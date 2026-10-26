@@ -1,0 +1,211 @@
+# greps.txt — R-G1F-2 Domain-family exclusion: what does and does not exist today
+# Task:  task/u7-r1f2-domain-exclusion-20261026 (docs/evidence only; no product change, no host boot)
+# Date:  2026-10-26
+# Runs from: .worktrees/u7-r1f2 (base origin/master @ 496a3980f)
+# Discipline: outputs are verbatim. Long lines are cut with awk substr(...,1,220) and the cut is marked [trunc].
+#   The untracked U4 obligation set is read from the MAIN worktree absolute path because untracked
+#   evidence does not materialize in a fresh worktree — disclosed, not silently substituted.
+
+==============================================================================
+## G-01
+##   git grep -n "domain_family"
+$ git grep -n "domain_family"
+
+docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json:4022:      "name": "surface:domain_family",  [trunc]
+docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/machine-v3/coverage-keys-expected.json:60:  "surface:domain_family#surface",  [trunc]
+docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/machine-v3/receipts/keyset-probe/mutated-records.json:1:{"meta": {"id": "m0-closure-v3c-route-records", "status": "M0-CLOSURE-CANDIDATE-v3c; NOT-FROZEN; checker-N  [trunc]
+docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/machine-v3/route-record.schema.json:216:    "surface:domain_family",  [trunc]
+docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/route-records-v3c.json:1927:   "name": "surface:domain_family",  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/gates/G1-F-G3-REVIEW-R2.md:22:5. **`surface:domain_family` is an acceptable named blocker, not a seam failure.** SUP-C records 21 credible routes plus exactly one named bl  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/gates/G1-F-G3-REVIEW-R2.md:30:- `surface:domain_family` remains NAMED-BLOCKER pending user/ROOT scope and enumerable registry decision.  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-VERDICTS.md:15:- R-G1F-2 surface:domain_family NAMED-BLOCKER (missing scope/enumeration decision, not a seam gap). Stays uncovered; blocks G5 for that obligatio  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/gates/HANDOFF-U6-20261026.md:35:- **R-G1F-2**：`surface:domain_family` 为命名阻塞（缺枚举/范围裁决，非 seam 缺口）。  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/gates/HANDOFF-U6-20261026.md:44:5. U8：E5 独立工程验收 + G5 产品门禁（**需用户发布批准**；R-G1F-2 未裁决前 G5 对 domain_family 保持 BLOCKED）。  [trunc]
+
+==============================================================================
+## G-02
+##   git grep -n "domain-family"
+$ git grep -n "domain-family"
+
+(exit=1 → no occurrence of the hyphen spelling anywhere in the tracked tree)
+
+==============================================================================
+## G-03
+##   git grep -n "domain_family" -- "*.ts" "*.mjs" "packages/**"
+$ git grep -n "domain_family" -- "*.ts" "*.mjs" "packages/**"
+
+(exit=1 → the term appears in NO TypeScript/JavaScript source and in NO packages/** path)
+
+==============================================================================
+## G-04
+##   grep -c "domain_family" <U4 obligations set>   [UNTACKED local file]
+$ grep -c "domain_family" <U4 obligations set>   [UNTACKED local file]
+
+$ ls -la $OBL   # /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json
+-rw-r--r-- 1 user user 93092 Oct 25 13:20 /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json
+$ grep -c 'domain_family' $OBL
+1
+
+  → exactly ONE line contains the substring. It is NOT a tool name: the obligation entry is
+    named "surface:domain_family (family obligation — no registered names)". An exact-quoted
+    search for the bare name proves the difference:
+$ grep -n '"surface:domain_family"' $OBL
+  (exit=1 → no bare-name record; the family obligation carries a parenthetical suffix instead)
+
+==============================================================================
+## G-05
+##   grep -n -i "domain" <U4 obligations set>
+$ grep -n -i "domain" <U4 obligations set>
+
+12:  "required_rule": "source of 'required' = the active plan/backlog/matrix on master (docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md + ALPHA5-EFFECTIVE-BACKLOG.md). A name with a MAIN acceptance row (L21-L46, expansions included) is REQUIRED. A name listed only in Append  [trunc]
+1594:    "matrix L41 (MCP stdio, WIRED-NOT-ACCEPTED) + L42 (MCP HTTP dynamic domain, NOT_VERIFIED)",  [trunc]
+1627:   "name": "surface:domain_family (family obligation — no registered names)",  [trunc]
+1630:   "scope_variant": "design-semantic family (HPC/RPC/research-state/device) — NOT proven registered names; concrete external domains need config/registry input (dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md and matrix L43)",  [trunc]
+1634:    "matrix L43 main row M-13 Domain (NOT_VERIFIED): '尚未枚举缺口 = domain 工具面未定义，无逐名输入'; fail-closed clauses are design-only; S0 explicit NOT_RUN",  [trunc]
+1635:    "CI-10 Domain veto stays independent (refs/center-assembly-architecture.md §2 L36)"  [trunc]
+
+==============================================================================
+## G-06
+##   grep -c "M-13" <U4 obligations set>
+$ grep -c "M-13" <U4 obligations set>
+
+3
+
+$ grep -n 'M-13' $OBL
+12:  "required_rule": "source of 'required' = the active plan/backlog/matrix on master (docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md + ALPHA5-EFFECTIVE-BACKLOG.md). A name with a MAIN acceptance row (L21-L46, expansions included) is REQUIRED. A name listed only in Append  [trunc]
+1634:    "matrix L43 main row M-13 Domain (NOT_VERIFIED): '尚未枚举缺口 = domain 工具面未定义，无逐名输入'; fail-closed clauses are design-only; S0 explicit NOT_RUN",  [trunc]
+1643:   "matrix_row": "L43 main row M-13"  [trunc]
+
+==============================================================================
+## G-07
+##   grep -n "hpc_" <U4 obligations set>
+$ grep -n "hpc_" <U4 obligations set>
+
+1641:    "do not invent hpc_* class names (matrix L43)"  [trunc]
+  → the only hpc_ hit is the instruction NOT to invent such names; no hpc_* tool name is registered or claimed.
+
+==============================================================================
+## G-08
+##   grep -n -i "equipment" <U4 obligations set>
+$ grep -n -i "equipment" <U4 obligations set>
+
+(exit=1 → zero occurrences)
+
+==============================================================================
+## G-09
+##   git grep -n "hpc_"
+$ git grep -n "hpc_"
+
+docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md:43:| Domain (M-13) | — | 无实现；HPC/RPC/研究状态/设备=**设计语义族，非已证注册名**（现 factory/注册未见此类固定名）；具体外部 domain 须配置/registry 补，**不造 hpc_\* 类名**；**尚未枚举缺口**=domain 工  [trunc]
+
+==============================================================================
+## G-10
+##   git grep -n "DomainVeto" -- ":!packages/runtime/dist"
+$ git grep -n "DomainVeto" -- ":!packages/runtime/dist"
+
+dev/agent-workflow/evidence/alpha5/pr0/review-PR0.md:63:- 类型面纪律与声明一致：admission 无"先跑后决"臂；grant-per-call 参数化（无共享 currentGrant）；`spawn` 无"裸跑"可表达面；Domain 否决独立回程（`DomainVeto`）。  [trunc]
+dev/agent-workflow/evidence/alpha5/pr0/runs/.pr-body.md:23:`canonicalJsonStringify canonicalJsonFingerprint · TOOL_CONTRACT_PROBLEM_CODES ToolContractProblem(Parse/Code) ParseResult problemCodesOf · RESOURCE_KINDS/RIGHTS  [trunc]
+packages/domain/tool-governance/src/index.ts:138:  DomainVeto,  [trunc]
+packages/domain/tool-governance/src/interfaces.ts:181:export type DomainVeto = 'allowed' | 'denied' | 'not-applicable'  [trunc]
+packages/domain/tool-governance/src/interfaces.ts:186:  readonly domainVeto: DomainVeto  [trunc]
+
+==============================================================================
+## G-11
+##   git grep -n "domainVeto"
+$ git grep -n "domainVeto"
+
+packages/domain/tool-governance/src/interfaces.ts:186:  readonly domainVeto: DomainVeto  [trunc]
+(above: the only non-dist hits)
+
+==============================================================================
+## G-12
+##   git grep -n "DOMAIN_DENIED" -- "packages/**"
+$ git grep -n "DOMAIN_DENIED" -- "packages/**"
+
+packages/domain/test/a5p0-contracts.test.ts:176:        'DOMAIN_DENIED',  [trunc]
+packages/domain/tool-governance/src/errors.ts:9: *   DOMAIN_DENIED, EXECUTION_TERMINATION_UNCONFIRMED  [trunc]
+packages/domain/tool-governance/src/errors.ts:31:  'DOMAIN_DENIED',  [trunc]
+packages/runtime/sandbox-provider/contract-stub.ts:29:  'DOMAIN_DENIED',  [trunc]
+
+==============================================================================
+## G-13
+##   grep -rn -i "equipment|hpc_|domain_family|domain-family" packages/domain/tool-governance/
+$ grep -rn -i "equipment|hpc_|domain_family|domain-family" packages/domain/tool-governance/
+
+(exit=1 → zero: the domain package exposes the veto TYPE, not a Domain tool family)
+
+==============================================================================
+## G-14
+##   git grep -n -i "domain" -- "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md"
+$ git grep -n -i "domain" -- "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md"
+
+docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md:43:| Domain (M-13) | — | 无实现；HPC/RPC/研究状态/设备=**设计语义族，非已证注册名**（现 factory/注册未见此类固定名）；具体外部 domain 须配置/registry 补，**不造 hpc_\* 类名**；**尚未枚举缺口**=domain 工具面未定义，无逐名输入 | — | — | 无 PoC（S0 明示 NOT_RUN）；适用性=NOT_VERIFIED(无测试) | fail-closed 条  [trunc]
+
+==============================================================================
+## G-15
+##   git grep -n "M-13" -- "docs/plans/memo/alpha5-tool-io-governance/"
+$ git grep -n "M-13" -- "docs/plans/memo/alpha5-tool-io-governance/"
+
+docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md:61:| M-13 | Domain 工具（HPC/RPC/研究状态/设备，G） | **受信 Domain Gateway 在 effect commit 处最终裁决**（CAS 版本、Principal 可信生成、业务拒绝、网络重试不明状态）；`TeamPermit ∧ DomainPermit` | — | Team 审批覆盖 Domain Gate；Shell 普通进程持真实设备绕行凭据；COW/rollback 假象 | 无 P0 实验腿（结构判定+设计   [trunc]
+docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json:66:    { "row_id": "M-13", "kind": "tool-family", "family": "Domain 工具（HPC/RPC/研究状态/设备）", "design_class": "G", "s0_ref": "../S0-SELECTION-MATRIX.md §2 M-13", "owner_pr": "PR7（veto 全链 PR8）", "pr_stages": ["PR2", "PR7", "PR8"]  [trunc]
+docs/plans/memo/alpha5-tool-io-governance/pr8-accept/e2e-skeleton/suites/registry.mjs:83:    matrixRows: ["M-10", "M-11", "M-12", "M-13", "SUP-07", "SUP-08"],  [trunc]
+
+==============================================================================
+## G-16
+##   git grep -n -i "equipment" -- "docs/plans/memo/alpha5-tool-io-governance/"
+$ git grep -n -i "equipment" -- "docs/plans/memo/alpha5-tool-io-governance/"
+
+docs/plans/memo/alpha5-tool-io-governance/architecture.md:185:- **Domain authority:** trusted binding references the actual domain gate and its independently enforced object/state/business authority. Research state versioning/CAS, HPC job rights and equipment safety interlocks are examples. The gate  [trunc]
+docs/plans/memo/alpha5-tool-io-governance/architecture.md:242:| MCP/remote/HPC/research/equipment | actual local process, in-process or remote provider | Bind the true execution boundary; remote domain/equipment effects governed at remote domain gate. No universal local-sandbox guarantee. |  [trunc]
+
+==============================================================================
+## G-17
+##   git grep -n "10.6" -- "docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md"
+$ git grep -n "10.6" -- "docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md"
+
+docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md:249:### 10.6 Bridge 阻断的准确含义  [trunc]
+
+==============================================================================
+## G-18
+##   git grep -n "CI-10"
+$ git grep -n "CI-10"
+
+docs/plans/memo/unified-baseline-alpha5-20261025/u6/G4-CORE-EVIDENCE.md:27:| CI-10 Domain veto independence | unchanged, gated earlier | control/** untouched this round (zero diff) | — | prior gate records (GATE-LEDGER A  [trunc]
+docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md:55:| CI-10 | Domain Authority 对设备/研究状态/远端作业的最终否决仍独立有效：Team Permit 不覆盖 Domain Permit，反之亦然 |  [trunc]
+
+==============================================================================
+## G-19
+##   git grep -n -i "domain" -- "docs/plans/memo/unified-baseline-alpha5-20261025/u7/" (this PR's own new directory, pre-write)
+$ git grep -n -i "domain" -- "docs/plans/memo/unified-baseline-alpha5-20261025/u7/" (this PR's own new directory, pre-write)
+
+total 8
+drwxr-xr-x 2 user user 4096 Oct 26 10:51 .
+drwxr-xr-x 5 user user 4096 Oct 26 10:51 ..
+
+==============================================================================
+## G-20
+##   git log -1 --format=%H%n%s origin/master
+$ git log -1 --format=%H%n%s origin/master
+
+496a3980fcd0f427e0c888e7dc63b10d2ae1b627
+Merge pull request #383 from ArmourPiercer1/task/gates-u6-g4-record-20261026
+
+==============================================================================
+## SUMMARY of what these greps prove
+##
+##  EXISTS today:
+##   - the literal seed/route key surface:domain_family in the M0 closure-v3 route records,
+##     the route-record schema, the coverage-key expectation and the family acceptance index (G-01);
+##   - the family obligation entry in the U4 set whose NAME carries a parenthetical suffix, not a
+##     tool name (G-04, G-05);
+##   - the R-G1F-2 named-blocker records in the tracked gate documents (G-01, G-18).
+##
+##  DOES NOT EXIST today:
+##   - any Domain provider, Domain tool name, or Scope enumeration: no hpc_*, no equipment,*
+##     no domain_family identifier in source (G-03, G-07..G-09, G-13);
+##   - the hyphen spelling domain-family anywhere (G-02);
+##   - any Domain acceptance row beyond the single M-13 NOT_VERIFIED row (G-14).
+##
+##  The type that does exist is a VETO RESULT, not a family: DomainVeto is a three-valued field
+##  on a gateway receipt (G-10, G-11) and DOMAIN_DENIED is a registered error name (G-12).
+==============================================================================
