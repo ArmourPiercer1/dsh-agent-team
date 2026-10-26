@@ -1748,7 +1748,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
       'jobs-management': { backsExecution: 'named-bridge' },
     } },
   })
-  const kernelFamilies = { jobs: false }
   // u7-w0b S3: the seam-mounted families register in descriptor `order`
   // (historical kernel-ledger order: fs 10 → process 20 → search 30, then
   // the jobs named bridge below). Origin is set by the plane, never by a
@@ -1793,7 +1792,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
         message: `the jobs bridge contribution was refused by the closed schema (${jobsRegistered.code}: ${jobsRegistered.detail}) — an unverified bridge mounts nowhere (fail closed; the un-attributed host trio is left native, this governed lane does not come back)`,
       }
     }
-    kernelFamilies.jobs = true
   }
   // u7-w0b S3: the names the seam families keep kernel-owned — the claims
   // of every ENABLED family, plus the declared `disabledOwned` names of a
@@ -1862,19 +1860,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
     registry,
     kernel,
     scopeKey: kernelScopeKey,
-    families: Object.freeze(kernelFamilies),
     guard: Object.freeze({
-      // ARC-B (PR2/PR3) + PR4/PR5: the kernel owns ALL governed mount names
-      // on the ONE table — read, shell, BOTH search rows (grep + glob), and
-      // the jobs trio when (and only when) the named-bridge contribution
-      // registered on this mount; install.ts's pre-body table gate and
-      // post-success drift veto then treat every name through the SAME
-      // code path (data, not new branches; §10.2's trace law is family-
-      // count independent by design).
-      owns: (name) => typeof name === 'string' && (
-        seamOwned.has(name)
-        || (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name))
-      ),
+      // ARC-B (PR2/PR3) + PR4/PR5, u7-w0b: the kernel owns ALL governed
+      // mount names on the ONE table — every name a seam family claims (or
+      // keeps owned while disabled), and every name a candidate REGISTERED
+      // on this mount claims (so the named jobs bridge's trio is owned when,
+      // and only when, its contribution registered); install.ts's pre-body
+      // table gate and post-success drift veto then treat every name
+      // through the SAME code path (data, not family branches; §10.2's
+      // trace law is family-count independent by design).
+      owns: (name) => typeof name === 'string' && (seamOwned.has(name) || mountClaims.has(name)),
       identityFor: (name) => {
         if (typeof name !== 'string') return null
         const entry = ensureApprovalEntry(name)
@@ -2088,23 +2083,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
               try {
                 centerKernel.kernel.beginDrain()
                 centerKernel.kernel.tombstone()
-                // U6 PR3 (ARC-B), PR5-completed: the ONE kernel drains ALL
-                // family candidates it registered — each revoke/drop pair is
-                // the deterministic invalidation that family's mount owes
-                // (FIX-K K1: a later re-registration never resurrects an
-                // approval).
-                for (const entry of seamFamilies) {
-                  if (!entry.enabled) continue
-                  centerKernel.registry.revoke(entry.descriptor.familyId, `the governed ${entry.descriptor.familyId} mount was disposed`)
-                  centerKernel.kernel.dropApprovalsForFamily(entry.descriptor.familyId)
-                }
-                // U6 PR4 (ARC-C): the jobs bridge family drains with the
-                // SAME deterministic law — revoke the candidate, drop its
-                // trio entries from the ONE table; a re-registration (the
-                // next reviewed mount, a fresh kernel) never resurrects one.
-                if (centerKernel.families.jobs === true) {
-                  centerKernel.registry.revoke('dsh.jobs-family', 'the governed jobs bridge mount was disposed')
-                  centerKernel.kernel.dropApprovalsForFamily('dsh.jobs-family')
+                // U6 PR3 (ARC-B), PR5-completed, u7-w0b: the ONE kernel
+                // drains ALL family candidates it registered (seam families
+                // and the jobs named bridge alike), in registration order —
+                // each revoke/drop pair is the deterministic invalidation
+                // that family's mount owes (FIX-K K1: a later
+                // re-registration never resurrects an approval).
+                for (const candidate of centerKernel.registry.view().candidates) {
+                  if (candidate.state === 'tombstoned') continue
+                  centerKernel.registry.revoke(candidate.familyId, `the governed ${candidate.familyId} mount was disposed`)
+                  centerKernel.kernel.dropApprovalsForFamily(candidate.familyId)
                 }
                 centerKernel.kernel.release()
               } catch {
