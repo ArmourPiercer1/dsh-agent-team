@@ -64,6 +64,7 @@ Architecture document, and legacy Team event vocabulary must not be presented as
 | the tool set | `src/tools.ts` (the 13 `name:` entries) |
 | guard / selection / deny | `src/guard.ts`, `src/tool-selector.ts`, `src/builtin-deny.ts` |
 | argument tokens | `src/tokens.ts`, `src/types.ts` |
+| governed family descriptors (u7-w0b) | `families/` — one `FamilyAssembly` descriptor module per ordinary governed family (`fs.mjs`, `process.mjs`, `search.mjs`), the REVIEWED list `manifest.json` (sha256 per module + the kernel capability backings), and the GENERATED `index.mjs` (`node scripts/gen-family-index.mjs [--check]`). Adding a family = its lane + one descriptor module + one manifest entry; see `dev/agent-workflow/evidence/u7-w0b-20261026/DESIGN.md` |
 | Alpha.5 search/shell lane | `a5p5-tools/src/` (`backend-contract.ts` is the closed execution shape a provider must speak; `effects-schema.ts` imports the domain parse law) |
 | tests | `test/` (13 `*.test.ts`, incl. `p6t6-bypass-scan.test.ts`, `h3-hostile-seam.test.ts`, `rc2-team-deny-least-privilege.test.ts`, `issue2-builtin-deny-focused.test.ts`) + `a5p5-tools/test/` (8) |
 | real-instance drivers | `harness/*.mjs` (`g5-member-e2e.mjs`, `d4-restart-reopen.mjs`, `t12-vertical.mjs`, `mock-deepseek.mjs`) — **manual drivers, not part of `test`** |

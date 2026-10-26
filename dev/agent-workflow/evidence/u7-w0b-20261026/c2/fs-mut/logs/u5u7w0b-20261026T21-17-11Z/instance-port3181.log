@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=<REDACTED-EPHEMERAL-GUI-TOKEN>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7w0b-20261026t21-17-11z
+[dsh-agent-team] a5ptc: census-boot root=session-u7fsmut-team-u5u7w0b-20261026t21-17-11z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7w0b-20261026t21-17-11z
+[dsh-agent-team] a5g7-write: governed-write RAN bytes=70 created=true path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0b-20261026T21-17-11Z/workspace/notes/u7fsmut-w1.txt
+[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0b-20261026T21-17-11Z/workspace/notes/u7fsmut-plant.txt
+[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0b-20261026T21-17-11Z/workspace/notes/u7fsmut-img.png
