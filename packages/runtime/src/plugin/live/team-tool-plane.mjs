@@ -824,8 +824,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // IO_POLICY_UNSUPPORTED). It INVENTS NOTHING: with no `read` rule the
     // search class stays refused; the center carries no tool-name literal —
     // the law lives HERE, in the trusted mount, and the projection consumes
-    // it generically (TemplatePolicyProjectionInput.invokeClasses).
+    // it generically (TemplatePolicyProjectionInput.invokeClasses). Review R1
+    // F1: the law is BOUNDED by the mount's declared closed row-class world —
+    // `knownEffectClasses` lists the effect classes the plane's rows can ever
+    // derive that are not nameable by the rule grammar (grep/glob; the shell
+    // class bash IS a rule tool so it is named by its own rules and never
+    // rides). Without this a stub/typo/attacker-shaped class key could ride a
+    // valid read governor and acquire authority; the center now refuses any
+    // law key outside this inventory (projection-invoke-class-unknown) and
+    // refuses a class law whose world is undeclared (projection-inventory-
+    // missing). The world lives HERE with the law, never in the center.
     invokeClasses: { grep: ['read'], glob: ['read'] },
+    knownEffectClasses: ['grep', 'glob'],
     onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
   })
   if (built.ok !== true) {

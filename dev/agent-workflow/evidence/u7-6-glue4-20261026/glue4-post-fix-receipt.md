@@ -52,3 +52,43 @@ Transcript (re-runnable): `glue4-offline-repro-postfix.txt`
 * No face weakened: default-deny coverage gate intact (P1/P5/P6), deny-lane
   mirror intact (ride arms mirror their governing rule's lane treatment
   exactly), no bypass of the PA edge, no blanket allow.
+
+## Addendum — review R1 fix round (2026-10-26)
+
+FACE NAMING (R1 F3): everything this receipt proves lives at the
+**template-policy coverage/projection gate** (`admitCall` in
+`tool-admission/admission-kernel.ts`). The assurance-LEVEL face
+(`assurance-runtime.ts`) is vacuous on this mount and NO assurance-runtime
+capability is claimed or counted anywhere in this PR.
+
+R1 F1 (unknown classes accepted) — fixed red-first:
+- `f1-red-before-fix.txt` — the two new law tests verbatim against the
+  PRE-FIX implementation (2 failed / 9 passed).
+- The fix: `knownEffectClasses` (the mount's closed row-class inventory) is
+  REQUIRED beside any class law; law key outside it ⇒ typed construction
+  refusal `projection-invoke-class-unknown`; class law with undeclared world
+  ⇒ `projection-inventory-missing`; inventory shape validated. The law AND
+  the class world are trusted DATA supplied by the plane mount
+  (`knownEffectClasses: ['grep','glob']`); the center still carries zero
+  class-name literals.
+- Both REAL entry points are covered by tests: the derive face the reviewer
+  probed (`deriveTeamPolicyAuthority`) and the production face the plane
+  actually calls (`createProductionAdmissionAssembly`).
+- Transcript legs R8-R11 (`glue4-offline-repro-postfix.txt`): the reviewer's
+  exact `{ evil: ['read'] }` probe through BOTH faces now returns a typed
+  refusal; R11 is their verbatim derive-side input, previously
+  `{"ok":true,"evilCovered":true}`, now
+  `REFUSED code=TOOL_BINDING_UNVERIFIED refusal=projection-inventory-missing`.
+
+R1 F2 (mutation probes) — `mutation-probes/run-mutation-probes.mjs`,
+deterministic, restorable (kernel re-hashed after every mutant):
+M1 deny-source mirroring removed, M2 unknown-class membership relaxed,
+M3 nameable-class guard dropped (test case carries an inventory containing
+the class, so only the nameable clause can answer), M4 ride ceiling relaxed
+to allow. Committed transcripts: all four **CAUGHT** (`manifest.txt`,
+`all-mutants-caught=true`).
+
+R1 environment note: `pnpm exec eslint` fails in a fresh worktree without a
+workspace install (the reviewer's verbatim tail) — in an installed tree
+`npx eslint <changed files>` exits 0 (zero problems), and CI's pr-gate leg
+performs the real frozen install + lint.

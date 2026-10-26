@@ -649,6 +649,24 @@ export function deriveTeamPolicyAuthority(input) {
                 rideClassesByTool.set(governingTool, prior.includes(effectClass) ? prior : Object.freeze([...prior, effectClass]));
             }
         }
+        // Review R1 F1 — the law is bounded by the mount's DECLARED class world.
+        // A well-formed but unknown key ('evil', 'grepp') is a typed refusal at
+        // construction — the projection never creates an authority arm for a
+        // class no row of this mount can derive. Order: the law's own shape
+        // first (above), then the inventory's presence and shape, then the
+        // membership — each its own refusal tag.
+        if (input.knownEffectClasses === undefined) {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-missing', 'projection refused: invokeClasses requires the mount\'s declared row-class inventory (knownEffectClasses) — a class law whose class world is undeclared is never constructed (fail-closed, review R1 F1)');
+        }
+        const inventory = input.knownEffectClasses;
+        if (!Array.isArray(inventory) || inventory.length === 0 || !inventory.every((c) => typeof c === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(c)) || new Set(inventory).size !== inventory.length) {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-malformed', 'projection refused: knownEffectClasses must be a non-empty array of unique lower-case class tokens');
+        }
+        for (const effectClass of Object.keys(input.invokeClasses)) {
+            if (!inventory.includes(effectClass)) {
+                return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-invoke-class-unknown', `projection refused: invokeClasses key '${effectClass}' is not a class of this mount's declared row world (${inventory.join(', ')}) — an unknown class never projects (review R1 F1)`);
+            }
+        }
         if (rideClassesByTool.size > 0) {
             notes.push(`row-class invoke law mounted (U7-6): ${[...rideClassesByTool.entries()].map(([t, classes]) => classes.map((c) => `${c}<-${t}`).join(', ')).join('; ')} — governing rules project the class arm; no governing rule keeps the class refused (disclosed)`);
         }
@@ -849,6 +867,7 @@ export function createProductionAdmissionAssembly(config) {
         ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
         ...(config.leaderExecTokenPresent === undefined ? {} : { leaderExecTokenPresent: config.leaderExecTokenPresent }),
         ...(config.invokeClasses === undefined ? {} : { invokeClasses: config.invokeClasses }),
+        ...(config.knownEffectClasses === undefined ? {} : { knownEffectClasses: config.knownEffectClasses }),
         sourceVersion: config.authorityGeneration,
     });
     if (!projection.ok)

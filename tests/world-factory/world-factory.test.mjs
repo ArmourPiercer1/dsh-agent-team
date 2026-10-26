@@ -527,7 +527,7 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   // root — and nothing else. Pre-U7-6 this pin read "all three lanes empty"
   // because a search-class rule was inexpressible in the closed enum and a
   // read any-rule bought no green (run8: refused at the PA assurance edge,
-  // IO_POLICY_UNSUPPORTED). The U7-6 assurance face made the search classes
+  // IO_POLICY_UNSUPPORTED). The U7-6 fix at the template-policy COVERAGE/
   // projectable FROM read rules (invokeClasses law + read→list companion),
   // so the honest minimum grant is this one locating rule: it covers the
   // anchored walk envelope (list+read at the root, tool-invoke by class

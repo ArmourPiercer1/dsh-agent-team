@@ -83,7 +83,7 @@ function assemblyFor(permissionPolicy, role = 'member', invokeClasses) {
     authorityGeneration: () => 0,
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
     subtreeContains,
-    ...(invokeClasses === undefined ? {} : { invokeClasses }),
+    ...(invokeClasses === undefined ? {} : { invokeClasses, knownEffectClasses: ['grep', 'glob'] }),
     onObserve: () => {},
   })
   if (built.ok !== true) throw new Error(`assembly refused: ${built.error.message}`)
@@ -167,3 +167,31 @@ await leg('P3 read-exact-root +class +anchored glob', { permissionPolicy: T_READ
 await leg('P4 read-exact-root +class +anchored grep /etc', { permissionPolicy: T_READ_EXACT, toolName: 'grep', parsedArgs: grepEtc.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
 await leg('P5 read-exact-elsewhere +class +anchored grep', { permissionPolicy: T_READ_ELSEWHERE, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
 await leg('P6 read-any +class +anchored grep', { permissionPolicy: T_READ_ANY, toolName: 'grep', parsedArgs: grepIn.value, invokeClasses: INVOKE_CLASSES, anchor: ROOT })
+
+// R8-R10 (review R1 F1 fix round): the reviewer's attacker-shaped class, driven
+// through the SAME production entry point (createProductionAdmissionAssembly),
+// must be a TYPED construction refusal — never ok:true.
+function refusedConstructionLeg(name, invokeClasses, knownEffectClasses) {
+  const built = createProductionAdmissionAssembly({
+    permissionPolicy: T_READ_EXACT, realmId: REALM, templateId: 'glue4-tpl', role: 'member',
+    definitionOwnerAuthority: 'human-user', clock: () => Date.now(), authorityGeneration: () => 0,
+    beneficiaryAuthority: 'member', subtreeContains,
+    ...(invokeClasses === undefined ? {} : { invokeClasses }),
+    ...(knownEffectClasses === undefined ? {} : { knownEffectClasses }),
+    onObserve: () => {},
+  })
+  console.log(built.ok === true
+    ? `${name}: CONSTRUCTED (!! attacker class accepted)`
+    : `${name}: REFUSED construction code=${built.error.code} refusal=${built.error.details?.refusal ?? '-'} :: ${built.error.message.slice(0, 200)}`)
+}
+refusedConstructionLeg('R8 attacker class evil + declared world', { evil: ['read'] }, ['grep', 'glob'])
+refusedConstructionLeg('R9 class law WITHOUT declared world', INVOKE_CLASSES, undefined)
+refusedConstructionLeg('R10 typo of known class grepp', { grepp: ['read'] }, ['grep', 'glob'])
+
+// R11: the REVIEWER'S VERBATIM F1 probe (REVIEW.md), same dist import, same
+// input — must now be a typed refusal, not {"ok":true,"evilCovered":true}.
+{
+  const { deriveTeamPolicyAuthority } = await import(D('runtime/tool-admission/admission-kernel.js'))
+  const r = deriveTeamPolicyAuthority({ permissionPolicy: { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: '/data/root' } }], ask: [], deny: [] }, realmId: 'r', templateId: 't', definitionOwnerAuthority: 'human-user', role: 'member', sourceVersion: () => 1, invokeClasses: { evil: ['read'] } })
+  console.log(`R11 reviewer verbatim derive probe: ${r.ok === true ? 'CONSTRUCTED (!! attacker class accepted)' : `REFUSED code=${r.error.code} refusal=${r.error.details?.refusal ?? '-'}`}`)
+}

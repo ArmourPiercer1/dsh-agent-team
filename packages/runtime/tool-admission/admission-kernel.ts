@@ -755,10 +755,25 @@ export interface TemplatePolicyProjectionInput {
    *  applies — the coherence this closes is the lane saying allow and the
    *  assembly gate saying IO_POLICY_UNSUPPORTED for one policy. Keys must
    *  be lower-case class tokens that are NOT themselves grammar tools (a
-   *  nameable class never rides); values must be grammar tools. The
-   *  projection stays DATA-DRIVEN: no tool-name literal ever enters this
-   *  file — the law lives in the trusted mount that supplies the map. */
+   *  nameable class never rides), MUST appear in the mount's declared
+   *  `knownEffectClasses` inventory (an unknown or typo'd class is a typed
+   *  refusal, never a silent projection — review R1 F1), and values must be
+   *  grammar tools. The projection stays DATA-DRIVEN: no tool-name literal
+   *  ever enters this file — the law AND the closed class world both live
+   *  in the trusted mount that supplies them. */
   readonly invokeClasses?: Readonly<Record<string, readonly string[]>>
+  /** U7-6 review R1 F1 — the mount's CLOSED row-class inventory: the effect
+   *  classes this mount's rows can ever derive. REQUIRED whenever
+   *  `invokeClasses` is mounted: a class law whose class world is undeclared
+   *  is incoherent and refused (`projection-inventory-missing`); a law key
+   *  outside the inventory is refused (`projection-invoke-class-unknown`)
+   *  — so a stub, typo, or attacker-shaped class cannot acquire tool-invoke
+   *  authority by riding a valid governor. Declaring an inventory WITHOUT a
+   *  class law is inert but legal: it states the world, projects nothing.
+   *  Entries must be unique lower-case class tokens; grammar-tool names are
+   *  legal here (the inventory describes the row world; only the LAW keys
+   *  must stay outside the grammar). */
+  readonly knownEffectClasses?: readonly string[]
 }
 
 /** Result of {@link deriveTeamPolicyAuthority} — the read-time arms. */
@@ -851,6 +866,24 @@ export function deriveTeamPolicyAuthority(
       for (const governingTool of governing as readonly PermissionTool[]) {
         const prior = rideClassesByTool.get(governingTool) ?? []
         rideClassesByTool.set(governingTool, prior.includes(effectClass) ? prior : Object.freeze([...prior, effectClass]))
+      }
+    }
+    // Review R1 F1 — the law is bounded by the mount's DECLARED class world.
+    // A well-formed but unknown key ('evil', 'grepp') is a typed refusal at
+    // construction — the projection never creates an authority arm for a
+    // class no row of this mount can derive. Order: the law's own shape
+    // first (above), then the inventory's presence and shape, then the
+    // membership — each its own refusal tag.
+    if (input.knownEffectClasses === undefined) {
+      return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-missing', 'projection refused: invokeClasses requires the mount\'s declared row-class inventory (knownEffectClasses) — a class law whose class world is undeclared is never constructed (fail-closed, review R1 F1)')
+    }
+    const inventory = input.knownEffectClasses
+    if (!Array.isArray(inventory) || inventory.length === 0 || !inventory.every((c) => typeof c === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(c)) || new Set(inventory).size !== inventory.length) {
+      return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-malformed', 'projection refused: knownEffectClasses must be a non-empty array of unique lower-case class tokens')
+    }
+    for (const effectClass of Object.keys(input.invokeClasses)) {
+      if (!inventory.includes(effectClass)) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-invoke-class-unknown', `projection refused: invokeClasses key '${effectClass}' is not a class of this mount's declared row world (${inventory.join(', ')}) — an unknown class never projects (review R1 F1)`)
       }
     }
     if (rideClassesByTool.size > 0) {
@@ -1051,6 +1084,9 @@ export interface ProductionAdmissionConfig {
   /** U7-6 GLUE-4: the trusted plane's row-class law, forwarded verbatim to
    *  the projection (see TemplatePolicyProjectionInput.invokeClasses). */
   readonly invokeClasses?: Readonly<Record<string, readonly string[]>>
+  /** U7-6 review R1 F1: the mount's closed row-class inventory, REQUIRED by
+   *  any mounted class law; forwarded verbatim to the projection. */
+  readonly knownEffectClasses?: readonly string[]
   readonly grantExpiry?: (issuedAt: number) => number | null
   readonly ledger?: GrantLedger
   /** The host's cancellation view at the execution edge (port reads it). */
@@ -1122,6 +1158,7 @@ export function createProductionAdmissionAssembly(
     ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
     ...(config.leaderExecTokenPresent === undefined ? {} : { leaderExecTokenPresent: config.leaderExecTokenPresent }),
     ...(config.invokeClasses === undefined ? {} : { invokeClasses: config.invokeClasses }),
+    ...(config.knownEffectClasses === undefined ? {} : { knownEffectClasses: config.knownEffectClasses }),
     sourceVersion: config.authorityGeneration,
   })
   if (!projection.ok) return projection
