@@ -27,8 +27,12 @@
  *                  (so their calls refuse before body, never ride native)
  *   backends(cap)  optional — effect backends this family contributes to the
  *                  SHARED backend set (later phases see all of them)
- *   build(cap)     { definitions, contribution, diagnostics?, teardown? }
- *                  or { refused: { code, message } }
+ *   build(cap)     { definitions, contribution, diagnostics?, handoff?,
+ *                  teardown? } or { refused: { code, message } } — closed:
+ *                  `diagnostics` (name → backend/executor, observation
+ *                  only), `handoff` (at most ONE family per mount may offer
+ *                  the PA read hand-off face {name, open, close}),
+ *                  `teardown` (family-owned cleanup run at dispose)
  *   refusalCode    'PLANE_*_REFUSED' — returned when registration refuses
  *
  * The capability object (`CAPABILITY_KEYS`) is enumerated here and frozen.
@@ -129,9 +133,19 @@ const sameSet = (a, b) => a.length === b.length && [...a].sort().join('\u0000') 
  * descriptor's family, its contribution claims EXACTLY the declared names
  * (an undeclared or missing name is refused), and it places exactly them.
  */
+const BUILT_KEYS = Object.freeze(['definitions', 'contribution', 'diagnostics', 'handoff', 'teardown'])
+
 export function checkBuiltFamily(descriptor, claims, built) {
   if (built === null || typeof built !== 'object' || !Array.isArray(built.definitions)) {
     return { ok: false, detail: 'build answered no definitions array' }
+  }
+  for (const k of Object.keys(built)) {
+    if (!BUILT_KEYS.includes(k)) return { ok: false, detail: `unknown build-result key '${k}'` }
+  }
+  if (built.teardown !== undefined && typeof built.teardown !== 'function') return { ok: false, detail: 'teardown must be a function' }
+  if (built.handoff !== undefined && (typeof built.handoff?.name !== 'string' || !claims.includes(built.handoff.name)
+    || typeof built.handoff.open !== 'function' || typeof built.handoff.close !== 'function')) {
+    return { ok: false, detail: 'handoff must be {name, open, close} for a claimed name' }
   }
   const declared = built.contribution?.visibility?.nativeNames
   if (built.contribution?.familyId !== descriptor.familyId) {

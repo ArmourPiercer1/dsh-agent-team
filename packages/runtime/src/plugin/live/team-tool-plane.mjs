@@ -77,36 +77,6 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-// U6 PR2 (U6 slice plan PR2 — the read family moves): the governed `read`
-// row's Family halves live in `packages/tools/fs-family/` (owner role: that
-// lane's README). The plane stays the TRUSTED ASSEMBLY POINT: it places the
-// family row, feeds the Kernel's table with the placement identity, and
-// routes the one-shot consume through the Kernel's consumeOnce port binding.
-import { buildReadRowDefinition, createGovernedReadExecutor } from '../../../../tools/fs-family/src/index.mjs'
-import * as fsFamilyReadMechanics from '../../../../tools/fs-family/src/fs-mechanics.mjs'
-import * as fsFamilyReadPresentation from '../../../../tools/fs-family/src/read-presentation.mjs'
-// U7-9a (CA-01, the first per-family delivery): the governed `write`,
-// `edit` and `read_image` rows join the SAME fs family, the SAME Kernel and
-// the SAME controlled-fs instance root under the SAME law the read row
-// proved — the family lane owns the argument law, the effect declaration,
-// the row Definitions and the ONE family contribution; the bytes land ONLY
-// through the controlled-fs provider's post-consume closures (write/create/
-// edit) and its verified-handle bounded read port (read_image), composed
-// here at the trusted seam. The plane's role is unchanged: validate, place,
-// feed the table, route the one-shot consume through the SAME consumeOnce
-// edge — and the zero-center-diff claim means EVERY new line lives in this
-// reviewed assembly file or in the family lane, never in a protected lane.
-import {
-  buildWriteRowDefinition,
-  buildEditRowDefinition,
-  buildImageRowDefinition,
-  createGovernedWriteExecutor,
-  createGovernedEditExecutor,
-  createGovernedReadImageExecutor,
-  createBoundedImageReadPort,
-  buildFsFamilyContribution,
-} from '../../../../tools/fs-family/src/index.mjs'
-import * as fsFamilyMutationMechanics from '../../../../tools/fs-family/src/fs-mutation-mechanics.mjs'
 // U6 PR3 (U6 slice plan PR3 — ARC-B part 2): the governed SHELL row joins
 // the SAME Kernel as the read row. The process family lane owns the shell
 // mechanics, the confined executor (CI-07 named provider), the pure shell
@@ -999,6 +969,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // of being looked up as a dispatcher key it never was. An unknown spelling
   // answers undefined — the entry lookup then fails closed on the binding
   // family, and no name is ever guessed (M1-D).
+  // u7-w0b S3: filled once the seam families are built (below), read at
+  // call time — the fixed spellings seam families claim are their own
+  // placement names (the U7-9a law, now family-blind).
+  const seamPlacementNames = new Set()
   const paPlacementNameOf = (name) => {
     const spelling = String(name ?? '')
     if (spelling.length === 0) return undefined
@@ -1012,7 +986,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // UNVERIFIED at the PA edge. Same law as readName above: the spelling
     // IS the placement name; an unmounted row still fails closed one step
     // later (no seed entry on the live surface) — no name is guessed.
-    if (spelling === WRITE_NATIVE_NAME || spelling === EDIT_NATIVE_NAME || spelling === READ_IMAGE_NATIVE_NAME) return spelling
+    if (seamPlacementNames.has(spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -1658,6 +1632,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // enumerated in family-assembly.mjs (CAPABILITY_KEYS) and frozen; it
   // carries no kernel, registry, approval or grant handle. Families
   // contribute their backends first (shared set), then build rows over it.
+  // The mount-resolved host services (the seam families reach them through `cap.hostService`). `mount(agentCtx)`
+  // binds them; until then (and in worlds with no such service) every
+  // lookup answers undefined and the row refuses with the native sentence.
+  const hostServices = { ctx: undefined }
+  const hostService = (name) => {
+    try {
+      return typeof hostServices.ctx?.get === 'function' ? hostServices.ctx.get(name) : undefined
+    } catch {
+      return undefined
+    }
+  }
   const familyBackends = { shell: hostedShell }
   const familyCapabilities = (backends) => makeFamilyCapabilities({
     realmId,
@@ -1732,37 +1717,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }, createGovernedShellRowDefinition),
     output: PLANE_PRESENTATION_FACE,
   })
-  // u7-w0b S3: seam-mounted rows place first, in descriptor `placement`
-  // order (the historical order: search rows, then the shell row).
-  const seamDefs = seamFamilies
+  // u7-w0b S3: the PA placement spelling of every seam-claimed name IS the
+  // placement name; at most one family may offer the PA read hand-off.
+  for (const entry of seamFamilies) {
+    if (entry.enabled) for (const n of entry.claims) seamPlacementNames.add(n)
+  }
+  const seamHandoffs = seamFamilies.filter((e) => e.enabled && e.built.handoff !== undefined)
+  if (seamHandoffs.length > 1) {
+    return { ok: false, code: 'PLANE_FAMILY_MANIFEST_REFUSED', message: `more than one family offers the PA read hand-off (${seamHandoffs.map((e) => e.descriptor.familyId).join(', ')}) — fail closed` }
+  }
+  const seamHandoff = seamHandoffs[0]?.built.handoff
+  // u7-w0b S3: seam rows place around the shell row in descriptor
+  // `placement` order (historical: search rows, shell row, fs rows).
+  const placedSeam = seamFamilies
     .filter((e) => e.enabled)
     .sort((a, b) => a.descriptor.placement - b.descriptor.placement)
-    .flatMap((e) => e.built.definitions)
+  const SHELL_ROW_PLACEMENT = 20
+  const seamDefsBefore = placedSeam.filter((e) => e.descriptor.placement < SHELL_ROW_PLACEMENT).flatMap((e) => e.built.definitions)
+  const seamDefsAfter = placedSeam.filter((e) => e.descriptor.placement > SHELL_ROW_PLACEMENT).flatMap((e) => e.built.definitions)
   const defs = Object.freeze([
-    ...seamDefs,
+    ...seamDefsBefore,
     bashRowDef,
   ])
 
-  // GLUE-7 fs-class row: the governed `read` over the SAME controlled-fs
-  // instance root (no second fs algebra). PLACED ONLY when the row declares
-  // an fsInstance — the native `read` spelling is takeover-mounted exactly
-  // like the G1 takeover vector the lane rules already speak, so dispatch
-  // resolves to THIS placement and the §6 binding feed below can hand the
-  // Guard the placement identity (int-a5b T5: `BINDING_UNVERIFIED` was the
-  // gap; a feed entry names the placement, it never bypasses the Guard).
-  // Deny-lane and template-default-deny re-check BEFORE any byte is read.
-  // (readName is hoisted to Gate 0b above — the same value, validated there.)
-  const readExecutor = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createGovernedReadExecutor({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      policy: permissionPolicy,
-      decide,
-      pa: paAdmit,
-      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
-      observe: logBackend('a5g7-read'),
-    })
-    : null
   // GLUE-5/C2 JOBS-MANAGEMENT ROW (B-ACT-1-PR): the three host `job_*`
   // management tools, takeover-mounted at FIXED native spellings behind the
   // closed `jobsEnabled` key (ABSENT = no rows at all — zero flip). The
@@ -1789,122 +1766,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
     ? buildJobsManagementRowDefs({ jobsBridge, shutJobsText, PLANE_PRESENTATION_FACE })
     : []
 
-  // U6 PR2: the read row DEFINITION is the family's — moved VERBATIM to
-  // `fs-family/src/read-row.mjs` (name/description/parameters/execute
-  // transport/presentation face all come from the family lane; the
-  // takeover-spelling law keeps the Gate 0b-validated native name).
-  // REVIEW-R1 B1 (R-REM-2.2 / FIX-K K3): the lifecycle count is ONLY ever
-  // the dispatcher's own ledger, injected as `dispatcherLifecycle`
-  // (production: the Guard handle's pendingCalls). The mount does NOT keep
-  // a self-counted fallback — with no port the kernel factory throws and
-  // this mount fails closed below (typed refusal); a family-local wrapper
-  // count is not a dispatcher count and is not offered.
-  const readRowDef = readExecutor === null ? null : buildReadRowDefinition({ readName, readExecutor })
-  // ── U7-9a: THE FS MUTATION + IMAGE ROWS ride the SAME fsInstance gate ──
-  // One controlled-fs instance root carries the whole fs family: read,
-  // write, edit and read_image mount TOGETHER (the family contribution
-  // requires all four rows; no fsInstance = none of them). Fixed native
-  // spellings (the jobs precedent — never the configurable names map): the
-  // takeover law's same-name same-meaning claim is per-implementation and
-  // is recorded in PLANE_SUPPORTED_NATIVE_TAKEOVERS above. The image row's
-  // TWO host-facing seams (attachment store, model-route capability) are
-  // resolved LAZILY through the mount's agent ctx at call time — absent
-  // seam = the native-shaped refusal, never a bypass, never a fake.
-  const WRITE_NATIVE_NAME = 'write'
-  const EDIT_NATIVE_NAME = 'edit'
-  const READ_IMAGE_NATIVE_NAME = 'read_image'
-  // The mount-resolved host services (image row only). `mount(agentCtx)`
-  // binds them; until then (and in worlds with no such service) every
-  // lookup answers undefined and the row refuses with the native sentence.
-  const hostServices = { ctx: undefined }
-  const hostService = (name) => {
-    try {
-      return typeof hostServices.ctx?.get === 'function' ? hostServices.ctx.get(name) : undefined
-    } catch {
-      return undefined
-    }
-  }
-  const attachmentsProvider = () => hostService('attachments')
-  // The capability route gate: the native law (read-image.ts:121-131
-  // @639ed01539) — latest routed config first (extracted from the host
-  // exec by the row), then agent options; the llm service answers the
-  // route's declared input modalities; UNANSWERABLE is a refusal.
-  const imageRouteResolver = async ({ filePath, provider, model, signal }) => {
-    const llm = hostService('llm')
-    if (typeof provider !== 'string' || typeof model !== 'string'
-      || llm === undefined || typeof llm.resolveModelInfo !== 'function') {
-      return { ok: false, refusal: { code: 'IMAGE_ROUTE_UNRESOLVED', text: `cannot read "${filePath}" as an image: the current model route could not be resolved` } }
-    }
-    let active
-    try {
-      active = await llm.resolveModelInfo(provider, model, signal)
-    } catch (error) {
-      return { ok: false, refusal: { code: 'IMAGE_ROUTE_UNRESOLVED', text: `cannot read "${filePath}" as an image: the current model route could not be resolved (${String(error?.message ?? error).slice(0, 120)})` } }
-    }
-    const modalities = Array.isArray(active?.inputModalities) ? active.inputModalities : []
-    if (!modalities.includes('image')) {
-      return { ok: false, refusal: { code: 'IMAGE_MODEL_NOT_CAPABLE', text: `cannot read "${filePath}" as an image: model "${model}" does not declare image input; switch to an image-capable model to read images` } }
-    }
-    return { ok: true }
-  }
-  const writeExecutor = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createGovernedWriteExecutor({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      policy: permissionPolicy,
-      decide,
-      pa: paAdmit,
-      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
-      observe: logBackend('a5g7-write'),
-    })
-    : null
-  const editExecutor = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createGovernedEditExecutor({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      policy: permissionPolicy,
-      decide,
-      pa: paAdmit,
-      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
-      observe: logBackend('a5g7-edit'),
-    })
-    : null
-  const imageReadPort = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createBoundedImageReadPort({ rootDir: fsInstance.rootDir, observe: logBackend('a5g7-image-port') })
-    : null
-  const imageExecutor = imageReadPort !== null
-    ? createGovernedReadImageExecutor({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      policy: permissionPolicy,
-      decide,
-      pa: paAdmit,
-      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
-      attachmentsProvider,
-      imageRoute: imageRouteResolver,
-      readBytes: imageReadPort,
-      observe: logBackend('a5g7-image'),
-    })
-    : null
-  const writeRowDef = writeExecutor === null ? null : buildWriteRowDefinition({ writeName: WRITE_NATIVE_NAME, writeExecutor })
-  const editRowDef = editExecutor === null ? null : buildEditRowDefinition({ editName: EDIT_NATIVE_NAME, editExecutor })
-  const imageRowDef = imageExecutor === null || imageReadPort === null
-    ? null
-    : buildImageRowDefinition({ readImageName: READ_IMAGE_NATIVE_NAME, imageExecutor, imageRouteResolver })
-  // The four fs rows mount TOGETHER: a partial fs family is a broken
-  // assembly (the family contribution requires all four), refused here
-  // fail-closed — the retired ungoverned native rows do not come back.
-  if (readRowDef !== null && (writeRowDef === null || editRowDef === null || imageRowDef === null)) {
-    return {
-      ok: false,
-      code: 'PLANE_FS_FAMILY_INCOMPLETE',
-      message: 'the fs family mounts read+write+edit+read_image together; a partial fs lane is a broken assembly (fail closed)',
-    }
-  }
-  const fsFamilyRowDefs = readRowDef === null ? [] : [readRowDef, writeRowDef, editRowDef, imageRowDef]
   const baseDefs = Object.freeze([
     ...defs,
-    ...fsFamilyRowDefs,
+    ...seamDefsAfter,
   ])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
@@ -1946,12 +1810,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // never see any of it (familyFace carries no authority, CI-06).
   const registry = createGovernedFamilyRegistry({
     kernelManifest: { capabilities: {
-      'fs-read': { backsExecution: 'family-body' },
-      // U7-9a: the governed write/edit bodies are family-body executions
-      // over the controlled-fs provider's post-consume closures — the
-      // manifest backs the capability the fs-family contribution requires,
-      // exactly like 'fs-read' already backs the read body.
-      'fs-write': { backsExecution: 'family-body' },
       'process-spawn': { backsExecution: 'family-body' },
       ...reviewedFamilies.kernelCapabilities,
       // U6 PR4 (ARC-C): the jobs-management capability is backed ONLY by a
@@ -1961,36 +1819,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
       'jobs-management': { backsExecution: 'named-bridge' },
     } },
   })
-  const kernelFamilies = { read: false, fsMutation: false, shell: false, jobs: false }
-  if (readRowDef !== null) {
-    // U7-9a (CA-01): ONE fs-family candidate carries ALL FOUR rows — the
-    // Registry law is one live candidate per family (DUP_FAMILY_ID) and the
-    // closed schema keys NAME claims per candidate, so the family that
-    // already speaks as `dsh.fs-family` for `read` brings `write`, `edit`
-    // and `read_image` into the SAME reviewed descriptor, the SAME source
-    // digest and the SAME ledger. Registration refusal fails the whole
-    // assembly closed (the retired center paths do not come back).
-    const contribution = buildFsFamilyContribution({
-      read: { definition: readRowDef, executorFactory: createGovernedReadExecutor },
-      write: { definition: writeRowDef, executorFactory: createGovernedWriteExecutor },
-      edit: { definition: editRowDef, executorFactory: createGovernedEditExecutor },
-      readImage: { definition: imageRowDef, executorFactory: createGovernedReadImageExecutor, readPortFactory: createBoundedImageReadPort },
-      mechanics: fsFamilyReadMechanics,
-      mutationMechanics: fsFamilyMutationMechanics,
-      presentation: fsFamilyReadPresentation,
-      cancelBoundary: 'the governed fs bodies check the injected signal at every await edge (read: before/after the verified-handle open; write/create: before truncate and before EVERY chunk, with mid-write cancellation reported as write-side-effect-unconfirmed; edit: before truncate; read_image: before the attachment commit, which is the one post-read step that may honestly claim zero side effect); the dispatcher-side arm + tools/change watcher lands ABORTED_BEFORE_DISPATCH before any body runs (install.ts seams, U6 PR2)',
-    })
-    const registered = registry.register(contribution, { origin: 'reviewed-manifest' })
-    if (registered.ok !== true) {
-      return {
-        ok: false,
-        code: 'PLANE_READ_REGISTRATION_REFUSED',
-        message: `the fs family contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; the old center read path does not come back)`,
+  const kernelFamilies = { shell: false, jobs: false }
+  // u7-w0b S3: the seam-mounted families register in descriptor `order`,
+  // around the families still hand-wired below (historical kernel-ledger
+  // order: fs 10 → process 20 → search 30 → jobs 40). Origin is set by the
+  // plane, never by a family; a refusal fails the whole assembly closed
+  // with that family's own typed code.
+  const SHELL_FAMILY_ORDER = 20
+  const registerSeam = (inBand) => {
+    for (const entry of [...seamFamilies].sort((a, b) => a.descriptor.order - b.descriptor.order)) {
+      if (!entry.enabled || !inBand(entry.descriptor.order)) continue
+      const registered = registry.register(entry.built.contribution, { origin: 'reviewed-manifest' })
+      if (registered.ok !== true) {
+        return {
+          ok: false,
+          code: entry.descriptor.refusalCode,
+          message: `the ${entry.descriptor.familyId} contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; a retired center path does not come back)`,
+        }
       }
     }
-    kernelFamilies.read = true
-    kernelFamilies.fsMutation = true
+    return null
   }
+  const seamRegisteredFirst = registerSeam((order) => order < SHELL_FAMILY_ORDER)
+  if (seamRegisteredFirst !== null) return seamRegisteredFirst
   // U6 PR3: the process/shell contribution. CI-07: the descriptor NAMES the
   // reviewed confined process provider this row's execution drives, and the
   // mount's launcher pin rides the bound digests — a provider-pin change is
@@ -2015,22 +1866,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     kernelFamilies.shell = true
   }
-  // u7-w0b S3: the seam-mounted families register here, in descriptor
-  // `order` (fs → process → [seam] → jobs keeps the historical order the
-  // kernel ledger is pinned to). Origin is set by the plane, never by a
-  // family; a refusal fails the whole assembly closed with the family's
-  // own typed code.
-  for (const entry of [...seamFamilies].sort((a, b) => a.descriptor.order - b.descriptor.order)) {
-    if (!entry.enabled) continue
-    const registered = registry.register(entry.built.contribution, { origin: 'reviewed-manifest' })
-    if (registered.ok !== true) {
-      return {
-        ok: false,
-        code: entry.descriptor.refusalCode,
-        message: `the ${entry.descriptor.familyId} contribution was refused by the closed schema (${registered.code}: ${registered.detail}) — an unverified family row mounts nowhere (fail closed; a retired center path does not come back)`,
-      }
-    }
-  }
+  const seamRegistered = registerSeam((order) => order > SHELL_FAMILY_ORDER)
+  if (seamRegistered !== null) return seamRegistered
   // U6 PR4 (ARC-C): the jobs contribution — the mount's FIRST named bridge.
   // Registered ONLY when the closed key says on AND a real bridge body is
   // injected: a bridgeless `jobsEnabled` mount keeps the honest typed shut
@@ -2133,9 +1970,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // code path (data, not new branches; §10.2's trace law is family-
       // count independent by design).
       owns: (name) => typeof name === 'string' && (
-        name === readName || name === bashName || seamOwned.has(name)
-        || (kernelFamilies.fsMutation === true
-          && (name === WRITE_NATIVE_NAME || name === EDIT_NATIVE_NAME || name === READ_IMAGE_NATIVE_NAME))
+        name === bashName || seamOwned.has(name)
         || (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name))
       ),
       identityFor: (name) => {
@@ -2211,10 +2046,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
        *  DOES declare it keeps the fail-closed law: whatever it holds reaches
        *  the adapter and a broken one refuses the install. Every other world
        *  and every other name keeps the old path. */
-      ...(readExecutor === null ? {} : { paReadHandoff: Object.freeze({
+      ...(seamHandoff === undefined ? {} : { paReadHandoff: Object.freeze({
         open: async (exec) => {
           if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
-          if (exec.name !== readName) return { kind: 'no-match' }
+          if (exec.name !== seamHandoff.name) return { kind: 'no-match' }
           const token = exec.token
           if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
             // The name IS this mount's governed read, so the effect-set question
@@ -2222,13 +2057,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // never falls back to the pre-hand-off lane.
             return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read carries no execution token, so no PA hand-off can be opened or redeemed for it' }
           }
-          return await readExecutor.paHandoffOpen(exec.arguments, {
+          return await seamHandoff.open(exec.arguments, {
             token,
             ...(exec.signal === undefined ? {} : { signal: exec.signal }),
           })
         },
         close: (exec) => {
-          const correlation = readExecutor.paHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
+          const correlation = seamHandoff.close(exec === null || typeof exec !== 'object' ? undefined : exec.token)
           if (typeof correlation === 'string') livePaPlan.delete(correlation)
         },
       }) }),
@@ -2249,13 +2084,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,
       backends: Object.freeze({
-        ...seamFamilies.reduce((acc, e) => (e.enabled ? { ...acc, ...(e.built.diagnostics ?? {}) } : acc), {}),
+        ...placedSeam.filter((e) => e.descriptor.placement < SHELL_ROW_PLACEMENT).reduce((acc, e) => ({ ...acc, ...(e.built.diagnostics ?? {}) }), {}),
         shell: hostedShell,
-        ...(readExecutor === null ? {} : { read: readExecutor }),
-        // U7-9a: the fs mutation + image bodies (diagnostics only).
-        ...(writeExecutor === null ? {} : { write: writeExecutor }),
-        ...(editExecutor === null ? {} : { edit: editExecutor }),
-        ...(imageExecutor === null ? {} : { read_image: imageExecutor }),
+        ...placedSeam.filter((e) => e.descriptor.placement > SHELL_ROW_PLACEMENT).reduce((acc, e) => ({ ...acc, ...(e.built.diagnostics ?? {}) }), {}),
       }),
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
@@ -2287,7 +2118,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // ride.
         : {
             kernelGuard: Object.freeze({
-              owns: (name) => typeof name === 'string' && (name === readName || name === bashName),
+              owns: (name) => typeof name === 'string' && (name === bashName || seamOwned.has(name)),
               identityFor: () => null,
             }),
           }),
@@ -2346,7 +2177,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // A5-M2: no hand-off survives its mount — claimed or not, the
             // flight, the unspent grant and the plan fact die with the
             // placement (teardown law, independent of the terminal observer).
-            readExecutor?.paHandoffCloseAll?.()
+            for (const entry of seamFamilies) {
+              if (entry.enabled) entry.built.teardown?.()
+            }
             // U6 PR2: the kernel's lifecycle rides its mount — drain,
             // tombstone, revoke the candidate, release (observations of the
             // §5 state machine; every transition is best-effort and each
@@ -2360,10 +2193,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
                 // the deterministic invalidation that family's mount owes
                 // (FIX-K K1: a later re-registration never resurrects an
                 // approval).
-                if (centerKernel.families.read === true) {
-                  centerKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
-                  centerKernel.kernel.dropApprovalsForFamily('dsh.fs-family')
-                }
                 if (centerKernel.families.shell === true) {
                   centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
                   centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')

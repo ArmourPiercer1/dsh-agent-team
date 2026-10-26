@@ -530,13 +530,15 @@ const SCANNED_PATHS_U70: readonly string[] = [
 // `expected 1308 to be 1306` (dev/agent-workflow/evidence/u7-w0b-20261026/
 // p4t6-RED-unbooked.log). S3 adds the FamilyAssembly seam module, the
 // generated family index and the search family's descriptor: +3, measured
-// `expected 1311 to be 1308` (…/p4t6-RED-unbooked-s3.log).
+// `expected 1311 to be 1308` (…/p4t6-RED-unbooked-s3.log); the fs family's
+// descriptor +1, `expected 1312 to be 1311` (…/p4t6-RED-unbooked-s3b.log).
 const SCANNED_PATHS_U7W0B: readonly string[] = [
   'packages/runtime/src/plugin/live/approval-entry-binder.mjs',
   'packages/runtime/test/u7-w0b-approval-entry-law.test.ts',
   'packages/runtime/src/plugin/live/family-assembly.mjs',
   'packages/tools/families/index.mjs',
   'packages/tools/families/search.mjs',
+  'packages/tools/families/fs.mjs',
 ]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
@@ -3821,8 +3823,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // increment; no cross-round prose total is load-bearing).
     expect(SCANNED_PATHS_U70.length).toBe(1289 - 1277)
     // u7-w0b: the measured delta on THIS tree (unbooked REDs `expected 1308
-    // to be 1306` at S2, `expected 1311 to be 1308` at S3).
-    expect(SCANNED_PATHS_U7W0B.length).toBe(1311 - 1306)
+    // to be 1306` at S2, `expected 1311 to be 1308` / `1312 to be 1311` at S3).
+    expect(SCANNED_PATHS_U7W0B.length).toBe(1312 - 1306)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
