@@ -1,0 +1,64 @@
+/**
+ * SCRATCH (U6 PR5, golden-vector recorder) — deleted after recording.
+ * Runs the SAME search-class corpus generator (u6-pr5-search-golden-corpus)
+ * against a projection face whose module URL is injected via
+ * U6PR5_FACE_SRC (absolute module URL):
+ *   - master recording: `u6-pr5-face-master.scratch.mts` in the DETACHED
+ *     origin/master worktree (.artifacts/tmp/u6pr5-search-master @
+ *     5c03f7240 — the pre-move plane-effect-backends/search-backend/
+ *     glob-backend region);
+ *   - family recording: `u6-pr5-face-family.scratch.mts` in THIS tree (the
+ *     moved lane + the UNTOUCHED protected authority).
+ * Full corpus JSON + digest written under .artifacts/tmp/u6pr5-search/.
+ * Not a shipped suite.
+ */
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { describe, expect, it } from 'vitest'
+import { buildCorpus, COVERAGE_FACTS, ANCHOR } from './u6-pr5-search-golden-corpus.mjs'
+
+const faceSrc = process.env['U6PR5_FACE_SRC']
+if (faceSrc === undefined || faceSrc.length === 0) {
+  throw new Error('U6PR5_FACE_SRC (absolute module URL of a face module) is required')
+}
+const tag = process.env['U6PR5_RECORD_TAG'] ?? 'run'
+const outDir = process.env['U6PR5_RECORD_DIR'] ?? '.artifacts/tmp/u6pr5-search'
+
+describe('u6-pr5 golden-vector recorder (scratch)', () => {
+  it(`records ${tag} search behavior over the pinned corpus`, async () => {
+    const mod = (await import(/* @vite-ignore */ faceSrc!)) as Record<string, unknown>
+    const need = (k: string): ((...a: unknown[]) => unknown) => {
+      const f = mod[k]
+      if (typeof f !== 'function') throw new Error(`face missing export ${k}`)
+      return f as (...a: unknown[]) => unknown
+    }
+    const face = {
+      canonicalizeOperation: need('canonicalizeOperation'),
+      classifyPermissionCoverage: (name: string) =>
+        (need('classifyPermissionCoverageTool') as (n: string, facts: unknown) => unknown)(name, COVERAGE_FACTS),
+      evaluatePermissionCoverage: (surface: readonly string[]) =>
+        (need('evaluatePermissionCoverage') as (s: readonly string[], facts: unknown) => unknown)(surface, COVERAGE_FACTS),
+      parseGrepArgs: need('parseGrepArgs'),
+      parseGlobArgs: need('parseGlobArgs'),
+      searchArgv: need('searchArgv'),
+      grepArgv: need('grepArgv'),
+      globArgv: need('globArgv'),
+      parseWalkOutput: need('parseWalkOutput'),
+      presentPath: (anchor: unknown, p: string) => need('presentPath')(anchor, p),
+      projectMatches: (records: unknown, mode: string, cap: number, present: (p: string) => unknown) =>
+        need('projectMatches')(records, mode, cap, present),
+      walkerCoverageRefusal: need('walkerCoverageRefusal'),
+      ANCHOR,
+    }
+    const vectors = await buildCorpus(face as never)
+    const json = JSON.stringify(vectors, null, 1)
+    const digest = createHash('sha256').update(JSON.stringify(vectors), 'utf8').digest('hex')
+    mkdirSync(outDir, { recursive: true })
+    writeFileSync(`${outDir}/golden-vectors-${tag}.json`, json, 'utf8')
+    const threw = vectors.filter((v) => (v as { value?: { threw?: unknown } }).value?.threw !== undefined).length
+    const line = `tag=${tag} vectors=${String(vectors.length)} threw=${String(threw)} clean=${String(vectors.length - threw)} bytes=${String(json.length)} digest=${digest}\n`
+    writeFileSync(`${outDir}/digest-${tag}.txt`, line, 'utf8')
+    process.stdout.write(line)
+    expect(vectors.length).toBeGreaterThan(300)
+  }, 180_000)
+})

@@ -1,0 +1,11 @@
+[u6-arc-a] case arca:mounted: FAIL {"teamSession":true,"familyMount":{"at":"2026-10-26T05:58:23.083Z","world":"u5u6arca2-20261026T05-58-20Z","leg":"family-mount","ok":true,"state":"ACTIVE"},"probeRegister":{"at":"2026-10-26T05:58:23.083Z","world":"u5u6arca2-20261026T05-58-20
+[u6-arc-a] case arca:probe-positive: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:probe-unbound-refused-zero-effect: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:probe-replay-refused-zero-effect: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:probe-unload-settles: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:search-grep-live: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:search-glob-live: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:search-refusal-zero-effect: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+[u6-arc-a] case arca:native-grep-control: FAIL {"reason":"probe tool never registered (the family has no callable surface)"}
+RUN-SUMMARY run=u5-u6-arc-a-u6arca2-2026-10-26T05-58-20-783Z suite=u6-arc-a overall=FAIL cases=10 FAIL:9 PASS:1 worlds=u5u6arca2-20261026T05-58-20Z
+EXIT:1
