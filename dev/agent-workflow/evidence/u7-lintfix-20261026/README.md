@@ -63,3 +63,35 @@ census — the guard's denominator is untouched, which is why the universe count
   file`. The gate ships a documented workaround (`--store-dir` / `DSH_CI_STORE_DIR`,
   `scripts/ci-pr-gate.mjs:1313,1613,1640`); the leg is run with it and that is disclosed, not
   hidden.
+
+## The §7.6 census guard, measured at the ROOT checkout (not in a worktree)
+
+`npx vitest run packages/testkit/test/a4p7-merge-gate.test.ts -t "no tracked file is invisible to lint"`:
+
+    lint-visibility: eslint read 1385 of 2485 OFFERED tracked lintable file(s);
+      1100 are hidden by an ignore pattern (dev/ 17, docs/ 4,
+      packages/client/composition-shim/ 2, packages/runtime/dist/ 911, tests/ 166);
+      1385 + 1100 = 2485 offered, + 0 skipped = 2485 tracked lintable path(s); nothing skipped
+    Test Files  1 passed (1)      Tests  1 passed | 34 skipped (35)
+
+`.artifacts` does not appear in the hidden-by-ignore breakdown, at all — before or after this
+change — because the census enumerates **tracked** files and `.artifacts` has none. The universe
+figure (1385 read / 2485 offered) is byte-identical to the pre-change measurement, so the guard
+confirms rather than merely tolerates the new line.
+
+## Disclosed: a worktree-only instrument failure, NOT caused by this change
+
+In a fresh task worktree the same test fails with
+`lint-visibility: eslint produced no JSON for the lint-visibility census (exit 1)` and stderr
+`MODULE_NOT_FOUND` (`Module._resolveFilename`). Controlled and excluded:
+
+| tree | my `.artifacts/**` line present | census test |
+|---|---|---|
+| root checkout | yes | **passed** |
+| `.worktrees/u7-rulings` (clean branch, line absent) | no | **failed, same `MODULE_NOT_FOUND`** |
+| `.worktrees/u7-lintfix` | yes | **failed, same `MODULE_NOT_FOUND`** |
+
+So the failure is a property of running that instrument from a non-root worktree (the census
+resolves its ESLint binary by a path that only exists at the checkout root), not a consequence of
+ignoring `.artifacts`. It is recorded here rather than silently omitted; fixing it is a separate
+test-infrastructure item and is not claimed by this PR.
