@@ -310,7 +310,7 @@ const planeRow = (await import(
     | { ok: false; code: string; message: string }
 }
 const backendsRow = (await import(
-  new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href
+  new URL('../src/plugin/live/jobs-family-bridge.mjs', import.meta.url).href
 )) as { createGovernedJobsBridge: (input: Record<string, unknown>) => unknown }
 
 const PLANE_POLICY = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })

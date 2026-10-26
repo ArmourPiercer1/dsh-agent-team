@@ -201,8 +201,8 @@ const PLANE_PRESENTATION_FACE = Object.freeze({
 // the render/presentationMeta contract, the decline-on-anything-dishonest
 // presentResult) now lives in the FS family lane —
 // `packages/tools/fs-family/src/read-presentation.mjs` — placed through the
-// family row builder at the mount (and re-exported by plane-effect-backends
-// for its pinned consumers). Mirror-not-import still holds: the host module
+// family row builder at the mount (the sole home; U6 PR6 deleted the legacy
+// plane-effect-backends re-export once C1/C2 were green). Mirror-not-import still holds: the host module
 // sits behind its own public tool; the governed row's face is a
 // family-owned plugin artifact.
 

@@ -27,8 +27,11 @@ dsh-agent-team Cordis plugin (see ./plugin/host.ts)."*
 
 - Launching confined processes is a genuine responsibility, not an accident: `child_process`
   appears in production-lane code — `sandbox-provider/provider.ts`,
-  `sandbox-provider/probe-abi.ts`, `src/plugin/live/plane-effect-backends.mjs`. **Do not**
-  describe this package as process-free.
+  `sandbox-provider/probe-abi.ts`, `root-binding/harness/bounded-run.mjs`. The governed
+  bash/grep/glob effect bodies that used to sit in `src/plugin/live/plane-effect-backends.mjs`
+  were moved to the `packages/tools/{fs,process,search}-family` lanes, and that center hub
+  was DELETED at U6 PR6 (see `dev/agent-workflow/evidence/u6-pr6-20261026/legacy-path-removal.md`).
+  **Do not** describe this package as process-free.
 
 ## NOT responsible for
 

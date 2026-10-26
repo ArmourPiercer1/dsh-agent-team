@@ -15,9 +15,10 @@
  * byte-preserved on purpose: the refusal texts and window numbers are pinned
  * by the existing read suites (a5-read-slice-window, a5-m1-read-c1c2, the
  * a5b3 cancel-parity legs) and by the golden-vector law this PR ships.
- * `plane-effect-backends.mjs` now RE-EXPORTS the anchor face so the
- * search/glob/shell rows and the existing suites keep one home for it until
- * their own families move (U6 PR3/PR5).
+ * U6 PR6: the legacy center file `plane-effect-backends.mjs` is DELETED —
+ * this family is now the single home of the anchor face (the removal landed
+ * only once the family registration + C1/C2 were green; U6-SLICE-PLAN
+ * scope B, proof dev/agent-workflow/evidence/u6-pr6-20261026/).
  *
  * @module fs-family/fs-mechanics
  */

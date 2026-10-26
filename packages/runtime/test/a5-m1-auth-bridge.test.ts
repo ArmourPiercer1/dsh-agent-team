@@ -2058,7 +2058,7 @@ const B4_BACKENDS_MODULE: {
   createConfinedShellBackend: (input: Record<string, unknown>) => unknown
   drainShellStdio: (input: { stdout: unknown; stderr: unknown; boundMs: number; sleep?: (cb: () => void, ms: number) => unknown }) => Promise<{ complete: boolean; shortOf: 'bound' | 'stdio' | null }>
   SHELL_STREAM_DRAIN_MS: number
-} = await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)
+} = await import(new URL('../../tools/process-family/src/index.mjs', import.meta.url).href)
 
 async function b4WaitFor(cond: () => boolean, what: string, budgetMs = 5_000): Promise<void> {
   const t0 = Date.now()

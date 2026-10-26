@@ -66,6 +66,7 @@ import {
 import { createProcAssembly, makeProcDecide, judgeU6Proc } from './lib/u6-proc-assembly.mjs'
 import { createJobsAssembly, makeJobsDecide, judgeU6Jobs, toolExchanges, laneTranscript, extractJobIds, JOBS_WORLD_MANAGED_NAMES } from './lib/u6-jobs-assembly.mjs'
 import { createArcAssembly, makeArcDecide, judgeU6ArcA } from './lib/u6-arc-a-assembly.mjs'
+import { createArcDAssembly, makeArcDDecide, judgeU6ArcD } from './lib/u6-arc-d-assembly.mjs'
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
@@ -128,6 +129,16 @@ export const SUITE_CASES = {
   // exclusion contract), the anchored containment refusal with zero effect,
   // and the non-Team native grep control.
   'u6-arc-a': ['arca:mounted', 'arca:probe-positive', 'arca:probe-unbound-refused-zero-effect', 'arca:probe-replay-refused-zero-effect', 'arca:probe-unload-settles', 'arca:search-grep-live', 'arca:search-glob-live', 'arca:search-refusal-zero-effect', 'arca:native-grep-control'],
+  // U6 PR6 C2 (ARC-D at the Host): the PR5 probe family ATTACKED AS SHIPPED
+  // — zero new family code is the claim, so the row mounts the PR5 assembly
+  // unchanged. ONE boot, nine legs: mount, positive walk (marker + nonce),
+  // replay of a settled grant, self-reported foreign scope, a swapped
+  // identity the table never bound, a decide on a never-bound name, honest
+  // teardown + post-teardown refusal, the CI-03 native control (a member
+  // with NO capabilities block), and the ledger's global arithmetic. Verdict
+  // law DISK + LEDGER + HOST LOG — never the model transcript. No shadow
+  // twin: the kernel computes refuse verdicts in every mode (assembly header).
+  'u6-arc-d': ['arcd:mounted', 'arcd:positive', 'arcd:spoof-zero-authority', 'arcd:swap-refused', 'arcd:unbound-refused', 'arcd:replay-refused', 'arcd:ci03-native-parity', 'arcd:marker-ledger', 'arcd:teardown-honest'],
   'u6-shadow': [
     'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
     'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',
@@ -2198,6 +2209,202 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
   if (!hostAlive()) failRest('host died during the run')
 }
 
+// u6-arc-d (U6 PR6 C2 / ARC-D at the Host): the ADVERSARIAL laws proven
+// offline at the production seams (u6-pr6-arc-d-adversarial + -matrix) get
+// their LIVE legs on the PR5 probe family AS SHIPPED — the row mounts the
+// very assembly tests/u6-arc-a-probe-family ships (zero new family code is
+// the whole claim) and attacks it: replay of a settled grant, self-reported
+// foreign scope, a swapped identity the table never bound, a decide on a
+// never-bound name, honest teardown + post-teardown refusal — plus the
+// CI-03 native control (member WITHOUT a capabilities block, judged from
+// the disk claim riding the wire tool_result). ONE host start (design
+// budget: 1 boot/run, tier 1 like ARC-A); the verdict law is DISK + LEDGER
+// + HOST LOG — every row the judge below derives comes off those channels,
+// never the model transcript.
+async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+  const CASE_IDS = SUITE_CASES['u6-arc-d']
+  const done = new Set()
+  const add = (id, verdict, detail) => {
+    done.add(id)
+    record.addCase(id, verdict, detail)
+    log(`case ${id}: ${verdict} ${JSON.stringify(detail).slice(0, 240)}`)
+  }
+  const failRest = (why, extra = {}) => {
+    for (const id of CASE_IDS) {
+      if (!done.has(id)) add(id, 'FAIL', { reason: why, ...extra })
+    }
+  }
+  const waitA = async (predicate, timeoutMs) => {
+    const started = Date.now()
+    for (;;) {
+      let hit = false
+      try { hit = (await predicate()) === true } catch { hit = false }
+      if (hit) return { hit: true, waitedMs: Date.now() - started }
+      if (Date.now() - started >= timeoutMs) return { hit: false, waitedMs: Date.now() - started }
+      await sleep(400)
+    }
+  }
+  const hostAlive = () => world.instance?.child !== null && world.instance?.child !== undefined && world.instance?.child.exitCode === null
+
+  // ── materialize + boot (ONE host start) ──────────────────────────────────
+  const world = await factory.createWorld({ line, u6ArcD: { rows: [] } })
+  worlds.push(world)
+  record.record.bindings.worldIds.push(world.id)
+  const assembly = createArcDAssembly({ repoRoot: REPO_ROOT, home: world.home, runStamp: world.id, reportDir: world.logDir })
+  assembly.writePreBootFiles() // must precede teamRows(): the plane rootDir canonicalizes the workspace
+  world.u6ArcD.rows.push(...assembly.teamRows())
+  await world.startMock({ decide: makeArcDDecide({ assembly }) })
+  record.logHostStart({ world: world.id, phase: 'u6arcd-boot1' })
+  rc.arm()
+  const startPromise = world.startHost()
+  const child = world.instance?.child ?? null
+  if (child !== null) rc.bindChild(child, { lifetimeMs: RUN_LIFETIME_MS, processGroup: false })
+  let boot
+  try {
+    boot = await startPromise
+  } catch (error) {
+    failRest(`host start failed: ${String(error?.message ?? error).slice(0, 200)}`)
+    return
+  }
+  record.record.boots = (record.record.boots ?? []).concat([{ phase: 'u6arcd-boot1', world: world.id, port: boot.port, logPath: boot.logPath }])
+  const origin = `http://127.0.0.1:${boot.port}`
+  const probeLedger = () => world.u6arcdLedgerRows() ?? []
+  const listMarkers = () => {
+    try { return readdirSync(world.u6arcdMarkerDir) } catch { return [] }
+  }
+  const nonceOf = (f) => {
+    try { return readFileSync(join(world.u6arcdMarkerDir, f), 'utf8').trim() } catch { return null }
+  }
+
+  // ── readiness gates (arc-a law; every early bail is a FAIL with its own
+  // reason — the JUDGE owns the nine verdicts, ENV_BLOCK included) ─────────
+  let health = null
+  const healthW = await waitA(async () => {
+    const st = await fetchJson(`${origin}/__p6t6/health`, undefined, 20_000)
+    health = st
+    return st.status === 200 && (st.body?.ok === true || st.body?.ok === false)
+  }, 120_000)
+  if (!healthW.hit || health?.body?.ok !== true) {
+    failRest(`p6t6 health not ok: status=${String(health?.status)} body=${JSON.stringify(health?.body ?? null).slice(0, 300)}`)
+    return
+  }
+  let stateBody = null
+  const stateW = await waitA(async () => {
+    const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
+    stateBody = st.body
+    return st.status === 200 && stateBody?.rootSessionId === assembly.ROOT && stateBody?.teamSession !== null
+  }, 90_000)
+  if (!stateW.hit) {
+    failRest('anchored Team Session never appeared (state probe timed out)')
+    return
+  }
+  if (!probeLedger().some((r) => r.leg === 'register' && r.kind === 'probe-tool' && r.ok === true)) {
+    failRest('probe tool never registered (the family has no callable surface)', {
+      familyRows: probeLedger().filter((r) => ['family-mount', 'register'].includes(String(r.leg))),
+    })
+    return
+  }
+
+  // ── discovery -> main blueprint -> team.create (arc-a lines kept 1:1) ────
+  const cookie = await authenticate(origin, world.token)
+  const discPrompt = await apiPrompt(origin, cookie, assembly.ROOT, assembly.markers.MK_DISC, 'u6arcd')
+  if (discPrompt.status !== 200) {
+    failRest(`discovery prompt rejected: ${String(discPrompt.status)} ${JSON.stringify(discPrompt.body ?? {}).slice(0, 200)}`)
+    return
+  }
+  const discW = await waitUntil(() => (world.mock?.requests ?? []).some((r) => hasMarker(r, assembly.markers.MK_DISC) && surfaceNamesOf(r).length > 0), { timeoutMs: 150_000 })
+  if (!discW.hit) {
+    failRest('discovery model request absent (deny list cannot be computed)', { mockDigest: world.mockRequestDigest().slice(-6) })
+    return
+  }
+  const disc = world.mock.requests.filter((r) => hasMarker(r, assembly.markers.MK_DISC)).map((r) => surfaceNamesOf(r)).sort((a, b) => b.length - a.length)[0]
+  const surface = [...new Set(disc)].sort()
+  const denyList = surface.filter((n) => !n.startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
+  assembly.writeMainBlueprint(denyList)
+  const created = await remoteCall(fetchJson, origin, cookie, 'team.create', { rootSessionId: assembly.CREATE_ROOT, blueprintId: assembly.BP_MAIN_ID, initialWork: { prompt: assembly.markers.MK_L1 } })
+  const createOk = created.status === 200 && created.body?.result?.ok === true
+  if (!createOk) {
+    failRest(`team.create failed: status=${String(created.status)} body=${JSON.stringify(created.body ?? null).slice(0, 300)}`)
+    return
+  }
+
+  // ── drive (native lane first: it runs on the member while the leader
+  // chain is still walking; the trigger legs ride boot-root prompts) ──────
+  const replySeen = (content) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && r.reply.content === content)
+  const laneDone = {}
+  record.record.u6arcdLanes = laneDone
+  const wake = async (tag) => {
+    const pr = await apiPrompt(origin, cookie, assembly.CREATE_ROOT, `U6ARCD_PHASE_${tag}`, 'u6arcd-wake')
+    if (pr.status !== 200) log(`wake ${String(tag)} rejected: status=${String(pr.status)}`)
+  }
+  const wakeCadence = async (doneText, deadlineMs, tag) => {
+    const t0 = Date.now()
+    let lastWake = 0
+    let wakes = 0
+    for (;;) {
+      if (replySeen(doneText)) return true
+      if (Date.now() - t0 > deadlineMs) return replySeen(doneText)
+      if (Date.now() - lastWake > 3000 && wakes < 14) { wakes += 1; lastWake = Date.now(); await wake(tag) }
+      await new Promise((r) => setTimeout(r, 350))
+    }
+  }
+  const fireTrigger = async (markerText, doneText, deadlineMs = 90_000) => {
+    const pr = await apiPrompt(origin, cookie, assembly.ROOT, markerText, 'u6arcd-trig')
+    if (pr.status !== 200) {
+      log(`trigger ${String(markerText).slice(0, 44)} rejected: status=${String(pr.status)}`)
+      return false
+    }
+    return (await waitA(async () => replySeen(doneText), deadlineMs)).hit
+  }
+  laneDone.native = await wakeCadence('U6ARCD_NATIVE_DONE', 120_000, 'n')
+  laneDone.pos = await fireTrigger(assembly.markers.T_POS, 'U6ARCD_WALK_DONE')
+  laneDone.spoof = await fireTrigger(assembly.markers.T_SPOOF, 'U6ARCD_SPOOF_DONE')
+  laneDone.swap = await fireTrigger(assembly.markers.T_SWAP, 'U6ARCD_SWAP_DONE')
+  laneDone.unbound = await fireTrigger(assembly.markers.T_UNBOUND, 'U6ARCD_UNBOUND_DONE')
+  laneDone.replay = await fireTrigger(assembly.markers.T_REPLAY, 'U6ARCD_REPLAY_DONE')
+  laneDone.teardown = await fireTrigger(assembly.markers.T_TD, 'U6ARCD_TD_DONE')
+  laneDone.postTeardown = await fireTrigger(assembly.markers.T_POSTTD, 'U6ARCD_POSTTD_DONE')
+  laneDone.leader = await wakeCadence('U6ARCD_L1_DONE', 60_000, 'z')
+
+  // ── evidence collection (DISK / LEDGER / wire-claimed disk facts) ────────
+  const probeRows = probeLedger()
+  const markerFiles = listMarkers()
+  const markerNonces = Object.fromEntries(markerFiles.map((f) => [f, nonceOf(f)]))
+  // The claims on WIRE tool_results are disk-channel facts the runner
+  // authored (the exact standard arc-a applies to its ctlResult /
+  // claimOccurrences): the fixture claim on disk + the native grep's
+  // tool_result bytes the mock saw — never a transcript claim of success.
+  const claimOccurrences = (claim) => (world.mock?.requests ?? []).reduce((n, r) =>
+    n + toolMsgsOf(r).filter((m) => String(m.text).includes(claim)).length, 0)
+  const nativeClaimFound = claimOccurrences(assembly.files.native.claim) >= 1
+  const alive = hostAlive()
+  const verdicts = judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeClaimFound, hostAlive: alive })
+  for (const [id, verdict, detail] of verdicts) {
+    if (done.has(id)) continue
+    add(id, verdict, {
+      markerFiles: markerFiles.filter((m) => m.endsWith('-marker.txt')),
+      posNonce: nonceOf('pos-1-marker.txt'),
+      expectedNonce: assembly.probe.posNonce,
+      nonceMatches: nonceOf('pos-1-marker.txt') === assembly.probe.posNonce,
+      nativeClaimFound,
+      laneDone,
+      hostAlive: alive,
+      ...(detail ?? {}),
+    })
+  }
+  record.record.u6arcdDigest = {
+    mockTail: world.mockRequestDigest().slice(-8),
+    surface, denyList, markerFiles,
+    nonceMatches: nonceOf('pos-1-marker.txt') === assembly.probe.posNonce,
+    nativeClaimFound, laneDone, probeLedgerRows: probeRows.length,
+    probeRows: probeRows
+      .filter((r) => ['family-mount', 'register', 'walk', 'teardown', 'unload-settle'].includes(String(r.leg)))
+      .map((r) => ({ leg: r.leg, action: r.action ?? null, callId: r.callId ?? null, ok: r.ok, code: r.code ?? null, outcome: r.outcome ?? null })),
+  }
+  writeFileSync(join(evidence, `${runId}.evidence.json`), JSON.stringify(record.record, null, 2) + '\n')
+  if (!alive) failRest('host died during the run')
+}
+
 export async function runSuite(opts) {
   const { suite, line, evidence, runRecord: runRecordPath, budgetLedger, maxHostStarts, keepHome, only = null } = opts
   mkdirSync(evidence, { recursive: true })
@@ -2242,8 +2449,10 @@ export async function runSuite(opts) {
       childLifetimeMs: RUN_LIFETIME_MS,
       // u6-proc drives a longer chain (5 member scripts + the ask
       // notification lane + 5 boot-root trigger lanes); the fs suite's 80
-      // would classify its honest completion as an overrun.
-      totalRequests: suite === 'u6-proc' ? 130 : suite === 'u6-jobs' ? 100 : suite === 'u6-arc-a' ? 90 : 80,
+      // would classify its honest completion as an overrun. u6-arc-d rides
+      // the ARC-A tier-1 shape (one boot, one member script + 7 trigger
+      // legs + the leader chain): 90.
+      totalRequests: suite === 'u6-proc' ? 130 : suite === 'u6-jobs' ? 100 : suite === 'u6-arc-a' ? 90 : suite === 'u6-arc-d' ? 90 : 80,
       perSessionRequests: 30,
       perScenarioRequests: 20,
       sameStateRepeats: 5,
@@ -2284,6 +2493,8 @@ export async function runSuite(opts) {
       await runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
     } else if (suite === 'u6-arc-a') {
       await runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
+    } else if (suite === 'u6-arc-d') {
+      await runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
     } else if (suite === 'crash-victim') {
       await caseCrashVictim({ factory, record, rc, line, worlds, keepHome })
     } else {

@@ -285,7 +285,7 @@ describe('GLUE-7 plane backends assembly', () => {
     mkdirSync(manyDir, { recursive: true })
     for (let i = 0; i < 105; i++) writeFileSync(join(manyDir, `f${String(i)}.gen`), 'x\n')
     symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link'))
-    const beMod = (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as {
+    const beMod = (await import(new URL('../../tools/search-family/src/search-mechanics.mjs', import.meta.url).href)) as {
       createAnchoredGlobBackend: (cfg: Record<string, unknown>) => {
         run: (call: unknown, io: unknown) => Promise<{ ok: boolean; failure?: { code?: string }; outcome?: { files?: string[]; truncated?: boolean } }>
         execCount: () => number
