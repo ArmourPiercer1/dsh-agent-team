@@ -143,7 +143,7 @@ describe('a5w compile surface', () => {
    * and the leg below asserts that they do by pinning the names literally.
    */
   const NAMED_PROVIDER_MOUNTS: readonly { file: string; edge: string }[] = [
-    // U6 PR5 (the real family move): the THREE provider-mounting rows left
+    // U6 PR5 (the real family move): the provider-mounting rows left
     // `runtime/src` with the search/glob mechanics — they now live in the
     // SEARCH family lane (one level above this walk's root, so THIS walk no
     // longer sees them; the full-tree walk in `a5p4-lane-hygiene` law (4)
@@ -153,7 +153,8 @@ describe('a5w compile surface', () => {
     // remaining job is the re-export surface plus the jobs bridge.
     { file: '../../tools/search-family/src/glob-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
     { file: '../../tools/search-family/src/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
-    { file: '../../tools/search-family/src/search-mechanics.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
+    // U7-G6b: search-mechanics.mjs left this list — its one mount was the
+    // retired archived CANDIDATE-A glob factory.
   ]
 
   it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {

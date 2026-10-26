@@ -9,7 +9,11 @@
  *
  *  M1 the mechanics region (master `plane-effect-backends.mjs` lines
  *     107–539: grepArgv + the W5 anchored search/glob wiring) is contained
- *     VERBATIM, byte for byte, in the lane's `search-mechanics.mjs`;
+ *     VERBATIM, byte for byte, in the lane's `search-mechanics.mjs` — up to
+ *     the archived CANDIDATE-A glob factory (master :319-539), which U7-G6b
+ *     RETIRED (a second, unrepaired copy of the walker law; the census-load
+ *     flake). M1 pins both halves: the kept region verbatim, the retired
+ *     tail absent;
  *  M2 `search-backend.mjs` / `glob-backend.mjs` / `cancel-leg.mjs` moved
  *     with EXACTLY the declared deltas (provider-import depth re-based to
  *     the lane + the `@module` provenance tag) — nothing else differs by a
@@ -93,7 +97,7 @@ function applyDeclaredDeltas(master: string, file: keyof typeof DECLARED_DELTAS)
 }
 
 describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center sites', () => {
-  it('M1 the moved mechanics region is byte-identical to master plane-effect-backends.mjs:107-539', () => {
+  it('M1 the moved mechanics region is byte-identical to master plane-effect-backends.mjs:107-318; the archived candidate tail :319-539 is retired', () => {
     const master = gitShow('packages/runtime/src/plugin/live/plane-effect-backends.mjs')
     const startMark = '/** The ONE argv builder (ported verbatim from the W5 wiring round). */'
     const endMark = '// ── U6 PR3: the shell-class mechanics + the confined shell EXECUTOR moved'
@@ -106,8 +110,18 @@ describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center s
     expect(master.slice(0, start).split('\n').length).toBe(107)
     // The boundary blank line(s) before the next banner are separator
     // formatting, not the moved code: the region ends at its final `}`.
-    const region = master.slice(start, end).replace(/\n+$/, '\n')
+    // U7-G6b: the region now ends where the archived CANDIDATE-A glob
+    // factory's doc block begins (master :319); that tail is RETIRED, and
+    // its absence is pinned below — never a silent partial match.
+    const retiredMark = '/**\n * THE glob row (GLUE-7 scope probe -> PR5 commitment)'
+    const retired = master.indexOf(retiredMark, start)
+    expect(retired, 'retired-tail marker (master)').toBeGreaterThan(start)
+    expect(retired, 'the retired tail sits inside the moved region').toBeLessThan(end)
+    expect(master.slice(0, retired).split('\n').length).toBe(319)
+    const region = master.slice(start, retired).replace(/\n+$/, '\n')
     const lane = read(MECHANICS)
+    expect(lane.includes('export function createAnchoredGlobBackend'), 'the archived candidate factory is retired').toBe(false)
+    expect(lane.includes(retiredMark), 'no part of the retired tail survives').toBe(false)
     expect(lane.includes(region), 'the lane contains the master region VERBATIM (not a rewrite)').toBe(true)
     // And the lane contains NOTHING between the region boundaries except
     // the region itself: the file is header + the region + lane additions
