@@ -150,17 +150,28 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       ...denyLines.map((l) => `  ${l}`),
       '      skills:', '        kind: allow', '        items: []',
       '      mcp:', '        kind: allow', '        items: []',
-      // MEASURED LAW (run6, team-tool-plane.mjs:459): the plane's admission
-      // gate classes the PLACED search rows (team_grep/team_glob by mount
-      // spelling) into the FILE class for the default-deny check — while the
-      // closed blueprint permission enum carries no search token, so a
-      // member template grants search coverage ONLY through a `tool: read`
-      // rule (disclosed finding). The rule is `kind: any` ON PURPOSE: this
-      // suite's refusal leg must be adjudicated by the anchored containment
-      // law (OUTSIDE_ROOT), not by admission; a narrower rule would test
-      // admission instead.
-      '      permissions:', '        default: deny', '        allow:',
-      '          - tool: read', '            resource:', '              kind: any',
+      // MEASURED, TWO LAYERS (run6 + run8, verbatim in the PR evidence):
+      // the governed search refusal walks DEEPER as each layer is fed.
+      // run6 (grammar-fixed calls, no rules): the LANE default-deny gate
+      // refuses — code=template-default-deny (createLaneDecide, invoked
+      // file-class tools need a rule in the read/read_image/write/edit
+      // class set). run8 (a `tool: read` any-rule added): the lane THEN
+      // allows (offline-proven against the shipped createLaneDecide), and
+      // the PA edge refuses deeper — code=IO_POLICY_UNSUPPORTED, the
+      // tool-admission assurance answer that this profile's capability
+      // RECORD does not meet the demand derived for the placed search
+      // rows' dimensions (assurance-runtime.ts:139-142; the plane header
+      // names the effect-face adapter a GLUE-4 follow-up). The read-any
+      // rule is NOT kept: it bought nothing at the wire (both codes are
+      // terminal refusals) while granting the member real `read` surface
+      // — least privilege wins; the template stays all-empty below.
+      // PRODUCT FINDING (disclosed): the moved search family is golden-
+      // identical at the mechanics face, but a governed MEMBER lane is not
+      // end-to-end admissible on the assurance face yet — exactly the
+      // fact this C2 exists to measure. The way forward is the approval/
+      // assurance round, not this fixture. Grammar fix stands PROVEN
+      // (run8: zero schema refusals anywhere on the wire).
+      '      permissions:', '        default: deny', '        allow: []',
       '        ask: []', '        deny: []',
       // The control lane: NO capabilities block at all — the legacy native
       // surface whose grep must behave exactly as before PR5 (§10.5-5).
@@ -461,8 +472,11 @@ export function judgeU6ArcA({ ledgerRows, markerFiles, grepResults, globResults,
     && markerFiles.filter((m) => m.endsWith('-marker.txt')).length === 1
   v['arca:search-grep-live'] = grepResults.some((r) => r.ok === true && r.claimsFound.includes('g1'))
   v['arca:search-glob-live'] = globResults.some((r) => r.ok === true && r.enumHasG3 === true && r.gitDecoyExcluded === true)
+  // An ADMISSION refusal is not the anchored containment refusal this leg
+  // claims: with the enum gap every governed search call is refused at
+  // admission (run8), and a PASS built on that would be a false green.
   v['arca:search-refusal-zero-effect'] = refusalResult?.refused === true && refusalResult?.outsideRootCodeSeen === true
-    && refusalResult?.censusUnchanged === true
+    && refusalResult?.censusUnchanged === true && refusalResult?.admissionRefused !== true
   v['arca:native-grep-control'] = ctlResult?.ok === true && ctlResult?.claimFound === true
     && hostKernelHits['a5-plane: mount-REFUSED']?.count === 0 && hostAlive === true
   return v

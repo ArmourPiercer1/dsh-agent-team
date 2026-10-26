@@ -522,14 +522,20 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(seq[0].toolCalls[0].arguments.output_mode, 'content')
   assert.equal(seq[0].toolCalls[0].arguments.path, assembly.workspaceDir)
   assert.equal(seq[2].toolCalls[0].arguments.output_mode, 'content')
-  // admission coverage (plane:459 fileNames class): greper grants read-any
+  // LEAST-PRIVILEGE pin: all three lanes empty, default deny. Measured
+  // (offline probe of the shipped createLaneDecide + run8 wire): a
+  // `tool: read` any-rule WOULD pass the lane gate for the placed file-
+  // class rows, only to be refused deeper at the PA assurance edge
+  // (IO_POLICY_UNSUPPORTED). The rule bought no green and real read
+  // surface, so the template stays empty — see the assembly comment for
+  // the two-layer refusal story.
   const greper = doc.members.find((m) => m.templateId === 'greper')
-  assert.deepEqual(greper.capabilities.permissions.allow, [{ tool: 'read', resource: { kind: 'any' } }])
   assert.equal(greper.capabilities.permissions.default, 'deny')
-  assert.deepEqual(greper.capabilities.permissions.ask, [])
-  assert.deepEqual(greper.capabilities.permissions.deny, [], 'YAML scalar drift (a stray comma) poisons catalog ingest')
+  for (const lane of ['allow', 'ask', 'deny']) {
+    assert.deepEqual(greper.capabilities.permissions[lane], [], `lane '${lane}' must stay empty while the enum carries no search token`)
+  }
   // judge algebra: every leg must be provable from disk/ledger facts alone
-  const good = judgeU6ArcA({
+  const goodDigest = {
     ledgerRows: [
       { leg: 'family-mount', ok: true }, { leg: 'register', kind: 'probe-tool', ok: true },
       { leg: 'walk', action: 'walk', callId: 'pos-1', ok: true },
@@ -542,10 +548,11 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
     grepResults: [{ ok: true, claimsFound: ['g1'] }],
     globResults: [{ ok: true, enumHasG3: true, gitDecoyExcluded: true }],
     ctlResult: { ok: true, claimFound: true },
-    refusalResult: { refused: true, outsideRootCodeSeen: true, censusUnchanged: true },
+    refusalResult: { refused: true, outsideRootCodeSeen: true, censusUnchanged: true, admissionRefused: false },
     hostKernelHits: { 'a5-plane: mount-REFUSED': { count: 0 } },
     hostAlive: true,
-  })
+  }
+  const good = judgeU6ArcA(goodDigest)
   assert.ok(Object.values(good).every((x) => x === true), JSON.stringify(good))
   const bad = judgeU6ArcA({
     ledgerRows: [
@@ -557,7 +564,7 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
     grepResults: [{ ok: true, claimsFound: [] }],
     globResults: [{ ok: false, enumHasG3: false, gitDecoyExcluded: false }],
     ctlResult: { ok: true, claimFound: false },
-    refusalResult: { refused: false, outsideRootCodeSeen: false, censusUnchanged: false },
+    refusalResult: { refused: false, outsideRootCodeSeen: false, censusUnchanged: false, admissionRefused: true },
     hostKernelHits: { 'a5-plane: mount-REFUSED': { count: 1 } },
     hostAlive: true,
   })
@@ -567,6 +574,11 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(bad['arca:search-grep-live'], false)
   assert.equal(bad['arca:search-glob-live'], false)
   assert.equal(bad['arca:native-grep-control'], false)
+  // run8's shape: a containment refusal refused at the ADMISSION gate is
+  // not the anchored containment this leg claims — never a green.
+  assert.equal(judgeU6ArcA({ ...goodDigest, refusalResult: { ...goodDigest.refusalResult, admissionRefused: true } })['arca:search-refusal-zero-effect'], false,
+    'refused-admission masquerading as containment = false green, refused')
+  assert.equal(judgeU6ArcA({ ...goodDigest, refusalResult: { ...goodDigest.refusalResult, outsideRootCodeSeen: false } })['arca:search-refusal-zero-effect'], false)
   rmSync(dir, { recursive: true, force: true })
 })
 

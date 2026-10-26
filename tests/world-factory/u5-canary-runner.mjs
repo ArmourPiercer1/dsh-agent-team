@@ -2008,7 +2008,14 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
       }
     }
     walk(assembly.workspaceDir, '')
-    return out.join('|')
+    // PROBE MARKERS ARE NOT FIXTURE STATE: the probe lane legitimately
+    // writes u6arca-markers/*.txt (its own effect, verified by the
+    // marker/nonce evidence of that leg). The refusal leg's ZERO-EFFECT
+    // law is about the FIXTURE files; counting another leg's declared
+    // output made censusUnchanged false in run8 for a legitimate write
+    // (post-run8 harness fix, disclosed; verdicts unaffected — the search
+    // legs fail at the enum gap regardless).
+    return out.filter((row) => !row.startsWith('u6arca-markers/')).join('|')
   }
   const censusPre = fixtureCensus()
 
@@ -2129,7 +2136,12 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
   const refusalText = results.find((t) => /refus|denied|outside|unsupported|not allowed|cannot be verified/i.test(t) && !t.includes(assembly.files.g1.claim)) ?? null
   const refusalResult = {
     refused: refusalText !== null,
-    outsideRootCodeSeen: refusalText !== null ? /outside|containment|OUTSIDE|refus|denied|unsupported/i.test(refusalText) : false,
+    // containment ONLY: the old regex counted ANY refusal word, so an
+    // ADMISSION refusal (refused-admission / IO_POLICY_UNSUPPORTED — what
+    // the enum gap produces) masqueraded as the anchored containment
+    // refusal the leg actually claims. Post-run8 honesty fix.
+    outsideRootCodeSeen: refusalText !== null ? /outside|containment|OUTSIDE_ROOT/i.test(refusalText) : false,
+    admissionRefused: refusalText !== null ? /refused-admission/i.test(refusalText) : false,
     censusUnchanged: censusPre === censusPost,
     refusalSample: refusalText === null ? null : refusalText.slice(0, 220),
   }
