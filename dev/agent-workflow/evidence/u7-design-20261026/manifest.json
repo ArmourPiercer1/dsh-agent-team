@@ -1,0 +1,65 @@
+{
+  "task": "u7-design-20261026",
+  "kind": "read-only-design",
+  "createdUtc": "2026-10-26",
+  "writes": [
+    "dev/agent-workflow/evidence/u7-design-20261026/U7-PLAN.md",
+    "dev/agent-workflow/evidence/u7-design-20261026/USER-DECISIONS.md",
+    "dev/agent-workflow/evidence/u7-design-20261026/manifest.json",
+    "dev/agent-workflow/evidence/u7-design-20261026/USER-RULINGS-20261026.md",
+    "dev/agent-workflow/evidence/u7-design-20261026/DECISION-3-ANSWER.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/u7/EXTERNAL-TOOL-CONTROL-DESIGN.md"
+  ],
+  "hostBoot": false,
+  "productWrites": false,
+  "protectedSetModified": false,
+  "inputs": [
+    "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/u6/center-assembly-architecture.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/u6/G4-CORE-EVIDENCE.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/u6/conditions.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/gates/HANDOFF-U6-20261026.md",
+    "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+    "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+    "dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json",
+    "dev/agent-workflow/evidence/u4-g1f-sup-c-20261025/SUMMARY.md"
+  ],
+  "classification": {
+    "testHarnessOnly": [
+      "R-U6P4-2/3",
+      "R-U6P6-1",
+      "R-G3-1",
+      "E1",
+      "E2"
+    ],
+    "existingSemanticsProduct": [
+      "R-U6P5-1/GLUE-4",
+      "R-G1F-1",
+      "S5 family deliveries"
+    ],
+    "userSemanticRuling": [
+      "R-U6P3-1",
+      "R-U6P4-1 capability approval",
+      "R-G1F-2",
+      "bind-time token semantics"
+    ]
+  },
+  "recommendations": {
+    "bash": "B: public human team.resolveControl on governed session; no bind-time token",
+    "jobsBackground": "approve producer; required job trio cannot be refusal-only",
+    "domain": "B: exclude from Alpha.5 claim unless finite provider scope is approved"
+  },
+  "rulings20261026": {
+    "R-U6P3-1": "B (human resolveControl)",
+    "R-U6P4-1": "Yes (producer mandatory)",
+    "R-G1F-2": "B overall; decision-3 design answered",
+    "bindTimeToken": "intentional absence"
+  },
+  "decision3": {
+    "verdict": "blocked-with-reason (full) / executable-with-narrowing",
+    "stdioConfinedSpawnFeasible": true,
+    "stdioNetworkConfinementFeasible": false,
+    "answer": "DECISION-3-ANSWER.md"
+  }
+}
