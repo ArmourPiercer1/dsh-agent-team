@@ -502,6 +502,21 @@ test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid bluep
   const emitted = emitPatchLayer(['t'], a.teamRows())
   assert.ok(emitted.includes('dsh-agent-team'))
   assert.ok(!emitted.includes('u6-jobs-probe'), 'the jobs World mounts NO probe row: the production bridge IS the subject')
+  // boot-4 law as DATA: the preset carries the BACKGROUND-CAPABLE plain
+  // tool-bash (base-bundle shape: bash-sandbox + shell-env + tool-bash),
+  // never the persistent PTY variant (whose schema has no run_in_background
+  // at all — a flagged call silently ran foreground in boot 4); the jobs
+  // REGISTRY is a host-plane patch row, never preset-nested.
+  assert.ok(emitted.includes('@deepseek-ai/dsh-tool-bash'), 'the birth lane rides the background-capable bash row')
+  assert.ok(!emitted.includes('tool-bash-persistent'), 'no persistent PTY bash in the jobs World')
+  assert.ok(emitted.includes('@deepseek-ai/dsh-jobs-local'), 'the jobs registry rides the host-plane patch layer')
+  // PR3's measured envelope law: the ask lane names request-control on BOTH
+  // sides (team root + worker template), the leader entry pins the OLD
+  // bounds (widening the team root must not silently widen the leader).
+  const bp = yaml.parseDocument(a.mainBlueprintYaml([])).toJS()
+  const env = Object.fromEntries(bp.memberEnvelopes.map((x) => [x.templateId, x.envelope.allow]))
+  assert.ok(bp.teamEnvelope.allow.includes('request-control') && env.worker.includes('request-control'), 'member ask needs request-control at team root AND template entry')
+  assert.ok(!env.leader.includes('request-control'), 'the leader entry pins its pre-widening bounds')
 })
 
 test('u6-jobs: the decide script answers real transcript shapes with the scripted calls', async () => {

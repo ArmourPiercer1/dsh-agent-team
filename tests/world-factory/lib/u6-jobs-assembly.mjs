@@ -34,7 +34,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { presetDeclarationRow, smokePresetPlugins } from '../../kits/_shared/preset-seam.mjs'
+import { personaRow, presetDeclarationRow } from '../../kits/_shared/preset-seam.mjs'
 import { toolCall, messagesOf, textOf, lastUserTextOfStatic, extractInstanceId } from './u6-fs-assembly.mjs'
 
 /** The trio the bridge owns — this list is what the jobs World must NOT
@@ -189,7 +189,15 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
       '    skills:', '      kind: allow', '      items: []',
       '    mcp:', '      kind: allow', '      items: []',
       '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
-      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress',
+      // request-control is named in teamEnvelope.allow because the member
+      // effective envelope is THIS list narrowed by the template entry —
+      // template entries never widen it (admission/envelope.ts:100-119;
+      // u6prc8 measured a template-only addition filtered at the team root
+      // with exactly boot-4's words: 'operation request-control ... outside
+      // the caller's mutation envelope'). The worker's bash ask (blueprint
+      // default: ask) is a durable-row creation = a request-control
+      // mutation, so the ASK lane needs it on both sides.
+      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - request-control',
       '  deny: []',
       'members:',
       '  - templateId: worker', '    displayName: "u6jobs birth+management worker"',
@@ -206,8 +214,14 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      skills:', '        kind: allow', '        items: []',
       '      mcp:', '        kind: allow', '        items: []',
       '      permissions:', '        default: ask', '        allow: []', '        ask: []', '        deny: []',
+            // worker: names request-control (the ask lane above). foreign stays
+      // NARROWER (its only calls are the plane trio, which never ask). The
+      // leader entry pins its OLD bounds exactly — teamEnvelope widened,
+      // so an entry-less leader would widen with it (PR3 discipline:
+      // leader lanes stay byte-identical).
       'memberEnvelopes:',
-      '  - templateId: worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '      deny: []',
+      '  - templateId: worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       '  - templateId: foreign', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
@@ -216,11 +230,31 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
 
   /** The rows the factory composes into the patch layer (besides canary). */
   function teamRows() {
-    const basePlugins = [...smokePresetPlugins({
-      personaText: 'You are a coding agent powered by the {{model}} model.',
-      cwdSuffix: 'Your working directory is {{cwd}}.',
-      bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
-    }), { id: 'tool-fs-search', name: '@deepseek-ai/dsh-tool-fs-search', config: { sampleOverCapGlobResults: false } }]
+    // Boot-4 law (its receipt names the cause): the kit smoke preset's
+    // persistent PTY bash has NO background spawn AT ALL — run_in_background
+    // is not in its schema and is silently ignored (the receipt captured the
+    // persistent renderer's `[Command finished with exit code 0]` trailer on
+    // a background-flagged call). The background-capable producer is the
+    // plain '@deepseek-ai/dsh-tool-bash' row, composed here EXACTLY as the
+    // host base bundle composes it (bash-sandbox provider + shell-env +
+    // tool-bash, packages/bundle/base/cordis.patch.yml:235/265/268), in the
+    // web-app shape the bundle's own comment demands: the jobs REGISTRY
+    // stays a host-plane row (patch layer, teamRows below), the preset rows
+    // resolve it with ctx.get/ctx.inject — 'a Service a row outside its
+    // realm READS belongs to the plane both can see'. persistent-shell is
+    // OUT of this World on purpose: exactly one bash per session, the
+    // background-capable one.
+    const basePlugins = [
+      personaRow({
+        text: 'You are a coding agent powered by the {{model}} model.',
+        suffix: 'Your working directory is {{cwd}}.',
+      }),
+      { id: 'tool-fs', name: '@deepseek-ai/dsh-tool-fs' },
+      { id: 'tool-fs-search', name: '@deepseek-ai/dsh-tool-fs-search', config: { sampleOverCapGlobResults: false } },
+      { id: 'bash-sandbox', name: '@deepseek-ai/dsh-bash-sandbox' },
+      { id: 'shell-env', name: '@deepseek-ai/dsh-shell-env' },
+      { id: 'tool-bash', name: '@deepseek-ai/dsh-tool-bash' },
+    ]
     return [
       { id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() },
       { id: 'p6t6-team-tools', name: P6T6_ROW_NAME },
