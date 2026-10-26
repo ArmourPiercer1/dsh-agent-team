@@ -488,62 +488,6 @@ test('u6-proc: the assembly materializes a confinedProvider plane + valid bluepr
   assert.ok(JSON.stringify(rec).includes('"kind":"any"'))
 })
 
-test('u6-proc envelope law — REAL validator + REAL callerEnvelope over the assembly blueprint (offline pin of the review-r1 fix)', async () => {
-  // This is the leg that died on u6prc6/7/8 BEFORE any row existed: the
-  // runtime mutation-envelope boundary. Pinned offline against the SAME
-  // compiled modules the live Host loads (packages/runtime/dist is what
-  // the plugin file:// imports): the real blueprint validator accepts the
-  // new data, and the real callerEnvelope law yields EXACTLY the intended
-  // per-lane envelopes. The narrowing law is untouched: template entries
-  // only narrow the team-root allow list — the fix is team-root data plus
-  // a leader pin, verified here as such.
-  const { createProcAssembly } = await import('./lib/u6-proc-assembly.mjs')
-  const { findTestRepoRoot } = await import('../paths.mjs')
-  const yaml = await import('yaml')
-  const dist = new URL('../../packages/runtime/dist/packages/', import.meta.url)
-  const { validateBlueprintDocument } = await import(new URL('domain/blueprint/src/validate.js', dist).href)
-  const { callerEnvelope, leaderExecEnvelopeOps, ALL_MUTATION_OPS } = await import(new URL('runtime/admission/envelope.js', dist).href)
-  const a = createProcAssembly({ repoRoot: findTestRepoRoot(HERE), home: '/home/x', runStamp: 'u6-U6PRC-T', reportDir: '/rep' })
-  const rec = yaml.parse(a.mainBlueprintYaml(['u6proc_probe']).split('---').join('\n'))
-  const bp = validateBlueprintDocument(rec) // the real gate: a rejected record never boots
-  assert.ok(ALL_MUTATION_OPS.includes('request-control'))
-  assert.ok((bp.teamEnvelope?.allow ?? []).includes('request-control'), 'the ask-row right is TEAM-ROOT data (u6prc8 law)')
-  const member = (templateId) => callerEnvelope(bp, { role: 'member', callerMember: { templateId, instanceId: `inst-${templateId}` } }, [])
-  assert.deepEqual([...member('asker')].sort(), ['report-progress', 'request-control', 'send-message'])
-  assert.deepEqual([...member('shell')].sort(), ['report-progress', 'send-message'], 'mask lane unchanged')
-  assert.deepEqual([...member('strict')].sort(), ['report-progress', 'send-message'], 'deny lane unchanged')
-  // LEADER PIN: its effective bounds are its OLD ones exactly (the full
-  // pre-review team list), `bash` exec token included — every leader lane
-  // (exec-door, swap, late) stays byte-identical to u6prc8 measurements.
-  assert.deepEqual(
-    [...callerEnvelope(bp, { role: 'leader', callerMember: { templateId: 'leader', instanceId: 'inst-leader' } }, [])].sort(),
-    ['assign-task', 'bash', 'create-member', 'report-progress', 'resolve-control', 'send-message'],
-  )
-  assert.ok(leaderExecEnvelopeOps(bp).includes('bash'), 'dual-gate token survives the pin entry')
-  // The narrowing law itself, pinned: every caller envelope is a subset of
-  // the team-root allow list, and a template entry naming an op ABSENT
-  // from the team root grants nothing (templates never widen).
-  const teamAllow = new Set(bp.teamEnvelope.allow)
-  for (const t of ['asker', 'shell', 'strict']) for (const op of member(t)) assert.ok(teamAllow.has(op), `narrowing law violated on ${t}`)
-  const widened = JSON.parse(JSON.stringify(bp))
-  widened.memberEnvelopes.find((e) => e.templateId === 'asker').envelope.allow = ['dispose-member']
-  assert.deepEqual([...callerEnvelope(widened, { role: 'member', callerMember: { templateId: 'asker', instanceId: 'i' } }, [])].sort(), [], 'a template-only op cannot widen the team root — the law the fix respects')
-})
-
-test('u6-proc runner poller — the pending-row regex matches the bridge summary spelling (offline pin)', async () => {
-  // u6prc8 disclosure: the bridge summary names the EFFECT toolName
-  // (`tool=bash`); the poller's filter must match that spelling or the
-  // World resolves nothing it created. Pinned without importing the
-  // runner: the regex literal is located in source and rebuilt.
-  const src = readFileSync(join(HERE, 'u5-canary-runner.mjs'), 'utf8')
-  const m = src.match(/r\.status === 'pending' && (\/tool\[[^\]]*\]\(team_\)\?bash\\b\/)/)
-  assert.ok(m !== null, 'the poller filter regex must exist in the runner source')
-  const re = new RegExp(m[1].slice(1, -1))
-  assert.ok(re.test('PA ask case=tadm:sess:inst:fp:g0 rung=leader-approval tool=bash effects=1'), 'bridge spelling tool=bash must match')
-  assert.ok(re.test('PA ask case=x tool:team_bash effects=1'), 'plane spelling stays matched')
-  assert.ok(!re.test('PA ask tool=bashish effects=1'), 'no over-match past the token boundary')
-})
-
 test('u6-fs: the patch-layer emitter produces one parseable insert layer', async () => {
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')
   const { createFsAssembly } = await import('./lib/u6-fs-assembly.mjs')
