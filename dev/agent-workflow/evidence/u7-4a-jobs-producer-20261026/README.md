@@ -97,3 +97,15 @@ private API. Approval rows observed via BOTH the p6t6 observer and the additive 
 - Receipt face vs native host bash is a registered presentation difference: header
   `bash · exit=not-observed`, stdout `> started background job <id> (governed: manage it
   with the job_list / job_output / job_kill trio)`.
+
+## Final gate state (post-merge, clean committed tree)
+
+- `ci-pr-gate --full --census`: **PASS 8/8** (`ci-pr-gate-full-GREEN-8of8-on-clean-committed-tree.log`).
+  The first (pre-commit) run's two new census reds were the a4p7 self-legs — composition-smoke
+  needed `pnpm build` (`pnpm-build.log`; identical refusal captured on pristine base), install-surface
+  measures the committed surface. Both legs 35/35 green after build+commit; `artifacts-at-head`
+  first-run refusal was a missing store dir (environment), pass on re-run.
+- Post-merge unit sweep 46/46 (p4t6 1279 booking holds through the master merge; arc-a fitness green).
+- SESSION_ROUTER_LOG conflict (append-only, both-sides-appended) resolved keeping master's
+  entries first, mine last; my own pre-PR entry amended in-branch (never landed) to the final
+  5/5-boot tally.
