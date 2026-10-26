@@ -6902,3 +6902,11 @@ master 跑 production-run-recipe 全链）。
 - PR #382：ARC-D 对抗套件（AD1–AD11 13/13，每条拒绝带 blinded twin）+ 42-cell oracle 矩阵重评（37 离线绿 + 3 实机映射 + 3 命名项）；`plane-effect-backends.mjs/.d.mts/dist` 删除，每个 kernel 归属名只剩一处实现（read→fs-family、bash→process-family、grep/glob→search-family、jobs→命名 bridge），PLACEMENTS 29→28；u6-arc-d C2 一次 boot 9/9 全绿（磁盘+账本判定）。
 - R1 独审：PR6 **投机通过**；**G4 = G4-CORE-PASS / BRIDGE-BLOCKED**（非 full G4，非 CORE BLOCKER）。解锁 = 无依赖局部 Family + EB 工程基线（U7）；不解锁 = CA-03/full G4、G5、S5、发布。
 - 命名项（阻断 full G4，需在 U7 关闭）：R-U6P3-1、R-U6P4-1..3、R-U6P5-1/GLUE-4、R-U6P6-1、R-G3-1；另有证据强度项 E1（CI-03 native 判定改为直接磁盘证据）、E2（blinded-twin 一一执行关系机器化）。
+
+## 2026-10-26 U7 用户裁决 + 决策 3 答复（外来工具/MCP 接入控制）
+
+- 用户四项裁决逐字入档（`dev/agent-workflow/evidence/u7-design-20261026/USER-RULINGS-20261026.md`）：R-U6P3-1 = **B**（人工经公开 `team.resolveControl`）；R-U6P4-1 = **Yes 必修**（`attributeBackgroundJob` 产出者）；R-G1F-2 = **总体同意 B**（Domain 从 Alpha.5 发布声明排除），但先答复外来工具设计问题；bind-time token 缺失 = **有意**。
+- 决策 3 答复（`DECISION-3-ANSWER.md` + `docs/plans/memo/unified-baseline-alpha5-20261025/u7/EXTERNAL-TOOL-CONTROL-DESIGN.md`）：Alpha.5 原设计以三条正交轴（implementationOrigin / executionBoundary / per-capability assurance）+ 9 项准入条件 + 效果类（read/write/process/network/Domain）约束外来工具，并要求只有既授权配置权威签发不可变 `DynamicSourceAdmissionRecord`；**不是**"控制读/写/沙箱启动"枚举，也不是 `ALL_MUTATION_OPS`/`ENVELOPE_EXEC_OPS`。判定：完整设计 `blocked-with-reason`，收窄声明 `executable-with-narrowing`。
+- 宿主 seam 亲核：`dsh-mcp-client` stdio 直连 SDK spawn，不过 `ctx.sandbox`；但 `ctx.sandbox.confine()` 返回替代 argv，可经公开 `command/args` 配置实现 stdio 受限启动（零 core patch）。宿主 `SandboxMode` 只声称 FILE effects，无网络规则。本机实测：bwrap 非特权 userns 被拒；landlock-run 可用但 `partial enforcement (older Landlock ABI)`，写拒绝生效。→ MCP stdio 在本环境只能做到 **partial file-effect 受限**，网络面不可控，必须如实写入 assurance，不得上报 `full`。
+- 根检出 `docs:sync --check` 唯一阻塞 = 未跟踪本地草稿 `docs/plans/active/evidence-storage-v1.md`（自述 DRAFT，链向不存在的 `evidence.mjs`）；按 pre-ff 先例字节等同移至 `.artifacts/evidence/root-untracked/pre-ff-20261026e/`（sha256 `40d1e806…`，附 RECEIPT + 还原命令）→ 根 `blocking=0`；各任务分支本即 `blocking=0`。
+- 并行中：U7-T1（harness 收口）、U7-0（动态 census）、U7-9a（FS write/edit/read_image）、U7-4a（jobs 产出者）、U7-6（GLUE-4 search assurance）、R-G1F-2 Domain 排除记录、U7-2（CI 分层 EB3）。G4 仍 = G4-CORE-PASS / BRIDGE-BLOCKED。
