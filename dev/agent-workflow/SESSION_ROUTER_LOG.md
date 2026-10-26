@@ -6934,3 +6934,10 @@ master 跑 production-run-recipe 全链）。
 - A1 p4t6：75 个 `SCANNED_PATHS_<LANE>` 逐字迁入 `packages/testkit/test/p4t6-bookings/<lane>.json`（+u7w0 自身 1 份，1306→1308 实测）；精确总数律不变（983 + Σ），新增双记账/重复 lane/退役复活/tie 失配 RED-first 控制。A2 PLACEMENTS → `scripts/dist-placements/NNN-*.json`（38 条顺序内容逐一相同，镜像律/首条 glue 失败即关）。A3 eslint node-globals → `scripts/eslint-node-globals/*.json`（lint new 0 / resolved 0，universe 1421 不缩）。A4 world-kind/suite → `tests/world-factory/{world-kinds,suites}/`（9/9 World 形态补丁层+env 字节等价；未知选项由静默忽略改为类型化拒绝）。
 - A5（team-tool-plane 禁改规则）**撤回**：plane 无通用 family 挂载 seam（逐族 register / ensure*ApprovalEntry / families.* 硬编码），强制即令全部治理 family lane 无法合规；父 Agent 认可，另开 Center-Owner PR（w0b）。
 - B：`TEST_PORT_RANGES` = 3180-3199 / 3491-3500 / 13000-13099；World 宿主 3181-3199→13000-13049（3180 不租），mock 3491-3500→13050-13099；3080 拒绝不变；绑定前 `ss -ltn` 实测仅 :3080 在监听。旧 kit 候选表不动（清单见证据 README）。用户裁决原文录入 TEST_METHODS §6。
+
+## 2026-10-26 U7-G6b（glue7 G6b census-load flake → 退役 archived CANDIDATE-A glob factory）
+- 分支 `task/u7-g6b-census-flake-20261026` / worktree `.worktrees/u7-g6b`，off origin/master f3f415aa0，单写者；未启 host，:3080 / ~/.dsh 未动。
+- 托管 transcripts 实读：run 40386960117 cap-1 = `:301 expected +0 to be 100`（ok:true 空列表，550 ms）；run 40386788330 cap-2 = `:304 expected true to be false`（`[unclosed` 空成功）。
+- 根因：被测的是 `search-mechanics.mjs` 的 ARCHIVED CANDIDATE-A `createAnchoredGlobBackend`（无产线消费者；plane 用 `glob-backend.mjs`），它在 `exited`+terminate 后不等流结束即读缓冲、且按 exit code+SPEECH 判错——g6b-flake 轮次只修了产线行。确定性复现 `u7-g6b-late-stream.test.ts`（迟到字节注入）：产线 2/2 绿、archived 2/2 红且形态与托管一致。
+- 处置：退役 archived factory 与 barrel 别名；G6b 三面改钉产线行（不放松断言）；move-law M1 改钉保留区 + 退役尾缺席；hygiene/wiring 去 search-mechanics provider 挂载登记；p4t6 1306→1307。保护中心 ledger 无涉；glob-backend.mjs 与 provider 字节未变。
+- 负载：修前本机 0/200（12 忙核 + 全 runtime 并发）与 0/200（单核饥饿，400 次 walk 无字节滞后）——窗口本机不开；修后产线行 0/600 同负载。受影响 20 文件 286 测全绿。证据 `dev/agent-workflow/evidence/u7-g6b-census-flake-20261026/`。

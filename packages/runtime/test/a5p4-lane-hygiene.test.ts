@@ -32,9 +32,10 @@
  *        - `tools/process-family/src/confined-shell-executor.mjs` — the
  *          governed shell row's executor (U6 PR3 moved the mount here with
  *          the shell mechanics; CI-07 named provider).
- *        - `tools/search-family/src/{search-mechanics,search-backend,glob-backend}.mjs`
+ *        - `tools/search-family/src/{search-backend,glob-backend}.mjs`
  *          — the anchored rg rows (U6 PR5 moved the mounts HERE with the
- *          search mechanics; confined rg walks, evidence
+ *          search mechanics; U7-G6b retired the third, `search-mechanics`'
+ *          archived CANDIDATE-A glob factory; confined rg walks, evidence
  *          `dev/agent-workflow/evidence/alpha5/glob-backend/` +
  *          `dev/agent-workflow/evidence/alpha5/srgp/`). The center glue file
  *          (`runtime/src/plugin/live/plane-effect-backends.mjs`) stopped
@@ -166,15 +167,12 @@ describe('a5p4 lane purity and dormancy', () => {
       lane: 'a5srgp (u6-pr5 moved: search-family lane) — anchored confined-rg search row',
       edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
     },
-    {
-      // U6 PR5: the TWO-body search row's confined body builds its OWN
-      // provider for the anchored rg walk (the grep(1) port needs none); the
-      // ARCHIVED CANDIDATE-A row moved with its disclosures and its provider
-      // mount stayed a mount — never a silent deletion, never a second copy.
-      file: 'tools/search-family/src/search-mechanics.mjs',
-      lane: 'u6-pr5 (glue7 heritage) — TWO-body search row + archived CANDIDATE-A glob row',
-      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
-    },
+    // U7-G6b: `tools/search-family/src/search-mechanics.mjs` is UNBOOKED —
+    // its only provider mount was the ARCHIVED CANDIDATE-A glob factory,
+    // RETIRED (a second, unrepaired copy of the walker law; the census-load
+    // flake). The TWO-body search row's confined body reaches the provider
+    // through `search-backend.mjs` (booked above), so the file now names the
+    // lane nowhere and the walk below holds it to that.
     {
       // U6 PR5 CI-07: the search family's row descriptor DECLARES its
       // provider requirement (row metadata names the reviewed provider the

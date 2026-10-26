@@ -1,0 +1,56 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g6b
+
+ ❯ packages/runtime/test/u7-g6b-late-stream.test.ts (4 tests | 2 failed) 691ms
+     ✓ PRODUCTION glob-backend.mjs: 105 late stdout records (rc=0) answer the honest cap — never ok:true files=[] (hosted :301) 96ms
+     ✓ PRODUCTION glob-backend.mjs: an invalid glob whose speech arrives late (exit read back as 0, payload rc=2) is a typed walker error — never an empty success (hosted :304) 43ms
+     × ARCHIVED search-mechanics.mjs candidate: 105 late stdout records (rc=0) answer the honest cap — never ok:true files=[] (hosted :301) 487ms
+     × ARCHIVED search-mechanics.mjs candidate: an invalid glob whose speech arrives late (exit read back as 0, payload rc=2) is a typed walker error — never an empty success (hosted :304) 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-g6b-late-stream.test.ts > u7-g6b: a walk whose bytes arrive AFTER `exited` is judged on the whole walk > ARCHIVED search-mechanics.mjs candidate: 105 late stdout records (rc=0) answer the honest cap — never ok:true files=[] (hosted :301)
+AssertionError: expected +0 to be 100 // Object.is equality
+
+- Expected
++ Received
+
+- 100
++ 0
+
+ ❯ packages/runtime/test/u7-g6b-late-stream.test.ts:124:47
+    122|       const r = await (await make()).run(globCall('late-1', 'many/*.ge…
+    123|       expect(r.ok, JSON.stringify(r)).toBe(true)
+    124|       expect((r.outcome?.files ?? []).length).toBe(100)
+       |                                               ^
+    125|       expect(r.outcome?.truncated).toBe(true)
+    126|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/u7-g6b-late-stream.test.ts > u7-g6b: a walk whose bytes arrive AFTER `exited` is judged on the whole walk > ARCHIVED search-mechanics.mjs candidate: an invalid glob whose speech arrives late (exit read back as 0, payload rc=2) is a typed walker error — never an empty success (hosted :304)
+AssertionError: {"ok":true,"outcome":{"outputMode":"files_with_matches","matches":[],"counts":[],"files":[],"totalMatches":0,"truncated":false},"settlement":{"kind":"completed"}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-g6b-late-stream.test.ts:131:39
+    129|       planRef.current = { lateStderr: [RG_SPEECH], exitCode: 0, rc: 2 }
+    130|       const r = await (await make()).run(globCall('late-2', '[unclosed…
+    131|       expect(r.ok, JSON.stringify(r)).toBe(false)
+       |                                       ^
+    132|       expect(String(r.failure?.code)).toMatch(/walker-error|rg-walker-…
+    133|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  20:16:58
+   Duration  879ms (transform 455ms, setup 0ms, import 51ms, tests 691ms, environment 0ms)
+
