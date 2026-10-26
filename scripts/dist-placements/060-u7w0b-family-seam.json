@@ -1,0 +1,36 @@
+{
+  "schema": "dist-placements/1",
+  "family": "u7w0b-family-seam",
+  "summary": "u7-w0b: the ONE approval-entry binder and the generic FamilyAssembly seam (siblings of team-tool-plane.mjs, imported through relative specifiers), plus the reviewed family drop-in directory packages/tools/families/ \u2014 the generated index statically imports each descriptor and names manifest.json relative to itself, and the seam re-hashes every module against that manifest at mount, so all of them sit in the mirror at the same relative layout (a missing manifest refuses the mount).",
+  "migratedFrom": "branch-local in-file PLACEMENTS entries (commits 31aa1bf20..447b8e6df), migrated at the #397 merge",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/approval-entry-binder.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/approval-entry-binder.mjs"
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/family-assembly.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/family-assembly.mjs"
+    },
+    {
+      "src": "packages/tools/families/manifest.json",
+      "dist": "packages/runtime/dist/packages/tools/families/manifest.json"
+    },
+    {
+      "src": "packages/tools/families/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/index.mjs"
+    },
+    {
+      "src": "packages/tools/families/fs.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/fs.mjs"
+    },
+    {
+      "src": "packages/tools/families/process.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/process.mjs"
+    },
+    {
+      "src": "packages/tools/families/search.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/search.mjs"
+    }
+  ]
+}

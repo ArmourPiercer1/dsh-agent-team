@@ -32,6 +32,11 @@
     {
       "src": "packages/tools/search-family/src/search-contribution.mjs",
       "dist": "packages/runtime/dist/packages/tools/search-family/src/search-contribution.mjs"
+    },
+    {
+      "src": "packages/tools/search-family/src/stream-drain.mjs",
+      "dist": "packages/runtime/dist/packages/tools/search-family/src/stream-drain.mjs",
+      "note": "u7 grep-drain: the stream drain law the two confined-rg rows share (imported by search-backend.mjs and glob-backend.mjs by a relative sibling specifier, so the mirror must carry it or the shipped rows stop loading)."
     }
   ]
 }

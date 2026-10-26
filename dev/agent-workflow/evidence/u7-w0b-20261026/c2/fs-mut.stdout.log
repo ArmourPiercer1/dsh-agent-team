@@ -1,0 +1,10 @@
+[u7-fs-mut] case fsm:mounted: PASS {"healthOk":true,"stateOk":true,"placementFeed":"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5u7w0b-20261026t21-17-11z","surfaceHas":"write=true,edit=true,read_i
+[u7-fs-mut] case fsm:write-positive: PASS {"oracleBytesEqual":true,"oracleBytesHead":"U7FSMUT_W1_CLAIM_u5u7w0b-20261026t21-17-11z\nwritten-by-governed-write\n","ranLine":"[dsh-agent-team] a5g7-write: governed-write RAN bytes=70 created=true path=/srv/workspace/dsh-plugins/dsh-agent
+[u7-fs-mut] case fsm:edit-positive: PASS {"oracleBytesEqual":true,"beforeTokenGone":true,"oracleBytesHead":"U7FSMUT_PLANT_AFTER_u5u7w0b-20261026t21-17-11z line one\nline two stays\n","ranLine":"[dsh-agent-team] a5g7-edit: governed-edit RAN replace_all=false path=/srv/workspace/dsh
+[u7-fs-mut] case fsm:refusal-zero-effect: PASS {"arm":"template-layer-denied","shaBefore":"bd0fe8e04c93c2a47dd47a0c2a8c39dff055aecd610d17406c308c3ce863e94a","shaAfter":"bd0fe8e04c93c2a47dd47a0c2a8c39dff055aecd610d17406c308c3ce863e94a","shaIdentical":true,"refusalLines":0,"refusalSample"
+[u7-fs-mut] case fsm:image-lane-honest: PASS {"arm":"typed-refusal","ran":null,"refusal":"[dsh-agent-team] a5g7-image: governed-image pre-gate-refused code=IMAGE_MODEL_NOT_CAPABLE path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0b-20261026T21-17-11Z/w
+[u7-fs-mut] case fsm:ctl-native-write: PASS {"oracleBytesEqual":true,"oracleBytesHead":"U7FSMUT_CTL_CLAIM_u5u7w0b-20261026t21-17-11z\nnative-control-write\n","ctlFoundPath":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/u7fsmut-ctl-native.txt","governedRan
+[u7-fs-mut] case fsm:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-fs-mut] host died during the run (verdicts read the evidence as-is)
+RUN-SUMMARY run=u5-u7-fs-mut-u7w0b-2026-10-26T21-17-11-072Z suite=u7-fs-mut overall=PASS cases=8 PASS:8 worlds=u5u7w0b-20261026T21-17-11Z
+exit=0

@@ -13,6 +13,7 @@
  * line format and exit code both derive from it. SKIP/REFUSED/ENV_BLOCK are
  * disclosures, never colours (plan §3: SKIP/REFUSED/ENV_BLOCK/UNKNOWN 不是 PASS).
  */
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { appendCappedLine } from '../canary/ledger-cap.mjs'
@@ -144,4 +145,30 @@ function finalizedCopy(record) {
 export function exitCodeFor(record) {
   const r = finalizedCopy(record)
   return r.overall === 'PASS' ? 0 : 1
+}
+
+const sha256OfText = (s) => createHash('sha256').update(s).digest('hex')
+
+/**
+ * The `bindings.authority` stamp every RUN record carries (EB3 RUN rule:
+ * a NEW record must bind the live authority generation). One home for both
+ * the u5 canary runner and the standalone u7-4a jobs runner (u7-w0b R1:
+ * moved here verbatim from u5-canary-runner.mjs so the second runner stops
+ * omitting it).
+ */
+export function readAuthorityBinding(repoRoot) {
+  const pointerPath = 'dev/engineering/current-authority.json'
+  try {
+    const text = readFileSync(join(repoRoot, pointerPath), 'utf8')
+    const pointer = JSON.parse(text)
+    let snapshotDigest = 'snapshot-unreadable'
+    try {
+      snapshotDigest = sha256OfText(readFileSync(join(repoRoot, 'dev', 'engineering', 'authority-snapshots', `${pointer.snapshot_version}.json`), 'utf8'))
+    } catch {
+      /* keep sentinel */
+    }
+    return { pointerPath, pointer, pointerSha256: sha256OfText(text), snapshotDigest }
+  } catch (error) {
+    return { pointerPath, error: String(error?.message ?? error) }
+  }
 }

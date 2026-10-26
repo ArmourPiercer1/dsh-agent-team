@@ -1,0 +1,15 @@
+3084-
+3085- FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6b CANDIDATE-A archive: the glob FACTORY (unwired) keeps its bounded face + typed walker error + symlink-final refusal
+3086:AssertionError: expected true to be false // Object.is equality
+3087-
+3088-- Expected
+3089-+ Received
+3090-
+3091-- false
+3092-+ true
+3093-
+3094- ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:304:20
+3095-    302|     expect(capped.outcome?.truncated).toBe(true)
+3096-    303|     const bad = await factory.run({ callId: 'c2', parsedArgs: { tool: …
+3097-    304|     expect(bad.ok).toBe(false)
+3098-       |                    ^

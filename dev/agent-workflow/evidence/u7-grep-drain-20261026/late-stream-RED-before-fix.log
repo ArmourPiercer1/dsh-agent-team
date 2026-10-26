@@ -1,0 +1,214 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+ ❯ test/u7-grep-late-stream.test.ts (8 tests | 7 failed) 780ms
+     × SEC-1 stdout complete on time (matches + summary), coverage refusal on stderr 40 ms late — REFUSED walker-permission-refused, never admitted 27ms
+     × SEC-2 the hosted P8 shape: `regex parse error` 40 ms late, zero stdout — walker-invalid-pattern, never the generic walker-error 9ms
+     × SEC-3 the whole stdout (matches + summary) 40 ms late — the completed walk is answered in full; never an empty admit 9ms
+     × SEC-4 a late summary WITH a late coverage refusal — refused, the late records never reach the sink 8ms
+     × SEC-5 stderr that never ends: the drain is BOUNDED and its expiry is a typed refusal, never a success 9ms
+     × SEC-6 a stdout torn down WITHOUT an end (destroyed pipe after a summary) — refused, never admitted as complete 11ms
+     ✓ SEC-7 control: everything on time, clean stderr — admitted exactly as before (the drain costs a clean walk nothing) 10ms
+     × SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged 479ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-1 stdout complete on time (matches + summary), coverage refusal on stderr 40 ms late — REFUSED walker-permission-refused, never admitted
+AssertionError: FALSE ADMIT: {"ok":true,"outcome":{"outputMode":"content","matches":[{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts","line":1,"text":"A5SRGP-TOK here"},{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts","line":3,"text":"A5SRGP-TOK here"}],"counts":[],"files":[],"totalMatches":2,"truncated":false},"settlement":{"kind":"completed"}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/u7-grep-late-stream.test.ts:178:65
+    176|     // A false admit would be ok:true with the two readable matches: a…
+    177|     // walk (the locked subtree silently skipped) presented as complet…
+    178|     expect(result.ok, `FALSE ADMIT: ${JSON.stringify(result)}`).toBe(f…
+       |                                                                 ^
+    179|     if (result.ok === false) {
+    180|       expect(result.failure.code).toBe('walker-permission-refused')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-2 the hosted P8 shape: `regex parse error` 40 ms late, zero stdout — walker-invalid-pattern, never the generic walker-error
+AssertionError: expected 'walker-error' to be 'walker-invalid-pattern' // Object.is equality
+
+Expected: "walker-invalid-pattern"
+Received: "walker-error"
+
+ ❯ test/u7-grep-late-stream.test.ts:193:35
+    191|     expect(result.ok).toBe(false)
+    192|     if (result.ok === false) {
+    193|       expect(result.failure.code).toBe('walker-invalid-pattern')
+       |                                   ^
+    194|       expect(JSON.stringify(result)).not.toContain('regex parse error')
+    195|       expect(JSON.stringify(result)).not.toContain('unclosed group')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-3 the whole stdout (matches + summary) 40 ms late — the completed walk is answered in full; never an empty admit
+AssertionError: {"ok":false,"failure":{"class":"undetermined","code":"walker-error","family":"a5srgp-refused/walker","detail":"ripgrep reported a search error","counts":{"stderrBytes":0,"outBytes":0}}}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/u7-grep-late-stream.test.ts:205:47
+    203|     // The invariant: no ok:true that claims the tree holds nothing.
+    204|     if (result.ok === true) expect(result.outcome.matches.length, 'EMP…
+    205|     expect(result.ok, JSON.stringify(result)).toBe(true)
+       |                                               ^
+    206|     if (result.ok === true) {
+    207|       expect(result.outcome.matches.map((m) => m.line)).toEqual([1, 3])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-4 a late summary WITH a late coverage refusal — refused, the late records never reach the sink
+AssertionError: expected 'walker-error' to be 'walker-permission-refused' // Object.is equality
+
+Expected: "walker-permission-refused"
+Received: "walker-error"
+
+ ❯ test/u7-grep-late-stream.test.ts:217:58
+    215|     const { result, writes, handle } = await runScript({ lateStdout: […
+    216|     expect(result.ok, `FALSE ADMIT: ${JSON.stringify(result)}`).toBe(f…
+    217|     if (result.ok === false) expect(result.failure.code).toBe('walker-…
+       |                                                          ^
+    218|     expect(writes()).toBe(0)
+    219|     expectNoRowListeners(handle)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-5 stderr that never ends: the drain is BOUNDED and its expiry is a typed refusal, never a success
+AssertionError: an undrained walk was admitted: {"ok":true,"outcome":{"outputMode":"content","matches":[{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts","line":1,"text":"A5SRGP-TOK here"},{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts","line":3,"text":"A5SRGP-TOK here"}],"counts":[],"files":[],"totalMatches":2,"truncated":false},"settlement":{"kind":"completed"}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/u7-grep-late-stream.test.ts:224:84
+    222|   it('SEC-5 stderr that never ends: the drain is BOUNDED and its expir…
+    223|     const { result, writes, audit, elapsed, handle } = await runScript…
+    224|     expect(result.ok, `an undrained walk was admitted: ${JSON.stringif…
+       |                                                                                    ^
+    225|     if (result.ok === false) {
+    226|       expect(result.failure.code).toBe('walker-error')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-6 a stdout torn down WITHOUT an end (destroyed pipe after a summary) — refused, never admitted as complete
+AssertionError: {"ok":true,"outcome":{"outputMode":"content","matches":[{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts","line":1,"text":"A5SRGP-TOK here"},{"path":"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts","line":3,"text":"A5SRGP-TOK here"}],"counts":[],"files":[],"totalMatches":2,"truncated":false},"settlement":{"kind":"completed"}}: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/u7-grep-late-stream.test.ts:238:47
+    236|   it('SEC-6 a stdout torn down WITHOUT an end (destroyed pipe after a …
+    237|     const { result, writes, handle } = await runScript({ onTimeStdout:…
+    238|     expect(result.ok, JSON.stringify(result)).toBe(false)
+       |                                               ^
+    239|     if (result.ok === false) expect(result.failure.code).toBe('walker-…
+    240|     expect(writes()).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-8 under repetition: 60 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged
+AssertionError: expected [ …(60) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "a0:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b0:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c0:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a1:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b1:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c1:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a2:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b2:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c2:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a3:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b3:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c3:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a4:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b4:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c4:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a5:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b5:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c5:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a6:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b6:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c6:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a7:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b7:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c7:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a8:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b8:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c8:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a9:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b9:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c9:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a10:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b10:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c10:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a11:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b11:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c11:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a12:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b12:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c12:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a13:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b13:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c13:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a14:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b14:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c14:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a15:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b15:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c15:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a16:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b16:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c16:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a17:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b17:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c17:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a18:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b18:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c18:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "a19:{\"ok\":true,\"outcome\":{\"outputMode\":\"content\",\"matches\":[{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/a.ts\",\"line\":1,\"text\":\"A5SRGP-TOK here\"},{\"path\":\"<worktree>/tests/homes/u7grep-late-mvpronhz-coyy/root/readable/b.ts\",\"line\":3,\"text\":\"A5SRGP-TOK here\"}],\"counts\":[],\"files\":[],\"totalMatches\":2,\"truncated\":false},\"settlement\":{\"kind\":\"completed\"}}",
++   "b19:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++   "c19:{\"ok\":false,\"failure\":{\"class\":\"undetermined\",\"code\":\"walker-error\",\"family\":\"a5srgp-refused/walker\",\"detail\":\"ripgrep reported a search error\",\"counts\":{\"stderrBytes\":0,\"outBytes\":0}}}",
++ ]
+
+ ❯ test/u7-grep-late-stream.test.ts:263:19
+    261|       if (c.result.ok !== true || c.result.outcome.totalMatches !== 2)…
+    262|     }
+    263|     expect(wrong).toEqual([])
+       |                   ^
+    264|   }, 60_000)
+    265| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  21:26:56
+   Duration  1.11s (transform 276ms, setup 0ms, import 143ms, tests 780ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

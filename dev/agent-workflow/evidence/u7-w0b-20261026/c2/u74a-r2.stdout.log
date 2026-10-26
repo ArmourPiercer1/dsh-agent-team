@@ -1,0 +1,19 @@
+[u7-4a] case u74a:mounted: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"kernelHits":{"a5g7: placement-feed rows=":8,"job_output":8,"a5-plane: mount-REFUSED":0,"a5-plane: placement-R
+[u7-4a] case u74a:bg-receipt-carries-host-job-id: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"jobId":"bash-4","bgHead":"bash · exit=not-observed\n> started background job bash-4 (governed: manage it with
+[u7-4a] case u74a:attributed-server-side: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"attributionsForJob":1,"attributedLines":["[dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-04
+[u7-4a] case u74a:ring-bytes-via-job-output-wait: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"outHead":"U74A_BG_CLAIM_u5u7w0b-20261026t22-10-16z\n\n[status: completed, exit code: 0]","jobId":"bash-4","no
+[u7-4a] case u74a:list-shows-owner: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"listJobId":"bash-3","listRow":"bash-3 [bash] running — governed background bash","note":"the owner's governed
+[u7-4a] case u74a:kill-live-requested: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"killLive":"requested cancellation of job bash-1","killLiveJobId":"bash-1","killLiveEarlyOut":"U74A_LIVE_WARM_
+[u7-4a] case u74a:kill-finished-honest: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"killDone":"job bash-5 had already finished","killDoneOutHead":"U74A_DONE_CLAIM_u5u7w0b-20261026t22-10-16z\n\n
+[u7-4a] case u74a:foreign-cross-scope-refusal: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"foreignOut":"refused: owner-mismatch — this viewer is not the owning member scope of the job","note":"MEASURE
+[u7-4a] case u74a:planted-unattributed: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"foreignPlanted":"refused: unattributed-job — the Team lane never attributed this job id; a governed mount ref
+[u7-4a] case u74a:native-ctl-unaffected: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"ctlHead":"U74A_CTL_CLAIM_u5u7w0b-20261026t22-10-16z\n[stderr]\nlandlock-run: partial enforcement (older Landl
+[u7-4a] case u74a:exactly-once-approvals: PASS {"laneDone":{"bg":true,"out":true,"list":true,"killLive":true,"killDone":true,"fout":true,"fplant":true,"ctl":true,"leader":true},"askRows":[{"requestId":"ctrl-1ufu1mo15xcg7t0jf4trq1sk","targetInstanceId":null,"resolutions":1,"ok":true,"res
+[u7-4a] attributed host lines: 5; ask rows: 10; kernelHits job_output: 8
+[u7-4a] hostlog: [dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-04r5bhd17s48 tool=bash
+[u7-4a] hostlog: [dsh-agent-team] a5bg: attributed hostJobId=bash-2 instance=inst-01amb2t1pucx tool=bash
+[u7-4a] hostlog: [dsh-agent-team] a5bg: attributed hostJobId=bash-3 instance=inst-1iddpez0p7wm tool=bash
+[u7-4a] hostlog: [dsh-agent-team] a5bg: attributed hostJobId=bash-4 instance=inst-0g8eyou19awi tool=bash
+[u7-4a] case stable-instance-unchanged: PASS {"status":401,"note":"read-only probe of :3080 before/after (never touched beyond the probe)"}
+RUN-SUMMARY run=u7w0b-u74a-2 suite=u7-4a-jobs overall=PASS cases=12 PASS:12 worlds=u5u7w0b-20261026T22-10-16Z
+exit=0

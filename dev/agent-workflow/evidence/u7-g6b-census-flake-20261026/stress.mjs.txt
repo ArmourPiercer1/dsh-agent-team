@@ -1,0 +1,12 @@
+// CPU stressor: one busy-loop worker per core for STRESS_SECONDS.
+import { Worker, isMainThread } from 'node:worker_threads'
+import { availableParallelism } from 'node:os'
+const secs = Number(process.env.STRESS_SECONDS ?? 600)
+if (isMainThread) {
+  const n = Number(process.env.STRESS_WORKERS ?? availableParallelism())
+  for (let i = 0; i < n; i++) new Worker(new URL(import.meta.url), { env: { STRESS_SECONDS: String(secs) } })
+} else {
+  const end = Date.now() + secs * 1000
+  let x = 0
+  while (Date.now() < end) x = (x * 1103515245 + 12345) % 2147483648
+}

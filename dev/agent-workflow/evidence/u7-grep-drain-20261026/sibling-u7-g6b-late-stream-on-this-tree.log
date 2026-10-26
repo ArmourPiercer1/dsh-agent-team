@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+ ✓ test/zz-sibling-g6b-late.test.ts (2 tests) 257ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  21:47:48
+   Duration  692ms (transform 271ms, setup 0ms, import 248ms, tests 257ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -5,17 +5,18 @@
  *
  * WHAT LIVES HERE: the governed grep/glob rows' FAMILY-owned halves, moved
  * VERBATIM out of the center files at master 5c03f7240 —
- *   - `search-mechanics.mjs`     the grep(1) port, the anchored rg
- *                                delegation, and the ARCHIVED CANDIDATE-A
- *                                glob row (ships NOTHING — moved with its
- *                                disclosures, never deleted, never
- *                                re-wired; exported under the honest
- *                                `…Candidate` name at this barrel);
+ *   - `search-mechanics.mjs`     the grep(1) port and the anchored rg
+ *                                delegation (the ARCHIVED CANDIDATE-A glob
+ *                                row that moved with them was RETIRED in
+ *                                U7-G6b: it shipped nothing and carried an
+ *                                unrepaired second copy of the walker law);
  *   - `search-backend.mjs`       the PR5 fixed-ripgrep SEARCH row (a5srgp);
  *   - `glob-backend.mjs`         the anchored confined-rg GLOB row (a5glb,
  *                                the PRODUCTION glob row of the plane);
  *   - `cancel-leg.mjs`           the cancellation leg the two async
  *                                confined-rg rows share (and only they);
+ *   - `stream-drain.mjs`         the stream drain law the same two rows
+ *                                share (u7 grep-drain: one implementation);
  *   - `search-row.mjs`           the two row Definitions the trusted
  *                                assembly places under the Gate 0b-
  *                                validated mount spellings;
@@ -59,13 +60,10 @@
 export {
   grepArgv,
   createAnchoredSearchBackend,
-  // The ARCHIVED CANDIDATE-A glob row (ships NOTHING), aliased honestly at
-  // this barrel — the PRODUCTION glob row is `createAnchoredGlobBackend`
-  // from `glob-backend.mjs` below.
-  createAnchoredGlobBackend as createAnchoredGlobBackendCandidate,
 } from './search-mechanics.mjs'
 export * from './search-backend.mjs'
 export * from './cancel-leg.mjs'
+export * from './stream-drain.mjs'
 export * from './glob-backend.mjs'
 export { buildSearchRowDefinitions } from './search-row.mjs'
 export { buildSearchContribution } from './search-contribution.mjs'

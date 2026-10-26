@@ -1,0 +1,2827 @@
+{
+ "default": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "noFs": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": false,
+   "edit": false,
+   "read_image": false,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": null,
+   "write": null,
+   "edit": null,
+   "read_image": null,
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5-effect-face-pending",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending"
+  },
+  "hasHandoff": false
+ },
+ "globOff": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-glob-config-disabled",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "globBad": {
+  "refused": "PLANE_CONFIG_INCOMPLETE",
+  "message": "planeCfg.globEnabled must be a boolean when present — got \"yes\" (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)"
+ },
+ "globOn": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "renamed": {
+  "placed": [
+   "my_grep",
+   "my_glob",
+   "bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "my_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "my_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "my_grep",
+   "my_glob",
+   "bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "ac21529767a5a18d6ada5c2abdfea69bb1e064de4ccb8a4a62560e06bb6b10de",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "e418e183fb3332dfff7757af0787f0525ed1162e334c134d8383676dc97a61af",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "my_grep",
+     "my_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": false,
+   "bash": true,
+   "team_grep": false,
+   "team_glob": false,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": null,
+   "bash": "dsh.process-family",
+   "team_grep": null,
+   "team_glob": null,
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "jobsNoBridge": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image",
+   "job_output",
+   "job_list",
+   "job_kill"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_output",
+    "description": "Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "job_id": {
+       "type": "string",
+       "description": "Job id returned by the tool that started the background work."
+      },
+      "wait": {
+       "type": "boolean",
+       "description": "Block until the job finishes or the timeout expires; a timed-out wait leaves the job running. Defaults to false."
+      },
+      "timeout_ms": {
+       "type": "number",
+       "description": "Max wait in milliseconds with wait: true."
+      }
+     },
+     "required": [
+      "job_id"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_list",
+    "description": "List your background jobs (running and finished) with their ids, kinds, and statuses.",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_kill",
+    "description": "Request cancellation of a running background job.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "job_id": {
+       "type": "string",
+       "description": "Job id returned by the tool that started the background work."
+      },
+      "reason": {
+       "type": "string",
+       "description": "Optional short reason, recorded in the log and forwarded to the job."
+      }
+     },
+     "required": [
+      "job_id"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image",
+   "job_output",
+   "job_list",
+   "job_kill"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "jobsBridge": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image",
+   "job_output",
+   "job_list",
+   "job_kill"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_output",
+    "description": "Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "job_id": {
+       "type": "string",
+       "description": "Job id returned by the tool that started the background work."
+      },
+      "wait": {
+       "type": "boolean",
+       "description": "Block until the job finishes or the timeout expires; a timed-out wait leaves the job running. Defaults to false."
+      },
+      "timeout_ms": {
+       "type": "number",
+       "description": "Max wait in milliseconds with wait: true."
+      }
+     },
+     "required": [
+      "job_id"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_list",
+    "description": "List your background jobs (running and finished) with their ids, kinds, and statuses.",
+    "parameters": {
+     "type": "object",
+     "properties": {}
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "job_kill",
+    "description": "Request cancellation of a running background job.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "job_id": {
+       "type": "string",
+       "description": "Job id returned by the tool that started the background work."
+      },
+      "reason": {
+       "type": "string",
+       "description": "Optional short reason, recorded in the log and forwarded to the job."
+      }
+     },
+     "required": [
+      "job_id"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image",
+   "job_output",
+   "job_list",
+   "job_kill"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   },
+   {
+    "familyId": "dsh.jobs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 4,
+    "src": "c1a20a41cbec45f9e3b032bfc63d65210be0394e0f4c6ef009fd468de707cfef",
+    "prov": "657c0b7a23c69b8b5373864ad4273185ba767f5c6049f5c52de1489aafd05f61",
+    "names": [
+     "job_output",
+     "job_list",
+     "job_kill"
+    ],
+    "caps": [
+     "jobs-management"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family",
+   "dsh.jobs-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": true,
+   "job_list": true,
+   "job_kill": true,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": "dsh.jobs-family",
+   "job_list": "dsh.jobs-family",
+   "job_kill": "dsh.jobs-family",
+   "nope": null
+  },
+  "backends": {
+   "search": "a5g7-controlled-fs-anchored-grep",
+   "glob": "a5-effect-face-pending",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "jobsBad": {
+  "refused": "PLANE_CONFIG_INCOMPLETE",
+  "message": "planeCfg.jobsEnabled must be a boolean when present — got 1 (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)"
+ },
+ "injectedSearch": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "kit-search",
+   "glob": "kit-search",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "injectedGlobOff": {
+  "placed": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "rows": [
+   {
+    "name": "team_grep",
+    "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      },
+      "glob": {
+       "type": "string"
+      },
+      "output_mode": {
+       "type": "string",
+       "enum": [
+        "content",
+        "files_with_matches",
+        "count"
+       ]
+      },
+      "fixed_string": {
+       "type": "boolean"
+      },
+      "ignore_case": {
+       "type": "boolean"
+      },
+      "multiline": {
+       "type": "boolean"
+      },
+      "context": {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 20
+      },
+      "max_results": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 5000
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_glob",
+    "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "pattern": {
+       "type": "string"
+      },
+      "path": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "pattern"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "team_bash",
+    "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "command": {
+       "type": "string"
+      },
+      "cwd": {
+       "type": "string"
+      },
+      "timeout": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 600000
+      },
+      "background": {
+       "type": "boolean"
+      }
+     },
+     "required": [
+      "command"
+     ],
+     "additionalProperties": false
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read",
+    "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "offset": {
+       "type": "number",
+       "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+      },
+      "limit": {
+       "type": "number",
+       "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "write",
+    "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "content": {
+       "type": "string",
+       "description": "the full UTF-8 content to write (empty string clears the file)"
+      }
+     },
+     "required": [
+      "file_path",
+      "content"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "edit",
+    "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      },
+      "old_string": {
+       "type": "string",
+       "description": "the exact text to replace (non-empty, must appear verbatim)"
+      },
+      "new_string": {
+       "type": "string",
+       "description": "the replacement text (empty string deletes)"
+      },
+      "replace_all": {
+       "type": "boolean",
+       "description": "replace every occurrence instead of requiring a unique match (default false)"
+      }
+     },
+     "required": [
+      "file_path",
+      "old_string",
+      "new_string"
+     ]
+    },
+    "hasOutput": true
+   },
+   {
+    "name": "read_image",
+    "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+    "parameters": {
+     "type": "object",
+     "properties": {
+      "file_path": {
+       "type": "string",
+       "description": "path relative to the governed root, or an absolute path inside it"
+      }
+     },
+     "required": [
+      "file_path"
+     ]
+    },
+    "hasOutput": true
+   }
+  ],
+  "ownNames": [
+   "team_grep",
+   "team_glob",
+   "team_bash",
+   "read",
+   "write",
+   "edit",
+   "read_image"
+  ],
+  "candidates": [
+   {
+    "familyId": "dsh.fs-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 1,
+    "src": "2a70d257695a6e613d60bd60ce9cd9cbbc9f82b82586a2e8feed557216ad902b",
+    "prov": "62d9770b078ce8f5092ff5bab09caebdab083761c7dd85aa573e2715499b564d",
+    "names": [
+     "read",
+     "write",
+     "edit",
+     "read_image"
+    ],
+    "caps": [
+     "fs-read",
+     "fs-write"
+    ]
+   },
+   {
+    "familyId": "dsh.process-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 2,
+    "src": "3a8d887d3a0713d063e77888a396fe58aed133b42493da3d3b099ca2cc43d1ba",
+    "prov": "efad1dd626e8332e96ffb8642d615945c62a7bd476acb7d3a065a0ab27850388",
+    "names": [
+     "team_bash"
+    ],
+    "caps": [
+     "process-spawn"
+    ]
+   },
+   {
+    "familyId": "dsh.search-family",
+    "state": "candidate",
+    "origin": "reviewed-manifest",
+    "gen": 3,
+    "src": "21f1931178729bf3c30e0cd8ba5750d9a8ba90a40f5f0d5d2dd0c4aed3ec35b1",
+    "prov": "aa3d0aecc80be36b6f04a40a7da7ae86b667c54656fea9acbb0a21c5fe40095b",
+    "names": [
+     "team_grep",
+     "team_glob"
+    ],
+    "caps": [
+     "fs-search"
+    ]
+   }
+  ],
+  "familyIds": [
+   "dsh.fs-family",
+   "dsh.process-family",
+   "dsh.search-family"
+  ],
+  "owns": {
+   "read": true,
+   "write": true,
+   "edit": true,
+   "read_image": true,
+   "team_bash": true,
+   "bash": false,
+   "team_grep": true,
+   "team_glob": true,
+   "grep": false,
+   "glob": false,
+   "job_output": false,
+   "job_list": false,
+   "job_kill": false,
+   "nope": false
+  },
+  "bound": {
+   "read": "dsh.fs-family",
+   "write": "dsh.fs-family",
+   "edit": "dsh.fs-family",
+   "read_image": "dsh.fs-family",
+   "team_bash": "dsh.process-family",
+   "bash": null,
+   "team_grep": "dsh.search-family",
+   "team_glob": "dsh.search-family",
+   "grep": null,
+   "glob": null,
+   "job_output": null,
+   "job_list": null,
+   "job_kill": null,
+   "nope": null
+  },
+  "backends": {
+   "search": "kit-search",
+   "glob": "a5-glob-config-disabled",
+   "shell": "a5-effect-face-pending",
+   "read": "function",
+   "write": "function",
+   "edit": "function",
+   "read_image": "function"
+  },
+  "hasHandoff": true
+ },
+ "noLifecycle": {
+  "refused": "PLANE_KERNEL_UNAVAILABLE",
+  "message": "the center kernel refused to build (an enforcing kernel requires the lifecycle port — FIX-K K3): LIFECYCLE_PORT_MISSING: an enforcing GovernanceKernel requires the injected DispatcherLifecyclePort (FIX-K K3) — release() may only count real in-flight work — no governed row mounts (fail closed; the retired center paths do not come back)"
+ }
+}
+FINGERPRINT 7b2babd6c22924f7321b137b3e9ae13caecdd88f72dcc04e33468ca661454552

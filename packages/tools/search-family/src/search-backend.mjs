@@ -206,6 +206,7 @@ import { buildGrepCommand, parseGrepArgs, parseGrepMatches, resolveRgPath } from
 import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'
 import { openAnchoredWalkRoot, verifyGlobResultsBeneath } from './glob-backend.mjs'
 import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
+import { STREAM_DRAIN_MS, awaitBounded, watchStreamEnd } from './stream-drain.mjs'
 
 /** The row's identity, quoted by the mount and by the suites. */
 export const SEARCH_BACKEND_ID = 'a5srgp-anchored-confined-rg-grep'
@@ -915,6 +916,15 @@ export function createAnchoredRgSearchBackend(options) {
       }
       child.stdout.on('data', onStdoutData)
       child.stderr.on('data', onStderrData)
+      // THE DRAIN WATCH (u7 grep-drain), installed BEFORE the settle race so a
+      // terminal event that arrives first is never missed. `exited` is the
+      // launcher's 'exit', and Node may fire it while 'data' callbacks are still
+      // pending: a verdict read at `exited` judges a walk this row has not heard
+      // to its end — the hosted P8 red (late `regex parse error` read as the
+      // generic `walker-error`), and on the coverage law a FALSE ADMIT (a late
+      // `Permission denied` line missed, a partial walk answered as complete).
+      const stdoutDrain = watchStreamEnd(child.stdout)
+      const stderrDrain = watchStreamEnd(child.stderr)
       // Listener release, and LAST in the release order: the terminate of the
       // payload is what has to be confirmed first (the pipes are held by the
       // living child), the pinned descriptor goes back in the `finally`, and
@@ -923,6 +933,8 @@ export function createAnchoredRgSearchBackend(options) {
         releaseStreamListeners = () => {} // idempotent: the `finally` may call it again
         try { child.stdout.off('data', onStdoutData) } catch { /* already torn down */ }
         try { child.stderr.off('data', onStderrData) } catch { /* already torn down */ }
+        try { stdoutDrain.release() } catch { /* already torn down */ }
+        try { stderrDrain.release() } catch { /* already torn down */ }
       }
       const exit = await raceConfinedSettle({ exited: child.exited, timeoutMs, signal: cancelSignal })
       // THE ONE TERMINATE, read by whoever is owed the answer. The ARM is the same
@@ -968,6 +980,15 @@ export function createAnchoredRgSearchBackend(options) {
           settlement: { kind: 'cancelled', event: 'search-walk-terminated-after-timeout' },
         }
       }
+      // THE DRAIN, after the owned terminate (the provider's pipes are held by the
+      // supervised child, so 'end' cannot be promised while it lives — the glob
+      // row's measured law) and only on the path that is about to judge the walk:
+      // the timeout arm above and the cancel arm below make no claim about the
+      // tree, so they never wait for it. BOUNDED by the glob row's own measured
+      // constant (`./stream-drain.mjs`). The channel ask right below is the
+      // boundary after this await, so a withdrawal during the drain is still
+      // answered as the cancellation it is.
+      const drained = cancelled ? null : await awaitBounded(Promise.all([stdoutDrain.ended, stderrDrain.ended]), STREAM_DRAIN_MS)
       if (cancelled || callAborted(cancelSignal)) {
         // Either the abort won the race (the walk was stopped, it did not finish)
         // or it landed DURING the stop await just above — which is an await like
@@ -998,6 +1019,20 @@ export function createAnchoredRgSearchBackend(options) {
         // verdict — see the completion law below.
         observe(`anchored-search LAUNCHER-ERROR realm=${safeToken(realmId)} call=${safeToken(call.callId)} code=${String(launcherCode)}`)
         return failure('undetermined', 'walker-error', { launcher: launcherCode }, debug, `launcher code=${String(launcherCode)}`)
+      }
+      // THE DRAIN VERDICT. A walk is judged only once BOTH streams were heard to
+      // their 'end': a bound that expired, a pipe torn down without an 'end'
+      // ('close'), or a dead one ('error') leaves the stdout record stream or the
+      // stderr coverage/pattern speech possibly short, and this row's completion
+      // law cannot be established over a channel it did not hear out. TYPED
+      // refusal on the existing table entry, NEVER a success — a missed
+      // `Permission denied` line is exactly the partial walk the coverage law
+      // exists to refuse. No code is added to the frozen table.
+      const stdoutForm = drained === null ? 'pending' : drained[0]
+      const stderrForm = drained === null ? 'pending' : drained[1]
+      if (stdoutForm !== 'end' || stderrForm !== 'end') {
+        observe(`anchored-search DRAIN-INCOMPLETE realm=${safeToken(realmId)} call=${safeToken(call.callId)} stdout=${safeToken(stdoutForm)} stderr=${safeToken(stderrForm)} boundMs=${String(STREAM_DRAIN_MS)}`)
+        return failure('undetermined', 'walker-error', { drainIncomplete: 1, outBytes: stdout.length, stderrBytes: stderr.length }, debug, `streams not drained stdout=${stdoutForm} stderr=${stderrForm}`)
       }
       // THE COMPLETION LAW — why an exit code is not this row's discriminator.
       // The confined face does NOT carry the payload's exit status: the

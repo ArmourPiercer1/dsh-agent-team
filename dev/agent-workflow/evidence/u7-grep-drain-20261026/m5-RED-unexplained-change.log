@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+ ❯ test/u6-pr5-search-move-law.test.ts (5 tests | 1 failed) 102ms
+     ✓ M1 the moved mechanics region is byte-identical to master plane-effect-backends.mjs:107-318; the archived candidate tail :319-539 is retired 11ms
+     ✓ M2 the git-mv'd files differ from master ONLY by the declared deltas (one byte otherwise) 50ms
+     ✓ M3 no dual ledger: the center defines nothing, the hub is deleted, and the old files are gone 30ms
+     × M5 the CURRENT lane bytes match the reviewed digest ledger (an unexplained change is a RED) 8ms
+     ✓ M4 the dist mirror carries the lane files (the dist-glue law) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/u6-pr5-search-move-law.test.ts > u6-pr5 search move law: one home, verbatim mechanics, deleted center sites > M5 the CURRENT lane bytes match the reviewed digest ledger (an unexplained change is a RED)
+AssertionError: cancel-leg.mjs: the lane bytes changed with no reviewed ledger entry — record the new sha256 in LANE_DIGESTS with WHY, in this commit: expected 'c2d3a9724acfec40afd48980af10d802d956e…' to be '90233b20a2fd7a11ee29408f9a78537a749b8…' // Object.is equality
+
+Expected: "90233b20a2fd7a11ee29408f9a78537a749b888f27197dbf51c6d84ae482e2da"
+Received: "c2d3a9724acfec40afd48980af10d802d956e529b302e1948f606a04cc81a349"
+
+ ❯ test/u6-pr5-search-move-law.test.ts:218:152
+    216|     for (const [name, entry] of Object.entries(LANE_DIGESTS)) {
+    217|       const actual = createHash('sha256').update(readFileSync(abs(`../…
+    218|       expect(actual, `${name}: the lane bytes changed with no reviewed…
+       |                                                                                                                                                        ^
+    219|       expect(entry.why.length, `${name}: the ledger entry must say why…
+    220|       seen.push(name)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  22:24:07
+   Duration  273ms (transform 22ms, setup 0ms, import 34ms, tests 102ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

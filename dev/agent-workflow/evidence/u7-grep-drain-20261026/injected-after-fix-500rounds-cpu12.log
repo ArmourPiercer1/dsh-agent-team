@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 <worktree>/packages/runtime
+
+stdout | test/u7-grep-late-stream.test.ts > u7 grep-drain: the production grep row judges the WHOLE walk, not the part heard by `exited` > SEC-8 under repetition: 1500 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged
+[u7-grep-late SEC-8] rounds=500 walks=1500 misjudged=0
+
+ ✓ test/u7-grep-late-stream.test.ts (8 tests) 75758ms
+     ✓ SEC-8 under repetition: 1500 interleaved late-coverage / late-P8 / late-summary walks, zero misjudged  74730ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  21:51:37
+   Duration  76.35s (transform 447ms, setup 0ms, import 209ms, tests 75.76s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

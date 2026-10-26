@@ -1,0 +1,126 @@
+### read (comments stripped) vs fsm
+1,3c1,4
+<   const ensureReadApprovalEntry = () => {
+<     if (centerKernel === null || centerKernel.families.read !== true) return null
+<     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
+---
+>   const ensureFsMutationApprovalEntry = (name) => {
+>     if (centerKernel === null || centerKernel.families.fsMutation !== true) return null
+>     if (name !== WRITE_NATIVE_NAME && name !== EDIT_NATIVE_NAME && name !== READ_IMAGE_NATIVE_NAME) return null
+>     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
+5,6c6,7
+<     if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
+<     const d = placedByName.get(readName)
+---
+>     if (fsMutationEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
+>     const d = placedByName.get(name)
+10c11
+<     readEntryAttempted = true
+---
+>     fsMutationEntryAttempted.set(name, true)
+13c14
+<       nativeName: readName,
+---
+>       nativeName: name,
+18c19
+<     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
+---
+>     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
+
+### read (comments stripped) vs bash
+1,3c1,3
+<   const ensureReadApprovalEntry = () => {
+<     if (centerKernel === null || centerKernel.families.read !== true) return null
+<     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
+---
+>   const ensureBashApprovalEntry = () => {
+>     if (centerKernel === null || centerKernel.families.shell !== true) return null
+>     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName)
+5,6c5,6
+<     if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
+<     const d = placedByName.get(readName)
+---
+>     if (bashEntryAttempted) return null // invalidated/failed — never rebound in this mount
+>     const d = placedByName.get(bashName)
+10c10
+<     readEntryAttempted = true
+---
+>     bashEntryAttempted = true
+13c13
+<       nativeName: readName,
+---
+>       nativeName: bashName,
+15c15
+<       familyId: 'dsh.fs-family',
+---
+>       familyId: 'dsh.process-family',
+18c18
+<     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
+---
+>     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName) ?? null
+
+### read (comments stripped) vs search
+1,3c1,4
+<   const ensureReadApprovalEntry = () => {
+<     if (centerKernel === null || centerKernel.families.read !== true) return null
+<     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
+---
+>   const ensureSearchApprovalEntry = (name) => {
+>     if (centerKernel === null || centerKernel.families.search !== true) return null
+>     if (name !== grepName && name !== globName) return null
+>     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
+5,6c6,7
+<     if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
+<     const d = placedByName.get(readName)
+---
+>     if (searchEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
+>     const d = placedByName.get(name)
+10c11
+<     readEntryAttempted = true
+---
+>     searchEntryAttempted.set(name, true)
+13c14
+<       nativeName: readName,
+---
+>       nativeName: name,
+15c16
+<       familyId: 'dsh.fs-family',
+---
+>       familyId: 'dsh.search-family',
+18c19
+<     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
+---
+>     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
+
+### read (comments stripped) vs jobs
+1,3c1,3
+<   const ensureReadApprovalEntry = () => {
+<     if (centerKernel === null || centerKernel.families.read !== true) return null
+<     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName)
+---
+>   const ensureJobsApprovalEntry = (name) => {
+>     if (centerKernel === null || centerKernel.families.jobs !== true) return null
+>     const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
+5,6c5,6
+<     if (readEntryAttempted) return null // invalidated/failed — never rebound in this mount
+<     const d = placedByName.get(readName)
+---
+>     if (jobsEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
+>     const d = placedByName.get(name)
+10c10
+<     readEntryAttempted = true
+---
+>     jobsEntryAttempted.set(name, true)
+13c13
+<       nativeName: readName,
+---
+>       nativeName: name,
+15c15
+<       familyId: 'dsh.fs-family',
+---
+>       familyId: 'dsh.jobs-family',
+18c18
+<     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, readName) ?? null
+---
+>     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
+

@@ -280,7 +280,11 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
     grepResults, globResults, refusalResult, ctlResult, hostKernelHits,
     probeLedgerRows: probeRows.length,
   }
-  writeFileSync(join(evidence, `${runId}.evidence.json`), JSON.stringify(record.record, null, 2) + '\n')
+  // u7-w0b (EB3 RUN rule): this is a PRE-FINISH snapshot (no finishedAt /
+  // overall yet) — it must not masquerade as a `u5-run-record/1` RUN. It is
+  // written under its own digest schema; the finalized RUN is the runner's
+  // run-record. Content: the record snapshot, verbatim, under `snapshot`.
+  writeFileSync(join(evidence, `${runId}.digest.json`), JSON.stringify({ schema: 'u6arca-digest/1', runId, snapshot: record.record }, null, 2) + '\n')
   if (!hostAlive()) failRest('host died during the run')
 }
 

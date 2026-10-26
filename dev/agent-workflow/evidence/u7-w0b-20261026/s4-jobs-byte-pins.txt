@@ -1,0 +1,6 @@
+jobs-family-bridge.mjs sha256 be609f979fb0c48f60aa09cc771bfd51f7285f77374568422d9a121cd98ca8e7
+jobs-gateway-assembly.mjs sha256 c99ecaadf2d34f8c313e539aee6ab9e247aad6e32b6087d29f12edaa08158b53
+pa-mount-registry.mjs sha256 fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d
+createGovernedJobsBridge region (u6-pr4 A1 measurement) sha256 71705d6eb1aaa9d0ae3fd22541f788a5dfb8dd07e6f96827db49e40283a9b29f
+git diff 88107ad71 -- the three files:
+(empty = zero diff)
