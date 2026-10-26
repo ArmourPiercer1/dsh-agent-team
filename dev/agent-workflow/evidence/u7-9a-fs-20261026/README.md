@@ -33,6 +33,16 @@ family members land with ZERO center diff. Branch
    head with explicit head binding (`golden-recording.txt` §R1; parser/
    corpus files proven byte-identical between heads via git hashes).
 
+### R1 RED control (measured, then reverted)
+
+The two new guards were verified to FAIL on the defect they exist for:
+with the `domain-ref` arm temporarily deleted from the executor's
+requested set, `npx vitest run u7-9a-fs-mutation-c1.test.ts` →
+**I-12 × (the call SUCCEEDS and commits ungoverned — the exact BLOCKER
+shape) and I-13 × (pin: declared arm absent)**; arm restored, dist
+re-placed (mirrors byte-identical), 35/35 green again, working tree clean
+(`git status --porcelain` = 0).
+
 ## CA-01 zero-center-diff — PROVEN
 
 * `dev/agent-workflow/ledgers/arc-a-protected-center.json` (33 protected
