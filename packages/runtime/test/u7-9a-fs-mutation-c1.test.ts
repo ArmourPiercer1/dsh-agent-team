@@ -509,6 +509,48 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
     return { plane, dispose: () => { handle.dispose() }, store }
   }
 
+  // POST-ADMISSION mechanics arm (u7-9a R1): the real executor + the REAL
+  // bounded verified-handle port, driven with a test PA that ADMITS the
+  // full fingerprinted effect set (recording every requested set). The
+  // kernel's own refusal of the ungrantable attachment rung is proven
+  // separately (I-12) through the mounted plane — the two arms together are
+  // the law: admitted ⇒ the commit mechanics run; not admitted ⇒ zero
+  // commit. Nothing here bypasses the executor's own gates.
+  const createDirectImage = async (opts: { store: Store; observe?: string[] }): Promise<{
+    exec: (raw: Record<string, unknown>, corr?: Record<string, unknown>) => Promise<RowOutcome>
+    sets: Array<{ requestedEffects?: { effects?: Array<Record<string, unknown>> } }>
+  }> => {
+    const lane = await import(new URL('../../tools/fs-family/src/image-executor.mjs', import.meta.url).href) as {
+      createGovernedReadImageExecutor: (i: Record<string, unknown>) => (raw: Record<string, unknown>, corr?: Record<string, unknown>) => Promise<RowOutcome>
+    }
+    const portMod = await import(new URL('../../tools/fs-family/src/image-read-port.mjs', import.meta.url).href) as {
+      createBoundedImageReadPort: (i: { rootDir: string }) => (c: { canonicalLocator: string; maxBytes: number; signal?: unknown }) => Promise<never>
+    }
+    const sets: Array<{ requestedEffects?: { effects?: Array<Record<string, unknown>> } }> = []
+    const exec = lane.createGovernedReadImageExecutor({
+      realmId: REALM,
+      rootDir: ROOT_DIR,
+      policy: policy({ allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }] }),
+      decide: () => ({ kind: 'allow' }),
+      // mirrors the REAL edge's arms: a settled token hands the executor an
+      // already-aborted signal and the edge answers the cancel fact (same
+      // law the plane's paAdmit walk answers on replay).
+      pa: async (c: unknown) => {
+        sets.push(c as { requestedEffects?: { effects?: Array<Record<string, unknown>> } })
+        const signal = (c as { signal?: { aborted?: boolean } })?.signal
+        return signal?.aborted === true ? { kind: 'allow', cancelled: true } : { kind: 'allow' }
+      },
+      subtreeContains,
+      attachmentsProvider: () => opts.store,
+      imageRoute: async () => ({ ok: true }),
+      readBytes: portMod.createBoundedImageReadPort({ rootDir: ROOT_DIR }),
+      observe: (line: string) => { opts.observe?.push(String(line)) },
+    })
+    return { exec, sets }
+  }
+  const outcomeKind = (o: unknown): string => String((o as { kind?: unknown })?.kind ?? 'unknown')
+  const outcomeText = (o: unknown): string => String((o as { text?: unknown })?.text ?? '')
+
   it('I-1 pure pre-gate ORDER + sentences, ZERO I/O and zero commit: extension law first, then store mounted, then route, then media acceptance', async () => {
     // (a) .txt — the extension gate answers before ANY seam is consulted.
     const bare = await build(ALLOW('read_image'))
@@ -533,36 +575,34 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
     d4()
   })
 
-  it('I-2 POSITIVE: the committed bytes EQUAL the disk bytes; ok answers the attachment reference (never inline base64)', async () => {
+  it('I-2 POSITIVE (post-admission arm): the committed bytes EQUAL the disk bytes; ok answers the attachment reference (never inline base64)', async () => {
     const observe: string[] = []
     const store = makeStore()
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store, observe })
-    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
-    expect(r.ok).toBe(true)
+    const { exec } = await createDirectImage({ store, observe })
+    const o = await exec({ file_path: join(ROOT_DIR, 'photo.png') })
+    expect(outcomeKind(o)).toBe('ok')
     expect(store.saved).toHaveLength(1)
     expect(store.saved[0]!.bytes.equals(readFileSync(join(ROOT_DIR, 'photo.png')))).toBe(true)
     expect(store.saved[0]!.mediaType).toBe('image/png')
     expect(ran(observe, 'image')).toHaveLength(1)
-    dispose()
   })
 
   it('I-3 extension-less positive via POST-CONSUME sniff (never a pre-approval byte read of a rejected kind): png bytes without extension commit as image/png', async () => {
     const store = makeStore()
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store })
-    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'noext') }, execWithRoute()))
-    expect(r.ok).toBe(true)
+    const { exec } = await createDirectImage({ store })
+    const o = await exec({ file_path: join(ROOT_DIR, 'noext') })
+    expect(outcomeKind(o)).toBe('ok')
     expect(store.saved[0]?.mediaType).toBe('image/png')
-    dispose()
   })
 
   it('I-4 extension-less NON-image bytes refuse as not-an-image AFTER the read, with zero commit', async () => {
     writeFileSync(join(ROOT_DIR, 'noext-bin'), 'plain text pretending\n')
     const store = makeStore()
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store })
-    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'noext-bin') }, execWithRoute()))
-    expect(r.ok).toBe(false)
+    const { exec } = await createDirectImage({ store })
+    const o = await exec({ file_path: join(ROOT_DIR, 'noext-bin') })
+    expect(outcomeKind(o)).toBe('refused')
+    expect(outcomeText(o)).toContain('not-an-image')
     expect(store.saved).toHaveLength(0)
-    dispose()
   })
 
   it('I-5 outside-root + symlink escape: refused with zero commit; the outside image stays unstored', async () => {
@@ -578,22 +618,20 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
 
   it('I-6 oversized refused WHOLE (cap = min(store limits)), zero commit', async () => {
     const store = makeStore({ maxImageBytes: 32, maxMessageImageBytes: 32 })
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store })
-    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'big.png') }, execWithRoute()))
-    expect(r.ok).toBe(false)
-    if (!r.ok) expect(r.msg).toContain('image-too-large')
+    const { exec } = await createDirectImage({ store })
+    const o = await exec({ file_path: join(ROOT_DIR, 'big.png') })
+    expect(outcomeKind(o)).toBe('refused')
+    expect(outcomeText(o)).toContain('image-too-large')
     expect(store.saved).toHaveLength(0)
-    dispose()
   })
 
   it('I-7 store law-code (dimension law) surfaces typed with nothing committed', async () => {
     const store = makeStore({}, 'IMAGE_DIMENSION_TOO_LARGE')
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store })
-    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
-    expect(r.ok).toBe(false)
-    if (!r.ok) expect(r.msg).toContain('IMAGE_DIMENSION_TOO_LARGE')
+    const { exec } = await createDirectImage({ store })
+    const o = await exec({ file_path: join(ROOT_DIR, 'photo.png') })
+    expect(outcomeKind(o)).toBe('refused')
+    expect(outcomeText(o)).toContain('IMAGE_DIMENSION_TOO_LARGE')
     expect(store.saved).toHaveLength(0)
-    dispose()
   })
 
   it('I-8 default-deny lane: refusal BEFORE any read, zero commit', async () => {
@@ -608,18 +646,16 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
     dispose()
   })
 
-  it('I-9 settled-token replay never double-commits', async () => {
+  it('I-9 settled-token replay never double-commits (ONE admitted call, ONE commit; the replay answers terminal)', async () => {
     const store = makeStore()
-    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store })
+    const { exec } = await createDirectImage({ store })
     const token = Symbol('u79a-image-replay')
-    const execLike = execWithRoute(token)
-    const first = await def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execLike)
-    expect(first.cancelled).toBeUndefined()
+    const first = await exec({ file_path: join(ROOT_DIR, 'photo.png') }, { token, route: async () => ({ ok: true }) })
+    expect(outcomeKind(first)).toBe('ok')
     expect(store.saved).toHaveLength(1)
-    const again = await def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execLike)
-    expect(again.cancelled).toBe(true)
+    const again = await exec({ file_path: join(ROOT_DIR, 'photo.png') }, { token, route: async () => ({ ok: true }) })
+    expect(outcomeKind(again)).toBe('cancelled')
     expect(store.saved).toHaveLength(1)
-    dispose()
   })
 
   it('I-10 torn-down mount: after dispose the host seams are gone — the row answers the no-store refusal, zero commit', async () => {
@@ -639,5 +675,36 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
     expect(r.ok).toBe(false)
     expect(store.saved).toHaveLength(0)
     dispose()
+  })
+
+  it('I-12 R1 negative control — the REAL kernel: the attachment-store commit effect has no grantable rung in the closed admission grammar (admission-kernel RESOURCE_EFFECT_KINDS is protected center), so the FINGERPRINTED domain-ref arm makes the whole effect set unadmittable: typed refusal, ZERO commit, no RAN — the declared effect can no longer ride ungoverned', async () => {
+    const observe: string[] = []
+    const store = makeStore()
+    // the MOST permissive read_image policy the grammar can express:
+    const { plane, dispose } = await mountedPlane(ALLOW('read_image'), { store, observe })
+    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
+    expect(r.ok).toBe(false)
+    expect(store.saved).toHaveLength(0)
+    expect(observe.some((l) => l.includes('governed-image') && /pa-refused|ask|pending/.test(l))).toBe(true)
+    expect(ran(observe, 'image')).toHaveLength(0)
+    dispose()
+  })
+
+  it('I-13 R1 pin — the DECLARED second target is IN the requested set: every governed call\'s fingerprinted PA request carries tool-invoke(read_image) + read(file) + domain-ref(' + "'" + 'attachment-store' + "'" + '); remove the arm and this test goes red (the reviewer\'s declared-effect law)', async () => {
+    const store = makeStore()
+    const { exec, sets } = await createDirectImage({ store })
+    const o = await exec({ file_path: join(ROOT_DIR, 'photo.png') })
+    expect(outcomeKind(o)).toBe('ok') // admitted ⇒ the mechanics arm runs (I-2)
+    expect(sets).toHaveLength(1)
+    const effects = sets[0]?.requestedEffects?.effects ?? []
+    const kinds = effects.map((e) => String(e?.kind))
+    expect(kinds).toContain('tool-invoke')
+    expect(kinds).toContain('read')
+    expect(kinds).toContain('domain-ref')
+    const domain = effects.find((e) => e?.kind === 'domain-ref')
+    expect(String(domain?.domainAuthorityId)).toBe('attachment-store')
+    // the descriptor face carries the SAME identity (single-source const):
+    const mechanics = await import(new URL('../../tools/fs-family/src/fs-mutation-mechanics.mjs', import.meta.url).href) as { ATTACHMENT_STORE_DOMAIN_AUTHORITY: string }
+    expect(mechanics.ATTACHMENT_STORE_DOMAIN_AUTHORITY).toBe('attachment-store')
   })
 })

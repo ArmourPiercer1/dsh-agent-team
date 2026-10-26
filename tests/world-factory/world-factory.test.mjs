@@ -661,6 +661,7 @@ test('u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge i
       plantBytes: assembly.PLANT_AFTER_CONTENT,
       deniedShaAfter: 'a'.repeat(64),
       ctlBytes: assembly.CTL_CONTENT,
+      ctlFoundPath: '/w/ctl-member-workspace/u7fsmut-ctl-native.txt',
       imgShaStable: 'c'.repeat(64),
     }
     const log = [
@@ -684,7 +685,7 @@ test('u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge i
     flip(() => ({ oracle: { ...oracle, plantBytes: assembly.PLANT_BEFORE_CONTENT } }), 'fsm:edit-positive')
     flip((b) => ({ oracle: { ...b.oracle, deniedShaAfter: 'f'.repeat(64) } }), 'fsm:refusal-zero-effect')
     flip((b) => ({ log: b.log.filter((l) => !l.includes('governed-image')) }), 'fsm:image-lane-honest')
-    flip((b) => ({ log: [...b.log, 'a5g7-write: governed-write RAN bytes=9 created=true path=/w/notes/u7fsmut-ctl.txt'] }), 'fsm:ctl-native-write')
+    flip((b) => ({ log: [...b.log, 'a5g7-write: governed-write RAN bytes=9 created=true path=/w/notes/u7fsmut-ctl-native.txt'] }), 'fsm:ctl-native-write')
     flip(() => ({ log: [] }), 'fsm:mounted')
     // the typed-refusal image arm is HONEST (PASS) — silence is not
     const refused = new Map(judgeU7FsMut({
@@ -692,6 +693,27 @@ test('u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge i
       log: [...base.log.filter((l) => !l.includes('governed-image RAN')), 'a5g7-image: governed-image pa-refused code=IMAGE_ROUTE_UNRESOLVED path=/w/notes/u7fsmut-img.png'],
     }).map(([cid, cv]) => [cid, cv]))
     assert.equal(refused.get('fsm:image-lane-honest'), 'PASS')
+    // boot-5 layered arms (u5x journal evidence): the denial executing at
+    // the host TEMPLATE layer (no plane row at all) is the governance stack
+    // refusing — honest with sha identity + the tool_result witness.
+    const layered = new Map(judgeU7FsMut({
+      ...base,
+      log: base.log.filter((l) => !l.includes('default-deny refusal') && !l.includes('governed-image')),
+      journal: [
+        { seq: 19, lastCall: 'write', resultHead: [{ type: 'text', text: 'Error: permission denied: write[/w/secret/u7fsmut-denied.txt]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match' }] },
+        { seq: 21, lastCall: 'read_image', resultHead: [{ type: 'text', text: 'Error: refused-admission IMAGE_MODEL_NOT_CAPABLE — cannot read "/w/notes/u7fsmut-img.png" as an image: model does not declare image input' }] },
+      ],
+    }).map(([cid, cv]) => [cid, cv]))
+    assert.equal(layered.get('fsm:refusal-zero-effect'), 'PASS')
+    assert.equal(layered.get('fsm:image-lane-honest'), 'PASS')
+    // ... but SILENCE at both layers stays FAIL
+    const silent = new Map(judgeU7FsMut({
+      ...base,
+      log: base.log.filter((l) => !l.includes('default-deny refusal') && !l.includes('governed-image')),
+      journal: [],
+    }).map(([cid, cv]) => [cid, cv]))
+    assert.equal(silent.get('fsm:refusal-zero-effect'), 'FAIL')
+    assert.equal(silent.get('fsm:image-lane-honest'), 'FAIL')
   } finally {
     rmSync(home, { recursive: true, force: true })
   }

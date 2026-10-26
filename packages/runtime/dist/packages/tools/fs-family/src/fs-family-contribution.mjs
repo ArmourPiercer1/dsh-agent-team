@@ -24,6 +24,7 @@
  *
  * @module fs-family/fs-family-contribution
  */
+import { ATTACHMENT_STORE_DOMAIN_AUTHORITY } from './fs-mutation-mechanics.mjs'
 import { createHash } from 'node:crypto'
 import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import { buildFsReadContribution } from './fs-read-contribution.mjs'
@@ -177,7 +178,11 @@ export function buildFsFamilyContribution({
       // store mounted = no commit path at all) and the store's own
       // capacity law. The family holds no fs face and no delete face over
       // the store.
-      targets: ['realm-file-root', 'attachment-store'],
+      // U7-9a R1: the SECOND target's identity is the shared constant the
+      // executor requests as a domain-ref effect — one name, two faces,
+      // pinned equal by C1 (a declared effect without an admitted rung is
+      // refused with zero commit).
+      targets: ['realm-file-root', ATTACHMENT_STORE_DOMAIN_AUTHORITY],
     },
     execution: {
       declared: true,

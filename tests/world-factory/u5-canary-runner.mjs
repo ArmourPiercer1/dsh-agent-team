@@ -2607,6 +2607,7 @@ async function runU7FsMut({ factory, record, rc, log, line, worlds, keepHome, ev
 
   const verdicts = judgeU7FsMut({
     before, oracle, log: logLines, laneDone,
+    journal: record.record.u7fsmutDigest.mockLaneTranscript ?? [],
     hostAlive: hostAlive(), healthOk: health?.body?.ok === true, stateOk: stateW.hit, surface,
   })
   for (const [id, verdict, detail] of verdicts) {

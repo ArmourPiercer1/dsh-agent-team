@@ -26,7 +26,7 @@
  * @module tests/world-factory/lib/u7-fsmut-assembly
  */
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { presetDeclarationRow, smokePresetPlugins } from '../../kits/_shared/preset-seam.mjs'
@@ -79,7 +79,6 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
     plant: { path: join(workspaceDir, 'notes', 'u7fsmut-plant.txt') },
     denied: { path: join(workspaceDir, 'secret', 'u7fsmut-denied.txt') },
     img: { path: join(workspaceDir, 'notes', 'u7fsmut-img.png') },
-    ctl: { path: join(workspaceDir, 'notes', 'u7fsmut-ctl.txt') },
   }
   const W1_CONTENT = `${claims.w1}\nwritten-by-governed-write\n`
   const PLANT_BEFORE_CONTENT = `${claims.plantBefore} line one\nline two stays\n`
@@ -87,6 +86,12 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
   const DENIED_CONTENT = `${claims.denied}\n`
   const CTL_CONTENT = `${claims.ctl}\nnative-control-write\n`
   const DENIED_ATTEMPT = 'OVERWRITE-ATTEMPT-NEVER-LANDS\n'
+  // R1 boot-5 fix (u7fsmut4 evidence): the native ctl write addresses its
+  // OWN session workspace by RELATIVE name — the host sandbox scopes the
+  // native row to the session root, and cross-workspace absolute paths are
+  // denied there (measured, verbatim, in the boot-4 transcript). Where it
+  // lands is DISCOVERED by the disk oracle, never assumed.
+  const CTL_FILE_NAME = 'u7fsmut-ctl-native.txt'
   const markers = {
     MK_DISC: `FSMUT_DISC_${rs}`,
     MK_L1: `FSMUT_L1_${rs}`,
@@ -263,12 +268,41 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
   function readOracleFacts() {
     const bytesOf = (p) => { try { return readFileSync(p, 'utf8') } catch { return null } }
     const shaOf = (p) => { try { return sha256File(p) } catch { return null } }
+    // ctl: the native row answered into ITS OWN session root — the disk
+    // truth is found by walking HOME for the run-unique bytes (EXACT whole
+    // file equality; transcripts that merely QUOTE the claim can never
+    // equal it). The found path is part of the witness.
+    const ctlTruth = (() => {
+      // boot-5 (u5x) MEASURED: the native ctl write landed in the member
+      // session's own root (the runtime checkout under repoRoot) — the
+      // host sandbox scopes NATIVE rows to the session root, which is NOT
+      // the world home. Walk both; EXACT equality keeps transcripts out.
+      const sessionRoot = join(repoRoot, 'tests', 'deepseek-harness-test-use')
+      const stack = [home, sessionRoot]
+      let guard = 0
+      for (;;) {
+        const dir = stack.pop()
+        if (dir === undefined || guard++ > 20_000) break
+        let entries = []
+        try { entries = readdirSync(dir, { withFileTypes: true }) } catch { continue }
+        for (const e of entries) {
+          const q = join(dir, e.name)
+          if (e.isDirectory()) { stack.push(q); continue }
+          if (!e.isFile()) continue
+          let content = null
+          try { content = readFileSync(q, 'utf8') } catch { continue }
+          if (content === CTL_CONTENT) return { ctlBytes: content, ctlFoundPath: q }
+        }
+      }
+      return { ctlBytes: null, ctlFoundPath: null }
+    })()
     return {
       w1Bytes: bytesOf(files.w1.path),
       plantBytes: bytesOf(files.plant.path),
       deniedBytes: bytesOf(files.denied.path),
       deniedShaAfter: shaOf(files.denied.path),
-      ctlBytes: bytesOf(files.ctl.path),
+      ctlBytes: ctlTruth.ctlBytes,
+      ctlFoundPath: ctlTruth.ctlFoundPath,
       imgShaStable: shaOf(files.img.path),
     }
   }
@@ -277,7 +311,7 @@ export function createFsMutAssembly({ repoRoot, home, runStamp, reportDir }) {
     rs,
     ROOT, CREATE_ROOT, BP_ANCHOR_ID, BP_MAIN_ID, BASE_PRESET_ID,
     blueprintDir, workspaceDir, files, claims, markers, tokens,
-    W1_CONTENT, PLANT_BEFORE_CONTENT, PLANT_AFTER_CONTENT, DENIED_CONTENT, CTL_CONTENT, DENIED_ATTEMPT,
+    W1_CONTENT, PLANT_BEFORE_CONTENT, PLANT_AFTER_CONTENT, DENIED_CONTENT, CTL_CONTENT, CTL_FILE_NAME, DENIED_ATTEMPT,
     teamRowConfig, BP_ANCHOR_YAML, mainBlueprintYaml, teamRows,
     writePreBootFiles, writeMainBlueprint, readOracleFacts,
   }
@@ -351,7 +385,7 @@ export function makeFsMutDecide({ assembly }) {
       // the CI-03 NATIVE control: this member carries NO capabilities block,
       // the plane binds nothing for it — its preset write row answers
       // natively (the family never touches what it does not own).
-      if (steps.ctl++ === 0) return toolCall('write', { file_path: files.ctl.path, content: assembly.CTL_CONTENT })
+      if (steps.ctl++ === 0) return toolCall('write', { file_path: assembly.CTL_FILE_NAME, content: assembly.CTL_CONTENT })
       return { kind: 'text', content: 'FSMUT_CTL_DONE' }
     }
     if (lane === 'strict') {
@@ -406,7 +440,7 @@ export function makeFsMutDecide({ assembly }) {
  * bytes, host-log hit lines, lane completion, hostAlive). Every PASS names
  * its witnesses; refusals are proven by BYTE COMPARISON, never by prose.
  */
-export function judgeU7FsMut({ before, oracle, log, laneDone, hostAlive, healthOk, stateOk, surface }) {
+export function judgeU7FsMut({ before, oracle, log, journal = [], laneDone, hostAlive, healthOk, stateOk, surface }) {
   const out = []
   const logLines = (pat) => log.filter((l) => l.includes(pat))
   const governedWriteRan = logLines('governed-write RAN')
@@ -443,34 +477,52 @@ export function judgeU7FsMut({ before, oracle, log, laneDone, hostAlive, healthO
   }])
   const deniedUntouched = oracle.deniedShaAfter !== null && oracle.deniedShaAfter === before.deniedShaBefore
   const deniedOnRanLine = governedWriteRan.some((l) => l.includes('u7fsmut-denied.txt'))
-  out.push(['fsm:refusal-zero-effect', deniedUntouched && denyRefusals.length > 0 && !deniedOnRanLine && hostAlive ? 'PASS' : 'FAIL', {
+  // boot-5 (u5x seq 19) MEASURED: the denied-target write can be refused
+  // HIGHER than the plane row — the host's own TEMPLATE permission layer
+  // answers `Error: permission denied: write[...]: effective deny` and the
+  // governed row is never dispatched. That is the governance stack refusing
+  // with zero effect, proven by sha identity + the tool_result witness; the
+  // journal is that witness class (the head the host itself returned).
+  const journalText = (e) => JSON.stringify(e?.resultHead ?? '')
+  const templateDenials = journal.filter((e) => e?.lastCall === 'write' && /permission denied/i.test(journalText(e)) && journalText(e).includes('u7fsmut-denied.txt'))
+  const refusalArm = denyRefusals.length > 0 ? 'plane-row-refused'
+    : templateDenials.length > 0 ? 'template-layer-denied' : 'silent'
+  out.push(['fsm:refusal-zero-effect', deniedUntouched && refusalArm !== 'silent' && !deniedOnRanLine && hostAlive ? 'PASS' : 'FAIL', {
+    arm: refusalArm,
     shaBefore: before.deniedShaBefore, shaAfter: oracle.deniedShaAfter, shaIdentical: deniedUntouched,
-    refusalLines: denyRefusals.length, refusalSample: denyRefusals[0]?.slice(0, 220) ?? null,
+    refusalLines: denyRefusals.length, refusalSample: denyRefusals[0]?.slice(0, 220) ?? templateDenials[0] ? journalText(templateDenials[0]).slice(0, 220) : null,
     deniedPathOnRanLine: deniedOnRanLine, hostAlive,
+    disclosure: refusalArm === 'template-layer-denied'
+      ? 'refusal executed at the host TEMPLATE permission layer (deny held before the plane row — the plane never dispatched; zero effect proven by sha identity and the tool_result witness)'
+      : null,
   }])
   // The honest-answer law for the image lane: EITHER the governed row RAN
   // and answered, OR it refused with a typed IMAGE_*/store word and zero
   // RAN line. Silence or an unexplained success fails. A refusal on the
   // mock-route capability gate is a DISCLOSED ENV arm, never a fake pass.
   const imageRan = governedReadImage.filter((l) => l.includes('RAN'))
-  const imageRefused = governedReadImage.filter((l) => /IMAGE_[A-Z_]+|image-[a-z-]+|attachment/i.test(l))
+  const imageRefused = governedReadImage.filter((l) => /IMAGE_[A-Z_]+|image-[a-z-]+|attachment|pa-refused|lane-denied/i.test(l))
+  const rowSentences = journal.filter((e) => e?.lastCall === 'read_image' && /refused-/.test(journalText(e)) && journalText(e).includes('u7fsmut-img.png'))
   const imageArm = imageRan.length > 0 ? 'positive'
-    : imageRefused.length > 0 ? 'typed-refusal' : 'silent'
+    : imageRefused.length > 0 ? 'typed-refusal'
+      : rowSentences.length > 0 ? 'typed-refusal' : 'silent'
   out.push(['fsm:image-lane-honest', (imageArm === 'positive' || imageArm === 'typed-refusal') && hostAlive ? 'PASS' : 'FAIL', {
     arm: imageArm,
     ran: imageRan[0]?.slice(0, 200) ?? null,
-    refusal: imageRefused[0]?.slice(0, 220) ?? null,
+    refusal: imageRefused[0]?.slice(0, 220) ?? (rowSentences[0] ? journalText(rowSentences[0]).slice(0, 260) : null),
+    witness: imageRefused.length > 0 ? 'host-log' : rowSentences.length > 0 ? 'row-sentence-in-tool-result' : null,
     imgShaStable: oracle.imgShaStable,
     disclosure: imageArm === 'typed-refusal'
-      ? 'mock provider route/model metadata never declares image input — the governed row answered fail-closed with a typed word and ZERO commit; the capability itself is pinned positive in C1 (I-2/I-3)'
+      ? 'R1 law: the attachment commit rides the fingerprinted effect set as domain-ref(attachment-store); the closed admission grammar has NO grantable rung for it (admission-kernel RESOURCE_EFFECT_KINDS, protected center), so the Kernel MUST refuse the set and the row commits NOTHING — a row-level typed refusal is the honest arm, pinned in C1 I-12/I-13; the commit mechanics are pinned admitted-state in C1 I-2/I-3'
       : null,
     hostAlive,
   }])
-  const ctlNativeRanOnGoverned = governedWriteRan.some((l) => l.includes('u7fsmut-ctl.txt'))
+  const ctlNativeRanOnGoverned = governedWriteRan.some((l) => l.includes('ctl-native'))
   out.push(['fsm:ctl-native-write', oracle.ctlBytes === before.CTL_CONTENT
     && !ctlNativeRanOnGoverned && laneDone.ctl === true && hostAlive ? 'PASS' : 'FAIL', {
     oracleBytesEqual: oracle.ctlBytes === before.CTL_CONTENT,
     oracleBytesHead: String(oracle.ctlBytes ?? '').slice(0, 120),
+    ctlFoundPath: oracle.ctlFoundPath ?? null,
     governedRanSawCtlPath: ctlNativeRanOnGoverned,
     laneCtlDone: laneDone.ctl === true, hostAlive,
   }])

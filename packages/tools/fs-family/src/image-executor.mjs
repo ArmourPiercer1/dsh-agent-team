@@ -38,6 +38,7 @@ import {
   imageMediaTypeForPath,
   parseGovernedImageArgs,
   sniffImageMediaType,
+  ATTACHMENT_STORE_DOMAIN_AUTHORITY,
 } from './fs-mutation-mechanics.mjs'
 
 /**
@@ -119,11 +120,13 @@ export function createGovernedReadImageExecutor({
       const extension = imageExtensionOf(parsed.filePath)
       const declared = imageMediaTypeForPath(parsed.filePath)
       if (declared === undefined && extension !== '') {
+        observe(`governed-image pre-gate-refused code=unsupported-image-extension path=${String(parsed.filePath)}`)
         return refused('schema', 'unsupported-image-extension', `cannot read "${parsed.filePath}": the ${extension} extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats`)
       }
       const attachments = typeof attachmentsProvider === 'function' ? attachmentsProvider() : undefined
       if (attachments === undefined || typeof attachments.saveImage !== 'function'
         || attachments.imageLimits === undefined || attachments.imageLimits === null) {
+        observe(`governed-image pre-gate-refused code=attachment-service-unmounted path=${String(parsed.filePath)}`)
         return refused('admission', 'attachment-service-unmounted', `cannot read "${parsed.filePath}" as an image: no attachment service is mounted`)
       }
       // The route gate arrives PER CALL on the correlation (the row owns
@@ -132,24 +135,37 @@ export function createGovernedReadImageExecutor({
       // unresolvable-route refusal, never a bypass.
       const routeGate = typeof corr?.route === 'function' ? corr.route : imageRoute
       if (typeof routeGate !== 'function') {
+        observe(`governed-image pre-gate-refused code=IMAGE_ROUTE_UNRESOLVED path=${String(parsed.filePath)}`)
         return refused('admission', 'IMAGE_ROUTE_UNRESOLVED', `cannot read "${parsed.filePath}" as an image: the current model route could not be resolved`)
       }
       const route = await routeGate({ filePath: parsed.filePath, ...(execSignal === undefined ? {} : { signal: execSignal }) })
       if (route.ok !== true) {
+        observe(`governed-image pre-gate-refused code=${String(route.refusal?.code ?? 'IMAGE_ROUTE_UNRESOLVED')} path=${String(parsed.filePath)}`)
         return refused('admission', String(route.refusal?.code ?? 'IMAGE_ROUTE_UNRESOLVED'), String(route.refusal?.text ?? `cannot read "${parsed.filePath}" as an image: the current model route could not be resolved`))
       }
       const acceptsMedia = (mediaType) => Array.isArray(attachments.imageLimits.mediaTypes)
         && attachments.imageLimits.mediaTypes.includes(mediaType)
       if (declared !== undefined && !acceptsMedia(declared)) {
+        observe(`governed-image pre-gate-refused code=image-media-not-accepted path=${String(parsed.filePath)}`)
         return refused('admission', 'image-media-not-accepted', `cannot read "${parsed.filePath}": ${declared} images are not accepted by this deployment`)
       }
       const byteCap = Math.min(Number(attachments.imageLimits.maxImageBytes) || 0, Number(attachments.imageLimits.maxMessageImageBytes) || 0)
       if (!Number.isSafeInteger(byteCap) || byteCap <= 0) {
+        observe(`governed-image pre-gate-refused code=image-limits-unavailable path=${String(parsed.filePath)}`)
         return refused('admission', 'image-limits-unavailable', 'the attachment store answers no usable byte limits; the read is refused, never attempted unbounded')
       }
       const effects = [
         { kind: 'tool-invoke', toolName: 'read_image', resource: null },
         { kind: 'read', resource: { realmId, kind: 'absolute-path', canonicalLocator: lex.path, rights: ['read'] } },
+        // U7-9a R1 BLOCKER fix: the attachment commit is a REAL effect and
+        // rides the FINGERPRINTED requested set — the grammar's cross-domain
+        // arm (domain/tool-governance: the Domain Authority decides at
+        // commit), named by the SAME constant the contribution descriptor
+        // declares as the second target. No admitted rung for this arm ⇒
+        // the Kernel refuses the set and the store is NEVER touched: a
+        // declaration can no longer stand in for admission, and no governed
+        // call commits an unadmitted effect.
+        { kind: 'domain-ref', domainAuthorityId: ATTACHMENT_STORE_DOMAIN_AUTHORITY, resource: null },
       ]
       const verdict = decide({ effects })
       if (verdict.kind === 'deny') {

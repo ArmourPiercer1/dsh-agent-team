@@ -39,6 +39,15 @@ import { Buffer } from 'node:buffer'
 
 export const MAX_GOVERNED_WRITE_BYTES = 1024 * 1024
 
+/** The closed Domain-Authority id of the host attachment store — the ONE
+ *  name the read_image row's SECOND declared target carries in BOTH faces:
+ *  the contribution descriptor's `effects.targets` and the per-call
+ *  requested-effect set (kind `domain-ref`, effects.ts: the authority
+ *  decides at commit). Pin law (u7-9a R1): a declared effect without an
+ *  admitted rung is refused with zero commit; the identity of the arm is
+ *  asserted against this constant on both sides. */
+export const ATTACHMENT_STORE_DOMAIN_AUTHORITY = 'attachment-store'
+
 /** The closed parameter set of each mutation row (extras are refused —
  *  disclosed stricter-than-native law: the governed rows mount NO
  *  sandbox-escalation lane, so the host's conditional
