@@ -163,6 +163,16 @@ revision-emission (M6) and the source-emission (M7) each turn the suite red
 | **m6** `team_lane_variant_expected` dangling | **fixed (consumed)** | the flag SUPPRESSES expected team-lane takeover observations (bash/read), and team-class drift rows carry it; unflagged observations stay scope-mismatch UNKNOWN (the read/bash projection gap: the takeover rule regex missed the reviewed "Team native takeover" phrasing — fixed, disclosed). |
 | **P3** cross-boot Body swap with identical shape | **disclosed, by design** | the public seam offers no cross-boot body channel; the shape digest is the only cross-boot Definition column — stated in the module law, schema $comment and receipts. |
 
+CI round-trip (disclosed): the first push of this fix set went red ONCE in
+CI's nine-root population census — and ONLY there: B3-gen's scratch lived
+under gitignored `.artifacts/tmp`, which does not exist in a fresh CI
+checkout, so `mkdtempSync` threw ENOENT before the control executed (both
+captures identical; the other 25 review-R1 controls passed in CI). Fixed
+in 3b187fddf by creating the parent recursively; the control's semantics
+were untouched. The environment-dependent failure the control is supposed
+to catch is exactly the kind of thing this loop exists for — CI found it,
+not my local tree.
+
 ## CI receipts (PR #386, head 512d164856942cea31655d0e90b7628bd78329a1)
 
 - pr-gate PASS (1m19s); candidate-protection PASS (14s); census-runtime
@@ -175,3 +185,19 @@ revision-emission (M6) and the source-emission (M7) each turn the suite red
   All 11 remaining reds reproduce identically on pristine master here
   (HTU/environment legs); zero NEW reds from this PR.
 - PR left OPEN for reviewer merge (DO-NOT-MERGE discipline per task).
+
+## CI receipts — review-R1 round (head 3b187fddf24f4215172743b25e6f31779800dcd5)
+
+- First push (0b11f6d22): candidate-protection PASS 15s, pr-gate PASS
+  1m44s, census-runtime FAIL 18m41s — ONE new red in the nine-root
+  identity set (B3-gen scratch under gitignored `.artifacts/tmp`, absent
+  in a fresh CI checkout → mkdtemp ENOENT before the control ran; both
+  captures identical; semantics of the control untouched). Disclosed in
+  the fix ledger; fixed in 3b187fddf.
+- Re-run (3b187fddf): pr-gate PASS 1m42s; census-runtime PASS 17m50s
+  (no-exemption leg, identity set back to the baseline nine);
+  candidate-protection PASS 13s.
+- Local gates at head: C1 26/26, p4t6 10/10, typecheck green, eslint
+  clean, lint-identities new=0, docs-sync blocking=0, a5p0 audit green,
+  world-factory node --test green, generator replay CHECK OK.
+- PR remains OPEN for the round-2 re-review; NOT merged.
