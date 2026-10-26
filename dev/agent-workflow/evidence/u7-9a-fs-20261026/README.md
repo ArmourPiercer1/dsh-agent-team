@@ -171,8 +171,13 @@ boot without a new ruling. Post-boot-7: pristine host tree verified clean
   not built — upstream's own record names the provisioning step); after
   `pnpm run build` in packages/client, a4p7 is **35/35 green solo**. The
   five old env-dependent baseline reds are GONE (closed upstream by #393).
-  **NEW reds = 0 against a now-green baseline.** Final-head run recorded
-  in `root-vitest-merged.log` (plus the final-head addendum below).
+  **NEW reds = 0 against a now-green baseline.** FINAL-HEAD run
+  (df9e08c48, after the second merge): **630 files / 630 passed, exit 0**
+  (`root-vitest-final.log`) — the suite is fully green, zero existing or
+  new reds. Final-head `ci-pr-gate`: **7 pass / 0 fail**
+  (`ci-pr-gate-final.log`); hosted pr-gate + candidate-protection +
+  census-runtime all SUCCESS on df9e08c48. (The commit carrying these two
+  logs is docs-only; its head re-runs the same trio — recorded green.)
 * quick battery @ merged tree: kit **35/35** (upstream +1),
   fitness+C1+golden+unsupported-c1+a5p0 = **62/62**, p4t6 re-tied
   **10/10** (both bookings), boot 7 recorded overall=PASS.
