@@ -111,9 +111,14 @@ read-only before/after and never signalled).
   Review-r1 POSITIVE arm (`proc:approve-spawn-once`,
   `proc:approve-replay-refused`): a named TEST-ONLY fixture — the `asker`
   member template (default:ask, NO shell rule) whose envelope NAMES
-  `request-control` (closed `ALL_MUTATION_OPS` vocabulary; a declared
-  allow list REPLACES the member base bounds, admission/envelope.ts). Its
-  governed `team_bash` opens a REAL pending leader-approval row; the
+  `request-control` (closed `ALL_MUTATION_OPS` vocabulary). Full boundary
+  law (admission/envelope.ts, measured u6prc6-8): a member's effective
+  envelope is `blueprint.teamEnvelope.allow` NARROWED by the
+  memberEnvelopes entry — template entries never widen the team-root
+  allow list — so the authorization is team-root data: `teamEnvelope.allow
+  += request-control` plus a leader entry pinning the leader's old bounds
+  exactly (leader lanes byte-identical). Its governed `team_bash` opens a
+  REAL pending leader-approval row; the
   runner settles it through the PUBLIC `team.resolveControl` v4 seam (the
   GUI's human lane; `CONTROL_RESOLVER_ROLES` admits `human`); approval ->
   bridge -> guard consume-once (one consumption row) -> real confined

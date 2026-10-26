@@ -265,15 +265,20 @@ export function createProcAssembly({ repoRoot, home, runStamp, reportDir }) {
       '  - templateId: shell', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       // The asker envelope NAMES `request-control` (closed ALL_MUTATION_OPS
-      // vocabulary): a declared allow list REPLACES the member's base
-      // bounds (admission/envelope.ts overlay law) — without this op the
-      // runtime boundary refuses the member's own ask-row creation
-      // (measured live, u6prc6/7: 'operation request-control is outside
-      // the caller's mutation envelope'). This line IS the fixture's
-      // authorization half: Team DATA granting the member its standing
-      // right to open an approval row — zero product-code change, test
-      // profile only, and it names nothing beyond the closed vocabulary
-      // the member role already owns.
+      // vocabulary). Full boundary law (admission/envelope.ts:100-119,
+      // measured live u6prc6-8): the member's effective envelope is
+      // `blueprint.teamEnvelope.allow` NARROWED by this entry — template
+      // entries NEVER widen the team-root allow list, so this line alone
+      // is necessary but NOT sufficient: the canary teamEnvelope.allow
+      // must name `request-control` too (u6prc8 measured the
+      // template-only addition filtered at the team root: 'operation
+      // request-control is outside the caller's mutation envelope').
+      // When the team-root line lands, ALSO add a leader memberEnvelopes
+      // entry pinning the leader's OLD bounds exactly (incl. the `bash`
+      // exec token — the leader has no entry today, tightening skipped
+      // by design) so the leader lanes stay byte-identical. Fixture DATA
+      // through the blueprint seam only; test profile; names nothing
+      // beyond the closed vocabulary the roles already own.
       '  - templateId: asker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
