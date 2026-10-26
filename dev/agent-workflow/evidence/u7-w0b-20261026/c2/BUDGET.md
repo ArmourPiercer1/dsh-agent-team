@@ -52,3 +52,16 @@ Result vs merged master: arc-a PASS, fs-mut PASS, u74a PASS, arc-d equal to
 master (11/12, same failing case). Post-run: :3080 status 401 unchanged
 (runner probes pre/post on every run), pristine host porcelain empty, no
 leftover host processes, launch tokens redacted in the committed logs.
+
+## R1 addendum — boot 7 (coordinator-granted, declared for exactly this)
+
+| Boot | Tree | Suite | Result |
+| --- | --- | --- | --- |
+| 7 | branch (runner fixed to bind `authority`) | u74a re-run | **PASS 12/12**, `bindings.authority` = as20261026r1 |
+
+Run 1's record lacked `bindings.authority` (runner defect, now fixed in the shared
+lib). eb3-run-manifest has no sanctioned exclusion path, so it was not kept in the
+tree and was NOT hand-stamped: it is removed as superseded, byte-exact in pushed
+history (`u74a/SUPERSEDED.md` has the `git show` and sha256). The three arc
+pre-finish snapshots were re-labelled as digests (`RELABEL.md`). The boot-2 arc-d
+401 at team.create remains UNEXPLAINED and is not counted.

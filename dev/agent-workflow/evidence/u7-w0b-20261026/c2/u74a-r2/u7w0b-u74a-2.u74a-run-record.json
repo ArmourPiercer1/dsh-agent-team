@@ -1,8 +1,8 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "u7w0b-u74a-1",
+  "runId": "u7w0b-u74a-2",
   "suite": "u7-4a-jobs",
-  "startedAt": "2026-10-26T21:18:09.655Z",
+  "startedAt": "2026-10-26T22:10:16.111Z",
   "selectedCases": [
     "u74a:mounted",
     "u74a:bg-receipt-carries-host-job-id",
@@ -18,14 +18,23 @@
     "stable-instance-unchanged"
   ],
   "bindings": {
-    "teamSha": "150c0bcac3e0114efc3bf09d0f009326d3ba5bb5",
+    "teamSha": "46b2c139fa367c495cb1f8ebb5272c322e639450",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
     "plant": false,
     "worldIds": [
-      "u5u7w0b-20261026T21-18-09Z"
+      "u5u7w0b-20261026T22-10-16Z"
     ],
     "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
-    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/deepseek-harness-test-use",
     "provider": {
       "kind": "mock-deepseek",
       "base": "injected http://127.0.0.1:<leased-port>"
@@ -36,7 +45,7 @@
     {
       "id": "u74a:mounted",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.016Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -65,7 +74,7 @@
     {
       "id": "u74a:bg-receipt-carries-host-job-id",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -77,14 +86,14 @@
         "ctl": true,
         "leader": true
       },
-      "jobId": "bash-2",
-      "bgHead": "bash · exit=not-observed\n> started background job bash-2 (governed: manage it with the job_list / job_output / job_kill trio)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":null,\"timedOut\":false,\"cancelled\":fal",
+      "jobId": "bash-4",
+      "bgHead": "bash · exit=not-observed\n> started background job bash-4 (governed: manage it with the job_list / job_output / job_kill trio)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":null,\"timedOut\":false,\"cancelled\":fal",
       "note": "the governed receipt carries the host job id in the producer wording (started background job <id> (governed: …))"
     },
     {
       "id": "u74a:attributed-server-side",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -98,17 +107,17 @@
       },
       "attributionsForJob": 1,
       "attributedLines": [
-        "[dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-1lg33491tq8n tool=bash",
-        "[dsh-agent-team] a5bg: attributed hostJobId=bash-2 instance=inst-11f4qjo06i6j tool=bash",
-        "[dsh-agent-team] a5bg: attributed hostJobId=bash-3 instance=inst-0i9o9j51g0no tool=bash",
-        "[dsh-agent-team] a5bg: attributed hostJobId=bash-4 instance=inst-0hfrrpn1hj9i tool=bash"
+        "[dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-04r5bhd17s48 tool=bash",
+        "[dsh-agent-team] a5bg: attributed hostJobId=bash-2 instance=inst-01amb2t1pucx tool=bash",
+        "[dsh-agent-team] a5bg: attributed hostJobId=bash-3 instance=inst-1iddpez0p7wm tool=bash",
+        "[dsh-agent-team] a5bg: attributed hostJobId=bash-4 instance=inst-0g8eyou19awi tool=bash"
       ],
       "note": "the host log line a5bg: attributed hostJobId=<id> (the producer's own echo) proves the gateway admit ran for THIS job — measured server-side, not from the transcript"
     },
     {
       "id": "u74a:ring-bytes-via-job-output-wait",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -120,14 +129,14 @@
         "ctl": true,
         "leader": true
       },
-      "outHead": "U74A_BG_CLAIM_u5u7w0b-20261026t21-18-09z\n\n[status: completed, exit code: 0]",
-      "jobId": "bash-2",
+      "outHead": "U74A_BG_CLAIM_u5u7w0b-20261026t22-10-16z\n\n[status: completed, exit code: 0]",
+      "jobId": "bash-4",
       "note": "the trio read the RING bytes the real confined process wrote (host-buffered: no transcript echo imitates them) plus the host status line; zero refusal"
     },
     {
       "id": "u74a:list-shows-owner",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -139,14 +148,14 @@
         "ctl": true,
         "leader": true
       },
-      "listJobId": "bash-1",
-      "listRow": "bash-1 [bash] running — governed background bash",
+      "listJobId": "bash-3",
+      "listRow": "bash-3 [bash] running — governed background bash",
       "note": "the owner's governed job_list surfaces its attributed row (id [bash] status — label, the byte-identical bridge body)"
     },
     {
       "id": "u74a:kill-live-requested",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -158,9 +167,9 @@
         "ctl": true,
         "leader": true
       },
-      "killLive": "requested cancellation of job bash-4",
-      "killLiveJobId": "bash-4",
-      "killLiveEarlyOut": "U74A_LIVE_WARM_u5u7w0b-20261026t21-18-09z\n\n[status: killed, u74a-kill-live; signal: ; u74a-kill-live]",
+      "killLive": "requested cancellation of job bash-1",
+      "killLiveJobId": "bash-1",
+      "killLiveEarlyOut": "U74A_LIVE_WARM_u5u7w0b-20261026t22-10-16z\n\n[status: killed, u74a-kill-live; signal: ; u74a-kill-live]",
       "killLiveLateOut": "(no new output)\n[status: killed, u74a-kill-live; signal: ; u74a-kill-live]",
       "lateReadHappened": true,
       "killLiveHostEvents": 0,
@@ -169,7 +178,7 @@
     {
       "id": "u74a:kill-finished-honest",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -182,14 +191,14 @@
         "leader": true
       },
       "killDone": "job bash-5 had already finished",
-      "killDoneOutHead": "U74A_DONE_CLAIM_u5u7w0b-20261026t21-18-09z\n\n[status: completed, exit code: 0]",
+      "killDoneOutHead": "U74A_DONE_CLAIM_u5u7w0b-20261026t22-10-16z\n\n[status: completed, exit code: 0]",
       "killDoneJobId": "bash-5",
       "note": "the two kill forms never collapse: the finished job answers already-finished (settles nothing new) after its ring bytes + status proved the settle"
     },
     {
       "id": "u74a:foreign-cross-scope-refusal",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -207,7 +216,7 @@
     {
       "id": "u74a:planted-unattributed",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -226,7 +235,7 @@
     {
       "id": "u74a:native-ctl-unaffected",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -238,14 +247,14 @@
         "ctl": true,
         "leader": true
       },
-      "ctlHead": "U74A_CTL_CLAIM_u5u7w0b-20261026t21-18-09z\n[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n",
+      "ctlHead": "U74A_CTL_CLAIM_u5u7w0b-20261026t22-10-16z\n[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n",
       "rootKernelMentions": 0,
       "note": "the boot-root session is not a Team mount: foreground native bash keeps its byte-identical posture, the kernel never spoke about those calls"
     },
     {
       "id": "u74a:exactly-once-approvals",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.017Z",
+      "at": "2026-10-26T22:11:05.870Z",
       "laneDone": {
         "bg": true,
         "out": true,
@@ -259,68 +268,68 @@
       },
       "askRows": [
         {
-          "requestId": "ctrl-09pchb404bhs0h19zjj1q0r4",
+          "requestId": "ctrl-1ufu1mo15xcg7t0jf4trq1sk",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-09pchb404bhs0h19zjj1q0r4\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1ufu1mo15xcg7t0jf4trq1sk\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-0w3r1fp0757ws00l3aif71q4",
+          "requestId": "ctrl-15903aq0xvxpon1fqtng81pj",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0w3r1fp0757ws00l3aif71q4\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-15903aq0xvxpon1fqtng81pj\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-02kst5b1lnr32m0r3lyf9080",
+          "requestId": "ctrl-00s1aqv18ixlqy1ox6oyt10k",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-02kst5b1lnr32m0r3lyf9080\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-00s1aqv18ixlqy1ox6oyt10k\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-1j7invb18udmky1yc9zpl0sn",
+          "requestId": "ctrl-0xolfdz0bvxuqq0yzvjp1048",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1j7invb18udmky1yc9zpl0sn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0xolfdz0bvxuqq0yzvjp1048\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-156lu620vil28t19en2xg02u",
+          "requestId": "ctrl-12bschh0qk7yra0rql04v18n",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-156lu620vil28t19en2xg02u\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-12bschh0qk7yra0rql04v18n\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-0qpo5jv18w26gs05wd6pt0om",
+          "requestId": "ctrl-0y6xqaz1rmb7301y1ykcp0f7",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0qpo5jv18w26gs05wd6pt0om\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0y6xqaz1rmb7301y1ykcp0f7\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-0jexuj31b4181g0uxvn9l1iv",
+          "requestId": "ctrl-1oxlw5z05ejeis17aud4h1a5",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0jexuj31b4181g0uxvn9l1iv\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1oxlw5z05ejeis17aud4h1a5\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         },
         {
-          "requestId": "ctrl-01g9n6908ep6gq12io8x70wu",
+          "requestId": "ctrl-07he4vs0mksetv1wggkpy126",
           "targetInstanceId": null,
           "resolutions": 1,
           "ok": true,
           "resolveStatus": 200,
-          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-01g9n6908ep6gq12io8x70wu\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t21-18-09z\"},\"scope\":{\"rootSessionId\":\"session"
+          "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-07he4vs0mksetv1wggkpy126\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7w0b-20261026t22-10-16z\"},\"scope\":{\"rootSessionId\":\"session"
         }
       ],
       "askResolutionsTotal": 10,
@@ -331,7 +340,7 @@
     {
       "id": "stable-instance-unchanged",
       "verdict": "PASS",
-      "at": "2026-10-26T21:18:57.481Z",
+      "at": "2026-10-26T22:11:06.359Z",
       "status": 401,
       "note": "read-only probe of :3080 before/after (never touched beyond the probe)"
     }
@@ -341,10 +350,10 @@
     "thisRunCount": 1,
     "thisRunEntries": [
       {
-        "at": "2026-10-26T21:18:25.165Z",
-        "runId": "u7w0b-u74a-1",
+        "at": "2026-10-26T22:10:16.155Z",
+        "runId": "u7w0b-u74a-2",
         "suite": "u7-4a-jobs",
-        "world": "u5u7w0b-20261026T21-18-09Z",
+        "world": "u5u7w0b-20261026T22-10-16Z",
         "phase": "u74a-boot1"
       }
     ]
@@ -352,9 +361,9 @@
   "boots": [
     {
       "phase": "u74a-boot1",
-      "world": "u5u7w0b-20261026T21-18-09Z",
-      "port": 3183,
-      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a/logs/u5u7w0b-20261026T21-18-09Z/instance-port3183.log"
+      "world": "u5u7w0b-20261026T22-10-16Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/logs/u5u7w0b-20261026T22-10-16Z/instance-port3181.log"
     }
   ],
   "hostBasePost": {
@@ -373,5 +382,5 @@
     "homesNet": {}
   },
   "overall": "PASS",
-  "finishedAt": "2026-10-26T21:18:57.482Z"
+  "finishedAt": "2026-10-26T22:11:06.359Z"
 }
