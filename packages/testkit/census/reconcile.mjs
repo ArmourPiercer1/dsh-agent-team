@@ -209,7 +209,7 @@ export function reconcile({ expected, sources, observed, baseline = null, testRo
           const idB = B.identities.get(name)
           const idO = O.identities.get(name)
           if (typeof idB === 'string' && typeof idO === 'string' && idB !== idO) {
-            drift.push({ name, scope_class: cls, kind: 'definition-identity', baseline: idB, observed: idO, detail: 'same boot: the placement identity (tool-dispatch WeakMap algebra) moved — the Definition Body was replaced' })
+            drift.push({ name, scope_class: cls, kind: 'definition-identity', baseline: idB, observed: idO, detail: 'same boot: the placement identity (runtime dispatcher WeakMap algebra) moved — the Definition Body was replaced' })
           }
           const qB = B.seqs.get(name)
           const qO = O.seqs.get(name)
