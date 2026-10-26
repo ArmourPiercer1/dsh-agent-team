@@ -19,7 +19,13 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../.." && pwd)
 OUT=${1:?usage: eb3-red-baseline.sh <out-file>}
 cd "$REPO"
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+# The out-file usually lives INSIDE the tracked evidence tree and this script writes it.
+# Without excluding it, the final clean check reports the script's OWN OUTPUT as a dirty
+# tracked file and exits 1 on a run where every mutation reverted correctly (measured:
+# the first C4 matrix exited 1 with "REVERT FAILED" and an otherwise perfect log).
+OUTREL=${OUT#./}
+dirty() { git status --porcelain --untracked-files=no -- . ":(exclude)$OUTREL"; }
+if [ -n "$(dirty)" ]; then
   echo "REFUSED: tracked files are dirty; this script reverts with git checkout and will not risk them" >&2
   git status --porcelain --untracked-files=no >&2
   exit 2
@@ -129,7 +135,7 @@ sed -i "s#from '../../fs-family/src/index.mjs'#from '../../fs-family/src/fs-mech
 both M4
 git checkout -- packages/tools/search-family/src/search-mechanics.mjs
 
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-  echo "REVERT FAILED: tracked tree is dirty after the run" ; git status --porcelain --untracked-files=no ; exit 1
+if [ -n "$(dirty)" ]; then
+  echo "REVERT FAILED: tracked tree is dirty after the run" ; dirty ; exit 1
 fi
 echo "# reverted: tracked tree clean"

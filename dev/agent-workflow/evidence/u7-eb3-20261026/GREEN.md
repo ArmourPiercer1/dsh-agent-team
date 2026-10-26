@@ -1,6 +1,8 @@
 # EB3 GREEN (C4) — the negatives are now detected, the positives are preserved
 
-Worktree HEAD at capture: `19beb3e4d` (C1 `131364952`, C2 `8dfaaaf37`, C3 `10621d02b`, C4 fixes `19beb3e4d`).
+Worktree HEAD at capture: rebased onto `origin/master` = `4912f3197` (PR #393). Commits:
+C1 `ed5bc6aaf`, C2 `fa768a20d`, C3 `3953efe04`, C4 fixes `12ea00f65` + `687aeaac5`, P2 rebase fix `b81cb8c7f`, and this evidence commit.
+master moved 32 commits under this branch mid-task; everything below was RE-RUN after the rebase.
 Raw transcripts: [GREEN-existing-gate.txt](GREEN-existing-gate.txt) (mutation matrix),
 [GREEN-enforcement.txt](GREEN-enforcement.txt) (controls + every check).
 
@@ -35,8 +37,8 @@ have been a green light wired to nothing. `eb3-ci-required` now emits
 | positive | how it is preserved | evidence |
 |---|---|---|
 | **non-Team native control** (`u6-pr3-bl01-ask-door` CI03-b; `u6-pr2-review-r1`) | in the `ci-security` suite list, and control **P1** fails if either assertion is removed | `PASS P1 … pinned BY ASSERTION, not by title` |
-| **complete known-old-red identity set** | `ci-full` runs the census with **no** `--allow-refused`, against the same baseline file; control **P2** grades the gate's own `parsePopulationBaseline`/`compareCensus` | `PASS P2 … 9 tolerated identities and 2 disclosed load family/ies; identical set => pass, one planted new red => fail` |
-| `docs:probe` / `docs:sync --check` clean baseline | `blocking=0` before and after | `docs=77 notes=4 plans=47 findings=0 blocking=0` |
+| **complete known-old-red identity set** | `ci-full` runs the census with **no** `--allow-refused`, against the same baseline file; control **P2** grades the gate's own `parsePopulationBaseline`/`compareCensus` | `PASS P2 … zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass, one planted new red => fail` |
+| `docs:probe` / `docs:sync --check` clean baseline | `blocking=0` before and after | `docs=79 notes=4 plans=49 findings=0 blocking=0` |
 | `ci-pr-gate` self-test | unchanged | `DSH-CI-SELFTEST pass 77 assertions` |
 
 ## C. The five non-green states (plan: "缺席、skip、ENV_BLOCK、refused、cancel 不能绿")
@@ -59,12 +61,12 @@ node scripts/eb3-ci-required.mjs                 pass workflows=9 findings=0    
 node scripts/eb3-trusted-sources.mjs             pass files=1723 findings=0              exit 0
 node scripts/eb3-family-definitions.mjs          pass files=7 findings=0                 exit 0
 node scripts/eb3-family-boundaries.mjs           pass files=23 findings=0                exit 0
-node scripts/eb3-run-manifest.mjs                pass records=31 strict=0 incomplete=5   exit 0
+node scripts/eb3-run-manifest.mjs                pass records=40 strict=0 incomplete=11  exit 0
 node scripts/eb3-impact.mjs --paths <unknown>    selection=<all 4 layers> unknown=1       exit 0
-node scripts/eb3-security-run.mjs                PASS suites=20 files=82 passed=259 clock_ms=20000  exit 0
+node scripts/eb3-security-run.mjs                PASS suites=20 files=83 passed=270 clock_ms=20000  exit 0
 node scripts/docs-sync.mjs --check               blocking=0                              exit 0
 node scripts/docs-probe.mjs --worktree-only      blocking=0                              exit 0
-node scripts/ci-pr-gate.mjs --self-test          pass 77 assertions                      exit 0
+node scripts/ci-pr-gate.mjs --self-test          pass 94 assertions (was 77 pre-#393)  exit 0
 node scripts/ci-pr-gate.mjs --only graph-parse --only state-freshness  pass pass=2 fail=0 exit 0
 pnpm typecheck                                   all packages Done                       exit 0
 pnpm exec eslint scripts/eb3-*.mjs               0 problems                              exit 0
@@ -75,6 +77,23 @@ glue takes 5.0–7.8 s here against vitest's 5000 ms default, so the first attem
 reported a TIMEOUT, not a failed assertion. The budget is raised to 20 s and printed
 on the token (`clock_ms=20000`), the same disclosure `ci-pr-gate --census-test-timeout`
 already makes. A timeout cannot excuse a red assertion; it only moves the clock.
+
+## D2. One preserved positive changed SHAPE under this branch, not by my choice
+
+PR #393 (U7-1/EB2-C) repaired all nine census-tolerated reds and retargeted
+`BASELINES.census` to `nine-root-u7-1-old-reds.md`, which states its zero with a
+`RETIRED-TO-EMPTY` sentinel whose retirement table the gate requires to EQUAL the
+predecessor's full set. My P2 control only knew the non-empty shape and went red on
+the rebase. It now grades all three shapes (non-empty / zero-by-named-retirement /
+zero-without-sentinel) and I proved it is not vacuous by staging both negative shapes
+on the real file: deleting the sentinel, and a sentinel claiming 8 over a 9-row
+table — the gate's own parser refuses each.
+
+This matters for the PR's verification quote: the known-old-red set is preserved as
+"complete" in the sense the plan asks — nothing was deleted to make anything green.
+The nine were retired by another lane with per-identity evidence
+(`u7-1-old-reds-20261026/OLD-REDS.md` plus mutation controls), and the gate refuses a
+zero that cannot name them.
 
 ## E. Honest gaps
 
