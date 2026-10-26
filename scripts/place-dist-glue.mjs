@@ -152,6 +152,10 @@ export const PLACEMENTS = [
     src: 'packages/tools/families/fs.mjs',
     dist: 'packages/runtime/dist/packages/tools/families/fs.mjs',
   },
+  {
+    src: 'packages/tools/families/process.mjs',
+    dist: 'packages/runtime/dist/packages/tools/families/process.mjs',
+  },
   // U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
   // producer is imported by the production entry (agent-bindings.mjs) via a
   // relative `.mjs` specifier tsc never emits — the same GLUE-6 RED-A class:

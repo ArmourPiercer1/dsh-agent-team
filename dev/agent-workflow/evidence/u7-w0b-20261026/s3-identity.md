@@ -11,3 +11,8 @@ Restored; index --check OK; fingerprint back to 7b2babd6….
 
 head (fs + search on seam): FINGERPRINT 7b2babd6c22924f7321b137b3e9ae13caecdd88f72dcc04e33468ca661454552 — equal to base 88107ad71 (fp-s3-fs.json).
 Regression: 41 files / 608 tests; the one red was the p4t6 +1 booking (fs.mjs), booked after (p4t6-RED-unbooked-s3b.log).
+
+## S3c process (shell row)
+
+head (fs + process + search on seam): FINGERPRINT 7b2babd6c22924f7321b137b3e9ae13caecdd88f72dcc04e33468ca661454552 — equal to base 88107ad71 (fp-s3-process.json).
+Regression: 41 files / 608 tests incl. u74a background-jobs producer and a5p7 jobs actuator; the one red was the p4t6 +1 booking (process.mjs), booked after.

@@ -77,20 +77,6 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-// U6 PR3 (U6 slice plan PR3 — ARC-B part 2): the governed SHELL row joins
-// the SAME Kernel as the read row. The process family lane owns the shell
-// mechanics, the confined executor (CI-07 named provider), the pure shell
-// normalizer, the row Definition and the contribution descriptor (owner
-// role: that lane's README). The plane remains the TRUSTED ASSEMBLY POINT:
-// it validates the provider pairing (Gate 0c, unchanged), builds the ONE
-// kernel over BOTH families' contributions, feeds the table with the
-// placement identities, and routes BOTH names' one-shot consume through
-// the SAME consumeOnce edge — one ledger, no dual path (ARC-B).
-import {
-  buildBashRowDefinition,
-  buildProcessShellContribution,
-  createConfinedShellBackend,
-} from '../../../../tools/process-family/src/index.mjs'
 import {
   createGovernanceKernel,
   createGovernedFamilyRegistry,
@@ -667,10 +653,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
 
   const names = { ...DEFAULT_PLANE_NAMES, ...(input.plane?.names ?? {}) }
   const readName = input.plane?.readName ?? 'read'
-  /** U6 PR3: the shell row's mount spelling (native 'bash' takeover or the
-   *  managed `team_bash` alias — the SAME row, the SAME mechanism, ONE
-   *  Kernel-owned name; Gate 0b validated it above). */
-  const bashName = names.bash
   // Gate 0b: the closed mount-name domain, checked BEFORE any construction
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
@@ -1610,24 +1592,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // standard global object is the honest route.
     globalThis.console?.log(`[dsh-agent-team] ${line}`)
   }
-  const realShell = confinedCfg !== null
-    ? createConfinedShellBackend({
-      realmId,
-      templateId: String(templateId),
-      instanceId: String(input.instanceId ?? templateId),
-      cwdRoot: typeof fsInstance?.rootDir === 'string' ? fsInstance.rootDir : input.plane?.workingDir,
-      confined: confinedCfg,
-      observe: logBackend('a5g7-shell'),
-      // U7-4a: the governed background arm — present ONLY when both closed
-      // keys said on AND the trusted entry injected its producer (validated
-      // above; absent otherwise, byte-for-byte). The arm is THIS SAME
-      // provider row, not a second executor.
-      ...(backgroundJobs === true
-        ? { background: { enabled: true, accept: (ctx) => backgroundProducer.accept(ctx) } }
-        : {}),
-    })
-    : null
-  const hostedShell = input.backends?.shell ?? realShell ?? shut
   // u7-w0b S3: the capability object EVERY seam-mounted family receives —
   // enumerated in family-assembly.mjs (CAPABILITY_KEYS) and frozen; it
   // carries no kernel, registry, approval or grant handle. Families
@@ -1643,7 +1607,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       return undefined
     }
   }
-  const familyBackends = { shell: hostedShell }
+  const familyBackends = {}
   const familyCapabilities = (backends) => makeFamilyCapabilities({
     realmId,
     templateId: String(templateId),
@@ -1692,31 +1656,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // lane deliberately ships name/description/parameters/execute ONLY. The
   // assembly adds exactly that missing presentation face; seam families add
   // it through `cap.presentationFace`.
-  // U6 PR3: the bash arm of the trio is NO LONGER the mounted path — the
-  // shell row joins the Kernel as the process family's contribution, built
-  // through the family row face (the a5p5 ONE makeExecute; byte-identical
-  // execute behavior, own per-assembly ledger state exactly like a fresh
-  // trio build). The lane's trio face stays untouched for every other
-  // consumer; the CENTER only stops placing its bash arm (the old path —
-  // a kernel-unowned shell row — is deleted here, no dual keep at any
-  // slice). The filter is by the VALIDATED mount spelling, one name, one
-  // placement (Gate 0b already refused any collision).
-  const bashRowDef = Object.freeze({
-    // U6 PR3 (dormancy law, a5p5-dormant-audit): the Family lane NEVER
-    // touches the dormant a5p5 lane — the plane is that lane's ONE reviewed
-    // consumer, so the row's execute transport is INJECTED here, through the
-    // reviewed barrel edge (one line, form-pinned). The lane owns the
-    // placement contract; the reviewed registration face owns the transport.
-    ...buildBashRowDefinition({
-      realmId,
-      decide,
-      pa: paAdmit,
-      shellBackend: hostedShell,
-      names: { bash: names.bash },
-      callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
-    }, createGovernedShellRowDefinition),
-    output: PLANE_PRESENTATION_FACE,
-  })
   // u7-w0b S3: the PA placement spelling of every seam-claimed name IS the
   // placement name; at most one family may offer the PA read hand-off.
   for (const entry of seamFamilies) {
@@ -1727,18 +1666,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: false, code: 'PLANE_FAMILY_MANIFEST_REFUSED', message: `more than one family offers the PA read hand-off (${seamHandoffs.map((e) => e.descriptor.familyId).join(', ')}) — fail closed` }
   }
   const seamHandoff = seamHandoffs[0]?.built.handoff
-  // u7-w0b S3: seam rows place around the shell row in descriptor
-  // `placement` order (historical: search rows, shell row, fs rows).
+  // u7-w0b S3: seam rows place in descriptor `placement` order
+  // (historical: search rows, shell row, fs rows).
   const placedSeam = seamFamilies
     .filter((e) => e.enabled)
     .sort((a, b) => a.descriptor.placement - b.descriptor.placement)
-  const SHELL_ROW_PLACEMENT = 20
-  const seamDefsBefore = placedSeam.filter((e) => e.descriptor.placement < SHELL_ROW_PLACEMENT).flatMap((e) => e.built.definitions)
-  const seamDefsAfter = placedSeam.filter((e) => e.descriptor.placement > SHELL_ROW_PLACEMENT).flatMap((e) => e.built.definitions)
-  const defs = Object.freeze([
-    ...seamDefsBefore,
-    bashRowDef,
-  ])
+  const defs = Object.freeze(placedSeam.flatMap((e) => e.built.definitions))
 
   // GLUE-5/C2 JOBS-MANAGEMENT ROW (B-ACT-1-PR): the three host `job_*`
   // management tools, takeover-mounted at FIXED native spellings behind the
@@ -1766,10 +1699,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     ? buildJobsManagementRowDefs({ jobsBridge, shutJobsText, PLANE_PRESENTATION_FACE })
     : []
 
-  const baseDefs = Object.freeze([
-    ...defs,
-    ...seamDefsAfter,
-  ])
+  const baseDefs = defs
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
@@ -1810,7 +1740,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // never see any of it (familyFace carries no authority, CI-06).
   const registry = createGovernedFamilyRegistry({
     kernelManifest: { capabilities: {
-      'process-spawn': { backsExecution: 'family-body' },
       ...reviewedFamilies.kernelCapabilities,
       // U6 PR4 (ARC-C): the jobs-management capability is backed ONLY by a
       // named bridge — the schema refuses (CAPABILITY_UNBACKED /
@@ -1819,16 +1748,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
       'jobs-management': { backsExecution: 'named-bridge' },
     } },
   })
-  const kernelFamilies = { shell: false, jobs: false }
-  // u7-w0b S3: the seam-mounted families register in descriptor `order`,
-  // around the families still hand-wired below (historical kernel-ledger
-  // order: fs 10 → process 20 → search 30 → jobs 40). Origin is set by the
-  // plane, never by a family; a refusal fails the whole assembly closed
-  // with that family's own typed code.
-  const SHELL_FAMILY_ORDER = 20
-  const registerSeam = (inBand) => {
+  const kernelFamilies = { jobs: false }
+  // u7-w0b S3: the seam-mounted families register in descriptor `order`
+  // (historical kernel-ledger order: fs 10 → process 20 → search 30, then
+  // the jobs named bridge below). Origin is set by the plane, never by a
+  // family; a refusal fails the whole assembly closed with that family's
+  // own typed code.
+  const registerSeam = () => {
     for (const entry of [...seamFamilies].sort((a, b) => a.descriptor.order - b.descriptor.order)) {
-      if (!entry.enabled || !inBand(entry.descriptor.order)) continue
+      if (!entry.enabled) continue
       const registered = registry.register(entry.built.contribution, { origin: 'reviewed-manifest' })
       if (registered.ok !== true) {
         return {
@@ -1840,33 +1768,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     return null
   }
-  const seamRegisteredFirst = registerSeam((order) => order < SHELL_FAMILY_ORDER)
-  if (seamRegisteredFirst !== null) return seamRegisteredFirst
-  // U6 PR3: the process/shell contribution. CI-07: the descriptor NAMES the
-  // reviewed confined process provider this row's execution drives, and the
-  // mount's launcher pin rides the bound digests — a provider-pin change is
-  // a DIFFERENT contribution (STALE on the next reviewed mount, never a
-  // silently inherited approval). The Gate 0c trustRoot⇄launcher pairing
-  // above stays the mount's law, validated BEFORE this point.
-  {
-    const shellContribution = buildProcessShellContribution({
-      definition: bashRowDef,
-      launcherPin: typeof confinedCfg?.assembly?.launcherSha256 === 'string'
-        ? confinedCfg.assembly.launcherSha256
-        : undefined,
-      cancelBoundary: 'the confined shell executor terminates the payload through the provider\'s frozen lease arm on timeout and on the host abort signal; the settle race answers exactly one of {exit, timedOut, cancelled} (tie law exited > timedOut > aborted), the drain never re-decides it, and a payload whose stop could not be confirmed is reported UNCERTAIN (truncated/not-observed), never as a clean end (a5b3 laws, U6 PR3)',
-    })
-    const shellRegistered = registry.register(shellContribution, { origin: 'reviewed-manifest' })
-    if (shellRegistered.ok !== true) {
-      return {
-        ok: false,
-        code: 'PLANE_PROCESS_REGISTRATION_REFUSED',
-        message: `the process family contribution was refused by the closed schema (${shellRegistered.code}: ${shellRegistered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center shell path does not come back)`,
-      }
-    }
-    kernelFamilies.shell = true
-  }
-  const seamRegistered = registerSeam((order) => order > SHELL_FAMILY_ORDER)
+  const seamRegistered = registerSeam()
   if (seamRegistered !== null) return seamRegistered
   // U6 PR4 (ARC-C): the jobs contribution — the mount's FIRST named bridge.
   // Registered ONLY when the closed key says on AND a real bridge body is
@@ -1970,7 +1872,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // code path (data, not new branches; §10.2's trace law is family-
       // count independent by design).
       owns: (name) => typeof name === 'string' && (
-        name === bashName || seamOwned.has(name)
+        seamOwned.has(name)
         || (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name))
       ),
       identityFor: (name) => {
@@ -2084,9 +1986,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,
       backends: Object.freeze({
-        ...placedSeam.filter((e) => e.descriptor.placement < SHELL_ROW_PLACEMENT).reduce((acc, e) => ({ ...acc, ...(e.built.diagnostics ?? {}) }), {}),
-        shell: hostedShell,
-        ...placedSeam.filter((e) => e.descriptor.placement > SHELL_ROW_PLACEMENT).reduce((acc, e) => ({ ...acc, ...(e.built.diagnostics ?? {}) }), {}),
+        ...placedSeam.reduce((acc, e) => ({ ...acc, ...(e.built.diagnostics ?? {}) }), {}),
       }),
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
@@ -2118,7 +2018,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // ride.
         : {
             kernelGuard: Object.freeze({
-              owns: (name) => typeof name === 'string' && (name === bashName || seamOwned.has(name)),
+              owns: (name) => typeof name === 'string' && seamOwned.has(name),
               identityFor: () => null,
             }),
           }),
@@ -2193,10 +2093,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
                 // the deterministic invalidation that family's mount owes
                 // (FIX-K K1: a later re-registration never resurrects an
                 // approval).
-                if (centerKernel.families.shell === true) {
-                  centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
-                  centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')
-                }
                 for (const entry of seamFamilies) {
                   if (!entry.enabled) continue
                   centerKernel.registry.revoke(entry.descriptor.familyId, `the governed ${entry.descriptor.familyId} mount was disposed`)

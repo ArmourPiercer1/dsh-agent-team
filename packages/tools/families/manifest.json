@@ -8,6 +8,9 @@
     "fs-write": {
       "backsExecution": "family-body"
     },
+    "process-spawn": {
+      "backsExecution": "family-body"
+    },
     "fs-search": {
       "backsExecution": "family-body"
     }
@@ -16,6 +19,10 @@
     {
       "module": "fs.mjs",
       "sha256": "30e5a0a75132a6d6afe716e20e23a728e87538cb2aa287b2daf0ce6c19d7db0c"
+    },
+    {
+      "module": "process.mjs",
+      "sha256": "faeb09466b84d2a0097f2b80629caadd61f4a330ebc893d877450d7e0ac0db5d"
     },
     {
       "module": "search.mjs",
