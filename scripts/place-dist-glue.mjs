@@ -97,27 +97,13 @@ export const PLACEMENTS = [
   // the wrong importer. The list must be walked from every file it already contains,
   // which is what leg `M3` of `alpha5-search-backend.test.ts` now pins so the mistake
   // cannot be repeated by the next reader who narrows this list.
-  {
-    src: 'packages/runtime/src/plugin/live/glob-backend.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs',
-  },
-  {
-    src: 'packages/runtime/src/plugin/live/search-backend.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs',
-  },
+  // U6 PR5: the glob/search/cancel rows MOVED to the search-family lane —
+  // their center placements retire WITH the files (no dual copy); the lane
+  // mirror block below carries the bytes now. The center face keeps only
+  // the re-export surface + jobs bridge.
   {
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
-  },
-  // A5-CANCEL (branch `a5-cancel-leg`): the two async confined-rg rows above both
-  // import this module by RELATIVE specifier, so on the strict
-  // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at the
-  // first search/glob call — the same failure class GLUE-6 RED-A recorded for
-  // `upstream-resolver.mjs`. Walked from the files the list already contains, as
-  // the M3 leg of `alpha5-search-backend.test.ts` requires.
-  {
-    src: 'packages/runtime/src/plugin/live/cancel-leg.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/cancel-leg.mjs',
   },
   // A5-M1 (PR358-B): the PA mount registry is imported by the production
   // root entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that
@@ -220,6 +206,44 @@ export const PLACEMENTS = [
   {
     src: 'packages/tools/process-family/src/bash-contribution.mjs',
     dist: 'packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs',
+  },
+  // U6 PR5 (the fs-family/process-family pattern, verbatim law): the SEARCH
+  // family lane's seven .mjs files byte-mirror under the runtime dist
+  // mirror. The center rows this list used to carry (glob-backend,
+  // search-backend, cancel-leg under `plugin/live/`) retired with their
+  // files — replacement, never dual-keep. Relative edges (`../../../runtime/…`,
+  // `../../fs-family/…`, sibling `./…`) resolve identically in src and
+  // mirror because the mirror sits at `dist/packages/…`; the M3/M4 closure
+  // legs of `alpha5-search-backend.test.ts` walk this graph from every file
+  // the list contains, so a missing lane copy is RED, not a runtime
+  // ERR_MODULE_NOT_FOUND.
+  {
+    src: 'packages/tools/search-family/src/index.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/index.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/search-mechanics.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-mechanics.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/search-backend.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-backend.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/glob-backend.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/glob-backend.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/cancel-leg.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/cancel-leg.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/search-row.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-row.mjs',
+  },
+  {
+    src: 'packages/tools/search-family/src/search-contribution.mjs',
+    dist: 'packages/runtime/dist/packages/tools/search-family/src/search-contribution.mjs',
   },
 ]
 

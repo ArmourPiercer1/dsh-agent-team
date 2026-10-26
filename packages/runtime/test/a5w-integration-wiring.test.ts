@@ -143,11 +143,17 @@ describe('a5w compile surface', () => {
    * and the leg below asserts that they do by pinning the names literally.
    */
   const NAMED_PROVIDER_MOUNTS: readonly { file: string; edge: string }[] = [
-    { file: 'plugin/live/plane-effect-backends.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
-    { file: 'plugin/live/glob-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
-    // A5-SRGP search row: the third named consumer, booked in the hygiene ledger too
-    // (evidence dev/agent-workflow/evidence/alpha5/srgp/README.md).
-    { file: 'plugin/live/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
+    // U6 PR5 (the real family move): the THREE provider-mounting rows left
+    // `runtime/src` with the search/glob mechanics — they now live in the
+    // SEARCH family lane (one level above this walk's root, so THIS walk no
+    // longer sees them; the full-tree walk in `a5p4-lane-hygiene` law (4)
+    // books them there, edges retargeted path-only, same public face). The
+    // center glue file `plugin/live/plane-effect-backends.mjs` is NOT listed
+    // any more: since PR5 it references the provider lane nowhere — its
+    // remaining job is the re-export surface plus the jobs bridge.
+    { file: '../../tools/search-family/src/glob-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
+    { file: '../../tools/search-family/src/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
+    { file: '../../tools/search-family/src/search-mechanics.mjs', edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'" },
   ]
 
   it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {

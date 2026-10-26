@@ -77,8 +77,15 @@ import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '.
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
-import { createAnchoredSearchBackend } from './plane-effect-backends.mjs'
-import { createAnchoredGlobBackend } from './glob-backend.mjs'
+// U6 PR5 (U6 slice plan PR5 — the real family moved): the governed
+// SEARCH rows (grep + glob) live in the SEARCH family lane
+// (`packages/tools/search-family/`, owner role: that lane's README). The
+// plane imports the production row faces from the lane's own files (the
+// TWO-body search row from search-mechanics, the PRODUCTION anchored-rg
+// glob row from glob-backend — NOT the archived CANDIDATE-A face the
+// center re-export surface keeps for its pinned consumers).
+import { createAnchoredSearchBackend } from '../../../../tools/search-family/src/search-mechanics.mjs'
+import { createAnchoredGlobBackend } from '../../../../tools/search-family/src/glob-backend.mjs'
 // U6 PR2 (U6 slice plan PR2 — the read family moves): the governed `read`
 // row's Family halves live in `packages/tools/fs-family/` (owner role: that
 // lane's README). The plane stays the TRUSTED ASSEMBLY POINT: it places the
@@ -101,6 +108,21 @@ import {
   buildProcessShellContribution,
   createConfinedShellBackend,
 } from '../../../../tools/process-family/src/index.mjs'
+// U6 PR5 (U6 slice plan PR5 — the REAL family move): the governed SEARCH
+// rows join the SAME Kernel as the read and shell rows. The search family
+// lane owns the two row Definitions (over the assembly-INJECTED a5p5 trio
+// registration face — dormancy law, PR3 precedent: the plane is that lane's
+// ONE reviewed consumer and the trio's shell ARM is discarded at selection,
+// the same byte-law as before the move), the mechanics, the contribution
+// descriptor (CI-07 names the reviewed confined process provider the rg
+// rows drive), and the cancel leg. The plane remains the TRUSTED ASSEMBLY
+// POINT: it builds the backends, the ONE kernel over ALL families'
+// contributions, feeds the table with the placement identities, and routes
+// EVERY governed name's one-shot consume through the SAME consumeOnce edge.
+import {
+  buildSearchRowDefinitions,
+  buildSearchContribution,
+} from '../../../../tools/search-family/src/index.mjs'
 import {
   createGovernanceKernel,
   createGovernedFamilyRegistry,
@@ -637,6 +659,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
    *  managed `team_bash` alias — the SAME row, the SAME mechanism, ONE
    *  Kernel-owned name; Gate 0b validated it above). */
   const bashName = names.bash
+  /** U6 PR5: the SEARCH rows' mount spellings (Gate 0b: grep/glob never
+   *  take over a reserved native name — PLANE_SUPPORTED_NATIVE_TAKEOVERS
+   *  keeps them managed aliases — but the mount `names` map may re-alias
+   *  them, so the Kernel table keys on the VALIDATED spellings, exactly
+   *  like the shell row keys on `bashName`). */
+  const grepName = names.grep
+  const globName = names.glob
   // Gate 0b: the closed mount-name domain, checked BEFORE any construction
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
@@ -1570,7 +1599,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // execute returns the closed { text } envelope — lane law, untouched).
   // The assembly adds exactly that missing presentation face — additive,
   // no change to any reviewed logic; the pinned object is THIS wrapper.
-  const searchRowDefs = createGovernedToolDefinitions({
+  // U6 PR5 (dormancy law, PR3 precedent): the two SEARCH row Definitions are
+  // placed through the SEARCH family's row face — `buildSearchRowDefinitions`
+  // makes ONE trio build through the assembly-INJECTED a5p5 registration face
+  // (the form-pinned barrel edge above; the plane is that lane's ONE reviewed
+  // consumer) and selects the grep/glob arms by the Gate-0b-validated mount
+  // spellings. The trio's shell ARM is discarded at selection exactly as the
+  // old center-side filter-by-name discarded it — same single build, same
+  // shared per-assembly row-execution state, byte-law unchanged.
+  const searchRowDefs = buildSearchRowDefinitions({
     realmId,
     decide,
     pa: paAdmit,
@@ -1579,7 +1616,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     shellBackend: hostedShell,
     names,
     callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
-  })
+  }, createGovernedToolDefinitions)
   // U6 PR3: the bash arm of the trio is NO LONGER the mounted path — the
   // shell row joins the Kernel as the process family's contribution, built
   // through the family row face (the a5p5 ONE makeExecute; byte-identical
@@ -1606,8 +1643,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
     output: PLANE_PRESENTATION_FACE,
   })
   const defs = Object.freeze([
+    // U6 PR5: the family row face already SELECTED the two search arms
+    // (the old center filter-by-name law moved with the placement — the
+    // face refuses a build whose arms do not match the validated names).
     ...searchRowDefs
-      .filter((def) => def.name !== names.bash)
       .map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })),
     bashRowDef,
   ])
@@ -1741,9 +1780,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
     kernelManifest: { capabilities: {
       'fs-read': { backsExecution: 'family-body' },
       'process-spawn': { backsExecution: 'family-body' },
+      'fs-search': { backsExecution: 'family-body' },
     } },
   })
-  const kernelFamilies = { read: false, shell: false }
+  const kernelFamilies = { read: false, shell: false, search: false }
   if (readRowDef !== null) {
     const contribution = buildFsReadContribution({
       definition: readRowDef,
@@ -1785,6 +1825,32 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
     }
     kernelFamilies.shell = true
+  }
+  // U6 PR5 (ARC-A real family move): the SEARCH contribution covers BOTH
+  // search rows in ONE descriptor (one family, one reviewed source, one
+  // generation — the closed schema keys claims by NAME and grep/glob are
+  // distinct names of the same lane). CI-07: the descriptor names the SAME
+  // reviewed confined process provider the rg walk bodies drive, and the
+  // mount's launcher pin rides the bound digests — grep/glob share the
+  // provider pairing the Gate 0c gate validated for the whole mount.
+  {
+    const searchContribution = buildSearchContribution({
+      grepDefinition: searchRowDefs[0],
+      globDefinition: searchRowDefs[1],
+      launcherPin: typeof confinedCfg?.assembly?.launcherSha256 === 'string'
+        ? confinedCfg.assembly.launcherSha256
+        : undefined,
+      cancelBoundary: 'the confined rg bodies stop the payload through the provider\'s frozen lease arm on timeout and on the host abort signal; the settle race answers exactly one of {exit, timedOut, cancelled} via the shared cancel leg (raceConfinedSettle), the drain never re-decides it, and a payload whose stop could not be confirmed is reported UNCERTAIN (termination-unconfirmed), never as a clean end (a5b3 laws, U6 PR5)',
+    })
+    const searchRegistered = registry.register(searchContribution, { origin: 'reviewed-manifest' })
+    if (searchRegistered.ok !== true) {
+      return {
+        ok: false,
+        code: 'PLANE_SEARCH_REGISTRATION_REFUSED',
+        message: `the search family contribution was refused by the closed schema (${searchRegistered.code}: ${searchRegistered.detail}) — an unverified family row mounts nowhere (fail closed; the retired center search path does not come back)`,
+      }
+    }
+    kernelFamilies.search = true
   }
   // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
   // mount's scopeKey — the scoped resolution this plane IS (the same
@@ -1846,8 +1912,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     scopeKey: kernelScopeKey,
     families: Object.freeze(kernelFamilies),
     guard: Object.freeze({
-      // ARC-B: the kernel owns BOTH governed mount names on the ONE table.
-      owns: (name) => typeof name === 'string' && (name === readName || name === bashName),
+      // ARC-B (PR2/PR3) + PR5: the kernel owns ALL governed mount names on
+      // the ONE table — read, shell, and now BOTH search rows (grep + glob
+      // join the same decision/settlement path; §10.2's trace law is
+      // family-count independent by design).
+      owns: (name) => typeof name === 'string'
+        && (name === readName || name === bashName || name === grepName || name === globName),
       identityFor: (name) => {
         if (typeof name !== 'string') return null
         if (name === readName) {
@@ -1856,6 +1926,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }
         if (name === bashName) {
           const entry = ensureBashApprovalEntry()
+          return entry === null ? null : entry.definitionIdentity
+        }
+        if (name === grepName || name === globName) {
+          const entry = ensureSearchApprovalEntry(name)
           return entry === null ? null : entry.definitionIdentity
         }
         return null
@@ -1925,20 +1999,53 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName) ?? null
   }
+  // U6 PR5 (ARC-A family move): the TWO search entries follow the IDENTICAL
+  // bind-ONCE law on the SAME kernel and scopeKey, bound to the sibling
+  // 'dsh.search-family' candidate — one latch PER NAME (grep's failed/
+  // invalidated bind never silences glob's fresh one; the names are distinct
+  // kernel table keys). The rows ALWAYS mount (the glob row's disabled form
+  // lands on the typed shut face but is still this family's placed, table-
+  // owned row), so the only silent-feed shapes are pre-mint consults (not
+  // latched) and post-invalidation ones (latched) — same as read/bash.
+  const searchEntryAttempted = new Map()
+  const ensureSearchApprovalEntry = (name) => {
+    if (centerKernel === null || centerKernel.families.search !== true) return null
+    if (name !== grepName && name !== globName) return null
+    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
+    if (existing !== undefined) return existing
+    if (searchEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
+    const d = placedByName.get(name)
+    if (d === undefined) return null
+    const identity = definitionIdentityOf(d)
+    if (identity === null) return null
+    searchEntryAttempted.set(name, true)
+    const added = centerKernel.kernel.addApprovalEntry({
+      scopeKey: centerKernel.scopeKey,
+      nativeName: name,
+      definitionIdentity: identity,
+      familyId: 'dsh.search-family',
+    })
+    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
+    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
+  }
 
   const placementFeed = (name) => {
     const d = placedByName.get(name)
     if (d === undefined) return undefined
-    if (centerKernel !== null && (name === readName || name === bashName)) {
-      // U6 PR2 (cond 1/2/6), PR3-generalized (ARC-B): for BOTH kernel-OWNED
-      // names the approval TABLE is the identity source. The entry binds
-      // ONCE, lazily, at first consult — the def#N mint still rides the
-      // seam's install pass (the pb §6 lookup-time law is untouched). It is
-      // NEVER silently re-bound: when a later live resolution disagrees with
-      // the table, this feed keeps answering the TABLE identity and the
-      // Guard's own live-vs-feed comparison refuses (cond 6: an identity
-      // mismatch never executes).
-      const entry = name === readName ? ensureReadApprovalEntry() : ensureBashApprovalEntry()
+    if (centerKernel !== null && (name === readName || name === bashName || name === grepName || name === globName)) {
+      // U6 PR2 (cond 1/2/6), PR3-generalized (ARC-B), PR5-completed: for EVERY
+      // kernel-OWNED name the approval TABLE is the identity source. The
+      // entry binds ONCE, lazily, at first consult — the def#N mint still
+      // rides the seam's install pass (the pb §6 lookup-time law is
+      // untouched). It is NEVER silently re-bound: when a later live
+      // resolution disagrees with the table, this feed keeps answering the
+      // TABLE identity and the Guard's own live-vs-feed comparison refuses
+      // (cond 6: an identity mismatch never executes).
+      const entry = name === readName
+        ? ensureReadApprovalEntry()
+        : name === bashName
+          ? ensureBashApprovalEntry()
+          : ensureSearchApprovalEntry(name)
       return entry === null
         ? undefined
         : Object.freeze({ definitionIdentity: entry.definitionIdentity, realmId })
@@ -2049,13 +2156,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
         kernel: centerKernel.kernel,
         registry: centerKernel.registry,
         scopeKey: centerKernel.scopeKey,
-        // U6 PR3 (ARC-B): ONE kernel, TWO registered families when both
-        // rows mounted. The PR2 surface's single `familyId` named the only
-        // family there was; the honest generalization is the list of the
-        // families THIS mount registered, in registration order.
+        // U6 PR3 (ARC-B), PR5-completed: ONE kernel, THREE registered
+        // families when all rows mounted. The PR2 surface's single
+        // `familyId` named the only family there was; the honest
+        // generalization is the list of the families THIS mount registered,
+        // in registration order.
         familyIds: Object.freeze([
           ...(centerKernel.families.read ? ['dsh.fs-family'] : []),
           ...(centerKernel.families.shell ? ['dsh.process-family'] : []),
+          ...(centerKernel.families.search ? ['dsh.search-family'] : []),
         ]),
       }) }),
       /**
@@ -2098,10 +2207,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
               try {
                 centerKernel.kernel.beginDrain()
                 centerKernel.kernel.tombstone()
-                // U6 PR3 (ARC-B): the ONE kernel drains BOTH family
-                // candidates it registered — each revoke/drop pair is the
-                // deterministic invalidation that family's mount owes (FIX-K
-                // K1: a later re-registration never resurrects an approval).
+                // U6 PR3 (ARC-B), PR5-completed: the ONE kernel drains ALL
+                // family candidates it registered — each revoke/drop pair is
+                // the deterministic invalidation that family's mount owes
+                // (FIX-K K1: a later re-registration never resurrects an
+                // approval).
                 if (centerKernel.families.read === true) {
                   centerKernel.registry.revoke('dsh.fs-family', 'the governed read mount was disposed')
                   centerKernel.kernel.dropApprovalsForFamily('dsh.fs-family')
@@ -2109,6 +2219,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
                 if (centerKernel.families.shell === true) {
                   centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
                   centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')
+                }
+                if (centerKernel.families.search === true) {
+                  centerKernel.registry.revoke('dsh.search-family', 'the governed search mount was disposed')
+                  centerKernel.kernel.dropApprovalsForFamily('dsh.search-family')
                 }
                 centerKernel.kernel.release()
               } catch {

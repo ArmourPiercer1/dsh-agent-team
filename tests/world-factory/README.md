@@ -19,7 +19,7 @@ booting.
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|u6-proc\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|u6-proc\|u6-arc-a\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
@@ -75,6 +75,25 @@ read-only before/after and never signalled).
   throws the Host's own `already registered in this scope`), so the swap
   arms judge `registration-refused` with zero spoof effects; the kernel-
   table swap law itself is pinned offline (C1 plants + RR legs).
+* `u6-arc-a` (U6 PR5 C2, one governed Team World, one boot; design budget
+  1 boot/run): the ARC-A claim on the REAL pinned Host — the PROBE FAMILY
+  (`tests/u6-arc-a-probe-family`, a NEW family with ZERO center diff)
+  mounts as a profile-patch row and its kernel runs the whole walk for
+  real: `arca:mounted` (family-mount + probe-tool register on the ledger),
+  `arca:probe-positive` (the marker file lands with the nonce INSIDE —
+  disk oracle), the three refusal legs (`arca:probe-unbound-refused-…`,
+  `arca:probe-replay-refused-…`, `arca:probe-unload-settles` incl. the
+  post-teardown KERNEL_NOT_ACTIVE leg) each with the marker dir provably
+  UNCHANGED, and the lane-side search matrix on the moved family's live
+  rows: `arca:search-grep-live` / `arca:search-glob-live` (claims found +
+  unicode path enumerated + the `.git` decoy EXCLUDED — the native
+  contract), `arca:search-refusal-zero-effect` (the anchored containment
+  refusal typed, fixture census unchanged), `arca:native-grep-control`
+  (§10.5-5: the non-Team native grep unchanged). The row resolves the
+  lane's two public seams at their SHIPPED dist faces
+  (`U6ARC_CENTER_URL`/`U6ARC_CONTRACTS_URL` in lib/world-factory.mjs); the
+  fake-scope offline test in world-factory.test.mjs runs the identical
+  walk in plain node.
 * `u6-proc` (U6 PR3 C2, one governed Team World, one boot): the kernel-owned
   governed process/bash lane on the REAL pinned Host, ARC-B-visible —
   `proc:mounted` (the placement feed lists `team_bash` AND `read` on ONE

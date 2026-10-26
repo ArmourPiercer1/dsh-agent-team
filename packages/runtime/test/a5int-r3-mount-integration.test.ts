@@ -55,8 +55,8 @@ const ROOT_DIR = join(WORLD, 'root')
 const OUTSIDE_DIR = join(WORLD, 'outside')
 const REALM = 'a5int-r3-realm'
 const PLANE_SRC = join(REPO, 'packages/runtime/src/plugin/live/team-tool-plane.mjs')
-const GLOB_SRC = join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs')
-const SEARCH_SRC = join(REPO, 'packages/runtime/src/plugin/live/search-backend.mjs')
+const GLOB_SRC = join(REPO, 'packages/tools/search-family/src/glob-backend.mjs')
+const SEARCH_SRC = join(REPO, 'packages/tools/search-family/src/search-backend.mjs')
 const MATRIX_RECEIPT = join(REPO, 'dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native-receipt.log')
 
 interface PlaneValue {

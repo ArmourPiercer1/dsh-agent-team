@@ -33,10 +33,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { acquirePortLease, reclaimStaleLease, releasePortLease, readLease, scanAllLeases, scanStaleLeases, LeaseError } from './lib/port-lease.mjs'
 import { appendCappedLine, DEFAULT_LEDGER_CAP_BYTES, MAX_LEDGER_CAP_BYTES } from './canary/ledger-cap.mjs'
 import { createOracle } from './lib/oracle.mjs'
@@ -452,6 +452,98 @@ test('u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion', a
   assert.equal(typeof TestWorldFactory, 'function')
 })
 
+// u6-arc-a (U6 PR5 C2): the ARC-A case matrix, the wiring, the assembly
+// materialization (valid blueprint YAML + plane + probe identities), the
+// decide routing, and the judge's algebra — all OFFLINE. The live run is
+// ONE host boot (budget design: 1 boot/run; the runner-wide gate caps the
+// rest).
+test('u6-arc-a: SUITE_CASES entry and parseArgs wiring', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u6-arc-a'], [
+    'arca:mounted', 'arca:probe-positive', 'arca:probe-unbound-refused-zero-effect',
+    'arca:probe-replay-refused-zero-effect', 'arca:probe-unload-settles',
+    'arca:search-grep-live', 'arca:search-glob-live', 'arca:search-refusal-zero-effect',
+    'arca:native-grep-control',
+  ])
+  const opts = parseArgs(['--suite', 'u6-arc-a', '--line', 'u6arcx', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u6-arc-a')
+  assert.throws(() => parseArgs(['--suite', 'u6-arc-a', '--evidence', '/tmp/ev', '--only', 'nope']))
+})
+
+test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra', async () => {
+  const { createArcAssembly, makeArcDecide, judgeU6ArcA } = await import('./lib/u6-arc-a-assembly.mjs')
+  const yaml = await import('yaml')
+  const dir = mkdtempSync(join(tmpdir(), 'u6arca-asm-'))
+  const assembly = createArcAssembly({ repoRoot: process.cwd(), home: dir, runStamp: 'r-TEST', reportDir: dir })
+  assembly.writePreBootFiles()
+  const doc = yaml.parseDocument(assembly.mainBlueprintYaml(['u6arc_probe'])).toJS()
+  assert.equal(doc.schemaVersion, 3)
+  assert.ok(doc.members.some((m) => m.templateId === 'greper'))
+  assert.ok(doc.members.some((m) => m.templateId === 'ctl' && m.capabilities === undefined))
+  const cfg = assembly.teamRowConfig()
+  assert.equal(cfg.teamToolPlane.centerAssembly, 'enforcing')
+  const rows = assembly.teamRows()
+  assert.ok(rows.some((r) => r.id === 'dsh-agent-team'))
+  // fixture facts exist BEFORE boot (the runner computes ground truth from them)
+  assert.ok(existsSync(assembly.files.g3.path), 'unicode fixture name')
+  assert.ok(existsSync(assembly.files.git.path), '.git decoy')
+  // decide: the greper lane issues grep -> glob -> /etc-refusal -> DONE
+  const decide = makeArcDecide({ assembly })
+  const memberReq = (n) => ({ body: { messages: [{ role: 'user', content: `[team-work requestToken=${assembly.tokens('d1')} x] t${String(n)}` }, ...Array.from({ length: n }, (_, i) => ({ role: 'assistant', content: [{ type: 'tool_use', name: i === 0 ? 'team_grep' : 'team_glob' }] }, { role: 'user', content: [{ type: 'tool_result', content: [{ type: 'text', text: 'r' }] }] })) ] } })
+  const seq = [0, 1, 2, 3].map((n) => decide({ req: memberReq(n) }))
+  const nameOf = (r) => (r.kind === 'tool-call' ? r.toolCalls[0].name : r.content)
+  assert.deepEqual(seq.map(nameOf), ['team_grep', 'team_glob', 'team_grep', 'U6ARCA_GREP_DONE'])
+  assert.equal(seq[2].toolCalls[0].arguments.path, '/etc')
+  // row grammar (run6-measured: register.ts PARAM_SCHEMA requires
+  // output_mode on the placed grep rows); ABSOLUTE targets (fs convention)
+  assert.equal(seq[0].toolCalls[0].arguments.output_mode, 'content')
+  assert.equal(seq[0].toolCalls[0].arguments.path, assembly.workspaceDir)
+  assert.equal(seq[2].toolCalls[0].arguments.output_mode, 'content')
+  // admission coverage (plane:459 fileNames class): greper grants read-any
+  const greper = doc.members.find((m) => m.templateId === 'greper')
+  assert.deepEqual(greper.capabilities.permissions.allow, [{ tool: 'read', resource: { kind: 'any' } }])
+  // judge algebra: every leg must be provable from disk/ledger facts alone
+  const good = judgeU6ArcA({
+    ledgerRows: [
+      { leg: 'family-mount', ok: true }, { leg: 'register', kind: 'probe-tool', ok: true },
+      { leg: 'walk', action: 'walk', callId: 'pos-1', ok: true },
+      { leg: 'walk', action: 'unbound', callId: 'unbound-1', outcome: 'defer' },
+      { leg: 'walk', action: 'walk', callId: 'replay-1', ok: false, code: 'GRANT_REPLAY' },
+      { leg: 'teardown', ok: true },
+      { leg: 'walk', action: 'walk', callId: 'after-1', ok: false, code: 'KERNEL_NOT_ACTIVE' },
+    ],
+    markerFiles: ['pos-1-marker.txt'],
+    grepResults: [{ ok: true, claimsFound: ['g1'] }],
+    globResults: [{ ok: true, enumHasG3: true, gitDecoyExcluded: true }],
+    ctlResult: { ok: true, claimFound: true },
+    refusalResult: { refused: true, outsideRootCodeSeen: true, censusUnchanged: true },
+    hostKernelHits: { 'a5-plane: mount-REFUSED': { count: 0 } },
+    hostAlive: true,
+  })
+  assert.ok(Object.values(good).every((x) => x === true), JSON.stringify(good))
+  const bad = judgeU6ArcA({
+    ledgerRows: [
+      { leg: 'walk', action: 'unbound', callId: 'unbound-1', outcome: 'allow' },
+      { leg: 'walk', action: 'walk', callId: 'replay-1', ok: true },
+      { leg: 'walk', action: 'walk', callId: 'after-1', ok: true },
+    ],
+    markerFiles: ['pos-1-marker.txt', 'replay-1-marker.txt'],
+    grepResults: [{ ok: true, claimsFound: [] }],
+    globResults: [{ ok: false, enumHasG3: false, gitDecoyExcluded: false }],
+    ctlResult: { ok: true, claimFound: false },
+    refusalResult: { refused: false, outsideRootCodeSeen: false, censusUnchanged: false },
+    hostKernelHits: { 'a5-plane: mount-REFUSED': { count: 1 } },
+    hostAlive: true,
+  })
+  assert.equal(bad['arca:probe-unbound-refused-zero-effect'], false)
+  assert.equal(bad['arca:probe-replay-refused-zero-effect'], false)
+  assert.equal(bad['arca:probe-unload-settles'], false)
+  assert.equal(bad['arca:search-grep-live'], false)
+  assert.equal(bad['arca:search-glob-live'], false)
+  assert.equal(bad['arca:native-grep-control'], false)
+  rmSync(dir, { recursive: true, force: true })
+})
+
 test('u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML', async () => {
   const { createProcAssembly } = await import('./lib/u6-proc-assembly.mjs')
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')
@@ -682,6 +774,63 @@ test('u6-fs: the probe row mounts and registers its tool against a fake scope', 
   assert.ok(listened.includes('tools/execute'))
   assert.equal(mod.name, 'u6-fs-probe-host')
   assert.deepEqual(mod.inject, ['tools'])
+})
+
+test('u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams)', async () => {
+  // The row + lane + BOTH public seams run here in plain node against the
+  // shipped dist faces — the exact resolution the Host world uses. This is
+  // the zero-center-diff claim offline: a family walking plan -> one-shot
+  // consume -> marker write -> unload, every refusal at ZERO effect (the
+  // marker dir is the oracle, never the return value).
+  const repoRoot = process.cwd()
+  const dir = mkdtempSync(join(tmpdir(), 'u6arca-row-'))
+  process.env.U6ARC_LEDGER = join(dir, 'ledger.jsonl')
+  process.env.U6ARC_MARKER_DIR = join(dir, 'markers')
+  process.env.U6ARC_WORLD = 'offline'
+  process.env.U6ARC_ASSEMBLY_URL = new URL('../../tests/u6-arc-a-probe-family/src/probe-assembly.mjs', import.meta.url).href
+  process.env.U6ARC_CENTER_URL = pathToFileURL(join(repoRoot, 'packages/runtime/dist/packages/runtime/governance-center/index.js')).href
+  process.env.U6ARC_CONTRACTS_URL = pathToFileURL(join(repoRoot, 'packages/runtime/dist/packages/contracts/src/index.js')).href
+  try {
+    const mod = await import(`./canary/u6-arc-a-probe-host.mjs?rowtest=${String(Date.now())}`)
+    const defs = []
+    const ctx = {
+      tools: { register: (d) => { defs.push(d); return () => {} } },
+      on: () => () => {},
+      effect: (fn) => fn(),
+    }
+    mod.apply(ctx)
+    assert.equal(mod.name, 'u6-arc-a-probe-host')
+    assert.deepEqual(mod.inject, ['tools'])
+    assert.deepEqual(defs.map((d) => d.name), ['u6arc_probe'])
+    const execute = defs[0].execute
+    const markers = () => {
+      try { return readdirSync(join(dir, 'markers')).filter((m) => m.endsWith('-marker.txt')).sort() } catch { return [] }
+    }
+    const pos = await execute({ action: 'walk', callId: 'pos-1', grantId: 'g-1', nonce: 'N1' })
+    assert.equal(pos.ok, true, JSON.stringify(pos))
+    assert.deepEqual(markers(), ['pos-1-marker.txt'])
+    assert.equal(readFileSync(join(dir, 'markers', 'pos-1-marker.txt'), 'utf8').trim(), 'N1')
+    const replay = await execute({ action: 'walk', callId: 'rep-1', grantId: 'g-1', nonce: 'N2' })
+    assert.equal(replay.ok, false)
+    assert.equal(replay.code, 'GRANT_REPLAY')
+    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'replay wrote nothing')
+    const unbound = await execute({ action: 'unbound', callId: 'unb-1' })
+    assert.notEqual(unbound.outcome, 'allow')
+    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'unbound wrote nothing')
+    const td = await execute({ action: 'teardown' })
+    assert.equal(td.ok, true)
+    const after = await execute({ action: 'walk', callId: 'aft-1', grantId: 'g-2', nonce: 'N3' })
+    assert.equal(after.ok, false)
+    assert.equal(after.code, 'KERNEL_NOT_ACTIVE')
+    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'post-unload wrote nothing')
+    const rows = readFileSync(join(dir, 'ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+    assert.ok(rows.some((r) => r.leg === 'family-mount' && r.ok === true))
+    assert.ok(rows.some((r) => r.leg === 'walk' && r.code === 'GRANT_REPLAY'))
+    assert.ok(rows.some((r) => r.leg === 'teardown' && r.ok === true))
+  } finally {
+    for (const k of ['U6ARC_LEDGER', 'U6ARC_MARKER_DIR', 'U6ARC_WORLD', 'U6ARC_ASSEMBLY_URL', 'U6ARC_CENTER_URL', 'U6ARC_CONTRACTS_URL']) delete process.env[k]
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law', async () => {
