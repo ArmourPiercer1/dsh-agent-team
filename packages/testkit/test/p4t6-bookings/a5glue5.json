@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5GLUE5",
+  "paths": [
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1166,
+    "to": 1168
+  },
+  "reason": "alpha5-glue5-entry (GLUE-5 production-assembly round): the two LIVE\nROWS land as scannable files — the governed tool-plane placement row\n(Q4/R1 placement lane; per-scope; mounts only behind a\npermissions-carrying template) and the PR7 gateway live row\n(pc-CONTRACT §3 checklist 2: the live row is a new scannable file and\nthe p4t6 census bump is the GLUE owner's). Both reach their lanes ONLY\nthrough the committed dist mirror and carry zero denylist vocabulary.\n(FINAL-REBASE note onto master eb56f805: this clause's sibling\nSCANNED_PATHS_A5PBMERGE from the prep round is DROPPED — #299 already\nbooks those three paths as SCANNED_PATHS_A5PB above, exactly the\none-booking outcome this round's own comment reserved: dedup resolved,\nnothing double-counted.)",
+  "tieNote": "The GLUE-5 tie, same form, measured on the FINAL REBASE tree (base\nmaster `eb56f805`, chain at 1166): with the two live rows on disk and\nabsent from the list the run reads `expected 1168 to be 1166`; booking\nthe two live rows ends the chain at 1168 — the scanner total of this\ntree. (The prep round booked 1157->1159->1162 with its own P-B dup\nclause; the final-rebase dedup re-ties the endpoints here, and the\nprep captures in evidence/alpha5/glue5/ stay as HISTORY lines.)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5GLUE5 (line 2952); tie line 3577"
+}

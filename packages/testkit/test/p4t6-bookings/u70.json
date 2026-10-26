@@ -1,0 +1,25 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U70",
+  "paths": [
+    "packages/testkit/census/json-canonical.mjs",
+    "packages/testkit/census/schema-check.mjs",
+    "packages/testkit/census/inventory.mjs",
+    "packages/testkit/census/reconcile.mjs",
+    "packages/testkit/census/expected-obligations.mjs",
+    "packages/testkit/census/json-canonical.d.mts",
+    "packages/testkit/census/schema-check.d.mts",
+    "packages/testkit/census/inventory.d.mts",
+    "packages/testkit/census/reconcile.d.mts",
+    "packages/testkit/census/expected-obligations.d.mts",
+    "packages/testkit/census/fixtures/make-fixture.mjs",
+    "packages/testkit/test/u7-0-census-reconcile.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1277,
+    "to": 1289
+  },
+  "reason": "U7-0 (EB2-A dynamic tool census, branch task/u7-0-dynamic-census-20261026):\nthe offline census library (canonical JSON + closed schema checker +\nObservedRuntimeInventory contract + three-way reconciler + tracked-artifact\nloader, each with its adjacent tsc type surface — the persona-probe /\nplane-effect-backends .d.mts pattern), the synthetic C1 fixture builder, and\nthe C1 CI spec. TEST/DIAGNOSTIC code only: zero production edits, zero\ndenylist vocabulary; the live probe row and runner live under tests/\n(outside every scan set), the tracked artifacts under dev/ (same).",
+  "tieNote": "U7-0: the booked SCANNED_PATHS_U70 list is exactly the measured delta —\nthe scanner on this tree WITHOUT the U7-0 files reads 1277 (= the booked\nunion through U6 PR6) and WITH them reads 1289; the unbooked RED run of\nthis suite recorded `expected 1289 to be 1277` (received-then-booked) (the +12 census-library\nincrement; no cross-round prose total is load-bearing).",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U70 (line 510); tie line 3802"
+}

@@ -1,0 +1,33 @@
+# per-suite body diff: old runner span (origin/master 88107ad71) vs tests/world-factory/suites/<NNN>-<suite>.mjs
+# expected deltas ONLY: (1) the run fn signature gains the ctx parameter; (2) SUITE_CASES[<suite>] -> CASES
+== u6-fs: old lines 821-1222 (402 lines); changed lines: 4
+   -async function runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u6-fs']
+   +async function runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, readLedgerRows, evaluateLeak, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+== u6-proc: old lines 1238-1728 (491 lines); changed lines: 4
+   -async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u6-proc']
+   +async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, readLedgerRows, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+== u6-jobs: old lines 1729-2132 (404 lines); changed lines: 4
+   -async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u6-jobs']
+   +async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, evaluateLeak, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+== u6-arc-a: old lines 2178-2435 (258 lines); changed lines: 4
+   -async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u6-arc-a']
+   +async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+== u6-arc-d: old lines 2436-2682 (247 lines); changed lines: 4
+   -async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u6-arc-d']
+   +async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+== u7-fs-mut: old lines 2683-2890 (208 lines); changed lines: 4
+   -async function runU7FsMut({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+   -  const CASE_IDS = SUITE_CASES['u7-fs-mut']
+   +async function runU7FsMut({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, evaluateLeak, REPO_ROOT, RUN_LIFETIME_MS }) {
+   +  const CASE_IDS = CASES
+# total changed lines: 24 (= 6 suites x 2 lines x (old+new))

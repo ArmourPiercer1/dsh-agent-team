@@ -1,0 +1,30 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5P4PROV",
+  "paths": [
+    "packages/runtime/sandbox-provider/contract-stub.ts",
+    "packages/runtime/sandbox-provider/phases.ts",
+    "packages/runtime/sandbox-provider/fd-inheritance.ts",
+    "packages/runtime/sandbox-provider/network.ts",
+    "packages/runtime/sandbox-provider/probe-abi.ts",
+    "packages/runtime/sandbox-provider/realm-evidence.ts",
+    "packages/runtime/sandbox-provider/provider.ts",
+    "packages/runtime/sandbox-provider/index.ts",
+    "packages/runtime/test/a5p4-harness.ts",
+    "packages/runtime/test/a5p4-phases.test.ts",
+    "packages/runtime/test/a5p4-fd-inheritance.test.ts",
+    "packages/runtime/test/a5p4-network-closure.test.ts",
+    "packages/runtime/test/a5p4-poc4-probe.test.ts",
+    "packages/runtime/test/a5p4-realm-evidence.test.ts",
+    "packages/runtime/test/a5p4-existence-wording.test.ts",
+    "packages/runtime/test/a5p4-provider.test.ts",
+    "packages/runtime/test/a5p4-lane-hygiene.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1092,
+    "to": 1109
+  },
+  "reason": "The Alpha.5 PR4 provider/launcher line (branch `alpha5-pr4-prov`, C\nLane, base master db5cb5f7): EIGHT production sources — the frozen-\nvocabulary local contract stub, the C-PROC phase closed set, the FD-\ninheritance declaration set, the network-dimension closed set, the\nauthoritative probe surface (bare-syscall GET_VERSION + real enforcement\nlegs, PoC4), the realm/trustRoot hard-profile evidence gate (negative\ncontrols only, enablement compiled OFF), the no-fallback confined-\nprocess provider, and the lane barrel — plus their NINE RED-first\nartifacts (seven specs + the shared harness and this lane's own\nhygiene/dormancy pin). The reference launcher is a .py resource and the\nscratch worlds live under gitignored `tests/homes/a5p4-*` — neither is\nscanned source. The lane touches NO shared file (the audit script, both\nruntime tsconfigs, the barrel and the scanner stay untouched; the lane\ntypechecks itself in-process via ts.createProgram in the hygiene spec),\nand it has NO production consumer (live wiring rides with PR5).",
+  "tieNote": "Lane-C (PR4 provider) ledger tie: this lane moves the scanned-total\nendpoint 1092 -> 1109 (its own pair only, pay-the-tie discipline).",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5P4PROV (line 2775); tie line 3542"
+}

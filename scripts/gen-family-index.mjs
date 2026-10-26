@@ -42,7 +42,10 @@ export function renderFamilyIndex(manifest) {
     lines.push(`import { familyAssembly as f${String(i)} } from './${e.module}'`)
   })
   lines.push('')
-  lines.push("export const FAMILY_MANIFEST_URL = new URL('./manifest.json', import.meta.url)")
+  lines.push("import { dirname, join } from 'node:path'")
+  lines.push("import { fileURLToPath } from 'node:url'")
+  lines.push('')
+  lines.push("export const FAMILY_MANIFEST_PATH = join(dirname(fileURLToPath(import.meta.url)), 'manifest.json')")
   lines.push('export const FAMILY_INDEX = Object.freeze([')
   manifest.families.forEach((e, i) => {
     lines.push(`  Object.freeze({ module: '${e.module}', familyAssembly: f${String(i)} }),`)

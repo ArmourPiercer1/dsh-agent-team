@@ -107,7 +107,7 @@ import {
   makeFamilyCapabilities,
   verifyReviewedFamilies,
 } from './family-assembly.mjs'
-import { FAMILY_INDEX, FAMILY_MANIFEST_URL } from '../../../../tools/families/index.mjs'
+import { FAMILY_INDEX, FAMILY_MANIFEST_PATH } from '../../../../tools/families/index.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -665,7 +665,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // the refusal grammar the hand-written gates used (a5-globoff's closed
   // `globEnabled` key is now the search descriptor's declared config: absent
   // = true, false = the typed shut face, non-boolean = PLANE_CONFIG_INCOMPLETE).
-  const reviewedFamilies = verifyReviewedFamilies({ manifestUrl: FAMILY_MANIFEST_URL, entries: FAMILY_INDEX })
+  const reviewedFamilies = verifyReviewedFamilies({ manifestPath: FAMILY_MANIFEST_PATH, entries: FAMILY_INDEX })
   if (reviewedFamilies.ok !== true) {
     return { ok: false, code: 'PLANE_FAMILY_MANIFEST_REFUSED', message: `the reviewed family set refused: ${reviewedFamilies.detail} (fail closed — no governed family mounts)` }
   }
@@ -1555,7 +1555,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
 
   // The reviewed Definitions (pb §2: decide REQUIRED).
   const decide = createLaneDecide(permissionPolicy, names, input.fs?.subtreeContains)
-  const shut = createShutBackend('a5-effect-face-pending')
   // GLUE-7 PRODUCTION BACKEND ASSEMBLY (glue only — `plane-effect-backends`
   // rides the implementations this repo already ships: the confined Process
   // provider for the shell class, the W5-round REAL read-only search for the

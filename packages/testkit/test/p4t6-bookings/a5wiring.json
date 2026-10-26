@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5WIRING",
+  "paths": [
+    "packages/runtime/controlled-fs/src/admission-binding.ts",
+    "packages/runtime/test/a5w-integration-wiring.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1153,
+    "to": 1155
+  },
+  "reason": "The wiring round's OWN pair: the admission-binding face (source) and\nits RED-first integration suite. Every other file this round touched\nis an EDIT to an already-counted path (an edit is not an increment),\n`dist/**` is outside the scan, and evidence lives under `dev/`.",
+  "tieNote": "(this tie shared the comment above the preceding tie at 88107ad71 — see a5intr3.json tieNote)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5WIRING (line 2890); tie line 3558"
+}

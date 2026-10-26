@@ -117,6 +117,17 @@ function* walk(dir: string): Generator<string> {
  * form. Again a NAME, not an edge: no import of the lane, nothing about the
  * barrel, the mount or the per-scope judgement moves.
  */
+/**
+ * u7-w0 (2026-10-26): the p4t6 census's per-lane lists moved out of the
+ * test file above into `testkit/test/p4t6-bookings/<lane>.json` (one file per
+ * lane, collected by enumeration). Same NAMES-ONLY category as the census
+ * file itself: JSON data that imports nothing. Directory-scoped and
+ * shape-exact (`<lane>.json` directly in that directory only) — the leg
+ * "the p4t6 census names the lane ONLY as quoted ledger paths" pins every
+ * lane-naming line inside them to one quoted path entry.
+ */
+const isP4t6Booking = (rel: string): boolean => /^testkit\/test\/p4t6-bookings\/[a-z0-9][a-z0-9-]*\.json$/.test(rel.split(sep).join('/'))
+
 const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json',
   'runtime/test/alpha5-glob-backend.test.ts', 'runtime/test/alpha5-search-backend.test.ts',
   // Seventh entry (A5-B2 exit-code fidelity, branch `alpha5-b2-rc-pr`): this spec names
@@ -205,6 +216,7 @@ describe('a5p5-dormant-audit', () => {
       const insideLane = file === laneRoot || file.startsWith(laneRoot + sep)
       if (insideLane) continue
       if (NAMES_ONLY_LEDGER_EXCEPTIONS.includes(relativePath)) continue
+      if (isP4t6Booking(relativePath)) continue
       if (REVIEWED_EDGE_EXCEPTIONS.includes(relativePath)) continue
       // Path-EXACT, and only after the leg below has pinned the spelling: a
       // test file whose one dynamic barrel line drifted is an offender again.
@@ -283,6 +295,20 @@ describe('a5p5-dormant-audit', () => {
       if (!line.includes('a5p5-tools')) continue
       expect(line.trim(), line.trim()).toMatch(/^'packages\/tools\/a5p5-tools\/[^']+',$/)
     }
+    // u7-w0: the census's per-lane bookings moved into p4t6-bookings/*.json
+    // (data, imports nothing). Same form law there: every line naming the
+    // lane is ONE quoted path entry of a `paths` array, and at least one
+    // booking still names it (the A5P5TOOLS booking) — a vacuous pass is RED.
+    const bookingsDir = join(packagesRoot, 'testkit', 'test', 'p4t6-bookings')
+    let named = 0
+    for (const file of readdirSync(bookingsDir).filter((n) => n.endsWith('.json'))) {
+      for (const line of readFileSync(join(bookingsDir, file), 'utf8').split('\n')) {
+        if (!line.includes('a5p5-tools')) continue
+        named += 1
+        expect(line.trim(), `${file}: ${line.trim()}`).toMatch(/^"packages\/tools\/a5p5-tools\/[^"]+",?$/)
+      }
+    }
+    expect(named).toBeGreaterThan(0)
   })
 
   it('the a5glb glob parity spec names the lane ONLY as one quoted read path, never as an edge', () => {

@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PINDIR",
+  "paths": [
+    "packages/runtime/test/a5-pindir-reserved-native.test.ts",
+    "packages/runtime/test/a5-pindir-subagent-flip.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1201,
+    "to": 1203
+  },
+  "reason": "A5-PINDIR (C-16 reserved-native registry, branch `a5-pindir` off master 5885e46e) adds\nONE scannable file: its spec. The production edit of this round is an EDIT to a file\nthis ledger already counts (team-tool-plane.mjs joined with GLUE-7), and no denylist\nvocabulary is added — the round's names (run_code, schedule_*, workflow, stagehand_*,\nplugin_manager) are host registry spellings, not legacy Team SessionEvent wording.\nMEASURED, not copied: the pre-booking scanner print on this tree read\n`MEASURED_TOTAL=1201` (dev/agent-workflow/evidence/alpha5/pindir/p4t6-anchor.txt,\nprinted and read) - the A5-B3 booking's 1200 plus exactly this one new path.\nThe root 21:15Z follow-up round (codex/claude_code preventive pins + flip-drift\nlaw) adds its SECOND scannable spec (a5-pindir-subagent-flip.test.ts); the\nmerge with A5-GLOBOFF (master 46e48218, booking 1201) re-anchors HERE: the\nscanner print on this MERGED tree reads `MEASURED_TOTAL=1203`\n(dev/agent-workflow/evidence/alpha5/pindir/p4t6-anchor-1203.txt, printed and\nread; the coverage title's literal equals it) - 1201 (A5-B3 + A5-GLOBOFF)\nplus exactly these two paths, no chain value copied.",
+  "tieNote": "The A5-PINDIR tie, re-anchored on this MERGED tree (A5-GLOBOFF booked 1201 there;\nthe scanner print on this tree after the merge reads MEASURED_TOTAL=1203\n(evidence/alpha5/pindir/p4t6-anchor-1203.txt, printed and read): the two pindir\nspecs sit on top of the globoff booking — no chain value copied.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PINDIR (line 85); tie line 3678"
+}

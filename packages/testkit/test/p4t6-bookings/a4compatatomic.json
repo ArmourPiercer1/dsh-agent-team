@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4COMPATATOMIC",
+  "paths": [
+    "packages/runtime/test/a4-compat-atomic-state.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1040,
+    "to": 1041
+  },
+  "reason": "a4-compat-atomic (A4-PR7 compat lane, `feat-a4-compat-atomic-state`): the\ninstrument for the DURABILITY SHAPE of one compatibility state transition —\ntwo independent consultations racing one cold generation (exactly one write\nlands, the loser is refused with a NAMED typed conflict), the\n`delete`→`put` gap a concurrent consultation can read as an ABSENT row, a\ncrash armed inside the transition and what a real reopened store can still\nreconstruct, and restart reconstruction through a fresh module evaluation.\nIt is the family that characterizes the defect the p6t1-flake escalation\n(`dev/agent-workflow/evidence/a4-pr7/p6t1-flake/FINDINGS.md` §7) escalated.\nThis lane's ONE new scannable file is this spec; every other path it writes\nis an EDIT to already-counted sources (`runtime/compatibility/probe.ts`,\n`authority.ts`, `activation/provider.ts`, `src/plugin/root.ts`,\n`coordination/index.ts`, `storage/repositories/compatibility.ts`) or evidence\nunder `dev/agent-workflow/evidence/a4-pr7/compat-atomic/`, outside\n`packages/**`. An edit is not an increment. The total on this branch was\nre-derived by landing the file FIRST and watching this leg go RED\n(`expected 1040 to be 1039`,\n`dev/agent-workflow/evidence/a4-pr7/compat-atomic/raw/p4t6-pre-extend-RED.log`)\nand then naming it: 1039 -> 1040 on its own base. MERGED with the corrupt-leg-guard spec above the\ntotal is 1041, and it was re-derived by RUNNING the derivation on the merge, not by adding two\nbranch numbers -- two lanes each saying \"+1\" is not arithmetic you may sum without checking that\nboth started from the same 1039.",
+  "tieNote": "The a4-f2-coldstart-interleave tie, same form, both endpoints MEASURED: this\nlane names one instrument, asserted present by path in the loop above, and\nthe scanner counts exactly one more file with it on disk (1041 -> 1042).",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4COMPATATOMIC (line 2617); tie line 3500"
+}

@@ -19,12 +19,29 @@ booting.
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
-| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|u6-fs\|u6-proc\|u6-jobs\|u6-arc-a\|u6-arc-d\|crash-victim> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
+| **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|crash-victim\|any suites/*.mjs name> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
 
 C1 is the ONLY tier CI runs. C2/C3 require a built Host tree and lease ports
-3180–3186 / 3491–3500 — never 3080 (the stable dev instance is probed
+from the `tests/paths.mjs` bands (World hosts: `HOST_PORT_BANDS` 3181–3199 then
+13000–13049; mocks: `MOCK_PORT_BANDS` 3491–3500 then 13050–13099; widened by
+the 2026-10-26 user ruling) — never 3080 (the stable dev instance is probed
 read-only before/after and never signalled).
+
+## Drop-in registries (u7-w0, 2026-10-26)
+
+A new C2 lane ADDS files and edits no shared list:
+
+| what | drop a file into | loader | C1 controls |
+| --- | --- | --- | --- |
+| a World shape (probe row, owned ledger/marker paths, env, patch header) | `world-kinds/<NNN>-<kind>.mjs` | `lib/world-kinds.mjs` (→ `TestWorldFactory.createWorld({<option>: {rows}})`) | `registries.test.mjs` |
+| a C2 suite (case list, request budget, run function) | `suites/<NNN>-<suite>.mjs` | `lib/suites.mjs` (→ `u5-canary-runner.mjs --suite <suite>`) | `registries.test.mjs` |
+
+The numeric prefix is the order. Both loaders are fail-closed (mis-named file,
+missing field, duplicate name/option/member, non-owned path, undeclared env
+key all refuse at load), and an option or suite name nobody declares is a
+typed refusal — a removed module can no longer degrade into a plain canary
+World. Run `node --test tests/world-factory/registries.test.mjs`.
 
 ## What each C2 suite proves
 

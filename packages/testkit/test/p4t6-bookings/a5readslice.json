@@ -1,0 +1,18 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5READSLICE",
+  "paths": [
+    "packages/runtime/test/a5-read-slice-window.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1210,
+    "to": 1212
+  },
+  "reason": "A5-READ-SLICE (the governed read slice, branch `a5-read-slice` off base 5b39cab13)\nadds TWO scannable files: the read-slice window spec, and the ADJACENT .d.mts tsc\ntype surface of the already-counted plane-effect-backends.mjs (the a2-canonical-\noperation-realfs / persona-probe pattern — the type surface is its own scannable\nfile, booked exactly as those precedents booked theirs). The two .mjs production\nedits and the two old-test shape edits ride ALREADY-COUNTED files; dist mirrors,\ndocs/INSTALL.md and the dev/ receipts are outside the scan; zero denylist vocabulary\n(the vocabulary legs pass over both files in the same unbooked run).\nMEASURED, not copied: the pre-booking scanner run on THIS tree read\n`expected 1212 to be 1210` (.probe-plan-tmp/r23-launch/read-tdd/\nconsumerfix-p4t6-red-unbooked.raw) — the booked 1210 plus exactly these two paths.",
+  "listNotes": "U6 PR6 RETIREMENT: the .d.mts left the world with its .mjs (legacy center\nsite deleted); named in RETIRED_PATHS_U6PR6, pinned ABSENT, tie corrected.",
+  "retiredLater": [
+    "packages/runtime/src/plugin/live/plane-effect-backends.d.mts"
+  ],
+  "tieNote": "The A5-READ-SLICE tie, MEASURED on THIS tree at booking time (scanner run\nin-place, both files present, clause unbooked, reading `expected 1212 to be\n1210`; .probe-plan-tmp/r23-launch/read-tdd/consumerfix-p4t6-red-unbooked.raw):\nthe chain's measured 1210 plus exactly these two files — no chain value copied.\nU6 PR6: the -term is the retired A5-READ-SLICE type surface, derived from the named array; the 2-file delta stays true for the booking tree",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5READSLICE (line 195); tie line 3714"
+}

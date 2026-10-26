@@ -1,0 +1,21 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR3",
+  "paths": [
+    "packages/runtime/intervention/types.ts",
+    "packages/runtime/intervention/derivation.ts",
+    "packages/runtime/intervention/projection.ts",
+    "packages/runtime/intervention/index.ts",
+    "packages/runtime/test/a4p3-approval-case.test.ts",
+    "packages/runtime/test/a4p3-approval-escalation.test.ts",
+    "packages/runtime/test/a4p3-intervention-projection.test.ts",
+    "packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 987,
+    "to": 995
+  },
+  "reason": "A4-PR3 (lane A/B/C): four lane sources plus four specs, all inside the\nscanner's existing `packages/**/*.ts` scope, nothing generated and nothing\nremoved. The `intervention/` lane ships UNWIRED by design (ADR A4-6's\nzero-dist posture restated at plan line 302: it is deliberately NOT in\n`packages/runtime/tsconfig.build.json`, and the test asserting that is\n`packages/runtime/test/a4p3-intervention-projection.test.ts`), so the four\nsources are counted exactly as any other lane source is. Everything else\nthis PR touches is an EDIT to an already-counted file\n(control/types.ts, control/service.ts, control/index.ts,\ncontrol/leader-notification.ts, src/plugin/projection-source.ts,\npackages/client/src/model/ledger-adapter.ts and the amended specs) — an\nedit is not an increment — and `dist/**` plus\n`dev/agent-workflow/evidence/**` stay outside the scanned scope.\nArithmetic: 987 + 8 = 995. RED raw\n`dev/agent-workflow/evidence/a4-pr3/red-captures/RED-04-p4t6-file-count-pin.txt`\nreported `expected 994 to be 987`. The eighth file is\n`a4p3-intervention-lane-hygiene.test.ts`, which the FREEZE AUDIT (finding F4,\nagainst the pre-amendment freeze) required: the plan names it at line 305, so\nthe pin moved 994 -> 995 — and it moved for a NAMED file, which is what the\ntie below is for.",
+  "tieNote": "The A4-PR3 tie, same form: the movement equals the named files, and every\none of them is asserted present by path above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR3 (line 2332); tie line 3347"
+}

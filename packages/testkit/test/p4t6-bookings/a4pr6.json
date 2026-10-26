@@ -1,0 +1,27 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR6",
+  "paths": [
+    "packages/runtime/governance-warning/types.ts",
+    "packages/runtime/governance-warning/service.ts",
+    "packages/runtime/governance-warning/index.ts",
+    "packages/runtime/test/a4p6-governance-warning.test.ts",
+    "packages/runtime/test/a4p6-governance-warning-service.test.ts",
+    "packages/runtime/test/a4p6-intervention-aggregation.test.ts",
+    "packages/remote/src/handlers/intervention.ts",
+    "packages/remote/test/a4p6-remote-v8.test.ts",
+    "packages/client/src/model/team-interventions.ts",
+    "packages/client/src/model/permission-administration.ts",
+    "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
+    "packages/runtime/test/a4p6-governance-warning-host-adapter.test.ts",
+    "packages/runtime/test/a4p6-driven-principal-act.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1003,
+    "to": 1016
+  },
+  "reason": "A4-PR6 (stage 6.A increment; extended INCREMENTALLY per file-creating\ncommit, per shared rule 8 / A5-17 — never renumber another PR): the\ngovernance-warning lane (types + service + index, the ONE warning\nmodule the start gate, the boundary observation and the v8 surface\nread through) plus its three runtime specs. Everything else PR6\ntouches so far is an EDIT to an already-counted file (s6-remote.ts,\nroot.ts, host.ts, the remote dispatch.ts backing vocabulary,\nintervention/*, tsconfig.build.json, this pin) — an edit is not an\nincrement — and `dist/**` plus `dev/agent-workflow/evidence/**` stay\noutside the scanned scope.",
+  "listNotes": "§6.B (contract v8): the intervention wire law module + its remote suite.\n§6.D (client plane): the two client model sources (the scanner's\ninclude pattern is .ts/.mts/.mjs — the panel/spec .tsx files are\noutside the scan; the discovered total is the proof: discovered\nminus registered is exactly these paths).\nReview round 1 (this PR's review-fix commits): three new runtime\nspecs — the start-gate entrance suite (fix 1), the host-adapter\nsuite over the real docs/contains builders (fixes 2+3), and the\ndriven-principal act suite (fixes 5+6). Everything else the round\ntouched is an EDIT to an already-counted file (s6-remote.ts,\nroot.ts, host.ts, permission-plane.ts, catalog.ts, the client\nmodel/spec, this pin) — an edit is not an increment.",
+  "tieNote": "The A4-PR6 tie, same form: the movement equals the named files, and every\none of them is asserted present by path above. `1016` is THIS PR's own\nadvancing total — it moves only when THIS list grows (a stage commit\nadding a file updates the list and this number together; an undeclared\nfile moves the scanner total without the list and fails above). Other\nPRs' numbers stay untouched. Review round 1 moved it with the three\nreview-round specs named in the list.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR6 (line 2387); tie line 3363"
+}

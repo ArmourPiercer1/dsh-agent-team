@@ -270,6 +270,20 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
       // (imports and prose edges never take this shape).
       expect(line.trim(), line.trim()).toMatch(/^'packages\/[^']+',$/)
     }
+    // u7-w0: the census's per-lane lists now live in p4t6-bookings/*.json
+    // (data, collected by enumeration). Same census form there: a line naming
+    // the lanes is ONE quoted path entry of a `paths` array — and the A5P7JOBS
+    // booking still names them, so this leg cannot pass vacuously.
+    const bookingsDir = join(REPO_PACKAGES, 'testkit', 'test', 'p4t6-bookings')
+    let named = 0
+    for (const file of readdirSync(bookingsDir).filter((n) => n.endsWith('.json'))) {
+      for (const line of readFileSync(join(bookingsDir, file), 'utf8').split('\n')) {
+        if (!/jobs-gateway|vnext-field-mapping/.test(line)) continue
+        named += 1
+        expect(line.trim(), `${file}: ${line.trim()}`).toMatch(/^"packages\/[^"]+",?$/)
+      }
+    }
+    expect(named).toBeGreaterThan(0)
   })
 
   it('every lane file carries zero frozen denylist vocabulary', () => {

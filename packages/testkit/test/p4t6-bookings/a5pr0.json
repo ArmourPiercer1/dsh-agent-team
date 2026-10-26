@@ -1,0 +1,31 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PR0",
+  "paths": [
+    "packages/domain/tool-governance/src/canonical-json.ts",
+    "packages/domain/tool-governance/src/parse-util.ts",
+    "packages/domain/tool-governance/src/resource.ts",
+    "packages/domain/tool-governance/src/effects.ts",
+    "packages/domain/tool-governance/src/assurance.ts",
+    "packages/domain/tool-governance/src/binding.ts",
+    "packages/domain/tool-governance/src/grant.ts",
+    "packages/domain/tool-governance/src/lease.ts",
+    "packages/domain/tool-governance/src/planes.ts",
+    "packages/domain/tool-governance/src/errors.ts",
+    "packages/domain/tool-governance/src/interfaces.ts",
+    "packages/domain/tool-governance/src/index.ts",
+    "packages/domain/test/a5p0-contracts.test.ts",
+    "packages/domain/test/a5p0-schema-negatives.test.ts",
+    "packages/domain/test/a5p0-fingerprint-negatives.test.ts",
+    "packages/domain/test/a5p0-planes.test.ts",
+    "packages/domain/test/a5p0-grant-replay.test.ts",
+    "packages/domain/test/a5p0-layer-audit.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1048,
+    "to": 1066
+  },
+  "reason": "The Alpha.5 PR0 tool-governance contract lane (branch\n`alpha5-pr0-contracts`, stacked on the S0 selection-matrix line):\ntwelve PURE-DOMAIN sources (the closed contract records + the immutable\nalgebra of `packages/domain/tool-governance/src`, shipped DORMANT —\nzero production consumers, pinned by a5p0-layer-audit — REUSING the\nAlpha.4 authority-envelope lattice rather than restating it) plus its\nsix RED-first specs. The audit tooling lives in `scripts/`, outside the\npackages/ scan, and moves nothing; the edited files (the domain\ntsconfig include entry is not scanned, the a3p3 hygiene allow-list\namendment is an EDIT) contribute no increment — an edit is not an\nincrement, in either direction.",
+  "tieNote": "The A5-PR0 tie, same form: the movement equals the eighteen files this\nlane names, each asserted present by path in the loop above. BOTH\nendpoints MEASURED on this branch, not inferred: with the lane on disk\nand this entry absent the run reads `expected 1066 to be 1048` (full\nsuite JSON capture, `a5-final-test.json`), and 1048 is the derived\nmerged-tip total the a4-w6 tie above ends on.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PR0 (line 2705); tie line 3523"
+}

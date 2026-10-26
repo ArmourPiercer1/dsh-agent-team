@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4PR5",
+  "paths": [
+    "packages/runtime/governance/permission-approval.ts",
+    "packages/runtime/test/a4p5-permission-mutation-proposal.test.ts",
+    "packages/runtime/test/a4p5-permission-mutation-inline-commit.test.ts",
+    "packages/runtime/test/a4p5-self-mutation.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 999,
+    "to": 1003
+  },
+  "reason": "A4-PR5 (lane A/B/C): one proposal-law lane source plus its three specs,\nall inside the scanner's existing `packages/**/*.ts` scope. Everything\nelse this PR touches is an EDIT to an already-counted file\n(governance/service.ts, governance/types.ts, governance/index.ts,\nsrc/plugin/root.ts, src/plugin/s6-remote.ts, src/plugin/permission-plane.ts,\ntools/types.ts, tools/tools.ts, the amended a3p3 hygiene, a4p2\ndual-envelope and tools c1-list specs, and THIS pin) — an edit is not an\nincrement (`control/` was NOT touched: the guard-side A1-14 duty closed\nas a named BLOCKED with the exact seam, recorded in\n`dev/agent-workflow/evidence/a4-pr5/design.md` §9) — and `dist/**` plus\n`dev/agent-workflow/evidence/**` stay outside the scanned scope. RED raw\n`dev/agent-workflow/evidence/a4-pr5/red-captures/RED-D01-p4t6-pin-999.txt`\nreported `expected 1003 to be 999` on the rebased tree.",
+  "tieNote": "The A4-PR5 tie, same form: the movement equals the named files, and every\none of them is asserted present by path above. No number in PROSE — the\ndifference of the two pinned totals is the only arithmetic here.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4PR5 (line 2371); tie line 3355"
+}

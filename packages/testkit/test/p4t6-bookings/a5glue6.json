@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5GLUE6",
+  "paths": [
+    "packages/runtime/test/a5g6-install-face-render.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1170,
+    "to": 1171
+  },
+  "reason": "GLUE-6 (alpha5-glue6-fix): the unit leg for the two shipped-artifact\nfixes. The fixes add NO new scannable source — the dist-mirror copies\nof `upstream-resolver.mjs` and `root-binding/harness/seam.mjs` live\nunder a `dist` segment, which the scanner excludes by rule (the shipped\nface is not a source tree), and every other edit is in a file this\nledger already books. So the chain moves by exactly this one file.",
+  "tieNote": "The GLUE-6 tie, same form, measured on this tree (base master\n`28d31f2a`, chain at 1170 after P-B-R2 (#317)): solo RED `expected 1171 to be 1170` before\nthis booking. One file — the shipped-face unit leg; the two\ndist-mirror placements the same round adds are excluded by the\n`dist`-segment rule, which is why the chain moves by one and not three.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5GLUE6 (line 2979); tie line 3593"
+}

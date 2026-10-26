@@ -1,0 +1,22 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SCHEMAREV",
+  "paths": [
+    "packages/domain/blueprint/src/blueprint-v4.ts",
+    "packages/domain/blueprint/src/migration-report.ts",
+    "packages/domain/tool-governance/src/placement.ts",
+    "packages/domain/vnext-field-mapping/src/v4-authoring-map.ts",
+    "packages/domain/test/a5sr1-tool-binding-placement.test.ts",
+    "packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts",
+    "packages/domain/test/a5sr3-default-deny-mapping.test.ts",
+    "packages/domain/test/a5sr4-migration-report.test.ts",
+    "packages/domain/test/a5sr5-migration-negative-cases.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1171,
+    "to": 1180
+  },
+  "reason": "alpha5-schema-rev (VNEXT-SCHEMA reversible half): the four DORMANT\ndomain-lane modules the round lands (v4 authoring grammar, migration\nreport, placement typed face, v4 authoring map) + the five a5sr\ncontract suites that pin them. SUPPORTED stays [3]; every module is\nunreachable from any shipped path; zero production consumers.",
+  "tieNote": "alpha5-schema-rev (re-tied at merge onto master 35bff836: GLUE-6=1171):\nnine scannable files, 1171 -> 1180 on the merged tree (scanner-measured, not copied).\nHistory: 1177 - 1168 on base 23002259; 1179 - 1170 after master@68deccaa.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5SCHEMAREV (line 2987); tie line 3597"
+}

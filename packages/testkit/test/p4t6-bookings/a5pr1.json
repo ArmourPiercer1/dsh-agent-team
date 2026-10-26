@@ -1,0 +1,20 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PR1",
+  "paths": [
+    "packages/runtime/tool-dispatch/closed-world-guard.ts",
+    "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+    "packages/runtime/tool-dispatch/install.ts",
+    "packages/runtime/tool-dispatch/index.ts",
+    "packages/runtime/test/a5p1-closed-world-guard.test.ts",
+    "packages/runtime/test/a5p1-scoped-dispatcher.test.ts",
+    "packages/runtime/test/a5p1-guard-install.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1066,
+    "to": 1073
+  },
+  "reason": "The Alpha.5 PR1 guard-dispatch line (branch `alpha5-pr1-guard-dispatcher`,\nstacked on the PR0 contract line): FOUR production sources — the pure\nclosed-world Guard decision, the stable Scoped Dispatcher assembly\nmachine, the public-seam install (Guard -> mask -> bind -> publish ->\nordered teardown) and the lane barrel — plus their THREE RED-first specs.\nThe ONE production consumer is the ALREADY-COUNTED Team trusted assembly\npoint `runtime/src/plugin/live/agent-bindings.mjs` (an edit to a scanned\nfile is not an increment); `packages/runtime/dist/**` is outside the\nscanner's rules and the real-Host kit lives under `tests/kits/`, outside\nthe packages/ scan — both move nothing.",
+  "tieNote": "The A5-PR1 tie, same form: seven named files, each asserted present by\npath above. BOTH endpoints MEASURED on this branch: with the lane on\ndisk and this entry absent the run reads `expected 1073 to be 1066`,\nand 1066 is the total the A5-PR0 tie above ends on.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PR1 (line 2735); tie line 3528"
+}

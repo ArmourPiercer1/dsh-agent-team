@@ -1,0 +1,20 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5GLB",
+  "paths": [
+    "packages/tools/search-family/src/glob-backend.mjs",
+    "packages/runtime/test/alpha5-glob-harness.ts",
+    "packages/runtime/test/alpha5-glob-backend.test.ts",
+    "packages/runtime/test/alpha5-glob-backend-adversarial.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1187,
+    "to": 1191
+  },
+  "reason": "alpha5-glob-backend (a5glb, branch `alpha5-glob-backend`): the anchored\nconfined-rg GLOB row and its two suites + shared harness. Four scannable\nfiles, all NEW paths owned by that lane; the row is a production live row\n(.mjs, like the GLUE-5/6 live rows) and carries no denylist vocabulary.",
+  "pathNotes": {
+    "packages/tools/search-family/src/glob-backend.mjs": "U6 PR5: moved lane"
+  },
+  "tieNote": "The a5glb tie, RE-ANCHORED by the scanner on THIS merged tree (the pre-merge\nanchors do not carry across the two chains: the a5glb chain measured 1184 with\nthe natexe spec absent, the natexe chain measured 1187 with the four glob paths\nabsent — neither number is this tree's total, so neither was copied). Measured\nhere, master's file as the base and this clause NOT yet booked, the run read\n`expected 1191 to be 1187`: the natexe chain's booked chain (1187) plus exactly\nthe four new glob paths on disk. Booking them by name ends the chain at the\nmeasured scanner total of this tree, 1191 — asserted green by the union totals above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5GLB (line 3047); tie line 3637"
+}

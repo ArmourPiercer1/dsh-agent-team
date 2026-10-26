@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "FIXK",
+  "paths": [
+    "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
+    "packages/runtime/test/u6-fixk-shadow-ledger.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1238,
+    "to": 1240
+  },
+  "reason": "FIX-K (U6 kernel safety, external-audit remediation off master 2db321f63)\nadds TWO scannable files: the kernel-safety suite (K1 revoke-bound\napprovals + K2 synchronous in-flight consume reservation + K3 required\nlifecycle port + K4 scope-keyed approvals) and the bounded-shadow-ledger\nsuite (K5). Every production change of this round is an EDIT to files this\nledger already counts (kernel.ts / index.ts / center-shadow-row.mjs joined\nwith U6PR1), no denylist vocabulary is added, and dist mirrors, docs/** and\ndev-evidence stay outside the scan. Taking the scanned total on THIS tree\nto 1240 — MEASURED, not copied: the unbooked scanner run reads\n`expected 1240 to be 1238`\n(dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),\nU6 PR1's booked 1238 plus exactly the two new paths on disk.",
+  "tieNote": "FIX-K (U6 kernel safety), same tie form: the measured unbooked scanner\nrun on THIS tree reported `expected 1240 to be 1238`\n(dev/agent-workflow/evidence/u6-fixk-20261026/logs/p4t6-RED-unbooked.log),\nand the whole 2-file gap is exactly the named SCANNED_PATHS_FIXK list\nasserted present by path above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_FIXK (line 333); tie line 3750"
+}

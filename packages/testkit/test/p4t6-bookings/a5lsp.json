@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5LSP",
+  "paths": [
+    "packages/runtime/sandbox-provider/lsp-assembly.ts",
+    "packages/runtime/test/a5lsp2-assembly.test.ts",
+    "packages/runtime/test/a5lsp2-fixture-lang-server.mjs",
+    "packages/runtime/test/a5lsp2-fixture-ping.mjs",
+    "packages/runtime/test/a5lsp2-harness.ts",
+    "packages/runtime/test/a5lsp2-streaming.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1160,
+    "to": 1166
+  },
+  "reason": "alpha5 prod-lsp (P-C R-1/R-2) booking, deduped on the rebased tree: the\nSIX scannable files the LSP lane adds (RED 7c8a90b8 + GREEN ab9ee76f) —\nthe lsp-assembly source + the two a5lsp2 suites + the shared harness +\nthe two fixture .mjs language servers. The three P-B install files this\nclause once carried WITH those six are booked by SCANNED_PATHS_A5PB\nabove since #299 landed; the merged P-B||P-C clause of 93b728a3 is\nretired to the LSP six here so the three can never double-count (the\nfinding-F no-double-count precedent, parent-ruled semantic merge).",
+  "tieNote": "The P-C prod-lsp tie, same form, measured on the REBASED tree (base\nmaster `2957809e`, P-B already merged): solo RED `expected 1166 to be\n1160` before this clause — six, matching the clause name-for-name.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5LSP (line 2932); tie line 3569"
+}

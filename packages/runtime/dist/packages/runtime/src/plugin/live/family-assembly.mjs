@@ -47,6 +47,7 @@
  */
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 
 export const FAMILY_ASSEMBLY_SCHEMA = 'u7-family-assembly/1'
 
@@ -172,12 +173,12 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
  * the plane fails the assembly closed rather than silently dropping a
  * family (a dropped governed family would let the native tool ride).
  *
- * @param {{ manifestUrl: URL, entries: readonly { module: string, familyAssembly: object }[] }} input
+ * @param {{ manifestPath: string, entries: readonly { module: string, familyAssembly: object }[] }} input
  */
-export function verifyReviewedFamilies({ manifestUrl, entries }) {
+export function verifyReviewedFamilies({ manifestPath, entries }) {
   let manifest
   try {
-    manifest = JSON.parse(readFileSync(manifestUrl, 'utf8'))
+    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   } catch (error) {
     return { ok: false, detail: `family manifest unreadable: ${String(error?.message ?? error)}` }
   }
@@ -198,7 +199,7 @@ export function verifyReviewedFamilies({ manifestUrl, entries }) {
     }
     let bytes
     try {
-      bytes = readFileSync(new URL(entry.module, manifestUrl))
+      bytes = readFileSync(join(dirname(manifestPath), entry.module))
     } catch {
       return { ok: false, detail: `reviewed family module '${entry.module}' is missing` }
     }

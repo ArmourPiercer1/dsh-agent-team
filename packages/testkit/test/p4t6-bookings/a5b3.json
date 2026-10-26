@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5B3",
+  "paths": [
+    "packages/runtime/test/a5b3-cancel-leg.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1199,
+    "to": 1200
+  },
+  "reason": "A5-B3 (B3 cancel leg, branch `alpha5-b3-cancel-pr` off master fee982d2) adds ONE\nscannable file: its spec. The four production edits of this round are EDITS to files\nthis ledger already counts (the lane's register.ts/backend-contract.ts/pipeline.ts\njoined with the GLUE-2 round, the plane .mjs with GLUE-7), and no denylist vocabulary\nis added — the round's whole vocabulary (`cancelled`, `dispatcher-call-terminated-\nafter-body-start`) is vNext closed-set wording already living in spill.ts/types.ts.\nMEASURED, not copied - twice, at each anchor this clause lives on. On its own\nbranch the pre-booking run read `expected 1198 to be 1197` (the A5-B2 booking\nplus exactly this one new path). On THIS merged tree, per the root's 19:3xZ\nmerge-sync order, the booking was re-anchored by an anchor print of the real\nscan (printed, read, deleted - the coverage title's literal equals it):\nMEASURED_TOTAL=1200, which is master's measured 1199 plus exactly this one\npath.",
+  "tieNote": "The A5-B3 tie, RE-ANCHORED on this merged tree by the root's 19:3xZ merge-sync\norder, copying nothing: alpha5-ptc-fs is already booked on master (its own\nmeasured booking ends at 1199 there), so the pre-booking reading of this\nmerged tree is taken HERE, at booking time, by the anchor print (printed,\nread, deleted; the title literal equals it). The clause keeps exactly ONE\npath: 1200 - 1199 is its spelling on this merged tree.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5B3 (line 67); tie line 3669"
+}

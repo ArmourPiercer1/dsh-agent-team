@@ -19,8 +19,10 @@
  *                an existing path or symlink; <home>.lock honoured)
  *   workspace    <home>/workspace          (the session cwd; canary effects)
  *   logs         <evidenceRoot>/logs/<id>  (raw logs live OUTSIDE git)
- *   provider     an in-process mock model with a LEASED port (3491-3500)
- *   host port    LEASED (3180-3186), lease = pid+startedAt file, stale-lease
+ *   provider     an in-process mock model with a LEASED port (MOCK_PORT_BANDS:
+ *                3491-3500, then 13050-13099)
+ *   host port    LEASED (HOST_PORT_BANDS: 3181-3199, then 13000-13049 — 3180
+ *                is never leased to a World), lease = pid+startedAt file, stale-lease
  *                reclaim = crash recovery (see port-lease.mjs)
  *   PIDs         <home>/.u5-ownership.json records {runnerPid, hostPid};
  *                teardown/reclaim kills ONLY pids listed there AND verified
@@ -43,11 +45,12 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { createConnection } from 'node:net'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CLIENT_COMMIT_HASH, homeDir, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+import { CLIENT_COMMIT_HASH, HOST_PORT_BANDS, homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 import { acquireFirstFreeLease, pidAlive, reclaimStaleLease, sweepLegacyLease } from './port-lease.mjs'
+import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, validateKindSpec } from './world-kinds.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -70,38 +73,34 @@ export const WORLD_PREFIX = 'u5'
 export const U6_SHADOW_HOST_SRC = resolve(HERE, '..', 'canary', 'u6-shadow-host.mjs')
 export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
 /**
- * U6 PR2 C2 (`u6-fs` suite): the probe row the factory mounts when a World is
- * created with `u6Fs` set. It observes the governed `read` lane and performs
- * the identity-swap / re-registration-window PLANTS on command (never
- * spontaneously); its ledger/markers are evidence channels independent of the
- * model transcript. See the file's header for the measured mount law.
+ * THE WORLD KINDS, collected from `tests/world-factory/world-kinds/*.mjs`
+ * (u7-w0): each C2 suite that needs its own World shape ships ONE module
+ * instead of editing four places in this file. See lib/world-kinds.mjs for the
+ * descriptor contract and the laws the factory now states once over it.
  */
-export const U6FS_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-fs-probe-host.mjs')
-export const U6FS_PROBE_ROW_ID = 'u6-fs-probe-host'
+export const WORLD_KINDS = await loadWorldKinds()
+const KIND_BY_OPTION = new Map(WORLD_KINDS.map((k) => [k.option, k]))
+/** The kind options createWorld accepts (every other unknown key is REFUSED). */
+export const WORLD_KIND_OPTIONS = Object.freeze(WORLD_KINDS.map((k) => k.option))
+
 /**
- * U6 PR3 C2 (`u6-proc` suite): the mirror of the PR2 probe for the governed
- * SHELL lane (`team_bash`) — same measured mount law, same public seam, its
- * own ledger/markers. Observes team_bash calls/results and performs the
- * swap/restore plants plus the guard-off positive CHANNEL on command.
+ * Back-compat probe exports (kept because suites import them by name — e.g.
+ * u6-arc-d.test.mjs pins U6ARCD_PROBE_SRC / _ROW_ID). They are DERIVED from
+ * the registry, never re-declared: each kind module owns its probe row (the
+ * header of every world-kinds/*.mjs carries the per-lane prose these
+ * comments used to).
  */
-export const U6PROC_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-proc-probe-host.mjs')
-export const U6PROC_PROBE_ROW_ID = 'u6-proc-probe-host'
-/** U6 PR5 ARC-A: the probe-family row + the lane's public assembly module
- *  (the HOST resolves it through this file URL; the lane resolves ITS two
- *  public seams at the dist faces via U6ARC_CENTER_URL / U6ARC_CONTRACTS_URL
- *  — set below, the exact files the shipped glue imports). */
-export const U6ARCA_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-arc-a-probe-host.mjs')
-export const U6ARCA_PROBE_ROW_ID = 'u6-arc-a-probe-host'
-/** U6 PR6 ARC-D: the ADVERSARIAL probe row. It mounts the PR5 probe FAMILY
- *  unchanged (zero new family code is the claim) through the same lane
- *  assembly URL; the row bridges U6ARCD_CENTER_URL / U6ARCD_CONTRACTS_URL
- *  onto the U6ARC_* names the family actually reads — the same shipped dist
- *  faces the u6ArcA block below pins. */
-export const U6ARCD_PROBE_SRC = resolve(HERE, '..', 'canary', 'u6-arc-d-probe-host.mjs')
-/** U7-0 (EB2-A): the ObservedRuntimeInventory census row + its seam faces. */
-export const U7C_PROBE_SRC = resolve(HERE, '..', 'canary', 'u7-census-probe-host.mjs')
-export const U7C_PROBE_ROW_ID = 'u7-census-probe'
-export const U6ARCD_PROBE_ROW_ID = 'u6-arc-d-probe-host'
+const probeOf = (option) => KIND_BY_OPTION.get(option)?.probe ?? { src: null, rowId: null }
+export const U6FS_PROBE_SRC = probeOf('u6Fs').src
+export const U6FS_PROBE_ROW_ID = probeOf('u6Fs').rowId
+export const U6PROC_PROBE_SRC = probeOf('u6Proc').src
+export const U6PROC_PROBE_ROW_ID = probeOf('u6Proc').rowId
+export const U6ARCA_PROBE_SRC = probeOf('u6ArcA').src
+export const U6ARCA_PROBE_ROW_ID = probeOf('u6ArcA').rowId
+export const U6ARCD_PROBE_SRC = probeOf('u6ArcD').src
+export const U6ARCD_PROBE_ROW_ID = probeOf('u6ArcD').rowId
+export const U7C_PROBE_SRC = probeOf('u7Census').src
+export const U7C_PROBE_ROW_ID = probeOf('u7Census').rowId
 export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
@@ -271,64 +270,38 @@ export class TestWorldFactory {
    * @param {'off'|'shadow'|null} [spec.centerAssembly] U6 PR1 shadow-parity:
    *        mount the `u6-shadow-host` row (identically in BOTH modes; only
    *        'shadow' installs the center-assembly row) and pass the U6_* env
-   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Fs]
-   *        U6 PR2 C2: mount the `u6-fs-probe-host` row and compose the extra
-   *        patch rows (production Team row + presets — rows carrying
-   *        `config:`, which the plain mountRows cannot express) into the SAME
-   *        `- insert:` layer; sets U6FS_* env for the probe before spawn.
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.<kind option>]
+   *        u7-w0: ONE World KIND per World, named by its option (u6Fs, u6Proc,
+   *        u6Jobs, u6ArcA, u6ArcD, u7Census, u7FsMut, … — the live list is
+   *        WORLD_KIND_OPTIONS, collected from tests/world-factory/world-kinds/).
+   *        The kind's probe row (if any) mounts beside the canary, and the
+   *        caller rows compose into the SAME `- insert:` layer; the kind's env
+   *        is set before spawn. Kinds are mutually exclusive; an option no
+   *        core field or kind declares is refused.
    */
-  /**
-   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Proc]
-   *        U6 PR3 C2: mount the `u6-proc-probe-host` row and compose the
-   *        extra patch rows into the SAME `- insert:` layer; sets U6PROC_*
-   *        env for the probe before spawn. Mutually exclusive with u6Fs.
-   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Jobs]
-   *        U6 PR4 C2: compose the jobs-World rows (production Team row with
-   *        the closed jobsEnabled key ON) into the SAME `- insert:` layer.
-   *        No probe row: the production bridge IS the subject. Mutually
-   *        exclusive with u6Fs and u6Proc.
-   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6ArcD]
-   *        U6 PR6 C2: mount the `u6-arc-d-probe-host` row (the PR5 probe
-   *        FAMILY attacked as shipped — zero new family code) and compose
-   *        the extra patch rows into the SAME `- insert:` layer; sets
-   *        U6ARCD_* env for the probe before spawn. Mutually exclusive with
-   *        u6Fs / u6Proc / u6Jobs / u6ArcA.
-   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u7FsMut]
-   *        U7-9a C2: NO probe row — the governed FS-family mutation rows
-   *        live on the PRODUCTION kernel; verdicts ride the runner's own
-   *        disk reads + host-log witnesses. Mutually exclusive with the
-   *        other suite specs.
-   */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null, u6ArcA = null, u6ArcD = null, u7Census = null, u7FsMut = null }) {
+  async createWorld(options = {}) {
+    const { line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null } = options
+    // u7-w0: every remaining key must be a WORLD KIND declared under
+    // tests/world-factory/world-kinds/. An unrecognised key is REFUSED rather
+    // than ignored: before the registry an unknown option was silently dropped
+    // by the destructure, so a kind whose module went missing would have booted
+    // a plain canary World and been judged as if the lane had run.
+    const unknown = Object.keys(options).filter((k) => !CORE_WORLD_OPTIONS.includes(k) && !KIND_BY_OPTION.has(k))
+    if (unknown.length > 0) {
+      throw new Error(`unknown world option(s): ${unknown.join(', ')} (core: ${CORE_WORLD_OPTIONS.join(', ')}; kinds: ${WORLD_KIND_OPTIONS.join(', ') || '(none)'})`)
+    }
+    const kindSpecs = WORLD_KINDS.map((kind) => ({ kind, value: options[kind.option] ?? null })).filter((e) => e.value !== null)
+    for (const { kind, value } of kindSpecs) validateKindSpec(kind, value)
+    if (kindSpecs.length > 1) {
+      // both patch-layer owners would race for the SAME profile patch file;
+      // the suites are disjoint by law — one World belongs to one suite.
+      throw new Error(`invalid world spec: ${WORLD_KIND_OPTIONS.join(' / ')} are mutually exclusive Worlds`)
+    }
+    const activeKind = kindSpecs[0]?.kind ?? null
+    const activeSpec = kindSpecs[0]?.value ?? null
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
-    }
-    if (u6Fs !== null && !(typeof u6Fs === 'object' && Array.isArray(u6Fs.rows))) {
-      throw new Error('invalid u6Fs (expected {rows: [...]} | null)')
-    }
-    if (u6Proc !== null && !(typeof u6Proc === 'object' && Array.isArray(u6Proc.rows))) {
-      throw new Error('invalid u6Proc (expected {rows: [...]} | null)')
-    }
-    if (u6Jobs !== null && !(typeof u6Jobs === 'object' && Array.isArray(u6Jobs.rows))) {
-      throw new Error('invalid u6Jobs (expected {rows: [...]} | null)')
-    }
-    if (u6ArcA !== null && !(typeof u6ArcA === 'object' && Array.isArray(u6ArcA.rows))) {
-      throw new Error('invalid u6ArcA (expected {rows: [...]} | null)')
-    }
-    if (u6ArcD !== null && !(typeof u6ArcD === 'object' && Array.isArray(u6ArcD.rows))) {
-      throw new Error('invalid u6ArcD (expected {rows: [...]} | null)')
-    }
-    if (u7Census !== null && !(typeof u7Census === 'object' && Array.isArray(u7Census.rows))) {
-      throw new Error('invalid u7Census (expected {rows: [...]} | null)')
-    }
-    if (u7FsMut !== null && !(typeof u7FsMut === 'object' && Array.isArray(u7FsMut.rows))) {
-      throw new Error('invalid u7FsMut (expected {rows: [...]} | null)')
-    }
-    if ([u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census, u7FsMut].filter((x) => x !== null).length > 1) {
-      // both patch-layer owners would race for the SAME profile patch file;
-      // the suites are disjoint by law — one World belongs to one suite.
-      throw new Error('invalid world spec: u6Fs / u6Proc / u6Jobs / u6ArcA / u6ArcD / u7Census / u7FsMut are mutually exclusive Worlds')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -355,7 +328,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs, u6ArcA, u6ArcD, u7Census, u7FsMut })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, kinds: WORLD_KINDS, activeKind, [activeKind?.option ?? '']: activeSpec })
     this.worlds.push(world)
     return world
   }
@@ -444,26 +417,25 @@ export class TestWorld {
     this.badMount = spec.badMount
     this.extContributors = spec.extContributors ?? 'disable'
     this.centerAssembly = spec.centerAssembly ?? null
-    this.u6Fs = spec.u6Fs ?? null
-    this.u6Proc = spec.u6Proc ?? null
-    this.u6Jobs = spec.u6Jobs ?? null
-    this.u6ArcA = spec.u6ArcA ?? null
-    this.u6ArcD = spec.u6ArcD ?? null
-    this.u7Census = spec.u7Census ?? null
-    this.u7cLedgerPath = join(spec.home, 'u7c-census-ledger.jsonl')
-    this.u7FsMut = spec.u7FsMut ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
     this.shadowLedgerPath = join(spec.home, 'center-shadow-ledger.jsonl')
-    this.u6fsLedgerPath = join(spec.home, 'u6fs-probe-ledger.jsonl')
-    this.u6fsMarkerDir = join(spec.workspaceDir, 'u6fs-markers')
-    this.u6procLedgerPath = join(spec.home, 'u6proc-probe-ledger.jsonl')
-    this.u6procMarkerDir = join(spec.workspaceDir, 'u6proc-markers')
-    this.u6arcaLedgerPath = join(spec.home, 'u6arca-probe-ledger.jsonl')
-    this.u6arcaMarkerDir = join(spec.workspaceDir, 'u6arca-markers')
-    this.u6arcdLedgerPath = join(spec.home, 'u6arcd-probe-ledger.jsonl')
-    this.u6arcdMarkerDir = join(spec.workspaceDir, 'u6arcd-markers')
+    // u7-w0: the World KIND fields come from the registry (world-kinds/*.mjs):
+    // the active kind's spec on its option field (every other kind's field is
+    // null, exactly as before), and EVERY kind's owned paths + JSONL readers —
+    // they were unconditional properties before the move too.
+    this.kinds = spec.kinds ?? []
+    this.activeKind = spec.activeKind ?? null
+    for (const kind of this.kinds) {
+      this[kind.option] = kind === this.activeKind ? (spec[kind.option] ?? null) : null
+      for (const [prop, [root, name]] of Object.entries(kind.paths)) {
+        this[prop] = join(root === 'home' ? spec.home : spec.workspaceDir, name)
+      }
+      for (const [method, prop] of Object.entries(kind.ledgerRows)) {
+        this[method] = () => rowsFrom(this[prop])
+      }
+    }
     this.instance = null
     this.mock = null
     this.hostLease = null
@@ -492,13 +464,13 @@ export class TestWorld {
     return path
   }
 
-  /** Lease the mock-provider port (3491-3500 block) and start the in-proc mock. */
+  /** Lease the mock-provider port (MOCK_PORT_BANDS, tests/paths.mjs) and start the in-proc mock. */
   async startMock({ decide }) {
     const lease = await acquireFirstFreeLease({
       leaseRoot: this.factory.leaseRoot,
       world: this.id,
       purpose: 'mock-provider',
-      include: range(3491, 3500),
+      include: portsOfBands(MOCK_PORT_BANDS),
       preferred: [],
     })
     this.mockLease = lease
@@ -537,21 +509,9 @@ export class TestWorld {
     return rowsFrom(this.shadowLedgerPath)
   }
 
-  /** U6 PR2 C2: the probe row's ledger (null = the probe never recorded). */
-  u6fsLedgerRows() {
-    return rowsFrom(this.u6fsLedgerPath)
-  }
-  u6procLedgerRows() {
-    return rowsFrom(this.u6procLedgerPath)
-  }
-
-  u6arcaLedgerRows() {
-    return rowsFrom(this.u6arcaLedgerPath)
-  }
-
-  u6arcdLedgerRows() {
-    return rowsFrom(this.u6arcdLedgerPath)
-  }
+  // (U6 PR2/PR3/PR5/PR6 probe-ledger readers — u6fsLedgerRows, u6procLedgerRows,
+  //  u6arcaLedgerRows, u6arcdLedgerRows — are installed per kind by the
+  //  constructor from the world-kinds registry; null = the probe never recorded.)
 
   /**
    * Boot the Host for this World through the SHARED launcher (DshInstance).
@@ -566,7 +526,10 @@ export class TestWorld {
     // (The instance log under <evidenceRoot>/logs is launcher stdout kept as
     // RUN evidence — a disclosed, runner-owned path, byte-capped at the
     // supervisor; it is not a World ledger and is not env-reachable.)
-    for (const [what, p] of [['ledgerPath', this.ledgerPath], ['markerDir', this.markerDir], ['shadowLedgerPath', this.shadowLedgerPath ?? null]]) {
+    // u7-w0: the guard covers EVERY registered kind's declared paths too (it
+    // named three before; a kind path is just as host-writable).
+    const kindPaths = this.kinds.flatMap((kind) => Object.keys(kind.paths).map((prop) => [prop, this[prop] ?? null]))
+    for (const [what, p] of [['ledgerPath', this.ledgerPath], ['markerDir', this.markerDir], ['shadowLedgerPath', this.shadowLedgerPath ?? null], ...kindPaths]) {
       if (p === null || p === undefined) continue
       if (p !== this.home && !p.startsWith(this.home + sep)) {
         throw new Error(`World ${this.id}: ${what} escapes the owned home (${this.home}): ${p}`)
@@ -578,7 +541,7 @@ export class TestWorld {
         leaseRoot: this.factory.leaseRoot,
         world: this.id,
         purpose: 'host',
-        include: range(3180, 3186),
+        include: portsOfBands(HOST_PORT_BANDS),
         preferred: [],
       })
       this.hostLease = lease
@@ -604,73 +567,11 @@ export class TestWorld {
       delete process.env.U6_CENTER_ROW_URL
       delete process.env.U6_CENTER_SHADOW_LEDGER
     }
-    // U6 PR2 C2 probe env (only on u6Fs Worlds; the probe row is mounted by
-    // the patch composition below — env names the ledger/markers it writes).
-    if (this.u6Fs !== null) {
-      process.env.U6FS_LEDGER = this.u6fsLedgerPath
-      process.env.U6FS_MARKER_DIR = this.u6fsMarkerDir
-      process.env.U6FS_WORLD = this.id
-    } else {
-      delete process.env.U6FS_LEDGER
-      delete process.env.U6FS_MARKER_DIR
-      delete process.env.U6FS_WORLD
-    }
-    // U6 PR3 C2 probe env (mirror of the U6FS_* block above).
-    if (this.u6Proc !== null) {
-      process.env.U6PROC_LEDGER = this.u6procLedgerPath
-      process.env.U6PROC_MARKER_DIR = this.u6procMarkerDir
-      process.env.U6PROC_WORLD = this.id
-    } else {
-      delete process.env.U6PROC_LEDGER
-      delete process.env.U6PROC_MARKER_DIR
-      delete process.env.U6PROC_WORLD
-    }
-    // U6 PR5 ARC-A C2 env (mirror of the U6FS/U6PROC blocks). The three
-    // *_URL names are the lane's seam-override law: on the HOST they point
-    // at the SHIPPED dist faces; the vitest world leaves them unset and the
-    // lane resolves the repo TS sources.
-    if (this.u6ArcA !== null) {
-      process.env.U6ARC_LEDGER = this.u6arcaLedgerPath
-      process.env.U6ARC_MARKER_DIR = this.u6arcaMarkerDir
-      process.env.U6ARC_WORLD = this.id
-      process.env.U6ARC_ASSEMBLY_URL = pathToFileURL(join(this.factory.repoRoot, 'tests', 'u6-arc-a-probe-family', 'src', 'probe-assembly.mjs')).href
-      process.env.U6ARC_CENTER_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'governance-center', 'index.js')).href
-      process.env.U6ARC_CONTRACTS_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'contracts', 'src', 'index.js')).href
-    } else {
-      for (const k of ['U6ARC_LEDGER', 'U6ARC_MARKER_DIR', 'U6ARC_WORLD', 'U6ARC_ASSEMBLY_URL', 'U6ARC_CENTER_URL', 'U6ARC_CONTRACTS_URL']) delete process.env[k]
-    }
-    // U6 PR6 ARC-D C2 env (mirror of the U6ARC block). The row reads its own
-    // U6ARCD_* names; the PR5 FAMILY it mounts resolves its two public seams
-    // under U6ARC_CENTER_URL / U6ARC_CONTRACTS_URL — the u6ArcA block above
-    // just cleared those when this is not an ARC-A World (the two are
-    // mutually exclusive), so this block re-pins them to the SAME shipped
-    // dist faces the production glue imports. Both spellings, one truth.
-    if (this.u6ArcD !== null) {
-      process.env.U6ARCD_LEDGER = this.u6arcdLedgerPath
-      process.env.U6ARCD_MARKER_DIR = this.u6arcdMarkerDir
-      process.env.U6ARCD_WORLD = this.id
-      process.env.U6ARCD_ASSEMBLY_URL = pathToFileURL(join(this.factory.repoRoot, 'tests', 'u6-arc-a-probe-family', 'src', 'probe-assembly.mjs')).href
-      process.env.U6ARCD_CENTER_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'governance-center', 'index.js')).href
-      process.env.U6ARCD_CONTRACTS_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'contracts', 'src', 'index.js')).href
-      process.env.U6ARC_CENTER_URL = process.env.U6ARCD_CENTER_URL
-      process.env.U6ARC_CONTRACTS_URL = process.env.U6ARCD_CONTRACTS_URL
-    } else {
-      for (const k of ['U6ARCD_LEDGER', 'U6ARCD_MARKER_DIR', 'U6ARCD_WORLD', 'U6ARCD_ASSEMBLY_URL', 'U6ARCD_CENTER_URL', 'U6ARCD_CONTRACTS_URL']) delete process.env[k]
-    }
-    // U7-0 (EB2-A) census env: the row resolves the ONE identity minter at
-    // its DIST face (the same file the production glue imports) and the ONE
-    // canonical-digest module the offline reconciler uses — probe and
-    // reconciler can never disagree by drifting implementations.
-    if (this.u7Census !== null) {
-      process.env.U7C_LEDGER = this.u7cLedgerPath
-      process.env.U7C_WORLD = this.id
-      process.env.U7C_BOOT_ID = this.restartIndex === null ? 'boot-1' : `boot-r${String(this.restartIndex)}`
-      process.env.U7C_TD_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'tool-dispatch', 'index.js')).href
-      process.env.U7C_CANON_URL = pathToFileURL(join(this.factory.repoRoot, 'packages', 'testkit', 'census', 'json-canonical.mjs')).href
-      process.env.U7C_AUTO_SNAPSHOT_MS = (this.u7Census.autoSnapshotMs ?? []).map((n) => String(Math.trunc(Number(n)))).filter((s) => /^-?\d+$/.test(s)).join(',')
-    } else {
-      for (const k of ['U7C_LEDGER', 'U7C_WORLD', 'U7C_BOOT_ID', 'U7C_TD_URL', 'U7C_CANON_URL', 'U7C_AUTO_SNAPSHOT_MS']) delete process.env[k]
-    }
+    // World-KIND env (u7-w0): every registered kind's keys are cleared on
+    // EVERY boot, then only the active kind's env is set — the same end state
+    // the per-kind set-or-delete blocks produced (incl. ARC-D re-pinning the
+    // two U6ARC_* seam URLs the PR5 family reads; see world-kinds/040-u6-arc-d.mjs).
+    applyKindEnv({ kinds: this.kinds, activeKind: this.activeKind, world: this, factory: this.factory })
 
     this.instance = new DshInstance({
       hostTree: this.factory.hostTree,
@@ -705,125 +606,22 @@ export class TestWorld {
       copyFileSync(U6_SHADOW_HOST_SRC, join(this.instance.profileDir, 'u6-shadow-host.mjs'))
       rows.push({ id: U6_SHADOW_ROW_ID, name: './u6-shadow-host.mjs' })
     }
-    if (this.u6Fs !== null) {
-      // U6 PR2 C2: the probe row mounts beside the canary (same measured
-      // shape); the CALLER-provided rows (production Team row, p6t6 observer,
-      // preset declarations — rows carrying `config:`) join the SAME insert
-      // layer through the emitter below, which writes the whole patch file.
-      copyFileSync(U6FS_PROBE_SRC, join(this.instance.profileDir, 'u6-fs-probe-host.mjs'))
-      rows.push({ id: U6FS_PROBE_ROW_ID, name: './u6-fs-probe-host.mjs' })
-      for (const row of this.u6Fs.rows) rows.push(row)
+    if (this.activeKind !== null) {
+      // u7-w0: ONE patch-layer composition for every World kind (the seven
+      // per-kind branches it replaces differed only in the probe row and the
+      // header text, which the kind descriptor now carries). The probe row (if
+      // any) mounts beside the canary; the CALLER-provided rows (production
+      // Team row, p6t6 observer, preset declarations — rows carrying
+      // `config:`, which the plain mountRows cannot express) join the SAME
+      // insert layer through the emitter, which writes the whole patch file.
+      const kind = this.activeKind
+      if (kind.probe !== null) {
+        copyFileSync(kind.probe.src, join(this.instance.profileDir, kind.probe.fileName))
+        rows.push({ id: kind.probe.rowId, name: `./${kind.probe.fileName}` })
+      }
+      for (const row of this[kind.option].rows) rows.push(row)
       mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U6-fs World: canary + probe rows + the production Team row, p6t6',
-           'observer and preset declarations, one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u6Proc !== null) {
-      // U6 PR3 C2: mirror of the u6Fs block for the governed shell lane.
-      copyFileSync(U6PROC_PROBE_SRC, join(this.instance.profileDir, 'u6-proc-probe-host.mjs'))
-      rows.push({ id: U6PROC_PROBE_ROW_ID, name: './u6-proc-probe-host.mjs' })
-      for (const row of this.u6Proc.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U6-proc World: canary + shell-probe rows + the production Team row,',
-           'p6t6 observer and preset declarations, one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u6ArcA !== null) {
-      // U6 PR5 ARC-A C2: mirror of the u6Fs/u6Proc blocks — the probe-family
-      // row beside the production Team row, the p6t6 observer and the
-      // preset declarations, one public profile-patch layer.
-      copyFileSync(U6ARCA_PROBE_SRC, join(this.instance.profileDir, 'u6-arc-a-probe-host.mjs'))
-      rows.push({ id: U6ARCA_PROBE_ROW_ID, name: './u6-arc-a-probe-host.mjs' })
-      for (const row of this.u6ArcA.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U6-arc-a World: canary + probe-FAMILY row (the ARC-A lane, zero',
-           'center diff) + the production Team row, p6t6 observer and preset',
-           'declarations, one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u6ArcD !== null) {
-      // U6 PR6 ARC-D C2: mirror of the u6ArcA block — the adversarial probe
-      // row mounts the PR5 probe FAMILY as shipped (zero new family code),
-      // beside the production Team row, the p6t6 observer and the preset
-      // declarations, one public profile-patch layer.
-      copyFileSync(U6ARCD_PROBE_SRC, join(this.instance.profileDir, 'u6-arc-d-probe-host.mjs'))
-      rows.push({ id: U6ARCD_PROBE_ROW_ID, name: './u6-arc-d-probe-host.mjs' })
-      for (const row of this.u6ArcD.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U6-arc-d World: canary + adversarial probe row (mounts the PR5',
-           'probe FAMILY unchanged — zero new family code is the claim) +',
-           'the production Team row, p6t6 observer and preset declarations,',
-           'one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u6Jobs !== null) {
-      // U6 PR4 C2: the jobs World needs NO probe row — the trio answers
-      // through the PRODUCTION bridge on the production Team row, and every
-      // observation this suite judges is public (host log, p6t6 state
-      // observer, mock corpus, disk markers). The caller rows (production
-      // Team row with jobsEnabled ON, p6t6 observer, preset declaration)
-      // compose into the SAME public patch layer.
-      for (const row of this.u6Jobs.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U6-jobs World: canary row + the production Team row (jobsEnabled ON),',
-           'p6t6 observer and preset declarations, one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u7Census !== null) {
-      // U7-0 census World: the collector row mounts beside the canary; the
-      // caller rows (production Team row + preset declarations for a
-      // governed-Team World; empty for the non-Team World) compose into the
-      // SAME public patch layer. The row only READS public tools seams.
-      copyFileSync(U7C_PROBE_SRC, join(this.instance.profileDir, 'u7-census-probe-host.mjs'))
-      rows.push({ id: U7C_PROBE_ROW_ID, name: './u7-census-probe-host.mjs' })
-      for (const row of this.u7Census.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U7-0 census World: canary + the read-only census row',
-           '(+ the production Team row and preset declarations when the',
-           'caller composes a governed-Team World), one public patch layer.'],
-          rows,
-        ) + '\n',
-      )
-    } else if (this.u7FsMut !== null) {
-      // U7-9a C2: the fs-MUTATION World needs NO probe row either — the
-      // governed write/edit/read_image rows answer through the PRODUCTION
-      // kernel on the production Team row, and every verdict is public:
-      // the runner's OWN disk reads (the independent Oracle), host-log
-      // witnesses of the family's observe lines, p6t6 state, mock corpus.
-      for (const row of this.u7FsMut.rows) rows.push(row)
-      mkdirSync(this.instance.profileDir, { recursive: true })
-      writeFileSync(
-        this.instance.patchFile,
-        emitPatchLayer(
-          ['U7-fs-mut World: canary row + the production Team row (FS family',
-           'mutation members governed on the same kernel), p6t6 observer and',
-           'preset declarations, one public profile-patch layer.'],
-          rows,
-        ) + '\n',
-      )
+      writeFileSync(this.instance.patchFile, emitPatchLayer(kind.patchHeader, rows) + '\n')
     } else {
       this.instance.mountRows(
         rows,
@@ -1028,12 +826,6 @@ function safeReadLeaseContent(path) {
   } catch {
     return null
   }
-}
-
-function range(lo, hi) {
-  const out = []
-  for (let p = lo; p <= hi; p += 1) out.push(p)
-  return out
 }
 
 /** Raw-log tail helper re-export (keeps the runner imports in one place). */

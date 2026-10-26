@@ -37,13 +37,13 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { acquirePortLease, reclaimStaleLease, releasePortLease, readLease, scanAllLeases, scanStaleLeases, LeaseError } from './lib/port-lease.mjs'
+import { acquireFirstFreeLease, acquirePortLease, candidatePorts, reclaimStaleLease, releasePortLease, readLease, scanAllLeases, scanStaleLeases, LeaseError } from './lib/port-lease.mjs'
 import { appendCappedLine, DEFAULT_LEDGER_CAP_BYTES, MAX_LEDGER_CAP_BYTES } from './canary/ledger-cap.mjs'
 import { createOracle } from './lib/oracle.mjs'
 import { createRunRecord, formatSummary, exitCodeFor, overallVerdict } from './lib/run-record.mjs'
 import { deleteWorldHomeIfMarked, validateWorldName, TestWorldFactory, HostBaseError } from './lib/world-factory.mjs'
 import { makeCanaryDecide, findToolResultInMessages, requestHasTool } from './lib/mock-script.mjs'
-import { TEST_USE_BASELINE_SHA } from '../paths.mjs'
+import { HOST_PORT_BANDS, isSanctionedTestPort, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../paths.mjs'
 
 function tmp(label) {
   return mkdtempSync(join(tmpdir(), `u5test-${label}-`))
@@ -93,6 +93,83 @@ test('port lease: exclusive, live-holder refuses, dead-holder stale reclaims, po
     await assert.rejects(acquirePortLease({ leaseRoot: root, port: 4000 }), (e) => e.code === 'PORT_REFUSED')
     assert.equal(existsSync(join(root, '3080.lease')), false)
   } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ── u7-w0: widened test port bands (user ruling 2026-10-26) ─────────────────
+// "当前机器应该没有太多会占用端口的进程。你可以尝试 3181-3199端口族；如果仍不够用，
+//  目前较大的端口区段（如13000甚至更大）应该都还是空置的" — tests/paths.mjs is the single
+// source; these legs pin (a) the new bands are sanctioned, (b) 3080 is still
+// refused, (c) one port outside EACH band edge is refused, (d) the World host
+// lease falls through to the 13000 band once 3181-3199 are held. ZERO binds:
+// the held slots are claim files naming OUR live pid; the one free port the
+// fall-through lands on is only TCP-probed (connect), as every acquisition is.
+
+test('port bands: the widened sanctioned set, 3080 refused, every band edge exact', async () => {
+  assert.deepEqual(TEST_PORT_RANGES.map((r) => [...r]), [[3180, 3199], [3491, 3500], [13000, 13099]])
+  assert.equal(STABLE_INSTANCE_PORT, 3080)
+  assert.equal(isSanctionedTestPort(3080), false, '3080 stays refused')
+  for (const p of [3187, 3190, 3199, 13000, 13049, 13050, 13099]) assert.equal(isSanctionedTestPort(p), true, `${p} is sanctioned`)
+  // one port just outside each band edge:
+  for (const p of [3179, 3200, 3490, 3501, 12999, 13100]) assert.equal(isSanctionedTestPort(p), false, `${p} is outside policy`)
+  for (const p of [3080.5, -1, NaN, '3181']) assert.equal(isSanctionedTestPort(p), false, `${String(p)} (not an integer port) is refused`)
+  // the acquisition gate refuses the same edges (policy enforced at the lease, not trusted to callers)
+  const root = tmp('bands')
+  try {
+    for (const p of [3080, 3179, 3200, 3490, 3501, 12999, 13100]) {
+      await assert.rejects(acquirePortLease({ leaseRoot: root, port: p }), (e) => e.code === 'PORT_REFUSED', `lease of ${p} must refuse`)
+    }
+    assert.deepEqual(readdirSync(root), [], 'a refused port writes no lease file')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080', () => {
+  const all = candidatePorts()
+  assert.equal(all.length, 20 + 10 + 100)
+  assert.deepEqual(all.slice(0, 3), [3180, 3181, 3182])
+  assert.equal(all.every((p) => isSanctionedTestPort(p)), true)
+  const host = portsOfBands(HOST_PORT_BANDS)
+  const mock = portsOfBands(MOCK_PORT_BANDS)
+  assert.deepEqual([host[0], host.at(-1), host.length], [3181, 13049, 19 + 50])
+  assert.deepEqual([mock[0], mock.at(-1), mock.length], [3491, 13099, 10 + 50])
+  assert.equal(host.includes(3180), false, '3180 is never leased to a World host (hand-run/kit default)')
+  assert.equal(host.includes(3080) || mock.includes(3080), false)
+  assert.equal(host.some((p) => mock.includes(p)), false, 'host and mock bands are disjoint')
+  // a band edited outside the sanctioned ranges fails loudly instead of leasing it
+  assert.throws(() => portsOfBands([[13090, 13110]]), /leaves the sanctioned ranges at 13100/)
+  assert.throws(() => portsOfBands([[3079, 3081]]), /leaves the sanctioned ranges at 3079/)
+})
+
+test('port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds)', async () => {
+  const root = tmp('fallthrough')
+  const held = []
+  try {
+    // Hold every low host port with a LIVE claim of our own pid — exactly what a
+    // concurrent World in this process would leave; acquisition must step over them.
+    for (const port of portsOfBands([HOST_PORT_BANDS[0]])) held.push(await acquirePortLease({ leaseRoot: root, port, world: 'u7w0-held', purpose: 'host' }))
+    assert.equal(held.length, 19)
+    const lease = await acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-fall', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) })
+    try {
+      assert.ok(lease.port >= 13000 && lease.port <= 13049, `fell through to the 13000 band (got ${lease.port})`)
+    } finally {
+      lease.release()
+    }
+    // exhausting EVERY host band fails closed (no wandering outside the bands)
+    const upper = []
+    try {
+      for (const port of portsOfBands([HOST_PORT_BANDS[1]])) upper.push(await acquirePortLease({ leaseRoot: root, port, world: 'u7w0-held2', purpose: 'host' }))
+      await assert.rejects(
+        acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-none', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) }),
+        (e) => e instanceof LeaseError && (e.code === 'LEASE_HELD' || e.code === 'EXTERNAL_BIND'),
+      )
+    } finally {
+      for (const l of upper) l.release()
+    }
+  } finally {
+    for (const l of held) l.release()
     rmSync(root, { recursive: true, force: true })
   }
 })
@@ -1304,4 +1381,3 @@ test('u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9)
     }
   }
 })
-

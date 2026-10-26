@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5INTR3",
+  "paths": [
+    "packages/runtime/test/a5int-r3-mount-integration.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1194,
+    "to": 1195
+  },
+  "reason": "alpha5-int-r3 bookings at module scope, so every ledger site and both named pins see\nthem (the in-body placement left by the merge replay was out of scope at the pins).\nMEASURED on this tree: the leg file landed with the merge replay (1194 -> 1195), the\nkit DRIVER landed after it (1195 -> 1196); no anchor copied from either side.",
+  "tieNote": "int-r3 named pins, MEASURED on this tree (no anchor copied from either side):\nthe leg file landed with the merge replay (chain 1194 -> 1195), the kit DRIVER\nlanded after it (1195 -> 1196). Both are owned by alpha5-int-r3.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5INTR3 (line 38); tie line 3656"
+}

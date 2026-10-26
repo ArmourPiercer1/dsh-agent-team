@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5PTCFS",
+  "paths": [
+    "packages/runtime/src/plugin/live/ptc-escalation-row.mjs",
+    "packages/runtime/test/a5ptc-escalation-row.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1194,
+    "to": 1196
+  },
+  "reason": "alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879, owner\n1ef62fcd): the PTC fs half-arm escalation adjudication row — the\ndurable-approval -> one-shot OperationGrant production row over the\npublic `approval/request` waterfall (scope-gated registration under\nthe :2412 governed face, per-root closed-world assembly, the PR2\nmint + ledger verbatim, zero domain edits, zero denylist vocabulary)\nand its five-negative-control synthetic leg (replay / expiry /\nother-team / revocation-before-use / mode binding, RED-first pinned).",
+  "tieNote": "alpha5-ptc-fs (this round): TWO scannable files (the production row\n.mjs + the synthetic-leg spec .ts). Measured on THIS tree by running\nthe scanner BEFORE the booking: it reported `expected 1196 to be\n1194` — 1194 is the pre-booking chain total (the tree this branch\nforked from), 1196 is this tree's scanner reading. No chain value\ncopied.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5PTCFS (line 3072); tie line 3651"
+}

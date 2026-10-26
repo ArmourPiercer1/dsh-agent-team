@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5G1",
+  "paths": [
+    "packages/runtime/test/alpha5-g1-deny-lane.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1168,
+    "to": 1169
+  },
+  "reason": "alpha5-g1-denyfix (GAP PROBE G1 repair round): the ONE new scannable\nfile is the lane-decide regression suite (the production fix is an\nIN-PLACE edit of the booked GLUE-5 row above; the kit + evidence live\nunder dev/agent-workflow/evidence/, outside the packages/ scan\nuniverse).",
+  "tieNote": "The G1 deny-lane repair tie, same form, measured on this tree (base\nmaster `fe829038`, chain at 1168): with the regression suite on disk\nand absent from the list the run reads `expected 1169 to be 1168`;\nbooking the one lane-decide test file ends the chain at 1169.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5G1 (line 2961); tie line 3582"
+}
