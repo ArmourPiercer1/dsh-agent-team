@@ -1,0 +1,136 @@
+{
+  "schema": "eb3-impact-graph/1",
+  "note": "EB3-A change-impact graph (plan U7-2). scripts/eb3-impact.mjs maps each changed path to the CI layers and checks it selects. A changed path selects the UNION of every rule that matches it (not first-match and not most-specific-only: a narrower rule matching is never a reason to drop a broader rule's checks). A changed path matched by NO rule is UNKNOWN impact, and UNKNOWN selects the `unknown` set below, which is the full layered CI: unknown impact may never select zero checks. Layer names are the ids of dev/ci/eb3-ci-manifest.json; an unknown layer name in this file is a refusal (IMPACT_LAYER_UNKNOWN).",
+  "always": {
+    "layers": ["ci-fast"],
+    "checks": ["docs:probe"],
+    "note": "Every change, including an empty one, runs ci-fast with docs:probe. docs:probe is mandatory, not impact-selected."
+  },
+  "unknown": {
+    "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+    "checks": ["docs:probe", "docs:sync --check", "typecheck", "security-suites", "census"],
+    "note": "What an UNKNOWN path selects: everything. A rule that wants less must be written down."
+  },
+  "rules": [
+    {
+      "glob": "**/*.md",
+      "layers": ["ci-fast"],
+      "checks": ["docs:sync --check"],
+      "why": "prose: document consistency only. A doc hit triggers docs:sync --check."
+    },
+    {
+      "glob": "docs/**",
+      "layers": ["ci-fast"],
+      "checks": ["docs:sync --check"],
+      "why": "document tree"
+    },
+    {
+      "glob": "docs/contracts/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security"],
+      "checks": ["docs:sync --check", "security-suites"],
+      "why": "contract text is normative for the permission law; selects the security suites"
+    },
+    {
+      "glob": "docs/plans/active/**",
+      "layers": ["ci-fast", "ci-integration"],
+      "checks": ["docs:sync --check", "state-freshness"],
+      "why": "current plan/backlog/matrix: Q1-Q8 current-contract grading reads them"
+    },
+    {
+      "glob": "dev/agent-workflow/evidence/**",
+      "layers": ["ci-fast"],
+      "checks": ["eb3-run-manifest"],
+      "why": "captured evidence: RUN records found here are validated by the RUN Manifest leg"
+    },
+    {
+      "glob": "dev/agent-workflow/graph.yaml",
+      "layers": ["ci-fast", "ci-integration"],
+      "checks": ["graph-parse", "state-freshness"],
+      "why": "orchestration state"
+    },
+    {
+      "glob": "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+      "layers": ["ci-fast", "ci-integration"],
+      "checks": ["state-freshness"],
+      "why": "append-only log: state-freshness checks the pointer agrees with the last heading"
+    },
+    {
+      "glob": "dev/engineering/**",
+      "layers": ["ci-fast", "ci-integration"],
+      "checks": ["docs:sync --check", "state-freshness"],
+      "why": "authority pointer/snapshots and the derived view"
+    },
+    {
+      "glob": "dev/agent-workflow/ledgers/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security"],
+      "checks": ["eb3-family-definitions", "security-suites"],
+      "why": "ARC-A family census / protected-centre ledgers: a ledger edit changes what the gate tolerates"
+    },
+    {
+      "glob": "dev/ci/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["eb3-ci-required", "eb3-trusted-sources", "eb3-impact"],
+      "why": "the CI's own declarations: a change here can widen what passes, so it runs every layer"
+    },
+    {
+      "glob": ".github/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["eb3-ci-required"],
+      "why": "workflow change: every layer, and the required-job shape check"
+    },
+    {
+      "glob": "scripts/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["docs:sync --check"],
+      "why": "gate tooling: a gate script change can change any verdict, so all layers"
+    },
+    {
+      "glob": "tests/paths.mjs",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["census"],
+      "why": "host pin: the Host Pin changes what every real-host leg measures"
+    },
+    {
+      "glob": "package.json",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["typecheck"],
+      "why": "toolchain/dependency surface"
+    },
+    {
+      "glob": "pnpm-lock.yaml",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["typecheck"],
+      "why": "dependency graph"
+    },
+    {
+      "glob": "packages/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["docs:sync --check", "typecheck", "security-suites", "census"],
+      "why": "product source: owning-doc sync, typecheck, security suites and the census"
+    },
+    {
+      "glob": "packages/tools/*-family/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["docs:sync --check", "typecheck", "eb3-family-definitions", "eb3-family-boundaries", "security-suites", "census"],
+      "why": "a Family lane: definitions + cross-family boundaries + security"
+    },
+    {
+      "glob": "packages/runtime/governance-center/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["docs:sync --check", "typecheck", "security-suites", "census"],
+      "why": "protected centre (ARC-A L1)"
+    },
+    {
+      "glob": "packages/runtime/src/plugin/live/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["docs:sync --check", "typecheck", "eb3-trusted-sources", "security-suites", "census"],
+      "why": "the trusted assembly (plane/bindings): MCP binding and native trust live here"
+    },
+    {
+      "glob": "tests/**",
+      "layers": ["ci-fast", "ci-integration", "ci-security", "ci-full"],
+      "checks": ["eb3-trusted-sources", "census"],
+      "why": "test infrastructure, kits and fixture MCP servers"
+    }
+  ]
+}

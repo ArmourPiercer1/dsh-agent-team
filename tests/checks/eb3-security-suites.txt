@@ -1,0 +1,41 @@
+# EB3 ci-security layer — the host-free security suites (no boot, no DSH_HOME, no
+# pristine host). One path per line; `#` comments and blank lines are ignored.
+#
+# WHAT THESE ARE. The Alpha.5 governance centre's own laws, each paired with the
+# negative controls that must fail if the law stops holding: the Kernel and its
+# grant algebra, the Registry's closed/collision/generation rules, the contribution
+# schema's closed field set, the Guard's closed world and native-trust filter, the
+# fixed reserved-native registry, the ARC-A fitness scanners, and — required by the
+# U7 verification — the two NON-TEAM NATIVE POSITIVE CONTROLS, which assert an
+# ordinary (non-Team) install is never narrowed by Team governance.
+#
+# HOST-FREE MEANS HOST-FREE. A suite that resolves the pinned host checkout
+# (findTestRepoRoot / TEST_USE_REL / TEST_USE_BASELINE_SHA) cannot run on the hosted
+# ci-security runner, which provisions no host. scripts/eb3-ci-required.mjs refuses one
+# here (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER). a5-pindir-reserved-native was
+# listed here first and turned PR #395's first hosted run red (267/270; the local
+# 270/270 was host-assisted). It MOVED to tests/checks/eb3-host-security-suites.txt,
+# graded by ci-full on every PR — moved, not dropped; the manifest records the move.
+#
+# ADDING A SUITE IS ADDING A LINE. Removing one is removing coverage the plan names;
+# the C5/P1 controls in scripts/eb3-ci-negative-controls.mjs assert the two non-Team
+# positives are still present and still asserting the native ride.
+packages/runtime/test/u6-arc-a-fitness.test.ts
+packages/runtime/test/u6-pr1-kernel.test.ts
+packages/runtime/test/u6-pr1-registry.test.ts
+packages/runtime/test/u6-pr1-contribution-schema.test.ts
+packages/runtime/test/u6-pr2-kernel-flow.test.ts
+packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts
+packages/runtime/test/u6-pr2-review-r1.test.ts
+packages/runtime/test/u6-pr3-kernel-flow.test.ts
+packages/runtime/test/u6-pr3-bl01-ask-door.test.ts
+packages/runtime/test/u6-pr5-kernel-flow.test.ts
+packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts
+packages/runtime/test/u6-pr6-arc-d-matrix.test.ts
+packages/runtime/test/u6-fixk-kernel-safety.test.ts
+packages/runtime/test/a5p1-closed-world-guard.test.ts
+packages/runtime/test/a5p1-guard-install.test.ts
+packages/runtime/test/a5p1-scoped-dispatcher.test.ts
+packages/runtime/test/a5p2-admission-kernel.test.ts
+packages/runtime/test/a5p2-grant-oneshot.test.ts
+packages/runtime/test/a5mcp-native-trust-filter.test.ts
