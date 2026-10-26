@@ -266,8 +266,13 @@ export class TestWorldFactory {
    *        U6 PR3 C2: mount the `u6-proc-probe-host` row and compose the
    *        extra patch rows into the SAME `- insert:` layer; sets U6PROC_*
    *        env for the probe before spawn. Mutually exclusive with u6Fs.
+   * @param {{rows: Array<{id: string, name: string, config?: object}>}} [spec.u6Jobs]
+   *        U6 PR4 C2: compose the jobs-World rows (production Team row with
+   *        the closed jobsEnabled key ON) into the SAME `- insert:` layer.
+   *        No probe row: the production bridge IS the subject. Mutually
+   *        exclusive with u6Fs and u6Proc.
    */
-  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null }) {
+  async createWorld({ line, visible = true, badMount = false, restartIndex = null, extContributors = 'disable', centerAssembly = null, u6Fs = null, u6Proc = null, u6Jobs = null }) {
     if (typeof line !== 'string' || !/^[a-z0-9-]{1,24}$/.test(line)) throw new Error(`invalid world line: ${JSON.stringify(line)}`)
     if (centerAssembly !== null && centerAssembly !== 'off' && centerAssembly !== 'shadow') {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
@@ -278,10 +283,13 @@ export class TestWorldFactory {
     if (u6Proc !== null && !(typeof u6Proc === 'object' && Array.isArray(u6Proc.rows))) {
       throw new Error('invalid u6Proc (expected {rows: [...]} | null)')
     }
-    if (u6Fs !== null && u6Proc !== null) {
+    if (u6Jobs !== null && !(typeof u6Jobs === 'object' && Array.isArray(u6Jobs.rows))) {
+      throw new Error('invalid u6Jobs (expected {rows: [...]} | null)')
+    }
+    if ((u6Fs !== null && u6Proc !== null) || (u6Jobs !== null && (u6Fs !== null || u6Proc !== null))) {
       // both patch-layer owners would race for the SAME profile patch file;
       // the suites are disjoint by law — one World belongs to one suite.
-      throw new Error('invalid world spec: u6Fs and u6Proc cannot share one World')
+      throw new Error('invalid world spec: u6Fs/u6Proc/u6Jobs cannot share one World')
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
     const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
@@ -308,7 +316,7 @@ export class TestWorldFactory {
       paths: { home, workspaceDir, logDir: 'kept-as-evidence (never auto-deleted)' },
     }, null, 2) + '\n')
 
-    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc })
+    const world = new TestWorld(this, { id, name, home, workspaceDir, logDir, visible, badMount, restartIndex, extContributors, centerAssembly, u6Fs, u6Proc, u6Jobs })
     this.worlds.push(world)
     return world
   }
@@ -399,6 +407,7 @@ export class TestWorld {
     this.centerAssembly = spec.centerAssembly ?? null
     this.u6Fs = spec.u6Fs ?? null
     this.u6Proc = spec.u6Proc ?? null
+    this.u6Jobs = spec.u6Jobs ?? null
     this.restartIndex = spec.restartIndex
     this.markerDir = join(spec.workspaceDir, 'markers')
     this.ledgerPath = join(spec.home, 'canary-ledger.jsonl')
@@ -621,6 +630,23 @@ export class TestWorld {
         this.instance.patchFile,
         emitPatchLayer(
           ['U6-proc World: canary + shell-probe rows + the production Team row,',
+           'p6t6 observer and preset declarations, one public profile-patch layer.'],
+          rows,
+        ) + '\n',
+      )
+    } else if (this.u6Jobs !== null) {
+      // U6 PR4 C2: the jobs World needs NO probe row — the trio answers
+      // through the PRODUCTION bridge on the production Team row, and every
+      // observation this suite judges is public (host log, p6t6 state
+      // observer, mock corpus, disk markers). The caller rows (production
+      // Team row with jobsEnabled ON, p6t6 observer, preset declaration)
+      // compose into the SAME public patch layer.
+      for (const row of this.u6Jobs.rows) rows.push(row)
+      mkdirSync(this.instance.profileDir, { recursive: true })
+      writeFileSync(
+        this.instance.patchFile,
+        emitPatchLayer(
+          ['U6-jobs World: canary row + the production Team row (jobsEnabled ON),',
            'p6t6 observer and preset declarations, one public profile-patch layer.'],
           rows,
         ) + '\n',

@@ -443,7 +443,10 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
-import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
+// U6 PR4 (ARC-C): the governed jobs bridge is its own named-bridge module —
+// the production edge points at the ONE home directly (the retired center
+// file keeps a surface re-export only for the pinned actuator test).
+import { createGovernedJobsBridge } from './jobs-family-bridge.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
