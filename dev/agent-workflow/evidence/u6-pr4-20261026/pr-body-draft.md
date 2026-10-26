@@ -101,12 +101,18 @@ is stated honestly (`request-only, Host settles`), and the bridge's
 
 ## Tests
 
-- C1 `packages/runtime/test/u6-pr4-jobs-bridge.test.ts` — **19/19**
+- C1 `packages/runtime/test/u6-pr4-jobs-bridge.test.ts` — **24/24**
   (groups A move-law / B closed-schema negatives via the registry's
   `schemaCode` wrap / C kernel+mount law / D same-admission + owner fence
-  / E CI-08 mount-generation law + E3 plant: the naive identity-less
-  disposer destroys the CURRENT mount — measured, the counterfactual the
-  law exists to prevent).
+  over the REAL gateway + counting svc double / E CI-08 mount-generation
+  law + E3 plant: the naive identity-less disposer destroys the CURRENT
+  mount — measured, the counterfactual the law exists to prevent /
+  **F (R1)**: the real bridge region driven through the real CI-05 mount
+  wrap — un-attributed id refused typed with ZERO counting-svc reach on
+  output AND kill; attributed id: corded owner trio reaches the host and
+  reads ring bytes; foreign attributed: `owner-mismatch` + zero reach;
+  the wrap is a pure law over one answer (idempotent, static detail, no
+  identity leak); the list row law through the same face).
 - Offline judge law `node --test tests/world-factory/world-factory.test.mjs`
   — **28/28** incl. the u6-jobs judge NON-VACUITY leg (synthetic ALL-PASS
   digest + twelve targeted mutations, each failing exactly its named case
@@ -124,7 +130,7 @@ is stated honestly (`request-only, Host settles`), and the bridge's
 - C2 `--suite u6-jobs` — see next section (verdicts recorded verbatim from
   the run).
 
-## C2 — six boots, every cause named by its own receipt, budget spent
+## C2 (round 1) — six boots, every cause named by its own receipt, budget spent (boot 7 under Review R1 below)
 
 World = `tests/world-factory/lib/u6-jobs-assembly.mjs` ONLY (no env vars,
 no probe rows), budget ledger `host-starts.jsonl` (6/6 entries), ports
@@ -184,6 +190,83 @@ the owner's row survives; `ctl-native-untouched` = the boot-root's native
 trio returns its own RING bytes + `[status` with `rootKernelMentions=0`.
 Prose-without-tool-calls FAILS; the runner does not coerce the model.
 
+## Review R1 (round 2) — CI-05 fail-closed for un-attributed ids + authorized boot 7
+
+Reviewer verified byte-identity, frozen shas, closed schema, one ledger,
+CI-03/CI-08. Two required additions; one targeted round; same branch.
+
+**R1-1 — CI-05 fail-closed mount face (the pass-through is gone).** The
+frozen gateway keeps answering the disclosed pass-through
+`{ok:true, corded:false}` for ids with no team record (its own two-fence
+layer law; file sha-pinned, E1). The mount no longer forwards that answer
+to the Host: the assembly (`agent-bindings`) hands the bridge its
+gateway row through `ci05GovernedGatewayRow` — a center-face export
+OUTSIDE the byte-identical region (76–347 re-measured `71705d6e…`, E1
+passes; gateway untouched). On a governed mount a no-team-record id is
+refused BEFORE any svc reach: the region's own `checked()` gate turns the
+typed, static-detail `unattributed-job` refusal into a stop for
+`job_output`/`job_kill`, and `job_list`'s per-row filter (the SAME face)
+hides un-attributed rows. Non-Team/native sessions never build the
+bridge — CI-03 and the host fence it rides are untouched BY CONSTRUCTION.
+Tests: F group drives the real region through the real wrap — F1
+un-attributed refusal with counting-svc ZERO reach on both arms; F2
+attributed id: corded owner trio reaches the host and reads ring bytes;
+F3 foreign attributed: `owner-mismatch` stands, zero reach; F4 the wrap
+is a pure law over one answer (idempotent, static detail, no identity
+leak); F5 the list row law. D3 re-disclosed as the RAW-region posture
+the production mount never exposes.
+
+**Attribution producer — named item, not patched around.** No
+Team-owned creation seam exists at this pin: the governed confined row
+refuses background by name (PR3's measured law), and the member native
+lane is untreated (CI-03) — its receipt never passes through Team code;
+attributing a native-born job from outside its creating lane would
+invent ownership, which `admitJob`'s law (and this refusal) exists to
+forbid. `attributeBackgroundJob` has no production caller (measured:
+gateway definition + tests only). The producer rides a future governed
+background creation lane; per R1 the fail-closed refusal ships NOW and
+the producer is carried here as the named item. Consequence, stated
+plainly: with no producer at this pin the governed trio manages NOTHING
+live (every member-born job is un-attributed → typed refusal) — which
+is precisely the CI-05 posture, and exactly why the ring-byte proof of
+the live world rides the CI-03 native control arm.
+
+**R1-2 — boot 7 (parent-authorized 7th start, ceiling 8).**
+**Boot 7 (ledger 7/8; HTU pristine before/after; full receipt in
+`c2/`).** VERBATIM: `jobs:mounted` PASS; `jobs:birth-positive` FAIL
+(`jobIds:[]`); `jobs:ci05-governed-fail-closed` FAIL — vacuous-safe,
+`trioUses:1` (no governed trio call happened this boot); `jobs:owner-fence`
+FAIL (`foreignOutput:""`); `jobs:kill-refusal-zero-reach` FAIL
+(`kill2:""`); `jobs:ctl-native-untouched` FAIL (`ctlAnswerHead:"(no new
+output)\n[status: running]"`, `rootKernelMentions:0`);
+`jobs:no-second-ledger` FAIL (`trioUses:1`); `jobs:leak-check` PASS;
+lanes `{work:false, foreign:false, leader:false, ctl:true}`. Two causes,
+both named by this receipt. **(1) Team-lane stall (dominant):** all three
+Team lanes produced ZERO tool exchanges — `team.create` succeeded and all
+three governed mounts placed (`a5g7` feed rows ×3), the root-native lane
+ran end to end, yet the leader phase machine emitted nothing observable,
+so no member ever ran the effect chain. The stall has been present since
+boot 5 (boot 6's lanes map is identical, masked there by the
+description error) and is not diagnosable to a one-line data fix from
+these receipts — the digest carries no leader-lane slice. **(2) ctl
+ring-read race (new, fix is one line):** the root background birth
+SUCCEEDED for the first time (`started background job bash-1` — cause #6
+`description` is now VERIFIED FIXED live) and the immediate read answered
+`(no new output) [status: running]` — the read raced the spawn. The 8th
+start was deliberately NOT spent: its authorization (new cause +
+one-line fix) is satisfied only by the spacer, while the CAUSING leg is
+the stall — that boot could not answer the effect legs and would burn
+budget without changing the verdict. Named items for the next boot round:
+leader telemetry in the digest + the spacer, then the effect legs.
+
+**ARC-C final status: G4-CORE-PASS / BRIDGE-BLOCKED (§10.6)** — the
+bridge law (mount, closed schema, one ledger, byte-identity, CI-05
+fail-closed) is measured at C1/CI and live where live is reachable; the
+end-to-end governed management of a real job awaits the two named items:
+(a) the Team-lane stall diagnosis, (b) the creation-lane attribution
+producer (no seam at this pin — until it exists the governed trio
+manages nothing live, which is exactly the CI-05 posture).
+
 ## Gates
 
 - census `p4t6`: honest RED (unbook→run→restore; `expected 1265 to be
@@ -197,38 +280,55 @@ Prose-without-tool-calls FAILS; the runner does not coerce the model.
   — failing set ⊆ the PR2/PR3 machine baseline
   (`t2-blueprint-hash`, `p6t3-mediation`, `p6t3-restart`,
   `a4p7-merge-gate`, `p6t6-actions`), NO NEW REDS.
-- Budget: Host starts 6/6 (ledger `c2/host-starts.jsonl`, ceiling never
-  exceeded; boot-5 burned on a World-profile provider duplication,
-  disclosed); `tests/homes/` empty at the end; HTU pristine
+- Budget: Host starts 7/8 authorized (ledger `c2/host-starts.jsonl`,
+  ceiling never exceeded; boot-5 burned on a World-profile provider
+  duplication, disclosed); the 8th deliberately NOT taken (its
+  authorization condition is analyzed against the boot-7 receipt in the
+  R1 section); `tests/homes/` empty at the end; HTU pristine
   (`639ed01539`, porcelain empty) verified before and after every boot.
+- R1 re-measurement (`logs-gate-r1.log`): C1 24/24, a5p7 40/40, offline
+  28/28, `pnpm -r typecheck` clean, lint-identities 76 distinct new 0,
+  ci-pr-gate required legs pass=7 fail=0 (census skip is the standing
+  opt-in disclosure), `docs:sync --check` ok, `docs:probe
+  --worktree-only` blocking=0; byte-identity re-measured
+  (`71705d6e…`) after the R1 edits; root vitest `root-vitest-r1.txt`.
 
-## ARC-C verdict (PARTIAL by measurement, stated honestly)
+## ARC-C verdict — G4-CORE-PASS / BRIDGE-BLOCKED (§10.6, stated honestly)
 
-CA-03 (§10.6) requires one REAL named-bridge success on the pinned Host
-for full G4. What is measured live: `dsh.jobs-family` passes the closed
-schema, mounts, places its trio rows on a real Team mount, and serves
-seven real governed trio calls with the kernel as the ONLY ledger
-(boot-4 receipt). That is a real named bridge serving real traffic.
-What is NOT measured live: end-to-end management of a REAL background
-job (birth→ring→post-settle absence) — the effect legs stand FAIL with
-the sixth cause fixed-but-unverified by budget. **ARC-C PARTIAL is
-claimed; full G4 requires one further boot (`--suite u6-jobs --line
-u6jobs7`, ledger ceiling raised) running the committed fixed World.**
-The same-admission + owner-fence claims are NOT standing on the
-unmeasured legs alone: C1-D drives the SAME pinned gateway code at unit
-tier (zero control-leg reach on trio; `owner-mismatch` + zero svc reach
-on foreign kill; `corded:false` honesty for un-attributed ids).
+What is MEASURED (the G4-CORE-PASS part): the bridge law end to end —
+byte-identical body (re-measured after R1), closed schema forces the
+named bridge, ONE kernel ledger (live boot-4: 7 governed trio calls,
+zero Control rows), CI-08 mount-generation law, frozen-sha law, and the
+R1 CI-05 fail-closed mount face (F1–F5: un-attributed ids refused typed
+with zero host reach; attributed owners reach the host; foreign owners
+get `owner-mismatch`; list hides un-attributed rows). Live mount +
+teardown hold on every boot that reached them (1–4, 6, 7).
+
+What is NOT measured live (the BRIDGE-BLOCKED part): end-to-end governed
+management of a real background job. After seven boots the chain of
+harness causes ends at two NAMED ITEMS: (a) the Team-lane stall (boot-7
+receipt: leader/work/foreign lanes produced zero exchanges while the
+root-native lane ran — next-round diagnosis with leader telemetry), and
+(b) the creation-lane attribution producer (no Team-owned seam at this
+pin: the governed confined row refuses background by name; attributing
+native-born jobs from outside their creating lane would invent
+ownership, which the refusal law exists to forbid). The judge never
+passed vacuously (every boot's mutations held); full G4 closes when the
+named items land and the effect legs go positive.
 
 ## Disclosures & risks
 
-1. **Live attribution gap (carried, honest):** no production
-   creation-lane producer attributes native-born jobs at this pin, so the
-   live owner fence measures through the Host's OWN session-scoped fence
-   behind the bridge's `corded:false` pass-through; the AT-OWNER
-   `owner-mismatch` + zero-reach measurement lives in C1-D2 on the same
-   pinned gateway code. The attribution-producer hook
-   (`attributeBackgroundJob`) is exercised from the KERNEL TABLE in C1-D1
-   as the production contract for the future creation lane.
+1. **Live attribution gap (carried, honest; R1 posture):** no production
+   creation-lane producer attributes native-born jobs at this pin — and
+   since R1 the governed mount therefore REFUSES every un-attributed id
+   typed (`unattributed-job`, zero host reach, C1-F1): a governed mount
+   manages NOTHING live until the producer exists, which is the CI-05
+   posture, not a regression to hide. The native lane is untouched
+   (CI-03) and still rides the host fence alone. The AT-OWNER
+   `owner-mismatch` + zero-reach measurement lives in C1-D2/F3 on the
+   same pinned gateway code; `attributeBackgroundJob` is exercised from
+   the KERNEL TABLE in C1-D1/F2 as the production contract for the
+   future creation lane.
 2. **Leader/ask structural limit (PR3 legacy, disclosed):** the mock-lane
    brain is a state machine over transcript exchanges; the boot-root lane
    can answer in prose without tool calls — the judge FAILS that (no

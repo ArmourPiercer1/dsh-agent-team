@@ -21,7 +21,7 @@ Single-writer slice 4/6 (ARC-C, FIRST named Bridge). Branch
 - The old home `plane-effect-backends.mjs` keeps ONLY the re-export edge
   (A2); `agent-bindings.mjs` imports the bridge module directly.
 
-## C1 — `packages/runtime/test/u6-pr4-jobs-bridge.test.ts` 19/19
+## C1 — `packages/runtime/test/u6-pr4-jobs-bridge.test.ts` 24/24 (19 at round 1, +5 for the R1 F group)
 
 Groups A (move law: sha, re-export-only old home, import whitelist
 `node:crypto` + contracts barrel — no second authority reachable), B (closed
@@ -39,10 +39,21 @@ fed from the kernel table; owner trio runs with the control-leg counter at
 ZERO (approval lane untouched — the trio rides the same `ensureApprovalEntry`
 + `decide` + `consumeOnce` path read does); owner-mismatch `job_kill`
 answers `owner-mismatch` with ZERO svc reach; ghost ids stay
-`corded:false` HOST pass-through, disclosure D3), E (frozen shas; the real
+`corded:false` HOST pass-through, disclosure D3 — RAW-region posture: the
+production mount wraps the face since R1, see F), E (frozen shas; the real
 pa-mount-registry mount-generation law: old disposer's drop REFUSED, current
 identity's drop lands; E3 plant — with the naive identity-less disposer the
-CURRENT mount dies (the counterfactual the law exists to prevent)).
+CURRENT mount dies (the counterfactual the law exists to prevent)),
+F (R1 CI-05 MOUNT FACE: the real region driven through the real
+`ci05GovernedGatewayRow` wrap — F1 un-attributed id refused typed +
+STATIC-detail with counting-svc ZERO reach on `job_output` AND `job_kill`;
+F2 attributed id: the corded owner trio reaches the host and returns ring
+bytes; F3 foreign attributed: `owner-mismatch` stands, zero reach; F4 the
+wrap is a pure law over ONE answer (`corded:false` flips, `corded:true`
+and `owner-mismatch` pass unchanged, WeakMap-idempotent, static detail
+identical across ids — no identity leak); F5 the governed `job_list`
+hides un-attributed rows through the SAME face, the attributed own row
+survives).
 
 ## Offline judge law — `node --test tests/world-factory/world-factory.test.mjs` 28/28
 
@@ -54,7 +65,15 @@ machines count only `type:'tool'` exchanges); judge NON-VACUITY: synthetic
 ALL-PASS digest + nine targeted mutations, each FAILING exactly its named
 case (`claim→echo`, `output→ghost`, `kill→settled`, `settle→alive`,
 `list→status-text`, `foreign→''`, `ctl→governed`, `ledger→approval rows`,
-`controlRows→trio row`) + dead-host `mounted` FAIL.
+`controlRows→trio row`) + dead-host `mounted` FAIL. R1 re-arm:
+`governed-management` → `jobs:ci05-governed-fail-closed` (typed,
+host-silent refusal + hidden rows + trio ≥4 runs; mutations: ring bytes
+through the governed answer, host-vocabulary answer, un-attributed row
+surfacing), `cancel-honest` → `jobs:kill-refusal-zero-reach` (refusal
+only, no settle word, zero host events; mutations: cancellation claim,
+host settle event, settle word inside the refusal, ring bytes leaking),
+fence arm gains the CI-05 route + row law (mutations: host-worded foreign
+answer, owner row resurfacing); twelve targeted mutations still, 28/28.
 
 ## C2 — one governed Team World (`c2/`)
 
@@ -165,6 +184,103 @@ passed vacuously (each boot's non-vacuity mutations held), and the
 offline judge law (28/28, twelve targeted mutations) is what the seventh
 boot — whoever runs it — starts from.
 
+## Review R1 (round 2) — CI-05 fail-closed mount face + the authorized boot 7
+
+The review (REVIEW.md, `dev/agent-workflow/evidence/u6-pr4-review-r1/`)
+required (1) CI-05 fail-closed for un-attributed ids on governed mounts
+WITHOUT touching the sha-pinned gateway or the byte-identical region
+(76–347 — re-measured `71705d6e…` after the round, E1 green), and (2)
+an authorized live boot (7th; 8th only for a NEW harness cause with a
+one-line data fix).
+
+Design + law: the mount (`agent-bindings`) hands the bridge its gateway
+row through the new center-face export `ci05GovernedGatewayRow`; the
+frozen gateway keeps its own-layer `{ok:true, corded:false}` answer for
+no-record ids (CI-08 intact), the WRAP turns it into the typed,
+static-detail `unattributed-job` refusal, and the verbatim region stops
+management calls with ZERO svc reach (`checked()` before svc; the list
+filter hides un-attributed rows through the same face). Non-Team
+sessions never build the bridge — CI-03 untouched BY CONSTRUCTION. The
+attribution producer (governed bash arm → `attributeBackgroundJob`) has
+NO Team-owned seam at this pin (the governed confined row refuses
+background by name; the native lane is untreated; measured: no
+production caller exists) — per R1 it is carried as a NAMED ITEM, and
+the pass-through was NOT kept around it. Commit `9bfc0dc17`; C1 24/24
+with the new F group; offline 28/28 with the judge re-armed to the
+CI-05 law (arms renamed — see the judge paragraph above).
+
+Boot 7 (`run-u6jobs7.console.txt` + `…u6jobs7…u6jobs-evidence.json`,
+ledger entry 7/8, HTU verified pristine before AND after): verdicts
+VERBATIM from the receipt —
+
+- `jobs:mounted`: PASS (placement-feed rows 3, all refusal counters 0)
+- `jobs:birth-positive`: FAIL — `jobIds:[]`, `birthRow:{seen:false}`
+- `jobs:ci05-governed-fail-closed`: FAIL — vacuous-safe: `trioUses:1`,
+  `jobId:null` (no member governed trio call ever happened — see cause)
+- `jobs:owner-fence`: FAIL — `foreignOutput:""`, `foreignKill:""`
+- `jobs:kill-refusal-zero-reach`: FAIL — `kill2:""`
+- `jobs:ctl-native-untouched`: FAIL — `ctlAnswerHead:"(no new
+  output)\n[status: running]"`, `rootKernelMentions:0`
+- `jobs:no-second-ledger`: FAIL — `trioUses:1` (<4 — no governed trio
+  traffic this boot)
+- `jobs:leak-check`: PASS
+- `lanes`: `{work:false, foreign:false, leader:false, ctl:true}`
+
+Two NEW causes, both named by the boot-7 receipt itself:
+
+1. **Team-lane stall (dominant).** All three Team lanes (leader, worker,
+   foreign) produced ZERO tool exchanges — the leader phase machine
+   emitted nothing observable, so no member existed to run the effect
+   chain. `team.create` succeeded, all three governed mounts placed
+   (`a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,
+   job_output,job_list,job_kill]` ×3 in the log tail), and the
+   root-native lane ran end to end — so this is not a mount, bridge,
+   or blueprint-create failure. The stall has been present since boot 5
+   (boot-6's receipt shows the identical `{work:false,foreign:false,
+   leader:false}` lanes map, masked there by the description error) and
+   boot 4's working lanes pin its introduction between boot-4 and the
+   roster/envelope commits. It is NOT diagnosable to a one-line data fix
+   from the boot-7 receipt — the digest carries no leader-lane slice —
+   so boot 8 (whose authorization REQUIRES a one-line fix for a new
+   harness cause) cannot honestly be spent on it, and spending it could
+   not reach the effect legs anyway (they ride the worker lane).
+   NAMED ITEM: leader-lane diagnosis with leader telemetry added to the
+   digest, next boot round.
+2. **ctl ring-read race (new, one-line fix known).** The root lane's
+   background birth SUCCEEDED for the first time (`started background
+   job bash-1` — the `description` law held; cause #6 is now VERIFIED
+   FIXED live), and the host answered the immediate `job_output` read
+   with `(no new output)\n[status: running]` — the read raced the spawn
+   (job registered/running, ring not yet flushed). The fix is a one-line
+   spacer exchange between birth and read in the ctl machine; it is
+   booked as data for the next boot, NOT exercised here because the
+   dominant stall (1) makes any further boot this round unable to
+   answer the effect legs — see the budget statement below.
+
+Budget: 7 of the authorized 8 starts spent (ledger `host-starts.jsonl`).
+The 8th was deliberately NOT taken: the review authorizes it only for a
+new harness cause with a one-line data fix, and the CAUSING leg (Team-
+lane stall) has no such fix from these receipts; spending the start on
+the ctl spacer would burn budget on a boot that must still FAIL the
+effect legs. No verdict beyond what the receipts record exists anywhere
+in this evidence set.
+
+**Final position after R1 (supersedes the six-boot paragraph):** the
+BRIDGE LAW legs hold (mounted PASS on every boot that reached mount:
+1–4, 6, 7; leak-check PASS likewise; no-second-ledger PASS boot 4 with
+real governed trio traffic). The CI-05 R1 law is MEASURED at C1 (F1–F5,
+including zero-reach counting); its live governed-traffic leg did not
+occur in boot 7 for the stall cause (the arm failed vacuous-safe — the
+judge never passed vacuously). The EFFECT legs never reached a positive
+measurement in seven boots; the chain of causes is
+substrate→sandbox→transcript→variant/envelope→binder→description
+(verified fixed live at boot 7)→lane-stall + ctl-race. ARC-C final
+status: **G4-CORE-PASS / BRIDGE-BLOCKED** per §10.6, named items:
+(a) the leader-lane stall diagnosis (+ctl spacer, next boot round),
+(b) the creation-lane attribution producer (no seam at this pin — the
+governed trio manages NOTHING live until it exists, which is the CI-05
+posture, stated plainly).
+
 ## Gates (final tree)
 
 - `p4t6-RED-unbooked.log` — honest RED, re-measured by unbook→run→restore:
@@ -180,9 +296,16 @@ boot — whoever runs it — starts from.
   (68 docs / 38 plans / 20 contracts), `docs:probe --base origin/master`
   blocking=0 non_blocking=0.
 - `logs-gate-default.log` — ci-pr-gate required legs.
-- `root-vitest-final.txt` — full-tree run; failing set ⊆ the
+- `root-vitest-rerun.txt` — full-tree run; failing set ⊆ the
   PR2/PR3-recorded machine baseline (`t2-blueprint-hash`, `p6t3-mediation`,
   `p6t3-restart`, `a4p7-merge-gate`, `p6t6-actions`); NO NEW REDS.
+- R1 re-measurement (round 2): `logs-gate-r1.log` — ci-pr-gate required
+  legs pass=7 fail=0 (census skip standing); C1 24/24, a5p7 40/40,
+  offline 28/28, typecheck clean, identity 76 distinct new 0 (the R1
+  capture briefly showed ONE new — an `&&`-chained assertion in the F4
+  leg — FIXED, not waived), byte-identity `71705d6e…` re-measured after
+  the center-face insertion, dist twins re-placed, `root-vitest-r1.txt`
+  full-tree run.
 
 ## Deviations & disclosures (all carried into the PR body)
 
@@ -195,12 +318,15 @@ boot — whoever runs it — starts from.
 2. HTU install ran `pnpm install --ignore-scripts` (frozen-lockfile); the
    build chain ran with `DSH_CLIENT_COMMIT_HASH=639ed01539`.
 3. Live-world attribution: NO production creation-lane producer attributes
-   native-born jobs (disclosed unit fact, test D3); the C2 owner fence is
-   therefore measured through the Host's own session-scoped fence behind
-   the bridge's `corded:false` pass-through — which is exactly the CI-03
-   untreated-native posture the arm exists to show. The AT-OWNER fence
-   itself is measured at the unit tier (D2: `owner-mismatch`, zero svc
-   reach) on the same pinned gateway code.
+   native-born jobs (disclosed unit fact, test D3). ROUND-1 posture (this
+   line as first written): the C2 owner fence measured through the Host's
+   own session-scoped fence behind the bridge's `corded:false`
+   pass-through. R1 SUPERSEDES that mount posture: the governed mount now
+   refuses un-attributed ids typed (`unattributed-job`) with zero svc
+   reach — the pass-through no longer exists on any governed mount; the
+   native lane is untouched (CI-03) and still rides the host fence alone.
+   The AT-OWNER fence itself is measured at the unit tier (D2/F3:
+   `owner-mismatch`, zero svc reach) on the same pinned gateway code.
 4. Scratch recorder files were kept OUT of the lint universe (the `.artifacts`
    tree); host instance logs (which carry the boot token) are NOT part of
    this evidence — receipts carry verdicts, kernelHits, and truncated

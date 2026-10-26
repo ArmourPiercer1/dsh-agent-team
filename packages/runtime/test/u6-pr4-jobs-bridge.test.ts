@@ -91,6 +91,7 @@ interface BridgeModule {
 }
 interface GatewayAssembly {
   attributeBackgroundJob(o: Record<string, unknown>): { ok: boolean; code?: string }
+  definitions: { register(scopeKey: string, name: string, identity: string): unknown }
   observations(): string[]
   checkManagementAccess(o: { jobId: string; viewer: Record<string, unknown> }):
     { ok: boolean; corded?: boolean; code?: string; detail?: string }

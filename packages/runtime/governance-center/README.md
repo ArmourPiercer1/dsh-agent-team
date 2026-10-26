@@ -10,7 +10,7 @@ contributes its center face (row defs + the `dsh.jobs-family` contribution)
 through the SAME closed schema and Registry as every other family; the plane's
 former direct trio injection is REMOVED (no dual ledger: one kernel table,
 one consume port, one guard — pinned by
-`packages/runtime/test/u6-pr4-jobs-bridge.test.ts` groups A–E). The
+`packages/runtime/test/u6-pr4-jobs-bridge.test.ts` groups A–F, 24/24). The
 jobs-gateway assembly and `pa-mount-registry.mjs` are imported UNMODIFIED
 (CI-08; E1 pins both files by sha). The governed `read` name remains
 KERNEL-OWNED: `src/plugin/live/team-tool-plane.mjs`
@@ -180,15 +180,26 @@ entries fed from the kernel table; owner trio runs with the approval lane
 untouched; owner-mismatch fence measured at zero service reach), and the
 frozen-file + mount-generation law with the E3 plant (identity-less disposer
 destroys the current mount; the registry's identity law keeps it alive).
-C2 (`--suite u6-jobs`, six boots, budget 6/6 spent): the MEASURED live
-legs — `jobs:mounted` (the family places its trio rows on a real Team
-mount through the closed schema, zero refusals) and `jobs:leak-check`
-PASS on every mount-reached boot; `jobs:no-second-ledger` PASSed with
-real governed trio traffic (7 trio calls, Control rows 0). The EFFECT
-legs (real background job born, ring-managed, honest cancel, owner
-fence, untreated native root trio) stand FAIL-DISCLOSED: each boot's
-receipt named one harness cause (substrate rows, sandbox disk law,
-transcript contamination, wrong bash variant + ask envelope, provider
-duplication, required `description`), the sixth fix is committed
-unverified-by-budget. Full receipts:
+R1 (review) added the CI-05 fail-closed MOUNT face
+(`ci05GovernedGatewayRow`, center face — gateway and bridge body stay
+byte-frozen): a governed mount refuses any un-attributed job id typed
+(`unattributed-job`, static detail) with ZERO host-service reach before
+`checked()` can pass it, and the governed list hides un-attributed rows
+through the same face; the native lane never builds the bridge (CI-03),
+and the production creation-lane attribution producer does not exist at
+this pin — carried as the named item, the pass-through NOT kept around
+it (C1-F1..F5 measure both directions).
+C2 (`--suite u6-jobs`, seven boots; authorized budget 8, spent 7): the
+MEASURED live legs — `jobs:mounted` (the family places its trio rows on
+a real Team mount through the closed schema, zero refusals) and
+`jobs:leak-check` PASS on every mount-reached boot;
+`jobs:no-second-ledger` PASSed with real governed trio traffic (7 trio
+calls, Control rows 0). The EFFECT legs (real background job born,
+ring-managed, honest cancel, owner fence, untreated native root trio)
+stand FAIL-DISCLOSED: each boot's receipt named one harness cause
+(substrate rows, sandbox disk law, transcript contamination, wrong bash
+variant + ask envelope, provider duplication, required `description` —
+VERIFIED fixed live at boot 7 — then Team-lane stall + ctl ring-read
+race, the boot-7 causes, both named items for the next boot round).
+Final status G4-CORE-PASS / BRIDGE-BLOCKED (§10.6). Full receipts:
 `dev/agent-workflow/evidence/u6-pr4-20261026/`.
