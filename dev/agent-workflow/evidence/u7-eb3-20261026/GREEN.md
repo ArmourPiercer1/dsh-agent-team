@@ -198,6 +198,24 @@ pull_request it asserts and passes, on push it prints `::warning::event push —
 assertion applies to pull_request only` and names the tree, and a tampered
 `EB3_MERGE_TREE` is refused with `::error::`.
 
+## D7. The third hosted run: two of four layers GREEN, and the same base mistake one level down
+
+run 40344660270: `synthesize-merge-tree` PASS, `ci-fast` PASS, **`ci-security` PASS**
+(the host-dependency move and the static guard are confirmed on a hosted runner),
+`ci-integration` FAIL on the RUN Manifest step.
+
+The failure was MY strict RUN rule doing its job on records that are not mine:
+`RUN_AUTHORITY_BINDING_MISMATCH … bindings.authority is absent on a NEW record` for five
+`u7-4a-jobs-producer` records. Those arrived by merging master, but the layer's base was
+`github.event.pull_request.base.sha` (where the branch was CUT) while the checkout is the
+merge ref built on master's CURRENT tip — so `git diff base...HEAD` attributed every
+commit merged since the cut to this PR, and `--new` marked another lane's records as new.
+
+Same root cause as D6-#1, one level down: the LAYERS had it too, because I fixed it only
+where it had failed. The base is now `HEAD^1` in all four layers, verified on a real
+merge commit: `CI_BASE=c5e43f1d5` (= the merge ref's first parent), the RUN step then
+passes with `strict=0`, and a non-`pull_request` event is refused by name.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still

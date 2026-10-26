@@ -107,30 +107,23 @@ jobs:
           pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
 
       - name: Resolve the change base
+        # THE BASE IS THE MERGE REF'S FIRST PARENT, not event.pull_request.base.sha. PR #395's
+        # third hosted run measured why: base.sha is where the branch was CUT, while the
+        # checkout is refs/pull/N/merge built on the base branch's CURRENT tip, so
+        # `git diff base.sha...HEAD` attributed every commit merged to master since the cut
+        # (another lane's five RUN records) to THIS PR, and the strict RUN check refused
+        # them as "new". HEAD^1 is exactly the tree this PR merges into, so the diff is
+        # exactly this PR's changes. Same rule as the synthesize job in ci-required.yml.
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PUSH_BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
-          case "$EVENT_NAME" in
-            pull_request)
-              [ -n "$PR_BASE_SHA" ] || { echo "::error::ci-integration: pull_request event carries no base.sha"; exit 1; }
-              BASE="$PR_BASE_SHA" ;;
-            push)
-              case "$PUSH_BEFORE_SHA" in
-                ''|0000000000000000000000000000000000000000)
-                  echo "::error::ci-integration: push event.before is absent/zeroed; no honest base for this run"
-                  exit 1 ;;
-                *) BASE="$PUSH_BEFORE_SHA" ;;
-              esac ;;
-            *)
-              echo "::error::ci-integration: ${EVENT_NAME} carries no base; refusing to grade a diff against nothing"
-              exit 1 ;;
-          esac
+          [ "$EVENT_NAME" = "pull_request" ] || { echo "::error::ci-integration: event ${EVENT_NAME} is not supported — this layer is called by ci-required on pull_request only"; exit 1; }
+          [ "$(git rev-list --parents -n1 HEAD | wc -w)" = "3" ] || { echo "::error::ci-integration: the checkout is not a two-parent merge commit — expected refs/pull/N/merge"; exit 1; }
+          BASE=$(git rev-parse 'HEAD^1')
           echo "CI_BASE=$BASE" >> "$GITHUB_ENV"
-          echo "ci-integration base = $BASE"
+          echo "ci-integration base = $BASE (merge ref first parent)"
 
       - name: Ensure a YAML parser for the graph leg
         run: |
