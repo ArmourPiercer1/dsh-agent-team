@@ -1,0 +1,20 @@
+# eb3-red-baseline head=131364952 at=2026-10-26T12:32:23Z
+== baseline (no mutation): the existing gate must be green here
+  [baseline] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  OK   [baseline] existing gate green on the unmutated tree (precondition met)
+== M1 required CI job removed: delete the census-runtime job block
+  [M1] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M1] NOT DETECTED by the existing gate (every check exit 0)
+== M2 unknown MCP tool introduced into product source
+  [M2] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M2] NOT DETECTED by the existing gate (every check exit 0)
+== M3a execution Definition replaced: via family-body -> named-bridge (search-family)
+  [M3a] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M3a] NOT DETECTED by the existing gate (every check exit 0)
+== M3c execution Definition replaced: nativeNames made unreadable (fs-family)
+  [M3c] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=1
+  NOTE [M3c] detected by an existing check (non-zero above) — recorded, not hidden
+== M4 cross-family influence: search-family reaches into fs-family internals
+  [M4] docs:sync=0 docs:probe=0 pr-gate(graph,state)=0 arc-a-fitness=0
+  RED  [M4] NOT DETECTED by the existing gate (every check exit 0)
+# reverted: tracked tree clean
