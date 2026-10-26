@@ -133,6 +133,13 @@ export interface A5P5Assembly {
    *  The plane production mount injects it; archived pre-M1 kits omit it and
    *  keep their historical behavior untouched. */
   readonly pa?: PaAdmitEdge
+  /** U7-6 GLUE-4 (anchored form): the governed root of the ANCHORED search
+   *  rows, injected by the trusted assembly that also anchors their
+   *  backends. Present ⇒ the grep/glob arms claim the governed walk surface
+   *  (`effects-schema` anchored law); the bash arm is untouched by it.
+   *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
+   *  byte-identical). Never model-visible: it rides the assembly, not args. */
+  readonly effectAnchorRoot?: string
 }
 
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
@@ -244,6 +251,10 @@ function createRowExecutionState(assembly: A5P5Assembly) {
           // end to end.
           exec: runCtx,
           parsedArgs: parsed.value,
+          // U7-6 GLUE-4: the anchored row's governed root rides the request
+          // when the assembly declared one (the derivation applies the
+          // anchored law to the search arms; bash ignores it).
+          ...(assembly.effectAnchorRoot === undefined ? {} : { effectAnchorRoot: assembly.effectAnchorRoot }),
           // M1: the canonical parameter fingerprint (Alpha.2 canonical-operation
           // law), computed here from the CLOSED parsed args — the fact the PA
           // edge asks, consumes and rechecks against.

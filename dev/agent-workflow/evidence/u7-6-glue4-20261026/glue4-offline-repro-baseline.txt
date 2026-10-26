@@ -1,0 +1,25 @@
+R1 empty-template grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R2 read-any grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R3 read-subtree grep: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace/notes), read(/srv/workspace/GLUE4/workspace/notes), tool-invoke(grep)
+R4 read-subtree glob: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/srv/workspace/GLUE4/workspace), tool-invoke(glob)
+R5 read-subtree READ-row: admitted
+  arms: read(/srv/workspace/GLUE4/workspace/notes/a.txt), tool-invoke(read)
+R6 bash-ask BASH-row: requires-approval :: one Alpha.4 ApprovalCase (tadm:session-glue4-team:glue4-inst:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0) at rung leader must legally cover ALL 1 effects; per-effect run
+  arms: tool-invoke(bash)
+R7 read-subtree grep /etc: denied code=IO_POLICY_UNSUPPORTED refusal=template-default-deny effectIndex=0 :: admission refused: the template policy defaults to DENY and no rule covers this effect (list) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+  arms: list(/etc), read(/etc), tool-invoke(grep)
+--- lane decide (createLaneDecide) on the SAME derived sets ---
+lane empty grep {"kind":"deny","code":"template-default-deny"}
+lane empty glob {"kind":"deny","code":"template-default-deny"}
+lane readAny grep {"kind":"allow"}
+lane readAny glob {"kind":"allow"}
+lane readSub grep {"kind":"allow"}
+lane readSub glob {"kind":"allow"}
+--- run8 wire fingerprint attribution (exact realm + exact wire args) ---
+grep G1 MATCH sha256:0e370d8e024f9e6009806ec78db2b900d0519df26cc81ebbe286350c0eccc69f
+glob MATCH sha256:174c3d74954afd2a4bc7629830c37a251df9870bf6e5e93d4267f454c9d02ebe
+grep /etc MATCH sha256:c2cd070f03719f4dbc3aedc76d18c8aacdf0bcd588941b7dc8c123706d15b457

@@ -1,0 +1,8 @@
+# M3-nameable-class-rides
+# R1 F2(c): letting a grammar-class (or any non-inventoried shortcut) through the key law must break a test — here the nameable-class guard is dropped
+# vitest -t "validated fail-closed" exit=1 => MUTANT CAUGHT (tests went RED)
+
+     × the class law is validated fail-closed (nameable class / non-grammar governor / empty list / shape) 13ms
+      Tests  1 failed | 53 skipped (54)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected undefined to be 'projection-input-malformed' // Object.is equality

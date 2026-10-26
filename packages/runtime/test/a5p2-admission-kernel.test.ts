@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { parseOperationGrant, type AdmissionRequest, type Effect, type OperationGrant } from '../../domain/tool-governance/src/index.js'
-import { deriveTeamPolicyAuthority, toolAskApprovalCaseId, type AssuranceProbe, type PolicyDenySource, type PresentedApproval } from '../tool-admission/index.js'
+import { createProductionAdmissionAssembly, deriveTeamPolicyAuthority, toolAskApprovalCaseId, type AssuranceProbe, type PolicyDenySource, type PresentedApproval } from '../tool-admission/index.js'
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/types.js'
 import {
   assuranceContract,
@@ -893,5 +893,140 @@ describe('production projection: template capabilities.permissions → PR0 autho
     expect(badTool.ok).toBe(false)
     const anyExtras = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any', path: '/x' } as unknown as TemplatePermissionPolicy['deny'][number]['resource'] }] })
     expect(anyExtras.ok).toBe(false)
+  })
+})
+
+// ── U7-6 GLUE-4: the row-class invoke law (invokeClasses) + read→list companion ──
+const ROOT = '/data/root'
+const listDirAt = (locator: string): Effect => ({ kind: 'list', resource: { realmId: REALM, kind: 'directory', canonicalLocator: locator, rights: ['list'] } })
+const readAbsAt = (locator: string): Effect => ({ kind: 'read', resource: { realmId: REALM, kind: 'absolute-path', canonicalLocator: locator, rights: ['read'] } })
+const grepEnvelope = [listDirAt(ROOT), readAbsAt(ROOT), toolInvokeEffect('grep')]
+const CLASSES = { grep: ['read'], glob: ['read'] }
+const INVENTORY = Object.freeze(['grep', 'glob']) // the mount's closed row world (R1 F1)
+
+describe('U7-6 GLUE-4: row-class invoke law (invokeClasses) — the named center-interface', () => {
+  it('a read rule over the governed root + class law covers the anchored search envelope (list+read+invoke)', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    for (const effect of grepEnvelope) expect(r.value.coversEffect(effect)).toBe(true)
+    const spell = new Set(r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`))
+    expect(spell.has(`tool-invoke@${REALM}|tool:grep:allow`)).toBe(true) // the grep arm rides the read rule
+    expect(spell.has(`list@${REALM}|${ROOT}:allow`)).toBe(true) // read projects the list companion
+  })
+
+  it('a rule that does NOT locate the governed surface leaves the envelope unmet (teeth kept)', () => {
+    const elsewhere = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: '/data/elsewhere' } }], ask: [], deny: [] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(elsewhere.ok).toBe(true)
+    if (!elsewhere.ok) return
+    expect(elsewhere.value.coversEffect(listDirAt(ROOT))).toBe(false) // surface not named ⇒ not covered
+    expect(elsewhere.value.coversEffect(toolInvokeEffect('grep'))).toBe(true) // the class arm still rides ANY read rule
+    expect(grepEnvelope.every((e) => elsewhere.value.coversEffect(e))).toBe(false) // envelope NOT met
+  })
+
+  it('EMPTY template + class law still refuses the whole envelope (a mounted class admits nothing on its own)', () => {
+    const r = projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    for (const effect of grepEnvelope) expect(r.value.coversEffect(effect)).toBe(false)
+  })
+
+  it('without the class law, the read rule covers list+read but NOT tool-invoke(grep) (the pre-U7-6 refusal)', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.coversEffect(listDirAt(ROOT))).toBe(true) // the list companion alone (no class)
+    expect(r.value.coversEffect(toolInvokeEffect('grep'))).toBe(false) // grep never nameable without the class law
+  })
+
+  it('a mounted class law NEVER touches the shell class: tool-invoke(bash) stays refused by a read rule', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.coversEffect(toolInvokeEffect('bash'))).toBe(false)
+  })
+
+  it('a DENY-lane governing rule projects the class arm into the deny lane AND its deny source (never loosened)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const spell = new Set(r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`))
+    expect(spell.has(`tool-invoke@${REALM}|tool:grep:deny`)).toBe(true) // deny rides deny, ceiling-for-ceiling
+    expect(r.value.denySources().some((s) => s.effectKind === 'tool-invoke' && s.matcher.resource === `${REALM}|tool:grep`)).toBe(true)
+  })
+
+  it('the class law DISCLOSES itself as a note, never silent', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] }, { invokeClasses: CLASSES, knownEffectClasses: INVENTORY })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.notes.some((n) => n.includes('U7-6') && n.includes('grep<-read'))).toBe(true)
+  })
+
+  // Review R1 F1 (fix round 1): the law must be BOUNDED by the mount's declared
+  // row-class inventory — a well-formed unknown class is a typed construction
+  // refusal at EVERY real entry point (the derive face the reviewer probed is
+  // the same function the production assembly calls; the assembly is driven
+  // here too, so neither face can answer ok to an attacker-shaped class).
+  it('a well-formed UNKNOWN class is a typed refusal at both real faces (review R1 F1)', () => {
+    const policy = { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy
+    const refusalOf = (r: ReturnType<typeof projOf>): string | undefined => (r.ok ? undefined : r.error.details?.refusal as string)
+    // the reviewer's probe class, well-formed, unknown to the declared world
+    expect(refusalOf(projOf(policy, { invokeClasses: { evil: ['read'] }, knownEffectClasses: ['grep', 'glob', 'bash'] }))).toBe('projection-invoke-class-unknown')
+    // a TYPO of a known class is the same refusal (removed-row mutation)
+    expect(refusalOf(projOf(policy, { invokeClasses: { grepp: ['read'] }, knownEffectClasses: ['grep', 'glob'] }))).toBe('projection-invoke-class-unknown')
+    // a class law WITHOUT the mount's declared inventory is itself incoherent — refused, never silently accepted
+    expect(refusalOf(projOf(policy, { invokeClasses: CLASSES }))).toBe('projection-inventory-missing')
+    // the inventory is validated too: empty, non-array, malformed token, duplicate
+    for (const bad of [[], 'nope', ['grep', 'Grepp'], ['grep', 'grep']]) {
+      expect(refusalOf(projOf(policy, { invokeClasses: CLASSES, knownEffectClasses: bad as unknown as readonly string[] }))).toBe('projection-inventory-malformed')
+    }
+    // a declared inventory WITHOUT any class law is inert but legal (world truth, no authority)
+    expect(projOf(policy, { knownEffectClasses: ['grep', 'glob'] }).ok).toBe(true)
+  })
+
+  it('the production assembly face refuses construction on an unknown class and on a classless inventory (same typed refusal — the reviewer drove the real path)', () => {
+    const subtreeContains = (declared: string, observed: string) => observed === declared || observed.startsWith(`${declared.replace(/\/+$/, '')}/`)
+    const build = (over: Record<string, unknown>) => createProductionAdmissionAssembly({
+      permissionPolicy: { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: ROOT } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy,
+      realmId: REALM,
+      templateId: 'tpl-f1',
+      role: 'member',
+      definitionOwnerAuthority: 'human-user',
+      clock: () => 1790000000000,
+      authorityGeneration: () => 0,
+      beneficiaryAuthority: 'member',
+      subtreeContains,
+      onObserve: () => {},
+      ...over,
+    })
+    const evil = build({ invokeClasses: { evil: ['read'] }, knownEffectClasses: ['grep', 'glob', 'bash'] })
+    expect(evil.ok).toBe(false)
+    if (evil.ok) return
+    expect(evil.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(evil.error.details?.refusal).toBe('projection-invoke-class-unknown')
+    const classless = build({ invokeClasses: CLASSES })
+    expect(classless.ok).toBe(false)
+    if (classless.ok) return
+    expect(classless.error.details?.refusal).toBe('projection-inventory-missing')
+    // the exact law the plane mounts, WITH its declared inventory, constructs and covers (the fix does not blunt the law)
+    const good = build({ invokeClasses: CLASSES, knownEffectClasses: ['grep', 'glob', 'bash'] })
+    expect(good.ok).toBe(true)
+    if (!good.ok) return
+    const spell = new Set(good.value.policyDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}`))
+    expect(spell.has(`tool-invoke@${REALM}|tool:grep`)).toBe(true) // the mounted law rides
+    expect(spell.has(`tool-invoke@${REALM}|tool:evil`)).toBe(false) // the unknown class never appears
+  })
+
+  it('the class law is validated fail-closed (nameable class / non-grammar governor / empty list / shape)', () => {
+    const refusalOf = (r: ReturnType<typeof projOf>): string | undefined => (r.ok ? undefined : r.error.details?.refusal as string)
+    // The nameable-class case carries its inventory WITH 'read' in it, so the
+    // refusal can only come from the nameable-class clause itself (an
+    // inventory-missing/unknown-class trip would be the wrong clause — the
+    // M3 mutation probe depends on this precision).
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { read: ['read'] }, knownEffectClasses: ['grep', 'glob', 'read'] }))).toBe('projection-input-malformed') // nameable class never rides
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: ['grep'] } }))).toBe('projection-input-malformed') // governor outside the grammar
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { grep: [] } }))).toBe('projection-input-malformed') // empty governor list
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: { Grep: ['read'] } }))).toBe('projection-input-malformed') // class must be lower-case
+    expect(refusalOf(projOf({ default: 'deny', allow: [], ask: [], deny: [] }, { invokeClasses: 'nope' as unknown as Record<string, readonly string[]> }))).toBe('projection-input-malformed') // shape
   })
 })

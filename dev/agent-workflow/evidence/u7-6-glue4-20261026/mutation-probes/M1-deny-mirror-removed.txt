@@ -1,0 +1,8 @@
+# M1-deny-mirror-removed
+# R1 F2(a): removing the deny-source mirroring must break a test
+# vitest -t "projects the class arm" exit=1 => MUTANT CAUGHT (tests went RED)
+
+     × a DENY-lane governing rule projects the class arm into the deny lane AND its deny source (never loosened) 18ms
+      Tests  1 failed | 53 skipped (54)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected false to be true // Object.is equality

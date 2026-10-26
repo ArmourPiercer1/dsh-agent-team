@@ -559,9 +559,22 @@ export function createAdmissionKernel(options) {
 //      (`bindAdmissionRecheck` law, unchanged).
 /** Effect-kind companions each file tool's resource rule projects (absent ⇒
  *  the tool carries no PR0 resource-effect mapping — its rules project the
- *  tool-invoke arm only; a DENY needing an absent mapping fails closed). */
+ *  tool-invoke arm only; a DENY needing an absent mapping fails closed).
+ *
+ *  U7-6 GLUE-4 (named center-interface PR): the `read` class ALSO projects
+ *  the `list` companion. The walk leg of a governed read-class row (the
+ *  anchored search rows enumerate the directory tree of the surface they
+ *  read) consumes directory enumeration as its enumeration leg — the exact
+ *  shape of the documented functional break the meta companion was added
+ *  for ("without it, an ALLOWED read would Ask at every stat"): without it,
+ *  an ALLOWED read-class walk refuses at every enumerate. Listing names
+ *  under a subtree the human already granted FULL READ of is strictly
+ *  weaker than the grant itself (names ⊂ contents), so this never widens
+ *  authority beyond what the read rule already carries. `read_image` keeps
+ *  no list companion (an image read is a single-resource read, never a
+ *  walk); the write class keeps none (writing never implies enumerating). */
 const RESOURCE_EFFECT_KINDS = Object.freeze({
-    read: Object.freeze(['read', 'meta']),
+    read: Object.freeze(['read', 'meta', 'list']),
     read_image: Object.freeze(['read', 'meta']),
     write: Object.freeze(['write', 'meta']),
     edit: Object.freeze(['write', 'meta']),
@@ -610,10 +623,67 @@ export function deriveTeamPolicyAuthority(input) {
             return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', `projection refused: policy.${lane} must be an array (possibly empty)`);
         }
     }
+    // U7-6: the row-class law (see TemplatePolicyProjectionInput.invokeClasses)
+    // — validated fail-closed ONCE at construction, then consumed per rule.
+    // A class nameable by the grammar itself never rides (its own rules
+    // already project it — a ride would shadow it); a governing tool outside
+    // the grammar is refused (nothing outside the grammar can carry authority).
     const entries = [];
     const denySources = [];
     const notes = [];
     let hasSubtree = false;
+    const rideClassesByTool = new Map();
+    if (input.invokeClasses !== undefined) {
+        if (!isPlainRecord(input.invokeClasses)) {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: invokeClasses must be a record <effectClass> → <governing rule tools>');
+        }
+        for (const [effectClass, governing] of Object.entries(input.invokeClasses)) {
+            if (!/^[a-z][a-z0-9_]{0,63}$/.test(effectClass) || PERMISSION_TOOL_NAMES.includes(effectClass)) {
+                return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', `projection refused: invokeClasses key '${effectClass}' must be a lower-case class token that is NOT a rule-grammar tool name (a nameable class never rides)`);
+            }
+            if (!Array.isArray(governing) || governing.length === 0 || !governing.every((t) => typeof t === 'string' && PERMISSION_TOOL_NAMES.includes(t))) {
+                return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', `projection refused: invokeClasses['${effectClass}'] must be a non-empty array of rule-grammar tools`);
+            }
+            for (const governingTool of governing) {
+                const prior = rideClassesByTool.get(governingTool) ?? [];
+                rideClassesByTool.set(governingTool, prior.includes(effectClass) ? prior : Object.freeze([...prior, effectClass]));
+            }
+        }
+        // Review R1 F1 — the law is bounded by the mount's DECLARED class world.
+        // A well-formed but unknown key ('evil', 'grepp') is a typed refusal at
+        // construction — the projection never creates an authority arm for a
+        // class no row of this mount can derive. Order: the law's own shape
+        // first (above), then the inventory's presence and shape, then the
+        // membership — each its own refusal tag.
+        if (input.knownEffectClasses === undefined) {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-missing', 'projection refused: invokeClasses requires the mount\'s declared row-class inventory (knownEffectClasses) — a class law whose class world is undeclared is never constructed (fail-closed, review R1 F1)');
+        }
+        const inventory = input.knownEffectClasses;
+        if (!Array.isArray(inventory) || inventory.length === 0 || !inventory.every((c) => typeof c === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(c)) || new Set(inventory).size !== inventory.length) {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-inventory-malformed', 'projection refused: knownEffectClasses must be a non-empty array of unique lower-case class tokens');
+        }
+        for (const effectClass of Object.keys(input.invokeClasses)) {
+            if (!inventory.includes(effectClass)) {
+                return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-invoke-class-unknown', `projection refused: invokeClasses key '${effectClass}' is not a class of this mount's declared row world (${inventory.join(', ')}) — an unknown class never projects (review R1 F1)`);
+            }
+        }
+        if (rideClassesByTool.size > 0) {
+            notes.push(`row-class invoke law mounted (U7-6): ${[...rideClassesByTool.entries()].map(([t, classes]) => classes.map((c) => `${c}<-${t}`).join(', ')).join('; ')} — governing rules project the class arm; no governing rule keeps the class refused (disclosed)`);
+        }
+    }
+    const rideClassesFor = (permissionTool) => rideClassesByTool.get(permissionTool) ?? [];
+    // The ride arms mirror the governing rule's OWN tool-invoke treatment
+    // exactly — same ceiling lane for lane, deny source for deny — so a class
+    // is never admitted where its governing rule would be denied, and never
+    // denied where the governing rule only asks.
+    const pushInvokeRideArms = (lane, ceiling, permissionTool, index) => {
+        for (const effectClass of rideClassesFor(permissionTool)) {
+            const rideMatcher = { kind: 'exact', resource: `${input.realmId}|tool:${effectClass}` };
+            entries.push({ ceiling, effectKinds: Object.freeze(['tool-invoke']), matcher: rideMatcher });
+            if (lane === 'deny')
+                denySources.push({ effectKind: 'tool-invoke', matcher: rideMatcher, ruleIndex: index });
+        }
+    };
     for (const lane of ['allow', 'ask', 'deny']) {
         const rules = lanes[lane];
         for (let index = 0; index < rules.length; index += 1) {
@@ -654,15 +724,18 @@ export function deriveTeamPolicyAuthority(input) {
                     if (input.leaderExecTokenPresent === undefined) {
                         notes.push(`rule ${path} (${permissionTool} whole-tool allow): exec dual-gate reader not wired — projected as ASK, never as allow`);
                         entries.push({ ceiling: 'ask', effectKinds: Object.freeze(['tool-invoke']), matcher: invokeMatcher });
+                        pushInvokeRideArms('allow', 'ask', permissionTool, index);
                     }
                     else {
                         entries.push({ ceiling: 'leader-exec-gate', effectKinds: Object.freeze(['tool-invoke']), matcher: invokeMatcher });
+                        pushInvokeRideArms('allow', 'leader-exec-gate', permissionTool, index);
                     }
                     continue;
                 }
                 entries.push({ ceiling: lane, effectKinds: Object.freeze(['tool-invoke']), matcher: invokeMatcher });
                 if (lane === 'deny')
                     denySources.push({ effectKind: 'tool-invoke', matcher: invokeMatcher, ruleIndex: index });
+                pushInvokeRideArms(lane, lane, permissionTool, index);
                 if (!isShell)
                     notes.push(`rule ${path} (${permissionTool} whole-tool allow over ALL resources): only the tool-invoke arm projects — resource-scoped effects fall to no-authority ⇒ Ask (TIGHTER than declared, disclosed never silent)`);
                 continue;
@@ -694,6 +767,7 @@ export function deriveTeamPolicyAuthority(input) {
             entries.push({ ceiling: lane, effectKinds: Object.freeze(['tool-invoke']), matcher: invokeMatcher });
             if (lane === 'deny')
                 denySources.push({ effectKind: 'tool-invoke', matcher: invokeMatcher, ruleIndex: index });
+            pushInvokeRideArms(lane, lane, permissionTool, index);
             const effectKinds = RESOURCE_EFFECT_KINDS[permissionTool];
             if (effectKinds === undefined) {
                 // Only the file-class tools can carry exact/subtree resources and the
@@ -792,6 +866,8 @@ export function createProductionAdmissionAssembly(config) {
         ...(config.canonicalizeResource === undefined ? {} : { canonicalizeResource: config.canonicalizeResource }),
         ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
         ...(config.leaderExecTokenPresent === undefined ? {} : { leaderExecTokenPresent: config.leaderExecTokenPresent }),
+        ...(config.invokeClasses === undefined ? {} : { invokeClasses: config.invokeClasses }),
+        ...(config.knownEffectClasses === undefined ? {} : { knownEffectClasses: config.knownEffectClasses }),
         sourceVersion: config.authorityGeneration,
     });
     if (!projection.ok)

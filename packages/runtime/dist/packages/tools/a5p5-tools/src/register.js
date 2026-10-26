@@ -168,6 +168,10 @@ function createRowExecutionState(assembly) {
                     // end to end.
                     exec: runCtx,
                     parsedArgs: parsed.value,
+                    // U7-6 GLUE-4: the anchored row's governed root rides the request
+                    // when the assembly declared one (the derivation applies the
+                    // anchored law to the search arms; bash ignores it).
+                    ...(assembly.effectAnchorRoot === undefined ? {} : { effectAnchorRoot: assembly.effectAnchorRoot }),
                     // M1: the canonical parameter fingerprint (Alpha.2 canonical-operation
                     // law), computed here from the CLOSED parsed args — the fact the PA
                     // edge asks, consumes and rechecks against.

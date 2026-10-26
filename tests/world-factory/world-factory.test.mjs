@@ -522,17 +522,22 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(seq[0].toolCalls[0].arguments.output_mode, 'content')
   assert.equal(seq[0].toolCalls[0].arguments.path, assembly.workspaceDir)
   assert.equal(seq[2].toolCalls[0].arguments.output_mode, 'content')
-  // LEAST-PRIVILEGE pin: all three lanes empty, default deny. Measured
-  // (offline probe of the shipped createLaneDecide + run8 wire): a
-  // `tool: read` any-rule WOULD pass the lane gate for the placed file-
-  // class rows, only to be refused deeper at the PA assurance edge
-  // (IO_POLICY_UNSUPPORTED). The rule bought no green and real read
-  // surface, so the template stays empty — see the assembly comment for
-  // the two-layer refusal story.
+  // LEAST-PRIVILEGE pin (U7-6 law): default deny; ask/deny lanes empty; the
+  // allow lane carries EXACTLY ONE rule — a `read` EXACT at the governed
+  // root — and nothing else. Pre-U7-6 this pin read "all three lanes empty"
+  // because a search-class rule was inexpressible in the closed enum and a
+  // read any-rule bought no green (run8: refused at the PA assurance edge,
+  // IO_POLICY_UNSUPPORTED). The U7-6 fix at the template-policy COVERAGE/
+  // projectable FROM read rules (invokeClasses law + read→list companion),
+  // so the honest minimum grant is this one locating rule: it covers the
+  // anchored walk envelope (list+read at the root, tool-invoke by class
+  // ride) and nothing beyond the root. No search-token rule can exist —
+  // the enum stays closed; the class law lives in the trusted plane mount.
   const greper = doc.members.find((m) => m.templateId === 'greper')
   assert.equal(greper.capabilities.permissions.default, 'deny')
-  for (const lane of ['allow', 'ask', 'deny']) {
-    assert.deepEqual(greper.capabilities.permissions[lane], [], `lane '${lane}' must stay empty while the enum carries no search token`)
+  assert.deepEqual(greper.capabilities.permissions.allow, [{ tool: 'read', resource: { kind: 'exact', path: assembly.workspaceDir } }])
+  for (const lane of ['ask', 'deny']) {
+    assert.deepEqual(greper.capabilities.permissions[lane], [], `lane '${lane}' must stay empty (least privilege)`)
   }
   // judge algebra: every leg must be provable from disk/ledger facts alone
   const goodDigest = {
