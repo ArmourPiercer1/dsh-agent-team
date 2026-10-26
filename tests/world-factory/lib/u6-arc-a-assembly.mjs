@@ -158,7 +158,7 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       // admission instead.
       '      permissions:', '        default: deny', '        allow:',
       '          - tool: read', '            resource:', '              kind: any',
-      '        ask: []', '        deny: [],',
+      '        ask: []', '        deny: []',
       // The control lane: NO capabilities block at all — the legacy native
       // surface whose grep must behave exactly as before PR5 (§10.5-5).
       '  - templateId: ctl', '    displayName: "u6arca legacy control worker"',

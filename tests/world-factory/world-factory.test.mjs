@@ -502,6 +502,9 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   // admission coverage (plane:459 fileNames class): greper grants read-any
   const greper = doc.members.find((m) => m.templateId === 'greper')
   assert.deepEqual(greper.capabilities.permissions.allow, [{ tool: 'read', resource: { kind: 'any' } }])
+  assert.equal(greper.capabilities.permissions.default, 'deny')
+  assert.deepEqual(greper.capabilities.permissions.ask, [])
+  assert.deepEqual(greper.capabilities.permissions.deny, [], 'YAML scalar drift (a stray comma) poisons catalog ingest')
   // judge algebra: every leg must be provable from disk/ledger facts alone
   const good = judgeU6ArcA({
     ledgerRows: [
