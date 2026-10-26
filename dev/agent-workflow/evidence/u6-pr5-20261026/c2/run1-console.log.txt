@@ -1,0 +1,1 @@
+[u6-arc-a] case arca:mounted: FAIL {"teamSession":true,"familyMount":{"at":"2026-10-26T05:53:45.732Z","world":"u5u6arca1-20261026T05-53-34Z","leg":"family-mount","ok":true,"state":"ACTIVE"},"probeRegister":{"at":"2026-10-26T05:53:45.732Z","world":"u5u6arca1-20261026T05-53-34

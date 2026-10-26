@@ -91,36 +91,54 @@ async function mountValue(over: Record<string, unknown> = {}): Promise<KernelPla
 }
 
 describe('u6-pr3 A — the mount carries ONE kernel owning BOTH names', () => {
-  it('A1 one kernel, one table, two family entries: the ARC-B ledger is observable on the mount surface', async () => {
+  it('A1 one kernel, one table, family entries for every governed row: the ARC-B ledger is observable on the mount surface (U6 PR5: THREE families)', async () => {
     const value = await mountValue()
     const center = value.centerKernel
     if (center === undefined) throw new Error('center kernel absent')
     expect(center.kernel.mode()).toBe('enforcing')
-    expect(center.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family'])
+    // U6 PR5 (the real family move): the search rows joined the SAME kernel —
+    // registration order read → shell → search, the mount surface in kind.
+    expect(center.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family', 'dsh.search-family'])
     const guard = value.kernelGuard
     if (guard === undefined) throw new Error('kernelGuard absent')
-    // ONE guard owns BOTH governed spellings and NOTHING else.
+    // ONE guard owns EVERY governed spelling and NOTHING else (PR5: grep and
+    // glob are now Kernel-owned — the pre-PR5 `false` pins retired WITH the
+    // old center path, replacement not dual-keep).
     expect(guard.owns('read')).toBe(true)
     expect(guard.owns('team_bash')).toBe(true)
-    expect(guard.owns('team_grep')).toBe(false)
-    expect(guard.owns('team_glob')).toBe(false)
+    expect(guard.owns('team_grep')).toBe(true)
+    expect(guard.owns('team_glob')).toBe(true)
     expect(guard.owns('job_output')).toBe(false)
-    // Feed consults MINT (pb §6) — then BOTH entries bind on the SAME
+    // Feed consults MINT (pb §6) — then the entries bind on the SAME
     // (scopeKey) row of the SAME table, each to its own family candidate.
     const fedRead = value.placementFeed('read')
     const fedBash = value.placementFeed('team_bash')
+    const fedGrep = value.placementFeed('team_grep')
+    const fedGlob = value.placementFeed('team_glob')
     expect(fedRead?.definitionIdentity).toMatch(/^def#\d+$/)
     expect(fedBash?.definitionIdentity).toMatch(/^def#\d+$/)
+    expect(fedGrep?.definitionIdentity).toMatch(/^def#\d+$/)
+    expect(fedGlob?.definitionIdentity).toMatch(/^def#\d+$/)
     expect(guard.identityFor('read')).toBe(fedRead?.definitionIdentity)
     expect(guard.identityFor('team_bash')).toBe(fedBash?.definitionIdentity)
+    expect(guard.identityFor('team_grep')).toBe(fedGrep?.definitionIdentity)
+    expect(guard.identityFor('team_glob')).toBe(fedGlob?.definitionIdentity)
     const readEntry = center.kernel.approvalFor(center.scopeKey, 'read')
     const bashEntry = center.kernel.approvalFor(center.scopeKey, 'team_bash')
+    const grepEntry = center.kernel.approvalFor(center.scopeKey, 'team_grep')
+    const globEntry = center.kernel.approvalFor(center.scopeKey, 'team_glob')
     expect(readEntry?.familyId).toBe('dsh.fs-family')
     expect(bashEntry?.familyId).toBe('dsh.process-family')
+    expect(grepEntry?.familyId).toBe('dsh.search-family')
+    expect(globEntry?.familyId).toBe('dsh.search-family')
     expect(bashEntry?.scopeKey).toBe(center.scopeKey)
     expect(readEntry?.scopeKey).toBe(center.scopeKey)
+    expect(grepEntry?.scopeKey).toBe(center.scopeKey)
+    expect(globEntry?.scopeKey).toBe(center.scopeKey)
     // SIBLING entries, distinct names, distinct identities — one table.
     expect(readEntry?.definitionIdentity).not.toBe(bashEntry?.definitionIdentity)
+    expect(grepEntry?.definitionIdentity).not.toBe(globEntry?.definitionIdentity)
+    expect(grepEntry?.definitionIdentity).not.toBe(bashEntry?.definitionIdentity)
   })
 
   it('A2 family-scoped invalidation on the shared table: dropping the shell family never touches the read entry (and revoke never resurrects)', async () => {

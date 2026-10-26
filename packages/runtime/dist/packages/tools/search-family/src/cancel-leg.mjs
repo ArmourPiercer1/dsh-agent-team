@@ -44,7 +44,7 @@
  * why, and `signal.reason` is never read or echoed here: it is caller-owned
  * free text, and these rows publish codes plus arithmetic and nothing else.
  *
- * @module runtime/plugin/live/cancel-leg
+ * @module search-family/cancel-leg
  */
 import { setTimeout as sleepTimer, clearTimeout as clearSleepTimer } from 'node:timers'
 

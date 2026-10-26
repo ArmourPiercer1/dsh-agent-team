@@ -136,7 +136,9 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     expect(center.scopeKey).toBe('u6-pr2-test-team-root:u6pr2-instance')
     // ARC-B (U6 PR3): the SAME kernel registers BOTH families — the one
     // ledger is observable right here (one registry, two candidates).
-    expect(center.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family'])
+    // U6 PR5: the search rows joined the SAME kernel (three families now,
+    // registration order read → shell → search).
+    expect(center.familyIds).toEqual(['dsh.fs-family', 'dsh.process-family', 'dsh.search-family'])
     const entry = center.kernel.approvalFor(center.scopeKey, 'read')
     expect(entry?.definitionIdentity).toBe(identity)
     expect(entry?.familyId).toBe('dsh.fs-family')
@@ -150,11 +152,27 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     // And it never re-binds on re-consult: the table is mounted truth.
     expect(value.placementFeed('read')?.definitionIdentity).toBe(identity)
     expect(guard.identityFor('read')).toBe(identity)
-    // Trio names stay on the plain minter feed — the table owns only what it owns.
-    const trioName = (value.ownNames as string[]).find((n) => n !== 'read')
-    expect(trioName, 'the plane places trio rows besides read').toBeDefined()
-    expect(value.placementFeed(trioName!)).toEqual({ definitionIdentity: expect.stringMatching(/^def#\d+$/), realmId: REALM })
-    expect(center.kernel.approvalFor(center.scopeKey, trioName!)).toBeUndefined()
+    // U6 PR5 REPLACED the pre-PR5 "trio names stay on the plain minter feed"
+    // law: every placed row of a governed mount is now family-owned
+    // (read/bash/grep/glob), and for ALL of them the TABLE is the feed —
+    // each entry bound to its own family candidate, minted once. The plain
+    // minter branch of the feed survives only for names NO registered
+    // family claims (pinned by the negative leg below).
+    for (const name of (value.ownNames as string[]).filter((n) => n !== 'read')) {
+      expect(guard.owns(name), `PR5: every placed governed row is table-owned (${name})`).toBe(true)
+      const fedName = value.placementFeed(name)
+      expect(fedName?.definitionIdentity, `table feed answers ${name}`).toMatch(/^def#\d+$/)
+      expect(guard.identityFor(name)).toBe(fedName?.definitionIdentity)
+      const entryName = center.kernel.approvalFor(center.scopeKey, name)
+      expect(entryName?.definitionIdentity).toBe(fedName?.definitionIdentity)
+      expect(['dsh.fs-family', 'dsh.process-family', 'dsh.search-family']).toContain(entryName?.familyId)
+    }
+    // A name no family claims stays UNOWNED and unbound — the guard says
+    // false, the table holds nothing, and the feed falls to the plain
+    // minter identity of the placed def (this mount places no such row,
+    // so the ownership half is pinned directly):
+    expect(guard.owns('team_grep_unmounted')).toBe(false)
+    expect(center.kernel.approvalFor(center.scopeKey, 'team_grep_unmounted')).toBeUndefined()
   })
 
   it('K3 a plane WITHOUT the read row binds NO read entry — and (review-r1 B2) a REJECTING read face, never native fallback', async () => {
@@ -179,7 +197,7 @@ describe('u6-pr2 center assembly: the read mount carries a live kernel', () => {
     // ROW there is no read candidate to claim, the table answers NULL for
     // `read` forever, and the door refuses every read before its Body.
     expect(value.centerKernel, 'mount-wide kernel (shell family only)').toBeDefined()
-    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family'])
+    expect(value.centerKernel!.familyIds).toEqual(['dsh.process-family', 'dsh.search-family']) // U6 PR5: the always-mounted search rows joined too
     // REVIEW-R1 B2 (CI-05): the guard face is NOT omitted — the governed
     // mount keeps ownership of `read` with a table that answers NULL
     // forever, so the door refuses every read before its Body instead of

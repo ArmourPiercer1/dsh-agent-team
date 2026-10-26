@@ -29,12 +29,17 @@
  *      enablement constant flipping to true, and a mount reaching past
  *      `sandbox-provider/index.js` into the lane's internals.
  *      Names and provenance (one line each, no blanket exemption):
- *        - `runtime/src/plugin/live/plane-effect-backends.mjs` — the governed
- *          Team tool plane's effect-backends row (glue lane; it mounts the
- *          shell/streaming rows behind the plane's own admission binding).
- *        - `runtime/src/plugin/live/glob-backend.mjs` — the a5glb anchored glob
- *          row (alpha5-glob-backend lane; confined rg walk, evidence
- *          `dev/agent-workflow/evidence/alpha5/glob-backend/`).
+ *        - `tools/process-family/src/confined-shell-executor.mjs` — the
+ *          governed shell row's executor (U6 PR3 moved the mount here with
+ *          the shell mechanics; CI-07 named provider).
+ *        - `tools/search-family/src/{search-mechanics,search-backend,glob-backend}.mjs`
+ *          — the anchored rg rows (U6 PR5 moved the mounts HERE with the
+ *          search mechanics; confined rg walks, evidence
+ *          `dev/agent-workflow/evidence/alpha5/glob-backend/` +
+ *          `dev/agent-workflow/evidence/alpha5/srgp/`). The center glue file
+ *          (`runtime/src/plugin/live/plane-effect-backends.mjs`) stopped
+ *          referencing the provider lane when PR5 moved its last provider-
+ *          consuming row — the ledger entry retires WITH the code.
  *
  * @module packages/runtime/test/a5p4-lane-hygiene.test
  */
@@ -143,24 +148,42 @@ describe('a5p4 lane purity and dormancy', () => {
    */
   const NAMED_PROVIDER_MOUNTS: readonly { readonly file: string; readonly lane: string; readonly edge: string; readonly kind?: 'requirement' }[] = [
     {
-      file: 'runtime/src/plugin/live/plane-effect-backends.mjs',
-      lane: 'glue — Team tool plane effect backends',
-      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
-    },
-    {
-      file: 'runtime/src/plugin/live/glob-backend.mjs',
-      lane: 'a5glb — anchored confined-rg glob row',
-      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+      // U6 PR5 (the real family move): the anchored rg glob row, mounted by
+      // the SEARCH family lane since the mechanics moved (a5glb was the
+      // center booking; the SAME edge retargets one level, path-only).
+      file: 'tools/search-family/src/glob-backend.mjs',
+      lane: 'a5glb (u6-pr3 moved: search-family lane) — anchored confined-rg glob row',
+      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
     },
     {
       // A5-SRGP (PR5 原生等价层, search row): the confined-rg SEARCH backend builds
       // its own provider for the anchored walk — allowPaths are the system dirs the
       // packaged binary needs plus the governed root READ-ONLY (readFile/readDir,
       // never write), and the walk rides the child's cwd at the anchor. Evidence:
-      // dev/agent-workflow/evidence/alpha5/srgp/README.md.
-      file: 'runtime/src/plugin/live/search-backend.mjs',
-      lane: 'a5srgp — anchored confined-rg search row',
-      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+      // dev/agent-workflow/evidence/alpha5/srgp/README.md. U6 PR5: same row,
+      // same edge shape, now under the search-family lane.
+      file: 'tools/search-family/src/search-backend.mjs',
+      lane: 'a5srgp (u6-pr5 moved: search-family lane) — anchored confined-rg search row',
+      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
+    },
+    {
+      // U6 PR5: the TWO-body search row's confined body builds its OWN
+      // provider for the anchored rg walk (the grep(1) port needs none); the
+      // ARCHIVED CANDIDATE-A row moved with its disclosures and its provider
+      // mount stayed a mount — never a silent deletion, never a second copy.
+      file: 'tools/search-family/src/search-mechanics.mjs',
+      lane: 'u6-pr5 (glue7 heritage) — TWO-body search row + archived CANDIDATE-A glob row',
+      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
+    },
+    {
+      // U6 PR5 CI-07: the search family's row descriptor DECLARES its
+      // provider requirement (row metadata names the reviewed provider the
+      // rg walks drive, the launcher pin rides the bound digests). A
+      // REQUIREMENT DECLARATION, not a mount (the bash-contribution pattern).
+      file: 'tools/search-family/src/search-contribution.mjs',
+      kind: 'requirement',
+      lane: 'u6-pr5 — search family row PROVIDER REQUIREMENT (row metadata names the reviewed provider; pairing is the plane\'s Gate 0c)',
+      edge: "provider: 'packages/runtime/sandbox-provider',",
     },
     {
       // U6 PR3 (ARC-B part 2): the governed shell row's Family descriptor

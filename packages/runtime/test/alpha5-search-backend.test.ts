@@ -175,7 +175,7 @@ afterAll(async () => {
   if (EVIDENCE_DIR !== undefined && EVIDENCE_DIR.length > 0) {
     mkdirSync(EVIDENCE_DIR, { recursive: true })
     const body = {
-      row: 'packages/runtime/src/plugin/live/search-backend.mjs',
+      row: 'packages/tools/search-family/src/search-backend.mjs',
       rg: 'ripgrep 15.0.0 (rev 3a612f88b8) — @vscode/ripgrep-linux-x64@1.18.0',
       launcher: `sha256:${LAUNCHER_SHA.slice(0, 16)}`,
       fixedArgv: ['<rg>', '--no-config', '--json', '--regexp=<P>', '[--glob=<inc>]', ...row.SEARCH_ARGV_ADDITIONS, '--', '.'],
@@ -337,7 +337,7 @@ describe('A5-SRGP A: the fixed argv is one measurement, one builder', () => {
   }, SLOW)
 
   it('source-law: one sink write, no channel in the stream handler, internal face opt-in, codes from the table only', () => {
-    const src = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+    const src = readFileSync(join(REPO, 'packages/tools/search-family/src/search-backend.mjs'), 'utf8')
     // (1) exactly one sink write site, and it is the post-verdict one.
     expect(src.match(/sink\?\.write\(/g) ?? []).toHaveLength(1)
     expect(src.match(/io\.sink\.write\(/g) ?? []).toHaveLength(0)
@@ -754,10 +754,10 @@ describe('M: the plane\'s search row mounts the rg body where a confined provide
     // what makes the byte-copy law apply to its target at all), and the placement
     // list carries that target. Break either half and the shipped row stops loading.
     const rowSrc = readFileSync(
-      join(REPO_ROOT, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+      join(REPO_ROOT, 'packages/tools/search-family/src/search-backend.mjs'), 'utf8')
     expect(rowSrc).toMatch(/from '\.\/glob-backend\.mjs'/)
     expect(placedDistPaths()).toContain(
-      'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs')
+      'packages/runtime/dist/packages/tools/search-family/src/glob-backend.mjs')
   })
 })
 
@@ -794,12 +794,13 @@ describe('V: the anchor law and the closed refusal face', () => {
   it('V6b the two new refusals are a DISCLOSED capability delta, not an invisible one', async () => {
     // `fixed_string` and `ignore_case` ARE lane vocabulary
     // (`packages/tools/a5p5-tools/src/args.ts:148-149`) and the grep(1) port the
-    // rg row replaces DOES honour them (`plane-effect-backends.mjs:120-122`
-    // pushes `-F` / `-i`). The host's public ripgrep vocabulary has no arm for
-    // either, so this row refuses rather than inventing a mapping. The delta is
-    // pinned from BOTH sides here so nobody discovers it as a silent behaviour
-    // change: the port answers, the rg row refuses by name.
-    const portSource = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/plane-effect-backends.mjs'), 'utf8')
+    // rg row replaces DOES honour them (the port's `grepArgv` — U6 PR5 moved
+    // it VERBATIM to `packages/tools/search-family/src/search-mechanics.mjs`
+    // — pushes `-F` / `-i`). The host's public ripgrep vocabulary has no arm
+    // for either, so this row refuses rather than inventing a mapping. The
+    // delta is pinned from BOTH sides here so nobody discovers it as a silent
+    // behaviour change: the port answers, the rg row refuses by name.
+    const portSource = readFileSync(join(REPO, 'packages/tools/search-family/src/search-mechanics.mjs'), 'utf8')
     expect(portSource).toContain("if (parsed.fixedString) argv.push('-F')")
     expect(portSource).toContain("if (parsed.ignoreCase) argv.push('-i')")
     // And the encodings exist — which is exactly why the refusal has to be
@@ -925,7 +926,7 @@ describe('V: the anchor law and the closed refusal face', () => {
     const doomed = join(ROOT_DIR, 'doomed')
     mkdirSync(doomed, { recursive: true })
     writeFileSync(join(doomed, 'x.txt'), `${SEARCH_TOK}\n`)
-    const globRow = (await import(new URL('../src/plugin/live/glob-backend.mjs', import.meta.url).href)) as unknown as {
+    const globRow = (await import(new URL('../../tools/search-family/src/glob-backend.mjs', import.meta.url).href)) as unknown as {
       openAnchoredWalkRoot(root: string, target: unknown, debug?: unknown): Promise<unknown>
       verifyGlobResultsBeneath(anchor: unknown, entries: readonly string[], debug?: unknown): Promise<unknown>
     }
@@ -962,7 +963,7 @@ describe('V: the anchor law and the closed refusal face', () => {
       const root = join(swapped, 'root')
       mkdirSync(join(root, 'src'), { recursive: true })
       writeFileSync(join(root, 'src', 'a.txt'), SEARCH_TOK + ' one\n')
-      const globRow = (await import(new URL('../src/plugin/live/glob-backend.mjs', import.meta.url).href)) as unknown as {
+      const globRow = (await import(new URL('../../tools/search-family/src/glob-backend.mjs', import.meta.url).href)) as unknown as {
         openAnchoredWalkRoot(root: string, target: unknown, debug?: unknown): Promise<unknown>
         verifyGlobResultsBeneath(anchor: unknown, entries: readonly string[], debug?: unknown): Promise<unknown>
       }
@@ -1037,7 +1038,7 @@ describe('V: the anchor law and the closed refusal face', () => {
   it('V11e the coverage law is applied AFTER completion and BEFORE any record is trusted', () => {
     // Source law: the coverage refusal sits between the completion check and the
     // record reader, and it cannot write to a channel.
-    const src = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+    const src = readFileSync(join(REPO, 'packages/tools/search-family/src/search-backend.mjs'), 'utf8')
     const completion = src.indexOf('anchored-search WALKER-INCOMPLETE')
     const coverageAt = src.indexOf('const coverage = walkerCoverageRefusal(stderrText)')
     const parseAt = src.indexOf('parseGrepMatches(stdout)')

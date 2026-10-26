@@ -147,9 +147,9 @@ interface CancelLegRow {
   callAborted(signal: unknown): boolean
   createOwnedStop(): { adopt(child: unknown): void; child(): unknown; stop(): Promise<OwnedStop> }
 }
-const cancelLeg = (await import(new URL('../src/plugin/live/cancel-leg.mjs', import.meta.url).href)) as CancelLegRow
+const cancelLeg = (await import(new URL('../../tools/search-family/src/cancel-leg.mjs', import.meta.url).href)) as CancelLegRow
 
-const rowSource = (): string => readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+const rowSource = (): string => readFileSync(join(REPO, 'packages/tools/search-family/src/glob-backend.mjs'), 'utf8')
   .split('\n')
   .map((line) => (line.trimStart().startsWith('//') || line.trimStart().startsWith('*') || line.trimStart().startsWith('/*') ? '' : line.split('//')[0] ?? ''))
   .join('\n')

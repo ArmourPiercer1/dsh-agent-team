@@ -1,0 +1,7 @@
+{"at":"2026-10-26T06:16:10.216Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"plugin-apply","pid":42,"hasTools":true}
+{"at":"2026-10-26T06:16:10.219Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"family-mount","ok":true,"state":"ACTIVE"}
+{"at":"2026-10-26T06:16:10.219Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"register","kind":"probe-tool","ok":true}
+{"at":"2026-10-26T06:16:13.299Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"walk","action":"walk","callId":"pos-1","grantId":"grant-pos","ok":true,"stage":"executed","code":null,"markerFile":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr5/tests/homes/u5u6arca5-20261026T06-15-58Z/workspace/u6arca-markers/pos-1-marker.txt"}
+{"at":"2026-10-26T06:17:43.444Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"walk","action":"unbound","callId":"unbound-1","ok":false,"stage":"plan","code":"NO_APPROVAL_ENTRY","outcome":"defer"}
+{"at":"2026-10-26T06:18:48.761Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"walk","action":"walk","callId":"replay-1","grantId":"grant-pos","ok":false,"stage":"consume","code":"GRANT_REPLAY","markerFile":null}
+{"at":"2026-10-26T06:18:49.169Z","world":"u5u6arca5-20261026T06-15-58Z","leg":"teardown","ok":true,"code":null}

@@ -186,6 +186,15 @@ const TEST_ONLY_EDGE_EXCEPTIONS: readonly { readonly path: string; readonly form
     path: 'runtime/test/a5-m1-correlation.test.ts',
     form: `const reg = await import('../../tools/a5p5-tools/src/index.js')`,
   },
+  // U6 PR5 (disclosed law-surface update): the golden gate pins the
+  // model-facing ROW grammar, which only this barrel carries — the plane
+  // builds the placed rows from it (team-tool-plane.mjs:75). Same one-line
+  // dynamic barrel form as the A5-M1 edge; the pinning leg below holds it
+  // exactly as narrow.
+  {
+    path: 'runtime/test/u6-pr5-search-golden-vectors.test.ts',
+    form: `const { parseGrepArgs, parseGlobArgs } = await import('../../tools/a5p5-tools/src/index.js')`,
+  },
 ]
 
 describe('a5p5-dormant-audit', () => {

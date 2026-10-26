@@ -1,0 +1,55 @@
+{
+  "schema": "u6-arc-a-family-census/1",
+  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only ⇔ tests/**).",
+  "families": [
+    {
+      "familyId": "dsh.fs-family",
+      "lane": "packages/tools/fs-family",
+      "mount": "product",
+      "reviewedBy": "PR #375 (U6 PR2)",
+      "contributionPaths": [
+        "packages/tools/fs-family/src/fs-read-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) read"
+      ]
+    },
+    {
+      "familyId": "dsh.process-family",
+      "lane": "packages/tools/process-family",
+      "mount": "product",
+      "reviewedBy": "PR #377 (U6 PR3)",
+      "contributionPaths": [
+        "packages/tools/process-family/src/bash-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) bash"
+      ]
+    },
+    {
+      "familyId": "dsh.search-family",
+      "lane": "packages/tools/search-family",
+      "mount": "product",
+      "reviewedBy": "U6 PR5 (this slice — the search move)",
+      "contributionPaths": [
+        "packages/tools/search-family/src/search-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) grep",
+        "(bound-definition) glob"
+      ]
+    },
+    {
+      "familyId": "dsh.u6-probe-family",
+      "lane": "tests/u6-arc-a-probe-family",
+      "mount": "test-only",
+      "reviewedBy": "U6 PR5 (ARC-A probe lane)",
+      "contributionPaths": [
+        "tests/u6-arc-a-probe-family/src/probe-contribution.mjs"
+      ],
+      "nativeNames": [
+        "u6arc_probe"
+      ]
+    }
+  ]
+}

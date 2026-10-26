@@ -1,0 +1,17 @@
+/**
+ * MASTER recording face v3 (SCRATCH — detached origin/master @ 5c03f7240,
+ * not part of any commit). v2 mistakenly pinned the npm package parse face;
+ * the PRODUCTION model-facing rows are built by createGovernedToolDefinitions
+ * in the a5p5 lane, whose args grammar (parseGrepArgs/parseGlobArgs, barrel
+ * face) is what callers actually meet (measured run6: rows validate
+ * register.ts PARAM_SCHEMA — output_mode required — before parse). v3 pins
+ * the barrel face: identical functions to v1's deep import.
+ */
+export { canonicalizeOperation } from '../operation-permission/canonical-operation.ts'
+export { classifyPermissionCoverageTool, evaluatePermissionCoverage } from '../operation-permission/permission-coverage.ts'
+const a5p5Barrel = await import('../../tools/a5p5-tools/src/index.js')
+export const parseGrepArgs = a5p5Barrel.parseGrepArgs
+export const parseGlobArgs = a5p5Barrel.parseGlobArgs
+export { searchArgv, presentPath, projectMatches, walkerCoverageRefusal } from '../src/plugin/live/search-backend.mjs'
+export { globArgv, parseWalkOutput } from '../src/plugin/live/glob-backend.mjs'
+export { grepArgv } from '../src/plugin/live/plane-effect-backends.mjs'

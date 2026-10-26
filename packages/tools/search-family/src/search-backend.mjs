@@ -197,13 +197,13 @@
  * never read and never echoed: it is caller-owned text, and this face publishes
  * codes plus arithmetic.
  *
- * @module packages/runtime/src/plugin/live/search-backend
+ * @module search-family/search-backend
  */
 
 import { realpathSync } from 'node:fs'
 import { realpath } from 'node:fs/promises'
 import { buildGrepCommand, parseGrepArgs, parseGrepMatches, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
-import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
+import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'
 import { openAnchoredWalkRoot, verifyGlobResultsBeneath } from './glob-backend.mjs'
 import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
 

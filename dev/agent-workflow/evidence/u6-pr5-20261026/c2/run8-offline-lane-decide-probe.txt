@@ -1,0 +1,2 @@
+read-any team_grep => {"kind":"allow"}
+empty    team_grep => {"kind":"deny","code":"template-default-deny"}

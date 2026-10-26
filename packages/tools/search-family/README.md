@@ -1,0 +1,89 @@
+# `packages/tools/search-family` — the SEARCH Family lane (U6 PR5)
+
+Owner-facing lane for the governed `grep`/`glob` rows' FAMILY-owned halves.
+Read `src/index.mjs` first — it is the module-role map. This README states
+the OWNER ROLE and the lane law.
+
+## Provenance
+
+Every byte of moved code came VERBATIM out of the center files at master
+`5c03f7240` (PR #376 merge = post-PR3 master):
+
+| family file | moved from (master lines) |
+| --- | --- |
+| `src/search-mechanics.mjs` | `src/plugin/live/plane-effect-backends.mjs` :106-539 (`grepArgv`, the fd-view remap/sink helpers, the `createAnchoredSearchBackend` TWO-body row, the ARCHIVED CANDIDATE-A `createAnchoredGlobBackend`) |
+| `src/search-backend.mjs` | `src/plugin/live/search-backend.mjs` (whole file; ONLY the provider import depth re-based — one line, path-only) |
+| `src/glob-backend.mjs` | `src/plugin/live/glob-backend.mjs` (whole file; ONLY the provider import depth re-based — one line, path-only) |
+| `src/cancel-leg.mjs` | `src/plugin/live/cancel-leg.mjs` (whole file, byte-identical) |
+| `src/search-row.mjs` | NEW placement face over the assembly-injected a5p5 trio registration face (PR3 dormancy law; the plane discards the shell ARM) |
+| `src/search-contribution.mjs` | NEW §4/§10.3 contribution descriptor factory |
+
+The byte-identity of the moves is pinned by
+`packages/runtime/test/u6-pr5-search-move-law.test.ts` (the moved regions
+re-extract hash-identically from the pre-move master blobs).
+
+The center keeps its OLD export surface alive as a RE-EXPORT
+(`plane-effect-backends.mjs`), so pinned consumers — the shipped search/glob
+suites, the `.d.mts` typings, team-tool-plane — resolve unchanged (the PR2
+read / PR3 shell precedents). The family lane is the single home of the
+search-slice logic: NO dual implementation exists at any slice.
+
+## Owner role (what the Family owns / does NOT own)
+
+OWNS (center-assembly-architecture §4): the two row Definitions
+(name/description/parameter schema placement contract), the argument
+contract, the effect BODIES (argv builders, the grep(1) port, the confined
+rg walk + verified-handle anchor law, the cancel leg), and the result
+SHAPES (`SearchOutcome` forms the reviewed renderer consumes).
+
+DOES NOT OWN: admission, approval, grant mint, grant consume, placement
+identity, lifecycle/drain/cancel decisions, the Result ENVELOPE (the host
+registration face is attached by the trusted assembly). The contribution
+descriptor states `admission/grantMint/grantConsume: 'kernel'` as data
+(§ CI-06 — self-approval is unexpressable, and the Kernel's closed schema
+refuses any other value). Every authority force used inside the bodies
+(the anchor law, the verified-handle seam, the confined provider, the
+lane `decide` + PA edges reached only THROUGH the injected a5p5 transport)
+is INJECTED by the trusted assembly point or reached through the public
+face of the OWNING lane — the lane imports no plane, no Kernel, no Host
+internals.
+
+## The native-behavior contract (slice plan §10.5-5)
+
+The rg vocabulary is the host PUBLIC package `@deepseek-ai/dsh-tool-fs-search`
+at the pin (`buildGrepCommand` / `buildGlobCommand` / `parseGrepArgs` /
+`parseGlobArgs` / `resolveRgPath` / `GLOB_MAX_RESULTS`) — the "real native
+behavior contract": the lane bakes argv and parses output EXACTLY as the
+host package does, inside the confined provider face (kernel-enforced read
+scope), anchored at the governed root. The golden-vector gate
+(`packages/runtime/test/u6-pr5-search-golden-vectors.test.ts`) pins the
+whole canonicalization pipeline byte-for-byte against the master recording
+over a corpus generated FROM master (argv forms, effect projections, the
+operation-permission refusals, presentation shapes).
+
+## Lane law (imports, dist, tests)
+
+- Allowed outward edges, and only these: `node:*` builtins,
+  `@deepseek-ai/dsh-tool-fs-search` (host public package — the same pin the
+  center rode), `../../../runtime/sandbox-provider/index.js` (the reviewed
+  confined process provider public face — CI-07 named provider, booked as a
+  NAMED MOUNT row in `a5p4-lane-hygiene`),
+  `../../../runtime/controlled-fs/src/index.js` (`verifyOpenedHandle` —
+  referenced, never copied), and the SIBLING FAMILY public faces:
+  `../../fs-family/src/index.mjs` (`resolveAnchored` — the one anchor-law
+  home) and `../../process-family/src/index.mjs` (`SYSTEM_RX` — the one
+  provider grant-entry-builder home). NO imports of the plane
+  (`src/plugin/live/*`), the governance-center lane, tool-dispatch, the
+  dormant a5p5 lane, or Host internals.
+- DIST MIRROR: every `.mjs` here rides `scripts/place-dist-glue.mjs`
+  PLACEMENTS and mirrors byte-identically under
+  `packages/runtime/dist/packages/tools/search-family/src/`.
+- TESTS: the pinned search/glob/cancel suites were re-pointed to this lane
+  (moved suites ride along: `alpha5-search-backend`, `alpha5-glob-backend`,
+  `alpha5-glob-backend-adversarial`, `alpha5-g6b-rc-first`,
+  `a5-cancel-search`, `a5-cancel-glob`, `a5b3-cancel-leg`,
+  `alpha5-glue7-plane-backends`, the harnesses, and the integration
+  mounts), plus the PR5 gates: `u6-pr5-search-move-law` (move byte-law),
+  `u6-pr5-search-golden-vectors` (native-behavior corpus),
+  `u6-pr5-kernel-flow` (the search family on the Kernel), and the
+  `u6-arc-a-fitness` suite's census/name scans.
