@@ -1,0 +1,66 @@
+{
+  "task": "U7-1 (EB2-C)",
+  "generatedFrom": "worktree .worktrees/u7-1 @ the commit carrying this file",
+  "externalSources": [
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+      "sha256": "f95ae921c23713e2bb1e236b49cbd61b40cbebebadbccc5861c29a70ea6d9ada",
+      "provenance": "tracked (predecessor baseline, unedited)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md",
+      "sha256": "228895a06c3440e47dbae8b6418f91e565408a74c9ab07d806640f56ba0fa959",
+      "provenance": "tracked (lineage)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr7/baseline-classes/BASELINE-CLASSES.md",
+      "sha256": "e95680f73fd98ad4411014610a62b56286df3ddf878617a760c335593cd14468",
+      "provenance": "tracked (22-row classification ledger)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+      "sha256": "6dd8e6b017a6b0ac3c8faac123ce9d7ea2f605ecc7f1db3bb485ec4b031deeb6",
+      "provenance": "tracked, added by this lane (new baseline)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/EB-E0-E1/baseline-inventory.md",
+      "sha256": "d33fdd2a8d558e9a8c52203abab917afddbcdf0f1f29f99a9d2c000cd18e2146",
+      "provenance": "tracked (EB0-2 audit)"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u1-closure-20261025/u1b/SUMMARY.md",
+      "sha256": "7c355edaa09b57c6c7c682fa00c3e7acd4048628fc31a93a3d87a38d63d4882f",
+      "provenance": "untracked in main checkout; read from /srv/workspace/dsh-plugins/dsh-agent-team"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u1-closure-20261025/u1b/reds.json",
+      "sha256": "9476d7e61a0f0a762fa7eef84ea3d17c27e337f84793155cbf236c0387d7cf7c",
+      "provenance": "untracked in main checkout; read from /srv/workspace/dsh-plugins/dsh-agent-team"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u1-closure-20261025/u1b/vitest-run2.log",
+      "sha256": "164710b17a6b6ad83ae525e628fb4ffceaa6f80eac96ee5846b5e48e3dbe6c4e",
+      "provenance": "untracked in main checkout; read from /srv/workspace/dsh-plugins/dsh-agent-team"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr0/baseline-closure/failing-identities-pr0-run1.txt",
+      "sha256": "dd27f7bef6997dd5dd6b2290df133d0241eb20612e836dfd8ffaf9cfe2e50d3f",
+      "provenance": "relocated by PR #366; restored with node scripts/evidence-store.mjs restore; sha256 matches RELOCATED-MANIFEST.tsv"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/a4-pr0/baseline-closure/failing-identities-pr0-run2.txt",
+      "sha256": "ed20c7776692104d5a1d9309c65bc81c1b661f17da4c75636f3ecb23049a91e3",
+      "provenance": "relocated by PR #366; restored with node scripts/evidence-store.mjs restore; sha256 matches RELOCATED-MANIFEST.tsv"
+    }
+  ],
+  "captureCommands": [
+    "pnpm install --frozen-lockfile --store-dir .tmp-pnpm-store",
+    "pnpm run build && pnpm build:composition",
+    "git clone --local --no-hardlinks /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use tests/deepseek-harness-test-use && git -C tests/deepseek-harness-test-use checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84",
+    "(cd tests/deepseek-harness-test-use && pnpm install --ignore-scripts --frozen-lockfile && ESBUILD_WORKER_THREADS=1 DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build)",
+    "rm -rf packages/testkit/test/.tmp-fault && XDG_CACHE_HOME=$PWD/.tmp-xdg/cache CI=true pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=<out>.json --testTimeout=90000   (x2)",
+    "node scripts/fail-set.mjs capture <out>.json --out <out>.ids.txt",
+    "node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 20000 --store-dir .tmp-pnpm-store",
+    "bash dev/agent-workflow/evidence/u7-1-old-reds-20261026/mutation-controls.sh"
+  ]
+}

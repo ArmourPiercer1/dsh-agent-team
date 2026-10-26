@@ -1,0 +1,9 @@
+docs:probe base=origin/master head=288f836d6 changed=24 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+ADVISORY DOC_IMPACT_OWNED: 6 source path(s) have declared owner documents
+ADVISORY SOURCE_CHANGED_DOC_IMPACT: owning-document selection is advisory except where dev/engineering/doc-ownership.yaml marks a rule enforce:true; those are self-imposed refusals (DOC_OWNER_UPDATE_MISSING), and CI wiring (EB-ADR-0001) remains a separate coordination decision
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared

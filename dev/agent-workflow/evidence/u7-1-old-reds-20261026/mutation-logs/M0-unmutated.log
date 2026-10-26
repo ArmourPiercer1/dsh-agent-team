@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1
+
+ ✓ packages/domain/test/t2-blueprint-hash.test.ts (18 tests) 64ms
+ ✓ packages/runtime/test/p6t3-mediation.test.ts (7 tests) 5ms
+ ✓ packages/runtime/test/p6t3-restart.test.ts (5 tests) 5ms
+ ✓ packages/tools/test/p6t6-actions.test.ts (14 tests) 6ms
+
+ Test Files  4 passed (4)
+      Tests  44 passed (44)
+   Start at  11:58:53
+   Duration  1.74s (transform 3.17s, setup 0ms, import 4.54s, tests 81ms, environment 0ms)
+

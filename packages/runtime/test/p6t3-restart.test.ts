@@ -49,6 +49,19 @@ import {
   P6T3_SEEDS,
 } from './p6t3-helpers.js'
 
+/**
+ * The LeaderInstance's session = the team ROOT session (frozen Architecture
+ * §9.2: "LeaderInstance is root Agent/Session, has no childSessionId").
+ * Commit 3be0de1f ("fix messaging relay to root leader", shipped in the
+ * user-ruled 0.1.0-rc.1 release) moved leader-directed delivery onto the
+ * root session. This file kept observing — and, in leg 5, FAULT-INJECTING —
+ * the seeded leader's legacy `childSessionId`, a session recovery no longer
+ * writes to: leg 2 read an empty inbox and leg 5's injector never fired
+ * (0 of 12 assertions ran). U7-1 / EB2-C old-red closure re-aims both the
+ * observer and the injector at the root session; every assertion is kept.
+ */
+const LEADER_SESSION = P6T3_ROOT
+
 interface RestartState {
   readonly world2: P6T1World
   readonly port2: FakeSessionInputPort
@@ -183,7 +196,7 @@ let rt!: RestartState
 
     // The leader session is faulty: ab1 (scout session) recovers, ab2
     // (leader session, mediated) fails → the run aborts (R5).
-    port2.setFailSession(P6T3_SEEDS.leader.childSessionId)
+    port2.setFailSession(LEADER_SESSION)
     let abortError: unknown
     let abortResult: PendingDeliveryRecoveryResult | undefined
     try {
@@ -207,7 +220,7 @@ let rt!: RestartState
       result1,
       result2,
       inputDirect: port2.inputsFor(worker.childSessionId)[0]!,
-      inputMed: port2.inputsFor(P6T3_SEEDS.leader.childSessionId)[0]!,
+      inputMed: port2.inputsFor(LEADER_SESSION)[0]!,
       scoutInputsAfterRecovery,
       okConfirmations: findFacts(
         world2,
@@ -224,7 +237,7 @@ let rt!: RestartState
       ).length,
       scoutInputsAfterAbort: port2.inputsFor(scout.childSessionId).length,
       resultAfterAbort,
-      leaderInputs: port2.inputsFor(P6T3_SEEDS.leader.childSessionId).length,
+      leaderInputs: port2.inputsFor(LEADER_SESSION).length,
     }
   } finally {
     await destroyP6T1World(rt?.world2 ?? world1)
@@ -401,7 +414,7 @@ describe('P6-T3 restart durability + pending-delivery recovery', () => {
     expect(recovered.deliveredToInstanceId).toBe('inst-leader')
 
     const input = rt.inputMed
-    expect(input.sessionId).toBe(P6T3_SEEDS.leader.childSessionId)
+    expect(input.sessionId).toBe(LEADER_SESSION)
     expect(input.attribution).toEqual({
       kind: 'team-relay',
       fromInstanceId: P6T3_SEEDS.worker.instanceId,

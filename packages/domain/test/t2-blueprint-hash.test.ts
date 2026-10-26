@@ -113,6 +113,12 @@ describe('t2 hash: hashable projection', () => {
     expect(hashable.teamEnvelope).toBe(null)
     expect(hashable.quotas).toBe(null)
     expect(hashable.capabilityPolicy).toBe(null)
+    // `capabilities` joined the per-template projection in 5ad6a4fe8
+    // (0.1.1-alpha.1 T1; plan §5.6 "new capability fields MUST enter the
+    // Blueprint normalized/hash representation"), absent ⇒ explicit null like
+    // every other optional single. This literal was never refreshed and
+    // stayed red with 6 of its 11 assertions dead (U7-1 / EB2-C old-red
+    // closure: literal completed, the exact-key-set toEqual kept).
     expect(hashable.leader).toEqual({
       templateId: 'leader',
       displayName: null,
@@ -120,6 +126,7 @@ describe('t2 hash: hashable projection', () => {
       persona: 'Lead.',
       modelPreference: null,
       contextPolicy: null,
+      capabilities: null,
     })
     expect(hashable.members).toEqual([])
     expect(hashable.requirements).toEqual([])

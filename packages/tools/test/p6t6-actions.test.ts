@@ -52,6 +52,15 @@ import type { P6T6World } from './p6t6-helpers.js'
 const LEADER_ID = String(P6T2_SEEDS.leader.instanceId)
 const WORKER_ID = String(P6T2_SEEDS.worker.instanceId)
 const WORKER_SESSION = String(P6T2_SEEDS.worker.childSessionId)
+/**
+ * The LeaderInstance's bound session = the team ROOT session (frozen
+ * Architecture §9.2: "LeaderInstance is root Agent/Session, has no
+ * childSessionId"; commit 3be0de1f "fix messaging relay to root leader",
+ * shipped in the user-ruled 0.1.0-rc.1 release). The worker→leader leg
+ * below had kept expecting the seeded leader's legacy `childSessionId`;
+ * U7-1 / EB2-C old-red closure re-pins the expectation, every assertion kept.
+ */
+const LEADER_SESSION = String(P6T2_ROOT)
 
 interface Captured {
   readonly status: string
@@ -890,13 +899,13 @@ describe('P6-T6 tool set — delegated actions (unit level)', () => {
       expect(delivered.recipientInstanceId).toBe(LEADER_ID)
       expect(delivered.deliveryMode).toBe('direct')
       expect(delivered.deliveredToInstanceId).toBe(LEADER_ID)
-      expect(delivered.deliveredToSessionId).toBe(String(P6T2_SEEDS.leader.childSessionId))
+      expect(delivered.deliveredToSessionId).toBe(LEADER_SESSION)
     }
     const inputs = A.recordedInputs
     expect(inputs.length).toBe(1)
     const firstInput = inputs[0]
     if (firstInput !== undefined) {
-      expect(firstInput.sessionId).toBe(String(P6T2_SEEDS.leader.childSessionId))
+      expect(firstInput.sessionId).toBe(LEADER_SESSION)
       expect(firstInput.attribution.kind).toBe('team-relay')
       expect(firstInput.attribution.fromInstanceId).toBe(WORKER_ID)
       expect(firstInput.attribution.intendedForInstanceId).toBe(LEADER_ID)

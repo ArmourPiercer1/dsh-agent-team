@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts (18 tests | 1 failed) 70ms
+     ✓ matches the NIST vector for "abc" 2ms
+     ✓ matches the NIST vector for the empty string 0ms
+     ✓ matches the NIST vector for the 448-bit message 0ms
+     ✓ hashes multi-byte UTF-8 deterministically 1ms
+     ✓ is independent of key order (canonical JSON binding) 1ms
+     ✓ changes when any value changes 0ms
+     ✓ returns a sha256-prefixed 64-hex string 0ms
+     ✓ is deterministic across parses 19ms
+     ✓ is independent of YAML key order 4ms
+     ✓ changes when semantic content changes 7ms
+     ✓ changes across revisions of the same id 2ms
+     ✓ changes across ids with identical content 2ms
+     ✓ binds exactly to the canonical hashable projection 4ms
+     × projects absent optional singles as explicit null 10ms
+     ✓ preserves present optional values (including nested quota nulls) 5ms
+     ✓ changes when only the leader modelPreference changes 3ms
+     ✓ absent vs present modelPreference hash differently 3ms
+     ✓ is deterministic for the same token 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/t2-blueprint-hash.test.ts > t2 hash: hashable projection > projects absent optional singles as explicit null
+AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(6) }
+
+- Expected
++ Received
+
+@@ -1,7 +1,7 @@
+  {
+-   "capabilities": null,
++   "capabilities": {},
+    "contextPolicy": null,
+    "description": null,
+    "displayName": null,
+    "modelPreference": null,
+    "persona": "Lead.",
+
+ ❯ packages/domain/test/t2-blueprint-hash.test.ts:122:29
+    120|     // stayed red with 6 of its 11 assertions dead (U7-1 / EB2-C old-r…
+    121|     // closure: literal completed, the exact-key-set toEqual kept).
+    122|     expect(hashable.leader).toEqual({
+       |                             ^
+    123|       templateId: 'leader',
+    124|       displayName: null,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  11:59:03
+   Duration  517ms (transform 229ms, setup 0ms, import 304ms, tests 70ms, environment 0ms)
+
