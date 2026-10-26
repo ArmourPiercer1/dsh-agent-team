@@ -33,7 +33,7 @@
  *
  * @module tests/world-factory/canary/u6-arc-d-probe-host
  */
-import { appendFileSync, mkdirSync } from 'node:fs'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
 export const name = 'u6-arc-d-probe-host'
@@ -157,6 +157,117 @@ const probeDefinition = {
   },
 }
 
+// R-U6P6-1 — the live deny-change lane (the d_restrict_veto / d_lift_control
+// pair). `tools.restrict` on the CALLING agent's scoped tools is the very
+// mask lane the Team glue drives for builtinToolDeny (applyBuiltInToolDeny ->
+// agentCtx.tools.restrict({deny})); g1fa measured this lane live on the same
+// pinned host (restrict -> target veto 'not-visible' + zero effect; dispose ->
+// success). Here it masks the built-in `bash` on the ROOT lane while the
+// suite's pair legs measure the disk on both sides of the change. The
+// disposer lives in module state: one pair per run, ordered by the runner.
+// The masked set is the pair leg's EFFECT channel: the builtin bash (the
+// builtinToolDeny twin shape) AND the pair's effect writer tool below — so
+// the deny leg is a typed refusal AND a zero-effect, and the lift leg
+// executes for real (arc-d-u7arc2 measured: the confined provider refuses
+// every bash workspace write on this pin, so the effect writer is the
+// plugin's fs — the ONE writer measured able to land a world file).
+
+// The pair effect writer (R-U6P6-1, arc-d-u7arc2 law): writes the leg's
+// marker through the plugin's own fs — the writer measured ABLE to land a
+// world file (the pos markers land every boot). Masked by the restrict
+// seam on the CALLER, exactly like the builtin bash: masked → typed
+// refusal and NO disk effect; unmasked → the file lands and the oracle
+// reads it back. Same tool, same path, same marker shape on both legs;
+// the mask is the only difference.
+const pairEffectDefinition = {
+  name: 'u6arcd_pair_effect',
+  description: 'U6 ARC-D pair effect writer (R-U6P6-1). Arguments: { path, marker }. Writes marker to path and records a durable row. Under a tools.restrict mask this call must be refused before any write.',
+  parameters: {
+    type: 'object',
+    properties: { path: { type: 'string' }, marker: { type: 'string' } },
+    required: ['path', 'marker'],
+  },
+  output: {
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { ok: { type: 'boolean' }, wrote: { type: 'boolean' }, error: { type: 'string' } },
+      required: ['ok'],
+    },
+    render: (args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+  },
+  execute: async (args) => {
+    const path = String(args?.path ?? '')
+    const marker = String(args?.marker ?? '')
+    try {
+      // The writers' own contract: only the run-unique pair markers to a
+      // FLAT world-workspace path — never a general-purpose file write.
+      if (!/^[A-Za-z0-9_./-]+\.txt$/.test(path) || !/^U6ARCD_PAIR_(DENY|LIFT)_[A-Za-z0-9-]+$/.test(marker)) throw new Error('PAIR_EFFECT_ARGS')
+      writeFileSync(path, `${marker}\n`)
+      record({ leg: 'pair-effect', marker, pathTail: path.split('/').slice(-1)[0], ok: true })
+      return { ok: true, wrote: true }
+    } catch (error) {
+      record({ leg: 'pair-effect', marker, pathTail: path.split('/').slice(-1)[0], ok: false, error: String(error?.message ?? error).slice(0, 140) })
+      return { ok: false, wrote: false, error: 'PAIR_EFFECT_FAILED' }
+    }
+  },
+}
+
+const MASKED_BUILTIN = ['bash', 'u6arcd_pair_effect']
+let restrictDisposer
+
+const governDefinition = {
+  name: 'u6arcd_govern',
+  description: 'U6 PR6 ARC-D live deny-change control (R-U6P6-1). Arguments: { action: "restrict-on" | "restrict-off" | "status" }. Applies/disposes a tools.restrict mask over the CALLING agent (the builtinToolDeny mask lane).',
+  parameters: {
+    type: 'object',
+    properties: { action: { type: 'string' } },
+    required: ['action'],
+  },
+  output: {
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { ok: { type: 'boolean' }, action: { type: 'string' }, detail: { type: 'string' } },
+      required: ['ok', 'action'],
+    },
+    render: (args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+  },
+  execute: async (args, exec) => {
+    const action = String(args?.action ?? '')
+    // The g1fa scopedTools law verbatim: the CALLING agent's ctx, with the
+    // get('tools') fallback — never the plugin's own mount ctx.
+    const c = exec?.agent?.ctx
+    let scoped
+    if (c !== undefined && c !== null) scoped = (c.tools !== undefined && c.tools !== null) ? c.tools : (() => { try { return c.get?.('tools') } catch { return undefined } })()
+    let ok = true
+    let detail = ''
+    try {
+      if (action === 'restrict-on') {
+        if (scoped?.restrict === undefined) throw new Error('agent scoped tools.restrict unavailable')
+        restrictDisposer = scoped.restrict({ deny: [...MASKED_BUILTIN] })
+        detail = `restricted:${MASKED_BUILTIN.join(',')}`
+      } else if (action === 'restrict-off') {
+        restrictDisposer?.()
+        restrictDisposer = undefined
+        detail = 'restriction-lifted'
+      } else if (action === 'status') {
+        detail = JSON.stringify({ restricted: restrictDisposer !== undefined, masked: MASKED_BUILTIN })
+      } else {
+        ok = false
+        detail = 'UNKNOWN_ACTION'
+      }
+    } catch (error) {
+      ok = false
+      detail = String(error?.message ?? error).slice(0, 200)
+    }
+    // The DURABLE witness row (JSONL, not the transcript): every restrict
+    // transition lands here with its own ok; the judge reads these rows.
+    record({ leg: 'govern', action, ok, detail, agentCaptured: exec?.agent !== undefined })
+    return { ok, action, ...(detail === '' ? {} : { detail }) }
+  },
+}
+
 export function apply(ctx) {
   record({ leg: 'plugin-apply', pid: process.pid })
   try {
@@ -169,6 +280,7 @@ export function apply(ctx) {
   }
   ctx.effect(() => {
     let dispose
+    let governDispose
     try {
       dispose = ctx.tools.register(probeDefinition)
       record({ leg: 'register', kind: 'probe-tool', ok: true })
@@ -176,11 +288,35 @@ export function apply(ctx) {
       record({ leg: 'register', kind: 'probe-tool', ok: false, error: String(error?.message ?? error).slice(0, 300) })
       return () => {}
     }
+    try {
+      governDispose = ctx.tools.register(governDefinition)
+      record({ leg: 'register', kind: 'govern-tool', ok: true })
+    } catch (error) {
+      record({ leg: 'register', kind: 'govern-tool', ok: false, error: String(error?.message ?? error).slice(0, 300) })
+    }
+    let pairEffectDispose
+    try {
+      pairEffectDispose = ctx.tools.register(pairEffectDefinition)
+      record({ leg: 'register', kind: 'pair-effect-tool', ok: true })
+    } catch (error) {
+      record({ leg: 'register', kind: 'pair-effect-tool', ok: false, error: String(error?.message ?? error).slice(0, 300) })
+    }
     return () => {
+      try {
+        pairEffectDispose?.()
+        record({ leg: 'unregister', kind: 'pair-effect-tool', ok: true })
+      } catch { /* unwind */ }
       try {
         dispose()
         record({ leg: 'unregister', kind: 'probe-tool', ok: true })
       } catch { /* unwind */ }
+      try {
+        governDispose?.()
+        record({ leg: 'unregister', kind: 'govern-tool', ok: true })
+      } catch { /* unwind */ }
+      // Mount hygiene (g1fa's teardown law): a mask that outlived its legs
+      // dies with the mount, never with the world.
+      try { restrictDisposer?.(); restrictDisposer = undefined } catch { /* already gone */ }
       // The FAMILY settles with its mount: an unload never strands the
       // kernel (drain -> tombstone -> release is idempotent-safe here).
       if (fam !== null) {

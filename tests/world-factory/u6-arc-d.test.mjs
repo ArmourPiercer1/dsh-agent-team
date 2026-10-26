@@ -27,7 +27,7 @@ import { pathToFileURL } from 'node:url'
 const CASE_IDS = [
   'arcd:mounted', 'arcd:positive', 'arcd:spoof-zero-authority', 'arcd:swap-refused',
   'arcd:unbound-refused', 'arcd:replay-refused', 'arcd:ci03-native-parity',
-  'arcd:marker-ledger', 'arcd:teardown-honest',
+  'arcd:restrict-veto', 'arcd:lift-control', 'arcd:marker-ledger', 'arcd:teardown-honest',
 ]
 
 test('u6-arc-d: SUITE_CASES entry and parseArgs wiring', async () => {
@@ -70,6 +70,14 @@ test('u6-arc-d: the assembly materializes the CI-03 lane (NO capabilities block)
     // the single fixture, one unique claim — the CI-03 disk oracle
     assert.ok(existsSync(a.files.native.path))
     assert.equal(readFileSync(a.files.native.path, 'utf8'), `${a.files.native.claim}\n`)
+    // E1: the EFFECT file is never pre-written — its only possible author
+    // is the native lane during the run, so its existence cannot be faked
+    // by the fixture.
+    assert.ok(existsSync(a.files.nativeEffect.path) ? !readFileSync(a.files.nativeEffect.path,'utf8').includes(a.files.nativeEffect.marker) : true, 'the native effect CONTENT (marker) is produced by the lane, never seeded by the fixture — a placeholder may pre-exist, the marker may not')
+    // R-U6P6-1: the pair legs' effect files likewise exist only if the
+    // run's lanes created them.
+    assert.ok(!existsSync(a.files.pairDeny.path), 'the restrict DENIED-effect file must start life absent')
+    assert.ok(!existsSync(a.files.pairLift.path), 'the lift effect file must start life absent')
     // the main blueprint: leader capabilities exactly like arc-a, ONE
     // member with NO capabilities block at all (the legacy native surface).
     const doc = yaml.parseDocument(a.mainBlueprintYaml(['u6arcd_probe'])).toJS()
@@ -136,7 +144,7 @@ test('u6-arc-d: the probe row mounts the PR5 family AS SHIPPED and the kernel ho
     mod.apply(ctx)
     assert.equal(mod.name, 'u6-arc-d-probe-host')
     assert.deepEqual(mod.inject, ['tools'])
-    assert.deepEqual(defs.map((d) => d.name), ['u6arcd_probe'])
+    assert.deepEqual(defs.map((d) => d.name), ['u6arcd_probe', 'u6arcd_govern', 'u6arcd_pair_effect'])
     const execute = defs[0].execute
     const markers = () => {
       try { return readdirSync(join(dir, 'markers')).filter((m) => m.endsWith('-marker.txt')).sort() } catch { return [] }
@@ -187,6 +195,43 @@ test('u6-arc-d: the probe row mounts the PR5 family AS SHIPPED and the kernel ho
     assert.ok(rows.some((r) => r.leg === 'teardown' && r.ok === true))
     const okWalks = rows.filter((r) => r.leg === 'walk' && r.ok === true).map((r) => r.callId)
     assert.deepEqual(okWalks, ['pos-1'], 'exactly ONE ok walk row for the whole adversarial walk — the marker-ledger arithmetic the live judge runs')
+    // R-U6P6-1: the govern row — the live deny-change lane OFFLINE, with a
+    // scripted agent ctx whose tools.restrict returns a recorded disposer.
+    // restrict-on must call restrict with the masked builtin and store the
+    // disposer; restrict-off must DISPOSE it; both must land durable ledger
+    // rows (the judge's durable witnesses); a caller WITHOUT a scoped
+    // tools.restrict must fail with ok:false (never a silent success).
+    const govern = defs[1].execute
+    let restricted = null
+    let disposed = 0
+    const agentExec = { agent: { ctx: { tools: { restrict: (spec) => { restricted = spec.deny.slice(); return () => { disposed += 1 } } } } } }
+    const rOn = await govern({ action: 'restrict-on' }, agentExec)
+    assert.equal(rOn.ok, true, JSON.stringify(rOn))
+    assert.deepEqual(restricted, ['bash', 'u6arcd_pair_effect'], 'the mask covers the built-in bash (the applyBuiltInToolDeny lane) AND the pair effect-writer — the deny leg is a refusal and a zero-effect at once')
+    const efDef = defs.find((d) => d.name === 'u6arcd_pair_effect')
+    assert.equal(typeof efDef?.execute, 'function', 'the pair effect-writer is a registered tool with an execute')
+    assert.deepEqual(Object.keys(efDef.parameters.properties).sort(), ['marker', 'path'], 'the effect-writer takes only { path, marker } — no general-purpose write surface')
+    // Its execute is the pair's ONLY disk producer, so the seam test runs it
+    // once per shape: the run-unique marker lands (and the row is durable),
+    // while anything else is refused BEFORE any write.
+    const efPath = join(dir, 'pair-effect-seam.txt')
+    const efOk = await efDef.execute({ path: efPath, marker: 'U6ARCD_PAIR_LIFT_seam1' })
+    assert.equal(efOk.ok, true, JSON.stringify(efOk))
+    assert.equal(readFileSync(efPath, 'utf8').trim(), 'U6ARCD_PAIR_LIFT_seam1', 'the effect the judge later reads off DISK is exactly what this writer wrote')
+    for (const bad of [{ path: efPath, marker: 'SOMETHING_ELSE_1' }, { path: join(dir, 'pair-effect-seam.bak'), marker: 'U6ARCD_PAIR_DENY_seam1' }]) {
+      const efBad = await efDef.execute(bad)
+      assert.equal(efBad.ok, false, `${JSON.stringify(bad)}: only the run-unique PAIR marker shape writes — a general write surface would be its own hole`)
+    }
+    assert.equal(readFileSync(efPath, 'utf8').trim(), 'U6ARCD_PAIR_LIFT_seam1', 'a refused effect call changed nothing on disk')
+    const rOff = await govern({ action: 'restrict-off' }, agentExec)
+    assert.equal(rOff.ok, true, JSON.stringify(rOff))
+    assert.equal(disposed, 1, 'restrict-off DISPOSES the mask (the lift is a real unwind, not a note)')
+    const rNoCtx = await govern({ action: 'restrict-on' }, {})
+    assert.equal(rNoCtx.ok, false, 'no scoped tools.restrict = an honest failure, never a claimed success')
+    const gRows = rows.concat(readFileSync(join(dir, 'ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l))).filter((r) => r.leg === 'govern')
+    assert.ok(gRows.some((r) => r.action === 'restrict-on' && r.ok === true && r.agentCaptured === true))
+    assert.ok(gRows.some((r) => r.action === 'restrict-off' && r.ok === true))
+    assert.ok(gRows.some((r) => r.action === 'restrict-on' && r.ok === false), 'the failed no-ctx attempt is on the record too — the ledger holds the WHOLE story')
   } finally {
     for (const k of ['U6ARCD_LEDGER', 'U6ARCD_MARKER_DIR', 'U6ARCD_WORLD', 'U6ARCD_ASSEMBLY_URL', 'U6ARCD_CENTER_URL', 'U6ARCD_CONTRACTS_URL', 'U6ARC_CENTER_URL', 'U6ARC_CONTRACTS_URL']) delete process.env[k]
     rmSync(dir, { recursive: true, force: true })
@@ -243,8 +288,32 @@ test('u6-arc-d: makeArcDDecide answers each trigger with ONE probe call and clos
       const closed = decide({ req: { body: { messages: [...base, result('t1', value)] } } })
       assert.deepEqual(closed, { kind: 'text', content: fence }, `close lane for ${JSON.stringify(value)}`)
     }
-    // the native CI-03 lane: ONE grep (ABSOLUTE path — the run-u6arca5
-    // law), then its own fence; identified by the delegated request token.
+    // R-U6P6-1 pair legs (live restrict/lift): three steps each — GOVERN
+    // (the plugin's tools.restrict mask toggle), the bash effect attempt,
+    // then the leg's own fence. Steps advance ONLY on the settled result of
+    // the prior step; the machine never re-issues a settled step.
+    const pairCases = [
+      ['T_RESTRICT', 'restrict-on', a.files.pairDeny, 'U6ARCD_RESTRICT_VETOED'],
+      ['T_LIFT', 'restrict-off', a.files.pairLift, 'U6ARCD_LIFT_RAN'],
+    ]
+    for (const [key, action, target, fence] of pairCases) {
+      const decide = makeArcDDecide({ assembly: a })
+      const m0 = [user(`run the leg ${a.markers[key]}`)]
+      const g = decide({ req: { body: { messages: m0 } } })
+      assert.equal(nameOf(g), 'u6arcd_govern', `${key} step 0: the mask toggle rides the plugin govern tool`)
+      assert.deepEqual(argsOf(g), { action })
+      const b = decide({ req: { body: { messages: [...m0, use('tg', 'u6arcd_govern', { action }), result('tg', { ok: true, action, detail: 'restricted:bash,u6arcd_pair_effect' })] } } })
+      // arc-d-u7arc2 law: bash workspace writes are sandbox-refused on this
+      // pin, so the pair's effect rides the plugin fs tool — masked by NAME
+      // on the same restrict seam. The args are the leg's own file+marker.
+      assert.equal(nameOf(b), 'u6arcd_pair_effect', `${key} step 1: the effect attempt is the maskable effect-writer on THIS lane`)
+      assert.deepEqual(argsOf(b), { path: target.path, marker: target.marker }, `${key}: the effect args are the leg's own path and run-unique marker`)
+      const f = decide({ req: { body: { messages: [...m0, use('tg', 'u6arcd_govern', { action }), result('tg', { ok: true, action }), use('tb', 'u6arcd_pair_effect', { path: target.path, marker: target.marker }), result('tb', { ok: true, wrote: true })] } } })
+      assert.deepEqual(f, { kind: 'text', content: fence }, `${key}: the leg closes by its OWN fence`)
+    }
+    // the native CI-03 lane (E1): grep FIRST (the parity note carrier —
+    // ABSOLUTE path, the run-u6arca5 law), then a native WRITE whose disk
+    // effect the ORACLE reads back; identified by the delegated request token.
     const nd = makeArcDDecide({ assembly: a })
     const nreq = { body: { messages: [user(`[team-work requestToken=${a.tokens('d1')} x] ${a.markers.MK_NATIVE} ...`)] } }
     const g = nd({ req: nreq })
@@ -252,7 +321,29 @@ test('u6-arc-d: makeArcDDecide answers each trigger with ONE probe call and clos
     assert.equal(argsOf(g).pattern, a.files.native.claim)
     assert.equal(argsOf(g).path, join(a.workspaceDir, 'notes'))
     assert.ok(argsOf(g).path.startsWith('/'), 'ABSOLUTE path everywhere the fs-proven convention')
-    const g2 = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true })] } } })
+    const w = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true })] } } })
+    // E1: the native lane PRODUCES a disk effect — it tries BOTH native
+    // write spellings (bash redirect at a FLAT workspace-root path, then
+    // the builtin write tool), because boot-3 measured the confined
+    // provider refusing bash writes and CI-03 compares the whole legacy
+    // surface. The verdict basis is what the ORACLE reads back off disk.
+    assert.equal(nameOf(w), 'bash', 'the native lane PRODUCES its disk effect through native tools (E1) — the verdict basis is what the oracle reads off disk, not any tool answer')
+    assert.ok(String(argsOf(w).command).includes(a.files.nativeEffect.path), 'the effect path is the assembly file the oracle will read')
+    assert.ok(String(argsOf(w).command).includes(a.files.nativeEffect.marker), 'the effect command carries the run-unique marker')
+    assert.ok(String(argsOf(w).command).includes('>'), 'the effect command WRITES (a pure read would launder the verdict)')
+    assert.ok(!a.files.nativeEffect.path.includes('/notes/'), 'FLAT workspace-root shape (sub-dir writes measure sandbox refusal, not the lane)')
+    // boot-4 measured law: this pin's census-boot surface carries NO builtin
+    // write tool (toolNames: bash/edit/glob/grep/read/read_image + team_*),
+    // and the confined bash has ZERO writable landlock grants. The legacy
+    // spelling the oracle compares is the NATIVE EDIT surface on the
+    // placeholder-seeded effect file: only the lane's edit can turn the
+    // placeholder into the run-unique marker.
+    const wr = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'bash', {}), result('tb', { stdout: 'Permission denied' })] } } })
+    assert.equal(nameOf(wr), 'edit', 'the native lane also drives the builtin edit surface — the whole legacy write surface is compared, and a sandbox-refused bash is answered by the next native spelling, never by laundering')
+    assert.equal(argsOf(wr).file_path, a.files.nativeEffect.path, 'the edit targets the same assembly file the oracle reads')
+    assert.equal(argsOf(wr).old_string, a.files.nativeEffect.placeholder, 'the edit replaces ONLY the fixture placeholder')
+    assert.ok(String(argsOf(wr).new_string).includes(a.files.nativeEffect.marker), 'the edit content is the run-unique marker')
+    const g2 = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'bash', {}), result('tb', { stdout: 'Permission denied' }), use('te', 'edit', {}), result('te', { ok: true })] } } })
     assert.deepEqual(g2, { kind: 'text', content: 'U6ARCD_NATIVE_DONE' })
     // the leader chain (the arc-a PHASES idiom): create -> the REAL
     // instance id from the tool_result -> async delegate with requestToken
@@ -303,10 +394,18 @@ test('u6-arc-d: the judge passes the honest digest and EVERY verdict moves when 
       { leg: 'walk', action: 'walk', callId: 'replay-1', ok: false, code: 'GRANT_REPLAY' },
       { leg: 'teardown', ok: true },
       { leg: 'walk', action: 'walk', callId: 'post-1', ok: false, code: 'KERNEL_NOT_ACTIVE' },
+      { leg: 'govern', action: 'restrict-on', ok: true },
+      { leg: 'govern', action: 'restrict-off', ok: true },
+      { leg: 'pair-effect', marker: 'U6ARCD_PAIR_LIFT_x', pathTail: 'u6arcd-pair-lift.txt', ok: true },
     ],
     markerFiles: ['pos-1-marker.txt'],
     markerNonces: { 'pos-1-marker.txt': 'NONCE_POS' },
-    nativeClaimFound: true,
+    nativeEvidence: { readFromDisk: true, present: true, contentMatches: true, pathTail: 'u6arcd-native-effect.txt' },
+    nativeGrepParity: { claimOccurrences: 1 },
+    pairEvidence: {
+      pairDeny: { readFromDisk: true, present: false, contentMatches: false, marker: 'U6ARCD_PAIR_DENY_x', pathTail: 'u6arcd-pair-denied.txt' },
+      pairLift: { readFromDisk: true, present: true, contentMatches: true, marker: 'U6ARCD_PAIR_LIFT_x', pathTail: 'u6arcd-pair-lift.txt' },
+    },
     hostAlive: true,
   })
   const rows = judgeU6ArcD(good())
@@ -335,8 +434,25 @@ test('u6-arc-d: the judge passes the honest digest and EVERY verdict moves when 
   // replay — the settled grant answering, or leaving a marker of its own.
   assert.equal(verdictOf({ ...good(), probeRows: good().probeRows.map((r) => (r.callId === 'replay-1' ? { ...r, ok: true } : r)) }, 'arcd:replay-refused'), 'FAIL')
   assert.equal(verdictOf({ ...good(), markerFiles: ['pos-1-marker.txt', 'replay-1-marker.txt'] }, 'arcd:replay-refused'), 'FAIL')
-  // CI-03 — the native lane never surfaced the disk claim on the wire.
-  assert.equal(verdictOf({ ...good(), nativeClaimFound: false }, 'arcd:ci03-native-parity'), 'FAIL')
+  // CI-03 (E1) — the verdict rides the DIRECT disk read: no effect file, or
+  // a file without THIS run's marker, FAILs whatever the wire carried;
+  // and the wire claim going missing must NOT move the verdict (the oracle
+  // is independent of every tool return — the grep count is a recorded
+  // parity NOTE, never the basis).
+  assert.equal(verdictOf({ ...good(), nativeEvidence: { ...good().nativeEvidence, present: false, contentMatches: false } }, 'arcd:ci03-native-parity'), 'FAIL', 'no effect file on disk = the native lane touched NOTHING, whatever its tool returns claimed')
+  assert.equal(verdictOf({ ...good(), nativeEvidence: { ...good().nativeEvidence, contentMatches: false } }, 'arcd:ci03-native-parity'), 'FAIL', 'a file without THIS run\'s marker is not the effect')
+  assert.equal(verdictOf({ ...good(), nativeGrepParity: { claimOccurrences: 0 } }, 'arcd:ci03-native-parity'), 'PASS', 'the grep parity note NEVER carries the verdict: disk evidence alone decides')
+  // restrict-veto (R-U6P6-1) — BOTH facts move it: the durable govern row
+  // (the mask transition, plugin-written to the JSONL) and the DENIED
+  // effect staying OFF disk.
+  assert.equal(verdictOf({ ...good(), probeRows: good().probeRows.filter((r) => !(r.leg === 'govern' && r.action === 'restrict-on')) }, 'arcd:restrict-veto'), 'FAIL', 'no durable restrict row = the live deny change never provably happened')
+  assert.equal(verdictOf({ ...good(), pairEvidence: { ...good().pairEvidence, pairDeny: { readFromDisk: true, present: true, contentMatches: true, marker: 'U6ARCD_PAIR_DENY_x' } } }, 'arcd:restrict-veto'), 'FAIL', 'the DENIED effect ON disk = the mask hid nothing — the exact false-green')
+  assert.equal(verdictOf({ ...good(), probeRows: [...good().probeRows, { leg: 'pair-effect', marker: 'U6ARCD_PAIR_DENY_x', ok: true }] }, 'arcd:restrict-veto'), 'FAIL', 'the effect writer EXECUTING under the mask = the mask hid nothing even though no file appeared yet — the ledger moves the veto too')
+  // lift-control — the dispose row AND the effect landing with the marker.
+  assert.equal(verdictOf({ ...good(), probeRows: good().probeRows.filter((r) => !(r.leg === 'govern' && r.action === 'restrict-off')) }, 'arcd:lift-control'), 'FAIL', 'no lift row = the mask was never disposed on the record')
+  assert.equal(verdictOf({ ...good(), pairEvidence: { ...good().pairEvidence, pairLift: { readFromDisk: true, present: false, contentMatches: false } } }, 'arcd:lift-control'), 'FAIL', 'no effect after the lift = the lane never recovered (a mask that only hides)')
+  assert.equal(verdictOf({ ...good(), pairEvidence: { ...good().pairEvidence, pairLift: { readFromDisk: true, present: true, contentMatches: false } } }, 'arcd:lift-control'), 'FAIL', 'a file without THIS run\'s marker is not the lift effect')
+  assert.equal(verdictOf({ ...good(), probeRows: good().probeRows.filter((r) => r.leg !== 'pair-effect') }, 'arcd:lift-control'), 'FAIL', 'a disk file WITHOUT the effect-writer ever executing this run is not a lifted lane — the ledger moves the lift too')
   // marker-ledger — global arithmetic: one EXTRA ok-walk for a refusal
   // callId moves THIS case and (by construction) not the spoof row itself.
   const leaked = { ...good(), probeRows: [...good().probeRows, { leg: 'walk', action: 'walk', callId: 'spoof-1', ok: true }] }

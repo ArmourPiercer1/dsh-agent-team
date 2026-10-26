@@ -19,10 +19,11 @@
  * walk and only masquerade as a passing sensitivity plant. The unguarded
  * twins live at the offline C1 seams (f_plant / plain-world legs).
  *
- * The native-parity leg (CI-03) rides a MAIN-team member with NO
- * capabilities block — the legacy native surface — and is judged from the
- * disk claim + the tool_result the wire carried, not from any transcript
- * claim of success.
+ * The native-parity leg (CI-03, E1) rides a MAIN-team member with NO
+ * capabilities block — the legacy native surface — and is judged from a
+ * DISK EFFECT the lane itself writes and the ORACLE reads back directly
+ * (independent of any tool return); the native grep's wire claim survives
+ * only as a recorded parity note, never as the verdict basis.
  *
  * @module tests/world-factory/lib/u6-arc-d-assembly
  */
@@ -57,10 +58,27 @@ export function createArcDAssembly({ repoRoot, home, runStamp, reportDir }) {
   const PLANE_REALM_ID = `u6arcd-realm-${rs}`
 
   // One fixture file, one unique claim: the CI-03 native leg is judged from
-  // THIS fact on disk (surfaced on the wire by the member's native grep),
-  // never from what the transcript claims.
+  // a DISK EFFECT the native lane PRODUCES (files.nativeEffect, E1) and
+  // that the ORACLE reads back itself — never from what a tool return
+  // carries. files.native is the fixture the native grep reads: its
+  // wire-claim scan survives only as the nativeGrepParity NOTE beside the
+  // verdict, never as the verdict's basis.
   const files = {
     native: { path: join(workspaceDir, 'notes', 'u6arcd-native.txt'), claim: `U6ARCD_NATIVE_CLAIM_${rs}` },
+    // The fixture may pre-exist ONLY as a placeholder: the effect is the
+    // marker CONTENT, which only the lane's own edit can produce. (boot-4
+    // measured law: this pin's surface has no builtin write tool, and the
+    // confined bash has zero writable grants — the legacy edit surface is
+    // the spelling the oracle compares.)
+    nativeEffect: { path: join(workspaceDir, 'u6arcd-native-effect.txt'), marker: `U6ARCD_NATIVE_EFFECT_${rs}`, placeholder: 'PENDING_U6ARCD_EFFECT' },
+    // R-U6P6-1 (the live d_restrict_veto / d_lift_control pair): the same
+    // effect shape the pair leg writes with bash BEFORE, under, and after a
+    // live tools.restrict mask (the builtinToolDeny lane) on the ROOT lane.
+    // pairDeny must stay ABSENT (the mask vetoed the write — zero effect);
+    // pairLift must EXIST after the mask is disposed (g1fa's exact law,
+    // judged on DISK + the durable govern rows, never the transcript).
+    pairDeny: { path: join(workspaceDir, 'u6arcd-pair-denied.txt'), marker: `U6ARCD_PAIR_DENY_${rs}` },
+    pairLift: { path: join(workspaceDir, 'u6arcd-pair-lift.txt'), marker: `U6ARCD_PAIR_LIFT_${rs}` },
   }
   const markers = {
     MK_DISC: `U6ARCD_DISC_${rs}`,
@@ -73,6 +91,8 @@ export function createArcDAssembly({ repoRoot, home, runStamp, reportDir }) {
     T_REPLAY: `U6ARCD_TRIGGER_REPLAY_${rs}`,
     T_TD: `U6ARCD_TRIGGER_TD_${rs}`,
     T_POSTTD: `U6ARCD_TRIGGER_POSTTD_${rs}`,
+    T_RESTRICT: `U6ARCD_TRIGGER_RESTRICT_${rs}`,
+    T_LIFT: `U6ARCD_TRIGGER_LIFT_${rs}`,
   }
   const tokens = (n) => `u6arcd-${n}-${rs}`
   // The probe walk identities are FIXED words so the ledger and the marker
@@ -174,7 +194,16 @@ export function createArcDAssembly({ repoRoot, home, runStamp, reportDir }) {
   function writePreBootFiles() {
     mkdirSync(blueprintDir, { recursive: true })
     mkdirSync(join(workspaceDir, 'notes'), { recursive: true })
-    for (const key of Object.keys(files)) writeFileSync(files[key].path, `${files[key].claim}\n`)
+    for (const key of Object.keys(files)) {
+      // E1: the EFFECT file is NEVER pre-written — its existence is the
+      // verdict's basis, so the only hand that may create it is the native
+      // lane's own native write during the run.
+      if (files[key].claim !== undefined) { writeFileSync(files[key].path, `${files[key].claim}\n`); continue }
+      // E1: the EFFECT file pre-exists ONLY as a placeholder — ABSENCE is
+      // not the oracle (the confined lane cannot create files); the marker
+      // CONTENT is, and only the lane's own native edit can produce it.
+      if (files[key].placeholder !== undefined) writeFileSync(files[key].path, `${files[key].placeholder}\n`)
+    }
     writeFileSync(join(blueprintDir, 'anchor.yaml'), BP_ANCHOR_YAML)
     writeFileSync(join(home, 'p6t6-directive.json'), JSON.stringify({
       boot: 1, phase: 'create', reportDir, runStamp: String(runStamp), rootSessionId: ROOT,
@@ -254,6 +283,8 @@ export function makeArcDDecide({ assembly }) {
   const ids = {}
   const steps = { native: 0 }
   const trigState = {}
+  // The live restrict/lift pair (R-U6P6-1): a two-leg, three-step lane each.
+  const pair = { leg: null, step: 0 }
   const PHASES = [
     { kind: 'create', template: 'native', tok: 'c1', label: 'arcd-native' },
     { kind: 'delegate', tok: 'd1', prompt: `${markers.MK_NATIVE} run the native script exactly: one grep for the claim, then say U6ARCD_NATIVE_DONE.`, which: 'native', fence: 'U6ARCD_NATIVE_DONE' },
@@ -280,7 +311,7 @@ export function makeArcDDecide({ assembly }) {
     const t = messagesOf(req).map(textOf).join('\n')
     if (t.includes('Generate the session title')) return 'title'
     const lu = lastUserTextOfStatic(req)
-    for (const key of ['T_POS', 'T_SPOOF', 'T_SWAP', 'T_UNBOUND', 'T_REPLAY', 'T_TD', 'T_POSTTD']) {
+    for (const key of ['T_POS', 'T_SPOOF', 'T_SWAP', 'T_UNBOUND', 'T_REPLAY', 'T_TD', 'T_POSTTD', 'T_RESTRICT', 'T_LIFT']) {
       if (lu.includes(markers[key])) return `trigger-${key}`
     }
     if (lu.includes(markers.MK_DISC)) return 'disc'
@@ -289,7 +320,9 @@ export function makeArcDDecide({ assembly }) {
     if (lu.includes('"type":"tool_result"')) {
       const tool = lastToolNameOf(req)
       if (tool === 'u6arcd_probe') return 'trigger-close'
-      if (tool === 'grep') return 'native'
+      if (tool === 'u6arcd_govern') return 'pair-step2'
+      if ((tool === 'u6arcd_pair_effect' || tool === 'bash') && pair.step === 2) return 'pair-close'
+      if (tool === 'grep' || tool === 'edit' || (tool === 'write' && steps.native === 3) || (tool === 'bash' && steps.native === 2)) return 'native'
       if (tool !== null && tool.startsWith('team_')) return 'leader'
       return 'other'
     }
@@ -322,11 +355,55 @@ export function makeArcDDecide({ assembly }) {
       if (t.includes('"action":"walk"')) return { kind: 'text', content: 'U6ARCD_WALK_DONE' }
       return { kind: 'text', content: 'U6ARCD_TRIGGER_DONE' }
     }
+    if (lane === 'pair-step2') {
+      // R-U6P6-1 step 1: the govern row settled; now the SAME lane attempts
+      // its bash effect — under the mask (T_RESTRICT: the write must be
+      // vetoed, zero disk effect) and after the dispose (T_LIFT: the write
+      // must land). The judge reads DISK; the fence only proves closure.
+      if (pair.leg !== null && pair.step === 1) {
+        pair.step = 2
+        const target = pair.leg === 'T_RESTRICT' ? assembly.files.pairDeny : assembly.files.pairLift
+        // arc-d-u7arc2 measured law: the confined provider refuses EVERY
+        // bash workspace write on this pin (flat included — Permission
+        // denied, settle captured), so a bash-redirect pair could never
+        // distinguish mask from sandbox. The effect now rides the ONE
+        // writer measured able to land a world file: the plugin's own fs
+        // tool u6arcd_pair_effect. The restrict seam masks its NAME on the
+        // caller (plus 'bash', the builtinToolDeny shape): masked -> typed
+        // refusal and zero disk effect; unmasked -> it lands and the
+        // oracle reads it back. Same tool, same path, same marker shape
+        // both legs — the mask is the only difference.
+        return toolCall('u6arcd_pair_effect', { path: target.path, marker: target.marker })
+      }
+      return { kind: 'text', content: 'U6ARCD_TRIGGER_DONE' }
+    }
+    if (lane === 'pair-close') {
+      // R-U6P6-1 step 2: the attempt settled (refused or not — the DISK and
+      // the durable govern rows decide, never this transcript); close the
+      // leg by its own fence.
+      const fence = pair.leg === 'T_RESTRICT' ? 'U6ARCD_RESTRICT_VETOED' : 'U6ARCD_LIFT_RAN'
+      pair.leg = null
+      pair.step = 0
+      return { kind: 'text', content: fence }
+    }
     if (lane === 'native') {
       // CI-03 script: the legacy native surface does its own work with the
       // plane mounted SOMEWHERE ELSE on the same Host. ABSOLUTE path (the
       // run-u6arca5 law: relative spellings resolve at the HTU tree).
+      // E1: step 1 is the native READ (kept — its wire claim is recorded as
+      // the nativeGrepParity note); step 2 is the native WRITE that LEAVES A
+      // DISK EFFECT the oracle reads independently of any tool return — the
+      // verdict's real basis.
       if (steps.native === 0) { steps.native = 1; return toolCall('grep', { pattern: assembly.files.native.claim, path: join(assembly.workspaceDir, 'notes') }) }
+      // boot-3 measured: the confined provider refuses bash workspace writes
+      // (Permission denied in the settle). The native lane now tries BOTH
+      // native write spellings — the bash redirect AND the builtin write
+      // tool — because the ORACLE decides on disk, and every spelling the
+      // legacy surface actually has is part of what CI-03 compares. Whichever
+      // (if any) lands is the honest effect; the settle texts ride the
+      // digest's effectNotes as diagnosis.
+      if (steps.native === 1) { steps.native = 2; return toolCall('bash', { command: `printf '%s\\n' '${assembly.files.nativeEffect.marker}' > '${assembly.files.nativeEffect.path}' 2>&1; cat '${assembly.files.nativeEffect.path}' 2>&1`, description: 'u6arcd CI-03 native effect attempt 1: bash redirect (flat workspace root)' }) }
+      if (steps.native === 2) { steps.native = 3; return toolCall('edit', { file_path: assembly.files.nativeEffect.path, old_string: assembly.files.nativeEffect.placeholder, new_string: assembly.files.nativeEffect.marker }) }
       return { kind: 'text', content: 'U6ARCD_NATIVE_DONE' }
     }
     if (lane.startsWith('trigger-')) {
@@ -334,6 +411,14 @@ export function makeArcDDecide({ assembly }) {
       const st = trigState[key] ?? 'fresh'
       trigState[key] = 'issued'
       if (st !== 'fresh') return { kind: 'text', content: 'U6ARCD_TRIGGER_DONE' }
+      if (key === 'T_RESTRICT' || key === 'T_LIFT') {
+        // R-U6P6-1 step 0 of the pair leg: the GOVERN call (the plugin's
+        // live tools.restrict mask on THIS agent — the builtinToolDeny
+        // lane). Steps 1-2 continue on the tool_result lanes.
+        pair.leg = key
+        pair.step = 1
+        return toolCall('u6arcd_govern', { action: key === 'T_RESTRICT' ? 'restrict-on' : 'restrict-off' })
+      }
       if (key === 'T_POS') return toolCall('u6arcd_probe', { action: 'walk', callId: probe.posCall, grantId: probe.posGrant, nonce: probe.posNonce })
       if (key === 'T_SPOOF') return toolCall('u6arcd_probe', { action: 'spoof', callId: probe.spoofCall, nonce: probe.spoofNonce })
       if (key === 'T_SWAP') return toolCall('u6arcd_probe', { action: 'swap', callId: probe.swapCall, nonce: probe.swapNonce, identity: probe.movedIdentity })
@@ -385,13 +470,14 @@ export function makeArcDDecide({ assembly }) {
 
 /**
  * THE JUDGE. Pure: its ENTIRE input is data the runner read from the
- * ledger / marker dir / wire claim scans / host log. It returns one
+ * ledger / marker dir / direct DISK reads (the native effect file) / host
+ * log. It returns one
  * [caseId, PASS|FAIL|ENV_BLOCK, detail] row per suite case, in SUITE_CASES
  * order. A verdict is derived, never transcribed: every FAIL row says which
  * fact was missing. ENV_BLOCK is emitted by NOBODY else (the runner's early
  * bail-outs are FAIL).
  */
-export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeClaimFound, hostAlive, bootOk = true }) {
+export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity = null, pairEvidence = {}, hostAlive, bootOk = true }) {
   const legRow = (leg, extra = {}) => probeRows.find((r) => r.leg === leg && Object.entries(extra).every(([k, v]) => r[k] === v)) ?? null
   const has = (f) => markerFiles.includes(f)
   const nonceAt = (f) => markerNonces[f] ?? null
@@ -446,11 +532,43 @@ export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeClaimF
     const r = legRow('walk', { action: 'walk', callId: 'replay-1' })
     add('arcd:replay-refused', r !== null && r.ok === false && !has('replay-1-marker.txt') ? 'PASS' : 'FAIL', { row: r ?? { missing: true }, markerPresent: has('replay-1-marker.txt') })
   }
-  // CI-03 native parity — the legacy member read its claim with the NATIVE
-  // grep and the claim rode the wire tool_result (the runner authored both
-  // the fixture and the scan; the transcript never decides).
+  // CI-03 native parity (E1 — the DIRECT disk oracle): the native lane's
+  // effect file must EXIST ON DISK with the run's unique effect marker, as
+  // read BY THE ORACLE (readFileSync in the runner process) — an
+  // observation no tool return can forge or hide. The native grep's wire
+  // claim survives only as the recorded nativeGrepParity NOTE: claim bytes
+  // inside a tool_result are what the lane ECHOED, not proof the native
+  // surface touched the world.
   {
-    add('arcd:ci03-native-parity', nativeClaimFound === true ? 'PASS' : 'FAIL', { nativeClaimFound: nativeClaimFound === true })
+    const ne = nativeEvidence ?? {}
+    add('arcd:ci03-native-parity', ne.present === true && ne.contentMatches === true ? 'PASS' : 'FAIL', {
+      diskEffect: { present: ne.present === true, contentMatches: ne.contentMatches === true, readFromDisk: ne.readFromDisk === true, path: ne.pathTail ?? null },
+      nativeGrepParity: nativeGrepParity ?? null,
+    })
+  }
+  // restrict-veto (R-U6P6-1, the live d_restrict_veto twin): the DURABLE
+  // govern row says the tools.restrict mask went ON (the builtinToolDeny
+  // lane, measured by the plugin itself), and the DENIED effect file is
+  // ABSENT on disk — zero effect under the mask, the g1fa law. The lift
+  // row below is the in-run positive control: the same lane CAN land bytes
+  // once unmasked, so absence here is the mask, not a dead lane.
+  {
+    const on = legRow('govern', { action: 'restrict-on', ok: true })
+    const deny = (pairEvidence ?? {}).pairDeny ?? {}
+    const denyMarker = String(deny?.marker ?? '\u0000')
+    const denyEffectRan = (probeRows ?? []).some((r) => r?.leg === 'pair-effect' && String(r?.marker ?? '') === denyMarker)
+    add('arcd:restrict-veto', on !== null && deny.present !== true && denyEffectRan !== true ? 'PASS' : 'FAIL', { restrictRow: on ?? { missing: true }, pairDeny: deny, denyEffectRan })
+  }
+  // lift-control (R-U6P6-1, the live d_lift_control twin): the mask was
+  // DISPOSED (durable row) and the lane's next write LANDED — DISK positive
+  // with the run-unique marker, read by the oracle. A mask that could only
+  // hide forever fails HERE, not there.
+  {
+    const off = legRow('govern', { action: 'restrict-off', ok: true })
+    const lift = (pairEvidence ?? {}).pairLift ?? {}
+    const liftMarker = String(lift?.marker ?? '\u0000')
+    const liftEffectRan = (probeRows ?? []).some((r) => r?.leg === 'pair-effect' && r?.ok === true && String(r?.marker ?? '') === liftMarker)
+    add('arcd:lift-control', off !== null && liftEffectRan === true && lift.present === true && lift.contentMatches === true ? 'PASS' : 'FAIL', { liftRow: off ?? { missing: true }, pairLift: lift, liftEffectRan })
   }
   // marker ledger — global arithmetic over the probe ledger: exactly one
   // ok-walk per positive call; zero ok-rows for any refusal call.

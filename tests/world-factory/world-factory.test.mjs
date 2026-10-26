@@ -682,6 +682,22 @@ test('u6-jobs: the decide script answers real transcript shapes with the scripte
   // follow-up pings cannot advance the machine (statelessness):
   const wPing = { body: { messages: [...wKill.body.messages, use('t6', 'bash', { command: 'sleep 40' }), result('t6', ''), user('please report status')] } }
   assert.equal(decide({ req: wPing }).toolCalls[0].name, 'job_output', 'the POST-SETTLE ring read is next, not DONE — the exchange count drives the lane, not the turn number')
+  // ctl machine (R-U6P4-2 ring-read spacer): birth → ONE foreground decide
+  // exchange → ring read. Boot-7 measured the un-spaced race verbatim
+  // ('(no new output)\n[status: running]' answered beside a job whose printf
+  // had already run): the read must not ride the birth's own result edge.
+  const ctl0 = { body: { messages: [user(`${a.markers.T_CTL} run the control script`)] } }
+  const c0 = decide({ req: ctl0 })
+  assert.equal(c0.toolCalls[0].name, 'bash')
+  assert.equal(c0.toolCalls[0].arguments.run_in_background, true, 'the ctl birth is a background row')
+  const ctl1 = { body: { messages: [...ctl0.body.messages, use('k1', 'bash', {}), result('k1', 'started background job jb-ctl01')] } }
+  const c1 = decide({ req: ctl1 })
+  assert.equal(c1.toolCalls[0].name, 'bash', 'the RING-READ SPACER (one foreground bash) sits between birth and the ring read')
+  assert.equal(c1.toolCalls[0].arguments.run_in_background, undefined, 'the spacer is FOREGROUND: no background row, zero trio names')
+  const ctl2 = { body: { messages: [...ctl1.body.messages, use('k2', 'bash', { command: 'sleep 3' }), result('k2', '')] } }
+  const c2ctl = decide({ req: ctl2 })
+  assert.equal(c2ctl.toolCalls[0].name, 'job_output')
+  assert.equal(c2ctl.toolCalls[0].arguments.job_id, 'jb-ctl01', 'the spaced ring read names the birth id from the transcript')
 })
 
 test('u6-jobs: the judge passes the honest digest and catches each named mutation', async () => {
@@ -716,7 +732,7 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
     ctlOutput: `${claims.ctl}\n[status: running]`,
     trioUses: 8,
     controlRows: [],
-    birthRow: { seen: false, resolved: false, resolutions: [] },
+    birthRow: { seen: true, resolved: true, resolutions: [{ requestId: 'req-birth-1', status: 200, ok: true }] },
     settle: { killLines: 0, foreignKillLines: 0 },
     rootKernelMentions: 0,
   }
@@ -739,6 +755,7 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
   assert.equal(verdictOf({ ...good, ctlOutput: 'Error: unknown job job-unknown' }, 'jobs:ctl-native-untouched'), 'FAIL', 'a native arm whose trio never returned its own ring bytes is vacuous')
   assert.equal(verdictOf({ ...good, rootKernelMentions: 2 }, 'jobs:ctl-native-untouched'), 'FAIL', 'kernel words on the root lane break the CI-03 control')
   assert.equal(verdictOf({ ...good, controlRows: [{ toolName: 'job_kill', summary: 'ask', status: 'pending' }] }, 'jobs:no-second-ledger'), 'FAIL', 'one approval row naming job_kill is the second ledger — it must be caught')
+  assert.equal(verdictOf({ ...good, birthRow: { seen: false, resolved: false, resolutions: [] } }, 'jobs:no-second-ledger'), 'FAIL', 'R-U6P3-1: zeros from a channel that never saw the row it CREATED are vacuous — the zero-row law needs the positive read of the run\'s own birth ask on the SAME governed-session channel')
   assert.equal(verdictOf(good, 'jobs:mounted') === 'PASS' && verdictOf({ ...good, kernelHits: { ...good.kernelHits, PLANE_JOBS_REGISTRATION_REFUSED: { count: 1 } } }, 'jobs:mounted'), 'FAIL', 'a registration refusal names itself')
   assert.equal(judgeU6Jobs(good, false).find(([id]) => id === 'jobs:mounted')[1], 'FAIL', 'a dead host is never a mounted verdict')
 })
@@ -1053,6 +1070,31 @@ test('u6-proc judge — offline fixture: run u6prc5 evidence judges deterministi
       continue
     }
     assert.equal(verdict, 'PASS', `${id} must PASS on its own measured evidence`)
+  }
+})
+
+test('u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS', async () => {
+  // The gate only speaks on digests that carry the controlRead block (the
+  // governed-channel era); committed pre-fix digests stay byte-equal. The
+  // mutation law: verdicts MOVE with the precondition, deterministically.
+  const { readFileSync } = await import('node:fs')
+  const { judgeU6Proc } = await import('./lib/u6-proc-assembly.mjs')
+  const evidencePath = new URL('../../dev/agent-workflow/evidence/u6-pr3-20261026/c2/u5-u6-proc-u6prc5-2026-10-25T23-11-14-774Z.u6proc-evidence.json', import.meta.url)
+  const d = JSON.parse(readFileSync(evidencePath, 'utf8'))
+  const gatedIds = ['proc:member-ask-born-terminal', 'proc:replay-settled-refusal']
+  const legacy = Object.fromEntries(judgeU6Proc(d, true))
+  assert.equal(legacy['proc:member-ask-born-terminal'], 'PASS', 'legacy digest (no controlRead) keeps its measured PASS')
+  assert.equal(legacy['proc:replay-settled-refusal'], 'PASS', 'legacy digest (no controlRead) keeps its measured PASS')
+  const unproven = judgeU6Proc({ ...d, controlRead: { channel: 'remote:team.getLedgerPage', teamSessionId: 'ts-unproven', anchoredToBootRoot: false, positiveReadProven: false } }, true)
+  const u = Object.fromEntries(unproven)
+  for (const id of gatedIds) assert.equal(u[id], 'FAIL', `${id} must FAIL when the channel never showed a row this run created (zero-row claim is vacuous)`)
+  const proven = judgeU6Proc({ ...d, controlRead: { channel: 'remote:team.getLedgerPage', teamSessionId: 'ts-proven', anchoredToBootRoot: false, positiveReadProven: true } }, true)
+  const pr = Object.fromEntries(proven)
+  for (const id of gatedIds) assert.equal(pr[id], 'PASS', `${id} must PASS again once the same channel has positively read a created row — the gate moves with the evidence, not with the mood`)
+  // every other case is untouched by the precondition (both variants)
+  for (const rows of [unproven, proven]) for (const [id, verdict] of rows) {
+    if (gatedIds.includes(id) || id.startsWith('proc:approve-')) continue
+    assert.equal(verdict, legacy[id], `${id} must be unaffected by controlRead`)
   }
 })
 
