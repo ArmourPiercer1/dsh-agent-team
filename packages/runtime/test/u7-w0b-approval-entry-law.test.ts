@@ -298,7 +298,7 @@ describe('u7-w0b U — the binder law over a real kernel + registry', () => {
   })
 
   it('the binder accepts no familyId input (B2 by construction)', async () => {
-    const src = (await import('node:fs')).readFileSync(new URL('../src/plugin/live/approval-entry-binder.mjs', import.meta.url), 'utf8')
+    const src = (await import('node:fs')).readFileSync(new URL('../src/plugin/live/approval-entry-binder.mjs', import.meta.url) as Parameters<typeof import('node:fs').readFileSync>[0], 'utf8')
     const sig = /export function createApprovalEntryBinder\(\{([^}]*)\}\)/.exec(src)?.[1] ?? ''
     expect(sig.split(',').map((s) => s.trim()).sort()).toEqual(['approvalFor', 'bindEntry', 'claimOf', 'identityOf', 'placedDefinition', 'scopeKey'])
   })
