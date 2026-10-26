@@ -77,7 +77,7 @@ import {
   U74A_PLANTED_JOB_ID,
 } from './lib/u74a-jobs-assembly.mjs'
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
-import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
+import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -152,6 +152,7 @@ async function main() {
     bindings: {
       teamSha: git(['rev-parse', 'HEAD'], REPO_ROOT),
       hostSha: hostBaseStartup.head,
+      authority: readAuthorityBinding(REPO_ROOT),
       plant,
       worldIds: [],
       leaseRoot: factory.leaseRoot,
