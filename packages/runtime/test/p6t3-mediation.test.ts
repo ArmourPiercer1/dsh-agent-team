@@ -52,10 +52,24 @@ import {
   findFacts,
   makeSendRequest,
   memberCaller,
+  P6T3_ROOT,
   P6T3_SEEDS,
   putP6T3Overlay,
 } from './p6t3-helpers.js'
 import type { MessagingCoordinator, SendTeamMessageRequest } from '../messaging/index.js'
+
+/**
+ * The LeaderInstance's session = the team ROOT session (frozen Architecture
+ * §9.2: "LeaderInstance is root Agent/Session, has no childSessionId").
+ * Commit 3be0de1f ("fix messaging relay to root leader", shipped in the
+ * user-ruled 0.1.0-rc.1 release) moved leader-directed delivery onto the
+ * root session. This file's observers had kept reading the seeded leader's
+ * legacy `childSessionId` (an empty inbox), which left 5 legs red with 23 of
+ * their assertions dead. U7-1 / EB2-C old-red closure re-pins the OBSERVER to
+ * the root session; every assertion is kept, and the legacy child session is
+ * now asserted silent (leg 1).
+ */
+const LEADER_SESSION = P6T3_ROOT
 
 /**
  * Expect one send to be rejected by the FACADE with a TeamRuntimeError of
@@ -126,6 +140,8 @@ interface MediationState {
     readonly intentFacts: number
   }
   readonly leaderInputs: number
+  /** Inputs on the seeded leader's legacy `childSessionId` — must stay 0. */
+  readonly legacyLeaderChildInputs: number
   readonly scoutInputs: number
   readonly confirmations: readonly ConfirmationRow[]
 }
@@ -166,7 +182,7 @@ let md!: MediationState
       'team-message-delivered',
       (p) => p['requestToken'] === 'tok-p6t3-med-1',
     )[0]!
-    const med1Input = port.inputsFor(leader.childSessionId)[0]!
+    const med1Input = port.inputsFor(LEADER_SESSION)[0]!
     const noGrant = {
       outcome: med1,
       intent: med1Intent,
@@ -225,7 +241,7 @@ let md!: MediationState
       'team-message-delivered',
       (p) => p['requestToken'] === 'tok-p6t3-med-3',
     )[0]!
-    const med3Input = port.inputsFor(leader.childSessionId)[1]!
+    const med3Input = port.inputsFor(LEADER_SESSION)[1]!
     const perSender = {
       outcome: med3,
       intent: med3Intent,
@@ -256,7 +272,7 @@ let md!: MediationState
       'team-message-delivered',
       (p) => p['requestToken'] === 'tok-p6t3-med-4',
     )[0]!
-    const med4Input = port.inputsFor(leader.childSessionId)[2]!
+    const med4Input = port.inputsFor(LEADER_SESSION)[2]!
     const revoked = {
       outcome: med4,
       intent: med4Intent,
@@ -314,7 +330,8 @@ let md!: MediationState
       perSender,
       revoked,
       envelopeBlocked: blocked,
-      leaderInputs: port.inputsFor(leader.childSessionId).length,
+      leaderInputs: port.inputsFor(LEADER_SESSION).length,
+      legacyLeaderChildInputs: port.inputsFor(leader.childSessionId).length,
       scoutInputs: port.inputsFor(scout.childSessionId).length,
       confirmations,
     }
@@ -326,12 +343,11 @@ let md!: MediationState
 describe('P6-T3 member→member mediation (the documented rule, end to end)', () => {
   it('1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient', () => {
     const scout = P6T3_SEEDS.scout
-    const leader = P6T3_SEEDS.leader
     const o = md.noGrant.outcome
     expect(o.deliveryMode).toBe('mediated')
     expect(o.recipientInstanceId).toBe(scout.instanceId)
     expect(o.deliveredToInstanceId).toBe('inst-leader')
-    expect(o.deliveredToSessionId).toBe(leader.childSessionId)
+    expect(o.deliveredToSessionId).toBe(LEADER_SESSION)
 
     // (a) the coordination fact addresses the INTENDED recipient —
     // mediation never rewrites the coordination (Arch §24.2).
@@ -345,7 +361,8 @@ describe('P6-T3 member→member mediation (the documented rule, end to end)', ()
     })
 
     // (b) the input landed on the LEADER session only.
-    expect(md.noGrant.input.sessionId).toBe(leader.childSessionId)
+    expect(md.noGrant.input.sessionId).toBe(LEADER_SESSION)
+    expect(md.legacyLeaderChildInputs).toBe(0)
     expect(md.noGrant.scoutInputs).toBe(0)
     expect(md.noGrant.workerInputs).toBe(0)
 
@@ -355,7 +372,7 @@ describe('P6-T3 member→member mediation (the documented rule, end to end)', ()
       'inst-leader',
     )
     expect(md.noGrant.confirm.payload['deliveredToSessionId']).toBe(
-      leader.childSessionId,
+      LEADER_SESSION,
     )
     expect(md.noGrant.confirm.payload['recipientInstanceId']).toBe(
       scout.instanceId,
@@ -397,7 +414,7 @@ describe('P6-T3 member→member mediation (the documented rule, end to end)', ()
     expect(o.deliveredToInstanceId).toBe('inst-leader')
     expect(md.perSender.confirm.payload['deliveryMode']).toBe('mediated')
     expect(md.perSender.input.sessionId).toBe(
-      P6T3_SEEDS.leader.childSessionId,
+      LEADER_SESSION,
     )
     expect(md.perSender.input.attribution.fromInstanceId).toBe(
       P6T3_SEEDS.worker2.instanceId,
@@ -413,7 +430,7 @@ describe('P6-T3 member→member mediation (the documented rule, end to end)', ()
     expect(o.deliveredToInstanceId).toBe('inst-leader')
     expect(md.revoked.confirm.payload['deliveryMode']).toBe('mediated')
     expect(md.revoked.input.sessionId).toBe(
-      P6T3_SEEDS.leader.childSessionId,
+      LEADER_SESSION,
     )
     expect(md.revoked.input.text).toBe(
       `[team-relay:mediated via leader] from=${P6T3_SEEDS.worker.instanceId} (label: existing-worker) intended-for=${P6T3_SEEDS.scout.instanceId} (label: existing-scout)\ngrant revoked, mediated again`,
