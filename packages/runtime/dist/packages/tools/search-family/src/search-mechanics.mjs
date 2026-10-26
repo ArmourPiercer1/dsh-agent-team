@@ -1,11 +1,22 @@
 /**
- * search-family/src/search-mechanics.mjs — the search/glob rows' anchor +
- * presentation mechanics + the grep(1) port + the ARCHIVED confined-rg glob
- * CANDIDATE, moved VERBATIM (U6 PR5) out of
+ * search-family/src/search-mechanics.mjs — the search rows' anchor +
+ * presentation mechanics + the grep(1) port, moved VERBATIM (U6 PR5) out of
  * `packages/runtime/src/plugin/live/plane-effect-backends.mjs` lines
  * 106–539 at master 5c03f7240 (byte-identity law: the moved region is
  * line-exact; the re-extraction is pinned by
  * `packages/runtime/test/u6-pr5-search-move-law.test.ts`).
+ *
+ * U7-G6b (2026-10-26): the ARCHIVED CANDIDATE-A glob factory that closed that
+ * region (master :320-539, `createAnchoredGlobBackend` here, aliased
+ * `createAnchoredGlobBackendCandidate` at the barrel) is RETIRED. It shipped
+ * nothing, and it carried a second, independently maintained copy of the
+ * walker law that never received the g6b-flake drain + rc-first repairs: it
+ * read its buffers at the launcher's `exit` without waiting for the streams
+ * to end, so under census load a 105-file walk answered `ok:true files=[]`
+ * and an invalid glob answered an empty success (hosted runs 40386960117 /
+ * 40386788330; deterministic reproducer
+ * `packages/runtime/test/u7-g6b-late-stream.test.ts`). The ONE glob row is
+ * `glob-backend.mjs`; the move law pins the surviving region (:107-251).
  *
  * OWNER ROLE (center-assembly-architecture §4): the Family owns the effect
  * BODY behind the grep/glob rows (argv builders, the confined-rg delegation,
@@ -13,29 +24,22 @@
  * authority: admission/approval/grant/lifecycle stay kernel-side
  * (`search-contribution.mjs` states that as data). The authority forces the
  * bodies use — the anchor law (`resolveAnchored`, fs-family's public face),
- * the verified-handle seam (controlled-fs), the confined process provider
- * (the reviewed sandbox-provider public face), the SYSTEM_RX grant-entry
- * builder (process-family's public face) — arrive through the PUBLIC faces
- * of the owning lanes, referenced, never copied (the center's own
- * one-home law, PR2/PR3 precedent).
+ * the verified-handle seam (controlled-fs), and (through `search-backend.mjs`)
+ * the confined process provider — arrive through the PUBLIC faces of the
+ * owning lanes, referenced, never copied (the center's own one-home law,
+ * PR2/PR3 precedent).
  *
  * @module search-family/search-mechanics
  */
 import { spawnSync } from 'node:child_process'
-import { constants as fsConstants, existsSync, statSync } from 'node:fs'
+import { constants as fsConstants, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
-import { relative } from 'node:path'
-import { setTimeout as sleepTimer } from 'node:timers'
-import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'
-import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { verifyOpenedHandle } from '../../../runtime/controlled-fs/src/index.js'
 import { createAnchoredRgSearchBackend } from './search-backend.mjs'
-// U6 PR5 (one home, no copy — the center's PR2 `resolveAnchored` / PR3
-// `SYSTEM_RX` precedents, now crossing lanes through their PUBLIC faces):
-// the anchor/window law is fs-family's; the provider grant-entry builder is
-// process-family's.
+// U6 PR5 (one home, no copy — the center's PR2 `resolveAnchored` precedent,
+// now crossing lanes through its PUBLIC face): the anchor/window law is
+// fs-family's.
 import { resolveAnchored } from '../../fs-family/src/index.mjs'
-import { SYSTEM_RX } from '../../process-family/src/index.mjs'
 
 
 /** The ONE argv builder (ported verbatim from the W5 wiring round). */
@@ -246,228 +250,6 @@ export function createAnchoredSearchBackend({ realmId, rootDir, observe = () => 
       trace = [...trace, 'terminate']
       lastOutcomes.push({ callId: call.callId, argv: argv.join(' '), mode: parsed.outputMode, totalMatches: outcome.totalMatches })
       return { ok: true, outcome, settlement: { kind: 'completed' } }
-    },
-  }
-}
-
-/**
- * THE glob row (GLUE-7 scope probe -> PR5 commitment): the REAL ripgrep
- * `--files` walk, run INSIDE the confined sandbox on the same provider face
- * the shell row proved live (kernel-enforced read scope: the rg process
- * cannot read outside its allowPaths no matter what the pattern names).
- * The argv/limit vocabulary is the host PUBLIC PACKAGE ROOT's own
- * (`@deepseek-ai/dsh-tool-fs-search`: `buildGlobCommand` bakes
- * `--files --glob=P --sort=modified --no-ignore --hidden` + the
- * GLOB_VCS_EXCLUDES negations, search root behind `--`) — the plan's R3
- * route names these helpers verbatim (memo plan :128; scope probe
- * evidence/alpha5/glue7/glob/README.md, ruling: within the original
- * authorization, no new decision needed). The PRESENTATION is the LANE's
- * own SearchOutcome (`files_with_matches`) so the reviewed renderer and
- * spill law stay single-owned (the host's formatGlobOutput is bound to the
- * host's own spill/sampling caps surface — double-formatting would fork
- * the render law; disclosed). Anchoring is the SAME `resolveAnchored` law
- * the read/grep rows carry (lex + realpath + isBeneath: a symlink whose
- * FINAL target escapes the governed root is refused BEFORE any spawn), and
- * the bounded-output cap is `GLOB_MAX_RESULTS` — an over-cap walk reports
- * `truncated` honestly, it is never silently cut.
- */
-export function createAnchoredGlobBackend({ realmId, rootDir, templateId = 'plane', instanceId = 'member', confined, observe = () => {}, timeoutMs = 60_000 }) {
-  const provider = createConfinedProcessProvider({
-    realmId,
-    trustRoot: confined.trustRoot ?? null,
-    // the provider materialises its scratch INSIDE the sandbox-visible cwd —
-    // a scratch rooted AT the governed root leaks the sandbox's own layout
-    // into every walk result (live-measured, probe-cwd). Default it OUTSIDE
-    // the governed root; a configured scratchRoot still rules. (The shell
-    // row's same default is disclosed to review, not silently changed here.)
-    scratchRoot: confined.scratchRoot ?? `${rootDir}.a5g7-glob-scratch`,
-    ...(confined.runnerCommand === undefined ? {} : { runnerCommand: confined.runnerCommand }),
-    assembly: confined.assembly ?? {},
-  })
-  let probed = null
-  let rgPath = null
-  let executed = 0
-  let trace = []
-  const lastRuns = []
-  return {
-    backendId: 'a5g7-confined-rg-glob',
-    get lastStageTrace() { return trace },
-    execCount: () => executed,
-    lastRuns,
-    async run(call, io) {
-      const parsed = call.parsedArgs
-      if (parsed.tool !== 'glob') {
-        return { ok: false, failure: { class: 'denied', code: 'wrong-tool-for-backend', detail: 'the glob backend got a non-glob call' } }
-      }
-      const anchor = resolveAnchored(rootDir, parsed.target)
-      if (!anchor.ok) {
-        trace = ['anchor-refused']
-        observe(`anchored-glob refused ${String(anchor.code)} call=${call.callId} realm=${realmId}`)
-        return { ok: false, failure: { class: 'denied', code: anchor.code, detail: anchor.detail } }
-      }
-      const walkRel = anchor.path === anchor.rootReal ? '.' : relative(anchor.rootReal, anchor.path)
-      if (rgPath === null) {
-        try { rgPath = await resolveRgPath() } catch (e) {
-          trace = ['probe', 'terminate']
-          return { ok: false, failure: { class: 'failed', code: 'rg-unavailable', detail: String((e && e.message) ?? e).slice(0, 200) } }
-        }
-      }
-      trace = ['probe']
-      if (probed === null) {
-        probed = await provider.probe()
-        if (probed.ok !== true) {
-          trace = ['probe', 'terminate']
-          observe(`anchored-glob capability REFUSED realm=${realmId} code=${probed.error?.code}`)
-          return { ok: false, failure: { class: 'denied', code: `confined-unavailable:${String(probed.error?.code ?? 'probe-refused')}`, detail: String(probed.error?.message ?? 'probe refused') } }
-        }
-        observe(`anchored-glob capability OK realm=${realmId} rows=${probed.value.length} rg=${rgPath}`)
-      }
-      trace = ['probe', 'prepare', 'execute']
-      // TOCTOU (the review's ①(c) law APPLIED BEFORE THE WALK SHIPS, reusing
-      // the SAME handle-verification law, no new architecture): the anchor
-      // DIRECTORY is opened O_DIRECTORY|O_NOFOLLOW and exec-time verified
-      // (`verifyOpenedHandle`). The provider's cwd then rides the VERIFIED
-      // fd's `/proc/self/fd/N` magic link — libuv opens the cwd string in
-      // the PARENT at spawn, and the magic link lands on the verified INODE:
-      // a later external rename->symlink swap of the path (which rg FOLLOWS
-      // for command-line dirs — measured, unlike grep -r) cannot steer the
-      // walk. The walk root is always `.`; the presentation keeps the
-      // root-relative spelling. No path string reaches rg's argv.
-      let dirHandle
-      try {
-        dirHandle = await fsOpen(anchor.path, fsConstants.O_RDONLY | fsConstants.O_DIRECTORY | fsConstants.O_NOFOLLOW)
-      } catch (error) {
-        const code = String(error?.code ?? '')
-        trace = [...trace, 'terminate']
-        if (code === 'ELOOP') return { ok: false, failure: { class: 'denied', code: 'symlink-alias', detail: 'the walk root was swapped to a symlink at open time (ELOOP)' } }
-        if (code === 'ENOENT') return { ok: false, failure: { class: 'denied', code: 'not-a-directory', detail: 'the walk root does not exist at open time' } }
-        if (code === 'ENOTDIR') return { ok: false, failure: { class: 'denied', code: 'not-a-directory', detail: 'a path component is not a directory' } }
-        return { ok: false, failure: { class: 'undetermined', code: 'glob-open-failed', detail: code.slice(0, 80) } }
-      }
-      try {
-        const dst = statSync(anchor.path)
-        const dsnap = { dev: Number(dst.dev), ino: Number(dst.ino), size: dst.size, mtimeMs: dst.mtimeMs }
-        const drecheck = await verifyOpenedHandle(dirHandle, anchor.rootReal, dsnap)
-        if (drecheck.verdict !== 'confirmed') {
-          trace = [...trace, 'terminate']
-          const detail = drecheck.verdict === 'escape'
-            ? `exec-time re-read: the walk-root fd resolved to ${drecheck.resolvedPath} — OUTSIDE the governed anchor`
-            : drecheck.verdict === 'drift'
-              ? `snapshot ${String(drecheck.snapshot.dev)}:${String(drecheck.snapshot.ino)} != opened ${String(drecheck.actual.dev)}:${String(drecheck.actual.ino)}`
-              : drecheck.detail
-          observe(`anchored-glob exec-refused:${drecheck.verdict} call=${call.callId}`)
-          return { ok: false, failure: { class: drecheck.verdict === 'escape' ? 'denied' : 'undetermined', code: `exec-time-${drecheck.verdict}`, detail: String(detail).slice(0, 200) } }
-        }
-      } catch (e) {
-        await dirHandle.close().catch(() => undefined)
-        trace = [...trace, 'terminate']
-        return { ok: false, failure: { class: 'undetermined', code: 'glob-open-failed', detail: String((e && e.message) ?? e).slice(0, 120) } }
-      }
-      const rgBinDir = rgPath.slice(0, rgPath.lastIndexOf('/'))
-      const request = {
-        grantFingerprint: `glue7:${realmId}:${templateId}:${call.callId}`,
-        realmId,
-        bindingId: `glue7-plane:${templateId}`,
-        memberScope: instanceId,
-        argv: [rgPath, ...buildGlobCommand({ pattern: parsed.pattern })],
-        // The provider/launcher chain opens the cwd by STRING (parent fds
-        // do not cross the launcher — measured), so the string stays. The
-        // ①(c) closure is TWO-LAYER, both pre-existing laws, no new
-        // machinery: (1) the verified pre-open above (O_DIRECTORY|
-        // O_NOFOLLOW + exec-time re-read) refuses a swap that landed
-        // before the spawn — deterministic, zero-walk; (2) whatever slips
-        // the microsecond window between re-read and the launcher's chdir
-        // lands the child on the swap target, and the walk runs under
-        // Landlock with allowPaths = the governed root ONLY: an outside
-        // swap target gets the KERNEL refusal (read_dir not granted) and
-        // rg discloses zero bytes — the confinement backstop, same law
-        // the shell row ships. An inside-root redirect cannot escape the
-        // boundary (every realm path is readable anyway); its integrity
-        // residual is disclosed in the glue7 README §4, never exempted.
-        cwd: anchor.path,
-        env: [['PATH', '/usr/bin:/bin']],
-        allowPaths: [
-          SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
-          ...(existsSync('/lib64') ? [SYSTEM_RX('/lib64')] : []),
-          SYSTEM_RX(rgBinDir),
-          { path: anchor.rootReal, accessBits: { readFile: true, readDir: true } },
-        ],
-      }
-      // The walk root is ALWAYS `.`: it arrives already bound to the
-      // verified inode via the cwd magic link — NO path string reaches rg
-      // (rg follows command-line symlinked dirs, measured: unlike grep -r,
-      // so an argv string would keep the ①(c) window open). Subtree walks
-      // are presented root-relative below.
-      let handle
-      try {
-        handle = await provider.spawnStreaming(request)
-      } finally {
-        // the verification fd has served its law — retire it (the walk's
-        // OWN protection is the Landlock rule set, not this fd)
-        await dirHandle.close().catch(() => undefined)
-      }
-      if (handle.ok !== true) {
-        trace = ['probe', 'prepare', 'terminate']
-        observe(`anchored-glob spawn REFUSED realm=${realmId} call=${call.callId} code=${handle.error?.code}`)
-        return { ok: false, failure: { class: 'denied', code: `confined-refused:${String(handle.error?.code ?? 'spawn-refused')}`, detail: String(handle.error?.message ?? 'spawn refused') } }
-      }
-      executed += 1
-      const h = handle.value
-      let stdout = ''
-      let stderr = ''
-      h.stdout.on('data', (c) => { const str = String(c); stdout += str; if (io.sink) io.sink.write(str) })
-      h.stderr.on('data', (c) => { stderr += String(c) })
-      const exit = await Promise.race([
-        h.exited,
-        new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs)),
-      ])
-      await h.terminate() // the lease settles through the frozen arm (once per path)
-      if (exit.timedOut === true) {
-        trace = [...trace, 'terminate']
-        return {
-          ok: true,
-          outcome: { outputMode: 'files_with_matches', matches: [], counts: [], files: [], totalMatches: 0, truncated: false },
-          settlement: { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' },
-        }
-      }
-      const code = typeof exit.code === 'number' ? exit.code : null
-      trace = [...trace, 'terminate']
-      if (code !== 0 && code !== 1) {
-        // rg exit>=2 is a REAL walker error (invalid pattern syntax,
-        // unreadable root): it lands as a typed failure — never a silently
-        // empty list.
-        observe(`anchored-glob ERROR realm=${realmId} call=${call.callId} exit=${String(code)}`)
-        return { ok: false, failure: { class: 'failed', code: `rg-exit-${String(code)}`, detail: (stderr.trim() || 'ripgrep reported an error').slice(0, 400) } }
-      }
-      if (code === 0 && stderr.trim().length > 0) {
-        // Live-measured (glue7/glob/probe-rg-exit + probe-cwd): the streaming
-        // arm does not always surface the payload's exit code on this host
-        // (rg's hard-error exit 2 read back as 0). A HARD walker error never
-        // writes files and always speaks on stderr — so the walker's own
-        // words, not the code, carry the typed failure. A quiet success has
-        // an empty stderr (verified on the success legs).
-        observe(`anchored-glob walker-error realm=${realmId} call=${call.callId} (exit read as ${String(code)}; stderr carried it)`)
-        return { ok: false, failure: { class: 'failed', code: 'rg-walker-error', detail: stderr.trim().slice(0, 400) } }
-      }
-      // presentation: root-relative spelling (the anchor algebra), the
-      // subtree prefix restored after the `.`-rooted walk
-      const walkPrefix = walkRel === '.' ? '' : `${walkRel}/`
-      const all = stdout.split('\n').filter((l) => l.trim().length > 0).map((l) => walkPrefix + (l.startsWith('./') ? l.slice(2) : l))
-      const files = all.slice(0, GLOB_MAX_RESULTS)
-      lastRuns.push({ callId: call.callId, pid: h.pid, exit: code, total: all.length })
-      observe(`anchored-glob ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} files=${String(all.length)} capped=${String(all.length > GLOB_MAX_RESULTS)}`)
-      return {
-        ok: true,
-        outcome: {
-          outputMode: 'files_with_matches',
-          matches: [],
-          counts: [],
-          files,
-          totalMatches: all.length,
-          truncated: all.length > files.length,
-        },
-        settlement: { kind: 'completed' },
-      }
     },
   }
 }

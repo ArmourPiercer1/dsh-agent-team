@@ -521,6 +521,18 @@ const SCANNED_PATHS_U70: readonly string[] = [
   'packages/testkit/census/fixtures/make-fixture.mjs',
   'packages/testkit/test/u7-0-census-reconcile.test.ts',
 ]
+// U7-G6b (census-load flake, branch task/u7-g6b-census-flake-20261026): the
+// ONE new scannable file is the deterministic late-stream reproducer spec
+// (bytes arriving after the provider's `exited`, pinned on the shipped glob
+// row). The retirement of the archived CANDIDATE-A glob factory and the G6b /
+// move-law / mount-booking retargets are EDITS to already-counted paths;
+// dist mirrors and dev/** evidence sit outside the scan. Zero new denylist
+// vocabulary. MEASURED by the pre-booking scanner run (evidence
+// `dev/agent-workflow/evidence/u7-g6b-census-flake-20261026/p4t6-RED-unbooked.log`
+// reads `expected 1307 to be 1306`; no chain value copied).
+const SCANNED_PATHS_U7G6B: readonly string[] = [
+  'packages/runtime/test/u7-g6b-late-stream.test.ts',
+]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
 // UNION expression — no prose total is load-bearing. On the merged tree
@@ -3153,6 +3165,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR6.length +
         SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
+        SCANNED_PATHS_U7G6B.length +
         SCANNED_PATHS_U79A.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3229,6 +3242,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR6.length +
         SCANNED_PATHS_U74A.length +
         SCANNED_PATHS_U70.length +
+        SCANNED_PATHS_U7G6B.length +
         SCANNED_PATHS_U79A.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3325,6 +3339,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR6,
       ...SCANNED_PATHS_U74A,
       ...SCANNED_PATHS_U70,
+      ...SCANNED_PATHS_U7G6B,
       ...SCANNED_PATHS_U79A,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
@@ -3800,6 +3815,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // this suite recorded `expected 1289 to be 1277` (received-then-booked) (the +12 census-library
     // increment; no cross-round prose total is load-bearing).
     expect(SCANNED_PATHS_U70.length).toBe(1289 - 1277)
+    // U7-G6b: ONE new path (the late-stream reproducer spec), the measured
+    // scanned-total delta 1306 -> 1307 on THIS tree.
+    expect(SCANNED_PATHS_U7G6B.length).toBe(1307 - 1306)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
