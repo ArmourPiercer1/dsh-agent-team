@@ -1,0 +1,9 @@
+## S3: delete a REQUIRED named host registration row (read) from the u1c sources seed; regenerate
+wrote expected-tool-obligations.v1.json (sha256:99f63a88e0dd6ab806bbf4de74b58bb6db0fecfdf9ad2794148623a89b7adeb1)
+wrote authoritative-tool-sources.v1.json (sha256:e439f64e7d16d5b2cb9611a4957054b0d77171976084b26e5598f327fb043725)
+manifest.json digest-of-expected: sha256:99f63a88e0dd6ab806bbf4de74b58bb6db0fecfdf9ad2794148623a89b7adeb1
+exit=0
+read obligation still emitted: read REQUIRED
+read source_registration: None
+read still in sources artifact: False
+counts: {'entries': 91, 'required': 58, 'out_of_scope': 33, 'named': 87, 'dynamic_classes': 3, 'surfaces': 1}

@@ -1,0 +1,29 @@
+## seed vs U4 evidence artifact (byte compare)
+cmp: dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json: No such file or directory
+0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d  dev/engineering/tool-obligations/sources/u4-reviewed-obligations.seed.json
+sha256sum: dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json: No such file or directory
+## does any test/generator check seed digest against U4 evidence?
+NO reference
+## u1c seed team pin
+"pin": "tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84 (git describe: dsh-v0.2.0-rc.2)"
+"pin": ".worktrees/u1-audit-master @ 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (read-only)"
+## unknown-dispositions seed consumers
+NO consumer
+## schema-check negative tests on expected/sources schemas
+40:import { validateAgainstSchema } from '../census/schema-check.mjs'
+102:    const v = validateAgainstSchema(inv, schema)
+## U4 evidence presence (main checkout / any ref)
+build-outputs.py
+expected-tool-obligations.json
+feasibility.json
+manifest.json
+mechanism-groups.json
+refs
+SUMMARY.md
+## the seed file digest
+0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d  .worktrees/u7-0-review/dev/engineering/tool-obligations/sources/u4-reviewed-obligations.seed.json
+## is U4 evidence tracked?
+tracked-count=0
+## byte-compare U4 artifact vs seed (main checkout file)
+IDENTICAL
+0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d  dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json

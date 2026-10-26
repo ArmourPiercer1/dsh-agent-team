@@ -1,0 +1,8 @@
+{
+ "clean_expected": true,
+ "expected_bad_enum_rejected": true,
+ "expected_extra_key_rejected": true,
+ "expected_missing_required_rejected": true,
+ "inventory_authorized_field_rejected": true,
+ "inventory_bad_sha_rejected": true
+}

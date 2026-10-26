@@ -1,0 +1,104 @@
+### MUTANT M1-authorized-true
+        ✓ loads schema-clean through the fail-closed loader 2ms
+        ✓ bytes match the tracked manifest digests 1ms
+        ✓ generator replays byte-identically (--check) 105ms
+        ✓ validates against the tracked schema and the runtime guard 5ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 8ms
+        × clean baseline reconciles to the pinned counts and digest 21ms
+        × PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 6ms
+        ✓ PLANT 2 — replacing an execution Definition is detected as DRIFT 20ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 2ms
+        × THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 12ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 1ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  3 failed | 8 passed (11)
+### MUTANT M2-no-identity-drift
+        ✓ loads schema-clean through the fail-closed loader 2ms
+        ✓ bytes match the tracked manifest digests 1ms
+        ✓ generator replays byte-identically (--check) 192ms
+        ✓ validates against the tracked schema and the runtime guard 12ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 19ms
+        ✓ clean baseline reconciles to the pinned counts and digest 5ms
+        ✓ PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 8ms
+        × PLANT 2 — replacing an execution Definition is detected as DRIFT 22ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 5ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 8ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 2ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)
+### MUTANT M3-dynamic-as-not-in-obligations
+        ✓ loads schema-clean through the fail-closed loader 2ms
+        ✓ bytes match the tracked manifest digests 1ms
+        ✓ generator replays byte-identically (--check) 193ms
+        ✓ validates against the tracked schema and the runtime guard 9ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 12ms
+        ✓ clean baseline reconciles to the pinned counts and digest 5ms
+        × PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 8ms
+        ✓ PLANT 2 — replacing an execution Definition is detected as DRIFT 19ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 1ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 8ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 1ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)
+### MUTANT M4-missing-skip
+        ✓ loads schema-clean through the fail-closed loader 2ms
+        ✓ bytes match the tracked manifest digests 1ms
+        ✓ generator replays byte-identically (--check) 184ms
+        ✓ validates against the tracked schema and the runtime guard 3ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 12ms
+        ✓ clean baseline reconciles to the pinned counts and digest 6ms
+        ✓ PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 7ms
+        ✓ PLANT 2 — replacing an execution Definition is detected as DRIFT 19ms
+        × PLANT 3 — dropping a required tool is detected as MISSING 10ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 7ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 0ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)
+### MUTANT M5-shape-collapse-to-placement
+        ✓ loads schema-clean through the fail-closed loader 4ms
+        ✓ bytes match the tracked manifest digests 3ms
+        ✓ generator replays byte-identically (--check) 160ms
+        ✓ validates against the tracked schema and the runtime guard 6ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 11ms
+        ✓ clean baseline reconciles to the pinned counts and digest 4ms
+        ✓ PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 7ms
+        × PLANT 2 — replacing an execution Definition is detected as DRIFT 24ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 1ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 10ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 0ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)
+### MUTANT M6-revision-drift-removed
+    ✓ packages/testkit/test/u7-0-census-reconcile.test.ts (11 tests) 206ms
+         Tests  11 passed (11)
+### MUTANT M7-source-drift-removed
+    ✓ packages/testkit/test/u7-0-census-reconcile.test.ts (11 tests) 182ms
+         Tests  11 passed (11)
+### MUTANT M8-unknown-dropped-for-unattributed
+        ✓ loads schema-clean through the fail-closed loader 3ms
+        ✓ bytes match the tracked manifest digests 1ms
+        ✓ generator replays byte-identically (--check) 169ms
+        ✓ validates against the tracked schema and the runtime guard 14ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 15ms
+        ✓ clean baseline reconciles to the pinned counts and digest 16ms
+        × PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 20ms
+        ✓ PLANT 2 — replacing an execution Definition is detected as DRIFT 23ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 3ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 9ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 0ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)
+### MUTANT M9-new-name-authorized
+        ✓ loads schema-clean through the fail-closed loader 5ms
+        ✓ bytes match the tracked manifest digests 3ms
+        ✓ generator replays byte-identically (--check) 107ms
+        ✓ validates against the tracked schema and the runtime guard 7ms
+        ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 18ms
+        ✓ clean baseline reconciles to the pinned counts and digest 11ms
+        × PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 23ms
+        ✓ PLANT 2 — replacing an execution Definition is detected as DRIFT 27ms
+        ✓ PLANT 3 — dropping a required tool is detected as MISSING 4ms
+        ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 15ms
+        ✓ fail-closed: malformed inputs are refused, never reconciled 1ms
+   ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+         Tests  1 failed | 10 passed (11)

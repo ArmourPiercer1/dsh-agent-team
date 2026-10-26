@@ -1,0 +1,13 @@
+## S1 tamper u4 seed (flip one scope_variant byte) then --check
+CHECK FAILED:
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0-review/.review-scratch/dev/engineering/tool-obligations/expected-tool-obligations.v1.json: byte-differs from the replayed generator output
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0-review/.review-scratch/dev/engineering/tool-obligations/manifest.json: expected-digest differs
+exit=1
+## S2 add a NEW host source tool to u1c seed (no obligation), regenerate (write mode) — does the generator refuse or mark it UNKNOWN?
+wrote expected-tool-obligations.v1.json (sha256:4cf15dfe8c1dbb5363fcbac4b7716f3aa9a3d01a9da9bc042b1b6f19408e0a74)
+wrote authoritative-tool-sources.v1.json (sha256:1ff05ebdee08869412736d1bf9511ccc298a554b9338175fc7b80a441dc3e3b9)
+manifest.json digest-of-expected: sha256:4cf15dfe8c1dbb5363fcbac4b7716f3aa9a3d01a9da9bc042b1b6f19408e0a74
+exit=0
+in sources artifact: True
+in expected obligations: False
+UNKNOWN text anywhere in expected for it: False
