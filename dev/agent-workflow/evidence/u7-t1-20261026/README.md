@@ -296,3 +296,16 @@ README states the live `other-world-unaffected` verdict REMAINS FAIL.
 - PR #389 checks: `candidate-protection pass`, `pr-gate pass (2m5s)`,
   `census-runtime pass (14m26s)` — the hosted census leg (which provisions
   the host tree) is GREEN, closing the worktree refusal. DO NOT MERGE.
+
+## Review R1 gate re-run (head `403c1b627`)
+
+- ci-pr-gate required legs after the R1 fixes:
+  `DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census` (same named
+  skip; environment note: the worktree's pnpm install surface is bound to
+  the workspace store `.artifacts/tmp/u7t1-store` — sandbox law makes
+  `/home/user/…` store non-writable — so the store mirror is KEPT,
+  consistent with `node_modules/.modules.yaml` storeDir, and must be
+  removed together with that metadata when this worktree is cleaned).
+- docs:probe `--worktree-only`: `blocking=0 non_blocking=0 advisories=0`.
+- PR #389 hosted checks on `403c1b627`: `candidate-protection pass (12s)`,
+  `pr-gate pass (1m25s)`, `census-runtime pass (15m2s)`. DO NOT MERGE.
