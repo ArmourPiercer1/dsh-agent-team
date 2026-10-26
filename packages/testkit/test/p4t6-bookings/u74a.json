@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U74A",
+  "paths": [
+    "packages/runtime/src/plugin/live/jobs-background-producer.mjs",
+    "packages/runtime/test/u74a-jobs-producer.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1277,
+    "to": 1279
+  },
+  "reason": "U7-4a (user ruling 2026-10-26 item 2; creation-lane attribution producer):\nthe round's two NEW paths — the producer module (production, dist-placed)\nand its C1 spec. MEASURED pre-booking on THIS tree: the scanner reads\n1279 with both present and the booked 1277 without the booking\n(`expected 1279 to be 1277`, `.artifacts/tmp/u74a-p4t6.log`, mirrored to\ndev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/p4t6-RED-unbooked.log).",
+  "tieNote": "U7-4a: the round's own tie — TWO new paths (producer module + C1 spec),\nthe measured scanned-total delta 1277 -> 1279 on THIS tree.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U74A (line 498); tie line 3796"
+}

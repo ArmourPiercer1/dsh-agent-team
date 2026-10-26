@@ -1,0 +1,23 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U6PR1",
+  "paths": [
+    "packages/runtime/governance-center/contribution-schema.ts",
+    "packages/runtime/governance-center/registry.ts",
+    "packages/runtime/governance-center/kernel.ts",
+    "packages/runtime/governance-center/host-adapter.ts",
+    "packages/runtime/governance-center/index.ts",
+    "packages/runtime/src/plugin/live/center-shadow-row.mjs",
+    "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
+    "packages/runtime/test/u6-pr1-registry.test.ts",
+    "packages/runtime/test/u6-pr1-kernel.test.ts",
+    "packages/runtime/test/u6-pr1-shadow-inert.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1228,
+    "to": 1238
+  },
+  "reason": "U6 PR1 (branch task/u6-pr1-center-skeleton-20261025 off master f7fbc0f67,\nthe center-assembly skeleton slice 1/6) adds its TEN scannable files: the\ngovernance-center lane (closed-world Family Contribution schema + the\nread-only non-authorizing GovernedFamilyRegistry + the §5-state-machine\nGovernanceKernel with the center-owned approval table and the ONE-SHOT\nconsume THROUGH the injected tool-admission port + the public-seams-only\nHostSurfaceAdapter + the barrel), its shadow live row (the config-gated\n`teamToolPlane.centerAssembly: 'shadow'` mount that ALWAYS takes next() —\ninert by construction, audit ledger only), and the four C1 suites. The\nagent-bindings.mjs + place-dist-glue.mjs + tsconfig EDITS ride\nalready-counted/outside-scan paths; dist mirrors, tests/**, docs/** and\ndev-evidence are outside the scan; zero new denylist vocabulary. Taking the\nscanned total on THIS tree to 1238 — MEASURED by the pre-booking scanner\nrun (dev/agent-workflow/evidence/u6-pr1-20261025/logs/p4t6-RED-unbooked.log\nreading `expected 1238 to be 1228`; no chain value copied).",
+  "tieNote": "U6 PR1, same tie form: the measured unbooked scanner run reported\n`expected 1238 to be 1228`, and the whole 10-file gap is exactly the\nnamed SCANNED_PATHS_U6PR1 list asserted present by path above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_U6PR1 (line 309); tie line 3744"
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5B2",
+  "paths": [
+    "packages/runtime/test/a5b2-exit-code-fidelity.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1196,
+    "to": 1197
+  },
+  "reason": "A5-B2 (B2 exit-code fidelity, branch `alpha5-b2-rc-pr` off master 104b4991) adds ONE\nscannable file: its spec. The three production edits of this round are EDITS to files\nthis ledger already counts (the launcher .py is outside the scan, the provider .ts and\nthe plane .mjs were booked by earlier rounds), and no denylist vocabulary is added.\nMEASURED, not copied: master's file, this tree, this clause not yet booked, read\n`expected 1197 to be 1196` (evidence `alpha5/b2-exit-code/p4t6-red-unbooked.log`) -\nthe int-r3 chain's booked 1196 plus exactly the one new path on disk.",
+  "tieNote": "The A5-B2 tie, measured on THIS tree with the same discipline as its neighbours:\nnothing was copied from any branch. Running master's own file against this tree\nBEFORE booking this clause read `expected 1197 to be 1196`, so the chain of this\ntree ends at 1197 - the int-r3 booking (1196) plus this round's single spec.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5B2 (line 51); tie line 3662"
+}

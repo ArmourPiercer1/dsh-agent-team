@@ -1,0 +1,15 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4P73GRAMMAR",
+  "paths": [
+    "packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts",
+    "packages/runtime/test/a4p7-v3-grammar-enforced.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1029,
+    "to": 1031
+  },
+  "reason": "A4-PR2: the total is the base plus the derived PR2 list below, so the pin\nmoves exactly when the named files exist and cannot move for an unnamed one.\nA4-PR7 Task 7.3 Option A (`feat/a4-73-grammar-version-agnostic`): the two instruments\nthe §7.3 decision record had to write by hand and ship as throwaway probes\n(`dev/agent-workflow/evidence/a4-pr7/7-3-decision/probes/`), landed as committed tests.\nTWO new scannable files — the identity twin in the package that owns the hash\n(`packages/domain/test/`) and the enforcement twin in the package that owns the gates\n(`packages/runtime/test/`). Every other write on this branch is an EDIT to a path this\nscan already counts (the five relaxed gates + the one widened test mirror), and an edit\nis not an increment; evidence `.md`/`.txt` under `dev/agent-workflow/evidence/` is\noutside this scan's `packages/**` scope. Same discipline as every list here: each path\nis asserted present BY PATH below and the length is tied to the movement of the total,\nwhich is derived — never written by hand.",
+  "tieNote": "The A4-PR7 §7.3-Option-A tie, same form: the movement equals the two twin instruments\nthis lane names, each asserted present by path in the loop above. Both endpoints were\nMEASURED on this branch, not inferred: the tree with the two twin files on disk but\nabsent from this list read `expected 1031 to be 1029` (capture\n`dev/agent-workflow/evidence/a4-pr7/7-3-relax/p4t6-PRE-EXTEND-RED.txt`), and 1029 is\nthe derived master total the line above ends on. The five relaxed gates and the one\nwidened test mirror are EDITS to already-counted paths and contribute nothing to the\nmovement — an edit is not an increment, which is exactly why a landed file without its\npath here turns this sum RED instead of moving it silently.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4P73GRAMMAR (line 2529); tie line 3451"
+}

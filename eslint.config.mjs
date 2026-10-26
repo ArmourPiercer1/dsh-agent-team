@@ -6,9 +6,46 @@
  * Toolchain/provenance inputs (dev/**, docs/**) and build output are not
  * linted sources and are ignored.
  */
+import { readdirSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+
+/**
+ * u7-w0 (2026-10-26): the node-globals file list is COLLECTED. Every
+ * `scripts/eslint-node-globals/<NNN>-<family>.json` is a `{schema, family,
+ * globals: ['<pattern>', …]}` document; this reads them in sorted file-name
+ * order (the numeric prefix is the order; it carries no meaning for a flat
+ * pattern list, but it keeps the config deterministic) and returns the flat
+ * pattern list.
+ *
+ * WHY A GLOB CONVENTION AND NOT ONLY A LIST: a family tree whose every file is
+ * node-side needs no per-lane edit at all — it ships ONE JSON with the tree's
+ * pattern. A single node-side module inside an otherwise browser-safe tree
+ * ships one pattern for that file. Either way the lane edits this config zero
+ * times, which is the whole point (the config was a measured merge hotspot).
+ *
+ * FAIL-CLOSED on a malformed entry: a bad schema, a non-string pattern, or an
+ * EMPTY pattern list throws while the config is loaded, so `eslint .` dies
+ * loudly rather than linting a universe nobody can account for.
+ */
+const NODE_GLOBALS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'scripts', 'eslint-node-globals')
+function nodeGlobalsPatterns() {
+  const names = readdirSync(NODE_GLOBALS_DIR).filter((n) => n.endsWith('.json')).sort()
+  const out = []
+  for (const name of names) {
+    const doc = JSON.parse(readFileSync(join(NODE_GLOBALS_DIR, name), 'utf8'))
+    if (doc?.schema !== 'eslint-node-globals/1') throw new Error(`${name}: schema ${JSON.stringify(doc?.schema)} (expected eslint-node-globals/1)`)
+    if (!Array.isArray(doc.globals) || doc.globals.length === 0) throw new Error(`${name}: globals must be a non-empty array of patterns`)
+    for (const pattern of doc.globals) {
+      if (typeof pattern !== 'string' || pattern.trim() === '') throw new Error(`${name}: every entry must be a non-empty pattern string`)
+      out.push(pattern)
+    }
+  }
+  return out
+}
 
 export default tseslint.config(
   {
@@ -135,22 +172,39 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node } },
   },
   {
-    // Plain-Node harness / e2e runner scripts (and the two node-side plugin
-    // modules) run under node: node globals are defined for exactly these
-    // .mjs files, mirroring the scripts/** block above.
+    // Plain-Node harness / e2e runner scripts and node-side plugin modules run
+    // under node: node globals are defined for exactly these .mjs files,
+    // mirroring the scripts/** block above.
+    //
+    // u7-w0 (2026-10-26) — THE FILE LIST IS COLLECTED, NOT EDITED. Until u7-w0
+    // a family lane added its node-side module to this array by hand, and this
+    // array was one of the shared registries every lane touched (2 of the 7
+    // merged U7 PRs).
+    //
+    // Two halves, on purpose:
+    //   - the five PATTERNS below (a whole tree is node-side: the tool harness,
+    //     the two runtime harness trees, the legacy reader's e2e tree, the
+    //     census library) need no per-lane edit at all and stay inline;
+    //   - EVERY individual file, and any new family's tree, comes from
+    //     `scripts/eslint-node-globals/<NNN>-<family>.json` (schema
+    //     `eslint-node-globals/1`), collected by `nodeGlobalsPatterns()` above.
+    //     A lane adds one JSON file — or one pattern to its own family's file —
+    //     and edits nothing in this config.
+    //
+    // Parity is a test, not a promise: tests/checks/eslint-node-globals.test.mjs
+    // asserts the five patterns plus the collected entries equal the NINE-entry
+    // list at origin/master 88107ad71, that every declared pattern matches at
+    // least one tracked file (a stale pattern is a phantom `no-undef`), and that
+    // removing an entry is detected (the RED-first control). The lint identity
+    // diff stays new 0 / resolved 0, and scripts/lint-identities.mjs PRINTS the
+    // universe count on every run (1421 files at this head; it did not shrink).
     files: [
       'packages/tools/harness/**/*.mjs',
       'packages/runtime/member-residency/harness/**/*.mjs',
       'packages/runtime/root-binding/harness/**/*.mjs',
       'packages/legacy/session-reader/e2e/**/*.mjs',
-      'packages/runtime/test/t12a-live-bridge.mjs',
-      'packages/runtime/src/plugin/upstream-resolver.mjs',
-      'packages/runtime/src/plugin/live/agent-bindings.mjs',
-      // U7-4a: the governed background producer is a host-side plugin module of
-      // the SAME class as agent-bindings.mjs (it buffers host job output under
-      // a byte cap via Buffer.byteLength); node globals for exactly this file.
-      'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
       'packages/testkit/census/**/*.mjs', // U7-0 EB2-A census library + fixture builder (plain-node diagnostic code)
+      ...nodeGlobalsPatterns(),
     ],
     languageOptions: { globals: { ...globals.node } },
   },

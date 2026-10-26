@@ -1,0 +1,17 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5CANCELEG",
+  "paths": [
+    "packages/tools/search-family/src/cancel-leg.mjs",
+    "packages/runtime/test/a5-cancel-search.test.ts",
+    "packages/runtime/test/a5-cancel-glob.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1212,
+    "to": 1215
+  },
+  "reason": "a5-cancel-leg (branch `a5-cancel-leg` off master 1739b262): the cooperative cancel\nleg of the TWO async confined-rg rows. THREE new scannable files: the shared mechanics\nmodule `runtime/src/plugin/live/cancel-leg.mjs` (the boundary predicate, ONE owned\nterminate per call whose result is READ, and the settle race whose tie law\n`exited > timedOut > aborted` is fixed by registration order — owning no wording of its\nown), plus the two suites that pin the law at each row\n(`runtime/test/a5-cancel-search.test.ts`, `runtime/test/a5-cancel-glob.test.ts`).\nEverything else this round touched is an EDIT to an already-counted file: the two row\n`.mjs` sources, `a5b3-cancel-leg.test.ts` (whose C7 pre-abort pin flipped, with the\nsuperseded pin named in that file's header HISTORY), the new module's dist mirror, and\n`scripts/place-dist-glue.mjs`; dist mirrors and `dev/agent-workflow/evidence/**` stay\noutside the scan. Zero new denylist vocabulary.",
+  "listNotes": "U6 PR5: the file MOVED to the search family lane (single home);\nthe booking travels with it (count unchanged).",
+  "tieNote": "The a5-cancel-leg tie, MEASURED on THIS tree at booking time (scanner run\nin-place, all three files present, clause unbooked, reading `expected 1215 to be\n1212`; dev/agent-workflow/evidence/alpha5/cancel-leg/p4t6-unbooked-RED.log): the\nchain's measured 1212 plus exactly these three files — no chain value copied. The\nscratch RED probe this round's first pass used was DELETED before the booking run,\nso it is in no list and in no count.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5CANCELEG (line 212); tie line 3721"
+}

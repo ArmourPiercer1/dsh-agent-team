@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5CAUSE",
+  "paths": [
+    "packages/runtime/test/a5r-cause-relay.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1203,
+    "to": 1204
+  },
+  "reason": "A5-CAUSE (#340 follow-up: the install wrapper's cancel-cause relay, branch\n`a5-abort-cause` off master ca7ab2ab) adds ONE scannable file: its spec. The round's\nproduction edit is to a file this ledger already counts (install.ts joined with the\nPR1 round), and no denylist vocabulary is added — the round's vocabulary (`kind`,\n`user`, `parent`, `hook`, `disposed`, `inherited-signal`) is the host's own\nAgentCancelCause wording, already living in the a5b3 spec this ledger counts.\nMEASURED, not copied: the pre-booking scanner run on THIS tree (file present,\nclause unbooked) reports `expected 1204 to be 1203`\n(dev/agent-workflow/evidence/alpha5/abort-cause/p4t6-RED-unbooked.log) — master's\nmeasured 1203 plus exactly this one new path.",
+  "tieNote": "The A5-CAUSE tie, measured on THIS branch at booking time (scanner run\nin-place, file present, clause unbooked, reading `expected 1204 to be 1203`;\nevidence/alpha5/abort-cause/p4t6-RED-unbooked.log): the chain is master's\nmeasured 1203 plus exactly this one spec — no chain value copied.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5CAUSE (line 112); tie line 3683"
+}

@@ -1,0 +1,15 @@
+# SUITE_CASES before (in-file object @88107ad71) vs after (runner-owned + collected tests/world-factory/suites/*.mjs)
+keys-equal=true suites=11
+SAME core          6 case(s)  [runner-owned]
+SAME core-restart  7 case(s)  [runner-owned]
+SAME crash-victim  1 case(s)  [runner-owned]
+SAME negatives     4 case(s)  [runner-owned]
+SAME u6-arc-a      9 case(s)  [collected: 040-u6-arc-a.mjs, totalRequests=90]
+SAME u6-arc-d      11 case(s)  [collected: 050-u6-arc-d.mjs, totalRequests=90]
+SAME u6-fs         9 case(s)  [collected: 010-u6-fs.mjs, totalRequests=80]
+SAME u6-jobs       8 case(s)  [collected: 030-u6-jobs.mjs, totalRequests=100]
+SAME u6-proc       11 case(s)  [collected: 020-u6-proc.mjs, totalRequests=130]
+SAME u6-shadow     15 case(s)  [runner-owned]
+SAME u7-fs-mut     7 case(s)  [collected: 060-u7-fs-mut.mjs, totalRequests=80]
+differing=0
+budget law before: u6-proc 130, u6-jobs 100, u6-arc-a 90, u6-arc-d 90, else 80 (ternary at runSuite)

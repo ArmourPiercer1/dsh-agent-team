@@ -1,0 +1,32 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5P5TOOLS",
+  "paths": [
+    "packages/tools/a5p5-tools/src/args.ts",
+    "packages/tools/a5p5-tools/src/backend-contract.ts",
+    "packages/tools/a5p5-tools/src/backend-direct.ts",
+    "packages/tools/a5p5-tools/src/backend-stub.ts",
+    "packages/tools/a5p5-tools/src/effects-schema.ts",
+    "packages/tools/a5p5-tools/src/index.ts",
+    "packages/tools/a5p5-tools/src/pipeline.ts",
+    "packages/tools/a5p5-tools/src/render.ts",
+    "packages/tools/a5p5-tools/src/spill.ts",
+    "packages/tools/a5p5-tools/src/types.ts",
+    "packages/tools/a5p5-tools/test/a5p5-args.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-effects-schema.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-parity.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-render.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-spill.test.ts",
+    "packages/tools/a5p5-tools/test/helpers/a5p5-fs-port.ts",
+    "packages/tools/a5p5-tools/vitest.config.ts"
+  ],
+  "expectedDelta": {
+    "from": 1120,
+    "to": 1139
+  },
+  "reason": "(no comment preceded this list at 88107ad71; the lane prose lives in tieNote)",
+  "tieNote": "(this tie shared the comment above the preceding tie at 88107ad71 — see a5intr3.json tieNote)",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5P5TOOLS (line 2849); tie line 3556"
+}

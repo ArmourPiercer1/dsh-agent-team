@@ -68,8 +68,9 @@
  *   (token-guarded) when an external bind is found.
  *
  *   Port policy is enforced here, not trusted to callers: only ranges from
- *   tests/paths.mjs TEST_PORT_RANGES (3180-3186 / 3491-3500); 3080 (stable
- *   instance) and anything outside the ranges are refused.
+ *   tests/paths.mjs TEST_PORT_RANGES (3180-3199 / 3491-3500 / 13000-13099
+ *   since the 2026-10-26 user ruling); 3080 (stable instance) and anything
+ *   outside the ranges are refused.
  *
  *   A RELEASE deletes only the claim file whose CONTENT still names the
  *   releasing holder (pid + token) and appends its release line. An empty
@@ -110,7 +111,7 @@ export function pidAlive(pid) {
   }
 }
 
-/** All candidate ports in policy order: the 3180 block first, then 3491-3500. */
+/** All candidate ports in policy order: every TEST_PORT_RANGES band, in order (3180-3199, 3491-3500, 13000-13099). */
 export function candidatePorts() {
   const out = []
   for (const [lo, hi] of TEST_PORT_RANGES) for (let p = lo; p <= hi; p += 1) out.push(p)
@@ -618,7 +619,7 @@ function appendClaimOrder(slotPath, payload) {
  */
 export async function acquirePortLease({ leaseRoot, port, world, purpose }) {
   if (!isSanctionedTestPort(port)) {
-    throw new LeaseError('PORT_REFUSED', `port ${port} is outside policy (sanctioned: 3180-3186/3491-3500; never ${STABLE_INSTANCE_PORT})`)
+    throw new LeaseError('PORT_REFUSED', `port ${port} is outside policy (sanctioned: ${TEST_PORT_RANGES.map(([lo, hi]) => `${lo}-${hi}`).join('/')}; never ${STABLE_INSTANCE_PORT})`)
   }
   const slotPath = leasePathFor(leaseRoot, port)
   const token = randomBytes(8).toString('hex')

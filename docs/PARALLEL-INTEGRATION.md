@@ -121,6 +121,37 @@ been swept in the same way. The count grew while this page was being written, wh
 nothing stops it. This branch neither adds nor removes any of them. Here they only cost a
 `NOT GRADED` line; whether they stay in git is the evidence owner's (EB4-A) call, not this checker's.
 
+## 4a. Shared registries a family lane must not edit (u7-w0, 2026-10-26)
+
+Measured over the 7 merged U7 PRs, the conflicts that forced a master re-merge and a census rerun
+came from append-to-a-shared-list registries, not from protected-center files. u7-w0 turned four of
+them into per-lane drop-in directories that are collected by enumeration. A family lane now ADDS a
+file to each one it needs and edits NO shared list:
+
+| Registry (before) | Drop a file into | Collected by | C1 controls |
+| --- | --- | --- | --- |
+| `SCANNED_PATHS_<LANE>` arrays + sum/presence/tie sites in `packages/testkit/test/p4t6-session-event-scan.test.ts` | `packages/testkit/test/p4t6-bookings/<lane>.json` (`{lane, paths, expectedDelta, reason}`) | `p4t6-bookings/load-bookings.mjs` — exact total = base + Σ paths, double-booking, absent/retired paths, ties | the p4t6 suite's `ledger sensitivity` block |
+| `PLACEMENTS` array in `scripts/place-dist-glue.mjs` | `scripts/dist-placements/<NNN>-<family>.json` (the prefix is the order) | `loadPlacements()` in the same script (mirror law, no duplicates, glue first) | `tests/checks/dist-placements.test.mjs` |
+| node-globals `files` list in `eslint.config.mjs` | `scripts/eslint-node-globals/<NNN>-<family>.json` (patterns) | `nodeGlobalsPatterns()` in the config | `tests/checks/eslint-node-globals.test.mjs` |
+| World-kind wiring in `tests/world-factory/lib/world-factory.mjs` and suite wiring in `u5-canary-runner.mjs` | `tests/world-factory/world-kinds/<NNN>-<kind>.mjs`, `tests/world-factory/suites/<NNN>-<suite>.mjs` | `lib/world-kinds.mjs`, `lib/suites.mjs` | `tests/world-factory/registries.test.mjs` |
+
+Two shared surfaces remain, deliberately:
+
+* `dev/agent-workflow/ledgers/arc-a-protected-center.json` (the center-override ledger). It is
+  supposed to be rare, and u7-w0 left its semantics alone.
+* `packages/runtime/src/plugin/live/team-tool-plane.mjs`. **No rule saying "an ordinary family PR
+  must not edit the plane" is enforced, because none can be met today.** The plane has no generic
+  family mount seam. Each family is imported by name, registered by its own
+  `registry.register(<x>Contribution)` call, given its own `ensure<X>ApprovalEntry`, and switched by
+  its own `centerKernel.families.<x>` flag (`team-tool-plane.mjs` ≈ :2045–2131, :2255–2371,
+  :2528–2610 at `88107ad71`). U7-9a had to add 230 lines there. ARC-A fitness also classes the
+  plane as NOT protected on purpose: `isProtectedPath('…/team-tool-plane.mjs') === false` in
+  [u6-arc-a-fitness.test.ts](../packages/runtime/test/u6-arc-a-fitness.test.ts). §1 above also
+  still describes families wiring "in non-conflicting semantic regions" of it. Lifting this needs a
+  generic plane mount seam from the named Center-Owner product PR (w0b). Until that lands, the plane
+  remains the one shared file a governed-family lane touches, and §3's short-transaction order
+  applies to it.
+
 ## 5. What this does not answer
 
 * Whether any C2 run PASSED its own lanes (a binding check, not a lane-verdict check).

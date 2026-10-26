@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5NATEXE",
+  "paths": [
+    "packages/runtime/test/a5natexe-native-takeover.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1186,
+    "to": 1187
+  },
+  "reason": "alpha5-natexe (branch `alpha5-natexe` -> PR chain `alpha5-natexe-pr`;\nbase alpha5-int-mnt@afd936ee): the native-spelling takeover lane spec (the\nunfed GLUE-8 landing stands VERBATIM; the fed takeover row rides the #313\nplacement feed — verified, abstains, executes after the durable approval\nis consumed; the three feed gates govern it; the lane re-check speaks the\nnative spelling). The round carries ZERO production edits; the assembly\nprobe, the live kits and their run receipts live under\ndev/agent-workflow/evidence/** (outside the packages/** scan), as every\nprior kit round; zero denylist vocabulary.",
+  "tieNote": "The natexe tie, RE-ANCHORED by the scanner on THIS PR chain (master\nb90aad2a base — the a5glb booking of the int-mnt line is NOT on this\nchain, so the int-mnt tie `1185 - 1184` was measured NOT to apply and\nis deliberately not copied): solo RED before booking read\n`expected 1187 to be 1186` (the FLIP-round measurement of 1186 on this\nchain stands untouched), and the scanner total of this tree with the one\nnamed spec booked is 1187 — asserted green by the union totals above.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5NATEXE (line 3040); tie line 3628"
+}

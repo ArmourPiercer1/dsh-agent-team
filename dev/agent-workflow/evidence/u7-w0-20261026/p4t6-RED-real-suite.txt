@@ -1,0 +1,6 @@
+# p4t6 RED-first (real suite): u7w0.json moved aside, the two load-bookings files on disk
+# command: npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts -t coverage
+AssertionError: expected [ { kind: 'total', …(1) } ] to deeply equal []
++     "detail": "scanner counts 1308, ledger derives 983 + 323 = 1306",
++     "kind": "total",
+      Tests  1 failed | 18 skipped (19)

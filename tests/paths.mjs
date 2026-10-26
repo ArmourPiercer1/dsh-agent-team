@@ -26,8 +26,10 @@
  *         freshness rules are the harness's own)
  *       - lock files live beside their home: <home>.lock
  *
- * Ports: 3180 family only (3180-3186 / 3491-3500). NEVER 3080 (stable
- * instance — read-only probe at most). Unchanged by this move.
+ * Ports: the sanctioned test bands below (TEST_PORT_RANGES — 3180-3199 /
+ * 3491-3500 / 13000-13099 since the user ruling of 2026-10-26; before it
+ * 3180-3186 / 3491-3500). NEVER 3080 (stable instance — read-only probe at
+ * most). See the port-policy block below for the ruling and the bands.
  */
 import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -77,13 +79,65 @@ export const CLIENT_COMMIT_HASH = '639ed01539'
  * (the P5-T5 mini-MCP server was binding 3481-3485). Harnesses and bounded
  * runners now read these numbers, so a drift is a one-line fix in one place and
  * a ledger test can enforce it.
+ *
+ * WIDENED 2026-10-26 (u7-w0), user ruling, verbatim:
+ *   "当前机器应该没有太多会占用端口的进程。你可以尝试 3181-3199端口族；如果仍不够用，
+ *    目前较大的端口区段（如13000甚至更大）应该都还是空置的"
+ * Measured at ruling time: 3180-3199 had nothing listening except :3080 (the
+ * user's stable instance, which sits OUTSIDE every band), 13000-13019 had
+ * nothing listening. Re-measured by u7-w0 before any bind (ss -ltn, evidence
+ * dev/agent-workflow/evidence/u7-w0-20261026/port-probe-pre.txt): 3180-3199,
+ * 3491-3500 and 13000-13099 all free; the kernel's ephemeral range here is
+ * 32768-60999, so no band can be handed out as an outgoing source port.
+ *
+ * The bands, by role (the World factory leases from these; legacy kits keep
+ * their own candidate lists INSIDE the old 3180-3186 / 3491-3500 ranges, which
+ * every band below still contains):
+ *   HOST_PORT_BANDS  host instances: 3181-3199, then 13000-13049. 3180 is
+ *                    deliberately NOT leased to World hosts: it is the
+ *                    hand-run default of TEST_METHODS §2 and several kits pin
+ *                    it, so a World never steals it from a human/kit run.
+ *   MOCK_PORT_BANDS  the in-process mock provider: 3491-3500, then 13050-13099.
+ * The upper band is FINITE on purpose (100 ports: 50 host + 50 mock) — enough
+ * for the six planned parallel family lanes at several Worlds each, while a
+ * runaway leaser still exhausts quickly and fails closed instead of wandering
+ * the port space. Widening it again is a one-line change here plus a recorded
+ * ruling.
  */
 export const TEST_PORT_RANGES = Object.freeze([
-  Object.freeze([3180, 3186]),
+  Object.freeze([3180, 3199]),
   Object.freeze([3491, 3500]),
+  Object.freeze([13000, 13099]),
+])
+/** World-factory host-instance leasing order (3180 excluded — see above). */
+export const HOST_PORT_BANDS = Object.freeze([
+  Object.freeze([3181, 3199]),
+  Object.freeze([13000, 13049]),
+])
+/** World-factory mock-provider leasing order. */
+export const MOCK_PORT_BANDS = Object.freeze([
+  Object.freeze([3491, 3500]),
+  Object.freeze([13050, 13099]),
 ])
 /** The stable development instance. A test must never bind it, only probe it. */
 export const STABLE_INSTANCE_PORT = 3080
+
+/**
+ * Expand bands to the concrete ports, in band order. Every port it yields is
+ * sanctioned (asserted, so a band edited outside TEST_PORT_RANGES fails loudly).
+ * @param {ReadonlyArray<readonly [number, number]>} bands
+ * @returns {number[]}
+ */
+export function portsOfBands(bands) {
+  const out = []
+  for (const [lo, hi] of bands) {
+    for (let p = lo; p <= hi; p += 1) {
+      if (!isSanctionedTestPort(p)) throw new Error(`port band ${lo}-${hi} leaves the sanctioned ranges at ${p}`)
+      out.push(p)
+    }
+  }
+  return out
+}
 
 /** @param {number} port @returns {boolean} */
 export function isSanctionedTestPort(port) {

@@ -27,7 +27,7 @@
  * Worlds: `tests/homes/a5srgp-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { buildGrepCommand, parseGrepArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -75,12 +75,20 @@ const START_SWEEP = sweepStrayWorlds('a5srgp-')
 
 /** The repository root this spec runs from (`packages/runtime/test/<file>`). */
 const REPO_ROOT = resolve(import.meta.dirname, '../../..')
-/** The dist byte-copy targets named by `scripts/place-dist-glue.mjs`. */
-const placedDistPaths = (): string[] =>
-  [...readFileSync(join(REPO_ROOT, 'scripts/place-dist-glue.mjs'), 'utf8')
-    .matchAll(/^\s+dist: '([^']+\.mjs)'/gm)]
-    .map((m) => m[1] ?? '')
-    .filter((rel) => rel !== '')
+/**
+ * The dist byte-copy targets named by `scripts/place-dist-glue.mjs`'s PLACEMENTS.
+ * u7-w0: the list is collected from `scripts/dist-placements/*.json` (one file per
+ * family) instead of an in-script array literal, so this reads those files — the
+ * same bytes the script's loader reads, in its sorted order — rather than the
+ * script text, which no longer carries a `dist:` line.
+ */
+const placedDistPaths = (): string[] => {
+  const dir = join(REPO_ROOT, 'scripts/dist-placements')
+  return readdirSync(dir).filter((n) => n.endsWith('.json')).sort()
+    .flatMap((n) => (JSON.parse(readFileSync(join(dir, n), 'utf8')) as { placements: Array<{ dist: string }> }).placements)
+    .map((p) => p.dist)
+    .filter((rel) => rel.endsWith('.mjs'))
+}
 /** Every `.mjs` the shipped live rows import by a relative specifier. */
 const faceImportsOf = (absFile: string): string[] =>
   [...readFileSync(absFile, 'utf8').matchAll(/from\s+'(\.[^']+)'/g)].map((m) => resolve(dirname(absFile), m[1] ?? ''))

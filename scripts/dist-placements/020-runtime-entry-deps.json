@@ -1,0 +1,22 @@
+{
+  "schema": "dist-placements/1",
+  "family": "runtime-entry-deps",
+  "summary": "GLUE-6 RED-A / A5-M1 PACKING: the runtime entry's non-emitted dependencies (resolve hook, storage seam, landlock pre-launcher).",
+  "migratedFrom": "scripts/place-dist-glue.mjs@88107ad71 PLACEMENTS entries 8..10 (0-based), comments carried verbatim as `note`",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/upstream-resolver.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs",
+      "note": "GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The\nresolve hook is registered by `module.register` at apply time and the\nstorage seam is imported by the boot row — both from a relative\nspecifier, so on the strict `files: [\"dist\"]` install face they must sit\nINSIDE the mirror or the bootstrap dies with ERR_MODULE_NOT_FOUND.\nByte-identical like every other placement; the drift gate (check D)\ncompares src vs dist for each entry of this list."
+    },
+    {
+      "src": "packages/runtime/root-binding/harness/seam.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs"
+    },
+    {
+      "src": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "dist": "packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "note": "A5-M1 PACKING (root-approved): the landlock pre-launcher is a TRACKED\nruntime asset (`git ls-tree` at the release commit carries it) that tsc\nnever emits, so the strict `files: [\"dist\"]` install face shipped WITHOUT\nit — and `provider.js`'s own default launcher path\n(`assembly.launcherPath ?? join(dirname(fileURLToPath(import.meta.url)),\n'launcher', 'landlock-prelauncher.py')`, dist provider.js:90) resolved to a\nmissing file, so confined bash could not start from an installed package at\nall. Same class as GLUE-6 RED-A (a runtime dependency outside tsc's emit\nmust sit INSIDE the mirror). Byte-identical placement like every entry here;\nthe drift gate (check D) compares src vs dist. NO sandbox rule, trust rule\nor path-trust boundary changes: the CONFINE_CONFIG_INCOMPLETE /\nTRUST_ROOT_SHA_MISMATCH triple and the verifyLauncherIntegrity byte gate\nstill decide every single use of this file."
+    }
+  ]
+}

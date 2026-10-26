@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "FDREC",
+  "paths": [
+    "packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1208,
+    "to": 1209
+  },
+  "reason": "A5-FDREC (#349 fd-recycling determinisation, branch a5-jobs-isolation): the PoC3-E\nrecycling leg moved into a child-process script (a fresh single-threaded fd table makes\nthe recycling OBSERVABLE deterministically; the census-wide shared fd table had made the\nin-process wait starvable by law - census run 39235428022 red / twin 39235441274 green).\nZero new event names; zero denylist vocabulary. MEASURED on THIS tree, no copying: the\npre-booking run read `expected 1209 to be 1208`\n(dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/fd-recycling/p4t6-RED-unbooked.log).",
+  "tieNote": "The A5-FDREC tie, MEASURED on THIS tree at booking time (scanner run\nin-place, leg script present, clause unbooked, reading\n`expected 1209 to be 1208`;\ndev/agent-workflow/evidence/alpha5/jobs-isolation/runs/fd-recycling/p4t6-RED-unbooked.log):\nthe chain is the round-2 measured 1208 plus exactly this one script.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_FDREC (line 166); tie line 3703"
+}

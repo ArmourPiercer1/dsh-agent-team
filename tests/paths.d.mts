@@ -15,3 +15,9 @@ export function findTestRepoRoot(start: string): string | null
 export function testUseTree(repoRoot: string): string
 export function homeRoot(repoRoot: string): string
 export function homeDir(repoRoot: string, name: string): string
+export const TEST_PORT_RANGES: ReadonlyArray<readonly [number, number]>
+export const HOST_PORT_BANDS: ReadonlyArray<readonly [number, number]>
+export const MOCK_PORT_BANDS: ReadonlyArray<readonly [number, number]>
+export const STABLE_INSTANCE_PORT: number
+export function portsOfBands(bands: ReadonlyArray<readonly [number, number]>): number[]
+export function isSanctionedTestPort(port: number): boolean

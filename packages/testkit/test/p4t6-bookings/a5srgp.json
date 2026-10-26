@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5SRGP",
+  "paths": [
+    "packages/tools/search-family/src/search-backend.mjs",
+    "packages/runtime/test/alpha5-search-harness.ts",
+    "packages/runtime/test/alpha5-search-backend.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1191,
+    "to": 1194
+  },
+  "reason": "alpha5-search-backend (a5srgp, branch `alpha5-srgp`): the anchored\nconfined-ripgrep SEARCH row (PR5 rg-parity), its harness and its suite.\nThree NEW paths owned by that lane; the row is a production live row\n(.mjs, like the glob row) and carries no denylist vocabulary. It imports\nthe anchor law of the glob row instead of forking it, and the plane\nsearch row (already counted by GLUE-7) only gains the delegation branch.",
+  "pathNotes": {
+    "packages/tools/search-family/src/search-backend.mjs": "U6 PR5: moved lane"
+  },
+  "tieNote": "The a5srgp tie, same discipline, measured on THIS merged tree, copying nothing: the\nlane branch pair belonged to a tree that booked A5G8 (absent from this chain) and the\npre-squash PR branch measured against the 1b44da20 file. The measurement here: master's\nOWN file, this tree, this clause not yet booked, read `expected 1194 to be 1191` —\nmaster's booked 1191 plus exactly the three named paths on disk. Booking them ends the\nchain at 1194, the scanner total of this tree.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A5SRGP (line 3059); tie line 3644 (repeated verbatim at line 3652)"
+}

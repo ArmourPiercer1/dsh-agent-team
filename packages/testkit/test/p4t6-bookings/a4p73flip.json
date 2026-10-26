@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4P73FLIP",
+  "paths": [
+    "packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1031,
+    "to": 1032
+  },
+  "reason": "A4-PR7 Task 7.3 the flip itself (`feat/a4-73-flip`, step 3 of 3): ONE new\nscannable file. `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` narrowing is a\nsemantic change with no new surface, EXCEPT for the one document this repo\nships and nothing parsed: the embedded `blueprintSource` of the repo-root\nbundle layer. That document is now parsed by a committed test\n(`packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts`), so the\ncutover's own acceptance is witnessed rather than asserted. Everything else\nthis lane writes is an EDIT to a path this scan already counts (the two\nnarrowed constants, the migrated fixtures, the wrapper's deferral rows, the\nlegacy adapter's emitted draft, the skill's version sentence), plus evidence\n`.md`/`.patch` under `dev/agent-workflow/evidence/` outside `packages/**`.\nAn edit is not an increment.",
+  "tieNote": "§7.3 the flip's tie, same form, both endpoints MEASURED on this branch: with\nthe shipped-composition instrument on disk and absent from this list the run\nreads `expected 1032 to be 1031` (capture\n`dev/agent-workflow/evidence/a4-pr7/7-3-flip/p4t6-PRE-EXTEND-RED.txt`), and\n1031 is the derived total the §7.3-Option-A line below ends on. The narrowing\nitself moves nothing here: two constants changed in place.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4P73FLIP (line 2514); tie line 3441"
+}

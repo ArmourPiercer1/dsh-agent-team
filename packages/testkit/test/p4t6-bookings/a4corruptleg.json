@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A4CORRUPTLEG",
+  "paths": [
+    "packages/tools/test/a4-corrupt-leg-guard.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1039,
+    "to": 1040
+  },
+  "reason": "The A4 corrupt-leg-guard lane (the A1-14 consumption-revalidation\nfollow-up): ONE instrument, and it writes production source too — an edit\nto `control/service.ts` + `control/types.ts`, neither of which is a new\npath — so its scannable footprint is exactly this spec. Same rule as above:\nthe evidence lives under `dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/`,\noutside `packages/**`, and a landed file without its name here turns this RED.",
+  "tieNote": "The corrupt-leg-guard tie, same form, both endpoints MEASURED on this\nbranch: with `packages/tools/test/a4-corrupt-leg-guard.test.ts` on disk and\nthis entry stripped, the scanner reads `expected 1040 to be 1039` (capture\n`dev/agent-workflow/evidence/a4-pr7/corrupt-leg-guard/p4t6-pre-extend-red.txt`);\n1039 is the derived merged-tip total the gaps tie above ends on, and 1040 is\nwhat the scanner counts with this lane's file present. The production edits\n(control/service.ts, control/types.ts) are EDITS to already-counted paths and\ncontribute nothing — edits are not increments in either direction.",
+  "migratedFrom": "packages/testkit/test/p4t6-session-event-scan.test.ts@88107ad71 const SCANNED_PATHS_A4CORRUPTLEG (line 2592); tie line 3496"
+}
