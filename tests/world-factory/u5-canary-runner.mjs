@@ -64,6 +64,7 @@ import {
   PROBE_TOOL_NAME,
 } from './lib/u6-fs-assembly.mjs'
 import { createProcAssembly, makeProcDecide, judgeU6Proc } from './lib/u6-proc-assembly.mjs'
+import { createJobsAssembly, makeJobsDecide, judgeU6Jobs, toolExchanges, laneTranscript, extractJobIds, JOBS_WORLD_MANAGED_NAMES } from './lib/u6-jobs-assembly.mjs'
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
@@ -107,6 +108,15 @@ export const SUITE_CASES = {
   // spawn on the independent disk oracle, then the same-identity replay
   // refusal with zero second spawn.
   'u6-proc': ['proc:mounted', 'proc:exec-door-fail-closed', 'proc:member-ask-born-terminal', 'proc:deny-zero-spawn', 'proc:replay-settled-refusal', 'proc:spoof-refusal', 'proc:guard-off-channel', 'proc:late-call-refused', 'proc:ctl-native-untouched', 'proc:approve-spawn-once', 'proc:approve-replay-refused'],
+  // U6 PR4 C2 (ARC-C, the FIRST named Bridge at the Host): the jobs trio
+  // mounted through the governance kernel on a live World — a REAL
+  // background job born on the member native lane whose EFFECT stands on
+  // disk (independent Oracle), managed through the bridge (list/output/
+  // kill), foreign viewer refused with measured zero settlement, kill
+  // answered as REQUEST only with the HOST settling, the boot-root native
+  // control untouched, and the no-second-ledger law measured over the
+  // durable Control lane.
+  'u6-jobs': ['jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence', 'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check'],
   'u6-shadow': [
     'off:token-gate', 'off:positive-control', 'off:error-return-with-effect', 'off:planted-defect-detected', 'off:oracle-blinding-divergence', 'off:leak-check',
     'shd:token-gate', 'shd:mounted', 'shd:positive-control', 'shd:error-return-with-effect', 'shd:planted-defect-detected', 'shd:oracle-blinding-divergence', 'shd:leak-check',
@@ -1577,6 +1587,296 @@ async function runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evi
   const laneGaps = Object.entries(laneDone).filter(([, v]) => v !== true).map(([k]) => k)
   if (laneGaps.length > 0) log(`lane completion gaps: ${laneGaps.join(',')} (each affected case above already carries the FAIL)`)
 }
+/**
+ * U6 PR4 C2 (ARC-C at the Host). ONE boot. The leader chain creates a
+ * WORKER (birth + management lane) and a FOREIGN viewer; the worker's
+ * script births TWO real background jobs on the member NATIVE bash lane
+ * (the confined governed row refuses `run_in_background` by name — the
+ * disclosed CI-03 law at this pin) and then manages them through the
+ * kernel-mounted trio (the first named Bridge riding the SAME admission
+ * path as read/team_bash); the foreign lane attempts to manage the owner's
+ * REAL job id (learned through the leader's collect — a real teammate's
+ * channel) and must be refused while the job provably keeps running. The
+ * kill answer must be REQUEST vocabulary, the FINAL marker must never land
+ * (the host settled), and the boot-root's NATIVE trio must show zero
+ * kernel involvement. Every effect fact is read from DISK by this runner —
+ * the tool returns are cross-checked, never trusted.
+ */
+async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }) {
+  const CASE_IDS = SUITE_CASES['u6-jobs']
+  const done = new Set()
+  const add = (id, verdict, detail) => {
+    done.add(id)
+    record.addCase(id, verdict, detail)
+    log(`case ${id}: ${verdict} ${JSON.stringify(detail).slice(0, 240)}`)
+  }
+  const failRest = (why, extra = {}) => {
+    for (const id of CASE_IDS) {
+      if (!done.has(id)) add(id, 'FAIL', { reason: why, ...extra })
+    }
+  }
+  const redactLine = (t) => String(t).replace(/\?token=[A-Za-z0-9_-]+/g, '?token=<redacted>').slice(0, 260)
+  const waitA = async (predicate, timeoutMs) => {
+    const started = Date.now()
+    for (;;) {
+      let hit = false
+      try { hit = (await predicate()) === true } catch { hit = false }
+      if (hit) return { hit: true, waitedMs: Date.now() - started }
+      if (Date.now() - started >= timeoutMs) return { hit: false, waitedMs: Date.now() - started }
+      await sleep(400)
+    }
+  }
+  const hostAlive = () => world.instance?.child !== null && world.instance?.child !== undefined && world.instance?.child.exitCode === null
+
+  // ── materialize + boot (ONE host start) ──────────────────────────────────
+  const world = await factory.createWorld({ line, u6Jobs: { rows: [] } })
+  worlds.push(world)
+  record.record.bindings.worldIds.push(world.id)
+  const assembly = createJobsAssembly({ repoRoot: REPO_ROOT, home: world.home, runStamp: world.id, reportDir: world.logDir })
+  assembly.writePreBootFiles()
+  world.u6Jobs.rows.push(...assembly.teamRows())
+  await world.startMock({ decide: makeJobsDecide({ assembly }) })
+  record.logHostStart({ world: world.id, phase: 'u6jobs-boot1' })
+  rc.arm()
+  const startPromise = world.startHost()
+  const child = world.instance?.child ?? null
+  if (child !== null) rc.bindChild(child, { lifetimeMs: RUN_LIFETIME_MS, processGroup: false })
+  let boot
+  try {
+    boot = await startPromise
+  } catch (error) {
+    failRest(`host start failed: ${String(error?.message ?? error).slice(0, 200)}`)
+    return
+  }
+  record.record.boots = (record.record.boots ?? []).concat([{ phase: 'u6jobs-boot1', world: world.id, port: boot.port, logPath: boot.logPath }])
+  const origin = `http://127.0.0.1:${boot.port}`
+
+  const kernelHits = () => {
+    const pats = ['a5g7: placement-feed rows=', 'job_output', 'a5-plane: mount-REFUSED', 'a5-plane: placement-REFUSED',
+      'PLANE_KERNEL_UNAVAILABLE', 'PLANE_JOBS_REGISTRATION_REFUSED', 'PLANE_READ_REGISTRATION_REFUSED',
+      'PLANE_PROCESS_REGISTRATION_REFUSED', 'cannot be verified at dispatch']
+    let text = ''
+    try { text = readFileSync(boot.logPath, 'utf8') } catch { /* log unreadable */ }
+    const out = {}
+    for (const p of pats) {
+      const lines = text.split('\n').filter((l) => l.includes(p))
+      out[p] = { count: lines.length, sample: lines.length > 0 ? redactLine(lines[lines.length - 1]) : null }
+    }
+    return out
+  }
+
+  // ── readiness ────────────────────────────────────────────────────────────
+  let health = null
+  const healthW = await waitA(async () => {
+    const st = await fetchJson(`${origin}/__p6t6/health`, undefined, 20_000)
+    health = st
+    return st.status === 200 && (st.body?.ok === true || st.body?.ok === false)
+  }, 120_000)
+  if (!healthW.hit || health?.body?.ok !== true) {
+    add('jobs:mounted', 'FAIL', { reason: `p6t6 health not ok: status=${String(health?.status)} body=${JSON.stringify(health?.body ?? null).slice(0, 300)}` })
+    failRest('mount readiness failed')
+    return
+  }
+  let stateBody = null
+  const stateW = await waitA(async () => {
+    const st = await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000)
+    stateBody = st.body
+    return st.status === 200 && stateBody?.rootSessionId === assembly.ROOT && stateBody?.teamSession !== null
+  }, 90_000)
+  if (!stateW.hit) {
+    failRest('anchored Team Session never appeared (state probe timed out)')
+    return
+  }
+  const stateSnapshot = async () => (await fetchJson(`${origin}/__p6t6/state`, undefined, 30_000))?.body ?? null
+
+  // ── discovery -> blueprint -> team.create ────────────────────────────────
+  const cookie = await authenticate(origin, world.token)
+  const discPrompt = await apiPrompt(origin, cookie, assembly.ROOT, assembly.markers.MK_DISC, 'u6jobs')
+  if (discPrompt.status !== 200) {
+    failRest(`discovery prompt rejected: ${String(discPrompt.status)} ${JSON.stringify(discPrompt.body ?? {}).slice(0, 200)}`)
+    return
+  }
+  const discW = await waitUntil(() => (world.mock?.requests ?? []).some((r) => hasMarker(r, assembly.markers.MK_DISC) && surfaceNamesOf(r).length > 0), { timeoutMs: 150_000 })
+  if (!discW.hit) {
+    failRest('discovery model request absent (deny list cannot be computed)', { mockDigest: world.mockRequestDigest().slice(-6) })
+    return
+  }
+  const disc = world.mock.requests.filter((r) => hasMarker(r, assembly.markers.MK_DISC)).map((r) => surfaceNamesOf(r)).sort((a, b) => b.length - a.length)[0]
+  const surface = [...new Set(disc)].sort()
+  // In THIS world the trio IS managed (the governed rows mount them) —
+  // builtinToolDeny would cover the un-managed surface only.
+  const denyList = surface.filter((n) => !n.startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n)
+    && !SAFE_UNMANAGED_TOOL_NAMES.includes(n) && !JOBS_WORLD_MANAGED_NAMES.includes(n))
+  assembly.writeMainBlueprint(denyList)
+  const created = await remoteCall(fetchJson, origin, cookie, 'team.create', { rootSessionId: assembly.CREATE_ROOT, blueprintId: assembly.BP_MAIN_ID, initialWork: { prompt: assembly.markers.MK_L1 } })
+  const createOk = created.status === 200 && created.body?.result?.ok === true
+  if (!createOk) {
+    failRest(`team.create failed: status=${String(created.status)} body=${JSON.stringify(created.body ?? null).slice(0, 300)}`)
+    return
+  }
+
+  // ── drive (proc rhythm) ──────────────────────────────────────────────────
+  const teamSessionId = stateBody?.teamSession?.rootSessionId ?? assembly.CREATE_ROOT
+  const replyPrefixSeen = (prefix) => (world.mock?.requests ?? []).some((r) => r.reply?.kind === 'text' && String(r.reply.content ?? '').startsWith(prefix))
+  const wake = async (tag) => {
+    const pr = await apiPrompt(origin, cookie, assembly.CREATE_ROOT, `U6JOBS_PHASE_${tag}`, 'u6jobs-wake')
+    if (pr.status !== 200) log(`wake ${String(tag)} rejected: status=${String(pr.status)}`)
+  }
+  const wakeCadence = async (prefix, deadlineMs, tag) => {
+    const t0 = Date.now()
+    let lastWake = 0
+    let wakes = 0
+    for (;;) {
+      if (replyPrefixSeen(prefix)) return true
+      if (Date.now() - t0 > deadlineMs) return replyPrefixSeen(prefix)
+      if (Date.now() - lastWake > 3000 && wakes < 14) { wakes += 1; lastWake = Date.now(); await wake(tag) }
+      await new Promise((r) => setTimeout(r, 350))
+    }
+  }
+  // The durable Control lane, OBSERVED continuously: every poll merges its
+  // rows into the record map. Member-birth asks (tool:bash — the native
+  // lane may be host-gated) are settled through the PUBLIC
+  // team.resolveControl seam (the product's human lane); trio rows are
+  // NEVER settled (their existence would itself be the second-ledger
+  // violation this suite measures).
+  const trioNameRe = /job_(output|list|kill)/
+  const controlRows = new Map()
+  const birthRow = { seen: false, resolved: false, resolutions: [] }
+  let approverStop = false
+  const approver = (async () => {
+    while (!approverStop) {
+      try {
+        const ctl = await stateSnapshot()
+        for (const r of (ctl?.requests ?? [])) {
+          controlRows.set(String(r.requestId), { toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 120), status: String(r.status ?? '') })
+          const tag = `${String(r.toolName ?? '')} ${String(r.summary ?? '')}`
+          if (r.status === 'pending' && /\bbash\b/.test(tag) && !trioNameRe.test(tag)) {
+            birthRow.seen = true
+            const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
+              { teamSessionId, requestId: String(r.requestId), decision: 'allow', note: 'u6jobs-c2-birth-approval' }, 'u6jobs-birth', 4)
+            const ok = res?.status === 200 && res?.body?.result?.ok === true
+            birthRow.resolved = birthRow.resolved || ok
+            birthRow.resolutions.push({ requestId: String(r.requestId), status: res?.status ?? null, ok })
+          }
+        }
+      } catch { /* poll is observational; a failed poll retries */ }
+      await sleep(1200)
+    }
+  })()
+  const laneDone = {}
+  record.record.u6jobsLanes = laneDone
+  laneDone.work = await wakeCadence('U6JOBS_WORK_DONE', 180_000, 'w')
+  laneDone.foreign = await wakeCadence('U6JOBS_FENCE_DONE', 120_000, 'f')
+  laneDone.leader = await wakeCadence('U6JOBS_L1_DONE', 90_000, 'z')
+  // CI-03 native control on the UNGOVERNED boot-root session.
+  laneDone.ctl = await (async () => {
+    const pr = await apiPrompt(origin, cookie, assembly.ROOT, assembly.markers.T_CTL, 'u6jobs-ctl')
+    if (pr.status !== 200) return false
+    return (await waitA(() => replyPrefixSeen('U6JOBS_CTL_RAN'), 90_000)).hit
+  })()
+  // settle window: the kill-subject sleeps 35 s between its warm marker and
+  // its FINAL marker; a survived (leaked) job lands FINAL INSIDE this
+  // window — the absence the judge measures is meaningful, not early exit.
+  await sleep(45_000)
+  approverStop = true
+  try { await approver } catch { /* observational */ }
+
+  // ── evidence ─────────────────────────────────────────────────────────────
+  const requests = world.mock?.requests ?? []
+  // ENVELOPE match, not the raw token: the delegation token also rides
+  // the LEADER's team_delegate ARGS, so matching it picks the leader's
+  // transcript and MISSES every member exchange (run 2/3 receipts proved
+  // the contamination: trioUses saw only the root's single call). The
+  // `[team-work requestToken=` envelope text exists only in the member
+  // session's own user message.
+  const wReq = laneTranscript(requests, `[team-work requestToken=${assembly.tokens('d1')}`)
+  const fReq = laneTranscript(requests, `[team-work requestToken=${assembly.tokens('d2')}`)
+  const cReq = laneTranscript(requests, assembly.markers.T_CTL)
+  const wEx = wReq === null ? [] : toolExchanges(wReq)
+  const fEx = fReq === null ? [] : toolExchanges(fReq)
+  const cEx = cReq === null ? [] : toolExchanges(cReq)
+  const firstNamed = (ex, name) => (ex.find((e) => e.name === name) ?? { result: null }).result
+  const lastNamed = (ex, name) => { for (let i = ex.length - 1; i >= 0; i -= 1) if (ex[i]?.name === name) return ex[i].result; return null }
+  const namesJob = (e, name, id) => e?.name === name && id !== undefined && id !== null && String(e.args?.job_id ?? '') === String(id)
+  const firstFor = (ex, name, id) => (ex.find((e) => namesJob(e, name, id)) ?? { result: null }).result
+  const lastFor = (ex, name, id) => { for (let i = ex.length - 1; i >= 0; i -= 1) if (namesJob(ex[i], name, id)) return ex[i].result; return null }
+  const jobIds = extractJobIds(wEx.map((e) => e.result).join('\n'))
+  const finalCtl = await stateSnapshot()
+  for (const r of (finalCtl?.requests ?? [])) {
+    controlRows.set(String(r.requestId), { toolName: r.toolName ?? null, summary: String(r.summary ?? '').slice(0, 120), status: String(r.status ?? '') })
+  }
+  let hostLogText = ''
+  try { hostLogText = readFileSync(boot.logPath, 'utf8') } catch { /* unreadable */ }
+  const settleEvents = (jobId, re) => jobId === undefined || jobId === null ? 0
+    : hostLogText.split('\n').filter((l) => l.includes(String(jobId)) && re.test(l)).length
+  const rootKernelMentions = (() => {
+    if (cReq === null) return 0
+    const t = JSON.stringify(cReq?.body?.messages ?? cReq?.messages ?? [])
+    return (t.match(/a5jobs|a5-plane|placement-feed|kernelGuard/gi) ?? []).length
+  })()
+  const digest = {
+    runId, worldId: world.id,
+    kernelHits: kernelHits(),
+    claims: assembly.claims,
+    claim1Text: assembly.readEffect('claim1'),
+    jobIds,
+    list1: firstNamed(wEx, 'job_list'),
+    output1: firstFor(wEx, 'job_output', jobIds[0]) ?? firstNamed(wEx, 'job_output'),
+    output2: firstFor(wEx, 'job_output', jobIds[1]),
+    output2Post: lastFor(wEx, 'job_output', jobIds[1]),
+    kill2: firstNamed(wEx, 'job_kill'),
+    list2: lastNamed(wEx, 'job_list'),
+    foreignOutput: firstNamed(fEx, 'job_output'),
+    foreignKill: firstNamed(fEx, 'job_kill'),
+    ctlOutput: lastNamed(cEx, 'job_output'),
+    trioUses: [...wEx, ...fEx, ...cEx].filter((e) => e.name !== null && trioNameRe.test(String(e.name))).length,
+    controlRows: [...controlRows.values()],
+    birthRow,
+    settle: {
+      killLines: settleEvents(jobIds[1], /aborted|killed|cancel-requested/i),
+      foreignKillLines: settleEvents(jobIds[0], /aborted|killed|cancel-requested/i),
+    },
+    rootKernelMentions,
+    lanes: { ...laneDone },
+    // compact transcript tails per lane (a stalled chain must be diagnosable
+    // from the receipt alone — every field below is truncated transcript text,
+    // never a secret: no token rides a tool result).
+    debug: {
+      worker: wEx.slice(-8).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      foreign: fEx.slice(-4).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      root: cEx.slice(-3).map((e) => ({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 220) })),
+      // global diagnostics: what did the HOST answer EVERY bash/trio call
+      // anywhere in the world (dedup, truncated) — a stalled birth must
+      // name its own cause in the receipt, boot 2/3 lesson.
+      bashResults: [...new Set(requests.flatMap((r) => toolExchanges(r))
+        .filter((e) => e.name === 'bash')
+        .map((e) => JSON.stringify({ args: e.args ?? null, result: String(e.result ?? '').slice(0, 200) })))]
+        .slice(-10),
+      trioResults: [...new Set(requests.flatMap((r) => toolExchanges(r))
+        .filter((e) => e.name !== null && trioNameRe.test(String(e.name)))
+        .map((e) => JSON.stringify({ name: e.name, args: e.args ?? null, result: String(e.result ?? '').slice(0, 200) })))]
+        .slice(-12),
+    },
+  }
+  record.record.u6jobsDigest = digest
+  try {
+    writeFileSync(join(evidence, `${runId}.u6jobs-evidence.json`), JSON.stringify(digest, null, 2) + '\n')
+  } catch { /* evidence best-effort; the RUN record carries the digest */ }
+
+  // ── verdicts (shared judge; the digest is its entire input) ─────────────
+  for (const [id, verdict, detail] of judgeU6Jobs(digest, hostAlive())) add(id, verdict, detail)
+
+  // ── leak-check: teardown, then the factory's owned-resources audit ──────
+  try {
+    await rc.stopChild()
+  } catch { /* idempotent */ }
+  const receipts = await world.teardown({ keepHome })
+  const leak = await evaluateLeak({ world, receipts, factory })
+  add('jobs:leak-check', leak.ok ? 'PASS' : 'FAIL', leak.detail)
+  const laneGaps = Object.entries(laneDone).filter(([, v]) => v !== true).map(([k]) => k)
+  if (laneGaps.length > 0) log(`lane completion gaps: ${laneGaps.join(',')} (each affected case above already carries the FAIL)`)
+}
+
 async function caseCrashVictim({ factory, record, rc, line, worlds, keepHome }) {
   let ctx = null
   try {
@@ -1667,7 +1967,7 @@ export async function runSuite(opts) {
       // u6-proc drives a longer chain (5 member scripts + the ask
       // notification lane + 5 boot-root trigger lanes); the fs suite's 80
       // would classify its honest completion as an overrun.
-      totalRequests: suite === 'u6-proc' ? 130 : 80,
+      totalRequests: suite === 'u6-proc' ? 130 : suite === 'u6-jobs' ? 100 : 80,
       perSessionRequests: 30,
       perScenarioRequests: 20,
       sameStateRepeats: 5,
@@ -1704,6 +2004,8 @@ export async function runSuite(opts) {
       await runU6Fs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
     } else if (suite === 'u6-proc') {
       await runU6Proc({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
+    } else if (suite === 'u6-jobs') {
+      await runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evidence, runId })
     } else if (suite === 'crash-victim') {
       await caseCrashVictim({ factory, record, rc, line, worlds, keepHome })
     } else {

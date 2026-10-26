@@ -1,0 +1,11 @@
+[u6-jobs] case jobs:mounted: PASS {"kernelHits":{"a5g7: placement-feed rows=":3,"job_output":3,"a5-plane: mount-REFUSED":0,"a5-plane: placement-REFUSED":0,"PLANE_KERNEL_UNAVAILABLE":0,"PLANE_JOBS_REGISTRATION_REFUSED":0,"PLANE_READ_REGISTRATION_REFUSED":0,"PLANE_PROCESS_REG
+[u6-jobs] case jobs:birth-positive: FAIL {"claimHead":"","jobIds":[],"birthRow":{"seen":false,"resolved":false,"resolutions":[]},"note":"the birth lane is the member NATIVE bash (the governed confined row refuses background by name — the CI-03 disclosed law); if the host gated the
+[u6-jobs] case jobs:governed-management: FAIL {"jobId":null,"list1Row":null,"outputHead":"","trioUses":1,"note":"the ring bytes ARE the server-side effect (the host registry buffered the child stdout); the [status: …] line is the HOST status relaying honestly"}
+[u6-jobs] case jobs:owner-fence: FAIL {"foreignOutput":"","foreignKill":"","ownerRowAfterForeign":null,"foreignKillHostEvents":0,"note":"DISCLOSED live-world law: the native-born job is UN-ATTRIBUTED (no production creation-lane producer rides the member native lane), so the an
+[u6-jobs] case jobs:cancel-honest: FAIL {"kill2":"","list2RowForKillJob":null,"killWarmSeen":false,"killFinalSeen":false,"killHostEvents":0,"note":"the bridge only ever says REQUESTED; the FINAL marker never wrote (measured absence inside the settle window) — the child really sto
+[u6-jobs] case jobs:ctl-native-untouched: FAIL {"ctlMarker":"","ctlAnswerHead":"Error: unknown job job-unknown","rootKernelMentions":0,"note":"the boot-root session is not a Team mount: its native job_* ride native (CI-03), the kernel never spoke about those calls"}
+[u6-jobs] case jobs:no-second-ledger: FAIL {"trioControlRows":[],"controlRowsTotal":0,"trioUses":1,"note":"the kernel is the ONLY ledger the trio touches; the birth ask rows (tool:bash), if any, are the PA lane — a different lane, different tool name"}
+[u6-jobs] case jobs:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u6-jobs] lane completion gaps: foreign,leader (each affected case above already carries the FAIL)
+RUN-SUMMARY run=u5-u6-jobs-u6jobs2-2026-10-26T03-17-08-391Z suite=u6-jobs overall=FAIL cases=9 FAIL:6 PASS:3 worlds=u5u6jobs2-20261026T03-17-08Z
+RUNNER_EXIT=1

@@ -393,6 +393,28 @@ const SCANNED_PATHS_U6PR3: readonly string[] = [
   'packages/runtime/test/u6-pr3-bl01-ask-door.test.ts',
 ]
 
+// U6 PR4 (this round; jobs bridge onto the governance kernel, ARC-C): the
+// TWO scannable files are the dedicated jobs bridge module (the moved
+// VERBATIM createGovernedJobsBridge body + the closed contribution
+// builders — byte-identity sha256 71705d6eb1aaa9d0ae3fd22541f788a5dfb8dd07
+// e6f96827db49e40283a9b29f pinned by the spec below) and its C1 spec
+// (19 cases: byte identity + frozen-file shas, contribution/schema law,
+// one-kernel claims, same-admission end-to-end over the real gateway
+// assembly with a counting host face, mount-generation law with the
+// counterfactual plant). Everything else this PR touched is an EDIT to an
+// already-counted path (team-tool-plane.mjs, plane-effect-backends.mjs,
+// agent-bindings.mjs, place-dist-glue.mjs) or lives outside packages/**
+// (dist mirrors, tests/world-factory/**, docs/**, dev/** evidence); the
+// C2 harness (runner/factory/lib/u6-jobs-assembly) rides tests/, outside
+// the scan. Zero new denylist vocabulary. Taking the scanned total on THIS
+// tree to 1265 — MEASURED by the pre-booking scanner run
+// (`dev/agent-workflow/evidence/u6-pr4-20261026/p4t6-RED-unbooked.log`
+// reads `expected 1265 to be 1263`; no chain value copied).
+const SCANNED_PATHS_U6PR4: readonly string[] = [
+  'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
+  'packages/runtime/test/u6-pr4-jobs-bridge.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2989,7 +3011,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR1.length +
         SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length +
-        SCANNED_PATHS_U6PR3.length,
+        SCANNED_PATHS_U6PR3.length +
+        SCANNED_PATHS_U6PR4.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3059,7 +3082,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR1.length +
         SCANNED_PATHS_FIXK.length +
         SCANNED_PATHS_U6PR2.length +
-        SCANNED_PATHS_U6PR3.length,
+        SCANNED_PATHS_U6PR3.length +
+        SCANNED_PATHS_U6PR4.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3150,6 +3174,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_FIXK,
       ...SCANNED_PATHS_U6PR2,
       ...SCANNED_PATHS_U6PR3,
+      ...SCANNED_PATHS_U6PR4,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3583,6 +3608,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // existed mid-round was DELETED before booking and never counted — the
     // measured 1263 is post-deletion).
     expect(SCANNED_PATHS_U6PR3.length).toBe(1263 - 1253)
+    // U6 PR4: the SCANNED_PATHS_U6PR4 files above are exactly the
+    // scanned-total delta 1263 -> 1265, MEASURED by the pre-booking
+    // scanner run on THIS tree (evidence
+    // `u6-pr4-20261026/p4t6-RED-unbooked.log` reads
+    // `expected 1265 to be 1263`; no chain value copied).
+    expect(SCANNED_PATHS_U6PR4.length).toBe(1265 - 1263)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

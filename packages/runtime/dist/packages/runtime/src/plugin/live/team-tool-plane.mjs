@@ -105,6 +105,21 @@ import {
   createGovernanceKernel,
   createGovernedFamilyRegistry,
 } from '../../../governance-center/index.js'
+// U6 PR4 (ARC-C): the governed JOBS trio joins the SAME Kernel as the
+// read/shell families — as the first NAMED BRIDGE. The bridge module owns
+// the moved-VERBATIM bridge body (byte-identity sha-pinned by
+// u6-pr4-jobs-bridge.test), the trio row Definitions, the fixed name list
+// (natexe ledger + kernel-ownership + contribution visibility all quote
+// THIS data), and the closed-schema contribution descriptor. The plane
+// remains the TRUSTED ASSEMBLY POINT: registration is fail-closed, the
+// trio's approval entries bind on the ONE table with the read/shell
+// bind-ONCE law, and the one-shot consume edge stays the ONLY consume path
+// (no second ledger anywhere on this lane).
+import {
+  buildJobsBridgeContribution,
+  buildJobsManagementRowDefs,
+  JOBS_MANAGEMENT_NAMES,
+} from './jobs-family-bridge.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -364,11 +379,15 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // under the closed `jobsEnabled` consumption key (never the configurable
   // `names` map — no config-driven spelling, no Gate 0b surface). The
   // same-name, same-meaning implementation this ledger exists to record is
-  // now ASSEMBLED (createGovernedJobsBridge over the host JobRegistry
-  // public face @639ed01539 — caller fence preserved, Team owner fence
-  // layered above); recording the claim here keeps the natexe ledger the
-  // complete truth of what this install may mount.
-  jobs: Object.freeze(['job_output', 'job_list', 'job_kill']),
+  // ASSEMBLED — U6 PR4 (ARC-C): the trio is a NAMED BRIDGE contribution,
+  // `jobs-family-bridge.mjs`'s bridge body over the host JobRegistry public
+  // face @639ed01539 (caller fence preserved, Team owner fence layered
+  // above), registered on the ONE kernel through the closed schema. The
+  // ledger quotes the bridge's OWN name list (name list C6 moved there —
+  // one list; the contribution's native visibility and the kernel-ownership
+  // set consume the same data); recording the claim here keeps the natexe
+  // ledger the complete truth of what this install may mount.
+  jobs: JOBS_MANAGEMENT_NAMES,
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -1324,17 +1343,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
       requestedEffects,
     }
     // U6 PR2 (port binding, PR1-open-1) / U6 PR3 (ARC-B: the SAME edge for
-    // BOTH owned families): a KERNEL-OWNED placement — the read name or the
-    // shell name — consumes its one-shot grant through the kernel's
-    // consumeOnce — replay-guarded BEFORE the port (double replay: kernel
-    // set + durable ledger, both refusals, neither ever un-spends), and a
-    // kernel outside ACTIVE refuses the edge outright (drain/tombstone
+    // BOTH owned families) / U6 PR4 (ARC-C: the trio rides the SAME edge —
+    // ONE ownership predicate, no name-pair list here either): a
+    // KERNEL-OWNED placement consumes its one-shot grant through the
+    // kernel's consumeOnce — replay-guarded BEFORE the port (double replay:
+    // kernel set + durable ledger, both refusals, neither ever un-spends),
+    // and a kernel outside ACTIVE refuses the edge outright (drain/tombstone
     // semantics). The port wrapper captured the FULL legacy answer for THIS
     // call, so every live deny code (APPROVAL_STALE /
     // TOOL_BINDING_UNVERIFIED / …) rides the unchanged mapping below. A
     // name the kernel does not own keeps the direct edge byte-for-byte.
     let edge
-    if (centerKernel !== null && (placementName === readName || placementName === bashName)) {
+    if (centerKernel !== null && centerKernel.guard.owns(placementName)) {
       const grantId = typeof grant?.grantId === 'string' ? grant.grantId : ''
       const captureKey = String(callId)
       kernelPortAnswers.delete(captureKey)
@@ -1636,59 +1656,27 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // management tools, takeover-mounted at FIXED native spellings behind the
   // closed `jobsEnabled` key (ABSENT = no rows at all — zero flip). The
   // effect body is the INJECTED bridge (glue wires gateway fence → host
-  // `ctx.get('jobs')` public face; see plane-effect-backends.mjs); with no
-  // bridge the rows land on the honest typed shut face (existing
-  // IO_POLICY_UNSUPPORTED grammar, zero new error surface — the mount gate
-  // is config law, not wiring). The descriptions/schemas below are the host
-  // tool-jobs spellings AT THE PIN (packages/jobs/tool-jobs/src/index.ts
-  // :311-400 @639ed01539) — same-name SAME-MEANING is the natexe claim law
-  // this row satisfies; the dispatch-provided caller (`exec.agent?.id`,
-  // exactly what the host tool passes) never gets invented: an unnamed
-  // caller is refused by the bridge, never queried unfiltered.
+  // `ctx.get('jobs')` public face); U6 PR4 (ARC-C) the row DEFINITIONS and
+  // the bridge itself live in `jobs-family-bridge.mjs` — `buildJobsManagementRowDefs`
+  // carries the moved-verbatim trio (the host tool-jobs spellings AT THE
+  // PIN, packages/jobs/tool-jobs/src/index.ts :311-400 @639ed01539: same-name
+  // SAME-MEANING is the natexe claim law this row satisfies; the
+  // dispatch-provided caller (`exec.agent?.id`, exactly what the host tool
+  // passes) never gets invented: an unnamed caller is refused by the bridge,
+  // never queried unfiltered). With no bridge the rows land on the honest
+  // typed shut face (existing IO_POLICY_UNSUPPORTED grammar, zero new error
+  // surface — the mount gate is config law, not wiring); there is NO native
+  // fallback lane and the shut rows are NOT registered on the kernel (a
+  // bridgeless mount contributes no jobs candidate at all).
   const jobsBridge = input.backends?.jobs ?? null
   const jobsShut = createShutBackend('a5-jobs-bridge-pending')
   const shutJobsText = async () => {
     const r = await jobsShut.run({})
     return { text: `refused: ${String(r.failure.code)} — ${String(r.failure.detail)}` }
   }
-  const jobsDefs = jobsEnabled === true ? [
-    Object.freeze({
-      name: 'job_output',
-      description: 'Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.',
-      parameters: {
-        type: 'object',
-        properties: {
-          job_id: { type: 'string', description: 'Job id returned by the tool that started the background work.' },
-          wait: { type: 'boolean', description: 'Block until the job finishes or the timeout expires; a timed-out wait leaves the job running. Defaults to false.' },
-          timeout_ms: { type: 'number', description: 'Max wait in milliseconds with wait: true.' },
-        },
-        required: ['job_id'],
-      },
-      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id, exec?.signal) : await shutJobsText()),
-      output: PLANE_PRESENTATION_FACE,
-    }),
-    Object.freeze({
-      name: 'job_list',
-      description: 'List your background jobs (running and finished) with their ids, kinds, and statuses.',
-      parameters: { type: 'object', properties: {} },
-      execute: async (_args, exec) => (jobsBridge !== null ? jobsBridge.jobList(exec?.agent?.id) : await shutJobsText()),
-      output: PLANE_PRESENTATION_FACE,
-    }),
-    Object.freeze({
-      name: 'job_kill',
-      description: 'Request cancellation of a running background job.',
-      parameters: {
-        type: 'object',
-        properties: {
-          job_id: { type: 'string', description: 'Job id returned by the tool that started the background work.' },
-          reason: { type: 'string', description: 'Optional short reason, recorded in the log and forwarded to the job.' },
-        },
-        required: ['job_id'],
-      },
-      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobKill(args ?? {}, exec?.agent?.id) : await shutJobsText()),
-      output: PLANE_PRESENTATION_FACE,
-    }),
-  ] : []
+  const jobsDefs = jobsEnabled === true
+    ? buildJobsManagementRowDefs({ jobsBridge, shutJobsText, PLANE_PRESENTATION_FACE })
+    : []
 
   // U6 PR2: the read row DEFINITION is the family's — moved VERBATIM to
   // `fs-family/src/read-row.mjs` (name/description/parameters/execute
@@ -1721,12 +1709,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // no-feed refusal: fail closed, never a guessed identity.
   const placedByName = new Map(allDefs.map((d) => [d.name, d]))
 
-  // ── U6 PR2/PR3: the CENTER ASSEMBLY for the governed families (ENFORCING)
-  // ONE kernel owns this placement's approval table for BOTH governed
-  // families — the FS read row (PR2) and the PROCESS shell row (PR3, ARC-B:
+  // ── U6 PR2/PR3/PR4: the CENTER ASSEMBLY for the governed families (ENFORCING)
+  // ONE kernel owns this placement's approval table for ALL governed
+  // families — the FS read row (PR2), the PROCESS shell row (PR3, ARC-B:
   // "read and bash share the same Kernel state transition trace… different
   // Executors but the same decision/settlement path",
-  // center-assembly-architecture §10.2). The kernel is built whenever the
+  // center-assembly-architecture §10.2), and the JOBS named bridge (PR4,
+  // ARC-C: the same trace extended to a PROVIDER-BACKED family — admission,
+  // grant and consume through the SAME edges, the bridge body owning no
+  // approval state at all). The kernel is built whenever the
   // plane assembles: the shell row ALWAYS mounts, so the enforcing kernel —
   // with the dispatcher's lifecycle port or nothing (FIX-K K3 / R-REM-2.2;
   // no self-count fallback, no native fallback) — is required by EVERY
@@ -1741,9 +1732,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     kernelManifest: { capabilities: {
       'fs-read': { backsExecution: 'family-body' },
       'process-spawn': { backsExecution: 'family-body' },
+      // U6 PR4 (ARC-C): the jobs-management capability is backed ONLY by a
+      // named bridge — the schema refuses (CAPABILITY_UNBACKED /
+      // NAMED_BRIDGE_REQUIRED) any contribution claiming a family body for
+      // it. There is no self-attested jobs executor on this mount.
+      'jobs-management': { backsExecution: 'named-bridge' },
     } },
   })
-  const kernelFamilies = { read: false, shell: false }
+  const kernelFamilies = { read: false, shell: false, jobs: false }
   if (readRowDef !== null) {
     const contribution = buildFsReadContribution({
       definition: readRowDef,
@@ -1785,6 +1781,31 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
     }
     kernelFamilies.shell = true
+  }
+  // U6 PR4 (ARC-C): the jobs contribution — the mount's FIRST named bridge.
+  // Registered ONLY when the closed key says on AND a real bridge body is
+  // injected: a bridgeless `jobsEnabled` mount keeps the honest typed shut
+  // rows (zero-effect refusals) and contributes NO kernel candidate (a
+  // shut face has no execution to back; registering one would be
+  // self-attestation). With a bridge, registration is fail-closed like the
+  // others; the descriptor's digests bind the bridge body, the trio rows
+  // and the host pin, and `execution.via='named-bridge'` names THIS bridge.
+  if (jobsEnabled === true && jobsBridge !== null) {
+    const jobsContribution = buildJobsBridgeContribution({
+      bridge: jobsBridge,
+      definitions: jobsDefs,
+      hostPin: PLANE_RESERVED_NATIVE_HOST_PIN,
+      cancelBoundary: 'job management is REQUEST-only through the host public face: job_kill maps to JobRegistry.kill, which answers \'requested\' | \'already-finished\' @639ed01539 — the bridge marks the gateway REQUEST and never settles cancellation (the Host settles it; a job that keeps running is reported as still running); job_output\'s wait arm is abort-signal-aware and returns without settling on timeout; the trio performs no process termination of its own (B-ACT-1-PR C2 laws, U6 PR4)',
+    })
+    const jobsRegistered = registry.register(jobsContribution, { origin: 'reviewed-manifest' })
+    if (jobsRegistered.ok !== true) {
+      return {
+        ok: false,
+        code: 'PLANE_JOBS_REGISTRATION_REFUSED',
+        message: `the jobs bridge contribution was refused by the closed schema (${jobsRegistered.code}: ${jobsRegistered.detail}) — an unverified bridge mounts nowhere (fail closed; the un-attributed host trio is left native, this governed lane does not come back)`,
+      }
+    }
+    kernelFamilies.jobs = true
   }
   // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
   // mount's scopeKey — the scoped resolution this plane IS (the same
@@ -1847,7 +1868,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
     families: Object.freeze(kernelFamilies),
     guard: Object.freeze({
       // ARC-B: the kernel owns BOTH governed mount names on the ONE table.
-      owns: (name) => typeof name === 'string' && (name === readName || name === bashName),
+      // U6 PR4 (ARC-C): the jobs trio joins the SAME predicate when — and
+      // only when — the named-bridge contribution registered on this mount;
+      // install.ts's pre-body table gate and post-success drift veto then
+      // treat all five names through the SAME code path (data, not new
+      // branches: the gate already calls owns/identityFor generically).
+      owns: (name) => typeof name === 'string' && (
+        name === readName || name === bashName
+        || (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name))
+      ),
       identityFor: (name) => {
         if (typeof name !== 'string') return null
         if (name === readName) {
@@ -1856,6 +1885,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }
         if (name === bashName) {
           const entry = ensureBashApprovalEntry()
+          return entry === null ? null : entry.definitionIdentity
+        }
+        if (kernelFamilies.jobs === true && JOBS_MANAGEMENT_NAMES.includes(name)) {
+          const entry = ensureJobsApprovalEntry(name)
           return entry === null ? null : entry.definitionIdentity
         }
         return null
@@ -1925,20 +1958,53 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
     return centerKernel.kernel.approvalFor(centerKernel.scopeKey, bashName) ?? null
   }
+  // U6 PR4 (ARC-C): the trio entries follow the IDENTICAL bind-ONCE law on
+  // the SAME kernel, the SAME scopeKey, and the sibling 'dsh.jobs-family'
+  // candidate — one latch per name (three names, three entries, one table).
+  // Invalidation goes SILENT exactly as above: never re-mints, never
+  // resurrects; only the next reviewed assembly mount (a fresh kernel)
+  // approves. A mount WITHOUT the registered bridge has no jobs candidate,
+  // so addApprovalEntry for these names could only fail closed anyway —
+  // the families.jobs gate simply states that law where it is read.
+  const jobsEntryAttempted = new Map(JOBS_MANAGEMENT_NAMES.map((n) => [n, false]))
+  const ensureJobsApprovalEntry = (name) => {
+    if (centerKernel === null || centerKernel.families.jobs !== true) return null
+    const existing = centerKernel.kernel.approvalFor(centerKernel.scopeKey, name)
+    if (existing !== undefined) return existing
+    if (jobsEntryAttempted.get(name) === true) return null // invalidated/failed — never rebound in this mount
+    const d = placedByName.get(name)
+    if (d === undefined) return null
+    const identity = definitionIdentityOf(d)
+    if (identity === null) return null
+    jobsEntryAttempted.set(name, true)
+    const added = centerKernel.kernel.addApprovalEntry({
+      scopeKey: centerKernel.scopeKey,
+      nativeName: name,
+      definitionIdentity: identity,
+      familyId: 'dsh.jobs-family',
+    })
+    if (added.ok !== true) return null // no live claiming candidate / non-ACTIVE — fail closed
+    return centerKernel.kernel.approvalFor(centerKernel.scopeKey, name) ?? null
+  }
 
   const placementFeed = (name) => {
     const d = placedByName.get(name)
     if (d === undefined) return undefined
-    if (centerKernel !== null && (name === readName || name === bashName)) {
-      // U6 PR2 (cond 1/2/6), PR3-generalized (ARC-B): for BOTH kernel-OWNED
-      // names the approval TABLE is the identity source. The entry binds
+    if (centerKernel !== null && centerKernel.guard.owns(name)) {
+      // U6 PR2 (cond 1/2/6), PR3-generalized (ARC-B), PR4-extended (ARC-C):
+      // for EVERY kernel-OWNED name — read, shell, and the registered jobs
+      // trio — the approval TABLE is the identity source. The entry binds
       // ONCE, lazily, at first consult — the def#N mint still rides the
       // seam's install pass (the pb §6 lookup-time law is untouched). It is
       // NEVER silently re-bound: when a later live resolution disagrees with
       // the table, this feed keeps answering the TABLE identity and the
       // Guard's own live-vs-feed comparison refuses (cond 6: an identity
       // mismatch never executes).
-      const entry = name === readName ? ensureReadApprovalEntry() : ensureBashApprovalEntry()
+      const entry = name === readName
+        ? ensureReadApprovalEntry()
+        : name === bashName
+          ? ensureBashApprovalEntry()
+          : ensureJobsApprovalEntry(name)
       return entry === null
         ? undefined
         : Object.freeze({ definitionIdentity: entry.definitionIdentity, realmId })
@@ -2052,10 +2118,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // U6 PR3 (ARC-B): ONE kernel, TWO registered families when both
         // rows mounted. The PR2 surface's single `familyId` named the only
         // family there was; the honest generalization is the list of the
-        // families THIS mount registered, in registration order.
+        // families THIS mount registered, in registration order. U6 PR4
+        // (ARC-C): the jobs bridge family rides the same list — three
+        // candidates, still ONE kernel and ONE approval table.
         familyIds: Object.freeze([
           ...(centerKernel.families.read ? ['dsh.fs-family'] : []),
           ...(centerKernel.families.shell ? ['dsh.process-family'] : []),
+          ...(centerKernel.families.jobs ? ['dsh.jobs-family'] : []),
         ]),
       }) }),
       /**
@@ -2109,6 +2178,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
                 if (centerKernel.families.shell === true) {
                   centerKernel.registry.revoke('dsh.process-family', 'the governed shell mount was disposed')
                   centerKernel.kernel.dropApprovalsForFamily('dsh.process-family')
+                }
+                // U6 PR4 (ARC-C): the jobs bridge family drains with the
+                // SAME deterministic law — revoke the candidate, drop its
+                // trio entries from the ONE table; a re-registration (the
+                // next reviewed mount, a fresh kernel) never resurrects one.
+                if (centerKernel.families.jobs === true) {
+                  centerKernel.registry.revoke('dsh.jobs-family', 'the governed jobs bridge mount was disposed')
+                  centerKernel.kernel.dropApprovalsForFamily('dsh.jobs-family')
                 }
                 centerKernel.kernel.release()
               } catch {

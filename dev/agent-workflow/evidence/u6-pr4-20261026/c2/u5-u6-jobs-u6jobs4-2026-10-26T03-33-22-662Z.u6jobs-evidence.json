@@ -1,0 +1,165 @@
+{
+  "runId": "u5-u6-jobs-u6jobs4-2026-10-26T03-33-22-662Z",
+  "worldId": "u5u6jobs4-20261026T03-33-22Z",
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs4-20261026t03-33-22z"
+    },
+    "job_output": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,job_output,job_list,job_kill] realm=u6jobs-realm-u5u6jobs4-20261026t03-33-22z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_READ_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "claims": {
+    "claim1": "U6JOBS_CLAIM_u5u6jobs4-20261026t03-33-22z",
+    "killWarm": "U6JOBS_KILLWARM_u5u6jobs4-20261026t03-33-22z",
+    "killFinal": "U6JOBS_KILLFINAL_u5u6jobs4-20261026t03-33-22z",
+    "ctl": "U6JOBS_CTLCLAIM_u5u6jobs4-20261026t03-33-22z"
+  },
+  "claim1Text": null,
+  "jobIds": [],
+  "list1": "(no background jobs)",
+  "output1": "refused: host-jobs-refused — unknown job job-unknown",
+  "output2": null,
+  "output2Post": null,
+  "kill2": "refused: host-jobs-refused — unknown job job-unknown",
+  "list2": "(no background jobs)",
+  "foreignOutput": null,
+  "foreignKill": null,
+  "ctlOutput": "Error: unknown job job-unknown",
+  "trioUses": 7,
+  "controlRows": [],
+  "birthRow": {
+    "seen": false,
+    "resolved": false,
+    "resolutions": []
+  },
+  "settle": {
+    "killLines": 0,
+    "foreignKillLines": 0
+  },
+  "rootKernelMentions": 0,
+  "lanes": {
+    "work": true,
+    "foreign": false,
+    "leader": false,
+    "ctl": true
+  },
+  "debug": {
+    "worker": [
+      {
+        "name": "job_list",
+        "args": {},
+        "result": "(no background jobs)"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: host-jobs-refused — unknown job job-unknown"
+      },
+      {
+        "name": "bash",
+        "args": {
+          "command": "printf '%s\\n' \"U6JOBS_KILLWARM_u5u6jobs4-20261026t03-33-22z\" && sleep 35 && printf '%s\\n' \"U6JOBS_KILLFINAL_u5u6jobs4-20261026t03-33-22z\"",
+          "run_in_background": true
+        },
+        "result": "Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: host-jobs-refused — unknown job job-unknown"
+      },
+      {
+        "name": "job_kill",
+        "args": {
+          "job_id": "job-unknown",
+          "reason": "u6jobs-cancel-honest"
+        },
+        "result": "refused: host-jobs-refused — unknown job job-unknown"
+      },
+      {
+        "name": "bash",
+        "args": {
+          "command": "sleep 40"
+        },
+        "result": "Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: host-jobs-refused — unknown job job-unknown"
+      },
+      {
+        "name": "job_list",
+        "args": {},
+        "result": "(no background jobs)"
+      }
+    ],
+    "foreign": [],
+    "root": [
+      {
+        "name": "bash",
+        "args": {
+          "command": "printf '%s\\n' \"U6JOBS_CTLCLAIM_u5u6jobs4-20261026t03-33-22z\" && sleep 45",
+          "run_in_background": true
+        },
+        "result": "U6JOBS_CTLCLAIM_u5u6jobs4-20261026t03-33-22z\n[Command finished with exit code 0]"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "Error: unknown job job-unknown"
+      }
+    ],
+    "bashResults": [
+      "{\"args\":{\"command\":\"{ printf '%s\\\\n' \\\"U6JOBS_CLAIM_u5u6jobs4-20261026t03-33-22z\\\" >> \\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr4/tests/homes/u5u6jobs4-20261026T03-33-22Z/workspace/u6jobs-claim.txt\\\" || true; printf '%s\\\\n' \\\"U6JOBS_CLAIM_u5u6jobs4-20261026t03-33-22z\\\"; } && sleep 90\",\"run_in_background\":true},\"result\":\"Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed\"}",
+      "{\"args\":{\"command\":\"printf '%s\\\\n' \\\"U6JOBS_KILLWARM_u5u6jobs4-20261026t03-33-22z\\\" && sleep 35 && printf '%s\\\\n' \\\"U6JOBS_KILLFINAL_u5u6jobs4-20261026t03-33-22z\\\"\",\"run_in_background\":true},\"result\":\"Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed\"}",
+      "{\"args\":{\"command\":\"sleep 40\"},\"result\":\"Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed\"}",
+      "{\"args\":{\"command\":\"printf '%s\\\\n' \\\"U6JOBS_CTLCLAIM_u5u6jobs4-20261026t03-33-22z\\\" && sleep 45\",\"run_in_background\":true},\"result\":\"U6JOBS_CTLCLAIM_u5u6jobs4-20261026t03-33-22z\\n[Command finished with exit code 0]\"}"
+    ],
+    "trioResults": [
+      "{\"name\":\"job_list\",\"args\":{},\"result\":\"(no background jobs)\"}",
+      "{\"name\":\"job_output\",\"args\":{\"job_id\":\"job-unknown\"},\"result\":\"refused: host-jobs-refused — unknown job job-unknown\"}",
+      "{\"name\":\"job_kill\",\"args\":{\"job_id\":\"job-unknown\",\"reason\":\"u6jobs-cancel-honest\"},\"result\":\"refused: host-jobs-refused — unknown job job-unknown\"}",
+      "{\"name\":\"job_output\",\"args\":{\"job_id\":\"job-unknown\"},\"result\":\"Error: unknown job job-unknown\"}"
+    ]
+  }
+}

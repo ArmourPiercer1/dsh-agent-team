@@ -109,6 +109,18 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
   },
+  // U6 PR4 (ARC-C): the jobs bridge module — plane-effect-backends.mjs now
+  // RE-EXPORTS from it (the retired-hub surface) and team-tool-plane.mjs
+  // imports its trio row defs + contribution builder, so on the strict
+  // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at
+  // plane construction — the same class GLUE-6 RED-A recorded. It imports
+  // `../../../../contracts/src/index.js` (already in the dist mirror), so
+  // its relative edge resolves exactly like bash-contribution.mjs's does.
+  // Byte-identical like every entry; the drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs',
+  },
   // A5-CANCEL (branch `a5-cancel-leg`): the two async confined-rg rows above both
   // import this module by RELATIVE specifier, so on the strict
   // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at the

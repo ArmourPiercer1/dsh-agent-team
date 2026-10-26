@@ -1,0 +1,10 @@
+[u6-jobs] case jobs:mounted: FAIL {"reason":"p6t6 health not ok: status=200 body={\"ok\":false,\"boot\":1,\"rootSessionId\":\"session-u6jobs-root-u5u6jobs5-20261026t03-44-27z\",\"setupError\":\"binder overlay effect 'persona' failed during 'fresh-root' bind of session 'sess
+[u6-jobs] case jobs:birth-positive: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:governed-management: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:owner-fence: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:cancel-honest: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:ctl-native-untouched: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:no-second-ledger: FAIL {"reason":"mount readiness failed"}
+[u6-jobs] case jobs:leak-check: FAIL {"reason":"mount readiness failed"}
+RUN-SUMMARY run=u5-u6-jobs-u6jobs5-2026-10-26T03-44-27-753Z suite=u6-jobs overall=FAIL cases=9 FAIL:8 PASS:1 worlds=u5u6jobs5-20261026T03-44-27Z
+RUNNER_EXIT=1
