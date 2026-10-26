@@ -374,6 +374,9 @@ describe('u7-0 review-R1 — B3: AuthoritativeToolSources is a real third side',
     // The scratch must sit INSIDE the repo tree at the SAME depth
     // (dev/engineering/tool-obligations) — the generator resolves the host
     // pin + matrix/backlog from the repo root relative to its own location.
+    // .artifacts/ is gitignored — it does not exist in a fresh CI checkout,
+    // so the mkdtemp parent must be created (recursive) first.
+    mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
     const dir = mkdtempSync(join(REPO_ROOT, '.artifacts', 'tmp', 'u70-gen-refuse-'))
     try {
       const scratch = join(dir, 'dev', 'engineering', 'tool-obligations')
