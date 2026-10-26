@@ -231,6 +231,16 @@ live (every member-born job is un-attributed → typed refusal) — which
 is precisely the CI-05 posture, and exactly why the ring-byte proof of
 the live world rides the CI-03 native control arm.
 
+**Finding-1 × Finding-2 interaction (for the round-2 review):** at this
+pin the two required additions are mutually exclusive as OBSERVATIONS —
+under the chosen fail-closed branch every member-born job is
+un-attributed, so the governed list/output/kill positives Finding 1
+expects are impossible BY DESIGN until the producer exists (the
+alternative branch — a contract ruling for the scoped pass-through — is
+not the worker's to grant). The boot-7 receipt shows the lane stall
+removed even the pre-wrap route first; both facts compose into the
+BRIDGE-BLOCKED status below.
+
 **R1-2 — boot 7 (parent-authorized 7th start, ceiling 8).**
 **Boot 7 (ledger 7/8; HTU pristine before/after; full receipt in
 `c2/`).** VERBATIM: `jobs:mounted` PASS; `jobs:birth-positive` FAIL

@@ -186,8 +186,10 @@ boot — whoever runs it — starts from.
 
 ## Review R1 (round 2) — CI-05 fail-closed mount face + the authorized boot 7
 
-The review (REVIEW.md, `dev/agent-workflow/evidence/u6-pr4-review-r1/`)
-required (1) CI-05 fail-closed for un-attributed ids on governed mounts
+The review (`REVIEW.md`, `dev/agent-workflow/evidence/u6-pr4-review-r1/`
+— copied verbatim into this branch's evidence at this round so the
+receipt set is self-contained) required (1) CI-05 fail-closed for
+un-attributed ids on governed mounts
 WITHOUT touching the sha-pinned gateway or the byte-identical region
 (76–347 — re-measured `71705d6e…` after the round, E1 green), and (2)
 an authorized live boot (7th; 8th only for a NEW harness cause with a
@@ -208,6 +210,20 @@ production caller exists) — per R1 it is carried as a NAMED ITEM, and
 the pass-through was NOT kept around it. Commit `9bfc0dc17`; C1 24/24
 with the new F group; offline 28/28 with the judge re-armed to the
 CI-05 law (arms renamed — see the judge paragraph above).
+
+**Finding-1 × Finding-2 interaction, stated for the round-2 reviewer:**
+at this pin the two required additions are mutually exclusive as
+observations. Finding 1 expects the boot to show governed list/output
+and kill-honesty over a REAL member-born job; Finding 2's chosen branch
+(fail-closed — the alternative was a contract ruling for the scoped
+pass-through, not the worker's to grant) makes exactly that
+impossible, since every member-born job is un-attributed until the
+creation-lane producer exists and must now be refused typed before any
+svc reach. The boot therefore could not yield Finding-1 positives under
+Finding-2's law by design, not by regression — and in the event the
+lane stall (below) removed even the pre-wrap route first. This is the
+precise content of the BRIDGE-BLOCKED status: the two named items are
+what stand between this tree and FULL BRIDGE PASS.
 
 Boot 7 (`run-u6jobs7.console.txt` + `…u6jobs7…u6jobs-evidence.json`,
 ledger entry 7/8, HTU verified pristine before AND after): verdicts
