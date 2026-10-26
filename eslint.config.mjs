@@ -94,6 +94,26 @@ export default tseslint.config(
       // tracked path has a `.scratch` component (`git ls-files | grep -c '(^|/)\.scratch'` = 0),
       // and the merge-gate leg that enumerates these prefixes asserts it.
       '**/.scratch/**',
+      // The gitignored local evidence mirror and its holding areas
+      // (`.artifacts/evidence/root-untracked/…`, written by the root-checkout
+      // disposition procedure). Same mechanism as the two lines above and the
+      // same reason: ESLint does not read `.gitignore`, so `eslint .` walks it.
+      // This tree is worse than noise — it is a MIRROR of this repository, so it
+      // contains its own `eslint.config.mjs`, `node_modules`, and relative
+      // symlinks pointing into `.worktrees/…` trees that a later cleanup removes.
+      // Measured at `37f349074` (root checkout, 2026-10-26): 33 dangling symlinks
+      // under `.artifacts/evidence`, and `npx eslint . --format json` exited 2
+      // printing `Error: ENOENT: no such file or directory, open
+      // '…/.artifacts/evidence/root-untracked/dev/…/blueprint-snapshot.d.ts'` at
+      // `eslint-helpers.js readAndVerifyFile` with a ZERO-BYTE stdout, which
+      // reaches §7.6's lint leg as `NOT RUN` (the exact flake class its own
+      // comment above records). Planted control in a clean worktree: same
+      // command, 1385 files, exit 1, complete JSON — then one dangling symlink at
+      // `.artifacts/evidence/probe/dead/x.d.ts`, and the same command exits 2 with
+      // 0 bytes of JSON. `.artifacts/` is gitignored and has 0 tracked files
+      // (`git ls-files .artifacts | wc -l` = 0), so nothing lintable is hidden:
+      // §7.6's census enumerates TRACKED files and cannot be widened by this line.
+      '.artifacts/**',
       '.pnpm-store/**',
       '.pnpm-store-testuse/**',
       '.agents/**',
