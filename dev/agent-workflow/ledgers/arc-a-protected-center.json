@@ -1,6 +1,6 @@
 {
  "schema": "u6-arc-a-protected-center/1",
- "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) — family-addition PRs may never add one.",
+ "note": "ARC-A fitness law L1 (PR5, first booking): the center files a FAMILY ADDITION may never move. Digests booked from origin/master 5c03f7240 content on this tree (proven unchanged by the PR5 zero-diff receipt). A drift is a violation UNLESS this ledger gains an override entry citing a NAMED center-interface PR (path+sha256+pr+reason) \u2014 family-addition PRs may never add one.",
  "bookedFrom": "5c03f7240a2a43534e6f52b87aa3c541fad993f7",
  "files": [
   {
@@ -141,7 +141,13 @@
    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
    "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
    "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
-   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it — the PR-body git-diff∩protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it \u2014 the PR-body git-diff\u2229protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "03e74843356a2d5c7d66dea49d436ebd0219c17332e6a5779c944d3bc9c72dd3",
+   "pr": "U7-4a creation-lane attribution producer \u2014 NAMED center-interface change, task branch task/u7-4a-jobs-attribution-producer-20261026, PR title 'feat(u7-4a): governed background-bash attribution producer \u2014 job trio becomes manageable under CI-05 (user-ruled capability)' (PR number appended by the booking commit once opened)",
+   "reason": "USER-RULINGS-2026-10-26 item 2 rules the governed background spawn an Alpha.5 capability: the entry wiring must MOUNT the creation attribution producer (jobs-background-producer.mjs) per durable member mount when planeCfg.backgroundJobs is configured. The hunk is conditional wiring only: with backgroundJobs unset (every pre-existing world) the produced mount surface is byte-identical (u74a C1 K4 zero-flip pin); no control/**, pa-mount-registry, tool-admission/dispatch or governance-center file moves."
   }
  ]
 }

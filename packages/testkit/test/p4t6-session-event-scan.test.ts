@@ -452,6 +452,16 @@ const RETIRED_PATHS_U6PR6: readonly string[] = [
   'packages/runtime/src/plugin/live/plane-effect-backends.d.mts', // was SCANNED_PATHS_A5READSLICE
   'packages/runtime/src/plugin/live/plane-effect-backends.mjs', // was SCANNED_PATHS_A5GLUE7
 ]
+// U7-4a (user ruling 2026-10-26 item 2; creation-lane attribution producer):
+// the round's two NEW paths — the producer module (production, dist-placed)
+// and its C1 spec. MEASURED pre-booking on THIS tree: the scanner reads
+// 1279 with both present and the booked 1277 without the booking
+// (`expected 1279 to be 1277`, `.artifacts/tmp/u74a-p4t6.log`, mirrored to
+// dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/p4t6-RED-unbooked.log).
+const SCANNED_PATHS_U74A: readonly string[] = [
+  'packages/runtime/src/plugin/live/jobs-background-producer.mjs',
+  'packages/runtime/test/u74a-jobs-producer.test.ts',
+]
 // MERGE NOTE (U6 PR5 × U6 PR4): both bookings landed; the deltas are
 // per-round constants (PR4 +2, PR5 +12) and the total pin below is the
 // UNION expression — no prose total is load-bearing. On the merged tree
@@ -3081,7 +3091,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR3.length +
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
-        SCANNED_PATHS_U6PR6.length,
+        SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U74A.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -3154,7 +3165,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_U6PR3.length +
         SCANNED_PATHS_U6PR4.length +
         SCANNED_PATHS_U6PR5.length +
-        SCANNED_PATHS_U6PR6.length,
+        SCANNED_PATHS_U6PR6.length +
+        SCANNED_PATHS_U74A.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -3248,6 +3260,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_U6PR4,
       ...SCANNED_PATHS_U6PR5,
       ...SCANNED_PATHS_U6PR6,
+      ...SCANNED_PATHS_U74A,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3707,6 +3720,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `u6-pr4-20261026/p4t6-RED-unbooked.log` reads
     // `expected 1265 to be 1263`; no chain value copied).
     expect(SCANNED_PATHS_U6PR4.length).toBe(1265 - 1263)
+    // U7-4a: the round's own tie — TWO new paths (producer module + C1 spec),
+    // the measured scanned-total delta 1277 -> 1279 on THIS tree.
+    expect(SCANNED_PATHS_U74A.length).toBe(1279 - 1277)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

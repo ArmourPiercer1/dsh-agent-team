@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=<redacted>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74ap-20261026t11-56-41z
+[dsh-agent-team] a5ptc: census-boot root=session-u74a-team-u5u74ap-20261026t11-56-41z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,read,job_output,job_list,job_kill] realm=u74a-realm-u5u74ap-20261026t11-56-41z

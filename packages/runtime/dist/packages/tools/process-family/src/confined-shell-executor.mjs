@@ -24,7 +24,25 @@ import {
   SYSTEM_RX,
 } from './shell-mechanics.mjs'
 
-export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {} }) {
+/**
+ * U7-4a (user ruling 2026-10-26, item 2 — governed background spawn IS an
+ * approved Alpha.5 capability): the optional `background` collaborator is
+ * the EXPLICITLY-CONFIGURED governed background arm, injected by the trusted
+ * plane assembly ONLY when the closed `jobsEnabled` + `backgroundJobs` keys
+ * are both on and the named jobs bridge with its live gateway row exists on
+ * this mount (`background = { enabled: true, accept }`). It is the SAME
+ * confined provider, not a bypass: the arm shares this row's cwd anchoring,
+ * probe gate, per-call grant set and `spawnStreaming` request verbatim —
+ * `accept` receives a thunk over THIS provider's spawn and never a raw
+ * process of its own. Without the collaborator the by-name refusal below
+ * answers byte-identically to every prior master (refused before probe,
+ * before spawn, never reinterpreted as foreground).
+ *
+ * @param {object} [input.background] - `{ enabled: true, accept(ctx) }` from
+ *   the plane assembly; ctx = `{ call, request, spawn }` with `request` the
+ *   exact confined SpawnRequest and `spawn()` the provider call.
+ */
+export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {}, background }) {
   const scratchRoot = confined.scratchRoot ?? cwdRoot ?? confined.workingDir
   const provider = createConfinedProcessProvider({
     realmId,
@@ -57,7 +75,12 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
         return { ok: false, failure: { class: 'denied', code: 'wrong-tool-for-backend', detail: 'the shell backend got a non-bash call' } }
       }
       // Refusals with ZERO side effects, before probe/spawn of any kind:
-      if (parsed.background === true) {
+      // the UNCONFIGURED shape (byte-identical to every prior master — the
+      // background request is refused BY NAME, never reinterpreted). When an
+      // explicit governed background arm is configured the request instead
+      // rides the SAME gates below and branches at the spawn edge (see the
+      // U7-4a note above).
+      if (parsed.background === true && (background === undefined || background === null || background.enabled !== true)) {
         return { ok: false, failure: { class: 'denied', code: 'background-not-supported', detail: 'background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)' } }
       }
       const base = cwdRoot ?? confined.workingDir
@@ -124,6 +147,25 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
         // exit code at all, and their legs prove completion from the stream — a law
         // this edit must not and does not weaken).
         exitPassthrough: true,
+      }
+      // THE GOVERNED BACKGROUND ARM (U7-4a): reached only on an explicitly
+      // configured mount, after the SAME wrong-tool / cwd-anchor / probe
+      // gates and with the SAME request object the foreground arm spawns
+      // with. The producer (`background.accept`) owns the host-job creation
+      // through the host's PUBLIC `JobRegistry.start` seam and the Team
+      // attribution through the existing gateway law; it spawns nothing of
+      // its own — it runs the thunk below. This point is only ever reached
+      // from `runToolCall` AFTER the kernel decided and the PA edge consumed
+      // the grant exactly once (refusal/replay never call the backend).
+      if (parsed.background === true) {
+        executed += 1
+        trace = ['probe', 'prepare', 'execute']
+        observe(`confined-shell background-ARM realm=${realmId} call=${call.callId} (same provider, same request; registration+attribution are the producer's)`)
+        return await background.accept({
+          call,
+          request,
+          spawn: () => provider.spawnStreaming(request),
+        })
       }
       const handle = await provider.spawnStreaming(request)
       if (handle.ok !== true) {

@@ -448,6 +448,10 @@ import { ci05GovernedGatewayRow } from './jobs-family-bridge.mjs'
 // the production edge points at the ONE home directly (the retired center
 // file keeps a surface re-export only for the pinned actuator test).
 import { createGovernedJobsBridge } from './jobs-family-bridge.mjs'
+// U7-4a (user ruling 2026-10-26, item 2): the creation-lane attribution
+// producer for governed background bash — the SAME lane's producer, riding
+// the bridge's scopeKey/viewer/pin feed and the per-root gateway row face.
+import { createGovernedBackgroundProducer } from './jobs-background-producer.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
@@ -2671,6 +2675,42 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(String(row)),
           })
           : null
+        // U7-4a (user ruling 2026-10-26, item 2): the CREATION-LANE
+        // ATTRIBUTION PRODUCER for governed background bash. Built ONLY for
+        // the SAME governed jobs bridge this mount already has, and ONLY
+        // when the closed `backgroundJobs` key says on (absent = the confined
+        // shell row keeps the byte-identical by-name background refusal —
+        // zero flip). It owns no authority: the kernel decided and consumed
+        // before it is ever reached; it attributes through the bridge's ONE
+        // scopeKey + the per-root gateway row face, and it fails closed
+        // (no host job before a durable owner, no exposed receipt before an
+        // accepted attribution).
+        const a5BackgroundProducer = a5JobsBridge !== null && planeCfg.backgroundJobs === true
+          ? createGovernedBackgroundProducer({
+            scopeKey: a5JobsBridge.scopeKey,
+            viewer: { rootSessionId: String(teamRoot), instanceId: String(instanceId) },
+            ownerSessionId: String(sessionId),
+            gatewayRow: () => ci05GovernedGatewayRow(liveJobsGatewayAssemblies.get(String(teamRoot)) ?? null),
+            ensureRegistered: () => a5JobsBridge.ensureRegistered(),
+            jobsService: typeof deps.jobs === 'function' ? deps.jobs : () => undefined,
+            // ADVISORY durable precheck (it can only ever REFUSE earlier —
+            // `admitJob` confirms again against the same store at admit): a
+            // routed scope without its durable MemberInstance row can never
+            // be attributed, so it bears NO side effect at all.
+            ownerDurable: () => {
+              try {
+                return domain.repositories.memberInstances.list(String(teamRoot))
+                  .some((m) => String(m.instanceId) === String(instanceId))
+              } catch { return false }
+            },
+            observe: (row) => observations.push(String(row)),
+            logLine: (line) => globalThis.console?.log(`[dsh-agent-team] ${line}`),
+          })
+          : null
+        if (a5BackgroundProducer !== null) {
+          observations.push(`a5bg: producer-mounted scope=${a5JobsBridge.scopeKey} owner-session=${String(sessionId)}`)
+          globalThis.console?.log(`[dsh-agent-team] a5bg: producer-mounted instance=${String(instanceId)} session=${String(sessionId)}`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -2768,7 +2808,10 @@ export function createAgentBindings(deps) {
           // call instead of falling back to revision 1.
           readCallFacts: (input) => readPaCallFactsForCall(input),
           plane: planeCfg,
-          ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
+          ...(a5JobsBridge === null ? {} : { backends: {
+            jobs: a5JobsBridge,
+            ...(a5BackgroundProducer === null ? {} : { backgroundJobs: a5BackgroundProducer }),
+          } }),
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
@@ -2812,11 +2855,16 @@ export function createAgentBindings(deps) {
         // mirror + owner fence are live; as of B-ACT-1-PR the MANAGEMENT
         // actuator face is mounted too (the fixed `job_output`/`job_list`/
         // `job_kill` trio → the bridge above → the host `ctx.get('jobs')`
-        // public face). CREATION attribution has NO producer in the
-        // governed world yet (the confined shell row refuses background by
-        // name — `background-not-supported`), so un-attributed jobs ride
-        // the disclosed corded:false pass-through to the host caller fence;
-        // this row never fakes a host jobs capability.
+        // public face). CREATION attribution (U7-4a, user ruling 2026-10-26
+        // item 2): when the closed `jobsEnabled` + `backgroundJobs` keys are
+        // both on, the producer built above turns an authorized governed
+        // background bash call into a REAL host job (the host's public
+        // `JobRegistry.start` seam, owned by this mount's own session) and
+        // attributes it through THIS row's `attributeBackgroundJob` BEFORE
+        // the receipt reaches the model. Without those keys the confined
+        // shell row keeps refusing background by name byte-for-byte, and
+        // un-attributed job ids ride the ci05 governed refusal (typed,
+        // zero reach) — this row never fakes a host jobs capability.
         const gatewayRootKey = String(teamRoot)
         if (!liveJobsGatewayAssemblies.has(gatewayRootKey)) {
           try {

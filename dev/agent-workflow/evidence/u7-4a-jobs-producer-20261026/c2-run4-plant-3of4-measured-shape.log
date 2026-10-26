@@ -1,0 +1,7 @@
+[u7-4a/plant] case u74a:plant-refused: FAIL {"laneDone":{"bg":true,"leader":true},"bgHead":"a5p5-refused kind=backend-failed code=background-not-supported detail=background spawn is not implemented by the confined-exec row (refused by name, never reinterpreted as a foreground run)","
+[u7-4a/plant] case u74a:plant-no-producer: PASS {"laneDone":{"bg":true,"leader":true},"kernelHits":{"a5g7: placement-feed rows=":2,"job_output":2,"a5-plane: mount-REFUSED":0,"a5-plane: placement-REFUSED":0,"PLANE_KERNEL_UNAVAILABLE":0,"PLANE_JOBS_REGISTRATION_REFUSED":0,"PLANE_PROCESS_RE
+[u7-4a/plant] case u74a:plant-no-jobs: PASS {"laneDone":{"bg":true,"leader":true},"jobIds":[],"startedJobReceipts":0,"note":"no host job id exists anywhere (no receipt, no attribution): the trio on this World can manage nothing because NOTHING was born"}
+[u7-4a/plant] attributed host lines: 0; ask rows: 2; kernelHits job_output: 2
+[u7-4a/plant] case stable-instance-unchanged: PASS {"status":401,"note":"read-only probe of :3080 before/after (never touched beyond the probe)"}
+RUN-SUMMARY run=u74a-plant-1 suite=u7-4a-jobs overall=FAIL cases=4 FAIL:1 PASS:3 worlds=u5u74ap-20261026T11-56-41Z
+EXIT=1

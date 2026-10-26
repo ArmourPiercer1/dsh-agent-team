@@ -6902,3 +6902,11 @@ master 跑 production-run-recipe 全链）。
 - PR #382：ARC-D 对抗套件（AD1–AD11 13/13，每条拒绝带 blinded twin）+ 42-cell oracle 矩阵重评（37 离线绿 + 3 实机映射 + 3 命名项）；`plane-effect-backends.mjs/.d.mts/dist` 删除，每个 kernel 归属名只剩一处实现（read→fs-family、bash→process-family、grep/glob→search-family、jobs→命名 bridge），PLACEMENTS 29→28；u6-arc-d C2 一次 boot 9/9 全绿（磁盘+账本判定）。
 - R1 独审：PR6 **投机通过**；**G4 = G4-CORE-PASS / BRIDGE-BLOCKED**（非 full G4，非 CORE BLOCKER）。解锁 = 无依赖局部 Family + EB 工程基线（U7）；不解锁 = CA-03/full G4、G5、S5、发布。
 - 命名项（阻断 full G4，需在 U7 关闭）：R-U6P3-1、R-U6P4-1..3、R-U6P5-1/GLUE-4、R-U6P6-1、R-G3-1；另有证据强度项 E1（CI-03 native 判定改为直接磁盘证据）、E2（blinded-twin 一一执行关系机器化）。
+
+## 2026-10-26 U7-4a（governed background-bash attribution producer，USER-RULINGS item 2）
+
+- 任务：为 PR #377 冻结的 `attributeBackgroundJob` 补上产出者 —— governed bash 行经同一 kernel（decide→consumeOnce）授权后在**同一 confined provider** 上真实 spawn host job 并完成归属，job 三件套（job_list/job_output/job_kill）自此可管理本 lane 自产 job；CI-05 fail-closed（未归属→类型化拒绝、零 host 触达）不变。
+- 生产改动四处 + placement：新文件 `jobs-background-producer.mjs`（零 import，P9）；process-family executor 可选 background arm（未配置=逐字节不变，E1 钉）；plane 闭合键 `backgroundJobs` + 五条有序 PLANE_CONFIG_INCOMPLETE（含 **CREATING-LANE PIN LAW**：`names.bash` 必须为 `'bash'`，归属按产线行名查 placement feed）；agent-bindings 条件接线（**NAMED center-interface**，arc-a ledger override 入账，PR 号补录于 booking commit）；PLACEMENTS 29。
+- C1 离线 19/19（G1 P1–P9 / G2 ci05 / G3 E1–E3 / G4 K1–K6 全 kernel + 真 landlock launcher + 真 ask 批准/拒绝腿）；runtime 全套 7 红 = 基线复现 p6t3（pristine base @496a3980f 实证）；root 全量 12 红全部基线复现（p6t3×7 + t2/p6t6-actions/a4p7×3 在 base 复跑红）；p4t6 1279 已入账；typecheck 0；docs blocking 0。
+- C2 实机（预算内 4 boot：main×3 + plant×1；:3080 探针前后未动）：boot2 **9/12** —— 四条 `a5bg: attributed hostJobId=bash-N instance=inst-…` 实机坐实"授权 spawn→归属→三件套可管"；boot3 **11/12**（唯一红=kill-live 迟读，leader follow 阶段被 DONE 分支抢跑，已重写为纯状态机）。**测得定律（如实入判据）**：本 pin 归属账本按 mount 作用域隔离 —— 他员读真实已归属 id 得类型化 `unattributed-job` 零触达拒绝（bridge 无 owner-mismatch 词），foreign 腿按测得定律重锚为 `u74a:foreign-cross-scope-refusal`。
+- 证据：`dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/`（C1/C2 日志、run-record、host log、离线 smoke 29/29）。

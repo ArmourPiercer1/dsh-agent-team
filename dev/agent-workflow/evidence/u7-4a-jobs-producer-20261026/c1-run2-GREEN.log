@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-4a
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:1afcfe81-ac29-42b8-a628-0a750b3778f3-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:2659d057-7484-421b-9bdc-a963f8946f78-1 (same provider, same request; registration+attribution are the producer's)
+
+stdout | packages/runtime/test/u74a-jobs-producer.test.ts > u74a G4 — the full kernel: real plane, real landlock spawn, durable ask, attributed trio > K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm call=team-inst-1-bash:mount:8fab506f-baa7-49f2-9d42-23b0ecadd164-1 (same provider, same request; registration+attribution are the producer's)
+
+ ✓ packages/runtime/test/u74a-jobs-producer.test.ts (19 tests) 2342ms
+     ✓ K1 an APPROVED background team_bash really spawns, is ATTRIBUTED before the receipt, and the ring bytes come back through job_output  1222ms
+     ✓ K2 a live job killed through job_kill answers REQUESTED and the real process is terminated (killed settlement)  469ms
+     ✓ K3 the FOREIGN viewer measures ZERO host reach on the owner's job (owner-mismatch fires before the registry)  377ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  10:56:02
+   Duration  3.87s (transform 1.81s, setup 0ms, import 1.28s, tests 2.34s, environment 0ms)
+
+EXIT=0
