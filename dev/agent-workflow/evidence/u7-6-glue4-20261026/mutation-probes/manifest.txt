@@ -1,0 +1,6 @@
+M1-deny-mirror-removed: CAUGHT (exit 1)
+M2-unknown-class-accepted: CAUGHT (exit 1)
+M3-nameable-class-rides: CAUGHT (exit 1)
+M4-ride-ceiling-relaxed-to-allow: CAUGHT (exit 1)
+all-mutants-caught=true
+kernel restored byte-identical: 6f25963ec2222c6866c94af0eb08fecc8714cec3e44c9e3d056f0810e33014cd

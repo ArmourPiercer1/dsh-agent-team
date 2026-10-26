@@ -141,7 +141,13 @@
    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
    "sha256": "935177e468b4e2c393bb53bd1521f1b64bf9381b5c20d2591aa50f429442f491",
    "pr": "PR #377 (U6 PR4 jobs bridge, merged into origin/master at 22110abbe)",
-   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it \u2014 the PR-body git-diff\u2229protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+   "reason": "mainline moved this protected file BEFORE the PR5 merge (CI-05 governed-mount id attribution fix); the PR5 slice itself adds ZERO diff to it — the PR-body git-diff∩protected=empty receipt is measured against origin/master AFTER this merge, which is the claim that stays true."
+  },
+  {
+   "path": "packages/runtime/tool-admission/admission-kernel.ts",
+   "sha256": "6f25963ec2222c6866c94af0eb08fecc8714cec3e44c9e3d056f0810e33014cd",
+   "pr": "PR #391 (U7-6 named center-interface PR) — fix(u7-6): GLUE-4 — governed search rows are admissible at the template-policy coverage gate (no teeth lost); the number booked by the follow-up citation commit",
+   "reason": "GLUE-4 closure of the live governed-search refusal AT THE TEMPLATE-POLICY COVERAGE/PROJECTION GATE (admitCall) — NOT the assurance-LEVEL face, which is vacuous on this mount; no assurance-runtime capability is claimed or counted here. Evidence dev/agent-workflow/evidence/u7-6-glue4-20261026/ (root-cause receipt + post-fix receipt + C2 run + mutation probes). Four data-driven changes: (A) read-class resource rules also project the list companion (the anchored walk enumerates the surface the rule already FULLY reads; names are a subset of contents — never widens; meta-companion precedent; read_image/write keep none); (B) NEW trusted data input invokeClasses <effectClass <- governing rule tools>: governing rules project the class tool-invoke arm with the SAME ceiling and deny-source treatment, disclosure note, blinded empty/elsewhere/whole-tool-any policies still answer IO_POLICY_UNSUPPORTED; ZERO search-class tool-name literals enter this file — the law lives in the trusted plane mount that supplies the map (PR5 law L2 honored at the byte); (C) ProductionAdmissionConfig pass-through; (D) review R1 F1 — closed-world law: knownEffectClasses (the mount's declared row-class inventory) is REQUIRED beside any class law; a law key outside it is the typed refusal projection-invoke-class-unknown, a law without a declared world is projection-inventory-missing — a well-formed unknown/stub/attacker class can never acquire tool-invoke authority (mutation probes M2/M3 catch any relaxation). Assurance weakened nowhere: default-deny coverage gate intact, deny-lane mirror intact (M1 caught), ride ceiling never loosened (M4 caught), PA edge not bypassed."
   },
   {
    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",

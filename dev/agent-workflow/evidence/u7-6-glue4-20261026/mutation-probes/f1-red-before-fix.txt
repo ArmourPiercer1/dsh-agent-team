@@ -1,0 +1,16 @@
+     ✓ the shell class keeps only whole-tool rules; allow-any is leader-only and dual-gated 3ms
+     ✓ a read rule over the governed root + class law covers the anchored search envelope (list+read+invoke) 1ms
+     ✓ a rule that does NOT locate the governed surface leaves the envelope unmet (teeth kept) 0ms
+     ✓ EMPTY template + class law still refuses the whole envelope (a mounted class admits nothing on its own) 1ms
+     ✓ without the class law, the read rule covers list+read but NOT tool-invoke(grep) (the pre-U7-6 refusal) 0ms
+     ✓ a mounted class law NEVER touches the shell class: tool-invoke(bash) stays refused by a read rule 0ms
+     ✓ a DENY-lane governing rule projects the class arm into the deny lane AND its deny source (never loosened) 1ms
+     ✓ the class law DISCLOSES itself as a note, never silent 0ms
+     × a well-formed UNKNOWN class is a typed refusal at both real faces (review R1 F1) 11ms
+     × the production assembly face refuses construction on an unknown class and on a classless inventory (same typed refusal — the reviewer drove the real path) 4ms
+     ✓ the class law is validated fail-closed (nameable class / non-grammar governor / empty list / shape) 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected undefined to be 'projection-invoke-class-unknown' // Object.is equality
+AssertionError: expected true to be false // Object.is equality
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed | 43 skipped (54)

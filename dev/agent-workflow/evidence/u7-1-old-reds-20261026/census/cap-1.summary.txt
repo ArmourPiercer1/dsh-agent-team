@@ -1,0 +1,6 @@
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ Test Files  626 passed (626)
+      Tests  7936 passed (7936)
+   Duration  331.31s (transform 32.93s, setup 0ms, import 314.93s, tests 729.70s, environment 126ms)

@@ -1527,7 +1527,20 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
       }
       // Same shape as the scratch probes, one file each, so the control moves the universe by
       // the same number of files the scratch would have.
-      const controlDir = join(REPO_ROOT, 'packages', 'testkit', 'test')
+      //
+      // WHERE THE CONTROLS LIVE IS A CORRECTNESS REQUIREMENT, NOT TIDINESS (U7-1 / EB2-C old-red
+      // closure, measured). They used to be planted in `packages/testkit/test/`, i.e. INSIDE the
+      // nine-root corpus that `p4t6-session-event-scan.test.ts` walks at module load and pins as an
+      // exact `filesScanned` total. The root suite runs those two files in parallel workers, so
+      // whenever this leg's ~50 s window overlapped p4t6's 20 ms scan, p4t6 counted two `.mts` files
+      // that belong to no commit and went red with `expected 1279 to be 1277` — a red that is a
+      // function of SCHEDULING, not of the tree. Measured: the same suite alone is 10/10 green; with
+      // the two control files present on disk it is 1 failed / 9 passed with exactly that
+      // assertion, twice, deterministically. `scripts/` is outside p4t6's `packages/**` walk (its
+      // scanner is rooted at `<repo>/packages`) and inside the lint universe this leg is actually
+      // measuring (`eslint .` covers `scripts/**`), so the controls keep full power and stop being
+      // visible to a concurrent census.
+      const controlDir = join(REPO_ROOT, 'scripts')
       const controls = [join(controlDir, 'lint-scratch-control-a.mts'), join(controlDir, 'lint-scratch-control-b.mts')]
       try {
         const before = await universe('lint universe, scratch absent')

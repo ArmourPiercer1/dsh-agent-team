@@ -126,13 +126,23 @@ function lane(opts: { readonly origin?: 'reviewed-manifest' | 'dynamic-source', 
     kernel,
     identity,
     events: () => outcome.value.observations().map((row) => String(row.event)),
-    run: (input) => double.runCall({ callId: `m-${seq++}`, ...input }),
+    run: async (input) => {
+      const r = await double.runCall({ callId: `m-${seq++}`, ...input })
+      recordBodies((r as { bodies?: readonly string[] }).bodies ?? [])
+      return r
+    },
   }
 }
 
 function plainWorld(): ScopedRegistryDouble {
   const plain = scopedRegistryDouble({ globalNames: ['grep', 'list_agents'] })
   plain.registerOwn('read', 'V1.read')
+  const orig = plain.runCall.bind(plain)
+  ;(plain as unknown as { runCall: (i: RunCallInput & { callId: string }) => ReturnType<ScopedRegistryDouble['runCall']> }).runCall = async (input) => {
+    const r = await orig(input)
+    recordBodies(r.bodies ?? [])
+    return r
+  }
   return plain
 }
 
@@ -146,11 +156,39 @@ const rIsError = (r: { text: string }): boolean => r.text.startsWith('Error:')
 /** The shipped Gate 0b face, imported exactly as a5-pindir imports it (the
  *  house dynamic-import idiom for the plane row; offline-safe). */
 async function planeRow(): Promise<{ verifyPlaneNames: (names: Record<string, string>, readName: string) => { ok: boolean, code?: string, message?: string } }> {
-  return import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as unknown as Promise<{ verifyPlaneNames: (names: Record<string, string>, readName: string) => { ok: boolean, code?: string, message?: string } }>
+  const mod = await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as unknown as { verifyPlaneNames: (names: Record<string, string>, readName: string) => { ok: boolean, code?: string, message?: string } }
+  const orig = mod.verifyPlaneNames
+  return {
+    verifyPlaneNames: (names, readName) => {
+      const r = orig(names, readName)
+      recordGate(r.ok === true)
+      return r
+    },
+  }
 }
 
 const PLANT = 'V2.planted-body'
 const MOVED = 'V2.moved'
+
+/* ── E2 instrumentation — the blinded-twin EXECUTION ledger ─────────────────
+ * The shape pairing (ids exist on both sides) is necessary but NOT the law:
+ * the law is that BOTH sides of every pair EXECUTE and their BODY COUNTS
+ * disagree in the named direction. These two ledgers record, per scenario
+ * leg, (a) how many Bodies every recorded call ran and (b) every shipped
+ * Gate 0b verdict — so the pairing test can assert EXECUTION facts, not
+ * prose. CURRENT_LEG is set only while the pairing test runs a leg; the
+ * big 37-leg test runs unrecorded (instrumentation adds nothing to it). */
+let CURRENT_LEG: string | null = null
+const BODY_LEDGER = new Map<string, string[][]>()
+const GATE_LEDGER = new Map<string, boolean[]>()
+function recordBodies(bodies: readonly string[]): void {
+  if (CURRENT_LEG === null) return
+  BODY_LEDGER.set(CURRENT_LEG, [...(BODY_LEDGER.get(CURRENT_LEG) ?? []), [...bodies]])
+}
+function recordGate(ok: boolean): void {
+  if (CURRENT_LEG === null) return
+  GATE_LEDGER.set(CURRENT_LEG, [...(GATE_LEDGER.get(CURRENT_LEG) ?? []), ok])
+}
 
 /** The offline legs: each returns the detail line the ledger records. */
 const SCENARIOS: Readonly<Record<string, () => Promise<string>>> = Object.freeze({
@@ -539,6 +577,123 @@ const CELLS: readonly Cell[] = Object.freeze<Cell[]>([
   { id: 'wire_secondary', oracle: 'wire-shape', disposition: { kind: 'offline', leg: 'wire_secondary' } },
 ])
 
+/**
+ * E2 — the STRUCTURED blinded-twin pairing. Every refusal cell names its
+ * twin EXECUTION (a sibling cell whose world is identical except the guard
+ * is off / the claim absent / identity present, so the SAME move RUNS), or
+ * `inLeg` when the blinded positive control executes INSIDE the refusal leg
+ * itself (p5a's plain-world shadow twin; the Gate 0b legs' clean-map mount
+ * verdict). One refusal ⇒ exactly one named twin; the pairing test below
+ * EXECUTES both sides and asserts the recorded BODY counts disagree in the
+ * named direction — shape (ids exist) alone never proved anyone ran.
+ */
+type TwinPair = {
+  readonly refusal: string
+  readonly twin: string | 'inLeg'
+  readonly twinKind: 'executes' | 'in-leg-bodies' | 'in-leg-gate'
+  /** What the refusal leg's calls may carry on the body ledger:
+   *  'zero' (default) — every recorded call ran NO Body at all;
+   *  'original-only' — the leg's oracle is an HONEST body-entry abort
+   *  (b2/c1/e by design: the ORIGINAL definition's Body may enter before
+   *  the abort lands — the cell's own class assertion pins it); the
+   *  planted/moved identity must STILL appear zero times, which is the
+   *  real refusal law. The twin side always proves > 0 Bodies ran. */
+  readonly refusalBodies?: 'zero' | 'original-only'
+}
+const TWIN_PAIRS: readonly TwinPair[] = Object.freeze<TwinPair[]>([
+  { refusal: 'b_regen_at_rest', twin: 'c_restore_control', twinKind: 'executes' },
+  { refusal: 'c_preguard_veto', twin: 'c_restore_control', twinKind: 'executes' },
+  { refusal: 'c1_foreign_midbody', twin: 'f_plant_executes', twinKind: 'executes', refusalBodies: 'original-only' },
+  { refusal: 'b2_regen_inflight', twin: 'f_after_restore', twinKind: 'executes', refusalBodies: 'original-only' },
+  { refusal: 'e_races', twin: 'f_plant_executes', twinKind: 'executes', refusalBodies: 'original-only' },
+  { refusal: 'eq4_swap_in_guard_window', twin: 'f_after_restore', twinKind: 'executes' },
+  { refusal: 'eq11_nested_veto', twin: 'eq10_nested_approved', twinKind: 'executes' },
+  { refusal: 'p6_spoof_zero_effects', twin: 'p6_plant_native_when_guard_off', twinKind: 'executes' },
+  { refusal: 'p6_interrupt_agent_veto', twin: 'p6_plant_native_when_guard_off', twinKind: 'executes' },
+  { refusal: 'p6_plugin_manager_veto', twin: 'p6_plant_native_when_guard_off', twinKind: 'executes' },
+  { refusal: 'p5a_late_shadow_veto', twin: 'inLeg', twinKind: 'in-leg-bodies' },
+  { refusal: 'p6_send_message_veto', twin: 'inLeg', twinKind: 'in-leg-gate' },
+  { refusal: 'p6_profile_zero_effects', twin: 'inLeg', twinKind: 'in-leg-gate' },
+])
+
+function legOf(cellId: string): string {
+  const cell = CELLS.find((c) => c.id === cellId)
+  if (cell === undefined) throw new Error(`pairing names the unknown cell ${cellId}`)
+  if (cell.disposition.kind !== 'offline') throw new Error(`pairing cell ${cellId} is not booked offline (its leg cannot be EXECUTED here)`)
+  const leg = (cell.disposition as { leg: string }).leg
+  if (typeof SCENARIOS[leg] !== 'function') throw new Error(`cell ${cellId} names no scenario leg`)
+  return leg
+}
+
+/** Run one leg under the ledgers and return the recorded execution facts. */
+async function runLegRecorded(leg: string, scenarios: Record<string, () => Promise<string>>): Promise<{ detail: string, bodyCalls: string[][], gateVerdicts: boolean[] }> {
+  const scenario = scenarios[leg]
+  if (typeof scenario !== 'function') throw new Error(`no scenario for leg ${leg}`)
+  // isolate THIS run's rows from the leg's earlier recorded history
+  const bodyMark = (BODY_LEDGER.get(leg) ?? []).length
+  const gateMark = (GATE_LEDGER.get(leg) ?? []).length
+  CURRENT_LEG = leg
+  try {
+    const detail = await scenario()
+    return { detail, bodyCalls: (BODY_LEDGER.get(leg) ?? []).slice(bodyMark), gateVerdicts: (GATE_LEDGER.get(leg) ?? []).slice(gateMark) }
+  } finally {
+    CURRENT_LEG = null
+  }
+}
+const bodyTotal = (calls: readonly (readonly string[])[]): number => calls.reduce((a, b) => a + b.length, 0)
+
+/** The pairing law, machine-checked over EXECUTION facts:
+ *  - every refusal cell appears EXACTLY once, and every refusal names one
+ *    twin (a real offline cell, or 'inLeg');
+ *  - BOTH sides execute: the refusal leg records ZERO Bodies across every
+ *    call it ran; an 'executes' twin leg records ≥1 Body; an 'in-leg-bodies'
+ *    twin is proven by the refusal leg itself recording BOTH a zero-Body and
+ *    a >0-Body call; an 'in-leg-gate' twin is proven by the same leg
+ *    recording BOTH a refused and an accepted shipped verdict;
+ *  - a missing twin id, an unrunnable twin, or a twin whose legs ran ZERO
+ *    Bodies all THROW (the planted-mismatch self-tests below). */
+async function verifyTwinExecution(
+  pairs: readonly TwinPair[],
+  scenarios: Record<string, () => Promise<string>>,
+): Promise<string[]> {
+  const refusalIds = CELLS.filter((c) => TWIN_PAIRS.some((t) => t.refusal === c.id)).map((c) => c.id)
+  const seen = new Map<string, number>()
+  for (const pair of pairs) seen.set(pair.refusal, (seen.get(pair.refusal) ?? 0) + 1)
+  for (const id of refusalIds) assert(seen.get(id) === 1, `refusal cell ${id} must appear EXACTLY once in the pairing (found ${String(seen.get(id) ?? 0)})`)
+  const out: string[] = []
+  for (const pair of pairs) {
+    const refusalLeg = legOf(pair.refusal)
+    const r = await runLegRecorded(refusalLeg, scenarios)
+    if (pair.twinKind === 'executes') {
+      assert(pair.twin !== 'inLeg', 'an executes pair must name a twin cell')
+      const twinLeg = legOf(pair.twin)
+      const t = await runLegRecorded(twinLeg, scenarios)
+      const rTotal = bodyTotal(r.bodyCalls)
+      const tTotal = bodyTotal(t.bodyCalls)
+      const leaked = r.bodyCalls.flat().filter((b) => b !== 'V1.read')
+      if ((pair.refusalBodies ?? 'zero') === 'zero') {
+        assert(rTotal === 0, `refusal cell ${pair.refusal} ran ${String(rTotal)} Bodies — a refusal with an effect is not a refusal`)
+      } else {
+        assert(leaked.length === 0, `refusal cell ${pair.refusal} ran a NON-original Body (${leaked.join()}) — the armed world must only ever run the ORIGINAL definition's Body before an honest abort`)
+        assert(r.bodyCalls.length > 0, `refusal cell ${pair.refusal} recorded no calls at all`)
+      }
+      assert(tTotal > 0, `twin ${String(pair.twin)} of refusal ${pair.refusal} ran ZERO Bodies — the blinded twin never executed (the pairing would be shape-only)`)
+      out.push(`${pair.refusal} (${String(rTotal)}/${String(r.bodyCalls.length)} calls) <-> ${String(pair.twin)} (${String(tTotal)} Bodies)`)
+    } else if (pair.twinKind === 'in-leg-bodies') {
+      const zero = r.bodyCalls.some((names) => names.length === 0)
+      const positive = r.bodyCalls.some((names) => names.length > 0)
+      assert(zero && positive, `in-leg twin for ${pair.refusal} not executed: calls recorded [${r.bodyCalls.join(',')}] — need BOTH a zero-Body refusal call and a >0-Body blinded call`)
+      out.push(`${pair.refusal} (in-leg: ${String(r.bodyCalls.length)} calls, both sides present)`)
+    } else {
+      const refused = r.gateVerdicts.some((ok) => ok !== true)
+      const accepted = r.gateVerdicts.some((ok) => ok === true)
+      assert(refused && accepted, `in-leg GATE twin for ${pair.refusal} not executed: shipped verdicts [${r.gateVerdicts.join(',')}] — need BOTH a refusal and the clean-map acceptance`)
+      out.push(`${pair.refusal} (in-leg gate: refusal + clean-map mount both executed)`)
+    }
+  }
+  return out
+}
+
 describe('ARC-D matrix — sup-a’s 42-cell oracle re-run as the U6 gate ledger', () => {
   it('the ledger is complete: sup-a’s cell list verbatim, each with an oracle and a disposition', () => {
     expect(CELLS.map((c) => c.id)).toEqual([
@@ -605,5 +760,41 @@ describe('ARC-D matrix — sup-a’s 42-cell oracle re-run as the U6 gate ledger
     // mounts; the refusals are pure/repeated — zero state to check); the rest
     // pair through f_plant_executes / c_restore_control / f_after_restore /
     // p6_plant_native_when_guard_off (the guard-off native plant).
+  })
+
+  it('E2 — the blinded-twin pairing is EXECUTED one-to-one: refusal bodies 0, twin bodies > 0, and a planted mismatch fails', async () => {
+    // The shape test above only proves the twin IDS exist. This test runs
+    // BOTH sides of every pair under the body/gate ledgers and asserts the
+    // EXECUTION facts (see verifyTwinExecution): a pairing whose twin never
+    // actually executes is exactly the false-green E2 names — so the
+    // mismatch plants below MUST make the checker throw.
+    const executed = await verifyTwinExecution(TWIN_PAIRS, SCENARIOS as unknown as Record<string, () => Promise<string>>)
+    expect(executed.length).toBe(TWIN_PAIRS.length)
+    // every named twin executes at least one Body — none is a paper twin
+    const executes = TWIN_PAIRS.filter((t) => t.twinKind === 'executes').map((t) => String(t.twin))
+    for (const twin of new Set(executes)) {
+      const twinLeg = legOf(twin)
+      const total = bodyTotal(BODY_LEDGER.get(twinLeg) ?? [])
+      expect(total, `twin ${twin} recorded zero Bodies across the whole pairing run`).toBeGreaterThan(0)
+    }
+    // (1) twin MISSING (pair dropped) → the checker must fail closed
+    await expect(verifyTwinExecution(TWIN_PAIRS.slice(1), SCENARIOS as unknown as Record<string, () => Promise<string>>)).rejects.toThrow(/EXACTLY once/)
+    // (2) twin id NOT A REAL CELL → fail closed
+    await expect(verifyTwinExecution(
+      TWIN_PAIRS.map((t, i) => (i === 0 ? { ...t, twin: 'twin_that_was_never_a_cell' } : t)),
+      SCENARIOS as unknown as Record<string, () => Promise<string>>),
+    ).rejects.toThrow(/unknown cell/)
+    // (3) twin NOT EXECUTED (the twin leg replaced by a scenario that runs
+    //     nothing) → fail closed: the bodies ledger shows a paper twin
+    const noRunTwin = { ...(SCENARIOS as unknown as Record<string, () => Promise<string>>), c_restore_control: async () => 'planted: a twin that runs nothing' }
+    await expect(verifyTwinExecution(TWIN_PAIRS, noRunTwin)).rejects.toThrow(/never executed|need BOTH/)
+    // (4) refusal LEAKING bodies (the refusal leg replaced by one whose
+    //     world RUNS) → fail closed on the refusal side
+    const leaky = { ...(SCENARIOS as unknown as Record<string, () => Promise<string>>), b_regen_at_rest: async () => { const l = lane(); await l.run({ name: 'read' }); return 'planted: refusal that leaked a body' } }
+    await expect(verifyTwinExecution(TWIN_PAIRS, leaky)).rejects.toThrow(/ran [1-9][0-9]* Bodies|not a refusal/)
+    // (5) in-leg twin not executed (p5a's blinded twin leg replaced by one
+    //     whose plain world never runs the shadow) → fail closed
+    const noInLeg = { ...(SCENARIOS as unknown as Record<string, () => Promise<string>>), p5a_late_shadow_veto: async () => { const l = lane(); await l.run({ name: 'read', swap: { stage: 'pre-execute', name: 'read', identity: PLANT } }); return 'planted: refusal only, no blinded twin' } }
+    await expect(verifyTwinExecution(TWIN_PAIRS, noInLeg)).rejects.toThrow(/in-leg twin for p5a_late_shadow_veto not executed/)
   })
 })

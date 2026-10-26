@@ -620,15 +620,26 @@ export function judgeU6Proc(d, hostAlive) {
   const maskRows = rowsOf('MASK')
   const maskAskId = ((d.controlDigest ?? {}).requests ?? [])
     .find((r) => String(r.summary ?? '').includes('U6PROC_MASK_'))?.requestId ?? null
+  // R-U6P3-1 — the POSITIVE-READ PRECONDITION: a zero-row claim on the
+  // control channel is evidence ONLY if that SAME channel has proven it
+  // can see rows at all, i.e. it showed a row THIS run CREATED (the asker
+  // lane's pending row). Digests without the controlRead block predate the
+  // governed-session read and keep their legacy semantics byte-equal; on a
+  // NEW digest, an unproven channel may never support a zero-row PASS —
+  // "we saw nothing" on an instrument that never showed anything is not a
+  // measurement.
+  const positiveRead = (d.controlRead ?? null) === null ? null : d.controlRead?.positiveReadProven === true
   const neverNotified = typeof d.notifTurnsMask === 'number'
     ? d.notifTurnsMask === 0
     : (d.notifTurns ?? 1) === 0
   out.push(['proc:member-ask-born-terminal',
     maskRows.some((r) => /APPROVAL_DENIED/i.test(String(r.result?.head ?? '')))
     && absent('mask') && (d.claims?.mask ?? 1) === 0 && neverNotified
+    && positiveRead !== false
     && hostAlive ? 'PASS' : 'FAIL', {
     maskResults: maskRows.map((r) => String(r.result?.head ?? '').slice(0, 140)),
     maskRequestId: maskAskId,
+    controlChannelPositiveRead: positiveRead === null ? 'digest-predates-governed-read' : positiveRead,
     notifTurns: d.notifTurns ?? null,
     notifTurnsForMaskAsk: typeof d.notifTurnsMask === 'number' ? d.notifTurnsMask : 'digest-predates-per-ask-count',
     note: 'the shell-lane member ask settled as a synchronous terminal deny with zero spawn and no leader notification ever carrying this ask id. Measured live cause (u6prc7 forensics): the durable ask row was never opened — request-control is outside the declared envelope of this template (the declared allow list replaces the member base bounds). The shell fingerprint rung law remains a C1/offline claim, not what this live leg reached.',
@@ -649,7 +660,7 @@ export function judgeU6Proc(d, hostAlive) {
   const ask = (d.resolvedAsks ?? []).find((a) => a.tag === 'replay') ?? null
   const openAtEnd = ((d.controlDigest ?? {}).requests ?? []).filter((r) => r.status === 'pending').length
   const replayOk = ask !== null && /"ok":false|"error"|CONTROL_/i.test(String(ask.firstBody ?? ''))
-    && openAtEnd === 0 && hostAlive
+    && openAtEnd === 0 && positiveRead !== false && hostAlive
   out.push(['proc:replay-settled-refusal', replayOk ? 'PASS' : 'FAIL', {
     replayArm: { requestId: String(ask?.requestId ?? '').slice(0, 24), body: String(ask?.firstBody ?? '').slice(0, 160) },
     openRequestsAtTeardown: openAtEnd,

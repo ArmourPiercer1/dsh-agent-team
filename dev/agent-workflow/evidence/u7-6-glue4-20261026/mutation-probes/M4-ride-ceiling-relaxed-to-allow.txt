@@ -1,0 +1,8 @@
+# M4-ride-ceiling-relaxed-to-allow
+# R1 recommended (c): relaxing the ride ceiling (deny/ask lane rides at allow) must break a test
+# vitest -t "projects the class arm" exit=1 => MUTANT CAUGHT (tests went RED)
+
+     × a DENY-lane governing rule projects the class arm into the deny lane AND its deny source (never loosened) 15ms
+      Tests  1 failed | 53 skipped (54)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected false to be true // Object.is equality

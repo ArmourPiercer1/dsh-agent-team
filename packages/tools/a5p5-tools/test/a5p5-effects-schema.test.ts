@@ -186,3 +186,73 @@ describe('a5p5-effects-schema: read-time consumption is REAL (the algebra is the
     expect(moved.value.fingerprint).not.toBe(a.value.fingerprint)
   })
 })
+
+// ── U7-6 GLUE-4: the ANCHORED form (module header, anchored law) ──────────
+const ROOT = '/srv/governed/root'
+
+describe('a5p5-effects-schema: U7-6 anchored form', () => {
+  it('anchored grep claims the governed WALK SURFACE, never the raw target', () => {
+    const derived = deriveToolEffectSet('realm-a', grepArgs({ target: target('absolute-path', `${ROOT}/notes`) }), ROOT)
+    expect(derived.ok).toBe(true)
+    if (!derived.ok) return
+    const [walk, content, invoke] = derived.value.effects
+    expect(walk).toMatchObject({ kind: 'list', resource: { realmId: 'realm-a', kind: 'directory', canonicalLocator: ROOT, rights: ['list'] } })
+    expect(content).toMatchObject({ kind: 'read', resource: { realmId: 'realm-a', kind: 'absolute-path', canonicalLocator: ROOT, rights: ['read'] } })
+    expect(invoke).toEqual({ kind: 'tool-invoke', toolName: 'grep', resource: null })
+  })
+
+  it('the anchored envelope is TARGET-INDEPENDENT: the /etc call claims the SAME set as the in-root call', () => {
+    // This is WHERE the anchored refusal leg moves: the row admits its
+    // surface claim identically for every target, and the BACKEND's own
+    // containment law refuses the outside target before any spawn.
+    const inRoot = deriveToolEffectSet('realm-a', grepArgs({ target: target('absolute-path', `${ROOT}/notes`) }), ROOT)
+    const outside = deriveToolEffectSet('realm-a', grepArgs({ target: target('absolute-path', '/etc') }), ROOT)
+    expect(inRoot.ok && outside.ok).toBe(true)
+    if (!inRoot.ok || !outside.ok) return
+    expect(outside.value.fingerprint).toBe(inRoot.value.fingerprint)
+  })
+
+  it('anchored glob claims invoke + list(surface); anchored bash is byte-identical to the historical claim', () => {
+    const glob = deriveToolEffectSet('realm-a', { tool: 'glob', pattern: '**/*.txt', target: target('workspace', '.') }, ROOT)
+    expect(glob.ok).toBe(true)
+    if (!glob.ok) return
+    expect(kindsOf(glob.value)).toEqual(['list', 'tool-invoke'])
+    expect(glob.value.effects.find((e) => e.kind === 'list')).toMatchObject({ resource: { kind: 'directory', canonicalLocator: ROOT } })
+    const anchoredBash = deriveToolEffectSet('realm-a', shellArgs('ls'), ROOT)
+    const plainBash = deriveToolEffectSet('realm-a', shellArgs('ls'))
+    expect(anchoredBash.ok && plainBash.ok).toBe(true)
+    if (!anchoredBash.ok || !plainBash.ok) return
+    expect(anchoredBash.value.fingerprint).toBe(plainBash.value.fingerprint) // the anchor never touches the shell arm
+  })
+
+  it('omitting the anchor keeps the historical target-scoped law BYTE-IDENTICAL (live wire pins)', () => {
+    const omitted = deriveToolEffectSet('realm-a', grepArgs())
+    const explicitUndefined = deriveToolEffectSet('realm-a', grepArgs(), undefined)
+    const anchored = deriveToolEffectSet('realm-a', grepArgs(), ROOT)
+    expect(omitted.ok && explicitUndefined.ok && anchored.ok).toBe(true)
+    if (!omitted.ok || !explicitUndefined.ok || !anchored.ok) return
+    expect(explicitUndefined.value.fingerprint).toBe(omitted.value.fingerprint)
+    expect(anchored.value.fingerprint).not.toBe(omitted.value.fingerprint) // anchored rows are NOT confusable with historical rows
+    const anchoredGlob = deriveToolEffectSet('realm-a', { tool: 'glob', pattern: '*', target: target('workspace', '.') }, ROOT)
+    const plainGlob = deriveToolEffectSet('realm-a', { tool: 'glob', pattern: '*', target: target('workspace', '.') })
+    if (!anchoredGlob.ok || !plainGlob.ok) return
+    expect(anchoredGlob.value.fingerprint).not.toBe(plainGlob.value.fingerprint)
+  })
+
+  it('an untrusted-looking anchor is refused with the lane problem codes (never guessed, never coerced)', () => {
+    for (const [bad, code] of [
+      [42, 'field-type'],
+      ['', 'empty-string'],
+      ['   ', 'empty-string'],
+      ['notes', 'locator-rejected'],
+      ['~/notes', 'locator-rejected'],
+    ] as const) {
+      const refused = deriveToolEffectSet('realm-a', grepArgs(), bad)
+      expect(refused.ok).toBe(false)
+      if (refused.ok) return
+      expect(refused.problems.some((p) => p.code === code && p.path === '$.effectAnchorRoot')).toBe(true)
+    }
+    const windowsRoot = deriveToolEffectSet('realm-a', grepArgs(), 'C:\\governed\\root')
+    expect(windowsRoot.ok).toBe(true) // an absolute governed root is absolute on both platforms
+  })
+})
