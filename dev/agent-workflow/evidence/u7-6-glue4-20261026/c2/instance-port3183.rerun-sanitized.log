@@ -1,0 +1,15 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-6/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=REDACTED
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6arca-realm-u5x-20261026t12-44-28z
+[dsh-agent-team] a5ptc: census-boot root=session-u6arca-team-u5x-20261026t12-44-28z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-6/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6arca-realm-u5x-20261026t12-44-28z
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=u6arca-realm-u5x-20261026t12-44-28z legs=6
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=pre-spawn-check realm=u6arca-realm-u5x-20261026t12-44-28z call=unspecified
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=child-live realm=u6arca-realm-u5x-20261026t12-44-28z call=unspecified
+[dsh-agent-team] a5g7-search: anchored-search OK realm=u6arca-realm-u5x-20261026t12-44-28z call=unspecified records=1 total=1 truncated=false
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=u6arca-realm-u5x-20261026t12-44-28z legs=6
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=pre-spawn-check realm=u6arca-realm-u5x-20261026t12-44-28z call=unspecified
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=child-live realm=u6arca-realm-u5x-20261026t12-44-28z call=unspecified
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5x-20261026t12-44-28z call=team-inst-1uhz0sl0tv3x-glob:hexec:bae7ca97-974f-4b41-b424-b3e38e8e5b91-2 pid=176 files=4 capped=false
+[dsh-agent-team] a5g7-search: anchored-search refused code=target-outside-governed-root call=unspecified realm=u6arca-realm-u5x-20261026t12-44-28z
