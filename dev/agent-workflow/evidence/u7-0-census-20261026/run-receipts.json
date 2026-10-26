@@ -197,5 +197,167 @@
         }
       }
     ]
+  },
+  "run3": {
+    "runId": "u7-0-census-2026-10-26T12-42-24-521Z",
+    "overall": "PASS",
+    "note": "review-R1 pinning run on the reviewer-granted +2 boots (ledger line u7c3); reconcile case carries assertions (problems []).",
+    "hostStarts": {
+      "ledgerPath": ".artifacts/tmp/u7-0-census-live/u7c-budget-run3.jsonl",
+      "thisRunCount": 2,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T12:42:24.729Z",
+          "runId": "u7-0-census-2026-10-26T12-42-24-521Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c3a-20261026T12-42-24Z",
+          "phase": "c2-non-team"
+        },
+        {
+          "at": "2026-10-26T12:42:29.640Z",
+          "runId": "u7-0-census-2026-10-26T12-42-24-521Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c3b-20261026T12-42-29Z",
+          "phase": "c2-governed-team"
+        }
+      ]
+    },
+    "cases": [
+      {
+        "id": "c2-non-team",
+        "verdict": "PASS",
+        "at": "2026-10-26T12:42:29.364Z",
+        "tag": "live1",
+        "waitedMs": 2002,
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 1,
+          "teamLaneSnapshots": 0,
+          "agentLanes": 1,
+          "tags": [
+            "live1"
+          ]
+        },
+        "sessionId": "session-4144e97e-4612-4d80-988e-3f54439cb142"
+      },
+      {
+        "id": "c2-governed-team",
+        "verdict": "PASS",
+        "at": "2026-10-26T12:44:18.292Z",
+        "waitedLanesMs": 30029,
+        "teamLiveHit": false,
+        "waitedMs": 1,
+        "facts": {
+          "mounted": true,
+          "applied": true,
+          "registerOk": true,
+          "seamRefusals": 0,
+          "snapshotCount": 3,
+          "teamLaneSnapshots": 3,
+          "agentLanes": 2,
+          "tags": [
+            "auto-30000ms",
+            "live1",
+            "auto-60000ms"
+          ]
+        }
+      },
+      {
+        "id": "reconcile",
+        "verdict": "PASS",
+        "at": "2026-10-26T12:44:18.462Z",
+        "problems": [],
+        "nonTeam": {
+          "missing": 11,
+          "unknown": 2,
+          "out_of_scope_observed": 0,
+          "source_findings": 0,
+          "drift": 0,
+          "scope_gaps": 18
+        },
+        "team": {
+          "missing": 24,
+          "unknown": 5,
+          "out_of_scope_observed": 0,
+          "source_findings": 0,
+          "drift": 0,
+          "scope_gaps": 0
+        },
+        "nonTeam_snapshot_digest": "sha256:c4e7da01fa1fa60633bdf6dcbf1c6e07ad184e40fd4adbf81c4869cf5634bf47",
+        "team_snapshot_digest": "sha256:320f81fa3e5be8c31ab0235fb346c21c7158b98c06f1bbfc9c3c47d592a7a30f",
+        "nonTeam_verdict_digest": "sha256:a890ced2bbb33448b33757d346857e17957a3f544f669742182a1b9c94b7035c",
+        "team_verdict_digest": "sha256:e223456d4392b5785ad10a25a472287e45252c718e2894b38dcc1abfb6f59ada",
+        "crossBoot": {
+          "drift": 2,
+          "kinds": [
+            "definition-shape"
+          ]
+        }
+      },
+      {
+        "id": "leak-check",
+        "verdict": "PASS",
+        "at": "2026-10-26T12:44:18.493Z",
+        "ownedPidsDead": true,
+        "portsReleased": true,
+        "homeReleased": true,
+        "leasesReleased": true,
+        "notes": []
+      },
+      {
+        "id": "stable-instance-unchanged",
+        "verdict": "PASS",
+        "at": "2026-10-26T12:44:18.495Z",
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        },
+        "homesCreated": [],
+        "note": "read-only probe of :3080 before/after"
+      }
+    ],
+    "bindings": {
+      "teamSha": "2f630e766310f8624c7dd5b66875a4739ff90e27",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "maxHostStarts": 2,
+      "provider": {
+        "kind": "mock-deepseek",
+        "base": "injected http://127.0.0.1:<leased-port>"
+      },
+      "worldIds": [
+        "u5u7c3a-20261026T12-42-24Z",
+        "u5u7c3b-20261026T12-42-29Z"
+      ],
+      "disclosure": "The pristine host base is the main checkout tests/deepseek-harness-test-use tree, mounted READ-ONLY through the factory (HEAD/porcelain asserted before every spawn). Worlds live under tests/homes/<world>; ports 3180-family via leases; the census row registers ONE tool and reads only public seams."
+    },
+    "hostStartsRecorded": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0/.artifacts/tmp/u7-0-census-live/u7c-budget-run3.jsonl",
+      "thisRunCount": 2,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-26T12:42:24.729Z",
+          "runId": "u7-0-census-2026-10-26T12-42-24-521Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c3a-20261026T12-42-24Z",
+          "phase": "c2-non-team"
+        },
+        {
+          "at": "2026-10-26T12:42:29.640Z",
+          "runId": "u7-0-census-2026-10-26T12-42-24-521Z",
+          "suite": "u7-0-census",
+          "world": "u5u7c3b-20261026T12-42-29Z",
+          "phase": "c2-governed-team"
+        }
+      ]
+    }
   }
 }
