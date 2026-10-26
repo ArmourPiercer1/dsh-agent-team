@@ -16,3 +16,7 @@ Regression: 41 files / 608 tests; the one red was the p4t6 +1 booking (fs.mjs), 
 
 head (fs + process + search on seam): FINGERPRINT 7b2babd6c22924f7321b137b3e9ae13caecdd88f72dcc04e33468ca661454552 — equal to base 88107ad71 (fp-s3-process.json).
 Regression: 41 files / 608 tests incl. u74a background-jobs producer and a5p7 jobs actuator; the one red was the p4t6 +1 booking (process.mjs), booked after.
+
+## After merging #399 (master f37406e47)
+
+#399 retired the archived CANDIDATE-A glob factory in search-family (the search contribution source digest moves), so the fingerprint moves for master too. Branch head and master f37406e47 are byte-equal: both `e2db39ec5013b70dc2bc5a72eed71f721d5a1027ce214a916e544dc2c266d091` (fp-merged-399-head.json vs fp-master-f37406e47.json). Merged-tree C1: 46 files / 644 tests (plane suites, goldens, law + seam suites, p4t6, u7-g6b) — s7-merged-399-c1.log.
