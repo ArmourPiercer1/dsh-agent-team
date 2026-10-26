@@ -347,7 +347,8 @@ control('C5 required-context-nongreen-states', () => {
   const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
   const { REQUIRED_JOBS } = requireModule('scripts/eb3-ci-required.mjs')
   const layers = REQUIRED_JOBS.filter((j) => j.id !== 'aggregate').map((j) => j.id)
-  const green = () => Object.fromEntries(layers.map((id) => [id, { result: 'success', outputs: { verdict: 'PASS' } }]))
+  // `synthesize` is a graded need too (C13): an all-green Required run includes it.
+  const green = () => ({ synthesize: { result: 'success' }, ...Object.fromEntries(layers.map((id) => [id, { result: 'success', outputs: { verdict: 'PASS' } }])) })
   const honest = gradeNeeds({ needs: green() })
   if (honest.verdict !== 'pass') return { ok: false, detail: `all-green needs graded ${honest.verdict} — the grader cannot pass anything` }
   const victim = layers[1]
@@ -649,6 +650,30 @@ control('C12 reusable-workflow-output-boundary', () => {
     }
   }
   return { ok: misses.length === 0, detail: misses.length === 0 ? 'honest workflows pass; removing on.workflow_call.outputs from each of the four layers => CI_WORKFLOW_CALL_OUTPUT_MISSING' : misses.join(' ;; ') }
+})
+
+// ─────────────────── control 13: the synthetic merge tree job is itself a graded need
+/**
+ * Found while READING the first fully green hosted run: the grader listed `synthesize`
+ * as `info-undeclared-need (not graded)`. A failed or cancelled synthesize (a conflict,
+ * a stale merge ref) was therefore invisible to the Required verdict. Today the layers
+ * `needs: synthesize` and would be skipped — red — so the gate held by accident of
+ * topology, not by rule. EB3-C says the merge tree is REQUIRED; this makes it so.
+ */
+control('C13 merge-tree-job-is-graded', () => {
+  const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
+  const { REQUIRED_JOBS } = requireModule('scripts/eb3-ci-required.mjs')
+  const layers = REQUIRED_JOBS.filter((j) => j.id !== 'aggregate').map((j) => j.id)
+  const green = () => ({ synthesize: { result: 'success' }, ...Object.fromEntries(layers.map((id) => [id, { result: 'success', outputs: { verdict: 'PASS' } }])) })
+  if (gradeNeeds({ needs: green() }).verdict !== 'pass') return { ok: false, detail: 'all-green needs (with synthesize success) do not pass' }
+  const missed = []
+  for (const [name, v] of [['failure', { result: 'failure' }], ['cancelled', { result: 'cancelled' }], ['skipped', { result: 'skipped' }], ['absent', undefined]]) {
+    const n = green()
+    if (v === undefined) delete n.synthesize
+    else n.synthesize = v
+    if (gradeNeeds({ needs: n }).verdict !== 'fail') missed.push(name)
+  }
+  return { ok: missed.length === 0, detail: missed.length === 0 ? 'layers all green + synthesize failure/cancelled/skipped/absent => fail each' : `synthesize ${missed.join(', ')} graded GREEN` }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control

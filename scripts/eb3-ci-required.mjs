@@ -483,6 +483,12 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     const needs = Array.isArray(summary.needs) ? summary.needs : summary.needs ? [summary.needs] : []
     // `synthesize` must be in needs too: a merge CONFLICT happens there, and a summary
     // that does not need it would be skipped-on-failure-free of that outcome.
+    for (const g of agg.gradedNeeds ?? []) {
+      if (!needs.includes(g)) add('CI_SUMMARY_NEEDS_INCOMPLETE', `summary: ${agg.job}.needs omits graded need "${g}" declared in ${MANIFEST_REL}`, { layer: 'aggregate' })
+    }
+    if (!(agg.gradedNeeds ?? []).includes('synthesize')) {
+      add('CI_SUMMARY_NEEDS_INCOMPLETE', `summary: ${MANIFEST_REL} aggregate.gradedNeeds omits "synthesize" — the synthetic merge tree would be ungraded`, { layer: 'aggregate' })
+    }
     if (!needs.includes('synthesize')) {
       add('CI_SUMMARY_NEEDS_INCOMPLETE', `summary: ${agg.job}.needs omits "synthesize" — a merge conflict would not reach the Required verdict`, { layer: 'aggregate' })
     }

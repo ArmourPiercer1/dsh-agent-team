@@ -9,6 +9,9 @@
     "jobs": [
       "synthesize",
       "ci-required"
+    ],
+    "gradedNeeds": [
+      "synthesize"
     ]
   },
   "layers": [

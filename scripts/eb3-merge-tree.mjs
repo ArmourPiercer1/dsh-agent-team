@@ -102,7 +102,20 @@ export function gradeNeeds({ needs, manifest = loadManifest(), callerOf = defaul
     }
     rows.push({ layer: layer.id, klass: 'green', detail: 'success + verdict=PASS' })
   }
-  const extra = Object.keys(needs).filter((k) => !Object.values(callerOf).includes(k))
+  // THE MERGE-TREE JOB IS A GRADED NEED. EB3-C makes the synthetic merge tree REQUIRED,
+  // and the first fully green hosted run (40356648567) showed it listed as
+  // `info-undeclared-need (not graded)`: a failed/cancelled synthesize was invisible to
+  // the verdict, held red only because the layers happen to `needs:` it. Rule, not
+  // topology: it must be present with result success (it has no verdict token).
+  for (const j of manifest.aggregate.gradedNeeds ?? []) {
+    const e = needs[j]
+    const r = e === undefined ? 'absent' : String(e.result ?? '')
+    rows.push(r === GREEN_RESULT
+      ? { layer: j, klass: 'green', detail: 'success (merge-tree job)' }
+      : { layer: j, klass: e === undefined ? 'absent' : (['failure', 'cancelled', 'skipped'].includes(r) ? r : `unrecognised-result:${r || 'empty'}`), detail: `needs.${j}.result=${r || '(empty)'} — the synthetic merge tree is Required` })
+  }
+  const graded = new Set([...Object.values(callerOf), ...(manifest.aggregate.gradedNeeds ?? [])])
+  const extra = Object.keys(needs).filter((k) => !graded.has(k))
   for (const k of extra) rows.push({ layer: k, klass: 'info-undeclared-need', detail: 'a need the manifest does not declare (not graded)' })
   const nonGreen = rows.filter((r) => r.klass !== 'green' && !r.klass.startsWith('info-'))
   return { verdict: nonGreen.length === 0 && rows.some((r) => r.klass === 'green') ? 'pass' : 'fail', rows }

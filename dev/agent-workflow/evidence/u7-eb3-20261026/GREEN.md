@@ -272,6 +272,25 @@ representation, not "this row is bound", the guarantee — and it surfaced only 
 another lane added the first multi-row contribution. **Verified on a real merge with
 `origin/master`, not on my branch alone: 14/14 controls.**
 
+## D10. FIRST FULLY GREEN HOSTED RUN — and one more gap found by reading it
+
+Run **40356648567** at `c61ab7b58`: `synthesize-merge-tree`, `ci-fast`, `ci-integration`,
+`ci-security`, `ci-full`, `ci-required` — **all success**. Aggregate, verbatim:
+`EB3-REQUIRED pass layers=4 green=4 nongreen=none`. ci-full:
+`DSH-CI-LEG leg=census verdict=pass seconds=763.6` · `DSH-CI-VERDICT pass pass=8 fail=0 skip=0 refused=0` ·
+`DSH-CI-TRANSCRIPT-CHECK pass`. pr-gate, census-runtime, candidate-protection also pass.
+
+Reading that green log, the grader had a line I should not have accepted:
+`synthesize  info-undeclared-need  a need the manifest does not declare (not graded)`.
+The synthetic merge tree — the thing EB3-C makes REQUIRED — was not graded. A probe
+with `synthesize: failure` and four green layers returned `EB3-REQUIRED pass` (exit 0).
+It held red in practice only because the layers `needs: synthesize` and would be
+skipped: correct by topology, not by rule. Now `aggregate.gradedNeeds: [synthesize]`
+in the manifest, the grader requires it `success`, eb3-ci-required reds if the manifest
+or the summary's `needs` drops it, and control C13 (RED first) fails if synthesize
+failure / cancelled / skipped / absent ever grades green. This change post-dates that
+green run, so it needs one more hosted run, reported below.
+
 ## E. Honest gaps
 
 1. **`ci-required` is NOT yet the required branch-protection context.** The API still

@@ -71,3 +71,13 @@ RED proof (before the rule existed): the checker PASSED all four boundary-less l
 
 GREEN after: each layer declares on.workflow_call.outputs.verdict -> jobs.<id>.outputs.verdict,
 and removing that block from any of the four is refused (control C12), verified per layer.
+
+## (vii) the synthetic merge-tree job was NOT graded — found READING the first all-green hosted run (40356648567)
+That run's aggregate listed: synthesize  info-undeclared-need  a need the manifest does not declare (not graded).
+RED (pre-fix grader), probe: synthesize=failure + four green layers =>
+  EB3-REQUIRED pass layers=4 green=4 nongreen=none        exit=0
+RED (control C13 before the fix):
+  FAIL C13 merge-tree-job-is-graded :: synthesize failure, cancelled, skipped, absent graded GREEN
+GREEN after (manifest aggregate.gradedNeeds=[synthesize]):
+  EB3-REQUIRED fail layers=5 green=4 nongreen=synthesize:failure
+  PASS C13 merge-tree-job-is-graded :: layers all green + synthesize failure/cancelled/skipped/absent => fail each
