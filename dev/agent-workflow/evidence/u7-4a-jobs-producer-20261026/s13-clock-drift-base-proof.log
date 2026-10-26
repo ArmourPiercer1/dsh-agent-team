@@ -1,0 +1,12 @@
+S13 (rc2-sanitize-evidence) clock-drift proof — 2026-10-26T13:0xZ
+machine: same host as the PR branch worktree; NO concurrent jobs during this capture
+capture: PRISTINE-BASE checkout /srv/workspace/dsh-plugins/dsh-agent-team at origin/master 2af64ead7 (porcelain empty for tracked files)
+command: pnpm exec vitest run packages/testkit/test/rc2-sanitize-evidence.test.ts -t S13
+result:  x S13 ... 5702ms — Error: Test timed out in 5000ms (vitest default testTimeout)
+         Tests  1 failed | 12 passed (13)
+same leg on this PR head's full gate minutes earlier: 6618ms standalone FAIL / census-capture FAIL
+leg anatomy: S13 = spawnSync(node --test scripts/sanitize-evidence.regression.test.mjs) — a node-test-runner cold start
+  pinned against vitest's 5000 ms default; the leg was already inside noise of the clock (the earlier gate run at 12:07Z
+  passed it under the same 5000 ms clock). NOT a product or PR defect: this PR does not touch scripts/sanitize-evidence*
+  nor this test. Re-baselining the census baseline is the Contract Owner / main-agent call, not taken here.
+verdict: disclosed pre-existing environment-clock flake; census identity-set otherwise clean (only this identity moved).
