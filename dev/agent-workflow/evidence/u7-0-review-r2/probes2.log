@@ -1,0 +1,55 @@
+{
+ "A_missing_row_annotated": {
+  "source_present": true,
+  "source_removed": false,
+  "counts_equal": true
+ },
+ "B_required_with_no_source_row": {
+  "total_named": 87,
+  "orphan_count": 0,
+  "orphans": []
+ },
+ "C_subrequirement_vocabulary_in_verdict": {
+  "provider": true,
+  "binding": true,
+  "trusted_config": true
+ },
+ "C_subrequirement_vocabulary_in_artifacts": {
+  "expected_keys": [
+   "candidate_route",
+   "effect_class",
+   "expected_in",
+   "kind",
+   "matrix_cross_check",
+   "name",
+   "obligation",
+   "out_of_scope_reason",
+   "scope_variant",
+   "source_registration",
+   "supporting_evidence",
+   "team_lane_variant_expected",
+   "team_source_registration",
+   "unknowns"
+  ],
+  "has_provider_field": false,
+  "has_binding_field": false,
+  "sources_top_keys": [
+   "__digest",
+   "dynamic_source_classes",
+   "host_pin_provenance",
+   "inputs",
+   "note",
+   "pins",
+   "schema",
+   "static_sources",
+   "team_pin_provenance"
+  ],
+  "mentions_trusted_config": false
+ },
+ "D_duplicate_lane": {
+  "digest_moved": true
+ },
+ "D_lane_rename": {
+  "digest_moved": true
+ }
+}

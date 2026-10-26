@@ -1,0 +1,83 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-0-review-r2
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts (26 tests | 2 failed) 221ms
+     ✓ loads schema-clean through the fail-closed loader 2ms
+     ✓ bytes match the tracked manifest digests 1ms
+     ✓ generator replays byte-identically (--check) 73ms
+     ✓ validates against the tracked schema and the runtime guard 3ms
+     ✓ snapshot_digest recomputes (digest law: per-boot fields excluded) 8ms
+     ✓ clean baseline reconciles to the pinned counts and digest 3ms
+     ✓ PLANT 1 — unknown mcp__-shaped tool is detected as UNKNOWN, never authorized 6ms
+     × PLANT 2 — replacing an execution Definition is detected as DRIFT 12ms
+     ✓ PLANT 3 — dropping a required tool is detected as MISSING 5ms
+     ✓ THE AUTHORIZATION LAW: no output on any plant ever carries authorized:true 6ms
+     ✓ fail-closed: malformed inputs are refused, never reconciled 1ms
+     ✓ B2a — same-boot swap in the NON-FIRST fixture holder fires exactly once, attributed to that scope 1ms
+     ✓ B2b — swap in a SECOND lane of the same class on the pinned LIVE team baseline: exactly one row, own scope 1ms
+     × B2c — the pre-fix misattribution (one swap reported under BOTH classes) cannot recur 2ms
+     ✓ M1-placement — moving ONLY identity_vs_global reports placement-identity-signal, never definition-shape 1ms
+     ✓ M6 — same-boot change_seq move with unchanged shape reports revision (kills the revision mutant) 2ms
+     ✓ M7 — a moved source attribution reports the source kind (kills the source mutant) 1ms
+     ✓ B3a — REQUIRED obligation without ANY source registration is a finding (digest moves) 1ms
+     ✓ B3b — a source row with no obligation is a finding naming it 1ms
+     ✓ B3c — an observed name absent from the sources side is a finding (sources disagree) 2ms
+     ✓ B3-gen — the generator REFUSES to emit REQUIRED without any source (scratch replay, seed tampered) 76ms
+     ✓ trusted-config difference set is an explicit verdict section (B1 可信配置差集) 1ms
+     ✓ web_fetch surfacing on a governed team lane reports scope-mismatch, authorized:false 3ms
+     ✓ the reviewed team_lane_variant_expected flag suppresses the EXPECTED takeover (m6 consumption) 2ms
+     ✓ m2 — source_class and scope_id are digest-eligible facts now 1ms
+     ✓ m5 — key order and formatting do not move the canonical digest 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 reconciler — clean baseline + planted counterexamples > PLANT 2 — replacing an execution Definition is detected as DRIFT
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:193:33
+    191|     target.definition_identity = 'def#777777'
+    192|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    193|     expect(result.counts.drift).toBe(1)
+       |                                 ^
+    194|     expect(result.drift[0]?.name).toBe('read')
+    195|     expect(result.drift[0]?.kind).toBe('definition-identity')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/testkit/test/u7-0-census-reconcile.test.ts > u7-0 review-R1 — B2: identity comparison keys on (scope, name) > B2c — the pre-fix misattribution (one swap reported under BOTH classes) cannot recur
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/testkit/test/u7-0-census-reconcile.test.ts:301:31
+    299|     const result = mustOk(reconcile({ ...pair, observed: withDigests(o…
+    300|     const identities = result.drift.filter((d) => d.kind === 'definiti…
+    301|     expect(identities.length).toBe(1)
+       |                               ^
+    302|     expect(identities[0]?.scope_id).toBe('global')
+    303|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 24 passed (26)
+   Start at  13:44:51
+   Duration  451ms (transform 61ms, setup 0ms, import 86ms, tests 221ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,199 @@
+{
+ "P1_identity_swap_agent1_only": {
+  "drift": 1,
+  "rows": [
+   {
+    "name": "read",
+    "scope_id": "agent-1",
+    "scope_class": "native",
+    "kind": "definition-identity",
+    "baseline": "def#25",
+    "observed": "def#777777",
+    "detail": "same boot: the placement/binding identity (runtime dispatcher WeakMap object via definitionIdentityOf) moved — the Definition Body bound at THIS scope was replaced"
+   }
+  ]
+ },
+ "P1b_live_team_identity_swap_agent2": {
+  "drift": 1,
+  "rows": [
+   {
+    "name": "read",
+    "scope_id": "agent-2",
+    "scope_class": "native",
+    "kind": "definition-identity",
+    "baseline": "def#28",
+    "observed": "def#999999",
+    "detail": "same boot: the placement/binding identity (runtime dispatcher WeakMap object via definitionIdentityOf) moved — the Definition Body bound at THIS scope was replaced"
+   }
+  ]
+ },
+ "P1c_live_team_identity_swap_agent1": {
+  "drift": 1,
+  "kinds": [
+   "read/team/definition-identity"
+  ]
+ },
+ "P2_shape_swap_no_baseline": {
+  "counts": {
+   "missing": 0,
+   "unknown": 2,
+   "out_of_scope_observed": 32,
+   "source_findings": 0,
+   "drift": 0,
+   "scope_gaps": 18
+  }
+ },
+ "P3_crossboot_body_swap_same_shape": {
+  "snapshot_digest_equal": true,
+  "drift": 0
+ },
+ "P4_source_removed_obligation_kept": {
+  "clean_counts": {
+   "missing": 0,
+   "unknown": 2,
+   "out_of_scope_observed": 32,
+   "source_findings": 0,
+   "drift": 0,
+   "scope_gaps": 18
+  },
+  "mutated_counts": {
+   "missing": 0,
+   "unknown": 2,
+   "out_of_scope_observed": 32,
+   "source_findings": 1,
+   "drift": 0,
+   "scope_gaps": 18
+  },
+  "verdict_digest_moved": true
+ },
+ "P4b_new_source_unobserved": {
+  "counts": {
+   "missing": 0,
+   "unknown": 2,
+   "out_of_scope_observed": 32,
+   "source_findings": 1,
+   "drift": 0,
+   "scope_gaps": 18
+  },
+  "verdict_digest_moved": true,
+  "mentions_new_source": true
+ },
+ "P4c_new_source_observed": {
+  "name": "new_source_tool",
+  "scope_ids": [
+   "global"
+  ],
+  "source_class": "host-static",
+  "classification": "not-in-obligations",
+  "dynamic_class": null,
+  "in_authoritative_sources": true,
+  "authorized": false,
+  "reason": "observed name has no ExpectedToolObligations entry — a NEW SOURCE is auto-UNKNOWN, never auto-authorized"
+ },
+ "P5_known_name_new_scope": {
+  "clean": {
+   "missing": 24,
+   "unknown": 5,
+   "out_of_scope_observed": 0,
+   "source_findings": 0,
+   "drift": 0,
+   "scope_gaps": 0
+  },
+  "mutated": {
+   "missing": 24,
+   "unknown": 6,
+   "out_of_scope_observed": 0,
+   "source_findings": 0,
+   "drift": 0,
+   "scope_gaps": 0
+  },
+  "unknown_names": [
+   "edit",
+   "read_image",
+   "u5_canary",
+   "u7_census",
+   "web_fetch",
+   "write"
+  ]
+ },
+ "P6a_revision_reachable": [
+  "revision"
+ ],
+ "P6b_placement_signal_reachable": [
+  "placement-identity-signal"
+ ],
+ "P6c_source_drift_reachable": [],
+ "P7_digest": {
+  "pinned": "sha256:66da85efcfce68ab26708f37c6c880d002c7743d9e1c06f12fda716d28249c32",
+  "reordered_keys_tools_scopes_equal": true,
+  "whitespace_equal": true,
+  "semantic_change_moves": true,
+  "source_class_change_moves": true,
+  "scope_id_change_moves": true
+ },
+ "P8_observed-non-team.20261026.json": {
+  "global_names": [
+   "u5_canary",
+   "u7_census"
+  ],
+  "identity_vs_global": {
+   "same": 4,
+   "n/a": 26
+  },
+  "recomputed_snapshot_equal": true
+ },
+ "P8_observed-governed-team.20261026.json": {
+  "global_names": [
+   "u5_canary",
+   "u7_census"
+  ],
+  "identity_vs_global": {
+   "same": 4,
+   "n/a": 36
+  },
+  "recomputed_snapshot_equal": true
+ },
+ "P9_live_replay": {
+  "nonTeam_digest_match": true,
+  "team_digest_match": true,
+  "nonTeam_missing": [
+   "cordis_inspect_list",
+   "cordis_inspect_query",
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "list_subagent_models",
+   "lsp",
+   "plugin_manager",
+   "pwsh",
+   "read_mcp_resource",
+   "run_code",
+   "str_replace_editor"
+  ],
+  "team_missing": [
+   "cordis_inspect_list",
+   "cordis_inspect_query",
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "list_subagent_models",
+   "lsp",
+   "plugin_manager",
+   "pwsh",
+   "read_mcp_resource",
+   "run_code",
+   "str_replace_editor",
+   "team_archive_member",
+   "team_collect",
+   "team_delegate",
+   "team_follow_up",
+   "team_grant_permission",
+   "team_inspect_config",
+   "team_list_pending_control",
+   "team_list_templates",
+   "team_report_progress",
+   "team_request_control",
+   "team_resolve_control",
+   "team_revoke_permission",
+   "team_send_message"
+  ]
+ }
+}
