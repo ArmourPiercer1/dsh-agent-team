@@ -13,7 +13,9 @@
  *  M2 `search-backend.mjs` / `glob-backend.mjs` / `cancel-leg.mjs` moved
  *     with EXACTLY the declared deltas (provider-import depth re-based to
  *     the lane + the `@module` provenance tag) — nothing else differs by a
- *     single byte;
+ *     single byte. The claim is about THE MOVE, so it is pinned against the
+ *     move commit's own blobs (`MOVE_SHA`), not the working tree: a later
+ *     lane-owned fix (u7 grep-drain: the stream drain law) is not a move;
  *  M3 the center files do NOT define the moved names any more — and the
  *     center hub that used to re-export them is DELETED outright (U6 PR6:
  *     pure re-export surface, zero importers once the plane mounts the
@@ -29,6 +31,10 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const BASE_SHA = '5c03f7240a2a43534e6f52b87aa3c541fad993f7'
+/** The U6 PR5 move commit itself (`feat(search-family): move the search rows
+ *  into their own lane`). M2 compares ITS blobs to master: what the move
+ *  wrote, not what the lane later fixed in place. */
+const MOVE_SHA = 'b720fa8f6'
 
 const gitShow = (rel: string, ref = BASE_SHA): string =>
   execFileSync('git', ['show', `${ref}:${rel}`], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
@@ -116,7 +122,11 @@ describe('u6-pr5 search move law: one home, verbatim mechanics, deleted center s
       ['cancel-leg.mjs', CANCEL_LEG] as const,
     ]) {
       const master = gitShow(`packages/runtime/src/plugin/live/${name}`)
-      expect(read(rel), `${name}: exactly the declared deltas`).toBe(applyDeclaredDeltas(master, name))
+      const moved = gitShow(`packages/tools/search-family/src/${name}`, MOVE_SHA)
+      expect(moved, `${name}: exactly the declared deltas`).toBe(applyDeclaredDeltas(master, name))
+      // Non-vacuity: the lane file is still the moved file (it exists and still
+      // carries the lane provenance tag), not a deleted or replaced one.
+      expect(read(rel), `${name}: the lane file is gone`).toContain(` * @module search-family/${name.replace(/\.mjs$/, '')}`)
     }
   })
 

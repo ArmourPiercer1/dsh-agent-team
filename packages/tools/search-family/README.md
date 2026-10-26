@@ -17,10 +17,14 @@ Every byte of moved code came VERBATIM out of the center files at master
 | `src/cancel-leg.mjs` | `src/plugin/live/cancel-leg.mjs` (whole file, byte-identical) |
 | `src/search-row.mjs` | NEW placement face over the assembly-injected a5p5 trio registration face (PR3 dormancy law; the plane discards the shell ARM) |
 | `src/search-contribution.mjs` | NEW §4/§10.3 contribution descriptor factory |
+| `src/stream-drain.mjs` | NEW (u7 grep-drain, post-move lane fix): the ONE stream drain law both confined-rg rows share — watch stdout/stderr to their terminal event, bounded wait (`STREAM_DRAIN_MS` = the glob row's measured 250 ms), listeners released on every path |
 
 The byte-identity of the moves is pinned by
 `packages/runtime/test/u6-pr5-search-move-law.test.ts` (the moved regions
 re-extract hash-identically from the pre-move master blobs).
+M2 compares the MOVE COMMIT's own blobs (`b720fa8f6`) with those masters, so a
+later lane-owned fix (u7 grep-drain changed `search-backend.mjs` and
+`glob-backend.mjs`) is never mistaken for part of the move.
 
 At move time (U6 PR5) the center kept its OLD export surface alive as a
 temporary RE-EXPORT hub (`plane-effect-backends.mjs`), so pinned consumers —

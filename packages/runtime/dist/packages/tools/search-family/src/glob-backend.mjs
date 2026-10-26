@@ -195,10 +195,10 @@
 import { constants as fsConstants, lstatSync, readlinkSync, realpathSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timers'
 import { buildGlobCommand, GLOB_MAX_RESULTS, parseGlobArgs as parseHostGlobArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'
 import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
+import { STREAM_DRAIN_MS, awaitBounded, watchStreamEnd } from './stream-drain.mjs'
 
 /** Stable backend identity (the plane/audit reports this name, never a anonymous one). */
 export const GLOB_BACKEND_ID = 'a5glb-anchored-confined-rg-glob'
@@ -215,7 +215,7 @@ export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
 export // Upper bound on waiting for the child's streams AFTER it exited (drain, not
 // lifetime): long enough for a late stderr note, short enough to be nothing
 // a walk could confuse with its own timeout budget.
-const GLOB_STDERR_DRAIN_MS = 250
+const GLOB_STDERR_DRAIN_MS = STREAM_DRAIN_MS // u7 grep-drain: the ONE drain bound both rows share (`./stream-drain.mjs`)
 export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
@@ -1057,13 +1057,7 @@ export function createAnchoredGlobBackend(options) {
           releaseAllWatchers = () => {
             releaseAllWatchers = () => {} // idempotent: the `finally` may call it again
             releaseStreamListeners()
-            if (stdoutWatch !== null) {
-              const done = stdoutWatch
-              stdoutWatch = null
-              child.stdout.off('end', done)
-              child.stdout.off('close', done)
-              child.stdout.off('error', done)
-            }
+            stdoutDrain.release()
             if (streamsWatch !== null) {
               const watch = streamsWatch
               streamsWatch = null
@@ -1090,7 +1084,6 @@ export function createAnchoredGlobBackend(options) {
           // so an 'end' that arrives first is never missed. Every listener is removed and
           // the drain timer cleared on the way out (round: root ruling ④), so a long-lived
           // assembly accumulates neither listeners nor timers.
-          let drainTimer = null
           let watchClosed = false
           const streamsEnded = new Promise((resolve) => {
             let pending = 2
@@ -1108,14 +1101,9 @@ export function createAnchoredGlobBackend(options) {
           // ROUND-8 (approved, narrow): STDOUT completeness is collected. The watcher is
           // installed BEFORE the exit race so an 'end' that arrives first is never missed.
           // Terminal = 'end' | 'close' | 'error'.
-          let stdoutWatch = null
-          const stdoutEnded = new Promise((resolve) => {
-            const done = () => resolve(true)
-            child.stdout.once('end', done)
-            child.stdout.once('close', done)
-            child.stdout.once('error', done)
-            stdoutWatch = done
-          })
+          // u7 grep-drain: the watch is the shared drain helper's (one implementation
+          // for both rows); this row keeps its own reading — ANY terminal form counts.
+          const stdoutDrain = watchStreamEnd(child.stdout)
           const exit = await raceConfinedSettle({ exited: child.exited, timeoutMs, signal: cancelSignal })
           // The lease closes first: the provider's pipes are held by the supervised child,
           // so 'end' cannot be promised while it lives (measured in the previous hand's
@@ -1189,13 +1177,7 @@ export function createAnchoredGlobBackend(options) {
           // remains a DISCLOSED limitation pending the rc-first semantic ruling.
           let stdoutCollected = true
           if (exit?.timedOut !== true) {
-            let capTimer = null
-            const won = await Promise.race([
-              stdoutEnded,
-              new Promise((r) => { capTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
-            ])
-            if (capTimer !== null) clearTimer(capTimer)
-            stdoutCollected = won === true
+            stdoutCollected = (await awaitBounded(stdoutDrain.ended, GLOB_STDERR_DRAIN_MS)) !== null
             // THE BOUNDARY AFTER THE STDOUT DRAIN AWAIT, before the incomplete-drain
             // return below: a withdrawal during the drain is answered as a cancel,
             // and the `finally` still gives every watcher and the descriptor back.
@@ -1203,12 +1185,7 @@ export function createAnchoredGlobBackend(options) {
             // judges the drain exactly as it always did.
             if (callAborted(cancelSignal)) return await cancelRefusal('after-stdout-drain')
           }
-          if (stdoutWatch !== null) {
-            child.stdout.off('end', stdoutWatch)
-            child.stdout.off('close', stdoutWatch)
-            child.stdout.off('error', stdoutWatch)
-            stdoutWatch = null
-          }
+          stdoutDrain.release()
           if (stdoutCollected !== true) {
             observe(`anchored-glob WALK-INCOMPLETE realm=${realmId} call=${String(call.callId)} stream=stdout exit=${String(exit?.code ?? -1)}`)
             return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes, incomplete: 'stdout' }, debug, `walk output was not collected to the end of the stream`)
@@ -1223,13 +1200,8 @@ export function createAnchoredGlobBackend(options) {
           // half. No code is added to the frozen table.
           let drainClosed = true
           if (exit?.timedOut !== true) {
-            drainClosed = await Promise.race([
-              streamsEnded,
-              new Promise((r) => { drainTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
-            ])
+            drainClosed = (await awaitBounded(streamsEnded, GLOB_STDERR_DRAIN_MS)) ?? false
           }
-          if (drainTimer !== null) clearTimer(drainTimer)
-          drainTimer = null
           // THE BOUNDARY AFTER THE STREAM-CLOSE DRAIN AWAIT, same law as the one
           // above: ask the channel before the row reaches for its own indeterminate
           // verdict, and let the `finally` do the cleanup either way. A walk whose
@@ -1296,10 +1268,7 @@ export function createAnchoredGlobBackend(options) {
             // measured bound in this family; a longer fuse would only blur
             // "broken wiring" into "slow wiring", and a fuse asserts, it does
             // not wait.
-            let recTimer = null
-            const recordBudget = new Promise((r) => { recTimer = sleepTimer(() => r(null), GLOB_STDERR_DRAIN_MS).unref?.() ?? null })
-            const rec0 = await Promise.race([child.payloadExit, recordBudget])
-            if (recTimer !== null) clearTimer(recTimer)
+            const rec0 = await awaitBounded(child.payloadExit, GLOB_STDERR_DRAIN_MS)
             // THE BOUNDARY AFTER THE RECORD AWAIT, before the row judges what the
             // record said: a withdrawal that landed while the payload's own record
             // was being awaited is answered as the cancellation it is, not behind the
