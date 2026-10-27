@@ -1,0 +1,53 @@
+{
+  "head": "c2de6a1c8b331c777cc7049e0509f4b58d57443c",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T053819Z-3-1.json",
+      "files": 635,
+      "legs": 8139,
+      "ids": [
+        "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit reports no findings (pure domain, no cycles, only reviewed consumers)",
+        "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit the consumer set is exactly the reviewed PR1+PR2+PR3+PR5+A5-M1 wiring (no accretion)",
+        "TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+        "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit reports no findings (pure domain, no cycles, only reviewed consumers)",
+      "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit the consumer set is exactly the reviewed PR1+PR2+PR3+PR5+A5-M1 wiring (no accretion)",
+      "TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newReds": [
+      "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit reports no findings (pure domain, no cycles, only reviewed consumers)",
+      "TEST packages/domain/test/a5p0-layer-audit.test.ts::the tool-governance lane audit the consumer set is exactly the reviewed PR1+PR2+PR3+PR5+A5-M1 wiring (no accretion)",
+      "TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8139,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "635f/8139l",
+      "totalsNote": "captured 635f/8139l vs baseline-declared 626 / 7936"
+    }
+  }
+}
