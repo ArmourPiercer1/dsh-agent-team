@@ -521,7 +521,6 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
   const started = Date.now()
   let delay = 2
   for (;;) {
-    let handle
     try {
       await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now()), faultAt)
       let stopped = false

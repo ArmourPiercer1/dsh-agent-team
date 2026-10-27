@@ -796,18 +796,33 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   })
 
   it('R3-2 release waits for an in-flight beat and never resurrects the lock', async () => {
-    let open!: () => void
-    const gate = new Promise<void>((resolve) => { open = resolve })
+    let openBeat!: () => void
+    const beatGate = new Promise<void>((resolve) => { openBeat = resolve })
+    let allowCommit!: () => void
+    const commitGate = new Promise<void>((resolve) => { allowCommit = resolve })
     let started!: () => void
     const beatStarted = new Promise<void>((resolve) => { started = resolve })
-    const owner = storeWith({ lockHeartbeatMs: 10, faultAt: async (point: string) => { if (point === 'beat-before-rename') { started(); await gate } } })
+    const owner = storeWith({ lockHeartbeatMs: 10, faultAt: async (point: string) => {
+      if (point === 'after-read') await commitGate
+      if (point === 'beat-before-rename') { started(); await beatGate }
+    } })
     const pending = owner.applyTodos('agent:race-release', { todos: [{ content: 'x', status: 'pending' }], applyId: 'race-release' })
     await new Promise((resolve) => setTimeout(resolve, 30))
     await beatStarted
-    open()
+    allowCommit()
+    openBeat()
     expect((await pending).ok).toBe(true)
     expect(existsSync(scopeLockPath('agent:race-release'))).toBe(false)
     expect((await storeWith({ lockTimeoutMs: 100 }).applyTodos('agent:race-release', { todos: [{ content: 'y', status: 'pending' }], applyId: 'race-release-2' })).ok).toBe(true)
+  })
+
+  it('R3-atomic initial lock publication leaves no target after injected pre-publish crash', async () => {
+    const crashing = storeWith({ faultAt: async (point: string) => { if (point === 'lock-before-publish') throw new Error('injected lock crash') } })
+    const first = await crashing.applyTodos('agent:atomic-lock', { todos: [{ content: 'x', status: 'pending' }], applyId: 'atomic-lock-1' })
+    expect(first).toMatchObject({ ok: false })
+    expect(existsSync(scopeLockPath('agent:atomic-lock'))).toBe(false)
+    const next = await storeWith().applyTodos('agent:atomic-lock', { todos: [{ content: 'y', status: 'pending' }], applyId: 'atomic-lock-2' })
+    expect(next.ok).toBe(true)
   })
 
   it('F-d the holder BEATS: while it is inside the critical section the lock record token changes', async () => {
