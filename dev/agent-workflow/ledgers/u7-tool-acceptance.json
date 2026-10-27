@@ -165,23 +165,24 @@
       "L2-mounted": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
-          "case": "proc:mounted"
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "case": "tbash:mounted"
         }
       },
       "L3-refusal": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
-          "case": "proc:deny-zero-spawn"
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "case": "tbash:deny-zero-effect"
         }
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "The positive-effect leg lands as the named U7 item (runner seam targeting the real team root + a lane-scoped grant design).",
-        "pr": "#375",
-        "source": "dev/agent-workflow/evidence/u6-pr3-20261026/README.md",
-        "note": "proc:approve-spawn-once is FAIL in every committed u6-proc record (r2..r5); the wording is the u6-pr3 lane's own disclosure that the positive leg was not delivered there. The later u7-4a records DO show a real confined process under the NATIVE `bash` spelling (see the bash row) — that is the background producer arm, not this takeover spelling"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "case": "tbash:approve-spawn-once"
+        },
+        "note": "u7-tbash boot 2 (overall PASS 6/6, teamSha ca575560b, host 639ed0153): one human allow at team.resolveControl on the governed session spawned ONE confined process (host log a5g7-shell 'confined-shell ran … exit=0'), consumed once, and left exactly one claim line on disk; replay, other-command and deny legs had zero effect. Closes the u6-pr3 (#375) deferral, whose FAIL was an envelope gap + wrong-root observer + two judge artifacts (evidence README §1/§4), not a family defect. The PA row is governed under the native name `bash`, but every model-facing call here is `team_bash`; the bash row is not backed by this record"
       }
     },
     {

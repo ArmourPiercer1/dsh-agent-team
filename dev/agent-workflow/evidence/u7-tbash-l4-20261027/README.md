@@ -112,4 +112,78 @@ human-seam resolver policy:
 | `tbash:deny-zero-effect` | command D → human deny → 1 `deny` decision, 0 consumption, typed refusal, D file absent |
 | `tbash:leak-check` | secret outside the team root appears in no corpus/host log; bytes unchanged; no allow ever issued beyond A |
 
-See §4+ (appended after the boots) for the record, verdicts and boot ledger.
+## 4. Boot ledger, verdicts, conclusions (appended after the boots)
+
+Budget 3, 2 spent; each boot was declared in `c2/boot-budget.jsonl` BEFORE it
+started. No third boot is needed. No world for this lane remains in `tests/homes/`
+(both records carry `teardown.homeRemoved=true`). `:3080` read 401 before and
+after each boot (`stableInstance.unchanged=true`, `touched=false`). Host tree
+`639ed0153` at the end of each run.
+
+### 4.1 Boot ledger
+
+| boot | runId | world | team head | record | result | finding |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `u7tb-c2-mvqzfr6a` | `u5u7tb-20261027T17-51-44Z` | `080886835` | `c2/c2-verdicts-boot1.json` | FAIL 3/6 (mounted, deny-zero-effect, leak-check PASS) | **native shell row spelling.** The durable PA row for a model-facing `team_bash` call is governed under the NATIVE name `bash` (row summary `… rung=leader tool=bash effects=1`). The resolver only accepted `toolName === 'team_bash'`, so it denied row A (`reason: "not a team_bash row — outside this lane"`). The fail-closed resolver did exactly what it should: 0 allows, 0 consumptions, no file on disk. `replay-refused` / `other-command-refused` then FAIL because their laws assume an approved A exists (1 consumption, a spent row to re-resolve). This is a runner/resolver spelling finding, not a product defect. Fixed in `ca575560b` (`SHELL_ROW_TOOL_NAMES = ['team_bash','bash']`; the command hash stays the ONLY widening key), C1 RED→GREEN in `c1/RED2-native-spelling.log` / `c1/GREEN.log`. |
+| 2 | `u7tb-c2-mvqzlr6k` | `u5u7tb-20261027T17-56-24Z` | `ca575560b` (tree clean) | `c2/c2-verdicts-boot2.json` | **PASS 6/6** | none |
+
+Host logs: `c2/host-boot1.log` (898 B), `c2/host-boot2.log` (1221 B). The web token
+is already `<redacted>`, and the only absolute paths are inside this worktree.
+Mock excerpts (~53 KB each) contain only in-repo world paths and team request
+tokens (`requestToken=u7tb-…`), which are not secrets. Every file is far under 1 MiB, so they are committed whole.
+Boot 2 host log carries the spawn line verbatim:
+`a5g7-shell: confined-shell ran realm=u7tb-realm-u5u7tb-20261027t17-56-24z call=team-inst-0tijb8f1ai8p-bash:hexec:… pid=255 exit=0 timedOut=false cancelled=false`.
+
+### 4.2 Boot-2 verdicts (verbatim from `c2/c2-verdicts-boot2.json`)
+
+Record bindings: `schema u5-run-record/1`, `overall PASS`, teamSha `ca575560be062be515f17ed5ac5752a276022f86`,
+`teamTreeClean true`, hostSha `639ed015397290b3745d163aafe02ffee4aa3f84`, authority `as20261026r1`.
+
+| case | verdict | key detail (verbatim fields) |
+| --- | --- | --- |
+| `tbash:mounted` | PASS | `healthOk/stateOk/createOk=true`, governedSession `session-u7tb-team-u5u7tb-20261027t17-56-24z`, placement feed `rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image]`, launcherPin `1264ea58…` |
+| `tbash:approve-spawn-once` | PASS | requestId `ctrl-18j9bg61eafrol1wn3alg03j`, decision `allow` ("the pinned command, first issue, no prior allow"), `decisions:["allow"]`, `consumptions:1`, `totalAllowsIssued:1`, `effectOnDisk:"U7TB_APPR_u5u7tb-20261027t17-56-24z\n"`, `effectLines:1`, toolResult `bash · exit=0 > U7TB_APPR_RAN` (`a5p5-meta {"kind":"shell","exitCode":0,…}`) |
+| `tbash:replay-refused` | PASS | `sameCommandAsApproved:true`, `mode:"new-row-denied"`, replay row `ctrl-013cha70v2f10c1omhbut120` deny / 0 consumptions, `distinctFromApprovedRow:true`, seam re-allow of the spent row → `ok:false` `CONTROL_REQUEST_DECIDED` ("the first decision is authoritative"), `effectLinesAfterReplay:1`, toolResult `a5p5-refused kind=refused-admission code=APPROVAL_DENIED` |
+| `tbash:other-command-refused` | PASS | commandHash `sha256:a3f0f2e3…` ≠ pinned `sha256:b673345f…`, row `ctrl-1ubitch1t5w80i1w9ya930k0` deny ("command hash differs from the one pinned grant"), 0 consumptions, `effectOnDisk:null`, `APPROVAL_DENIED` |
+| `tbash:deny-zero-effect` | PASS | row `ctrl-1fmon9y1bvy2bh0k7hevc13n`, `decisions:["deny"]`, `consumptions:0`, `effectOnDisk:null`, `APPROVAL_DENIED` |
+| `tbash:leak-check` | PASS | `inCorpus:false`, `inHostLog:false`, `bytesUnchanged:true`, `allowsIssued:1` |
+
+### 4.3 Conclusions
+
+1. **The u6-pr3 `proc:approve-spawn-once` failure was NOT a family defect.** On a world
+   whose team root grants `request-control`, with the observer on the governed root, the
+   unchanged product spawned exactly one confined process for exactly one human allow
+   and consumed it exactly once. A replay, a different command and a denied command all
+   produced zero effect. The u6-pr3 failure came from (§1): an **envelope gap**
+   (team root never named `request-control`, so the bridge failed closed); a
+   **wrong-root observer** (r5 polled and resolved on the boot root); and **two judge
+   artifacts** (index pairing; a replay expectation that wants a synchronous refusal
+   where the bridge correctly opens a NEW row). Boot 1 added one more runner-side
+   finding: the governed row is spelled `bash`.
+2. **Spelling scope.** The model-facing calls in this record are all `team_bash`
+   (`mock-excerpt-boot2.json`: 4 × `"name": "team_bash"`). The PA row's native name
+   `bash` is the governance key, not a model-facing spelling, so this record backs the
+   `team_bash` ledger row only. The `bash` row (background native takeover) is untouched.
+3. **Follow-ups on the OLD u6-proc suite. Not changed in this PR. Neither fix is
+   trivial, because each changes the graded semantics of committed u6-proc records.**
+   - F-1 `judgeU6Proc` pairs `bashExecutes[i]` with `bashResults[i]` by index
+     (`tests/world-factory/lib/u6-proc-assembly.mjs:594`). It must join by `tool_use_id`,
+     as `u7-tbash-assembly.mjs` does (C1 test "results join to calls by tool_use_id").
+   - F-2 the `note` the judge attaches to `proc:approve-spawn-once`
+     (`u6-proc-assembly.mjs:746-748`, whenever a positive-arm digest exists) is a fixed
+     success sentence. It is printed under FAIL exactly as under PASS, so make it
+     verdict-dependent or drop it. Related: the `proc:approve-replay-refused` law
+     (:750-756) should also accept "new row, denied, 0 consumption" (the
+     `tbash:replay-refused` law).
+   - F-3 (from §1.5) a lane-scoped `request-control` at the team root also arms the
+     leader ask lane (`envelope.ts:113-115`). Any u6-proc re-run that grants it must
+     move the leader's exec commands off the ask path first.
+
+### 4.4 Ledger change
+
+`dev/agent-workflow/ledgers/u7-tool-acceptance.json`, row `team_bash`: L4-positive
+DISCLOSED → PROVEN (`c2/c2-verdicts-boot2.json`, `tbash:approve-spawn-once`). L3-refusal
+was already PROVEN (u6-proc r4 `proc:deny-zero-spawn`) and is re-cited to this record's
+`tbash:deny-zero-effect`. L2-mounted is re-cited to `tbash:mounted` (a PASS record
+whose mount case shows the `team_bash` placement row, instead of a FAIL-overall record).
+The `bash` row is unchanged.
