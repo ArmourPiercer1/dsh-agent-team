@@ -190,7 +190,13 @@ Strict identity now requires both durable and bind identities, equal, fresh-root
 
 Offline re-judge of committed boot 5 is disclosed in `c2/offline-rejudge-boot5.json`: raw live verdict remains PASS 6/6, but strengthened judge is FAIL because boot 5 predates retained `ledger.requests` and binding-chain data. No additional boot was started (boot budget already exhausted; no boot 7). Accordingly team_bash L2/L3/L4 remain DISCLOSED pending a record that satisfies the strengthened judge; no PROVEN claim is made.
 
-### 4.6 Review round 1 closure
+### 4.6 Boot 6 and final re-judge disclosure
+
+Boot 6 was user-authorized as the single final extension (original budget 3; no boot 7). It ran exactly once at team head `47da3da07e16de675f64dac17d1e206ad429b91c`, after `ss -ltn`; host `639ed01539` used port 3184 and the temporary home was removed. `:3080` remained 401 before and after. The run is committed as `c2/c2-verdicts-boot6.json` with `host-boot6.log` and `mock-excerpt-boot6.json`.
+
+Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bind identities agreed, but the independent projection extractor returned null despite HTTP 200, so `identityOk=false`; no approval, spawn, ledger request, or binding chain was produced. The strengthened judge therefore cannot pass. This is retained honestly; L2/L3/L4 remain DISCLOSED and no boot 7 is permitted. Boot 5 raw PASS versus strengthened offline FAIL remains recorded in `c2/offline-rejudge-boot5.json`.
+
+### 4.7 Review round 1 closure
 
 - **F-1 identity:** closed by the create durable+bind identity extractor plus independent projection cross-check; boot 5 records `governedSession.identityOk=true` and matching session IDs.
 - **F-2 resolver session input:** closed by `ledgerControlFromEntries` and the runner's create-echoed `teamSessionId`; foreign ledger entries are counted and never resolved.

@@ -3,3 +3,5 @@
 {"boot":3,"budget":5,"declaredAt":"2026-10-27T19:25:03.130Z","runId":"u7tb-c2-mvr2ranu","world":"u5u7tb-20261027T19-24-42Z","teamSha":"648c6f7e772dfdbd51e51eb7320610652145c2f7"}
 {"boot":4,"budget":4,"declaredAt":"2026-10-27T19:44:14.889Z","runId":"u7tb-c2-mvr3fyzz","world":"u5u7tb-20261027T19-43-53Z","teamSha":"8d1475464460eba498452ad62d8c31206d7c4502"}
 {"boot":5,"budget":5,"declaredAt":"2026-10-27T20:02:21.742Z","runId":"u7tb-c2-mvr43skc","world":"u5u7tb-20261027T20-02-24Z","teamSha":"20829bf71c4779fb2e0b39b5c28ed54ac2b18e1b"}
+{"disclosure":"user-authorized final extension: original budget 3; boot 6 is over-budget; no boot 7"}
+{"boot":6,"budget":6,"declaredAt":"2026-10-27T20:56:41.102Z","runId":"u7tb-c2-mvr614b4","world":"u5u7tb-20261027T20-56-19Z","teamSha":"47da3da07e16de675f64dac17d1e206ad429b91c"}
