@@ -1,16 +1,29 @@
 ## Summary
-AC-1 production subagents port, native result projections, real ToolRuntime registry C1, and evidence-local C2 dry-run. CORE PATCH BUDGET = 0, no protected center/upstream edits. PR remains **DRAFT** because final live C2 failed. Do not merge.
+AC-1 judge correction for boot 8 `ac:fork-positive`, C1 regression coverage, offline re-grade evidence, and ledger promotion. CORE PATCH BUDGET = 0; no upstream/core edits; no new live boot; do not merge.
 
-## Offline verification
-- Lane + registry + family C1: **63/63 PASS** (21 lane, 2 registry, 40 family).
-- `run-c2.mjs --dry-run --fixtures`: real drive with injected fake HTTP/auth/file effects; boot-6 recorded bodies plus synthetic ledger. Old-face RED reproduces four positive failures; current GREEN 10/10; mutation RED fails provider refusal.
-- Family rows now project production catalogue envelopes to native string/array faces. Removes obsolete native leader PTC probe and reconciles complete durable asks.
-- Typecheck, artifact checks, family boundaries/definitions, generated index, acceptance honesty, and ci-pr-gate recorded under lane evidence. ci-pr-gate census is explicitly opt-in/skipped, not claimed PASS.
+## Truthful boot history (1–8)
+- Boots 1–6: earlier C2 attempts recorded in `c2-verdicts-boot1.json` through `c2-verdicts-boot6.json`; failures/voids and native output-schema defects are preserved in those raw records.
+- Boot 7: explicitly voided before drive effects after the runner TDZ defect; `host-boot7.log` and `c2-verdicts-boot7.json` remain unchanged.
+- Boot 8: authorized final live boot, raw record `c2-verdicts-boot8.json`; 9/10 PASS, with only `ac:fork-positive` FAIL because its readBack began with unrelated `unknown tool \"subagent_fork\"` noise before the actual positive result.
+- Main-agent ruling: this is a judge defect, not product behavior. The positive fork evidence is present: the second readBack is non-error and contains `U7AC1_FORK_SAW_TOKEN`; `forkChildRequestCarriedToken=true`, one RAN witness, and one human ALLOW.
 
-## Final authorized live boot 7 — FAIL
-Original budget 3; six already spent; direct authorization granted exactly ONE final boot 7, four over original cap. No boot 8. Record `u7ac1-c2-mvr783ml`, input 64ca32738354e1709cdd80844d0d4df7f216a81e, pristine Host 639ed01539, leased port 3184. **0 PASS / 10 FAIL**, all fail-closed missing-verdict cases. Host booted; drive immediately threw `Cannot access 'fetchJsonRetry' before initialization` at driver line 183. Default injection expressions referenced locally shadowed bindings; fake fixtures provided every override and therefore did not exercise that default path. README identifies both sides and exact source/record lines. Postmortem LIVE_IO capture fix is offline only; not live-validated.
+## Fix and C1
+- `run-c2.mjs` now finds the first non-error readBack containing the expected token, independent of earlier error entries.
+- C1 adds pure-function coverage for positive-first, positive-not-first, and no-token cases.
+- Focused C1: **25/25 PASS** (lane, registry, native schema, and new judge case).
 
-World home deleted; ports 3184/3498 released; pristine baseline clean. :3080 unchanged/read-only status probes; no stable instance operation. Ledger remains unchanged/DISCLOSED: no new L2/L3/L4 promotions. No live PTC refusal: boots 2/3 remain disclosure evidence and ac:refusal-ptc stays absent from live selection. Tool-less child L4 is not claimed without live effect witness.
+## Offline re-grade and ledger
+- `c2/fork-regraded-boot8.json` records raw FAIL, defect rationale, exact correction, evidence, and re-graded PASS without modifying raw boot-8 evidence.
+- Ledger promotes `subagent_fork` L4 using the re-grade + boot-8 record combination; `subagent`, `list_subagent_models`, and `list_agents` L4 are promoted from boot-8 PASS cases. `list_agents` is conservative: its native array projection is read back as `(no subagents)`, with catalogSize/oneShotChildren from the same governed listChildren effect.
+
+## Gates
+- `pnpm typecheck`: PASS.
+- `node scripts/check-artifacts-committed.mjs`: PASS (no dist touched).
+- EB3 family boundaries/definitions: PASS.
+- `node scripts/gen-family-index.mjs --check`: PASS.
+- `node scripts/eb3-tool-acceptance.mjs`: PASS (honesty gate; 31 tools, 17 L4 PROVEN, 13 DISCLOSED, 1 NOT_VERIFIED).
+- `node scripts/eb3-evidence-guard.mjs --new-since origin/master`: PASS; evidence files remain under 1 MiB.
+- `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store`: PASS (7 pass, 0 fail, 1 named opt-in census skip).
 
 ## Integration / status
-Fetched origin and merged origin/master (no rebase/force-push). Plain push only. CI conclusions are reported after checks complete; local gate green cannot override failed live C2. No gh pr ready, no merge.
+Fetched origin and merged origin/master (no rebase/force-push). Plain push only. PR is ready for review. CI checks were requested and are being awaited. Do not merge.
