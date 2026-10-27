@@ -31,13 +31,30 @@ State scope = `agent:<exec.agent.id>` — the CALLING agent from the dispatch, n
 **DISCLOSED-NO-SEAM (never coloured PASS):** the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane. Those legs are PROVEN at C1 over the real plane and the real `issueApprovedGrant`/consume edges; C2 carries the disclosure verbatim into its evidence json.
 **DISCLOSED (template law):** on the default-`deny` template every agent-state call answers `IO_POLICY_UNSUPPORTED / template-default-deny` before PA and before the store (D1) — the agent-state effect class has no rule-grammar spelling on this mount; extending the grammar is a named center-interface change (follow-up), never family self-authorization. Governed positives require the ask-default template + Control leg, which C1 exercises end-to-end.
 
-## Live C2 verdicts (from the run record, verbatim)
+## Live C2 verdicts (recorded run `u5-u7-fagentb-x-2026-10-27T00-41-36-828Z`, overall **PASS 6/6**, verbatim)
 
-(boot A / boot B verdicts + leak check pasted from `dev/agent-workflow/evidence/u7-f-agentB-20261026/` after the recorded run)
+| case | verdict | witness |
+| --- | --- | --- |
+| `agt:zero-flip-mount` | PASS | `a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image]` + `a5ptc: census-boot`, zero family lines, no agent-state name in any placement |
+| `agt:surface-unchanged-witness` | PASS | shipped `read/write/edit/read_image` on the model surface; `agentStateNamesOnAnySurface: []`; census-boot present |
+| `agt:enabled-mount-refused` | PASS | team.create response body: `agent-bindings: alpha.5 Team tool plane refused the mount for '<session>': the dsh.agent-state-family is enabled but its state-store port is not mounted (the agent-state store port is absent) — an enabled family with no durable store never mounts (fail closed) (code: PLANE_AGENT_STATE_STORE_MISSING)` |
+| `agt:enabled-zero-plane` | PASS | 0 placement-feed rows, 0 census-boot, 0 family RAN |
+| `agt:leak-check` | PASS | both worlds torn down clean |
+
+Boot budget: the suite's design is 2 boots/run, 3 declared, 2 used in the
+recorded run. Five runner invocations total (10 host starts) are disclosed in
+the evidence dir: runs 1–2 diagnosed the witness channels, run 3 kept homes
+for the post-mortem that located the typed refusal on the `team.create` body,
+run 4 proved the verdict path but carried a swallowed drive-phase reference
+error so it is **not** the record, run 5 is the clean record. `tests/homes/`
+empty after; the pristine `tests/deepseek-harness-test-use` remained byte-clean
+@ `639ed01539`.
 
 ## Gate results
 
-(append after the recorded `ci-pr-gate --full --census` run)
+(recorded `ci-pr-gate --store-dir .tmp-pnpm-store --full --census` + typecheck +
+docs blocking 0 + `eb3-ci-required` + `gen-family-index --check` +
+`diag-call-chain --self-test` results appended below after the final run)
 
 ## Zero-plane-edit file list (everything touched)
 
