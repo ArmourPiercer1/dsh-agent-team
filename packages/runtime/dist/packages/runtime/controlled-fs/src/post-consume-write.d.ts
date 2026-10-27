@@ -132,6 +132,13 @@ export interface PostConsumeWriteCallContext {
     readonly signal?: {
         readonly aborted?: boolean;
     };
+    /** LANE-INTERNAL PROBE SEAM ONLY (mirrors the PoC3
+     *  `onAfterPreCheckBeforeOpen` hook of controlled-fs.ts): fires AFTER the
+     *  exec-time verification and BEFORE the first byte-changing step, so the
+     *  verify→truncate window is observable without a real-time race. The
+     *  sanctioned wiring (fs-family executors) NEVER passes it — pinned by
+     *  u7-r4091 S-1; its presence changes no law. */
+    readonly onBeforeFirstByteChange?: () => void | Promise<void>;
 }
 /** Assembly-time configuration: where the governed instance root STANDS. */
 export interface PostConsumeWriteConfig {
