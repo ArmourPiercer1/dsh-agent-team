@@ -1,13 +1,15 @@
 {
- "schema": "p4t6-booking/1",
- "lane": "U7AC1",
- "paths": [
-  "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts"
- ],
- "expectedDelta": {
-  "from": 1382,
-  "to": 1383
- },
- "reason": "U7 AC-1 (agent-control retarget to the public subagents service + Tier A ceiling; branch task/u7-ac1-subagents-port-20261027 off origin/master a264d2df0): the ONE scannable file this round ADDS is the AC-1 C1 suite (the port legs over fake subagents/llm faces: forced toolFilter {allow:[]}, no agentOptions/persona, typed Tier A route/PTC refusals, the child-toolview witness, agentTeams never resolved; plus the family legs over the real plane chain under the build-time Tier A ceiling). Every production edit rides ALREADY-COUNTED agent-control-family paths and the already-counted families/agent-control.mjs; manifest.json, dist mirrors, the acceptance ledger and dev evidence are outside the scan. ZERO diff in the protected center, team-tool-plane.mjs, family-assembly.mjs and agent-bindings.mjs; zero new denylist vocabulary.",
- "tieNote": "MEASURED, not copied: on this tree with the suite on disk and this booking absent, the ledger law reads `scanner counts 1383, ledger derives 983 + 399 = 1382` (dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/p4t6-RED-unbooked.log)."
+  "schema": "p4t6-booking/1",
+  "lane": "U7AC1",
+  "paths": [
+    "packages/runtime/test/u7-ac1-subagents-coverage-c1.test.ts",
+    "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
+    "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1385,
+    "to": 1388
+  },
+  "reason": "U7 AC-1 agent-control retarget and coverage suites: both newly scannable C1 files are booked; production edits ride already-counted agent-control-family paths and evidence/dist are outside the scan. Zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: after merging origin/master, with both AC-1 scannable suites on disk and this booking absent, the ledger law reads scanner counts 1388, ledger derives 983 + 403 = 1386 (dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/p4t6-RED-unbooked.log). Exactly these two paths are booked."
 }

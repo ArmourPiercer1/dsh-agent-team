@@ -1,6 +1,19 @@
 {
   "schema": "u5-run-record/1",
   "runId": "u7ac1-c2-boot8-fork-regrade",
+  "regradeOf": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/c2-verdicts-boot8.json",
+  "bindings": {
+    "teamSha": "ab8a5f236a3d8c21e3777a20b37d0b6a4f4bf9ae",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae"
+    }
+  },
   "suite": "u7-ac1-agent-control-subagents-c2/fork-positive-pass-override",
   "startedAt": "2026-10-27T21:51:07.838Z",
   "finishedAt": "2026-10-27T22:04:00.000Z",
