@@ -25,6 +25,10 @@
  */
 import { constants as fsConstants, realpathSync, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
+import { Buffer } from 'node:buffer' // the lane law: tools lanes import their
+// node globals explicitly (fs-mechanics.mjs precedent); the eslint
+// node-globals allowlist (scripts/eslint-node-globals/) is a disclosed
+// runtime-plugin/testkit family list, not a tools-lane entitlement.
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
 // The anchor law has ONE home and the opened-handle identity law has ONE
 // home; both arrive through fs-family's PUBLIC face `src/index.mjs`
