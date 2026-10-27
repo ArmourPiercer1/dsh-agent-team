@@ -65,18 +65,19 @@ agent-state tools was DISCLOSED.
   target in place) turns C1 RED: `mutation-control-atomic-rename.txt`.
 - **O1 RED on the old envelope**: `O1-RED-old-envelope.txt`.
 
-## C2 (real Host, pin 639ed01539) — budget 3 boots, 3 spent
+## C2 (real Host, pin 639ed01539) — budget 3 boots, 3 spent + boot 4 granted
 
-Budget ledger: `c2/host-start-budget.jsonl` (3 lines). :3080 returned 401
+Budget ledger: `c2/host-start-budget.jsonl` (4 lines). **Boot 4 — over budget, granted by main agent for get_goal L4 after the bridge-shape fix** (`c2/boot4-grant.txt`; no 5th boot authorised). :3080 returned 401
 before and after every boot (read-only probe, no other contact).
 
 | boot | record | overall | notes |
 | --- | --- | --- | --- |
 | 1 | `c2/run-ast1.json` | REFUSED (7 PASS / 1 REFUSED) | create_goal / todo_write / cross-scope PASS. **Found**: every family refusal reached the model as host `invalid output` (an extra `refusal` field against the closed `{text}` face); fixed in `0cff7979e`. get_goal REFUSED. |
 | 2 | `c2/run-ast2.json` | REFUSED (8 PASS / 2 REFUSED) | update_goal(edit) PASS. The exit_plan_mode plan-mode plant failed (runner imported the lane barrel, which pulls a dist-only `.js` edge) → exit_plan_mode REFUSED `PLAN_MODE_NOT_ACTIVE`; fixed in `61a49e362`. |
-| 3 | `c2/run-ast3.json` | **REFUSED (9 PASS / 1 REFUSED)** | grades the ledger. |
+| 3 | `c2/run-ast3.json` | REFUSED (9 PASS / 1 REFUSED) | get_goal still APPROVAL_DENIED (bridge shape, see below). |
+| 4 | `c2/run-ast4.json` | **PASS (10 / 10)** | after `eee67dafd` (get_goal tool-invoke arm). **Grades the ledger.** `RUN-SUMMARY run=u5-u7-astore-ast4-2026-10-27T16-22-47-523Z suite=u7-astore overall=PASS cases=10 PASS:10` |
 
-Boot 3 verdicts (verbatim from `c2/run-ast3.json`):
+Boot 3 verdicts (verbatim from `c2/run-ast3.json`; boot 4 is identical except `ast:get-goal-readback` = PASS, the model saw `{"goal":{"goal_id":…,"objective":"U7AS_GOAL_CLAIM_…","revision":1,…}}` through a settled Control ask):
 
 - `ast:mounted` PASS: the five rows are on the placement feed; host log shows `agent-state store=fs`.
 - `ast:store-under-world-home` PASS: the World home realpath is under `tests/homes/`; store base `team-state/agent-state/<realm>`.
@@ -88,19 +89,42 @@ Boot 3 verdicts (verbatim from `c2/run-ast3.json`):
 - `ast:get-goal-readback` REFUSED: `refused: APPROVAL_DENIED — durable Control request uncreated answered deny`.
 - `ast:leak-check` PASS.
 
-## What remains DISCLOSED
+## get_goal — the C1/live gap and its fix
 
-get_goal live L4 positive: the production PA approval bridge refuses an ask whose effect set carries no tool-invoke effect (packages/runtime/operation-permission/pa-control-bridge.ts:358-361, a protected center path), and get_goal deliberately requests only the metadata meta arm (executors.mjs get_goal effectsFor, the reviewed #407 read/mutation split), so on the real host the read is denied before any Control row exists (C2 run-ast3 ast:get-goal-readback REFUSED, verbatim "refused: APPROVAL_DENIED — durable Control request uncreated answered deny").
+Boots 1 to 3 refused get_goal with `refused: APPROVAL_DENIED — durable Control
+request uncreated answered deny`. The production PA approval bridge
+(`packages/runtime/operation-permission/pa-control-bridge.ts:358-361`,
+protected) denies an ask whose effect set names no `tool-invoke` tool, and
+get_goal requested only the `meta` arm. **Root cause: C1's stand-in control
+leg approved any ask and never enforced the production bridge's tool-invoke
+requirement.**
 
-Named center-interface need: the bridge needs an approval carrier for a
-read-only (no tool-invoke) ask. The alternative is a reviewed family law
-change that adds a `tool-invoke(get_goal)` arm. Neither is made here. The
-get_goal read path is PROVEN at C1 over the real store (P1 and others).
+Fix (`eee67dafd`, main-agent ruling): get_goal now carries its own
+`tool-invoke` arm, which is the shape every governed read row already has
+(fs read, read_image, inspect list). `tool-invoke` is not a mutation kind, so
+the get_goal set stays mutation-free (E1 pins `['meta','tool-invoke']` and no
+write/list/connect/read). The other four rows already carried the arm. A new
+C1 leg G1 drives all five rows through a faithful model of the bridge shape.
+G2 and `mutation-control-get-goal-tool-invoke.txt` show that dropping the arm
+in the source turns G1/E1/E2 RED.
+
+## What remains DISCLOSED / NOT_VERIFIED
+
+- exit_plan_mode L4 uses a planted precondition: plan mode is set active on
+  disk before boot, because no family tool enters plan mode.
+- L3 live (typed refusal with zero effect) is graded only for update_goal
+  (cross-scope). For the other four tools L3 stays NOT_VERIFIED live; their
+  refusal arms with zero durable write are proven at C1 over the production
+  store.
+- The home comes from `$DSH_HOME` at build. This is interim until a
+  `homePath` family capability exists (a named center-interface follow-up).
+- #409's `hardlinkAliasVerdict` is not on master; the in-lane nlink check
+  carries a `TODO(#409)`.
 
 ## Files
 
 - `packages/tools/agent-state-family/src/fs-state-store.mjs` (new),
-  `index.mjs` (exports), `executors.mjs` (closed `{text}` envelope)
+  `index.mjs` (exports), `executors.mjs` (closed `{text}` envelope; get_goal tool-invoke arm), `contribution.mjs` (get_goal arms)
 - `packages/tools/families/agent-state.mjs` (build supplies the production
   store) + `manifest.json` digest
 - `scripts/dist-placements/110-agent-state.json` + dist mirrors
