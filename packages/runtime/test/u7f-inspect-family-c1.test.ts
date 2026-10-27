@@ -51,7 +51,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     if (!mockSwapHook.armed || typeof p !== 'string' || !p.endsWith(SWAP_SUFFIX)) return
     mockSwapHook.armed = false
     syncFs.rmSync(p, { force: true })
-    syncFs.symlinkSync(process.env.DSH_U7F_OUTSIDE ?? p, p)
+    syncFs.symlinkSync((process as unknown as { env: Record<string, string | undefined> }).env.DSH_U7F_OUTSIDE ?? p, p)
   }
   return {
     ...actual,
@@ -65,7 +65,7 @@ vi.mock('node:fs', async (importOriginal) => {
     if (!mockSwapHook.armed || typeof p !== 'string' || !p.endsWith(SWAP_SUFFIX)) return
     mockSwapHook.armed = false
     actual.rmSync(p, { force: true })
-    actual.symlinkSync(process.env.DSH_U7F_OUTSIDE ?? p, p)
+    actual.symlinkSync((process as unknown as { env: Record<string, string | undefined> }).env.DSH_U7F_OUTSIDE ?? p, p)
   }
   return {
     ...actual,
@@ -325,7 +325,8 @@ describe('u7f-c1 skill row', () => {
     mkdirSync(join(SKILL_ROOT, 'swap-skill'), { recursive: true })
     const plain = '---\nname: swap-skill\ndescription: the swap subject\n---\n\nplain inside.\n'
     writeFileSync(join(SKILL_ROOT, 'swap-skill', 'SKILL.md'), plain)
-    process.env.DSH_U7F_OUTSIDE = OUTSIDE_SWAP
+    const procEnv = process as unknown as { env: Record<string, string | undefined> }
+    procEnv.env.DSH_U7F_OUTSIDE = OUTSIDE_SWAP
     mockSwapHook.armed = true
     try {
       const { cap } = descriptorCap()
@@ -339,7 +340,7 @@ describe('u7f-c1 skill row', () => {
       expect(snapshot).toMatch(/symlink-alias|exec-time-escape|exec-time-drift/)
     } finally {
       mockSwapHook.armed = false
-      delete process.env.DSH_U7F_OUTSIDE
+      delete procEnv.env.DSH_U7F_OUTSIDE
       const target = join(SKILL_ROOT, 'swap-skill', 'SKILL.md')
       rmSync(target, { force: true })
       writeFileSync(target, plain)
