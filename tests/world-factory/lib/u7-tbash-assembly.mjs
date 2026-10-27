@@ -367,6 +367,15 @@ export const SHELL_ROW_TOOL_NAMES = Object.freeze(['team_bash', 'bash'])
  * frozen team.create wire value. The remote contract deliberately has no
  * top-level rootSessionId: the identity is carried by durable and bind.
  */
+export function extractProjectionSessionId(value) {
+  const projection = value?.projection
+  const id = projection?.teamSessionId
+  if (typeof id !== 'string' || id.length === 0) return null
+  const rootId = projection?.root?.teamSessionId
+  if (rootId !== undefined && (typeof rootId !== 'string' || rootId !== id)) return null
+  return id
+}
+
 export function extractGovernedSessionId(value, { expectedRoot, bootRoot } = {}) {
   const out = { ok: false, createPath: value?.path ?? null, fromDurable: null, fromBind: null, reason: null }
   if (value === null || typeof value !== 'object' || value.path !== 'fresh-root') {

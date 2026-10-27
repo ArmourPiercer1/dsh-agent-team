@@ -26,13 +26,13 @@ import { createRunRecord, readAuthorityBinding } from '../../../../../tests/worl
 import { testUseTree } from '../../../../../tests/paths.mjs'
 import {
   TBASH_CASES, createTbashAssembly, makeTbashDecide, askerScript, decideResolution,
-  callResultsOf, judgeTbash, commandHashOf, extractGovernedSessionId,
+  callResultsOf, judgeTbash, commandHashOf, extractGovernedSessionId, extractProjectionSessionId,
 } from '../../../../../tests/world-factory/lib/u7-tbash-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const BUDGET = 3
+const BUDGET = 4
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const notes = []
 const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
@@ -207,10 +207,10 @@ async function drive({ world, assembly, planted, boot, decide }) {
   if (teamSessionId !== null) {
     const projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId }, 'u7tb-independent', 1)
     const pv = unwrap(projection.body)
-    independent = pv?.rootSessionId ?? pv?.teamSessionId ?? pv?.projection?.rootSessionId ?? null
+    independent = extractProjectionSessionId(pv)
   }
   const independentOk = independent === teamSessionId && teamSessionId !== null
-  run.record.governedSession = { ...identity, teamSessionId, bootRoot: assembly.ROOT, identityOk: identityOk && independentOk, fromIndependentRead: independent, ledgerForeignEntries: 0, bindings: { rowToModelCall: [], modelCallToSession: [] } }
+  run.record.governedSession = { ...identity, teamSessionId, bootRoot: assembly.ROOT, identityOk: identityOk && independentOk, fromIndependentRead: independent, projectionStatus: projection?.status ?? null, projectionExcerpt: JSON.stringify(projection?.body ?? null).slice(0, 600), ledgerForeignEntries: 0, bindings: { rowToModelCall: [], modelCallToSession: [] } }
   if (!createOk || !run.record.governedSession.identityOk) {
     add('tbash:mounted', 'FAIL', { createOk, identityOk, createBody: JSON.stringify(created.body ?? null).slice(0, 800) })
     failRest('team.create failed or governed identity mismatch')

@@ -72,6 +72,14 @@ test('u7-tbash: commands are harmless printf appends inside the team root', with
   assert.notEqual(c.appr, c.deny)
 }))
 
+test('u7-tbash: projection identity extractor reads only projection.teamSessionId', async () => {
+  const { extractProjectionSessionId } = await lib()
+  assert.equal(extractProjectionSessionId({ projection: { teamSessionId: 'team-1' } }), 'team-1')
+  assert.equal(extractProjectionSessionId({}), null)
+  assert.equal(extractProjectionSessionId({ projection: { teamSessionId: 'team-1', root: { teamSessionId: 'other' } } }), null)
+  assert.equal(extractProjectionSessionId({ rootSessionId: 'team-1' }), null)
+})
+
 test('u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity', async () => {
   const { extractGovernedSessionId } = await lib()
   const base = { path: 'fresh-root', durable: { teamSession: { rootSessionId: 'team-1' } }, bind: { identity: { rootSessionId: 'team-1' } } }
