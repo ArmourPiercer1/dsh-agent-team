@@ -121,6 +121,18 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-F B (agent-state family) booked FILE-BY-FILE, thin faces only:
+  // `tools/agent-state-family/src/executors.mjs` imports ONLY
+  // `parseRequestedEffectSet` (the SAME effect-grammar face the fs-family
+  // executors carry) to validate the five rows' per-call PA arm sets;
+  // `tools/agent-state-family/src/contribution.mjs` imports ONLY
+  // `canonicalJsonStringify` (the deterministic canonical serialization the
+  // contribution provider-digest needs — a pure function, zero authority,
+  // the face the shadow-row booking above carries for its digest documents).
+  // No other lane export is reachable from these files (a different face
+  // stays a finding by this audit's own rule); zero lane edits.
+  'tools/agent-state-family/src/executors.mjs',
+  'tools/agent-state-family/src/contribution.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
