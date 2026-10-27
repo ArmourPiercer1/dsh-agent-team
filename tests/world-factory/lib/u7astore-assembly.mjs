@@ -383,7 +383,8 @@ export function judgeU7AStore(f) {
   const goalWrite = goalWrites.slice(0, 1)
   const createRow = controlRows.filter((r) => /create_goal/.test(`${r.toolName} ${r.summary}`))
   const createAttempt = goalRec === null ? null : disk.attempts.find((a) => a.op === 'goal/apply' && a.scope === goalRec.key && a.outcome === 'applied') ?? null
-  if (goalRecs.length === 1 && goalRec.goal.phase === 'active' && goalWrites.length >= 1 && createAttempt !== null && String(goalRec.key).startsWith('agent:') && goalRec.nlink === 1 && !isRefusal(createHead) && String(createHead).includes(f.claims.goal)) {
+  const rereadOk = reread !== null && reread?.goal !== undefined && JSON.stringify(reread.goal) === JSON.stringify(goalRec?.goal ?? null)
+  if (goalRecs.length === 1 && rereadOk && goalRec.goal.phase === 'active' && goalWrites.length >= 1 && createAttempt !== null && String(goalRec.key).startsWith('agent:') && goalRec.nlink === 1 && !isRefusal(createHead) && String(createHead).includes(f.claims.goal)) {
     V.push(['ast:create-goal-positive', 'PASS', {
       diskRecord: { key: goalRec.key, goal: goalRec.goal, nlink: goalRec.nlink, file: goalRec.file },
       writesAudit: goalWrite,
@@ -395,7 +396,7 @@ export function judgeU7AStore(f) {
   } else if (isRefusal(createHead)) {
     V.push(['ast:create-goal-positive', 'REFUSED', { toolResultHead: String(createHead).slice(0, 400), diskRecords: disk.records.length, controlRows: createRow, resolutions: resolutions.filter((r) => /create_goal/.test(String(r.toolName))) }])
   } else {
-    V.push(['ast:create-goal-positive', 'FAIL', { createHead, goalRecs: goalRecs.length, writes: disk.writes, controlRows: createRow }])
+    V.push(['ast:create-goal-positive', 'FAIL', { createHead, goalRecs: goalRecs.length, rereadOk, reread, writes: disk.writes, controlRows: createRow }])
   }
   const getHead = resultOf('leader', 'get_goal')
   V.push(['ast:get-goal-readback', typeof getHead === 'string' && getHead.includes(f.claims.goal) && !isRefusal(getHead) ? 'PASS' : (isRefusal(getHead) ? 'REFUSED' : 'FAIL'), {

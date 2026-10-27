@@ -76,11 +76,12 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
   // through the production store's own atomic seed path.
   let plantedPlanScope = null
   try {
-    const laneMod = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'index.mjs')).href)
+    const laneMod = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'fs-state-store.mjs')).href)
     plantedPlanScope = await assembly.plantLeaderPlanMode(laneMod, homeReal)
     record.record.bindings.agentStateStore.plantedPlanModeScope = plantedPlanScope
   } catch (error) {
     log(`plan-mode plant failed: ${String(error?.message ?? error).slice(0, 160)}`)
+    record.record.bindings.agentStateStore.plantError = String(error?.message ?? error).slice(0, 300)
   }
   world.u7AStore.rows.push(...assembly.teamRows())
   await world.startMock({ decide: makeU7AStoreDecide({ assembly }) })
@@ -243,7 +244,7 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
   // a FRESH production store instance over the same home (restart re-read)
   let reread = null
   try {
-    const lane = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'index.mjs')).href)
+    const lane = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'fs-state-store.mjs')).href)
     const goalKey = disk.records.find((r) => r.goal?.objective === assembly.claims.goal || r.goal?.objective === assembly.claims.goalEdited)?.key
     if (goalKey !== undefined) {
       const fresh = lane.createFsStateStore({ rootDir: assembly.STORE_ROOT, anchorDir: realpathSync(world.home), realmId: assembly.PLANE_REALM_ID })
