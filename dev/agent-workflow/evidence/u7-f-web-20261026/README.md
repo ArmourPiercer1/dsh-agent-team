@@ -116,10 +116,20 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   rounds. Stated, not hidden: post-booking local census reds are
   host-load artifacts on spawn/timer-sensitive tests, NOT lane findings;
   the AUTHORITATIVE census is the hosted one.
-- Hosted (authoritative, PR #403): pr-gate SUCCESS (run 40458857327),
-  candidate-protection SUCCESS (40458857234); census-runtime
-  (40458857196) and ci-required (40458857297) tracked to completion —
-  final verdicts reported in the PR conversation.
+- Hosted (authoritative, PR #403) round 1 @ `02c64aa0f`: pr-gate SUCCESS
+  (40458857327), candidate-protection SUCCESS (40458857234),
+  census-runtime SUCCESS (40458857196); ci-required (40458857297) FAIL —
+  layers=5 green=4, the ONLY red layer `ci-integration`, whose failing
+  step was `eb3-family-boundaries`: this lane was UNBOOKED there
+  ("an unbooked lane cannot be graded" — findings=9, one per lane file).
+  Fixed the way the mechanism prescribes: lane README as the law home
+  (`packages/tools/web-family/README.md`: allowed outward edges = node:*
+  + contracts + the single governance face, NO plane/sibling/host edges)
+  + the `LANE_EDGES`/`LANE_ID_BY_LANE` booking in
+  `scripts/eb3-family-boundaries.mjs` (the same booking table every
+  family lane rides). Local `eb3-family-boundaries` pass files=42
+  findings=0; p4t6 + arc-A fitness + docs re-verified green. Round 2
+  below carries the fix.
 
 Verdict law followed throughout: a blocked arm is DISCLOSED (ENV_BLOCK /
 verbatim refusal text), never flipped to PASS; the DECISION-3 limit (the

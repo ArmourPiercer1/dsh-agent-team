@@ -89,6 +89,19 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  // U7-f (web family lane), transcribed from its README (the law home):
+  // the ONE network family rides node builtins for its single bounded
+  // transport port, contracts for the closed vocabulary, and the SAME
+  // single thin governance face the fs-family executors carry
+  // (parseRequestedEffectSet, booked file-by-file in the a5p0 audit).
+  // No plane edge, no sibling-family edge, no host internals — network
+  // confinement is the admission plane (DECISION-3), so the lane itself
+  // claims nothing beyond these three.
+  'dsh.web-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -101,6 +114,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/fs-family': 'dsh.fs-family',
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
+  'packages/tools/web-family': 'dsh.web-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
 })
 
