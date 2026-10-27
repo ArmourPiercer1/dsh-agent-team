@@ -155,6 +155,15 @@ jobs:
         # detecting — this is the leg that keeps the other legs honest.
         run: node scripts/eb3-ci-negative-controls.mjs
 
+      - name: "EB3 acceptance ledger (per-tool four levels; every PROVEN level backed by a committed RUN record case PASS)"
+        # PR #404 merged with its live C2 RUN record at overall=FAIL (3 PASS / 3 FAIL)
+        # while every layer was green: nothing machine-checked "the Definition passes"
+        # against "the real positive effect ran on a Host". This leg refuses a PROVEN
+        # level that no committed RUN record case backs. It deliberately does NOT fail on
+        # DISCLOSED / NOT_VERIFIED — honesty is the merge gate, completeness (every L4
+        # PROVEN) is the G5 release gate.
+        run: node scripts/eb3-tool-acceptance.mjs
+
       - name: "EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free)"
         # Declared as a leg in dev/ci/eb3-ci-manifest.json with both paths as required tokens:
         # dropping either file from this line is CI_LAYER_LEG_WEAKENED. They shipped in PR #394 in
