@@ -42,6 +42,13 @@ name: ci-required
 on:
   pull_request:
     branches: [master]
+    # `labeled`/`unlabeled` are LOAD-BEARING for the deferred tier: the verdict depends on
+    # the PR's labels, so ADDING ci-defer-full must re-run (to skip ci-full) and REMOVING it
+    # must re-run the full aggregate on the SAME head. Without them, taking the label off
+    # would leave a red ci-required standing until the next push — a head that is fully green
+    # but cannot merge, the failure this tier must not create. The default set
+    # (opened/synchronize/reopened) does not include them.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -117,6 +124,15 @@ jobs:
   ci-full:
     name: ci-full
     needs: synthesize
+    # THE DEFERRED TIER (dev/ci/eb3-ci-manifest.json#deferral). An intermediate
+    # fix-round push may carry the PR label `ci-defer-full` to skip the census. This
+    # is the ONLY layer caller allowed an `if:`, and only this exact text
+    # (scripts/eb3-ci-required.mjs grades it). It cannot produce a mergeable run:
+    # `ci-required` below still needs ci-full, a skipped ci-full grades NOT green,
+    # so the Required context is RED on a deferred run. The ci-required job itself
+    # is never skipped. A skipped required job reports `skipped`, which GitHub
+    # branch protection accepts as passing; that is why the deferral lives here.
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
     uses: ./.github/workflows/ci-full.yml
     with:
       merge_tree: ${{ needs.synthesize.outputs.tree }}
@@ -160,3 +176,34 @@ jobs:
           name: ci-required-verdict-${{ github.run_number }}
           path: ${{ runner.temp }}/required-verdict.txt
           if-no-files-found: warn
+
+  # ── the deferred tier's report (NOT Required, never named ci-required) ─────────
+  # Runs only on a deferred run (label `ci-defer-full`). It grades the three cheap
+  # layers + synthesize so a fix round still gets a verdict on what DID run. Its check
+  # name is `ci-required-deferred`, which branch protection does not require; the
+  # Required `ci-required` above is red on the same run (ci-full skipped), so a
+  # deferred run can never satisfy branch protection.
+  required-deferred:
+    name: ci-required-deferred
+    if: ${{ always() && contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
+    needs: [synthesize, ci-fast, ci-integration, ci-security]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Grade the non-deferred layers (this run cannot merge)
+        shell: bash
+        env:
+          EB3_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          node scripts/eb3-merge-tree.mjs --grade-needs "$EB3_NEEDS_JSON" --deferred
