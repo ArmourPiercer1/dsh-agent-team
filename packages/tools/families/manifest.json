@@ -13,6 +13,9 @@
     },
     "fs-search": {
       "backsExecution": "family-body"
+    },
+    "network-egress": {
+      "backsExecution": "family-body"
     }
   },
   "families": [
@@ -27,6 +30,10 @@
     {
       "module": "search.mjs",
       "sha256": "33b4569909d9f77a298d2c06be5d10630650a697491d09c593e096189fcb689b"
+    },
+    {
+      "module": "web.mjs",
+      "sha256": "1856db1aa973bd2a146c3e267a933f3e8aa2ca4cb2c9f8a41abf45c28acf44a9"
     }
   ]
 }

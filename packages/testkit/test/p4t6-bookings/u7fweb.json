@@ -1,0 +1,23 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FWEB",
+  "paths": [
+    "packages/tools/web-family/src/index.mjs",
+    "packages/tools/web-family/src/web-mechanics.mjs",
+    "packages/tools/web-family/src/web-transport.mjs",
+    "packages/tools/web-family/src/web-search-provider.mjs",
+    "packages/tools/web-family/src/fetch-executor.mjs",
+    "packages/tools/web-family/src/search-executor.mjs",
+    "packages/tools/web-family/src/fetch-row.mjs",
+    "packages/tools/web-family/src/search-row.mjs",
+    "packages/tools/web-family/src/web-family-contribution.mjs",
+    "packages/tools/families/web.mjs",
+    "packages/runtime/test/u7f-web-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1333
+  },
+  "reason": "u7-f (the governed WEB family — the first network-effect family): the web-family lane's nine runtime .mjs modules (pure closed mechanics, the ONE bounded transport port, the search-provider law, the two governed executors, the two rows, the ONE contribution carrying web_fetch+web_search, the barrel), its reviewed FamilyAssembly descriptor drop-in (packages/tools/families/web.mjs, mounted only behind the closed opt-in boolean planeCfg.webEnabled), and the C1 suite proving the whole chain offline against a MOCK-band stub (positive with the declared==requested fingerprint pin; zero-flip absent/false; config-law refuse-the-mount; default-deny and deny-leg zero-wire; scheme/userinfo/closed-args pre-wire refusals; over-cap refused WHOLE; redirect-loop hop bound; off-destination redirect with the victim server provably never contacted; wall-time WEB_TIMEOUT; one-shot settled-token replay cancelled; no-provider typed refusal; invalid-provider mount refusal; leak law on every leg). The manifest.json/index.mjs edits ride already-counted paths; the dist mirror and dev/ evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the eleven files on disk and this booking absent, the ledger law reads `scanner counts 1333, ledger derives 983 + 339 = 1322` (dev/agent-workflow/evidence/u7-f-web-20261026/p4t6-RED-unbooked.log) — the merged tree's 1322 plus exactly these eleven paths."
+}

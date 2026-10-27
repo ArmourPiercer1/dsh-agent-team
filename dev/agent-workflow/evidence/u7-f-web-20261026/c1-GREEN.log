@@ -1,0 +1,79 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch default-deny dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-6 ask lane + DENYING leg: typed refusal, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_URL_USERINFO_FORBIDDEN dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-limit dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-denied reason=off-destination dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TIMEOUT dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=1 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch cancelled-at-pa-edge dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search RAN seq=1 sources=1 provider=u7f-c1-test-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search pa-refused code=APPROVAL_DENIED provider=u7f-c1-test-provider
+
+ ✓ packages/runtime/test/u7f-web-c1.test.ts (19 tests) 1220ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  23:44:13
+   Duration  1.72s (transform 902ms, setup 0ms, import 361ms, tests 1.22s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

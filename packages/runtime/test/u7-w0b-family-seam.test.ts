@@ -292,6 +292,11 @@ describe('u7-w0b fitness F1 — the plane names no family', () => {
 describe('u7-w0b fitness F2 — the family index is the reviewed manifest', () => {
   it('gen-family-index --check is green (index derived, digests match, no unlisted module)', () => {
     const out = execFileSync('node', [join(REPO, 'scripts/gen-family-index.mjs'), '--check'], { cwd: REPO, encoding: 'utf8' })
-    expect(out).toContain('OK (3 reviewed famil(ies))')
+    // u7-f: the reviewed set is now FOUR (fs/process/search + the OPT-IN web
+    // family). This literal is the reviewed-family COUNT, not a governance
+    // law — a new family joining the manifest moves it (the same edit the
+    // search-family join made when it took it 2 -> 3). The web family is
+    // mounted only behind the closed boolean planeCfg.webEnabled.
+    expect(out).toContain('OK (4 reviewed famil(ies))')
   })
 })
