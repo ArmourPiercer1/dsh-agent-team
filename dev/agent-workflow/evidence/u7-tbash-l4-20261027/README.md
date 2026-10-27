@@ -114,11 +114,11 @@ human-seam resolver policy:
 
 ## 4. Boot ledger, verdicts, conclusions (appended after the boots)
 
-Budget 3, 2 spent; each boot was declared in `c2/boot-budget.jsonl` BEFORE it
-started. No third boot is needed. No world for this lane remains in `tests/homes/`
-(both records carry `teardown.homeRemoved=true`). `:3080` read 401 before and
-after each boot (`stableInstance.unchanged=true`, `touched=false`). Host tree
-`639ed0153` at the end of each run.
+Budget 3, all 3 spent; each boot was declared in `c2/boot-budget.jsonl` BEFORE it
+started. Boot 3 was the final permitted boot; no boot 4 was attempted. No world
+for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
+`:3080` read 401 before and after boot 3 (`stableInstance.unchanged=true`,
+`touched=false`). Host tree `639ed0153` at the end of boot 3.
 
 ### 4.1 Boot ledger
 

@@ -177,12 +177,12 @@
         }
       },
       "L4-positive": {
-        "status": "PROVEN",
+        "status": "DISCLOSED",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot3.json",
           "case": "tbash:approve-spawn-once"
         },
-        "note": "u7-tbash boot 2 (overall PASS 6/6, teamSha ca575560b, host 639ed0153): one human allow at team.resolveControl on the governed session spawned ONE confined process (host log a5g7-shell 'confined-shell ran … exit=0'), consumed once, and left exactly one claim line on disk; replay, other-command and deny legs had zero effect. Closes the u6-pr3 (#375) deferral, whose FAIL was an envelope gap + wrong-root observer + two judge artifacts (evidence README §1/§4), not a family defect. The PA row is governed under the native name `bash`, but every model-facing call here is `team_bash`; the bash row is not backed by this record"
+        "note": "Boot 3/3 failed closed before the approval drive: create durable and bind identities agreed and differed from boot root, but independent team.getProjection returned no bound session identity; governedSession.identityOk=false. All six cases FAIL, no allow/consumption/effect was issued. Boot 2 did not prove identity (review F-1), so it does not back PROVEN."
       }
     },
     {
