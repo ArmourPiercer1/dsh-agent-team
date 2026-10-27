@@ -1,0 +1,55 @@
+RUN-1
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------·----·---------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  20:10:18
+   Duration  4.02s (transform 1.10s, setup 0ms, import 1.38s, tests 2.48s, environment 0ms)
+
+RUN-2
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------·----·---------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  20:10:23
+   Duration  3.97s (transform 1.09s, setup 0ms, import 1.38s, tests 2.43s, environment 0ms)
+
+RUN-3
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------·----·---------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  20:10:28
+   Duration  4.00s (transform 1.12s, setup 0ms, import 1.41s, tests 2.43s, environment 0ms)
+
+RUN-4
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------·----·---------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  20:10:33
+   Duration  3.97s (transform 1.11s, setup 0ms, import 1.39s, tests 2.43s, environment 0ms)
+
+RUN-5
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------·----·---------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  20:10:38
+   Duration  3.98s (transform 1.10s, setup 0ms, import 1.39s, tests 2.43s, environment 0ms)
+
