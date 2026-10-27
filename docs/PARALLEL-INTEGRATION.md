@@ -132,6 +132,13 @@ been swept in the same way. The count grew while this page was being written, wh
 nothing stops it. This branch neither adds nor removes any of them. Here they only cost a
 `NOT GRADED` line; whether they stay in git is the evidence owner's (EB4-A) call, not this checker's.
 
+**Update 2026-10-27.** The nine raw captures were un-tracked in PR #396, and "nothing stops it"
+no longer holds. The census leg now writes raw captures and re-samples to the gitignored
+`.artifacts/census/` and keeps only the `census-comparison-*` sidecar in `scratch/`. A
+`ci-integration` leg, `scripts/eb3-evidence-guard.mjs --new-since "$CI_BASE"`, refuses a PR that
+adds a raw-capture or resample name under the evidence root. It also refuses a PR that adds a
+file over 1 MiB there, unless `dev/ci/evidence-large-allowlist.json` lists it with a reason.
+
 ## 4a. Shared registries a family lane must not edit (u7-w0, 2026-10-26)
 
 Measured over the 7 merged U7 PRs, the conflicts that forced a master re-merge and a census rerun

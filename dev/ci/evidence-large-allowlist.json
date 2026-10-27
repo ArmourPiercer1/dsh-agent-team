@@ -1,0 +1,5 @@
+{
+  "schema": "evidence-large-allowlist/1",
+  "note": "Reviewed exemptions from the 1 MiB size bound of scripts/eb3-evidence-guard.mjs, for files ADDED under dev/agent-workflow/evidence/. Each entry needs {path, reason}; an entry without a reason is EVIDENCE_ALLOWLIST_INVALID. An entry exempts SIZE only: a raw census capture or resample name is refused regardless. Existing large tracked files (e.g. RELOCATED-MANIFEST.tsv) need no entry because the guard grades additions only. Editing this file selects every CI layer (dev/ci/** in eb3-impact-graph.json), so a new exemption is reviewed with the PR that needs it.",
+  "entries": []
+}

@@ -60,6 +60,7 @@ const MODULES = {
   'scripts/eb3-merge-tree.mjs': null,
   'scripts/eb3-run-manifest.mjs': null,
   'scripts/eb3-impact.mjs': null,
+  'scripts/eb3-evidence-guard.mjs': null,
 }
 const CI_PR_GATE = await import(new URL('./ci-pr-gate.mjs', import.meta.url).href)
 // Per-module load errors: the RED run of this file first recorded only the FIRST
@@ -785,6 +786,121 @@ control('C14 leg-allowlist-not-denylist', () => {
           real.length > 0 ? `real workflow leg findings: ${real.map((f) => f.detail).join(' ;; ')}` : '',
         ].filter(Boolean).join(' ;; '),
   }
+})
+
+// ──────────────────────────────── controls 15–19: evidence guard (raw captures, size)
+/**
+ * The recurring defect these close (PR #396, then three lanes again): the census leg
+ * wrote ~3.8 MB raw vitest captures `census-<stamp>-<pid>-<n>.json` into the SAME tracked
+ * directory as its ~2 KB comparison sidecars `census-comparison-<stamp>-<pid>.json`, and the
+ * only thing keeping the captures out of git was prose. Two halves, both controlled here:
+ *
+ *   C15–C18  scripts/eb3-evidence-guard.mjs refuses what a PR ADDS under the evidence root:
+ *            a raw-capture / resample name, or a file over the bound that no reviewed
+ *            allowlist entry names. Each control plants the file in a THROWAWAY git repo
+ *            (real commits, real `git diff --diff-filter=A`), never in this tree.
+ *   C19      the census leg itself writes captures and resamples to a gitignored path
+ *            and keeps only the sidecar in tracked scratch/ — separation at the source,
+ *            so the guard is the backstop, not the mechanism.
+ */
+function plantedRepo(files, allowlist = null) {
+  const dir = mkdtempSync(join(tmpdir(), 'eb3-evguard-'))
+  const git = (...a) => execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  git('init', '-q', '-b', 'main')
+  git('config', 'user.email', 'controls@example.invalid')
+  git('config', 'user.name', 'eb3 controls')
+  mkdirSync(join(dir, 'dev/agent-workflow/evidence'), { recursive: true })
+  writeFileSync(join(dir, 'dev/agent-workflow/evidence/README.md'), 'base\n')
+  git('add', '.')
+  git('commit', '-q', '-m', 'base')
+  const base = git('rev-parse', 'HEAD')
+  for (const [rel, bytes] of Object.entries(files)) {
+    mkdirSync(dirname(join(dir, rel)), { recursive: true })
+    writeFileSync(join(dir, rel), bytes)
+  }
+  if (allowlist !== null) {
+    mkdirSync(join(dir, 'dev/ci'), { recursive: true })
+    writeFileSync(join(dir, 'dev/ci/evidence-large-allowlist.json'), JSON.stringify(allowlist, null, 2))
+  }
+  git('add', '.')
+  git('commit', '-q', '-m', 'planted')
+  return { dir, base, cleanup: () => rmSync(dir, { recursive: true, force: true }) }
+}
+
+/** Grade one planted repo through the guard's own entry point (git diff + allowlist load). */
+function guardPlanted(files, allowlist = null) {
+  const { guardAddedEvidence } = requireModule('scripts/eb3-evidence-guard.mjs')
+  const r = plantedRepo(files, allowlist)
+  try { return guardAddedEvidence({ root: r.dir, since: r.base }) } finally { r.cleanup() }
+}
+
+const SCRATCH = 'dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch'
+const TWO_MIB = Buffer.alloc(2 * 1024 * 1024, 0x61)
+
+control('C15 evidence-guard-refuses-raw-capture', () => {
+  const planted = {
+    [`${SCRATCH}/census-20261027T003234Z-4-1.json`]: '{"testResults":[]}\n',
+    'dev/agent-workflow/evidence/some-lane/census-20261027T052628Z-4417-2.json': '{}\n',
+    [`${SCRATCH}/resample-4-packages_runtime_test_x_ts-1.json`]: '{}\n',
+  }
+  const out = guardPlanted(planted)
+  const hit = new Set(out.findings.filter((f) => f.code === 'EVIDENCE_RAW_CAPTURE').map((f) => f.path))
+  const missed = Object.keys(planted).filter((p) => !hit.has(p))
+  // Small on purpose: the refusal must be by NAME, not by the size rule catching it.
+  return { ok: missed.length === 0, detail: missed.length === 0 ? `${String(hit.size)} planted raw captures/resamples (tiny, so the NAME rule alone refuses them) => EVIDENCE_RAW_CAPTURE each` : `not refused: ${missed.join(', ')} (findings: ${out.findings.map((f) => f.code).join(',') || 'none'})` }
+})
+
+control('C16 evidence-guard-refuses-oversized', () => {
+  const rel = 'dev/agent-workflow/evidence/some-lane/huge-log.txt'
+  const out = guardPlanted({ [rel]: TWO_MIB })
+  const ok = out.findings.some((f) => f.code === 'EVIDENCE_OVERSIZED' && f.path === rel)
+  return { ok, detail: ok ? `a planted 2 MiB ${rel.split('/').pop()} => EVIDENCE_OVERSIZED (bound ${String(out.boundBytes)} B)` : `not refused: ${JSON.stringify(out.findings)}` }
+})
+
+control('C17 evidence-guard-allowlist-accepts-reviewed-large', () => {
+  const rel = 'dev/agent-workflow/evidence/some-lane/huge-log.txt'
+  const allow = { schema: 'evidence-large-allowlist/1', entries: [{ path: rel, reason: 'control: a reviewed large file' }] }
+  const out = guardPlanted({ [rel]: TWO_MIB }, allow)
+  // The allowlist must exempt SIZE only — never the raw-capture name, and never without a reason.
+  const raw = `${SCRATCH}/census-20261027T003234Z-4-1.json`
+  const rawOut = guardPlanted({ [raw]: TWO_MIB }, { schema: 'evidence-large-allowlist/1', entries: [{ path: raw, reason: 'trying to launder a capture' }] })
+  const noReason = guardPlanted({ [rel]: TWO_MIB }, { schema: 'evidence-large-allowlist/1', entries: [{ path: rel }] })
+  const misses = []
+  if (out.findings.length !== 0) misses.push(`listed 2 MiB file still refused: ${out.findings.map((f) => f.code).join(',')}`)
+  if (!rawOut.findings.some((f) => f.code === 'EVIDENCE_RAW_CAPTURE')) misses.push('an allowlist entry laundered a raw capture')
+  if (!noReason.findings.some((f) => f.code === 'EVIDENCE_ALLOWLIST_INVALID')) misses.push('an entry with no reason was honoured')
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'the same 2 MiB file listed WITH a reason => accepted; a listed raw capture => still EVIDENCE_RAW_CAPTURE; an entry with no reason => EVIDENCE_ALLOWLIST_INVALID' : misses.join(' ;; ') }
+})
+
+control('C18 evidence-guard-accepts-sidecar', () => {
+  const planted = {
+    [`${SCRATCH}/census-comparison-20261027T003234Z-4.json`]: '{"comparison":{}}\n',
+    [`${SCRATCH}/census-comparison-62.json`]: '{}\n',
+    'dev/agent-workflow/evidence/some-lane/census-newreds.json': '{}\n',
+  }
+  const out = guardPlanted(planted)
+  const ok = out.findings.length === 0 && out.added.length === Object.keys(planted).length
+  return { ok, detail: ok ? `${String(out.added.length)} sidecar-shaped additions (census-comparison-*, a named census note) => accepted, and all ${String(out.added.length)} were graded` : `sidecar refused or not graded: added=${String(out.added.length)} findings=${JSON.stringify(out.findings)}` }
+})
+
+control('C19 census-leg-writes-captures-outside-tracked-evidence', () => {
+  const { censusCapturePath, censusResamplePath, CENSUS_SIDECAR_REL } = requireModule('scripts/ci-pr-gate.mjs')
+  if (typeof censusCapturePath !== 'function' || typeof censusResamplePath !== 'function' || typeof CENSUS_SIDECAR_REL !== 'string') {
+    return { ok: false, detail: 'scripts/ci-pr-gate.mjs exports no censusCapturePath/censusResamplePath/CENSUS_SIDECAR_REL — the capture location is not separated from the sidecar location' }
+  }
+  const { isRawCaptureName } = requireModule('scripts/eb3-evidence-guard.mjs')
+  const cap = posix(censusCapturePath(ROOT, '20261027T003234Z', 4, 1)).slice(posix(ROOT).length + 1)
+  const res = posix(censusResamplePath(ROOT, 4, 'packages/runtime/test/x.test.ts', 1)).slice(posix(ROOT).length + 1)
+  const ignored = (rel) => { try { execFileSync('git', ['-C', ROOT, 'check-ignore', '-q', '--no-index', rel]); return true } catch { return false } }
+  const misses = []
+  for (const rel of [cap, res]) {
+    if (rel.startsWith('dev/agent-workflow/evidence/')) misses.push(`${rel} is under the tracked evidence root`)
+    if (!ignored(rel)) misses.push(`${rel} is not gitignored`)
+    if (!isRawCaptureName(rel.split('/').pop())) misses.push(`${rel} no longer matches the raw-capture grammar the guard refuses — moving it back would not be caught`)
+  }
+  if (CENSUS_SIDECAR_REL !== SCRATCH) misses.push(`sidecar dir moved to ${CENSUS_SIDECAR_REL}`)
+  if (isRawCaptureName('census-comparison-20261027T003234Z-4.json')) misses.push('the sidecar name matches the raw-capture grammar')
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `captures -> ${cap.split('/').slice(0, -1).join('/')}/ and resamples -> ${res.split('/').slice(0, -1).join('/')}/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in ${CENSUS_SIDECAR_REL}/` : misses.join(' ;; ') }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
