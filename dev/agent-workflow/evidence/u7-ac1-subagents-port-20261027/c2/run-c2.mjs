@@ -6,7 +6,8 @@
  * Pattern: dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/run-c2.mjs
  * (human approvals over the PUBLIC remote seam: team.getLedgerPage +
  * team.resolveControl v4). The drive script is committed clean before the
- * boot; `bindings.driveScriptClean` records it.
+ * boot; `bindings.driveScriptClean` records it. Boot 7 was voided before
+ * any drive effect due to a runner TDZ defect; exactly one boot 8 is granted.
  *
  * Cases (u5-run-record/1, evidence-first; a missing witness is FAIL):
  *   ac:mounted          create ok; the host placement feed carries the seven
@@ -55,7 +56,7 @@ const REPO = resolve(HERE, '../../../..', '..')
 const REL = relative(REPO, HERE)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const ORIGINAL_BUDGET = 3
-const BUDGET = 7 // exactly one final extension; no boot 8
+const BUDGET = 8 // boot 7 voided; exactly one final boot 8; no boot 9
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const SELECTED = ['ac:mounted', 'ac:list-models', 'ac:list-agents', 'ac:spawn-positive', 'ac:child-toolview', 'ac:fork-positive',
   'ac:refusal-tools', 'ac:refusal-provider', 'ac:refusal-fork-bg', 'ac:leak-check']

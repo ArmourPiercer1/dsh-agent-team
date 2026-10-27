@@ -300,3 +300,7 @@ production-host vertical (real browser, port 3180).
 - Current status, pending items and evidence pointers: **`docs/STATUS.md`** (snapshot;
   authority = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`).
 - Pre-release Git branch and RC promotion policy: **`docs/BRANCHING.md`**.
+
+## Main-agent ruling 2026-10-27 (boot 7 voided; boot 8 granted)
+
+Boot 7 died before any drive effect on a TDZ bug in our own dry-run plumbing → **VOID**, not a family FAIL. Exactly **ONE boot 8** is granted. **Binding condition:** if boot 8 fails again for our own harness/judge code, stop live boots for this round and hand back a defect list; **no boot 9**.
