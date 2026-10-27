@@ -160,15 +160,46 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
       case 'spawnChild': {
         const f = face('spawnChild', ['agentTeams'], (svc) => (typeof svc.spawnTeammate === 'function' ? svc.spawnTeammate : undefined))
         if (f === null) return null
+        // CARRY EXACTLY OR REFUSE (review R1 F-1): the pinned face
+        // SpawnTeammateRequest is the CLOSED six-field record `name,
+        // description, prompt, context, provider, signal`
+        // (tests/deepseek-harness-test-use/packages/experimental/agent-team
+        // /src/types.ts:166-173); at runtime the face REQUIRES a provider
+        // string (roster.ts:264 `requiredText(request.provider, …)`) and
+        // folds the caller's cancellation (roster.ts:256
+        // `AbortSignal.any([request.signal, …])`). A bounded field the check
+        // APPROVED that this face cannot carry is refused TYPED with zero
+        // reach — silently dropping it would run a DIFFERENT child than the
+        // one admitted; a face-required field the walk did not carry is
+        // refused too — fabricating a route or a lifetime would restate the
+        // approved world. Never a partial guess.
+        const faceRefusal = (detail) => Object.freeze({
+          ok: false,
+          code: 'agent-runtime-port-face-cannot-carry',
+          detail: `the approved effect world has no faithful spelling on the pinned host face — refused with zero reach, the child that would run is not the child that was admitted (${detail})`,
+        })
         return async ({ caller: c, spec, signal }) => {
           const agent = asAgent(c)
           if (agent === null) return CALLER_UNRESOLVED
+          const uncarryable = ['model', 'reasoning_effort', 'run_in_background']
+            .filter((field) => spec?.[field] !== undefined && spec?.[field] !== null)
+          if (uncarryable.length > 0) {
+            return faceRefusal(`caller bounded ${uncarryable.join(', ')}; the face has no such field (types.ts:166-173) — the named follow-up center round (vNext roster face) carries them`)
+          }
+          if (typeof spec?.provider !== 'string' || spec.provider.length === 0) {
+            return faceRefusal('the admitted world named no provider route, but the face requires one (roster.ts:264) — no default is expressible and none is invented')
+          }
+          if (signal === null || typeof signal !== 'object' || typeof signal.aborted !== 'boolean') {
+            return faceRefusal('the walk carried no AbortSignal and the face folds one (roster.ts:256) — a never-aborted stand-in would restate the approved lifetime')
+          }
           return await f.svc.spawnTeammate(agent, {
             name: String(spec?.description ?? 'governed-child').slice(0, 64),
             description: String(spec?.description ?? ''),
             prompt: [{ type: 'text', text: String(spec?.prompt ?? '') }],
             context: 'fresh',
-            ...(signal === undefined ? {} : { signal }),
+            // The bounded provider forwards EXACTLY as approved (types.ts:171).
+            provider: spec.provider,
+            signal,
           })
         }
       }

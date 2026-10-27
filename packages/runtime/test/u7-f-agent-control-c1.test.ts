@@ -458,6 +458,74 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.msg).toContain('agent-runtime-leg-unwired')
   })
+
+  // ── F-3 (review R1): EXACTLY what the fence enforces at this pin ──
+  // The fence is a DURABLE-ROSTER MEMBERSHIP fence over the CALLER'S OWN
+  // MOUNT SCOPE: (arm 1) an explicit `scope:` prefix must equal the mount's
+  // own scopeKey byte-for-byte; (arm 2) the remaining id must appear
+  // VERBATIM in the assembly-injected `agentScope.members` list — exact
+  // string equality, no trim/fold. It is NOT subtree containment (a
+  // descendant chain spanning mounts is not expressible in this data at
+  // this pin — disclosed, not implied) and it is NOT a liveness gate: LIVE
+  // STATE belongs to the runtime (steering an in-roster but inactive member
+  // is the host face's DOCUMENTED resume semantics; an ARCHIVED member is
+  // gone from the durable roster, and removal from that list IS how
+  // archived leaves the fence's data).
+  it('AC-37 an archived member (removed from the durable roster): scope-foreign, zero port', async () => {
+    const fake = makeFakeRuntime()
+    const { plane } = await setup({
+      injected: trustedInjected(fake, { agentScope: { scopeKey: SCOPE_KEY, members: ['member-beta'] } }),
+    })
+    // member-alpha was archived: the durable roster no longer names it —
+    // membership the roster cannot prove is membership not held.
+    const r = await attempt(() => def(plane, 'interrupt_agent').execute({ agent_id: 'member-alpha' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toContain('agent-control-scope-foreign')
+    expect(fake.calls).toHaveLength(0)
+  })
+
+  it('AC-38 a SIBLING member\'s child (off this roster, however named): scope-foreign, zero port', async () => {
+    const { plane, fake } = await setup()
+    // Shaped like a descendant id of member-alpha — the fence never reads
+    // ids for lineage; a descendant lives in ITS OWN mount's roster data,
+    // not this mount's, so it is off-roster here (and subtree reach across
+    // mounts is NOT claimed at this pin — see the disclosure).
+    const r = await attempt(() => def(plane, 'send_message').execute({ agent_id: 'member-alpha/child-7', message: 'x' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toContain('agent-control-scope-foreign')
+    const r2 = await attempt(() => def(plane, 'interrupt_agent').execute({ agent_id: 'member-alpha-child-7' }))
+    expect(r2.ok).toBe(false)
+    if (!r2.ok) expect(r2.msg).toContain('agent-control-scope-foreign')
+    expect(fake.calls).toHaveLength(0)
+  })
+
+  it('AC-38b identity is EXACT strings: case and whitespace variants refuse with zero port; an inactive-but-rostered member rides the fence (runtime owns liveness)', async () => {
+    const { plane, fake } = await setup()
+    for (const variant of ['Member-Alpha', 'MEMBER-ALPHA', ' member-alpha', 'member-alpha ', 'member-alph a']) {
+      const r = await attempt(() => def(plane, 'send_message').execute({ agent_id: variant, message: 'x' }))
+      expect(r.ok, `variant ${JSON.stringify(variant)} must NOT be admitted`).toBe(false)
+      if (!r.ok) expect(r.msg).toContain('agent-control-scope-foreign')
+    }
+    expect(fake.calls).toHaveLength(0)
+    // An in-roster member the roster lists (status is NOT fence data at
+    // this pin): the fence ADMITS and the runtime's own lifecycle governs —
+    // the host face documents inactive targets RESUME on send_message.
+    const ok = await attempt(() => def(plane, 'send_message').execute({ agent_id: 'member-beta', message: 'x' }))
+    expect(ok.ok).toBe(true)
+    expect(fake.callsFor('steer')).toHaveLength(1)
+    expect(fake.callsFor('steer')[0]?.targetId).toBe('member-beta')
+  })
+
+  it('AC-39 the explicit-scope arm is byte-exact: a differently-cased own-scope prefix is FOREIGN, zero port', async () => {
+    const { plane, fake } = await setup()
+    const r = await attempt(() => def(plane, 'send_message').execute({ agent_id: `U7F-C1-REALM:member-alpha`, message: 'x' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toContain('agent-control-scope-foreign')
+    const r2 = await attempt(() => def(plane, 'send_message').execute({ agent_id: ` ${SCOPE_KEY}:member-alpha`, message: 'x' }))
+    expect(r2.ok).toBe(false)
+    if (!r2.ok) expect(r2.msg).toContain('agent-control-scope-foreign')
+    expect(fake.calls).toHaveLength(0)
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -639,5 +707,118 @@ describe('u7-f C1 effect-split arm — the PA requested sets ARE the law (a)', (
     expect((contribution.visibility as Record<string, unknown>).nativeNames).toEqual(['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'])
     expect((contribution.effects as Record<string, string[]>).targets).toContain('dsh-agent-runtime')
     expect((contribution.effects as Record<string, unknown>).kinds).toEqual(['tool-invoke', 'meta', 'domain-ref'])
+  })
+
+  // F-2 (review R1): declared == requested for the MUTATION rows, pinned as
+  // the EXACT requested set per row — every arm's full spelling, the arm
+  // COUNT, and the single domain-ref arm. A dropped (or added) arm in the
+  // derivation trips this by construction; the mutation-control run of this
+  // file (evidence u7-f-agentA-20261026/mutation-controls-r1.txt) shows the
+  // trip is REAL: deleting one arm from the derivation turns AC-51 RED.
+  it('AC-51 every MUTATION row requests its EXACT declared set (spawn/fork/send/interrupt/workflow)', async () => {
+    const exactArms = (effects: Array<Record<string, unknown>>) => effects
+      .map((e) => e.kind === 'meta'
+        ? { kind: 'meta', canonicalLocator: String((e.resource as Record<string, unknown> | undefined)?.canonicalLocator) }
+        : e.kind === 'domain-ref'
+          ? { kind: 'domain-ref', domainAuthorityId: String(e.domainAuthorityId), resource: e.resource ?? null }
+          : { kind: 'tool-invoke', toolName: String(e.toolName) })
+      .sort((a, b) => a.kind.localeCompare(b.kind))
+    const AUTHORITY = { kind: 'domain-ref', domainAuthorityId: 'dsh-agent-runtime', resource: null }
+    const rows: Array<[string, Record<string, unknown>, Array<Record<string, unknown>>]> = [
+      ['subagent', { description: 'd', prompt: 'p' }, [AUTHORITY, { kind: 'tool-invoke', toolName: 'subagent' }]],
+      ['subagent_fork', { description: 'd', prompt: 'p' }, [AUTHORITY, { kind: 'meta', canonicalLocator: 'mount-conversation-context' }, { kind: 'tool-invoke', toolName: 'subagent_fork' }]],
+      ['send_message', { agent_id: 'member-alpha', message: 'x' }, [AUTHORITY, { kind: 'tool-invoke', toolName: 'send_message' }]],
+      ['interrupt_agent', { agent_id: 'member-alpha' }, [AUTHORITY, { kind: 'tool-invoke', toolName: 'interrupt_agent' }]],
+      ['workflow', { description: 'w', prompt: 'p' }, [AUTHORITY, { kind: 'tool-invoke', toolName: 'workflow' }]],
+    ]
+    for (const [rowName, args, expected] of rows) {
+      const sets: PaCall[] = []
+      const { exec } = await directExecutors({ agentRuntime: makeFakeRuntime() }, sets)
+      const out = await exec(rowName)(args, {})
+      expect(out.kind, `${rowName} walk outcome`).toBe('ok')
+      expect(sets, `${rowName} PA calls`).toHaveLength(1)
+      const effects = sets[0]?.requestedEffects?.effects ?? []
+      expect(exactArms(effects), `${rowName} exact requested set`).toEqual(expected)
+      expect(effects.filter((e) => e.kind === 'domain-ref')).toHaveLength(1)
+    }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// F-1 (review R1): the PRODUCTION port factory itself, driven with a
+// RECORDING `spawnTeammate` shaped exactly like the pinned host face
+// (tests/deepseek-harness-test-use/packages/experimental/agent-team/src/
+// types.ts:166-173 — the CLOSED six-field SpawnTeammateRequest; runtime law
+// roster.ts:256 signal fold, roster.ts:264 provider requiredText). The fake
+// PORT of the suites above cannot see this law — only the real resolver can
+// be caught dropping an approved field. The law: CARRY EXACTLY OR REFUSE.
+describe('u7-f C1 the PRODUCTION host-port resolver — carry exactly or refuse (F-1)', () => {
+  const AGENT = { id: 'agent-1' }
+  const SIGNAL = () => new AbortController().signal
+  const makeHost = () => {
+    const seen: Array<{ agent: unknown; request: Record<string, unknown> }> = []
+    const svc = {
+      listMembers: () => [{ id: 'member-alpha' }],
+      sendMessage: async () => ({ ok: true }),
+      interrupt: async () => ({ ok: true }),
+      spawnTeammate: async (agent: unknown, request: Record<string, unknown>) => {
+        seen.push({ agent, request })
+        return { ok: true, member: { id: 'child-1' } }
+      },
+    }
+    return { seen, hostService: (name: string) => (name === 'agentTeams' ? svc : undefined) }
+  }
+  const callSpawn = async (host: ReturnType<typeof makeHost>, spec: Record<string, unknown>, signal?: AbortSignal) => {
+    const mod = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as {
+      createHostAgentRuntimePort: (i: Record<string, unknown>) => Record<string, unknown>
+      normalizePort: (c: unknown) => { staticLegs: Record<string, unknown>; legResolver: (l: string) => unknown }
+      resolveLeg: (p: unknown, leg: string) => ((a: Record<string, unknown>) => Promise<Record<string, unknown>>) | null
+    }
+    const port = mod.createHostAgentRuntimePort({ hostService: host.hostService, caller: { agent: AGENT }, observe: () => {} })
+    const fn = mod.resolveLeg(mod.normalizePort(port), 'spawnChild')
+    if (fn === null) throw new Error('spawnChild leg unexpectedly unwired against a face that answers it')
+    return await fn({ caller: { agent: AGENT }, spec, ...(signal === undefined ? {} : { signal }) })
+  }
+
+  it('AC-60 the bounded provider arrives EXACTLY (byte-equal) and the request is the closed six-field face shape', async () => {
+    const host = makeHost()
+    const signal = SIGNAL()
+    const r = await callSpawn(host, { description: 'route-task', prompt: 'do it', provider: 'prov-a' }, signal)
+    expect(r.ok).toBe(true)
+    expect(host.seen).toHaveLength(1)
+    const req = host.seen[0]?.request as Record<string, unknown>
+    expect(req.provider).toBe('prov-a')
+    expect(req.context).toBe('fresh')
+    expect(req.signal).toBe(signal)
+    expect(req.description).toBe('route-task')
+    expect(Object.keys(req).slice().sort()).toEqual(['context', 'description', 'name', 'prompt', 'provider', 'signal'])
+  })
+
+  for (const field of ['model', 'reasoning_effort', 'run_in_background'] as const) {
+    it(`AC-61 a bounded ${field} the face cannot carry refuses TYPED with ZERO spawnTeammate reach (never a silent drop)`, async () => {
+      const host = makeHost()
+      const value = field === 'run_in_background' ? false : 'bounded-value'
+      const r = await callSpawn(host, { description: 'd', prompt: 'p', provider: 'prov-a', [field]: value }, SIGNAL())
+      expect(r.ok).toBe(false)
+      expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
+      expect(String(r.detail)).toContain(field)
+      expect(host.seen).toHaveLength(0)
+    })
+  }
+
+  it('AC-62 no named provider route: refused (the face REQUIRES one — roster.ts:264), zero reach, no invented default', async () => {
+    const host = makeHost()
+    const r = await callSpawn(host, { description: 'd', prompt: 'p' }, SIGNAL())
+    expect(r.ok).toBe(false)
+    expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
+    expect(host.seen).toHaveLength(0)
+  })
+
+  it('AC-63 no AbortSignal from the walk: refused (the face folds one — roster.ts:256), zero reach, no never-aborted stand-in', async () => {
+    const host = makeHost()
+    const r = await callSpawn(host, { description: 'd', prompt: 'p', provider: 'prov-a' })
+    expect(r.ok).toBe(false)
+    expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
+    expect(host.seen).toHaveLength(0)
   })
 })

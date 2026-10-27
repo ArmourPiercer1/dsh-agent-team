@@ -176,9 +176,21 @@ export function deriveAgentControlEffects(realmId, name, _args) { // the EFFECT 
 /**
  * Structural foreignness, answered from trusted mount data with ZERO port
  * interaction: a target may be a bare id (addressed inside the mount's own
- * scope by the runtime) or an explicitly scoped id `scope:agent`. A target
- * naming ANY scope other than the mount's own is FOREIGN; nothing about it
- * is probed.
+ * scope by the runtime) or an explicitly scoped id `scope:agent` (split at
+ * the FIRST colon). A target naming ANY scope other than the mount's own —
+ * byte-exact, no case/whitespace folding — is FOREIGN; nothing about it is
+ * probed.
+ *
+ * SCOPE ENFORCED, STATED EXACTLY (review R1 F-3): at this pin a scope is
+ * the MOUNT's own identity (`realmId:instanceId`) and the fence is a
+ * DURABLE-ROSTER MEMBERSHIP fence over THAT mount — see scopeMembership.
+ * It is NOT subtree containment: an id carries no lineage this fence can
+ * read, a caller's descendants live in THEIR OWN mounts' roster data, and
+ * reaching a sibling member's child through this fence is therefore a
+ * REFUSAL (off-roster), not a containment proof. Nor is it a liveness
+ * gate: member STATUS belongs to the runtime (the host face resumes an
+ * inactive target on send_message by documented semantics); an ARCHIVED
+ * member leaves the fence precisely by leaving the durable roster list.
  * @param {string} target
  * @param {{ scopeKey: string }} mountScope - the mount's own scope identity
  *   (trusted: the plane's identity, never a model argument).

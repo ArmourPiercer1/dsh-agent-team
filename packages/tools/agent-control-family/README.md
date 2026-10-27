@@ -15,10 +15,25 @@ per-call PA requests from the same constants).
 
 - LAW HOME (this lane): the scope fence (`send_message`/`interrupt_agent`
   address only the CALLER's own scope — a foreign id is a typed refusal with
-  ZERO reach), the no-amplification rule (a request that would widen the
-  caller's authority is refused, zero spawn), and the fork-context law (the
-  mounted conversation context is DATA, never authority). Proof lives in
-  `packages/tools/agent-control-family/test/agent-control-c1.test.mjs`.
+  ZERO reach). SCOPE STATED EXACTLY: at this pin the fence is a
+  DURABLE-ROSTER MEMBERSHIP fence over the caller's OWN MOUNT identity
+  (`realmId:instanceId`): an explicit `scope:` prefix must match that
+  identity byte-exact, and the id must appear VERBATIM (no case/whitespace
+  folding) in the assembly-injected member list. It is NOT subtree
+  containment (a sibling member's child is off this roster — refusal, not
+  containment proof) and NOT a liveness gate (status belongs to the runtime;
+  an archived member leaves the fence by leaving the durable roster).
+  Also law-home here: the no-amplification rule (a request that would widen
+  the caller's authority is refused, zero spawn) and the fork-context law
+  (the mounted conversation context is DATA, never authority). Proof lives
+  in `packages/runtime/test/u7-f-agent-control-c1.test.ts`.
+- THE PORT CARRIES EXACTLY OR REFUSES: the production `spawnChild` leg
+  forwards the bounded `provider` byte-equal to the pinned host face
+  `SpawnTeammateRequest` (closed six fields — `types.ts:166-173` at the
+  pinned host tree); a bounded `model`/`reasoning_effort`/`run_in_background`
+  that face cannot carry, or a face-required field the walk did not carry,
+  is a typed `agent-runtime-port-face-cannot-carry` refusal with ZERO spawn
+  reach — never a silent drop, never an invented default.
 - Allowed outward edges, and only these: `node:*` builtins (`node:crypto`),
   `../../../contracts/src/index.js` (canonical JSON), and the frozen
   `parseRequestedEffectSet` vocabulary face of
