@@ -249,3 +249,58 @@ was right, the lane was wrong → the digest now binds each row's name +
   new C2 record) · boundaries pass files=63 findings=0 · definitions
   pass files=23 findings=0 · `gen-family-index --check` OK (6 reviewed
   families) · `eb3-ci-required` pass workflows=9 findings=0.
+
+## Review R2 (PASS-WITH-FINDINGS at 662da6997) — rejected Medium + base-refresh 0910f977d
+
+Round-2 review: all four R1 findings reproduced FIXED; the one new Medium
+("update_goal complete from blocked must refuse", agent-state-law.mjs:285-289)
+was **REJECTED by the main agent — the error was in the review brief, not
+the code.** Host law `tests/deepseek-harness-test-use/packages/goal/goal/src/
+index.ts:390-399` runs `complete(...) → transition(..., 'complete',
+['active','paused','blocked'], 'complete', 'disarmed')` — our allowed set
+mirrors it exactly; NOT changed. Two pins added instead (tests only):
+
+- **Negative leg** (T table): `resume` on a `complete` goal →
+  `GOAL_INVALID_TRANSITION`, zero durable writes — host resumable set
+  `['active','paused','blocked']` at index.ts:368.
+- **Positive leg T2**: `complete` FROM `blocked` SUCCEEDS with exactly ONE
+  durable write (`log.writes` goal/apply length 1, one `applied` attempt),
+  citing :390-399 — a do-not-narrow regression pin. Falsifiability: planting
+  the rejected narrowing `['active','paused']` turned T2 RED with the typed
+  refusal; file restored byte-clean, suite re-greened (`R2-T2-do-not-narrow-control.txt`).
+  C1 **54/54**.
+
+Base-refresh merge `0910f977d` (#403 web + #405 ui on the #400/#402/#404/#406
+line), rehearsed fully in a throwaway worktree first, then replayed:
+manifest keep-both (8 families) + index REGENERATED (gen-family-index 8,
+place-dist-glue 98 placements, never hand-merged); census union (9);
+LANE_EDGES + LANE_ID_BY_LANE union (boundaries files=80 findings=0);
+PR1_CONSUMERS + a5p0 consumer union; registries — master's TEN-suite rewrite
+SILENTLY DROPPED the u7-fagentb booking AGAIN (same class as R1), re-booked:
+**ELEVEN suites**, budgets `[…u7-f-web 90, u7-pwsh 70, u7-agent-control 60,
+u7-f-ui 60, u7-fagentb 160]`; prefixes 090 (ui) / 100 (web) taken → placement
+`110-agent-state.json`, suite `110-u7-fagentb.mjs`; seam = master's DERIVED
+form. `fs-family/src/index.mjs` per review ask: 36 exports, ZERO duplicate
+re-exports, byte-unchanged by the merge.
+
+**Gate self-catch (disclosed honestly):** the first local gate run at the
+merge went **fail=2** — T2's non-refusal assertion used `r.isError` (not on
+the row-outcome type; TS2339). vitest doesn't typecheck, C1 passed; the
+typecheck leg caught it AND the census mirrored it (single NEW RED =
+a4p7-merge-gate §7.6, which drives the real typechecks — both comparison
+sidecars committed). Fix-forward: `refusal` undefined; runtime tsc exit 0.
+
+## R2 battery (head with legs + merge; raw gate lines `ci-pr-gate-r2merge.log`)
+
+- `ci-pr-gate --store-dir .tmp-pnpm-store --full --census`: **DSH-CI-VERDICT
+  pass pass=8 fail=0** (329.3s; typecheck clean; lint-identities new 0;
+  artifacts-at-head 1881 files drift 0; census PASS — counts moved by the
+  merged ui/web suites, SET did not).
+- C1 **54/54** · vitest batch (seam 9 + ARC-A 12 + a5p0 4 + p4t6 20) all
+  green (batch total 99) · registries **12/12 (ELEVEN suites)** ·
+  world-factory offline 59/59 · `eb3-ci-negative-controls` **21/21** ·
+  `eb3-evidence-guard` pass findings=0 · `eb3-run-manifest --new-since
+  origin/master` **pass records=64 strict=1 findings=0** (the R1 C2 record
+  still strict-clean against the new base — authority `as20261026r1`
+  unchanged) · boundaries files=80 findings=0 · definitions files=29
+  findings=0 · `gen-family-index --check` OK (8 reviewed families).

@@ -167,7 +167,32 @@ both fixed on this branch, disclosed here:**
 
 ## Zero-plane-edit file list (everything touched)
 
-New: `packages/tools/agent-state-family/src/{agent-state-law,state-store,executors,contribution,index}.mjs` · `packages/tools/families/agent-state.mjs` · `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` (52 cases) · `tests/world-factory/suites/110-u7-fagentb.mjs` + `tests/world-factory/lib/u7fagentb-assembly.mjs` · `packages/testkit/test/p4t6-bookings/u7fagentb.json` · `scripts/dist-placements/110-agent-state.json` · `dev/agent-workflow/evidence/u7-f-agentB-20261026/**`.
-Modified (bookkeeping only): `packages/tools/families/manifest.json` (+family entry +sha, +`kernelCapabilities.agent-state`) · generated `packages/tools/families/index.mjs` · `packages/runtime/test/u7-w0b-family-seam.test.ts` (reviewed-family count 3→4) · `dev/agent-workflow/ledgers/arc-a-family-census.json` (L3 census booking) · `packages/runtime/dist/packages/tools/**` (byte-copy mirrors).
+New: `packages/tools/agent-state-family/src/{agent-state-law,state-store,executors,contribution,index}.mjs` · `packages/tools/families/agent-state.mjs` · `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` (54 cases) · `tests/world-factory/suites/110-u7-fagentb.mjs` + `tests/world-factory/lib/u7fagentb-assembly.mjs` · `packages/testkit/test/p4t6-bookings/u7fagentb.json` · `scripts/dist-placements/110-agent-state.json` · `dev/agent-workflow/evidence/u7-f-agentB-20261026/**`.
+Modified (bookkeeping only): `packages/tools/families/manifest.json` (+family entry +sha, +`kernelCapabilities.agent-state`) · generated `packages/tools/families/index.mjs` · `packages/runtime/test/u7-w0b-family-seam.test.ts` (→ master's DERIVED-count form) · `dev/agent-workflow/ledgers/arc-a-family-census.json` (L3 census booking) · `packages/runtime/dist/packages/tools/**` (byte-copy mirrors).
 
 Ledger notes: the p4t6 booking delta is MEASURED (1322→1329; RED-unbooked capture in evidence); the ARC-A census booking is the sanctioned registration, and the L3/L4 fitness suites pass with it. The goal/plan matrix rows in `TOOL-CAPABILITY-MATRIX-9b2.md` are NOT touched by this lane — their acceptance rows remain the matrix owner's call (disclosed as an UNKNOWN gap, not silently claimed).
+
+## Review R2: rejected Medium pinned both ways + base-refresh (`0910f977d`)
+
+Round 2 = PASS-WITH-FINDINGS; the new Medium ("complete from blocked must
+refuse") was **REJECTED — review-brief error, not code**: host law
+`goal/src/index.ts:390-399` allows complete from `['active','paused','blocked']`
+and our set mirrors it EXACTLY. Instead of changing law, two tests-only pins:
+resume-from-`complete` refuses typed (`GOAL_INVALID_TRANSITION`, zero writes;
+host resumable set :368) and T2 pins complete-from-BLOCKED **succeeds** with
+exactly one durable write — with a proven planted-narrowing control that turns
+T2 RED (`R2-T2-do-not-narrow-control.txt`). C1 52→**54/54**.
+
+Base-refresh merge of `0910f977d` (#403 web + #405 ui): 8-family manifest
+(index REGENERATED, never hand-merged; 98 placements), census/LANE_EDGES/
+PR1_CONSUMERS/a5p0 unions, registries ELEVEN (master's rewrite silently
+dropped the u7-fagentb booking AGAIN — re-booked), placement+suite renumber
+090→**110** (090=ui, 100=web taken), seam = master's derived form.
+`fs-family/src/index.mjs`: 36 exports, zero duplicates, untouched.
+
+Gate honesty: the first gate run at the merge went fail=2 — T2's assertion
+used `isError` (TS2339; vitest can't typecheck). The typecheck leg caught it
+and census mirrored it (single NEW RED a4p7 §7.6); fix-forward, runtime tsc
+exit 0. Re-drive: **DSH-CI-VERDICT pass pass=8 fail=0** (`ci-pr-gate-r2merge.log`),
+census counts moved by the merged suites, SET did not;
+`eb3-run-manifest --new-since origin/master` still **strict=1 findings=0**.
