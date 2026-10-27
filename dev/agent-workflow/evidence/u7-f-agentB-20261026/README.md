@@ -135,3 +135,15 @@ byte-clean with the suite re-greened (45/45).
 
 #407 — https://github.com/ArmourPiercer1/dsh-agent-team/pull/407 (opened
 against master; body = `pr-body.md`; NOT merged — merge is the coordinator's).
+
+Hosted round 1 (runs 40462120941 census PASS 18m26s, 40462120913
+ci-required) caught two REAL lane gaps, both fixed on-branch and
+re-proven locally: (1) the lane was unbooked in
+`scripts/eb3-family-boundaries.mjs` (`FAMILY_CROSS_INFLUENCE` ×5 — an
+unbooked lane cannot be graded) → lane README + edge booking added;
+(2) the C3 negative control (leg 3d) seeded this lane's contribution and
+its execute-transport mutation did not apply — the source digest bound
+row NAMES only, so a swapped body would have kept the digest: the control
+was right, the lane was wrong → the digest now binds each row's name +
+`execute?.toString?.()` + parameters (fs/search precedent); controls now
+16/16, definitions/boundaries/trusted-sources all pass findings 0.

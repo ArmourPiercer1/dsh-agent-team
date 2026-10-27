@@ -73,6 +73,24 @@ empty after; the pristine `tests/deepseek-harness-test-use` remained byte-clean
 - C1 45/45, family seam 9/9, ARC-A fitness 12/12, p4t6 20/20, world-factory
   offline 38/38, diag+devex `node --test` 44/44.
 
+**Hosted round 1 (runs 40462120941/40462120913) found two real lane gaps —
+both fixed on this branch, disclosed here:**
+- `FAMILY_CROSS_INFLUENCE` ×5 — the lane was unbooked in
+  `eb3-family-boundaries.mjs`. Fixed by the lane README (the boundary
+  statement) + the edge booking: `node:*` + the two thin tool-governance
+  faces only; `EB3-FAMILY-BOUNDARIES pass files=38 findings=0`.
+- C3 negative control leg **3d MISSED on this lane**: the C3 control seeded
+  this lane's contribution (alphabetically first family-body seed) and its
+  execute-transport-swapping mutation DID NOT APPLY — my source digest
+  bound row names only, so a swapped row body would have kept the same
+  digest. The control caught a real gap, not a control bug. The digest now
+  binds each row's `name` + `execute?.toString?.()` + `parameters` (the
+  fs/search `sourceDocument` precedent, with a fail-closed order guard);
+  `eb3-ci-negative-controls` reports **16/16**, leg 3d detected on this
+  file. Re-verified after the fix: definitions 12/0, boundaries 38/0,
+  trusted-sources 1902/0, C1/ARC-A/seam/p4t6 green, and the full local
+  8-leg gate re-run green at this head.
+
 ## Zero-plane-edit file list (everything touched)
 
 New: `packages/tools/agent-state-family/src/{agent-state-law,state-store,executors,contribution,index}.mjs` · `packages/tools/families/agent-state.mjs` · `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` (45 cases) · `tests/world-factory/suites/070-u7-fagentb.mjs` + `tests/world-factory/lib/u7fagentb-assembly.mjs` · `packages/testkit/test/p4t6-bookings/u7fagentb.json` · `scripts/dist-placements/070-agent-state.json` · `dev/agent-workflow/evidence/u7-f-agentB-20261026/**`.
