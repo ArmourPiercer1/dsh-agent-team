@@ -352,8 +352,19 @@ export function makeTbashDecide({ assembly }) {
 }
 
 /**
+ * The PA row's tool spelling for the governed shell lane. MEASURED at boot 1
+ * (`c2/c2-verdicts-boot1.json`, ledger `control-request-recorded.toolName`):
+ * the durable row for a model-facing `team_bash` call carries the NATIVE
+ * spelling `bash`, the name the row is governed under; the managed alias is
+ * only the model-facing spelling. Both name one authority (A2C-1: the
+ * COMMAND is the authority key), so the command hash below stays the only
+ * thing that can widen or narrow the grant.
+ */
+export const SHELL_ROW_TOOL_NAMES = Object.freeze(['team_bash', 'bash'])
+
+/**
  * THE lane-scoped grant (pure). Called by the runner for each NEW pending
- * team_bash row on the governed session.
+ * shell row on the governed session.
  *
  * @param {object} input
  * @param {{requestId: string, toolName: string|null}} input.row
@@ -365,8 +376,8 @@ export function makeTbashDecide({ assembly }) {
  * @returns {{decision: 'allow'|'deny', reason: string}}
  */
 export function decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven }) {
-  if (row === null || row === undefined || row.toolName !== 'team_bash') {
-    return { decision: 'deny', reason: 'not a team_bash row — outside this lane' }
+  if (row === null || row === undefined || !SHELL_ROW_TOOL_NAMES.includes(String(row.toolName))) {
+    return { decision: 'deny', reason: 'not a shell row — outside this lane' }
   }
   if (outstanding === null || outstanding === undefined || typeof outstanding.command !== 'string') {
     return { decision: 'deny', reason: 'no attributable outstanding call — never allow an unattributed row' }

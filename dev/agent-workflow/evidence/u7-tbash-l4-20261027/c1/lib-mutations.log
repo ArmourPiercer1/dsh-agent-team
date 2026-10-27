@@ -1,5 +1,6 @@
 M1-second-allow exit=1 ℹ fail 1
 M2-any-command exit=1 ℹ fail 1
-M3-judge-ignores-consumption-count exit=1 ℹ fail 1
-M4-index-pairing exit=1 ℹ fail 1
-M5-fence-self exit=1 ℹ fail 1
+M3-any-tool exit=1 ℹ fail 1
+M4-judge-ignores-consumption-count exit=1 ℹ fail 1
+M5-result-not-by-id exit=1 ℹ fail 1
+M6-fence-self exit=1 ℹ fail 1

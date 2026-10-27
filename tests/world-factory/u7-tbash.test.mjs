@@ -87,6 +87,13 @@ test('u7-tbash: the lane-scoped resolver allows exactly the pinned command once'
   assert.equal(decideResolution({ row, outstanding: { step: 0, command: `${A} ` }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'one byte differs = different hash')
   assert.equal(decideResolution({ row: { ...row, toolName: 'team_skill' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'other tool')
   assert.equal(decideResolution({ row, outstanding: null, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'unattributed row')
+  // MEASURED at boot 1 (dev/agent-workflow/evidence/u7-tbash-l4-20261027/
+  // c2/c2-verdicts-boot1.json): the durable PA row for a governed team_bash
+  // call carries `toolName: "bash"` — the NATIVE takeover spelling the row
+  // mounts under, not the managed alias the model calls. The lane resolver
+  // must recognise it; the command hash stays the ONLY widening control.
+  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'allow', 'native takeover spelling')
+  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: B }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'native spelling does not widen the command')
 })
 
 test('u7-tbash: results join to calls by tool_use_id, not by position (r5 artifact)', async () => {
