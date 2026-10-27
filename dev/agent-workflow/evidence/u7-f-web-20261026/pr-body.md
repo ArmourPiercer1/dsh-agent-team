@@ -56,9 +56,60 @@ shipped default.
   be blanket-allowed: default-deny templates refuse typed pre-wire; ask
   templates reach the durable Control approval (proven live in C2).
 
+## Review round 1 (independent review, `REVIEW-403`) — three HIGH findings fixed, RED-first
+
+The external review (branch `task/u7-wave1-review-b-20261027` @ `b641cf65e`,
+PASS-WITH-FINDINGS, findings treated as blocking) was right on all three
+counts; each fix went in test-first (RED logs in the evidence dir):
+
+- **H-1 — non-public-destination law.** The old gate only restricted
+  LOOPBACK for the plain-http opt; `https://` admitted ANY address
+  (RFC1918, CGNAT, link-local incl. `169.254.169.254`, ULA, IPv4-mapped /
+  v4-compatible / NAT64 `64:ff9b::/96` spellings, `0.0.0.0`, decimal/octal/
+  hex IPv4). Now a second law runs on the ADDRESS, for EVERY scheme,
+  BEFORE connect, on the RESOLVED bytes and on the literal spelling:
+  `WEB_DESTINATION_NON_PUBLIC`, zero wire. A trusted mount opt re-admits
+  LOOPBACK ONLY — private ranges are never re-admittable — and the
+  plain-http leg dials loopback ADDRESSES only (a `localhost` that
+  re-resolves away from loopback is refused, not dialled). A provider
+  MOUNT declaring a literal non-public destination refuses the mount.
+- **H-2+M-1 — DNS rebinding (TOCTOU).** The check used to look at the URL
+  hostname while the connect re-resolved later. Now: resolve EXACTLY ONCE
+  per hop → check EVERY answer (one private answer poisons the whole set)
+  → CONNECT TO THE PINNED ADDRESS via an injected `lookup`, so
+  re-resolution between check and connect is structurally impossible.
+  TLS still validates the ORIGINAL hostname (servername from the request
+  host). Every redirect hop resolves, checks, and pins AGAIN. Arms: mixed
+  public+private answer → refused zero-wire; hostile second answer never
+  consulted (`resolver.calls === 1`); per-hop re-pin (`calls === 2`).
+- **H-3 — provider endpoint.** The search port no longer accepts
+  arbitrary URLs from provider code: it POSTs ONLY to origins the trusted
+  mount declared for that provider — the same frozen set the contribution
+  declares and the PA requested set carries (declared == requested, now
+  enforced at the socket). Empty declared set reaches nothing. Code
+  `WEB_SEARCH_DESTINATION_DENIED`, victim server provably never contacted.
+- **Consent scope.** Grants are PER-ORIGIN, so the text now says so: both
+  row descriptions state an approval permits ANY path on the origin, and
+  the ledger control-detail renders a derived consent-scope line per
+  `connect` effect (`deriveControlScopeNotes`, client-side over the
+  reviewPayload — the protected bridge summary is untouched, which keeps
+  the center budget at ZERO; the origin was always inside the payload).
+
+Mutation controls with RED logs: removing the endpoint pin → S-11 RED;
+disabling the destination law → D-1/D-1b/D-3 RED; both byte-reverted.
+Environment disclosure (measured): this test host's sandbox answers dead
+non-`:80` loopback dials with a proxy-layer 502 and drops TEST-NET dials;
+the rebinding arms therefore pin the LAW shape via resolver call counts
+and stub request counters — the zero-wire proofs never lean on the
+interceptor. C2 live evidence PREDATES the law fixes (boot budget 3/3
+consumed); its stub-provider shapes (declared loopback destination over
+the port) are exactly what the new S-10 arm proves remains allowed — no
+C2 behavior this round contradicts the laws, and C1 carries their offline
+proof.
+
 ## Proof table (per arm, honest)
 
-C1 (offline, real plane+kernel assembly, MOCK-band stub only) — 19/19:
+C1 (offline, real plane+kernel assembly, MOCK-band stub only) — 30/30 (19 round-1 arms + 11 review-round arms D-1…D-7, S-10…S-12):
 **PROVEN**: positive + declared==requested fingerprint pin; zero-flip
 absent/false; mount-refusal on bad config; default-deny pre-wire zero-wire;
 deny-leg zero-wire; scheme/userinfo/closed-args pre-wire zero-stub-contact;

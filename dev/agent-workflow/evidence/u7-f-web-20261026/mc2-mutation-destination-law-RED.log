@@ -1,0 +1,106 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://10.0.0.1
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://10.0.0.1
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=502 bytes=0 hops=0 dest=http://127.0.0.2:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://mixed.example
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://localhost:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://rebind2.example
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=1 dest=http://localhost:3491
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts (30 tests | 3 failed | 22 skipped) 13637ms
+     ↓ W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+     ↓ W-2 zero-flip: webEnabled ABSENT — the mount is web-free by shape (no rows, no claims, no lines, zero wire)
+     ↓ W-3 explicit webEnabled:false behaves EXACTLY like absent (opt-in law)
+     ↓ W-4 config law: a non-boolean webEnabled REFUSES THE MOUNT (PLANE_CONFIG_INCOMPLETE), never coerced
+     ↓ W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+     ↓ W-6 ask lane + DENYING leg: typed refusal, zero wire
+     ↓ W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+     ↓ W-8 closed args: unknown parameters refused (NO escalation lane), zero wire
+     ↓ W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+     ↓ W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+     ↓ W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+     ↓ W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+     ↓ W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+     ↓ W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+     ↓ W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+     ↓ S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+     ↓ S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+     ↓ S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+     ↓ S-4 invalid provider mount is REFUSED AT THE MOUNT (fail closed) — a broken provider never half-rides
+     × D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire 5011ms
+     × D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path) 5003ms
+     ✓ D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)  2797ms
+     × D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire) 19ms
+     ✓ D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1) 15ms
+     ✓ D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired 14ms
+     ✓ D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop) 15ms
+     ↓ S-10 a provider calling its DECLARED destination over the port: positive
+     ↓ S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+     ↓ S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+     ✓ D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:591:3
+    589|   ]
+    590|
+    591|   it('D-1 the matrix is refused on EVERY scheme on a plain mount — bef…
+       |   ^
+    592|     const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    593|     const observe: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:618:3
+    616|   })
+    617|
+    618|   it('D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local s…
+       |   ^
+    619|     const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    620|     const audit: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+AssertionError: expected 'refused-io WEB_TRANSPORT_FAILED — the…' to contain 'WEB_DESTINATION_NON_PUBLIC'
+
+Expected: "WEB_DESTINATION_NON_PUBLIC"
+Received: "refused-io WEB_TRANSPORT_FAILED — the request failed (ECONNRESET)"
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:656:30
+    654|     const r = await attempt(() => def(plane, 'web_fetch').execute({ ur…
+    655|     expect(r.ok).toBe(false)
+    656|     if (!r.ok) expect(r.msg).toContain('WEB_DESTINATION_NON_PUBLIC')
+       |                              ^
+    657|     expect(resolver.calls.length).toBe(1) // resolve ONCE even for a r…
+    658|     expect(stubHits.length).toBe(wire0.stub)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed | 22 skipped (30)
+   Start at  08:39:04
+   Duration  14.13s (transform 861ms, setup 0ms, import 352ms, tests 13.64s, environment 0ms)
+

@@ -155,3 +155,66 @@ host sandbox claims FILE effects only — bwrap without `--unshare-net`,
 partial Landlock, see DECISION-3-ANSWER.md) is restated in every
 web-family header: network confinement is NOT sandbox-claimable;
 confinement here is the admission plane.
+
+## Review round 1 (REVIEW-403, branch `task/u7-wave1-review-b-20261027` @ `b641cf65e`) — the two HIGH findings fixed, RED-first
+
+The independent review (PASS-WITH-FINDINGS, treated as blocking) found:
+**H-1** the destination law only restricted LOOPBACK for the plain-http opt —
+`https://` admitted ANY address (RFC1918, CGNAT, link-local incl. the
+169.254.169.254 metadata home, ULA, IPv4-mapped/compatible/NAT64 spellings,
+decimal/octal/hex IPv4); **H-2+M-1** the address law checked the URL's
+HOSTNAME while the connect re-resolved later — the DNS-rebinding TOCTOU
+window; **H-3** the web_search provider port accepted arbitrary HTTPS URLs
+beyond the mount-declared destinations; plus the consent-disclosure
+finding (an approval covers the ORIGIN; the text must say so).
+
+Fixes + RED-first evidence (every item written failing BEFORE the fix):
+
+| finding | law now enforced | arms | RED log → GREEN |
+| --- | --- | --- | --- |
+| H-1 | non-public-destination law on EVERY scheme, BEFORE connect, on the RESOLVED address + the literal spelling; opt re-admits LOOPBACK ONLY (`WEB_DESTINATION_NON_PUBLIC`) | D-1 (20-entry address matrix, pre-PA, zero wire), D-1b (opt never re-admits private/CGNAT/link-local/NAT64), D-2 (opt re-admits 127/8 and the wire TRIES), S-12 (provider declaring a non-public destination refuses the MOUNT) | `u7fweb-review1-c1-RED.log` (11×/19✓) → C1 30/30 |
+| H-2/M-1 | resolve EXACTLY ONCE per hop → check EVERY answer (mixed set poisons) → CONNECT TO THE PINNED ADDRESS (injected `lookup`); re-resolution structurally impossible; each redirect hop re-pins | D-3 (mixed public+private refused, resolver.calls=1, zero wire), D-4 (socket lands on the FIRST checked address; hostile second answer NEVER consulted), D-5 (public-first pinned, loopback-rebind second answer never wired), D-6 (per-hop re-resolve+re-pin, calls=2) | same RED log → 30/30 |
+| H-3 | the search port POSTs ONLY to the mount-declared provider origins (declared == requested == socket-pinned; empty set reaches nothing) (`WEB_SEARCH_DESTINATION_DENIED`) | S-10 (declared destination positive), S-11 (rogue origin refused AT THE PORT, victim server provably never contacted) | same RED log → 30/30 |
+| consent scope | row descriptions + client-rendered consent-scope notes state: an approval permits ANY path on the origin (grants are per-origin) | D-7 (row text), client unit spec (3 arms, shape-tolerant/never-throws) | `u7fweb-review1-client-RED.log` (3×) → 35/35 |
+
+Mutation controls (the tests must be able to fail): **MC-1** removing the
+endpoint pin → S-11 RED (`mc1-mutation-allowedOrigins-RED.log`); **MC-2**
+disabling the destination law (the pre-review https-passthrough) → D-1,
+D-1b, D-3 RED (`mc2-mutation-destination-law-RED.log`). Both reverted;
+`grep MUTATION` over the lane: zero.
+
+Consent placement (budget-preserving, disclosed): the protected
+`pa-control-bridge.ts` summary template was NOT touched. The origin scope
+reaches the human through three lawful faces: (a) the reviewPayload's
+effect locators were always on the row; (b) `deriveControlScopeNotes`
+(client, `packages/client/src/model/ledger-adapter.ts`) renders one
+"ANY path on <origin>" note per connect effect in the control detail
+(client tree is not in the 36-path protected ledger); (c) both row
+descriptions. The client bundle artifact was rebuilt (1,308,108 B).
+
+Environment disclosure (measured, affects how two arms assert): this test
+host's network sandbox transparently intercepts non-`:80` loopback dials
+(a dead `127.0.0.2:port` answers 502 from the intercept layer) and drops
+TEST-NET dials. D-2/D-5 therefore pin the LAW shape (admitted + PA walked
++ typed bound/never-the-private-answer) via the stub request counters and
+resolver call counts — the zero-wire proofs never rely on the interceptor.
+
+C2 note (honest): the C2 live evidence (7/7, 3/3 boots) PREDATES these law
+fixes; its stub providers call their declared loopback destinations over
+the port — the shapes the new laws continue to allow (S-10 is exactly that
+shape). C1 above is the offline proof of the NEW laws; no C2 re-boot was
+run this round (boot budget 3/3 consumed; re-boot needs main-agent
+authorization).
+
+Fix-round local gates (honest two-round record): **round 5**
+(`ci-pr-gate-full-census-round5.log`) = 7/8 — the only red was the
+testkit's own merge-gate arm (§7.6, "committed install surface fresh
+against the tree"), which red-flagged MY NOT-YET-COMMITTED rebuilt
+artifacts (bundle + 8 dist mirrors). That arm is a tripwire working as
+designed, not a law break. **Round 6**
+(`ci-pr-gate-full-census-round6.log`) runs on the committed fix tree
+(f42a92023): the verdict line is recorded there. The census identity set
+compares against the booked baseline of OLD REDS (0); counts are
+informational — 635f/8127l here vs the baseline document's historical
+626/7936, moved by this lane's booked test growth (635/8113 already
+passed round 4 with `setIdentical`).
