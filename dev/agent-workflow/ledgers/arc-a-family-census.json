@@ -87,6 +87,19 @@
         "(bound-definition) list_subagent_models",
         "(bound-definition) workflow"
       ]
+    },
+    {
+      "familyId": "dsh.ui-family",
+      "lane": "packages/tools/ui-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (governed ask_user_question + present through the FamilyAssembly seam; ONE candidate)",
+      "contributionPaths": [
+        "packages/tools/ui-family/src/ui-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) ask_user_question",
+        "(bound-definition) present"
+      ]
     }
   ]
 }

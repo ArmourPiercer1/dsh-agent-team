@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-ui/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=YTuWXrQ8EzqGiooH2iUf4QfMX7jXfXw4f2MfrEaeN50
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image,ask_user_question,present] realm=u7fui-realm-u5f2-20261027t00-02-57z
+[dsh-agent-team] a5ptc: census-boot root=session-u7fui-team-u5f2-20261027t00-02-57z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-ui/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image,ask_user_question,present] realm=u7fui-realm-u5f2-20261027t00-02-57z
+[dsh-agent-team] u7f-present: governed-present port-refusal
+[dsh-agent-team] u7f-present: governed-present anchor-refusal code=locator-rejected

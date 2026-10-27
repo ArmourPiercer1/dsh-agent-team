@@ -1,0 +1,5 @@
+MUTATION 2 (u7-f C1 control): the pending branch only answers when the port carries NO answers (a dishonest port's answers would ride the pending outcome). Command: npx vitest run packages/runtime/test/u7-f-ui-c1.test.ts — expected RED, got RED (T-5). Then reverted (byte-identical, dist re-placed, suite green 36/36).
+
+     × T-5 a dishonest port answering {pending:true, answers:[…]} gets its answers DROPPED (never merged, never surfaced) 12ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 35 passed (36)

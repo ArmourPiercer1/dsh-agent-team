@@ -154,6 +154,16 @@ const PR1_CONSUMERS = Object.freeze([
   // confined/contribution modules of the same slice import nothing of the
   // governance lane.
   'tools/process-family/src/pwsh-executor.mjs',
+  // u7-f (UI family) booked FILE-BY-FILE, SAME single thin face: the two
+  // governed executors (ask/present bodies) import ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // mint the PA operation fingerprint pre-authority — exactly the face the
+  // read/fs executors carry; no other lane export is reachable from these
+  // files (verified by this audit itself). Zero lane edits; the mechanics/
+  // rows/port/contribution modules of the same slice import nothing of the
+  // governance lane (owner role: packages/tools/ui-family/README.md).
+  'tools/ui-family/src/ask-executor.mjs',
+  'tools/ui-family/src/present-executor.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:

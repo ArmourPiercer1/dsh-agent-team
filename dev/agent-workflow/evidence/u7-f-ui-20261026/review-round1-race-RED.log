@@ -1,0 +1,107 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-ui
+
+ ❯ packages/runtime/test/u7-f-ui-c1.test.ts (41 tests | 4 failed | 36 skipped) 1080ms
+     ↓ MF-1 absent uiFamilyEnabled: NO ask/present definitions, the native spellings stay NOT plane-owned (byte-zero flip)
+     ↓ MF-2 uiFamilyEnabled:true mounts BOTH rows at their FIXED native spellings (kernel-owned)
+     ↓ MF-3 non-boolean uiFamilyEnabled / uiTimedQuestions: PLANE_CONFIG_INCOMPLETE, the mount is refused (never silently defaulted)
+     ↓ MF-4 the reviewed manifest carries the ui family + its kernel capability, and the contribution declares the SAME Domain Authority identities the executors request
+     ↓ A-1 POSITIVE: the answer batch passes through UNTOUCHED; the port saw ONE call in service shape; the RAN line is true
+     ↓ A-2 port ABSENT: typed refusal, zero PA consumption, zero port calls (a call that could never ask never spends a grant)
+     ↓ A-3 unknown fields have NO ride (top level, question, option): typed schema refusals BEFORE the port; multi_select stays the model spelling
+     ↓ A-4 the closed contract refuses malformed questions (empty batch, blank id/question, wrong types) with zero port calls
+     ↓ A-5 default-DENY template: typed refusal (the closed grammar names no interaction rule), zero port calls
+     ↓ A-6 the control leg DENIES the question: typed refusal, the port was never asked (zero effect: no card, no wait)
+     ↓ A-7 one-shot: the settled token re-used answers cancelled WITHOUT re-consuming the grant or asking the human twice
+     ↓ A-8 in-flight replay on the SAME token is refused outright (one question, one wait)
+     ↓ A-9 a dishonest port is answered by typed refusals, NEVER by a fabricated answer: malformed shape and port throw
+     ↓ A-10 an aborted signal answers the cancelled row-form with ZERO port calls (a call that never reached the human claims zero effect)
+     ↓ T-1 variant selection is MOUNT-TIME and CLOSED: only the timed mount carries the timeout parameter (host mode mirror)
+     ↓ T-2 the per-call timeout reaches the port in milliseconds; the mount default is the host 120s
+     ↓ T-3 timeout -1 takes the KEYED indefinite-ask arm (host wait:{callId} form); the timed face is untouched
+     ↓ T-4 EXPIRY is the typed pending outcome with the host pendingNotice VERBATIM — and no answers field exists to misread
+     ↓ T-5 a dishonest port answering {pending:true, answers:[…]} gets its answers DROPPED (never merged, never surfaced)
+     ↓ T-6 the timeout BOUND is a law BEFORE any authority force: 0 / 1.5 / 2147484 / strings are typed refusals with zero port calls
+     ↓ T-7 the timed variant enforces unique question ids per call (host validateQuestionIds); the refusal is zero-port
+     ↓ T-8 replay law holds for the timed arm too: settled token answers cancelled, the human was waited-for once
+     ↓ P-1 POSITIVE: the verified file list reaches the port; the probe line pays the read effect with the REAL byte count; the receipt carries the port turn
+     ↓ P-2 out-of-root paths (absolute outside, ../ traversal) are refused PURE-LEXICALLY: zero PA consumption, zero port calls, zero fs touch
+     ↓ P-3 the symlink escape is refused POST-CONSUME with ZERO publication; the outside target stays BYTE-IDENTICAL
+     ↓ P-4 absent file answers the HOST sentence; a directory is not a regular file; both zero port
+     ↓ P-5 no presentation face on the injected port: typed UI_PRESENT_PORT_ABSENT, zero PA consumption; the ASK face stays usable
+     ↓ P-6 the closed file contract: 0 files / 9 files / unknown item fields are typed schema refusals with zero port calls
+     ↓ P-7 default-DENY refuses BOTH ways: an uncovered file answers the executor file-level law; a covered file answers the Kernel edge refusal — both zero port
+     ↓ P-8 one presented file OUT of root poisons the whole call BEFORE anything publishes (all-or-nothing)
+     ↓ P-9 ZERO BYTE LEAK: the presented file canary appears in NO observation line, refusal or RAN alike
+     ↓ P-10 one-shot replay: the settled token answers cancelled; the human-facing publish happened EXACTLY once
+     ↓ P-11 multiple in-root files publish together (receipt order, one line each); a throwing port is a typed io refusal, never a silent success
+     ↓ E-1 the ask call REQUESTS exactly tool-invoke(ask_user_question) + domain-ref(user-interaction) — the declared arm is IN the fingerprinted set
+     ↓ E-2 the present call REQUESTS tool-invoke(present) + domain-ref(ui-presentation) + one READ per file at the anchored locator — the read arm is not decorative (the probe pays for it)
+     ↓ E-3 one name, two faces: the identities the executors REQUEST are the constants the contribution DECLARES (drift in either is RED here)
+     × R-1 the final component swapped in the open window (substituted inode) is REFUSED — fstat-vs-snapshot drift binds the fd, never the path (F-405-1a) 51ms
+     ✓ R-2 the final component swapped to a SYMLINK to the outside file in the open window is refused; the outside file is never opened (F-405-1a) 22ms
+     × R-3 the PARENT DIRECTORY swapped to a symlink onto the outside dir in the open window is refused — /proc/self/fd containment proves the fd, never the path (F-405-1b) 16ms
+     × R-4 a receipt WITHOUT the host-required turn is a typed refusal — publication without correlation identity is not success (F-405-3; host packages/deliverables/tool-present/src/index.ts:61 requires integer turn; :79 refuses an unopened turn) 0ms
+     × R-5 the size cap is enforced ON THE VERIFIED FD (cap+1 metering): one byte over refuses FILE_TOO_LARGE, at the cap passes — metered bytes are discarded, never disclosed 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-f-ui-c1.test.ts > R — present at the OPEN WINDOW: one-fd identity, receipt turn, fd cap > R-1 the final component swapped in the open window (substituted inode) is REFUSED — fstat-vs-snapshot drift binds the fd, never the path (F-405-1a)
+AssertionError: the substituted inode must never be presented: expected 'ok' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "ok"
+
+ ❯ packages/runtime/test/u7-f-ui-c1.test.ts:853:71
+    851|       const r = await present({ files: [{ path: target }] }, { token: …
+    852|       expect(arm.fired, 'INJECTION SELF-PROOF: the swap fired inside t…
+    853|       expect(r.kind, 'the substituted inode must never be presented').…
+       |                                                                       ^
+    854|       expect(String(r.code)).toBe('ANCHOR-DRIFT')
+    855|       expect(presentCalls).toHaveLength(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/u7-f-ui-c1.test.ts > R — present at the OPEN WINDOW: one-fd identity, receipt turn, fd cap > R-3 the PARENT DIRECTORY swapped to a symlink onto the outside dir in the open window is refused — /proc/self/fd containment proves the fd, never the path (F-405-1b)
+Error: ENOENT: no such file or directory, rename '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-ui/tests/homes/u7-f-c1-mvqf077g/root/racesub-moved/secret.txt' -> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-ui/tests/homes/u7-f-c1-mvqf077g/root/racesub/secret.txt'
+ ❯ packages/runtime/test/u7-f-ui-c1.test.ts:907:50
+    905|     } finally {
+    906|       rmSync(sub, { force: true }) // the symlink itself
+    907|       if (existsSync(join(moved, 'secret.txt'))) renameSync(join(moved…
+       |                                                  ^
+    908|       cleanupRace()
+    909|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/u7-f-ui-c1.test.ts > R — present at the OPEN WINDOW: one-fd identity, receipt turn, fd cap > R-4 a receipt WITHOUT the host-required turn is a typed refusal — publication without correlation identity is not success (F-405-3; host packages/deliverables/tool-present/src/index.ts:61 requires integer turn; :79 refuses an unopened turn)
+ReferenceError: direct is not defined
+ ❯ packages/runtime/test/u7-f-ui-c1.test.ts:914:25
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/u7-f-ui-c1.test.ts > R — present at the OPEN WINDOW: one-fd identity, receipt turn, fd cap > R-5 the size cap is enforced ON THE VERIFIED FD (cap+1 metering): one byte over refuses FILE_TOO_LARGE, at the cap passes — metered bytes are discarded, never disclosed
+ReferenceError: direct is not defined
+ ❯ packages/runtime/test/u7-f-ui-c1.test.ts:928:27
+    926|     writeFileSync(at, Buffer.alloc(MAX, 0x62))
+    927|     try {
+    928|       const { present } = await direct()
+       |                           ^
+    929|       const r = await present({ files: [{ path: over }] }, { token: { …
+    930|       expect(r.kind).toBe('refused')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed | 36 skipped (41)
+   Start at  08:19:46
+   Duration  1.35s (transform 878ms, setup 0ms, import 117ms, tests 1.08s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
