@@ -24,6 +24,10 @@
  *       - a regular file must carry exactly ONE link (`nlink === 1`): a
  *         hardlink's in-root name passes both checks above while its inode
  *         is also named outside the anchor (`hardlinkAliasVerdict`).
+ *         Write-class paths re-ask THIS law on the SAME fd immediately
+ *         before their first byte-changing step (`recheckSingleLink`,
+ *         residual R-409-1 from PR #409's merge ruling) — the open-time
+ *         observation alone leaves a verify→truncate TOCTOU window.
  *
  * The kernel-grade guarantee (openat2 + RESOLVE_BENEATH/RESOLVE_IN_ROOT on
  * a trusted directory FD) is declared as the `OpenAtPort` seam below: a
@@ -111,6 +115,37 @@ export async function verifyOpenedHandle(handle, anchorReal, snapshot) {
         return hardlinkAliasVerdict(stats.nlink);
     }
     return { verdict: 'confirmed', identity: actual };
+}
+/**
+ * Re-observe the link-count law on an ALREADY-VERIFIED fd, immediately
+ * BEFORE the first byte-changing step (truncate / first write) of a
+ * write-class path — the second observation of `nlink === 1` on the SAME fd
+ * (residual R-409-1, LOW, recorded on PR #409's merge ruling).
+ *
+ * `verifyOpenedHandle` proves the law once at open time; between that
+ * observation and the truncate/write an attacker can still plant a second
+ * name for the verified inode (u7-r4091 RED: the late alias mutated through
+ * untouched). One cheap `fstat` on the same fd, answered at the point of no
+ * return, shrinks the TOCTOU window to a single syscall — the same law,
+ * stated ONCE here and reused by every write-class caller (no per-family
+ * copies, exactly like `hardlinkAliasVerdict` above). It never re-states the
+ * containment or identity laws: those were the open-time check's job; this
+ * is the link count, re-asked where the bytes actually change.
+ */
+export async function recheckSingleLink(handle) {
+    let stats;
+    try {
+        stats = await handle.stat({ bigint: false });
+    }
+    catch {
+        return { verdict: 'undeterminable', detail: 'fstat on the verified fd failed — the link count cannot be re-established before the first byte change' };
+    }
+    // The directory exemption of `hardlinkAliasVerdict` applies verbatim: a
+    // directory's nlink counts subdirectory entries, never file aliases.
+    if (stats.isFile() && stats.nlink !== 1) {
+        return hardlinkAliasVerdict(stats.nlink);
+    }
+    return { verdict: 'confirmed' };
 }
 /** Pre-freeze default: no external recheck (recorded deviation, README §2). */
 export const NO_RECHECK = Object.freeze({
