@@ -114,11 +114,9 @@ human-seam resolver policy:
 
 ## 4. Boot ledger, verdicts, conclusions (appended after the boots)
 
-Budget 3, all 3 spent; each boot was declared in `c2/boot-budget.jsonl` BEFORE it
-started. Boot 3 was the final permitted boot; no boot 4 was attempted. No world
-for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
-`:3080` read 401 before and after boot 3 (`stableInstance.unchanged=true`,
-`touched=false`). Host tree `639ed0153` at the end of boot 3.
+Budget extended to 4 (one disclosed over the original budget of 3); all 4 spent, each boot was declared in `c2/boot-budget.jsonl` BEFORE it started. Boot 4 was the final permitted boot; no boot 5 is allowed. Boot 4 failed closed due to a runner `ReferenceError: projection is not defined` while recording projection diagnostics; the scope fix was committed after the last permitted boot and was not live-verified. No world for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
+`:3080` read 401 before and after boot 4 (`stableInstance.unchanged=true`,
+`touched=false`). Host tree `639ed0153` at the end of boot 4.
 
 ### 4.1 Boot ledger
 
