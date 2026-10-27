@@ -63,8 +63,8 @@
     {
       "glob": "dev/agent-workflow/ledgers/**",
       "layers": ["ci-fast", "ci-integration", "ci-security"],
-      "checks": ["eb3-family-definitions", "security-suites"],
-      "why": "ARC-A family census / protected-centre ledgers: a ledger edit changes what the gate tolerates"
+      "checks": ["eb3-family-definitions", "eb3-tool-acceptance", "security-suites"],
+      "why": "ARC-A family census / protected-centre ledgers, plus the per-tool acceptance ledger (u7-tool-acceptance/1: a PROVEN level is a claim about live Host behaviour, so a ledger edit changes what the gate tolerates)"
     },
     {
       "glob": "dev/ci/**",
