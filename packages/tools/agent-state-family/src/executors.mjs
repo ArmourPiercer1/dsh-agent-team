@@ -22,9 +22,11 @@
  *
  * READ vs MUTATION (effect law (a), visible in BOTH the contribution's
  * declaration and every per-call PA request):
- *  - `get_goal` is a READ: its requested set is the metadata `meta` arm of
- *    the calling agent's goal view ONLY — no mutation-bearing arm is ever
- *    requested, and the row performs exactly one bounded store read.
+ *  - `get_goal` is a READ: its requested set is its own `tool-invoke` arm
+ *    (the guard-scope tool identity the production PA bridge requires of
+ *    every ask — the fs read / read_image / inspect-list row shape) + the
+ *    metadata `meta` arm of the calling agent's goal view. No mutation kind
+ *    is ever requested, and the row performs exactly one bounded store read.
  *  - the four mutation tools request their own `tool-invoke` arm (the law
  *    vocabulary's honest carrier of a session-state mutation — the closed
  *    resource vocabulary gives `metadata` the `meta` right only, so a
@@ -59,7 +61,12 @@ import {
  *  contribution visibility and the row definitions all consume THIS list. */
 export const AGENT_STATE_NAMES = Object.freeze(['todo_write', 'create_goal', 'get_goal', 'update_goal', 'exit_plan_mode'])
 
-const refused = (code, detail) => ({ text: `refused: ${String(code)} — ${String(detail)}`, refusal: { code, detail } })
+// The envelope is `{ text }` ONLY: the plane presentation face is a closed
+// `{text}` schema (additionalProperties:false, team-tool-plane.mjs:146-152),
+// so any extra field turns every refusal into the host's "returned invalid
+// output" error and the typed code never reaches the model (measured live,
+// u7-astore C2 boot 1). The code rides the text, verbatim.
+const refused = (code, detail) => ({ text: `refused: ${String(code)} — ${String(detail)}` })
 const accepted = (value) => ({ text: JSON.stringify(value) })
 
 /** The default-deny fail-closed leg: the agent-state effect class is not
@@ -201,7 +208,7 @@ export function buildAgentStateRowDefinitions({
     toolName: 'get_goal',
     exec,
     parse: () => parseGetGoalArgs(raw),
-    effectsFor: (scope) => [metaArm(scope, 'goal')],
+    effectsFor: (scope) => [{ kind: 'tool-invoke', toolName: 'get_goal', resource: null }, metaArm(scope, 'goal')],
     missingAgent: ['GOAL_TOOL_AGENT_REQUIRED', 'goal tools require a calling agent'],
     body: async ({ scope }) => {
       const snapshot = await store.readGoal(scope) // the ONE bounded read

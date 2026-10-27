@@ -1,0 +1,12 @@
+[u7-astore] approval allow ctrl-0alvope16 tool=create_goal status=200
+[u7-astore] approval allow ctrl-0gf9g3a0r tool=todo_write status=200
+[u7-astore] approval allow ctrl-01ubagy14 tool=update_goal status=200
+[u7-astore] case ast:mounted: PASS {"placementFeed":["[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast1-20261027t16-02-04z","[dsh-agent-team] a5g7: placement-feed rows=[team_grep,tea
+[u7-astore] case ast:store-under-world-home: PASS {"homeUnderTestsHomes":true,"storeBase":"team-state/agent-state/u7as-realm-u5ast1-20261027t16-02-04z","rootExists":true,"realpathUnderHome":true,"errors":[]}
+[u7-astore] case ast:create-goal-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast1-20261027t16-02-04z","goal":{"goalId":"goal-2026-10-27T16:02:35.930Z-1","objective":"U7AS_GOAL_CLAIM_u5ast1-20261027t16-02-04z","phase":"active","revision":1,"roundsStarted":0,"maxGoalRounds":3,"armed":true},
+[u7-astore] case ast:get-goal-readback: REFUSED {"toolResultHead":"Error: tool \"get_goal\" returned invalid output: \"value.refusal\" is not a declared property (additionalProperties: false)","law":"the governed READ row returned the durable goal to the model (one bounded snapshot of the caller scope)"}
+[u7-astore] case ast:todo-write-positive: PASS {"diskRecord":{"key":"agent:session-team-child-487fe85d59e775f6fd942546b6d0a26e","todos":[{"content":"U7AS_TODO_CLAIM_u5ast1-20261027t16-02-04z","status":"in_progress"},{"content":"U7AS_TODO_CLAIM_u5ast1-20261027t16-02-04z second","status":"pending"}],"nlink":
+[u7-astore] case ast:cross-scope-zero-effect: PASS {"toolResultHead":"Error: tool \"update_goal\" returned invalid output: \"value.refusal\" is not a declared property (additionalProperties: false)","namedForeignRef":{"goal_id":"goal-2026-10-27T16:02:35.930Z-1","revision":1,"action":"complete"},"leaderRecordAf
+[u7-astore] case ast:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-astore] u7as run u5-u7-astore-ast1-2026-10-27T16-02-04-629Z: lanes={"goalTurn":true,"worker":true,"leader":true} records=2 writes=2 attempts=2
+RUN-SUMMARY run=u5-u7-astore-ast1-2026-10-27T16-02-04-629Z suite=u7-astore overall=REFUSED cases=8 PASS:7 REFUSED:1 worlds=u5ast1-20261027T16-02-04Z

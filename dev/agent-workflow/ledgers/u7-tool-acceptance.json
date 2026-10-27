@@ -775,19 +775,24 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:mounted"
+        },
+        "note": "all five agent-state rows on the live placement feed with the production fs store mounted (host log witness `agent-state store=fs`)"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
-        "pr": "#407",
-        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
-        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:todo-write-positive"
+        },
+        "note": "graded record = C2 boot 5 — over budget, granted by main agent (review round 1) to re-prove the live arms on the round-1 store code e319513fa (B-1 pinned descriptor chain on every op, B-2 per-scope lock, commit-coupled applyId, scope cap); production fs store, no injected port, durable fact read back from disk by the runner. Supersedes run-ast4.json, which bound the PRE-FIX store code (head 53e292b56 lineage) and no longer backs any level"
       }
     },
     {
@@ -800,19 +805,24 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:mounted"
+        },
+        "note": "all five agent-state rows on the live placement feed with the production fs store mounted (host log witness `agent-state store=fs`)"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
-        "pr": "#407",
-        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
-        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:create-goal-positive"
+        },
+        "note": "graded record = C2 boot 5 — over budget, granted by main agent (review round 1) to re-prove the live arms on the round-1 store code e319513fa (B-1 pinned descriptor chain on every op, B-2 per-scope lock, commit-coupled applyId, scope cap); production fs store, no injected port, durable fact read back from disk by the runner. Supersedes run-ast4.json, which bound the PRE-FIX store code (head 53e292b56 lineage) and no longer backs any level"
       }
     },
     {
@@ -825,19 +835,24 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:mounted"
+        },
+        "note": "all five agent-state rows on the live placement feed with the production fs store mounted (host log witness `agent-state store=fs`)"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
-        "pr": "#407",
-        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
-        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:get-goal-readback"
+        },
+        "note": "graded record = C2 boot 5 — over budget, granted by main agent (review round 1) to re-prove the live arms on the round-1 store code e319513fa (B-1 pinned descriptor chain on every op, B-2 per-scope lock, commit-coupled applyId, scope cap); production fs store, no injected port, durable fact read back from disk by the runner. Supersedes run-ast4.json, which bound the PRE-FIX store code (head 53e292b56 lineage) and no longer backs any level; get_goal now carries its tool-invoke arm (the production PA bridge pa-control-bridge.ts:358-361 requires a tool identity; boots 1-3 were denied before any Control row because C1's stand-in leg never enforced that shape)"
       }
     },
     {
@@ -850,19 +865,28 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:mounted"
+        },
+        "note": "all five agent-state rows on the live placement feed with the production fs store mounted (host log witness `agent-state store=fs`)"
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:cross-scope-zero-effect"
+        },
+        "note": "the member update_goal named the LEADER goal_id+revision and answered `refused: GOAL_NOT_FOUND — no current goal` (scope = calling agent); leader record unchanged on disk, zero goal writes in the member scope"
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
-        "pr": "#407",
-        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
-        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:update-goal-positive"
+        },
+        "note": "graded record = C2 boot 5 — over budget, granted by main agent (review round 1) to re-prove the live arms on the round-1 store code e319513fa (B-1 pinned descriptor chain on every op, B-2 per-scope lock, commit-coupled applyId, scope cap); production fs store, no injected port, durable fact read back from disk by the runner. Supersedes run-ast4.json, which bound the PRE-FIX store code (head 53e292b56 lineage) and no longer backs any level"
       }
     },
     {
@@ -875,19 +899,24 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:mounted"
+        },
+        "note": "all five agent-state rows on the live placement feed with the production fs store mounted (host log witness `agent-state store=fs`)"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
-        "pr": "#407",
-        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
-        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/run-ast5.json",
+          "case": "ast:exit-plan-mode-positive"
+        },
+        "note": "graded record = C2 boot 5 — over budget, granted by main agent (review round 1) to re-prove the live arms on the round-1 store code e319513fa (B-1 pinned descriptor chain on every op, B-2 per-scope lock, commit-coupled applyId, scope cap); production fs store, no injected port, durable fact read back from disk by the runner. Supersedes run-ast4.json, which bound the PRE-FIX store code (head 53e292b56 lineage) and no longer backs any level; PRECONDITION PLANTED: planMode.active=true was seeded on disk pre-boot by the runner through the production store seed path, because no family tool ENTERS plan mode (the host plan-mode service is not wired to this store) — this case proves the governed exit row commits durably on the real host, not that a live session entered plan mode"
       }
     }
   ]

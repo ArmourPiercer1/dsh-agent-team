@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+----------------------------------------------·--
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 48 skipped (49)
+   Start at  19:56:45
+   Duration  1.42s (transform 911ms, setup 0ms, import 1.21s, tests 68ms, environment 0ms)
+
+
+mutation_exit=0 (expected nonzero RED)
