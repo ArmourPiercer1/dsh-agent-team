@@ -23,14 +23,20 @@
  *
  * @module ui-family/present-executor
  */
-import { closeSync, fstatSync, openSync, realpathSync } from 'node:fs'
-import { constants as fsConstants } from 'node:fs'
+import { constants as fsConstants, realpathSync, statSync } from 'node:fs'
+import { open as fsOpen } from 'node:fs/promises'
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-// The anchor law has ONE home; the boundary law (eb3-family-boundaries)
-// forbids reaching into a sibling lane's internals, so the two anchor
-// faces arrive through fs-family's PUBLIC face `src/index.mjs` (the same
-// exports fs-mechanics carries; the precedent booked for process/search).
-import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/index.mjs'
+// The anchor law has ONE home and the opened-handle identity law has ONE
+// home; both arrive through fs-family's PUBLIC face `src/index.mjs`
+// (boundary law: never a sibling internal; the review F-405-1 fix round
+// added the verifyOpenedHandle re-export there — same module, same faces
+// the fs executors themselves consume).
+import {
+  lexicalAnchor,
+  MAX_READ_BYTES,
+  resolveAnchoredPath,
+  verifyOpenedHandle,
+} from '../../fs-family/src/index.mjs'
 import {
   PRESENT_NATIVE_NAME,
   UI_PRESENTATION_DOMAIN_AUTHORITY,
@@ -96,24 +102,63 @@ export function createGovernedPresentExecutor({ realmId, rootDir, policy, decide
     }
     return false
   })
-  /** The post-consume probe: prove readable-regular-file at the approved
-   *  spelling through an O_NOFOLLOW descriptor. NEVER reads bytes. */
-  const probe = (path) => {
-    let fd
+  /** THE ONE-FD IDENTITY LAW (review F-405-1; the fs family's own law —
+   *  image-read-port.mjs and the read-executor's exec-time re-read):
+   *  snapshot the path, OPEN ONCE with O_RDONLY|O_NOFOLLOW, then prove the
+   *  FD — never the path — with `verifyOpenedHandle` (/proc/self/fd
+   *  containment against the governed root FIRST, fstat-vs-snapshot
+   *  identity second). A parent directory swapped to a symlink between
+   *  the anchor check and the open CANNOT escape: the fd's own /proc view
+   *  lands outside the root and the containment check refuses. The cap is
+   *  metered ON THE FD (cap+1 budget read); metered bytes are DISCARDED —
+   *  present publishes REFERENCES only, zero bytes ever ride a line. */
+  const probeAnchoredFd = async (path, rootReal) => {
+    let st
     try {
-      fd = openSync(path, READ_NO_FOLLOW)
+      st = statSync(path)
+    } catch (error) {
+      const code = String(error?.code ?? '')
+      if (code === 'ENOENT') return { ok: false, code: 'not-found' }
+      return { ok: false, code: 'unopenable', detail: code || String(error) }
+    }
+    if (!st.isFile()) return { ok: false, code: 'not-a-file' }
+    const snapshot = { dev: Number(st.dev), ino: Number(st.ino), size: st.size, mtimeMs: st.mtimeMs }
+    let handle
+    try {
+      handle = await fsOpen(path, READ_NO_FOLLOW)
     } catch (error) {
       const code = String(error?.code ?? '')
       if (code === 'ENOENT') return { ok: false, code: 'not-found' }
       if (code === 'ELOOP' || code === 'EMLINK') return { ok: false, code: 'symlink' }
+      if (code === 'EISDIR') return { ok: false, code: 'not-a-file' }
       return { ok: false, code: 'unopenable', detail: code || String(error) }
     }
     try {
-      const st = fstatSync(fd)
-      if (!st.isFile()) return { ok: false, code: 'not-a-file' }
-      return { ok: true, byteLength: st.size }
+      const recheck = await verifyOpenedHandle(handle, rootReal, snapshot)
+      if (recheck.verdict !== 'confirmed') {
+        const detail = recheck.verdict === 'escape'
+          ? `the opened descriptor resolved to ${String(recheck.resolvedPath)} — OUTSIDE the governed anchor`
+          : recheck.verdict === 'drift'
+            ? `snapshot ${String(snapshot.dev)}:${String(snapshot.ino)} != opened ${String(recheck.actual?.dev)}:${String(recheck.actual?.ino)}`
+            : String(recheck.detail ?? 'the opened handle identity could not be established')
+        return { ok: false, code: `exec-time-${String(recheck.verdict)}`, detail: `${detail.slice(0, 200)}; zero bytes disclosed` }
+      }
+      const opened = await handle.stat({ bigint: false })
+      if (!opened.isFile()) return { ok: false, code: 'not-a-file' }
+      const budget = MAX_READ_BYTES + 1
+      const chunk = Buffer.alloc(64 * 1024)
+      let metered = 0
+      while (metered < budget) {
+        const { bytesRead } = await handle.read(chunk, 0, Math.min(chunk.length, budget - metered), metered)
+        if (bytesRead === 0) break
+        metered += bytesRead
+      }
+      if (metered > MAX_READ_BYTES) {
+        return { ok: false, code: 'oversize', detail: `the governed presentation cap is ${String(MAX_READ_BYTES)} bytes (metered on the verified fd; the surplus is discarded)` }
+      }
+      return { ok: true, byteLength: metered }
     } finally {
-      try { closeSync(fd) } catch { /* the probe's fact is already decided */ }
+      try { await handle.close() } catch { /* the probe's fact is already decided */ }
     }
   }
 
@@ -222,8 +267,9 @@ export function createGovernedPresentExecutor({ realmId, rootDir, policy, decide
       // ── POST-CONSUME: the approved anchor law still has to STAND (the
       // write row's ANCHOR-DRIFT law at a read target), then the probe,
       // then the port. All refusals here publish NOTHING. ────────────────
+      let rootReal
       try {
-        realpathSync(rootDir)
+        rootReal = realpathSync(rootDir)
       } catch {
         return refused('io', 'root-unavailable', `the governed root does not resolve: ${rootDir}`)
       }
@@ -241,13 +287,25 @@ export function createGovernedPresentExecutor({ realmId, rootDir, policy, decide
           observe(`governed-present anchor-drift lex=${entry.path} real=${resolved.path}`)
           return refused('admission', 'ANCHOR-DRIFT', 'the resolved target differs from the approved lexical target; this call is stale and publishes nothing')
         }
-        const fact = probe(entry.path)
+        const fact = await probeAnchoredFd(entry.path, rootReal)
         if (!fact.ok) {
           if (fact.code === 'not-found') {
             return refused('io', 'FILE_NOT_FOUND', `Cannot present ${entry.path}: file not found. Check the path, create the file if needed, and retry.`)
           }
           if (fact.code === 'symlink' || fact.code === 'not-a-file') {
             return refused('schema', 'NOT_A_FILE', `Cannot present ${entry.path}: not a regular file`)
+          }
+          if (fact.code === 'exec-time-escape') {
+            observe(`governed-present exec-refused:escape path=${entry.path}`)
+            return refused('admission', 'ANCHOR-ESCAPE', `the opened descriptor is not inside the governed root at verification time (${String(fact.detail)}); nothing is published`)
+          }
+          if (fact.code === 'exec-time-drift') {
+            observe(`governed-present exec-refused:drift path=${entry.path}`)
+            return refused('admission', 'ANCHOR-DRIFT', `the opened fd is not the object that was anchored (${String(fact.detail)}); this call is stale and publishes nothing`)
+          }
+          if (fact.code === 'oversize') {
+            observe(`governed-present exec-refused:oversize path=${entry.path}`)
+            return refused('io', 'FILE_TOO_LARGE', `Cannot present ${entry.path}: the file exceeds the governed presentation cap of ${String(MAX_READ_BYTES)} bytes`)
           }
           return refused('io', 'FILE_UNREADABLE', `Cannot present ${entry.path}: the file could not be opened (${String(fact.detail ?? fact.code)})`)
         }
@@ -273,13 +331,28 @@ export function createGovernedPresentExecutor({ realmId, rootDir, policy, decide
         observe(`governed-present port-failed detail=${message}`)
         return refused('io', 'UI_PRESENT_PORT_FAILED', `the presentation face refused the publication (${message})`, true)
       }
+      // THE RECEIPT-TURN LAW (review F-405-3): the host's present RESULT
+      // REQUIRES an integer `turn` — pinned host
+      // packages/deliverables/tool-present/src/index.ts:61
+      // (`turn: { type: 'integer', required: true }`); :79 throws
+      // 'present requires an open turn'. A mount that reports success
+      // WITHOUT a correlation identity is not a success here: the row
+      // fails closed with a typed refusal. The mount may already have
+      // displayed something, so the refusal honestly carries
+      // sideEffectPossible.
+      if (!Number.isSafeInteger(receipt?.turn)) {
+        observe('governed-present receipt-refusal code=UI_PRESENT_RECEIPT_INVALID')
+        return refused('io', 'UI_PRESENT_RECEIPT_INVALID',
+          'the presentation face reported success WITHOUT the host-required receipt turn (the host result schema requires an integer turn — tool-present/src/index.ts:61, :79) — the publication carries no correlation identity, so this row treats it as failed',
+          true)
+      }
       const value = {
         files: verified.map((entry) => ({
           path: entry.path,
           ...(entry.file.description !== undefined ? { description: entry.file.description } : {}),
         })),
+        turn: receipt.turn,
       }
-      if (Number.isSafeInteger(receipt?.turn)) value.turn = receipt.turn
       observe(`governed-present RAN files=${String(value.files.length)}`)
       return { kind: 'ok', value }
     } finally {

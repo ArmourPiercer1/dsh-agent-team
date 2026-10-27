@@ -16,7 +16,7 @@ bypass, never a fabricated answer.
 ## Effect classes (per-call PA requested set — the PR #390 law)
 
 - `ask_user_question`: `tool-invoke(ask_user_question)` + `domain-ref(user-interaction)`.
-- `present`: `tool-invoke(present)` + `domain-ref(ui-presentation)` + one `read(<anchored file>)` PER presented file — the read arm is not decorative: the post-consume O_NOFOLLOW probe PAYS for it (byte counts land on the `governed-present PROBED path=… bytes=N` witness; zero file bytes ever enter memory, the result, or a log line).
+- `present`: `tool-invoke(present)` + `domain-ref(ui-presentation)` + one `read(<anchored file>)` PER presented file — the read arm is not decorative: the post-consume ONE-FD identity probe PAYS for it (byte counts land on the `governed-present PROBED path=… bytes=N` witness, metered on the verified fd; zero file bytes ever enter the result or a log line).
 - The canonical set sorts its arms; the C1 E-1/E-2/E-3 legs pin the MULTISET and every identity, and pin contribution-declared ≡ executor-requested identities.
 
 ## The timed-variant law
@@ -53,6 +53,10 @@ calls. The positive arms therefore run under per-call approval
 | present port/presentation face ABSENT → `UI_PRESENT_PORT_ABSENT`, zero consumption, zero publication | PROVEN offline + LIVE | C1 P-6; C2 f3: `u7f-present: governed-present port-refusal`, presented-target sha `afd51db3…` IDENTICAL, zero `PROBED`/`RAN` |
 | CANARY byte-leak: presented-file bytes never ride any line | PROVEN | C1 P-9 + C2 f3 outside-CANARY check |
 | per-call PA requested-set identities | PROVEN | C1 E-1/E-2/E-3 |
+| present: FINAL component swapped in the open window — substituted inode → `ANCHOR-DRIFT` (fstat-vs-snapshot), final → outside-symlink → `NOT_A_FILE`; zero port calls | PROVEN | C1 R-1/R-2 (deterministic swap-at-open injection; R-1 RED on the check-then-open head — `review-round1-race-RED.log`) |
+| present: PARENT DIRECTORY swapped to a symlink onto the outside dir in the open window → `ANCHOR-ESCAPE` via `/proc/self/fd` containment; outside canary never opened, read or presented | PROVEN | C1 R-3 — the F-405-1 arm: RED on head `ef348f7c3` (check-then-open delivered the outside file), GREEN on the one-fd head (`review-round1-race-GREEN.log`) |
+| present: size cap enforced ON THE VERIFIED FD (cap+1 metering) → `FILE_TOO_LARGE`; at-cap passes | PROVEN | C1 R-5 |
+| present: receipt WITHOUT the host-required integer `turn` → typed `UI_PRESENT_RECEIPT_INVALID` + `sideEffectPossible` honesty, never a silent success | PROVEN | C1 R-4 (F-405-3; host `packages/deliverables/tool-present/src/index.ts:61` `turn: {type:'integer', required:true}`, `:79` `'present requires an open turn'`) |
 
 ## Live C2 verdicts (verbatim, boot f3 of ≤3; `dev/agent-workflow/evidence/u7-f-ui-20261026/c2/`)
 
@@ -69,6 +73,66 @@ indent fix, f2 the closed-world option-contract discovery, f3 the law run).
 `host-base-pristine-post` PASS: the pristine host checkout is byte-clean
 after the runs.
 
+**C2 currency disclosure (fix round):** the three boots predate the
+review's one-fd probe rewrite and will not be re-run (budget 3/3 spent).
+The live arms C2 pins — default-deny refusal, port-absent refusal,
+pure-lexical anchor refusal — all terminate STRICTLY BEFORE the rewritten
+post-consume probe, so their witnesses are unaffected; the new fd law only
+STRICTENS what happens after those points and is proven offline by the
+C1 R-legs (the R-3 parent-swap arm additionally proves the rewrite closes
+a real escape that the pre-rewrite head shipped).
+
+## Review round 1 (REVIEW-405, PASS-WITH-FINDINGS → fixed here)
+
+Verdict source: `task/u7-wave1-review-b-20261027` @ `b641cf65e`,
+`dev/agent-workflow/evidence/u7-wave1-review-b/REVIEW-405.md`.
+
+- **H-1 (HIGH, blocking) — present checked the path, then opened the path
+  again**: a parent directory swapped to a symlink between the anchor check
+  and the probe's `openSync` delivered an OUTSIDE file through an
+  in-root-looking path (same TOCTOU class as the #404 `skill` escape).
+  Fixed the way the fs family does it, reusing the ONE law, no third copy:
+  `probeAnchoredFd` snapshots the path, OPENS ONCE with
+  `O_RDONLY|O_NOFOLLOW`, and proves the FD with the fs family's public
+  face `verifyOpenedHandle` (`/proc/self/fd` containment against the
+  governed root first, fstat-vs-snapshot second — the controlled-fs
+  `open-at-exec` law `image-read-port.mjs:75` and the read-executor
+  already run), re-proves regularity on the fd, and meters the cap on the
+  same fd. This PR adds ONE additive re-export to fs-family's public face
+  (`packages/tools/fs-family/src/index.mjs` —
+  `export { verifyOpenedHandle } from '../../../runtime/controlled-fs/src/index.js'`,
+  the same edge `image-read-port.mjs` already crosses; boundaries/audit
+  re-run green). Deterministic race tests (arm fires inside the open seam
+  via a per-test fs mock, both heads):
+  `review-round1-race-RED.log` (head `ef348f7c3`: R-1/R-3/R-4/R-5 fail —
+  R-3 shows `received: "ok"`, the outside file WAS delivered) →
+  `review-round1-race-GREEN.log` (41/41).
+- **M-1 — missing `turn` receipt silently accepted**: now a typed refusal
+  `UI_PRESENT_RECEIPT_INVALID` with `sideEffectPossible: true` — pinned
+  host law: `packages/deliverables/tool-present/src/index.ts:61` declares
+  the RESULT `turn: { type: 'integer', required: true }` and `:79` throws
+  `'present requires an open turn'`; a publication without correlation
+  identity is treated as failed, not silently downgraded. Pinned by C1
+  R-4; the port contract doc (`ui-interaction-port.mjs`) now states the
+  REQUIRED receipt turn.
+- **L-1 — closed-world parsing kept as a DELIBERATE deviation** (safer
+  law; measurement corrected against the pinned tree): the host ASK schema
+  ships `additionalProperties: true` at
+  `packages/interaction/tool-ask-user/src/index.ts:48` (question item) and
+  `:61` (option item) — host-legal callers MAY send extra keys there
+  (anything beyond the declared `{id, question, header, options,
+  multi_select}` / `{label, description}`, e.g. a `metadata` or `style`
+  key the host would simply ignore); the host PRESENT schema instead
+  ships `additionalProperties: false` on BOTH faces
+  (`packages/deliverables/tool-present/src/index.ts:49` input item, `:59`
+  output, `:65` output file item — measured, `:61` cited above), so
+  present's closed set is host-faithful, not a deviation. Where the
+  governed row IS stricter (ask extras), every refusal NAMES the offending
+  field and the accepted set —
+  `…carries unknown parameter(s) id (accepted: label, description)…`
+  (`ui-mechanics.mjs:110/:128/:164`; present twins `:203/:217`), live-
+  proven on boot f2.
+
 ## Base + the merged #398 diag/devex surface
 
 Branch base = `origin/master` @ `0ea67bee8` (normal merge, zero conflicts).
@@ -84,7 +148,8 @@ PLANE_UI_REGISTRATION_REFUSED` → `ATTRIBUTED, face: plane-mount
 
 ## Boot budget + harness honesty
 
-C1 36/36 offline; TWO mutation controls RED→reverted→GREEN; p4t6 delta
+C1 36/36 offline at the review head, 41/41 with the fix-round R-legs; TWO
+mutation controls RED→reverted→GREEN; p4t6 delta
 MEASURED (`scanner counts 1332, ledger derives … = 1322` → +10 booked);
 world-factory offline machinery green (38/38) with the new suite/kind
 registered; `registries` 12/12; family-seam 9/9 (count pin legitimately
@@ -160,11 +225,24 @@ EB3-REQUIRED pass layers=5 green=5 nongreen=none
 The hosted ci-full census is GREEN — confirming the one local red
 (`rc2-sanitize-evidence::S13`) was sandbox process-spawn slowness only.
 
+Fix-round hosted verdicts (review round 1, new head) are appended below in
+the follow-up evidence commit once the four ci-required / pr-gate /
+census-runtime / candidate-protection runs report — then this PR FREEZES
+for review round 2 (no further pushes).
+
 ## Disclosed deviations (from the host mirror)
 
-closed-world parameter schema (host ships `additionalProperties: true`);
-`present`'s `turn` is optional on the governed face (the host requires it —
-the receipt turn rides only when the port reports one) and paths are
-governed-absolute; unique question ids enforced on the TIMED variant only
+closed-world parameter schema on `ask` (host question/option items ship
+`additionalProperties: true` — tool-ask-user/src/index.ts:48,:61 — so
+extras a host caller may legally send, e.g. `metadata`/`style` keys, are
+ignored there but refused typed here, naming the field; present's closed
+set is host-faithful — tool-present/src/index.ts:49,:59,:65 ship
+`additionalProperties: false`); `present` paths are governed-absolute
+(host: session-relative allowed); the presentation size cap is the
+governed read cap `MAX_READ_BYTES` = 1 MiB metered ON THE VERIFIED FD
+(host: no cap — stricter here, `FILE_TOO_LARGE`); the receipt turn is NOT
+a deviation since fix round 1 (host-required integer turn enforced,
+F-405-3 above); unique question ids enforced on the TIMED variant only
 (host-faithful: legacy does not); the default-deny rule-grammar consequence
-above; C2 live positive arms DISCLOSED (structural, quoted above).
+above; C2 live positive arms DISCLOSED (structural, quoted above, with the
+pre-rewrite currency note).

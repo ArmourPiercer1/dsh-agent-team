@@ -34,9 +34,9 @@
  *    settled-token replay answers cancelled WITHOUT re-consuming the grant
  *    or touching the port twice; unknown fields have no ride.
  */
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
@@ -786,5 +786,173 @@ describe('u7-f C1 declared == requested — the fingerprinted set IS the declara
     })
     expect(contribution.effects.targets).toContain(lane.USER_INTERACTION_DOMAIN_AUTHORITY)
     expect(contribution.effects.targets).toContain(lane.UI_PRESENTATION_DOMAIN_AUTHORITY)
+  })
+})
+
+// ── Review round 1 (REVIEW-405): the one-fd identity law (F-405-1), the
+// host-required receipt turn (F-405-3), the fd-metered size cap.
+describe('R — present at the OPEN WINDOW: one-fd identity, receipt turn, fd cap', () => {
+  /** A fresh present-executor whose fs OPEN seam fires `swap` exactly once
+   *  for `target` — deterministic arrival inside the check→use window that
+   *  F-405-1 names (the path was anchored and verified; the object behind
+   *  it is being traded at the instant of open). Mocked at BOTH open
+   *  faces (node:fs openSync, node:fs/promises open) so the same test is
+   *  RED on the check-then-open head and GREEN on the one-fd head. */
+  const racePresent = async (target: string, swap: () => void) => {
+    const arm = { fired: false }
+    vi.resetModules()
+    vi.doMock('node:fs', async (importOriginal) => {
+      const m = await (importOriginal as unknown as () => Promise<typeof import('node:fs')>)()
+      const real = m.openSync
+      return { ...m, openSync: ((...args: Parameters<typeof m.openSync>) => {
+        if (!arm.fired && args[0] === target) { arm.fired = true; swap() }
+        return real(...args)
+      }) as typeof m.openSync }
+    })
+    vi.doMock('node:fs/promises', async (importOriginal) => {
+      const m = await (importOriginal as unknown as () => Promise<typeof import('node:fs/promises')>)()
+      const realOpen = m.open as unknown as (...a: unknown[]) => Promise<unknown>
+      return { ...m, open: async (...args: unknown[]) => {
+        if (!arm.fired && args[0] === target) { arm.fired = true; swap() }
+        return await realOpen(...args)
+      } }
+    })
+    const lane = await import(new URL('../../tools/ui-family/src/present-executor.mjs', import.meta.url).href) as {
+      createGovernedPresentExecutor: (i: Record<string, unknown>) => (raw: unknown, corr?: unknown) => Promise<Record<string, unknown>>
+    }
+    const presentCalls: unknown[] = []
+    const port = { present: async (req: unknown) => { presentCalls.push(req); return { turn: 7 } } }
+    const present = lane.createGovernedPresentExecutor({
+      realmId: REALM,
+      policy: policy({ default: 'ask' }),
+      decide: () => ({ kind: 'allow' }),
+      pa: async () => ({ kind: 'allow' }),
+      rootDir: ROOT_DIR,
+      portRef: () => port,
+    })
+    return { present, presentCalls, arm }
+  }
+
+  const cleanupRace = () => {
+    vi.doUnmock('node:fs')
+    vi.doUnmock('node:fs/promises')
+    vi.resetModules()
+  }
+
+  /** The same direct executor WITHOUT the fs mock (no race arm needed). */
+  const plainPresent = async (presentPort?: { present: (req: unknown) => Promise<unknown> }) => {
+    const lane = await import(new URL('../../tools/ui-family/src/present-executor.mjs', import.meta.url).href) as {
+      createGovernedPresentExecutor: (i: Record<string, unknown>) => (raw: unknown, corr?: unknown) => Promise<Record<string, unknown>>
+    }
+    const presentCalls: unknown[] = []
+    const port = presentPort ?? { present: async (req: unknown) => { presentCalls.push(req); return { turn: 7 } } }
+    const present = lane.createGovernedPresentExecutor({
+      realmId: REALM,
+      policy: policy({ default: 'ask' }),
+      decide: () => ({ kind: 'allow' }),
+      pa: async () => ({ kind: 'allow' }),
+      rootDir: ROOT_DIR,
+      portRef: () => port,
+    })
+    return { present, presentCalls }
+  }
+
+  it('R-1 the final component swapped in the open window (substituted inode) is REFUSED — fstat-vs-snapshot drift binds the fd, never the path (F-405-1a)', async () => {
+    const target = join(ROOT_DIR, 'race-final.txt')
+    const orig = join(WORLD, 'race-final.orig')
+    writeFileSync(target, 'APPROVED-ORIGINAL-IDENTITY\n')
+    const { present, presentCalls, arm } = await racePresent(target, () => {
+      renameSync(target, orig)
+      writeFileSync(target, 'SUBSTITUTED-INODE-9e41-NOT-APPROVED\n')
+    })
+    try {
+      const r = await present({ files: [{ path: target }] }, { token: { t: 'r1' } })
+      expect(arm.fired, 'INJECTION SELF-PROOF: the swap fired inside the open window').toBe(true)
+      expect(r.kind, 'the substituted inode must never be presented').toBe('refused')
+      expect(String(r.code)).toBe('ANCHOR-DRIFT')
+      expect(presentCalls).toHaveLength(0)
+    } finally {
+      if (existsSync(orig)) renameSync(orig, target)
+      rmSync(target, { force: true })
+      cleanupRace()
+    }
+  })
+
+  it('R-2 the final component swapped to a SYMLINK to the outside file in the open window is refused; the outside file is never opened (F-405-1a)', async () => {
+    const target = join(ROOT_DIR, 'race-link.txt')
+    const orig = join(WORLD, 'race-link.orig')
+    writeFileSync(target, 'APPROVED-PLAIN-FILE\n')
+    const { present, presentCalls, arm } = await racePresent(target, () => {
+      renameSync(target, orig)
+      symlinkSync(join(OUTSIDE_DIR, 'secret.txt'), target)
+    })
+    try {
+      const r = await present({ files: [{ path: target }] }, { token: { t: 'r2' } })
+      expect(arm.fired, 'INJECTION SELF-PROOF: the swap fired inside the open window').toBe(true)
+      expect(r.kind).toBe('refused')
+      expect(String(r.code)).toBe('NOT_A_FILE')
+      expect(presentCalls).toHaveLength(0)
+      expect(`${String(r.text ?? '')}${JSON.stringify(presentCalls)}`).not.toContain('OUTSIDE-SECRET-DO-NOT-PUBLISH')
+    } finally {
+      rmSync(target, { force: true })
+      if (existsSync(orig)) renameSync(orig, target)
+      rmSync(target, { force: true })
+      cleanupRace()
+    }
+  })
+
+  it('R-3 the PARENT DIRECTORY swapped to a symlink onto the outside dir in the open window is refused — /proc/self/fd containment proves the fd, never the path (F-405-1b)', async () => {
+    const sub = join(ROOT_DIR, 'racesub')
+    const moved = join(ROOT_DIR, 'racesub-moved')
+    rmSync(sub, { recursive: true, force: true })
+    rmSync(moved, { recursive: true, force: true })
+    mkdirSync(sub, { recursive: true })
+    const target = join(sub, 'secret.txt')
+    writeFileSync(target, 'INSIDE-LOOKALIKE-NOT-THE-OUTSIDE-FILE\n')
+    const { present, presentCalls, arm } = await racePresent(target, () => {
+      renameSync(sub, moved)
+      symlinkSync(OUTSIDE_DIR, sub)
+    })
+    try {
+      const r = await present({ files: [{ path: target }] }, { token: { t: 'r3' } })
+      expect(arm.fired, 'INJECTION SELF-PROOF: the parent swap fired inside the open window').toBe(true)
+      expect(r.kind, 'the parent swap must NOT deliver the outside file through an in-root-looking path').toBe('refused')
+      expect(String(r.code)).toBe('ANCHOR-ESCAPE')
+      expect(presentCalls).toHaveLength(0)
+      expect(`${String(r.text ?? '')}${JSON.stringify(presentCalls)}`).not.toContain('OUTSIDE-SECRET-DO-NOT-PUBLISH')
+    } finally {
+      rmSync(sub, { force: true }) // the symlink itself
+      mkdirSync(sub, { recursive: true })
+      if (existsSync(join(moved, 'secret.txt'))) renameSync(join(moved, 'secret.txt'), target)
+      cleanupRace()
+    }
+  })
+
+  it('R-4 a receipt WITHOUT the host-required turn is a typed refusal — publication without correlation identity is not success (F-405-3; host packages/deliverables/tool-present/src/index.ts:61 requires integer turn; :79 refuses an unopened turn)', async () => {
+    const port = { present: async () => ({ /* no turn — a mount that lost the correlation fact */ }) }
+    const { present } = await plainPresent(port)
+    const r = await present({ files: [{ path: join(ROOT_DIR, 'doc.txt') }] }, { token: { t: 'r4' } })
+    expect(r.kind, 'the governed face never silently accepts a turn-less publication').toBe('refused')
+    expect(String((r as { code?: string }).code)).toBe('UI_PRESENT_RECEIPT_INVALID')
+    expect((r as { sideEffectPossible?: boolean }).sideEffectPossible, 'the mount may already have displayed — the refusal says so').toBe(true)
+  })
+
+  it('R-5 the size cap is enforced ON THE VERIFIED FD (cap+1 metering): one byte over refuses FILE_TOO_LARGE, at the cap passes — metered bytes are discarded, never disclosed', async () => {
+    const MAX = 1024 * 1024 // the governed read cap (fs-mechanics MAX_READ_BYTES)
+    const over = join(ROOT_DIR, 'race-over.bin')
+    const at = join(ROOT_DIR, 'race-at.bin')
+    writeFileSync(over, Buffer.alloc(MAX + 1, 0x61))
+    writeFileSync(at, Buffer.alloc(MAX, 0x62))
+    try {
+      const { present } = await plainPresent()
+      const r = await present({ files: [{ path: over }] }, { token: { t: 'r5a' } })
+      expect(r.kind).toBe('refused')
+      expect(String((r as { code?: string }).code)).toBe('FILE_TOO_LARGE')
+      const ok = await present({ files: [{ path: at }] }, { token: { t: 'r5b' } })
+      expect(ok.kind).toBe('ok')
+    } finally {
+      rmSync(over, { force: true })
+      rmSync(at, { force: true })
+    }
   })
 })

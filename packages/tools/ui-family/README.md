@@ -31,22 +31,27 @@ port = typed refusal, zero effect — never a bypass, never a fake.
 Nothing under this directory may import the plane, the Kernel lane, or Host
 internals. The complete outward set, face by face:
 
-- `node:*` — `node:fs` (the post-consume `O_NOFOLLOW` probe in
-  `present-executor.mjs`), `node:crypto` (fingerprinting in
-  `ui-mechanics.mjs`).
+- `node:*` — `node:fs` + `node:fs/promises` (the post-consume ONE-FD
+  identity probe in `present-executor.mjs`: `statSync` snapshot,
+  `open(O_RDONLY|O_NOFOLLOW)`, fd metering), `node:crypto`
+  (fingerprinting in `ui-mechanics.mjs`).
 - `packages/contracts/src/index.js` — `canonicalJsonStringify` in
   `ui-family-contribution.mjs` (the canonicalizer face, read-only).
 - `packages/domain/tool-governance/src/index.js` — the ONE effect-grammar
   face `parseRequestedEffectSet`, imported by the TWO executors only,
   booked consumer-by-consumer in the A5P0 layer audit (`PR1_CONSUMERS`).
 - `packages/tools/fs-family/src/index.mjs` — the SIBLING FAMILY PUBLIC
-  FACE (`lexicalAnchor`, `resolveAnchoredPath`): the anchor law has ONE
-  home and this lane reads it through the reviewed face, never through the
-  sibling's internals (`fs-mechanics.mjs` is NOT an edge of this lane).
+  FACE (`lexicalAnchor`, `resolveAnchoredPath`, `MAX_READ_BYTES`,
+  `verifyOpenedHandle`): the anchor law and the opened-handle identity law
+  each have ONE home and this lane reads both through the reviewed face,
+  never through a sibling's internals (`fs-mechanics.mjs` is NOT an edge
+  of this lane; `verifyOpenedHandle` is fs-family's additive re-export of
+  controlled-fs' `open-at-exec` law, added in the review F-405-1 fix —
+  no third copy).
 
 Everything else the lane imports is inward (`./`-relative, this lane).
 
-## The two law blocks
+## The law blocks
 
 - **The timed law** (`ui-mechanics.mjs` + `ask-executor.mjs`): the variant
   selects at MOUNT (`uiTimedQuestions`, the host `mode: timed` mirror); the
@@ -58,10 +63,31 @@ Everything else the lane imports is inward (`./`-relative, this lane).
 - **The anchor law** (`present-executor.mjs`, reusing
   `fs-family/src/fs-mechanics.mjs` — reused, not copied): paths are
   pure-lexically anchored BEFORE the PA edge (out-of-root = typed refusal,
-  zero fs touch, zero grant consumption); `resolveAnchoredPath` + an
-  O_NOFOLLOW probe run POST-CONSUME (anchor drift / symlink alias refuse
-  with zero publication); the probe pays the declared per-file `read`
-  effects; zero file bytes ever enter memory, the result, or a line.
+  zero fs touch, zero grant consumption); `resolveAnchoredPath` re-checks
+  POST-CONSUME (anchor drift / symlink alias refuse with zero
+  publication); the anchors pay the declared per-file `read` effects;
+  zero file bytes ever enter the result or a line.
+- **The one-fd identity law** (review F-405-1; `present-executor.mjs`
+  reusing the fs family's OWN law, never a third copy): after the anchor
+  re-check the executor snapshots the path and OPENS ONCE with
+  `O_RDONLY|O_NOFOLLOW`, then proves the FD — never the path — with
+  `verifyOpenedHandle` (controlled-fs `open-at-exec`: `/proc/self/fd`
+  containment against the governed root FIRST, fstat-vs-snapshot identity
+  second), re-proves regularity on the fd, and meters the size cap ON THE
+  FD (a `MAX_READ_BYTES+1` budget read whose bytes are DISCARDED). A file
+  or a PARENT DIRECTORY swapped between the anchor check and the open
+  cannot escape or substitute: `ANCHOR-ESCAPE` / `ANCHOR-DRIFT` /
+  `FILE_TOO_LARGE` refuse with zero publication. Deterministic
+  swap-at-open races are pinned by C1 R-1/R-2/R-3 — RED on the
+  check-then-open head, GREEN here (evidence
+  `review-round1-race-RED.log` / `-GREEN.log`).
+- **The receipt-turn law** (review F-405-3): the host present RESULT
+  REQUIRES an integer `turn` (pinned host
+  `packages/deliverables/tool-present/src/index.ts:61`; `:79` refuses an
+  unopened turn), so a mount that reports success WITHOUT one is not a
+  success here: the row answers typed `UI_PRESENT_RECEIPT_INVALID` (with
+  `sideEffectPossible: true` — the mount may already have displayed)
+  instead of silently dropping the correlation identity.
 
 ## Booking
 
@@ -73,7 +99,9 @@ Everything else the lane imports is inward (`./`-relative, this lane).
 
 ## Proof
 
-C1: `packages/runtime/test/u7-f-ui-c1.test.ts` (36 legs; positives land
+C1: `packages/runtime/test/u7-f-ui-c1.test.ts` (41 legs; positives land
 their effects on the injected fake port, every refusal arm proves ZERO port
-calls and zero consumption; mutation controls live in
+calls and zero consumption; the R-legs pin the one-fd identity law against
+deterministic swap-at-open races and the receipt-turn / fd-cap laws;
+mutation controls live in
 `dev/agent-workflow/evidence/u7-f-ui-20261026/`).

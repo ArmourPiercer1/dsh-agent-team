@@ -22,10 +22,13 @@
  *                                             → Promise<{ answers } | { pending: true }>
  *       the bounded foreground wait. The expiry outcome is `pending` —
  *       NEVER a synthesized answer batch (the timeout law).
- *   present({ files, signal?, callId })       → Promise<{ turn? } | void>
- *       publishes the verified, post-consume file list; `turn` is the
- *       mount's session fact when it has one (the host keys durable
- *       deliverables by it), absent means the mount states no turn.
+ *   present({ files, signal?, callId })       → Promise<{ turn: number }>
+ *       publishes the verified, post-consume file list and MUST return the
+ *       mount's session `turn` — the host result schema REQUIRES an integer
+ *       turn (tool-present/src/index.ts:61; :79 refuses an unopened turn),
+ *       and the executor enforces it: a turn-less receipt is a typed
+ *       UI_PRESENT_RECEIPT_INVALID refusal (review F-405-3), never a silent
+ *       success.
  *
  * `createUserQuestionsPort` adapts the pinned host `userQuestions` service
  * (index.ts:287/234 @639ed01539: `ask(request)` / `askTimed(request,
