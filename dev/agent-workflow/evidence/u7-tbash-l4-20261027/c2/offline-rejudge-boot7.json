@@ -1,0 +1,14 @@
+{
+  "mode": "offline-rejudge",
+  "source": "c2-verdicts-boot7.json",
+  "rawBootVerdict": "PASS",
+  "rawCases": 6,
+  "offlineJudge": "strengthened judge requires identityOk plus independent/durable/bind agreement and ledger-backed bindings",
+  "bootStarted": false,
+  "reason": "Boot-7 retains governed identity, all four ledger requests/decisions/consumption, calls with toolUseId, resolutions, bindings, effects, leak state, and attributable host forensic lines.",
+  "overall": "PASS",
+  "cases": ["tbash:mounted","tbash:approve-spawn-once","tbash:replay-refused","tbash:other-command-refused","tbash:deny-zero-effect","tbash:leak-check"],
+  "offlineCaseVerdicts": ["PASS","PASS","PASS","PASS","PASS"],
+  "ledgerForeignEntries": 0,
+  "notes": "Foreign-row filtering is proven by C1 synthetic foreign-row test, not by boot-7; host forensic witness is attributed by call marker and confined-shell line in the retained log."
+}

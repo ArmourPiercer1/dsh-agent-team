@@ -464,12 +464,34 @@ export function recordResolutionBinding({ row, outstanding, resolution, governed
 }
 
 export function deriveBindingChain({ ledger, calls, resolutions, governedSessionId }) {
+  const rows = new Map((ledger?.requests ?? []).map((row) => [String(row.requestId), row]))
   const byStep = new Map((calls ?? []).map((c) => [c.step, c]))
-  const rowToModelCall = (resolutions ?? []).map((r) => {
-    const call = byStep.get(r.step) ?? null
-    return { requestId: r.requestId, rootSessionId: governedSessionId, toolName: r.toolName ?? 'bash', toolUseId: call?.toolUseId ?? null, callIndex: r.step, commandHash: call?.command ? commandHashOf(call.command) : r.commandHash ?? null }
+  const rowToModelCall = (resolutions ?? []).map((resolution) => {
+    const row = rows.get(String(resolution.requestId)) ?? null
+    const call = byStep.get(resolution.step) ?? null
+    return {
+      requestId: resolution.requestId ?? null,
+      ledgerRequestId: row?.requestId ?? null,
+      rootSessionId: row?.rootSessionId ?? null,
+      toolName: row?.toolName ?? resolution.toolName ?? null,
+      summary: row?.summary ?? null,
+      parametersFingerprint: row?.parametersFingerprint ?? null,
+      step: resolution.step ?? null,
+      toolUseId: call?.toolUseId ?? resolution.toolUseId ?? null,
+      callIndex: call?.step ?? resolution.step ?? null,
+      commandHash: call?.command ? commandHashOf(call.command) : resolution.commandHash ?? null,
+      decision: resolution.decision ?? null,
+      sessionId: governedSessionId ?? null,
+      ledgerMatched: row !== null && row.rootSessionId === governedSessionId,
+    }
   })
-  const modelCallToSession = (calls ?? []).map((c) => ({ toolUseId: c.toolUseId ?? null, callIndex: c.step, rootSessionId: governedSessionId, sessionId: governedSessionId }))
+  const modelCallToSession = (calls ?? []).map((call) => ({
+    toolUseId: call.toolUseId ?? null,
+    callIndex: call.step ?? null,
+    rootSessionId: governedSessionId,
+    sessionId: governedSessionId,
+    ledgerRequestIds: rowToModelCall.filter((b) => b.toolUseId === call.toolUseId).map((b) => b.requestId),
+  }))
   return { rowToModelCall, modelCallToSession }
 }
 
@@ -570,6 +592,25 @@ const lines = (raw) => (raw === null || raw === undefined ? 0 : String(raw).spli
  *   leak:        {inCorpus, inHostLog, bytesUnchanged}
  */
 export function judgeTbash(d, hostAlive) {
+  const governed = d.governed ?? null
+  const teamSessionId = d.governedSessionId ?? governed?.teamSessionId ?? null
+  const identityOk = governed?.identityOk === true
+    && governed.fromIndependentRead === teamSessionId
+    && (governed.fromDurable ?? governed.identity?.fromDurable) === teamSessionId
+    && (governed.fromBind ?? governed.identity?.fromBind) === teamSessionId
+  const bindingRows = d.governed?.bindings?.rowToModelCall ?? d.bindings?.rowToModelCall ?? []
+  const bindingsOk = bindingRows.length > 0 && bindingRows.every((binding) => binding.ledgerMatched === true
+    && binding.rootSessionId === teamSessionId
+    && typeof binding.ledgerRequestId === 'string'
+    && binding.ledgerRequestId === binding.requestId)
+  const identityFailure = identityOk ? null : {
+    identityOk: governed?.identityOk ?? null,
+    fromIndependentRead: governed?.fromIndependentRead ?? null,
+    fromDurable: governed?.fromDurable ?? governed?.identity?.fromDurable ?? null,
+    fromBind: governed?.fromBind ?? governed?.identity?.fromBind ?? null,
+    teamSessionId,
+  }
+  const bindingFailure = bindingsOk ? null : { bindingRows }
   const out = []
   const callOf = (step) => (d.calls ?? []).find((c) => c.step === step) ?? null
   const resOf = (step) => (d.resolutions ?? []).filter((r) => r.step === step)
@@ -601,7 +642,7 @@ export function judgeTbash(d, hostAlive) {
     && ridA !== null && JSON.stringify(decisionsFor(ridA)) === JSON.stringify(['allow'])
     && consumptionsFor(ridA) === 1 && totalConsumptions === 1
     && lines(apprText) === 1 && String(apprText).trim() === claims.appr
-    && strictWitness && hostAlive === true
+    && strictWitness && hostAlive === true && identityOk && bindingsOk
   out.push(['tbash:approve-spawn-once', approveOk ? 'PASS' : 'FAIL', {
     requestId: ridA,
     resolutions: ra,
@@ -624,7 +665,7 @@ export function judgeTbash(d, hostAlive) {
     && rr.every((x) => consumptionsFor(x.requestId) === 0)
     && lines(apprText) === 1 && totalConsumptions === 1
     && d.seamReAllow !== null && d.seamReAllow !== undefined && d.seamReAllow.requestId === ridA && d.seamReAllow.ok === false
-    && strictWitness && hostAlive === true
+    && strictWitness && hostAlive === true && identityOk && bindingsOk
   out.push(['tbash:replay-refused', replayOk ? 'PASS' : 'FAIL', {
     sameCommandAsApproved: r !== null && a !== null && r.command === a.command,
     mode: rr.length === 0 ? 'synchronous-refusal' : 'new-row-denied',
@@ -642,7 +683,7 @@ export function judgeTbash(d, hostAlive) {
     && commandHashOf(o.command) !== d.pinned?.commandHash
     && refused(o) && ro.every((x) => x.decision !== 'allow' && x.requestId !== ridA && consumptionsFor(x.requestId) === 0)
     && (d.effects?.other ?? null) === null && totalConsumptions === 1
-    && strictWitness && hostAlive === true
+    && strictWitness && hostAlive === true && identityOk && bindingsOk
   out.push(['tbash:other-command-refused', otherOk ? 'PASS' : 'FAIL', {
     commandHash: o === null ? null : commandHashOf(o.command),
     pinnedCommandHash: d.pinned?.commandHash ?? null,
@@ -660,7 +701,7 @@ export function judgeTbash(d, hostAlive) {
     && ridD !== null && JSON.stringify(decisionsFor(ridD)) === JSON.stringify(['deny'])
     && consumptionsFor(ridD) === 0
     && refused(n) && (d.effects?.deny ?? null) === null
-    && strictWitness && hostAlive === true
+    && strictWitness && hostAlive === true && identityOk && bindingsOk
   out.push(['tbash:deny-zero-effect', denyOk ? 'PASS' : 'FAIL', {
     requestId: ridD,
     resolutions: rn,
@@ -676,5 +717,5 @@ export function judgeTbash(d, hostAlive) {
     ...lk,
     allowsIssued: allows.length,
   }])
-  return out
+  return out.map(([id, verdict, detail]) => [id, identityOk && bindingsOk ? verdict : 'FAIL', { ...detail, identity: identityFailure, bindings: bindingFailure }])
 }

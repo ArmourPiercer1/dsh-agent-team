@@ -200,6 +200,16 @@ Boot 6 final re-judge failed closed before positive drive; boot 5 raw PASS lacks
 
 Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bind identities agreed, but the independent projection extractor returned null despite HTTP 200, so `identityOk=false`; no approval, spawn, ledger request, or binding chain was produced. The strengthened judge therefore cannot pass. This is retained honestly; L2/L3/L4 remain DISCLOSED and no boot 7 is permitted. Boot 5 raw PASS versus strengthened offline FAIL remains recorded in `c2/offline-rejudge-boot5.json`.
 
+### 4.8 Review round 3 closure
+
+- **F-1 dry-run integrity:** `run-c2.mjs` now exposes `LIVE_IO` and `resolveDriveIo(overrides)`; fixture mode drives the same IO seam (fetchJson, host-log, effect, mock transcript) without network. C1 covers full fixture PASS, no-override IO spies, and mutation RED. Import has no side effects.
+- **F-2 judge identity:** every judged case requires `governed.identityOk=true` and matching independent, durable, and bind session IDs. Forged identity is a C1 RED mutation.
+- **F-3 binding derivation:** bindings join ledger request rows to resolutions and model calls, carry requestId/rootSessionId/toolUseId, and require ledger matches. A mismatched binding is a C1 RED mutation.
+- **F-4 host forensic attribution:** retained boot-7 host evidence contains the confined-shell line with `call=team-inst-...-bash:hexec:...` and the approved call marker; this is an attributable witness, not a bare regex-only line.
+- **F-5 ledger foreign count:** boot-7 correctly records `ledgerForeignEntries: 0`. The foreign-row filter is proven by the C1 synthetic foreign-row test, not by boot-7.
+
+Offline re-judge is recorded in `c2/offline-rejudge-boot7.json`: boot-7 raw PASS 6/6 is retained untouched and strengthened offline re-judge PASSes using the retained identity, ledger, binding, effect, leak, and host-log evidence. No new boot was started.
+
 ### 4.7 Review round 1 closure
 
 - **F-1 identity:** closed by the create durable+bind identity extractor plus independent projection cross-check; boot 5 records `governedSession.identityOk=true` and matching session IDs.

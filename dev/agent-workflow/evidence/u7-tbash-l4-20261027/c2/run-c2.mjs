@@ -76,6 +76,10 @@ function declareBoot(world) {
 }
 const redact = (t) => String(t).replace(/([?&]token=)[A-Za-z0-9_-]+/g, '$1<redacted>')
 
+// Explicit IO seam: live defaults are stable and never shadowed by fixture overrides.
+export const LIVE_IO = Object.freeze({ fetchJson: fetchJsonRetry, readHostLog: (path) => readFileSync(path, 'utf8'), readEffect: (path) => { try { return readFileSync(path, 'utf8') } catch { return null } }, mockTranscript: (fixture) => fixture })
+export function resolveDriveIo(overrides = {}) { return { ...LIVE_IO, ...overrides } }
+
 async function dryRun() {
   const fixturePath = process.argv[process.argv.indexOf('--fixtures') + 1]
   if (!fixturePath) throw new Error('--dry-run requires --fixtures <json>')
@@ -85,8 +89,16 @@ async function dryRun() {
   const projectionInput = process.env.U7TB_DRY_RUN_MUTATE === '1' ? projectionResponse.body : projectionResponse
   const governed = governedIdentityRecord({ createResponse, projectionResponse: projectionInput, expectedRoot: 'session-u7tb-dry', bootRoot: 'session-u7tb-root' })
   const ledger = ledgerControlFromEntries(fixture.ledger, { teamSessionId: governed.teamSessionId, pinnedCommandHash: commandHashOf(fixture.calls[0].command) })
-  const digest = { governedSessionId: governed.teamSessionId, governed, pinned: { commandHash: commandHashOf(fixture.calls[0].command), claims: { appr: 'U7TB_APPR_dry' }, ranEcho: { appr: 'U7TB_APPR_RAN' } }, calls: fixture.calls, resolutions: fixture.resolutions, ledger, effects: { appr: fixture.effect, other: null, deny: null }, hostForensic: ['confined-shell ran realm=dry exit=0 timedOut=false cancelled=false'], seamReAllow: { requestId: 'ctrl-dry', ok: false }, leak: { inCorpus: false, inHostLog: false, bytesUnchanged: true } }
-  const verdicts = governed.identityOk && process.env.U7TB_DRY_RUN_MUTATE !== '1' ? [['tbash:mounted', 'PASS'], ...judgeTbash(digest, fixture.hostAlive)] : [['tbash:mounted', 'FAIL', { identityOk: governed.identityOk }]]
+  const ioCalls = []
+  const io = resolveDriveIo({
+    fetchJson: async (...args) => { ioCalls.push(['fetchJson', args]); return fixture.fetchJsonResponse ?? { status: 200, body: {} } },
+    readHostLog: () => fixture.hostLog ?? '',
+    readEffect: (name) => fixture.effects?.[name] ?? null,
+    mockTranscript: () => fixture.mockExcerpt ?? null,
+  })
+  await io.fetchJson('fixture://dry-run')
+  const digest = { governedSessionId: governed.teamSessionId, governed, pinned: { commandHash: commandHashOf(fixture.calls[0].command), claims: fixture.claims ?? { appr: 'U7TB_APPR_dry' }, ranEcho: fixture.ranEcho ?? { appr: 'U7TB_APPR_RAN' } }, calls: fixture.calls, resolutions: fixture.resolutions, ledger, effects: { appr: io.readEffect('appr') ?? fixture.effect, other: null, deny: null }, hostForensic: String(io.readHostLog()).split('\\n').filter(Boolean), seamReAllow: fixture.seamReAllow ?? { requestId: 'ctrl-dry', ok: false }, leak: fixture.leak ?? { inCorpus: false, inHostLog: false, bytesUnchanged: true }, ioCalls: ioCalls.length }
+  const verdicts = process.env.U7TB_DRY_RUN_MUTATE === '1' ? [['tbash:mounted', 'FAIL', { mutation: true }]] : [['tbash:mounted', governed.identityOk ? 'PASS' : 'FAIL', { identityOk: governed.identityOk }], ...judgeTbash(digest, fixture.hostAlive)]
   const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
   const outPath = join(HERE, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
   writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n')
@@ -368,9 +380,10 @@ async function drive({ world, assembly, planted, boot, decide }) {
   for (const [id, verdict, detail] of judgeTbash(digest, hostAlive)) add(id, verdict, detail)
 }
 
-if (process.argv.includes('--dry-run')) {
+const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
+if (invokedDirectly && process.argv.includes('--dry-run')) {
   dryRun().catch((error) => { console.error('[u7tb-c2] DRY-RUN FATAL', error); process.exit(1) })
-} else main().then(() => process.exit(0)).catch((error) => {
+} else if (invokedDirectly) main().then(() => process.exit(0)).catch((error) => {
   console.error('[u7tb-c2] FATAL', error)
   process.exit(1)
 })
