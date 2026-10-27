@@ -187,6 +187,15 @@ export function resolveDriveIo(overrides = {}, liveDefaults = LIVE_IO) {
   return { ...liveDefaults, ...overrides }
 }
 
+/**
+ * Judge a positive fork read-back by the first non-error result carrying the
+ * expected token. Earlier error results can be pre-flight noise from another
+ * model prompt in the same world and must not mask a later positive effect.
+ */
+export function judgeForkPositive(readBack, expectedToken) {
+  return readBack.find((result) => !result?.isError && String(result?.text ?? '').includes(expectedToken)) ?? null
+}
+
 export async function drive({ world, assembly, planted, boot, stableBefore, io = {}, liveDefaults = LIVE_IO }) {
   const resolvedIo = resolveDriveIo(io, liveDefaults)
   const fetchJsonRetry = resolvedIo.fetchJsonRetry
@@ -435,8 +444,9 @@ export async function drive({ world, assembly, planted, boot, stableBefore, io =
 
   // ac:fork-positive
   const fk = resultsOf('subagent_fork', (i) => i.description === 'ac1 fork probe')
+  const forkPositive = judgeForkPositive(fk, assembly.DONE.forkSaw)
   const forkSawToken = forkChild.some((r) => JSON.stringify(r.body ?? {}).includes(assembly.markers.TOKEN))
-  add('ac:fork-positive', fk.length === 1 && !fk[0].isError && fk[0].text.includes(assembly.DONE.forkSaw) && forkSawToken && ranLines('subagent_fork').length === 1 && allowedFor('subagent_fork').length === 1 ? 'PASS' : 'FAIL', {
+  add('ac:fork-positive', forkPositive !== null && forkSawToken && ranLines('subagent_fork').length === 1 && allowedFor('subagent_fork').length === 1 ? 'PASS' : 'FAIL', {
     readBack: heads(fk), forkChildRequestCarriedToken: forkSawToken,
     ranWitness: ranLines('subagent_fork').map((l) => l.slice(0, 200)),
     humanAllow: allowedFor('subagent_fork').map((r) => r.requestId),

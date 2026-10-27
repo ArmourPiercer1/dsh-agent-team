@@ -1,0 +1,21 @@
+{
+  "schema": "u7-ac1/fork-positive-pass-override/1",
+  "sourceRecord": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/c2-verdicts-boot8.json",
+  "case": "ac:fork-positive",
+  "rawVerdict": "FAIL",
+  "regradedVerdict": "PASS",
+  "rationale": {
+    "defect": "The judge required the first readBack entry to be the positive result, but an earlier unknown-tool error from a different model prompt preceded the actual fork result in the same world.",
+    "correction": "Search readBack entries in order for the first non-error result containing the expected fork token; any such result qualifies, independent of earlier error entries."
+  },
+  "evidence": {
+    "ranWitness": "[dsh-agent-team] u7f-agent-control: agent-control-subagent_fork RAN correlation=plane-ac:mvr80i3g9byy-4",
+    "tokenInSecondEntry": "[{\"type\":\"text\",\"text\":\"U7AC1_FORK_SAW_TOKEN\"}]",
+    "humanAllow": "ctrl-13g5zi31j7w8x00mddsrh0no",
+    "forkChildRequestCarriedToken": true
+  },
+  "ledgerBasis": [
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/fork-regraded-boot8.json",
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/c2-verdicts-boot8.json"
+  ]
+}

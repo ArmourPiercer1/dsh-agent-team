@@ -26,7 +26,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
-import { LIVE_IO, resolveDriveIo } from '../../../dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs'
+import { LIVE_IO, judgeForkPositive, resolveDriveIo } from '../../../dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs'
 
 const REALM = 'u7ac1-c1-realm'
 const INSTANCE = 'u7ac1-instance'
@@ -136,6 +136,19 @@ describe('AC-1 C1 port — the public subagents/llm faces, Tier A forced at the 
     expect(resolveDriveIo(override).fetchJsonRetry).toBe('override')
     expect(resolveDriveIo({}, { ...LIVE_IO, fetchJsonRetry: 'default' }).fetchJsonRetry).toBe('default')
     expect(Object.keys(resolveDriveIo({}, LIVE_IO)).sort()).toEqual(['apiPrompt', 'authenticate', 'fetchJsonRetry', 'readFile', 'sleep', 'stableProbe'])
+  })
+
+  it('AC1-J fork-positive accepts a later non-error token result after pre-flight noise', () => {
+    const positive = { isError: false, text: '[{"type":"text","text":"U7AC1_FORK_SAW_TOKEN"}]' }
+    expect(judgeForkPositive([
+      { isError: true, text: 'Error: unknown tool "subagent_fork"' },
+      positive,
+    ], 'U7AC1_FORK_SAW_TOKEN')).toBe(positive)
+    expect(judgeForkPositive([positive], 'U7AC1_FORK_SAW_TOKEN')).toBe(positive)
+    expect(judgeForkPositive([
+      { isError: true, text: 'Error: unknown tool "subagent_fork"' },
+      { isError: false, text: '[{"type":"text","text":"other"}]' },
+    ], 'U7AC1_FORK_SAW_TOKEN')).toBeNull()
   })
 
   it('AC1-P1 listAgents rides subagents.listChildren(caller.id, signal) and projects the native shape (continuable only)', async () => {
