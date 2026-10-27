@@ -6,460 +6,629 @@
       "tool": "read",
       "familyId": "dsh.fs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr2-kernel-flow.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6fs-rerun.json",
+          "case": "fs:refusal-zero-effect"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6fs-rerun.json",
+          "case": "fs:governed-read-positive"
+        }
       }
     },
     {
       "tool": "write",
       "familyId": "dsh.fs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:refusal-zero-effect"
+        },
+        "note": "the record discloses arm=template-layer-denied: the deny held at the host TEMPLATE permission layer before the plane row dispatched — zero effect is proven (sha identity), but the governed write row's OWN refusal path was not the arm exercised live"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:write-positive"
+        }
       }
     },
     {
       "tool": "edit",
       "familyId": "dsh.fs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:edit-positive"
+        }
       }
     },
     {
       "tool": "read_image",
       "familyId": "dsh.fs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:image-lane-honest"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "so the Kernel MUST refuse the set and the row commits NOTHING",
+        "pr": "#390",
+        "source": "dev/agent-workflow/evidence/u7-9a-fs-20261026/c2/run-7.json",
+        "note": "fsm:image-lane-honest is the typed-refusal arm; no live image read was ever authorized"
       }
     },
     {
       "tool": "team_bash",
       "familyId": "dsh.process-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr3-kernel-flow.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
+          "case": "proc:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
+          "case": "proc:deny-zero-spawn"
+        }
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "proc:approve-spawn-once is FAIL in every committed u6-proc record (r2..r5); the governed shell row did spawn a real background process in the u7-4a jobs records (u74a:bg-receipt-carries-host-job-id PASS) but under the native takeover spelling `bash` (names.bash=bash, required by backgroundJobs) and graded as a jobs receipt — the record does not grade a foreground authorized spawn under this spelling, so this stays NOT_VERIFIED"
       }
     },
     {
       "tool": "pwsh",
       "familyId": "dsh.process-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-pwsh-row-c1.test.ts"
+        }
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars and a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars and a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "positive spawn DISCLOSED (pwsh absent; matrix M-07 stays NOT_VERIFIED)",
+        "pr": "#402",
+        "source": "dev/agent-workflow/evidence/u7-f-pwsh-20261026/c2/README.md"
       }
     },
     {
       "tool": "team_grep",
       "familyId": "dsh.search-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr5-kernel-flow.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-refusal-zero-effect"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-grep-live"
+        }
       }
     },
     {
       "tool": "team_glob",
       "familyId": "dsh.search-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr5-kernel-flow.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-glob-live"
+        }
       }
     },
     {
       "tool": "team_skill",
       "familyId": "dsh.inspect-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "the #404 C2 suite has no skill refusal case"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:skill-load"
+        }
       }
     },
     {
       "tool": "team_cordis_inspect_list",
       "familyId": "dsh.inspect-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no inspect-list refusal case; boot4 shows a pa-refused APPROVAL_DENIED witness but no case grades it"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "u7f:inspect-list is FAIL in both committed #404 records (c2-verdicts.json: transcriptHasProviders=false; boot4-record: pa-refused APPROVAL_DENIED) — PR #404 merged with overall=FAIL"
       }
     },
     {
       "tool": "team_cordis_inspect_query",
       "familyId": "dsh.inspect-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "u7f:refusal-zero-effect is FAIL in the final #404 record (c2-verdicts.json, transcriptHasRefusal=false) and PASS only in the earlier boot4-record — the two committed records disagree, so this is not PROVEN"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "the #404 C2 suite has no authorized inspect-query positive case; u7f:approval-leg (the authorized leg) is FAIL with pendingSeenNonEmpty=0"
       }
     },
     {
       "tool": "subagent",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades it REFUSED, not PASS"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)",
+        "pr": "#406",
+        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json"
       }
     },
     {
       "tool": "subagent_fork",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live subagent_fork case in the #406 C2 suite"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live subagent_fork case in the #406 C2 suite"
       }
     },
     {
       "tool": "send_message",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live send_message case in the #406 C2 suite"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live send_message case in the #406 C2 suite"
       }
     },
     {
       "tool": "interrupt_agent",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:interrupt-foreign-zero"
+        }
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no authorized interrupt_agent case in the #406 C2 suite"
       }
     },
     {
       "tool": "list_agents",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no list_agents refusal case in the #406 C2 suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
+        "pr": "#406",
+        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+        "note": "ac:enumerate-governed: the governed approval walk RAN and settled once; the port leg answered typed (record verdict REFUSED)"
       }
     },
     {
       "tool": "list_subagent_models",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live list_subagent_models case in the #406 C2 suite"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live list_subagent_models case in the #406 C2 suite"
       }
     },
     {
       "tool": "workflow",
       "familyId": "dsh.agent-control-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live workflow case in the #406 C2 suite"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no live workflow case in the #406 C2 suite"
       }
     },
     {
       "tool": "ask_user_question",
       "familyId": "dsh.ui-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-ui-c1.test.ts"
+        }
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "no trusted production mount injects a UI port (production `backends` are `{jobs?, backgroundJobs?}` only)",
+        "pr": "#405",
+        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/PR-BODY.md"
       }
     },
     {
       "tool": "present",
       "familyId": "dsh.ui-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-ui-c1.test.ts"
+        }
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "DISCLOSED",
+        "reason": "the present publication face exists on no host ctx",
+        "pr": "#405",
+        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/c2/C2-VERDICTS.md"
       }
     },
     {
       "tool": "job_output",
       "familyId": "dsh.jobs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:planted-unattributed"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:ring-bytes-via-job-output-wait"
+        }
       }
     },
     {
       "tool": "job_list",
       "familyId": "dsh.jobs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no job_list refusal case in the u7-4a suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:list-shows-owner"
+        }
       }
     },
     {
       "tool": "job_kill",
       "familyId": "dsh.jobs-family",
       "L1-definition": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output only"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "skeleton row — backfill pending"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:kill-live-requested"
+        }
       }
     }
   ]
