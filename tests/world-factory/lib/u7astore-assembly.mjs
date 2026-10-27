@@ -398,10 +398,20 @@ export function judgeU7AStore(f) {
   } else {
     V.push(['ast:create-goal-positive', 'FAIL', { createHead, goalRecs: goalRecs.length, rereadOk, reread, writes: disk.writes, controlRows: createRow }])
   }
+  // get_goal runs BEFORE the edit, so the model must have seen the ORIGINAL
+  // claim, revision 1 — the durable fact create_goal committed — through a
+  // settled Control ask (the read rides the same PA chain as the mutators).
   const getHead = resultOf('leader', 'get_goal')
-  V.push(['ast:get-goal-readback', typeof getHead === 'string' && getHead.includes(f.claims.goal) && !isRefusal(getHead) ? 'PASS' : (isRefusal(getHead) ? 'REFUSED' : 'FAIL'), {
+  const getRow = controlRows.filter((r) => /get_goal/.test(`${r.toolName} ${r.summary}`))
+  const getSettled = getRow.some((r) => r.status === 'settled')
+  let getParsed = null
+  try { getParsed = JSON.parse(String(getHead ?? '')) } catch { getParsed = null }
+  const readBack = getParsed?.goal?.objective === f.claims.goal && getParsed?.goal?.revision === 1 && getParsed?.goal?.goal_id === goalRec?.goal?.goalId
+  V.push(['ast:get-goal-readback', readBack && getSettled && !isRefusal(getHead) ? 'PASS' : (isRefusal(getHead) ? 'REFUSED' : 'FAIL'), {
     toolResultHead: String(getHead ?? '').slice(0, 400),
-    law: 'the governed READ row returned the durable goal to the model (one bounded snapshot of the caller scope)',
+    controlRows: getRow,
+    readBackMatchesDiskGoalId: readBack,
+    law: 'the governed READ row (tool-invoke + meta arms, no mutation kind) walked a durable Control ask settled once by the human seam and returned the durable goal the store committed (goal_id equal to the disk record, revision 1, the create claim)',
   }])
   const todoRecs = disk.records.filter((r) => Array.isArray(r.todos) && r.todos.some((t) => t.content === f.claims.todo))
   const todoHead = resultOf('worker', 'todo_write')

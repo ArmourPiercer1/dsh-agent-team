@@ -508,3 +508,59 @@ describe('u7as O — every row outcome fits the plane presentation face (closed 
     expect(outcomes.filter((o) => o.text.startsWith('refused: ')).length).toBeGreaterThanOrEqual(3)
   })
 })
+
+/**
+ * The C1/live gap that hid the get_goal denial: the C1 stand-in control leg
+ * approved ANY ask, while the PRODUCTION bridge
+ * (operation-permission/pa-control-bridge.ts:358-361, protected center)
+ * denies an ask whose effect set names no tool-invoke tool — BEFORE any
+ * durable Control row. This leg drives every row of the family through a
+ * faithful model of exactly that shape requirement.
+ */
+const bridgeShapeLeg = (seen: Array<{ tool: string, ok: boolean }>) => async (input: { request: { requestedEffects: { effects: Array<{ kind: string, toolName?: string }> } } }) => {
+  const toolInvoke = input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')
+  const toolName = toolInvoke?.toolName
+  if (typeof toolName !== 'string' || toolName.length === 0) {
+    seen.push({ tool: 'NO-TOOL-INVOKE', ok: false })
+    return { decision: 'deny', detail: 'the effect set names no tool-invoke tool — the guard scope would carry no tool identity' }
+  }
+  seen.push({ tool: toolName, ok: true })
+  return approvingControlLeg()(input as never)
+}
+
+describe('u7as G — every row meets the production bridge shape (tool-invoke names the row)', () => {
+  it('G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back', async () => {
+    const seen: Array<{ tool: string, ok: boolean }> = []
+    const built = await plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 }, teamSessionId: 'u7as-root', controlLeg: bridgeShapeLeg(seen),
+      permissionPolicy: POLICY_ASK, realmId: REALM, templateId: 'u7as-tpl', role: 'member', instanceId: 'u7as-inst',
+      onObserve: () => {}, plane: { agentStateEnabled: true },
+    }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean } } }
+    expect(built.ok).toBe(true)
+    const humans = new Set(['alice'])
+    const agent = { id: 'alice', session: { snapshotEvents: () => [{ type: 'turn/start' }, { type: 'user/message', data: { source: { kind: 'user' } } }] } }
+    built.value.mount({ get: (n: string) => (n === 'agents' ? { get: (id: string) => (humans.has(id) ? agent : undefined), roots: () => [agent] } : n === 'sessionProjections' ? { stateOf: () => ({ openTurnStartSeq: 0 }) } : undefined), tools: { register: () => () => {} } })
+    const rows: Record<string, Row> = {}
+    for (const d of built.value.definitions) rows[d.name] = d
+    await reopen().seedPlanMode('agent:alice', true)
+    const g = JSON.parse((await rows.create_goal!.execute({ objective: 'bridge-shape' }, exec('alice'))).text).goal
+    const read = await rows.get_goal!.execute({}, exec('alice'))
+    expect(codeOf(read)).toBe('ACCEPTED')
+    expect(JSON.parse(read.text).goal.objective).toBe('bridge-shape')
+    await rows.update_goal!.execute({ goal_id: g.goal_id, revision: 1, action: 'edit', objective: 'e' }, exec('alice'))
+    await rows.todo_write!.execute({ todos: [{ content: 't', status: 'pending' }] }, exec('alice'))
+    await rows.exit_plan_mode!.execute({ plan: '# p' }, exec('alice'))
+    expect(seen).toEqual([
+      { tool: 'create_goal', ok: true }, { tool: 'get_goal', ok: true }, { tool: 'update_goal', ok: true },
+      { tool: 'todo_write', ok: true }, { tool: 'exit_plan_mode', ok: true },
+    ])
+  })
+
+  it('G2 MUTATION CONTROL: a get_goal set WITHOUT its tool-invoke arm is denied by the bridge-shape leg (the live boot-1..3 failure, reproduced at C1)', async () => {
+    const seen: Array<{ tool: string, ok: boolean }> = []
+    const leg = bridgeShapeLeg(seen)
+    const without = await leg({ request: { requestedEffects: { effects: [{ kind: 'meta' }] } } })
+    expect(without).toMatchObject({ decision: 'deny' })
+    expect(seen).toEqual([{ tool: 'NO-TOOL-INVOKE', ok: false }])
+  })
+})

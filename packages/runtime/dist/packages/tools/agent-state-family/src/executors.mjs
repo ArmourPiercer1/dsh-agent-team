@@ -22,9 +22,11 @@
  *
  * READ vs MUTATION (effect law (a), visible in BOTH the contribution's
  * declaration and every per-call PA request):
- *  - `get_goal` is a READ: its requested set is the metadata `meta` arm of
- *    the calling agent's goal view ONLY — no mutation-bearing arm is ever
- *    requested, and the row performs exactly one bounded store read.
+ *  - `get_goal` is a READ: its requested set is its own `tool-invoke` arm
+ *    (the guard-scope tool identity the production PA bridge requires of
+ *    every ask — the fs read / read_image / inspect-list row shape) + the
+ *    metadata `meta` arm of the calling agent's goal view. No mutation kind
+ *    is ever requested, and the row performs exactly one bounded store read.
  *  - the four mutation tools request their own `tool-invoke` arm (the law
  *    vocabulary's honest carrier of a session-state mutation — the closed
  *    resource vocabulary gives `metadata` the `meta` right only, so a
@@ -206,7 +208,7 @@ export function buildAgentStateRowDefinitions({
     toolName: 'get_goal',
     exec,
     parse: () => parseGetGoalArgs(raw),
-    effectsFor: (scope) => [metaArm(scope, 'goal')],
+    effectsFor: (scope) => [{ kind: 'tool-invoke', toolName: 'get_goal', resource: null }, metaArm(scope, 'goal')],
     missingAgent: ['GOAL_TOOL_AGENT_REQUIRED', 'goal tools require a calling agent'],
     body: async ({ scope }) => {
       const snapshot = await store.readGoal(scope) // the ONE bounded read
