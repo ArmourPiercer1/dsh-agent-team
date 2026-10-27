@@ -1,0 +1,595 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u7-astore-ast3-2026-10-27T16-14-10-420Z",
+  "suite": "u7-astore",
+  "startedAt": "2026-10-27T16:14:10.522Z",
+  "selectedCases": [
+    "ast:mounted",
+    "ast:store-under-world-home",
+    "ast:create-goal-positive",
+    "ast:get-goal-readback",
+    "ast:update-goal-positive",
+    "ast:exit-plan-mode-positive",
+    "ast:todo-write-positive",
+    "ast:cross-scope-zero-effect",
+    "ast:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "61a49e3624df600cc5abf78d23db6af5096f607c",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5ast3-20261027T16-14-10Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+    "agentStateStore": {
+      "base": "DSH_HOME/team-state/agent-state/<realmId>",
+      "baseRelativeToHome": "team-state/agent-state/u7as-realm-u5ast3-20261027t16-14-10z",
+      "realmId": "u7as-realm-u5ast3-20261027t16-14-10z",
+      "homeUnderTestsHomes": true,
+      "homeSource": "the host process DSH_HOME (the World home) — read by the family descriptor at build; no injected port",
+      "bootBudgetDeclared": 3,
+      "plantedPlanModeScope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z"
+    }
+  },
+  "cases": [
+    {
+      "id": "ast:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "placementFeed": [
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z"
+      ],
+      "storeWitness": [
+        "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)",
+        "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)"
+      ],
+      "law": "agentStateEnabled=true + NO injected port: the descriptor built the PRODUCTION fs store from the host DSH_HOME; the five rows sit on the placement feed"
+    },
+    {
+      "id": "ast:store-under-world-home",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "homeUnderTestsHomes": true,
+      "storeBase": "team-state/agent-state/u7as-realm-u5ast3-20261027t16-14-10z",
+      "rootExists": true,
+      "realpathUnderHome": true,
+      "errors": []
+    },
+    {
+      "id": "ast:create-goal-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "diskRecord": {
+        "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+        "goal": {
+          "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+          "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+          "phase": "active",
+          "revision": 2,
+          "roundsStarted": 0,
+          "maxGoalRounds": 3,
+          "armed": true
+        },
+        "nlink": 1,
+        "file": "9f5b3bf1d0a51a70c652fedfbafae638043c1b95f3c1dfb84d218b7027992c13.json"
+      },
+      "writesAudit": [
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:1"
+        }
+      ],
+      "freshStoreReread": {
+        "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+        "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+        "phase": "active",
+        "revision": 2,
+        "roundsStarted": 0,
+        "maxGoalRounds": 3,
+        "armed": true
+      },
+      "controlRows": [
+        {
+          "requestId": "ctrl-09q5pfp1gmej40164zspz0m3",
+          "toolName": "create_goal",
+          "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-leader:sha256:3f041b3c9997b7c5dd77eea8eeacd862e5c2869ed0d21ff4855ce95c2ead",
+          "status": "settled"
+        }
+      ],
+      "modelSaw": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T16:14:15.039Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5ast3-20261027t16-14-10z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}",
+      "law": "durable PA ask settled ONCE by the human seam → grant consumed → the production store committed the goal (temp+fsync+rename); read back from disk by the runner AND through a fresh store instance"
+    },
+    {
+      "id": "ast:get-goal-readback",
+      "verdict": "REFUSED",
+      "at": "2026-10-27T16:14:23.223Z",
+      "toolResultHead": "refused: APPROVAL_DENIED — durable Control request uncreated answered deny",
+      "law": "the governed READ row returned the durable goal to the model (one bounded snapshot of the caller scope)"
+    },
+    {
+      "id": "ast:todo-write-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "diskRecord": {
+        "key": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+        "todos": [
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z",
+            "status": "in_progress"
+          },
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z second",
+            "status": "pending"
+          }
+        ],
+        "nlink": 1
+      },
+      "writesAudit": [
+        {
+          "op": "todos/apply",
+          "scope": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+          "key": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6/todos",
+          "applyId": "plane-agent-state:950079eb-b36d-46a3-8665-a860d71471b3:1"
+        }
+      ],
+      "modelSaw": "{\"todos\":[{\"content\":\"U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z\",\"status\":\"in_progress\"},{\"content\":\"U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z second\",\"status\":\"pending\"}],\"counts\":{\"pending\":1,\"inProgress\":1,\"completed\":0}}",
+      "law": "member ask settled by the human seam → the production store committed the whole-list replacement in the MEMBER scope (distinct from the leader scope)"
+    },
+    {
+      "id": "ast:update-goal-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "diskRecord": {
+        "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+        "goal": {
+          "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+          "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+          "phase": "active",
+          "revision": 2,
+          "roundsStarted": 0,
+          "maxGoalRounds": 3,
+          "armed": true
+        }
+      },
+      "writesAudit": [
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:1"
+        },
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:3"
+        }
+      ],
+      "modelSaw": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T16:14:15.039Z-1\",\"objective\":\"U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z\",\"phase\":\"active\",\"revision\":2,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}",
+      "law": "direct-human edit at the exact revision → the store CAS applied → revision 1→2 durably (fold law), read from disk"
+    },
+    {
+      "id": "ast:exit-plan-mode-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "diskRecord": {
+        "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+        "planMode": {
+          "active": false,
+          "pendingIntents": [
+            {
+              "plan": "# U7AS_PLAN_u5ast3-20261027t16-14-10z\n\n- the u7as live plan",
+              "appliedBy": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:4"
+            }
+          ]
+        }
+      },
+      "writesAudit": [
+        {
+          "op": "plan-mode/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/plan-mode",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:4"
+        }
+      ],
+      "modelSaw": "{\"exited\":true,\"planMode\":{\"active\":false}}",
+      "plantDisclosed": "planMode.active=true was PLANTED on disk pre-boot by the runner through the store seed path (the family has no plan-mode ENTRY tool); this case proves the governed exit row commits durably on the real host, not that a live session entered plan mode"
+    },
+    {
+      "id": "ast:cross-scope-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "toolResultHead": "refused: GOAL_NOT_FOUND — no current goal",
+      "namedForeignRef": {
+        "goal_id": "goal-2026-10-27T16:14:15.039Z-1",
+        "revision": 1,
+        "action": "complete"
+      },
+      "leaderRecordAfter": {
+        "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+        "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+        "phase": "active",
+        "revision": 2,
+        "roundsStarted": 0,
+        "maxGoalRounds": 3,
+        "armed": true
+      },
+      "memberGoalWrites": 0,
+      "memberOwnGetGoal": "refused: APPROVAL_DENIED — durable Control request uncreated answered deny",
+      "law": "the call named the leader goal_id+revision; the scope is the CALLING agent, so it met the member scope and answered typed — the leader record is still active rev 1 on disk and the write audit holds no goal entry for the member"
+    },
+    {
+      "id": "ast:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.223Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:14:23.323Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/host-start-budget.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T16:14:10.583Z",
+        "runId": "u5-u7-astore-ast3-2026-10-27T16-14-10-420Z",
+        "suite": "u7-astore",
+        "world": "u5ast3-20261027T16-14-10Z",
+        "phase": "u7as-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u7as-boot1",
+      "world": "u5ast3-20261027T16-14-10Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/dev/agent-workflow/evidence/u7-agentstate-store-20261027/c2/logs/u5ast3-20261027T16-14-10Z/instance-port3181.log"
+    }
+  ],
+  "u7asCreate": {
+    "status": 200,
+    "ok": true,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"u6fs-hkj9zi3sms\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u7as-team-u5ast3-20261027t16-14-10z\",\"blueprint\":{\"blueprintId\":\"team.u7as.main\",\"revision\":\"1\",\"contentHash\":\"sha256:a762f2487af9be451980471540d2d5cc5d3c6887eb996fa1cef725c804febde9\"},\"createdAt\":\"2026-10-27T16:14:13.552Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/tests/deepseek-harness-test-use\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"sessi"
+  },
+  "u7asGoalPrompt": {
+    "status": 200
+  },
+  "u7asDigest": {
+    "lanes": {
+      "goalTurn": true,
+      "worker": true,
+      "leader": true
+    },
+    "teamSessionId": "session-u7as-team-u5ast3-20261027t16-14-10z",
+    "exchanges": [
+      {
+        "lane": "leader",
+        "name": "create_goal",
+        "input": {
+          "objective": "U7AS_GOAL_CLAIM_u5ast3-20261027t16-14-10z",
+          "max_goal_rounds": 3
+        },
+        "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T16:14:15.039Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5ast3-20261027t16-14-10z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+      },
+      {
+        "lane": "leader",
+        "name": "get_goal",
+        "input": {},
+        "head": "refused: APPROVAL_DENIED — durable Control request uncreated answered deny"
+      },
+      {
+        "lane": "leader",
+        "name": "update_goal",
+        "input": {
+          "goal_id": "goal-2026-10-27T16:14:15.039Z-1",
+          "revision": 1,
+          "action": "edit",
+          "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z"
+        },
+        "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T16:14:15.039Z-1\",\"objective\":\"U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z\",\"phase\":\"active\",\"revision\":2,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+      },
+      {
+        "lane": "leader",
+        "name": "exit_plan_mode",
+        "input": {
+          "plan": "# U7AS_PLAN_u5ast3-20261027t16-14-10z\n\n- the u7as live plan"
+        },
+        "head": "{\"exited\":true,\"planMode\":{\"active\":false}}"
+      },
+      {
+        "lane": "worker",
+        "name": "todo_write",
+        "input": {
+          "todos": [
+            {
+              "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z",
+              "status": "in_progress"
+            },
+            {
+              "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z second",
+              "status": "pending"
+            }
+          ]
+        },
+        "head": "{\"todos\":[{\"content\":\"U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z\",\"status\":\"in_progress\"},{\"content\":\"U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z second\",\"status\":\"pending\"}],\"counts\":{\"pending\":1,\"inProgress\":1,\"completed\":0}}"
+      },
+      {
+        "lane": "worker",
+        "name": "update_goal",
+        "input": {
+          "goal_id": "goal-2026-10-27T16:14:15.039Z-1",
+          "revision": 1,
+          "action": "complete"
+        },
+        "head": "refused: GOAL_NOT_FOUND — no current goal"
+      },
+      {
+        "lane": "worker",
+        "name": "get_goal",
+        "input": {},
+        "head": "refused: APPROVAL_DENIED — durable Control request uncreated answered deny"
+      }
+    ],
+    "controlRows": [
+      {
+        "requestId": "ctrl-09q5pfp1gmej40164zspz0m3",
+        "toolName": "create_goal",
+        "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-leader:sha256:3f041b3c9997b7c5dd77eea8eeacd862e5c2869ed0d21ff4855ce95c2ead",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-1visf4u0p63vjv0v3s1xk0kv",
+        "toolName": "update_goal",
+        "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-leader:sha256:8d5a41274316c1da2ad8a5a4732a4f66c856eb0ee79102b07de88a28bb7c",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-1vudg951l7tcg61lsvv1714h",
+        "toolName": "exit_plan_mode",
+        "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-leader:sha256:01fe3c758fd9deb7ed96454306a1929c60bfe46624190a297e3b24c9b788",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-175bvi71yr2rl80kv6yxx1uz",
+        "toolName": "todo_write",
+        "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-1lsdrsz0is3f:sha256:7eb8570d25f5c69accc6be45c7b7f9b67d97b69008f59a99adab63",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-07ilkm6046qagn1rzfaeg1db",
+        "toolName": "update_goal",
+        "summary": "PA ask case=tadm:session-u7as-team-u5ast3-20261027t16-14-10z:inst-1lsdrsz0is3f:sha256:93345a965272a833a4ac64ca0119ce4f7455f1e3a34272b7caff53",
+        "status": "settled"
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-09q5pfp1gmej40164zspz0m3",
+        "toolName": "create_goal",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-1visf4u0p63vjv0v3s1xk0kv",
+        "toolName": "update_goal",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-1vudg951l7tcg61lsvv1714h",
+        "toolName": "exit_plan_mode",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-175bvi71yr2rl80kv6yxx1uz",
+        "toolName": "todo_write",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-07ilkm6046qagn1rzfaeg1db",
+        "toolName": "update_goal",
+        "status": 200,
+        "ok": true
+      }
+    ],
+    "approverErrors": [],
+    "disk": {
+      "base": "team-state/agent-state/u7as-realm-u5ast3-20261027t16-14-10z",
+      "rootExists": true,
+      "realUnderHome": true,
+      "records": [
+        {
+          "file": "4383693ba7c5646d622db88ff9f66aa17fa64ae2a5772b64dcaba11b24beacae.json",
+          "nlink": 1,
+          "key": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+          "goal": null,
+          "todos": [
+            {
+              "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z",
+              "status": "in_progress"
+            },
+            {
+              "content": "U7AS_TODO_CLAIM_u5ast3-20261027t16-14-10z second",
+              "status": "pending"
+            }
+          ],
+          "planMode": {
+            "active": false,
+            "pendingIntents": []
+          }
+        },
+        {
+          "file": "9f5b3bf1d0a51a70c652fedfbafae638043c1b95f3c1dfb84d218b7027992c13.json",
+          "nlink": 1,
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "goal": {
+            "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+            "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+            "phase": "active",
+            "revision": 2,
+            "roundsStarted": 0,
+            "maxGoalRounds": 3,
+            "armed": true
+          },
+          "todos": null,
+          "planMode": {
+            "active": false,
+            "pendingIntents": [
+              {
+                "plan": "# U7AS_PLAN_u5ast3-20261027t16-14-10z\n\n- the u7as live plan",
+                "appliedBy": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:4"
+              }
+            ]
+          }
+        }
+      ],
+      "writes": [
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:1"
+        },
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:3"
+        },
+        {
+          "op": "plan-mode/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/plan-mode",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:4"
+        },
+        {
+          "op": "todos/apply",
+          "scope": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+          "key": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6/todos",
+          "applyId": "plane-agent-state:950079eb-b36d-46a3-8665-a860d71471b3:1"
+        }
+      ],
+      "attempts": [
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:1",
+          "outcome": "applied"
+        },
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/goal",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:3",
+          "outcome": "applied"
+        },
+        {
+          "op": "plan-mode/apply",
+          "scope": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+          "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z/plan-mode",
+          "applyId": "plane-agent-state:10a2b112-4394-4f8e-b88c-92f9f3ff8f6f:4",
+          "outcome": "applied"
+        },
+        {
+          "op": "todos/apply",
+          "scope": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+          "key": "agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6/todos",
+          "applyId": "plane-agent-state:950079eb-b36d-46a3-8665-a860d71471b3:1",
+          "outcome": "applied"
+        }
+      ],
+      "errors": []
+    },
+    "reread": {
+      "key": "agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+      "goal": {
+        "goalId": "goal-2026-10-27T16:14:15.039Z-1",
+        "objective": "U7AS_GOAL_EDITED_u5ast3-20261027t16-14-10z",
+        "phase": "active",
+        "revision": 2,
+        "roundsStarted": 0,
+        "maxGoalRounds": 3,
+        "armed": true
+      }
+    },
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z"
+    ],
+    "storeLine": [
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)",
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)"
+    ],
+    "logHits": [
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z",
+      "[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-u5ast3-20261027t16-14-10z goalId=goal-2026-10-27T16:14:15.039Z-1 revision=1 phase=active",
+      "[dsh-agent-team] a5-agent-state: get_goal pa-refused code=APPROVAL_DENIED scope=agent:session-u7as-team-u5ast3-20261027t16-14-10z (zero state access)",
+      "[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:session-u7as-team-u5ast3-20261027t16-14-10z goalId=goal-2026-10-27T16:14:15.039Z-1 revision=2 phase=active",
+      "[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:session-u7as-team-u5ast3-20261027t16-14-10z",
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast3-20261027t16-14-10z (durable root under DSH_HOME/team-state/agent-state)",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast3-20261027t16-14-10z",
+      "[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6 count=2",
+      "[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6",
+      "[dsh-agent-team] a5-agent-state: get_goal pa-refused code=APPROVAL_DENIED scope=agent:session-team-child-e64bd253d894d35bb98732e7d189c5e6 (zero state access)"
+    ]
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "REFUSED",
+  "finishedAt": "2026-10-27T16:14:23.323Z"
+}
