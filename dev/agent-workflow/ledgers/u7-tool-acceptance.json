@@ -195,12 +195,20 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-pwsh/run-record.json",
+          "case": "pwsh:mounted"
+        },
+        "note": "witness = the placement-feed row names pwsh AND a model-issued pwsh call was dispatched into the governed stack; the boot-session model surface lists native names only \u2014 the record's case carries that disclosure verbatim"
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-pwsh/run-record.json",
+          "case": "pwsh:deny-zero-effect"
+        },
+        "note": "arm=kernel-admission-denial-in-tool-result (u6prc10 witness class): the refusal ran over the row-declared exec-fingerprint effect set inside the tool_result, before any backend/spawn; zero effect by absent marker + zero RAN lines"
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -557,12 +565,19 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-ui/run-record.json",
+          "case": "ui:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-ui/run-record.json",
+          "case": "ui:ask-live-refused"
+        },
+        "note": "arm=plane-row-refused: governed-ask default-deny refusal in the host log, zero port calls, zero fabricated answers, zero governed-ask RAN"
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -581,12 +596,19 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-ui/run-record.json",
+          "case": "ui:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-ui/run-record.json",
+          "case": "ui:present-outside-refused"
+        },
+        "note": "arm=plane-row-refused: governed-present anchor-refusal code=locator-rejected BEFORE the port check and the PA edge \u2014 OUTSIDE canary rode no log line/tool result + byte identity of the outside file; ui:present-inroot-zero-effect (port-refusal, sha-identical target) PASSes in the same record"
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -693,16 +715,25 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-web/run-record.json",
+          "case": "web:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-web/run-record.json",
+          "case": "web:deny-leg-zero-wire"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-web/run-record.json",
+          "case": "web:fetch-positive"
+        }
       }
     },
     {
@@ -715,12 +746,18 @@
         }
       },
       "L2-mounted": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-web/run-record.json",
+          "case": "web:mounted"
+        }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-family-records-20261027/u7-f-web/run-record.json",
+          "case": "web:search-no-provider"
+        }
       },
       "L4-positive": {
         "status": "DISCLOSED",
