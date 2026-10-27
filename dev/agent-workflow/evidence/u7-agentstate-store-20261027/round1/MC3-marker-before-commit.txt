@@ -1,0 +1,7 @@
+     × B2 an oversized WRITE refuses typed and writes nothing 22ms
+     × C1 a crash mid-write leaves the PREVIOUS record intact and readable; no torn record; no write audit entry; applyId reusable 30ms
+     × M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later 32ms
+     × M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id) 25ms
+     × N1 the scope past the bound refuses typed (AGENT_STATE_STORE_SCOPE_LIMIT) with ZERO write; existing scopes stay writable; the default bound is 1024 157ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  5 failed | 35 passed (40)

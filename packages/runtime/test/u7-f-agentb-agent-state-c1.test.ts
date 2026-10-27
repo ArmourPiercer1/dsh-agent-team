@@ -163,10 +163,20 @@ describe('u7fb M — the mount law', () => {
     expect(built.value.centerKernel.familyIds).toContain('dsh.agent-state-family')
   })
 
-  it('M2 enabled WITHOUT the store port: the whole assembly refuses (PLANE_AGENT_STATE_STORE_MISSING) — an enabled family with no durable face never mounts', async () => {
-    const built = await mount({ agentStateEnabled: true })
-    expect(built.ok).toBe(false)
-    expect(built.code).toBe('PLANE_AGENT_STATE_STORE_MISSING')
+  it('M2 enabled WITHOUT the store port and WITHOUT a durable home: the whole assembly refuses (PLANE_AGENT_STATE_STORE_MISSING) — an enabled family with no durable face never mounts', async () => {
+    // The production store resolves its home from DSH_HOME; with none, the
+    // existing typed refusal stands (never an invented default location).
+    // The production-store arms live in u7-agentstate-fs-store-c1.test.ts.
+    const env = (process as unknown as { env: Record<string, string | undefined> }).env
+    const saved = env.DSH_HOME
+    delete env.DSH_HOME
+    try {
+      const built = await mount({ agentStateEnabled: true })
+      expect(built.ok).toBe(false)
+      expect(built.code).toBe('PLANE_AGENT_STATE_STORE_MISSING')
+    } finally {
+      if (saved !== undefined) env.DSH_HOME = saved
+    }
   })
 })
 
@@ -254,14 +264,14 @@ describe('u7fb P — authorized positives (ask-default template, real grant, dur
 })
 
 describe('u7fb E — the read/mutation split is REAL in the per-call PA request', () => {
-  it('E1 every call requests EXACTLY the declared arms: get_goal = meta only (no mutation arm); mutators = own tool-invoke + meta', async () => {
+  it('E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind', async () => {
     const store = createRecordingStateStore()
     const seen: { tool: string; arms: string[] }[] = []
     const tokenFor = (a: string): string => (a === 'tool-invoke' ? 'tool-invoke' : 'meta')
     const sorted = (xs: string[]): string[] => [...xs].sort()
     const leg = async (input: { request: { requestedEffects: { effects: { kind: string; toolName?: string }[] } } }) => {
       seen.push({
-        tool: String(input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'get_goal'),
+        tool: String(input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'NO-TOOL-INVOKE'),
         arms: sorted(input.request.requestedEffects.effects.map((e) => e.kind)),
       })
       return approvingControlLeg()(input as never)
@@ -281,8 +291,12 @@ describe('u7fb E — the read/mutation split is REAL in the per-call PA request'
       { tool: 'todo_write', arms: sorted(AGENT_STATE_EFFECT_ARMS.todo_write.map(tokenFor)) },
       { tool: 'exit_plan_mode', arms: sorted(AGENT_STATE_EFFECT_ARMS.exit_plan_mode.map(tokenFor)) },
     ])
-    // The mutation-bearing tool-invoke arm NEVER appears in the read's set:
-    expect(seen[0]?.arms).not.toContain('tool-invoke')
+    // The READ law, pinned explicitly: get_goal's requested set carries NO
+    // mutation kind (write is the only mutation kind in EFFECT_KINDS that a
+    // state row could ever request; tool-invoke is the guard-scope identity
+    // every governed read row carries — fs read / read_image / inspect list).
+    expect(seen[0]?.arms).toEqual(['meta', 'tool-invoke'])
+    expect(seen[0]?.arms.filter((k) => k === 'write' || k === 'list' || k === 'connect' || k === 'read')).toEqual([])
   })
 
   it('E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms', async () => {
@@ -312,7 +326,7 @@ describe('u7fb E — the read/mutation split is REAL in the per-call PA request'
     const seen: { tool: string; arms: string[] }[] = []
     const leg = async (input: { request: { requestedEffects: { effects: { kind: string; toolName?: string }[] } } }) => {
       seen.push({
-        tool: String(input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'get_goal'),
+        tool: String(input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'NO-TOOL-INVOKE'),
         arms: sorted(input.request.requestedEffects.effects.map((e) => e.kind)),
       })
       return approvingControlLeg()(input as never)

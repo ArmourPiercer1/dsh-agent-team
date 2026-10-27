@@ -1,0 +1,871 @@
+/**
+ * U7 agent-state PRODUCTION STORE C1 — the same five governed rows as
+ * u7-f-agentb-agent-state-c1.test.ts, over the REAL plane mount and the real
+ * Kernel PA edge, but with NO injected port: the family descriptor builds
+ * the PRODUCTION durable store (`fs-state-store.mjs`) under the resolved
+ * harness home, `<DSH_HOME>/team-state/agent-state/<realmId>/`.
+ *
+ * Every refusal leg pairs the ANSWER with a DISK fact — the durable write
+ * audit `ledger/writes.jsonl` is byte-measured before and after (growth 0),
+ * and `ledger/attempts.jsonl` shows the refused attempt. Every positive is
+ * re-read through a SECOND, fresh store instance on the same home (the
+ * simulated restart): what the model was told persisted IS on disk.
+ *
+ * Laws pinned here:
+ *  H  home guards — DSH_HOME absent / blank / relative / nonexistent / the
+ *     operator's live `.dsh` (incl. a symlink into it) → the mount refuses
+ *     PLANE_AGENT_STATE_STORE_MISSING; a symlinked store subtree escaping
+ *     the home refuses before any write.
+ *  P  positives through the real store, re-read after restart.
+ *  R  refusals keep ZERO durable write (writes.jsonl byte-identical, one
+ *     attempts line) — stale CAS, already-exists, plan-mode inactive,
+ *     cross-scope (by construction), replay (durable across restart).
+ *  S  byte-exact scoping — `a`, `a `, ` a` are three scopes, never aliases.
+ *  B  bounds — an oversized record refuses typed; corrupt/foreign-key
+ *     records fail CLOSED (typed), never "empty state".
+ *  K  hardlink + symlink law on the read path (nlink>1 refused — the #409
+ *     law, pinned here so the swap to the shared symbol is behaviour-
+ *     preserving).
+ *  C  crash atomicity — a writer that dies mid-record leaves the PREVIOUS
+ *     record intact. MUTATION CONTROL: a store whose writer skips the
+ *     temp+rename (writes the target in place) goes RED on the same check.
+ */
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { hostname, tmpdir } from 'node:os'
+const hostId = hostname()
+const bootId = (() => { try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' } })()
+import { join } from 'node:path'
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
+
+type RowName = 'todo_write' | 'create_goal' | 'get_goal' | 'update_goal' | 'exit_plan_mode'
+type RowOutcome = { text: string }
+type Row = { name: string, execute: (raw: unknown, exec?: Record<string, unknown>) => Promise<RowOutcome> }
+type Built = { ok: boolean, code?: string, message?: string, value: { definitions: readonly Row[] } }
+type Refusal = { ok: false, code: string, detail: string }
+type FsStore = {
+  name: string
+  log: { reads: unknown[], writes: unknown[], attempts: Array<{ outcome: string, code?: string }> }
+  ledgerPaths: { attempts: string, writes: string }
+  writesBytes: () => Promise<number>
+  stateOf: (scope: string) => Promise<Record<string, unknown> | null>
+  armFor: (scope: string) => Record<string, unknown>
+  readGoal: (scope: string) => Promise<Record<string, unknown> | null>
+  applyGoal: (scope: string, op: Record<string, unknown>) => Promise<{ ok: boolean, code?: string, snapshot?: Record<string, unknown> }>
+  readTodos: (scope: string) => Promise<unknown>
+  applyTodos: (scope: string, op: Record<string, unknown>) => Promise<{ ok: boolean, code?: string }>
+  readPlanMode: (scope: string) => Promise<{ active: boolean, pendingIntents: unknown[] }>
+  applyPlanModeExit: (scope: string, op: Record<string, unknown>) => Promise<{ ok: boolean, code?: string }>
+  seedPlanMode: (scope: string, active: boolean) => Promise<void>
+  seedGoal: (scope: string, goal: Record<string, unknown>) => Promise<void>
+}
+type StoreOpts = Record<string, unknown>
+type LaneModule = {
+  AGENT_STATE_NAMES: readonly RowName[]
+  STATE_STORE_SUBTREE: readonly string[]
+  MAX_SCOPE_BYTES: number
+  createFsStateStore: (input: Record<string, unknown>) => FsStore
+  createHostArmProvider: (input: { hostService: (name: string) => unknown }) => (scope: string) => Record<string, unknown>
+  resolveAgentStateHome: (opts?: { env?: Record<string, string | undefined>, realHome?: string }) => { ok: true, home: string } | Refusal
+  safeReadRecord: (path: string, limit?: number) => Promise<{ ok: true, text: string } | (Refusal & { absent?: boolean })>
+  storeRootFor: (home: string, realmId: string) => { ok: true, rootDir: string } | Refusal
+}
+type PlaneModule = { createTeamToolPlaneAssembly: (input: unknown) => Built | Promise<Built> }
+
+const lane = await (import(new URL('../../tools/agent-state-family/src/index.mjs', import.meta.url).href) as unknown as Promise<LaneModule>)
+const plane = await (import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as unknown as Promise<PlaneModule>)
+const descriptor = (await (import(new URL('../../tools/families/agent-state.mjs', import.meta.url).href) as unknown as Promise<{ familyAssembly: { build: (cap: unknown) => { refused?: { code: string, message: string }, diagnostics?: { agentStateStore: FsStore } } } }>)).familyAssembly
+
+// The package's minimal node shim (src/plugin/node-min.d.ts) types neither
+// `process.env` nor `Stats.size`; a narrow local view, not a shim edit.
+const env = (process as unknown as { env: Record<string, string | undefined> }).env
+const sizeOf = (p: string): number => (statSync(p) as unknown as { size: number }).size
+
+const REALM = 'u7as-realm'
+const POLICY_ASK = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
+
+let scratch = ''
+let home = ''
+let savedHome: string | undefined
+beforeEach(() => {
+  scratch = realpathSync(mkdtempSync(join(tmpdir(), 'u7as-')))
+  home = join(scratch, 'world-home')
+  mkdirSync(home)
+  savedHome = env.DSH_HOME
+  env.DSH_HOME = home
+})
+afterEach(() => {
+  if (savedHome === undefined) delete env.DSH_HOME
+  else env.DSH_HOME = savedHome
+  rmSync(scratch, { recursive: true, force: true })
+})
+
+const storeRoot = (): string => join(home, ...lane.STATE_STORE_SUBTREE, REALM)
+const writesPath = (): string => join(storeRoot(), 'ledger', 'writes.jsonl')
+const attemptsPath = (): string => join(storeRoot(), 'ledger', 'attempts.jsonl')
+const bytesOf = (p: string): number => (existsSync(p) ? sizeOf(p) : 0)
+const linesOf = (p: string): Array<Record<string, unknown>> => (existsSync(p) ? readFileSync(p, 'utf8').split('\n').filter((l) => l !== '').map((l) => JSON.parse(l) as Record<string, unknown>) : [])
+
+/** A fresh store over the SAME home — the simulated restart. */
+const reopen = (armProvider?: (scope: string) => Record<string, unknown>): FsStore => lane.createFsStateStore({
+  rootDir: storeRoot(), anchorDir: home, realmId: REALM, ...(armProvider === undefined ? {} : { armProvider }),
+})
+
+/**
+ * Mount through the REAL plane with NO injected port — the descriptor builds
+ * the production store. The execution-origin arm is a HOST fact; the plane's
+ * `hostService` binds only at `mount(agentCtx)`, so this C1 rides the
+ * descriptor's own production arm provider over an agentCtx stand-in that
+ * answers the host's PUBLIC `agents` / `sessionProjections` shapes (the
+ * shapes `tool-goal/src/authority.ts` reads @639ed01539).
+ */
+async function mountProduction(opts: { humanFor?: string[] } = {}): Promise<{ built: Built, rows: Record<RowName, Row> }> {
+  const built = await plane.createTeamToolPlaneAssembly({
+    dispatcherLifecycle: { inflight: () => 0 },
+    teamSessionId: 'u7as-root',
+    controlLeg: approvingControlLeg(),
+    permissionPolicy: POLICY_ASK,
+    realmId: REALM,
+    templateId: 'u7as-tpl',
+    role: 'member',
+    instanceId: 'u7as-inst',
+    onObserve: () => {},
+    plane: { agentStateEnabled: true },
+  }) as Built & { value: { mount?: (ctx: unknown) => { ok: boolean } } }
+  if (built.ok !== true) return { built, rows: {} as Record<RowName, Row> }
+  const humans = new Set(opts.humanFor ?? [])
+  const agentOf = (id: string) => ({
+    id,
+    session: {
+      id,
+      snapshotEvents: () => [
+        { type: 'turn/start' },
+        ...(humans.has(id) ? [{ type: 'user/message', data: { source: { kind: 'user' } } }] : [{ type: 'user/message', data: { source: { kind: 'agent' } } }]),
+      ],
+    },
+  })
+  const known = new Map<string, ReturnType<typeof agentOf>>()
+  const agents = {
+    get: (id: string) => { if (!known.has(id)) known.set(id, agentOf(id)); return known.get(id) },
+    roots: () => [...known.values()],
+  }
+  const services: Record<string, unknown> = {
+    agents,
+    sessionProjections: { stateOf: () => ({ openTurnStartSeq: 0 }) },
+  }
+  const mounted = (built.value as unknown as { mount: (ctx: unknown) => { ok: boolean, message?: string } }).mount({
+    get: (name: string) => services[name],
+    tools: { register: () => () => {} },
+  })
+  expect(mounted.ok, String(mounted.message ?? '')).toBe(true)
+  const rows: Record<string, Row> = {}
+  for (const d of built.value.definitions) rows[d.name] = d
+  return { built, rows: rows as Record<RowName, Row> }
+}
+const exec = (id: string): Record<string, unknown> => ({ agent: { id } })
+const codeOf = (r: RowOutcome): string => (r.text.startsWith('refused: ') ? (r.text.slice('refused: '.length).split(' \u2014 ')[0] ?? '') : 'ACCEPTED')
+
+describe('u7as H — the durable home is resolved fail-closed (no invented default)', () => {
+  it('H1 DSH_HOME absent / blank / relative / nonexistent → PLANE_AGENT_STATE_STORE_MISSING, and nothing is created anywhere', async () => {
+    for (const value of [undefined, '', '   ', 'relative/home', join(scratch, 'does-not-exist')]) {
+      if (value === undefined) delete env.DSH_HOME
+      else env.DSH_HOME = value
+      const { built } = await mountProduction()
+      expect(built.ok, `DSH_HOME=${JSON.stringify(value)}`).toBe(false)
+      expect(built.code).toBe('PLANE_AGENT_STATE_STORE_MISSING')
+    }
+    expect(existsSync(join(home, 'team-state'))).toBe(false)
+  })
+
+  it('H2 DSH_HOME naming the operator\'s live `.dsh` (or a symlink into it) is REFUSED — never written', () => {
+    const fakeOperator = join(scratch, 'operator')
+    const liveDsh = join(fakeOperator, '.dsh')
+    mkdirSync(liveDsh, { recursive: true })
+    const intoLive = join(scratch, 'innocent-looking')
+    symlinkSync(liveDsh, intoLive)
+    mkdirSync(join(liveDsh, 'nested'))
+    for (const candidate of [liveDsh, join(liveDsh, 'nested'), intoLive]) {
+      const r = lane.resolveAgentStateHome({ env: { DSH_HOME: candidate }, realHome: fakeOperator })
+      expect(r.ok, candidate).toBe(false)
+      expect((r as Refusal).code).toBe('AGENT_STATE_STORE_HOME_INVALID')
+    }
+    // a sibling `.dsh`-named dir that is NOT the operator's live home is a
+    // plain test home (the guard is the live home, not the spelling).
+    const ok = lane.resolveAgentStateHome({ env: { DSH_HOME: home }, realHome: fakeOperator })
+    expect(ok.ok).toBe(true)
+    expect(readdirSync(liveDsh)).toEqual(['nested'])
+  })
+
+  it('H3 the descriptor refuses an enabled mount whose DSH_HOME is the live `.dsh` of the real operator home', async () => {
+    // Point HOME-equivalent at a scratch operator so the real ~/.dsh is never touched.
+    const r = lane.resolveAgentStateHome({ env: { DSH_HOME: join(scratch, 'op', '.dsh') }, realHome: join(scratch, 'op') })
+    expect(r.ok).toBe(false)
+  })
+
+  it('H4 a realm id that is not one path-safe segment refuses (never sanitised into another realm)', () => {
+    for (const bad of ['', '..', '.', 'a/b', 'a\\b', '../x', ' lead']) {
+      const r = lane.storeRootFor(home, bad)
+      expect(r.ok, JSON.stringify(bad)).toBe(false)
+    }
+    expect(lane.storeRootFor(home, REALM)).toEqual({ ok: true, rootDir: storeRoot() })
+  })
+
+  it('H5 anchor law: a `team-state` component symlinked OUTSIDE the home refuses before any byte is written', async () => {
+    const elsewhere = join(scratch, 'elsewhere')
+    mkdirSync(elsewhere)
+    symlinkSync(elsewhere, join(home, 'team-state'))
+    const store = reopen(() => ({ kind: 'direct-human' }))
+    await expect(store.readGoal('agent:a')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+    expect(readdirSync(elsewhere).length === 0 || !existsSync(join(elsewhere, 'agent-state', REALM, 'scopes'))).toBe(true)
+  })
+
+  it('H6 the store root is exactly <DSH_HOME>/team-state/agent-state/<realmId> (the built port is the fs store)', () => {
+    const built = descriptor.build({
+      realmId: REALM, injected: {}, hostService: () => undefined, logBackend: () => () => {},
+      permissionPolicy: POLICY_ASK, decide: () => ({ kind: 'allow' }), pa: async () => ({ kind: 'allow' }), presentationFace: {},
+      planeConfig: { agentStateEnabled: true },
+    })
+    expect(built.refused).toBeUndefined()
+    const port = built.diagnostics?.agentStateStore as unknown as { name: string, rootDir: string }
+    expect(port.name).toBe('agent-state:fs')
+    expect(port.rootDir).toBe(storeRoot())
+  })
+})
+
+describe('u7as P — positives through the REAL store, re-read after a simulated restart', () => {
+  it('P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts', async () => {
+    const { rows } = await mountProduction({ humanFor: ['alice'] })
+    const created = JSON.parse((await rows.create_goal.execute({ objective: 'ship the durable store', max_goal_rounds: 4 }, exec('alice'))).text).goal
+    expect(created).toMatchObject({ objective: 'ship the durable store', phase: 'active', revision: 1, max_goal_rounds: 4 })
+    const read = JSON.parse((await rows.get_goal.execute({}, exec('alice'))).text).goal
+    expect(read).toEqual(created)
+    const paused = JSON.parse((await rows.update_goal.execute({ goal_id: created.goal_id, revision: 1, action: 'pause' }, exec('alice'))).text).goal
+    expect(paused).toMatchObject({ phase: 'paused', revision: 2, armed: false })
+    // restart: a brand-new store over the same home
+    const restarted = reopen()
+    expect(await restarted.readGoal('agent:alice')).toMatchObject({ goalId: created.goal_id, objective: 'ship the durable store', phase: 'paused', revision: 2, maxGoalRounds: 4 })
+    // and the durable audit has exactly the two committed writes
+    expect(linesOf(writesPath()).map((w) => w.op)).toEqual(['goal/apply', 'goal/apply'])
+  })
+
+  it('P2 todo_write replaces the whole list durably; restart reads the last list', async () => {
+    const { rows } = await mountProduction()
+    await rows.todo_write.execute({ todos: [{ content: 'a', status: 'in_progress' }, { content: 'b', status: 'pending' }] }, exec('alice'))
+    const r2 = JSON.parse((await rows.todo_write.execute({ todos: [{ content: 'a', status: 'completed' }] }, exec('alice'))).text)
+    expect(r2.counts).toEqual({ pending: 0, inProgress: 0, completed: 1 })
+    expect(await reopen().readTodos('agent:alice')).toEqual([{ content: 'a', status: 'completed' }])
+  })
+
+  it('P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded', async () => {
+    await reopen().seedPlanMode('agent:alice', true)
+    const { rows } = await mountProduction()
+    const r = await rows.exit_plan_mode.execute({ plan: '# Durable plan\n\n- step' }, exec('alice'))
+    expect(JSON.parse(r.text)).toEqual({ exited: true, planMode: { active: false } })
+    const pm = await reopen().readPlanMode('agent:alice')
+    expect(pm.active).toBe(false)
+    expect(JSON.stringify(pm.pendingIntents)).toContain('# Durable plan')
+  })
+
+  it('P4 update_goal edit/complete fold the revision exactly one each, durably', async () => {
+    const { rows } = await mountProduction({ humanFor: ['alice'] })
+    const g = JSON.parse((await rows.create_goal.execute({ objective: 'o1' }, exec('alice'))).text).goal
+    const e = JSON.parse((await rows.update_goal.execute({ goal_id: g.goal_id, revision: 1, action: 'edit', objective: 'o2' }, exec('alice'))).text).goal
+    expect(e).toMatchObject({ objective: 'o2', revision: 2 })
+    const c = JSON.parse((await rows.update_goal.execute({ goal_id: g.goal_id, revision: 2, action: 'complete' }, exec('alice'))).text).goal
+    expect(c).toMatchObject({ phase: 'complete', revision: 3 })
+    expect(await reopen().readGoal('agent:alice')).toMatchObject({ objective: 'o2', phase: 'complete', revision: 3 })
+  })
+})
+
+describe('u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line', () => {
+  const zeroWrite = async (fn: () => Promise<RowOutcome>, code: string) => {
+    const before = bytesOf(writesPath())
+    const attemptsBefore = linesOf(attemptsPath()).length
+    const r = await fn()
+    expect(codeOf(r)).toBe(code)
+    expect(bytesOf(writesPath()), `${code}: writes.jsonl must not grow`).toBe(before)
+    return { attemptsDelta: linesOf(attemptsPath()).length - attemptsBefore }
+  }
+
+  it('R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write', async () => {
+    const { rows } = await mountProduction({ humanFor: ['alice'] })
+    const g = JSON.parse((await rows.create_goal.execute({ objective: 'once' }, exec('alice'))).text).goal
+    await zeroWrite(() => rows.create_goal.execute({ objective: 'twice' }, exec('alice')), 'GOAL_ALREADY_EXISTS')
+    await zeroWrite(() => rows.update_goal.execute({ goal_id: g.goal_id, revision: 9, action: 'pause' }, exec('alice')), 'GOAL_STALE_REVISION')
+    await zeroWrite(() => rows.update_goal.execute({ goal_id: 'x', revision: 1, action: 'pause' }, exec('bob')), 'GOAL_TOOL_NOT_DIRECT_HUMAN')
+    // resume of an already active+armed goal (goal/src/index.ts:372-373)
+    await zeroWrite(() => rows.update_goal.execute({ goal_id: g.goal_id, revision: 1, action: 'resume' }, exec('alice')), 'GOAL_INVALID_TRANSITION')
+    expect(await reopen().readGoal('agent:alice')).toMatchObject({ revision: 1, phase: 'active', objective: 'once' })
+  })
+
+  it('R2 the STORE-level refusals: stale CAS and already-exists answered BY THE STORE leave one attempts line and zero writes', async () => {
+    const store = reopen()
+    await store.seedGoal('agent:a', { goalId: 'g', objective: 'x', phase: 'active', revision: 2, roundsStarted: 0, armed: true })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const stale = await store.applyGoal('agent:a', { expectedRevision: 1, next: { goalId: 'g', revision: 2 }, applyId: 'call-stale' })
+    expect(stale).toMatchObject({ ok: false, code: 'GOAL_STALE_REVISION' })
+    const exists = await store.applyGoal('agent:a', { expectedRevision: null, next: { goalId: 'h', revision: 1 }, applyId: 'call-exists' })
+    expect(exists).toMatchObject({ ok: false, code: 'GOAL_ALREADY_EXISTS' })
+    const pm = await store.applyPlanModeExit('agent:a', { plan: '# p', applyId: 'call-pm' })
+    expect(pm).toMatchObject({ ok: false, code: 'PLAN_MODE_NOT_ACTIVE' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    const attempts = linesOf(attemptsPath()).slice(a0)
+    expect(attempts.map((a) => [a.outcome, a.code])).toEqual([['refused', 'GOAL_STALE_REVISION'], ['refused', 'GOAL_ALREADY_EXISTS'], ['refused', 'PLAN_MODE_NOT_ACTIVE']])
+    // a refused apply never burns its applyId: the same id applies later
+    const later = await store.applyGoal('agent:a', { expectedRevision: 2, next: { goalId: 'g', objective: 'x', phase: 'paused', revision: 3, roundsStarted: 0, armed: false }, applyId: 'call-stale' })
+    expect(later.ok).toBe(true)
+  })
+
+  it('R3 REPLAY: a consumed applyId never applies twice — durably, across a restart (STATE_APPLY_REPLAY, zero write)', async () => {
+    const s1 = reopen()
+    const first = await s1.applyTodos('agent:a', { todos: [{ content: 't', status: 'pending' }], applyId: 'call-1' })
+    expect(first.ok).toBe(true)
+    const w1 = bytesOf(writesPath())
+    const s2 = reopen() // restart
+    const replay = await s2.applyTodos('agent:a', { todos: [{ content: 'evil', status: 'pending' }], applyId: 'call-1' })
+    expect(replay).toMatchObject({ ok: false, code: 'STATE_APPLY_REPLAY' })
+    expect(bytesOf(writesPath())).toBe(w1)
+    expect(await s2.readTodos('agent:a')).toEqual([{ content: 't', status: 'pending' }])
+    expect(linesOf(attemptsPath()).at(-1)).toMatchObject({ outcome: 'refused', code: 'STATE_APPLY_REPLAY' })
+  })
+
+  it('R4 CROSS-SCOPE: bob naming alice\'s goal meets bob\'s own (empty) scope — alice\'s record bytes untouched, zero write', async () => {
+    const { rows } = await mountProduction({ humanFor: ['alice', 'bob'] })
+    const g = JSON.parse((await rows.create_goal.execute({ objective: 'alice owns this' }, exec('alice'))).text).goal
+    const aliceFile = readdirSync(join(storeRoot(), 'scopes')).map((f) => join(storeRoot(), 'scopes', f))
+    const before = aliceFile.map((p) => readFileSync(p, 'utf8'))
+    await zeroWrite(() => rows.update_goal.execute({ goal_id: g.goal_id, revision: 1, action: 'complete' }, exec('bob')), 'GOAL_NOT_FOUND')
+    expect(aliceFile.map((p) => readFileSync(p, 'utf8'))).toEqual(before)
+    expect(await reopen().readGoal('agent:bob')).toBe(null)
+  })
+})
+
+describe('u7as S — byte-exact scoping (no trim, no fold)', () => {
+  it('S1 "a", "a " and " a" are three distinct durable scopes; each reads back only its own fact', async () => {
+    const store = reopen()
+    for (const [i, id] of ['agent:a', 'agent:a ', 'agent: a'].entries()) {
+      const r = await store.applyTodos(id, { todos: [{ content: `t${String(i)}`, status: 'pending' }], applyId: `s-${String(i)}` })
+      expect(r.ok).toBe(true)
+    }
+    const again = reopen()
+    expect(await again.readTodos('agent:a')).toEqual([{ content: 't0', status: 'pending' }])
+    expect(await again.readTodos('agent:a ')).toEqual([{ content: 't1', status: 'pending' }])
+    expect(await again.readTodos('agent: a')).toEqual([{ content: 't2', status: 'pending' }])
+    expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(3)
+    expect(await again.readTodos('agent:A')).toBe(null)
+  })
+})
+
+describe('u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state"', () => {
+  const recordFile = async (scope: string): Promise<string> => {
+    await reopen().applyTodos(scope, { todos: [{ content: 'x', status: 'pending' }], applyId: `seed-${scope}` })
+    const files = readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))
+    return join(storeRoot(), 'scopes', files[0] as string)
+  }
+
+  it('B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null', async () => {
+    const path = await recordFile('agent:alice')
+    writeFileSync(path, 'x'.repeat(lane.MAX_SCOPE_BYTES + 1))
+    await expect(reopen().readGoal('agent:alice')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_OVERSIZED' })
+    const { rows } = await mountProduction()
+    const r = await rows.get_goal.execute({}, exec('alice'))
+    expect(codeOf(r)).toBe('AGENT_STATE_STORE_FAULT')
+    expect(r.text).toContain('AGENT_STATE_STORE_OVERSIZED')
+  })
+
+  it('B2 an oversized WRITE refuses typed and writes nothing', async () => {
+    const store = lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, maxScopeBytes: 256 })
+    const r = await store.applyTodos('agent:a', { todos: [{ content: 'y'.repeat(400), status: 'pending' }], applyId: 'big' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_OVERSIZED' })
+    expect(bytesOf(writesPath())).toBe(0)
+    // the applyId was rolled back: the same id applies once the content fits
+    expect((await store.applyTodos('agent:a', { todos: [{ content: 'ok', status: 'pending' }], applyId: 'big' })).ok).toBe(true)
+  })
+
+  it('B3 corrupt JSON / unknown schema / a FOREIGN key in the file fail closed (AGENT_STATE_STORE_CORRUPT), never read as empty', async () => {
+    const path = await recordFile('agent:alice')
+    for (const bad of ['{not json', JSON.stringify({ schema: 'other/1', key: 'agent:alice' }), JSON.stringify({ schema: 'agent-state-scope/1', key: 'agent:mallory', goal: null })]) {
+      writeFileSync(path, bad)
+      await expect(reopen().readGoal('agent:alice')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_CORRUPT' })
+    }
+  })
+
+  it('B4 an ABSENT scope is honestly null for get (no record exists), while an unreadable one is a typed fault', async () => {
+    expect(await reopen().readGoal('agent:nobody')).toBe(null)
+  })
+})
+
+describe('u7as K — the read path refuses aliases (hardlink law, interim of #409)', () => {
+  it('K1 nlink>1: a record that is hard-linked elsewhere is REFUSED (AGENT_STATE_STORE_ALIAS_REFUSED) — pins the #409 behaviour for the swap', async () => {
+    await reopen().applyTodos('agent:alice', { todos: [{ content: 'x', status: 'pending' }], applyId: 'k1' })
+    const file = join(storeRoot(), 'scopes', readdirSync(join(storeRoot(), 'scopes')).find((f) => f.endsWith('.json')) as string)
+    linkSync(file, join(scratch, 'alias.json'))
+    const direct = await lane.safeReadRecord(file)
+    expect(direct).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_ALIAS_REFUSED' })
+    await expect(reopen().readTodos('agent:alice')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_ALIAS_REFUSED' })
+  })
+
+  it('K2 a symlinked record is refused at open (O_NOFOLLOW), never followed', async () => {
+    const target = join(scratch, 'planted.json')
+    writeFileSync(target, JSON.stringify({ schema: 'agent-state-scope/1', key: 'agent:alice', goal: { goalId: 'planted' } }))
+    const link = join(scratch, 'link.json')
+    symlinkSync(target, link)
+    expect(await lane.safeReadRecord(link)).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_ALIAS_REFUSED' })
+  })
+})
+
+describe('u7as C — crash atomicity (temp + fsync + rename), with a mutation control', () => {
+  /** A writer that writes HALF the record and then dies (the crash). */
+  const dyingWriter = async (handle: { writeFile: (t: string, e: string) => Promise<void> }, text: string) => {
+    await handle.writeFile(text.slice(0, Math.floor(text.length / 2)), 'utf8')
+    throw Object.assign(new Error('simulated crash mid-record'), { code: 'ESIMCRASH' })
+  }
+
+  /** THE SAME crash against a store that writes the TARGET in place (no temp,
+   *  no rename) — the mutation the atomic rename exists to prevent. */
+  const inPlaceStoreDying = () => {
+    // Reproduce exactly the record path the real store uses, then perform
+    // the broken (non-atomic) write: open the target itself and write half.
+    return async (scope: string, text: string) => {
+      const real = reopen()
+      await real.readGoal(scope) // ensure dirs
+      const files = readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))
+      const target = join(storeRoot(), 'scopes', files[0] as string)
+      writeFileSync(target, text.slice(0, Math.floor(text.length / 2)))
+    }
+  }
+
+  const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
+
+  it('C1 a crash mid-write leaves the PREVIOUS record intact and readable; no torn record; no write audit entry; applyId reusable', async () => {
+    await reopen().seedGoal('agent:a', goalV(1))
+    const dying = lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, recordWriter: dyingWriter })
+    const w0 = bytesOf(writesPath())
+    const r = await dying.applyGoal('agent:a', { expectedRevision: 1, next: goalV(2), applyId: 'crash-1' })
+    expect(r.ok).toBe(false)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(await reopen().readGoal('agent:a')).toMatchObject({ revision: 1, objective: 'rev 1' })
+    // no temp debris is ever READ as state: only *.json records count
+    const ok = await reopen().applyGoal('agent:a', { expectedRevision: 1, next: goalV(2), applyId: 'crash-1' })
+    expect(ok.ok).toBe(true)
+  })
+
+  it('C2 MUTATION CONTROL: the same crash against an IN-PLACE (non-rename) write TEARS the record — the C1 law would go RED without the atomic rename', async () => {
+    await reopen().seedGoal('agent:a', goalV(1))
+    const record = `${JSON.stringify({ schema: 'agent-state-scope/1', key: 'agent:a', realmId: REALM, goal: goalV(2), todos: null, planMode: { active: false, pendingIntents: [] } })}\n`
+    await inPlaceStoreDying()('agent:a', record)
+    // The previous record is GONE and the torn one fails closed — exactly
+    // what C1 asserts can never happen with temp+fsync+rename.
+    let previousIntact = true
+    try {
+      const g = await reopen().readGoal('agent:a')
+      previousIntact = (g as { revision?: number } | null)?.revision === 1
+    } catch {
+      previousIntact = false
+    }
+    expect(previousIntact, 'an in-place writer must NOT preserve the previous record across a crash (this is the RED the rename prevents)').toBe(false)
+  })
+})
+
+describe('u7as A — the production arm provider mirrors host authority (fail closed to `model`)', () => {
+  it('A1 direct-human only for a ROOT agent with a user-sourced message in the open turn; goal-round for an exact goal source; otherwise model', () => {
+    const evt = (source: Record<string, unknown>) => ({ type: 'user/message', data: { source } })
+    const mk = (events: unknown[]) => ({ session: { snapshotEvents: () => [{ type: 'turn/start' }, ...events] } })
+    const human = mk([evt({ kind: 'user' })])
+    const child = mk([evt({ kind: 'user' })])
+    const round = mk([evt({ kind: 'goal', goalId: 'g', revision: 2, round: 3 })])
+    const table: Record<string, unknown> = { human, child, round }
+    const services: Record<string, unknown> = {
+      agents: { get: (id: string) => table[id], roots: () => [human, round] },
+      sessionProjections: { stateOf: () => ({ openTurnStartSeq: 0 }) },
+    }
+    const arm = lane.createHostArmProvider({ hostService: (n) => services[n] })
+    expect(arm('agent:human')).toEqual({ kind: 'direct-human' })
+    expect(arm('agent:child')).toEqual({ kind: 'model' })
+    expect(arm('agent:round')).toEqual({ kind: 'goal-round', goalId: 'g', revision: 2, round: 3 })
+    expect(arm('agent:unknown')).toEqual({ kind: 'model' })
+    expect(arm('not-a-scope')).toEqual({ kind: 'model' })
+    const unbound = lane.createHostArmProvider({ hostService: () => undefined })
+    expect(unbound('agent:human')).toEqual({ kind: 'model' })
+    const throwing = lane.createHostArmProvider({ hostService: () => { throw new Error('svc') } })
+    expect(throwing('agent:human')).toEqual({ kind: 'model' })
+  })
+})
+
+describe('u7as O — every row outcome fits the plane presentation face (closed {text})', () => {
+  it('O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")', async () => {
+    const { built, rows } = await mountProduction({ humanFor: ['alice'] })
+    const face = (built.value.definitions[0] as unknown as { output: { schema: { additionalProperties: boolean, properties: Record<string, unknown> } } }).output.schema
+    expect(face.additionalProperties).toBe(false)
+    const allowed = Object.keys(face.properties)
+    const outcomes = [
+      await rows.get_goal.execute({}, exec('alice')),
+      await rows.create_goal.execute({ objective: 'o' }, exec('alice')),
+      await rows.create_goal.execute({ objective: 'again' }, exec('alice')),
+      await rows.update_goal.execute({ goal_id: 'nope', revision: 1, action: 'pause' }, exec('alice')),
+      await rows.todo_write.execute({ todos: 'bad' }, exec('alice')),
+      await rows.exit_plan_mode.execute({ plan: '# p' }, exec('alice')),
+    ]
+    for (const o of outcomes) expect(Object.keys(o).filter((k) => !allowed.includes(k)), JSON.stringify(o).slice(0, 120)).toEqual([])
+    expect(outcomes.filter((o) => o.text.startsWith('refused: ')).length).toBeGreaterThanOrEqual(3)
+  })
+})
+
+/**
+ * The C1/live gap that hid the get_goal denial: the C1 stand-in control leg
+ * approved ANY ask, while the PRODUCTION bridge
+ * (operation-permission/pa-control-bridge.ts:358-361, protected center)
+ * denies an ask whose effect set names no tool-invoke tool — BEFORE any
+ * durable Control row. This leg drives every row of the family through a
+ * faithful model of exactly that shape requirement.
+ */
+const bridgeShapeLeg = (seen: Array<{ tool: string, ok: boolean }>) => async (input: { request: { requestedEffects: { effects: Array<{ kind: string, toolName?: string }> } } }) => {
+  const toolInvoke = input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')
+  const toolName = toolInvoke?.toolName
+  if (typeof toolName !== 'string' || toolName.length === 0) {
+    seen.push({ tool: 'NO-TOOL-INVOKE', ok: false })
+    return { decision: 'deny', detail: 'the effect set names no tool-invoke tool — the guard scope would carry no tool identity' }
+  }
+  seen.push({ tool: toolName, ok: true })
+  return approvingControlLeg()(input as never)
+}
+
+describe('u7as G — every row meets the production bridge shape (tool-invoke names the row)', () => {
+  it('G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back', async () => {
+    const seen: Array<{ tool: string, ok: boolean }> = []
+    const built = await plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 }, teamSessionId: 'u7as-root', controlLeg: bridgeShapeLeg(seen),
+      permissionPolicy: POLICY_ASK, realmId: REALM, templateId: 'u7as-tpl', role: 'member', instanceId: 'u7as-inst',
+      onObserve: () => {}, plane: { agentStateEnabled: true },
+    }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean } } }
+    expect(built.ok).toBe(true)
+    const humans = new Set(['alice'])
+    const agent = { id: 'alice', session: { snapshotEvents: () => [{ type: 'turn/start' }, { type: 'user/message', data: { source: { kind: 'user' } } }] } }
+    built.value.mount({ get: (n: string) => (n === 'agents' ? { get: (id: string) => (humans.has(id) ? agent : undefined), roots: () => [agent] } : n === 'sessionProjections' ? { stateOf: () => ({ openTurnStartSeq: 0 }) } : undefined), tools: { register: () => () => {} } })
+    const rows: Record<string, Row> = {}
+    for (const d of built.value.definitions) rows[d.name] = d
+    await reopen().seedPlanMode('agent:alice', true)
+    const g = JSON.parse((await rows.create_goal!.execute({ objective: 'bridge-shape' }, exec('alice'))).text).goal
+    const read = await rows.get_goal!.execute({}, exec('alice'))
+    expect(codeOf(read)).toBe('ACCEPTED')
+    expect(JSON.parse(read.text).goal.objective).toBe('bridge-shape')
+    await rows.update_goal!.execute({ goal_id: g.goal_id, revision: 1, action: 'edit', objective: 'e' }, exec('alice'))
+    await rows.todo_write!.execute({ todos: [{ content: 't', status: 'pending' }] }, exec('alice'))
+    await rows.exit_plan_mode!.execute({ plan: '# p' }, exec('alice'))
+    expect(seen).toEqual([
+      { tool: 'create_goal', ok: true }, { tool: 'get_goal', ok: true }, { tool: 'update_goal', ok: true },
+      { tool: 'todo_write', ok: true }, { tool: 'exit_plan_mode', ok: true },
+    ])
+  })
+
+  it('G2 MUTATION CONTROL: a get_goal set WITHOUT its tool-invoke arm is denied by the bridge-shape leg (the live boot-1..3 failure, reproduced at C1)', async () => {
+    const seen: Array<{ tool: string, ok: boolean }> = []
+    const leg = bridgeShapeLeg(seen)
+    const without = await leg({ request: { requestedEffects: { effects: [{ kind: 'meta' }] } } })
+    expect(without).toMatchObject({ decision: 'deny' })
+    expect(seen).toEqual([{ tool: 'NO-TOOL-INVOKE', ok: false }])
+  })
+})
+
+/** Every file anywhere under `dir` (the zero-bytes-outside witness). */
+const filesUnder = (dir: string): string[] => {
+  if (!existsSync(dir)) return []
+  const out: string[] = []
+  const walk = (d: string): void => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const q = join(d, e.name)
+      if (e.isDirectory()) walk(q)
+      else out.push(q)
+    }
+  }
+  walk(dir)
+  return out
+}
+const storeWith = (opts: StoreOpts = {}): FsStore => lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, ...opts })
+const storeWithBoot = (boot: string, opts: StoreOpts = {}): FsStore => storeWith({ ...opts, bootId: boot })
+
+describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
+  // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
+  const targets: Array<[string, () => string]> = [
+    ['scopes dir', () => join(storeRoot(), 'scopes')],
+    ['realm dir', () => storeRoot()],
+    ['ancestor (team-state)', () => join(home, 'team-state')],
+  ]
+  const swap = (target: string): string => {
+    const outside = join(scratch, `outside-${String(Math.random()).slice(2, 8)}`)
+    mkdirSync(outside)
+    renameSync(target, `${target}.moved`)
+    symlinkSync(outside, target)
+    return outside
+  }
+  for (const [label, target] of targets) {
+    for (const phase of ['after build (first read only)', 'after a first write'] as const) {
+      it(`X ${label} swapped for a symlink ${phase}: write AND read refuse typed, ZERO bytes outside the root`, async () => {
+        const store = storeWith()
+        if (phase === 'after a first write') {
+          expect((await store.applyTodos('agent:a', { todos: [{ content: 'first', status: 'pending' }], applyId: 'x-first' })).ok).toBe(true)
+        } else {
+          // build-equivalent: the descriptor-built store has touched the
+          // store once (a read) — the old cache was armed by exactly this.
+          await store.readGoal('agent:a')
+          mkdirSync(join(storeRoot(), 'scopes'), { recursive: true })
+        }
+        const outside = swap(target())
+        const r = await store.applyTodos('agent:b', { todos: [{ content: 'escape', status: 'pending' }], applyId: 'x-escape' })
+        expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        await expect(store.seedGoal('agent:b', { goalId: 'g', revision: 1, phase: 'active' })).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        await expect(store.readGoal('agent:a')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        // a FRESH instance (the restart) refuses the same way
+        const fresh = await storeWith().applyGoal('agent:c', { expectedRevision: null, next: { goalId: 'g', revision: 1, phase: 'active' }, applyId: 'x-fresh' })
+        expect(fresh).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        expect(filesUnder(outside), `${label}: nothing may land outside the root`).toEqual([])
+      })
+    }
+  }
+
+  it('X-pin: the operation writes into the directory whose identity it PROVED (openStoreDir pins the descriptor, not a re-resolvable name)', async () => {
+    const pinned = await (lane as unknown as { openStoreDir: (a: string, s: string[], o: { create: boolean }) => Promise<{ path: string, close: () => Promise<void> }> }).openStoreDir(home, ['team-state', 'agent-state', REALM, 'scopes'], { create: true })
+    try {
+      const outside = swap(join(storeRoot(), 'scopes'))
+      writeFileSync(join(pinned.path, 'probe.txt'), 'x')
+      expect(filesUnder(outside)).toEqual([])
+      expect(readdirSync(join(storeRoot(), 'scopes.moved'))).toContain('probe.txt')
+    } finally { await pinned.close() }
+  })
+})
+
+describe('u7as L — concurrent appliers are serialised per scope (review round-1 B-2)', () => {
+  it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
+    for (let round = 1; round <= 25; round += 1) {
+      await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
+      const w0 = bytesOf(writesPath())
+      const linesBefore = linesOf(writesPath()).length
+      const racers = [0, 1, 2, 3].map(() => storeWith())
+      const results = await Promise.all(racers.map((st, i) => st.applyGoal('agent:race', {
+        expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      })))
+      expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
+      expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
+      expect(linesOf(writesPath()).length - linesBefore).toBe(1)
+      expect(bytesOf(writesPath())).toBeGreaterThan(w0)
+      expect(await storeWith().readGoal('agent:race')).toMatchObject({ revision: round + 1 })
+    }
+  })
+
+  it('L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    const scopeLock = (scope: string): string => {
+      // the store names a scope lock by the sha256 of the scope bytes
+      return join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
+    }
+    writeFileSync(scopeLock('agent:s'), JSON.stringify({ pid: 2 ** 22 + 12345, host: hostId, boot: bootId || 'test-boot', nonce: 'dead-holder', token: 'dead-token', at: Date.now() }))
+    expect((await storeWith().applyTodos('agent:s', { todos: [{ content: 'after-stale', status: 'pending' }], applyId: 'stale-1' })).ok).toBe(true)
+    writeFileSync(scopeLock('agent:t'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, host: hostId, boot: bootId || 'test-boot', nonce: 'live-holder', token: 'live-token', at: Date.now() }))
+    const w0 = bytesOf(writesPath())
+    const r = await storeWith({ lockTimeoutMs: 150 }).applyTodos('agent:t', { todos: [{ content: 'blocked', status: 'pending' }], applyId: 'live-1' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(await storeWith().readTodos('agent:t')).toBe(null)
+  })
+})
+
+describe('u7as M — the applyId is consumed WITH the commit, never before it', () => {
+  const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
+
+  it('M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later', async () => {
+    await storeWith().seedGoal('agent:m', goalV(1))
+    const dying = storeWith({ recordWriter: async (h: { writeFile: (t: string, e: string) => Promise<void> }, t: string) => { await h.writeFile(t.slice(0, 10), 'utf8'); throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
+    expect((await dying.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(false)
+    expect(await storeWith().readGoal('agent:m')).toMatchObject({ revision: 1 })
+    expect((await storeWith().applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(true)
+  })
+
+  it('M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id)', async () => {
+    await storeWith().seedGoal('agent:m', goalV(1))
+    const crashing = storeWith({ faultAt: (point: string) => { if (point === 'after-commit') throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
+    await crashing.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-2' })
+    expect(existsSync(join(storeRoot(), 'applied')) ? readdirSync(join(storeRoot(), 'applied')) : []).toEqual([])
+    const restarted = storeWith()
+    expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+    const w0 = bytesOf(writesPath())
+    const replay = await restarted.applyGoal('agent:m', { expectedRevision: 2, next: goalV(3), applyId: 'm-2' })
+    expect(replay).toMatchObject({ ok: false, code: 'STATE_APPLY_REPLAY' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+  })
+})
+
+describe('u7as N — the per-realm scope count is bounded', () => {
+  it('N1 the scope past the bound refuses typed (AGENT_STATE_STORE_SCOPE_LIMIT) with ZERO write; existing scopes stay writable; the default bound is 1024', async () => {
+    expect((lane as unknown as { MAX_SCOPES_PER_REALM: number }).MAX_SCOPES_PER_REALM).toBe(1024)
+    const capped = storeWith({ maxScopes: 3 })
+    for (const id of ['a', 'b', 'c']) expect((await capped.applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n-${id}` })).ok).toBe(true)
+    const w0 = bytesOf(writesPath())
+    const r = await capped.applyTodos('agent:d', { todos: [{ content: 'd', status: 'pending' }], applyId: 'n-d' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_SCOPE_LIMIT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(3)
+    expect((await capped.applyTodos('agent:a', { todos: [{ content: 'a2', status: 'pending' }], applyId: 'n-a2' })).ok).toBe(true)
+    // the refused id was not consumed: it applies once room exists
+    expect((await storeWith({ maxScopes: 4 }).applyTodos('agent:d', { todos: [{ content: 'd', status: 'pending' }], applyId: 'n-d' })).ok).toBe(true)
+  })
+
+  it('N2 concurrent creators of DIFFERENT new scopes cannot overshoot the bound (realm lock)', async () => {
+    const results = await Promise.all(['p', 'q', 'r', 's', 't'].map((id) => storeWith({ maxScopes: 2 }).applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n2-${id}` })))
+    expect(results.filter((r) => r.ok === true)).toHaveLength(2)
+    expect(results.filter((r) => r.code === 'AGENT_STATE_STORE_SCOPE_LIMIT')).toHaveLength(3)
+    expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(2)
+  })
+})
+
+describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F-4)', () => {
+  const scopeLockPath = (scope: string): string => join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
+  const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
+  const bootId = (): string => { try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' } }
+  const host = (): string => hostname()
+
+  it('F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry', async () => {
+    await storeWith().seedGoal('agent:f', goalV(1))
+    const linesBefore = linesOf(writesPath()).length
+    let paused: (() => void) | null = null
+    const inside = new Promise<void>((resolve) => { paused = resolve })
+    const a = storeWith({ lockStaleMs: 50, lockHeartbeatMs: 20, faultAt: async (point: string) => {
+      if (point === 'after-read') { paused?.(); await new Promise((r) => { setTimeout(r, 1000) }) }
+    } })
+    const b = storeWith({ lockStaleMs: 50, lockHeartbeatMs: 20, lockTimeoutMs: 400 })
+    const pa = a.applyGoal('agent:f', { expectedRevision: 1, next: goalV(2), applyId: 'f-a' })
+    await inside // A now HOLDS the lock and is paused mid read→CAS→commit
+    const rb = await b.applyGoal('agent:f', { expectedRevision: 1, next: { ...goalV(2), objective: 'B wins?' }, applyId: 'f-b' })
+    const ra = await pa
+    const oks = [ra, rb].filter((r) => r.ok === true)
+    expect(oks, 'exactly one commit').toHaveLength(1)
+    expect(ra.ok).toBe(true)
+    expect(['AGENT_STATE_STORE_LOCK_TIMEOUT', 'GOAL_STALE_REVISION']).toContain(rb.code)
+    expect(linesOf(writesPath()).length - linesBefore).toBe(1)
+    expect(await storeWith().readGoal('agent:f')).toMatchObject({ revision: 2, objective: 'rev 2' })
+  })
+
+  it('F-b a DEAD-pid holder (same host, same boot, no heartbeat) is still broken and the apply proceeds', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:d'), JSON.stringify({ pid: 2 ** 22 + 4242, host: host(), boot: bootId(), nonce: 'dead', token: 't0', at: Date.now() }))
+    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:d', { todos: [{ content: 'after-dead', status: 'pending' }], applyId: 'f-dead' })
+    expect(r.ok).toBe(true)
+  })
+
+  it('F-b2 a holder from a PREVIOUS BOOT of this host is broken (boot id differs)', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:boot'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, host: host(), boot: 'a-previous-boot', nonce: 'old-boot', token: 't0', at: Date.now() }))
+    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:boot', { todos: [{ content: 'after-reboot', status: 'pending' }], applyId: 'f-boot' })
+    expect(bootId() === '' ? r.ok === false : r.ok === true).toBe(true)
+  })
+
+  it('F-c a LIVE pid holder (pid recycled / unknown-but-present) with an ANCIENT lock is NEVER broken → typed LOCK_TIMEOUT, ZERO write', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    // pid 1 is always alive; the lock is an hour old — under the old policy age alone broke it.
+    writeFileSync(scopeLockPath('agent:live'), JSON.stringify({ pid: 1, host: host(), boot: bootId(), nonce: 'live', token: 't0', at: Date.now() - 3_600_000 }))
+    const w0 = bytesOf(writesPath())
+    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:live', { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: 'f-live' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(existsSync(scopeLockPath('agent:live'))).toBe(true)
+    expect(await storeWith().readTodos('agent:live')).toBe(null)
+  })
+
+  it('F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:remote'), JSON.stringify({ pid: 2 ** 22 + 1, host: 'some-other-host.invalid', boot: 'x', nonce: 'remote', token: 't0', at: Date.now() - 3_600_000 }))
+    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:remote', { todos: [{ content: 'x', status: 'pending' }], applyId: 'f-remote' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+  })
+
+  it('R3-1 malformed or incomplete lock records refuse closed, preserve bytes, and do not write', async () => {
+    const bodies = ['', '{', 'garbage', JSON.stringify({ pid: 1, nonce: 'n', token: 't', at: 1 }), JSON.stringify({ pid: 1, host: host(), nonce: 'n', token: 't', at: 1 }), JSON.stringify({ pid: 1.5, host: host(), boot: bootId(), nonce: 'n', token: 't', at: 1 })]
+    for (const [i, body] of bodies.entries()) {
+      const path = scopeLockPath(`agent:bad-${i}`)
+      mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+      writeFileSync(path, body)
+      const before = readFileSync(path)
+      const writes = bytesOf(writesPath())
+      const result = await storeWith({ lockStaleMs: 10, lockTimeoutMs: 80 }).applyTodos(`agent:bad-${i}`, { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: `bad-${i}` })
+      expect(result).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+      expect(readFileSync(path)).toEqual(before)
+      expect(bytesOf(writesPath())).toBe(writes)
+    }
+  })
+
+  it('R3-2 release waits for an in-flight beat and never resurrects the lock', async () => {
+    let openBeat!: () => void
+    const beatGate = new Promise<void>((resolve) => { openBeat = resolve })
+    let allowCommit!: () => void
+    const commitGate = new Promise<void>((resolve) => { allowCommit = resolve })
+    let started!: () => void
+    const beatStarted = new Promise<void>((resolve) => { started = resolve })
+    const owner = storeWith({ lockHeartbeatMs: 10, faultAt: async (point: string) => {
+      if (point === 'after-read') await commitGate
+      if (point === 'beat-before-rename') { started(); await beatGate }
+    } })
+    const pending = owner.applyTodos('agent:race-release', { todos: [{ content: 'x', status: 'pending' }], applyId: 'race-release' })
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    await beatStarted
+    allowCommit()
+    const settledWhileBeatGated = await Promise.race([
+      pending.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 40)),
+    ])
+    expect(settledWhileBeatGated, 'release must await the gated in-flight beat').toBe(false)
+    openBeat()
+    expect((await pending).ok).toBe(true)
+    expect(existsSync(scopeLockPath('agent:race-release'))).toBe(false)
+    expect((await storeWith({ lockTimeoutMs: 100 }).applyTodos('agent:race-release', { todos: [{ content: 'y', status: 'pending' }], applyId: 'race-release-2' })).ok).toBe(true)
+  })
+
+  it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
+    for (let round = 1; round <= 10; round += 1) {
+      const seeded = storeWithBoot('')
+      await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
+      const results = await Promise.all([0, 1, 2, 3].map((i) => storeWithBoot('').applyGoal('agent:empty-race', {
+        expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      })))
+      expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
+      expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
+    }
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
+    expect((await storeWithBoot('', { lockStaleMs: 10 }).applyTodos('agent:empty-dead', { todos: [{ content: 'ok', status: 'pending' }], applyId: 'empty-dead' })).ok).toBe(true)
+    writeFileSync(scopeLockPath('agent:empty-invalid'), JSON.stringify({ pid: 2 ** 22 + 7778, host: host(), boot: '', nonce: 'invalid-empty', token: 't0', at: Date.now() }))
+    const before = bytesOf(writesPath())
+    const refused = await storeWithBoot('local-boot', { lockTimeoutMs: 80 }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' })
+    expect(refused).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(before)
+  })
+
+  it('R3-atomic initial lock publication leaves no target after injected pre-publish crash', async () => {
+    const crashing = storeWith({ faultAt: async (point: string) => { if (point === 'lock-before-publish') throw new Error('injected lock crash') } })
+    const first = await crashing.applyTodos('agent:atomic-lock', { todos: [{ content: 'x', status: 'pending' }], applyId: 'atomic-lock-1' })
+    expect(first).toMatchObject({ ok: false })
+    expect(existsSync(scopeLockPath('agent:atomic-lock'))).toBe(false)
+    const next = await storeWith().applyTodos('agent:atomic-lock', { todos: [{ content: 'y', status: 'pending' }], applyId: 'atomic-lock-2' })
+    expect(next.ok).toBe(true)
+  })
+
+  it('F-d the holder BEATS: while it is inside the critical section the lock record token changes', async () => {
+    let release: () => void = () => {}
+    const hold = new Promise<void>((r) => { release = r })
+    let entered: () => void = () => {}
+    const inside = new Promise<void>((r) => { entered = r })
+    const a = storeWith({ lockHeartbeatMs: 20, faultAt: async (point: string) => { if (point === 'after-read') { entered(); await hold } } })
+    const pa = a.applyTodos('agent:beat', { todos: [{ content: 'b', status: 'pending' }], applyId: 'f-beat' })
+    await inside
+    const t1 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+    await new Promise((r) => { setTimeout(r, 120) })
+    const t2 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+    release()
+    expect((await pa).ok).toBe(true)
+    expect(t2).not.toBe(t1)
+    expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
+  })
+})

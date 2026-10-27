@@ -5,8 +5,10 @@
  * `exit_plan_mode` — the agent-state group. The family owns the pinned
  * state LAW (`agent-state-law.mjs`, derived and cited against the host pin
  * 639ed01539) and the per-call walk (`executors.mjs`); persistence arrives
- * through the INJECTED state-store port (`state-store.mjs`) — the family
- * holds no kernel, registry, approval or grant handle, and mints nothing.
+ * through the state-store port (`state-store.mjs`): an INJECTED port when a
+ * kit/test supplies one, else the PRODUCTION durable store
+ * (`fs-state-store.mjs`) under the resolved harness home — the family holds
+ * no kernel, registry, approval or grant handle, and mints nothing.
  *
  * @module tools/agent-state-family
  */
@@ -21,6 +23,19 @@ export {
   createRecordingStateStore,
   STATE_PORT_METHODS,
 } from './state-store.mjs'
+export {
+  createFsStateStore,
+  createHostArmProvider,
+  resolveAgentStateHome,
+  safeReadRecord,
+  storeRootFor,
+  ledgerBytes,
+  MAX_SCOPE_BYTES,
+  MAX_SCOPES_PER_REALM,
+  APPLIED_IDS_KEPT,
+  openStoreDir,
+  STATE_STORE_SUBTREE,
+} from './fs-state-store.mjs'
 export {
   GOAL_ACTIONS,
   GOAL_PHASES,

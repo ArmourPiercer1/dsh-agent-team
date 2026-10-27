@@ -1,0 +1,190 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:35.980Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:35.980Z-1 revision=2 phase=paused
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=2
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded
+[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.135Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.135Z-1 revision=2 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.135Z-1 revision=3 phase=complete
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.201Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: create_goal state-refusal code=GOAL_ALREADY_EXISTS scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NOT_DIRECT_HUMAN scope=agent:bob
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.326Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:bob
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+[dsh-agent-team] a5-agent-state: get_goal store-fault code=AGENT_STATE_STORE_FAULT scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.580Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: create_goal state-refusal code=GOAL_ALREADY_EXISTS scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: exit_plan_mode state-refusal code=PLAN_MODE_NOT_ACTIVE scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.621Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-27T20:46:36.621Z-1 revision=2 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:alice
+
+ ❯ packages/runtime/test/u7-agentstate-fs-store-c1.test.ts (50 tests | 1 failed) 8417ms
+     ✓ H1 DSH_HOME absent / blank / relative / nonexistent → PLANE_AGENT_STATE_STORE_MISSING, and nothing is created anywhere 28ms
+     ✓ H2 DSH_HOME naming the operator's live `.dsh` (or a symlink into it) is REFUSED — never written 2ms
+     ✓ H3 the descriptor refuses an enabled mount whose DSH_HOME is the live `.dsh` of the real operator home 1ms
+     ✓ H4 a realm id that is not one path-safe segment refuses (never sanitised into another realm) 1ms
+     ✓ H5 anchor law: a `team-state` component symlinked OUTSIDE the home refuses before any byte is written 4ms
+     ✓ H6 the store root is exactly <DSH_HOME>/team-state/agent-state/<realmId> (the built port is the fs store) 3ms
+     ✓ P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts 72ms
+     ✓ P2 todo_write replaces the whole list durably; restart reads the last list 48ms
+     ✓ P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded 46ms
+     ✓ P4 update_goal edit/complete fold the revision exactly one each, durably 66ms
+     ✓ R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write 45ms
+     ✓ R2 the STORE-level refusals: stale CAS and already-exists answered BY THE STORE leave one attempts line and zero writes 51ms
+     ✓ R3 REPLAY: a consumed applyId never applies twice — durably, across a restart (STATE_APPLY_REPLAY, zero write) 28ms
+     ✓ R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write 33ms
+     ✓ S1 "a", "a " and " a" are three distinct durable scopes; each reads back only its own fact 60ms
+     ✓ B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null 36ms
+     ✓ B2 an oversized WRITE refuses typed and writes nothing 26ms
+     ✓ B3 corrupt JSON / unknown schema / a FOREIGN key in the file fail closed (AGENT_STATE_STORE_CORRUPT), never read as empty 24ms
+     ✓ B4 an ABSENT scope is honestly null for get (no record exists), while an unreadable one is a typed fault 1ms
+     ✓ K1 nlink>1: a record that is hard-linked elsewhere is REFUSED (AGENT_STATE_STORE_ALIAS_REFUSED) — pins the #409 behaviour for the swap 20ms
+     ✓ K2 a symlinked record is refused at open (O_NOFOLLOW), never followed 1ms
+     ✓ C1 a crash mid-write leaves the PREVIOUS record intact and readable; no torn record; no write audit entry; applyId reusable 39ms
+     ✓ C2 MUTATION CONTROL: the same crash against an IN-PLACE (non-rename) write TEARS the record — the C1 law would go RED without the atomic rename 14ms
+     ✓ A1 direct-human only for a ROOT agent with a user-sourced message in the open turn; goal-round for an exact goal source; otherwise model 1ms
+     ✓ O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output") 31ms
+     ✓ G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back 82ms
+     ✓ G2 MUTATION CONTROL: a get_goal set WITHOUT its tool-invoke arm is denied by the bridge-shape leg (the live boot-1..3 failure, reproduced at C1) 1ms
+     ✓ X scopes dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 20ms
+     ✓ X scopes dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 35ms
+     ✓ X realm dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 9ms
+     ✓ X realm dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 25ms
+     ✓ X ancestor (team-state) swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 5ms
+     ✓ X ancestor (team-state) swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 21ms
+     ✓ X-pin: the operation writes into the directory whose identity it PROVED (openStoreDir pins the descriptor, not a re-resolvable name) 3ms
+     ✓ L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one  2243ms
+     ✓ L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write  1204ms
+     ✓ M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later 37ms
+     ✓ M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id) 33ms
+     ✓ N1 the scope past the bound refuses typed (AGENT_STATE_STORE_SCOPE_LIMIT) with ZERO write; existing scopes stay writable; the default bound is 1024 101ms
+     ✓ N2 concurrent creators of DIFFERENT new scopes cannot overshoot the bound (realm lock) 95ms
+     ✓ F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry  1028ms
+     ✓ F-b a DEAD-pid holder (same host, same boot, no heartbeat) is still broken and the apply proceeds 72ms
+     ✓ F-b2 a holder from a PREVIOUS BOOT of this host is broken (boot id differs) 19ms
+     ✓ F-c a LIVE pid holder (pid recycled / unknown-but-present) with an ANCIENT lock is NEVER broken → typed LOCK_TIMEOUT, ZERO write  339ms
+     ✓ F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT  339ms
+     ✓ R3-1 malformed or incomplete lock records refuse closed, preserve bytes, and do not write  775ms
+     × R3-2 release waits for an in-flight beat and never resurrects the lock 50ms
+     ✓ R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record  1032ms
+     ✓ R3-atomic initial lock publication leaves no target after injected pre-publish crash 22ms
+     ✓ F-d the holder BEATS: while it is inside the critical section the lock record token changes 140ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as F — age alone NEVER breaks a live lock holder (review round-2 F-4) > R3-2 release waits for an in-flight beat and never resurrects the lock
+AssertionError: release must await the gated in-flight beat: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-agentstate-fs-store-c1.test.ts:818:82
+    816|       new Promise<boolean>((resolve) => setTimeout(() => resolve(false…
+    817|     ])
+    818|     expect(settledWhileBeatGated, 'release must await the gated in-fli…
+       |                                                                                  ^
+    819|     openBeat()
+    820|     expect((await pending).ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 49 passed (50)
+   Start at  20:46:34
+   Duration  9.97s (transform 1.11s, setup 0ms, import 1.40s, tests 8.42s, environment 0ms)
+

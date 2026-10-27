@@ -1,0 +1,14 @@
+     × X scopes dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 13ms
+     × X scopes dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 9ms
+     × X realm dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 4ms
+     × X realm dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 6ms
+     × X ancestor (team-state) swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 3ms
+     × X ancestor (team-state) swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 6ms
+     × X-pin: the operation writes into the directory whose identity it PROVED (openStoreDir pins the descriptor, not a re-resolvable name) 1ms
+     × L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one 11ms
+     × L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write 10ms
+     × M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id) 9ms
+     × N1 the scope past the bound refuses typed (AGENT_STATE_STORE_SCOPE_LIMIT) with ZERO write; existing scopes stay writable; the default bound is 1024 1ms
+     × N2 concurrent creators of DIFFERENT new scopes cannot overshoot the bound (realm lock) 8ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  12 failed | 28 passed (40)
