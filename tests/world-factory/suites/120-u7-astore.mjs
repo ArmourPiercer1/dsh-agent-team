@@ -26,6 +26,7 @@ import { pathToFileURL } from 'node:url'
 
 const CASES = Object.freeze([
   'ast:mounted', 'ast:store-under-world-home', 'ast:create-goal-positive', 'ast:get-goal-readback',
+  'ast:update-goal-positive', 'ast:exit-plan-mode-positive',
   'ast:todo-write-positive', 'ast:cross-scope-zero-effect', 'ast:leak-check',
 ])
 
@@ -71,6 +72,16 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
     return
   }
   assembly.writePreBootFiles()
+  // DISCLOSED plant (see assembly): leader-scope plan mode ON, pre-boot,
+  // through the production store's own atomic seed path.
+  let plantedPlanScope = null
+  try {
+    const laneMod = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'index.mjs')).href)
+    plantedPlanScope = await assembly.plantLeaderPlanMode(laneMod, homeReal)
+    record.record.bindings.agentStateStore.plantedPlanModeScope = plantedPlanScope
+  } catch (error) {
+    log(`plan-mode plant failed: ${String(error?.message ?? error).slice(0, 160)}`)
+  }
   world.u7AStore.rows.push(...assembly.teamRows())
   await world.startMock({ decide: makeU7AStoreDecide({ assembly }) })
   record.logHostStart({ world: world.id, phase: 'u7as-boot1' })
@@ -172,7 +183,7 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
         // THE DIRECT-HUMAN TURN: a real session/prompt from the runner
         const goalPrompt = await apiPrompt(origin, cookie, assembly.CREATE_ROOT, assembly.markers.MK_GOAL, 'u7as-human')
         record.record.u7asGoalPrompt = { status: goalPrompt.status }
-        lanes.goalTurn = (await waitUntil(() => toolSeen('team_delegate'), { timeoutMs: 180_000 })).hit === true
+        lanes.goalTurn = (await waitUntil(() => toolSeen('team_delegate'), { timeoutMs: 240_000 })).hit === true
         const wakeCadence = async (content, deadlineMs, tag) => {
           const t0 = Date.now()
           let lastWake = 0
@@ -233,7 +244,7 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
   let reread = null
   try {
     const lane = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'agent-state-family', 'src', 'index.mjs')).href)
-    const goalKey = disk.records.find((r) => r.goal?.objective === assembly.claims.goal)?.key
+    const goalKey = disk.records.find((r) => r.goal?.objective === assembly.claims.goal || r.goal?.objective === assembly.claims.goalEdited)?.key
     if (goalKey !== undefined) {
       const fresh = lane.createFsStateStore({ rootDir: assembly.STORE_ROOT, anchorDir: realpathSync(world.home), realmId: assembly.PLANE_REALM_ID })
       reread = { key: goalKey, goal: await fresh.readGoal(goalKey) }
@@ -254,7 +265,7 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
   const leak = await evaluateLeak({ world, receipts, factory })
   const verdicts = judgeU7AStore({
     disk, exchanges, placement, storeLine, controlRows: [...controlRows.values()], resolutions,
-    homeUnderTests, reread, claims: assembly.claims, workerUpdateArgs, leakOk: leak.ok, leakDetail: leak.detail,
+    homeUnderTests, reread, claims: assembly.claims, workerUpdateArgs, plantedPlanScope, leakOk: leak.ok, leakDetail: leak.detail,
   })
   for (const [id, verdict, detail] of verdicts) if (!done.has(id)) add(id, verdict, detail)
   log(`u7as run ${runId}: lanes=${JSON.stringify(lanes)} records=${String(disk.records.length)} writes=${String(disk.writes.length)} attempts=${String(disk.attempts.length)}`)
@@ -263,6 +274,6 @@ async function runU7AStore({ factory, record, rc, log, line, worlds, keepHome, e
 export default {
   suite: 'u7-astore',
   cases: CASES,
-  totalRequests: 90,
+  totalRequests: 110,
   run: (opts, ctx) => runU7AStore(opts, ctx),
 }

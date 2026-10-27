@@ -59,7 +59,12 @@ import {
  *  contribution visibility and the row definitions all consume THIS list. */
 export const AGENT_STATE_NAMES = Object.freeze(['todo_write', 'create_goal', 'get_goal', 'update_goal', 'exit_plan_mode'])
 
-const refused = (code, detail) => ({ text: `refused: ${String(code)} — ${String(detail)}`, refusal: { code, detail } })
+// The envelope is `{ text }` ONLY: the plane presentation face is a closed
+// `{text}` schema (additionalProperties:false, team-tool-plane.mjs:146-152),
+// so any extra field turns every refusal into the host's "returned invalid
+// output" error and the typed code never reaches the model (measured live,
+// u7-astore C2 boot 1). The code rides the text, verbatim.
+const refused = (code, detail) => ({ text: `refused: ${String(code)} — ${String(detail)}` })
 const accepted = (value) => ({ text: JSON.stringify(value) })
 
 /** The default-deny fail-closed leg: the agent-state effect class is not

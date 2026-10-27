@@ -73,7 +73,9 @@ export function createU7AStoreAssembly({ repoRoot, home, runStamp, reportDir }) 
   }
   const claims = {
     goal: `U7AS_GOAL_CLAIM_${rs}`,
+    goalEdited: `U7AS_GOAL_EDITED_${rs}`,
     todo: `U7AS_TODO_CLAIM_${rs}`,
+    plan: `U7AS_PLAN_${rs}`,
   }
   const tokens = (n) => `u7as-${n}-${rs}`
 
@@ -187,6 +189,20 @@ export function createU7AStoreAssembly({ repoRoot, home, runStamp, reportDir }) 
   }
 
   /**
+   * DISCLOSED PLANT: the family exposes no tool that ENTERS plan mode (the
+   * host's plan-mode service does, and it is not wired to this store), so
+   * the runner seeds `planMode.active=true` for the LEADER scope BEFORE boot
+   * through the production store's own atomic seed path. The exit_plan_mode
+   * positive then proves the governed row's durable commit on the real
+   * host — not that a live session entered plan mode.
+   */
+  async function plantLeaderPlanMode(storeModule, homeReal) {
+    const store = storeModule.createFsStateStore({ rootDir: STORE_ROOT, anchorDir: homeReal, realmId: PLANE_REALM_ID })
+    await store.seedPlanMode(`agent:${CREATE_ROOT}`, true)
+    return `agent:${CREATE_ROOT}`
+  }
+
+  /**
    * The runner's OWN raw read of the store ON DISK (no family code): every
    * scope record (JSON, bounded) + both durable ledgers. `base` is the store
    * root redacted RELATIVE to DSH_HOME (the evidence shows where state lived
@@ -227,7 +243,7 @@ export function createU7AStoreAssembly({ repoRoot, home, runStamp, reportDir }) 
     rs, ROOT, CREATE_ROOT, BP_ANCHOR_ID, BP_MAIN_ID, BASE_PRESET_ID, PLANE_REALM_ID, STORE_ROOT,
     blueprintDir, workspaceDir, markers, claims, tokens,
     teamRowConfig, BP_ANCHOR_YAML, mainBlueprintYaml, teamRows,
-    writePreBootFiles, writeMainBlueprint, readStoreOnDisk,
+    writePreBootFiles, writeMainBlueprint, readStoreOnDisk, plantLeaderPlanMode,
   }
 }
 
@@ -312,6 +328,8 @@ export function makeU7AStoreDecide({ assembly }) {
     if (!leaderHasMarker(req, markers.MK_GOAL)) return { kind: 'text', content: 'U7AS_L1_WAITING_FOR_HUMAN' }
     if (!used.includes('create_goal')) return toolCall('create_goal', { objective: claims.goal, max_goal_rounds: 3 })
     if (!used.includes('get_goal')) return toolCall('get_goal', {})
+    if (!used.includes('update_goal')) return toolCall('update_goal', { goal_id: ids.goalId ?? 'u7as-no-goal-seen', revision: 1, action: 'edit', objective: claims.goalEdited })
+    if (!used.includes('exit_plan_mode')) return toolCall('exit_plan_mode', { plan: `# ${claims.plan}\n\n- the u7as live plan` })
     while (phase < PHASES.length) {
       const ph = PHASES[phase]
       if (ph.kind === 'create') {
@@ -358,12 +376,14 @@ export function judgeU7AStore(f) {
     homeUnderTestsHomes: homeUnderTests, storeBase: disk.base, rootExists: disk.rootExists, realpathUnderHome: disk.realUnderHome, errors: disk.errors,
   }])
   // create_goal positive: the DISK fact is the verdict source.
-  const goalRecs = disk.records.filter((r) => r.goal?.objective === f.claims.goal)
+  const goalRecs = disk.records.filter((r) => r.goal?.objective === f.claims.goal || r.goal?.objective === f.claims.goalEdited)
   const goalRec = goalRecs[0] ?? null
   const createHead = resultOf('leader', 'create_goal')
-  const goalWrite = goalRec === null ? [] : disk.writes.filter((w) => w.op === 'goal/apply' && w.scope === goalRec.key)
+  const goalWrites = goalRec === null ? [] : disk.writes.filter((w) => w.op === 'goal/apply' && w.scope === goalRec.key)
+  const goalWrite = goalWrites.slice(0, 1)
   const createRow = controlRows.filter((r) => /create_goal/.test(`${r.toolName} ${r.summary}`))
-  if (goalRecs.length === 1 && goalRec.goal.phase === 'active' && goalRec.goal.revision === 1 && goalWrite.length === 1 && String(goalRec.key).startsWith('agent:') && goalRec.nlink === 1) {
+  const createAttempt = goalRec === null ? null : disk.attempts.find((a) => a.op === 'goal/apply' && a.scope === goalRec.key && a.outcome === 'applied') ?? null
+  if (goalRecs.length === 1 && goalRec.goal.phase === 'active' && goalWrites.length >= 1 && createAttempt !== null && String(goalRec.key).startsWith('agent:') && goalRec.nlink === 1 && !isRefusal(createHead) && String(createHead).includes(f.claims.goal)) {
     V.push(['ast:create-goal-positive', 'PASS', {
       diskRecord: { key: goalRec.key, goal: goalRec.goal, nlink: goalRec.nlink, file: goalRec.file },
       writesAudit: goalWrite,
@@ -397,14 +417,47 @@ export function judgeU7AStore(f) {
   } else {
     V.push(['ast:todo-write-positive', 'FAIL', { todoHead, todoRecs: todoRecs.length, writes: disk.writes }])
   }
+  // update_goal(edit) positive on the leader: revision folds to EXACTLY 2,
+  // objective replaced, a second goal/apply write in the SAME scope.
+  const editHead = resultOf('leader', 'update_goal')
+  if (goalRec !== null && goalRec.goal.objective === f.claims.goalEdited && goalRec.goal.revision === 2 && goalWrites.length === 2 && !isRefusal(editHead)) {
+    V.push(['ast:update-goal-positive', 'PASS', {
+      diskRecord: { key: goalRec.key, goal: goalRec.goal },
+      writesAudit: goalWrites,
+      modelSaw: String(editHead ?? '').slice(0, 300),
+      law: 'direct-human edit at the exact revision → the store CAS applied → revision 1→2 durably (fold law), read from disk',
+    }])
+  } else if (isRefusal(editHead)) {
+    V.push(['ast:update-goal-positive', 'REFUSED', { toolResultHead: String(editHead).slice(0, 400), goal: goalRec?.goal ?? null }])
+  } else {
+    V.push(['ast:update-goal-positive', 'FAIL', { editHead, goal: goalRec?.goal ?? null, goalWrites }])
+  }
+  const exitHead = resultOf('leader', 'exit_plan_mode')
+  const planRec = disk.records.find((r) => r.key === f.plantedPlanScope) ?? null
+  const planWrites = disk.writes.filter((w) => w.op === 'plan-mode/apply' && w.scope === f.plantedPlanScope)
+  if (planRec !== null && planRec.planMode?.active === false && JSON.stringify(planRec.planMode?.pendingIntents ?? []).includes(f.claims.plan) && planWrites.length === 1 && !isRefusal(exitHead)) {
+    V.push(['ast:exit-plan-mode-positive', 'PASS', {
+      diskRecord: { key: planRec.key, planMode: planRec.planMode },
+      writesAudit: planWrites,
+      modelSaw: String(exitHead ?? '').slice(0, 300),
+      plantDisclosed: 'planMode.active=true was PLANTED on disk pre-boot by the runner through the store seed path (the family has no plan-mode ENTRY tool); this case proves the governed exit row commits durably on the real host, not that a live session entered plan mode',
+    }])
+  } else if (isRefusal(exitHead)) {
+    V.push(['ast:exit-plan-mode-positive', 'REFUSED', { toolResultHead: String(exitHead).slice(0, 400), planMode: planRec?.planMode ?? null }])
+  } else {
+    V.push(['ast:exit-plan-mode-positive', 'FAIL', { exitHead, planRec, planWrites }])
+  }
   // cross-scope: the member's update_goal named the LEADER's goal ref.
   const crossHead = resultOf('worker', 'update_goal')
   const memberGet = resultOf('worker', 'get_goal')
   const memberKey = todoRecs[0]?.key ?? null
-  const leaderUntouched = goalRec !== null && goalRec.goal.phase === 'active' && goalRec.goal.revision === 1
+  // the member runs AFTER the leader's edit: the leader's record must still be
+  // exactly what the LEADER left (active, not completed by the member).
+  const leaderUntouched = goalRec !== null && goalRec.goal.phase === 'active' && goalWrites.every((w) => w.scope === goalRec.key) && disk.writes.filter((w) => w.op === 'goal/apply').length === goalWrites.length
   const noMemberGoalWrite = memberKey === null ? true : disk.writes.filter((w) => w.op === 'goal/apply' && w.scope === memberKey).length === 0
   const crossNamedLeader = f.workerUpdateArgs?.goal_id !== undefined && goalRec !== null && f.workerUpdateArgs.goal_id === goalRec.goal.goalId
-  if (isRefusal(crossHead) && leaderUntouched && noMemberGoalWrite && crossNamedLeader) {
+  const crossTyped = typeof crossHead === 'string' && /^refused: GOAL_(NOT_FOUND|STALE_REVISION)/.test(crossHead.trim())
+  if (crossTyped && leaderUntouched && noMemberGoalWrite && crossNamedLeader) {
     V.push(['ast:cross-scope-zero-effect', 'PASS', {
       toolResultHead: String(crossHead).slice(0, 400),
       namedForeignRef: f.workerUpdateArgs,
@@ -414,7 +467,7 @@ export function judgeU7AStore(f) {
       law: 'the call named the leader goal_id+revision; the scope is the CALLING agent, so it met the member scope and answered typed — the leader record is still active rev 1 on disk and the write audit holds no goal entry for the member',
     }])
   } else {
-    V.push(['ast:cross-scope-zero-effect', 'FAIL', { crossHead, leaderUntouched, noMemberGoalWrite, crossNamedLeader, workerUpdateArgs: f.workerUpdateArgs }])
+    V.push(['ast:cross-scope-zero-effect', 'FAIL', { crossHead, crossTyped, leaderUntouched, noMemberGoalWrite, crossNamedLeader, workerUpdateArgs: f.workerUpdateArgs }])
   }
   V.push(['ast:leak-check', f.leakOk ? 'PASS' : 'FAIL', f.leakDetail ?? {}])
   return V

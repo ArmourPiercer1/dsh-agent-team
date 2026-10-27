@@ -489,3 +489,22 @@ describe('u7as A — the production arm provider mirrors host authority (fail cl
     expect(throwing('agent:human')).toEqual({ kind: 'model' })
   })
 })
+
+describe('u7as O — every row outcome fits the plane presentation face (closed {text})', () => {
+  it('O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")', async () => {
+    const { built, rows } = await mountProduction({ humanFor: ['alice'] })
+    const face = (built.value.definitions[0] as unknown as { output: { schema: { additionalProperties: boolean, properties: Record<string, unknown> } } }).output.schema
+    expect(face.additionalProperties).toBe(false)
+    const allowed = Object.keys(face.properties)
+    const outcomes = [
+      await rows.get_goal.execute({}, exec('alice')),
+      await rows.create_goal.execute({ objective: 'o' }, exec('alice')),
+      await rows.create_goal.execute({ objective: 'again' }, exec('alice')),
+      await rows.update_goal.execute({ goal_id: 'nope', revision: 1, action: 'pause' }, exec('alice')),
+      await rows.todo_write.execute({ todos: 'bad' }, exec('alice')),
+      await rows.exit_plan_mode.execute({ plan: '# p' }, exec('alice')),
+    ]
+    for (const o of outcomes) expect(Object.keys(o).filter((k) => !allowed.includes(k)), JSON.stringify(o).slice(0, 120)).toEqual([])
+    expect(outcomes.filter((o) => o.text.startsWith('refused: ')).length).toBeGreaterThanOrEqual(3)
+  })
+})
