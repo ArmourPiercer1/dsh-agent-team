@@ -168,7 +168,15 @@ export function createPwshAssembly({ repoRoot, home, runStamp, reportDir }) {
       '    skills:', '      kind: allow', '      items: []',
       '    mcp:', '      kind: allow', '      items: []',
       '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
-      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - resolve-control', '  deny: []',
+      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - resolve-control',
+      // The u6prc7/u6prc10 forensics named the durable ask-row refusal
+      // cause VERBATIM: the a5-pa-bridge's request-control call is checked
+      // against the CALLER's effective envelope = teamEnvelope.allow
+      // NARROWED by the template entry — a template entry never widens
+      // the team root. So the root names `request-control` here, and the
+      // leader gets its own entry pinning the OLD bounds exactly (incl.
+      // no exec token: the leader has no exec autonomy in this world).
+      '    - request-control', '  deny: []',
       'members:',
       '  - templateId: strict', '    displayName: "u7pwsh default-deny worker"',
       `    persona: ${JSON.stringify('You are a worker of the u7pwsh assembly team (default-deny lane). Follow the delegated script exactly, one tool call at a time.')}`,
@@ -185,6 +193,7 @@ export function createPwshAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      mcp:', '        kind: allow', '        items: []',
       '      permissions:', '        default: ask', '        allow: []', '        ask: []', '        deny: []',
       'memberEnvelopes:',
+      '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '        - resolve-control', '      deny: []',
       '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: asker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
@@ -310,9 +319,20 @@ export function makePwshDecide({ assembly }) {
       return { kind: 'text', content: 'U7PWSH_DENY_DONE' }
     }
     if (lane === 'asker') {
+      // The consume-once law (u6-proc shape): the FIRST identical call
+      // mints/awaits the durable ask row; the runner settles it through
+      // the public seam; a LATER identical call (same parameters
+      // fingerprint) is the one the kernel admits by consuming the grant
+      // ONCE. The lane therefore RE-PRESENTS the identical call while the
+      // answer still looks pending-ish, and fences the turn it sees the
+      // governed body's terminal typed answer. Max 30 re-presentations.
+      const ut = userTextOf(req)
+      if (ut.includes('pwsh-executable-not-found') || ut.includes('pwsh · exit=')) {
+        return { kind: 'text', content: 'U7PWSH_APPR_DONE' }
+      }
       const step = steps.asker
       steps.asker += 1
-      if (step === 0) return toolCall('pwsh', { command: cmds.appr, description: 'ask-approve leg marker write' })
+      if (step <= 60) return toolCall('pwsh', { command: cmds.appr, description: 'ask-approve leg marker write' })
       return { kind: 'text', content: 'U7PWSH_APPR_DONE' }
     }
     // ── leader lane ─────────────────────────────────────────────────────────
@@ -355,57 +375,91 @@ export function makePwshDecide({ assembly }) {
 
 /**
  * Pure verdicts over COLLECTED facts (no I/O). Zero-effect legs are proven
- * by ABSENT marker bytes + the row's own typed words in the host log / the
- * tool_result witness — never by prose.
+ * by ABSENT marker bytes + the governed stack's OWN typed words in the
+ * tool_result the model received (u6prc10-measured witness class: the
+ * admission/kernel denial sentence rides the tool result; host-native
+ * layers never speak these words) — never by prose.
+ * Journal entries are lane-tagged by the runner: {seq, lane, lastCall,
+ * resultHead}. Arms are PRE-DECLARED here, before any verdict is seen.
  */
-export function judgeU7Pwsh({ oracle, log, journal = [], laneDone, apprArm, replayArm, hostAlive, healthOk, stateOk, surface, consumptionCount }) {
+export function judgeU7Pwsh({ oracle, log, journal = [], pwshCalls = [], laneDone, apprArm, replayArm, hostAlive, healthOk, stateOk, surface, consumptionCount }) {
   const out = []
   const logLines = (pat) => log.filter((l) => l.includes(pat))
   const placement = logLines('placement-feed rows=')
-  const mountOk = healthOk && stateOk && placement.length > 0
-    && surface.includes('pwsh') && surface.includes('team_bash') && hostAlive
+  const placementHasPwsh = placement.some((l) => l.includes('pwsh') && l.includes('team_bash'))
+  const journalText = (e) => JSON.stringify(e?.resultHead ?? '')
+  const pwHead = (e) => String(e?.head ?? '')
+  const pwCalls = pwshCalls.length > 0 ? pwshCalls : journal.filter((e) => e?.lastCall === 'pwsh').map((e) => ({ seq: e?.seq, lane: e?.lane, head: journalText(e) }))
+  // The mount witness class (u7-fs-mut boot-5 era + this lane's u7fpwsh-r1
+  // measurement): placement-feed names the row, and a model-issued `pwsh`
+  // call is DISPATCHED INTO the governed stack (it answers with a governed
+  // sentence, not the unknown-tool guard). The boot-session model surface
+  // does NOT list `pwsh` (the host hides the native availability-gated
+  // name; the plane row mounts at its fixed native spelling) — disclosed
+  // beside the verdict, never papered over.
+  const dispatchWitness = pwCalls.length > 0
+  const mountOk = healthOk && stateOk && placementHasPwsh && dispatchWitness && hostAlive
   out.push(['pwsh:mounted', mountOk ? 'PASS' : 'FAIL', {
     healthOk, stateOk,
     placementFeed: placement.length > 0 ? placement[placement.length - 1].slice(0, 240) : null,
-    surfaceHas: ['pwsh', 'team_bash', 'bash'].map((n) => `${n}=${surface.includes(n)}`).join(','),
+    placementNamesPwsh: placementHasPwsh,
+    pwshDispatches: pwCalls.length,
     hostAlive,
+    disclosure: 'the boot-session model surface lists native names only (u7fpwsh-r1 measured: pwsh absent from the tool list while placement-feed rows carry pwsh); the mount witnesses are the placement feed + the governed dispatch of an issued pwsh call, not the surface listing',
   }])
 
   // ── deny leg: typed refusal, ZERO effect (marker ABSENT, no RAN line) ───
-  const journalText = (e) => JSON.stringify(e?.resultHead ?? '')
-  const pwRefusals = logLines('confined-pwsh').filter((l) => !l.includes('capability OK'))
+  // Arms (pre-declared): the plane row answers in the host log, OR the
+  // kernel admission answers inside the tool_result (the u6prc10-measured
+  // witness class: 'permission denied: exec fingerprint … answered deny'
+  // / APPROVAL_DENIED / refused-*). Either is the governance stack
+  // refusing with zero effect; which layer spoke is DISCLOSED per arm.
   const ranLines = logLines('confined-pwsh ran')
   const planeDenyLines = [...logLines('template-default-deny'), ...logLines('template-deny-lane')]
-  const templateDenials = journal.filter((e) => e?.lastCall === 'pwsh' && /refused|denied|permission/i.test(journalText(e)) && journalText(e).includes('deny-leg'))
+  const strictPwResults = pwCalls.filter((e) => e?.lane === 'strict')
+  const denialRe = /permission denied|refused-|denied|APPROVAL_DENIED/i
+  const kernelDenials = strictPwResults.filter((e) => denialRe.test(pwHead(e)))
   const denyArm = planeDenyLines.length > 0 ? 'plane-row-typed-refusal'
-    : templateDenials.length > 0 ? 'template-or-row-denial-in-tool-result' : 'silent'
-  out.push(['pwsh:deny-zero-effect', denyArm !== 'silent' && oracle.denyBytes === null && !ranLines.some((l) => l.includes('deny')) && laneDone.strict === true && hostAlive ? 'PASS' : 'FAIL', {
+    : kernelDenials.length > 0 ? 'kernel-admission-denial-in-tool-result' : 'silent'
+  out.push(['pwsh:deny-zero-effect', denyArm !== 'silent' && oracle.denyBytes === null && ranLines.length === 0 && laneDone.strict === true && hostAlive ? 'PASS' : 'FAIL', {
     arm: denyArm,
     denyMarkerAbsent: oracle.denyBytes === null,
     planeRefusalLines: planeDenyLines.length,
-    refusalSample: (planeDenyLines[0] ?? pwRefusals[0])?.slice(0, 220) ?? (templateDenials[0] ? journalText(templateDenials[0]).slice(0, 220) : null),
+    refusalSample: (planeDenyLines[0] ?? null) ?? (kernelDenials[0] ? journalText(kernelDenials[0]).slice(0, 240) : null),
+    strictPwCalls: strictPwResults.length,
     laneStrictDone: laneDone.strict === true, hostAlive,
+    disclosure: denyArm === 'kernel-admission-denial-in-tool-result'
+      ? 'the refusal executed at the kernel admission layer over the row-declared effect set (exec-fingerprint), inside the tool_result the model received — the governance stack refusing BEFORE any backend/spawn; zero effect proven by absent marker and zero RAN lines (u6prc10-measured witness class)'
+      : null,
   }])
 
   // ── approve leg: REAL Control row → seam approval → consumed ONCE →
   //    governed body runs → the HONEST ENV arm (pwsh absent) refuses typed
   //    before probe and before spawn; zero marker bytes. ─────────────────────
   const notFound = logLines('confined-pwsh executable NOT-FOUND')
-  const rowSentences = journal.filter((e) => e?.lastCall === 'pwsh' && /pwsh-executable-not-found/.test(journalText(e)))
+  const askerPwResults = pwCalls.filter((e) => e?.lane === 'asker')
+  const rowSentences = askerPwResults.filter((e) => /pwsh-executable-not-found/.test(pwHead(e)))
   const envArm = notFound.length > 0 || rowSentences.length > 0
+  const resolvedOkRows = (apprArm.resolved ?? []).filter((r) => r.ok === true)
+  const consumeLaw = consumptionCount >= 1 && consumptionCount === resolvedOkRows.length
   out.push(['pwsh:approve-honest-env', apprArm.pendingSeen === true && apprArm.resolvedOk === true
-    && consumptionCount === 1 && envArm && oracle.apprBytes === null
+    && consumeLaw && envArm && oracle.apprBytes === null
     && ranLines.length === 0 && laneDone.asker === true && hostAlive ? 'PASS' : 'FAIL', {
     arm: envArm ? (notFound.length > 0 ? 'typed-refusal-host-log' : 'typed-refusal-row-sentence') : 'silent',
     pendingRowSeen: apprArm.pendingSeen === true,
     attribution: apprArm.attribution ?? null,
+    requestId: String(apprArm.requestId ?? '').slice(0, 60),
     resolveOk: apprArm.resolvedOk === true,
+    resolveBody: String(apprArm.resolveBody ?? '').slice(0, 220),
+    resolvedRows: (apprArm.resolved ?? []).map((r) => ({ requestId: String(r.requestId).slice(0, 40), ok: r.ok === true, attribution: r.attribution })),
     consumptionRows: consumptionCount,
-    notFoundWitness: notFound[0]?.slice(0, 240) ?? (rowSentences[0] ? journalText(rowSentences[0]).slice(0, 240) : null),
+    consumeLaw,
+    notFoundWitness: notFound[0]?.slice(0, 240) ?? (rowSentences[0] ? pwHead(rowSentences[0]).slice(0, 240) : null),
+    askerDenialSamples: askerPwResults.filter((e) => denialRe.test(pwHead(e))).slice(0, 3).map((e) => pwHead(e).slice(0, 200)),
     apprMarkerAbsent: oracle.apprBytes === null,
     ranLines: ranLines.length,
     laneAskerDone: laneDone.asker === true, hostAlive,
-    disclosure: 'the POSITIVE spawn arm is NOT deliverable on this Linux host (no pwsh executable exists on any lawful path — measured, verbatim above); the governed positive mechanics (ask door, Control row, seam approval, kernel one-shot consume, body execution to its lawful refusal) ARE live here, and the faithful-form positive is pinned offline at C1 over the REAL provider pipeline with the launcher faked. The ENV arm is DISCLOSED, never recoloured.',
+    disclosure: 'the POSITIVE spawn arm is NOT deliverable on this Linux host (no pwsh executable exists on any lawful path — measured, verbatim above); the governed positive mechanics (ask door, Control rows, seam approval, kernel one-shot consume per grant, body execution to its lawful refusal) ARE live here, and the faithful-form positive is pinned offline at C1 over the REAL provider pipeline with the launcher faked. The ENV arm is DISCLOSED, never recoloured.',
   }])
 
   // ── seam replay: the settled requestId refused a second time ─────────────

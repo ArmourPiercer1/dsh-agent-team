@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3185/?token=c9uISNHY_u3M_v7qmMx4-drIxEkiH3IczxFD4QOdFp4
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z
+[dsh-agent-team] a5ptc: census-boot root=session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z
+[dsh-agent-team] u7f-pwsh-row: governed-pwsh cancelled-at-pa-edge

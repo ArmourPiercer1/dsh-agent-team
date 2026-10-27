@@ -48,6 +48,7 @@ async function runU7Pwsh({ factory, record, rc, log, line, worlds, keepHome, evi
     }
   }
   const hostAlive = () => world.instance?.child !== null && world.instance?.child !== undefined && world.instance?.child.exitCode === null
+  let hostAliveAtEvidence = true
 
   // ── materialize + boot (ONE host start) ──────────────────────────────────
   const world = await factory.createWorld({ line, u7Pwsh: { rows: [] } })
@@ -188,39 +189,58 @@ async function runU7Pwsh({ factory, record, rc, log, line, worlds, keepHome, evi
           // deny leg first (synchronous typed refusal, no control row)
           laneDone.strict = await wakeCadence('U7PWSH_DENY_DONE', 150_000, 's')
 
-          // ── approve leg: the asker's pwsh call mints a REAL pending row;
-          // the runner settles it with the PUBLIC team.resolveControl v4
-          // seam — the very endpoint the GUI calls for a human operator. ────
-          const apprArm = { pendingSeen: false, requestId: null, kind: null, attribution: null, resolveBody: null, resolvedOk: false, waitedMs: null, channelError: null }
+          // ── approve leg: the asker's pwsh call mints a REAL pending row
+          // (u7fpwsh-r2 measured TWO governed ask identities on this path:
+          // the bridge's durable control-request row AND the kernel PA
+          // case row, each resolved and consumed EXACTLY ONCE); the runner
+          // settles EVERY matching pending row that appears through the
+          // PUBLIC team.resolveControl v4 seam until the lane completes. ──
+          const apprArm = { pendingSeen: false, requestId: null, kind: null, attribution: null, resolveBody: null, resolvedOk: false, resolved: [], waitedMs: null, channelError: null }
           {
-            const apprDrive = wakeCadence('U7PWSH_APPR_DONE', 150_000, 'a')
-            const pend = await waitA(async () => {
+            const apprDrive = wakeCadence('U7PWSH_APPR_DONE', 170_000, 'a')
+            const pendingPwshRow = async () => {
               const st = await stateSnapshot()
               const governed = await governedControlSnapshot().catch((error) => {
                 apprArm.channelError = String(error?.message ?? error).slice(0, 200)
                 return null
               })
-              if (governed === null) return false
+              if (governed === null) return null
               const pending = (governed.requests ?? []).filter((r) => r.status === 'pending' && (r.toolName === 'pwsh' || /tool:pwsh|tool=pwsh|pwsh/.test(String(r.summary ?? ''))))
-              if (pending.length === 0) return false
+              if (pending.length === 0) return null
               const askerInst = (st?.members ?? []).find((m) => m.templateId === 'asker')?.instanceId ?? null
+              const fresh = pending.filter((r) => !apprArm.resolved.some((x) => x.requestId === r.requestId))
+              if (fresh.length === 0) return null
               const exact = askerInst === null
-                ? pending[0] ?? null
-                : pending.find((r) => String(r.summary ?? '').includes(`:${askerInst}:`)) ?? null
-              const p = exact ?? (pending.length === 1 ? pending[0] : null)
-              if (p === null || p === undefined) return false
+                ? fresh[0] ?? null
+                : fresh.find((r) => String(r.summary ?? '').includes(`:${askerInst}:`) || String(r.summary ?? '').includes(askerInst)) ?? null
+              const p = exact ?? (fresh.length === 1 ? fresh[0] : null)
+              if (p === null || p === undefined) return null
+              return { row: p, attribution: exact !== null ? 'exact-instance' : 'sole-pending-row' }
+            }
+            const first = await waitA(async () => (await pendingPwshRow()) !== null, 120_000)
+            apprArm.waitedMs = first.waitedMs
+            for (let round = 0; round < 5; round += 1) {
+              const found = await pendingPwshRow()
+              if (found === null) break
+              const { row, attribution } = found
               apprArm.pendingSeen = true
-              apprArm.requestId = p.requestId
-              apprArm.kind = p.kind ?? null
-              apprArm.attribution = exact !== null ? 'exact-instance' : 'sole-pending-row'
-              return true
-            }, 120_000)
-            apprArm.waitedMs = pend.waitedMs
-            if (apprArm.pendingSeen) {
+              if (apprArm.requestId === null) {
+                apprArm.requestId = row.requestId
+                apprArm.kind = row.kind ?? null
+                apprArm.attribution = attribution
+              }
               const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
-                { teamSessionId, requestId: apprArm.requestId, decision: 'allow', note: 'u7pwsh-c2-approve-arm' }, 'u7pwsh-approve', 4)
-              apprArm.resolveBody = JSON.stringify(res?.body ?? null).slice(0, 500)
-              apprArm.resolvedOk = res?.status === 200 && res?.body?.result?.ok === true
+                { teamSessionId, requestId: row.requestId, decision: 'allow', note: 'u7pwsh-c2-approve-arm' }, 'u7pwsh-approve', 4)
+              const ok = res?.status === 200 && res?.body?.result?.ok === true
+              apprArm.resolved.push({ requestId: row.requestId, attribution, ok, body: JSON.stringify(res?.body ?? null).slice(0, 300) })
+              if (apprArm.resolved.length === 1) {
+                apprArm.resolveBody = apprArm.resolved[0].body
+                apprArm.resolvedOk = ok
+              }
+              // give the retried call time to consume this grant (and, if
+              // the kernel opens another governed ask identity, to mint it
+              // — the next loop iteration settles that one too).
+              if (await waitA(() => replySeen('U7PWSH_APPR_DONE'), 25_000).then((w) => w.hit)) break
             }
             laneDone.asker = await apprDrive
 
@@ -251,30 +271,59 @@ async function runU7Pwsh({ factory, record, rc, log, line, worlds, keepHome, evi
             } catch { /* log unreadable → verdicts fall to the disk truth */ }
             const governedPost = await governedControlSnapshot().catch(() => null)
             const consumptionCount = (governedPost?.consumptions ?? []).length
+            const aliveForVerdict = hostAlive()
+            hostAliveAtEvidence = aliveForVerdict
+            // FULL pwsh-call digest over ALL requests (the lane transcript
+            // slice is tail-only; the consume-chain rows sit mid-stream).
+            const pwshCalls = (world.mock?.requests ?? []).map((rec) => {
+              const body = rec.body ?? {}
+              const msgs = Array.isArray(body.messages) ? body.messages : []
+              const uses = msgs.flatMap((m) => m?.role === 'assistant' && Array.isArray(m.content)
+                ? m.content.filter((b) => b?.type === 'tool_use' && String(b.name) === 'pwsh') : [])
+              if (uses.length === 0) return null
+              const bodyText = JSON.stringify(body).slice(0, 200_000)
+              const lane = bodyText.includes(assembly.tokens('d1')) ? 'strict'
+                : bodyText.includes(assembly.tokens('d2')) ? 'asker' : 'other'
+              const lastUser = [...msgs].reverse().find((m) => m?.role === 'user')
+              const tr = Array.isArray(lastUser?.content)
+                ? lastUser.content.find((b) => b?.type === 'tool_result')
+                : null
+              const head = typeof lastUser?.content === 'string' ? lastUser.content
+                : typeof tr?.content === 'string' ? tr.content
+                  : tr?.content !== undefined ? JSON.stringify(tr.content) : null
+              return { seq: rec.seq, lane, head: String(head ?? '').slice(0, 240) }
+            }).filter((x) => x !== null)
             record.record.u7pwshDigest = {
               oracle,
               surface, laneDone,
               appr: apprArm,
               replay: record.record.u7pwshReplay,
+              pwshCalls,
               controlRequests: (governedPost?.requests ?? []).map((r) => ({ ...r, requestId: String(r.requestId).slice(0, 40) })).slice(-24),
               consumptionCount,
               logHits: {
                 pwLines: logLines.filter((l) => l.includes('confined-pwsh')).map((l) => l.slice(0, 220)),
                 placement: logLines.filter((l) => l.includes('placement-feed')).map((l) => l.slice(0, 220)),
               },
-              mockLaneTranscript: (world.mock?.requests ?? []).slice(-60).map((rec) => {
+              mockLaneTranscript: (world.mock?.requests ?? []).slice(-80).map((rec) => {
                 const body = rec.body ?? {}
                 const msgs = Array.isArray(body.messages) ? body.messages : []
+                const bodyText = JSON.stringify(body).slice(0, 200_000)
+                const lane = bodyText.includes(assembly.tokens('d1')) ? 'strict'
+                  : bodyText.includes(assembly.tokens('d2')) ? 'asker'
+                    : bodyText.includes('U7PWSH_PHASE_') || bodyText.includes('[team-root-work') || bodyText.includes('team-work-settled') ? 'leader' : 'other'
                 const toolUses = msgs.flatMap((m) => m?.role === 'assistant' && Array.isArray(m.content)
                   ? m.content.filter((b) => b?.type === 'tool_use').map((b) => String(b.name)) : [])
                 const lastUser = [...msgs].reverse().find((m) => m?.role === 'user')
                 const resultHead = typeof lastUser?.content === 'string' ? lastUser.content.slice(0, 150)
                   : Array.isArray(lastUser?.content)
                     ? (lastUser.content.find((b) => b?.type === 'tool_result')?.content?.slice?.(0, 150)
+                       ?? lastUser.content.find((b) => b?.type === 'tool_result')?.content
                        ?? JSON.stringify(lastUser.content[0] ?? '').slice(0, 150))
                     : null
                 return {
                   seq: rec.seq,
+                  lane,
                   nCalls: toolUses.length,
                   lastCall: toolUses.length > 0 ? toolUses[toolUses.length - 1] : null,
                   resultHead,
@@ -288,9 +337,10 @@ async function runU7Pwsh({ factory, record, rc, log, line, worlds, keepHome, evi
             const verdicts = judgeU7Pwsh({
               oracle, log: logLines,
               journal: record.record.u7pwshDigest.mockLaneTranscript ?? [],
+              pwshCalls,
               laneDone, apprArm, replayArm: record.record.u7pwshReplay,
               consumptionCount,
-              hostAlive: hostAlive(), healthOk: health?.body?.ok === true, stateOk: stateW.hit, surface,
+              hostAlive: aliveForVerdict, healthOk: health?.body?.ok === true, stateOk: stateW.hit, surface,
             })
             for (const [id, verdict, detail] of verdicts) {
               if (!done.has(id)) add(id, verdict, detail)
@@ -308,7 +358,7 @@ async function runU7Pwsh({ factory, record, rc, log, line, worlds, keepHome, evi
   if (!done.has('pwsh:leak-check')) add('pwsh:leak-check', leak.ok ? 'PASS' : 'FAIL', leak.detail)
   const laneGaps = Object.entries(laneDone).filter(([, v]) => v !== true).map(([k]) => k)
   if (laneGaps.length > 0) log(`lane completion gaps: ${laneGaps.join(',')} (each affected case above already carries the FAIL)`)
-  if (!hostAlive() && !done.has('pwsh:host-died')) log('host died during the run (verdicts read the evidence as-is)')
+  if (!hostAliveAtEvidence && !done.has('pwsh:host-died')) log('host died before the evidence point (verdicts read the evidence as-is)')
 }
 
 export default {
