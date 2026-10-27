@@ -143,10 +143,12 @@ describe('GLUE-6 LEG B — the plane renders ContentBlock[], not a String', () =
     return built.value?.definitions ?? []
   }
 
-  it('the trio definitions all carry a render that returns an array of typed text blocks', async () => {
+  it('the four definitions all carry a render that returns an array of typed text blocks', async () => {
     const definitions = await buildDefinitions()
+    // U7-F: the process family's second row mounts at its fixed native
+    // spelling — the default world's face grows from the trio to the four.
     expect(definitions.map((d) => (d as unknown as { name: string }).name).sort()).toEqual(
-      ['team_bash', 'team_glob', 'team_grep'],
+      ['pwsh', 'team_bash', 'team_glob', 'team_grep'],
     )
     // The two lanes the lane's closed `{ text }` envelope can carry: a
     // computed refusal (the only thing the default effect face answers today)

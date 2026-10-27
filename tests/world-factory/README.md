@@ -186,6 +186,23 @@ World. Run `node --test tests/world-factory/registries.test.mjs`.
   outside the declared envelopes) — NOT the shell-rung walk; the
   human-admin born-terminal and dual-gate downgrade laws remain
   C1/offline claims, attributed as such in the judge notes.
+* `u7-pwsh` (U7-F C2, one governed Team World, delivered on boot r3; boot
+  budget 3/3 SPENT — the runner refuses a fourth start): the governed
+  `pwsh` shell-class SECOND row over the live Host. Headline per REVIEW-402
+  ruling 2: **C2 6/6 PASS over the refusal/lifecycle arms; positive spawn
+  DISCLOSED (pwsh absent; matrix M-07 stays NOT_VERIFIED)** — the six cases
+  are `u7pwsh:mounted` (placement-feed row + governed dispatch answer; the
+  host hides the availability-gated native name from the boot model
+  surface, disclosed), `u7pwsh:deny-zero-spawn` (kernel sentence inside the
+  tool_result), `u7pwsh:approve-honest` (the durable control ask AND the
+  kernel PA case row each resolved + consumed EXACTLY ONCE, then the typed
+  `pwsh-executable-not-found` refusal before any spawn — this Linux host
+  carries no pwsh binary, so the positive live spawn is DISCLOSED, never
+  claimed), `u7pwsh:replay-refused` (`CONTROL_REQUEST_DECIDED`) and the
+  leak/teardown legs. Positive mechanics (argv fidelity, exit passthrough,
+  zero-spawn witnesses) are C1-pinned (`u7f-pwsh-row-c1`, 49 legs). Run
+  summary + budget prose: dev/agent-workflow/evidence/u7-f-pwsh-20261026/
+  c2/README.md; the record bytes stay frozen.
 
 `negatives` carries honest worst-of semantics: that record's overall is
 TIMEOUT/START_FAILED **by design** — the classification is the demonstrated
