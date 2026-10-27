@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=I7WDauhjAQAOC06BoHSiAVQg0dG1KAF83ScNjV-5HWw
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7f-realm-u5u7finsp-20261027t00-30-18z
+[dsh-agent-team] a5ptc: census-boot root=session-u7f-team-u5u7finsp-20261027t00-30-18z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7f-realm-u5u7finsp-20261027t00-30-18z
+[dsh-agent-team] a7f-skill: governed-skill pa-refused code=TOOL_BINDING_UNVERIFIED
+[dsh-agent-team] a7f-ilist: governed-inspect-list pa-refused code=TOOL_BINDING_UNVERIFIED

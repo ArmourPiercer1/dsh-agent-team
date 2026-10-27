@@ -55,5 +55,8 @@ node scripts/ci-pr-gate.mjs --only census --census-captures 1 \
 node scripts/ci-pr-gate.mjs --only census --census-captures 1 --census-test-timeout 20000
 ```
 
-Reports land here as `census-<pid>-<n>.json`; the leg names the exact path in its detail. Nothing here
+Reports used to land here as `census-<pid>-<n>.json`. Since 2026-10-27 the raw reports and the
+re-samples land in the gitignored `.artifacts/census/` instead, and only the `census-comparison-*.json`
+sidecar is written here. `scripts/eb3-evidence-guard.mjs` refuses a PR that adds a raw capture under the
+evidence root (see `UNTRACKED-SCRATCH.md`). The leg names the exact path in its detail. Nothing here
 is consumed by CI — the workflow runs the legs, it does not read this directory.

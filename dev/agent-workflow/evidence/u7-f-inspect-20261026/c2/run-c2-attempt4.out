@@ -1,0 +1,9 @@
+[u7f-c2] boot 1 starting (world u5u7finsp-20261027T00-34-43Z)
+[u7f-c2] case u7f:mounted: PASS {"healthOk":true,"stateOk":true,"createOk":true,"createBody":"ok","placementFeed":"[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7f-realm-u5u7finsp-20261027t00-34-43z","rootSe
+[u7f-c2] case u7f:skill-load: FAIL {"transcriptHasSkillContent":false,"ranWitness":["[dsh-agent-team] a7f-skill: governed-skill pa-refused code=TOOL_BINDING_UNVERIFIED"],"refusalWitness":[]}
+[u7f-c2] case u7f:inspect-list: FAIL {"transcriptHasProviders":false,"ranWitness":["[dsh-agent-team] a7f-ilist: governed-inspect-list pa-refused code=TOOL_BINDING_UNVERIFIED"]}
+[u7f-c2] case u7f:refusal-zero-effect: PASS {"transcriptHasRefusal":true,"queryRanLines":[]}
+[u7f-c2] case u7f:approval-leg: FAIL {"resolveIssues":0,"pendingSeenNonEmpty":0,"note":"PASS requires a durable PA ask actually raised (pending count>0) AND a leader resolve actually issued; tool-definition text never counts"}
+[u7f-c2] case u7f:leak-check: PASS {"secretClaimInCorpus":false,"secretClaimInHostLog":false,"secretBytesUnchanged":true}
+[u7f-c2] verdicts written to c2-verdicts.json
+[u7f-c2] DONE pass=3 fail=3

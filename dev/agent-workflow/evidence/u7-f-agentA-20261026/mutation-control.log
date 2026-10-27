@@ -1,0 +1,35 @@
+== MUT-1 owner fence dropped (law d) -> expect AC-20/21/22/23 RED ==
+     × AC-14 send_message POSITIVE (in-roster target): the steer leg RAN once 14ms
+     × AC-20 FOREIGN-scope send_message: typed refusal, zero port, ZERO Control row opened (fence before PA) 8ms
+     × AC-21 FOREIGN-scope interrupt: typed refusal, zero reach 7ms
+     × AC-22 off-roster bare target: scope-foreign refusal with zero port (roster is trusted data, never a probe) 6ms
+     × AC-23 no roster wired: steer/interrupt FAIL CLOSED (membership unprovable = membership not held), zero port 9ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  5 failed | 28 passed (33)
+== MUT-2 workflow spawn-delegate fence dropped (law c) -> expect AC-27 RED ==
+     × AC-27 WORKFLOW amplifying step (law (c)): the delegate refuses and the fake records ZERO spawnChild under the workflow 8ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 32 passed (33)
+== MUT-3 fork-context authority scan dropped (law e) -> expect AC-28 RED ==
+     × AC-28 fork context carrying AUTHORITY-SHAPED keys (law (e)): refused, zero fork 9ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 32 passed (33)
+== MUT-4 one-shot token ledger dropped -> expect AC-32/43 RED ==
+     × AC-32 ONE-SPAWN law: the same exec token spawns ONCE; the replayed call refuses and the port stays at one call 11ms
+     × AC-43 the PA replay mirror: a settled exec token asks the PA edge ONCE, the second call refuses at the family ledger 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 31 passed (33)
+== MUT-5 enumeration requests the domain-ref arm (law a) -> expect AC-40 RED ==
+     × AC-40 enumeration PA sets carry NO domain-ref arm and no mutation kind — list_agents 13ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 32 passed (33)
+== MUT-6 row-level spawn amplification fence dropped (law b) -> expect AC-24/25/26 RED ==
+     × AC-24 AMPLIFYING spawn (provider outside the caller): typed refusal, ZERO spawnChild 16ms
+     × AC-25 AMPLIFYING continuable child (caller not continuable): refused, zero spawn 4ms
+     × AC-26 no caller-authority snapshot: spawn FAILS CLOSED (an unbounded caller can never prove a bounded child), zero port 4ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 30 passed (33)
+== FINAL: restored executor+mechanics, full suite must be 33 passed ==
+ Test Files  1 passed (1)
+      Tests  33 passed (33)
+FILES-BYTE-IDENTICAL-TO-PRISTINE

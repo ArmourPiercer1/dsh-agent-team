@@ -121,6 +121,39 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
+  // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // canonicalize the DERIVED per-call effect set at the PA edge; no other
+  // family module imports anything of the governance lane (mechanics/rows/
+  // port/contribution verified), and a different face stays a finding, as
+  // every booking above states.
+  'tools/agent-control-family/src/agent-control-executor.mjs',
+  // U7-F (inspect-family lane: skill / cordis_inspect_list /
+  // cordis_inspect_query) booked FILE-BY-FILE, SAME single thin face as the
+  // fs-family executors above: each governed executor imports ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // validate its admitted effect set at the PA boundary — skill-executor
+  // reads anchored SKILL.md files, inspect-executor reaches ONLY the
+  // read-only inspect-provider face, and neither grants anything. Zero lane
+  // edits; the mechanics/rows/contribution/descriptor modules of the same
+  // slice import nothing of the governance lane.
+  'tools/inspect-family/src/inspect-executor.mjs',
+  'tools/inspect-family/src/skill-executor.mjs',
+  // U7-F (process-family governed PWSH row) booked FILE-BY-FILE.
+  // `tools/process-family/src/pwsh-executor.mjs` imports
+  // `parseRequestedEffectSet` (the SAME thin effect-grammar face the fs
+  // executors carry — it mints the call's closed `tool-invoke:pwsh`
+  // requested-effect set) AND `canonicalJsonFingerprint` (VALUE, the
+  // control/service.ts precedent face) for the PA `parametersFingerprint`:
+  // the shell-class H2 law says the OPAQUE COMMAND is the security-relevant
+  // field, so the fingerprint binds the PARSED parameter record, not the
+  // per-call-uniform effect-set digest (fs-row form) — an effect-set
+  // fingerprint would make every pwsh command fingerprint-identical. No
+  // other lane export is reachable from the file; the row/mechanics/
+  // confined/contribution modules of the same slice import nothing of the
+  // governance lane.
+  'tools/process-family/src/pwsh-executor.mjs',
   // U7-F B (agent-state family) booked FILE-BY-FILE, thin faces only:
   // `tools/agent-state-family/src/executors.mjs` imports ONLY
   // `parseRequestedEffectSet` (the SAME effect-grammar face the fs-family

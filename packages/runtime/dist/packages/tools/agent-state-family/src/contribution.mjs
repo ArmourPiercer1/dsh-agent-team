@@ -106,7 +106,18 @@ export function buildAgentStateContribution({ rowDefinitions }) {
     },
     effects: {
       declared: true,
-      kinds: ['tool-invoke', 'meta'],
+      // Review R1 F-3 (#404/#406 failure class): the union below is no
+      // longer an independent literal — it is DERIVED from the ONE per-row
+      // arms table, so a family-wide kind can never claim coverage a row
+      // does not actually declare. The per-row table is the declared face
+      // the contribution binds through `definition.outputContractDigest`
+      // (rows:[{name,arms}]); the CLOSED governance schema keeps $.effects
+      // to {declared,kinds,targets}, so row granularity lives in that
+      // digest + the exported table, and C1 E2 pins each ROW's observed PA
+      // request against it — planted mutation controls prove it reds.
+      kinds: Object.freeze(['tool-invoke', 'meta'].filter((kind) =>
+        Object.values(AGENT_STATE_EFFECT_ARMS).some((arms) =>
+          arms.some((token) => (token === 'tool-invoke' ? 'tool-invoke' : String(token).split(':')[0]) === kind)))),
       targets: ['agent-state:session-scoped-metadata'],
     },
     execution: { declared: true, via: 'family-body' },

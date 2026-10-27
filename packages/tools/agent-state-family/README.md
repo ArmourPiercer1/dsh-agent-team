@@ -43,7 +43,7 @@ edges file-by-file.
 - dist mirrors are byte-copies placed by `scripts/dist-placements/070-agent-state.json`.
 - Tests: C1 `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts`
   (real plane + real kernel grant, 45 cases); C2
-  `tests/world-factory/suites/070-u7-fagentb.mjs` (live host, ≤3 boots, the
+  `tests/world-factory/suites/090-u7-fagentb.mjs` (live host, ≤3 boots, the
   mount law both directions). Evidence:
   `dev/agent-workflow/evidence/u7-f-agentB-20261026/`.
 - Vocabulary law (disclosed): `metadata` resources carry the `meta` right

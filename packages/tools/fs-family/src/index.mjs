@@ -57,6 +57,16 @@ export {
   resolveAnchoredPath,
 } from './fs-mechanics.mjs'
 export { READ_ROW_PRESENTATION_FACE, readRowPresentResult } from './read-presentation.mjs'
+// U7-F review round 1 (finding H-1): the governed skill loader needs the
+// exec-time handle-identity law (`verifyOpenedHandle`) to read through an
+// fd-pinned, O_NOFOLLOW-opened handle instead of re-resolving a path string.
+// That primitive lives in the reviewed controlled-fs lane, which THIS barrel
+// already imports (fs-mechanics' `isBeneath`, read-executor's post-consume
+// closures). The inspect family books ONLY this public face in its
+// LANE_EDGES, so the law is re-exported here — a minimal additive surface,
+// the same primitive the fs read/write/edit/image rows already run, never a
+// second copy. Consumers reach it as `fs-family` → `verifyOpenedHandle`.
+export { verifyOpenedHandle } from '../../../runtime/controlled-fs/src/index.js'
 export { normalizeReadProjection } from './read-normalizer.js'
 export { createGovernedReadExecutor } from './read-executor.mjs'
 export { buildReadRowDefinition } from './read-row.mjs'

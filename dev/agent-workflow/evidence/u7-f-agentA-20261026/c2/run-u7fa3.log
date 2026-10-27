@@ -1,0 +1,8 @@
+[u7-agent-control] case ac:mounted: FAIL {"healthOk":true,"stateOk":true,"hostAlive":true,"placementFeed":"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm
+[u7-agent-control] case ac:enumerate-governed: REFUSED {"witness":"governed Control ask on the GOVERNED session (team.getLedgerPage) settled ONCE via team.resolveControl v4; port answer verbatim below","listAgentsRows":[],"settledByRunner":false,"toolResultHead":"Error: refused-agent-control te
+[u7-agent-control] case ac:spawn-failclosed: FAIL {"witness":"fence before the PA edge: zero Control rows for the spawn, zero spawn","toolResultHead":"","controlRowsForSubagent":0}
+[u7-agent-control] case ac:interrupt-foreign-zero: FAIL {"witness":"typed structural refusal; ZERO Control rows opened for the interrupt (fence BEFORE PA); ZERO RAN witnesses","toolResultHead":"","controlRowsForInterrupt":0,"ranWitnesses":0}
+[u7-agent-control] case ac:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-agent-control] lane completion gaps: pilot (each affected case above already carries the FAIL)
+[u7-agent-control] host died during the run (verdicts read the evidence as-is)
+RUN-SUMMARY run=u5-u7-agent-control-u7fa3-2026-10-27T00-08-20-935Z suite=u7-agent-control overall=FAIL cases=6 FAIL:3 PASS:2 REFUSED:1 worlds=u5u7fa3-20261027T00-08-21Z

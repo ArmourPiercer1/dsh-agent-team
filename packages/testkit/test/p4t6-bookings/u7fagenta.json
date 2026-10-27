@@ -1,0 +1,26 @@
+{
+ "schema": "p4t6-booking/1",
+ "lane": "U7FAGENTA",
+ "paths": [
+  "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+  "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+  "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+  "packages/tools/agent-control-family/src/spawn-row.mjs",
+  "packages/tools/agent-control-family/src/fork-row.mjs",
+  "packages/tools/agent-control-family/src/steer-row.mjs",
+  "packages/tools/agent-control-family/src/interrupt-row.mjs",
+  "packages/tools/agent-control-family/src/list-agents-row.mjs",
+  "packages/tools/agent-control-family/src/list-models-row.mjs",
+  "packages/tools/agent-control-family/src/workflow-row.mjs",
+  "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+  "packages/tools/agent-control-family/src/index.mjs",
+  "packages/tools/families/agent-control.mjs",
+  "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+ ],
+ "expectedDelta": {
+  "from": 1322,
+  "to": 1336
+ },
+ "reason": "U7-F (governed agent-control family; branch task/u7-f-agentcontrol-a-20261026\noff master): the fourteen scannable files this round ADDS - the twelve\nagent-control-family lane sources (mechanics: closed grammar + owner fence +\nno-amplification law + fork-context boundary; the agent-runtime port contract\n+ host resolver over the public hostService faces pinned at 639ed01539; the\none effect-body executor module; seven row Definitions; the family\ncontribution; the barrel), the reviewed FamilyAssembly descriptor\n(packages/tools/families/agent-control.mjs - the manifest digest is booked in\nthe already-counted manifest.json), and the C1 suite. The CA-01 claim: the\ncenter's 33 protected files and team-tool-plane.mjs / family-assembly.mjs /\nthe binder carry ZERO diff (this booking's path list is the whole production\naddition); the census/manifest/index/dist bookings ride ALREADY-COUNTED\npaths, the 070 placement file and tests/world-factory/** and\ndev/agent-workflow/evidence/** live outside packages/**; dist mirrors are\noutside the scan; zero new denylist vocabulary (refusal words are the\nfamily's own typed agent-control-* codes plus the center's frozen\ntemplate-default-deny / APPROVAL_* vocabularies, quoted, never re-derived).\nMEASURED, not copied: the pre-booking scanner run on THIS tree (all fourteen\npresent, clause unbooked) reads `expected 1336 to be 1322` -\ndev/agent-workflow/evidence/u7-f-agentA-20261026/p4t6-RED-unbooked.log.",
+ "tieNote": "U7-F's tie, MEASURED on THIS tree at booking time (scanner run in-place,\nall fourteen files present, clause unbooked, reading `expected 1336 to be\n1322`): the chain is the merged tree's ledger-derived 1322 plus exactly\nthese fourteen files - no chain value copied."
+}

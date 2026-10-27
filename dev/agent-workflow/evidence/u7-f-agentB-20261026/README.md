@@ -22,7 +22,7 @@ reviewed `packages/tools/families/` manifest + the generic seam loop.
   (`u7fagentb.json`, MEASURED 1322→1329) + dist placement
   (`scripts/dist-placements/070-agent-state.json`).
 - C1: `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` — 45 cases.
-- C2: `tests/world-factory/suites/070-u7-fagentb.mjs` (+
+- C2: `tests/world-factory/suites/090-u7-fagentb.mjs` (+
   `tests/world-factory/lib/u7fagentb-assembly.mjs`).
 
 ## Files touched OUTSIDE the new lane (the complete list — zero plane lines)

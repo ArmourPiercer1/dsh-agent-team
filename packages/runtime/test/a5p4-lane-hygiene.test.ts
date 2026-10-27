@@ -32,6 +32,9 @@
  *        - `tools/process-family/src/confined-shell-executor.mjs` — the
  *          governed shell row's executor (U6 PR3 moved the mount here with
  *          the shell mechanics; CI-07 named provider).
+ *        - `tools/process-family/src/pwsh-confined.mjs` — the U7-F governed
+ *          pwsh row's confined backend (same public-face edge, own factory
+ *          call; the family's second row under the one reviewed provider).
  *        - `tools/search-family/src/{search-backend,glob-backend}.mjs`
  *          — the anchored rg rows (U6 PR5 moved the mounts HERE with the
  *          search mechanics; U7-G6b retired the third, `search-mechanics`'
@@ -201,6 +204,16 @@ describe('a5p4 lane purity and dormancy', () => {
       // with the public-face import edge and its own factory call site.
       file: 'tools/process-family/src/confined-shell-executor.mjs',
       lane: 'u6-pr3 — confined shell executor (CI-07: the lane drives the named provider, no bridge)',
+      edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
+    },
+    {
+      // U7-F (the governed pwsh shell-class row): the pwsh confined backend
+      // builds its provider for the SAME Landlock law as the bash row —
+      // a true mount (public-face import, own factory call site); the
+      // allowPaths are the launcher's core rx dirs plus the per-call
+      // anchored workspace grant (zero new write lanes).
+      file: 'tools/process-family/src/pwsh-confined.mjs',
+      lane: 'u7-f — confined pwsh backend (same confined-provider law as the bash row; no bridge)',
       edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
     },
   ]

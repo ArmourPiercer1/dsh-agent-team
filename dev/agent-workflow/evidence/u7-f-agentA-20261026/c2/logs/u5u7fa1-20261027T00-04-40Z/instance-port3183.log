@@ -1,0 +1,32 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'schema_meta' operation 'put' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at SchemaMetaRepository.putRaw (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/packages/runtime/dist/packages/storage/repositories/base.js:127:19)
+    at async SchemaMetaRepository.stampStore (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/packages/runtime/dist/packages/storage/repositories/schema-meta.js:66:9)
+    at async createTeamDomain (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/packages/runtime/dist/packages/storage/repositories/team-domain.js:205:13)
+    at async bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/packages/runtime/dist/packages/runtime/src/plugin/host.js:1169:22)
+dsh: startup failed: 2 required plugins did not activate
+
+Failed plugins (1):
+  webserver (required)
+    Package: @deepseek-ai/dsh-host-webserver
+    Error: listen EADDRINUSE: address already in use 127.0.0.1:3183
+        at Server.setupListenHandle [as _listen2] (node:net:2328:16)
+        at listenInCluster (node:net:2437:12)
+        at node:net:2666:7
+        at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+Plugins waiting for services (10):
+  Plugin                 Missing services
+  connection (required)  webRuntime
+  session-log-download   connection
+  open-in-app            webServer, connection
+  directory-picker       webServer
+  session-controller     fileUploads
+  web-runtime            webServer
+  client-hmr             webServer
+  file-upload            connection
+  ui-deliverables        connection, sessionController
+  p6t6-team-tools        webServer
+
+Full diagnostics: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/tests/homes/u5u7fa1-20261027T00-04-40Z/logs/startup-2026-10-27T00-05-11.731Z-dc3d0cca-6bd9-4c59-b1b4-15158d9d5059.log

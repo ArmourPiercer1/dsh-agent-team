@@ -119,6 +119,17 @@
           ]
         },
         {
+          "id": "eb3-evidence-guard",
+          "cmd": [
+            "node",
+            "scripts/eb3-evidence-guard.mjs"
+          ],
+          "check": [
+            "--new-since"
+          ],
+          "why": "Raw census captures (~3.8 MB) were committed into tracked evidence scratch/ three times in two days with only a prose rule against it (PR #396 untracked 32 MB; lanes re-committed 6-8 each). Refuses files the PR ADDS under dev/agent-workflow/evidence/ that match the raw-capture/resample grammar, or exceed 1 MiB without a reasoned entry in dev/ci/evidence-large-allowlist.json. --new-since is required: without a base it would grade against origin/master, which is not the merge ref's first parent."
+        },
+        {
           "id": "eb3-negative-controls",
           "cmd": [
             "node",

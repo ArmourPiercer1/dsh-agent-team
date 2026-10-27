@@ -1,0 +1,6 @@
+[u7-agent-control] case ac:mounted: FAIL {"reason":"p6t6 health not ok: status=200 body={\"ok\":false,\"boot\":null,\"rootSessionId\":null,\"setupError\":\"ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/tests/homes/u5u7fa2
+[u7-agent-control] case ac:enumerate-governed: FAIL {"reason":"mount readiness failed"}
+[u7-agent-control] case ac:spawn-failclosed: FAIL {"reason":"mount readiness failed"}
+[u7-agent-control] case ac:interrupt-foreign-zero: FAIL {"reason":"mount readiness failed"}
+[u7-agent-control] case ac:leak-check: FAIL {"reason":"mount readiness failed"}
+RUN-SUMMARY run=u5-u7-agent-control-u7fa2-2026-10-27T00-07-24-544Z suite=u7-agent-control overall=FAIL cases=6 FAIL:5 PASS:1 worlds=u5u7fa2-20261027T00-07-24Z

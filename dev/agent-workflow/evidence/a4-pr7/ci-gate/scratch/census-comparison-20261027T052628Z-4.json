@@ -1,0 +1,45 @@
+{
+  "head": "5bb88870ac2f730aafa54ff9f01c76189a6c72b6",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T052628Z-4-1.json",
+      "files": 635,
+      "legs": 8143,
+      "ids": [
+        "FILE packages/runtime/test/a5-cancel-glob.test.ts::COLLECTION-OR-UNHANDLED",
+        "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "FILE packages/runtime/test/a5-cancel-glob.test.ts::COLLECTION-OR-UNHANDLED",
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newCollections": [
+      "FILE packages/runtime/test/a5-cancel-glob.test.ts::COLLECTION-OR-UNHANDLED"
+    ],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8143,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "635f/8143l",
+      "totalsNote": "captured 635f/8143l vs baseline-declared 626 / 7936"
+    }
+  }
+}
