@@ -109,12 +109,24 @@ export function buildInspectFamilyContribution({ skillDefinition, listDefinition
     },
     effects: {
       declared: true,
-      // The effect-declaration namespace of this family's rows: a bounded
-      // anchored FILE read (skill instructions) and metadata introspection
-      // (the inspect registry's declared surface). NEVER write, connect, or
-      // domain-ref — every per-call PA request set carries only these kinds
-      // plus the row's tool-invoke arm.
-      kinds: ['read', 'meta'],
+      // The effect-declaration namespace of this family's rows, EXACT (PR
+      // #404 review round 1, finding B-2): `kinds` is the precise union of
+      // what the three rows ever request — the row's own placement-tool
+      // invoke (the arm the plane's placement law requires), an anchored
+      // FILE read (skill instructions), and metadata introspection (the
+      // inspect registry's declared surface) — with nothing requested left
+      // undeclared (the earlier block omitted `tool-invoke`) and nothing
+      // unrequested declared. The governance-center closed schema caps
+      // `$.effects` at {declared, kinds, targets} (governance-center/
+      // contribution-schema.ts EFFECTS_KEYS — frozen, budget-0), so a
+      // family-wide union is ALL the contract surface admits; the ROW-
+      // LEVEL exactness the review demands is therefore pinned where it
+      // can bind — C1 E1 (exact requested multiset per row, arm for arm)
+      // and E2 (requested ⊆ declared per row + declared == exact union),
+      // with the X3 deletion mutant proving the pins turn RED on a lost
+      // arm. NEVER write, connect, or domain-ref — no mutation kind is
+      // declared or requestable anywhere in this family.
+      kinds: ['tool-invoke', 'read', 'meta'],
       targets: ['absolute-path', 'metadata'],
     },
     execution: {

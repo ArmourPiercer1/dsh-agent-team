@@ -16,6 +16,19 @@
  * WRITE effect is ever declared or performed — this row's whole vocabulary
  * is {tool-invoke, read}.
  *
+ * THE OPEN IS FD-PINNED (U7-F review round 1, finding H-1): the check-time
+ * path string never carries the open. After the anchor resolution the row
+ * takes an identity snapshot, opens ONCE with `O_RDONLY | O_NOFOLLOW`, and
+ * runs the fs family's OWN opened-handle law — `verifyOpenedHandle` (fd
+ * containment via `/proc/self/fd` + fstat-vs-snapshot drift; escape/drift/
+ * undeterminable refused BEFORE any byte, zero disclosed) — reading the
+ * bytes and the size bound from the SAME verified fd (a cap+1 metered ring:
+ * overshoot is MEASURED and the file refused whole). This closes the
+ * check-then-use window a path-based `readFile` leaves (a SKILL.md swapped
+ * for a symlink after a separate `lstat` would otherwise be followed). The
+ * law is REUSED (`verifyOpenedHandle` via the fs family's public face), not
+ * re-invented — the same primitive the read/write/edit/image rows run.
+ *
  * NO PA EDGE, NO READ: a mount without the PA admission edge refuses
  * (`PA_EDGE_UNAVAILABLE`); the row never bypasses, never falls back to a
  * native face, and holds no authority (admission / grant mint / grant
@@ -23,13 +36,16 @@
  *
  * @module inspect-family/skill-executor
  */
-import { readFile, lstat } from 'node:fs/promises'
+import { statSync, constants as fsConstants } from 'node:fs'
+import { open as fsOpen } from 'node:fs/promises'
+import { Buffer } from 'node:buffer'
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-// The anchor law is borrowed through the fs family's PUBLIC face (its barrel
-// exports lexicalAnchor/resolveAnchoredPath), never the sibling's internals:
-// EB3 family-boundary law (scripts/eb3-family-boundaries.mjs) — reaching past
-// a sibling's index.mjs is cross-family influence (sibling-internals).
-import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/index.mjs'
+// The anchor law AND the opened-handle identity law are borrowed through the
+// fs family's PUBLIC face (its barrel exports lexicalAnchor/resolveAnchoredPath
+// and re-exports verifyOpenedHandle), never the sibling's internals: EB3
+// family-boundary law (scripts/eb3-family-boundaries.mjs) — reaching past a
+// sibling's index.mjs is cross-family influence (sibling-internals).
+import { lexicalAnchor, resolveAnchoredPath, verifyOpenedHandle } from '../../fs-family/src/index.mjs'
 import { SKILL_ROW_NAME } from './row-names.mjs'
 import {
   SKILL_FILE_NAME,
@@ -37,6 +53,10 @@ import {
   isSkillNameGrammar,
   parseSkillMarkdown,
 } from './skill-mechanics.mjs'
+
+// The cap+1 metered ring's chunk size — the same bound the image row's
+// bounded read port runs, so a skill file is never buffered past cap+1.
+const READ_CHUNK_BYTES = 64 * 1024
 
 export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decide, pa, observe = () => {} }) {
   const roots = skillRoots
@@ -171,7 +191,7 @@ export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decid
       observe('governed-skill cancelled-at-pa-edge')
       return { kind: 'cancelled' }
     }
-    // ── POST-CONSUME: the anchored read over the declared candidates. ────
+    // ── POST-CONSUME: the anchored, fd-pinned read over the candidates. ──
     try {
       for (const candidate of candidates) {
         // The anchor law BY REFERENCE (fs-mechanics): lexical containment,
@@ -181,29 +201,79 @@ export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decid
         // proof, and any deviation is a refusal, never a follow.
         const resolved = resolveAnchoredPath(candidate.root, relative)
         if (resolved.ok === true) {
-          const stat = await lstat(resolved.path)
+          // Identity snapshot FIRST, then the open rides the FD, never the
+          // path string (the family's image/read law, referenced not
+          // copied): a swap between this stat and the open dies at the OS
+          // (ELOOP under O_NOFOLLOW) or under the fd-identity re-read —
+          // BEFORE any byte is taken from the swapped object.
+          let stat
+          try {
+            stat = statSync(resolved.path)
+          } catch {
+            return refused('io', 'skill-target-unreadable', 'the anchored target could not be stat-ed at open time')
+          }
           if (!stat.isFile()) return refused('io', 'skill-not-a-file', `a non-file stands at ${candidate.locator}`)
-          if (stat.size > SKILL_MAX_BYTES) {
-            return refused('io', 'skill-oversized', `the skill file exceeds the ${String(SKILL_MAX_BYTES)}-byte bound of the governed loader`)
+          let handle
+          try {
+            handle = await fsOpen(resolved.path, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW)
+          } catch (error) {
+            const code = String(error?.code ?? '')
+            if (code === 'ELOOP') return refused('io', 'symlink-alias', `the OS refused the open (ELOOP): the sanctioned path wore a symlink alias at open time; zero bytes read`)
+            if (code === 'ENOENT') return refused('io', 'skill-target-unreadable', 'the object does not exist at open time')
+            if (code === 'EISDIR') return refused('io', 'skill-not-a-file', `a non-file stands at ${candidate.locator}`)
+            return refused('io', 'open-failed', code.slice(0, 80))
           }
-          const text = await readFile(resolved.path, { encoding: 'utf8', ...(skillSignal === undefined ? {} : { signal: skillSignal }) })
-          const parsed = parseSkillMarkdown(text)
-          if (parsed.ok !== true) return refused('schema', parsed.code, String(parsed.detail))
-          if (parsed.name !== name) {
-            return refused('schema', 'skill-name-mismatch', `the skill file declares name "${parsed.name.slice(0, 120)}" under directory "${name}"`)
-          }
-          if (parsed.modelInvocable !== true) {
-            return refused('admission', 'skill-not-model-invocable', `skill "${name}" is not available for model invocation`)
-          }
-          observe(`governed-skill RAN name=${name} bytes=${String(stat.size)}`)
-          return {
-            kind: 'ok',
-            value: {
-              name: parsed.name,
-              provider: 'filesystem',
-              resourceBase: { kind: 'directory', path: candidate.root + '/' + name },
-              content: parsed.content,
-            },
+          try {
+            const snapshot = { dev: Number(stat.dev), ino: Number(stat.ino), size: stat.size, mtimeMs: stat.mtimeMs }
+            const recheck = await verifyOpenedHandle(handle, resolved.rootReal, snapshot)
+            if (recheck.verdict !== 'confirmed') {
+              const detail = recheck.verdict === 'escape'
+                ? `exec-time re-read: the fd resolved to ${recheck.resolvedPath} — OUTSIDE the sanctioned anchor`
+                : recheck.verdict === 'drift'
+                  ? `snapshot ${String(recheck.snapshot.dev)}:${String(recheck.snapshot.ino)} != opened ${String(recheck.actual.dev)}:${String(recheck.actual.ino)}`
+                  : recheck.detail
+              observe(`governed-skill exec-refused:${recheck.verdict} path=${candidate.locator}`)
+              return refused('io', `exec-time-${recheck.verdict}`, `${String(detail).slice(0, 200)}; zero bytes disclosed`)
+            }
+            // The size bound rides the FD BYTES (cap+1 metered ring on the
+            // SAME verified fd): overshoot is measured, never truncated, and
+            // the file is refused whole. The earlier stat.size never
+            // decides anything the fd does not re-measure.
+            const chunk = Buffer.alloc(READ_CHUNK_BYTES)
+            const parts = []
+            let total = 0
+            while (total < SKILL_MAX_BYTES + 1) {
+              if (skillSignal?.aborted === true) return { kind: 'cancelled' }
+              const want = Math.min(READ_CHUNK_BYTES, SKILL_MAX_BYTES + 1 - total)
+              const { bytesRead } = await handle.read(chunk, 0, want, total)
+              if (bytesRead === 0) break
+              parts.push(Buffer.from(chunk.subarray(0, bytesRead)))
+              total += bytesRead
+            }
+            if (total > SKILL_MAX_BYTES) {
+              return refused('io', 'skill-oversized', `the skill file exceeds the ${String(SKILL_MAX_BYTES)}-byte bound of the governed loader (measured on the verified fd); refused whole`)
+            }
+            const text = Buffer.concat(parts, total).toString('utf8')
+            const parsed = parseSkillMarkdown(text)
+            if (parsed.ok !== true) return refused('schema', parsed.code, String(parsed.detail))
+            if (parsed.name !== name) {
+              return refused('schema', 'skill-name-mismatch', `the skill file declares name "${parsed.name.slice(0, 120)}" under directory "${name}"`)
+            }
+            if (parsed.modelInvocable !== true) {
+              return refused('admission', 'skill-not-model-invocable', `skill "${name}" is not available for model invocation`)
+            }
+            observe(`governed-skill RAN name=${name} bytes=${String(total)}`)
+            return {
+              kind: 'ok',
+              value: {
+                name: parsed.name,
+                provider: 'filesystem',
+                resourceBase: { kind: 'directory', path: candidate.root + '/' + name },
+                content: parsed.content,
+              },
+            }
+          } finally {
+            await handle.close().catch(() => undefined)
           }
         }
         if (resolved.code === 'symlink-alias') {

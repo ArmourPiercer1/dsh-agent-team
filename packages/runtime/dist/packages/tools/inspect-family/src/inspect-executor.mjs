@@ -170,8 +170,17 @@ export function createGovernedInspectQueryExecutor({ realmId, policy, decide, pa
     if (located.ok !== true) return refused('admission', located.code, located.detail)
     const methodHit = findMethod(located.provider, method)
     if (methodHit.ok !== true) return refused('admission', methodHit.code, methodHit.detail)
-    if (raw?.input !== undefined) {
-      const problems = validateInputSubset(methodHit.method?.inputSchema, raw.input)
+    // Validate whenever the method DECLARES a schema — including when the
+    // caller OMITS `input` (finding M-1: an omitted input is validated as an
+    // empty object, so a schema's `required` properties are still enforced
+    // instead of the whole check being skipped as before). No declared
+    // schema = no constraint to check.
+    const inputSchema = methodHit.method?.inputSchema
+    if (inputSchema !== undefined && inputSchema !== null) {
+      const inputForValidation = raw?.input !== undefined
+        ? raw.input
+        : (inputSchema.type === 'object' ? {} : undefined)
+      const problems = validateInputSubset(inputSchema, inputForValidation)
       if (problems.length > 0) {
         return refused('schema', 'inspect-input-invalid', `the input does not satisfy the method's declared schema: ${problems.slice(0, 4).join('; ').slice(0, 240)}`)
       }
