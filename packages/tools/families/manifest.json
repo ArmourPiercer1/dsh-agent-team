@@ -13,6 +13,9 @@
     },
     "fs-search": {
       "backsExecution": "family-body"
+    },
+    "agent-state": {
+      "backsExecution": "family-body"
     }
   },
   "families": [
@@ -27,6 +30,10 @@
     {
       "module": "search.mjs",
       "sha256": "33b4569909d9f77a298d2c06be5d10630650a697491d09c593e096189fcb689b"
+    },
+    {
+      "module": "agent-state.mjs",
+      "sha256": "f6ac552f51a354ac133e6c1ac81cec688736dc2aa673e52d4139021f6d51e605"
     }
   ]
 }

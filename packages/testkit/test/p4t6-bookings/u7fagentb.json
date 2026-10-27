@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FAGENTB",
+  "paths": [
+    "packages/tools/families/agent-state.mjs",
+    "packages/tools/agent-state-family/src/index.mjs",
+    "packages/tools/agent-state-family/src/agent-state-law.mjs",
+    "packages/tools/agent-state-family/src/state-store.mjs",
+    "packages/tools/agent-state-family/src/executors.mjs",
+    "packages/tools/agent-state-family/src/contribution.mjs",
+    "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1329
+  },
+  "reason": "U7-F B (branch task/u7-f-agentcontrol-b-20261026 off origin/master 42c4d04b5): the governed agent-state family — todo_write / create_goal / get_goal / update_goal / exit_plan_mode mounted as ONE ordinary family through the reviewed FamilyAssembly seam with ZERO plane edits. The seven scannable files are the lane's runtime face (the pinned state-law table, the injected state-store port, the five governed executors, the closed contribution, the barrel) + its FamilyAssembly descriptor + the C1 law suite. The manifest.json/index.mjs edits, the dist mirror (outside the scan), the census/p4t6 bookings and the evidence files add no scannable path; zero denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the seven files on disk and this booking absent, the ledger law reads `scanner counts 1329, ledger derives 983 + 339 = 1322` (dev/agent-workflow/evidence/u7-f-agentB-20261026/p4t6-RED-unbooked.txt) — master's 1322 plus exactly these seven paths."
+}
