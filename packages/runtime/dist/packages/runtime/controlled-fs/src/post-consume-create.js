@@ -285,6 +285,13 @@ export function createPostConsumeCreateClosure(frozenPlan, ctx, cfg) {
                     return settle(cfsDenial('not-a-file', 'post-consume create refused: the freshly created object is not a regular file — no content was written'));
                 }
                 if (fresh.nlink !== 1) {
+                    // BELT-AND-BRACES (post-merge #405 review HIGH): the shared law in
+                    // `verifyOpenedHandle` now refuses `nlink !== 1` itself, so this
+                    // arm is unreachable while that law holds — the generic
+                    // not-confirmed branch above settles it as an undetermined
+                    // (sideEffectPossible true: the fresh file legitimately stands).
+                    // Kept as the create path's OWN statement of the clause so the
+                    // law does not rest on a shared default alone.
                     return settle(cfsUndetermined('write-side-effect-unconfirmed', `post-consume create refused: the fresh name carries ${String(fresh.nlink)} links (hardlink alias at the fresh inode) — no content was written; the empty in-root file stands`, { sideEffectPossible: true }));
                 }
                 // ── THE WRITE LOOP (the reviewed law verbatim) ─────────────────

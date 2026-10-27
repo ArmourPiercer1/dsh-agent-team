@@ -1,0 +1,167 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-fixfwd
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts (14 tests | 8 failed) 625ms
+     × H-0 an in-root hardlink to an outside inode answers hardlink-alias (never confirmed), naming the link count 13ms
+     ✓ P-0 an ordinary nlink=1 in-root file is confirmed (positive control) 2ms
+     × H-read an in-root hardlink to the outside canary is refused typed; zero canary bytes in the answer or any line; the byte stage never ran 360ms
+     ✓ P-read a normal nlink=1 file still reads 5ms
+     × H-image an in-root hardlink to the outside canary image is refused typed; the port returns zero bytes and the attachment store is never written 5ms
+     ✓ P-image a normal nlink=1 image still commits 4ms
+     × H-skill a SKILL.md hardlinked from outside the sanctioned root is refused typed; the outside content is never loaded 16ms
+     ✓ P-skill a normal nlink=1 SKILL.md still loads 3ms
+     × H-present an in-root hardlink to the outside canary is refused typed; the presenter is NEVER invoked; zero canary bytes anywhere 23ms
+     ✓ P-present a normal nlink=1 file still presents (one port call) 3ms
+     × H-grep a hardlinked file target is refused typed before grep sees the descriptor; zero canary bytes reach the sink 169ms
+     ✓ P-grep a normal nlink=1 file target still searches 9ms
+     × H-write writing through an in-root hardlink is refused BEFORE truncation; the outside canary is byte-identical 5ms
+     × H-edit editing through an in-root hardlink is refused BEFORE the read half; the outside canary is byte-identical and never disclosed 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > the shared law itself — verifyOpenedHandle > H-0 an in-root hardlink to an outside inode answers hardlink-alias (never confirmed), naming the link count
+AssertionError: expected 'confirmed' to be 'hardlink-alias' // Object.is equality
+
+Expected: "hardlink-alias"
+Received: "confirmed"
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:94:25
+     92|     try {
+     93|       const v = await verifyOpenedHandle(h, ROOT, { dev: st.dev, ino: …
+     94|       expect(v.verdict).toBe('hardlink-alias')
+       |                         ^
+     95|       expect(v.nlink).toBe(2)
+     96|       expect(String(v.detail)).toMatch(/2 hard links/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > fs-family read > H-read an in-root hardlink to the outside canary is refused typed; zero canary bytes in the answer or any line; the byte stage never ran
+AssertionError: expected '{"kind":"ok","path":"/srv/workspace/d…' to match /exec-time-hardlink-alias/
+
+- Expected:
+/exec-time-hardlink-alias/
+
++ Received:
+"{\"kind\":\"ok\",\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-fixfwd/tests/homes/u7-fixfwd-hl-mvqoty0o/root/alias.txt\",\"offset\":1,\"lines\":[{\"number\":1,\"text\":\"OUTSIDE-CANARY-HARDLINK-NEVER-DISCLOSE-7c1d\"}],\"totalLines\":1}"
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:127:23
+    125|     let out: unknown
+    126|     try { out = await exec({ file_path: join(ROOT, 'alias.txt') }) } c…
+    127|     expect(flat(out)).toMatch(/exec-time-hardlink-alias/)
+       |                       ^
+    128|     expect(flat(out)).toMatch(/hard link/)
+    129|     expect(flat(out, observe)).not.toContain(CANARY)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > fs-family read_image > H-image an in-root hardlink to the outside canary image is refused typed; the port returns zero bytes and the attachment store is never written
+AssertionError: expected 'ok' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "ok"
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:163:22
+    161|     const { exec, store, portResults } = await make(observe)
+    162|     const out = await exec({ file_path: join(ROOT, 'alias.png') })
+    163|     expect(out.kind).toBe('refused')
+       |                      ^
+    164|     expect(String(out.text)).toMatch(/exec-time-hardlink-alias/)
+    165|     expect(portResults).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > inspect-family skill > H-skill a SKILL.md hardlinked from outside the sanctioned root is refused typed; the outside content is never loaded
+AssertionError: expected 'ok' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "ok"
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:193:22
+    191|     const exec = await make(observe)
+    192|     const out = await exec({ name: 'alias-skill' }, {})
+    193|     expect(out.kind).toBe('refused')
+       |                      ^
+    194|     expect(String(out.code)).toBe('exec-time-hardlink-alias')
+    195|     expect(flat(out, observe)).not.toContain(CANARY)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > ui-family present (the F-405-R2-1 reproduction) > H-present an in-root hardlink to the outside canary is refused typed; the presenter is NEVER invoked; zero canary bytes anywhere
+AssertionError: {"kind":"ok","value":{"files":[{"path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-fixfwd/tests/homes/u7-fixfwd-hl-mvqoty0o/root/alias.txt"}],"turn":1}}: expected 'ok' to be 'refused' // Object.is equality
+
+Expected: "refused"
+Received: "ok"
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:226:33
+    224|     const { exec, presentCalls } = await make(observe)
+    225|     const out = await exec({ files: [{ path: join(ROOT, 'alias.txt') }…
+    226|     expect(out.kind, flat(out)).toBe('refused')
+       |                                 ^
+    227|     expect(String(out.code)).toBe('FILE_UNREADABLE')
+    228|     expect(String(out.text)).toMatch(/exec-time-hardlink-alias/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > search-family grep file target (the fifth read caller of the law) > H-grep a hardlinked file target is refused typed before grep sees the descriptor; zero canary bytes reach the sink
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:256:18
+    254|     let sunk = ''
+    255|     const r = await b.run(call('alias.txt'), { sink: { write: (t: stri…
+    256|     expect(r.ok).toBe(false)
+       |                  ^
+    257|     expect(String((r.failure as { code?: string })?.code)).toBe('exec-…
+    258|     expect(flat(r, sunk)).not.toContain(CANARY)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > controlled-fs post-consume write / edit — the same law protects the outside inode from mutation > H-write writing through an in-root hardlink is refused BEFORE truncation; the outside canary is byte-identical
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:279:18
+    277|     const plan = { approvedRootLexical: ROOT, approvedRootReal: ROOT, …
+    278|     const r = await createPostConsumeWriteClosure(plan, { parametersFi…
+    279|     expect(r.ok).toBe(false)
+       |                  ^
+    280|     expect(String(r.error?.message)).toMatch(/hard link/)
+    281|     expect(readFileSync(join(OUTSIDE, 'secret-w.txt')).equals(before),…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts > controlled-fs post-consume write / edit — the same law protects the outside inode from mutation > H-edit editing through an in-root hardlink is refused BEFORE the read half; the outside canary is byte-identical and never disclosed
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts:288:18
+    286|     const plan = { approvedRootLexical: ROOT, approvedRootReal: ROOT, …
+    287|     const r = await createPostConsumeEditClosure(plan, { parametersFin…
+    288|     expect(r.ok).toBe(false)
+       |                  ^
+    289|     expect(String(r.error?.message)).toMatch(/hard link/)
+    290|     expect(flat(r)).not.toContain(CANARY)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 6 passed (14)
+   Start at  12:54:50
+   Duration  812ms (transform 459ms, setup 0ms, import 44ms, tests 625ms, environment 0ms)
+

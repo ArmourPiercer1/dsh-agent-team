@@ -307,6 +307,14 @@ export function createGovernedPresentExecutor({ realmId, rootDir, policy, decide
             observe(`governed-present exec-refused:drift path=${entry.path}`)
             return refused('admission', 'ANCHOR-DRIFT', `the opened fd is not the object that was anchored (${String(fact.detail)}); this call is stale and publishes nothing`)
           }
+          // Post-merge #405 review HIGH (F-405-R2-1): an in-root HARDLINK to an
+          // outside inode passes fd containment AND snapshot identity, so the
+          // shared law refuses it on the link count and names it here — never a
+          // generic unreadable, which would hide the reason from the model.
+          if (fact.code === 'exec-time-hardlink-alias') {
+            observe(`governed-present exec-refused:hardlink-alias path=${entry.path}`)
+            return refused('admission', 'ANCHOR-ESCAPE', `Cannot present ${entry.path}: ${String(fact.detail)}; nothing is published`)
+          }
           if (fact.code === 'oversize') {
             observe(`governed-present exec-refused:oversize path=${entry.path}`)
             return refused('io', 'FILE_TOO_LARGE', `Cannot present ${entry.path}: the file exceeds the governed presentation cap of ${String(MAX_READ_BYTES)} bytes`)

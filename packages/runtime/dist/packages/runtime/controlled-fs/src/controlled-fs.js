@@ -217,8 +217,13 @@ export function createControlledFsLane(config) {
             record(op, memberKey(grant), target.locator, 'exec-refused:exec-time-escape', `fd resolved to ${verdict.resolvedPath}`);
             return refused(op, grant, target.locator, FAIL(cfsDenial('exec-time-escape', 'exec-time re-read: the open landed OUTSIDE the instance anchor; zero bytes disclosed')));
         }
-        // drift / undeterminable / destructive-escape: identity (and for writes,
-        // the landed side effect) cannot be established — the honest third class.
+        if (verdict.verdict === 'hardlink-alias' && !destructive) {
+            record(op, memberKey(grant), target.locator, 'exec-refused:hardlink-alias', `nlink=${String(verdict.nlink)}`);
+            return refused(op, grant, target.locator, FAIL(cfsDenial('hardlink-alias', verdict.detail)));
+        }
+        // drift / undeterminable / destructive-escape / destructive-hardlink:
+        // identity (and for writes, the landed side effect) cannot be
+        // established — the honest third class.
         const detail = verdict.verdict === 'drift'
             ? `snapshot ${verdict.snapshot.dev}:${verdict.snapshot.ino} != actual ${verdict.actual.dev}:${verdict.actual.ino}`
             : verdict.verdict === 'escape'

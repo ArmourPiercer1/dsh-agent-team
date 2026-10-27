@@ -203,6 +203,11 @@ export function createPostConsumeEditClosure(plan, ctx, cfg) {
                 if (verdict.verdict === 'escape') {
                     return settle(cfsDenial('exec-time-escape', `post-consume edit refused: the open landed OUTSIDE the approved root anchor (${verdict.resolvedPath}); nothing was written`));
                 }
+                if (verdict.verdict === 'hardlink-alias') {
+                    // BEFORE the read half: neither the outside inode's bytes are read
+                    // nor is anything written through the alias.
+                    return settle(cfsDenial('hardlink-alias', `post-consume edit refused: ${verdict.detail}; nothing was read or written`));
+                }
                 if (verdict.verdict !== 'confirmed') {
                     const detail = verdict.verdict === 'drift'
                         ? `snapshot ${verdict.snapshot.dev}:${verdict.snapshot.ino} != actual ${verdict.actual.dev}:${verdict.actual.ino}`
