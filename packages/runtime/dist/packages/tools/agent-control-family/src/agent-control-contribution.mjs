@@ -76,7 +76,6 @@ export function buildAgentControlContribution({
       throw new TypeError('buildAgentControlContribution: every row needs its placed transport AND its executor')
     }
   }
-  const rows = placed.map((definition) => ({ definition, executor: executors[definition.name] }))
   const inputContractDigest = sha256Hex(canonicalJsonStringify(placed.map((definition) => ({
     name: definition.name,
     parameters: definition.parameters,
@@ -87,13 +86,55 @@ export function buildAgentControlContribution({
     render: definition.output?.render?.toString?.() ?? null,
     presentationMeta: definition.output?.presentationMeta?.toString?.() ?? null,
   }))))
+  // ONE explicit, NAMED entry per row in the bound source document (EB3-A
+  // reviewable law: a `.map` over rows is a COMPUTED transport a reviewer
+  // cannot audit by reading the source — every row binds its name AND its
+  // execute digest as a plain-identifier literal, fs-family form).
   const sourceDocument = canonicalJsonStringify({
-    rows: rows.map((r) => ({
-      name: r.definition.name,
-      parameters: r.definition.parameters,
-      execute: r.definition.execute?.toString?.() ?? null,
-      executor: r.executor?.toString?.() ?? null,
-    })),
+    rows: [
+      {
+        name: spawnDefinition.name,
+        parameters: spawnDefinition.parameters,
+        execute: spawnDefinition.execute?.toString?.() ?? null,
+        executor: executors.subagent?.toString?.() ?? null,
+      },
+      {
+        name: forkDefinition.name,
+        parameters: forkDefinition.parameters,
+        execute: forkDefinition.execute?.toString?.() ?? null,
+        executor: executors.subagent_fork?.toString?.() ?? null,
+      },
+      {
+        name: steerDefinition.name,
+        parameters: steerDefinition.parameters,
+        execute: steerDefinition.execute?.toString?.() ?? null,
+        executor: executors.send_message?.toString?.() ?? null,
+      },
+      {
+        name: interruptDefinition.name,
+        parameters: interruptDefinition.parameters,
+        execute: interruptDefinition.execute?.toString?.() ?? null,
+        executor: executors.interrupt_agent?.toString?.() ?? null,
+      },
+      {
+        name: listAgentsDefinition.name,
+        parameters: listAgentsDefinition.parameters,
+        execute: listAgentsDefinition.execute?.toString?.() ?? null,
+        executor: executors.list_agents?.toString?.() ?? null,
+      },
+      {
+        name: listModelsDefinition.name,
+        parameters: listModelsDefinition.parameters,
+        execute: listModelsDefinition.execute?.toString?.() ?? null,
+        executor: executors.list_subagent_models?.toString?.() ?? null,
+      },
+      {
+        name: workflowDefinition.name,
+        parameters: workflowDefinition.parameters,
+        execute: workflowDefinition.execute?.toString?.() ?? null,
+        executor: executors.workflow?.toString?.() ?? null,
+      },
+    ],
     mechanics: sourceLossless(mechanics),
     port: sourceLossless(portModule),
     executorLaw: sourceLossless(executorModule),

@@ -89,6 +89,16 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  // U7-F (agent-control family), transcribed from
+  // packages/tools/agent-control-family/README.md: canonical JSON + the ONE
+  // thin effect-grammar face, NOTHING else — no plane, no center, no
+  // tool-dispatch, no sibling family (the runtime reaches the rows only
+  // through the port face THIS lane declares, never the reverse).
+  'dsh.agent-control-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -102,6 +112,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/agent-control-family': 'dsh.agent-control-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are
