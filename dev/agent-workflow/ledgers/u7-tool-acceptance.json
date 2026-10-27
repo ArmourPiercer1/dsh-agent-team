@@ -182,6 +182,8 @@
           "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot4.json",
           "case": "tbash:approve-spawn-once"
         },
+        "reason": "Boot 4/4 failed closed: runner ReferenceError: projection is not defined while recording governedSession projection diagnostics; all six cases failed with no verdict, no allow/consumption/effect. The scope fix was committed after the last permitted boot; no boot 5 is allowed.",
+        "pr": "#415",
         "note": "Boot 4/4 failed closed before grading: the runner raised ReferenceError: projection is not defined while recording governedSession projection diagnostics. All six cases FAIL with no verdict, no allow/consumption/effect was issued. The projection extractor scope fix was committed after this last permitted boot; no boot 5 is allowed. The prior boot-3 judge defect was disclosed in the lane README."
       }
     },
