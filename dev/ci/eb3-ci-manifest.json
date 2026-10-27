@@ -8,11 +8,20 @@
     "note": "The synthetic merge-tree summary. `synthesize` builds the merge of base+head with git merge-tree (no ref moved) and fails hard on a conflict; `ci-required` runs if:always(), needs every layer below, and is the ONE Required branch-protection context. `jobs` names both so the undeclared-job rule stays honest about the summary's own jobs. Every entry in the summary's needs must be a declared layer or the checker reds: a layer left out of needs can fail while the summary stays green.",
     "jobs": [
       "synthesize",
-      "ci-required"
+      "ci-required",
+      "required-deferred"
     ],
     "gradedNeeds": [
       "synthesize"
     ]
+  },
+  "deferral": {
+    "label": "ci-defer-full",
+    "layer": "ci-full",
+    "callerIf": "${{ !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}",
+    "job": "required-deferred",
+    "context": "ci-required-deferred",
+    "note": "THE DEFERRED TIER. An intermediate fix-round push may carry the PR label `ci-defer-full`; the ci-full caller is then skipped. The Required job `ci-required` is NEVER skipped (a skipped required job reports skipped, which branch protection accepts as passing) and still needs ci-full, so a skipped ci-full grades red there: a deferred run cannot satisfy branch protection. `required-deferred` (check name `ci-required-deferred`, not Required) grades the other layers so the round still gets a verdict. The ci-full caller may carry exactly `callerIf` and nothing else; the deferred job may never be named ci-required. The head frozen for review must run with the label removed and the full aggregate green."
   },
   "layers": [
     {
@@ -155,6 +164,18 @@
             "tests/diag-call-chain/diag-call-chain.test.mjs"
           ],
           "why": "EB4-B/D/E tooling (PR #394) shipped in no CI layer, so a real tool defect (integration-order dropped committed evidence and read untracked files) and a checkout-shape-dependent test (E2) went uncaught. These are node:test suites, not vitest, so they cannot ride a suiteList (eb3-security-run is vitest-only); they are a leg. Host-free: no HOST_DEPENDENCE_MARKERS, the only host reach (devex verify-zero) is not exercised; ci-integration checks out with fetch-depth 0, which E4/E5/D11 need for origin/master."
+        },
+        {
+          "id": "tests/checks node:test suites",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "tests/checks/dist-placements.test.mjs",
+            "tests/checks/eslint-node-globals.test.mjs"
+          ],
+          "why": "u7-fixfwd (2026-10-27): `tests/checks/dist-placements.test.mjs` stood at 4 pass / 5 fail on a CLEAN origin/master and nothing ever ran it, so nobody saw — it pinned the #397 38-placement/5-file snapshot while the ledger had grown to 82 placements in 9 files, and its mirror filter (mjs|py) read a legitimately placed manifest.json as untracked. The test now DERIVES its totals from the files on disk (mutation cases assert deltas from the measured N; the filter covers the measured shipped extensions) and THIS leg makes that regression undroppable. `tests/checks/eslint-node-globals.test.mjs` is the sibling suite in the same directory (the collected eslint-globals parity pin) and had the same exposure. Both are node:test, host-free: no ports, no DSH_HOME, no pristine host, so they cannot ride a vitest suiteList. Adding a suite to tests/checks means adding it to this leg's check list — dropping one is CI_LAYER_LEG_WEAKENED."
         }
       ],
       "hostFree": true

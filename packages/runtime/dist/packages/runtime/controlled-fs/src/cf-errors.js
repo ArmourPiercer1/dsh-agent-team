@@ -45,6 +45,7 @@ export const CF_DENIED_REASONS = [
     'window-rejected',
     'not-a-file',
     'not-a-directory',
+    'hardlink-alias',
 ];
 export const CF_HIDDEN_REASONS = ['hidden-read', 'hidden-write'];
 export const CF_UNDETERMINED_REASONS = [
@@ -67,6 +68,7 @@ const CLASS_OF = Object.freeze({
     'window-rejected': 'denied',
     'not-a-file': 'denied',
     'not-a-directory': 'denied',
+    'hardlink-alias': 'denied',
     'hidden-read': 'hidden',
     'hidden-write': 'hidden',
     'exec-time-identity-drift': 'undetermined',
@@ -96,6 +98,9 @@ const CODE_OF = Object.freeze({
     'window-rejected': 'TOOL_BINDING_UNVERIFIED',
     'not-a-file': 'TOOL_BINDING_UNVERIFIED',
     'not-a-directory': 'TOOL_BINDING_UNVERIFIED',
+    // Post-merge #405 review HIGH: the same class as `symlink-alias` — an
+    // alias the policy KNOWS and refuses, before any byte.
+    'hardlink-alias': 'TOOL_BINDING_UNVERIFIED',
     'hidden-read': 'TOOL_BINDING_UNVERIFIED',
     'hidden-write': 'TOOL_BINDING_UNVERIFIED',
     'exec-time-identity-drift': 'IO_POLICY_UNSUPPORTED',

@@ -31,7 +31,7 @@ import type { GovernanceError, GovernanceResult } from '../../../domain/tool-gov
 export declare const CF_ERROR_CLASSES: readonly ["denied", "hidden", "undetermined"];
 export type CfErrorClass = (typeof CF_ERROR_CLASSES)[number];
 /** Closed reason sets, partitioned by class. */
-export declare const CF_DENIED_REASONS: readonly ["path-rejected", "realm-mismatch", "effect-outside-grant", "authority-generation-stale", "grant-expired", "grant-consumed", "outside-anchor", "symlink-alias", "denied-inode", "exec-time-escape", "fd-closed", "fd-recycled", "window-rejected", "not-a-file", "not-a-directory"];
+export declare const CF_DENIED_REASONS: readonly ["path-rejected", "realm-mismatch", "effect-outside-grant", "authority-generation-stale", "grant-expired", "grant-consumed", "outside-anchor", "symlink-alias", "denied-inode", "exec-time-escape", "fd-closed", "fd-recycled", "window-rejected", "not-a-file", "not-a-directory", "hardlink-alias"];
 export declare const CF_HIDDEN_REASONS: readonly ["hidden-read", "hidden-write"];
 export declare const CF_UNDETERMINED_REASONS: readonly ["exec-time-identity-drift", "write-side-effect-unconfirmed"];
 export type CfDenyReason = (typeof CF_DENIED_REASONS)[number];

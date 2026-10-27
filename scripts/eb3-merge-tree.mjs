@@ -233,7 +233,15 @@ if (invokedDirectly) {
       console.log(`EB3-REQUIRED fail layers=0 green=0 nongreen=*:needs-unparseable (${String(e?.message ?? e).slice(0, 80)})`)
       process.exit(1)
     }
-    const g = gradeNeeds({ needs })
+    // --deferred: the deferred-tier report job (check name ci-required-deferred). It grades every
+    // layer EXCEPT the declared deferral layer, and says so; the Required `ci-required` job never
+    // passes --deferred, so it still grades ci-full and a skipped ci-full is red there.
+    const deferred = argv.includes('--deferred')
+    const m0 = loadManifest()
+    const g = deferred
+      ? gradeNeeds({ needs, manifest: { ...m0, layers: m0.layers.filter((l) => l.id !== m0.deferral?.layer) } })
+      : gradeNeeds({ needs })
+    if (deferred) console.log(`EB3-DEFERRED layer=${String(m0.deferral?.layer)} skipped by label ${String(m0.deferral?.label)}; this run CANNOT satisfy branch protection`)
     for (const r of g.rows) console.log(`  ${r.layer.padEnd(16)} ${r.klass.padEnd(22)} ${r.detail}`)
     const graded = g.rows.filter((r) => !r.klass.startsWith('info-'))
     const green = graded.filter((r) => r.klass === 'green')

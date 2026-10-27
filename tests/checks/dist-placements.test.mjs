@@ -5,37 +5,54 @@
  * case mutates an INPUT (a planted temp directory), never the tree.
  *
  * Run: node --test tests/checks/dist-placements.test.mjs
+ * CI:  ci-integration leg `dist-placements node:test` (dev/ci/eb3-ci-manifest.json).
  *
- * What is pinned:
- *   - the shipped ledger equals the 38-entry list at origin/master 88107ad71
- *     (order AND content) — the migration moved entries, it did not reorder
- *     or drop them (the receipt is
- *     dev/agent-workflow/evidence/u7-w0-20261026/placements-before-after.txt);
- *   - the enumeration is DETERMINISTIC (two loads, same order) and the order
- *     comes from the file-name prefix, not from readdir order;
+ * u7-fixfwd (2026-10-27) — DERIVED, NOT LITERAL. The #397 version pinned the
+ * 38-placement / 5-file snapshot (`PLACEMENTS.length === 38`, per-file
+ * `[8,3,15,5,7]`, and 37/39 in the mutation cases). Every family lane since
+ * added a file, so on a clean origin/master the check was 4 pass / 5 fail —
+ * and no CI layer ran it, so nobody saw. Same lesson as the seam-test derived
+ * count: the expected totals are now MEASURED from the files on disk at run
+ * time, and the mutation cases assert DELTAS (N-1, N+1) from that measured N.
+ * A new family adds one placement file and this test stays green unedited.
+ *
+ * What is pinned (every real law of the #397 version is kept):
+ *   - the frozen `PLACEMENTS` equals a fresh load of the ledger on disk, and
+ *     its length equals the sum of the per-file counts read from disk;
+ *   - the FIRST placement is the glue; the order is the file-name prefix, not
+ *     readdir order (deterministic: two loads agree);
  *   - RED-first: a removed placement, a mis-named file, a duplicate order
- *     prefix, a duplicate src, a broken mirror law, a misplaced glue and an
- *     unknown schema ALL refuse (each was a silent hole in a by-hand list);
- *   - the tracked dist mirror equals the ledger's dist set (so a
- *     hand-added mirror file cannot ride along unbooked).
+ *     prefix, a duplicate src, a broken mirror law, a misplaced glue, an
+ *     unknown schema, an empty list, an empty directory and every stray entry
+ *     ALL refuse; prefix GAPS are allowed and order correctly;
+ *   - the tracked dist mirror equals the ledger's dist set. The parity filter
+ *     covers EVERY extension placements actually ship — measured: mjs, py and
+ *     json — so the legitimately placed
+ *     `packages/runtime/dist/packages/tools/families/manifest.json` is no
+ *     longer misread as "untracked" (the #397 filter matched mjs|py only).
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GLUE_SRC, PLACEMENTS, PLACEMENTS_DIR, loadPlacements } from '../../scripts/place-dist-glue.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
 
-/** A 38-entry, 5-file ledger copy that a case may mutate freely. */
+/** The ledger files, sorted (the prefix is the order). */
+const LEDGER_FILES = readdirSync(PLACEMENTS_DIR).filter((n) => n.endsWith('.json')).sort()
+/** The measured per-file counts and total N — read from disk, never a literal. */
+const PER_FILE = LEDGER_FILES.map((n) => JSON.parse(readFileSync(join(PLACEMENTS_DIR, n), 'utf8')).placements.length)
+const N = PER_FILE.reduce((a, b) => a + b, 0)
+
+/** A copy of the live ledger that a case may mutate freely. */
 function plantedLedger(mutate = () => {}) {
   const dir = mkdtempSync(join(tmpdir(), 'dist-placements-'))
-  for (const name of readdirSync(PLACEMENTS_DIR).filter((n) => n.endsWith('.json'))) {
-    mkdirSync(join(dir), { recursive: true })
+  for (const name of LEDGER_FILES) {
     writeFileSync(join(dir, name), readFileSync(join(PLACEMENTS_DIR, name), 'utf8'))
   }
   mutate(dir)
@@ -50,19 +67,27 @@ function editDoc(dir, file, fn) {
   writeFileSync(p, JSON.stringify(doc, null, 2) + '\n')
 }
 
-test('shipped ledger: 38 placements, glue first, order and content as migrated', () => {
-  assert.equal(PLACEMENTS.length, 38)
+test('shipped ledger: N derived from disk, glue first, every file non-empty, frozen list == a fresh load', () => {
+  assert.ok(LEDGER_FILES.length > 0, 'the ledger directory holds placement files')
+  assert.ok(PER_FILE.every((n) => n > 0), `every placement file is non-empty: ${JSON.stringify(PER_FILE)}`)
+  assert.equal(PLACEMENTS.length, N, `PLACEMENTS (${String(PLACEMENTS.length)}) == sum of per-file counts read from disk (${String(N)})`)
   assert.equal(PLACEMENTS[0]?.src, GLUE_SRC)
-  // Every earlier entry kept its place: the 5 files cover the 38 in order.
-  const perFile = readdirSync(PLACEMENTS_DIR).filter((n) => n.endsWith('.json')).sort()
-    .map((n) => JSON.parse(readFileSync(join(PLACEMENTS_DIR, n), 'utf8')).placements.length)
-  assert.deepEqual(perFile, [8, 3, 15, 5, 7])
-  assert.equal(perFile.reduce((a, b) => a + b, 0), 38)
+  // The frozen export is exactly a fresh load: the loader is the one home.
+  assert.deepEqual([...PLACEMENTS].map((p) => ({ ...p })), loadPlacements())
+  // Per-file order: walking the files in prefix order reproduces PLACEMENTS.
+  const walked = LEDGER_FILES.flatMap((n) => JSON.parse(readFileSync(join(PLACEMENTS_DIR, n), 'utf8')).placements.map((p) => p.src))
+  assert.deepEqual(walked, PLACEMENTS.map((p) => p.src))
 })
 
-/** The tracked non-tsc files of the runtime dist mirror (what an install ships). */
+/** The extensions placements actually ship — measured from the ledger, not assumed. */
+const SHIPPED_EXTS = [...new Set(PLACEMENTS.map((p) => extname(p.dist)))].sort()
+
+/** The tracked non-tsc files of the runtime dist mirror (what an install ships).
+ *  tsc emits .js/.d.ts/.map; everything else in the mirror is placed. The
+ *  filter is the MEASURED shipped-extension set, so a new placed extension is
+ *  covered automatically. */
 const TRACKED_MIRROR = execFileSync('git', ['ls-files', 'packages/runtime/dist'], { cwd: REPO_ROOT, encoding: 'utf8' })
-  .split('\n').filter((f) => /\.(mjs|py)$/.test(f)).sort()
+  .split('\n').filter((f) => f.length > 0 && SHIPPED_EXTS.includes(extname(f))).sort()
 
 /** Mirror parity: tracked-but-unplaced (would go stale on the next edit) and placed-but-untracked. */
 function mirrorParity(placements) {
@@ -72,6 +97,14 @@ function mirrorParity(placements) {
     untracked: [...placed].filter((f) => !TRACKED_MIRROR.includes(f)),
   }
 }
+
+test('mirror filter: covers every shipped extension (json included) and no tsc-emitted one', () => {
+  // Measured on 2026-10-27: .mjs + .py + .json. The assertion is structural —
+  // json MUST be covered while a placement ships one (the #397 filter missed it).
+  assert.ok(SHIPPED_EXTS.length > 0)
+  if (PLACEMENTS.some((p) => p.dist.endsWith('.json'))) assert.ok(SHIPPED_EXTS.includes('.json'))
+  for (const tscExt of ['.js', '.ts', '.map']) assert.ok(!SHIPPED_EXTS.includes(tscExt), `${tscExt} is tsc output, never a placement`)
+})
 
 test('shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file)', () => {
   assert.deepEqual(mirrorParity(PLACEMENTS), { unplaced: [], untracked: [] })
@@ -88,11 +121,11 @@ test('enumeration is deterministic: two loads agree, and the order is the file-n
   assert.deepEqual(a.map((p) => p.src), PLACEMENTS.map((p) => p.src))
 })
 
-test('RED-first: a REMOVED placement is detected (the drift a by-hand list hid)', () => {
+test('RED-first: a REMOVED placement is detected — DELTA N-1 (the drift a by-hand list hid)', () => {
   const dir = plantedLedger((d) => editDoc(d, '030-fs-family.json', (doc) => { doc.placements.splice(3, 1) }))
   try {
     const now = loadPlacements(dir)
-    assert.equal(now.length, 37)
+    assert.equal(now.length, N - 1)
     // The dropped entry's mirror file is still tracked, so the parity leg above
     // names it: a removal can no longer leave a stale shipped copy behind silently
     // (check D of check-artifacts-committed only compares what the list names).
@@ -139,20 +172,23 @@ test('RED-first (review R1 F-1): a stray entry — other extension, subdirectory
 })
 
 test('order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse', () => {
-  // the shipped ledger already has gaps (010, 020, …, 050 — nine numbers between each)
-  const prefixes = readdirSync(PLACEMENTS_DIR).map((n) => Number(n.slice(0, 3)))
+  // the shipped ledger is gapped by design (010, 020, … — nine numbers between each)
+  const prefixes = LEDGER_FILES.map((n) => Number(n.slice(0, 3)))
   assert.ok(prefixes.some((p, i) => i > 0 && p - prefixes[i - 1] > 1), 'the shipped prefixes are gapped by design')
-  // a file dropped INTO a gap (015, between 010 and 020) lands exactly there
+  assert.equal(prefixes[0], 10, 'the glue file keeps the first prefix (010)')
+  assert.ok(prefixes[1] > 15, 'a 015 gap file lands between the first two shipped files')
+  // a file dropped INTO a gap (015, between 010 and the next) lands exactly there
   const dir = plantedLedger((d) => writeFileSync(join(d, '015-gap-family.json'), JSON.stringify({
     schema: 'dist-placements/1',
     placements: [{ src: 'packages/tools/gap-family/src/row.mjs', dist: 'packages/runtime/dist/packages/tools/gap-family/src/row.mjs' }],
   })))
   try {
     const now = loadPlacements(dir)
-    assert.equal(now.length, 39)
-    assert.equal(now[8]?.src, 'packages/tools/gap-family/src/row.mjs', 'after the eight 010 entries, before the 020 ones')
-    assert.deepEqual(now.slice(0, 8), PLACEMENTS.slice(0, 8))
-    assert.deepEqual(now.slice(9), PLACEMENTS.slice(8))
+    const first = PER_FILE[0] // the measured size of the 010 file
+    assert.equal(now.length, N + 1)
+    assert.equal(now[first]?.src, 'packages/tools/gap-family/src/row.mjs', 'after the whole 010 block, before the next file')
+    assert.deepEqual(now.slice(0, first), PLACEMENTS.slice(0, first))
+    assert.deepEqual(now.slice(first + 1), PLACEMENTS.slice(first))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -167,17 +203,22 @@ test('RED-first: an EMPTY directory refuses instead of reading as "no placements
   }
 })
 
-test('a new family adds ONE file and edits none: the appended entry lands after the existing ones', () => {
-  const dir = plantedLedger((d) => writeFileSync(join(d, '060-u7-w0-family.json'), JSON.stringify({
+test('a new family adds ONE file and edits none: the appended entry lands after the existing ones (DELTA N+1)', () => {
+  // The next free prefix above the highest shipped one — derived, so this case
+  // never collides with a real lane's file (the #397 literal 060 did, once
+  // u7-w0b took it).
+  const next = String(Math.max(...LEDGER_FILES.map((n) => Number(n.slice(0, 3)))) + 10).padStart(3, '0')
+  assert.ok(Number(next) <= 999, 'the prefix space is not exhausted')
+  const dir = plantedLedger((d) => writeFileSync(join(d, `${next}-new-family.json`), JSON.stringify({
     schema: 'dist-placements/1',
-    family: 'u7-w0-family',
-    placements: [{ src: 'packages/tools/u7-w0-family/src/row.mjs', dist: 'packages/runtime/dist/packages/tools/u7-w0-family/src/row.mjs' }],
+    family: 'new-family',
+    placements: [{ src: 'packages/tools/new-family/src/row.mjs', dist: 'packages/runtime/dist/packages/tools/new-family/src/row.mjs' }],
   }, null, 2) + '\n'))
   try {
     const now = loadPlacements(dir)
-    assert.equal(now.length, 39)
-    assert.equal(now.at(-1)?.src, 'packages/tools/u7-w0-family/src/row.mjs')
-    assert.deepEqual(now.slice(0, 38), PLACEMENTS, 'the existing 38 are untouched, in order')
+    assert.equal(now.length, N + 1)
+    assert.equal(now.at(-1)?.src, 'packages/tools/new-family/src/row.mjs')
+    assert.deepEqual(now.slice(0, N), [...PLACEMENTS].map((p) => ({ ...p })), 'the existing N are untouched, in order')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
