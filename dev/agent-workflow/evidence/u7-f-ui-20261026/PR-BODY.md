@@ -251,6 +251,53 @@ Census test-count note: the R-legs move the C1 suite 36→41 tests on top
 of the capture quoted above. THIS PR NOW FREEZES for review round 2:
 no further pushes to `task/u7-f-ui-20261026` pending round-2 verdicts.
 
+### Base-refresh merge (master `e004c25c6` = #402+#406+#404 line), head `d20760d31`
+
+Per the main agent's merge-order ruling (slot 4): normal merge, round-2
+review bytes stay `287b38c32`. Shared-booking resolutions, all KEEP-BOTH:
+
+- `PR1_CONSUMERS` (audit script + a5p0 test): master's agent-control /
+  inspect×2 / pwsh bookings verbatim + the two ui-family executor
+  bookings; a5p0 test 4/4 against the real scanner.
+- `eb3-family-boundaries`: LANE_EDGES + lane-id union (inspect-family,
+  agent-control-family, ui-family); files=66 findings=0.
+- `registries.test.mjs`: TEN kinds (080 enumeration: agent-control, f-ui,
+  pwsh), master's generic `090-u7-plantnew` form with length 11; NINE
+  suites (+u7-f-ui); 12/0 green.
+- `u7-w0b-family-seam.test.ts`: master's DERIVED-count form taken verbatim
+  (#406 R2 law); seam 9/9.
+- `families/manifest.json` capability+families union; `index.mjs` NOT
+  hand-merged — regenerated (`gen-family-index` OK (6), `--check` green);
+  census ledger union (7 families, JSON parses).
+- `scripts/dist-placements/070-ui-family.json` → `090-ui-family.json`:
+  the placement order law is TOTAL (#406 took 070, #404 took 080; the
+  loader refused the collision — renumbered per the ruling).
+- **fs-family public face DEDUP**: the #404 review landed the IDENTICAL
+  `verifyOpenedHandle` additive re-export BEFORE this merge; this PR's
+  fix-round copy was removed at the merge and the single master copy
+  stands — one law, one face, zero duplicates (present-executor reads the
+  same public face unchanged).
+
+Local battery (all green on the merged tree): evidence-guard
+added=21 findings=0, ci-required workflows=9 findings=0,
+negative-controls 21/21, boundaries 66/0, definitions 25/0,
+gen-index --check OK(6), C1 41/41, diag-call-chain OK 51 codes,
+lint-identities new 0, typecheck clean, mirrors byte-identical (82
+placements).
+
+Hosted on merge head `d20760d31` (ONE code push per the ruling):
+
+```
+run 40489688065  ci-required        success  EB3-REQUIRED pass layers=5 green=5 nongreen=none
+run 40489687981  pr-gate            success
+run 40489688154  census-runtime     success
+run 40489688158  candidate-protection success
+```
+
+This following evidence append is dev/**-only (touches no linted, hashed
+or placement surface; the path-filtered workflows do not re-run on it) —
+same pattern as the fix-round's `ad98c7895`. FREEZE stands for round 2.
+
 ## Disclosed deviations (from the host mirror)
 
 closed-world parameter schema on `ask` (host question/option items ship
