@@ -9,7 +9,7 @@ test('u7-tbash offline drive identity, ledger, resolution and judge use committe
   assert.equal(identity.ok, true)
   assert.equal(extractGovernedSessionId({ path: 'fresh-root', durable: { teamSession: { rootSessionId: X } }, bind: {} }, { expectedRoot: X }).ok, false)
   assert.equal(extractGovernedSessionId({ path: 'fresh-root', durable: {}, bind: { rootSessionId: X } }, { expectedRoot: X }).ok, false)
-  const governed = governedIdentityRecord({ createBody: { result: { ok: true, value: { data: create } } }, projectionBody: { status: 200, result: { ok: true, value: { data: { projection: { teamSessionId: X, root: { teamSessionId: X } } } } } }, expectedRoot: X, bootRoot: 'session-u7tb-root-fake' })
+  const governed = governedIdentityRecord({ createResponse: { status: 200, body: { result: { ok: true, value: { data: create } } } }, projectionResponse: { status: 200, body: { result: { ok: true, value: { data: { projection: { teamSessionId: X, root: { teamSessionId: X } } } } } } }, expectedRoot: X, bootRoot: 'session-u7tb-root-fake' })
   assert.equal(governed.identityOk, true)
   assert.equal(governed.createBodyExcerpt.length <= 800, true)
   const projection = extractProjectionSessionId({ projection: { teamSessionId: X, root: { teamSessionId: X } } })

@@ -165,7 +165,7 @@
       "L2-mounted": {
         "status": "DISCLOSED",
         "reason": "Boot 6 final re-judge failed closed: projection identity extraction returned null; no strengthened PASS record exists.",
-        "pr": 415,
+        "pr": "#415",
         "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot6.json",
@@ -175,13 +175,13 @@
       "L3-refusal": {
         "status": "DISCLOSED",
         "reason": "Boot 6 final re-judge failed closed before refusal drive; strengthened record unavailable.",
-        "pr": 415,
+        "pr": "#415",
         "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md"
       },
       "L4-positive": {
         "status": "DISCLOSED",
         "reason": "Boot 6 final re-judge failed closed before positive drive; boot 5 raw PASS lacks strengthened ledger/binding fields.",
-        "pr": 415,
+        "pr": "#415",
         "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md",
         "note": "Boot 6 was the authorized final extension and failed closed on projection identity; no boot 7. Boot 5 raw PASS versus strengthened offline FAIL remains disclosed."
       }

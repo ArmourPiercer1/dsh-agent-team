@@ -429,10 +429,12 @@ export function unwrapRemoteValue(body) {
   return v && typeof v === 'object' && 'data' in v ? v.data : v
 }
 
-export function deriveGovernedIdentity({ createBody, expectedRoot, bootRoot, projectionBody = null }) {
-  const createOk = createBody?.result?.ok === true
+export function deriveGovernedIdentity({ createResponse, expectedRoot, bootRoot, projectionResponse = null }) {
+  const createBody = createResponse?.body ?? null
+  const createOk = createResponse?.status === 200 && createBody?.result?.ok === true
   const createValue = unwrapRemoteValue(createBody)
   const identity = extractGovernedSessionId(createValue, { expectedRoot, bootRoot })
+  const projectionBody = projectionResponse?.body ?? null
   const projectionValue = unwrapRemoteValue(projectionBody)
   const independent = extractProjectionSessionId(projectionValue)
   const teamSessionId = identity.ok ? identity.teamSessionId : null
@@ -441,7 +443,7 @@ export function deriveGovernedIdentity({ createBody, expectedRoot, bootRoot, pro
     identity,
     teamSessionId,
     fromIndependentRead: independent,
-    projectionStatus: projectionBody?.status ?? null,
+    projectionStatus: projectionResponse?.status ?? null,
     identityOk: createOk && identity.ok && independent === teamSessionId && teamSessionId !== null,
     createBodyExcerpt: JSON.stringify(createBody ?? null).slice(0, 800),
   }
@@ -497,8 +499,8 @@ export function ledgerControlFromEntries(entries, { teamSessionId, pinnedCommand
   }
 }
 
-export function governedIdentityRecord({ createBody, projectionBody, expectedRoot, bootRoot }) {
-  return deriveGovernedIdentity({ createBody, projectionBody, expectedRoot, bootRoot })
+export function governedIdentityRecord({ createResponse, projectionResponse, expectedRoot, bootRoot }) {
+  return deriveGovernedIdentity({ createResponse, projectionResponse, expectedRoot, bootRoot })
 }
 
 export function assembleTbashRecord({ digest, governed, ledger, calls, resolutions }) {

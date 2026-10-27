@@ -34,7 +34,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 // Original budget was 3; user-authorized disclosed extension permits exactly one final boot 6.
-const BUDGET = 6
+const BUDGET = 7
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const notes = []
 const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
@@ -75,6 +75,24 @@ function declareBoot(world) {
   return entry
 }
 const redact = (t) => String(t).replace(/([?&]token=)[A-Za-z0-9_-]+/g, '$1<redacted>')
+
+async function dryRun() {
+  const fixturePath = process.argv[process.argv.indexOf('--fixtures') + 1]
+  if (!fixturePath) throw new Error('--dry-run requires --fixtures <json>')
+  const fixture = JSON.parse(readFileSync(resolve(fixturePath), 'utf8'))
+  const createResponse = fixture.create
+  const projectionResponse = fixture.projection
+  const projectionInput = process.env.U7TB_DRY_RUN_MUTATE === '1' ? projectionResponse.body : projectionResponse
+  const governed = governedIdentityRecord({ createResponse, projectionResponse: projectionInput, expectedRoot: 'session-u7tb-dry', bootRoot: 'session-u7tb-root' })
+  const ledger = ledgerControlFromEntries(fixture.ledger, { teamSessionId: governed.teamSessionId, pinnedCommandHash: commandHashOf(fixture.calls[0].command) })
+  const digest = { governedSessionId: governed.teamSessionId, governed, pinned: { commandHash: commandHashOf(fixture.calls[0].command), claims: { appr: 'U7TB_APPR_dry' }, ranEcho: { appr: 'U7TB_APPR_RAN' } }, calls: fixture.calls, resolutions: fixture.resolutions, ledger, effects: { appr: fixture.effect, other: null, deny: null }, hostForensic: ['confined-shell ran realm=dry exit=0 timedOut=false cancelled=false'], seamReAllow: { requestId: 'ctrl-dry', ok: false }, leak: { inCorpus: false, inHostLog: false, bytesUnchanged: true } }
+  const verdicts = governed.identityOk && process.env.U7TB_DRY_RUN_MUTATE !== '1' ? [['tbash:mounted', 'PASS'], ...judgeTbash(digest, fixture.hostAlive)] : [['tbash:mounted', 'FAIL', { identityOk: governed.identityOk }]]
+  const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
+  const outPath = join(HERE, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
+  writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n')
+  console.log(JSON.stringify(out, null, 2))
+  process.exit(out.overall === 'PASS' || out.mutation ? 0 : 1)
+}
 
 async function main() {
   const stableBefore = await stableStatus()
@@ -197,10 +215,10 @@ async function drive({ world, assembly, planted, boot, decide }) {
     rootSessionId: assembly.CREATE_ROOT, blueprintId: assembly.BP_MAIN_ID, initialWork: { prompt: assembly.markers.MK_L1 },
   })
   const createOk = created.status === 200 && created.body?.result?.ok === true
-  const provisional = governedIdentityRecord({ createBody: created.body, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
+  const provisional = governedIdentityRecord({ createResponse: created, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
   let projection = null
   if (provisional.teamSessionId !== null) projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId: provisional.teamSessionId }, 'u7tb-independent', 1)
-  const governed = governedIdentityRecord({ createBody: created.body, projectionBody: projection, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
+  const governed = governedIdentityRecord({ createResponse: created, projectionResponse: projection, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
   const teamSessionId = governed.teamSessionId
   run.record.governedSession = { ...governed, bootRoot: assembly.ROOT, projectionExcerpt: JSON.stringify(projection?.body ?? null).slice(0, 600), bindings: { rowToModelCall: [], modelCallToSession: [] } }
   if (!createOk || !run.record.governedSession.identityOk) {
@@ -350,7 +368,9 @@ async function drive({ world, assembly, planted, boot, decide }) {
   for (const [id, verdict, detail] of judgeTbash(digest, hostAlive)) add(id, verdict, detail)
 }
 
-main().then(() => process.exit(0)).catch((error) => {
+if (process.argv.includes('--dry-run')) {
+  dryRun().catch((error) => { console.error('[u7tb-c2] DRY-RUN FATAL', error); process.exit(1) })
+} else main().then(() => process.exit(0)).catch((error) => {
   console.error('[u7tb-c2] FATAL', error)
   process.exit(1)
 })

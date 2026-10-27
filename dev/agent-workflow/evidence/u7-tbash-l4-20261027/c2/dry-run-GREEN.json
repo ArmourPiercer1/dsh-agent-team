@@ -1,0 +1,204 @@
+{
+  "mode": "dry-run",
+  "fixture": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json",
+  "mutation": false,
+  "governedSession": {
+    "createOk": true,
+    "identity": {
+      "ok": true,
+      "createPath": "fresh-root",
+      "fromDurable": "session-u7tb-dry",
+      "fromBind": "session-u7tb-dry",
+      "reason": null,
+      "teamSessionId": "session-u7tb-dry"
+    },
+    "teamSessionId": "session-u7tb-dry",
+    "fromIndependentRead": "session-u7tb-dry",
+    "projectionStatus": 200,
+    "identityOk": true,
+    "createBodyExcerpt": "{\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"rootSessionId\":\"session-u7tb-dry\"}},\"bind\":{\"rootSessionId\":\"session-u7tb-dry\"}}}}}"
+  },
+  "ledger": {
+    "ledgerForeignEntries": 1,
+    "requests": [
+      {
+        "requestId": "ctrl-dry",
+        "rootSessionId": "session-u7tb-dry",
+        "toolName": "bash",
+        "kind": null,
+        "targetInstanceId": null,
+        "summary": "PA ask",
+        "operationFingerprint": null,
+        "parametersFingerprint": "sha256:PLACEHOLDER",
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-replay",
+        "rootSessionId": "session-u7tb-dry",
+        "toolName": "bash",
+        "kind": null,
+        "targetInstanceId": null,
+        "summary": "replay",
+        "operationFingerprint": null,
+        "parametersFingerprint": null,
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-other",
+        "rootSessionId": "session-u7tb-dry",
+        "toolName": "bash",
+        "kind": null,
+        "targetInstanceId": null,
+        "summary": "other",
+        "operationFingerprint": null,
+        "parametersFingerprint": null,
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-deny",
+        "rootSessionId": "session-u7tb-dry",
+        "toolName": "bash",
+        "kind": null,
+        "targetInstanceId": null,
+        "summary": "deny",
+        "operationFingerprint": null,
+        "parametersFingerprint": null,
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-dry",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-replay",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-other",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-deny",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-dry"
+      }
+    ],
+    "abandoned": []
+  },
+  "verdicts": [
+    [
+      "tbash:mounted",
+      "PASS"
+    ],
+    [
+      "tbash:approve-spawn-once",
+      "PASS",
+      {
+        "requestId": "ctrl-dry",
+        "resolutions": [
+          {
+            "requestId": "ctrl-dry",
+            "step": 0,
+            "decision": "allow",
+            "ok": true,
+            "toolName": "bash",
+            "rootSessionId": "session-u7tb-dry"
+          }
+        ],
+        "decisions": [
+          "allow"
+        ],
+        "consumptions": 1,
+        "totalAllowsIssued": 1,
+        "totalConsumptions": 1,
+        "effectOnDisk": "U7TB_APPR_dry\n",
+        "effectLines": 1,
+        "toolResult": "U7TB_APPR_RAN"
+      }
+    ],
+    [
+      "tbash:replay-refused",
+      "PASS",
+      {
+        "sameCommandAsApproved": true,
+        "mode": "new-row-denied",
+        "replayRows": [
+          {
+            "requestId": "ctrl-replay",
+            "decision": "deny",
+            "consumptions": 0
+          }
+        ],
+        "distinctFromApprovedRow": true,
+        "seamReAllowOfSpentRow": {
+          "requestId": "ctrl-dry",
+          "ok": false
+        },
+        "effectLinesAfterReplay": 1,
+        "toolResult": "APPROVAL_DENIED"
+      }
+    ],
+    [
+      "tbash:other-command-refused",
+      "PASS",
+      {
+        "commandHash": "sha256:6095a4eb5fc43d428c2dd35dc0a1267d07cb19f9944ee9bd1bc22b3785999f5f",
+        "pinnedCommandHash": "sha256:739e0f26853b744838922fee4ee0ecef3138ffb098fc92dba88a942568e4ad7b",
+        "mode": "new-row-denied",
+        "rows": [
+          {
+            "requestId": "ctrl-other",
+            "decision": "deny",
+            "consumptions": 0
+          }
+        ],
+        "effectOnDisk": null,
+        "toolResult": "APPROVAL_DENIED"
+      }
+    ],
+    [
+      "tbash:deny-zero-effect",
+      "PASS",
+      {
+        "requestId": "ctrl-deny",
+        "resolutions": [
+          {
+            "requestId": "ctrl-deny",
+            "step": 3,
+            "decision": "deny",
+            "ok": true,
+            "toolName": "bash",
+            "rootSessionId": "session-u7tb-dry"
+          }
+        ],
+        "decisions": [
+          "deny"
+        ],
+        "consumptions": 0,
+        "effectOnDisk": null,
+        "toolResult": "APPROVAL_DENIED"
+      }
+    ],
+    [
+      "tbash:leak-check",
+      "PASS",
+      {
+        "inCorpus": false,
+        "inHostLog": false,
+        "bytesUnchanged": true,
+        "allowsIssued": 1
+      }
+    ]
+  ],
+  "overall": "PASS"
+}
