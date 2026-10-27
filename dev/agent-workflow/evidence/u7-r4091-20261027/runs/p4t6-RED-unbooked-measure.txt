@@ -1,0 +1,1 @@
+scanner counts 1383, ledger derives 983 + 399 = 1382

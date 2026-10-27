@@ -46,6 +46,17 @@ export interface LaneHooks {
         readonly fd: number;
         readonly locator: string;
     }) => void;
+    /**
+     * u7-r4091 PROBE SEAM (test-only): fires on the VERIFIED write fd of
+     * `writeText` between the exec-time re-read and the first write — the
+     * fixture's deterministic second attacker window (R-409-1 re-check). No
+     * sanctioned wiring passes hooks at all; the seam itself changes no law.
+     */
+    readonly onAfterVerifiedBeforeWrite?: (info: {
+        readonly op: string;
+        readonly fd: number;
+        readonly locator: string;
+    }) => void | Promise<void>;
 }
 export interface ControlledFsLaneConfig {
     readonly instances: readonly ControlledFsInstance[];

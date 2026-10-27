@@ -1,0 +1,98 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-r4091
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts (11 tests | 4 failed) 356ms
+     ✓ R-1 a single-link regular file fd is re-confirmed 10ms
+     × R-2 a second name planted after the first observation answers hardlink-alias on the SAME fd 7ms
+     ✓ R-3 the directory exemption of the link-count law is unchanged (regular files only) 2ms
+     × H-write: alias planted between verify and truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; zero bytes landed 306ms
+     ✓ P-write: with the seam present but inert, an ordinary nlink=1 write still lands (the seam alone changes no law) 3ms
+     × H-edit: alias planted after the read half and before truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; no echo in the refusal 4ms
+     ✓ P-edit: an ordinary nlink=1 edit still lands with the echo receipt 3ms
+     × H-lane: alias planted between the verified open and the write is refused hardlink-alias; NO content byte lands through either name 13ms
+     ✓ P-lane: without the probe seam an ordinary nlink=1 writeText still lands 4ms
+     ✓ S-1 the fs-family write/edit executors and the admission binding pass neither seam (internal test seams, never production knobs) 1ms
+     ✓ S-2 the re-check lives ONCE in open-at-exec.ts (no per-family copies) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > recheckSingleLink — the shared second observation (unit) > R-2 a second name planted after the first observation answers hardlink-alias on the SAME fd
+AssertionError: expected 'confirmed' to be 'hardlink-alias' // Object.is equality
+
+Expected: "hardlink-alias"
+Received: "confirmed"
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:105:25
+    103|       plantAlias('unit-2.txt', 'unit-alias-2.txt')
+    104|       const v = await recheckSingleLink(h)
+    105|       expect(v.verdict).toBe('hardlink-alias')
+       |                         ^
+    106|       expect(v.nlink).toBe(2)
+    107|       expect(String(v.detail)).toMatch(/2 hard links/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > post-consume write — nlink re-check before truncate/write > H-write: alias planted between verify and truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; zero bytes landed
+AssertionError: outside name: zero byte change: expected 'OVERWRITTEN-THROUGH-ALIAS' to be 'TARGET-BEFORE-WRITE-4a7c\n' // Object.is equality
+
+- Expected
++ Received
+
+- TARGET-BEFORE-WRITE-4a7c
+-
++ OVERWRITTEN-THROUGH-ALIAS
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:140:100
+    138|     ).write()
+    139|     // FACT first: in RED the bytes prove the mutation through the lat…
+    140|     expect(readFileSync(join(OUTSIDE, 'stolen-hw.txt'), 'utf8'), 'outs…
+       |                                                                                                    ^
+    141|     expect(readFileSync(join(ROOT, name), 'utf8'), 'in-root name: zero…
+    142|     expect(r.ok, `write must be refused, got: ${flat(r)}`).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > post-consume edit — nlink re-check before the write half > H-edit: alias planted after the read half and before truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; no echo in the refusal
+AssertionError: outside name: zero byte change: expected 'NEW-TEXT edit target\n' to be 'OLD-TEXT edit target\n' // Object.is equality
+
+- Expected
++ Received
+
+- OLD-TEXT edit target
++ NEW-TEXT edit target
+
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:180:100
+    178|     ).write()
+    179|     // FACT first: in RED the bytes prove the mutation through the lat…
+    180|     expect(readFileSync(join(OUTSIDE, 'stolen-he.txt'), 'utf8'), 'outs…
+       |                                                                                                    ^
+    181|     expect(readFileSync(join(ROOT, name), 'utf8'), 'in-root name: zero…
+    182|     expect(r.ok, `edit must be refused, got: ${flat(r)}`).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > controlled-fs lane writeText — nlink re-check before the first write > H-lane: alias planted between the verified open and the write is refused hardlink-alias; NO content byte lands through either name
+AssertionError: expected 'LANE-WRITTEN-THROUGH-ALIAS' not to contain 'LANE-WRITTEN-THROUGH-ALIAS'
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:235:70
+    233|     // truncates before any verification can run; what this refusal mu…
+    234|     // guarantee is that NO CONTENT byte lands through the late alias.)
+    235|     expect(readFileSync(join(OUTSIDE, 'stolen-hl.txt'), 'utf8')).not.t…
+       |                                                                      ^
+    236|     expect(readFileSync(join(ROOT, name), 'utf8')).not.toContain(AFTER…
+    237|     expect(res.ok, `writeText must be refused, got: ${flat(res)}`).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 7 passed (11)
+   Start at  19:35:27
+   Duration  538ms (transform 285ms, setup 0ms, import 38ms, tests 356ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

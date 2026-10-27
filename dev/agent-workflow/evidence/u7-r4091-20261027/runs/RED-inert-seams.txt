@@ -1,0 +1,310 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-r4091
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts (11 tests | 7 failed) 369ms
+     × R-1 a single-link regular file fd is re-confirmed 12ms
+     × R-2 a second name planted after the first observation answers hardlink-alias on the SAME fd 2ms
+     × R-3 the directory exemption of the link-count law is unchanged (regular files only) 1ms
+     × H-write: alias planted between verify and truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; zero bytes landed 318ms
+     ✓ P-write: with the seam present but inert, an ordinary nlink=1 write still lands (the seam alone changes no law) 6ms
+     × H-edit: alias planted after the read half and before truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; no echo in the refusal 4ms
+     ✓ P-edit: an ordinary nlink=1 edit still lands with the echo receipt 3ms
+     × H-lane: alias planted between the verified open and the write is refused hardlink-alias; NO content byte lands through either name 12ms
+     ✓ P-lane: without the probe seam an ordinary nlink=1 writeText still lands 4ms
+     ✓ S-1 the fs-family write/edit executors and the admission binding pass neither seam (internal test seams, never production knobs) 1ms
+     × S-2 the re-check lives ONCE in open-at-exec.ts (no per-family copies) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > recheckSingleLink — the shared second observation (unit) > R-1 a single-link regular file fd is re-confirmed
+TypeError: recheckSingleLink is not a function
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:94:21
+     92|     const h = await fsOpen(join(ROOT, 'unit-1.txt'), 'r')
+     93|     try {
+     94|       expect((await recheckSingleLink(h)).verdict).toBe('confirmed')
+       |                     ^
+     95|     } finally { await h.close() }
+     96|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > recheckSingleLink — the shared second observation (unit) > R-2 a second name planted after the first observation answers hardlink-alias on the SAME fd
+TypeError: recheckSingleLink is not a function
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:102:21
+    100|     const h = await fsOpen(join(ROOT, 'unit-2.txt'), 'r')
+    101|     try {
+    102|       expect((await recheckSingleLink(h)).verdict, 'first look: still …
+       |                     ^
+    103|       plantAlias('unit-2.txt', 'unit-alias-2.txt')
+    104|       const v = await recheckSingleLink(h)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > recheckSingleLink — the shared second observation (unit) > R-3 the directory exemption of the link-count law is unchanged (regular files only)
+TypeError: recheckSingleLink is not a function
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:117:21
+    115|       // law (open-at-exec.ts hardlinkAliasVerdict docs) exempts it by
+    116|       // construction and so does the re-check.
+    117|       expect((await recheckSingleLink(h)).verdict).toBe('confirmed')
+       |                     ^
+    118|     } finally { await h.close() }
+    119|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > post-consume write — nlink re-check before truncate/write > H-write: alias planted between verify and truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; zero bytes landed
+AssertionError: outside name: zero byte change: expected 'OVERWRITTEN-THROUGH-ALIAS' to be 'TARGET-BEFORE-WRITE-4a7c\n' // Object.is equality
+
+- Expected
++ Received
+
+- TARGET-BEFORE-WRITE-4a7c
+-
++ OVERWRITTEN-THROUGH-ALIAS
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:140:100
+    138|     ).write()
+    139|     // FACT first: in RED the bytes prove the mutation through the lat…
+    140|     expect(readFileSync(join(OUTSIDE, 'stolen-hw.txt'), 'utf8'), 'outs…
+       |                                                                                                    ^
+    141|     expect(readFileSync(join(ROOT, name), 'utf8'), 'in-root name: zero…
+    142|     expect(r.ok, `write must be refused, got: ${flat(r)}`).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > post-consume edit — nlink re-check before the write half > H-edit: alias planted after the read half and before truncate is refused hardlink-alias; the inode is byte-unchanged through BOTH names; no echo in the refusal
+AssertionError: outside name: zero byte change: expected 'NEW-TEXT edit target\n' to be 'OLD-TEXT edit target\n' // Object.is equality
+
+- Expected
++ Received
+
+- OLD-TEXT edit target
++ NEW-TEXT edit target
+
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:180:100
+    178|     ).write()
+    179|     // FACT first: in RED the bytes prove the mutation through the lat…
+    180|     expect(readFileSync(join(OUTSIDE, 'stolen-he.txt'), 'utf8'), 'outs…
+       |                                                                                                    ^
+    181|     expect(readFileSync(join(ROOT, name), 'utf8'), 'in-root name: zero…
+    182|     expect(r.ok, `edit must be refused, got: ${flat(r)}`).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > controlled-fs lane writeText — nlink re-check before the first write > H-lane: alias planted between the verified open and the write is refused hardlink-alias; NO content byte lands through either name
+AssertionError: expected 'LANE-WRITTEN-THROUGH-ALIAS' not to contain 'LANE-WRITTEN-THROUGH-ALIAS'
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:235:70
+    233|     // truncates before any verification can run; what this refusal mu…
+    234|     // guarantee is that NO CONTENT byte lands through the late alias.)
+    235|     expect(readFileSync(join(OUTSIDE, 'stolen-hl.txt'), 'utf8')).not.t…
+       |                                                                      ^
+    236|     expect(readFileSync(join(ROOT, name), 'utf8')).not.toContain(AFTER…
+    237|     expect(res.ok, `writeText must be refused, got: ${flat(res)}`).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/u7-r4091-nlink-recheck.test.ts > seam discipline — the sanctioned wiring never passes the probe seams > S-2 the re-check lives ONCE in open-at-exec.ts (no per-family copies)
+AssertionError: expected '/**\n * Open-at-exec — the exec-time …' to match /export async function recheckSingleLi…/
+
+- Expected:
+/export async function recheckSingleLink/
+
++ Received:
+"/**
+ * Open-at-exec — the exec-time RE-READ seam (INTERFACES-v1 C-FS, plan §6).
+ *
+ * Two independent laws run at the moment of the real open:
+ *
+ *  1. POLICY RE-READ (this module's seam, `AdmissionRecheck`): the decision
+ *     taken at check time is re-confirmed at exec time. INTEGRATION NOTE
+ *     (C-ADM freeze, do not live-wire before PR2 merges): this is exactly
+ *     where the PR1 fingerprint law re-attaches — the recheck must present
+ *     the SAME `parametersFingerprint` the Guard saw pre-call, so a
+ *     re-resolved definition cannot exec under another call's fingerprint.
+ *     Until the integration owner wires it, the seam runs with the honest
+ *     `noRecheck` default, and README §2 records this as a pre-freeze
+ *     deviation, NOT as if the recheck existed.
+ *
+ *  2. OBJECT RE-READ (implemented here, real syscalls): the opened FD is
+ *     matched against the check-time snapshot —
+ *       - `readlink /proc/self/fd/<n>` must resolve at-or-below the instance
+ *         anchor (a directory swapped to an outside symlink mid-flight is
+ *         caught here, AFTER the OS open and BEFORE any byte is read);
+ *       - `fstat` (dev, ino) must equal the pre-open `lstat` snapshot; any
+ *         drift is `undetermined` (identity cannot be established) — never
+ *         silently \"close enough\";
+ *       - a regular file must carry exactly ONE link (`nlink === 1`): a
+ *         hardlink's in-root name passes both checks above while its inode
+ *         is also named outside the anchor (`hardlinkAliasVerdict`).
+ *
+ * The kernel-grade guarantee (openat2 + RESOLVE_BENEATH/RESOLVE_IN_ROOT on
+ * a trusted directory FD) is declared as the `OpenAtPort` seam below: a
+ * native helper lands it at integration time; this file keeps the honest
+ * node:fs fallback and its documented residual windows (README §3).
+ *
+ * @module packages/runtime/controlled-fs/src/open-at-exec
+ */
+
+import { readlinkSync, realpathSync } from 'node:fs'
+import type { FileHandle } from 'node:fs/promises'
+import * as path from 'node:path'
+
+/** The object identity captured at check time and re-read at exec time. */
+export interface IdentitySnapshot {
+  readonly dev: number
+  readonly ino: number
+  readonly size: number
+  readonly mtimeMs: number
+}
+
+/** Exec-time verdict on an already-opened handle (bytes not yet read). */
+export type ExecTimeVerdict =
+  | { readonly verdict: 'confirmed'; readonly identity: IdentitySnapshot }
+  | { readonly verdict: 'escape'; readonly resolvedPath: string }
+  | { readonly verdict: 'drift'; readonly snapshot: IdentitySnapshot; readonly actual: IdentitySnapshot }
+  | { readonly verdict: 'hardlink-alias'; readonly nlink: number; readonly detail: string }
+  | { readonly verdict: 'undeterminable'; readonly detail: string }
+
+/**
+ * The link-count law, stated ONCE here so no caller re-derives it.
+ *
+ * `/proc/self/fd/<n>` answers with the PATH the descriptor was opened
+ * through, and `fstat` identity answers with (dev, ino). A HARDLINK defeats
+ * both: the second name can sit inside the governed root while the first
+ * name is an outside file, the /proc view then reports the IN-ROOT spelling
+ * and the snapshot of the in-root name is the very same inode. Containment
+ * plus identity therefore cannot distinguish \"this inode lives here\" from
+ * \"this inode is also named here\".
+ *
+ * What a name CAN prove is that it is the object's only name: a regular file
+ * with `nlink === 1` has no second name anywhere, so its bytes have no
+ * outside spelling to be disclosed through. `nlink > 1` is refused — not
+ * because multi-link files are illegitimate (package managers' content-
+ * addressed stores and `git` worktree/`cp -l` layouts do hardlink), but
+ * because an alias cannot be PROVEN to stay inside the root, and a
+ * governance boundary that cannot prove containment must fail closed.
+ * Directories are exempt by construction: their `nlink` counts subdirectory
+ * entries, never file aliases, and the lane never reads directory bytes.
+ *
+ * Post-merge #405 review HIGH (finding F-405-R2-1): this refusal existed
+ * only on the create path before; it now lives in the shared exec-time law,
+ * so every read, image, skill, present, search, write and edit caller of
+ * `verifyOpenedHandle` inherits it with no per-family rule of its own.
+ */
+export function hardlinkAliasVerdict(nlink: number): { readonly verdict: 'hardlink-alias'; readonly nlink: number; readonly detail: string } {
+  // ≤ 200 chars on purpose: every family caller slices `detail` to 200, and
+  // the WHY plus the remedy must survive that slice verbatim.
+  return {
+    verdict: 'hardlink-alias',
+    nlink,
+    detail: `hardlink-alias: the file has ${String(nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`,
+  }
+}
+
+/** Is `candidate` at-or-below `anchor` (both real, canonical paths)? */
+export function isBeneath(anchor: string, candidate: string): boolean {
+  const rel = path.relative(anchor, candidate)
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel))
+}
+
+function snapshotOf(stats: { dev: number; ino: number; size: number; mtimeMs: number }): IdentitySnapshot {
+  return { dev: Number(stats.dev), ino: Number(stats.ino), size: stats.size, mtimeMs: stats.mtimeMs }
+}
+
+/**
+ * Re-read the ACTUAL opened object. Order matters: escape first (active
+ * knowledge of a foreign object → denied), drift second (identity cannot be
+ * established → undetermined), link count third (a regular file with a
+ * second name cannot be proven to live only here → `hardlink-alias`, see
+ * `hardlinkAliasVerdict`). All three answer BEFORE any byte is read.
+ */
+export async function verifyOpenedHandle(
+  handle: FileHandle,
+  anchorReal: string,
+  snapshot: IdentitySnapshot | null,
+): Promise<ExecTimeVerdict> {
+  let resolved: string
+  try {
+    resolved = readlinkSync(`/proc/self/fd/${handle.fd}`)
+  } catch {
+    return { verdict: 'undeterminable', detail: 'no /proc view for the opened fd' }
+  }
+  let canonical: string
+  try {
+    canonical = realpathSync(resolved)
+  } catch {
+    canonical = resolved
+  }
+  if (!isBeneath(anchorReal, canonical)) {
+    return { verdict: 'escape', resolvedPath: canonical }
+  }
+  const stats = await handle.stat({ bigint: false })
+  const actual = snapshotOf(stats)
+  if (snapshot !== null && (actual.dev !== snapshot.dev || actual.ino !== snapshot.ino)) {
+    return { verdict: 'drift', snapshot, actual }
+  }
+  if (stats.isFile() && stats.nlink !== 1) {
+    return hardlinkAliasVerdict(stats.nlink)
+  }
+  return { verdict: 'confirmed', identity: actual }
+}
+
+/**
+ * The exec-time policy re-read seam. INTEGRATION (C-ADM freeze — LANDED in
+ * the wiring round): the PR2-admission binding lives in `admission-binding.ts`
+ * (`bindAdmissionRecheck` presents the bound PR1 canonical
+ * `parametersFingerprint` of THIS call; `createAdmissionGatedControlledFs` is
+ * the sanctioned wiring entry). The `NO_RECHECK` default below stays a
+ * LANE-INTERNAL pre-freeze deviation only — the wiring face never uses it
+ * (unbound there is a typed refusal, pinned by the a5w suite).
+ */
+export interface AdmissionRecheck {
+  /** Re-ask admission for the exact call about to effect. */
+  readonly recheck: (intent: {
+    readonly op: string
+    readonly canonicalLocator: string
+    readonly parametersFingerprint: string | null
+  }) => Promise<{ readonly ok: true } | { readonly ok: false; readonly reason: string }>
+}
+
+/** Pre-freeze default: no external recheck (recorded deviation, README §2). */
+export const NO_RECHECK: AdmissionRecheck = Object.freeze({
+  recheck: async () => ({ ok: true as const }),
+})
+
+/**
+ * The kernel-safe-open port (plan §6 candidate: `openat2` +
+ * `RESOLVE_BENEATH`/`RESOLVE_IN_ROOT` + `RESOLVE_NO_MAGICLINKS` on a trusted
+ * directory FD). No native helper is wired in this lane; the fallback
+ * (segment lstat walk + O_NOFOLLOW + exec-time re-read) carries the
+ * documented residual window and its `undetermined` honesty instead of a
+ * false \"proven\" claim.
+ */
+export interface OpenAtPort {
+  readonly openBeneath: (anchorDirFd: number, relPath: string, flags: number) => Promise<number>
+}
+"
+
+ ❯ packages/runtime/test/u7-r4091-nlink-recheck.test.ts:274:17
+    272|   it('S-2 the re-check lives ONCE in open-at-exec.ts (no per-family co…
+    273|     const law = await read('runtime/controlled-fs/src/open-at-exec.ts')
+    274|     expect(law).toMatch(/export async function recheckSingleLink/)
+       |                 ^
+    275|     // The law is NOT re-derived in any caller: the write-class files …
+    276|     // helper, they never re-state `nlink !== 1` beside a fstat of the…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 4 passed (11)
+   Start at  19:34:55
+   Duration  553ms (transform 294ms, setup 0ms, import 38ms, tests 369ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
