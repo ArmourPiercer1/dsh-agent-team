@@ -99,6 +99,22 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   during their own live runs (observed listeners MOVING between polls —
   shared-machine contention, not lane state); 50/50 GREEN un-contended.
 
+## Merge of origin/master@9e542c0f3 (post-review-fix)
+
+Shared-booking resolutions per main-agent law: families manifest = UNION
+5 families with index.mjs REGENERATED (`gen-family-index` + glue, never
+hand-merged); arc-a-family-census.json UNION (6 lanes);
+eb3-family-boundaries LANE_EDGES UNION (pass files=58 findings=0); audit
+PR1_CONSUMERS + a5p0 test UNION (audit OK, 36 consumers; a5p0 4/4);
+registries.test.mjs UNION (10 options / 11 kinds / 9 suites / 14
+SUITE_CASES — 12/12); seam test = MASTER'S DERIVED COUNT FORM (verbatim,
+#406) — 9/9. One extra booking move: master's agent-control lane claimed
+dist-placements prefix 070 (total-order law), so this lane's placement
+file moved `070-web.json` -> `080-web.json` (79b292883); glue 73
+placements, check-artifacts-committed ok 1856. Post-merge C1 30/30,
+client 35/35, eb3-ci-required 9/0, negative controls 21/21,
+evidence-guard added=20 findings=0.
+
 ## Census rounds (honest record)
 
 - Round 1 (local, post-merge tree): FAIL 7/8 — census named **4 NEW reds**,
@@ -213,7 +229,13 @@ against the tree"), which red-flagged MY NOT-YET-COMMITTED rebuilt
 artifacts (bundle + 8 dist mirrors). That arm is a tripwire working as
 designed, not a law break. **Round 6**
 (`ci-pr-gate-full-census-round6.log`) runs on the committed fix tree
-(f42a92023): the verdict line is recorded there. The census identity set
+(f42a92023) was CANCELLED before its census leg on the main agent's
+instruction — the merge of origin/master@9e542c0f3 (#402 pwsh, #406
+agent-control, #408 evidence-guard) had to rewrite the tree it was
+capturing; its 5 completed legs are all pass
+(`ci-pr-gate-full-census-round6-partial-CANCELLED.log`). The authoritative
+post-fix verdict is the HOSTED run on the pushed head e3088400d
+(ci-required + pr-gate; ids appended below when green). The census identity set
 compares against the booked baseline of OLD REDS (0); counts are
 informational — 635f/8127l here vs the baseline document's historical
 626/7936, moved by this lane's booked test growth (635/8113 already

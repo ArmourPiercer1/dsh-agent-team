@@ -157,7 +157,7 @@ run-summary. `:3080` / `~/.dsh` untouched; all stubs on the MOCK band.
 ## Zero-plane-edit changed-file list
 
 New: `packages/tools/web-family/src/*.mjs` (9), `packages/tools/families/web.mjs`,
-`scripts/dist-placements/070-web.json`, `packages/runtime/test/u7f-web-c1.test.ts`,
+`scripts/dist-placements/080-web.json`, `packages/runtime/test/u7f-web-c1.test.ts`,
 `packages/testkit/test/p4t6-bookings/u7fweb.json`,
 `scripts/eslint-node-globals/030-web-family-node-modules.json` (the u7-w0
 collection law: a node-side lane ships exactly one JSON here;
@@ -178,7 +178,15 @@ light up when the reviewed set changes), evidence logs.
 
 ## Gates
 
-Branch carries `origin/master @ 0ea67bee8` (normal merge, zero conflicts;
+Branch carries `origin/master @ 9e542c0f3` (post-review merge of #402
+pwsh, #406 agent-control, #408 evidence-guard; shared bookings resolved as
+unions — manifest 5 families via `gen-family-index` regeneration, census
+ledger, LANE_EDGES, PR1_CONSUMERS, registries — and the seam test now
+uses master's DERIVED family-count form; the lane's dist-placement file
+moved `070-web.json` -> `080-web.json` for the glue's total-order law;
+review-round 1 checks on the merged tree: eb3-ci-required 9/0, negative
+controls 21/21, evidence-guard added=20 findings=0, C1 30/30,
+client 35/35). Branch previously carried `origin/master @ 0ea67bee8` (normal merge, zero conflicts;
 `gen-family-index` regenerated — still 4 reviewed families — and
 `--check` green). `ci-pr-gate --full --census` (per-worktree pristine
 test-use provisioned per TEST_METHODS §2 — the shared baseline dir in this
