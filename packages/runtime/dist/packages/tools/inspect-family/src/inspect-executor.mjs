@@ -63,9 +63,15 @@ async function admit({ realmId, policy, decide, pa, effects, corr, label, refuse
   const set = parseRequestedEffectSet(effects)
   if (!set.ok) return { refusal: refused('schema', 'effect-set-rejected', JSON.stringify(set.problems).slice(0, 200)) }
   const seq = paSeqRef.value += 1
+  // The host-allocated call correlation (`exec.tokenKey`, forwarded by the
+  // row) rides as the PA callId: the call-level facts entry resolves the
+  // live dispatcher binding behind THAT identity; a synthetic call is an
+  // identity gap and stale-refs the call fail-closed (C2 boot-2 measured:
+  // identity-gap=no-answer-object). Same law the fs read row carries.
+  const execCorrelation = typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
   const gate = await pa({
     realmId,
-    callId: `plane-${label}-${paNonce}-${String(seq)}`,
+    callId: execCorrelation ?? `plane-${label}-${paNonce}-${String(seq)}`,
     ...(corr.signal === undefined ? {} : { signal: corr.signal }),
     parametersFingerprint: set.value.fingerprint,
     requestedEffects: set.value,

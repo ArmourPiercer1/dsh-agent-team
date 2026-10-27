@@ -23,6 +23,8 @@ export function buildInspectRowDefinitions({ inspectListExecutor, inspectQueryEx
     parameters: Object.freeze({ type: 'object', properties: Object.freeze({}), additionalProperties: false }),
     execute: async (_raw, exec) => {
       const corr = {
+        ...(exec?.token === undefined ? {} : { token: exec.token }),
+        ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
         ...(exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
@@ -58,6 +60,8 @@ export function buildInspectRowDefinitions({ inspectListExecutor, inspectQueryEx
     }),
     execute: async (raw, exec) => {
       const corr = {
+        ...(exec?.token === undefined ? {} : { token: exec.token }),
+        ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
         ...(exec?.agent === undefined ? {} : { agent: exec.agent }),
       }

@@ -112,13 +112,19 @@ export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decid
     const set = parseRequestedEffectSet(effects)
     if (!set.ok) return refused('schema', 'effect-set-rejected', JSON.stringify(set.problems).slice(0, 200))
     paSeq += 1
+    // The host-allocated call correlation (`exec.tokenKey`, forwarded by the
+    // row): the PA call-level facts entry resolves the live dispatcher
+    // binding behind THAT identity — a synthetic call is an identity gap and
+    // stale-refs the call fail-closed (measured live, C2 boot-2:
+    // identity-gap=no-answer-object). The fs read row carries the same law.
+    const execCorrelation = typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
     if (tokenKey !== undefined) {
       const prior = tokenLedger.get(tokenKey)
       if (prior !== undefined && prior.settled) {
         ledgerCorrelation = prior.correlation
         replaySettled = true
       } else {
-        ledgerCorrelation = `plane-skill:${mountNonce}-${String(paSeq)}`
+        ledgerCorrelation = prior?.correlation ?? execCorrelation ?? `plane-skill:${mountNonce}-${String(paSeq)}`
         tokenLedger.set(tokenKey, { correlation: ledgerCorrelation, settled: false })
       }
     }
@@ -134,7 +140,7 @@ export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decid
     try {
       gate = await pa({
         realmId,
-        callId: ledgerCorrelation ?? `plane-skill-${mountNonce}-${String(paSeq)}`,
+        callId: ledgerCorrelation ?? execCorrelation ?? `plane-skill-${mountNonce}-${String(paSeq)}`,
         ...(skillSignal === undefined ? {} : { signal: skillSignal }),
         parametersFingerprint: set.value.fingerprint,
         requestedEffects: set.value,

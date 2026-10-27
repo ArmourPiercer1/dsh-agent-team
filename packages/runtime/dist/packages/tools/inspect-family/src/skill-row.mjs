@@ -79,6 +79,7 @@ export function buildSkillRowDefinition({ skillExecutor, skillName = SKILL_ROW_N
     execute: async (raw, exec) => {
       const corr = {
         ...(exec?.token === undefined ? {} : { token: exec.token }),
+        ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
         ...(exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
