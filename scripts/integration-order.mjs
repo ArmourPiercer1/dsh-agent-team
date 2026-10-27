@@ -11,8 +11,8 @@
  *   ceremonial: `agent-bindings.mjs` / `team-tool-plane.mjs` are shared surfaces, so a C2 taken on a
  *   branch measures a tree that does not have the other family's contribution in it.
  *
- * WHAT THIS TOOL DOES. Every C2 record in `dev/agent-workflow/evidence/**` that carries the
- * `u5-run-record/1` schema binds itself to a `bindings.teamSha`. This tool answers, per record and
+ * WHAT THIS TOOL DOES. Every C2 record COMMITTED under `dev/agent-workflow/evidence/**` that carries
+ * the `u5-run-record/1` schema binds itself to a `bindings.teamSha`. This tool answers, per record and
  * then per branch, the only question that decides whether that binding is still the candidate:
  *
  *   EXACT_MERGED_HEAD       teamSha IS the target head — the strongest form
@@ -28,26 +28,37 @@
  * It is a read-only git + JSON reader: it does not run tests, boot anything, or write. It never
  * says "the branch is verified"; it says what the evidence currently binds to.
  *
+ * WHAT IT READS: the committed tree only. Candidates are the `.json` blobs `git ls-tree HEAD` lists
+ * under the evidence root, read with `git cat-file --batch` — never the disk. The audit is about what
+ * is committed, so an untracked local file, or an uncommitted edit of a tracked one, cannot change the
+ * verdict (PR #394 walked the disk: at f3f415aa0 the main checkout held 505 `.json` there against 174
+ * tracked, and the verdict depended on which of them a given machine happened to have).
+ *
  * Fail-closed: an unknown target ref is REFUSED (exit 2, never "no evidence = fine"); an unreadable
- * or oversize record is reported, never skipped silently; `--strict` exits 1 unless every record is
+ * or oversize record is reported, never skipped silently; a BOUND HIT is REFUSED (exit 2) — a partial
+ * report is never printed as if it were the audit; `--strict` exits 1 unless every record is
  * EXACT_MERGED_HEAD.
  *
- * BOUNDS (declared, enforced): records scanned ≤ 400 (extension `.json`, ≤ 512 KiB each);
- * records reported ≤ 40 per class; stdout ≤ 24 KiB; one memoized git call per distinct SHA; no
- * child process other than `git`.
+ * BOUNDS (declared, enforced): RECORDS graded ≤ 200 — the budget is spent on files that parse and
+ * carry the run-record schema, not on arbitrary json (PR #394 spent 400 on every `.json` in name
+ * order, so at f3f415aa0 it graded 24 of the 50 committed records and dropped the rest). Measured
+ * at origin/master f3f415aa0: 174 tracked `.json` under the evidence root, 55 mention the schema,
+ * 50 are records; 200 is 4× that. Candidate `.json` blobs read ≤ 4000, each ≤ 512 KiB (over the cap:
+ * NOT GRADED by name and size, never read). Rows reported ≤ 40 per class; stdout ≤ 24 KiB; one
+ * memoized git call per distinct SHA; no child process other than `git`.
  *
  * Usage:
  *   node scripts/integration-order.mjs [--target origin/master] [--branch <task/branch>] [--json] [--strict]
  *   node scripts/integration-order.mjs --self-test
- * Exit: 0 report produced · 1 --strict and something is not EXACT_MERGED_HEAD · 2 REFUSED.
+ * Exit: 0 report produced · 1 --strict and something is not EXACT_MERGED_HEAD · 2 REFUSED (target
+ * unresolvable, BOUND HIT, or output over bound).
  */
 import { spawnSync } from 'node:child_process'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const BOUNDS = Object.freeze({ maxRecords: 400, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+export const BOUNDS = Object.freeze({ maxRecords: 200, maxCandidates: 4000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 
@@ -109,52 +120,88 @@ export function classify(record, head, anc) {
   return { cls: 'UNRELATED', detail: 'not an ancestor or descendant of the candidate' }
 }
 
-function* walkJson(dir, budget) {
-  let entries
-  try { entries = readdirSync(dir, { withFileTypes: true }) } catch { return }
-  for (const e of [...entries].sort((a, b) => (a.name < b.name ? -1 : 1))) {
-    if (budget.left <= 0) return
-    const full = join(dir, e.name)
-    if (e.isDirectory()) { yield* walkJson(full, budget); continue }
-    if (!e.isFile() || !e.name.endsWith('.json')) continue
-    budget.left -= 1
-    yield full
+/** The `.json` blobs committed at `rev` under the evidence root, in path order: { path, oid, size }. */
+function committedJson(root, rev) {
+  const r = git(root, ['ls-tree', '-r', '-l', '-z', '--full-tree', rev, '--', EVIDENCE_ROOT])
+  if (r.status !== 0) return null
+  const out = []
+  for (const entry of r.stdout.split('\0')) {
+    const m = /^\d+ blob ([0-9a-f]+) +(\d+)\t(.+)$/.exec(entry)
+    if (m !== null && m[3].endsWith('.json')) out.push({ oid: m[1], size: Number(m[2]), path: m[3] })
   }
+  return out.sort((x, y) => (x.path < y.path ? -1 : x.path > y.path ? 1 : 0))
 }
 
-export function collectRecords(root = REPO_ROOT) {
-  const dir = join(root, ...EVIDENCE_ROOT.split('/'))
-  const budget = { left: BOUNDS.maxRecords }
+/** Blob contents for `oids` in ONE `git cat-file --batch` call; Map oid → utf8 text. */
+function readBlobs(root, oids) {
+  const texts = new Map()
+  if (oids.length === 0) return texts
+  const r = spawnSync('git', ['-C', root, 'cat-file', '--batch'], { input: `${oids.join('\n')}\n`, maxBuffer: 1024 * 1024 * 1024 })
+  if (r.status !== 0 || !Buffer.isBuffer(r.stdout)) return texts
+  const buf = r.stdout
+  let at = 0
+  while (at < buf.length) {
+    const nl = buf.indexOf(10, at)
+    if (nl === -1) break
+    const [oid, type, size] = buf.subarray(at, nl).toString('utf8').split(' ')
+    if (type !== 'blob') { at = nl + 1; continue }
+    const n = Number(size)
+    texts.set(oid, buf.subarray(nl + 1, nl + 1 + n).toString('utf8'))
+    at = nl + 1 + n + 1
+  }
+  return texts
+}
+
+/**
+ * The run records committed at `rev` (default HEAD of `root`). Untracked and uncommitted files are
+ * never read. Non-record json costs one read and no budget; a bound hit sets `bound` and the caller
+ * must refuse — the record list is then a prefix, not the corpus.
+ */
+export function collectRecords(root = REPO_ROOT, { rev = 'HEAD' } = {}) {
   const records = []
   const skipped = []
-  for (const file of walkJson(dir, budget)) {
-    let st
-    try { st = statSync(file) } catch { skipped.push([relative(root, file).split(sep).join('/'), 'unstatable']); continue }
-    if (st.size > BOUNDS.maxRecordBytes) { skipped.push([relative(root, file).split(sep).join('/'), `${String(st.size)} B over the record cap (not read)`]); continue }
-    let text
-    try { text = readFileSync(file, 'utf8') } catch { skipped.push([relative(root, file).split(sep).join('/'), 'unreadable']); continue }
+  const commit = resolveRev(root, rev)
+  const listed = commit === null ? null : committedJson(root, commit)
+  if (listed === null) return { records, skipped, commit, bound: null, refused: `cannot list the committed evidence at ${rev}` }
+  if (listed.length > BOUNDS.maxCandidates) {
+    return { records, skipped, commit, bound: `${String(listed.length)} committed .json under ${EVIDENCE_ROOT} > maxCandidates ${String(BOUNDS.maxCandidates)}` }
+  }
+  const readable = []
+  for (const f of listed) {
+    if (f.size > BOUNDS.maxRecordBytes) skipped.push([f.path, `${String(f.size)} B over the record cap (not read)`])
+    else readable.push(f)
+  }
+  const texts = readBlobs(root, readable.map((f) => f.oid))
+  for (const f of readable) {
+    const text = texts.get(f.oid)
+    if (text === undefined) { skipped.push([f.path, 'unreadable (git cat-file returned no blob)']); continue }
     if (!text.includes(SCHEMA)) continue
     let parsed
-    try { parsed = JSON.parse(text) } catch { skipped.push([relative(root, file).split(sep).join('/'), 'unparseable despite carrying the run-record schema']); continue }
+    try { parsed = JSON.parse(text) } catch { skipped.push([f.path, 'unparseable despite carrying the run-record schema']); continue }
     if (parsed?.schema !== SCHEMA) continue
-    records.push({ path: relative(root, file).split(sep).join('/'), record: parsed })
+    if (records.length >= BOUNDS.maxRecords) {
+      return { records, skipped, commit, bound: `more than maxRecords ${String(BOUNDS.maxRecords)} committed run records (stopped at ${f.path})` }
+    }
+    records.push({ path: f.path, record: parsed })
   }
-  return { records, skipped, exhausted: budget.left <= 0 }
+  return { records, skipped, commit, bound: null }
 }
 
 export function report({ target = 'origin/master', branch = null, root = REPO_ROOT } = {}) {
   const head = resolveRev(root, branch ?? target)
   if (head === null) return { refused: `target ${JSON.stringify(branch ?? target)} does not resolve to a commit in this repository — refusing rather than reporting an empty answer` }
   const anc = makeAncestry(root)
-  const { records, skipped, exhausted } = collectRecords(root)
+  const { records, skipped, commit, bound, refused } = collectRecords(root)
+  if (refused) return { refused }
+  if (bound !== null) return { bound, evidenceAt: commit, target: branch ?? target, head }
   const rows = records.map(({ path, record }) => ({ path, suite: record.suite ?? null, runId: record.runId ?? null, startedAt: record.startedAt ?? null, head, ...classify(record, head, anc) }))
   const byClass = {}
   for (const r of rows) (byClass[r.cls] ??= []).push(r)
-  return { target: branch ?? target, head, rows, byClass, skipped, exhausted }
+  return { target: branch ?? target, head, evidenceAt: commit, rows, byClass, skipped }
 }
 
 function render(rep) {
-  const lines = [`integration-order: target=${rep.target} head=${rep.head.slice(0, 12)} records=${String(rep.rows.length)}`]
+  const lines = [`integration-order: target=${rep.target} head=${rep.head.slice(0, 12)} evidence@${rep.evidenceAt.slice(0, 12)} records=${String(rep.rows.length)}`]
   for (const [cls, rows] of Object.entries(rep.byClass)) {
     lines.push(`${cls} (${String(rows.length)}) — ${CLASSES[cls]}`)
     for (const r of rows.slice(0, BOUNDS.perClass)) lines.push(`  ${r.path}${r.suite ? ` [${r.suite}]` : ''} ${r.detail}`)
@@ -164,10 +211,9 @@ function render(rep) {
     lines.push(`NOT GRADED (${String(rep.skipped.length)}):`)
     for (const [p, why] of rep.skipped.slice(0, 10)) lines.push(`  ${p}: ${why}`)
   }
-  if (rep.exhausted) lines.push(`BOUND HIT: stopped after ${String(BOUNDS.maxRecords)} candidate files — the report is partial`)
   const sub = (rep.byClass.BRANCH_LOCAL?.length ?? 0) + (rep.byClass.MERGED_ANCESTOR?.length ?? 0)
   lines.push(`RULE branch-local C2 cannot substitute for merged-head C2: ${String(sub)} record(s) do not bind the candidate; ${String(rep.byClass.EXACT_MERGED_HEAD?.length ?? 0)} do.`)
-  lines.push('LIMIT read-only evidence binding audit: no test run, no Host boot, no verdict on whether any C2 PASSED its own lanes')
+  lines.push(`LIMIT read-only evidence binding audit of the run records COMMITTED at ${rep.evidenceAt.slice(0, 12)} (git ls-tree; untracked and uncommitted files are not read): no test run, no Host boot, no verdict on whether any C2 PASSED its own lanes`)
   return `${lines.join('\n')}\n`
 }
 
@@ -208,6 +254,11 @@ function main(argv) {
   }
   const rep = report(opts)
   if (rep.refused) { process.stdout.write(`REFUSED TARGET_UNRESOLVABLE: ${rep.refused}\n`); process.exit(2) }
+  if (rep.bound) {
+    // A partial corpus is not an audit: no class counts, no RULE line, non-zero exit.
+    process.stdout.write(`BOUND HIT: ${rep.bound} — REFUSED, no partial report is produced; raise the bound with a measurement (see the BOUNDS header)\n`)
+    process.exit(2)
+  }
   const out = opts.json ? `${JSON.stringify(rep, null, 1)}\n` : render(rep)
   if (Buffer.byteLength(out) > BOUNDS.outputBytes) { process.stdout.write(`REFUSED OUTPUT_OVER_BOUND: ${String(Buffer.byteLength(out))} B > ${String(BOUNDS.outputBytes)} B\n`); process.exit(2) }
   process.stdout.write(out)

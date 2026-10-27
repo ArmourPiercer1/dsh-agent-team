@@ -124,6 +124,18 @@
             "node",
             "scripts/eb3-ci-negative-controls.mjs"
           ]
+        },
+        {
+          "id": "devex+diag node:test suites",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "tests/u7-3-devex/devex-integration.test.mjs",
+            "tests/diag-call-chain/diag-call-chain.test.mjs"
+          ],
+          "why": "EB4-B/D/E tooling (PR #394) shipped in no CI layer, so a real tool defect (integration-order dropped committed evidence and read untracked files) and a checkout-shape-dependent test (E2) went uncaught. These are node:test suites, not vitest, so they cannot ride a suiteList (eb3-security-run is vitest-only); they are a leg. Host-free: no HOST_DEPENDENCE_MARKERS, the only host reach (devex verify-zero) is not exercised; ci-integration checks out with fetch-depth 0, which E4/E5/D11 need for origin/master."
         }
       ],
       "hostFree": true

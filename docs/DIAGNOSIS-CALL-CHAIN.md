@@ -34,6 +34,15 @@ plausible:
   self-test red instead of silently attributing to a file that no longer emits it.
 * the spill refusal set is read **out of** `packages/tools/a5p5-tools/src/spill.ts`, never matched
   by prefix, so an invented `spill-…` code stays `UNKNOWN_CODE`.
+* family registration refusals (`PLANE_READ_/PROCESS_/SEARCH_REGISTRATION_REFUSED` at this tree)
+  are **resolved, not listed**. Every module that `packages/tools/families/manifest.json` lists is
+  scanned for its `refusalCode: 'PLANE_*_REFUSED'` literal, and each code found is attributed to
+  `plane-mount` with that descriptor as its emitter. A descriptor on disk that the manifest does not
+  list attributes nothing, because only a listed module mounts. A listed descriptor without the
+  literal is a self-test red that names the file and the code. A new family is therefore attributed
+  without editing the tool. The three codes were first a hardcoded `team-tool-plane.mjs` citation.
+  #399/#400 moved the literals into the family descriptors, the citation drifted, and the self-test
+  went red on master. Nothing caught it, because this suite was in no CI layer until #398.
 
 ## 2. Run it
 
