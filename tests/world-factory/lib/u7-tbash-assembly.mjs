@@ -421,6 +421,32 @@ export function extractGovernedSessionId(value, { expectedRoot, bootRoot } = {})
  * @param {string} input.governedSessionId - the only session whose rows may be allowed.
  * @returns {{decision: 'allow'|'deny', reason: string}}
  */
+export function ledgerControlFromEntries(entries, { teamSessionId, pinnedCommandHash }) {
+  const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
+  let ledgerForeignEntries = 0
+  for (const e of entries ?? []) {
+    if (e?.rootSessionId !== teamSessionId) { ledgerForeignEntries += 1; continue }
+    if (byType[e?.factType] === undefined) continue
+    let payload = e.payload
+    if (typeof payload === 'string') { try { payload = JSON.parse(payload) } catch { payload = {} } }
+    byType[e.factType].push({ sequence: e.sequence ?? null, payload: payload ?? {} })
+  }
+  const settled = new Set([...byType['control-decision-recorded'], ...byType['control-allow-consumed'], ...byType['control-request-abandoned']].map((f) => String(f.payload?.requestId ?? '')))
+  return {
+    ledgerForeignEntries,
+    requests: byType['control-request-recorded'].map((f) => {
+      const p = f.payload ?? {}
+      const raw = JSON.stringify(p)
+      return { requestId: String(p.requestId ?? ''), rootSessionId: teamSessionId, toolName: p.toolName ?? null, kind: p.kind ?? null,
+        targetInstanceId: p.targetInstanceId ?? null, summary: String(p.summary ?? '').slice(0, 200), operationFingerprint: p.operationFingerprint ?? null,
+        parametersFingerprint: p.reviewPayload?.parametersFingerprint ?? null, carriesPinnedCommandHash: raw.includes(String(pinnedCommandHash ?? '').replace(/^sha256:/, '')), status: settled.has(String(p.requestId ?? '')) ? 'settled' : 'pending' }
+    }),
+    decisions: byType['control-decision-recorded'].map((f) => ({ requestId: String(f.payload?.requestId ?? ''), decision: f.payload?.decision ?? null })),
+    consumptions: byType['control-allow-consumed'].map((f) => ({ requestId: String(f.payload?.requestId ?? '') })),
+    abandoned: byType['control-request-abandoned'].map((f) => ({ requestId: String(f.payload?.requestId ?? '') })),
+  }
+}
+
 export function decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven, governedSessionId }) {
   if (typeof governedSessionId !== 'string' || governedSessionId === '' || String(row?.rootSessionId ?? '') !== governedSessionId) {
     return { decision: 'deny', reason: 'row is outside the governed session' }

@@ -165,26 +165,24 @@
       "L2-mounted": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot5.json",
           "case": "tbash:mounted"
         }
       },
       "L3-refusal": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot2.json",
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot5.json",
           "case": "tbash:deny-zero-effect"
         }
       },
       "L4-positive": {
-        "status": "DISCLOSED",
+        "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot4.json",
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot5.json",
           "case": "tbash:approve-spawn-once"
         },
-        "reason": "Boot 4/4 failed closed: runner ReferenceError: projection is not defined while recording governedSession projection diagnostics; all six cases failed with no verdict, no allow/consumption/effect. The scope fix was committed after the last permitted boot; no boot 5 is allowed.",
-        "pr": "#415",
-        "note": "Boot 4/4 failed closed before grading: the runner raised ReferenceError: projection is not defined while recording governedSession projection diagnostics. All six cases FAIL with no verdict, no allow/consumption/effect was issued. The projection extractor scope fix was committed after this last permitted boot; no boot 5 is allowed. The prior boot-3 judge defect was disclosed in the lane README."
+        "note": "Boot 5/5 PASS: create durable+bind+projection agree on governed session; one pinned team_bash allow produced exactly one confined shell effect. The native bash ledger row is not backed by this record as a model-visible tool claim. Boots 3/4 judge/runner defects remain disclosed in README §4."
       }
     },
     {

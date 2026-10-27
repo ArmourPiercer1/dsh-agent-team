@@ -114,7 +114,7 @@ human-seam resolver policy:
 
 ## 4. Boot ledger, verdicts, conclusions (appended after the boots)
 
-Budget extended to 4 (one disclosed over the original budget of 3); all 4 spent, each boot was declared in `c2/boot-budget.jsonl` BEFORE it started. Boot 4 was the final permitted boot; no boot 5 is allowed. Boot 4 failed closed due to a runner `ReferenceError: projection is not defined` while recording projection diagnostics; the scope fix was committed after the last permitted boot and was not live-verified. No world for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
+Budget extended to 5 (two disclosed over the original budget of 3); boot 5 is the final permitted boot, each boot declared in `c2/boot-budget.jsonl` BEFORE it started. Boot 4 failed closed due to a runner `ReferenceError: projection is not defined`; the scope fix is now live in the runner and covered by the offline drive test. No world for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
 `:3080` read 401 before and after boot 4 (`stableInstance.unchanged=true`,
 `touched=false`). Host tree `639ed0153` at the end of boot 4.
 
@@ -180,8 +180,15 @@ Record bindings: `schema u5-run-record/1`, `overall PASS`, teamSha `ca575560be06
 ### 4.4 Ledger change
 
 `dev/agent-workflow/ledgers/u7-tool-acceptance.json`, row `team_bash`: L4-positive
-DISCLOSED → PROVEN (`c2/c2-verdicts-boot2.json`, `tbash:approve-spawn-once`). L3-refusal
-was already PROVEN (u6-proc r4 `proc:deny-zero-spawn`) and is re-cited to this record's
-`tbash:deny-zero-effect`. L2-mounted is re-cited to `tbash:mounted` (a PASS record
-whose mount case shows the `team_bash` placement row, instead of a FAIL-overall record).
-The `bash` row is unchanged.
+DISCLOSED → PROVEN (`c2/c2-verdicts-boot5.json`, `tbash:approve-spawn-once`). L3-refusal
+and L2-mounted are re-cited to the boot-5 PASS cases. The native `bash` row is unchanged
+and is not backed by this model-visible `team_bash` record.
+
+### 4.5 Review round 1 closure
+
+- **F-1 identity:** closed by the create durable+bind identity extractor plus independent projection cross-check; boot 5 records `governedSession.identityOk=true` and matching session IDs.
+- **F-2 resolver session input:** closed by `ledgerControlFromEntries` and the runner's create-echoed `teamSessionId`; foreign ledger entries are counted and never resolved.
+- **F-3 binding chain:** closed by the live chain `team.create → team.getProjection → team.getLedgerPage → team.resolveControl`, with all decisions addressed to the governed session.
+- **Boot 3 judge defect:** the prior projection cross-check read the wrong field; `extractProjectionSessionId` now reads `value.projection.teamSessionId` and is covered by C1/offline tests.
+- **Boot 4 runner defect:** `projection` was previously scoped inside an `if`; the fixed runner now declares and records it safely, and boot 5 is the live verification.
+- **L4 note:** PROVEN for `team_bash` only; the native `bash` ledger row remains unbacked.

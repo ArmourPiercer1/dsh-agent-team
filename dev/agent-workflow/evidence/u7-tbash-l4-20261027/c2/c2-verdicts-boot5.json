@@ -1,0 +1,533 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7tb-c2-mvr43skc",
+  "suite": "u7-team-bash-l4",
+  "startedAt": "2026-10-27T20:02:24.786Z",
+  "selectedCases": [
+    "tbash:mounted",
+    "tbash:approve-spawn-once",
+    "tbash:replay-refused",
+    "tbash:other-command-refused",
+    "tbash:deny-zero-effect",
+    "tbash:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "20829bf71c4779fb2e0b39b5c28ed54ac2b18e1b",
+    "teamTreeClean": false,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "tbash:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.336Z",
+      "detail": {
+        "healthOk": true,
+        "stateOk": true,
+        "createOk": true,
+        "governedSession": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+        "placementFeed": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7tb-realm-u5u7tb-20261027t20-02-24z",
+        "launcherPin": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+      }
+    },
+    {
+      "id": "tbash:approve-spawn-once",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.337Z",
+      "detail": {
+        "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+        "resolutions": [
+          {
+            "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+            "step": 0,
+            "tag": "appr",
+            "commandHash": "sha256:f00571282035d7c958ab0a1992db5cd7c1248c539cbc2eb5f019aa63c719ea97",
+            "decision": "allow",
+            "reason": "the pinned command, first issue, no prior allow",
+            "ok": true,
+            "kind": "leader-approval",
+            "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+            "parametersFingerprint": "sha256:e36de2f157a30d87a9de8450984b7b84d6843dcd095f9edaa8c5901717a57f18",
+            "carriesPinnedCommandHash": false,
+            "body": "ok"
+          }
+        ],
+        "decisions": [
+          "allow"
+        ],
+        "consumptions": 1,
+        "totalAllowsIssued": 1,
+        "totalConsumptions": 1,
+        "effectOnDisk": "U7TB_APPR_u5u7tb-20261027t20-02-24z\n",
+        "effectLines": 1,
+        "toolResult": "bash · exit=0\n> U7TB_APPR_RAN\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+      }
+    },
+    {
+      "id": "tbash:replay-refused",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.337Z",
+      "detail": {
+        "sameCommandAsApproved": true,
+        "mode": "new-row-denied",
+        "replayRows": [
+          {
+            "requestId": "ctrl-1geyaei0sqn0i51idsrsk1qv",
+            "decision": "deny",
+            "consumptions": 0
+          }
+        ],
+        "distinctFromApprovedRow": true,
+        "seamReAllowOfSpentRow": {
+          "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+          "ok": false,
+          "body": "{\"type\":\"server-response\",\"rpcId\":\"u7tb-replay-fb0xtw47v5\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0dq56y802sut430iiqbjy1ow' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveCont"
+        },
+        "effectLinesAfterReplay": 1,
+        "toolResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      }
+    },
+    {
+      "id": "tbash:other-command-refused",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.337Z",
+      "detail": {
+        "commandHash": "sha256:f1b760d2ab58ec129cdbc0b0771d47fbfa3fa735ad7e32593e4f8de57819d0d6",
+        "pinnedCommandHash": "sha256:f00571282035d7c958ab0a1992db5cd7c1248c539cbc2eb5f019aa63c719ea97",
+        "mode": "new-row-denied",
+        "rows": [
+          {
+            "requestId": "ctrl-16mzvic0hbyvsr07ihcuy1ev",
+            "decision": "deny",
+            "reason": "command hash differs from the one pinned grant",
+            "consumptions": 0
+          }
+        ],
+        "effectOnDisk": null,
+        "toolResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      }
+    },
+    {
+      "id": "tbash:deny-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.337Z",
+      "detail": {
+        "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+        "resolutions": [
+          {
+            "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+            "step": 3,
+            "tag": "deny",
+            "commandHash": "sha256:9f4512b2ea72ee244fec79902c8ed4dcee272b9dd67b84dd9f63de0a6e2a2ff1",
+            "decision": "deny",
+            "reason": "command hash differs from the one pinned grant",
+            "ok": true,
+            "kind": "leader-approval",
+            "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+            "parametersFingerprint": "sha256:1397f1d6d8c2b948c9095c39e2eb651f4b1281bcffe7247e07a79127542125f6",
+            "carriesPinnedCommandHash": false,
+            "body": "ok"
+          }
+        ],
+        "decisions": [
+          "deny"
+        ],
+        "consumptions": 0,
+        "effectOnDisk": null,
+        "toolResult": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+      }
+    },
+    {
+      "id": "tbash:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:02:52.337Z",
+      "detail": {
+        "inCorpus": false,
+        "inHostLog": false,
+        "bytesUnchanged": true,
+        "allowsIssued": 1
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T20:02:43.081Z",
+        "runId": "u7tb-c2-mvr43skc",
+        "suite": "u7-team-bash-l4",
+        "phase": "u7tb-c2-boot",
+        "boot": 5,
+        "world": "u5u7tb-20261027T20-02-24Z",
+        "port": 3184,
+        "bootMs": 21337
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 5,
+    "budget": 5,
+    "declaredAt": "2026-10-27T20:02:21.742Z",
+    "runId": "u7tb-c2-mvr43skc",
+    "world": "u5u7tb-20261027T20-02-24Z",
+    "teamSha": "20829bf71c4779fb2e0b39b5c28ed54ac2b18e1b"
+  },
+  "governedSession": {
+    "ok": true,
+    "createPath": "fresh-root",
+    "fromDurable": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+    "fromBind": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+    "reason": null,
+    "teamSessionId": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+    "bootRoot": "session-u7tb-root-u5u7tb-20261027t20-02-24z",
+    "identityOk": true,
+    "fromIndependentRead": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+    "projectionStatus": 200,
+    "projectionExcerpt": "{\"type\":\"server-response\",\"rpcId\":\"u7tb-independent-y3it5oqvkg\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-02-24z\",\"blueprint\":{\"blueprintId\":\"team.u7tb.main\",\"revision\":\"1\",\"contentHash\":\"sha256:3d053271706893b9d250db1db58463a4571517b7e7ed4c1f9eb32f2abe6e0763\"},\"generation\":8,\"generatedAt\":\"2026-10-27T20:02:47.986Z\",\"root\":{\"teamSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-02-24z\",\"createdAt\":\"2026-10-27T20:02:46.252Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration",
+    "ledgerForeignEntries": 0,
+    "bindings": {
+      "rowToModelCall": [],
+      "modelCallToSession": []
+    }
+  },
+  "tbashDigest": {
+    "pinned": {
+      "commandHash": "sha256:f00571282035d7c958ab0a1992db5cd7c1248c539cbc2eb5f019aa63c719ea97",
+      "claims": {
+        "appr": "U7TB_APPR_u5u7tb-20261027t20-02-24z",
+        "other": "U7TB_OTHER_u5u7tb-20261027t20-02-24z",
+        "deny": "U7TB_DENY_u5u7tb-20261027t20-02-24z",
+        "secret": "U7TB_SECRET_u5u7tb-20261027t20-02-24z"
+      },
+      "ranEcho": {
+        "appr": "U7TB_APPR_RAN",
+        "other": "U7TB_OTHER_RAN",
+        "deny": "U7TB_DENY_RAN"
+      }
+    },
+    "calls": [
+      {
+        "step": 0,
+        "tag": "appr",
+        "command": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+        "scriptCommand": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+        "toolUseId": "call-u6fs-meo9nai2",
+        "result": {
+          "isError": false,
+          "text": "bash · exit=0\n> U7TB_APPR_RAN\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+        }
+      },
+      {
+        "step": 1,
+        "tag": "replay",
+        "command": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+        "scriptCommand": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+        "toolUseId": "call-u6fs-00cddwkl",
+        "result": {
+          "isError": false,
+          "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+        }
+      },
+      {
+        "step": 2,
+        "tag": "other",
+        "command": "printf 'U7TB_OTHER_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-other.txt' && echo U7TB_OTHER_RAN",
+        "scriptCommand": "printf 'U7TB_OTHER_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-other.txt' && echo U7TB_OTHER_RAN",
+        "toolUseId": "call-u6fs-1yn7vj4c",
+        "result": {
+          "isError": false,
+          "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+        }
+      },
+      {
+        "step": 3,
+        "tag": "deny",
+        "command": "printf 'U7TB_DENY_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-deny.txt' && echo U7TB_DENY_RAN",
+        "scriptCommand": "printf 'U7TB_DENY_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-deny.txt' && echo U7TB_DENY_RAN",
+        "toolUseId": "call-u6fs-9vko41bc",
+        "result": {
+          "isError": false,
+          "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+        }
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+        "step": 0,
+        "tag": "appr",
+        "commandHash": "sha256:f00571282035d7c958ab0a1992db5cd7c1248c539cbc2eb5f019aa63c719ea97",
+        "decision": "allow",
+        "reason": "the pinned command, first issue, no prior allow",
+        "ok": true,
+        "kind": "leader-approval",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "parametersFingerprint": "sha256:e36de2f157a30d87a9de8450984b7b84d6843dcd095f9edaa8c5901717a57f18",
+        "carriesPinnedCommandHash": false,
+        "body": "ok"
+      },
+      {
+        "requestId": "ctrl-1geyaei0sqn0i51idsrsk1qv",
+        "step": 1,
+        "tag": "replay",
+        "commandHash": "sha256:f00571282035d7c958ab0a1992db5cd7c1248c539cbc2eb5f019aa63c719ea97",
+        "decision": "deny",
+        "reason": "the one approval is already spent — a repeat needs a new grant this lane never gives",
+        "ok": true,
+        "kind": "leader-approval",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "parametersFingerprint": "sha256:e36de2f157a30d87a9de8450984b7b84d6843dcd095f9edaa8c5901717a57f18",
+        "carriesPinnedCommandHash": false,
+        "body": "ok"
+      },
+      {
+        "requestId": "ctrl-16mzvic0hbyvsr07ihcuy1ev",
+        "step": 2,
+        "tag": "other",
+        "commandHash": "sha256:f1b760d2ab58ec129cdbc0b0771d47fbfa3fa735ad7e32593e4f8de57819d0d6",
+        "decision": "deny",
+        "reason": "command hash differs from the one pinned grant",
+        "ok": true,
+        "kind": "leader-approval",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "parametersFingerprint": "sha256:0c0bb125cc269ae43c6f4741c6359df8091f8c5a4711b93f29f432f0adb842b7",
+        "carriesPinnedCommandHash": false,
+        "body": "ok"
+      },
+      {
+        "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+        "step": 3,
+        "tag": "deny",
+        "commandHash": "sha256:9f4512b2ea72ee244fec79902c8ed4dcee272b9dd67b84dd9f63de0a6e2a2ff1",
+        "decision": "deny",
+        "reason": "command hash differs from the one pinned grant",
+        "ok": true,
+        "kind": "leader-approval",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "parametersFingerprint": "sha256:1397f1d6d8c2b948c9095c39e2eb651f4b1281bcffe7247e07a79127542125f6",
+        "carriesPinnedCommandHash": false,
+        "body": "ok"
+      }
+    ],
+    "effectAtPending": [
+      {
+        "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+        "step": 0,
+        "effects": {
+          "appr": null,
+          "other": null,
+          "deny": null
+        }
+      },
+      {
+        "requestId": "ctrl-1geyaei0sqn0i51idsrsk1qv",
+        "step": 1,
+        "effects": {
+          "appr": "U7TB_APPR_u5u7tb-20261027t20-02-24z\n",
+          "other": null,
+          "deny": null
+        }
+      },
+      {
+        "requestId": "ctrl-16mzvic0hbyvsr07ihcuy1ev",
+        "step": 2,
+        "effects": {
+          "appr": "U7TB_APPR_u5u7tb-20261027t20-02-24z\n",
+          "other": null,
+          "deny": null
+        }
+      },
+      {
+        "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+        "step": 3,
+        "effects": {
+          "appr": "U7TB_APPR_u5u7tb-20261027t20-02-24z\n",
+          "other": null,
+          "deny": null
+        }
+      }
+    ],
+    "ledger": {
+      "ledgerForeignEntries": 0,
+      "requests": [
+        {
+          "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+          "toolName": "bash",
+          "kind": "leader-approval",
+          "targetInstanceId": "inst-06lfcr31kr9t",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "operationFingerprint": "sha256:e0cfd8b04001ef64f219a83c15b3f3699932ed67ab213fe0bfc5f8931ad403b9",
+          "parametersFingerprint": "sha256:e36de2f157a30d87a9de8450984b7b84d6843dcd095f9edaa8c5901717a57f18",
+          "carriesPinnedCommandHash": false,
+          "status": "settled"
+        },
+        {
+          "requestId": "ctrl-1geyaei0sqn0i51idsrsk1qv",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+          "toolName": "bash",
+          "kind": "leader-approval",
+          "targetInstanceId": "inst-06lfcr31kr9t",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "operationFingerprint": "sha256:e6c6be16d59aec3063b79a916480b904ba35f0233d396ffd5973a1caea37ecd4",
+          "parametersFingerprint": "sha256:e36de2f157a30d87a9de8450984b7b84d6843dcd095f9edaa8c5901717a57f18",
+          "carriesPinnedCommandHash": false,
+          "status": "settled"
+        },
+        {
+          "requestId": "ctrl-16mzvic0hbyvsr07ihcuy1ev",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+          "toolName": "bash",
+          "kind": "leader-approval",
+          "targetInstanceId": "inst-06lfcr31kr9t",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "operationFingerprint": "sha256:4637e600d4a99a182debf93cad0d85d803f7af71d4ea0dd702d0caede696223e",
+          "parametersFingerprint": "sha256:0c0bb125cc269ae43c6f4741c6359df8091f8c5a4711b93f29f432f0adb842b7",
+          "carriesPinnedCommandHash": false,
+          "status": "settled"
+        },
+        {
+          "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t20-02-24z",
+          "toolName": "bash",
+          "kind": "leader-approval",
+          "targetInstanceId": "inst-06lfcr31kr9t",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t20-02-24z:inst-06lfcr31kr9t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "operationFingerprint": "sha256:7fd7541343659520abf79f3de25fc7d94202780fdb742cb8ad1e5ba076a9a1b0",
+          "parametersFingerprint": "sha256:1397f1d6d8c2b948c9095c39e2eb651f4b1281bcffe7247e07a79127542125f6",
+          "carriesPinnedCommandHash": false,
+          "status": "settled"
+        }
+      ],
+      "decisions": [
+        {
+          "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+          "decision": "allow"
+        },
+        {
+          "requestId": "ctrl-1geyaei0sqn0i51idsrsk1qv",
+          "decision": "deny"
+        },
+        {
+          "requestId": "ctrl-16mzvic0hbyvsr07ihcuy1ev",
+          "decision": "deny"
+        },
+        {
+          "requestId": "ctrl-0yhg929006l7fm12x617b0j2",
+          "decision": "deny"
+        }
+      ],
+      "consumptions": [
+        {
+          "requestId": "ctrl-0dq56y802sut430iiqbjy1ow"
+        }
+      ],
+      "abandoned": []
+    },
+    "seamReAllow": {
+      "requestId": "ctrl-0dq56y802sut430iiqbjy1ow",
+      "ok": false,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"u7tb-replay-fb0xtw47v5\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0dq56y802sut430iiqbjy1ow' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveCont"
+    },
+    "effects": {
+      "appr": "U7TB_APPR_u5u7tb-20261027t20-02-24z\n",
+      "other": null,
+      "deny": null
+    },
+    "leak": {
+      "inCorpus": false,
+      "inHostLog": false,
+      "bytesUnchanged": true
+    },
+    "lanes": {
+      "askerDone": true,
+      "leaderDone": true
+    },
+    "brain": {
+      "phase": 2,
+      "ids": {
+        "asker": "inst-06lfcr31kr9t"
+      },
+      "issued": [
+        {
+          "step": 0,
+          "tag": "appr",
+          "command": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+          "at": 1793131366974
+        },
+        {
+          "step": 1,
+          "tag": "replay",
+          "command": "printf 'U7TB_APPR_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN",
+          "at": 1793131368564
+        },
+        {
+          "step": 2,
+          "tag": "other",
+          "command": "printf 'U7TB_OTHER_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-other.txt' && echo U7TB_OTHER_RAN",
+          "at": 1793131368946
+        },
+        {
+          "step": 3,
+          "tag": "deny",
+          "command": "printf 'U7TB_DENY_u5u7tb-20261027t20-02-24z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z/workspace/u7tb-deny.txt' && echo U7TB_DENY_RAN",
+          "at": 1793131369252
+        }
+      ]
+    },
+    "approverErrors": [],
+    "hostForensic": [
+      "[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u7tb-realm-u5u7tb-20261027t20-02-24z rows=6",
+      "[dsh-agent-team] a5g7-shell: confined-shell ran realm=u7tb-realm-u5u7tb-20261027t20-02-24z call=team-inst-06lfcr31kr9t-bash:hexec:87a1bd70-aec0-4b63-a2c6-15adbfa8299a-1 pid=268 exit=0 timedOut=false cancelled=false"
+    ],
+    "notifTurns": 32
+  },
+  "notes": [
+    "lanes: asker=true leader=true"
+  ],
+  "stableInstance": {
+    "port": 3080,
+    "statusBefore": 401,
+    "statusAfter": 401,
+    "unchanged": true,
+    "touched": false
+  },
+  "hostTreeAfter": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-02-24Z",
+      "releasedPorts": [
+        3184,
+        3498,
+        3184
+      ],
+      "killedPids": [
+        72
+      ],
+      "notes": []
+    },
+    "homeRemoved": true
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/host-boot5.log",
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/mock-excerpt-boot5.json"
+  ],
+  "mockDigest": [],
+  "overall": "PASS",
+  "finishedAt": "2026-10-27T20:02:52.681Z"
+}
