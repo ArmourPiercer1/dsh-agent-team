@@ -37,11 +37,28 @@ export const AGENT_STATE_EFFECT_ARMS = Object.freeze({
 })
 
 export function buildAgentStateContribution({ rowDefinitions }) {
-  const digest = sha256Hex(canonicalJsonStringify({
+  // THE LAW (fs/search precedent; eb3-family-definitions DEF_EXECUTION_REPLACED,
+  // proven live by eb3-ci-negative-controls C3 leg 3d): the bound source
+  // document binds EACH row's name AND its execute transport — a swapped row
+  // body changes the source digest. The five spellings below are the same
+  // order law AGENT_STATE_NAMES carries (guard right below).
+  const [todoWriteDefinition, createGoalDefinition, getGoalDefinition, updateGoalDefinition, exitPlanModeDefinition] = rowDefinitions
+  if ([todoWriteDefinition, createGoalDefinition, getGoalDefinition, updateGoalDefinition, exitPlanModeDefinition]
+    .map((def) => def.name).join('\u0000') !== AGENT_STATE_NAMES.join('\u0000')) {
+    throw new Error('agent-state contribution: rowDefinitions must arrive in the AGENT_STATE_NAMES order — one list, one truth')
+  }
+  const sourceDocument = canonicalJsonStringify({
     familyId: 'dsh.agent-state-family',
     selector: 'packages/tools/agent-state-family/src',
-    rows: AGENT_STATE_NAMES,
-  }))
+    rows: [
+      { name: todoWriteDefinition.name, execute: todoWriteDefinition.execute?.toString?.() ?? null, parameters: todoWriteDefinition.parameters },
+      { name: createGoalDefinition.name, execute: createGoalDefinition.execute?.toString?.() ?? null, parameters: createGoalDefinition.parameters },
+      { name: getGoalDefinition.name, execute: getGoalDefinition.execute?.toString?.() ?? null, parameters: getGoalDefinition.parameters },
+      { name: updateGoalDefinition.name, execute: updateGoalDefinition.execute?.toString?.() ?? null, parameters: updateGoalDefinition.parameters },
+      { name: exitPlanModeDefinition.name, execute: exitPlanModeDefinition.execute?.toString?.() ?? null, parameters: exitPlanModeDefinition.parameters },
+    ],
+  })
+  const digest = sha256Hex(sourceDocument)
   const inputContractDigest = sha256Hex(canonicalJsonStringify(rowDefinitions.map((def) => ({
     name: def.name,
     parameters: def.parameters,
