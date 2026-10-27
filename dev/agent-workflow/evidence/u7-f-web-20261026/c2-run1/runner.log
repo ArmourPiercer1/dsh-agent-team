@@ -1,0 +1,8 @@
+[u7-f-web] case web:mounted: PASS {"health":"p6t6 ok","placement":"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image,web_fetch,web_search] realm=u7fweb-realm-u5u7fweb-20261027t00-01-35z","webEnabled":"planeCfg.webEnabled=true (trusted row conf
+[u7-f-web] case web:fetch-positive: FAIL {"stubLedger":{"port":3491,"claimHits":0,"victimHits":0,"other":{}},"ran":[],"askerDone":"true"}
+[u7-f-web] case web:approval-chain-live: ENV_BLOCK {"reason":"no durable Control ask surfaced (member never reached PA — see mounted/fetch witnesses); NOT a pass claim","askNoticed":false,"resolveAllow":false,"resolveDeny":false}
+[u7-f-web] case web:deny-leg-zero-wire: PASS {"victimHits":0,"witness":"[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491","law":"leader DENIED the second ask; the stub proves ZERO wire to the denied endpoint"}
+[u7-f-web] case web:search-no-provider: PASS {"witness":"WEB_SEARCH_NO_PROVIDER typed refusal in the member transcript; no governed-web-search RAN witness; zero stub wire beyond /claim","stubLedger":{"port":3491,"claimHits":0,"victimHits":0,"other":{}}}
+[u7-f-web] case web:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-f-web] u7fweb run u5-u7-f-web-u7fweb-2026-10-27T00-01-35-162Z: stub={"port":3491,"claimHits":0,"victimHits":0,"other":{}} lanes={"askerDone":true,"leaderDone":true}
+RUN-SUMMARY run=u5-u7-f-web-u7fweb-2026-10-27T00-01-35-162Z suite=u7-f-web overall=FAIL cases=7 ENV_BLOCK:1 FAIL:1 PASS:5 worlds=u5u7fweb-20261027T00-01-35Z

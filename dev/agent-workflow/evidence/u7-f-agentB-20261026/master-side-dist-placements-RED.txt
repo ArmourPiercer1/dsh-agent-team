@@ -1,0 +1,14 @@
+✖ shipped ledger: 38 placements, glue first, order and content as migrated (1.417878ms)
+✖ shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file) (2.013069ms)
+✖ RED-first: a REMOVED placement is detected (the drift a by-hand list hid) (1.76839ms)
+✖ order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse (1.558662ms)
+✖ a new family adds ONE file and edits none: the appended entry lands after the existing ones (1.122212ms)
+ℹ tests 9
+ℹ pass 4
+ℹ fail 5
+✖ failing tests:
+✖ shipped ledger: 38 placements, glue first, order and content as migrated (1.417878ms)
+✖ shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file) (2.013069ms)
+✖ RED-first: a REMOVED placement is detected (the drift a by-hand list hid) (1.76839ms)
+✖ order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse (1.558662ms)
+✖ a new family adds ONE file and edits none: the appended entry lands after the existing ones (1.122212ms)

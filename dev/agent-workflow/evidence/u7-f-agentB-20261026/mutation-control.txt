@@ -1,0 +1,27 @@
+U7-F B mutation controls (planted bug -> the RIGHT test turns RED -> restored),
+2026-10-27, worktree .worktrees/u7-f-agentB, suite
+packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts (45 cases).
+
+PLANT 1 — kill the revision CAS leg in goalStateLeg (agent-state-law.mjs):
+  -  if (current.goalId !== goalId || current.revision !== revision) {
+  +  if (false && (current.goalId !== goalId || current.revision !== revision)) {
+  $ npx vitest run ... -t "wrong revision"
+  x T1 - wrong revision (stale) -> GOAL_STALE_REVISION with ZERO durable writes
+  Tests 1 failed | 44 skipped (45)
+  Restored the exact original line; suite re-greened (45/45).
+
+PLANT 2 — derive the scope from ARGS in update_goal's post-consume read
+  (executors.mjs): store.readGoal(scope) replaced by a scope built from
+  args.goalId ("agent:<id with goal- prefix stripped>") — the cross-scope lie.
+  $ npx vitest run ... -t "S1b"
+  x S1b planted cross-scope WRITE - update_goal NAMING bob's exact
+    goal_id+revision still answers the typed CAS refusal with ZERO reach
+  AssertionError: expected 'GOAL_STALE_REVISION' to be 'GOAL_NOT_FOUND'
+  (the planted row READ BOB'S SCOPE — the exact reach the law forbids; the
+  planted test catches it by the refusal identity AND, in S1c, by the
+  stale-ref sentence naming the wrong current.)
+  Reverted in place (the plant block removed, the original one-line read
+  restored); grep 'PLANTED|false &&' clean; suite re-greened (45/45).
+
+Both plants prove the tests bite on the exact law they pin; the restored tree
+is byte-clean (verified by the re-run + the greps above).

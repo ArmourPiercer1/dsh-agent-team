@@ -121,6 +121,18 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-f (web family lane) booked FILE-BY-FILE, SAME single thin face as
+  // every executor above: both governed executors import ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // declare the family body's [tool-invoke + connect@origin] effect set
+  // pre-authority — no other lane export is reachable from these files
+  // (the audit itself enforces that; a different face stays a finding).
+  // Zero lane edits; web-mechanics / web-transport / web-search-provider /
+  // rows / contribution / index import NOTHING of the governance lane
+  // (network confinement is the admission plane per DECISION-3 — this
+  // family carries no sandbox claim), matching the fs-family slice shape.
+  'tools/web-family/src/fetch-executor.mjs',
+  'tools/web-family/src/search-executor.mjs',
   // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
   // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
   // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
@@ -164,6 +176,18 @@ const PR1_CONSUMERS = Object.freeze([
   // governance lane (owner role: packages/tools/ui-family/README.md).
   'tools/ui-family/src/ask-executor.mjs',
   'tools/ui-family/src/present-executor.mjs',
+  // U7-F B (agent-state family) booked FILE-BY-FILE, thin faces only:
+  // `tools/agent-state-family/src/executors.mjs` imports ONLY
+  // `parseRequestedEffectSet` (the SAME effect-grammar face the fs-family
+  // executors carry) to validate the five rows' per-call PA arm sets;
+  // `tools/agent-state-family/src/contribution.mjs` imports ONLY
+  // `canonicalJsonStringify` (the deterministic canonical serialization the
+  // contribution provider-digest needs — a pure function, zero authority,
+  // the face the shadow-row booking above carries for its digest documents).
+  // No other lane export is reachable from these files (a different face
+  // stays a finding by this audit's own rule); zero lane edits.
+  'tools/agent-state-family/src/executors.mjs',
+  'tools/agent-state-family/src/contribution.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:

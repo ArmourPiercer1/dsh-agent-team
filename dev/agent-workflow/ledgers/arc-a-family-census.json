@@ -1,6 +1,6 @@
 {
   "schema": "u6-arc-a-family-census/1",
-  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only ⇔ tests/**).",
+  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only \u21d4 tests/**).",
   "families": [
     {
       "familyId": "dsh.fs-family",
@@ -35,7 +35,7 @@
       "familyId": "dsh.search-family",
       "lane": "packages/tools/search-family",
       "mount": "product",
-      "reviewedBy": "U6 PR5 (this slice — the search move)",
+      "reviewedBy": "U6 PR5 (this slice \u2014 the search move)",
       "contributionPaths": [
         "packages/tools/search-family/src/search-contribution.mjs"
       ],
@@ -71,6 +71,19 @@
       ]
     },
     {
+      "familyId": "dsh.web-family",
+      "lane": "packages/tools/web-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (this PR \u2014 the first network-effect family: web_fetch/web_search, opt-in webEnabled)",
+      "contributionPaths": [
+        "packages/tools/web-family/src/web-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "web_fetch",
+        "web_search"
+      ]
+    },
+    {
       "familyId": "dsh.agent-control-family",
       "lane": "packages/tools/agent-control-family",
       "mount": "product",
@@ -99,6 +112,22 @@
       "nativeNames": [
         "(bound-definition) ask_user_question",
         "(bound-definition) present"
+      ]
+    },
+    {
+      "familyId": "dsh.agent-state-family",
+      "lane": "packages/tools/agent-state-family",
+      "mount": "product",
+      "reviewedBy": "U7-F B (this lane \u2014 governed todo/goal/plan-mode state via the FamilyAssembly seam)",
+      "contributionPaths": [
+        "packages/tools/agent-state-family/src/contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) todo_write",
+        "(bound-definition) create_goal",
+        "(bound-definition) get_goal",
+        "(bound-definition) update_goal",
+        "(bound-definition) exit_plan_mode"
       ]
     }
   ]

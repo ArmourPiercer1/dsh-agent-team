@@ -106,6 +106,19 @@ export const LANE_EDGES = Object.freeze({
     'packages/tools/fs-family/src/index.mjs',
     'packages/tools/search-family/src/index.mjs',
   ]),
+  // U7-f (web family lane), transcribed from its README (the law home):
+  // the ONE network family rides node builtins for its single bounded
+  // transport port, contracts for the closed vocabulary, and the SAME
+  // single thin governance face the fs-family executors carry
+  // (parseRequestedEffectSet, booked file-by-file in the a5p0 audit).
+  // No plane edge, no sibling-family edge, no host internals — network
+  // confinement is the admission plane (DECISION-3), so the lane itself
+  // claims nothing beyond these three.
+  'dsh.web-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+  ]),
   // U7-F (agent-control family), transcribed from
   // packages/tools/agent-control-family/README.md: canonical JSON + the ONE
   // thin effect-grammar face, NOTHING else — no plane, no center, no
@@ -126,6 +139,19 @@ export const LANE_EDGES = Object.freeze({
     // home — lexicalAnchor + resolveAnchoredPath; never a sibling internal)
     'packages/tools/fs-family/src/index.mjs',
   ]),
+  // U7-F B (agent-state family): the lane README books TWO thin faces only —
+  // node builtins and the frozen governance vocabulary/serialization face of
+  // domain/tool-governance. NO sibling-family, plane, governance-center,
+  // tool-dispatch, or Host edge. `executors.mjs` imports ONLY
+  // `parseRequestedEffectSet`; `contribution.mjs` ONLY `canonicalJsonStringify`
+  // (both registered file-by-file in audit-a5-tool-governance-imports.mjs +
+  // the pinned consumer set). The state-store port is a consumed INTERFACE,
+  // injected via cap.injected.agentState — not an import edge — so it adds no
+  // outward edge here.
+  'dsh.agent-state-family': Object.freeze([
+    'node:*',
+    'packages/domain/tool-governance/src/*',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -138,10 +164,12 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/fs-family': 'dsh.fs-family',
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
+  'packages/tools/web-family': 'dsh.web-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
   'packages/tools/inspect-family': 'dsh.inspect-family',
   'packages/tools/agent-control-family': 'dsh.agent-control-family',
   'packages/tools/ui-family': 'dsh.ui-family',
+  'packages/tools/agent-state-family': 'dsh.agent-state-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are

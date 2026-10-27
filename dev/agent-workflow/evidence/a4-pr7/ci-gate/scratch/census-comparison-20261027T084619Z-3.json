@@ -1,0 +1,57 @@
+{
+  "head": "4668db336110963d3a41d4b6d3614eb6f01e64dc",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T084619Z-3-1.json",
+      "files": 635,
+      "legs": 8127,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+      ]
+    },
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T084619Z-3-2.json",
+      "files": 635,
+      "legs": 8127,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+      ]
+    },
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T084619Z-3-3.json",
+      "files": 635,
+      "legs": 8127,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the committed install surface is fresh against the tree, and a missing surface is refused"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8127,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "3 captures, identical identity sets",
+      "captured": "635f/8127l, 635f/8127l, 635f/8127l",
+      "totalsNote": "captured 635f/8127l, 635f/8127l, 635f/8127l vs baseline-declared 626 / 7936"
+    }
+  }
+}

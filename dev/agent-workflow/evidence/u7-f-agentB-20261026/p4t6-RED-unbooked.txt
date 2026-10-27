@@ -1,0 +1,9 @@
+p4t6 scanner, measured 2026-10-27 on task/u7-f-agentcontrol-b-20261026 @ worktree
+worktrees/u7-f-agentB (off origin/master 42c4d04b5), with the seven U7-F B files
+ON DISK and packages/testkit/test/p4t6-bookings/u7fagentb.json ABSENT:
+
+  $ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+  violations: [ { kind: 'total', detail: 'scanner counts 1329, ledger derives 983 + 339 = 1322' } ]
+
+Delta = 1329 - 1322 = 7 = exactly the seven booked paths. Booking recorded
+from:1322 to:1329 (measured tie law: paths.length === M - N).

@@ -1,0 +1,32 @@
+{
+  "schema": "dist-placements/1",
+  "family": "agent-state-family",
+  "summary": "U7-F B: the agent-state family lane's .mjs runtime face (law table + store port + executors + contribution + barrel) and its FamilyAssembly descriptor. Same byte-copy law as every lane above — tsc never emits `.mjs`, so the lane's runtime face rides the mirror; the relative edges (`../../..` up to `packages/…`) resolve identically because the mirror sits at `dist/packages/…`. The descriptor is statically imported by the generated families index, so it rides the mirror at its repo-relative layout.",
+  "migratedFrom": "new lane (U7-F B) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/tools/families/agent-state.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/agent-state.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/index.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/agent-state-law.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/agent-state-law.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/state-store.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/state-store.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/executors.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/executors.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/contribution.mjs"
+    }
+  ]
+}
