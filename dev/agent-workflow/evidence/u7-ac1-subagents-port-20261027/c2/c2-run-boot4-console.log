@@ -1,4 +1,8 @@
-[u7ac1-c2] FATAL Error: boot budget exhausted: 3/3 declared in /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/boot-budget.jsonl
-    at declareBoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:92:25)
-    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:125:20)
-    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[u7ac1-c2] boot 4/5 declared; starting (world u5u7ac1-20261027T19-32-01Z)
+[u7ac1-c2] human allow ctrl-0u92vz10s8dw680c0htfj0h7 tool=list_subagent_models ok=true
+[u7ac1-c2] human allow ctrl-1h1ttwm1eg6nib0ralsac1f0 tool=subagent ok=true
+[u7ac1-c2] human allow ctrl-006fybl11zp1y010yk9b306g tool=subagent ok=true
+[u7ac1-c2] human allow ctrl-0c8qts11557qwe1qe8cfr15j tool=list_agents ok=true
+[u7ac1-c2] human allow ctrl-03rulix1efn2di1wkviwb0o8 tool=subagent_fork ok=true
+[u7ac1-c2] record written to /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/c2-verdicts-boot4.json (u5-run-record/1, finalized before write)
+[u7ac1-c2] DONE overall=FAIL pass=0 nonpass=10

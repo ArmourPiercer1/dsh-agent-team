@@ -48,7 +48,7 @@ import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../.
 import { remoteCall, hasMarker, surfaceNamesOf, messagesOf } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
-import { AC1_TOOLS, createAc1Assembly, makeAc1Decide, userTexts, assertAc1NativeSurface, computeAc1BuiltinToolDeny } from './ac1-assembly.mjs'
+import { AC1_TOOLS, AGENT_CONTROL_MANAGED_NAMES, createAc1Assembly, makeAc1Decide, userTexts, assertAc1NativeSurface, computeAc1BuiltinToolDeny } from './ac1-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')

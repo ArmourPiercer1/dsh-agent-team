@@ -1,0 +1,3117 @@
+{
+ "note": "Declared EXCERPT of the boot4 mock corpus: every CHILD request (spawn/fork), the last pilot turn-2 request (full pilot chain) and the final request. Kept entries are byte-identical to the capture; the raw capture is not committed (evidence guard).",
+ "rawSha256": "a97494fa4f66080ed32a44e851953d7b6de7007e0b052077c4ae10073789d823",
+ "rawEntries": 46,
+ "entries": [
+  {
+   "seq": 29,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_CHILD_SPAWN_u5u7ac1-20261027t19-32-01z reply with the pong word"
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval prompts are disabled in this session: actions that require approval are rejected automatically — do not request sandbox escalation (do not set `sandbox_permissions`).\n\nYou are a delegated subagent: your permission scope was fixed when you were started and cannot be widened from inside this session — operations that require approval are rejected automatically. When the task needs access beyond that scope, do not retry the denied operation; state the limitation in your reply so the delegating agent can handle it."
+       }
+      ]
+     }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+     "type": "enabled"
+    },
+    "output_config": {
+     "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the u7ac1-model model.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use."
+   },
+   "reply": {
+    "kind": "tool-call",
+    "toolCalls": [
+     {
+      "id": "call-u6fs-qh0510vv",
+      "name": "read",
+      "arguments": {
+       "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/homes/u5u7ac1-20261027T19-32-01Z/outside-secret.txt"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "seq": 30,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_CHILD_SPAWN_u5u7ac1-20261027t19-32-01z reply with the pong word"
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval prompts are disabled in this session: actions that require approval are rejected automatically — do not request sandbox escalation (do not set `sandbox_permissions`).\n\nYou are a delegated subagent: your permission scope was fixed when you were started and cannot be widened from inside this session — operations that require approval are rejected automatically. When the task needs access beyond that scope, do not retry the denied operation; state the limitation in your reply so the delegating agent can handle it."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-qh0510vv",
+        "name": "read",
+        "input": {
+         "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/homes/u5u7ac1-20261027T19-32-01Z/outside-secret.txt"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-qh0510vv",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: unknown tool \"read\""
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+     "type": "enabled"
+    },
+    "output_config": {
+     "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the u7ac1-model model.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use."
+   },
+   "reply": {
+    "kind": "text",
+    "content": "U7AC1_CHILD_PONG"
+   }
+  },
+  {
+   "seq": 43,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work requestToken=u7ac1-d1-u5u7ac1-20261027t19-32-01z] U7AC1_SCRIPT1_u5u7ac1-20261027t19-32-01z Remember this token for later: K7Q27t193201z."
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-3qdel6qu",
+        "name": "list_subagent_models",
+        "input": {}
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-3qdel6qu",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: tool \"list_subagent_models\" returned invalid output: missing required property \"value.text\"; \"value.ok\" is not a declared property (additionalProperties: false); \"value.models\" is not a declared property (additionalProperties: false); \"value.spawnRoutes\" is not a declared property (additionalProperties: false)"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-api36htg",
+        "name": "subagent",
+        "input": {
+         "description": "ac1 spawn probe",
+         "prompt": "U7AC1_CHILD_SPAWN_u5u7ac1-20261027t19-32-01z reply with the pong word"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-api36htg",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: tool \"subagent\" returned invalid output: \"value.ok\" is not a declared property (additionalProperties: false); \"value.kind\" is not a declared property (additionalProperties: false); \"value.provider\" is not a declared property (additionalProperties: false); \"value.runId\" is not a declared property (additionalProperties: false); \"value.stopReason\" is not a declared property (additionalProperties: false); \"value.output\" is not a declared property (additionalProperties: false)"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-fxirp0oh",
+        "name": "list_agents",
+        "input": {}
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-fxirp0oh",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: tool \"list_agents\" returned invalid output: missing required property \"value.text\"; \"value.ok\" is not a declared property (additionalProperties: false); \"value.scope\" is not a declared property (additionalProperties: false); \"value.agents\" is not a declared property (additionalProperties: false); \"value.catalogSize\" is not a declared property (additionalProperties: false); \"value.oneShotChildren\" is not a declared property (additionalProperties: false)"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-765lbjrr",
+        "name": "subagent",
+        "input": {
+         "description": "ac1 route override",
+         "prompt": "never runs",
+         "provider": "deepseek-official"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-765lbjrr",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: provider 'deepseek-official' is outside the caller's own authority"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-n67octay",
+        "name": "subagent",
+        "input": {
+         "description": "ac1 tool request",
+         "prompt": "never runs",
+         "tools": [
+          "read"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-n67octay",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: refused-agent-control agent-control-schema-refused — unknown field 'tools'"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-xipxsi2n",
+        "name": "subagent_fork",
+        "input": {
+         "description": "ac1 fork background",
+         "prompt": "never runs",
+         "run_in_background": true
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-xipxsi2n",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: refused-agent-control agent-control-amplification-refused — a forked child may not carry broader authority than its caller: a continuable child outlives a caller that is not itself continuable"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_PILOT1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work requestToken=u7ac1-d2-u5u7ac1-20261027t19-32-01z] U7AC1_SCRIPT2_u5u7ac1-20261027t19-32-01z"
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval prompts are disabled in this session: actions that require approval are rejected automatically — do not request sandbox escalation (do not set `sandbox_permissions`).\n\nYou are a delegated subagent: your permission scope was fixed when you were started and cannot be widened from inside this session — operations that require approval are rejected automatically. When the task needs access beyond that scope, do not retry the denied operation; state the limitation in your reply so the delegating agent can handle it."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-5gx1skmq",
+        "name": "subagent_fork",
+        "input": {
+         "description": "ac1 fork probe",
+         "prompt": "U7AC1_CHILD_FORK_u5u7ac1-20261027t19-32-01z which token did we see earlier?"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-5gx1skmq",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: unknown tool \"subagent_fork\""
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_PILOT2_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_CHILD_FORK_u5u7ac1-20261027t19-32-01z which token did we see earlier?"
+       }
+      ]
+     }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+     "type": "enabled"
+    },
+    "output_config": {
+     "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the u7ac1-model model.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use."
+   },
+   "reply": {
+    "kind": "text",
+    "content": "U7AC1_FORK_SAW_TOKEN"
+   }
+  },
+  {
+   "seq": 46,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-root-work requestToken=team-create:initial-work:sha256:adf6f53f16250d7ce36e9a770690e8d7735d6a9bf93d70e2f680736859358b70] U7AC1_L1_u5u7ac1-20261027t19-32-01z"
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-xb4xdyw7",
+        "name": "team_create_member",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-c1-u5u7ac1-20261027t19-32-01z",
+         "delegationTemplateId": "acpilot",
+         "label": "u7ac1-pilot"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-xb4xdyw7",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1katy2x1nla1\",\"templateId\":\"acpilot\",\"childSessionId\":\"session-team-child-816465dfb4b16342ed42c6aad96f9205\",\"operationId\":\"op-0cac5ks0wvr33j0dfktca1dt\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7ac1-c1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-3pox7mgb",
+        "name": "team_delegate",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-d1-u5u7ac1-20261027t19-32-01z",
+         "delegationInstanceId": "inst-1katy2x1nla1",
+         "label": "u7ac1-d1",
+         "prompt": "U7AC1_SCRIPT1_u5u7ac1-20261027t19-32-01z Remember this token for later: K7Q27t193201z.",
+         "async": true
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-3pox7mgb",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1katy2x1nla1\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-uy9rsn1q",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-1-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-uy9rsn1q",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-31sx2fiu",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-2-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-31sx2fiu",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-f4t3u9kl",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-3-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-f4t3u9kl",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-3-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6fpld3qn",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-4-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6fpld3qn",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-4-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-8l6amjaq",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-5-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-8l6amjaq",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-5-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6m6sm7tj",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-6-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6m6sm7tj",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-6-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-uuu8i4ns",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-7-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-uuu8i4ns",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-7-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-4vpe7915",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-8-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-4vpe7915",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-8-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_FENCE_HOLD_U7AC1_PILOT1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-0u92vz10s8dw680c0htfj0h7]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0u92vz10s8dw680c0htfj0h7\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: list_subagent_models\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:df1ef94da7b63a85db4a3f2757f2867ef0b0472dd00901934c8af9fa2ffee081:g0 rung=leader tool=list_subagent_models effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0lfmbu8a",
+        "name": "team_delegate",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-d2-u5u7ac1-20261027t19-32-01z",
+         "delegationInstanceId": "inst-1katy2x1nla1",
+         "label": "u7ac1-d2",
+         "prompt": "U7AC1_SCRIPT2_u5u7ac1-20261027t19-32-01z",
+         "async": true
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0lfmbu8a",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1katy2x1nla1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-rc8q9v54",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-1-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-rc8q9v54",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-slb96on6",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-2-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-slb96on6",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-2jes1e1v",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-3-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-2jes1e1v",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-3-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-halytc0z",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-4-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-halytc0z",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-4-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0uat6c37",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-5-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0uat6c37",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-5-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-hwgtu49v",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-6-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-hwgtu49v",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-6-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0guoxg4j",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-7-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0guoxg4j",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-7-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-ftbv0j5q",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-8-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-ftbv0j5q",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-8-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_FENCE_HOLD_U7AC1_PILOT2_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-1h1ttwm1eg6nib0ralsac1f0]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1h1ttwm1eg6nib0ralsac1f0\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: subagent\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:7dedcc9c47b0c3445320484183fdc926978596596e551b731300dbcb7c3ba544:g0 rung=leader tool=subagent effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6pv68am3",
+        "name": "subagent",
+        "input": {
+         "description": "ac1 ptc probe",
+         "prompt": "never runs"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6pv68am3",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: tool \"subagent\" returned invalid output: \"value.ok\" is not a declared property (additionalProperties: false); \"value.kind\" is not a declared property (additionalProperties: false); \"value.provider\" is not a declared property (additionalProperties: false); \"value.runId\" is not a declared property (additionalProperties: false); \"value.stopReason\" is not a declared property (additionalProperties: false); \"value.output\" is not a declared property (additionalProperties: false)"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-0c8qts11557qwe1qe8cfr15j]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0c8qts11557qwe1qe8cfr15j\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: list_agents\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:9ccb70d3adaf8cc46c95407c1d4125072767abc02b68f4a7e00eb75ed5709eaa:g0 rung=leader tool=list_agents effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-03rulix1efn2di1wkviwb0o8]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-03rulix1efn2di1wkviwb0o8\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: subagent_fork\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:8a3b3bded1c770d46c3678a58d7225a849949554cc17775399501c34826ef141:g0 rung=leader tool=subagent_fork effects=3\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work-settled requestToken=u7ac1-d1-u5u7ac1-20261027t19-32-01z]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1katy2x1nla1\nrequestToken: u7ac1-d1-u5u7ac1-20261027t19-32-01z\n\nUse team_collect with this requestToken to read the durable result."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work-settled requestToken=u7ac1-d2-u5u7ac1-20261027t19-32-01z]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1katy2x1nla1\nrequestToken: u7ac1-d2-u5u7ac1-20261027t19-32-01z\n\nUse team_collect with this requestToken to read the durable result."
+       }
+      ]
+     }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+     "type": "enabled"
+    },
+    "output_config": {
+     "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u7ac1 team. U7AC1_L1_u5u7ac1-20261027t19-32-01z drives your chain.\n\n[team-root-context rootSessionId=session-u7ac1-team-u5u7ac1-20261027t19-32-01z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\" and a unique requestToken.\n\nYou are a coding agent powered by the u7ac1-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use.",
+    "tools": [
+     {
+      "name": "edit",
+      "description": "Edit an existing UTF-8 text file by replacing literal text.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to edit, resolved by the filesystem backend."
+        },
+        "old_string": {
+         "type": "string",
+         "description": "Literal text to replace."
+        },
+        "new_string": {
+         "type": "string",
+         "description": "Literal replacement text. Use an empty string to delete the match."
+        },
+        "replace_all": {
+         "type": "boolean",
+         "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+        },
+        "sandbox_permissions": {
+         "type": "string",
+         "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+         "enum": [
+          "workspace-write",
+          "danger-full-access"
+         ]
+        },
+        "justification": {
+         "type": "string",
+         "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+        }
+       },
+       "required": [
+        "file_path",
+        "old_string",
+        "new_string"
+       ]
+      }
+     },
+     {
+      "name": "interrupt_agent",
+      "description": "Request cancellation of one agent's current turn inside THIS session scope. Foreign-scope targets are refused with zero reach; the request rides the runtime's own cancel leg and never settles cancellation itself.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "agent_id": {
+         "type": "string",
+         "description": "Target agent id inside this scope (or this scope's own `scope:id` form)."
+        },
+        "reason": {
+         "type": "string",
+         "description": "Optional short reason recorded with the request."
+        }
+       },
+       "required": [
+        "agent_id"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "list_agents",
+      "description": "List the subagents this session started (its own subagent catalog). Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "scope": {
+         "type": "string",
+         "enum": [
+          "children",
+          "descendants"
+         ],
+         "description": "children (default) lists your direct children only; descendants walks the complete tree below you."
+        }
+       },
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "list_subagent_models",
+      "description": "List the LLM providers/models advertised to this mount, optionally filtered by provider. Read-only enumeration of the route catalogue; it declares no mutation effect and spawns nothing.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "provider": {
+         "type": "string",
+         "description": "Exact provider id to inspect; omit to list providers."
+        }
+       },
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "pwsh",
+      "description": "Execute a PowerShell command (`pwsh -NoLogo -NoProfile -NonInteractive -Command`) inside this member's admitted working root. Prefer PowerShell syntax (`Get-ChildItem`, `$env:NAME`, backtick continuation); multi-line scripts are supported. The command runs under the mount's confined provider: filesystem writes land only inside the admitted working root. Foreground only — a timed-out command is terminated, never promoted to a background job.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "command": {
+         "type": "string",
+         "description": "the PowerShell command text, run as `pwsh -Command <command>` (one argv element — no shell-quoting layer)"
+        },
+        "description": {
+         "type": "string",
+         "description": "a short description of what the command does (1 sentence, states why it is needed)"
+        },
+        "workdir": {
+         "type": "string",
+         "description": "working directory inside the governed working root (default: the root itself)"
+        },
+        "timeoutMs": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "kill the command after this many milliseconds (the row terminates a timed-out payload; the exit code is reported as not-observed)"
+        }
+       },
+       "required": [
+        "command",
+        "description"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "read",
+      "description": "Read a UTF-8 text file and return line-numbered content.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to read, resolved by the filesystem backend."
+        },
+        "offset": {
+         "type": "number",
+         "description": "1-based first line to return. Defaults to 1."
+        },
+        "limit": {
+         "type": "number",
+         "description": "Maximum number of lines to return. Defaults to 2000."
+        }
+       },
+       "required": [
+        "file_path"
+       ]
+      }
+     },
+     {
+      "name": "read_image",
+      "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to the image file, resolved by the filesystem backend."
+        }
+       },
+       "required": [
+        "file_path"
+       ]
+      }
+     },
+     {
+      "name": "send_message",
+      "description": "Send one message to another agent inside THIS session scope. Targets outside the caller's own scope are refused before any runtime is reached; the call is admission-gated and its execution identity is one-shot (a settled call never re-delivers).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "agent_id": {
+         "type": "string",
+         "description": "Target agent id inside this scope (or this scope's own `scope:id` form)."
+        },
+        "message": {
+         "type": "string",
+         "description": "The message to deliver."
+        }
+       },
+       "required": [
+        "agent_id",
+        "message"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "subagent",
+      "description": "Delegate a self-contained task to a governed subagent. The spawn is admission-gated before any agent is created, stays bounded by the CALLER's own authority (no privilege amplification), and every child is recorded on the mount's own scope.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short (3-5 word) description of the delegated task."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The complete, self-contained task for the subagent."
+        },
+        "provider": {
+         "type": "string",
+         "description": "LLM provider route for the child; must sit inside the caller's own authority."
+        },
+        "model": {
+         "type": "string",
+         "description": "Model id for the child; must sit inside the caller's own authority."
+        },
+        "reasoning_effort": {
+         "type": "string",
+         "description": "Adapter-owned reasoning effort for the child route."
+        },
+        "run_in_background": {
+         "type": "boolean",
+         "description": "Whether the child runs in the background."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "subagent_fork",
+      "description": "Delegate a task to a governed child that inherits this conversation as DATA. Inherited context is never inherited authority: the child carries no grants, approvals, or permissions from the parent, and the spawn stays bounded by the caller's own authority.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short (3-5 word) description of the delegated task."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The task for the child; it already sees this conversation's completed turns."
+        },
+        "run_in_background": {
+         "type": "boolean",
+         "description": "Whether the child runs in the background."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_bash",
+      "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "command": {
+         "type": "string"
+        },
+        "cwd": {
+         "type": "string"
+        },
+        "timeout": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 600000
+        },
+        "background": {
+         "type": "boolean"
+        }
+       },
+       "required": [
+        "command"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_collect",
+      "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "requestTokens": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         },
+         "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "requestTokens"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_create_member",
+      "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+         "type": "string",
+         "description": "The blueprint template id the new member is created from."
+        },
+        "label": {
+         "type": "string",
+         "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+         "type": "string",
+         "description": "Optional group id for the new member."
+        },
+        "workspace": {
+         "type": "string",
+         "description": "Optional workspace path override for the new member."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "delegationTemplateId",
+        "label"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_delegate",
+      "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+         "type": "string",
+         "description": "Present: create a new member from this template and delegate to it."
+        },
+        "delegationInstanceId": {
+         "type": "string",
+         "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+        },
+        "label": {
+         "type": "string",
+         "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+         "type": "string",
+         "description": "Optional group id for a new member."
+        },
+        "workspace": {
+         "type": "string",
+         "description": "Optional workspace path override for a new member."
+        },
+        "taskSummary": {
+         "type": "string",
+         "description": "Optional short summary of the delegated work unit (audit context)."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+        },
+        "attachedContext": {
+         "type": "string",
+         "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+        },
+        "async": {
+         "type": "boolean",
+         "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "label",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_glob",
+      "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "pattern": {
+         "type": "string"
+        },
+        "path": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "pattern"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_grep",
+      "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "pattern": {
+         "type": "string"
+        },
+        "path": {
+         "type": "string"
+        },
+        "glob": {
+         "type": "string"
+        },
+        "output_mode": {
+         "type": "string",
+         "enum": [
+          "content",
+          "files_with_matches",
+          "count"
+         ]
+        },
+        "fixed_string": {
+         "type": "boolean"
+        },
+        "ignore_case": {
+         "type": "boolean"
+        },
+        "multiline": {
+         "type": "boolean"
+        },
+        "context": {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 20
+        },
+        "max_results": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 5000
+        }
+       },
+       "required": [
+        "pattern"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_list_members",
+      "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "workflow",
+      "description": "Run a governed orchestration script whose agent legs execute through the caller-bound runtime delegates: every spawn re-passes the no-amplification fence and every steer re-passes the owner fence, so a workflow carries exactly THIS call's authority — never more.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short description of the orchestration."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The closed orchestration request handed to the governed runtime."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "write",
+      "description": "Create or fully replace a UTF-8 text file.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to write, resolved by the filesystem backend."
+        },
+        "content": {
+         "type": "string",
+         "description": "Full UTF-8 text content to write."
+        },
+        "sandbox_permissions": {
+         "type": "string",
+         "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+         "enum": [
+          "workspace-write",
+          "danger-full-access"
+         ]
+        },
+        "justification": {
+         "type": "string",
+         "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+        }
+       },
+       "required": [
+        "file_path",
+        "content"
+       ]
+      }
+     }
+    ]
+   },
+   "reply": {
+    "kind": "text",
+    "content": "U7AC1_L1_DONE"
+   }
+  },
+  {
+   "seq": 46,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-root-work requestToken=team-create:initial-work:sha256:adf6f53f16250d7ce36e9a770690e8d7735d6a9bf93d70e2f680736859358b70] U7AC1_L1_u5u7ac1-20261027t19-32-01z"
+       },
+       {
+        "type": "text",
+        "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-xb4xdyw7",
+        "name": "team_create_member",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-c1-u5u7ac1-20261027t19-32-01z",
+         "delegationTemplateId": "acpilot",
+         "label": "u7ac1-pilot"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-xb4xdyw7",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1katy2x1nla1\",\"templateId\":\"acpilot\",\"childSessionId\":\"session-team-child-816465dfb4b16342ed42c6aad96f9205\",\"operationId\":\"op-0cac5ks0wvr33j0dfktca1dt\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7ac1-c1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-3pox7mgb",
+        "name": "team_delegate",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-d1-u5u7ac1-20261027t19-32-01z",
+         "delegationInstanceId": "inst-1katy2x1nla1",
+         "label": "u7ac1-d1",
+         "prompt": "U7AC1_SCRIPT1_u5u7ac1-20261027t19-32-01z Remember this token for later: K7Q27t193201z.",
+         "async": true
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-3pox7mgb",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1katy2x1nla1\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-uy9rsn1q",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-1-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-uy9rsn1q",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-31sx2fiu",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-2-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-31sx2fiu",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-f4t3u9kl",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-3-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-f4t3u9kl",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-3-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6fpld3qn",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-4-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6fpld3qn",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-4-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-8l6amjaq",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-5-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-8l6amjaq",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-5-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6m6sm7tj",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-6-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6m6sm7tj",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-6-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-uuu8i4ns",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-7-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-uuu8i4ns",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-7-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-4vpe7915",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd1-8-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d1-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-4vpe7915",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d1-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd1-8-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_FENCE_HOLD_U7AC1_PILOT1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-0u92vz10s8dw680c0htfj0h7]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0u92vz10s8dw680c0htfj0h7\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: list_subagent_models\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:df1ef94da7b63a85db4a3f2757f2867ef0b0472dd00901934c8af9fa2ffee081:g0 rung=leader tool=list_subagent_models effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0lfmbu8a",
+        "name": "team_delegate",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-d2-u5u7ac1-20261027t19-32-01z",
+         "delegationInstanceId": "inst-1katy2x1nla1",
+         "label": "u7ac1-d2",
+         "prompt": "U7AC1_SCRIPT2_u5u7ac1-20261027t19-32-01z",
+         "async": true
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0lfmbu8a",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1katy2x1nla1\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-rc8q9v54",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-1-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-rc8q9v54",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-1-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-slb96on6",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-2-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-slb96on6",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-2-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-2jes1e1v",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-3-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-2jes1e1v",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-3-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-halytc0z",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-4-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-halytc0z",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-4-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0uat6c37",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-5-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0uat6c37",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-5-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-hwgtu49v",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-6-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-hwgtu49v",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-6-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-0guoxg4j",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-7-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-0guoxg4j",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-7-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-ftbv0j5q",
+        "name": "team_collect",
+        "input": {
+         "rootSessionId": "session-u7ac1-team-u5u7ac1-20261027t19-32-01z",
+         "requestToken": "u7ac1-fd2-8-u5u7ac1-20261027t19-32-01z",
+         "requestTokens": [
+          "u7ac1-d2-u5u7ac1-20261027t19-32-01z"
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-ftbv0j5q",
+        "content": [
+         {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7ac1-d2-u5u7ac1-20261027t19-32-01z\",\"status\":\"running\",\"instanceId\":\"inst-1katy2x1nla1\",\"admittedSequence\":6,\"resumePossible\":true}]},\"requestToken\":\"u7ac1-fd2-8-u5u7ac1-20261027t19-32-01z\"}"
+         }
+        ],
+        "is_error": false
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_FENCE_HOLD_U7AC1_PILOT2_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-1h1ttwm1eg6nib0ralsac1f0]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1h1ttwm1eg6nib0ralsac1f0\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: subagent\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:7dedcc9c47b0c3445320484183fdc926978596596e551b731300dbcb7c3ba544:g0 rung=leader tool=subagent effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "tool_use",
+        "id": "call-u6fs-6pv68am3",
+        "name": "subagent",
+        "input": {
+         "description": "ac1 ptc probe",
+         "prompt": "never runs"
+        }
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "tool_use_id": "call-u6fs-6pv68am3",
+        "content": [
+         {
+          "type": "text",
+          "text": "Error: tool \"subagent\" returned invalid output: \"value.ok\" is not a declared property (additionalProperties: false); \"value.kind\" is not a declared property (additionalProperties: false); \"value.provider\" is not a declared property (additionalProperties: false); \"value.runId\" is not a declared property (additionalProperties: false); \"value.stopReason\" is not a declared property (additionalProperties: false); \"value.output\" is not a declared property (additionalProperties: false)"
+         }
+        ],
+        "is_error": true
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-0c8qts11557qwe1qe8cfr15j]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0c8qts11557qwe1qe8cfr15j\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: list_agents\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:9ccb70d3adaf8cc46c95407c1d4125072767abc02b68f4a7e00eb75ed5709eaa:g0 rung=leader tool=list_agents effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-control requestId=ctrl-03rulix1efn2di1wkviwb0o8]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-03rulix1efn2di1wkviwb0o8\nrequester: inst-1katy2x1nla1\nsubject: instance inst-1katy2x1nla1\ntarget: inst-1katy2x1nla1\ntool: subagent_fork\nsummary: PA ask case=tadm:session-u7ac1-team-u5u7ac1-20261027t19-32-01z:inst-1katy2x1nla1:sha256:8a3b3bded1c770d46c3678a58d7225a849949554cc17775399501c34826ef141:g0 rung=leader tool=subagent_fork effects=3\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work-settled requestToken=u7ac1-d1-u5u7ac1-20261027t19-32-01z]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1katy2x1nla1\nrequestToken: u7ac1-d1-u5u7ac1-20261027t19-32-01z\n\nUse team_collect with this requestToken to read the durable result."
+       }
+      ]
+     },
+     {
+      "role": "assistant",
+      "content": [
+       {
+        "type": "text",
+        "text": "U7AC1_L1_DONE"
+       }
+      ]
+     },
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "[team-work-settled requestToken=u7ac1-d2-u5u7ac1-20261027t19-32-01z]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1katy2x1nla1\nrequestToken: u7ac1-d2-u5u7ac1-20261027t19-32-01z\n\nUse team_collect with this requestToken to read the durable result."
+       }
+      ]
+     }
+    ],
+    "max_tokens": 256000,
+    "thinking": {
+     "type": "enabled"
+    },
+    "output_config": {
+     "effort": "high"
+    },
+    "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u7ac1 team. U7AC1_L1_u5u7ac1-20261027t19-32-01z drives your chain.\n\n[team-root-context rootSessionId=session-u7ac1-team-u5u7ac1-20261027t19-32-01z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-u7ac1-team-u5u7ac1-20261027t19-32-01z\" and a unique requestToken.\n\nYou are a coding agent powered by the u7ac1-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use.",
+    "tools": [
+     {
+      "name": "edit",
+      "description": "Edit an existing UTF-8 text file by replacing literal text.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to edit, resolved by the filesystem backend."
+        },
+        "old_string": {
+         "type": "string",
+         "description": "Literal text to replace."
+        },
+        "new_string": {
+         "type": "string",
+         "description": "Literal replacement text. Use an empty string to delete the match."
+        },
+        "replace_all": {
+         "type": "boolean",
+         "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+        },
+        "sandbox_permissions": {
+         "type": "string",
+         "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+         "enum": [
+          "workspace-write",
+          "danger-full-access"
+         ]
+        },
+        "justification": {
+         "type": "string",
+         "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+        }
+       },
+       "required": [
+        "file_path",
+        "old_string",
+        "new_string"
+       ]
+      }
+     },
+     {
+      "name": "interrupt_agent",
+      "description": "Request cancellation of one agent's current turn inside THIS session scope. Foreign-scope targets are refused with zero reach; the request rides the runtime's own cancel leg and never settles cancellation itself.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "agent_id": {
+         "type": "string",
+         "description": "Target agent id inside this scope (or this scope's own `scope:id` form)."
+        },
+        "reason": {
+         "type": "string",
+         "description": "Optional short reason recorded with the request."
+        }
+       },
+       "required": [
+        "agent_id"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "list_agents",
+      "description": "List the subagents this session started (its own subagent catalog). Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "scope": {
+         "type": "string",
+         "enum": [
+          "children",
+          "descendants"
+         ],
+         "description": "children (default) lists your direct children only; descendants walks the complete tree below you."
+        }
+       },
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "list_subagent_models",
+      "description": "List the LLM providers/models advertised to this mount, optionally filtered by provider. Read-only enumeration of the route catalogue; it declares no mutation effect and spawns nothing.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "provider": {
+         "type": "string",
+         "description": "Exact provider id to inspect; omit to list providers."
+        }
+       },
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "pwsh",
+      "description": "Execute a PowerShell command (`pwsh -NoLogo -NoProfile -NonInteractive -Command`) inside this member's admitted working root. Prefer PowerShell syntax (`Get-ChildItem`, `$env:NAME`, backtick continuation); multi-line scripts are supported. The command runs under the mount's confined provider: filesystem writes land only inside the admitted working root. Foreground only — a timed-out command is terminated, never promoted to a background job.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "command": {
+         "type": "string",
+         "description": "the PowerShell command text, run as `pwsh -Command <command>` (one argv element — no shell-quoting layer)"
+        },
+        "description": {
+         "type": "string",
+         "description": "a short description of what the command does (1 sentence, states why it is needed)"
+        },
+        "workdir": {
+         "type": "string",
+         "description": "working directory inside the governed working root (default: the root itself)"
+        },
+        "timeoutMs": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "kill the command after this many milliseconds (the row terminates a timed-out payload; the exit code is reported as not-observed)"
+        }
+       },
+       "required": [
+        "command",
+        "description"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "read",
+      "description": "Read a UTF-8 text file and return line-numbered content.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to read, resolved by the filesystem backend."
+        },
+        "offset": {
+         "type": "number",
+         "description": "1-based first line to return. Defaults to 1."
+        },
+        "limit": {
+         "type": "number",
+         "description": "Maximum number of lines to return. Defaults to 2000."
+        }
+       },
+       "required": [
+        "file_path"
+       ]
+      }
+     },
+     {
+      "name": "read_image",
+      "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to the image file, resolved by the filesystem backend."
+        }
+       },
+       "required": [
+        "file_path"
+       ]
+      }
+     },
+     {
+      "name": "send_message",
+      "description": "Send one message to another agent inside THIS session scope. Targets outside the caller's own scope are refused before any runtime is reached; the call is admission-gated and its execution identity is one-shot (a settled call never re-delivers).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "agent_id": {
+         "type": "string",
+         "description": "Target agent id inside this scope (or this scope's own `scope:id` form)."
+        },
+        "message": {
+         "type": "string",
+         "description": "The message to deliver."
+        }
+       },
+       "required": [
+        "agent_id",
+        "message"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "subagent",
+      "description": "Delegate a self-contained task to a governed subagent. The spawn is admission-gated before any agent is created, stays bounded by the CALLER's own authority (no privilege amplification), and every child is recorded on the mount's own scope.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short (3-5 word) description of the delegated task."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The complete, self-contained task for the subagent."
+        },
+        "provider": {
+         "type": "string",
+         "description": "LLM provider route for the child; must sit inside the caller's own authority."
+        },
+        "model": {
+         "type": "string",
+         "description": "Model id for the child; must sit inside the caller's own authority."
+        },
+        "reasoning_effort": {
+         "type": "string",
+         "description": "Adapter-owned reasoning effort for the child route."
+        },
+        "run_in_background": {
+         "type": "boolean",
+         "description": "Whether the child runs in the background."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "subagent_fork",
+      "description": "Delegate a task to a governed child that inherits this conversation as DATA. Inherited context is never inherited authority: the child carries no grants, approvals, or permissions from the parent, and the spawn stays bounded by the caller's own authority.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short (3-5 word) description of the delegated task."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The task for the child; it already sees this conversation's completed turns."
+        },
+        "run_in_background": {
+         "type": "boolean",
+         "description": "Whether the child runs in the background."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_bash",
+      "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "command": {
+         "type": "string"
+        },
+        "cwd": {
+         "type": "string"
+        },
+        "timeout": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 600000
+        },
+        "background": {
+         "type": "boolean"
+        }
+       },
+       "required": [
+        "command"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_collect",
+      "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "requestTokens": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         },
+         "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "requestTokens"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_create_member",
+      "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+         "type": "string",
+         "description": "The blueprint template id the new member is created from."
+        },
+        "label": {
+         "type": "string",
+         "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+         "type": "string",
+         "description": "Optional group id for the new member."
+        },
+        "workspace": {
+         "type": "string",
+         "description": "Optional workspace path override for the new member."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "delegationTemplateId",
+        "label"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_delegate",
+      "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        },
+        "delegationTemplateId": {
+         "type": "string",
+         "description": "Present: create a new member from this template and delegate to it."
+        },
+        "delegationInstanceId": {
+         "type": "string",
+         "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+        },
+        "label": {
+         "type": "string",
+         "description": "A short human-readable label for the new member instance (non-empty)."
+        },
+        "groupId": {
+         "type": "string",
+         "description": "Optional group id for a new member."
+        },
+        "workspace": {
+         "type": "string",
+         "description": "Optional workspace path override for a new member."
+        },
+        "taskSummary": {
+         "type": "string",
+         "description": "Optional short summary of the delegated work unit (audit context)."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+        },
+        "attachedContext": {
+         "type": "string",
+         "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+        },
+        "async": {
+         "type": "boolean",
+         "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken",
+        "label",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_glob",
+      "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "pattern": {
+         "type": "string"
+        },
+        "path": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "pattern"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_grep",
+      "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "pattern": {
+         "type": "string"
+        },
+        "path": {
+         "type": "string"
+        },
+        "glob": {
+         "type": "string"
+        },
+        "output_mode": {
+         "type": "string",
+         "enum": [
+          "content",
+          "files_with_matches",
+          "count"
+         ]
+        },
+        "fixed_string": {
+         "type": "boolean"
+        },
+        "ignore_case": {
+         "type": "boolean"
+        },
+        "multiline": {
+         "type": "boolean"
+        },
+        "context": {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 20
+        },
+        "max_results": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 5000
+        }
+       },
+       "required": [
+        "pattern"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "team_list_members",
+      "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "rootSessionId": {
+         "type": "string",
+         "description": "The TeamSession (root session) id this operation belongs to."
+        },
+        "requestToken": {
+         "type": "string",
+         "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+        }
+       },
+       "required": [
+        "rootSessionId",
+        "requestToken"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "workflow",
+      "description": "Run a governed orchestration script whose agent legs execute through the caller-bound runtime delegates: every spawn re-passes the no-amplification fence and every steer re-passes the owner fence, so a workflow carries exactly THIS call's authority — never more.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "description": {
+         "type": "string",
+         "description": "A short description of the orchestration."
+        },
+        "prompt": {
+         "type": "string",
+         "description": "The closed orchestration request handed to the governed runtime."
+        }
+       },
+       "required": [
+        "description",
+        "prompt"
+       ],
+       "additionalProperties": false
+      }
+     },
+     {
+      "name": "write",
+      "description": "Create or fully replace a UTF-8 text file.",
+      "input_schema": {
+       "type": "object",
+       "properties": {
+        "file_path": {
+         "type": "string",
+         "description": "Path to write, resolved by the filesystem backend."
+        },
+        "content": {
+         "type": "string",
+         "description": "Full UTF-8 text content to write."
+        },
+        "sandbox_permissions": {
+         "type": "string",
+         "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+         "enum": [
+          "workspace-write",
+          "danger-full-access"
+         ]
+        },
+        "justification": {
+         "type": "string",
+         "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+        }
+       },
+       "required": [
+        "file_path",
+        "content"
+       ]
+      }
+     }
+    ]
+   },
+   "reply": {
+    "kind": "text",
+    "content": "U7AC1_L1_DONE"
+   }
+  }
+ ]
+}
