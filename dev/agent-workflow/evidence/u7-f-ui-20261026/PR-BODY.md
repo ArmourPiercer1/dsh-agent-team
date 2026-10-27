@@ -295,8 +295,19 @@ run 40489688158  candidate-protection success
 ```
 
 This following evidence append is dev/**-only (touches no linted, hashed
-or placement surface; the path-filtered workflows do not re-run on it) —
-same pattern as the fix-round's `ad98c7895`. FREEZE stands for round 2.
+or placement surface) — same content class as the fix-round's
+`ad98c7895`. CORRECTION discovered live: the base-refresh also brought
+master's widened workflow triggers, so a pure `dev/**` commit NOW
+re-runs the full four-workflow set (the fix-round's no-rerun sentence
+was true pre-merge, false post-merge). The ONE-CODE-PUSH law stands;
+review bytes stand at `287b38c32`; the doc-head re-runs are recorded:
+
+```
+run 40492436483  ci-required        success  EB3-REQUIRED pass layers=5 green=5 nongreen=none
+run 40492436193  pr-gate            success
+run 40492435983  census-runtime     success
+run 40492435995  candidate-protection success
+```
 
 ## Disclosed deviations (from the host mirror)
 
