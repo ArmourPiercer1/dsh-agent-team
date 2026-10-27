@@ -1,0 +1,848 @@
+{
+  "schema": "u7-tool-acceptance/1",
+  "note": "Per-tool four-level acceptance ledger. One row per model-visible tool name claimed by a family in packages/tools/families/manifest.json (claims read with the plane DEFAULT names: readName=read, names={grep:team_grep,glob:team_glob,bash:team_bash}) plus the named-bridge jobs trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs JOBS_MANAGEMENT_NAMES). Levels: L1-definition (the family C1 suite exists, is in the root vitest population the ci-full census grades, and names the tool), L2-mounted (live Host mount, tool on the placement feed), L3-refusal (live typed refusal with zero effect), L4-positive (live authorized call whose real effect was read back). Status PROVEN | DISCLOSED | NOT_VERIFIED. PROVEN L1 carries evidence {suite}; PROVEN L2-L4 carry evidence {record, case} naming a committed u5-run-record/1 RUN record whose case verdict is PASS. DISCLOSED carries reason (verbatim from source) + pr (+ source, checked to contain the reason). Checked by scripts/eb3-tool-acceptance.mjs (ci-integration). Honesty is the merge gate; completeness (every L4 PROVEN) is the G5 release gate, not a CI colour.",
+  "rows": [
+    {
+      "tool": "read",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr2-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6fs-rerun.json",
+          "case": "fs:refusal-zero-effect"
+        }
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6fs-rerun.json",
+          "case": "fs:governed-read-positive"
+        }
+      }
+    },
+    {
+      "tool": "write",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:refusal-zero-effect"
+        },
+        "note": "the record discloses arm=template-layer-denied: the deny held at the host TEMPLATE permission layer before the plane row dispatched — zero effect is proven by sha identity, but the governed write row's own refusal path was not the arm exercised live"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:write-positive"
+        }
+      }
+    },
+    {
+      "tool": "edit",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:edit-positive"
+        }
+      }
+    },
+    {
+      "tool": "read_image",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:image-lane-honest"
+        }
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "R1 law: the attachment commit rides the fingerprinted effect set as domain-ref(attachment-store); the closed admission grammar has NO grantable rung for it (admission-kernel RESOURCE_EFFECT_KINDS, protected center), so the Kernel MUST refuse the set and the row commits NOTHING — a row-level typed refusal is the honest arm, pinned in C1 I-12/I-13; the commit mechanics are pinned admitted-state in C1 I-2/I-3",
+        "pr": "#390",
+        "source": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+        "note": "fsm:image-lane-honest is the typed-refusal arm (PASS); no live image read was ever authorized"
+      }
+    },
+    {
+      "tool": "bash",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr3-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:ring-bytes-via-job-output-wait"
+        },
+        "note": "the authorized background bash row spawned a real confined process and the trio read back the ring bytes it wrote (host-buffered, so no transcript echo can imitate them). This is the native takeover spelling, which backgroundJobs REQUIRES (team-tool-plane.mjs refuses a background mount that keeps the team_bash alias)"
+      },
+      "familyId": "dsh.process-family"
+    },
+    {
+      "tool": "team_bash",
+      "familyId": "dsh.process-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr3-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
+          "case": "proc:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u6-pr3-20261026/c2/run-u6proc-r4.json",
+          "case": "proc:deny-zero-spawn"
+        }
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "The positive-effect leg lands as the named U7 item (runner seam targeting the real team root + a lane-scoped grant design).",
+        "pr": "#375",
+        "source": "dev/agent-workflow/evidence/u6-pr3-20261026/README.md",
+        "note": "proc:approve-spawn-once is FAIL in every committed u6-proc record (r2..r5); the wording is the u6-pr3 lane's own disclosure that the positive leg was not delivered there. The later u7-4a records DO show a real confined process under the NATIVE `bash` spelling (see the bash row) — that is the background producer arm, not this takeover spelling"
+      }
+    },
+    {
+      "tool": "pwsh",
+      "familyId": "dsh.process-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-pwsh-row-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "**C2 6/6 PASS over the refusal/lifecycle arms; positive spawn DISCLOSED (pwsh absent; matrix M-07 stays NOT_VERIFIED)**",
+        "pr": "#402",
+        "source": "dev/agent-workflow/evidence/u7-f-pwsh-20261026/c2/README.md"
+      }
+    },
+    {
+      "tool": "team_grep",
+      "familyId": "dsh.search-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr5-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-refusal-zero-effect"
+        }
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-grep-live"
+        }
+      }
+    },
+    {
+      "tool": "team_glob",
+      "familyId": "dsh.search-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr5-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+          "case": "fsm:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-a/run-record.json",
+          "case": "arca:search-glob-live"
+        }
+      }
+    },
+    {
+      "tool": "team_skill",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the #404 C2 suite has no skill refusal case"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:skill-load"
+        }
+      }
+    },
+    {
+      "tool": "team_cordis_inspect_list",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no inspect-list refusal case; the boot4 record shows a pa-refused APPROVAL_DENIED witness but grades it inside the L4 case, so no case is a refusal case"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "u7f:inspect-list is FAIL in both committed #404 records (c2-verdicts.json: transcriptHasProviders=false; boot4-record: pa-refused APPROVAL_DENIED) — PR #404 merged with overall=FAIL"
+      }
+    },
+    {
+      "tool": "team_cordis_inspect_query",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "case": "u7f:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the two committed #404 records DISAGREE on u7f:refusal-zero-effect at the same teamSha: boot4-record/c2-verdicts.json PASS (transcriptHasRefusal=true), the FINAL c2/c2-verdicts.json FAIL (transcriptHasRefusal=false). boot4 is superseded by the final record (boot4-record/README.md: \"Superseded by the final c2-verdicts.json (boot 5)\"), and a superseded record may not back a PROVEN level — so this stays NOT_VERIFIED rather than quoting the friendlier boot"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "the #404 C2 suite has no authorized inspect-query positive case; u7f:approval-leg (the authorized leg) is FAIL with pendingSeenNonEmpty=0"
+      }
+    },
+    {
+      "tool": "subagent",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)",
+        "pr": "#406",
+        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+        "note": "ac:spawn-failclosed: the production leg is wired fail-closed — no trusted caller-authority snapshot is injected into the production assembly (a named center round)"
+      }
+    },
+    {
+      "tool": "subagent_fork",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no live subagent_fork case in the #406 C2 suite"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "`forkChild` has NO recognized public host face at the 639ed01539 pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+      }
+    },
+    {
+      "tool": "send_message",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no live send_message case in the #406 C2 suite"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "not exercised live (would steer a live member) — DISCLOSED",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+      }
+    },
+    {
+      "tool": "interrupt_agent",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:interrupt-foreign-zero"
+        }
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "no authorized interrupt_agent case in the #406 C2 suite — and #406 discloses no positive arm for it"
+      }
+    },
+    {
+      "tool": "list_agents",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no list_agents refusal case in the #406 C2 suite"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
+        "pr": "#406",
+        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+        "note": "ac:enumerate-governed: the governed approval walk RAN and its durable Control row settled once; the port leg then answered typed and the record grades the case REFUSED, never flipped to PASS"
+      }
+    },
+    {
+      "tool": "list_subagent_models",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no live list_subagent_models case in the #406 C2 suite"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "not booted live this round (same face family as list_agents) — DISCLOSED",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+      }
+    },
+    {
+      "tool": "workflow",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agent-control-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+          "case": "ac:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no live workflow case in the #406 C2 suite"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "`runWorkflow` has NO recognized public host face at the pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+      }
+    },
+    {
+      "tool": "ask_user_question",
+      "familyId": "dsh.ui-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-ui-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "no trusted production mount injects a UI port (production `backends` are `{jobs?, backgroundJobs?}` only)",
+        "pr": "#405",
+        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/PR-BODY.md"
+      }
+    },
+    {
+      "tool": "present",
+      "familyId": "dsh.ui-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-ui-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the present publication face exists on no host ctx service",
+        "pr": "#405",
+        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/c2/C2-VERDICTS.md",
+        "note": "the C2-VERDICTS.md sentence continues: the answerer rides the member agent-scoped Cordis waterfall with no HTTP face the C2 world could drive"
+      }
+    },
+    {
+      "tool": "job_output",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:planted-unattributed"
+        }
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:ring-bytes-via-job-output-wait"
+        }
+      }
+    },
+    {
+      "tool": "job_list",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no job_list refusal case in the u7-4a suite"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:list-shows-owner"
+        }
+      }
+    },
+    {
+      "tool": "job_kill",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output read"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:kill-live-requested"
+        }
+      }
+    },
+    {
+      "tool": "web_fetch",
+      "familyId": "dsh.web-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-web-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      }
+    },
+    {
+      "tool": "web_search",
+      "familyId": "dsh.web-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-web-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "**no provider ships with the product** — with no provider the row answers typed `WEB_SEARCH_NO_PROVIDER` with zero PA and zero wire, and the capability matrix keeps the provider cell NOT_VERIFIED (we never invent a provider).",
+        "pr": "#403",
+        "source": "dev/agent-workflow/evidence/u7-f-web-20261026/pr-body.md"
+      }
+    },
+    {
+      "tool": "todo_write",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "create_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "get_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "update_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "exit_plan_mode",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    }
+  ]
+}

@@ -170,6 +170,56 @@ Two shared surfaces remain, deliberately:
   remains the one shared file a governed-family lane touches, and §3's short-transaction order
   applies to it.
 
+## 4b. The per-tool acceptance ledger — "definition passes" is not "it ran" (2026-10-27)
+
+PR #404 merged with its live C2 RUN record at `overall: FAIL` (3 PASS / 3 FAIL —
+`u7f:inspect-list`, `u7f:refusal-zero-effect`, `u7f:approval-leg`) while every CI layer was green.
+The green was honest about what it measured; the problem was that **nothing machine-checked the
+distance between "this family's Definition is structurally right" and "the real positive effect ran
+on a Host"**, so "structurally correct but not running" families accumulate behind a green tick.
+
+`dev/agent-workflow/ledgers/u7-tool-acceptance.json` (schema `u7-tool-acceptance/1`) records that
+distance per tool, and [scripts/eb3-tool-acceptance.mjs](../scripts/eb3-tool-acceptance.mjs) grades
+it as a declared `ci-integration` leg. One row per model-visible tool name claimed by a family in
+[packages/tools/families/manifest.json](../packages/tools/families/manifest.json) — read through the
+plane's own name domain, so a configurable spelling (`cap.names.bash`) claims BOTH `team_bash` and
+the `bash` native takeover the Gate 0b ledger admits — plus the named-bridge jobs trio. Four levels,
+each `PROVEN | DISCLOSED | NOT_VERIFIED`:
+
+| level | PROVEN means |
+| --- | --- |
+| `L1-definition` | the family's C1 suite exists, is committed, and names the tool (`evidence.suite`) |
+| `L2-mounted` | a live Host mount put the tool on the placement feed (`evidence: {record, case}`) |
+| `L3-refusal` | a live typed refusal ran with zero effect (`evidence: {record, case}`) |
+| `L4-positive` | a live authorized call whose REAL effect was read back (`evidence: {record, case}`) |
+
+The rules, and what each one exists to stop:
+
+* **A family PR adds or updates its ledger rows in the same PR.** A tool a manifest family claims
+  with no row is `ACCEPT_ROW_MISSING`; a row for a tool nobody claims is `ACCEPT_ROW_STALE`; a row
+  naming the wrong family is `ACCEPT_ROW_FAMILY_MISMATCH`. The claim set is derived from the
+  manifest every run, so a new family cannot land ungraded by forgetting to edit a list.
+* **A `PROVEN` level must cite a committed `u5-run-record/1` RUN record's case at `PASS`.** A missing,
+  untracked, unparseable, unfinalised (no `overall`/`finishedAt`) record, a case the record does not
+  contain, and a case the record grades anything but `PASS` are all `ACCEPT_PROVEN_UNBACKED` — the
+  #404 shape, where the record said FAIL and the merge went green. **No level is PROVEN on prose.**
+* **A `DISCLOSED` level must carry the verbatim `reason` and the `pr`** (`ACCEPT_DISCLOSED_UNREASONED`);
+  when it names a `source`, that file must contain the reason word for word
+  (`ACCEPT_DISCLOSED_UNSOURCED`). A hedge with no disclosure behind it is a silent NOT_VERIFIED.
+
+**The merge gate is that the rows are HONEST, not that they are complete.** `DISCLOSED` and
+`NOT_VERIFIED` never fail the leg — the PR #404 lesson is that an unproven arm must be *sayable*, and
+a gate that refuses to merge until every tool is live-proven would be met by re-labelling, which is
+exactly the failure being fixed. Completeness — every `L4-positive` `PROVEN` — is the **G5 release
+gate**, tracked by the summary line
+`EB3-TOOL-ACCEPTANCE pass tools=N L4-proven=K L4-disclosed=D L4-unverified=U` and by
+[TOOL-CAPABILITY-MATRIX-9b2](./plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md).
+
+The checker is negative-controlled in
+[scripts/eb3-ci-negative-controls.mjs](../scripts/eb3-ci-negative-controls.mjs) (C20): a PROVEN level
+citing a FAIL case, one citing a missing record, a claimed tool with no row, and a DISCLOSED level
+with an empty reason are each refused on a mutated in-memory copy of the real ledger.
+
 ## 5. What this does not answer
 
 * Whether any C2 run PASSED its own lanes (a binding check, not a lane-verdict check).

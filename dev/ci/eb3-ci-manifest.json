@@ -137,6 +137,14 @@
           ]
         },
         {
+          "id": "eb3-tool-acceptance",
+          "cmd": [
+            "node",
+            "scripts/eb3-tool-acceptance.mjs"
+          ],
+          "why": "PR #404 merged with its live C2 RUN record at overall=FAIL (u7f:inspect-list / u7f:refusal-zero-effect / u7f:approval-leg FAIL) while every layer was green: nothing machine-checked 'the definition passes' against 'the real positive effect ran on a Host'. This leg grades dev/agent-workflow/ledgers/u7-tool-acceptance.json — one row per claimed tool, four levels (definition / mounted / refusal / positive), every PROVEN level backed by a committed RUN record case PASS. DISCLOSED and NOT_VERIFIED never fail it: honesty is the merge gate, completeness (every L4 PROVEN) is the G5 release gate."
+        },
+        {
           "id": "devex+diag node:test suites",
           "cmd": [
             "node",
