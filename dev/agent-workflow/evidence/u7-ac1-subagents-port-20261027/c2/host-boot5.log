@@ -1,0 +1,14 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3185/?token=lMSlm-UnYIVMXDvjDit0_iUuGZhpu4XlB9Y0lq10MBc
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7ac1-realm-u5u7ac1-20261027t19-34-16z
+[dsh-agent-team] a5ptc: census-boot root=session-u7ac1-team-u5u7ac1-20261027t19-34-16z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7ac1-realm-u5u7ac1-20261027t19-34-16z
+[dsh-agent-team] u7f-agent-control: agent-control-list_subagent_models RAN correlation=plane-ac:mvr34ib48fhe-1
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=94f78160-0cee-45b1-a081-9eea7b732c9f tools=[]
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr34i4b570n-1
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=08195ebf-11cd-45df-b749-039c14edea60 tools=[]
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr34ib48fhe-2
+[dsh-agent-team] u7f-agent-control: agent-control-list_agents RAN correlation=plane-ac:mvr34ib48fhe-3
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=fork run=f9bb2ba1-722d-4c80-bcb1-0705eee205e3 tools=[]
+[dsh-agent-team] u7f-agent-control: agent-control-subagent_fork RAN correlation=plane-ac:mvr34ib48fhe-4

@@ -26,3 +26,8 @@ Offline C1 update: root and member are native; reserved `run_code` is excluded f
 ## Boot-4 diagnosis
 
 Boot 4 was authorized as the first extension boot and the native fixture mounted successfully; pilot1/pilot2/leader all completed and the host remained clean. The run was recorded FAIL only because the evidence driver referenced `AGENT_CONTROL_MANAGED_NAMES` without importing it, causing verdict finalization to fail closed after live execution. This fixture-level driver defect was corrected in commit 43129a619; boot 5 is authorized as the sole retry.
+
+
+## Boot-5 conclusion
+
+Boot 5 was the sole authorized retry after the boot-4 driver fix (5/5; Host `639ed01539`, port `3184`; world/home teardown clean). Mounting passed and the C1 family ran, but C2 overall is **FAIL** (`2 PASS / 8 FAIL`). The live native surface had no `run_code`; `ac:mounted` passed. Positive tool cases failed because the host tool result schemas reject the family's returned `{ok,...}` envelope (`missing required property value.text` / undeclared `value.models`, `value.agents`, etc.). Refusal cases showed expected typed refusals, but the fixture counts durable asks from both positive and refusal attempts, so those grades fail; this is fixture/contract grading evidence, not a product or upstream seam change. No boot 6 is permitted.
