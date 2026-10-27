@@ -602,7 +602,12 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
         add('CI_SUMMARY_NEEDS_INCOMPLETE', `summary: ${agg.workflow} has no job calling ./${layer.workflow} — layer ${layer.id} is invisible to the Required context`, { layer: layer.id })
         continue
       }
-      if ('if' in caller[1]) {
+      // THE DEFERRED TIER is the one sanctioned caller `if:`: only on the declared
+      // deferral layer, only the exact declared text. Its safety rests on the Required
+      // summary still needing this caller (graded below), so a skip grades red there.
+      const dfr = manifest.deferral
+      const sanctioned = dfr !== undefined && dfr.layer === layer.id && String(caller[1].if ?? '').trim() === String(dfr.callerIf ?? '').trim()
+      if ('if' in caller[1] && !sanctioned) {
         add('CI_LAYER_SKIPPABLE', `summary: caller "${caller[0]}" of layer ${layer.id} carries if: ${JSON.stringify(caller[1].if)}`, { layer: layer.id })
       }
       if (!needs.includes(caller[0])) {
@@ -659,6 +664,21 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
   return { findings }
 }
 
+/**
+ * CI_DEFERRAL_CONFLICT: a head that carries the deferral label AND has a `ci-required` success.
+ * A deferred run skips ci-full, so ci-required must be red on it; a success next to the label
+ * means the deferral gate was bypassed. Guarded: it only grades when BOTH inputs are readable
+ * (env EB3_PR_LABELS_JSON = JSON array of label names, EB3_CI_REQUIRED_CONCLUSION = the
+ * ci-required check-run conclusion on the same head). Absent inputs are a no-op (checked:false).
+ */
+export function checkDeferralConflict({ labels, requiredConclusion, label = 'ci-defer-full' } = {}) {
+  if (!Array.isArray(labels) || typeof requiredConclusion !== 'string') return { findings: [], checked: false }
+  if (labels.includes(label) && requiredConclusion === 'success') {
+    return { checked: true, findings: [{ code: 'CI_DEFERRAL_CONFLICT', detail: `the PR carries ${label} AND ci-required is success on the same head — a deferred run must not satisfy branch protection` }] }
+  }
+  return { findings: [], checked: true }
+}
+
 export const REQUIRED_JOBS = (() => {
   const m = loadManifest()
   return [...m.layers, { ...m.aggregate, id: 'aggregate' }]
@@ -683,7 +703,15 @@ if (invokedDirectly) {
     const files = workflowFiles(ROOT)
     const wf = checkRequiredJobs({ files })
     const sl = checkSuiteLists({ root: ROOT })
-    out = { files: files.size, findings: [...wf.findings, ...sl.findings] }
+    const rawLabels = process.env['EB3_PR_LABELS_JSON']
+    const conclusion = process.env['EB3_CI_REQUIRED_CONCLUSION']
+    let dc = { findings: [] }
+    if (rawLabels !== undefined && conclusion !== undefined) {
+      try { dc = checkDeferralConflict({ labels: JSON.parse(rawLabels), requiredConclusion: conclusion }) } catch (e) {
+        dc = { findings: [{ code: 'CI_DEFERRAL_CONFLICT_UNREADABLE', detail: `EB3_PR_LABELS_JSON is set but unreadable: ${String(e?.message ?? e).slice(0, 80)}` }] }
+      }
+    }
+    out = { files: files.size, findings: [...wf.findings, ...sl.findings, ...dc.findings] }
   } catch (e) {
     console.error(`EB3-CI-REQUIRED refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)

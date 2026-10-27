@@ -220,6 +220,16 @@ The checker is negative-controlled in
 citing a FAIL case, one citing a missing record, a claimed tool with no row, and a DISCLOSED level
 with an empty reason are each refused on a mutated in-memory copy of the real ledger.
 
+## 4c. Deferring `ci-full` on intermediate fix-round pushes
+
+A fix round costs 2–4 pushes of 15–20 minutes of `ci-full` each. An intermediate fix-round push may
+set the PR label `ci-defer-full`: the `ci-full` caller in `ci-required.yml` is then skipped, and a
+separate non-required job `ci-required-deferred` grades the other layers. The `ci-required` job is
+never skipped and still needs `ci-full`, so a deferred run is **red** on `ci-required`: **a deferred run
+cannot satisfy branch protection.** The head you freeze for review MUST run with the label removed and
+the full aggregate green. `CI_DEFERRAL_CONFLICT` reds a head that shows both the label and a
+`ci-required` success (controls C21, C22).
+
 ## 5. What this does not answer
 
 * Whether any C2 run PASSED its own lanes (a binding check, not a lane-verdict check).
