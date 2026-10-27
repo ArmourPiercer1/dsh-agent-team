@@ -26,8 +26,10 @@
  *                               not PASS; a PROVEN L1 whose suite is absent or does
  *                               not name the tool
  *   ACCEPT_DISCLOSED_UNREASONED a DISCLOSED level with an empty reason or no `#N` pr
- *   ACCEPT_DISCLOSED_UNSOURCED  a DISCLOSED level whose `source` is absent or does
- *                               not contain the reason verbatim
+ *   ACCEPT_DISCLOSED_UNSOURCED  a DISCLOSED level whose `source` does not contain the
+ *                               reason verbatim (whitespace-normalised: a prose file
+ *                               wraps a sentence across lines, and the WORDS are what
+ *                               must be verbatim, not the author's line breaks)
  *   ACCEPT_SCHEMA               wrong schema, unknown status, missing level
  *
  * WHAT IS NOT REFUSED: DISCLOSED and NOT_VERIFIED. Honesty is enforced at merge;
@@ -38,11 +40,26 @@
  * which the host-free ci-integration layer does not build. Importing them would
  * make this leg depend on build order; instead each descriptor's
  * `claims: (cap) => [ … ]` array is resolved token by token: string literals,
- * `cap.readName` (the plane default 'read'), `cap.names.<k>` (DEFAULT_PLANE_NAMES
- * in team-tool-plane.mjs), and identifiers bound to a string / frozen string
- * array literal in the descriptor or in a module it imports (one alias hop
- * allowed). A token that does not resolve is a could-not-grade refusal (exit 2),
- * never a silently shorter claim set.
+ * identifiers bound to a string / frozen string array literal in the descriptor
+ * or in a module it imports (bounded alias/import hops), and the two
+ * CONFIGURABLE spellings. A configurable spelling (`cap.readName`,
+ * `cap.names.<k>`) is not one name: it is every spelling the plane's Gate 0b
+ * (`verifyPlaneNames`) can admit for that class without a source change — the
+ * DEFAULT_PLANE_NAMES alias PLUS every native takeover the
+ * PLANE_SUPPORTED_NATIVE_TAKEOVERS ledger records for that class. So
+ * `cap.names.bash` claims both `team_bash` and `bash` (the background-jobs
+ * worlds mount the native spelling), and a future takeover booked in that
+ * ledger adds its row requirement here automatically. Any other free-form
+ * alias a config could pick is not reserved and not enumerable; the rows track
+ * every spelling the tree itself can name. A token that does not resolve is a
+ * could-not-grade refusal (exit 2), never a silently shorter claim set.
+ *
+ * WHY SOURCE AND NOT THE DIST MIRROR. `packages/runtime/dist/packages/tools/
+ * families/*` imports cleanly, but its parity with src is graded only by the
+ * non-Required pr-gate artifacts leg; the src descriptors are what the manifest
+ * digests pin and what reviewers read. Every manifest entry is enumerated, so a
+ * new family cannot be missed; a descriptor whose claims stop being statically
+ * readable refuses (exit 2) instead of shrinking the set.
  *
  * Exported for scripts/eb3-ci-negative-controls.mjs:
  *   checkToolAcceptance({ ledger, claims, readFile, isTracked }) → { findings, counts }
@@ -135,12 +152,16 @@ function parseList(read, rel, body, depth, cap = null) {
     const tok = raw.replace(/^\.\.\./, '')
     const s = STR.exec(tok)
     if (s !== null) { out.push(s[2]); continue }
-    if (tok === 'cap.readName') { out.push(cap?.readName ?? (() => { throw new Error('cap.readName outside a claims body') })()); continue }
+    if (tok === 'cap.readName') {
+      if (cap === null) throw new Error('cap.readName outside a claims body')
+      out.push(...new Set([cap.readName, ...(cap.takeovers.read ?? [])]))
+      continue
+    }
     const nm = /^cap\.names\.([A-Za-z_$][\w$]*)$/.exec(tok)
     if (nm !== null) {
       const v = cap?.names?.[nm[1]]
       if (typeof v !== 'string') throw new Error(`${rel}: cap.names.${nm[1]} has no plane default`)
-      out.push(v)
+      out.push(...new Set([v, ...(cap.takeovers[nm[1]] ?? [])]))
       continue
     }
     if (/^[A-Za-z_$][\w$]*$/.test(tok)) { out.push(...resolveIdent(read, rel, tok, depth)); continue }
@@ -159,7 +180,18 @@ function planeDefaults(read) {
   for (const p of m[1].matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'([^']+)'/g)) names[p[1]] = p[2]
   const rn = /const readName = input\.plane\?\.readName \?\? '([^']+)'/.exec(text)
   if (rn === null) throw new Error(`${PLANE_REL}: the readName default literal was not found`)
-  return { readName: rn[1], names }
+  // The native-takeover ledger for the CONFIGURABLE classes (Gate 0b's closed
+  // domain: grep/glob/bash + read). Each must be present as a literal array.
+  const ledgerAt = text.indexOf('PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({')
+  if (ledgerAt === -1) throw new Error(`${PLANE_REL}: PLANE_SUPPORTED_NATIVE_TAKEOVERS literal not found`)
+  const block = text.slice(ledgerAt)
+  const takeovers = {}
+  for (const k of ['grep', 'glob', 'bash', 'read']) {
+    const m2 = new RegExp(`\\n\\s*${k}:\\s*Object\\.freeze\\(\\[([^\\]]*)\\]\\)`).exec(block)
+    if (m2 === null) throw new Error(`${PLANE_REL}: PLANE_SUPPORTED_NATIVE_TAKEOVERS.${k} is not a literal array`)
+    takeovers[k] = [...m2[1].matchAll(/'([^']+)'/g)].map((x) => x[1])
+  }
+  return { readName: rn[1], names, takeovers }
 }
 
 /**
@@ -194,6 +226,14 @@ export function readClaimsWith(read) {
   }
   return claims
 }
+
+/** Verbatim, line-wrapping forgiven: the WORDS must match, the source's line breaks
+ *  are its own formatting. Any other difference (a re-worded quote) still fails. */
+export function containsVerbatim(haystack, needle) {
+  if (haystack.includes(needle)) return true
+  return normalizeSpace(haystack).includes(normalizeSpace(needle))
+}
+const normalizeSpace = (t) => String(t).replace(/\s+/g, ' ').trim()
 
 const diskReader = (root) => (rel) => {
   const abs = join(root, rel)
@@ -298,9 +338,12 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked }) {
           continue
         }
         if (L.source !== undefined) {
+          // `source` is OPTIONAL because some disclosures exist only in the merged
+          // PR's body (a review artefact GitHub keeps, not a tree file); when it IS
+          // named, the reason must be findable in it word for word.
           const text = typeof L.source === 'string' ? readFile(L.source) : null
           if (text === null) add('ACCEPT_DISCLOSED_UNSOURCED', `${at}: source ${JSON.stringify(L.source)} is absent`)
-          else if (!text.includes(reason)) add('ACCEPT_DISCLOSED_UNSOURCED', `${at}: source ${L.source} does not contain the reason verbatim`)
+          else if (!containsVerbatim(text, reason)) add('ACCEPT_DISCLOSED_UNSOURCED', `${at}: source ${L.source} does not contain the reason verbatim`)
         }
       }
     }

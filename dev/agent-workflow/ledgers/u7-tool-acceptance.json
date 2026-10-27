@@ -55,7 +55,7 @@
           "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
           "case": "fsm:refusal-zero-effect"
         },
-        "note": "the record discloses arm=template-layer-denied: the deny held at the host TEMPLATE permission layer before the plane row dispatched — zero effect is proven (sha identity), but the governed write row's OWN refusal path was not the arm exercised live"
+        "note": "the record discloses arm=template-layer-denied: the deny held at the host TEMPLATE permission layer before the plane row dispatched — zero effect is proven by sha identity, but the governed write row's own refusal path was not the arm exercised live"
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -118,11 +118,40 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "so the Kernel MUST refuse the set and the row commits NOTHING",
+        "reason": "R1 law: the attachment commit rides the fingerprinted effect set as domain-ref(attachment-store); the closed admission grammar has NO grantable rung for it (admission-kernel RESOURCE_EFFECT_KINDS, protected center), so the Kernel MUST refuse the set and the row commits NOTHING — a row-level typed refusal is the honest arm, pinned in C1 I-12/I-13; the commit mechanics are pinned admitted-state in C1 I-2/I-3",
         "pr": "#390",
-        "source": "dev/agent-workflow/evidence/u7-9a-fs-20261026/c2/run-7.json",
-        "note": "fsm:image-lane-honest is the typed-refusal arm; no live image read was ever authorized"
+        "source": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
+        "note": "fsm:image-lane-honest is the typed-refusal arm (PASS); no live image read was ever authorized"
       }
+    },
+    {
+      "tool": "bash",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u6-pr3-kernel-flow.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:mounted"
+        }
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash"
+      },
+      "L4-positive": {
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/u74a-r2/u7w0b-u74a-2.u74a-run-record.json",
+          "case": "u74a:ring-bytes-via-job-output-wait"
+        },
+        "note": "the authorized background bash row spawned a real confined process and the trio read back the ring bytes it wrote (host-buffered, so no transcript echo can imitate them). This is the native takeover spelling, which backgroundJobs REQUIRES (team-tool-plane.mjs refuses a background mount that keeps the team_bash alias)"
+      },
+      "familyId": "dsh.process-family"
     },
     {
       "tool": "team_bash",
@@ -148,8 +177,11 @@
         }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "proc:approve-spawn-once is FAIL in every committed u6-proc record (r2..r5); the governed shell row did spawn a real background process in the u7-4a jobs records (u74a:bg-receipt-carries-host-job-id PASS) but under the native takeover spelling `bash` (names.bash=bash, required by backgroundJobs) and graded as a jobs receipt — the record does not grade a foreground authorized spawn under this spelling, so this stays NOT_VERIFIED"
+        "status": "DISCLOSED",
+        "reason": "The positive-effect leg lands as the named U7 item (runner seam targeting the real team root + a lane-scoped grant design).",
+        "pr": "#375",
+        "source": "dev/agent-workflow/evidence/u6-pr3-20261026/README.md",
+        "note": "proc:approve-spawn-once is FAIL in every committed u6-proc record (r2..r5); the wording is the u6-pr3 lane's own disclosure that the positive leg was not delivered there. The later u7-4a records DO show a real confined process under the NATIVE `bash` spelling (see the bash row) — that is the background producer arm, not this takeover spelling"
       }
     },
     {
@@ -163,15 +195,15 @@
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars and a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars and a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #402 committed only *.u7pwsh-evidence.json sidecars plus a README stating \"overall=PASS, cases=6\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "positive spawn DISCLOSED (pwsh absent; matrix M-07 stays NOT_VERIFIED)",
+        "reason": "**C2 6/6 PASS over the refusal/lifecycle arms; positive spawn DISCLOSED (pwsh absent; matrix M-07 stays NOT_VERIFIED)**",
         "pr": "#402",
         "source": "dev/agent-workflow/evidence/u7-f-pwsh-20261026/c2/README.md"
       }
@@ -281,7 +313,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no inspect-list refusal case; boot4 shows a pa-refused APPROVAL_DENIED witness but no case grades it"
+        "note": "no inspect-list refusal case; the boot4 record shows a pa-refused APPROVAL_DENIED witness but grades it inside the L4 case, so no case is a refusal case"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
@@ -306,7 +338,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "u7f:refusal-zero-effect is FAIL in the final #404 record (c2-verdicts.json, transcriptHasRefusal=false) and PASS only in the earlier boot4-record — the two committed records disagree, so this is not PROVEN"
+        "note": "the two committed #404 records DISAGREE on u7f:refusal-zero-effect at the same teamSha: boot4-record/c2-verdicts.json PASS (transcriptHasRefusal=true), the FINAL c2/c2-verdicts.json FAIL (transcriptHasRefusal=false). boot4 is superseded by the final record (boot4-record/README.md: \"Superseded by the final c2-verdicts.json (boot 5)\"), and a superseded record may not back a PROVEN level — so this stays NOT_VERIFIED rather than quoting the friendlier boot"
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
@@ -331,13 +363,14 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades it REFUSED, not PASS"
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level"
       },
       "L4-positive": {
         "status": "DISCLOSED",
         "reason": "refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)",
         "pr": "#406",
-        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json"
+        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
+        "note": "ac:spawn-failclosed: the production leg is wired fail-closed — no trusted caller-authority snapshot is injected into the production assembly (a named center round)"
       }
     },
     {
@@ -361,8 +394,10 @@
         "note": "no live subagent_fork case in the #406 C2 suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "no live subagent_fork case in the #406 C2 suite"
+        "status": "DISCLOSED",
+        "reason": "`forkChild` has NO recognized public host face at the 639ed01539 pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
       }
     },
     {
@@ -386,8 +421,10 @@
         "note": "no live send_message case in the #406 C2 suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "no live send_message case in the #406 C2 suite"
+        "status": "DISCLOSED",
+        "reason": "not exercised live (would steer a live member) — DISCLOSED",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
       }
     },
     {
@@ -415,7 +452,7 @@
       },
       "L4-positive": {
         "status": "NOT_VERIFIED",
-        "note": "no authorized interrupt_agent case in the #406 C2 suite"
+        "note": "no authorized interrupt_agent case in the #406 C2 suite — and #406 discloses no positive arm for it"
       }
     },
     {
@@ -440,10 +477,10 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
+        "reason": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
         "pr": "#406",
         "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
-        "note": "ac:enumerate-governed: the governed approval walk RAN and settled once; the port leg answered typed (record verdict REFUSED)"
+        "note": "ac:enumerate-governed: the governed approval walk RAN and its durable Control row settled once; the port leg then answered typed and the record grades the case REFUSED, never flipped to PASS"
       }
     },
     {
@@ -467,8 +504,10 @@
         "note": "no live list_subagent_models case in the #406 C2 suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "no live list_subagent_models case in the #406 C2 suite"
+        "status": "DISCLOSED",
+        "reason": "not booted live this round (same face family as list_agents) — DISCLOSED",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
       }
     },
     {
@@ -492,8 +531,10 @@
         "note": "no live workflow case in the #406 C2 suite"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "no live workflow case in the #406 C2 suite"
+        "status": "DISCLOSED",
+        "reason": "`runWorkflow` has NO recognized public host face at the pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
+        "pr": "#406",
+        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
       }
     },
     {
@@ -507,11 +548,11 @@
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -531,17 +572,18 @@
       },
       "L2-mounted": {
         "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "PR #405 committed only *.u7fui-evidence.json sidecars and C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record is on the tree, and no level is PROVEN on prose"
+        "note": "PR #405 committed only *.u7fui-evidence.json sidecars plus C2-VERDICTS.md stating \"f3: overall=PASS 7/7\"; no u5-run-record/1 RUN record for this suite is on the tree, and no level is PROVEN on prose"
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "the present publication face exists on no host ctx",
+        "reason": "the present publication face exists on no host ctx service",
         "pr": "#405",
-        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/c2/C2-VERDICTS.md"
+        "source": "dev/agent-workflow/evidence/u7-f-ui-20261026/c2/C2-VERDICTS.md",
+        "note": "the C2-VERDICTS.md sentence continues: the answerer rides the member agent-scoped Cordis waterfall with no HTTP face the C2 world could drive"
       }
     },
     {
@@ -621,7 +663,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output only"
+        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output read"
       },
       "L4-positive": {
         "status": "PROVEN",
