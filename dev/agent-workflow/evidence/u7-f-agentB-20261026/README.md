@@ -145,7 +145,15 @@ success, census-runtime 40466923123 success, ci-required 40466923122
 success (synthesize-merge-tree + ci-fast + ci-security + ci-integration +
 ci-full all success), grader line verbatim:
 `EB3-REQUIRED pass layers=5 green=5 nongreen=none`; merge state CLEAN/
-MERGEABLE at the baseline.
+MERGEABLE at the baseline. The docs-only head `582f015cc` re-ran the same
+round: all green EXCEPT ci-full attempt 1, which died at 64 minutes
+killed MID-step with NO failed step (gate step never concluded; its log
+blob expired before retrieval — runner loss under contention, not a
+verdict: the byte-identical code at 7f1eb0ad5 ran the same gate in ~19
+minutes, and the diff between the two heads is two markdown files);
+`gh run rerun --failed` → run 40470925287 attempt 2 **success**, grader
+verbatim `EB3-REQUIRED pass layers=5 green=5 nongreen=none`
+(09:34:37Z). Head frozen here for independent review.
 
 Hosted round 1 (runs 40462120941 census PASS 18m26s, 40462120913
 ci-required) caught two REAL lane gaps, both fixed on-branch and

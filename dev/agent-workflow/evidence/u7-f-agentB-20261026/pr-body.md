@@ -98,7 +98,10 @@ both fixed on this branch, disclosed here:**
   candidate-protection 40466923082, pr-gate 40466923207, census-runtime
   40466923123, ci-required 40466923122 (synthesize-merge-tree + ci-fast +
   ci-security + ci-integration + ci-full all success); grader line:
-  `EB3-REQUIRED pass layers=5 green=5 nongreen=none`.
+  `EB3-REQUIRED pass layers=5 green=5 nongreen=none`. (Docs-only follow-up
+  head `582f015cc`: one transient ci-full infra death — 64 min, killed
+  mid-step, no failed step, log blob expired; rerun of the same run is
+  success with the same all-green grader line. No code moved.)
 
 ## Zero-plane-edit file list (everything touched)
 
