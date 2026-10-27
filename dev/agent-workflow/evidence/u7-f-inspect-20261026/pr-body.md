@@ -10,8 +10,9 @@ with **ZERO lines** in `team-tool-plane.mjs`, `family-assembly.mjs`,
 `origin/master` through `0ea67bee8` (#398 — diag-call-chain resolves family
 refusal codes from `packages/tools/families/manifest.json`; devex+diag
 suites gate CI). Post-merge `gen-family-index.mjs` regenerates
-byte-identical output (4 reviewed families) and
-`diag-call-chain --self-test` is OK (49 codes, 5 kinds): this family's
+byte-identical output (5 reviewed families post-#406 merge:
+fs/process/search/inspect/agent-control) and
+`diag-call-chain --self-test` is OK (50 codes, 5 kinds): this family's
 refusal codes ride the manifest-driven resolution #398 introduced, no lane
 change needed.
 
@@ -21,7 +22,9 @@ Descriptor `packages/tools/families/inspect.mjs` (sha256
 `120d45343f9157d5c876edb53d23eefe049af502c07abe367d9287563c181274`, pinned
 in the reviewed `manifest.json`, 4th family). Gate:
 `config.teamToolPlane.inspectFamilyEnabled === true` (boolean; absent ⇒ the
-seven master rows are byte-identical — C1 leg M1). When enabled the family
+always-mounted baseline rows are byte-identical — C1 leg M1; that baseline is
+the seven master rows plus the ungated governed pwsh row since the #402
+merge). When enabled the family
 claims exactly three rows and the mount is all-three-or-refused (ARC-A L4
 closedness requires a readable bracketed `nativeNames` block; per-row
 conditional claiming would turn the census blind — the SHUT-skill-executor

@@ -47,7 +47,7 @@
  *
  * DIST MIRROR: every file here is a plain .mjs tracked as a BYTE COPY under
  * `packages/runtime/dist/packages/tools/inspect-family/src/` via
- * `scripts/dist-placements/070-inspect-family.json` (tsc never emits .mjs);
+ * `scripts/dist-placements/080-inspect-family.json` (tsc never emits .mjs);
  * relative import depths resolve identically from src and from the mirror.
  *
  * @module inspect-family

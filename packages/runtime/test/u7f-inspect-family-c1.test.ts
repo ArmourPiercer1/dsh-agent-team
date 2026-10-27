@@ -7,7 +7,8 @@
  * manifest, so registration rides the closed schema + checkBuiltFamily +
  * kernel-capability law):
  *  1. ZERO-FLIP: without `planeCfg.inspectFamilyEnabled` the mount places
- *     EXACTLY the seven master names; the family is invisible.
+ *     EXACTLY the always-mounted baseline (seven master names + the
+ *     ungated governed pwsh row since the #402 merge); the family is invisible.
  *  2. POSITIVES: authorized skill load executes and observes; inspect list
  *     and inspect query execute through the injected host face.
  *  3. REFUSAL ARMS with zero effect: out-of-root skill path (grammar +
@@ -114,7 +115,12 @@ const confinedProvider = () => ({
   trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
   assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
 })
-const MASTER_SEVEN = ['edit', 'read', 'read_image', 'team_bash', 'team_glob', 'team_grep', 'write']
+// Always-mounted baseline (no gate flag). Post-#402 the governed pwsh row
+// (process family, ungated) joins the seven master names, so the C1 zero-
+// flip law grades EIGHT names as of 2026-10-27. Still an EXACT multiset —
+// the #406 agent-control rows are flag-gated and appear in NEITHER leg,
+// exactly as the inspect rows appear only with inspectFamilyEnabled.
+const BASELINE_ALWAYS_ON = ['edit', 'pwsh', 'read', 'read_image', 'team_bash', 'team_glob', 'team_grep', 'write']
 
 const planeInput = (planeCfg: Record<string, unknown> = {}) => ({
   dispatcherLifecycle: { inflight: () => 0 },
@@ -208,17 +214,17 @@ beforeAll(async () => {
 afterAll(() => { rmSync(WORLD, { recursive: true, force: true }) })
 
 describe('u7f-c1 mount seam (real plane + reviewed manifest)', () => {
-  it('M1 zero-flip: without the enable flag the mount places EXACTLY the seven master names', () => {
+  it('M1 zero-flip: without the enable flag the mount places EXACTLY the always-mounted baseline (no inspect rows)', () => {
     const built = plane.createTeamToolPlaneAssembly(planeInput())
     expect(built.ok).toBe(true)
     const names = (built.value?.definitions ?? []).map((d) => d.name).sort()
-    expect(names).toEqual(MASTER_SEVEN)
+    expect(names).toEqual(BASELINE_ALWAYS_ON)
   })
   it('M2 the flag mounts the three alias rows through the seam (closed schema + kernel capability accept)', () => {
     const built = plane.createTeamToolPlaneAssembly(planeInput({ inspectFamilyEnabled: true, skillRoots: [SKILL_ROOT] }))
     expect(built.ok).toBe(true)
     const names = (built.value?.definitions ?? []).map((d) => d.name).sort()
-    expect(names).toEqual([...MASTER_SEVEN, 'team_cordis_inspect_list', 'team_cordis_inspect_query', 'team_skill'].sort())
+    expect(names).toEqual([...BASELINE_ALWAYS_ON, 'team_cordis_inspect_list', 'team_cordis_inspect_query', 'team_skill'].sort())
     const placed: string[] = []
     const fakeCtx = { tools: { register: (def: { name: string }) => { placed.push(def.name); return () => {} } }, get: () => undefined }
     const mounted = built.value?.mount(fakeCtx)
