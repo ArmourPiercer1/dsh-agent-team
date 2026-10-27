@@ -17,6 +17,9 @@
     "inspect-read": {
       "backsExecution": "family-body"
     },
+    "network-egress": {
+      "backsExecution": "family-body"
+    },
     "agent-control": {
       "backsExecution": "family-body"
     },
@@ -40,6 +43,10 @@
     {
       "module": "inspect.mjs",
       "sha256": "120d45343f9157d5c876edb53d23eefe049af502c07abe367d9287563c181274"
+    },
+    {
+      "module": "web.mjs",
+      "sha256": "b6c73ec43255087dcec680fbdab663ea4f53d785ea65efd4420fe47e3e20072c"
     },
     {
       "module": "agent-control.mjs",

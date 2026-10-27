@@ -162,6 +162,11 @@ describe('the tool-governance lane audit', () => {
       // sorted-edge set the audit walks.
       'tools/ui-family/src/ask-executor.mjs',
       'tools/ui-family/src/present-executor.mjs',
+      // U7-f web family: the two governed executors ride the SAME single
+      // face (parseRequestedEffectSet), booked file-by-file beside the
+      // fs-family entries in the audit; sorted here to match.
+      'tools/web-family/src/fetch-executor.mjs',
+      'tools/web-family/src/search-executor.mjs',
     ])
   })
 

@@ -71,6 +71,19 @@
       ]
     },
     {
+      "familyId": "dsh.web-family",
+      "lane": "packages/tools/web-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (this PR — the first network-effect family: web_fetch/web_search, opt-in webEnabled)",
+      "contributionPaths": [
+        "packages/tools/web-family/src/web-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "web_fetch",
+        "web_search"
+      ]
+    },
+    {
       "familyId": "dsh.agent-control-family",
       "lane": "packages/tools/agent-control-family",
       "mount": "product",

@@ -1,0 +1,47 @@
+{
+  "head": "02c64aa0f5a78148f85a03a922be3ac919d19525",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T060302Z-3-1.json",
+      "files": 635,
+      "legs": 8113,
+      "ids": [
+        "TEST packages/runtime/test/a5lsp2-streaming.test.ts::a5lsp2 streaming permission (fake seam — zero process creations) a consumed plan never streams twice — the second executeStreaming is the second-spawn-without-a-grant refusal",
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+        "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/runtime/test/a5lsp2-streaming.test.ts::a5lsp2 streaming permission (fake seam — zero process creations) a consumed plan never streams twice — the second executeStreaming is the second-spawn-without-a-grant refusal",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newReds": [
+      "TEST packages/runtime/test/a5lsp2-streaming.test.ts::a5lsp2 streaming permission (fake seam — zero process creations) a consumed plan never streams twice — the second executeStreaming is the second-spawn-without-a-grant refusal",
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8113,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "635f/8113l",
+      "totalsNote": "captured 635f/8113l vs baseline-declared 626 / 7936"
+    }
+  }
+}

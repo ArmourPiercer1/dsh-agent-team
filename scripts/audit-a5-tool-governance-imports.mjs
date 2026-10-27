@@ -121,6 +121,18 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-f (web family lane) booked FILE-BY-FILE, SAME single thin face as
+  // every executor above: both governed executors import ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // declare the family body's [tool-invoke + connect@origin] effect set
+  // pre-authority — no other lane export is reachable from these files
+  // (the audit itself enforces that; a different face stays a finding).
+  // Zero lane edits; web-mechanics / web-transport / web-search-provider /
+  // rows / contribution / index import NOTHING of the governance lane
+  // (network confinement is the admission plane per DECISION-3 — this
+  // family carries no sandbox claim), matching the fs-family slice shape.
+  'tools/web-family/src/fetch-executor.mjs',
+  'tools/web-family/src/search-executor.mjs',
   // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
   // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
   // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to

@@ -1,0 +1,8 @@
+[u7-f-web] case web:mounted: PASS {"health":"p6t6 ok","placement":"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image,web_fetch,web_search] realm=u7fweb-realm-u5u7fweb-20261027t00-06-59z","webEnabled":"planeCfg.webEnabled=true (trusted row conf
+[u7-f-web] case web:fetch-positive: FAIL {"stubLedger":{"port":3491,"claimHits":0,"victimHits":0,"other":{}},"ran":[],"askerDone":"false"}
+[u7-f-web] case web:approval-chain-live: FAIL {"askNoticed":true,"resolveAllow":false,"resolveDeny":false}
+[u7-f-web] case web:deny-leg-zero-wire: ENV_BLOCK {"victimHits":0,"denyObs":[],"refusalSeen":false,"reason":"denied leg never reached the refusal witness (approval chain blocked upstream)"}
+[u7-f-web] case web:search-no-provider: ENV_BLOCK {"reason":"asker lane never reached the web_search step (upstream wall)","askerDone":"false"}
+[u7-f-web] case web:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-f-web] u7fweb run u5-u7-f-web-u7fweb-2026-10-27T00-06-59-099Z: stub={"port":3491,"claimHits":0,"victimHits":0,"other":{}} lanes={"askerDone":false,"leaderDone":true}
+RUN-SUMMARY run=u5-u7-f-web-u7fweb-2026-10-27T00-06-59-099Z suite=u7-f-web overall=FAIL cases=7 ENV_BLOCK:2 FAIL:2 PASS:3 worlds=u5u7fweb-20261027T00-06-59Z
