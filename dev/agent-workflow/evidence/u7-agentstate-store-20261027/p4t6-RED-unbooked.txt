@@ -1,0 +1,1 @@
++     "detail": "scanner counts 1383, ledger derives 983 + 398 = 1381",

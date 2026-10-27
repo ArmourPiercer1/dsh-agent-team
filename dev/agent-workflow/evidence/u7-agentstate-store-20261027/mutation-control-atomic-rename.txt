@@ -1,0 +1,27 @@
+     ✓ H1 DSH_HOME absent / blank / relative / nonexistent → PLANE_AGENT_STATE_STORE_MISSING, and nothing is created anywhere 27ms
+     ✓ H2 DSH_HOME naming the operator's live `.dsh` (or a symlink into it) is REFUSED — never written 2ms
+     ✓ H3 the descriptor refuses an enabled mount whose DSH_HOME is the live `.dsh` of the real operator home 1ms
+     ✓ H4 a realm id that is not one path-safe segment refuses (never sanitised into another realm) 1ms
+     ✓ H5 anchor law: a `team-state` component symlinked OUTSIDE the home refuses before any byte is written 3ms
+     ✓ H6 the store root is exactly <DSH_HOME>/team-state/agent-state/<realmId> (the built port is the fs store) 3ms
+     ✓ P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts 37ms
+     ✓ P2 todo_write replaces the whole list durably; restart reads the last list 23ms
+     ✓ P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded 22ms
+     ✓ P4 update_goal edit/complete fold the revision exactly one each, durably 32ms
+     ✓ R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write 23ms
+     ✓ R2 the STORE-level refusals: stale CAS and already-exists answered BY THE STORE leave one attempts line and zero writes 15ms
+     ✓ R3 REPLAY: a consumed applyId never applies twice — durably, across a restart (STATE_APPLY_REPLAY, zero write) 10ms
+     ✓ R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write 17ms
+     ✓ S1 "a", "a " and " a" are three distinct durable scopes; each reads back only its own fact 17ms
+     ✓ B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null 18ms
+     ✓ B2 an oversized WRITE refuses typed and writes nothing 8ms
+     ✓ B3 corrupt JSON / unknown schema / a FOREIGN key in the file fail closed (AGENT_STATE_STORE_CORRUPT), never read as empty 13ms
+     ✓ B4 an ABSENT scope is honestly null for get (no record exists), while an unreadable one is a typed fault 3ms
+     ✓ K1 nlink>1: a record that is hard-linked elsewhere is REFUSED (AGENT_STATE_STORE_ALIAS_REFUSED) — pins the #409 behaviour for the swap 8ms
+     ✓ K2 a symlinked record is refused at open (O_NOFOLLOW), never followed 1ms
+     × C1 a crash mid-write leaves the PREVIOUS record intact and readable; no torn record; no write audit entry; applyId reusable 19ms
+     ✓ C2 MUTATION CONTROL: the same crash against an IN-PLACE (non-rename) write TEARS the record — the C1 law would go RED without the atomic rename 9ms
+     ✓ A1 direct-human only for a ROOT agent with a user-sourced message in the open turn; goal-round for an exact goal source; otherwise model 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/u7-agentstate-fs-store-c1.test.ts > u7as C — crash atomicity (temp + fsync + rename), with a mutation control > C1 a crash mid-write leaves the PREVIOUS record intact and readable; no torn record; no write audit entry; applyId reusable
+      Tests  1 failed | 23 passed (24)

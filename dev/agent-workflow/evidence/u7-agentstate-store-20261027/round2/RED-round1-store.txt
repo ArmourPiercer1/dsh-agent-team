@@ -1,0 +1,6 @@
+     × F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry 5010ms
+     × F-c a LIVE pid holder (pid recycled / unknown-but-present) with an ANCIENT lock is NEVER broken → typed LOCK_TIMEOUT, ZERO write 27ms
+     × F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT 23ms
+     × F-d the holder BEATS: while it is inside the critical section the lock record token changes 5001ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 42 passed (46)

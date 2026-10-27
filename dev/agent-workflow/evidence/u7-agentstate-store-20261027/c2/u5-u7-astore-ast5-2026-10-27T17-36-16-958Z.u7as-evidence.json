@@ -1,0 +1,307 @@
+{
+  "lanes": {
+    "goalTurn": true,
+    "worker": true,
+    "leader": true
+  },
+  "teamSessionId": "session-u7as-team-u5ast5-20261027t17-36-17z",
+  "exchanges": [
+    {
+      "lane": "leader",
+      "name": "create_goal",
+      "input": {
+        "objective": "U7AS_GOAL_CLAIM_u5ast5-20261027t17-36-17z",
+        "max_goal_rounds": 3
+      },
+      "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T17:36:21.628Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5ast5-20261027t17-36-17z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+    },
+    {
+      "lane": "leader",
+      "name": "get_goal",
+      "input": {},
+      "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T17:36:21.628Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5ast5-20261027t17-36-17z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+    },
+    {
+      "lane": "leader",
+      "name": "update_goal",
+      "input": {
+        "goal_id": "goal-2026-10-27T17:36:21.628Z-1",
+        "revision": 1,
+        "action": "edit",
+        "objective": "U7AS_GOAL_EDITED_u5ast5-20261027t17-36-17z"
+      },
+      "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-27T17:36:21.628Z-1\",\"objective\":\"U7AS_GOAL_EDITED_u5ast5-20261027t17-36-17z\",\"phase\":\"active\",\"revision\":2,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+    },
+    {
+      "lane": "leader",
+      "name": "exit_plan_mode",
+      "input": {
+        "plan": "# U7AS_PLAN_u5ast5-20261027t17-36-17z\n\n- the u7as live plan"
+      },
+      "head": "{\"exited\":true,\"planMode\":{\"active\":false}}"
+    },
+    {
+      "lane": "worker",
+      "name": "todo_write",
+      "input": {
+        "todos": [
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z",
+            "status": "in_progress"
+          },
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z second",
+            "status": "pending"
+          }
+        ]
+      },
+      "head": "{\"todos\":[{\"content\":\"U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z\",\"status\":\"in_progress\"},{\"content\":\"U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z second\",\"status\":\"pending\"}],\"counts\":{\"pending\":1,\"inProgress\":1,\"completed\":0}}"
+    },
+    {
+      "lane": "worker",
+      "name": "update_goal",
+      "input": {
+        "goal_id": "goal-2026-10-27T17:36:21.628Z-1",
+        "revision": 1,
+        "action": "complete"
+      },
+      "head": "refused: GOAL_NOT_FOUND — no current goal"
+    },
+    {
+      "lane": "worker",
+      "name": "get_goal",
+      "input": {},
+      "head": "{\"goal\":null}"
+    }
+  ],
+  "controlRows": [
+    {
+      "requestId": "ctrl-0scapxe18fsx370c87sbc096",
+      "toolName": "create_goal",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-leader:sha256:81f825352216a9aa98878fe6f9dac2cf7cee03f1301a8343a75192925bbb",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-1ji24y90subsfi0s2hgoj0lp",
+      "toolName": "get_goal",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-leader:sha256:d28a6092fd946df7aea81cbf874ae471a18a197bcad15ad4e7fdd98f37e5",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-178ge4q0g94voj1m29iys0td",
+      "toolName": "update_goal",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-leader:sha256:bdc55218867e7b8e1a8e203189e030244bd5662120f34df276fa629deed3",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-06q59hb1rljikg090kwhd1ax",
+      "toolName": "exit_plan_mode",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-leader:sha256:77d01799b149d88fa5b8992ada5fe70b372402032be7e2e092201332753f",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-1olpmu11ylidly06bm94b01s",
+      "toolName": "todo_write",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-0tovwbz0di82:sha256:7603eb9bbb48ebaeee88312000be8e6a8084f9b09a472becf17696",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-1ceua6c1bevwr10ne8siq0nm",
+      "toolName": "update_goal",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-0tovwbz0di82:sha256:1f998940ca645a1a036e0eed0f65a1119f12f77f46906538831cda",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-1gfs6b210tgig90gvr0s403p",
+      "toolName": "get_goal",
+      "summary": "PA ask case=tadm:session-u7as-team-u5ast5-20261027t17-36-17z:inst-0tovwbz0di82:sha256:cba0f2180005e50632e50324cff939be559178869a70066081f572",
+      "status": "settled"
+    }
+  ],
+  "resolutions": [
+    {
+      "requestId": "ctrl-0scapxe18fsx370c87sbc096",
+      "toolName": "create_goal",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-1ji24y90subsfi0s2hgoj0lp",
+      "toolName": "get_goal",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-178ge4q0g94voj1m29iys0td",
+      "toolName": "update_goal",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-06q59hb1rljikg090kwhd1ax",
+      "toolName": "exit_plan_mode",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-1olpmu11ylidly06bm94b01s",
+      "toolName": "todo_write",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-1ceua6c1bevwr10ne8siq0nm",
+      "toolName": "update_goal",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "requestId": "ctrl-1gfs6b210tgig90gvr0s403p",
+      "toolName": "get_goal",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "approverErrors": [],
+  "disk": {
+    "base": "team-state/agent-state/u7as-realm-u5ast5-20261027t17-36-17z",
+    "rootExists": true,
+    "realUnderHome": true,
+    "records": [
+      {
+        "file": "22fc9694835bbfcae60b93663c6d2d6249e2446fd9255e2d6950b79571014c1a.json",
+        "nlink": 1,
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "goal": {
+          "goalId": "goal-2026-10-27T17:36:21.628Z-1",
+          "objective": "U7AS_GOAL_EDITED_u5ast5-20261027t17-36-17z",
+          "phase": "active",
+          "revision": 2,
+          "roundsStarted": 0,
+          "maxGoalRounds": 3,
+          "armed": true
+        },
+        "todos": null,
+        "planMode": {
+          "active": false,
+          "pendingIntents": [
+            {
+              "plan": "# U7AS_PLAN_u5ast5-20261027t17-36-17z\n\n- the u7as live plan",
+              "appliedBy": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:4"
+            }
+          ]
+        }
+      },
+      {
+        "file": "48c9b7cf9ede5ca099c5d63100c24e32cc00e5415b85284df63b0ea0aa17656e.json",
+        "nlink": 1,
+        "key": "agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d",
+        "goal": null,
+        "todos": [
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z",
+            "status": "in_progress"
+          },
+          {
+            "content": "U7AS_TODO_CLAIM_u5ast5-20261027t17-36-17z second",
+            "status": "pending"
+          }
+        ],
+        "planMode": {
+          "active": false,
+          "pendingIntents": []
+        }
+      }
+    ],
+    "writes": [
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/goal",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:1"
+      },
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/goal",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:3"
+      },
+      {
+        "op": "plan-mode/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/plan-mode",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:4"
+      },
+      {
+        "op": "todos/apply",
+        "scope": "agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d",
+        "key": "agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d/todos",
+        "applyId": "plane-agent-state:cb9f57dc-ee4f-46df-b86d-22318f9d32bd:1"
+      }
+    ],
+    "attempts": [
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/goal",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:1",
+        "outcome": "applied"
+      },
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/goal",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:3",
+        "outcome": "applied"
+      },
+      {
+        "op": "plan-mode/apply",
+        "scope": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+        "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z/plan-mode",
+        "applyId": "plane-agent-state:91b0af32-7ed2-4ace-b595-65924f0adfe4:4",
+        "outcome": "applied"
+      },
+      {
+        "op": "todos/apply",
+        "scope": "agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d",
+        "key": "agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d/todos",
+        "applyId": "plane-agent-state:cb9f57dc-ee4f-46df-b86d-22318f9d32bd:1",
+        "outcome": "applied"
+      }
+    ],
+    "errors": []
+  },
+  "reread": {
+    "key": "agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+    "goal": {
+      "goalId": "goal-2026-10-27T17:36:21.628Z-1",
+      "objective": "U7AS_GOAL_EDITED_u5ast5-20261027t17-36-17z",
+      "phase": "active",
+      "revision": 2,
+      "roundsStarted": 0,
+      "maxGoalRounds": 3,
+      "armed": true
+    }
+  },
+  "placement": [
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast5-20261027t17-36-17z",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast5-20261027t17-36-17z"
+  ],
+  "storeLine": [
+    "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast5-20261027t17-36-17z (durable root under DSH_HOME/team-state/agent-state)",
+    "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast5-20261027t17-36-17z (durable root under DSH_HOME/team-state/agent-state)"
+  ],
+  "logHits": [
+    "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast5-20261027t17-36-17z (durable root under DSH_HOME/team-state/agent-state)",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast5-20261027t17-36-17z",
+    "[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-u5ast5-20261027t17-36-17z goalId=goal-2026-10-27T17:36:21.628Z-1 revision=1 phase=active",
+    "[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+    "[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:session-u7as-team-u5ast5-20261027t17-36-17z goalId=goal-2026-10-27T17:36:21.628Z-1 revision=2 phase=active",
+    "[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:session-u7as-team-u5ast5-20261027t17-36-17z",
+    "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast5-20261027t17-36-17z (durable root under DSH_HOME/team-state/agent-state)",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast5-20261027t17-36-17z",
+    "[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d count=2",
+    "[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d",
+    "[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-team-child-30f012fd9cc61a4828dfbb061aca466d"
+  ]
+}

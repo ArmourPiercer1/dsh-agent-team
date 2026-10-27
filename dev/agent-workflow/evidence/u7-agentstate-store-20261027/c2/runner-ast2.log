@@ -1,0 +1,17 @@
+[u7-astore] plan-mode plant failed: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/packages/domain/tool-governance/src/index.js' imported from /srv/workspace/ds
+[u7-astore] approval allow ctrl-0qzrejb0r tool=create_goal status=200
+[u7-astore] approval allow ctrl-1gz6p201h tool=update_goal status=200
+[u7-astore] approval allow ctrl-0r46cja1g tool=exit_plan_mode status=200
+[u7-astore] approval allow ctrl-1jtt7cy1d tool=todo_write status=200
+[u7-astore] approval allow ctrl-0ecx6np1d tool=update_goal status=200
+[u7-astore] case ast:mounted: PASS {"placementFeed":["[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast2-20261027t16-12-25z","[dsh-agent-team] a5g7: placement-feed rows=[team_grep,tea
+[u7-astore] case ast:store-under-world-home: PASS {"homeUnderTestsHomes":true,"storeBase":"team-state/agent-state/u7as-realm-u5ast2-20261027t16-12-25z","rootExists":true,"realpathUnderHome":true,"errors":[]}
+[u7-astore] case ast:create-goal-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast2-20261027t16-12-25z","goal":{"goalId":"goal-2026-10-27T16:12:29.717Z-1","objective":"U7AS_GOAL_EDITED_u5ast2-20261027t16-12-25z","phase":"active","revision":2,"roundsStarted":0,"maxGoalRounds":3,"armed":true}
+[u7-astore] case ast:get-goal-readback: REFUSED {"toolResultHead":"refused: APPROVAL_DENIED — durable Control request uncreated answered deny","law":"the governed READ row returned the durable goal to the model (one bounded snapshot of the caller scope)"}
+[u7-astore] case ast:todo-write-positive: PASS {"diskRecord":{"key":"agent:session-team-child-5249e51a5a615cb7b78a3f8ce78f1639","todos":[{"content":"U7AS_TODO_CLAIM_u5ast2-20261027t16-12-25z","status":"in_progress"},{"content":"U7AS_TODO_CLAIM_u5ast2-20261027t16-12-25z second","status":"pending"}],"nlink":
+[u7-astore] case ast:update-goal-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast2-20261027t16-12-25z","goal":{"goalId":"goal-2026-10-27T16:12:29.717Z-1","objective":"U7AS_GOAL_EDITED_u5ast2-20261027t16-12-25z","phase":"active","revision":2,"roundsStarted":0,"maxGoalRounds":3,"armed":true}
+[u7-astore] case ast:exit-plan-mode-positive: REFUSED {"toolResultHead":"refused: PLAN_MODE_NOT_ACTIVE — exit_plan_mode is only available in plan mode","planMode":null}
+[u7-astore] case ast:cross-scope-zero-effect: PASS {"toolResultHead":"refused: GOAL_NOT_FOUND — no current goal","namedForeignRef":{"goal_id":"goal-2026-10-27T16:12:29.717Z-1","revision":1,"action":"complete"},"leaderRecordAfter":{"goalId":"goal-2026-10-27T16:12:29.717Z-1","objective":"U7AS_GOAL_EDITED_u5ast2-
+[u7-astore] case ast:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-astore] u7as run u5-u7-astore-ast2-2026-10-27T16-12-25-125Z: lanes={"goalTurn":true,"worker":true,"leader":true} records=2 writes=3 attempts=3
+RUN-SUMMARY run=u5-u7-astore-ast2-2026-10-27T16-12-25-125Z suite=u7-astore overall=REFUSED cases=10 PASS:8 REFUSED:2 worlds=u5ast2-20261027T16-12-25Z
