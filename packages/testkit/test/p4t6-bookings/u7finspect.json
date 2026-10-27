@@ -1,0 +1,23 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FINSPECT",
+  "paths": [
+    "packages/tools/inspect-family/src/index.mjs",
+    "packages/tools/inspect-family/src/row-names.mjs",
+    "packages/tools/inspect-family/src/skill-mechanics.mjs",
+    "packages/tools/inspect-family/src/skill-executor.mjs",
+    "packages/tools/inspect-family/src/skill-row.mjs",
+    "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+    "packages/tools/inspect-family/src/inspect-executor.mjs",
+    "packages/tools/inspect-family/src/inspect-rows.mjs",
+    "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+    "packages/tools/families/inspect.mjs",
+    "packages/runtime/test/u7f-inspect-family-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1333
+  },
+  "reason": "u7-f inspect family (governed skill loader + governed cordis_inspect_list/query rows through the FamilyAssembly seam, branch task/u7-f-inspect-20261026 off origin/master 42c4d04b5): the nine lane .mjs files (alias row-names, skill grammar/frontmatter mechanics, anchored skill executor, skill row, inspect directory/input-schema mechanics, inspect list/query executors with the bounded settle race and the no-late-result law, the two inspect rows, the ONE contribution descriptor) + the familyAssembly descriptor packages/tools/families/inspect.mjs + the C1 suite. ZERO edits in team-tool-plane.mjs / family-assembly.mjs / the binder; the manifest.json + families/index.mjs edits and the dist mirrors, placements JSON, ledgers and dev evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the eleven paths on disk and this booking absent, the ledger law reads `scanner counts 1333, ledger derives 983 + 339 = 1322` (dev/agent-workflow/evidence/u7-f-inspect-20261026/p4t6-RED-unbooked.log) — master's 1322 plus exactly these eleven paths."
+}

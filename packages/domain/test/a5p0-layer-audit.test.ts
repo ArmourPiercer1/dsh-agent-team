@@ -141,6 +141,13 @@ describe('the tool-governance lane audit', () => {
       'tools/fs-family/src/image-executor.mjs',
       'tools/fs-family/src/read-executor.mjs',
       'tools/fs-family/src/write-executor.mjs',
+      // U7-F (inspect-family lane) booked FILE-BY-FILE, SAME single thin
+      // face (`parseRequestedEffectSet`) as the fs-family executors above:
+      // the two governed executors validate their admitted effect set at
+      // the PA boundary; everything read-only, zero lane edits (booking
+      // note in scripts/audit-a5-tool-governance-imports.mjs). Alphabetical.
+      'tools/inspect-family/src/inspect-executor.mjs',
+      'tools/inspect-family/src/skill-executor.mjs',
       // U7-F (the governed pwsh shell-class row): the executor consumes the
       // same two thin governance faces as the fs executors — the effect
       // grammar (`parseRequestedEffectSet`) and the parsed-record fingerprint

@@ -129,6 +129,17 @@ const PR1_CONSUMERS = Object.freeze([
   // port/contribution verified), and a different face stays a finding, as
   // every booking above states.
   'tools/agent-control-family/src/agent-control-executor.mjs',
+  // U7-F (inspect-family lane: skill / cordis_inspect_list /
+  // cordis_inspect_query) booked FILE-BY-FILE, SAME single thin face as the
+  // fs-family executors above: each governed executor imports ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // validate its admitted effect set at the PA boundary — skill-executor
+  // reads anchored SKILL.md files, inspect-executor reaches ONLY the
+  // read-only inspect-provider face, and neither grants anything. Zero lane
+  // edits; the mechanics/rows/contribution/descriptor modules of the same
+  // slice import nothing of the governance lane.
+  'tools/inspect-family/src/inspect-executor.mjs',
+  'tools/inspect-family/src/skill-executor.mjs',
   // U7-F (process-family governed PWSH row) booked FILE-BY-FILE.
   // `tools/process-family/src/pwsh-executor.mjs` imports
   // `parseRequestedEffectSet` (the SAME thin effect-grammar face the fs

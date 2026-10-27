@@ -95,6 +95,17 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  // U7-F: transcribed from packages/tools/inspect-family/README.md. The two
+  // sibling edges are PUBLIC faces only (the anchor law and the cancel-leg
+  // race, each the one home of its law), and the domain edge is the ONE
+  // thin effect-grammar face the fs executors already carry.
+  'dsh.inspect-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+    'packages/tools/fs-family/src/index.mjs',
+    'packages/tools/search-family/src/index.mjs',
+  ]),
   // U7-F (agent-control family), transcribed from
   // packages/tools/agent-control-family/README.md: canonical JSON + the ONE
   // thin effect-grammar face, NOTHING else — no plane, no center, no
@@ -118,6 +129,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/inspect-family': 'dsh.inspect-family',
   'packages/tools/agent-control-family': 'dsh.agent-control-family',
 })
 
