@@ -1,0 +1,302 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7insp-c2-mvqw71pq",
+  "suite": "u7f-inspect-family-c2-completion",
+  "startedAt": "2026-10-27T16:20:59.679Z",
+  "selectedCases": [
+    "u7f:mounted",
+    "u7f:skill-load",
+    "u7f:inspect-list",
+    "u7f:inspect-query",
+    "u7f:refusal-zero-effect",
+    "u7f:approval-leg",
+    "u7f:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "d9d1f58179758ae2e5b5828dc40e33e0c203b5d9",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "u7f:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:32.926Z",
+      "detail": {
+        "healthOk": true,
+        "stateOk": true,
+        "createOk": true,
+        "createBody": "ok",
+        "placementFeed": "[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7f-realm-u5u7insp-20261027t16-20-59z"
+      }
+    },
+    {
+      "id": "u7f:skill-load",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.134Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": false,
+            "head": "<skill_content name=\"u7f-demo-skill\">\n<skill_resources>\nBase directory for this skill: /srv/workspace/dsh-plugins/dsh-ag"
+          }
+        ],
+        "ranWitness": [
+          "[dsh-agent-team] a7f-skill: governed-skill RAN name=u7f-demo-skill bytes=144"
+        ],
+        "humanAllow": [
+          "ctrl-1yrcks31lsa7hc1lm1xf10zw"
+        ]
+      }
+    },
+    {
+      "id": "u7f:inspect-list",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.134Z",
+      "detail": {
+        "ranWitness": [
+          "[dsh-agent-team] a7f-ilist: governed-inspect-list RAN count=4"
+        ],
+        "readBackProviderCount": 4,
+        "readBackProviders": [
+          "host/Service",
+          "host/Event",
+          "host/Config",
+          "host/Tool"
+        ],
+        "toolResults": [
+          {
+            "isError": false,
+            "head": "{\n  \"providers\": [\n    {\n      \"platform\": \"host\",\n      \"id\": \"Service\",\n      \"description\": \"Progressive Host Service discovery: compact capability/signature directory, then one exact coding contra"
+          }
+        ],
+        "humanAllow": [
+          "ctrl-00h15k70s1smku18bwoeh11y"
+        ]
+      }
+    },
+    {
+      "id": "u7f:inspect-query",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.134Z",
+      "detail": {
+        "ranWitness": [
+          "[dsh-agent-team] a7f-iquery: governed-inspect-query RAN platform=host provider=Tool method=listTools"
+        ],
+        "readBackDataHead": "{\"tools\":[{\"name\":\"read\",\"description\":\"Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"file_path\":{\"type\":\"string\",\"description\":\"path relative to the governed root, or ",
+        "toolResults": [
+          {
+            "isError": false,
+            "head": "{\n  \"platform\": \"host\",\n  \"provider\": \"Tool\",\n  \"method\": \"listTools\",\n  \"data\": {\n    \"tools\": [\n      {\n        \"name\": \"read\",\n        \"description\": \"Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.\",\n        \"par"
+          }
+        ],
+        "otherQueryLog": [],
+        "humanAllow": [
+          "ctrl-1o676580ss2cc1005un0609k"
+        ]
+      }
+    },
+    {
+      "id": "u7f:refusal-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.134Z",
+      "detail": {
+        "refusalReadBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-admission inspect-provider-unknown — inspect provider \"u7f-no-such-provider\" is not registered on platform \"host\". Available: Service, Event, Config, Tool — call team_cordis_inspect_list and use an exact id; do not guess."
+          }
+        ],
+        "unknownProviderLogLines": [],
+        "durableQueryAsks": 1,
+        "positiveQueryCalls": 1,
+        "law": "the unknown-provider call raised NO durable Control row (asks for team_cordis_inspect_query == positive calls only) and NO dispatch line for that provider"
+      }
+    },
+    {
+      "id": "u7f:approval-leg",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.140Z",
+      "detail": {
+        "perAsk": [
+          {
+            "requestId": "ctrl-1yrcks31lsa7hc1lm1xf10zw",
+            "toolName": "team_skill",
+            "listedPending": true,
+            "humanResolveOk": true,
+            "decisions": [
+              "allow"
+            ],
+            "consumptions": 1
+          },
+          {
+            "requestId": "ctrl-00h15k70s1smku18bwoeh11y",
+            "toolName": "team_cordis_inspect_list",
+            "listedPending": true,
+            "humanResolveOk": true,
+            "decisions": [
+              "allow"
+            ],
+            "consumptions": 1
+          },
+          {
+            "requestId": "ctrl-1o676580ss2cc1005un0609k",
+            "toolName": "team_cordis_inspect_query",
+            "listedPending": true,
+            "humanResolveOk": true,
+            "decisions": [
+              "allow"
+            ],
+            "consumptions": 1
+          }
+        ],
+        "law": "each durable PA ask: pending in a leader team_list_pending_control listing (real shape) -> human public seam team.resolveControl v4 allow ok -> exactly ONE decision row and exactly ONE control-allow-consumed fact"
+      }
+    },
+    {
+      "id": "u7f:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T16:21:35.141Z",
+      "detail": {
+        "secretClaimInCorpus": false,
+        "secretClaimInHostLog": false,
+        "secretBytesUnchanged": true
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T16:21:29.321Z",
+        "runId": "u7insp-c2-mvqw71pq",
+        "suite": "u7f-inspect-family-c2-completion",
+        "phase": "u7insp-c2-boot",
+        "boot": 1,
+        "world": "u5u7insp-20261027T16-20-59Z",
+        "port": 3183,
+        "bootMs": 12926
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 1,
+    "budget": 3,
+    "declaredAt": "2026-10-27T16:21:16.394Z",
+    "runId": "u7insp-c2-mvqw71pq",
+    "world": "u5u7insp-20261027T16-20-59Z",
+    "teamSha": "d9d1f58179758ae2e5b5828dc40e33e0c203b5d9"
+  },
+  "controlLedger": {
+    "requests": [
+      {
+        "requestId": "ctrl-1yrcks31lsa7hc1lm1xf10zw",
+        "toolName": "team_skill",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-00h15k70s1smku18bwoeh11y",
+        "toolName": "team_cordis_inspect_list",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-1o676580ss2cc1005un0609k",
+        "toolName": "team_cordis_inspect_query",
+        "status": "settled"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-1yrcks31lsa7hc1lm1xf10zw",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-00h15k70s1smku18bwoeh11y",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1o676580ss2cc1005un0609k",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-1yrcks31lsa7hc1lm1xf10zw"
+      },
+      {
+        "requestId": "ctrl-00h15k70s1smku18bwoeh11y"
+      },
+      {
+        "requestId": "ctrl-1o676580ss2cc1005un0609k"
+      }
+    ],
+    "abandoned": []
+  },
+  "humanResolutions": [
+    {
+      "requestId": "ctrl-1yrcks31lsa7hc1lm1xf10zw",
+      "toolName": "team_skill",
+      "decision": "allow",
+      "ok": true,
+      "witnessedPendingInListing": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-00h15k70s1smku18bwoeh11y",
+      "toolName": "team_cordis_inspect_list",
+      "decision": "allow",
+      "ok": true,
+      "witnessedPendingInListing": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-1o676580ss2cc1005un0609k",
+      "toolName": "team_cordis_inspect_query",
+      "decision": "allow",
+      "ok": true,
+      "witnessedPendingInListing": true,
+      "status": 200,
+      "body": "ok"
+    }
+  ],
+  "approverErrors": [],
+  "notes": [
+    "lanes: strict=true leader=true"
+  ],
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-inspc2/tests/homes/u5u7insp-20261027T16-20-59Z",
+      "releasedPorts": [
+        3183,
+        3494,
+        3183
+      ],
+      "killedPids": [
+        50
+      ],
+      "notes": []
+    }
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/host-boot1.log",
+    "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/mock-corpus-boot1.json"
+  ],
+  "mockDigest": [],
+  "overall": "PASS",
+  "finishedAt": "2026-10-27T16:21:35.374Z"
+}

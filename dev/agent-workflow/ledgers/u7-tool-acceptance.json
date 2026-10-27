@@ -279,18 +279,18 @@
       "L2-mounted": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
           "case": "u7f:mounted"
         }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the #404 C2 suite has no skill refusal case"
+        "note": "neither the #404 C2 suite nor its completion record (u7-inspect-c2-20261027 boot1) has a team_skill refusal case; the skill refusal arms are C1-only"
       },
       "L4-positive": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
           "case": "u7f:skill-load"
         }
       }
@@ -307,17 +307,20 @@
       "L2-mounted": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
           "case": "u7f:mounted"
         }
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no inspect-list refusal case; the boot4 record shows a pa-refused APPROVAL_DENIED witness but grades it inside the L4 case, so no case is a refusal case"
+        "note": "no live inspect-list refusal case: the completion record (u7-inspect-c2-20261027 boot1) grades the list call only on its authorized positive; the list refusal arms (face-absent, PA deny) are C1-only"
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "u7f:inspect-list is FAIL in both committed #404 records (c2-verdicts.json: transcriptHasProviders=false; boot4-record: pa-refused APPROVAL_DENIED) — PR #404 merged with overall=FAIL"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
+          "case": "u7f:inspect-list"
+        }
       }
     },
     {
@@ -332,17 +335,23 @@
       "L2-mounted": {
         "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json",
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
           "case": "u7f:mounted"
         }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "the two committed #404 records DISAGREE on u7f:refusal-zero-effect at the same teamSha: boot4-record/c2-verdicts.json PASS (transcriptHasRefusal=true), the FINAL c2/c2-verdicts.json FAIL (transcriptHasRefusal=false). boot4 is superseded by the final record (boot4-record/README.md: \"Superseded by the final c2-verdicts.json (boot 5)\"), and a superseded record may not back a PROVEN level — so this stays NOT_VERIFIED rather than quoting the friendlier boot"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
+          "case": "u7f:refusal-zero-effect"
+        }
       },
       "L4-positive": {
-        "status": "NOT_VERIFIED",
-        "note": "the #404 C2 suite has no authorized inspect-query positive case; u7f:approval-leg (the authorized leg) is FAIL with pendingSeenNonEmpty=0"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/c2-verdicts-boot1.json",
+          "case": "u7f:inspect-query"
+        }
       }
     },
     {
