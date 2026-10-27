@@ -1,0 +1,525 @@
+{
+ "note": "Declared EXCERPT (last asker-lane request + last leader request, byte-identical message arrays); the raw capture is not committed.",
+ "rawSha256": "4669ccb93ebe6b6cba5ea1b796896dc48215749940eca1f7079c14e3d808d21b",
+ "rawRequests": 21,
+ "asker": {
+  "seq": 8,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=u7tb-d1-u5u7tb-20261027t19-24-42z] U7TB_SCRIPT_u5u7tb-20261027t19-24-42z: run your four team_bash commands one at a time, then report done.\"}]"
+     }
+    ]
+   }
+  ],
+  "reply": {
+   "kind": "text",
+   "content": "u7tb assembly session"
+  }
+ },
+ "leader": {
+  "seq": 21,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-root-work requestToken=team-create:initial-work:sha256:9703bc4b34fcaaa2b5655dd4675f67fc2824a1c08a5f4d1b5e80db5d7878cc0a] U7TB_L1_u5u7tb-20261027t19-24-42z"
+     },
+     {
+      "type": "text",
+      "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-3bfltzw9",
+      "name": "team_create_member",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-c1-u5u7tb-20261027t19-24-42z",
+       "delegationTemplateId": "asker",
+       "label": "u7tb-asker"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-3bfltzw9",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"templateId\":\"asker\",\"childSessionId\":\"session-team-child-8771587c29206fdaaac37d184c4c19b2\",\"operationId\":\"op-036as4d0faqle21yd8mgf11a\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7tb-c1-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-k1p6ckr0",
+      "name": "team_delegate",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-d1-u5u7tb-20261027t19-24-42z",
+       "delegationInstanceId": "inst-0vjaejz1pzqr",
+       "label": "u7tb-d1",
+       "prompt": "U7TB_SCRIPT_u5u7tb-20261027t19-24-42z: run your four team_bash commands one at a time, then report done.",
+       "async": true
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-k1p6ckr0",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-qa2dipfi",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123621-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-qa2dipfi",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123621-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-5osy28vm",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123661-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-5osy28vm",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123661-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-66uw56p4",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123678-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-66uw56p4",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123678-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-90rq6g9e",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123694-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-90rq6g9e",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123694-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-9vdvwrq2",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123710-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-9vdvwrq2",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123710-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-l344j99p",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123774-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-l344j99p",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123774-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-control requestId=ctrl-0amkfz319od5wo1a03bgp0o0]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0amkfz319od5wo1a03bgp0o0\nrequester: inst-0vjaejz1pzqr\nsubject: instance inst-0vjaejz1pzqr\ntarget: inst-0vjaejz1pzqr\ntool: bash\nsummary: PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t19-24-42z:inst-0vjaejz1pzqr:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-vtj83jel",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129123971-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-vtj83jel",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129123971-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-wqu29elh",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129124080-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-wqu29elh",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129124080-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-xvr5ceyq",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129124097-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-xvr5ceyq",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129124097-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-9z25bkzk",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129124112-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-9z25bkzk",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129124112-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-rzhp613j",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129124128-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-rzhp613j",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129124128-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-cml3g7cv",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261027t19-24-42z",
+       "requestToken": "u7tb-fd1-1793129124148-u5u7tb-20261027t19-24-42z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261027t19-24-42z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-cml3g7cv",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t19-24-42z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261027t19-24-42z\",\"status\":\"running\",\"instanceId\":\"inst-0vjaejz1pzqr\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793129124148-u5u7tb-20261027t19-24-42z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   }
+  ],
+  "reply": {
+   "kind": "text",
+   "content": "U7TB_FENCE_HOLD_d1"
+  }
+ }
+}

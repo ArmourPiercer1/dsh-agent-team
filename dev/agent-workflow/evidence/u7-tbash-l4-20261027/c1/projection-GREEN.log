@@ -1,0 +1,16 @@
+✔ u7-tbash: blueprints pass the host validator; leader has no shell lane; asker can open an ask row (80.085989ms)
+✔ u7-tbash: commands are harmless printf appends inside the team root (0.952987ms)
+✔ u7-tbash: projection identity extractor reads only projection.teamSessionId (0.191297ms)
+✔ u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity (0.460594ms)
+✔ u7-tbash: the lane-scoped resolver allows exactly the pinned command once (0.602791ms)
+✔ u7-tbash: results join to calls by tool_use_id, not by position (r5 artifact) (0.452694ms)
+✔ u7-tbash: the brain issues the 4-step script from the transcript; fence never self-satisfies (2.220869ms)
+✔ u7-tbash: judge — all-green PASSes, and every case flips on its own evidence (mutation controls) (2.001372ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 178.164626
