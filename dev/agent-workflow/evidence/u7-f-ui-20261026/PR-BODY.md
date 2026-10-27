@@ -102,7 +102,12 @@ generated `packages/tools/families/index.mjs`; dist byte-mirrors +
 `packages/runtime/test/u7-f-ui-c1.test.ts`; C2 world kind + suite +
 assembly (`tests/world-factory/`); derived-count pins that the manifest
 change legitimately moves (`u7-w0b-family-seam.test.ts`,
-`registries.test.mjs`); evidence `dev/agent-workflow/evidence/u7-f-ui-20261026/`.
+`registries.test.mjs`); the EB3 family-boundaries booking
+(`scripts/eb3-family-boundaries.mjs` — `LANE_EDGES['dsh.ui-family']` +
+lane-id map, with the outward-edge law stated in the lane README;
+`present` reaches the anchor law ONLY through fs-family's PUBLIC face
+`src/index.mjs`, never a sibling internal); evidence
+`dev/agent-workflow/evidence/u7-f-ui-20261026/`.
 ZERO diff on `team-tool-plane.mjs`, `family-assembly.mjs`, the
 approval-entry binder, and every one of the ARC-A 33 protected paths
 (machine-checked: zero intersection with the staged set).
@@ -133,6 +138,27 @@ census red on EXACTLY ONE identity, disclosed and root-caused here:
   --worktree-only` blocking=0; `docs:sync --check` exit 0;
   `gen-family-index --check` OK (4); `diag-call-chain --self-test` OK;
   world-factory offline 38/38; `registries` 12/12.
+
+## Hosted CI — GREEN on head `88e48464a`
+
+Round 1 (head `ce572cf27`): ci-required RED — `EB3-A: family boundaries`
+graded this honestly ("an unbooked lane cannot be graded", 8 findings).
+Fixed in `88e48464a` (booking + public-face re-route above; C1 36/36
+re-run, `eb3-family-boundaries` pass findings=0,
+`eb3-ci-negative-controls` 16/16). Round 2 on head `88e48464a`
+(merge tree `01d6f6b4d…`, base `0ea67bee8`):
+
+```
+run 40462203772  ci-required        success  (synthesize-merge-tree, ci-security,
+                                             ci-integration, ci-fast, ci-full, ci-required — all success)
+run 40462203813  pr-gate            success
+run 40462203775  census-runtime     success
+run 40462203682  candidate-protection success
+EB3-REQUIRED pass layers=5 green=5 nongreen=none
+```
+
+The hosted ci-full census is GREEN — confirming the one local red
+(`rc2-sanitize-evidence::S13`) was sandbox process-spawn slowness only.
 
 ## Disclosed deviations (from the host mirror)
 
