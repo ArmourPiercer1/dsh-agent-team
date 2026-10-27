@@ -1,0 +1,453 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7ac1-c2-mvr4fu26",
+  "suite": "u7-ac1-agent-control-subagents-c2",
+  "startedAt": "2026-10-27T20:11:46.593Z",
+  "selectedCases": [
+    "ac:mounted",
+    "ac:list-models",
+    "ac:list-agents",
+    "ac:spawn-positive",
+    "ac:child-toolview",
+    "ac:fork-positive",
+    "ac:refusal-tools",
+    "ac:refusal-provider",
+    "ac:refusal-fork-bg",
+    "ac:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "418a4d33693ffadfbc26c23b7888cbcf7ec2008b",
+    "teamTreeClean": true,
+    "driveScriptClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "ac:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:12:35.031Z",
+      "detail": {
+        "createOk": true,
+        "createBody": "ok",
+        "placementFeed": [
+          "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7ac1-realm-u5u7ac1-20261027t20-11-46z",
+          "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7ac1-realm-u5u7ac1-20261027t20-11-46z"
+        ],
+        "planeRefusals": []
+      }
+    },
+    {
+      "id": "ac:list-models",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.032Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control — the governed list_subagent_models executor returned a value outside the native result schema"
+          }
+        ],
+        "providersParsed": null,
+        "ranWitness": [
+          "[dsh-agent-team] u7f-agent-control: agent-control-list_subagent_models RAN correlation=plane-ac:mvr4gqamiaz2-1"
+        ],
+        "humanAllow": [
+          "ctrl-1k2ukvr1y0r35a0w2mewh0a4"
+        ]
+      }
+    },
+    {
+      "id": "ac:spawn-positive",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.032Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: tool \"subagent\" returned invalid output: missing required property \"value.text\"; \"value.kind\" is not a declared property (additionalProperties: false); \"value.runId\" is not a declared property (additionalProperties: false); \"value.output\" is not a declared property (additionalProperties: false)"
+          }
+        ],
+        "ranWitness": [
+          "[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr4gq3sbbda-1",
+          "[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr4gqamiaz2-2"
+        ],
+        "humanAllow": [
+          "ctrl-0qan4ti1848i5j03dndyc0fv",
+          "ctrl-0ho0p7x1g3fbzs1dizs9z0ya"
+        ],
+        "toolviewLines": [
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=32a1ae19-ecd5-4293-a78b-7ae8df95bbaf tools=[]",
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=8920d3eb-93b5-4a5d-9edc-4754c42ad9a6 tools=[]",
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=fork run=4d60177e-86df-4387-97f4-21ca45663c06 tools=[]"
+        ]
+      }
+    },
+    {
+      "id": "ac:list-agents",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.032Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control — the governed list_agents executor returned a value outside the native list_agents result schema"
+          }
+        ],
+        "catalogSize": null,
+        "ranWitness": [
+          "[dsh-agent-team] u7f-agent-control: agent-control-list_agents RAN correlation=plane-ac:mvr4gqamiaz2-3"
+        ],
+        "humanAllow": [
+          "ctrl-1d1nk730ix6cks0wb7ydh0fv"
+        ],
+        "note": "the native projection lists continuable children only; the one-shot spawn child is witnessed through catalogSize/oneShotChildren from the same subagents.listChildren answer"
+      }
+    },
+    {
+      "id": "ac:child-toolview",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:12:35.032Z",
+      "detail": {
+        "spawnChildRequests": 2,
+        "forkChildRequests": 1,
+        "childToolSurfaces": [
+          [],
+          [],
+          []
+        ],
+        "spawnChildAttemptedToolResults": [
+          {
+            "isError": true,
+            "text": "Error: unknown tool \"read\""
+          }
+        ],
+        "unknownReadErrors": 1,
+        "portToolviewLines": [
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=32a1ae19-ecd5-4293-a78b-7ae8df95bbaf tools=[]",
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=8920d3eb-93b5-4a5d-9edc-4754c42ad9a6 tools=[]",
+          "[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=fork run=4d60177e-86df-4387-97f4-21ca45663c06 tools=[]"
+        ],
+        "q1": "Tier A ceiling is an empty child tool view; the mock read probe must fail specifically as unknown tool"
+      }
+    },
+    {
+      "id": "ac:fork-positive",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.033Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: unknown tool \"subagent_fork\""
+          },
+          {
+            "isError": true,
+            "text": "Error: tool \"subagent_fork\" returned invalid output: missing required property \"value.text\"; \"value.kind\" is not a declared property (additionalProperties: false); \"value.runId\" is not a declared property (additionalProperties: false); \"value.output\" is not a declared property (additionalProperties: false)"
+          }
+        ],
+        "forkChildRequestCarriedToken": true,
+        "ranWitness": [
+          "[dsh-agent-team] u7f-agent-control: agent-control-subagent_fork RAN correlation=plane-ac:mvr4gqamiaz2-4"
+        ],
+        "humanAllow": [
+          "ctrl-02x4o580ba7mo70drvj0e0sd"
+        ]
+      }
+    },
+    {
+      "id": "ac:refusal-tools",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.033Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-schema-refused — unknown field 'tools'"
+          }
+        ],
+        "expected": [
+          "agent-control-schema-refused",
+          "unknown field 'tools'"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 1
+        }
+      }
+    },
+    {
+      "id": "ac:refusal-provider",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.033Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: provider 'deepseek-official' is outside the caller's own authority"
+          }
+        ],
+        "expected": [
+          "agent-control-amplification-refused",
+          "provider 'deepseek-official' is outside the caller's own authority"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 1
+        }
+      }
+    },
+    {
+      "id": "ac:refusal-fork-bg",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:12:35.033Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-amplification-refused — a forked child may not carry broader authority than its caller: a continuable child outlives a caller that is not itself continuable"
+          }
+        ],
+        "expected": [
+          "agent-control-amplification-refused",
+          "continuable"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent_fork",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 1
+        }
+      }
+    },
+    {
+      "id": "ac:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T20:12:35.041Z",
+      "detail": {
+        "secretClaimInCorpus": false,
+        "secretClaimInHostLog": false,
+        "secretBytesUnchanged": true,
+        "stable3080": {
+          "before": {
+            "status": 401
+          },
+          "after": {
+            "status": 401
+          }
+        },
+        "childStarts": 3,
+        "startsByProvider": {
+          "spawn": 2,
+          "fork": 1
+        },
+        "law": "positive witnesses require exactly two spawn starts (spawn pilot retries are attributed) and one fork start; refusals are not starts"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T20:12:25.534Z",
+        "runId": "u7ac1-c2-mvr4fu26",
+        "suite": "u7-ac1-agent-control-subagents-c2",
+        "phase": "u7ac1-c2-boot",
+        "boot": 6,
+        "world": "u5u7ac1-20261027T20-11-46Z",
+        "port": 3184,
+        "bootMs": -10586
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 6,
+    "budget": 6,
+    "declaredAt": "2026-10-27T20:12:36.120Z",
+    "runId": "u7ac1-c2-mvr4fu26",
+    "world": "u5u7ac1-20261027T20-11-46Z",
+    "teamSha": "418a4d33693ffadfbc26c23b7888cbcf7ec2008b",
+    "driveScriptClean": true
+  },
+  "discoverySurface": [
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "controlLedger": {
+    "requests": [
+      {
+        "requestId": "ctrl-1k2ukvr1y0r35a0w2mewh0a4",
+        "toolName": "list_subagent_models",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-0qan4ti1848i5j03dndyc0fv",
+        "toolName": "subagent",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-0ho0p7x1g3fbzs1dizs9z0ya",
+        "toolName": "subagent",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-1d1nk730ix6cks0wb7ydh0fv",
+        "toolName": "list_agents",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-02x4o580ba7mo70drvj0e0sd",
+        "toolName": "subagent_fork",
+        "status": "settled"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-1k2ukvr1y0r35a0w2mewh0a4",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0qan4ti1848i5j03dndyc0fv",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0ho0p7x1g3fbzs1dizs9z0ya",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1d1nk730ix6cks0wb7ydh0fv",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-02x4o580ba7mo70drvj0e0sd",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-1k2ukvr1y0r35a0w2mewh0a4"
+      },
+      {
+        "requestId": "ctrl-0ho0p7x1g3fbzs1dizs9z0ya"
+      },
+      {
+        "requestId": "ctrl-0qan4ti1848i5j03dndyc0fv"
+      },
+      {
+        "requestId": "ctrl-1d1nk730ix6cks0wb7ydh0fv"
+      },
+      {
+        "requestId": "ctrl-02x4o580ba7mo70drvj0e0sd"
+      }
+    ],
+    "abandoned": []
+  },
+  "humanResolutions": [
+    {
+      "requestId": "ctrl-1k2ukvr1y0r35a0w2mewh0a4",
+      "toolName": "list_subagent_models",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-0qan4ti1848i5j03dndyc0fv",
+      "toolName": "subagent",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-0ho0p7x1g3fbzs1dizs9z0ya",
+      "toolName": "subagent",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-1d1nk730ix6cks0wb7ydh0fv",
+      "toolName": "list_agents",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ctrl-02x4o580ba7mo70drvj0e0sd",
+      "toolName": "subagent_fork",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    }
+  ],
+  "approverErrors": [],
+  "notes": [
+    "lanes: pilot1=true pilot2=true leader=true"
+  ],
+  "hostBaseAfter": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "phase": "c2-after"
+  },
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/homes/u5u7ac1-20261027T20-11-46Z",
+      "releasedPorts": [
+        3184,
+        3498,
+        3184
+      ],
+      "killedPids": [
+        63
+      ],
+      "notes": []
+    }
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/host-boot6.log",
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/mock-corpus-boot6.json"
+  ],
+  "mockDigest": [],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-27T20:12:35.349Z"
+}
