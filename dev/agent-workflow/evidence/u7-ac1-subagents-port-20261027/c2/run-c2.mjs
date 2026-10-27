@@ -179,10 +179,9 @@ async function main() {
   console.log(`[u7ac1-c2] DONE overall=${run.record.overall} pass=${String(run.record.cases.length - fails)} nonpass=${String(fails)}`)
 }
 
+const LIVE_IO = { fetchJsonRetry, authenticate, apiPrompt, sleep, stableProbe, readFile: readFileSync }
 export async function drive({ world, assembly, planted, boot, stableBefore, io = {} }) {
-  const { fetchJsonRetry: http = fetchJsonRetry, authenticate: auth = authenticate, apiPrompt: prompt = apiPrompt,
-    sleep: pause = sleep, stableProbe: probe = stableProbe, readFile: read = readFileSync } = io
-  const fetchJsonRetry = http, authenticate = auth, apiPrompt = prompt, sleep = pause, stableProbe = probe, readFileSync = read
+  const { fetchJsonRetry, authenticate, apiPrompt, sleep, stableProbe, readFile: readFileSync } = { ...LIVE_IO, ...io }
   const origin = `http://127.0.0.1:${boot.port}`
   const waitA = async (predicate, timeoutMs) => {
     const started = Date.now()

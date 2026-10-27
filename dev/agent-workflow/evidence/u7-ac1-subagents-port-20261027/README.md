@@ -1,4 +1,18 @@
 
+## Final boot-7 conclusion (supersedes prior budget conclusions below)
+
+**FAIL; PR #418 stays DRAFT; no boot 8.** Run `u7ac1-c2-mvr783ml`, product/driver `64ca32738354e1709cdd80844d0d4df7f216a81e`, pristine Host `639ed01539`, leased port 3184. All ten selected cases are FAIL (missing verdict, fail-closed), not evidence of a family refusal or positive effect. Boot 7 is the fourth boot over the original cap 3, explicitly authorized exactly once. Home removed; ports 3184/3498 released; Host baseline/porcelain unchanged (record lines 143–163). The ledger is unchanged: no new L2/L3/L4 PROVEN claims.
+
+### Precise two-sided diagnosis
+
+At the booted commit, `c2/run-c2.mjs:182–186` destructured injected IO defaults using names that were immediately redeclared locally. With live `io = {}`, evaluating `fetchJsonRetry: http = fetchJsonRetry` entered that local binding's temporal dead zone. Record `c2/c2-verdicts-boot7.json:140–142` contains the exact ReferenceError and both caller frames (drive:183, main:138). The opposite side is `c2/dryrun-fixtures.mjs:56–96`: the fake provided **every** IO key, so no default expression ran. This is a new runner defect, not a Host seam failure and not a product result mismatch. Offline RED/GREEN is valid for the injected path but insufficient for the absent-override path. Postmortem repair captures LIVE_IO outside drive and merges overrides without self-shadowing; **not live validated**, no additional boot. No evidence was retroactively promoted.
+
+### Preboot evidence and remaining disclosure
+
+`c1-dryrun/` records old-face RED (four intended positive failures), current GREEN (10/10), and mutated provider refusal RED; recorded boot-6 bodies plus synthetic ledger drive real create → request/read → resolveControl → effects → judges. Lane/registry/family focused suites are 63/63 green. The preboot work additionally fixed the production catalogue envelopes at their native row outputs, stale lane expectations, obsolete leader extra spawn, inherited fork transcript attribution and unaccounted refusal asks. These fixes remain C1/offline only after the live drive failed.
+
+No live `ac:refusal-ptc` claim: omitted from selected cases; boots 2/3 are disclosure evidence only. A tool-less child's L4 still requires real child-effect witness; no fabricated ledger upgrade is made. :3080 was only status-probed before launch; the drive exception prevented its normal after probe, so a separate read-only postmortem status check is recorded. Stable instance was not modified.
+
 ## Boot-3 conclusion
 
 Boot 3 was the final authorized boot (3/3), run `u7ac1-c2-mvr2f2jx`, team SHA `2f51cf81`, Host `639ed01539`, port `3184`; the Host mounted and teardown removed the world/home. C2 overall is **FAIL**, with all 11 cases fail-closed because `team.create` could not start the root. The exact typed error in `c2/c2-verdicts-boot3.json:36-44` is:

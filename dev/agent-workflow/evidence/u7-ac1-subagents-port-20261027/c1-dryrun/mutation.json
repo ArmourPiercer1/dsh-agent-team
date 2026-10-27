@@ -1,8 +1,8 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "u7ac1-c2-mvr783gt",
+  "runId": "u7ac1-c2-mvr7br8e",
   "suite": "u7-ac1-agent-control-subagents-c2",
-  "startedAt": "2026-10-27T21:29:44.382Z",
+  "startedAt": "2026-10-27T21:32:35.150Z",
   "selectedCases": [
     "ac:mounted",
     "ac:list-models",
@@ -16,8 +16,8 @@
     "ac:leak-check"
   ],
   "bindings": {
-    "teamSha": "d5434f85488249bce1501a38defd61f91f61f42f",
-    "teamTreeClean": false,
+    "teamSha": "56819410037892670a5ced28136240681aa79fdf",
+    "teamTreeClean": true,
     "driveScriptClean": false,
     "hostSha": "set-from-assertHostBase-in-main",
     "authority": {
@@ -34,7 +34,7 @@
     {
       "id": "ac:mounted",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.393Z",
+      "at": "2026-10-27T21:32:35.161Z",
       "detail": {
         "createOk": true,
         "createBody": "ok",
@@ -47,7 +47,7 @@
     {
       "id": "ac:list-models",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.393Z",
+      "at": "2026-10-27T21:32:35.162Z",
       "detail": {
         "readBack": [
           {
@@ -72,7 +72,7 @@
     {
       "id": "ac:spawn-positive",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.393Z",
+      "at": "2026-10-27T21:32:35.162Z",
       "detail": {
         "readBack": [
           {
@@ -95,7 +95,7 @@
     {
       "id": "ac:list-agents",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.393Z",
+      "at": "2026-10-27T21:32:35.162Z",
       "detail": {
         "readBack": [
           {
@@ -116,7 +116,7 @@
     {
       "id": "ac:child-toolview",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.393Z",
+      "at": "2026-10-27T21:32:35.162Z",
       "detail": {
         "spawnChildRequests": 2,
         "forkChildRequests": 1,
@@ -142,7 +142,7 @@
     {
       "id": "ac:fork-positive",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.394Z",
+      "at": "2026-10-27T21:32:35.162Z",
       "detail": {
         "readBack": [
           {
@@ -162,7 +162,7 @@
     {
       "id": "ac:refusal-tools",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.394Z",
+      "at": "2026-10-27T21:32:35.163Z",
       "detail": {
         "readBack": [
           {
@@ -185,7 +185,7 @@
     {
       "id": "ac:refusal-provider",
       "verdict": "FAIL",
-      "at": "2026-10-27T21:29:44.394Z",
+      "at": "2026-10-27T21:32:35.163Z",
       "detail": {
         "readBack": [
           {
@@ -208,7 +208,7 @@
     {
       "id": "ac:refusal-fork-bg",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.394Z",
+      "at": "2026-10-27T21:32:35.163Z",
       "detail": {
         "readBack": [
           {
@@ -231,7 +231,7 @@
     {
       "id": "ac:leak-check",
       "verdict": "PASS",
-      "at": "2026-10-27T21:29:44.394Z",
+      "at": "2026-10-27T21:32:35.163Z",
       "detail": {
         "secretClaimInCorpus": false,
         "secretClaimInHostLog": false,
@@ -380,5 +380,5 @@
     "live": false
   },
   "overall": "FAIL",
-  "finishedAt": "2026-10-27T21:29:44.394Z"
+  "finishedAt": "2026-10-27T21:32:35.164Z"
 }
