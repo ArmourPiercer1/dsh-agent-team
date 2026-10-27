@@ -1,0 +1,47 @@
+{
+  "schema": "dist-placements/1",
+  "family": "dsh.inspect-family",
+  "summary": "u7-f: the INSPECT family lane (governed skill loader + governed cordis_inspect list/query rows) and its FamilyAssembly descriptor. Every lane file is a plain .mjs byte copy (tsc never emits .mjs); the lane imports the fs-family anchor law and the shared cancel leg through relative specifiers whose depths resolve identically from src and from this mirror, and the descriptor rides the reviewed manifest (packages/tools/families/manifest.json, mirrored by 060-u7w0b-family-seam.json).",
+  "placements": [
+    {
+      "src": "packages/tools/inspect-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/index.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/row-names.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/row-names.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/skill-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/skill-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/skill-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/skill-executor.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/skill-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/skill-row.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/inspect-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/inspect-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/inspect-executor.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/inspect-rows.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/inspect-rows.mjs"
+    },
+    {
+      "src": "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/inspect-family/src/inspect-family-contribution.mjs"
+    },
+    {
+      "src": "packages/tools/families/inspect.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/inspect.mjs"
+    }
+  ]
+}
