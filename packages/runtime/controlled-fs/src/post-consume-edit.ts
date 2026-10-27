@@ -51,7 +51,7 @@ import { open as fsOpen, type FileHandle } from 'node:fs/promises'
 import path from 'node:path'
 
 import { cfsDenial, cfsUndetermined } from './cf-errors.js'
-import { isBeneath, verifyOpenedHandle } from './open-at-exec.js'
+import { isBeneath, recheckSingleLink, verifyOpenedHandle } from './open-at-exec.js'
 
 /** The frozen edit plan the B-EDIT arm freezes at classify. */
 export interface PostConsumeEditPlan {
@@ -67,6 +67,13 @@ export interface PostConsumeEditPlan {
 export interface PostConsumeEditCallContext {
   readonly parametersFingerprint?: string
   readonly signal?: { readonly aborted?: boolean }
+  /** LANE-INTERNAL PROBE SEAM ONLY (mirrors the PoC3
+   *  `onAfterPreCheckBeforeOpen` hook of controlled-fs.ts): fires AFTER the
+   *  read half and BEFORE the first byte-changing step (truncate), so the
+   *  verify→truncate window is observable without a real-time race. The
+   *  sanctioned wiring (fs-family executors) NEVER passes it — pinned by
+   *  u7-r4091 S-1; its presence changes no law. */
+  readonly onBeforeFirstByteChange?: () => void | Promise<void>
 }
 
 export interface PostConsumeEditConfig {
@@ -343,6 +350,29 @@ export function createPostConsumeEditClosure(
           return settle(cfsDenial(
             'effect-outside-grant',
             'post-consume edit refused: the call was cancelled after the read but before the truncate — nothing was written',
+          ))
+        }
+
+        // Lane-internal probe seam (test-only; never passed by the wiring).
+        await ctx?.onBeforeFirstByteChange?.()
+
+        // R-409-1 defence-in-depth: the SAME-fd link-count re-check at the
+        // point of no return (open-at-exec.ts `recheckSingleLink`). A second
+        // name planted after the open-time observation (or after the read
+        // half) is caught HERE: the existing `hardlink-alias` denial, and
+        // the truncate below never runs — the inode keeps its bytes.
+        const link = await recheckSingleLink(handle)
+        if (link.verdict === 'hardlink-alias') {
+          return settle(cfsDenial(
+            'hardlink-alias',
+            `post-consume edit refused: ${link.detail}; the second name appeared after the open-time verification — refused before the first byte; nothing was written`,
+          ))
+        }
+        if (link.verdict !== 'confirmed') {
+          return settle(cfsUndetermined(
+            'exec-time-identity-drift',
+            `post-consume edit refused: pre-truncate link-count re-check — ${link.detail}; nothing was written`,
+            { sideEffectPossible: false },
           ))
         }
 

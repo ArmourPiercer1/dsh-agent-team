@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7R4091",
+  "paths": [
+    "packages/runtime/test/u7-r4091-nlink-recheck.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1382,
+    "to": 1383
+  },
+  "reason": "u7-r4091 (residual R-409-1 from PR #409's merge ruling: nlink re-check before\nthe first byte change; branch task/u7-r4091-nlink-recheck-20261027): the ONE scannable\nfile this round ADDS — the RED->GREEN suite for the shared same-fd link-count\nre-check (packages/runtime/test/u7-r4091-nlink-recheck.test.ts: the recheckSingleLink\nunit legs, the post-consume write / post-consume edit / controlled-fs writeText\nlate-alias legs each pairing the typed hardlink-alias refusal with unchanged\ncanary bytes through BOTH names, nlink=1 positive controls, and the seam-\ndiscipline pins that the sanctioned wiring never passes the verify-window probe\nseams). Every production edit rides an ALREADY-COUNTED path\n(controlled-fs/src/open-at-exec.ts, post-consume-write.ts, post-consume-edit.ts,\ncontrolled-fs.ts); dist mirrors, tests/** and dev/** are outside the scan.\nZero new denylist vocabulary.",
+  "tieNote": "u7-r4091's tie, MEASURED on THIS tree at booking time (scanner run in-place,\nthe one file present, clause unbooked, reading `scanner counts 1383, ledger\nderives 983 + 399 = 1382`, i.e. scanner counts 1383 while the ledger derives\n1382): the chain is the booked 1382 plus exactly this one file — no chain value\ncopied. Capture dev/agent-workflow/evidence/u7-r4091-20261027/runs/\np4t6-RED-unbooked-measure.txt. Confirmed causal: the base tree's suites are\nGREEN on origin/master a264d2df0, so the movement is this round's one added\nfile and nothing else."
+}

@@ -49,7 +49,7 @@ import { constants as fsConstants, lstatSync, realpathSync } from 'node:fs';
 import { open as fsOpen } from 'node:fs/promises';
 import path from 'node:path';
 import { cfsDenial, cfsUndetermined } from './cf-errors.js';
-import { isBeneath, verifyOpenedHandle } from './open-at-exec.js';
+import { isBeneath, recheckSingleLink, verifyOpenedHandle } from './open-at-exec.js';
 function isNonEmptyString(value) {
     return typeof value === 'string' && value.length > 0;
 }
@@ -256,6 +256,20 @@ export function createPostConsumeEditClosure(plan, ctx, cfg) {
                 // step: after the truncate, bytes may land.
                 if (isAborted(signal)) {
                     return settle(cfsDenial('effect-outside-grant', 'post-consume edit refused: the call was cancelled after the read but before the truncate — nothing was written'));
+                }
+                // Lane-internal probe seam (test-only; never passed by the wiring).
+                await ctx?.onBeforeFirstByteChange?.();
+                // R-409-1 defence-in-depth: the SAME-fd link-count re-check at the
+                // point of no return (open-at-exec.ts `recheckSingleLink`). A second
+                // name planted after the open-time observation (or after the read
+                // half) is caught HERE: the existing `hardlink-alias` denial, and
+                // the truncate below never runs — the inode keeps its bytes.
+                const link = await recheckSingleLink(handle);
+                if (link.verdict === 'hardlink-alias') {
+                    return settle(cfsDenial('hardlink-alias', `post-consume edit refused: ${link.detail}; the second name appeared after the open-time verification — refused before the first byte; nothing was written`));
+                }
+                if (link.verdict !== 'confirmed') {
+                    return settle(cfsUndetermined('exec-time-identity-drift', `post-consume edit refused: pre-truncate link-count re-check — ${link.detail}; nothing was written`, { sideEffectPossible: false }));
                 }
                 try {
                     await handle.truncate(0);
