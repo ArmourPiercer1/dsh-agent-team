@@ -42,6 +42,13 @@ name: ci-required
 on:
   pull_request:
     branches: [master]
+    # `labeled`/`unlabeled` are LOAD-BEARING for the deferred tier: the verdict depends on
+    # the PR's labels, so ADDING ci-defer-full must re-run (to skip ci-full) and REMOVING it
+    # must re-run the full aggregate on the SAME head. Without them, taking the label off
+    # would leave a red ci-required standing until the next push — a head that is fully green
+    # but cannot merge, the failure this tier must not create. The default set
+    # (opened/synchronize/reopened) does not include them.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read

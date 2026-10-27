@@ -978,6 +978,52 @@ control('C20 acceptance-ledger-refuses-unproven-proven', () => {
   }
 })
 
+// ─────────────────────────────────────────────────── deferred tier (ci-defer-full)
+const GREEN_LAYER = { result: 'success', outputs: { verdict: 'PASS' } }
+const fourLayerNeeds = (fullEntry) => ({
+  synthesize: { result: 'success' },
+  'ci-fast': GREEN_LAYER,
+  'ci-integration': GREEN_LAYER,
+  'ci-security': GREEN_LAYER,
+  ...(fullEntry === undefined ? {} : { 'ci-full': fullEntry }),
+})
+
+control('C21 deferred-run-cannot-produce-ci-required-success', () => {
+  const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
+  const { checkDeferralConflict, loadManifest } = requireModule('scripts/eb3-ci-required.mjs')
+  const m = loadManifest()
+  const misses = []
+  // The deferral flag means ci-full is SKIPPED; the Required grade (no deferral relief) must be red.
+  const deferred = gradeNeeds({ needs: fourLayerNeeds({ result: 'skipped', outputs: {} }) })
+  if (deferred.verdict !== 'fail') misses.push(`4 green layers + skipped ci-full graded ${deferred.verdict}, not fail`)
+  if (!deferred.rows.some((r) => r.layer === 'ci-full' && r.klass === 'skipped')) misses.push('ci-full:skipped is not named in the rows')
+  // THE PROPERTY THAT MATTERS: the exact command ci-required runs must EXIT NON-ZERO (the
+  // check run is red). If the grader is ever taught to tolerate a skipped layer, this goes red.
+  let cliExit = 0
+  try { execFileSync(process.execPath, [join(ROOT, 'scripts/eb3-merge-tree.mjs'), '--grade-needs', JSON.stringify(fourLayerNeeds({ result: 'skipped', outputs: {} }))], { stdio: 'pipe' }) } catch (err) { cliExit = err.status ?? -1 }
+  if (cliExit === 0) misses.push('`eb3-merge-tree.mjs --grade-needs` exited 0 on a deferred run (ci-full skipped) — ci-required would be GREEN')
+  // The deferred job must never be the Required context.
+  if (m.deferral?.context === m.aggregate.context || m.deferral?.job === m.aggregate.job) misses.push('the deferred job shares the Required context name')
+  // Conflict rule: label + ci-required success is a finding; guarded to a no-op without inputs.
+  const conflict = checkDeferralConflict({ labels: ['ci-defer-full'], requiredConclusion: 'success' })
+  if (!conflict.findings.some((f) => f.code === 'CI_DEFERRAL_CONFLICT')) misses.push('label + ci-required success raised no CI_DEFERRAL_CONFLICT')
+  if (checkDeferralConflict({ labels: [], requiredConclusion: 'success' }).findings.length !== 0) misses.push('no label + success raised a conflict')
+  if (checkDeferralConflict({}).checked !== false) misses.push('unreadable PR was not a no-op')
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'deferred run (ci-full skipped) grades fail on the Required path and the ci-required CLI exits non-zero, ci-full:skipped named; deferred job is not the Required context; CI_DEFERRAL_CONFLICT fires on label+success and is a no-op without PR inputs' : misses.join(' ;; ') }
+})
+
+control('C22 no-deferral-ci-full-missing-is-a-failure', () => {
+  const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
+  const misses = []
+  const absent = gradeNeeds({ needs: fourLayerNeeds(undefined) })
+  if (absent.verdict !== 'fail' || !absent.rows.some((r) => r.layer === 'ci-full' && r.klass === 'absent')) misses.push(`ci-full missing graded ${absent.verdict} (want fail, ci-full:absent)`)
+  const skipped = gradeNeeds({ needs: fourLayerNeeds({ result: 'skipped', outputs: {} }) })
+  if (skipped.verdict !== 'fail') misses.push('ci-full skipped without a deferral flag graded pass')
+  const green = gradeNeeds({ needs: fourLayerNeeds(GREEN_LAYER) })
+  if (green.verdict !== 'pass') misses.push(`all five green graded ${green.verdict}`)
+  return { ok: misses.length === 0, detail: misses.length === 0 ? 'without the deferral flag a missing or skipped ci-full is a failure (today\'s rule); all green still passes' : misses.join(' ;; ') }
+})
+
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
 /**
  * PRESERVED POSITIVE A — "保留非 Team Native 正控". The two controls that prove a
