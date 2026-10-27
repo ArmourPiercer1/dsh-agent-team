@@ -69,13 +69,26 @@ indent fix, f2 the closed-world option-contract discovery, f3 the law run).
 `host-base-pristine-post` PASS: the pristine host checkout is byte-clean
 after the runs.
 
+## Base + the merged #398 diag/devex surface
+
+Branch base = `origin/master` @ `0ea67bee8` (normal merge, zero conflicts).
+#398 makes `diag-call-chain` resolve family refusal codes from the reviewed
+descriptors — verified against THIS family on the merged tree:
+`gen-family-index --check` → OK (4 reviewed families);
+`diag-call-chain --self-test` → OK 49 codes (the ui descriptor's
+`refusalCode:` token carries its site); `--code
+PLANE_UI_REGISTRATION_REFUSED` → `ATTRIBUTED, face: plane-mount
+[packages/tools/families/ui.mjs (refusalCode:)]`; the two CI-gating suites
+#398 added pass on this tree: `tests/diag-call-chain` 24/24,
+`tests/u7-3-devex` 20/20.
+
 ## Boot budget + harness honesty
 
 C1 36/36 offline; TWO mutation controls RED→reverted→GREEN; p4t6 delta
 MEASURED (`scanner counts 1332, ledger derives … = 1322` → +10 booked);
-world-factory offline machinery green with the new suite/kind registered;
-`registries` 12/12; family-seam 9/9 (count pin legitimately moved 3→4 with
-the manifest — the fitness law is `index == manifest`).
+world-factory offline machinery green (38/38) with the new suite/kind
+registered; `registries` 12/12; family-seam 9/9 (count pin legitimately
+moved 3→4 with the manifest — the fitness law is `index == manifest`).
 
 ## Files (the zero-plane-edit list)
 
@@ -93,6 +106,33 @@ change legitimately moves (`u7-w0b-family-seam.test.ts`,
 ZERO diff on `team-tool-plane.mjs`, `family-assembly.mjs`, the
 approval-entry binder, and every one of the ARC-A 33 protected paths
 (machine-checked: zero intersection with the staged set).
+
+## Gates (local, provisioned worktree; hosted is the arbiter)
+
+`ci-pr-gate --full --census`: **7 pass / 1 fail** — every leg green
+(graph-parse, state-freshness, install, blueprint-fence, **typecheck**,
+**lint-identities** new 0 / resolved 0, **artifacts-at-head** drift 0),
+census red on EXACTLY ONE identity, disclosed and root-caused here:
+
+- `rc2-sanitize-evidence.test.ts::…S13 file aliases, quoted values, and
+  capture formats pass the standalone regressions` — a **timeout**
+  (vitest 5000 ms default) on the leg that SPAWNS `node --test
+  scripts/sanitize-evidence.regression.test.mjs`; on this sandbox machine
+  that nested run measures **8.6 s wall idle and passes 5/5 standalone**
+  — slow process spawn, not a behavioral red. The test file is unchanged
+  since `97efc2d62` (this PR touches zero bytes of it), the same single
+  red was captured in the local census comparisons of two SINCE-MERGED
+  rounds (`ci-gate/scratch/census-comparison-20261026T114234Z-4.json`,
+  `…20261026T130037Z-40.json`), and the u7-9a PR body discloses
+  rc2-sanitize-evidence in the known env-dependent set. Census counts
+  moved 626→635 files / 7936→8130 tests = this PR's +1 suite (+36 tests)
+  on top of master-side growth; the identity set (zero other new reds)
+  is what the verdict draws from. Hosted ci-required (ci-full + census)
+  decides.
+- Quick gates green: `eb3-ci-required` pass findings=0; `docs:probe
+  --worktree-only` blocking=0; `docs:sync --check` exit 0;
+  `gen-family-index --check` OK (4); `diag-call-chain --self-test` OK;
+  world-factory offline 38/38; `registries` 12/12.
 
 ## Disclosed deviations (from the host mirror)
 
