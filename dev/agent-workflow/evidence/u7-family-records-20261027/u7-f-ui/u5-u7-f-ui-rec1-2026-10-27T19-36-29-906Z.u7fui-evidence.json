@@ -1,0 +1,270 @@
+{
+  "planted": {
+    "presentedShaBefore": "abb179e70cc1c5d4f0fb26a7c3c0561de19362fe729e1fe427d9a13c2266207a",
+    "outsideShaBefore": "65f61371f8fd09811b19f2e23cc8d8e4a847a1f6ad8f20acee25bd63680bafda"
+  },
+  "oracle": {
+    "presentedShaAfter": "abb179e70cc1c5d4f0fb26a7c3c0561de19362fe729e1fe427d9a13c2266207a",
+    "presentedBytesAfter": "U7FUI_PRESENTED_CLAIM_u5rec1-20261027t19-36-30z\nthe file the governed present row tried to publish\n",
+    "outsideShaAfter": "65f61371f8fd09811b19f2e23cc8d8e4a847a1f6ad8f20acee25bd63680bafda"
+  },
+  "logHits": {
+    "askRan": 0,
+    "askRefusals": [
+      "[dsh-agent-team] u7f-ask: governed-ask default-deny refusal"
+    ],
+    "presentRan": 0,
+    "presentProbed": 0,
+    "presentRefusals": [
+      "[dsh-agent-team] u7f-present: governed-present port-refusal",
+      "[dsh-agent-team] u7f-present: governed-present anchor-refusal code=locator-rejected"
+    ],
+    "planeRefusals": []
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7FUI_DISC_u5rec1-20261027t19-36-30z\"}"
+    },
+    {
+      "seq": 2,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"U7FUI_DISC_u5rec1-20261027t19-36-30z"
+    },
+    {
+      "seq": 3,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:04e6e1cb869e3d3c887aa0687253b25e4ff5c78bbe87928f7312dbbe36cefa92] "
+    },
+    {
+      "seq": 4,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-cr"
+    },
+    {
+      "seq": 5,
+      "d1": false,
+      "nCalls": 1,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"templateId\":\"uigov\",\"childSessionId\":\"session-team-child-9e0f00a0b58be9df8f54b7fabe57c8cd\",\"operationId\":\"op-162lfyr0ej12cq0guvdt51pl\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7fui-c1-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "d1": false,
+      "nCalls": 2,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "d1": true,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7fui-d1-u5rec1-20261027t19-36-30z] U7FUI_STRICT_u5rec1-20261027t19-36-30z\"}"
+    },
+    {
+      "seq": 8,
+      "d1": true,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7fui-d1-u5r"
+    },
+    {
+      "seq": 9,
+      "d1": false,
+      "nCalls": 3,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-1-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 10,
+      "d1": false,
+      "nCalls": 4,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-2-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 11,
+      "d1": false,
+      "nCalls": 5,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-3-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 12,
+      "d1": false,
+      "nCalls": 6,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-4-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 13,
+      "d1": true,
+      "nCalls": 1,
+      "lastCall": "ask_user_question",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: refused-admission template-default-deny — the policy defaults to DENY and the closed rule grammar names no interaction rule that could cover a user question"
+        }
+      ]
+    },
+    {
+      "seq": 14,
+      "d1": false,
+      "nCalls": 7,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-5-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 15,
+      "d1": true,
+      "nCalls": 2,
+      "lastCall": "present",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: refused-admission UI_PRESENT_PORT_ABSENT — this mount carries no injected presentation face, so nothing can be published — the governed row fails closed and presents nothing"
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "d1": false,
+      "nCalls": 8,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-6-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "d1": true,
+      "nCalls": 3,
+      "lastCall": "present",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: refused-schema locator-rejected — the lexical target escapes the governed root (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-records/tests/homes/u5rec1-20261027T19-36-30Z/u7fui-outside-secret.txt)"
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "d1": false,
+      "nCalls": 9,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-7-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 19,
+      "d1": false,
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"running\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7fui-fd1-8-u5rec1-20261027t19-36-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 20,
+      "d1": false,
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7fui-d1-u5rec1-20261027t19-36-30z]\\n\\nAn asynchronous Team work unit has settled.\\ninstanceId:"
+    },
+    {
+      "seq": 21,
+      "d1": false,
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7fui-team-u5rec1-20261027t19-36-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0c7t9jd0x0ff\",\"admittedSequence\":3,\"settledSequence\":6,\"memberResult\":{\"body\":\"U7FUI_UI_DONE\",\"requestToken\":\"u7fui-d1-u5rec1-20261027t19-36-30z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-1-1\"}"
+        }
+      ]
+    }
+  ],
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "uigov": true,
+    "leader": true
+  }
+}

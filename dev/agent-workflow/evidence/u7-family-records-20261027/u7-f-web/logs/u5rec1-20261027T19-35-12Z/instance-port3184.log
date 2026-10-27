@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-records/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=<REDACTED-per-TEST_METHODS-3.6>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,web_fetch,web_search] realm=u7fweb-realm-u5rec1-20261027t19-35-12z
+[dsh-agent-team] a5ptc: census-boot root=session-u7fweb-team-u5rec1-20261027t19-35-12z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,web_fetch,web_search] realm=u7fweb-realm-u5rec1-20261027t19-35-12z
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=60 hops=0 dest=http://127.0.0.1:3491
+[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
