@@ -482,7 +482,7 @@ describe('u7-f C1 effect-split arm — the PA requested sets ARE the law (a)', (
     }
     return { exec, fake }
   }
-  const createExec = (lane: Record<string, unknown>, injected: Record<string, unknown>, sets: PaCall[], fake: FakePort) => {
+  const createExec = (lane: Record<string, unknown>, injected: Record<string, unknown>, sets: PaCall[], _fake: FakePort) => {
     const create = (lane as unknown as { createAgentControlExecutors: (i: Record<string, unknown>) => Record<string, ((raw: unknown, corr?: Record<string, unknown>) => Promise<Record<string, unknown>>) | undefined> }).createAgentControlExecutors
     return create({
       realmId: REALM, templateId: 'u7f-tpl', instanceId: INSTANCE,

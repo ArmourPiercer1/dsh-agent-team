@@ -153,7 +153,7 @@ export function parseAgentControlArgs(name, raw) {
  * @returns {Array<object>} the raw arms (the executor canonicalizes through
  *   the domain parser BEFORE the PA edge is asked).
  */
-export function deriveAgentControlEffects(realmId, name, args) {
+export function deriveAgentControlEffects(realmId, name, _args) { // the EFFECT WORLD is name-keyed (closed vocabulary) — the payload never enters derivation (the runtime's commit-time job)
   const invoke = { kind: 'tool-invoke', toolName: name, resource: null }
   const meta = (locator) => ({
     kind: 'meta',
