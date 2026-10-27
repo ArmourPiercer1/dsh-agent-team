@@ -45,6 +45,29 @@ import * as pwshConfined from './pwsh-confined.mjs'
 
 const sha256Hex = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
 
+/**
+ * DECLARED→REQUESTED effect mapping (REVIEW-402 round-1 ruling; makes an
+ * IMPLICIT mapping explicit — implicit is how the #390 real gap slipped).
+ *
+ * The contribution below declares `process-spawn` as an honest capability
+ * statement, but `process-spawn` is NOT a requestable kind: the requestable
+ * vocabulary is the closed `EFFECT_KINDS`
+ * (`packages/domain/tool-governance/src/effects.ts`: tool-invoke, read,
+ * write, list, meta, connect, domain-ref). Under A2C-1 the shell row's
+ * process spawn is authorized by the `tool-invoke(<class>)` arm — the
+ * COMMAND IS the authority key, hashed verbatim
+ * (`process-family/src/bash-normalizer.ts`; no parsing, no claimed
+ * granularity), so the spawn carries no separate requestable arm.
+ *
+ * DATA ONLY — read by tests and reviewers, never by an executor or the
+ * Kernel: both executors' requested sets are byte-for-byte what they were
+ * before this table existed, and admission semantics did not move.
+ */
+export const DECLARED_TO_REQUESTED = Object.freeze({
+  'tool-invoke': 'tool-invoke',
+  'process-spawn': 'tool-invoke',
+})
+
 /** The family's closed parameter contracts as ONE canonical document: the
  *  fs-family multi-row form — per-name `{name, parameters, required}` facts
  *  in placement order (bash first, then pwsh). The digest binds the PLACED
@@ -183,6 +206,11 @@ export function buildProcessShellContribution({ definition, cancelBoundary, laun
       // DIFFERENT authority key per A2C-1); the opaque command's process
       // spawn is the class's effect (the authority hashes the command
       // verbatim — bash-normalizer.ts; no parsing, no claimed granularity).
+      // DECLARED→REQUESTED law (REVIEW-402): EVERY kind listed here maps
+      // through the exported `DECLARED_TO_REQUESTED` table above onto a
+      // kind both shell rows actually request (`tool-invoke`), and the
+      // mapping is pinned by test, per row, against EFFECT_KINDS — an
+      // unmapped declared kind is a red test, never an implicit read.
       kinds: ['tool-invoke', 'process-spawn'],
       targets: ['confined-process-realm'],
     },

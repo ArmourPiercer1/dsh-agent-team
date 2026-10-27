@@ -17,7 +17,7 @@ export {
 } from './shell-mechanics.mjs'
 export { createConfinedShellBackend } from './confined-shell-executor.mjs'
 export { buildBashRowDefinition } from './bash-row.mjs'
-export { buildProcessShellContribution } from './bash-contribution.mjs'
+export { buildProcessShellContribution, DECLARED_TO_REQUESTED } from './bash-contribution.mjs'
 export { normalizeShellProjection } from './bash-normalizer.js'
 // U7-F: the shell-class SECOND row (governed `pwsh`) — the same confined
 // provider law, its own closed parameter schema and faithful command form.
