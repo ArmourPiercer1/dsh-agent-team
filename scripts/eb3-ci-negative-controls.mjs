@@ -61,6 +61,7 @@ const MODULES = {
   'scripts/eb3-run-manifest.mjs': null,
   'scripts/eb3-impact.mjs': null,
   'scripts/eb3-evidence-guard.mjs': null,
+  'scripts/eb3-tool-acceptance.mjs': null,
 }
 const CI_PR_GATE = await import(new URL('./ci-pr-gate.mjs', import.meta.url).href)
 // Per-module load errors: the RED run of this file first recorded only the FIRST
@@ -901,6 +902,80 @@ control('C19 census-leg-writes-captures-outside-tracked-evidence', () => {
   if (CENSUS_SIDECAR_REL !== SCRATCH) misses.push(`sidecar dir moved to ${CENSUS_SIDECAR_REL}`)
   if (isRawCaptureName('census-comparison-20261027T003234Z-4.json')) misses.push('the sidecar name matches the raw-capture grammar')
   return { ok: misses.length === 0, detail: misses.length === 0 ? `captures -> ${cap.split('/').slice(0, -1).join('/')}/ and resamples -> ${res.split('/').slice(0, -1).join('/')}/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in ${CENSUS_SIDECAR_REL}/` : misses.join(' ;; ') }
+})
+
+// ────────────── control 20: the acceptance ledger cannot keep a PROVEN level alive
+/**
+ * PR #404 merged with its live C2 RUN record at `overall: FAIL` (u7f:inspect-list,
+ * u7f:refusal-zero-effect, u7f:approval-leg FAIL) while every layer was green. The
+ * ledger (dev/agent-workflow/ledgers/u7-tool-acceptance.json) is the thing that now
+ * says which levels are PROVEN, so the ledger is the thing that can lie. Four
+ * mutations, one per way it could lie, each staged on an in-memory copy of the real
+ * ledger — never on the disk:
+ *
+ *   a  PROVEN L4 whose cited case verdict is FAIL   (the #404 shape: colour a red arm)
+ *   b  PROVEN L4 whose cited record does not exist  (a citation to nothing)
+ *   c  a claimed tool with no row                   (a new family slipping in ungraded)
+ *   d  DISCLOSED with an empty reason               (a hedge with no disclosure behind it)
+ *
+ * The honest half runs too: the REAL ledger must pass, or the control is grading a
+ * tree that is already failing and proves nothing about the mutation.
+ */
+control('C20 acceptance-ledger-refuses-unproven-proven', () => {
+  const { checkToolAcceptance, readClaims, loadLedger, LEDGER_REL } = requireModule('scripts/eb3-tool-acceptance.mjs')
+  const tracked = new Set(gitLsFiles('dev/agent-workflow/evidence', 'packages', 'tests'))
+  const read = (rel) => { const abs = join(ROOT, rel); return existsSync(abs) ? readFileSync(abs, 'utf8') : null }
+  const claims = readClaims(ROOT)
+  const ledger = loadLedger(ROOT)
+  const grade = (l) => checkToolAcceptance({ ledger: l, claims, readFile: read, isTracked: (r) => tracked.has(r) }).findings
+  const honest = grade(ledger)
+  if (honest.length !== 0) {
+    return { ok: false, detail: `the real ${LEDGER_REL} already fails (${honest.length} finding(s)): ${honest.slice(0, 3).map((f) => `${f.code} ${f.detail}`).join(' ;; ')}` }
+  }
+  const clone = () => JSON.parse(JSON.stringify(ledger))
+  // Seeded from the real ledger, never from a hardcoded tool name: the row set moves
+  // as families land, and a pinned name would make this control a no-op on the next
+  // rename (the C3-3c lesson).
+  const provenRow = ledger.rows.find((r) => r['L4-positive'].status === 'PROVEN')
+  const disclosedRow = ledger.rows.find((r) => ['L2-mounted', 'L3-refusal', 'L4-positive'].some((l) => r[l].status === 'DISCLOSED'))
+  if (provenRow === undefined) return { ok: false, detail: 'the real ledger has no PROVEN L4 row — the control cannot stage mutation (a)' }
+  if (disclosedRow === undefined) return { ok: false, detail: 'the real ledger has no DISCLOSED level — the control cannot stage mutation (d)' }
+  const misses = []
+
+  // (a) PROVEN pointing at a case that the record grades FAIL. Take the cited record
+  // and swap in a FAIL case that record really contains; if it holds none, plant the
+  // citation on this tree's own #404 record, which really has three.
+  const FAILING = 'dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/c2-verdicts.json'
+  const a = clone()
+  a.rows.find((r) => r.tool === provenRow.tool)['L4-positive'].evidence = { record: FAILING, case: 'u7f:inspect-list' }
+  const aHit = grade(a).find((f) => f.code === 'ACCEPT_PROVEN_UNBACKED' && f.detail.includes('u7f:inspect-list'))
+  if (aHit === undefined) misses.push('(a) PROVEN citing a FAIL case was not refused')
+
+  // (b) PROVEN pointing at a record that does not exist.
+  const b = clone()
+  b.rows.find((r) => r.tool === provenRow.tool)['L4-positive'].evidence = { record: 'dev/agent-workflow/evidence/no-such-lane/no-such-record.json', case: 'x:y' }
+  if (!grade(b).some((f) => f.code === 'ACCEPT_PROVEN_UNBACKED')) misses.push('(b) PROVEN citing a missing record was not refused')
+
+  // (c) a claimed tool with no row.
+  const claimed = [...claims.keys()]
+  const victim = claimed.find((t) => ledger.rows.some((r) => r.tool === t))
+  const c = clone()
+  c.rows = c.rows.filter((r) => r.tool !== victim)
+  if (!grade(c).some((f) => f.code === 'ACCEPT_ROW_MISSING' && f.detail.includes(victim))) misses.push(`(c) a claimed tool (${String(victim)}) with no row was not refused`)
+
+  // (d) DISCLOSED with an empty reason (and the same row with the reason restored).
+  const d = clone()
+  const dRow = d.rows.find((r) => r.tool === disclosedRow.tool)
+  const dLevel = ['L2-mounted', 'L3-refusal', 'L4-positive'].find((l) => dRow[l].status === 'DISCLOSED')
+  dRow[dLevel].reason = '   '
+  if (!grade(d).some((f) => f.code === 'ACCEPT_DISCLOSED_UNREASONED')) misses.push('(d) DISCLOSED with an empty reason was not refused')
+
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest ${LEDGER_REL} passes (${String(ledger.rows.length)} rows); (a) PROVEN on a FAIL case, (b) PROVEN on a missing record, (c) claimed ${String(victim)} with no row, (d) DISCLOSED with an empty reason — each refused`
+      : misses.join(' ;; '),
+  }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
