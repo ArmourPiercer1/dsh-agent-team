@@ -316,3 +316,11 @@ ledger `scripts/eslint-node-globals/030-inspect-family.json`.
   after the final push).
 - Post-merge (#398): `diag-call-chain --self-test` OK (49 codes),
   `diag-call-chain.test.mjs` 24/24, `devex-integration.test.mjs` green.
+- Review-round-1 gate ledger: **run-8** red on ONE genuine new failure —
+  the four `process.env` sites added with S9 against the runtime package's
+  minimal ambient `process` type (typecheck leg; the census §7.6 red was
+  downstream of the same). Fixed (`test(inspect): type the swap hook's env
+  access…`, C1 unchanged 34/34). **run-9** at the final head:
+  `DSH-CI-VERDICT pass pass=8 fail=0 skip=0 skipped=none legs=8 refused=0`
+  (census pass, verdict drawn from the identity set, clock declared at
+  `--testTimeout=30000`). Logs `ci-pr-gate-full-8.log` / `…-9.log`.
