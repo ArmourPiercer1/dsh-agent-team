@@ -73,7 +73,24 @@ from args turns S1b RED.
 | `exit_plan_mode` | PROVEN: plan-law pre-PA (`# heading`), PLAN_MODE_NOT_ACTIVE refusal zero-write, approved commit post-consume (P5) | same as above |
 | all | mount: enabled WITHOUT store port → whole assembly refuses `PLANE_AGENT_STATE_STORE_MISSING` (M2); default-DENY template → every call answers `IO_POLICY_UNSUPPORTED / template-default-deny` with zero PA entry and zero store access (D1 — honest fail-closed: the agent-state effect class has NO rule-grammar spelling on this mount; extending the grammar is a named center-interface change, never family self-authorization) | PROVEN live: zero-flip mount + unchanged shipped surface (A); enabled-refused mount with the typed code riding the team.create body + zero placement rows (B) |
 
-## C2 (recorded run `u5-u7-fagentb-x-2026-10-27T00-41-36-828Z`, overall PASS 6/6; declared ≤3 boots, used 2)
+## C2 (RECORDED RUN `u5-u7-fagentb-x-2026-10-27T11-11-55-455Z`, overall PASS 6/6 — the graded `u5-run-record/1`; boot budget this round: 2 declared, 2 used)
+
+- **Review R1 F-4 round**: the committed record is
+  `c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json`
+  — written by the shared runner (`u5-canary-runner --run-record`, the
+  #400/#404 machinery: `createRunRecord` + `readAuthorityBinding`,
+  FINALIZED before write: `schema u5-run-record/1`, `overall=PASS`,
+  `finishedAt`, `bindings.teamSha=d435db655`, `bindings.hostSha` = the
+  `tests/paths.mjs` pin, `bindings.authority` = LIVE pointer
+  `as20261026r1` + pointerSha256 + snapshotDigest), with its
+  `c2/budget-ledger.jsonl` showing EXACTLY the two starts. Re-run on the
+  post-merge tree; stdout `c2/run6-recorded-stdout.txt`.
+- The FIVE earlier `*.u7fagentb-evidence.json` (runs 1–5,
+  `2026-10-27T00-24-37-205Z` … `00-41-36-828Z`) are **PRE-REVIEW BOOT
+  PAYLOAD DIGESTS — NOT RUN RECORDS**: they carry no `schema` key (so
+  eb3-run-manifest does not grade them) and no `overall`/`finishedAt`/
+  `bindings.authority`; per the review's option they are kept unedited
+  and labelled here, superseded by the record above.
 
 - boot A (`agentStateEnabled` ABSENT): plane mounts exactly as shipped
   (`a5g7: placement-feed rows=[…]` + `a5ptc: census-boot`), ZERO family
@@ -90,10 +107,11 @@ from args turns S1b RED.
   refused the mount … (code: PLANE_AGENT_STATE_STORE_MISSING)` — the
   runner's own scan witnesses it (`team-create-body` channel); zero
   placement rows, zero census-boot, zero RAN witnesses behind it.
-- boot accounting: 5 runner invocations (10 host starts) are disclosed in
+- boot accounting: 6 runner invocations (12 host starts) are disclosed in
   `c2/` — runs 1–2 diagnosed witness channels, run 3 kept homes for the
   post-mortem, run 4 carried a swallowed drive-phase error so it is NOT the
-  record, run 5 is the clean record (stdout files beside this README).
+  record, run 5 was the clean pre-review record (stdout files beside this
+  README), run 6 is THE graded record above.
   `tests/homes/` empty after; pristine test-use byte-clean @ `639ed01539`.
 
 DISCLOSED-NO-SEAM (never coloured PASS): the enabled-and-store-mounted
@@ -166,3 +184,51 @@ row NAMES only, so a swapped body would have kept the digest: the control
 was right, the lane was wrong → the digest now binds each row's name +
 `execute?.toString?.()` + parameters (fs/search precedent); controls now
 16/16, definitions/boundaries/trusted-sources all pass findings 0.
+
+## Review R1 fix round (review `dev/agent-workflow/evidence/u7-407-review-r1/REVIEW.md` @ branch task/u7-407-review-r1-20261027, head 1a2321cf2)
+
+- **F-1 (Medium)** `state-store.mjs`: `log.writes` is the durable-write
+  audit — entries exist IFF the apply COMMITTED; refusals/replays record
+  on a separate `log.attempts` ledger (outcome + typed code). RED-first:
+  the five `u7fb W` legs failed against the old store verbatim as the
+  review predicted (`R1-F1-store-writes-RED.txt`: replay-2 wrote
+  `writes.length` 2), green after the fix.
+- **F-2 (Medium)** `executors.mjs`: `scopeOf` is BYTE-EXACT
+  (`agent:${id}`, no trim/fold; string+non-empty check only). Host law
+  cited at the use: ids minted `brandString<SessionId>(\`session-${uuid}\`)`
+  (`tests/deepseek-harness-test-use/…/session-controller/src/commands.ts:109`,
+  also :266) and resolved by exact `Map.get` (commands.ts:450) — no
+  canonicalisation law exists. New `S2` leg: `"a"`, `"a "`, `" a"` are
+  three distinct scopes; cross-write with a's exact ref refuses
+  `GOAL_NOT_FOUND` with zero reach. Planted-trim control leaked a's goal
+  into `"a "` — RED proof in `R1-F2-scope-trim-RED.txt`.
+- **F-3 (Low)** `contribution.mjs`: `effects.kinds` is DERIVED from the
+  one per-row `AGENT_STATE_EFFECT_ARMS` table, never an independent
+  literal; the closed governance schema (`contribution-schema.ts`
+  `EFFECTS_KEYS=[declared,kinds,targets]`, arc-a-protected — DISCLOSED:
+  the byRow face the review sketched is not representable there: an
+  extra key is `INVALID_CONTRIBUTION: UNKNOWN_FIELD`, mount refused)
+  keeps per-row pinning in the exported table + `outputContractDigest`
+  (now binding name+arms per row) + new E2 legs (each row's PA-observed
+  arms === table row). Planted controls BOTH directions RED:
+  `R1-F3-mc-executor-RED.txt`, `R1-F3-mc-table-RED.txt`. C1 45→**52/52**.
+- **F-4 (Low)**: see C2 section — graded run record committed via the
+  shared `--run-record` machinery (the #400/#404 pattern; runner
+  FINALIZES before write), five pre-review digests labelled, NOT edited.
+- **Master merge `e004c25c6`** (#400 #402 #404 #406): resolutions =
+  manifest keep-both + `gen-family-index`/`place-dist-glue` REGEN (never
+  hand-merged index), census ledger union, LANE_EDGES/LANE_ID_BY_LANE
+  union (boundaries 63 files 0 findings), PR1_CONSUMERS + a5p0 union
+  (alphabetical), seam test = master's DERIVED-count form, dist-placements
+  prefix 070→**090** and suite file `070-u7-fagentb.mjs` →
+  **`090-u7-fagentb.mjs`** (070/080 taken). REGISTRIES SILENT-DROP caught:
+  master's rewritten block auto-merged WITHOUT my u7-fagentb booking →
+  re-booked (NINE suites, registries 12/12).
+- **Master-side inherited red (disclosed, NOT lane-caused, NOT fixed —
+  different lane's check)**: `tests/checks/dist-placements.test.mjs`
+  fails 5/9 IDENTICALLY on clean `origin/master` (hardcoded 38-placement
+  snapshot vs 73 real; mirror-parity filter can't see `.json` placements)
+  — captured verbatim in `master-side-dist-placements-RED.txt` from a
+  detached probe worktree of `origin/master`; the file is in no hosted
+  gate list (the lanes that broke it merged green).
+
