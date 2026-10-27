@@ -18,19 +18,47 @@
  * differently and can never alias.
  *
  * DURABILITY + ATOMICITY. A write is fully applied or not at all: the record
- * is written to a fresh temp file in the SAME directory, `fsync`ed, then
- * `rename`d over the target, and the directory is `fsync`ed. A crash can
- * therefore never leave a half-goal; the reader sees the old bytes or the new
- * bytes, never a torn record.
+ * is written to a fresh `O_EXCL` temp file in the SAME (pinned) directory,
+ * `fsync`ed, then `rename`d over the target, and the directory is `fsync`ed.
+ * A crash can therefore never leave a half-goal; the reader sees the old bytes
+ * or the new bytes, never a torn record.
  *
- * REPLAY / CAS. `applyId` (the PA call correlation) is the durable
- * idempotence anchor: consuming it is an EXCLUSIVE CREATE of its own marker
- * file (`wx`), which is atomic on every POSIX filesystem, so a consumed grant
- * cannot apply twice even across a restart. Order is consume-THEN-commit: a
- * crash between the two loses the mutation but can never double-apply it
- * (at-most-once, the direction the law requires). `expectedRevision` CAS and
- * the create/already-exists leg mirror `createRecordingStateStore` exactly —
- * the fake is the specification.
+ * CONTAINMENT ON EVERY OPERATION (review B-1). Nothing is cached: EVERY read
+ * and EVERY write re-walks the store subtree from the resolved home one
+ * component at a time, opening each directory `O_DIRECTORY | O_NOFOLLOW`
+ * RELATIVE TO THE PREVIOUS DIRECTORY'S DESCRIPTOR (`/proc/self/fd/<n>/<seg>`
+ * — openat semantics on Linux), so a component swapped for a symlink is
+ * refused (`AGENT_STATE_STORE_PATH_REFUSED`) and every byte lands in the
+ * directory whose identity was just proven, never in a path re-resolved
+ * later. The final descriptor's realpath is re-checked to equal the expected
+ * location under the home before the operation. Where `/proc/self/fd` is
+ * absent the walk falls back to per-component `lstat` + realpath checks on
+ * every operation (a residual check-to-use window, disclosed).
+ *
+ * SERIALISATION (review B-2). Every apply holds an exclusive per-scope lock
+ * (`locks/<scope-digest>.lock`, created `O_EXCL`, shared by every store
+ * instance and process on the same home) across read → CAS check → commit,
+ * so two concurrent appliers at the same `expectedRevision` cannot both win:
+ * the second reads the first's committed revision and answers
+ * `GOAL_STALE_REVISION` with zero writes. Creating a NEW scope additionally
+ * holds the realm lock while the per-realm scope count is checked (lock order
+ * is always scope → realm). Stale-owner policy: a lock whose holder pid is
+ * dead on this host, or that is older than `lockStaleMs`, is broken by an
+ * atomic rename-aside (only one breaker wins; a breaker that grabbed a fresh
+ * lock restores it). A lock that cannot be taken within `lockTimeoutMs`
+ * refuses typed (`AGENT_STATE_STORE_LOCK_TIMEOUT`) with zero write.
+ *
+ * REPLAY. `applyId` (the PA call correlation) is the durable idempotence
+ * anchor, and its consumption is COUPLED TO THE COMMIT: the committed record
+ * itself carries the applied id (`appliedIds`, the last 256 in that scope)
+ * in the same atomic rename, and the global `applied/` marker is written only
+ * AFTER the commit. Under the scope lock a replay is refused
+ * (`STATE_APPLY_REPLAY`, zero persistence) if EITHER witness holds the id.
+ * Consequences of the order: a crash BEFORE the rename leaves no witness, so
+ * the grant is NOT consumed and the same call may apply later; a crash AFTER
+ * the rename leaves the id in the record, so the replay is still refused.
+ * `expectedRevision` CAS and the create/already-exists leg mirror
+ * `createRecordingStateStore` exactly — the fake is the specification.
  *
  * THE ATTEMPT/WRITE LEDGERS ARE DURABLE, not in-memory testimony:
  *   ledger/attempts.jsonl — one line per APPLY call with its outcome.
@@ -42,19 +70,26 @@
  *
  * BOUNDS. A per-scope record is bounded (`maxScopeBytes`) and every read is
  * bounded to that bound: an oversized record refuses typed, never a
- * truncated read that would parse into a plausible-but-wrong state.
+ * truncated read that would parse into a plausible-but-wrong state. The
+ * number of scope records per realm is bounded (`maxScopes`, default 1024):
+ * creating one past the bound refuses typed (`AGENT_STATE_STORE_SCOPE_LIMIT`)
+ * with zero write, so a model-driven caller cannot exhaust the disk with
+ * unbounded scopes.
  *
  * HARD LINK LAW. Reads go through {safeReadRecord} — component-free
  * `O_RDONLY | O_NOFOLLOW` open of the final path, `fstat` through the
  * descriptor, refuse unless it is a regular file with `nlink === 1` inside
  * the size bound, then read the SAME descriptor (no path re-resolution
  * between check and read). A symlink or a hardlink alias is refused typed.
- *   // TODO(#409): replace with hardlinkAliasVerdict from controlled-fs once
- *   // merged. #409 (origin/task/u7-fixfwd-20261027, 139f566a3 "fix(fs-law):
- *   // read paths refuse hardlink aliases") is NOT on master at this branch
- *   // point, and this lane must not vendor an unmerged symbol; the nlink>1
- *   // refusal above is pinned by its own test so the swap is a behaviour-
- *   // preserving edit.
+ *   The shared #409 law (`hardlinkAliasVerdict`, controlled-fs
+ *   `open-at-exec.ts:82`, on master since a264d2df0) is NOT imported, on
+ *   purpose: it is not part of controlled-fs's public face (`index.ts:40-48`
+ *   exports `NO_RECHECK`/`isBeneath`/`verifyOpenedHandle` only), it lives in a
+ *   compiled `.ts` lane this lane has no booked edge to (eb3-family-boundaries
+ *   LANE_EDGES: `node:*` + domain/tool-governance only), and adding that edge
+ *   would bind a `node:*`-only lane to a build-order dependency. The refusal
+ *   below applies the same rule (nlink > 1 ⇒ refused before any byte) and
+ *   carries the shared law's detail sentence; C1 K1 pins it.
  *
  * PURITY: `node:*` only (the lane's booked edge). No import of the plane, the
  * governance center, another family lane, or any Host internal.
@@ -62,11 +97,12 @@
  * @module tools/agent-state-family/fs-state-store
  */
 import { Buffer } from 'node:buffer'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { constants as fsConstants, promises as fsp, realpathSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { isAbsolute, join, sep } from 'node:path'
+import { isAbsolute, join, relative, sep } from 'node:path'
 import process from 'node:process'
+import { setTimeout as delayFor } from 'node:timers/promises'
 
 /** The durable subtree this store owns, relative to the harness home. */
 export const STATE_STORE_SUBTREE = Object.freeze(['team-state', 'agent-state'])
@@ -76,10 +112,26 @@ export const STATE_STORE_SUBTREE = Object.freeze(['team-state', 'agent-state'])
 export const MAX_SCOPE_BYTES = 256 * 1024
 /** The per-ledger-line bound (attempt/write lines are tiny). */
 export const MAX_LEDGER_LINE_BYTES = 8 * 1024
+/** The per-realm scope-record bound (review round 1, item 2). */
+export const MAX_SCOPES_PER_REALM = 1024
+/** How many committed applyIds a scope record remembers (the replay witness
+ *  coupled to the commit; the global marker covers anything older). */
+export const APPLIED_IDS_KEPT = 256
+const LOCK_TIMEOUT_MS = 10_000
+const LOCK_STALE_MS = 30_000
 
 const RECORD_SCHEMA = 'agent-state-scope/1'
-const OPEN_NOFOLLOW = (fsConstants.O_RDONLY ?? 0) | (fsConstants.O_NOFOLLOW ?? 0)
-const CREATE_EXCLUSIVE = (fsConstants.O_WRONLY ?? 0) | (fsConstants.O_CREAT ?? 0) | (fsConstants.O_EXCL ?? 0)
+const NOFOLLOW = fsConstants.O_NOFOLLOW ?? 0
+const OPEN_NOFOLLOW = (fsConstants.O_RDONLY ?? 0) | NOFOLLOW
+const OPEN_DIR = (fsConstants.O_RDONLY ?? 0) | (fsConstants.O_DIRECTORY ?? 0) | NOFOLLOW
+const CREATE_EXCLUSIVE = (fsConstants.O_WRONLY ?? 0) | (fsConstants.O_CREAT ?? 0) | (fsConstants.O_EXCL ?? 0) | NOFOLLOW
+const APPEND_NOFOLLOW = (fsConstants.O_WRONLY ?? 0) | (fsConstants.O_CREAT ?? 0) | (fsConstants.O_APPEND ?? 0) | NOFOLLOW
+const PATH_REFUSED = 'AGENT_STATE_STORE_PATH_REFUSED'
+/** openat-equivalent availability: Linux exposes every open descriptor as a
+ *  directory path under /proc/self/fd, and a path RELATIVE to that entry is
+ *  resolved from the descriptor, not by re-walking the original path. */
+const PROC_FD = (() => { try { return statSync('/proc/self/fd').isDirectory() } catch { return false } })()
+const sleep = (ms) => delayFor(ms)
 
 const typedError = (code, detail) => {
   const error = new Error(`${code}: ${detail}`)
@@ -166,20 +218,6 @@ export function storeRootFor(home, realmId) {
   return { ok: true, rootDir: join(home, ...STATE_STORE_SUBTREE, realmId) }
 }
 
-/** fsync one directory so a rename is durable, not merely visible. */
-const fsyncDir = async (dir) => {
-  let handle
-  try {
-    handle = await fsp.open(dir, fsConstants.O_RDONLY)
-    await handle.sync()
-  } catch {
-    /* directory fsync is unavailable on some platforms/filesystems; the
-     * rename itself is still atomic, which is the crash-safety requirement. */
-  } finally {
-    if (handle !== undefined) { try { await handle.close() } catch { /* closed */ } }
-  }
-}
-
 /**
  * The ONE safe-read leg. Open the final path with `O_NOFOLLOW` (so a symlink
  * is ELOOP, never followed), `fstat` THROUGH the descriptor, refuse anything
@@ -203,16 +241,17 @@ export async function safeReadRecord(path, limit = MAX_SCOPE_BYTES) {
     const stat = await handle.stat()
     if (!stat.isFile()) return refusal('AGENT_STATE_STORE_NOT_A_FILE', 'the state record is not a regular file')
     if (stat.nlink !== 1) {
-      // TODO(#409): replace with hardlinkAliasVerdict once merged (see header).
-      return refusal('AGENT_STATE_STORE_ALIAS_REFUSED', `the state record has ${String(stat.nlink)} hard links; an aliased durable fact is refused (the hardlink law)`)
+      // The shared #409 rule and sentence (controlled-fs open-at-exec.ts:82),
+      // applied in-lane — see the header for why the symbol is not imported.
+      return refusal('AGENT_STATE_STORE_ALIAS_REFUSED', `hardlink-alias: the file has ${String(stat.nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`)
     }
     if (stat.size > limit) {
       return refusal('AGENT_STATE_STORE_OVERSIZED', `the state record is ${String(stat.size)} bytes, over the ${String(limit)}-byte bound for one scope (refused, never truncated into a plausible state)`)
     }
-    const buffer = Buffer.allocUnsafe(limit)
+    const buffer = Buffer.allocUnsafe(limit + 1)
     let offset = 0
     for (;;) {
-      const { bytesRead } = await handle.read(buffer, offset, limit - offset, offset)
+      const { bytesRead } = await handle.read(buffer, offset, limit + 1 - offset, offset)
       if (bytesRead === 0) break
       offset += bytesRead
       if (offset > limit) return refusal('AGENT_STATE_STORE_OVERSIZED', `the state record grew past the ${String(limit)}-byte bound mid-read (refused)`)
@@ -225,22 +264,90 @@ export async function safeReadRecord(path, limit = MAX_SCOPE_BYTES) {
   }
 }
 
+/**
+ * Walk `anchor/<segments…>` ONE component at a time and return the final
+ * directory pinned (review B-1). Each component is opened `O_DIRECTORY |
+ * O_NOFOLLOW` relative to the previous component's DESCRIPTOR, so a
+ * component swapped for a symlink (or a file) is refused, and the returned
+ * `path` addresses the proven directory itself (`/proc/self/fd/<n>`), not a
+ * name that could be re-resolved later. The final realpath must equal the
+ * expected location. `create: false` answers `{absent: true}` when a
+ * component simply does not exist (a read of a store never written).
+ *
+ * Exported for C1 only.
+ */
+export async function openStoreDir(anchor, segments, { create }) {
+  const realAnchor = await fsp.realpath(anchor)
+  const expected = join(realAnchor, ...segments)
+  const refuse = (detail) => typedError(PATH_REFUSED, `${detail} — refused before any byte (the store subtree must be real directories beneath ${realAnchor})`)
+  if (!PROC_FD) {
+    // Fallback (no openat face): per-component lstat + final realpath, on
+    // EVERY operation. Residual check-to-use window, disclosed in the header.
+    let cur = realAnchor
+    for (const seg of segments) {
+      cur = join(cur, seg)
+      let st
+      try { st = await fsp.lstat(cur) } catch (error) {
+        if (error?.code !== 'ENOENT') throw error
+        if (!create) return { absent: true, close: async () => {} }
+        try { await fsp.mkdir(cur, { mode: 0o700 }) } catch (e) { if (e?.code !== 'EEXIST') throw e }
+        st = await fsp.lstat(cur)
+      }
+      if (!st.isDirectory() || st.isSymbolicLink()) throw refuse(`store component ${cur} is not a real directory`)
+    }
+    if ((await fsp.realpath(cur)) !== expected) throw refuse(`store directory ${cur} does not resolve to ${expected}`)
+    const handle = await fsp.open(cur, OPEN_DIR)
+    return { path: cur, handle, close: async () => { try { await handle.close() } catch { /* closed */ } } }
+  }
+  const handles = []
+  const closeAll = async () => { for (const h of handles.reverse()) { try { await h.close() } catch { /* closed */ } } }
+  try {
+    let handle
+    try { handle = await fsp.open(realAnchor, OPEN_DIR) } catch (error) {
+      if (error?.code === 'ELOOP' || error?.code === 'ENOTDIR') throw refuse(`the home ${realAnchor} is not a real directory`)
+      throw error
+    }
+    handles.push(handle)
+    for (const seg of segments) {
+      const parent = `/proc/self/fd/${String(handle.fd)}`
+      if (create) {
+        try { await fsp.mkdir(`${parent}/${seg}`, { mode: 0o700 }) } catch (error) { if (error?.code !== 'EEXIST') throw error }
+      }
+      try { handle = await fsp.open(`${parent}/${seg}`, OPEN_DIR) } catch (error) {
+        if (error?.code === 'ENOENT' && !create) { await closeAll(); return { absent: true, close: async () => {} } }
+        if (error?.code === 'ELOOP' || error?.code === 'ENOTDIR') throw refuse(`store component '${seg}' is a symlink or not a directory`)
+        throw error
+      }
+      handles.push(handle)
+    }
+    const path = `/proc/self/fd/${String(handle.fd)}`
+    const real = await fsp.realpath(path)
+    if (real !== expected || !sameOrUnder(real, realAnchor)) throw refuse(`the pinned store directory resolves to ${real}, not ${expected}`)
+    return { path, handle, close: closeAll }
+  } catch (error) {
+    await closeAll()
+    throw error
+  }
+}
+
 /** The default byte-writer: the whole text through the open descriptor. */
 const writeAll = async (handle, text) => { await handle.writeFile(text, 'utf8') }
 
-/** Atomic durable replace: temp file in the SAME directory, fsync, rename,
- *  fsync the directory. Never a partial record. `writeBytes` is the C1
- *  crash-simulation seam (a test may make it write half the bytes and then
- *  die); production always uses {writeAll}. */
-async function atomicWrite(dir, filename, text, writeBytes = writeAll) {
-  await fsp.mkdir(dir, { recursive: true })
-  const target = join(dir, filename)
-  const temp = join(dir, `.${filename}.${process.pid}.${Date.now().toString(36)}.tmp`)
+/** Atomic durable replace INSIDE a pinned directory: `O_EXCL|O_NOFOLLOW` temp,
+ *  fsync, rename, fsync the directory descriptor. `writeBytes` is the C1
+ *  crash-simulation seam; production always uses {writeAll}. */
+async function atomicWriteIn(dir, filename, text, writeBytes = writeAll) {
+  const temp = `${dir.path}/.${filename}.${String(process.pid)}.${randomUUID()}.tmp`
+  const target = `${dir.path}/${filename}`
   let handle
   try {
     handle = await fsp.open(temp, CREATE_EXCLUSIVE, 0o600)
     await writeBytes(handle, text)
     await handle.sync()
+  } catch (error) {
+    if (handle !== undefined) { try { await handle.close() } catch { /* closed */ } handle = undefined }
+    try { await fsp.unlink(temp) } catch { /* best effort */ }
+    throw error
   } finally {
     if (handle !== undefined) { try { await handle.close() } catch { /* closed */ } }
   }
@@ -250,20 +357,18 @@ async function atomicWrite(dir, filename, text, writeBytes = writeAll) {
     try { await fsp.unlink(temp) } catch { /* best effort */ }
     throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the atomic rename failed: ${String(error?.code ?? error)}`)
   }
-  await fsyncDir(dir)
+  try { await dir.handle.sync() } catch { /* directory fsync unsupported here; the rename is still atomic */ }
 }
 
-/** Append one bounded line to a durable JSONL ledger, fsynced. */
-async function appendLedgerLine(dir, filename, entry) {
+/** Append one bounded line to a durable JSONL ledger inside a pinned dir. */
+async function appendLineIn(dir, filename, entry) {
   const line = `${JSON.stringify(entry)}\n`
   if (Buffer.byteLength(line, 'utf8') > MAX_LEDGER_LINE_BYTES) {
     throw typedError('AGENT_STATE_STORE_OVERSIZED', `a ledger line exceeded ${String(MAX_LEDGER_LINE_BYTES)} bytes`)
   }
-  await fsp.mkdir(dir, { recursive: true })
-  const path = join(dir, filename)
   let handle
   try {
-    handle = await fsp.open(path, fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_APPEND, 0o600)
+    handle = await fsp.open(`${dir.path}/${filename}`, APPEND_NOFOLLOW, 0o600)
     await handle.writeFile(line, 'utf8')
     await handle.sync()
   } finally {
@@ -279,6 +384,74 @@ export async function ledgerBytes(dir, filename = 'writes.jsonl') {
     return stat.size
   } catch {
     return 0
+  }
+}
+
+const pidDead = (pid) => {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return false
+  try { process.kill(pid, 0); return false } catch (error) { return error?.code === 'ESRCH' }
+}
+async function readLockFile(path) {
+  try {
+    const read = await safeReadRecord(path, 4096)
+    if (read.ok === true) {
+      const parsed = JSON.parse(read.text)
+      if (parsed !== null && typeof parsed === 'object' && typeof parsed.nonce === 'string') return parsed
+    }
+  } catch { /* fall through to the mtime view */ }
+  try {
+    const st = await fsp.lstat(path)
+    return { nonce: null, pid: null, at: st.mtimeMs }
+  } catch {
+    return null // vanished: retry the create
+  }
+}
+
+/**
+ * The exclusive lock (review B-2): `O_EXCL` create of `<dir>/<name>` carrying
+ * `{pid, nonce, at}`. Returns the release function (which removes the lock
+ * only if it is still ours). Stale-owner policy in the module header.
+ */
+async function acquireLock(dir, name, { timeoutMs, staleMs }) {
+  const path = `${dir.path}/${name}`
+  const nonce = randomUUID()
+  const body = JSON.stringify({ pid: process.pid, nonce, at: Date.now() })
+  const started = Date.now()
+  let delay = 2
+  for (;;) {
+    let handle
+    try {
+      handle = await fsp.open(path, CREATE_EXCLUSIVE, 0o600)
+      try { await handle.writeFile(body, 'utf8') } finally { await handle.close() }
+      return async () => {
+        const held = await readLockFile(path)
+        if (held?.nonce === nonce) { try { await fsp.unlink(path) } catch { /* already gone */ } }
+      }
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock ${name} could not be created: ${String(error?.code ?? error)}`)
+    }
+    const holder = await readLockFile(path)
+    const stale = holder !== null && ((holder.pid !== null && holder.pid !== process.pid && pidDead(holder.pid))
+      || (typeof holder.at === 'number' && Date.now() - holder.at > staleMs))
+    if (stale) {
+      // Break by rename-aside: exactly one breaker wins the rename; the winner
+      // verifies it took the SAME stale lock it judged, else restores it.
+      const aside = `${dir.path}/.${name}.broken.${randomUUID()}`
+      try {
+        await fsp.rename(path, aside)
+        const taken = await readLockFile(aside)
+        if (taken !== null && taken.nonce !== holder.nonce) {
+          try { await fsp.link(aside, path) } catch { /* someone already re-locked */ }
+        }
+        try { await fsp.unlink(aside) } catch { /* best effort */ }
+      } catch { /* another breaker won */ }
+      continue
+    }
+    if (Date.now() - started > timeoutMs) {
+      throw typedError('AGENT_STATE_STORE_LOCK_TIMEOUT', `the ${name} lock is held by another applier (pid ${String(holder?.pid)}) for longer than ${String(timeoutMs)} ms — refused, nothing written`)
+    }
+    await sleep(delay)
+    delay = Math.min(delay * 2, 50)
   }
 }
 
@@ -350,64 +523,57 @@ export function createHostArmProvider({ hostService }) {
  *  Hashing is not normalisation — the key is still stored and compared
  *  verbatim; the digest only keeps an arbitrary id from shaping a path. */
 const recordName = (scope) => `${digestOf(scope)}.json`
+const lockName = (scope) => `${digestOf(scope)}.lock`
 const markerName = (applyId) => `${digestOf(`apply:${String(applyId)}`)}.mark`
+const REALM_LOCK = '_realm.lock'
 
 /**
  * @param {object} input
  * @param {string} input.rootDir   the realm's store root (`<home>/team-state/agent-state/<realmId>`).
  * @param {string} [input.anchorDir] the resolved harness home the root must
- *        stay beneath; checked by REALPATH on first use (a symlinked
- *        `team-state` component pointing elsewhere is refused before any write).
+ *        stay beneath; EVERY operation re-walks root → home (B-1).
  * @param {string} input.realmId
  * @param {(scope: string) => object} [input.armProvider] execution-origin arm;
  *        default answers `{kind:'model'}` (the conservative arm).
  * @param {number} [input.maxScopeBytes]
+ * @param {number} [input.maxScopes]      per-realm scope-record bound.
+ * @param {number} [input.lockTimeoutMs]
+ * @param {number} [input.lockStaleMs]
  * @param {() => string} [input.nowIso] persistence clock (the store owns it).
  * @param {(handle: import('node:fs').promises.FileHandle, text: string) => Promise<void>} [input.recordWriter]
- *        C1 crash-simulation seam ONLY (writes the record bytes into the open
- *        temp descriptor). The descriptor never passes it.
+ *        C1 crash-simulation seam ONLY. The descriptor never passes it.
+ * @param {(point: string) => void | Promise<void>} [input.faultAt]
+ *        C1 crash-simulation seam ONLY ('after-commit' fires between the
+ *        record rename and the marker). The descriptor never passes it.
  */
 export function createFsStateStore({
   rootDir, realmId, anchorDir = rootDir, armProvider = () => Object.freeze({ kind: 'model' }),
-  maxScopeBytes = MAX_SCOPE_BYTES, nowIso = () => new Date().toISOString(),
-  recordWriter = writeAll,
+  maxScopeBytes = MAX_SCOPE_BYTES, maxScopes = MAX_SCOPES_PER_REALM,
+  lockTimeoutMs = LOCK_TIMEOUT_MS, lockStaleMs = LOCK_STALE_MS,
+  nowIso = () => new Date().toISOString(),
+  recordWriter = writeAll, faultAt = () => {},
 }) {
-  if (typeof rootDir !== 'string' || !isAbsolute(rootDir)) {
-    throw typedError('AGENT_STATE_STORE_HOME_INVALID', 'the store root must be an absolute path')
+  if (typeof rootDir !== 'string' || !isAbsolute(rootDir) || typeof anchorDir !== 'string' || !isAbsolute(anchorDir)) {
+    throw typedError('AGENT_STATE_STORE_HOME_INVALID', 'the store root and its anchor must be absolute paths')
   }
-  const scopeDir = join(rootDir, 'scopes')
-  const markerDir = join(rootDir, 'applied')
-  const ledgerDir = join(rootDir, 'ledger')
+  const rel = relative(anchorDir, rootDir)
+  if (rel.startsWith('..') || isAbsolute(rel)) throw typedError(PATH_REFUSED, `the store root ${rootDir} is not beneath its anchor ${anchorDir}`)
+  const rootSegs = rel === '' ? [] : rel.split(sep)
+  const ledgerDirPath = join(rootDir, 'ledger')
   // In-memory mirrors of the durable ledgers, in the same shape the C1 fake
-  // exposes (`log.reads` / `log.attempts` / `log.writes`) so the same
-  // assertions read the production store.
+  // exposes (`log.reads` / `log.attempts` / `log.writes`).
   const log = { reads: [], writes: [], attempts: [] }
-  let dirReady = false
-  /** Anchor law: create the realm root, then prove by REALPATH that it (and
-   *  every directory the store will write into) still sits beneath the
-   *  resolved home. A symlinked component that redirects the subtree is
-   *  refused before the first byte is written. */
-  const ensureDirs = async () => {
-    if (dirReady) return
-    await fsp.mkdir(rootDir, { recursive: true })
-    const realAnchor = await fsp.realpath(anchorDir)
-    for (const dir of [rootDir, scopeDir, markerDir, ledgerDir]) {
-      await fsp.mkdir(dir, { recursive: true })
-      const real = await fsp.realpath(dir)
-      if (!sameOrUnder(real, realAnchor) || real !== dir) {
-        throw typedError('AGENT_STATE_STORE_PATH_REFUSED', `the store directory ${dir} resolves to ${real}, outside (or aliased away from) the sanctioned home ${realAnchor} — refused before any write`)
-      }
-    }
-    dirReady = true
-  }
-  /** Containment: every path this store touches must sit beneath its root. */
-  const inside = (path) => sameOrUnder(path, rootDir)
 
-  const readState = async (scope) => {
-    await ensureDirs()
-    const path = join(scopeDir, recordName(scope))
-    if (!inside(path)) throw typedError('AGENT_STATE_STORE_PATH_REFUSED', 'resolved a path outside the store root')
-    const read = await safeReadRecord(path, maxScopeBytes)
+  /** Pin `<root>/<sub>` for ONE operation (no cache — review B-1). */
+  const dirOf = async (sub, create) => {
+    if (create && rootSegs.length === 0) await fsp.mkdir(anchorDir, { recursive: true })
+    return await openStoreDir(anchorDir, sub === null ? rootSegs : [...rootSegs, sub], { create })
+  }
+  const withDir = async (sub, create, fn) => {
+    const dir = await dirOf(sub, create)
+    try { return await fn(dir) } finally { await dir.close() }
+  }
+  const parseRecord = (scope, read) => {
     if (read.ok !== true) {
       if (read.absent === true) return null
       throw typedError(read.code, read.detail)
@@ -425,9 +591,23 @@ export function createFsStateStore({
     }
     return parsed
   }
-  const writeState = async (scope, patch) => {
-    await ensureDirs()
-    const current = await readState(scope)
+  const readState = async (scope) => {
+    const dir = await dirOf('scopes', false)
+    try {
+      if (dir.absent === true) return null
+      return parseRecord(scope, await safeReadRecord(`${dir.path}/${recordName(scope)}`, maxScopeBytes))
+    } finally { await dir.close() }
+  }
+  /** Hold the scope lock for `fn` (every apply/seed). */
+  const underScopeLock = async (scope, fn) => withDir('locks', true, async (locks) => {
+    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs })
+    try { return await fn(locks) } finally { await release() }
+  })
+  /** Commit `patch` onto the CURRENT record (caller holds the scope lock). */
+  const commitState = async (scope, locks, current, patch, applyId) => {
+    const appliedIds = applyId === undefined
+      ? (current?.appliedIds ?? [])
+      : [...(current?.appliedIds ?? []), String(applyId)].slice(-APPLIED_IDS_KEPT)
     const next = {
       schema: RECORD_SCHEMA,
       key: scope,
@@ -435,35 +615,47 @@ export function createFsStateStore({
       goal: current?.goal ?? null,
       todos: current?.todos ?? null,
       planMode: current?.planMode ?? { active: false, pendingIntents: [] },
-      updatedAt: nowIso(),
       ...patch,
+      appliedIds,
+      updatedAt: nowIso(),
     }
     const text = `${JSON.stringify(next)}\n`
     if (Buffer.byteLength(text, 'utf8') > maxScopeBytes) {
       throw typedError('AGENT_STATE_STORE_OVERSIZED', `the record would be over the ${String(maxScopeBytes)}-byte per-scope bound (refused; nothing written)`)
     }
-    await atomicWrite(scopeDir, recordName(scope), text, recordWriter)
-    return next
-  }
-  /** Consume an applyId durably and atomically. `wx` is the CAS. */
-  const consume = async (applyId) => {
-    await ensureDirs()
-    const path = join(markerDir, markerName(applyId))
-    if (!inside(path)) throw typedError('AGENT_STATE_STORE_PATH_REFUSED', 'resolved a marker path outside the store root')
+    const write = async () => withDir('scopes', true, async (scopes) => {
+      await atomicWriteIn(scopes, recordName(scope), text, recordWriter)
+    })
+    if (current !== null) return await write()
+    // A NEW scope: the realm lock serialises the count against concurrent creators.
+    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs })
     try {
-      const handle = await fsp.open(path, CREATE_EXCLUSIVE, 0o600)
-      try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
-      await fsyncDir(markerDir)
-      return true
-    } catch (error) {
-      if (error?.code === 'EEXIST') return false
-      throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the apply marker could not be written: ${String(error?.code ?? error)}`)
-    }
+      const count = await withDir('scopes', true, async (scopes) => (await fsp.readdir(scopes.path)).filter((n) => n.endsWith('.json')).length)
+      if (count >= maxScopes) {
+        throw typedError('AGENT_STATE_STORE_SCOPE_LIMIT', `this realm already holds ${String(count)} scope records (bound ${String(maxScopes)}); a new scope is refused with zero write`)
+      }
+      return await write()
+    } finally { await release() }
   }
-  /** Roll a consumed marker back when the commit behind it failed, so a
-   *  transient write fault does not silently burn a grant. */
-  const unconsume = async (applyId) => {
-    try { await fsp.unlink(join(markerDir, markerName(applyId))) } catch { /* best effort */ }
+  const markerPresent = async (applyId) => {
+    const dir = await dirOf('applied', false)
+    try {
+      if (dir.absent === true) return false
+      try { await fsp.lstat(`${dir.path}/${markerName(applyId)}`); return true } catch (error) {
+        if (error?.code === 'ENOENT') return false
+        throw error
+      }
+    } finally { await dir.close() }
+  }
+  /** The global marker, written AFTER the commit (the record already holds
+   *  the id, so a failure here can only lose a redundant witness). */
+  const writeMarker = async (applyId) => {
+    try {
+      await withDir('applied', true, async (dir) => {
+        const handle = await fsp.open(`${dir.path}/${markerName(applyId)}`, CREATE_EXCLUSIVE, 0o600)
+        try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
+      })
+    } catch { /* redundant witness; the committed record carries the id */ }
   }
   const attemptEntry = (op, scope, resource, applyId) => {
     const entry = { op, scope, key: `${scope}/${resource}`, applyId, outcome: 'refused' }
@@ -471,11 +663,47 @@ export function createFsStateStore({
     return entry
   }
   const finishAttempt = async (entry) => {
-    try { await appendLedgerLine(ledgerDir, 'attempts.jsonl', entry) } catch { /* the ledger is best-effort on the refusal path; the ANSWER is not */ }
+    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'attempts.jsonl', entry)) } catch { /* best-effort on the refusal path; the ANSWER is not */ }
   }
   const commitWrite = async (entry) => {
     log.writes.push(entry)
-    await appendLedgerLine(ledgerDir, 'writes.jsonl', entry)
+    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'writes.jsonl', entry)) } catch { /* the commit already happened; the audit line is lost, never the state */ }
+  }
+
+  /**
+   * The ONE apply walk for all three mutations: scope lock → replay witnesses
+   * → fresh read → the op's own precondition legs → commit (record carries
+   * the applyId) → fault seam → marker → ledgers.
+   */
+  const applyUnder = async ({ scope, op, resource, applyId, decide }) => {
+    const attempt = attemptEntry(op, scope, resource, applyId)
+    try {
+      return await underScopeLock(scope, async (locks) => {
+        const current = await readState(scope)
+        if ((current?.appliedIds ?? []).includes(String(applyId)) || await markerPresent(applyId)) {
+          attempt.code = 'STATE_APPLY_REPLAY'
+          await finishAttempt(attempt)
+          return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
+        }
+        const decision = decide(current)
+        if (decision.ok !== true) {
+          attempt.code = decision.code
+          await finishAttempt(attempt)
+          return decision
+        }
+        await commitState(scope, locks, current, decision.patch, applyId)
+        await faultAt('after-commit')
+        await writeMarker(applyId)
+        attempt.outcome = 'applied'
+        await finishAttempt(attempt)
+        await commitWrite({ op, scope, key: `${scope}/${resource}`, applyId })
+        return decision.answer
+      })
+    } catch (error) {
+      attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_FAULT')
+      await finishAttempt(attempt)
+      return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
+    }
   }
 
   return Object.freeze({
@@ -484,9 +712,9 @@ export function createFsStateStore({
     rootDir,
     log,
     /** Absolute durable ledger files (evidence-readable). */
-    ledgerPaths: Object.freeze({ attempts: join(ledgerDir, 'attempts.jsonl'), writes: join(ledgerDir, 'writes.jsonl') }),
+    ledgerPaths: Object.freeze({ attempts: join(ledgerDirPath, 'attempts.jsonl'), writes: join(ledgerDirPath, 'writes.jsonl') }),
     /** The durable write-audit size — the independent zero-write witness. */
-    writesBytes: () => ledgerBytes(ledgerDir, 'writes.jsonl'),
+    writesBytes: () => ledgerBytes(ledgerDirPath, 'writes.jsonl'),
     attemptCount: () => log.attempts.length,
     /** Read one scope's whole record (tests/evidence; bounded, typed). */
     stateOf: async (scope) => await readState(scope),
@@ -496,120 +724,54 @@ export function createFsStateStore({
       log.reads.push({ op: 'goal/read', scope, key: `${scope}/goal` })
       return (await readState(scope))?.goal ?? null
     },
-    applyGoal: async (scope, { expectedRevision, next, applyId }) => {
-      const attempt = attemptEntry('goal/apply', scope, 'goal', applyId)
-      if ((await consume(applyId)) !== true) {
-        attempt.code = 'STATE_APPLY_REPLAY'
-        await finishAttempt(attempt)
-        return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
-      }
-      let current
-      try { current = (await readState(scope))?.goal ?? null } catch (error) {
-        await unconsume(applyId)
-        attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_FAULT')
-        await finishAttempt(attempt)
-        return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
-      }
-      // The CAS / already-exists legs, verbatim from the recording fake.
-      if (expectedRevision === null) {
-        if (current !== null && current.phase !== 'complete') {
-          await unconsume(applyId)
-          attempt.code = 'GOAL_ALREADY_EXISTS'
-          await finishAttempt(attempt)
-          return refusal('GOAL_ALREADY_EXISTS', `goal "${current.goalId}" already exists with phase "${current.phase}"`)
+    applyGoal: async (scope, { expectedRevision, next, applyId }) => applyUnder({
+      scope, op: 'goal/apply', resource: 'goal', applyId,
+      decide: (record) => {
+        const current = record?.goal ?? null
+        // The CAS / already-exists legs, verbatim from the recording fake.
+        if (expectedRevision === null) {
+          if (current !== null && current.phase !== 'complete') {
+            return refusal('GOAL_ALREADY_EXISTS', `goal "${current.goalId}" already exists with phase "${current.phase}"`)
+          }
+        } else if (current === null || current.goalId !== next.goalId || current.revision !== expectedRevision) {
+          return refusal('GOAL_STALE_REVISION', `stale goal ref "${String(next.goalId)}" revision ${String(expectedRevision)}; current is "${String(current?.goalId)}" revision ${String(current?.revision)}`)
         }
-      } else if (current === null || current.goalId !== next.goalId || current.revision !== expectedRevision) {
-        await unconsume(applyId)
-        attempt.code = 'GOAL_STALE_REVISION'
-        await finishAttempt(attempt)
-        return refusal('GOAL_STALE_REVISION', `stale goal ref "${String(next.goalId)}" revision ${String(expectedRevision)}; current is "${String(current?.goalId)}" revision ${String(current?.revision)}`)
-      }
-      try {
-        await writeState(scope, { goal: next })
-      } catch (error) {
-        await unconsume(applyId)
-        attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_WRITE_FAILED')
-        await finishAttempt(attempt)
-        return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
-      }
-      attempt.outcome = 'applied'
-      await finishAttempt(attempt)
-      await commitWrite({ op: 'goal/apply', scope, key: `${scope}/goal`, applyId })
-      return { ok: true, snapshot: next }
-    },
+        return { ok: true, patch: { goal: next }, answer: { ok: true, snapshot: next } }
+      },
+    }),
     readTodos: async (scope) => {
       log.reads.push({ op: 'todos/read', scope, key: `${scope}/todos` })
       return (await readState(scope))?.todos ?? null
     },
-    applyTodos: async (scope, { todos, applyId }) => {
-      const attempt = attemptEntry('todos/apply', scope, 'todos', applyId)
-      if ((await consume(applyId)) !== true) {
-        attempt.code = 'STATE_APPLY_REPLAY'
-        await finishAttempt(attempt)
-        return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
-      }
-      try {
-        await writeState(scope, { todos: todos.map((t) => ({ ...t })) })
-      } catch (error) {
-        await unconsume(applyId)
-        attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_WRITE_FAILED')
-        await finishAttempt(attempt)
-        return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
-      }
-      attempt.outcome = 'applied'
-      await finishAttempt(attempt)
-      await commitWrite({ op: 'todos/apply', scope, key: `${scope}/todos`, applyId })
-      return { ok: true, todos }
-    },
+    applyTodos: async (scope, { todos, applyId }) => applyUnder({
+      scope, op: 'todos/apply', resource: 'todos', applyId,
+      decide: () => ({ ok: true, patch: { todos: todos.map((t) => ({ ...t })) }, answer: { ok: true, todos } }),
+    }),
     readPlanMode: async (scope) => {
       log.reads.push({ op: 'plan-mode/read', scope, key: `${scope}/plan-mode` })
       return (await readState(scope))?.planMode ?? { active: false, pendingIntents: [] }
     },
-    applyPlanModeExit: async (scope, { plan, applyId }) => {
-      const attempt = attemptEntry('plan-mode/apply', scope, 'plan-mode', applyId)
-      if ((await consume(applyId)) !== true) {
-        attempt.code = 'STATE_APPLY_REPLAY'
-        await finishAttempt(attempt)
-        return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
-      }
-      let current
-      try { current = (await readState(scope))?.planMode ?? { active: false, pendingIntents: [] } } catch (error) {
-        await unconsume(applyId)
-        attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_FAULT')
-        await finishAttempt(attempt)
-        return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
-      }
-      if (current.active !== true) {
-        await unconsume(applyId)
-        attempt.code = 'PLAN_MODE_NOT_ACTIVE'
-        await finishAttempt(attempt)
-        return refusal('PLAN_MODE_NOT_ACTIVE', 'exit_plan_mode is only available in plan mode')
-      }
-      const nextState = { active: false, pendingIntents: [...current.pendingIntents, { plan, appliedBy: applyId }] }
-      try {
-        await writeState(scope, { planMode: nextState })
-      } catch (error) {
-        await unconsume(applyId)
-        attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_WRITE_FAILED')
-        await finishAttempt(attempt)
-        return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
-      }
-      attempt.outcome = 'applied'
-      await finishAttempt(attempt)
-      await commitWrite({ op: 'plan-mode/apply', scope, key: `${scope}/plan-mode`, applyId })
-      return { ok: true, state: nextState }
-    },
+    applyPlanModeExit: async (scope, { plan, applyId }) => applyUnder({
+      scope, op: 'plan-mode/apply', resource: 'plan-mode', applyId,
+      decide: (record) => {
+        const current = record?.planMode ?? { active: false, pendingIntents: [] }
+        if (current.active !== true) return refusal('PLAN_MODE_NOT_ACTIVE', 'exit_plan_mode is only available in plan mode')
+        const state = { active: false, pendingIntents: [...current.pendingIntents, { plan, appliedBy: applyId }] }
+        return { ok: true, patch: { planMode: state }, answer: { ok: true, state } }
+      },
+    }),
     /** Scenario control for tests/worlds: plant or flip PLAN MODE (the
      *  family has no tool that enters plan mode — the host's plan-mode
      *  service does — so the durable flag is seeded, never invented by a
-     *  governed row). Writes through the SAME atomic path. */
+     *  governed row). Writes through the SAME locked, pinned, atomic path. */
     seedPlanMode: async (scope, active) => {
-      await writeState(scope, { planMode: { active: active === true, pendingIntents: [] } })
+      await underScopeLock(scope, async (locks) => commitState(scope, locks, await readState(scope), { planMode: { active: active === true, pendingIntents: [] } }))
     },
     /** Scenario control: plant a goal snapshot (cross-scope fixtures). */
-    seedGoal: async (scope, goal) => { await writeState(scope, { goal }) },
+    seedGoal: async (scope, goal) => {
+      await underScopeLock(scope, async (locks) => commitState(scope, locks, await readState(scope), { goal }))
+    },
     /** The realm's store root, for evidence binding (path only). */
     root: () => rootDir,
-    /** Resolve the realm store root under a resolved harness home. */
   })
 }

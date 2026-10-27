@@ -6,9 +6,9 @@
     "packages/runtime/test/u7-agentstate-fs-store-c1.test.ts"
   ],
   "expectedDelta": {
-    "from": 1381,
-    "to": 1383
+    "from": 1382,
+    "to": 1384
   },
   "reason": "U7 agent-state production store (branch task/u7-agentstate-store-20261027 off origin/master 50da6c464): the PRODUCTION durable store behind the agent-state family's injected port — atomic temp+fsync+rename records under <DSH_HOME>/team-state/agent-state/<realmId>/, durable applyId consume markers, durable attempts/writes ledgers, byte-exact scope keys, bounded O_NOFOLLOW+nlink reads — plus its C1 suite over the real plane mount. The descriptor/barrel/test edits ride already-counted files; dist mirrors and evidence are outside the scan; zero denylist vocabulary.",
-  "tieNote": "MEASURED, not copied: on this tree with the two files on disk and this booking absent, the ledger law reads `scanner counts 1383, ledger derives 983 + 398 = 1381` (dev/agent-workflow/evidence/u7-agentstate-store-20261027/p4t6-RED-unbooked.txt) — master's 1381 plus exactly these two paths."
+  "tieNote": "MEASURED, not copied: re-measured on the tree merged with origin/master a264d2df0 (#414 / #409's u7fixfwd booking took master to 1382). With the two files on disk and this booking absent, the ledger law reads `scanner counts 1384, ledger derives 983 + 399 = 1382` (dev/agent-workflow/evidence/u7-agentstate-store-20261027/round1/p4t6-RED-unbooked-postmerge.txt); first measured pre-merge as 1381 -> 1383 (../p4t6-RED-unbooked.txt). Exactly these two paths either way."
 }

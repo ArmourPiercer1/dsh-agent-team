@@ -31,6 +31,9 @@ export {
   storeRootFor,
   ledgerBytes,
   MAX_SCOPE_BYTES,
+  MAX_SCOPES_PER_REALM,
+  APPLIED_IDS_KEPT,
+  openStoreDir,
   STATE_STORE_SUBTREE,
 } from './fs-state-store.mjs'
 export {

@@ -31,7 +31,8 @@
  *     temp+rename (writes the target in place) goes RED on the same check.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
@@ -57,6 +58,7 @@ type FsStore = {
   seedPlanMode: (scope: string, active: boolean) => Promise<void>
   seedGoal: (scope: string, goal: Record<string, unknown>) => Promise<void>
 }
+type StoreOpts = Record<string, unknown>
 type LaneModule = {
   AGENT_STATE_NAMES: readonly RowName[]
   STATE_STORE_SUBTREE: readonly string[]
@@ -562,5 +564,156 @@ describe('u7as G — every row meets the production bridge shape (tool-invoke na
     const without = await leg({ request: { requestedEffects: { effects: [{ kind: 'meta' }] } } })
     expect(without).toMatchObject({ decision: 'deny' })
     expect(seen).toEqual([{ tool: 'NO-TOOL-INVOKE', ok: false }])
+  })
+})
+
+/** Every file anywhere under `dir` (the zero-bytes-outside witness). */
+const filesUnder = (dir: string): string[] => {
+  if (!existsSync(dir)) return []
+  const out: string[] = []
+  const walk = (d: string): void => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const q = join(d, e.name)
+      if (e.isDirectory()) walk(q)
+      else out.push(q)
+    }
+  }
+  walk(dir)
+  return out
+}
+const storeWith = (opts: StoreOpts = {}): FsStore => lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, ...opts })
+
+describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
+  // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
+  const targets: Array<[string, () => string]> = [
+    ['scopes dir', () => join(storeRoot(), 'scopes')],
+    ['realm dir', () => storeRoot()],
+    ['ancestor (team-state)', () => join(home, 'team-state')],
+  ]
+  const swap = (target: string): string => {
+    const outside = join(scratch, `outside-${String(Math.random()).slice(2, 8)}`)
+    mkdirSync(outside)
+    renameSync(target, `${target}.moved`)
+    symlinkSync(outside, target)
+    return outside
+  }
+  for (const [label, target] of targets) {
+    for (const phase of ['after build (first read only)', 'after a first write'] as const) {
+      it(`X ${label} swapped for a symlink ${phase}: write AND read refuse typed, ZERO bytes outside the root`, async () => {
+        const store = storeWith()
+        if (phase === 'after a first write') {
+          expect((await store.applyTodos('agent:a', { todos: [{ content: 'first', status: 'pending' }], applyId: 'x-first' })).ok).toBe(true)
+        } else {
+          // build-equivalent: the descriptor-built store has touched the
+          // store once (a read) — the old cache was armed by exactly this.
+          await store.readGoal('agent:a')
+          mkdirSync(join(storeRoot(), 'scopes'), { recursive: true })
+        }
+        const outside = swap(target())
+        const r = await store.applyTodos('agent:b', { todos: [{ content: 'escape', status: 'pending' }], applyId: 'x-escape' })
+        expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        await expect(store.seedGoal('agent:b', { goalId: 'g', revision: 1, phase: 'active' })).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        await expect(store.readGoal('agent:a')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        // a FRESH instance (the restart) refuses the same way
+        const fresh = await storeWith().applyGoal('agent:c', { expectedRevision: null, next: { goalId: 'g', revision: 1, phase: 'active' }, applyId: 'x-fresh' })
+        expect(fresh).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_PATH_REFUSED' })
+        expect(filesUnder(outside), `${label}: nothing may land outside the root`).toEqual([])
+      })
+    }
+  }
+
+  it('X-pin: the operation writes into the directory whose identity it PROVED (openStoreDir pins the descriptor, not a re-resolvable name)', async () => {
+    const pinned = await (lane as unknown as { openStoreDir: (a: string, s: string[], o: { create: boolean }) => Promise<{ path: string, close: () => Promise<void> }> }).openStoreDir(home, ['team-state', 'agent-state', REALM, 'scopes'], { create: true })
+    try {
+      const outside = swap(join(storeRoot(), 'scopes'))
+      writeFileSync(join(pinned.path, 'probe.txt'), 'x')
+      expect(filesUnder(outside)).toEqual([])
+      expect(readdirSync(join(storeRoot(), 'scopes.moved'))).toContain('probe.txt')
+    } finally { await pinned.close() }
+  })
+})
+
+describe('u7as L — concurrent appliers are serialised per scope (review round-1 B-2)', () => {
+  it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
+    for (let round = 1; round <= 25; round += 1) {
+      await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
+      const w0 = bytesOf(writesPath())
+      const linesBefore = linesOf(writesPath()).length
+      const racers = [0, 1, 2, 3].map((i) => storeWith())
+      const results = await Promise.all(racers.map((st, i) => st.applyGoal('agent:race', {
+        expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      })))
+      expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
+      expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
+      expect(linesOf(writesPath()).length - linesBefore).toBe(1)
+      expect(bytesOf(writesPath())).toBeGreaterThan(w0)
+      expect(await storeWith().readGoal('agent:race')).toMatchObject({ revision: round + 1 })
+    }
+  })
+
+  it('L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    const scopeLock = (scope: string): string => {
+      // the store names a scope lock by the sha256 of the scope bytes
+      return join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
+    }
+    writeFileSync(scopeLock('agent:s'), JSON.stringify({ pid: 2 ** 22 + 12345, nonce: 'dead-holder', at: Date.now() }))
+    expect((await storeWith().applyTodos('agent:s', { todos: [{ content: 'after-stale', status: 'pending' }], applyId: 'stale-1' })).ok).toBe(true)
+    writeFileSync(scopeLock('agent:t'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, nonce: 'live-holder', at: Date.now() }))
+    const w0 = bytesOf(writesPath())
+    const r = await storeWith({ lockTimeoutMs: 150 }).applyTodos('agent:t', { todos: [{ content: 'blocked', status: 'pending' }], applyId: 'live-1' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(await storeWith().readTodos('agent:t')).toBe(null)
+  })
+})
+
+describe('u7as M — the applyId is consumed WITH the commit, never before it', () => {
+  const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
+
+  it('M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later', async () => {
+    await storeWith().seedGoal('agent:m', goalV(1))
+    const dying = storeWith({ recordWriter: async (h: { writeFile: (t: string, e: string) => Promise<void> }, t: string) => { await h.writeFile(t.slice(0, 10), 'utf8'); throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
+    expect((await dying.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(false)
+    expect(await storeWith().readGoal('agent:m')).toMatchObject({ revision: 1 })
+    expect((await storeWith().applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(true)
+  })
+
+  it('M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id)', async () => {
+    await storeWith().seedGoal('agent:m', goalV(1))
+    const crashing = storeWith({ faultAt: (point: string) => { if (point === 'after-commit') throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
+    await crashing.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-2' })
+    expect(existsSync(join(storeRoot(), 'applied')) ? readdirSync(join(storeRoot(), 'applied')) : []).toEqual([])
+    const restarted = storeWith()
+    expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+    const w0 = bytesOf(writesPath())
+    const replay = await restarted.applyGoal('agent:m', { expectedRevision: 2, next: goalV(3), applyId: 'm-2' })
+    expect(replay).toMatchObject({ ok: false, code: 'STATE_APPLY_REPLAY' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+  })
+})
+
+describe('u7as N — the per-realm scope count is bounded', () => {
+  it('N1 the scope past the bound refuses typed (AGENT_STATE_STORE_SCOPE_LIMIT) with ZERO write; existing scopes stay writable; the default bound is 1024', async () => {
+    expect((lane as unknown as { MAX_SCOPES_PER_REALM: number }).MAX_SCOPES_PER_REALM).toBe(1024)
+    const capped = storeWith({ maxScopes: 3 })
+    for (const id of ['a', 'b', 'c']) expect((await capped.applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n-${id}` })).ok).toBe(true)
+    const w0 = bytesOf(writesPath())
+    const r = await capped.applyTodos('agent:d', { todos: [{ content: 'd', status: 'pending' }], applyId: 'n-d' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_SCOPE_LIMIT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(3)
+    expect((await capped.applyTodos('agent:a', { todos: [{ content: 'a2', status: 'pending' }], applyId: 'n-a2' })).ok).toBe(true)
+    // the refused id was not consumed: it applies once room exists
+    expect((await storeWith({ maxScopes: 4 }).applyTodos('agent:d', { todos: [{ content: 'd', status: 'pending' }], applyId: 'n-d' })).ok).toBe(true)
+  })
+
+  it('N2 concurrent creators of DIFFERENT new scopes cannot overshoot the bound (realm lock)', async () => {
+    const results = await Promise.all(['p', 'q', 'r', 's', 't'].map((id) => storeWith({ maxScopes: 2 }).applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n2-${id}` })))
+    expect(results.filter((r) => r.ok === true)).toHaveLength(2)
+    expect(results.filter((r) => r.code === 'AGENT_STATE_STORE_SCOPE_LIMIT')).toHaveLength(3)
+    expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(2)
   })
 })
