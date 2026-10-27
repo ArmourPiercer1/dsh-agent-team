@@ -397,9 +397,12 @@ export function extractGovernedSessionId(value, { expectedRoot, bootRoot } = {})
   if (d.length > 1 || b.length > 1) { out.reason = 'ambiguous identity within durable or bind'; return out }
   out.fromDurable = d[0] ?? null
   out.fromBind = b[0] ?? null
-  const ids = unique([out.fromDurable, out.fromBind].filter(Boolean))
-  if (ids.length !== 1) { out.reason = ids.length === 0 ? 'missing durable/bind identity' : 'durable/bind identity mismatch'; return out }
-  const id = ids[0]
+  if (d.length !== 1 || b.length !== 1) {
+    out.reason = d.length === 0 || b.length === 0 ? 'durable and bind identities are both required' : 'durable/bind identity mismatch'
+    return out
+  }
+  if (d[0] !== b[0]) { out.reason = 'durable/bind identity mismatch'; return out }
+  const id = d[0]
   if (typeof expectedRoot !== 'string' || id !== expectedRoot) { out.reason = 'governed identity does not equal expected create root'; return out }
   if (typeof bootRoot === 'string' && id === bootRoot) { out.reason = 'governed identity equals boot root'; return out }
   out.ok = true
@@ -421,6 +424,53 @@ export function extractGovernedSessionId(value, { expectedRoot, bootRoot } = {})
  * @param {string} input.governedSessionId - the only session whose rows may be allowed.
  * @returns {{decision: 'allow'|'deny', reason: string}}
  */
+export function unwrapRemoteValue(body) {
+  const v = body?.result?.value
+  return v && typeof v === 'object' && 'data' in v ? v.data : v
+}
+
+export function deriveGovernedIdentity({ createBody, expectedRoot, bootRoot, projectionBody = null }) {
+  const createOk = createBody?.result?.ok === true
+  const createValue = unwrapRemoteValue(createBody)
+  const identity = extractGovernedSessionId(createValue, { expectedRoot, bootRoot })
+  const projectionValue = unwrapRemoteValue(projectionBody)
+  const independent = extractProjectionSessionId(projectionValue)
+  const teamSessionId = identity.ok ? identity.teamSessionId : null
+  return {
+    createOk,
+    identity,
+    teamSessionId,
+    fromIndependentRead: independent,
+    projectionStatus: projectionBody?.status ?? null,
+    identityOk: createOk && identity.ok && independent === teamSessionId && teamSessionId !== null,
+    createBodyExcerpt: JSON.stringify(createBody ?? null).slice(0, 800),
+  }
+}
+
+export function recordResolutionBinding({ row, outstanding, resolution, governedSessionId }) {
+  return {
+    requestId: row?.requestId ?? null,
+    rootSessionId: row?.rootSessionId ?? governedSessionId ?? null,
+    toolName: row?.toolName ?? null,
+    step: outstanding?.step ?? null,
+    tag: outstanding?.tag ?? null,
+    toolUseId: outstanding?.toolUseId ?? null,
+    commandHash: outstanding?.command ? commandHashOf(outstanding.command) : null,
+    decision: resolution?.decision ?? null,
+    sessionId: governedSessionId ?? null,
+  }
+}
+
+export function deriveBindingChain({ ledger, calls, resolutions, governedSessionId }) {
+  const byStep = new Map((calls ?? []).map((c) => [c.step, c]))
+  const rowToModelCall = (resolutions ?? []).map((r) => {
+    const call = byStep.get(r.step) ?? null
+    return { requestId: r.requestId, rootSessionId: governedSessionId, toolName: r.toolName ?? 'bash', toolUseId: call?.toolUseId ?? null, callIndex: r.step, commandHash: call?.command ? commandHashOf(call.command) : r.commandHash ?? null }
+  })
+  const modelCallToSession = (calls ?? []).map((c) => ({ toolUseId: c.toolUseId ?? null, callIndex: c.step, rootSessionId: governedSessionId, sessionId: governedSessionId }))
+  return { rowToModelCall, modelCallToSession }
+}
+
 export function ledgerControlFromEntries(entries, { teamSessionId, pinnedCommandHash }) {
   const byType = { 'control-request-recorded': [], 'control-decision-recorded': [], 'control-allow-consumed': [], 'control-request-abandoned': [] }
   let ledgerForeignEntries = 0
@@ -445,6 +495,15 @@ export function ledgerControlFromEntries(entries, { teamSessionId, pinnedCommand
     consumptions: byType['control-allow-consumed'].map((f) => ({ requestId: String(f.payload?.requestId ?? '') })),
     abandoned: byType['control-request-abandoned'].map((f) => ({ requestId: String(f.payload?.requestId ?? '') })),
   }
+}
+
+export function governedIdentityRecord({ createBody, projectionBody, expectedRoot, bootRoot }) {
+  return deriveGovernedIdentity({ createBody, projectionBody, expectedRoot, bootRoot })
+}
+
+export function assembleTbashRecord({ digest, governed, ledger, calls, resolutions }) {
+  const bindings = deriveBindingChain({ ledger, calls, resolutions, governedSessionId: governed?.teamSessionId ?? null })
+  return { governedSession: { ...governed, ledgerForeignEntries: ledger?.ledgerForeignEntries ?? 0, bindings }, tbashDigest: digest }
 }
 
 export function decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven, governedSessionId }) {
@@ -516,6 +575,13 @@ export function judgeTbash(d, hostAlive) {
   const consumptionsFor = (rid) => (d.ledger?.consumptions ?? []).filter((x) => x.requestId === rid).length
   const allows = (d.resolutions ?? []).filter((r) => r.decision === 'allow')
   const totalConsumptions = (d.ledger?.consumptions ?? []).length
+  const requests = d.ledger?.requests
+  const forensic = Array.isArray(d.hostForensic) ? d.hostForensic : null
+  const spawnLines = forensic?.filter((l) => /confined-shell ran .*exit=0/i.test(String(l))) ?? []
+  const governedRequests = requests?.filter((x) => x.rootSessionId === d.governedSessionId || x.rootSessionId === d.governed?.teamSessionId) ?? []
+  const approvedRows = governedRequests.filter((x) => x.requestId === (d.resolutions ?? []).find((r) => r.step === 0 && r.decision === 'allow')?.requestId && x.status === 'settled')
+  const strictWitness = requests !== undefined && forensic !== null && spawnLines.length === 1 && approvedRows.length === 1
+
   const ran = d.pinned?.ranEcho ?? {}
   const claims = d.pinned?.claims ?? {}
   const refused = (c) => c !== null && c.result !== null && c.result !== undefined
@@ -533,7 +599,7 @@ export function judgeTbash(d, hostAlive) {
     && ridA !== null && JSON.stringify(decisionsFor(ridA)) === JSON.stringify(['allow'])
     && consumptionsFor(ridA) === 1 && totalConsumptions === 1
     && lines(apprText) === 1 && String(apprText).trim() === claims.appr
-    && hostAlive === true
+    && strictWitness && hostAlive === true
   out.push(['tbash:approve-spawn-once', approveOk ? 'PASS' : 'FAIL', {
     requestId: ridA,
     resolutions: ra,
@@ -556,7 +622,7 @@ export function judgeTbash(d, hostAlive) {
     && rr.every((x) => consumptionsFor(x.requestId) === 0)
     && lines(apprText) === 1 && totalConsumptions === 1
     && d.seamReAllow !== null && d.seamReAllow !== undefined && d.seamReAllow.requestId === ridA && d.seamReAllow.ok === false
-    && hostAlive === true
+    && strictWitness && hostAlive === true
   out.push(['tbash:replay-refused', replayOk ? 'PASS' : 'FAIL', {
     sameCommandAsApproved: r !== null && a !== null && r.command === a.command,
     mode: rr.length === 0 ? 'synchronous-refusal' : 'new-row-denied',
@@ -574,7 +640,7 @@ export function judgeTbash(d, hostAlive) {
     && commandHashOf(o.command) !== d.pinned?.commandHash
     && refused(o) && ro.every((x) => x.decision !== 'allow' && x.requestId !== ridA && consumptionsFor(x.requestId) === 0)
     && (d.effects?.other ?? null) === null && totalConsumptions === 1
-    && hostAlive === true
+    && strictWitness && hostAlive === true
   out.push(['tbash:other-command-refused', otherOk ? 'PASS' : 'FAIL', {
     commandHash: o === null ? null : commandHashOf(o.command),
     pinnedCommandHash: d.pinned?.commandHash ?? null,
@@ -592,7 +658,7 @@ export function judgeTbash(d, hostAlive) {
     && ridD !== null && JSON.stringify(decisionsFor(ridD)) === JSON.stringify(['deny'])
     && consumptionsFor(ridD) === 0
     && refused(n) && (d.effects?.deny ?? null) === null
-    && hostAlive === true
+    && strictWitness && hostAlive === true
   out.push(['tbash:deny-zero-effect', denyOk ? 'PASS' : 'FAIL', {
     requestId: ridD,
     resolutions: rn,

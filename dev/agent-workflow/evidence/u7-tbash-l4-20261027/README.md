@@ -184,7 +184,13 @@ DISCLOSED → PROVEN (`c2/c2-verdicts-boot5.json`, `tbash:approve-spawn-once`). 
 and L2-mounted are re-cited to the boot-5 PASS cases. The native `bash` row is unchanged
 and is not backed by this model-visible `team_bash` record.
 
-### 4.5 Review round 1 closure
+### 4.5 Review round 2 closure
+
+Strict identity now requires both durable and bind identities, equal, fresh-root, expected create root, and distinct boot root; one-sided probes are RED. Runner identity/ledger/resolution/assembly paths are exported from the assembly library and driven by the offline test. Successful create body excerpts are retained. The judge now requires host forensic spawn evidence and a governed ledger request row; deleting either input is a FAIL mutation.
+
+Offline re-judge of committed boot 5 is disclosed in `c2/offline-rejudge-boot5.json`: raw live verdict remains PASS 6/6, but strengthened judge is FAIL because boot 5 predates retained `ledger.requests` and binding-chain data. No additional boot was started (boot budget already exhausted; no boot 7). Accordingly team_bash L2/L3/L4 remain DISCLOSED pending a record that satisfies the strengthened judge; no PROVEN claim is made.
+
+### 4.6 Review round 1 closure
 
 - **F-1 identity:** closed by the create durable+bind identity extractor plus independent projection cross-check; boot 5 records `governedSession.identityOk=true` and matching session IDs.
 - **F-2 resolver session input:** closed by `ledgerControlFromEntries` and the runner's create-echoed `teamSessionId`; foreign ledger entries are counted and never resolved.

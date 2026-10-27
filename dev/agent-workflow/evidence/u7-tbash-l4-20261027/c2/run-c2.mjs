@@ -27,7 +27,7 @@ import { testUseTree } from '../../../../../tests/paths.mjs'
 import {
   TBASH_CASES, createTbashAssembly, makeTbashDecide, askerScript, decideResolution,
   callResultsOf, judgeTbash, commandHashOf, extractGovernedSessionId, extractProjectionSessionId,
-  ledgerControlFromEntries,
+  ledgerControlFromEntries, governedIdentityRecord, assembleTbashRecord,
 } from '../../../../../tests/world-factory/lib/u7-tbash-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -195,26 +195,15 @@ async function drive({ world, assembly, planted, boot, decide }) {
   const created = await remoteCall(fetchJsonRetry, origin, cookie, 'team.create', {
     rootSessionId: assembly.CREATE_ROOT, blueprintId: assembly.BP_MAIN_ID, initialWork: { prompt: assembly.markers.MK_L1 },
   })
-  const unwrap = (body) => {
-    const v = body?.result?.value
-    return v && typeof v === 'object' && 'data' in v ? v.data : v
-  }
   const createOk = created.status === 200 && created.body?.result?.ok === true
-  const createValue = unwrap(created.body)
-  const identity = extractGovernedSessionId(createValue, { expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
-  const teamSessionId = identity.teamSessionId ?? null
-  const identityOk = createOk && identity.ok
-  let independent = null
+  const provisional = governedIdentityRecord({ createBody: created.body, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
   let projection = null
-  if (teamSessionId !== null) {
-    projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId }, 'u7tb-independent', 1)
-    const pv = unwrap(projection.body)
-    independent = extractProjectionSessionId(pv)
-  }
-  const independentOk = independent === teamSessionId && teamSessionId !== null
-  run.record.governedSession = { ...identity, teamSessionId, bootRoot: assembly.ROOT, identityOk: identityOk && independentOk, fromIndependentRead: independent, projectionStatus: projection?.status ?? null, projectionExcerpt: JSON.stringify(projection?.body ?? null).slice(0, 600), ledgerForeignEntries: 0, bindings: { rowToModelCall: [], modelCallToSession: [] } }
+  if (provisional.teamSessionId !== null) projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId: provisional.teamSessionId }, 'u7tb-independent', 1)
+  const governed = governedIdentityRecord({ createBody: created.body, projectionBody: projection, expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
+  const teamSessionId = governed.teamSessionId
+  run.record.governedSession = { ...governed, bootRoot: assembly.ROOT, projectionExcerpt: JSON.stringify(projection?.body ?? null).slice(0, 600), bindings: { rowToModelCall: [], modelCallToSession: [] } }
   if (!createOk || !run.record.governedSession.identityOk) {
-    add('tbash:mounted', 'FAIL', { createOk, identityOk, createBody: JSON.stringify(created.body ?? null).slice(0, 800) })
+    add('tbash:mounted', 'FAIL', { createOk, identityOk: governed.identityOk, createBody: governed.createBodyExcerpt })
     failRest('team.create failed or governed identity mismatch')
     return
   }
@@ -227,7 +216,8 @@ async function drive({ world, assembly, planted, boot, decide }) {
       const page = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getLedgerPage', { teamSessionId, afterSequence, limit: 500 }, 'u7tb-ledger', 1)
       const r = page?.body?.result
       if (page?.status !== 200 || r?.ok !== true) throw new Error(`team.getLedgerPage failed: status=${String(page?.status)} ${JSON.stringify(r ?? null).slice(0, 160)}`)
-      const data = unwrap(page.body)
+      const v = page.body?.result?.value
+      const data = v && typeof v === 'object' && 'data' in v ? v.data : v
       const pageEntries = Array.isArray(data?.entries) ? data.entries : []
       entries.push(...pageEntries)
       const next = data?.nextAfterSequence
@@ -264,7 +254,7 @@ async function drive({ world, assembly, planted, boot, decide }) {
           resolutions.push({
             requestId: row.requestId, step: outstanding?.step ?? null, tag: outstanding?.tag ?? null,
             commandHash: outstanding === null ? null : commandHashOf(outstanding.command),
-            decision: verdict.decision, reason: verdict.reason, ok, kind: row.kind, summary: row.summary,
+            decision: verdict.decision, reason: verdict.reason, ok, toolName: row.toolName, rootSessionId: row.rootSessionId, kind: row.kind, summary: row.summary,
             parametersFingerprint: row.parametersFingerprint, carriesPinnedCommandHash: row.carriesPinnedCommandHash,
             body: ok ? 'ok' : JSON.stringify(res?.body ?? null).slice(0, 300),
           })
@@ -346,7 +336,10 @@ async function drive({ world, assembly, planted, boot, decide }) {
     hostForensic: forensic,
     notifTurns: requests.filter((r) => JSON.stringify(r?.body?.messages ?? []).includes('[team-control requestId=')).length,
   }
-  run.record.tbashDigest = digest
+  digest.governedSessionId = teamSessionId
+  const assembled = assembleTbashRecord({ digest, governed: run.record.governedSession, ledger: ctl, calls, resolutions })
+  run.record.governedSession = assembled.governedSession
+  run.record.tbashDigest = assembled.tbashDigest
   const hostAlive = world.instance?.child !== null && world.instance?.child !== undefined && world.instance.child.exitCode === null
   add('tbash:mounted', placement.length > 0 && (placement.at(-1) ?? '').includes('team_bash') && hostAlive ? 'PASS' : 'FAIL', {
     healthOk: true, stateOk: true, createOk, governedSession: teamSessionId,

@@ -192,8 +192,10 @@ function greenDigest(commandHashOf) {
       { requestId: 'rB', step: 2, decision: 'deny', ok: true },
       { requestId: 'rD', step: 3, decision: 'deny', ok: true },
     ],
+    governedSessionId: 'team-1',
+    hostForensic: ['confined-shell ran realm=x exit=0 timedOut=false cancelled=false'],
     ledger: {
-      requests: [],
+      requests: [{ requestId: 'rA', rootSessionId: 'team-1', status: 'settled' }],
       decisions: [{ requestId: 'rA', decision: 'allow' }, { requestId: 'rR', decision: 'deny' }, { requestId: 'rB', decision: 'deny' }, { requestId: 'rD', decision: 'deny' }],
       consumptions: [{ requestId: 'rA' }],
     },
