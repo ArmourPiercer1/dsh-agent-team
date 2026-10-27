@@ -114,7 +114,7 @@ human-seam resolver policy:
 
 ## 4. Boot ledger, verdicts, conclusions (appended after the boots)
 
-Budget extended to 5 (two disclosed over the original budget of 3); boot 5 is the final permitted boot, each boot declared in `c2/boot-budget.jsonl` BEFORE it started. Boot 4 failed closed due to a runner `ReferenceError: projection is not defined`; the scope fix is now live in the runner and covered by the offline drive test. No world for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
+Budget extended to 5 (two disclosed over the original budget of 3); boot 5 was the final boot under that budget, each boot declared in `c2/boot-budget.jsonl` BEFORE it started (the budget was extended further later: boot 6 user-authorized, boot 7 declared at budget 7 — see §4.6, §4.8 and §4.10). Boot 4 failed closed due to a runner `ReferenceError: projection is not defined`; the scope fix is now live in the runner and covered by the offline drive test. No world for this lane remains in `tests/homes/` (all records carry `teardown.homeRemoved=true`).
 `:3080` read 401 before and after boot 4 (`stableInstance.unchanged=true`,
 `touched=false`). Host tree `639ed0153` at the end of boot 4.
 
@@ -188,17 +188,19 @@ and is not backed by this model-visible `team_bash` record.
 
 Strict identity now requires both durable and bind identities, equal, fresh-root, expected create root, and distinct boot root; one-sided probes are RED. Runner identity/ledger/resolution/assembly paths are exported from the assembly library and driven by the offline test. Successful create body excerpts are retained. The judge now requires host forensic spawn evidence and a governed ledger request row; deleting either input is a FAIL mutation.
 
-Offline re-judge of committed boot 5 is disclosed in `c2/offline-rejudge-boot5.json`: raw live verdict remains PASS 6/6, but strengthened judge is FAIL because boot 5 predates retained `ledger.requests` and binding-chain data. No additional boot was started (boot budget already exhausted; no boot 7). Accordingly team_bash L2/L3/L4 remain DISCLOSED pending a record that satisfies the strengthened judge; no PROVEN claim is made.
+Offline re-judge of committed boot 5 is disclosed in `c2/offline-rejudge-boot5.json`: raw live verdict remains PASS 6/6, but strengthened judge is FAIL because boot 5 predates retained `ledger.requests` and binding-chain data. No additional boot was started in that round (the boot budget was then exhausted). This paragraph states the boot-5-round position and is superseded: boot 7 was subsequently started and is retained in `c2/c2-verdicts-boot7.json` (raw PASS 6/6, identityOk true) with strengthened offline re-judge PASS in `c2/offline-rejudge-boot7.json` — final ledger state in §4.10.
 
 ### 4.6 Boot 6 and final re-judge disclosure
 
-Boot 6 was user-authorized as the single final extension (original budget 3; no boot 7). It ran exactly once at team head `47da3da07e16de675f64dac17d1e206ad429b91c`, after `ss -ltn`; host `639ed01539` used port 3184 and the temporary home was removed. `:3080` remained 401 before and after. The run is committed as `c2/c2-verdicts-boot6.json` with `host-boot6.log` and `mock-excerpt-boot6.json`.
+Boot 6 was user-authorized as the single final extension under that authorization (original budget 3). It ran exactly once at team head `47da3da07e16de675f64dac17d1e206ad429b91c`, after `ss -ltn`; host `639ed01539` used port 3184 and the temporary home was removed. `:3080` remained 401 before and after. The run is committed as `c2/c2-verdicts-boot6.json` with `host-boot6.log` and `mock-excerpt-boot6.json`.
 
 Boot 6 final re-judge failed closed: projection identity extraction returned null; no strengthened PASS record exists.
 Boot 6 final re-judge failed closed before refusal drive; strengthened record unavailable.
 Boot 6 final re-judge failed closed before positive drive; boot 5 raw PASS lacks strengthened ledger/binding fields.
 
-Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bind identities agreed, but the independent projection extractor returned null despite HTTP 200, so `identityOk=false`; no approval, spawn, ledger request, or binding chain was produced. The strengthened judge therefore cannot pass. This is retained honestly; L2/L3/L4 remain DISCLOSED and no boot 7 is permitted. Boot 5 raw PASS versus strengthened offline FAIL remains recorded in `c2/offline-rejudge-boot5.json`.
+(These three sentences stated the boot-6-round position; superseded — boot 7 provides the strengthened PASS record: `c2/c2-verdicts-boot7.json` re-judged PASS in `c2/offline-rejudge-boot7.json`, see §4.10.)
+
+Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bind identities agreed, but the independent projection extractor returned null despite HTTP 200, so `identityOk=false`; no approval, spawn, ledger request, or binding chain was produced. The strengthened judge could not pass on boot 6. This is retained honestly; at that round L2/L3/L4 remained DISCLOSED. Superseded by boot 7 (declared at budget 7 in `c2/boot-budget.jsonl`, retained in `c2/c2-verdicts-boot7.json`, strengthened offline re-judge PASS in `c2/offline-rejudge-boot7.json`) — see §4.8 and §4.10. Boot 5 raw PASS versus strengthened offline FAIL remains recorded in `c2/offline-rejudge-boot5.json`.
 
 ### 4.8 Review round 3 closure
 
@@ -226,3 +228,7 @@ The strengthened judge (F-2/F-3) additionally reads `governed.bindings.rowToMode
 - **Boot 3 judge defect:** the prior projection cross-check read the wrong field; `extractProjectionSessionId` now reads `value.projection.teamSessionId` and is covered by C1/offline tests.
 - **Boot 4 runner defect:** `projection` was previously scoped inside an `if`; the fixed runner now declares and records it safely, and boot 5 is the live verification.
 - **L4 note:** PROVEN for `team_bash` only; the native `bash` ledger row remains unbacked.
+
+### 4.10 Final ledger state
+
+Final ledger state (supersedes every DISCLOSED wording of §4.4–§4.6, retained as boot-5/6-round history): `dev/agent-workflow/ledgers/u7-tool-acceptance.json` row `team_bash` — L2-mounted / L3-refusal / L4-positive **PROVEN** on `c2/c2-verdicts-boot7.json` (live PASS 6/6, identityOk true), strengthened offline re-judge PASS `c2/offline-rejudge-boot7.json`; the native `bash` ledger row is still NOT backed by this record.

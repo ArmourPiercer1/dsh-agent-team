@@ -163,27 +163,26 @@
         }
       },
       "L2-mounted": {
-        "status": "DISCLOSED",
-        "reason": "Boot 6 final re-judge failed closed: projection identity extraction returned null; no strengthened PASS record exists.",
-        "pr": "#415",
-        "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md",
+        "status": "PROVEN",
         "evidence": {
-          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot6.json",
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot7.json",
           "case": "tbash:mounted"
         }
       },
       "L3-refusal": {
-        "status": "DISCLOSED",
-        "reason": "Boot 6 final re-judge failed closed before refusal drive; strengthened record unavailable.",
-        "pr": "#415",
-        "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md"
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot7.json",
+          "case": "tbash:deny-zero-effect"
+        }
       },
       "L4-positive": {
-        "status": "DISCLOSED",
-        "reason": "Boot 6 final re-judge failed closed before positive drive; boot 5 raw PASS lacks strengthened ledger/binding fields.",
-        "pr": "#415",
-        "source": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/README.md",
-        "note": "Boot 6 was the authorized final extension and failed closed on projection identity; no boot 7. Boot 5 raw PASS versus strengthened offline FAIL remains disclosed."
+        "status": "PROVEN",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/c2-verdicts-boot7.json",
+          "case": "tbash:approve-spawn-once"
+        },
+        "note": "boot 7 live PASS 6/6 at team SHA 96dd541e97129f6474c70f7bda51d91e091b456a / host SHA 639ed015397290b3745d163aafe02ffee4aa3f84 (record bindings): governed identity proven (create durable+bind identities and the independent projection read agree on the governed session and differ from the boot root); exactly one human allow via the public team.resolveControl seam on the governed session, consumed exactly once; one confined-shell exit=0 host witness in the retained host-boot7.log; replay, other-command and deny rows all produced zero effect; strengthened offline re-judge PASS on this same record (c2/offline-rejudge-boot7.json). Boots 3/4/6 were runner/judge defects of this lane (named in the lane README), and boot 5's raw PASS predates the strengthened ledger/binding fields. The PA row is governed under the native name `bash` and the `bash` ledger row is NOT backed by this record."
       }
     },
     {
