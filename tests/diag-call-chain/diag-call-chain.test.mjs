@@ -48,7 +48,7 @@ test('S3 a drifted line hint is reported as moved, a vanished token as a problem
   const { cpSync, mkdirSync, writeFileSync: wf, readFileSync: rf } = await import('node:fs')
   const root = join(scratch, 'drift-tree')
   const repo = resolve(HERE, '..', '..')
-  for (const rel of ['packages/tools/a5p5-tools/src', 'packages/runtime/tool-admission', 'packages/runtime/tool-dispatch', 'packages/runtime/governance-center', 'packages/runtime/operation-permission', 'packages/runtime/sandbox-provider', 'packages/runtime/src/plugin/live', 'packages/domain/tool-governance/src', 'packages/tools/fs-family/src']) {
+  for (const rel of ['packages/tools/a5p5-tools/src', 'packages/runtime/tool-admission', 'packages/runtime/tool-dispatch', 'packages/runtime/governance-center', 'packages/runtime/operation-permission', 'packages/runtime/sandbox-provider', 'packages/runtime/src/plugin/live', 'packages/domain/tool-governance/src', 'packages/tools/fs-family/src', 'packages/tools/families']) {
     mkdirSync(join(root, rel), { recursive: true })
     cpSync(join(repo, rel), join(root, rel), { recursive: true })
   }
@@ -61,6 +61,65 @@ test('S3 a drifted line hint is reported as moved, a vanished token as a problem
   wf(pipe, rf(pipe, 'utf8').replaceAll("kind: 'refused-spill'", "kind: 'refused-SPILL-RENAMED'"))
   const after = mod.selfTest(root, [])
   assert.ok(after.some((p) => p.includes('refused-spill') && p.includes('anywhere')), JSON.stringify(after))
+})
+
+// ── family registration refusals: resolved from the descriptors, not listed (#399/#400 drift) ──
+
+/** A temp tree carrying only the family descriptor dir (and whatever else `extra` copies). */
+async function familyTree(name) {
+  const { cpSync, mkdirSync } = await import('node:fs')
+  const root = join(scratch, name)
+  const repo = resolve(HERE, '..', '..')
+  mkdirSync(join(root, 'packages/tools'), { recursive: true })
+  cpSync(join(repo, 'packages/tools/families'), join(root, 'packages/tools/families'), { recursive: true })
+  return root
+}
+
+test('S4 family refusal codes resolve from the reviewed descriptors: the three at this tree, a new listed family without editing the tool', async () => {
+  const { readFileSync: rf, writeFileSync: wf } = await import('node:fs')
+  for (const [code, descriptor] of [['PLANE_READ_REGISTRATION_REFUSED', 'fs.mjs'], ['PLANE_PROCESS_REGISTRATION_REFUSED', 'process.mjs'], ['PLANE_SEARCH_REGISTRATION_REFUSED', 'search.mjs']]) {
+    const got = mod.attribute(null, code)
+    assert.equal(got.verdict, 'ATTRIBUTED', `${code}: ${JSON.stringify(got)}`)
+    assert.deepEqual(got.candidates.map((c) => c.face), ['plane-mount'])
+    assert.deepEqual(got.candidates[0].emitters, [`packages/tools/families/${descriptor} (refusalCode:)`])
+  }
+  const root = await familyTree('family-new')
+  const fam = join(root, 'packages/tools/families')
+  wf(join(fam, 'widget.mjs'), "export default Object.freeze({ familyId: 'dsh.widget', refusalCode: 'PLANE_WIDGET_REGISTRATION_REFUSED' })\n")
+  wf(join(fam, 'stray.mjs'), "export default Object.freeze({ familyId: 'dsh.stray', refusalCode: 'PLANE_STRAY_REGISTRATION_REFUSED' })\n")
+  const before = mod.familyRefusalRows(root)
+  assert.ok(!Object.hasOwn(before.rows, 'PLANE_WIDGET_REGISTRATION_REFUSED'), 'an UNLISTED descriptor must attribute nothing (only a listed module mounts)')
+  const manifest = JSON.parse(rf(join(fam, 'manifest.json'), 'utf8'))
+  manifest.families.push({ module: 'widget.mjs', sha256: '0'.repeat(64) })
+  wf(join(fam, 'manifest.json'), JSON.stringify(manifest))
+  const after = mod.familyRefusalRows(root)
+  assert.deepEqual(after.problems, [])
+  assert.deepEqual(after.rows.PLANE_WIDGET_REGISTRATION_REFUSED, [['plane-mount', 'packages/tools/families/widget.mjs', 'refusalCode:']])
+  assert.ok(!Object.hasOwn(after.rows, 'PLANE_STRAY_REGISTRATION_REFUSED'), 'listing one family must not pull in an unlisted one')
+})
+
+test('S5 control: a listed descriptor that drops its refusalCode turns the self-test RED, naming the code and the file', async () => {
+  const { readFileSync: rf, writeFileSync: wf } = await import('node:fs')
+  const root = await familyTree('family-drop')
+  const fs = join(root, 'packages/tools/families/fs.mjs')
+  const src = rf(fs, 'utf8')
+  const dropped = src.replace(/\n\s*refusalCode: 'PLANE_READ_REGISTRATION_REFUSED',/, '')
+  assert.notEqual(dropped, src, 'the control could not stage its mutation')
+  assert.deepEqual(mod.familyRefusalRows(root).problems, [], 'honest copy must be clean before the mutation')
+  wf(fs, dropped)
+  const problems = mod.selfTest(root)
+  assert.ok(problems.some((p) => p.startsWith('PLANE_READ_REGISTRATION_REFUSED: packages/tools/families/fs.mjs no longer contains the literal')), JSON.stringify(problems))
+  assert.ok(problems.some((p) => p.startsWith('packages/tools/families/fs.mjs: family descriptor carries no')), JSON.stringify(problems))
+  // and the two untouched families are NOT reported (no collateral red)
+  assert.ok(!problems.some((p) => /PLANE_(PROCESS|SEARCH)_REGISTRATION_REFUSED/.test(p)), JSON.stringify(problems))
+})
+
+test('S6 fail-closed: no manifest means no family code is attributable (UNKNOWN, never a guess); vocabulary-only stays NO_PRODUCTION_EMITTER', () => {
+  const none = mod.familyRefusalRows(scratch)
+  assert.deepEqual(none.rows, {})
+  assert.ok(none.problems.some((p) => p.includes('manifest.json unreadable')), JSON.stringify(none.problems))
+  assert.equal(mod.attribute(null, 'DOMAIN_DENIED').verdict, 'NO_PRODUCTION_EMITTER')
+  assert.equal(mod.attribute(null, 'PLANE_WIDGET_REGISTRATION_REFUSED').verdict, 'UNKNOWN_CODE')
 })
 
 test('A1 refused-admission: attributed through the kind, fingerprint printed only in digest shape', () => {
