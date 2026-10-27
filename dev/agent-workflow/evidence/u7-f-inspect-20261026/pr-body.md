@@ -179,7 +179,18 @@ ledger `scripts/eslint-node-globals/030-inspect-family.json`.
 ## Gate outputs
 
 - `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store --full --census`:
-  (final run appended below)
+  run-4 hit ONE census red — `packages/testkit/test/rc2-sanitize-evidence.test.ts::S13`
+  — root-caused as ENVIRONMENT: the shared host ran load 16+; S13's nested
+  `node --test` suite passes 25/25 but takes 8.4 s wall while the wrapper
+  `it()` sits on vitest's 5000 ms default (the census leg line itself names
+  this clock fragility). No sanitizer file changed in the merge or this lane.
+  Re-run `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store --full
+  --census --census-test-timeout 30000 --resample 3`:
+  **`DSH-CI-VERDICT pass pass=8 fail=0 skip=0 skipped=none legs=8 refused=0`**
+  with the census verdict printed at its declared clock
+  (`--testTimeout=30000 ms, an operator override above the 5000 ms default —
+  COUNTS MOVED, SET DID NOT — identity set IDENTICAL to the published
+  baseline`) — logs `ci-pr-gate-full-4.log` / `ci-pr-gate-full-5.log`.
 - `pnpm typecheck` clean; lint-identities: 76 distinct / **new 0**;
   docs:sync + probe blocking 0; `node scripts/eb3-ci-required.mjs`:
   `EB3-CI-REQUIRED pass workflows=9 findings=0`;
