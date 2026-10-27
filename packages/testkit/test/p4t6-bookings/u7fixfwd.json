@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FIXFWD",
+  "paths": [
+    "packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1381,
+    "to": 1382
+  },
+  "reason": "u7-fixfwd (fix-forward for the post-merge #405 review HIGH F-405-R2-1: read paths\nrefuse hardlink aliases; branch task/u7-fixfwd-20261027): the ONE scannable file this\nround ADDS — the per-caller RED->GREEN suite for the shared opened-handle law\n(packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts: the shared verifyOpenedHandle\nleg plus fs read / read_image / skill / present / search grep file target /\npost-consume write / post-consume edit, each with an outside canary hardlinked into\nthe root, plus six nlink=1 positive controls). Every production edit of this round\nrides an ALREADY-COUNTED path (controlled-fs/src/open-at-exec.ts, cf-errors.ts,\ncontrolled-fs.ts, post-consume-write.ts, post-consume-edit.ts, post-consume-create.ts,\nand packages/tools/ui-family/src/present-executor.mjs); the controlled-fs README is\nnot a scanned extension; dist mirrors, tests/checks/** and dev/** are outside the\nscan. Zero new denylist vocabulary.",
+  "tieNote": "u7-fixfwd's tie, MEASURED on THIS tree at booking time (scanner run in-place,\nthe one file present, clause unbooked, reading `expected 1381 to be 1382`, i.e.\nscanner counts 1382 while the ledger derives 1381): the chain is the booked 1381\nplus exactly this one file — no chain value copied. Confirmed causal: the same\nsuite is 20/20 GREEN on clean origin/master (50da6c464), so the movement is this\nround's one added file and nothing else."
+}

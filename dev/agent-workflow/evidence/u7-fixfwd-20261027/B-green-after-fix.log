@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-fixfwd
+
+ ✓ packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts (14 tests) 592ms
+     ✓ H-read an in-root hardlink to the outside canary is refused typed; zero canary bytes in the answer or any line; the byte stage never ran  347ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  13:07:26
+   Duration  773ms (transform 442ms, setup 0ms, import 45ms, tests 592ms, environment 0ms)
+
