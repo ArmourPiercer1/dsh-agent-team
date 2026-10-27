@@ -194,6 +194,10 @@ Offline re-judge of committed boot 5 is disclosed in `c2/offline-rejudge-boot5.j
 
 Boot 6 was user-authorized as the single final extension (original budget 3; no boot 7). It ran exactly once at team head `47da3da07e16de675f64dac17d1e206ad429b91c`, after `ss -ltn`; host `639ed01539` used port 3184 and the temporary home was removed. `:3080` remained 401 before and after. The run is committed as `c2/c2-verdicts-boot6.json` with `host-boot6.log` and `mock-excerpt-boot6.json`.
 
+Boot 6 final re-judge failed closed: projection identity extraction returned null; no strengthened PASS record exists.
+Boot 6 final re-judge failed closed before refusal drive; strengthened record unavailable.
+Boot 6 final re-judge failed closed before positive drive; boot 5 raw PASS lacks strengthened ledger/binding fields.
+
 Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bind identities agreed, but the independent projection extractor returned null despite HTTP 200, so `identityOk=false`; no approval, spawn, ledger request, or binding chain was produced. The strengthened judge therefore cannot pass. This is retained honestly; L2/L3/L4 remain DISCLOSED and no boot 7 is permitted. Boot 5 raw PASS versus strengthened offline FAIL remains recorded in `c2/offline-rejudge-boot5.json`.
 
 ### 4.7 Review round 1 closure
