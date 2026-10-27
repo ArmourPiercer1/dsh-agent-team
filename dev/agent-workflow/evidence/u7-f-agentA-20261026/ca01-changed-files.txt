@@ -1,6 +1,5 @@
-dev/agent-workflow/evidence/u7-f-agentA-20261026/mutation-control.log
-dev/agent-workflow/evidence/u7-f-agentA-20261026/p4t6-RED-unbooked.log
 dev/agent-workflow/ledgers/arc-a-family-census.json
+packages/domain/test/a5p0-layer-audit.test.ts
 packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-contribution.mjs
 packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-executor.mjs
 packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-mechanics.mjs
@@ -34,4 +33,10 @@ packages/tools/agent-control-family/src/workflow-row.mjs
 packages/tools/families/agent-control.mjs
 packages/tools/families/index.mjs
 packages/tools/families/manifest.json
+scripts/audit-a5-tool-governance-imports.mjs
 scripts/dist-placements/070-agent-control-family.json
+tests/world-factory/lib/u7fa-assembly.mjs
+tests/world-factory/registries.test.mjs
+tests/world-factory/suites/080-u7-agent-control.mjs
+tests/world-factory/world-factory.test.mjs
+tests/world-factory/world-kinds/080-u7-agent-control.mjs
