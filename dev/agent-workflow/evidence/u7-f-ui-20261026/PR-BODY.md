@@ -225,10 +225,29 @@ EB3-REQUIRED pass layers=5 green=5 nongreen=none
 The hosted ci-full census is GREEN — confirming the one local red
 (`rc2-sanitize-evidence::S13`) was sandbox process-spawn slowness only.
 
-Fix-round hosted verdicts (review round 1, new head) are appended below in
-the follow-up evidence commit once the four ci-required / pr-gate /
-census-runtime / candidate-protection runs report — then this PR FREEZES
-for review round 2 (no further pushes).
+### Fix-round hosted verdicts (the honest two-step)
+
+Step 1 (head `558f0365d`, the one-fd fix): pr-gate **RED on exactly one
+leg** — `lint-identities: error no-undef
+packages/tools/ui-family/src/present-executor.mjs` (the fd-metering loop
+used the global `Buffer`; tools lanes hold no node-globals entitlement —
+`scripts/eslint-node-globals/` is a disclosed runtime-plugin/testkit
+family list — and the `fs-mechanics.mjs:25` precedent is an explicit
+`import { Buffer } from 'node:buffer'`). candidate-protection was already
+green; ci-required/census were superseded. Step 2 (head `287b38c32`, the
+explicit import; `lint-identities --diff` → `76 distinct; new 0,
+resolved 0`; C1 41/41 re-run; mirror re-placed):
+
+```
+run 40475275288  ci-required        success  EB3-REQUIRED pass layers=5 green=5 nongreen=none
+run 40475275370  pr-gate            success  (lint-identities new 0; artifacts-at-head drift 0)
+run 40475275347  census-runtime     success
+run 40475275249  candidate-protection success
+```
+
+Census test-count note: the R-legs move the C1 suite 36→41 tests on top
+of the capture quoted above. THIS PR NOW FREEZES for review round 2:
+no further pushes to `task/u7-f-ui-20261026` pending round-2 verdicts.
 
 ## Disclosed deviations (from the host mirror)
 
