@@ -1,8 +1,8 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "u7ac1-c2-mvr7br4l",
+  "runId": "u7ac1-c2-mvr7frm4",
   "suite": "u7-ac1-agent-control-subagents-c2",
-  "startedAt": "2026-10-27T21:32:35.012Z",
+  "startedAt": "2026-10-27T21:35:42.268Z",
   "selectedCases": [
     "ac:mounted",
     "ac:list-models",
@@ -16,7 +16,7 @@
     "ac:leak-check"
   ],
   "bindings": {
-    "teamSha": "56819410037892670a5ced28136240681aa79fdf",
+    "teamSha": "8902a04a9206e17ad265bf3110018cf06baccb00",
     "teamTreeClean": true,
     "driveScriptClean": false,
     "hostSha": "set-from-assertHostBase-in-main",
@@ -34,7 +34,7 @@
     {
       "id": "ac:mounted",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.021Z",
+      "at": "2026-10-27T21:35:42.277Z",
       "detail": {
         "createOk": true,
         "createBody": "ok",
@@ -47,7 +47,7 @@
     {
       "id": "ac:list-models",
       "verdict": "FAIL",
-      "at": "2026-10-27T21:32:35.021Z",
+      "at": "2026-10-27T21:35:42.277Z",
       "detail": {
         "readBack": [
           {
@@ -67,7 +67,7 @@
     {
       "id": "ac:spawn-positive",
       "verdict": "FAIL",
-      "at": "2026-10-27T21:32:35.021Z",
+      "at": "2026-10-27T21:35:42.277Z",
       "detail": {
         "readBack": [
           {
@@ -90,7 +90,7 @@
     {
       "id": "ac:list-agents",
       "verdict": "FAIL",
-      "at": "2026-10-27T21:32:35.021Z",
+      "at": "2026-10-27T21:35:42.277Z",
       "detail": {
         "readBack": [
           {
@@ -111,7 +111,7 @@
     {
       "id": "ac:child-toolview",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.022Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "spawnChildRequests": 2,
         "forkChildRequests": 1,
@@ -137,7 +137,7 @@
     {
       "id": "ac:fork-positive",
       "verdict": "FAIL",
-      "at": "2026-10-27T21:32:35.022Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "readBack": [
           {
@@ -157,7 +157,7 @@
     {
       "id": "ac:refusal-tools",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.022Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "readBack": [
           {
@@ -180,7 +180,7 @@
     {
       "id": "ac:refusal-provider",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.023Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "readBack": [
           {
@@ -203,7 +203,7 @@
     {
       "id": "ac:refusal-fork-bg",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.023Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "readBack": [
           {
@@ -226,7 +226,7 @@
     {
       "id": "ac:leak-check",
       "verdict": "PASS",
-      "at": "2026-10-27T21:32:35.023Z",
+      "at": "2026-10-27T21:35:42.278Z",
       "detail": {
         "secretClaimInCorpus": false,
         "secretClaimInHostLog": false,
@@ -372,8 +372,9 @@
       "team.getLedgerPage"
     ],
     "syntheticLedger": true,
-    "live": false
+    "live": false,
+    "ioPath": "injected-overrides"
   },
   "overall": "FAIL",
-  "finishedAt": "2026-10-27T21:32:35.023Z"
+  "finishedAt": "2026-10-27T21:35:42.279Z"
 }

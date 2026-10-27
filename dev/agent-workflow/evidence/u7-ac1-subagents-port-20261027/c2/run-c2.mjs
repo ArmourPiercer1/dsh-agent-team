@@ -41,7 +41,7 @@
  */
 import { appendFileSync, copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname, relative } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../../../tests/world-factory/lib/world-factory.mjs'
@@ -179,9 +179,21 @@ async function main() {
   console.log(`[u7ac1-c2] DONE overall=${run.record.overall} pass=${String(run.record.cases.length - fails)} nonpass=${String(fails)}`)
 }
 
-const LIVE_IO = { fetchJsonRetry, authenticate, apiPrompt, sleep, stableProbe, readFile: readFileSync }
-export async function drive({ world, assembly, planted, boot, stableBefore, io = {} }) {
-  const { fetchJsonRetry, authenticate, apiPrompt, sleep, stableProbe, readFile: readFileSync } = { ...LIVE_IO, ...io }
+export const LIVE_IO = Object.freeze({ fetchJsonRetry, authenticate, apiPrompt, sleep, stableProbe, readFile: readFileSync })
+
+/** Resolve the drive's live defaults without shadowing any injected binding. */
+export function resolveDriveIo(overrides = {}, liveDefaults = LIVE_IO) {
+  return { ...liveDefaults, ...overrides }
+}
+
+export async function drive({ world, assembly, planted, boot, stableBefore, io = {}, liveDefaults = LIVE_IO }) {
+  const resolvedIo = resolveDriveIo(io, liveDefaults)
+  const fetchJsonRetry = resolvedIo.fetchJsonRetry
+  const authenticate = resolvedIo.authenticate
+  const apiPrompt = resolvedIo.apiPrompt
+  const sleep = resolvedIo.sleep
+  const stableProbe = resolvedIo.stableProbe
+  const readFileSync = resolvedIo.readFile
   const origin = `http://127.0.0.1:${boot.port}`
   const waitA = async (predicate, timeoutMs) => {
     const started = Date.now()
@@ -466,13 +478,16 @@ export async function drive({ world, assembly, planted, boot, stableBefore, io =
   })
 }
 
-const dryRun = process.argv.includes('--dry-run')
+const isDirectExecution = process.argv[1] !== undefined && pathToFileURL(resolve(process.argv[1])).href === import.meta.url
+const dryRun = isDirectExecution && process.argv.includes('--dry-run')
 const execute = dryRun ? async () => {
   if (!process.argv.includes('--fixtures')) throw Error('--dry-run requires --fixtures')
   const { fixtures } = await import('./dryrun-fixtures.mjs')
-  await fixtures({ drive, run, here: HERE, repo: REPO, mode: process.argv.includes('--old-faces') ? 'old' : process.argv.includes('--mutation') ? 'mutation' : 'current' })
+  await fixtures({ drive, run, here: HERE, repo: REPO, mode: process.argv.includes('--old-faces') ? 'old' : process.argv.includes('--mutation') ? 'mutation' : process.argv.includes('--no-overrides') ? 'no-overrides' : 'current' })
 } : main
-execute().then(() => process.exit(0)).catch((error) => {
-  console.error('[u7ac1-c2] FATAL', error)
-  process.exit(1)
-})
+if (isDirectExecution) {
+  execute().then(() => process.exit(0)).catch((error) => {
+    console.error('[u7ac1-c2] FATAL', error)
+    process.exit(1)
+  })
+}

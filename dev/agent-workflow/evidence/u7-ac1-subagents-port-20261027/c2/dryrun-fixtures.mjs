@@ -75,10 +75,16 @@ export async function fixtures({ drive, run, here, repo, mode }) {
     },
   }
   const log = `placement-feed rows=[${AGENT_CONTROL_MANAGED_NAMES.join(',')}]\n` + positive.map(n=>`agent-control-${n} RAN`).join('\n') + '\nagent-runtime host-port: catalog-read count=1 oneShot=1\nagent-runtime host-port: child-toolview provider=spawn tools=[]\nagent-runtime host-port: child-toolview provider=fork tools=[]'
-  await drive({world,assembly,planted:{secretBefore:assembly.SECRET_CLAIM+'\n'},boot:{port:3181,logPath:'fake-host'},stableBefore:{status:401},io})
+  const driveArgs = {world,assembly,planted:{secretBefore:assembly.SECRET_CLAIM+'\n'},boot:{port:3181,logPath:'fake-host'},stableBefore:{status:401}}
+  // Exercise both injection paths: normal fixtures provide overrides, while the
+  // no-overrides mode supplies the same seams only as live defaults. This is
+  // intentionally separate so CI proves the default path runs.
+  if (mode === 'no-overrides') driveArgs.liveDefaults = io
+  else driveArgs.io = io
+  await drive(driveArgs)
   assert.equal(resolved.size,4)
   assert(trace.includes('team.create') && trace.includes('team.getLedgerPage') && trace.includes('team.resolveControl'))
-  run.record.fixture={mode,source:'mock-corpus-boot6.json',trace,syntheticLedger:true,live:false}
+  run.record.fixture={mode,source:'mock-corpus-boot6.json',trace,syntheticLedger:true,live:false,ioPath: mode === 'no-overrides' ? 'live-defaults-without-overrides' : 'injected-overrides'}
   run.finalize()
   run.write(join(here,'..','c1-dryrun',`${mode}.json`))
   const failures=run.record.cases.filter(c=>c.verdict!=='PASS').map(c=>c.id)

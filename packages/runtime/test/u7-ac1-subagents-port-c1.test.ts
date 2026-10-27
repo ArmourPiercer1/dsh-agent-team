@@ -26,6 +26,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
+import { LIVE_IO, resolveDriveIo } from '../../../dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs'
 
 const REALM = 'u7ac1-c1-realm'
 const INSTANCE = 'u7ac1-instance'
@@ -130,6 +131,13 @@ const leg = async (host: FakeHost, name: string, observe: string[] = []) => {
 
 // ─────────────────────────────────────────────────────────────────────────
 describe('AC-1 C1 port — the public subagents/llm faces, Tier A forced at the port', () => {
+  it('drive IO resolver exercises override and no-override paths without TDZ shadowing', () => {
+    const override = { fetchJsonRetry: 'override' }
+    expect(resolveDriveIo(override).fetchJsonRetry).toBe('override')
+    expect(resolveDriveIo({}, { ...LIVE_IO, fetchJsonRetry: 'default' }).fetchJsonRetry).toBe('default')
+    expect(Object.keys(resolveDriveIo({}, LIVE_IO)).sort()).toEqual(['apiPrompt', 'authenticate', 'fetchJsonRetry', 'readFile', 'sleep', 'stableProbe'])
+  })
+
   it('AC1-P1 listAgents rides subagents.listChildren(caller.id, signal) and projects the native shape (continuable only)', async () => {
     const host = makeHost()
     const agent = makeAgent()
