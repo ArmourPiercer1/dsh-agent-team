@@ -175,6 +175,13 @@ ledger `scripts/eslint-node-globals/030-inspect-family.json`.
    executors booked FILE-BY-FILE for the SAME single thin face
    (`parseRequestedEffectSet`) the fs-family executors carry. Zero lane
    edits; pure-domain law untouched.
+6. `scripts/eb3-family-boundaries.mjs` (#398's boundary grader, merged
+   after this branch was cut) — the `dsh.inspect-family` booking in
+   `LANE_EDGES` + `LANE_ID_BY_LANE`, transcribed from the new lane README.
+   The booking round also moved this lane's two sibling imports from
+   sibling-INTERNALS (`fs-family/src/fs-mechanics.mjs`,
+   `search-family/src/cancel-leg.mjs`) to the siblings' PUBLIC barrels —
+   both symbols already ride those barrels; no other lane's file changed.
 
 ## Gate outputs
 
@@ -184,13 +191,17 @@ ledger `scripts/eslint-node-globals/030-inspect-family.json`.
   `node --test` suite passes 25/25 but takes 8.4 s wall while the wrapper
   `it()` sits on vitest's 5000 ms default (the census leg line itself names
   this clock fragility). No sanitizer file changed in the merge or this lane.
-  Re-run `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store --full
-  --census --census-test-timeout 30000 --resample 3`:
+  Run-5 and run-7 with the gate's own `--census-test-timeout 30000`:
   **`DSH-CI-VERDICT pass pass=8 fail=0 skip=0 skipped=none legs=8 refused=0`**
   with the census verdict printed at its declared clock
   (`--testTimeout=30000 ms, an operator override above the 5000 ms default —
   COUNTS MOVED, SET DID NOT — identity set IDENTICAL to the published
-  baseline`) — logs `ci-pr-gate-full-4.log` / `ci-pr-gate-full-5.log`.
+  baseline`). Run-6 (after the EB3 boundary round) caught ONE genuine new
+  red — `alpha5-search-backend M4` (the shipped-face import-closure walk,
+  raw-text regex): an EB3 comment of mine cited a quoted specifier and the
+  comment parsed as an edge; fixed (`fix(inspect): name no quoted specifier
+  in prose`) and run-7 is the final-head green. Logs
+  `ci-pr-gate-full-4.log` … `ci-pr-gate-full-7.log`.
 - `pnpm typecheck` clean; lint-identities: 76 distinct / **new 0**;
   docs:sync + probe blocking 0; `node scripts/eb3-ci-required.mjs`:
   `EB3-CI-REQUIRED pass workflows=9 findings=0`;
