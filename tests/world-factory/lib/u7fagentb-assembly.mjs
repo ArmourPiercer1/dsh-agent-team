@@ -55,10 +55,9 @@ export function createFAgentBAssembly(opts) {
  *  fails. */
 export function judgeU7FAgentB({ bootA, bootB, leakOk }) {
   const V = []
-  const has = (hits, re) => hits.some((l) => re.test(l))
   // A1 — zero flip: the ungoverned world mounts its plane exactly as
-  // before (placement-feed witness), and NOTHING of the agent-state family
-  // appears (no family line, no governed name in any placement row).
+  // shipped (the placement-feed witness rows are the rows master mounts),
+  // and NOTHING of the agent-state family appears anywhere.
   const aMounted = bootA.placementLines.length > 0
   const aFamilyFree = bootA.familyLines.length === 0
   const aNamesFree = bootA.placementLines.every((l) => !AGENT_STATE_LIVE_NAMES.some((n) => l.includes(n)))
@@ -68,29 +67,48 @@ export function judgeU7FAgentB({ bootA, bootB, leakOk }) {
     placementNamesFree: aNamesFree,
     law: 'ABSENT key = FALSE: no rows, no family witness lines, shipped placement byte-comparable (zero flip)',
   }])
-  // A2 — the native ride: todo_write exists on the model surface as the
-  // HOST NATIVE (the family claims nothing while disabled).
-  const nativeRide = bootA.surface.includes('todo_write')
-  V.push(['agt:native-ride-witness', nativeRide ? 'PASS' : 'FAIL', {
-    todoWriteOnSurface: nativeRide,
-    surfaceSample: bootA.surface.filter((n) => ['todo_write', 'read', 'write', 'bash'].includes(n)),
-    governedPlacementOfNativeNames: bootA.placementLines.filter((l) => l.includes('todo_write')).map((l) => l.slice(0, 160)),
+  // A2 — the surface is UNCHANGED: the shipped governed placements ride the
+  // model surface (read/write/edit/read_image are real placements), the
+  // anchored census-boot line shows the shipped boot signature completed,
+  // and NONE of the five agent-state spellings appears in ANY captured
+  // model request surface (leader or member).
+  // (DISCLOSED truth measured here: the 0.2.0-rc.2 team-session surface
+  // carries NO native `todo_write` at all — the native-ride premise of the
+  // first design does not hold on this host generation, so the honest
+  // witness is the NEGATIVE one: while disabled, the family contributes
+  // zero names to every surface, and the shipped names ride unchanged.)
+  const aShippedRide = ['read', 'write', 'edit', 'read_image'].every((n) => bootA.surfaceUnion.includes(n))
+  const aZeroNames = bootA.surfaceUnion.filter((n) => AGENT_STATE_LIVE_NAMES.includes(n)).length === 0
+  const aBootSignature = bootA.censusBootLines.length > 0
+  V.push(['agt:surface-unchanged-witness', aShippedRide && aZeroNames && aBootSignature ? 'PASS' : 'FAIL', {
+    shippedPlacementOnSurface: aShippedRide,
+    agentStateNamesOnAnySurface: bootA.surfaceUnion.filter((n) => AGENT_STATE_LIVE_NAMES.includes(n)),
+    censusBootWitness: bootA.censusBootLines.map((l) => l.slice(0, 160)),
+    surfaceUnion: bootA.surfaceUnion,
+    note: '0.2.0-rc.2 team sessions carry no native todo_write — disclosed, asserted as absence',
   }])
-  // B1 — enabled WITHOUT the production store port: the real host answers
-  // the typed mount refusal (never silence, never a degraded mount).
-  const refused = bootB.refusalHits.length > 0
-  const typedCode = bootB.refusalHits.some((l) => /PLANE_AGENT_STATE_STORE_MISSING|plane_agent_state_store_missing/.test(l))
-  V.push(['agt:enabled-mount-refused', refused && typedCode ? 'PASS' : 'FAIL', {
-    refusalHits: bootB.refusalHits.map((l) => l.slice(0, 240)),
+  // B1 — enabled WITHOUT the production store port: the mount refusal must
+  // be WITNESSED by a typed code string in at least one observable channel
+  // (host log / world-home persisted records / p6t6 state body / mock
+  // transcript). Silence FAILS — the suite never claims the refusal it
+  // cannot see.
+  const typedHits = bootB.refusalHits.filter((l) => CODE_RE_TEST.test(l))
+  V.push(['agt:enabled-mount-refused', typedHits.length > 0 ? 'PASS' : 'FAIL', {
+    typedCodeHits: typedHits.map((l) => l.slice(0, 240)),
+    allRefusalHits: bootB.refusalHits.map((l) => l.slice(0, 160)),
     law: 'an enabled agent-state family with no durable store port refuses the whole plane mount (fail closed) — production binder wires no store adapter and this lane added none',
   }])
   // B2 — the refused mount leaves NO governed trace: zero placement-feed
-  // lines, zero family RAN witnesses (nothing mounted, nothing ran).
-  const zeroPlane = bootB.placementLines.length === 0 && bootB.familyRanLines.length === 0
+  // rows, zero census-boot boot signatures, zero family RAN witnesses.
+  const zeroPlane = bootB.placementLines.length === 0 && bootB.censusBootLines.length === 0 && bootB.familyRanLines.length === 0
   V.push(['agt:enabled-zero-plane', zeroPlane ? 'PASS' : 'FAIL', {
     placementFeedLines: bootB.placementLines.length,
+    censusBootLines: bootB.censusBootLines.length,
     familyRanLines: bootB.familyRanLines.length,
+    note: 'the boot-A world shows both boot signatures (placement-feed + census-boot); their joint absence here is the mount-level halt witness, paired with B1 when B1 has its typed code',
   }])
   V.push(['agt:leak-check', leakOk ? 'PASS' : 'FAIL', { bothWorlds: true }])
   return V
 }
+
+const CODE_RE_TEST = /PLANE_AGENT_STATE_STORE_MISSING|plane_agent_state_store_missing/
