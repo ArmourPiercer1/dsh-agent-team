@@ -420,7 +420,7 @@ export async function ledgerBytes(dir, filename = 'writes.jsonl') {
 /** This host's identity: a reboot gives a NEW boot id (Linux), so a lock from
  *  a previous boot can be proven orphaned; '' when the platform has no such
  *  file (then only the pid leg can prove death). */
-const BOOT_ID = (() => {
+const DEFAULT_BOOT_ID = (() => {
   try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' }
 })()
 const HOST_ID = (() => { try { return hostname() } catch { return '' } })()
@@ -428,28 +428,28 @@ const pidAlive = (pid) => {
   if (!Number.isSafeInteger(pid) || pid <= 0) return false
   try { process.kill(pid, 0); return true } catch (error) { return error?.code !== 'ESRCH' }
 }
-const isCompleteLockRecord = (record) => record !== null && typeof record === 'object'
+const isCompleteLockRecord = (record, localBootId = DEFAULT_BOOT_ID) => record !== null && typeof record === 'object'
   && Number.isInteger(record.pid) && record.pid > 0
   && typeof record.host === 'string' && record.host.length > 0
-  && typeof record.boot === 'string' && record.boot.length > 0
+  && typeof record.boot === 'string' && (record.boot.length > 0 || localBootId === '')
   && typeof record.nonce === 'string'
   && typeof record.token === 'string'
   && typeof record.at === 'number' && Number.isFinite(record.at)
 
-async function readLockFile(path) {
+async function readLockFile(path, localBootId = DEFAULT_BOOT_ID) {
   try {
     const read = await safeReadRecord(path, 4096)
     if (read.ok !== true) return read.absent === true ? null : { invalid: true }
     let parsed
     try { parsed = JSON.parse(read.text) } catch { return { invalid: true } }
-    return isCompleteLockRecord(parsed) ? parsed : { invalid: true }
+    return isCompleteLockRecord(parsed, localBootId) ? parsed : { invalid: true }
   } catch { return { invalid: true } }
 }
 
 /** The lock record's identity: who, on which host, in which boot, beating
  *  under which token. Every field exists so a BREAKER can prove death
  *  (review round 2, F-4). */
-const lockRecord = (nonce, token, at) => JSON.stringify({ pid: process.pid, host: HOST_ID, boot: BOOT_ID, nonce, token, at })
+const lockRecord = (nonce, token, at, bootId = DEFAULT_BOOT_ID) => JSON.stringify({ pid: process.pid, host: HOST_ID, boot: bootId, nonce, token, at })
 
 /** Rewrite a lock record in place (the holder's beat, and the initial body):
  *  same atomic temp+fsync+rename path as every other durable byte. */
@@ -485,13 +485,13 @@ async function createLockRecord(dir, name, text, faultAt = async () => {}) {
 }
 
 /** MAY this holder be broken? Positive proof only (the F-4 table). */
-async function mayBreak(dir, name, holder, staleMs) {
+async function mayBreak(dir, name, holder, staleMs, bootId = DEFAULT_BOOT_ID) {
   if (holder === null) return true // vanished — retry the create
-  if (holder.invalid === true || !isCompleteLockRecord(holder)) return false // unprovable: never break
+  if (holder.invalid === true || !isCompleteLockRecord(holder, bootId)) return false // unprovable: never break
   if (holder.host !== HOST_ID) {
     return false // another host: unprovable from here (never broken)
   }
-  if (BOOT_ID !== '' && holder.boot !== BOOT_ID) {
+  if (bootId !== '' && holder.boot !== bootId) {
     return true // same host, previous boot: the owner died at the reboot
   }
   if (holder.pid === process.pid) return false // our own record: present by definition
@@ -501,7 +501,7 @@ async function mayBreak(dir, name, holder, staleMs) {
   // rewriting the record is alive no matter which pid number it grabbed.
   const before = holder.token
   await sleep(Math.min(staleMs, 1000))
-  const after = await readLockFile(`${dir.path}/${name}`)
+  const after = await readLockFile(`${dir.path}/${name}`, bootId)
   if (after === null) return true
   if (after.invalid === true || (after.token !== before) || after.nonce !== holder.nonce) return false // it is beating (or was re-locked)
   return !pidAlive(after.pid ?? holder.pid)
@@ -515,19 +515,19 @@ async function mayBreak(dir, name, holder, staleMs) {
  * owner policy — and the correctness-over-liveness trade — is in the module
  * header.
  */
-async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {} }) {
+async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {}, bootId = DEFAULT_BOOT_ID }) {
   const path = `${dir.path}/${name}`
   const nonce = randomUUID()
   const started = Date.now()
   let delay = 2
   for (;;) {
     try {
-      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now()), faultAt)
+      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
       let stopped = false
       let inFlight = null
       const beat = setInterval(() => {
         if (stopped || inFlight !== null) return
-        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now()), faultAt)
+        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
           .catch(() => {})
           .finally(() => { inFlight = null })
       }, heartbeatMs)
@@ -536,20 +536,20 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
         stopped = true
         clearInterval(beat)
         if (inFlight !== null) await inFlight
-        const held = await readLockFile(path)
+        const held = await readLockFile(path, bootId)
         if (held?.nonce === nonce) { try { await fsp.unlink(path) } catch { /* already gone */ } }
       }
     } catch (error) {
       if (error?.code !== 'EEXIST') throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock ${name} could not be created: ${String(error?.code ?? error)}`)
     }
-    const holder = await readLockFile(path)
-    if (await mayBreak(dir, name, holder, staleMs)) {
+    const holder = await readLockFile(path, bootId)
+    if (await mayBreak(dir, name, holder, staleMs, bootId)) {
       // Break by rename-aside: exactly one breaker wins the rename; the winner
       // verifies it took the SAME lock it judged, else restores it.
       const aside = `${dir.path}/.${name}.broken.${randomUUID()}`
       try {
         await fsp.rename(path, aside)
-        const taken = await readLockFile(aside)
+        const taken = await readLockFile(aside, bootId)
         if (taken !== null && taken.nonce !== holder?.nonce) {
           try { await fsp.link(aside, path) } catch { /* someone already re-locked */ }
         }
@@ -650,6 +650,7 @@ const REALM_LOCK = '_realm.lock'
  * @param {number} [input.lockTimeoutMs]
  * @param {number} [input.lockStaleMs]   the death-observation window.
  * @param {number} [input.lockHeartbeatMs] the holder's beat period.
+ * @param {string} [input.bootId] test-only boot identity seam; production defaults to the local boot id.
  * @param {() => string} [input.nowIso] persistence clock (the store owns it).
  * @param {(handle: import('node:fs').promises.FileHandle, text: string) => Promise<void>} [input.recordWriter]
  *        C1 crash-simulation seam ONLY. The descriptor never passes it.
@@ -663,6 +664,7 @@ export function createFsStateStore({
   rootDir, realmId, anchorDir = rootDir, armProvider = () => Object.freeze({ kind: 'model' }),
   maxScopeBytes = MAX_SCOPE_BYTES, maxScopes = MAX_SCOPES_PER_REALM,
   lockTimeoutMs = LOCK_TIMEOUT_MS, lockStaleMs = LOCK_STALE_MS, lockHeartbeatMs = LOCK_HEARTBEAT_MS,
+  bootId = DEFAULT_BOOT_ID,
   nowIso = () => new Date().toISOString(),
   recordWriter = writeAll, faultAt = () => {},
 }) {
@@ -713,7 +715,7 @@ export function createFsStateStore({
   }
   /** Hold the scope lock for `fn` (every apply/seed). */
   const underScopeLock = async (scope, fn) => withDir('locks', true, async (locks) => {
-    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt })
+    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
     try { return await fn(locks) } finally { await release() }
   })
   /** Commit `patch` onto the CURRENT record (caller holds the scope lock). */
@@ -741,7 +743,7 @@ export function createFsStateStore({
     })
     if (current !== null) return await write()
     // A NEW scope: the realm lock serialises the count against concurrent creators.
-    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt })
+    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
     try {
       const count = await withDir('scopes', true, async (scopes) => (await fsp.readdir(scopes.path)).filter((n) => n.endsWith('.json')).length)
       if (count >= maxScopes) {

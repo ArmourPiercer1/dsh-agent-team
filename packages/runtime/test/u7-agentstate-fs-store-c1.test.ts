@@ -584,6 +584,7 @@ const filesUnder = (dir: string): string[] => {
   return out
 }
 const storeWith = (opts: StoreOpts = {}): FsStore => lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, ...opts })
+const storeWithBoot = (boot: string, opts: StoreOpts = {}): FsStore => storeWith({ ...opts, bootId: boot })
 
 describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
   // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
@@ -810,10 +811,36 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     await new Promise((resolve) => setTimeout(resolve, 30))
     await beatStarted
     allowCommit()
+    const settledWhileBeatGated = await Promise.race([
+      pending.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 40)),
+    ])
+    expect(settledWhileBeatGated, 'release must await the gated in-flight beat').toBe(false)
     openBeat()
     expect((await pending).ok).toBe(true)
     expect(existsSync(scopeLockPath('agent:race-release'))).toBe(false)
     expect((await storeWith({ lockTimeoutMs: 100 }).applyTodos('agent:race-release', { todos: [{ content: 'y', status: 'pending' }], applyId: 'race-release-2' })).ok).toBe(true)
+  })
+
+  it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
+    for (let round = 1; round <= 10; round += 1) {
+      const seeded = storeWithBoot('')
+      await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
+      const results = await Promise.all([0, 1, 2, 3].map((i) => storeWithBoot('').applyGoal('agent:empty-race', {
+        expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      })))
+      expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
+      expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
+    }
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
+    expect((await storeWithBoot('', { lockStaleMs: 10 }).applyTodos('agent:empty-dead', { todos: [{ content: 'ok', status: 'pending' }], applyId: 'empty-dead' })).ok).toBe(true)
+    writeFileSync(scopeLockPath('agent:empty-invalid'), JSON.stringify({ pid: 2 ** 22 + 7778, host: host(), boot: '', nonce: 'invalid-empty', token: 't0', at: Date.now() }))
+    const before = bytesOf(writesPath())
+    const refused = await storeWithBoot('local-boot', { lockTimeoutMs: 80 }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' })
+    expect(refused).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(before)
   })
 
   it('R3-atomic initial lock publication leaves no target after injected pre-publish crash', async () => {
