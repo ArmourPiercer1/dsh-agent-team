@@ -204,8 +204,9 @@ async function drive({ world, assembly, planted, boot, decide }) {
   const teamSessionId = identity.teamSessionId ?? null
   const identityOk = createOk && identity.ok
   let independent = null
+  let projection = null
   if (teamSessionId !== null) {
-    const projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId }, 'u7tb-independent', 1)
+    projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId }, 'u7tb-independent', 1)
     const pv = unwrap(projection.body)
     independent = extractProjectionSessionId(pv)
   }
