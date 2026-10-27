@@ -50,11 +50,28 @@ error so it is **not** the record, run 5 is the clean record. `tests/homes/`
 empty after; the pristine `tests/deepseek-harness-test-use` remained byte-clean
 @ `639ed01539`.
 
-## Gate results
+## Gate results (local, at this PR's head)
 
-(recorded `ci-pr-gate --store-dir .tmp-pnpm-store --full --census` + typecheck +
-docs blocking 0 + `eb3-ci-required` + `gen-family-index --check` +
-`diag-call-chain --self-test` results appended below after the final run)
+- `ci-pr-gate --store-dir .tmp-pnpm-store --full --census`: **DSH-CI-VERDICT
+  pass pass=8 fail=0** — graph-parse, state-freshness, install,
+  blueprint-fence, typecheck, lint-identities (baseline 76 distinct, **new 0,
+  resolved 0**), artifacts-at-head (1835 files, drift 0 — HEAD carries its own
+  build), **census PASS** (nine roots, 286s). An earlier census capture at the
+  merge commit listed exactly TWO lane-caused reds — the un-booked
+  tool-governance consumer edges — booked in `chore(a5p0)` (file-by-file,
+  fs-family precedent); three further drift reds were proven on clean
+  origin/master in this worktree (client `dist` never built here + load
+  timing) and vanished after `pnpm build` — not lane-caused.
+- `pnpm typecheck`: clean (all packages, tests included).
+- `eb3-ci-required`: pass workflows=9 findings=0.
+- `docs:sync --check` blocking=0; `docs:probe --worktree-only`
+  blocking=0 non_blocking=0.
+- `gen-family-index --check`: OK (4 reviewed families).
+- `diag-call-chain --self-test`: OK 49 codes, 5 kinds (this PR's two family
+  refusal codes resolve through the reviewed manifest + descriptor
+  `refusalCode`, per #398).
+- C1 45/45, family seam 9/9, ARC-A fitness 12/12, p4t6 20/20, world-factory
+  offline 38/38, diag+devex `node --test` 44/44.
 
 ## Zero-plane-edit file list (everything touched)
 
