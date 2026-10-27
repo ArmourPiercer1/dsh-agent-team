@@ -639,7 +639,7 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
       await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const w0 = bytesOf(writesPath())
       const linesBefore = linesOf(writesPath()).length
-      const racers = [0, 1, 2, 3].map((i) => storeWith())
+      const racers = [0, 1, 2, 3].map(() => storeWith())
       const results = await Promise.all(racers.map((st, i) => st.applyGoal('agent:race', {
         expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
         next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
