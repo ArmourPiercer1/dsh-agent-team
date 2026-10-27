@@ -87,7 +87,11 @@ async function dryRun() {
   const createResponse = fixture.create
   const projectionResponse = fixture.projection
   const projectionInput = process.env.U7TB_DRY_RUN_MUTATE === '1' ? projectionResponse.body : projectionResponse
-  const governed = governedIdentityRecord({ createResponse, projectionResponse: projectionInput, expectedRoot: 'session-u7tb-dry', bootRoot: 'session-u7tb-root' })
+  // A faithful boot replay fixture names the REAL create/boot roots it carries
+  // (boot-7 ids); the dry defaults keep the synthetic-shape usage working.
+  const expectedRoot = fixture.expectedRoot ?? 'session-u7tb-dry'
+  const bootRoot = fixture.bootRoot ?? 'session-u7tb-root'
+  const governed = governedIdentityRecord({ createResponse, projectionResponse: projectionInput, expectedRoot, bootRoot })
   const ledger = ledgerControlFromEntries(fixture.ledger, { teamSessionId: governed.teamSessionId, pinnedCommandHash: commandHashOf(fixture.calls[0].command) })
   const ioCalls = []
   const io = resolveDriveIo({
@@ -97,9 +101,14 @@ async function dryRun() {
     mockTranscript: () => fixture.mockExcerpt ?? null,
   })
   await io.fetchJson('fixture://dry-run')
-  const digest = { governedSessionId: governed.teamSessionId, governed, pinned: { commandHash: commandHashOf(fixture.calls[0].command), claims: fixture.claims ?? { appr: 'U7TB_APPR_dry' }, ranEcho: fixture.ranEcho ?? { appr: 'U7TB_APPR_RAN' } }, calls: fixture.calls, resolutions: fixture.resolutions, ledger, effects: { appr: io.readEffect('appr') ?? fixture.effect, other: null, deny: null }, hostForensic: String(io.readHostLog()).split('\\n').filter(Boolean), seamReAllow: fixture.seamReAllow ?? { requestId: 'ctrl-dry', ok: false }, leak: fixture.leak ?? { inCorpus: false, inHostLog: false, bytesUnchanged: true }, ioCalls: ioCalls.length }
+  const digest = { governedSessionId: governed.teamSessionId, governed, pinned: { commandHash: commandHashOf(fixture.calls[0].command), claims: fixture.claims ?? { appr: 'U7TB_APPR_dry' }, ranEcho: fixture.ranEcho ?? { appr: 'U7TB_APPR_RAN' } }, calls: fixture.calls, resolutions: fixture.resolutions, ledger, effects: { appr: io.readEffect('appr') ?? fixture.effect, other: null, deny: null }, hostForensic: String(io.readHostLog()).split('\n').filter(Boolean), seamReAllow: fixture.seamReAllow ?? { requestId: 'ctrl-dry', ok: false }, leak: fixture.leak ?? { inCorpus: false, inHostLog: false, bytesUnchanged: true }, ioCalls: ioCalls.length }
+  // THE strengthened judge demands the ledger-backed binding chain; dry-run
+  // derives it through the SAME assembleTbashRecord/deriveBindingChain the
+  // live drive uses — never from a fixture-supplied chain.
+  const assembled = assembleTbashRecord({ digest, governed, ledger, calls: fixture.calls, resolutions: fixture.resolutions })
+  digest.governed = assembled.governedSession
   const verdicts = process.env.U7TB_DRY_RUN_MUTATE === '1' ? [['tbash:mounted', 'FAIL', { mutation: true }]] : [['tbash:mounted', governed.identityOk ? 'PASS' : 'FAIL', { identityOk: governed.identityOk }], ...judgeTbash(digest, fixture.hostAlive)]
-  const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
+  const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: digest.governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
   const outPath = join(HERE, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
   writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n')
   console.log(JSON.stringify(out, null, 2))
@@ -371,6 +380,8 @@ async function drive({ world, assembly, planted, boot, decide }) {
   const assembled = assembleTbashRecord({ digest, governed: run.record.governedSession, ledger: ctl, calls, resolutions })
   run.record.governedSession = assembled.governedSession
   run.record.tbashDigest = assembled.tbashDigest
+  // the strengthened judge reads identity + bindings from digest.governed
+  digest.governed = assembled.governedSession
   const hostAlive = world.instance?.child !== null && world.instance?.child !== undefined && world.instance.child.exitCode === null
   add('tbash:mounted', placement.length > 0 && (placement.at(-1) ?? '').includes('team_bash') && hostAlive ? 'PASS' : 'FAIL', {
     healthOk: true, stateOk: true, createOk, governedSession: teamSessionId,

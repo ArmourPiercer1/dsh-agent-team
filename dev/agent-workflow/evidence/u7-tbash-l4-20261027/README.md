@@ -210,6 +210,14 @@ Boot 6 **FAILED closed** before the governed drive: `team.create` durable and bi
 
 Offline re-judge is recorded in `c2/offline-rejudge-boot7.json`: boot-7 raw PASS 6/6 is retained untouched and strengthened offline re-judge PASSes using the retained identity, ledger, binding, effect, leak, and host-log evidence. No new boot was started.
 
+### 4.9 Dry-run fixture rebuilt on boot-7 bodies (review round 4)
+
+The strengthened judge (F-2/F-3) additionally reads `governed.bindings.rowToModelCall` and `ledger.requests[].rootSessionId`, which the old synthetic `dry-run-fixtures.json` never carried, so `run-c2.mjs --dry-run` judged FAIL after 4.8. Closed WITHOUT any new boot:
+
+- `c2/run-c2.mjs` dry-run now derives the binding chain through the SAME `assembleTbashRecord`/`deriveBindingChain` the live drive uses (the judge digest never takes a fixture-supplied chain), accepts the fixture's real `expectedRoot`/`bootRoot`, and splits the retained host log on real newlines; the live `drive()` path passes `digest.governed` to the judge symmetrically.
+- `c2/dry-run-fixtures.json` is rebuilt from the committed boot-7 bodies: real governed session `session-u7tb-team-u5u7tb-20261027t21-25-04z` (boot root `session-u7tb-root-...`), the four real `ctrl-*` requestIds with their recorded `rootSessionId`/fingerprints/summaries, the real `call-u6fs-*` toolUseIds (as recorded in `mock-excerpt-boot7.json`), the real command hashes (`sha256:35a473dc…` = `commandHashOf(call0.command)`, replay-equal; `756db05f…`/`e60ee4c3…` for other/deny), the retained `host-boot7.log` (exactly one `confined-shell ran … exit=0` witness line), and the real seam-refusal body. create/projection bodies are faithful reconstructions from the truncated recorded excerpts (noted in the fixture `note`). 15,575 bytes ≤ 1 MiB.
+- Result: `node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json` ends **overall=PASS, 6/6** (`c2/dry-run-GREEN.json`/`.log`); the forged-projection mutation still ends FAIL (`c2/dry-run-RED.json`/`.log`). C1 (`tests/world-factory/u7-tbash.test.mjs`) gains strengthened-gate mutation controls: forged identity, disagreeing independent/durable/bind reads, empty/unmatched/forged/foreign binding chains each force EVERY judged case to FAIL; its green digest now carries the boot-7-shaped identity + `deriveBindingChain` bindings.
+
 ### 4.7 Review round 1 closure
 
 - **F-1 identity:** closed by the create durable+bind identity extractor plus independent projection cross-check; boot 5 records `governedSession.identityOk=true` and matching session IDs.

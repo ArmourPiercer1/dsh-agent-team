@@ -176,15 +176,15 @@ test('u7-tbash: the brain issues the 4-step script from the transcript; fence ne
   assert.deepEqual(fenced, { kind: 'text', content: a.DONE.leader })
 }))
 
-function greenDigest(commandHashOf) {
+function greenDigest(commandHashOf, deriveBindingChain) {
   const A = "printf 'U7TB_APPR_x\\n' >> '/w/a' && echo U7TB_APPR_RAN"
-  return {
+  const digest = {
     pinned: { commandHash: commandHashOf(A), claims: { appr: 'U7TB_APPR_x' }, ranEcho: { appr: 'U7TB_APPR_RAN', other: 'U7TB_OTHER_RAN', deny: 'U7TB_DENY_RAN' } },
     calls: [
-      { step: 0, tag: 'appr', command: A, result: { isError: false, text: 'U7TB_APPR_RAN' } },
-      { step: 1, tag: 'replay', command: A, result: { isError: false, text: 'a5p5-refused kind=refused-admission code=APPROVAL_DENIED' } },
-      { step: 2, tag: 'other', command: 'printf B', result: { isError: false, text: 'a5p5-refused code=APPROVAL_DENIED' } },
-      { step: 3, tag: 'deny', command: 'printf D', result: { isError: false, text: 'a5p5-refused code=APPROVAL_DENIED' } },
+      { step: 0, tag: 'appr', command: A, toolUseId: 'u-0', result: { isError: false, text: 'U7TB_APPR_RAN' } },
+      { step: 1, tag: 'replay', command: A, toolUseId: 'u-1', result: { isError: false, text: 'a5p5-refused kind=refused-admission code=APPROVAL_DENIED' } },
+      { step: 2, tag: 'other', command: 'printf B', toolUseId: 'u-2', result: { isError: false, text: 'a5p5-refused code=APPROVAL_DENIED' } },
+      { step: 3, tag: 'deny', command: 'printf D', toolUseId: 'u-3', result: { isError: false, text: 'a5p5-refused code=APPROVAL_DENIED' } },
     ],
     resolutions: [
       { requestId: 'rA', step: 0, decision: 'allow', ok: true },
@@ -193,9 +193,16 @@ function greenDigest(commandHashOf) {
       { requestId: 'rD', step: 3, decision: 'deny', ok: true },
     ],
     governedSessionId: 'team-1',
+    // strengthened judge gate: identity agreed by create/durable/bind + independent read
+    governed: { identityOk: true, fromIndependentRead: 'team-1', fromDurable: 'team-1', fromBind: 'team-1' },
     hostForensic: ['confined-shell ran realm=x exit=0 timedOut=false cancelled=false'],
     ledger: {
-      requests: [{ requestId: 'rA', rootSessionId: 'team-1', status: 'settled' }],
+      requests: [
+        { requestId: 'rA', rootSessionId: 'team-1', status: 'settled' },
+        { requestId: 'rR', rootSessionId: 'team-1', status: 'settled' },
+        { requestId: 'rB', rootSessionId: 'team-1', status: 'settled' },
+        { requestId: 'rD', rootSessionId: 'team-1', status: 'settled' },
+      ],
       decisions: [{ requestId: 'rA', decision: 'allow' }, { requestId: 'rR', decision: 'deny' }, { requestId: 'rB', decision: 'deny' }, { requestId: 'rD', decision: 'deny' }],
       consumptions: [{ requestId: 'rA' }],
     },
@@ -203,14 +210,19 @@ function greenDigest(commandHashOf) {
     effects: { appr: 'U7TB_APPR_x\n', other: null, deny: null },
     leak: { inCorpus: false, inHostLog: false, bytesUnchanged: true },
   }
+  // the strengthened judge gate: the ledger-backed binding chain, derived
+  // through the SAME deriveBindingChain the runner uses (never hand-fed)
+  digest.bindings = deriveBindingChain({ ledger: digest.ledger, calls: digest.calls, resolutions: digest.resolutions, governedSessionId: 'team-1' })
+  return digest
 }
 
 test('u7-tbash: judge — all-green PASSes, and every case flips on its own evidence (mutation controls)', async () => {
-  const { judgeTbash, commandHashOf, TBASH_CASES } = await lib()
+  const { judgeTbash, commandHashOf, deriveBindingChain, TBASH_CASES } = await lib()
+  const green = () => greenDigest(commandHashOf, deriveBindingChain)
   const verdicts = (d, alive = true) => Object.fromEntries(judgeTbash(d, alive).map(([id, v]) => [id, v]))
-  const green = verdicts(greenDigest(commandHashOf))
-  assert.deepEqual(Object.keys(green).sort(), TBASH_CASES.filter((c) => c !== 'tbash:mounted').sort())
-  for (const v of Object.values(green)) assert.equal(v, 'PASS')
+  const greenAll = verdicts(green())
+  assert.deepEqual(Object.keys(greenAll).sort(), TBASH_CASES.filter((c) => c !== 'tbash:mounted').sort())
+  for (const v of Object.values(greenAll)) assert.equal(v, 'PASS')
   const mutations = {
     'tbash:approve-spawn-once': [
       (d) => { d.effects.appr = 'U7TB_APPR_x\nU7TB_APPR_x\n' }, // two spawns
@@ -248,16 +260,33 @@ test('u7-tbash: judge — all-green PASSes, and every case flips on its own evid
   }
   for (const [caseId, list] of Object.entries(mutations)) {
     for (const [i, mutate] of list.entries()) {
-      const d = greenDigest(commandHashOf)
+      const d = green()
       mutate(d)
       assert.equal(verdicts(d)[caseId], 'FAIL', `${caseId} mutation #${String(i)} must FAIL`)
     }
   }
+  // strengthened gates: a forged identity or an unbacked/mismatched binding
+  // chain forces EVERY judged case to FAIL (fail closed, not just its own)
+  const gates = {
+    'forged identityOk': (d) => { d.governed.identityOk = false },
+    'independent read disagrees': (d) => { d.governed.fromIndependentRead = 'team-2' },
+    'durable read disagrees': (d) => { d.governed.fromDurable = 'team-2' },
+    'bind read disagrees': (d) => { d.governed.fromBind = 'team-2' },
+    'empty binding chain': (d) => { d.bindings.rowToModelCall = [] },
+    'binding without ledger match': (d) => { d.bindings.rowToModelCall[0].ledgerMatched = false },
+    'binding ledgerRequestId forged': (d) => { d.bindings.rowToModelCall[0].ledgerRequestId = 'missing' },
+    'binding on foreign session': (d) => { d.bindings.rowToModelCall[0].rootSessionId = 'team-2' },
+  }
+  for (const [name, mutate] of Object.entries(gates)) {
+    const d = green()
+    mutate(d)
+    for (const [caseId, verdict] of Object.entries(verdicts(d))) assert.equal(verdict, 'FAIL', `gate mutation "${name}" must FAIL ${caseId}`)
+  }
   // a dead host fails every effect case
-  const dead = verdicts(greenDigest(commandHashOf), false)
+  const dead = verdicts(green(), false)
   for (const c of ['tbash:approve-spawn-once', 'tbash:replay-refused', 'tbash:other-command-refused', 'tbash:deny-zero-effect']) assert.equal(dead[c], 'FAIL')
   // the synchronous-refusal replay mode (no second row) is ALSO a pass
-  const sync = greenDigest(commandHashOf)
+  const sync = green()
   sync.resolutions = sync.resolutions.filter((r) => r.step !== 1)
   sync.ledger.decisions = sync.ledger.decisions.filter((x) => x.requestId !== 'rR')
   assert.equal(verdicts(sync)['tbash:replay-refused'], 'PASS')
