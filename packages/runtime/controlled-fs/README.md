@@ -32,8 +32,9 @@ Run the lane (from `packages/runtime/controlled-fs/`):
   `{exists:false, kind:'unknown', withheld:true}` — withheld is not absent.
 - **open-at-exec 重读** — `src/open-at-exec.ts`: object re-read runs AFTER
   the OS open and BEFORE any byte moves (`/proc/self/fd` realpath under the
-  anchor; `fstat` (dev,ino) equality with the check-time snapshot); policy
-  re-read rides the `AdmissionRecheck` seam.
+  anchor; `fstat` (dev,ino) equality with the check-time snapshot; a regular
+  file must carry exactly ONE link — `nlink === 1`). Policy re-read rides the
+  `AdmissionRecheck` seam. The link-count clause is stated in §1.1 below.
 - **PR0 interface law carried through**: grant-per-call (no shared mutable
   grant), checks before open, `limit:null` window law (no default windows),
   write receipts never echo old content (M-02), no standing fd across calls

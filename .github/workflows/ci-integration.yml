@@ -161,6 +161,13 @@ jobs:
         # no layer, which is how two of their defects reached master unseen.
         run: node --test tests/u7-3-devex/devex-integration.test.mjs tests/diag-call-chain/diag-call-chain.test.mjs
 
+      - name: "tests/checks node:test suites (dist-placements, eslint-node-globals — host-free)"
+        # u7-fixfwd (2026-10-27): declared as a leg with both file paths as required tokens.
+        # dist-placements.test.mjs was 4/5 fail on clean master and no CI ran it;
+        # eslint-node-globals.test.mjs had the same exposure. Dropping either path is
+        # CI_LAYER_LEG_WEAKENED. New tests/checks suites join this step AND the manifest leg.
+        run: node --test tests/checks/dist-placements.test.mjs tests/checks/eslint-node-globals.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

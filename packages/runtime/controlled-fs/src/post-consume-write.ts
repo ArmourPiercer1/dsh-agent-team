@@ -385,6 +385,15 @@ export function createPostConsumeWriteClosure(
             `post-consume write refused: the open landed OUTSIDE the approved root anchor (fd resolved to ${verdict.resolvedPath}); nothing was truncated or written`,
           ))
         }
+        if (verdict.verdict === 'hardlink-alias') {
+          // Verified BEFORE truncation (P2): a hardlinked target shares its
+          // inode with a name the grant never covered — writing through it
+          // would mutate that outside name. Clean denial, zero side effect.
+          return settle(cfsDenial(
+            'hardlink-alias',
+            `post-consume write refused: ${verdict.detail}; nothing was truncated or written`,
+          ))
+        }
         if (verdict.verdict !== 'confirmed') {
           // drift / undeterminable: identity cannot be established BEFORE
           // truncation — the EXISTING lane law verbatim (no bytes claimed,

@@ -1,0 +1,18 @@
+✔ shipped ledger: N derived from disk, glue first, every file non-empty, frozen list == a fresh load (2.688034ms)
+✔ mirror filter: covers every shipped extension (json included) and no tsc-emitted one (0.208272ms)
+✔ shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file) (0.357751ms)
+✔ enumeration is deterministic: two loads agree, and the order is the file-name prefix (1.513093ms)
+✔ RED-first: a REMOVED placement is detected — DELTA N-1 (the drift a by-hand list hid) (2.941699ms)
+✔ RED-first: a mis-named file, a duplicate prefix, an unknown schema and an empty list all refuse (6.392529ms)
+✔ RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (2.408072ms)
+✔ order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse (1.300423ms)
+✔ RED-first: an EMPTY directory refuses instead of reading as "no placements" (0.418443ms)
+✔ a new family adds ONE file and edits none: the appended entry lands after the existing ones (DELTA N+1) (5.242686ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.427948
