@@ -112,10 +112,20 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   (`a5lsp2-streaming` spawn tests; standalone re-runs flip WHICH test is
   red under vitest's 5000 ms default on this shared, spawn-sensitive
   host). `rc2-sanitize-evidence` passes 13/13 with
-  `--testTimeout=30000`; `a4p7-merge-gate` green standalone between red
-  rounds. Stated, not hidden: post-booking local census reds are
-  host-load artifacts on spawn/timer-sensitive tests, NOT lane findings;
-  the AUTHORITATIVE census is the hosted one.
+  `--testTimeout=30000`; the `a4p7-merge-gate` arm's cause was then
+  root-caused in round 3 (missing local client build, below) — the
+  round-2 attribution to load alone was incomplete, corrected here.
+- Round 3 (local): 7/8, the single red was the a4p7 composition-smoke
+  arm — root-caused honestly: NOT load, NOT lane code — this worktree had
+  never built the gitignored client artifact
+  (`packages/client/dist/.../plugin/client.js` absent, "Run pnpm build
+  and re-run this leg"). Hosted CI builds it (which is why hosted
+  ci-full was green from round 1). After a local
+  `DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build`, the suite is
+  35/35 GREEN — recorded at round 4 below.
+- Round 4 (local, client built): **DSH-CI-VERDICT pass pass=8 fail=0
+  skip=0 refused=0 legs=8** (`ci-pr-gate-full-census-round4.log`) —
+  every leg including the nine-root census green on this checkout.
 - Hosted (authoritative, PR #403) round 1 @ `02c64aa0f`: pr-gate SUCCESS
   (40458857327), candidate-protection SUCCESS (40458857234),
   census-runtime SUCCESS (40458857196); ci-required (40458857297) FAIL —
@@ -130,6 +140,12 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   family lane rides). Local `eb3-family-boundaries` pass files=42
   findings=0; p4t6 + arc-A fitness + docs re-verified green. Round 2
   below carries the fix.
+- Hosted round 2 @ `aa9bdc8e3`: **ALL GREEN** — pr-gate 40462280311
+  success, candidate-protection 40462280252 success, census-runtime
+  40462280253 success, ci-required 40462280320 success with
+  `EB3-REQUIRED pass layers=5 green=5 nongreen=none`; inside it
+  ci-full `DSH-CI-VERDICT pass pass=8 fail=0` with
+  `leg=census verdict=pass` (SET DID NOT move).
 
 Verdict law followed throughout: a blocked arm is DISCLOSED (ENV_BLOCK /
 verbatim refusal text), never flipped to PASS; the DECISION-3 limit (the

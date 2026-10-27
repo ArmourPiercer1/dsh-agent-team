@@ -139,13 +139,14 @@ eb3-ci-required pass (workflows=9 findings=0), docs:sync --check /
 docs:probe blocking=0, p4t6 20/20, arc-A fitness 12/12, family-seam 9/9,
 world-factory offline 50/50, registries 12/12 — full captures under
 `dev/agent-workflow/evidence/u7-f-web-20261026/`. Local census honesty:
-round 1 named two REAL reds of this lane (the a5p0 tool-governance
-consumer audit — booked file-by-file in a follow-up commit, same thin
-face as fs-family, zero lane edits); round 2's reds are shared-host
-load/spawn artifacts (counts stable 635f/8113l, red set MOVED between
-rounds; the failing suites pass standalone with a fair clock) — recorded
-verbatim in the evidence README. Hosted runs are the authoritative
-census; results are reported as they land.
+round 1 named two REAL reds of this lane (a5p0 consumer audit — booked
+file-by-file; hosted ci-integration round 1 then named the unbooked
+family-boundaries lane — booked via the law-home README + `LANE_EDGES`),
+and a local-only client-build provisioning gap root-caused honestly;
+final local round: **8/8 PASS incl. the nine-root census**. Hosted
+(authoritative): ci-required **pass layers=5 green=5 nongreen=none**
+(census-runtime, pr-gate, candidate-protection all success) — run ids in
+the evidence README.
 
 ## Law choices disclosed (deliberate, not gaps)
 
