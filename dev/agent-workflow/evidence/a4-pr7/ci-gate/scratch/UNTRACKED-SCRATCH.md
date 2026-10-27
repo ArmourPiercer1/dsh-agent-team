@@ -75,3 +75,27 @@ adds it also cites the fact derived from it.** A 3.7 MB vitest report whose deri
 live in `../population-baseline/` is scratch; the derived numbers are the evidence.
 
 `git add -A` is the mechanism that broke this twice. Lane commits should name their paths.
+
+## 2026-10-27: raw captures no longer land here; a CI leg refuses them
+
+The rule above was prose, and prose lost three times in two days (PR #396, then lanes re-committing
+6–8 captures each, e.g. one commit adding 3 × 3.8 MB captures next to their 3 sidecars). Two
+mechanical changes replace it:
+
+1. **Separation at the source.** `scripts/ci-pr-gate.mjs` now writes raw census captures
+   (`census-<stamp>-<pid>-<n>.json`) and load-family re-samples (`resample-*.json`) to
+   `.artifacts/census/` at the repository root, which is gitignored (`.artifacts/`). Only the
+   comparison sidecar `census-comparison-<stamp>-<pid>.json` is written here, and the leg line
+   still cites it by path. The sidecar's `reports[].jsonPath` names the capture's
+   `.artifacts/census/…` location. `--census-json` reads a capture from wherever you point it.
+2. **Machine guard.** `scripts/eb3-evidence-guard.mjs` runs as a declared `ci-integration` leg
+   (`--new-since "$CI_BASE"`). Over files a PR **adds** under `dev/agent-workflow/evidence/`, it
+   refuses any raw-capture or resample name anywhere (`EVIDENCE_RAW_CAPTURE`, no exemption).
+   It also refuses any file over 1 MiB that `dev/ci/evidence-large-allowlist.json` does not
+   list with a reason (`EVIDENCE_OVERSIZED`). The negative controls are C15–C19 in
+   `scripts/eb3-ci-negative-controls.mjs`.
+
+The files listed in the table above and in the 2026-10-26 correction still sit untracked on
+disk where they were captured, and none of them is affected. A capture that has to be committed
+because a document cites a fact derived from it is still refused by name. Gzip it
+(`.json.gz`, as with `census-32-1.json.gz`) or, better, commit the derived numbers.
