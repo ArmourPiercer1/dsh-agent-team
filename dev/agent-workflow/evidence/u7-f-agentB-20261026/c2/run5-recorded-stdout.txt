@@ -1,0 +1,6 @@
+[u7-fagentb] case agt:zero-flip-mount: PASS {"placementFeedWitness":["[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5x-20261027t00-41-37z","[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,tea
+[u7-fagentb] case agt:surface-unchanged-witness: PASS {"shippedPlacementOnSurface":true,"agentStateNamesOnAnySurface":[],"censusBootWitness":["[dsh-agent-team] a5ptc: census-boot root=session-u7fsmut-team-u5x-20261027t00-41-37z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktree
+[u7-fagentb] case agt:enabled-mount-refused: PASS {"typedCodeHits":["team-create-body: PLANE_AGENT_STATE_STORE_MISSING"],"allRefusalHits":["team-create-body: PLANE_AGENT_STATE_STORE_MISSING"],"law":"an enabled agent-state family with no durable store port refuses the whole plane mount (fai
+[u7-fagentb] case agt:enabled-zero-plane: PASS {"placementFeedLines":0,"censusBootLines":0,"familyRanLines":0,"note":"the boot-A world shows both boot signatures (placement-feed + census-boot); their joint absence here is the mount-level halt witness, paired with B1 when B1 has its type
+[u7-fagentb] case agt:leak-check: PASS {"bothWorlds":true}
+RUN-SUMMARY run=u5-u7-fagentb-x-2026-10-27T00-41-36-828Z suite=u7-fagentb overall=PASS cases=6 PASS:6 worlds=u5x-20261027T00-41-37Z|u5x-20261027T00-42-28Z

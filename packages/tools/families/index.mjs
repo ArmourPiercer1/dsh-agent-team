@@ -9,6 +9,7 @@ import { familyAssembly as f3 } from './inspect.mjs'
 import { familyAssembly as f4 } from './web.mjs'
 import { familyAssembly as f5 } from './agent-control.mjs'
 import { familyAssembly as f6 } from './ui.mjs'
+import { familyAssembly as f7 } from './agent-state.mjs'
 
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -22,4 +23,5 @@ export const FAMILY_INDEX = Object.freeze([
   Object.freeze({ module: 'web.mjs', familyAssembly: f4 }),
   Object.freeze({ module: 'agent-control.mjs', familyAssembly: f5 }),
   Object.freeze({ module: 'ui.mjs', familyAssembly: f6 }),
+  Object.freeze({ module: 'agent-state.mjs', familyAssembly: f7 }),
 ])

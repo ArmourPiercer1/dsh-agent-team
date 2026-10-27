@@ -1,0 +1,41 @@
+{
+  "head": "13a46cd47c7fbd7eb30768f601ea46fcd49e441c",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/.artifacts/census/census-20261027T125022Z-40-1.json",
+      "files": 641,
+      "legs": 8355,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs every workspace package that declares a typecheck script typechecks"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs every workspace package that declares a typecheck script typechecks"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs every workspace package that declares a typecheck script typechecks"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 641,
+      "legs": 8355,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "641f/8355l",
+      "totalsNote": "captured 641f/8355l vs baseline-declared 626 / 7936"
+    }
+  }
+}

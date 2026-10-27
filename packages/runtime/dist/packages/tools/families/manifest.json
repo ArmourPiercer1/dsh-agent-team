@@ -25,6 +25,9 @@
     },
     "ui-interaction": {
       "backsExecution": "family-body"
+    },
+    "agent-state": {
+      "backsExecution": "family-body"
     }
   },
   "families": [
@@ -55,6 +58,10 @@
     {
       "module": "ui.mjs",
       "sha256": "160c318b52820d45741bd81ac797835d3560983951a44ccde664c11139679a76"
+    },
+    {
+      "module": "agent-state.mjs",
+      "sha256": "f6ac552f51a354ac133e6c1ac81cec688736dc2aa673e52d4139021f6d51e605"
     }
   ]
 }

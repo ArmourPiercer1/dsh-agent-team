@@ -1,0 +1,283 @@
+{
+  "boots": [
+    {
+      "phase": "u7fagentb-bootA-zero-flip",
+      "world": "u5x-20261027T00-33-17Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/logs/u5x-20261027T00-33-17Z/instance-port3181.log"
+    },
+    {
+      "phase": "u7fagentb-bootB-enabled-refused",
+      "world": "u5x-20261027T00-33-24Z",
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/logs/u5x-20261027T00-33-24Z/instance-port3181.log"
+    }
+  ],
+  "bootA": {
+    "bootError": null,
+    "health": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-17z",
+        "liveSessions": [
+          "session-u7fsmut-root-u5x-20261027t00-33-17z"
+        ],
+        "toolCount": 15
+      }
+    },
+    "state": {
+      "status": 200,
+      "body": {
+        "boot": 1,
+        "phase": "create",
+        "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-17z",
+        "teamSession": {
+          "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-17z",
+          "blueprintId": "team.u7fsmut.anchor",
+          "revision": "1",
+          "contentHash": "sha256:f438ec0285db8edf1e401069e5288608cd9214acbb6e7d72fdc7cf4d84022986",
+          "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/tests/deepseek-harness-test-use",
+          "createdAt": "2026-10-27T00:33:21.874Z",
+          "generation": 2
+        },
+        "members": [
+          {
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "childSessionId": "undefined",
+            "lifecycle": "undefined",
+            "activityVersion": 1
+          }
+        ],
+        "control": {
+          "requests": [],
+          "decisions": [],
+          "consumptions": [],
+          "abandonments": []
+        },
+        "activity": [],
+        "pendingDeliveries": {
+          "recovered": [],
+          "skipped": []
+        },
+        "governance": {
+          "overrides": [],
+          "sessions": {
+            "session-u7fsmut-root-u5x-20261027t00-33-17z": {
+              "instanceId": "inst-leader",
+              "model": {
+                "current": {
+                  "provider": "deepseek-official",
+                  "model": "u7fsmut-model"
+                },
+                "selection": {
+                  "provider": "deepseek-official",
+                  "model": "u7fsmut-model"
+                },
+                "source": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null
+                },
+                "suppressed": [],
+                "unavailable": false,
+                "deniedBy": {
+                  "by": "team",
+                  "reason": "unspecifiedFailClosed"
+                },
+                "pendingNextBoundary": [],
+                "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+              },
+              "mcp": {
+                "servers": {}
+              }
+            }
+          }
+        },
+        "observations": [
+          "u6-center-shadow: shadow-installed"
+        ]
+      }
+    },
+    "teamCreate": {
+      "status": 200,
+      "ok": true,
+      "errorHead": ""
+    },
+    "surfaceUnion": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "write",
+      "team_bash",
+      "team_glob",
+      "team_grep"
+    ],
+    "placementLines": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5x-20261027t00-33-17z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5x-20261027t00-33-17z"
+    ],
+    "censusBootLines": [
+      "[dsh-agent-team] a5ptc: census-boot root=session-u7fsmut-team-u5x-20261027t00-33-17z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)"
+    ],
+    "familyLines": [],
+    "refusalHits": []
+  },
+  "bootB": {
+    "bootError": null,
+    "health": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "boot": 1,
+        "ready": true,
+        "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-24z",
+        "liveSessions": [
+          "session-u7fsmut-root-u5x-20261027t00-33-24z"
+        ],
+        "toolCount": 15
+      }
+    },
+    "state": {
+      "status": 200,
+      "body": {
+        "boot": 1,
+        "phase": "create",
+        "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-24z",
+        "teamSession": {
+          "rootSessionId": "session-u7fsmut-root-u5x-20261027t00-33-24z",
+          "blueprintId": "team.u7fsmut.anchor",
+          "revision": "1",
+          "contentHash": "sha256:089df8ec2ed85250c5486ead6a88b23a7012f978b24f78936717b54e41ae0bf1",
+          "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/tests/deepseek-harness-test-use",
+          "createdAt": "2026-10-27T00:33:27.818Z",
+          "generation": 2
+        },
+        "members": [
+          {
+            "instanceId": "inst-leader",
+            "templateId": "leader",
+            "label": "leader",
+            "childSessionId": "undefined",
+            "lifecycle": "undefined",
+            "activityVersion": 1
+          }
+        ],
+        "control": {
+          "requests": [],
+          "decisions": [],
+          "consumptions": [],
+          "abandonments": []
+        },
+        "activity": [],
+        "pendingDeliveries": {
+          "recovered": [],
+          "skipped": []
+        },
+        "governance": {
+          "overrides": [],
+          "sessions": {
+            "session-u7fsmut-root-u5x-20261027t00-33-24z": {
+              "instanceId": "inst-leader",
+              "model": {
+                "current": {
+                  "provider": "deepseek-official",
+                  "model": "u7fsmut-model"
+                },
+                "selection": {
+                  "provider": "deepseek-official",
+                  "model": "u7fsmut-model"
+                },
+                "source": {
+                  "layer": "unspecified",
+                  "origin": "static",
+                  "recordId": null
+                },
+                "suppressed": [],
+                "unavailable": false,
+                "deniedBy": {
+                  "by": "team",
+                  "reason": "unspecifiedFailClosed"
+                },
+                "pendingNextBoundary": [],
+                "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+              },
+              "mcp": {
+                "servers": {}
+              }
+            }
+          }
+        },
+        "observations": [
+          "u6-center-shadow: shadow-installed"
+        ]
+      }
+    },
+    "teamCreate": {
+      "status": 200,
+      "ok": false,
+      "errorHead": ""
+    },
+    "placementLines": [],
+    "censusBootLines": [],
+    "familyRanLines": [],
+    "refusalHits": [],
+    "surfaceUnion": []
+  },
+  "leaks": {
+    "bootA": {
+      "ok": true,
+      "detail": {
+        "ownedPidsDead": true,
+        "portsReleased": true,
+        "stillBound": [],
+        "homeReleased": true,
+        "leasesReleased": true,
+        "heldLease": [],
+        "notes": [
+          "home kept as evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/tests/homes/u5x-20261027T00-33-17Z"
+        ]
+      }
+    },
+    "bootB": {
+      "ok": true,
+      "detail": {
+        "ownedPidsDead": true,
+        "portsReleased": true,
+        "stillBound": [],
+        "homeReleased": true,
+        "leasesReleased": true,
+        "heldLease": [],
+        "notes": [
+          "home kept as evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentB/tests/homes/u5x-20261027T00-33-24Z"
+        ]
+      }
+    }
+  },
+  "disclosed": "ENABLED-AND-STORE-MOUNTED positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write with zero reach) have NO production seam on this tree: agent-bindings.mjs wires backends for the jobs bridge only and this lane edited no binder line. They are PROVEN at C1 over the real plane and the real kernel grant (packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts) and are NOT claimed live here. A durable store adapter is a separate named binder lane. Also disclosed: the 0.2.0-rc.2 team-session model surface carries no native todo_write; the family-disabled surface claim is asserted as ABSENCE of the five spellings.",
+  "law": {
+    "zeroFlip": "agentStateEnabled ABSENT = FALSE: no rows, no family witnesses, shipped placement + census-boot signatures unchanged",
+    "failClosed": "enabled with no store port -> whole plane mount refused PLANE_AGENT_STATE_STORE_MISSING; witnessed typed code required, silence FAILS"
+  }
+}

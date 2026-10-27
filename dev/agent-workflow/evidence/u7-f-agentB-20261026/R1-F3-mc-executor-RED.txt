@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+AssertionError: requested arms of get_goal === declared row arms: expected [ 'meta', 'tool-invoke' ] to deeply equal [ 'meta' ]
+    330|       expect(arms, `requested arms of ${tool} === declared row arms`).…
+      Tests  1 failed | 51 skipped (52)

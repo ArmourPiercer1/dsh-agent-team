@@ -215,18 +215,18 @@ test('suites RED-first (review R1 F-1): a stray entry — other extension, subdi
   }
 })
 
-test('suites: the TEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + U7-F u7-f-ui + u7-f u7-f-web), prefix order, budgets as the old ternary', async () => {
+test('suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary', async () => {
   const a = await loadSuites()
   const b = await loadSuites()
   // 88107ad71 hand-wired the first six; u7-f ADDED u7-f-ui and u7-f-web as
   // drop-in lane modules (enumeration law — a lane joining extends the derived list).
   assert.deepEqual(a.map((s) => [s.suite, s.totalRequests]), [
-    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60], ['u7-f-ui', 60],
+    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60], ['u7-f-ui', 60], ['u7-fagentb', 160],
   ])
   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-f-ui', 'u7-f-web', 'u7-fs-mut', 'u7-pwsh'])
+  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-f-ui', 'u7-f-web', 'u7-fagentb', 'u7-fs-mut', 'u7-pwsh'])
 })
 
 test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {

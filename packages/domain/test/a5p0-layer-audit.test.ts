@@ -129,6 +129,17 @@ describe('the tool-governance lane audit', () => {
       // domain reach (file-by-file booking, zero lane edits; owner role:
       // agent-control-family). Alphabetical here, as the fs block states.
       'tools/agent-control-family/src/agent-control-executor.mjs',
+      // U7-F B (agent-state family): the five governed agent-state rows
+      // (todo_write/create_goal/get_goal/update_goal/exit_plan_mode) book
+      // TWO thin faces, file-by-file — `executors.mjs` consumes ONLY
+      // `parseRequestedEffectSet` (the SAME effect-grammar face the
+      // fs-family executors carry below) to validate the per-call PA arm
+      // sets, and `contribution.mjs` consumes ONLY `canonicalJsonStringify`
+      // (the deterministic canonical serialization behind the
+      // contribution's provider digest — pure function, zero authority).
+      // Zero lane edits; alphabetically placed, as everywhere here.
+      'tools/agent-state-family/src/contribution.mjs',
+      'tools/agent-state-family/src/executors.mjs',
       // U6 PR2 + U7-9a: the FS family's FOUR executors (read/write/edit/
       // read_image bodies) each consume the ONE effect-grammar face
       // (`parseRequestedEffectSet`, domain/tool-governance) — the same thin

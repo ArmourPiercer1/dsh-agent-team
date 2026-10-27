@@ -1,0 +1,6 @@
+[u7-fagentb] case agt:zero-flip-mount: PASS {"placementFeedWitness":["[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7fsmut-realm-u5x-20261027t00-24-37z","[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,tea
+[u7-fagentb] case agt:native-ride-witness: FAIL {"todoWriteOnSurface":false,"surfaceSample":["bash","read","write"],"governedPlacementOfNativeNames":[]}
+[u7-fagentb] case agt:enabled-mount-refused: FAIL {"refusalHits":[],"law":"an enabled agent-state family with no durable store port refuses the whole plane mount (fail closed) — production binder wires no store adapter and this lane added none"}
+[u7-fagentb] case agt:enabled-zero-plane: PASS {"placementFeedLines":0,"familyRanLines":0}
+[u7-fagentb] case agt:leak-check: PASS {"bothWorlds":true}
+RUN-SUMMARY run=u5-u7-fagentb-x-2026-10-27T00-24-37-205Z suite=u7-fagentb overall=FAIL cases=6 FAIL:2 PASS:4 worlds=u5x-20261027T00-24-37Z|u5x-20261027T00-25-17Z
