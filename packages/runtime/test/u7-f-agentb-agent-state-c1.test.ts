@@ -41,13 +41,14 @@ import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs
 // explicit `as` shape (no ambient any).
 type RowName = 'todo_write' | 'create_goal' | 'get_goal' | 'update_goal' | 'exit_plan_mode'
 type LogEntry = { op: string, scope: string, key: string, applyId?: string }
+type AttemptEntry = LogEntry & { outcome: 'applied' | 'refused', code?: string }
 type ScopeState = {
   goal: Record<string, unknown> | null
   todos: Array<Record<string, unknown>> | null
   planMode: { active: boolean, pendingIntents: Array<Record<string, unknown>> }
 }
 type RecordingStore = {
-  log: { reads: LogEntry[], writes: LogEntry[] }
+  log: { reads: LogEntry[], writes: LogEntry[], attempts: AttemptEntry[] }
   setArm: (scope: string, arm: Record<string, unknown>) => void
   seed: (scope: string, patch: Partial<{ goal: Record<string, unknown> | null, todos: Array<Record<string, unknown>> | null, planMode: ScopeState['planMode'] }>) => void
   stateOf: (scope: string) => ScopeState | null
@@ -61,6 +62,8 @@ type RecordingStore = {
 }
 type LaneModule = {
   createRecordingStateStore: () => RecordingStore
+  buildAgentStateContribution: (input: { rowDefinitions: unknown[] }) => { effects: { kinds: readonly string[] }, definition: { outputContractDigest: string } }
+  buildAgentStateRowDefinitions: (input: Record<string, unknown>) => unknown[]
   AGENT_STATE_NAMES: readonly RowName[]
   AGENT_STATE_EFFECT_ARMS: Record<'todo_write' | 'create_goal' | 'get_goal' | 'update_goal' | 'exit_plan_mode', readonly string[]>
   GOAL_TRANSITION_LAW: {
@@ -73,7 +76,7 @@ type LaneModule = {
 type PlaneModule = { createTeamToolPlaneAssembly: (input: unknown) => Built | Promise<Built> }
 const lanePromise = import(new URL('../../tools/agent-state-family/src/index.mjs', import.meta.url).href) as unknown as Promise<LaneModule>
 const planePromise = import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as unknown as Promise<PlaneModule>
-const { createRecordingStateStore, AGENT_STATE_NAMES, AGENT_STATE_EFFECT_ARMS, GOAL_TRANSITION_LAW } = await lanePromise
+const { createRecordingStateStore, buildAgentStateContribution, buildAgentStateRowDefinitions, AGENT_STATE_NAMES, AGENT_STATE_EFFECT_ARMS, GOAL_TRANSITION_LAW } = await lanePromise
 const planeModule = await planePromise
 
 const REALM = 'u7fb-realm'
@@ -281,6 +284,52 @@ describe('u7fb E — the read/mutation split is REAL in the per-call PA request'
     // The mutation-bearing tool-invoke arm NEVER appears in the read's set:
     expect(seen[0]?.arms).not.toContain('tool-invoke')
   })
+
+  it('E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms', async () => {
+    // #404/#406 failure class: a family-wide UNION hides row-granularity
+    // drift. The closed governance schema (protected center) fixes
+    // `$.effects` to {declared,kinds,targets} — so the declared face here
+    // is (a) the contribution's union, now DERIVED from the ONE per-row
+    // arms table (never an independent literal), (b) the per-row table
+    // itself, which the contribution binds through its outputContractDigest
+    // (rows:[{name,arms}]), and (c) THIS test pinning each row's OBSERVED
+    // PA request to its declared row arms — exact, per row.
+    const store = createRecordingStateStore()
+    const contribution = buildAgentStateContribution({
+      rowDefinitions: buildAgentStateRowDefinitions({
+        realmId: REALM, policy: POLICY_ASK, store,
+        decide: async () => ({ decision: 'allow' }), pa: async () => ({ decision: 'allow' }),
+      }),
+    })
+    const kindOf = (token: string): string => (token === 'tool-invoke' ? 'tool-invoke' : token.split(':')[0] as string)
+    const sorted = (xs: readonly string[]): string[] => [...xs].sort()
+    // (a) The declared union == exactly the kinds the per-row rows declare.
+    const derivedUnion = [...new Set(Object.values(AGENT_STATE_EFFECT_ARMS).flat().map(kindOf))].sort()
+    expect(sorted(contribution.effects.kinds), 'declared union must be DERIVED from the per-row table').toEqual(derivedUnion)
+    // (b) The per-row arms are digest-bound by the contribution.
+    expect(contribution.definition.outputContractDigest).toMatch(/^[0-9a-f]{64}$/)
+    // (c) Requested face through the REAL PA edge, per row — exact multiset.
+    const seen: { tool: string; arms: string[] }[] = []
+    const leg = async (input: { request: { requestedEffects: { effects: { kind: string; toolName?: string }[] } } }) => {
+      seen.push({
+        tool: String(input.request.requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'get_goal'),
+        arms: sorted(input.request.requestedEffects.effects.map((e) => e.kind)),
+      })
+      return approvingControlLeg()(input as never)
+    }
+    const built = await mount({ agentStateEnabled: true, store, leg })
+    store.setArm('agent:alice', { kind: 'direct-human' })
+    const rows = rowsOf(built)
+    await rows.get_goal.execute({}, execFor('alice'))
+    await rows.create_goal.execute({ objective: 'x' }, execFor('alice'))
+    await rows.update_goal.execute({ goal_id: 'nope', revision: 1, action: 'pause' }, execFor('alice'))
+    await rows.todo_write.execute({ todos: [{ content: 'a', status: 'pending' }] }, execFor('alice'))
+    await rows.exit_plan_mode.execute({ plan: '# p' }, execFor('alice'))
+    expect(seen).toHaveLength(AGENT_STATE_NAMES.length)
+    for (const { tool, arms } of seen) {
+      expect(arms, `requested arms of ${tool} === declared row arms`).toEqual(sorted(AGENT_STATE_EFFECT_ARMS[tool as RowName].map(kindOf)))
+    }
+  })
 })
 
 describe('u7fb S — the scope law (planted cross-scope)', () => {
@@ -323,6 +372,36 @@ describe('u7fb S — the scope law (planted cross-scope)', () => {
     expect(store.log.writes).toEqual([])
     expect(store.log.reads.every((x) => x.scope === 'agent:alice')).toBe(true)
     expect(store.stateOf('agent:bob')).toEqual(before)
+  })
+
+  it('S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach', async () => {
+    // The host mints opaque branded ids verbatim (commands.ts:109) and
+    // resolves agents by exact Map lookup (commands.ts:450) — there is NO
+    // trimming/canonicalisation law on the identity path. A scope key
+    // "a" after trim() would silently alias "a " / " a" onto the SAME
+    // durable goal state. Byte-exact scope derivation keeps them apart.
+    const store = createRecordingStateStore()
+    const built = await mount({ agentStateEnabled: true, store })
+    const rows = rowsOf(built)
+    store.setArm('agent:a', { kind: 'direct-human' })
+    store.setArm('agent:a ', { kind: 'direct-human' })
+    const created = JSON.parse((await rows.create_goal.execute({ objective: 'a owns this' }, execFor('a'))).text).goal
+    expect(created).toMatchObject({ phase: 'active', revision: 1 })
+    const goalId = String((store.stateOf('agent:a')?.goal as { goalId?: string } | null)?.goalId ?? created.goalId)
+    // The whitespace siblings READ THEIR OWN (empty) state — never a's.
+    expect(JSON.parse((await rows.get_goal.execute({}, execFor('a '))).text)).toEqual({ goal: null })
+    expect(JSON.parse((await rows.get_goal.execute({}, execFor(' a'))).text)).toEqual({ goal: null })
+    // And their WRITE naming a's exact goal_id+revision is refused against
+    // their OWN fresh state (GOAL_NOT_FOUND) with zero reach into a's scope.
+    const aBefore = JSON.parse(JSON.stringify(store.stateOf('agent:a')))
+    const writesBefore = store.log.writes.length
+    const cross = await rows.update_goal.execute({ goal_id: goalId, revision: 1, action: 'pause' }, execFor('a '))
+    expect(refusedAs(cross).code).toBe('GOAL_NOT_FOUND')
+    expect(store.log.writes).toHaveLength(writesBefore)
+    expect(store.stateOf('agent:a')).toEqual(aBefore)
+    // Three scopes, byte-distinct, all observed separately in the store log.
+    const scopes = [...new Set(store.log.reads.map((x) => x.scope))].sort()
+    expect(scopes).toEqual(['agent: a', 'agent:a', 'agent:a '])
   })
 })
 
@@ -422,6 +501,82 @@ describe('u7fb R — durable writes are idempotent under replay', () => {
     expect(refusedAs(replay).code).toBe('GOAL_STALE_REVISION')
     expect(store.stateOf('agent:alice')?.goal).toMatchObject({ revision: 2, phase: 'paused' })
     expect(store.log.writes.filter((w) => w.op === 'goal/apply')).toHaveLength(1)
+  })
+})
+
+describe('u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1)', () => {
+  // Review R1 F-1 (Medium): the recording store used to push `log.writes`
+  // BEFORE the replay / CAS / plan-active checks, so a refused call was
+  // recorded as a durable write — the exact opposite of the zero-write
+  // refusal law the C1 legs assert, and it made those legs unfalsifiable
+  // at the store face. Law now: `log.writes` is the durable-write audit —
+  // an entry EXISTS IFF the mutation committed; `log.attempts` is the
+  // attempt ledger — one entry per apply call, outcome 'applied' | 'refused'.
+  const writesOf = (store: RecordingStore, op: string) => store.log.writes.filter((w) => w.op === op)
+  const attemptsOf = (store: RecordingStore, op: string) => store.log.attempts.filter((a) => a.op === op)
+
+  it('W1 goal replay: the consumed grant refuses with writes UNCHANGED and a refused attempt present', async () => {
+    const store = createRecordingStateStore()
+    store.seed('agent:alice', { goal: seededGoal('g1') })
+    const next = seededGoal('g1', { revision: 2, phase: 'paused' })
+    const first = await store.applyGoal('agent:alice', { expectedRevision: 1, next, applyId: 'call-1' })
+    expect(first.ok).toBe(true)
+    const writesAfterCommit = writesOf(store, 'goal/apply').length
+    const again = await store.applyGoal('agent:alice', { expectedRevision: 2, next, applyId: 'call-1' })
+    expect(again.ok).toBe(false)
+    expect(again.code).toBe('STATE_APPLY_REPLAY')
+    expect(writesOf(store, 'goal/apply')).toHaveLength(writesAfterCommit)
+    expect(attemptsOf(store, 'goal/apply').map((a) => a.outcome)).toEqual(['applied', 'refused'])
+    expect(attemptsOf(store, 'goal/apply')[1]?.code).toBe('STATE_APPLY_REPLAY')
+    expect(store.stateOf('agent:alice')?.goal).toMatchObject({ revision: 2, phase: 'paused' })
+  })
+
+  it('W2 stale revision: ZERO writes, one refused attempt, the stored revision byte-still current', async () => {
+    const store = createRecordingStateStore()
+    store.seed('agent:alice', { goal: seededGoal('g1', { revision: 3 }) })
+    const r = await store.applyGoal('agent:alice', { expectedRevision: 1, next: seededGoal('g1', { revision: 2 }), applyId: 'call-x' })
+    expect(r.ok).toBe(false)
+    expect(r.code).toBe('GOAL_STALE_REVISION')
+    expect(writesOf(store, 'goal/apply')).toHaveLength(0)
+    expect(attemptsOf(store, 'goal/apply')).toHaveLength(1)
+    expect(attemptsOf(store, 'goal/apply')[0]).toMatchObject({ outcome: 'refused', code: 'GOAL_STALE_REVISION', scope: 'agent:alice' })
+    expect(store.stateOf('agent:alice')?.goal).toMatchObject({ revision: 3 })
+  })
+
+  it('W3 already-exists (create form): ZERO writes, one refused attempt', async () => {
+    const store = createRecordingStateStore()
+    store.seed('agent:alice', { goal: seededGoal('g1') })
+    const r = await store.applyGoal('agent:alice', { expectedRevision: null, next: seededGoal('g2'), applyId: 'call-c' })
+    expect(r.ok).toBe(false)
+    expect(r.code).toBe('GOAL_ALREADY_EXISTS')
+    expect(writesOf(store, 'goal/apply')).toHaveLength(0)
+    expect(attemptsOf(store, 'goal/apply').map((a) => a.outcome)).toEqual(['refused'])
+  })
+
+  it('W4 todos replay: the first call commits (one write), the replay refuses (writes UNCHANGED, attempts 2)', async () => {
+    const store = createRecordingStateStore()
+    const first = await store.applyTodos('agent:alice', { todos: [{ content: 'x', status: 'pending' }], applyId: 'call-1' })
+    expect(first.ok).toBe(true)
+    const replay = await store.applyTodos('agent:alice', { todos: [{ content: 'y', status: 'pending' }], applyId: 'call-1' })
+    expect(replay.ok).toBe(false)
+    expect(replay.code).toBe('STATE_APPLY_REPLAY')
+    expect(writesOf(store, 'todos/apply')).toHaveLength(1)
+    expect(attemptsOf(store, 'todos/apply').map((a) => a.outcome)).toEqual(['applied', 'refused'])
+    expect(store.stateOf('agent:alice')?.todos).toEqual([{ content: 'x', status: 'pending' }])
+  })
+
+  it('W5 plan-mode exit on an INACTIVE scope: ZERO writes, one refused attempt; once active the same call commits', async () => {
+    const store = createRecordingStateStore()
+    const refused = await store.applyPlanModeExit('agent:alice', { plan: '# p', applyId: 'call-p' })
+    expect(refused.ok).toBe(false)
+    expect(refused.code).toBe('PLAN_MODE_NOT_ACTIVE')
+    expect(writesOf(store, 'plan-mode/apply')).toHaveLength(0)
+    expect(attemptsOf(store, 'plan-mode/apply').map((a) => a.outcome)).toEqual(['refused'])
+    store.seed('agent:alice', { planMode: { active: true, pendingIntents: [] } })
+    const ok = await store.applyPlanModeExit('agent:alice', { plan: '# p', applyId: 'call-p2' })
+    expect(ok.ok).toBe(true)
+    expect(writesOf(store, 'plan-mode/apply')).toHaveLength(1)
+    expect(attemptsOf(store, 'plan-mode/apply').map((a) => a.outcome)).toEqual(['refused', 'applied'])
   })
 })
 

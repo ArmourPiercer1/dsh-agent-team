@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
+AssertionError: expected { goal: { …(6) } } to deeply equal { goal: null }
+      Tests  1 failed | 50 skipped (51)

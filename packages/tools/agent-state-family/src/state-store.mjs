@@ -19,8 +19,9 @@
  * EVERY method takes the scope FIRST. The rows derive `scope` exclusively
  * from the dispatch's calling agent — never from arguments — so a
  * cross-scope read or write is UNREACHABLE by construction, and the
- * recording store makes that claim OBSERVABLE (every touch is logged with
- * its scope; refusals must show zero touches).
+ * recording store makes that claim OBSERVABLE: `log.writes` holds an entry
+ * IFF a mutation committed, `log.attempts` shows every apply with its
+ * outcome, so a refusal is a visible attempt with a ZERO durable write.
  *
  * DURABLE IDEMPOTENCE (law d): every apply carries an `applyId` (the PA
  * call correlation). A consumed grant cannot apply twice: the store refuses
@@ -67,6 +68,17 @@ export function createAbsentStateStore() {
  * ANSWER with a DISK FACT of this store's own log, exactly like the fs
  * mutation suite pairs refusals with byte-compare.
  *
+ * THREE ledgers, one law each (review R1 F-1):
+ *   log.reads     — one entry per port read (scope + op + key).
+ *   log.attempts  — one entry per APPLY call, outcome 'applied' | 'refused'
+ *                   with the refusal `code`. This is the ATTEMPT ledger: it
+ *                   shows a refused call was SEEN without claiming a write.
+ *   log.writes    — the DURABLE-WRITE audit: an entry exists IFF the
+ *                   mutation COMMITTED. A refused apply (replay, stale
+ *                   revision, already-exists, inactive plan mode) NEVER
+ *                   appears here — the zero-write refusal law is asserted
+ *                   as `log.writes` UNCHANGED + an attempts entry present.
+ *
  * Scenario controls (test-facing, not port methods):
  *   setArm(scope, arm)      — the execution-origin fact for later calls
  *   seed(scope, {goal, todos, planMode}) — plant state (incl. ANOTHER agent's
@@ -74,7 +86,7 @@ export function createAbsentStateStore() {
  */
 export function createRecordingStateStore() {
   const scopes = new Map()
-  const log = { reads: [], writes: [] }
+  const log = { reads: [], writes: [], attempts: [] }
   const applied = new Set()
   const scopeOf = (scope) => {
     let entry = scopes.get(scope)
@@ -105,17 +117,25 @@ export function createRecordingStateStore() {
       return scopes.get(scope)?.goal ?? null
     },
     applyGoal: async (scope, { expectedRevision, next, applyId }) => {
-      log.writes.push({ op: 'goal/apply', scope, key: `${scope}/goal`, applyId })
+      // Review R1 F-1: `log.writes` is the DURABLE-WRITE audit — an entry
+      // exists IFF the mutation committed. The attempt itself rides the
+      // separate `log.attempts` ledger with its final outcome, so refusals
+      // stay visible WITHOUT masquerading as writes.
+      const attempt = { op: 'goal/apply', scope, key: `${scope}/goal`, applyId, outcome: 'refused' }
+      log.attempts.push(attempt)
       if (applied.has(applyId)) {
+        attempt.code = 'STATE_APPLY_REPLAY'
         return { ok: false, code: 'STATE_APPLY_REPLAY', detail: `apply ${String(applyId)} already consumed; a consumed grant never applies twice` }
       }
       const entry = scopeOf(scope)
       const current = entry.goal
       if (expectedRevision === null) {
         if (current !== null && current.phase !== 'complete') {
+          attempt.code = 'GOAL_ALREADY_EXISTS'
           return { ok: false, code: 'GOAL_ALREADY_EXISTS', detail: `goal "${current.goalId}" already exists with phase "${current.phase}"` }
         }
       } else if (current === null || current.goalId !== next.goalId || current.revision !== expectedRevision) {
+        attempt.code = 'GOAL_STALE_REVISION'
         return {
           ok: false,
           code: 'GOAL_STALE_REVISION',
@@ -124,6 +144,8 @@ export function createRecordingStateStore() {
       }
       applied.add(applyId)
       entry.goal = next
+      attempt.outcome = 'applied'
+      log.writes.push({ op: 'goal/apply', scope, key: `${scope}/goal`, applyId })
       return { ok: true, snapshot: next }
     },
     readTodos: async (scope) => {
@@ -131,12 +153,16 @@ export function createRecordingStateStore() {
       return scopes.get(scope)?.todos ?? null
     },
     applyTodos: async (scope, { todos, applyId }) => {
-      log.writes.push({ op: 'todos/apply', scope, key: `${scope}/todos`, applyId })
+      const attempt = { op: 'todos/apply', scope, key: `${scope}/todos`, applyId, outcome: 'refused' }
+      log.attempts.push(attempt)
       if (applied.has(applyId)) {
+        attempt.code = 'STATE_APPLY_REPLAY'
         return { ok: false, code: 'STATE_APPLY_REPLAY', detail: `apply ${String(applyId)} already consumed; a consumed grant never applies twice` }
       }
       applied.add(applyId)
       scopeOf(scope).todos = todos.map((t) => ({ ...t }))
+      attempt.outcome = 'applied'
+      log.writes.push({ op: 'todos/apply', scope, key: `${scope}/todos`, applyId })
       return { ok: true, todos }
     },
     readPlanMode: async (scope) => {
@@ -144,16 +170,21 @@ export function createRecordingStateStore() {
       return scopes.get(scope)?.planMode ?? { active: false, pendingIntents: [] }
     },
     applyPlanModeExit: async (scope, { plan, applyId }) => {
-      log.writes.push({ op: 'plan-mode/apply', scope, key: `${scope}/plan-mode`, applyId })
+      const attempt = { op: 'plan-mode/apply', scope, key: `${scope}/plan-mode`, applyId, outcome: 'refused' }
+      log.attempts.push(attempt)
       if (applied.has(applyId)) {
+        attempt.code = 'STATE_APPLY_REPLAY'
         return { ok: false, code: 'STATE_APPLY_REPLAY', detail: `apply ${String(applyId)} already consumed; a consumed grant never applies twice` }
       }
       const entry = scopeOf(scope)
       if (entry.planMode.active !== true) {
+        attempt.code = 'PLAN_MODE_NOT_ACTIVE'
         return { ok: false, code: 'PLAN_MODE_NOT_ACTIVE', detail: 'exit_plan_mode is only available in plan mode' }
       }
       applied.add(applyId)
       entry.planMode = { active: false, pendingIntents: [...entry.planMode.pendingIntents, { plan, appliedBy: applyId }] }
+      attempt.outcome = 'applied'
+      log.writes.push({ op: 'plan-mode/apply', scope, key: `${scope}/plan-mode`, applyId })
       return { ok: true, state: entry.planMode }
     },
   }

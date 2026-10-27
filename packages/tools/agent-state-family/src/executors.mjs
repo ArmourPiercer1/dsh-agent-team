@@ -104,7 +104,15 @@ export function buildAgentStateRowDefinitions({
   }
   const scopeOf = (exec) => {
     const id = exec?.agent?.id
-    return typeof id === 'string' && id.trim().length > 0 ? `agent:${id.trim()}` : null
+    // Review R1 F-2: the scope key is BYTE-EXACT — no trim, no fold. The
+    // host mints opaque branded ids verbatim (`brandString<SessionId>(
+    // \`session-${randomUUID()}\`)`, session-controller/src/commands.ts:109)
+    // and resolves them by exact Map lookup (`this.ctx.agents.get(
+    // request.sessionId)`, commands.ts:450) — no canonicalisation law
+    // exists anywhere on the identity path. Trimming would ALIAS distinct
+    // identities ("a" / "a " / " a") into one durable scope — the opposite
+    // of calling-agent ownership. Only shape (string, non-empty) is checked.
+    return typeof id === 'string' && id.length > 0 ? `agent:${id}` : null
   }
   const metaArm = (scope, resource) => ({
     kind: 'meta',

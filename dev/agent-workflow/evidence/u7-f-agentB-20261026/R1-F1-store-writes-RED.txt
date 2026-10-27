@@ -1,0 +1,12 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1) > W1 goal replay: the consumed grant refuses with writes UNCHANGED and a refused attempt present
+AssertionError: expected [ { op: 'goal/apply', …(3) }, …(1) ] to have a length of 1 but got 2
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1) > W2 stale revision: ZERO writes, one refused attempt, the stored revision byte-still current
+AssertionError: expected [ { op: 'goal/apply', …(3) } ] to have a length of +0 but got 1
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1) > W3 already-exists (create form): ZERO writes, one refused attempt
+AssertionError: expected [ { op: 'goal/apply', …(3) } ] to have a length of +0 but got 1
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1) > W4 todos replay: the first call commits (one write), the replay refuses (writes UNCHANGED, attempts 2)
+AssertionError: expected [ { op: 'todos/apply', …(3) }, …(1) ] to have a length of 1 but got 2
+ FAIL  packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb W — the store audit law: a REFUSED apply is an attempt, never a write (review R1 F-1) > W5 plan-mode exit on an INACTIVE scope: ZERO writes, one refused attempt; once active the same call commits
+AssertionError: expected [ { op: 'plan-mode/apply', …(3) } ] to have a length of +0 but got 1
+      Tests  5 failed | 45 skipped (50)
