@@ -779,17 +779,17 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   })
 
   it('F-d the holder BEATS: while it is inside the critical section the lock record token changes', async () => {
-    let release: (() => void) | null = null
+    let release: () => void = () => {}
     const hold = new Promise<void>((r) => { release = r })
-    let entered: (() => void) | null = null
+    let entered: () => void = () => {}
     const inside = new Promise<void>((r) => { entered = r })
-    const a = storeWith({ lockHeartbeatMs: 20, faultAt: async (point: string) => { if (point === 'after-read') { entered?.(); await hold } } })
+    const a = storeWith({ lockHeartbeatMs: 20, faultAt: async (point: string) => { if (point === 'after-read') { entered(); await hold } } })
     const pa = a.applyTodos('agent:beat', { todos: [{ content: 'b', status: 'pending' }], applyId: 'f-beat' })
     await inside
     const t1 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
     await new Promise((r) => { setTimeout(r, 120) })
     const t2 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
-    release?.()
+    release()
     expect((await pa).ok).toBe(true)
     expect(t2).not.toBe(t1)
     expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
