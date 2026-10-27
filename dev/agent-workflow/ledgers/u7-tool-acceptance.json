@@ -1,0 +1,466 @@
+{
+  "schema": "u7-tool-acceptance/1",
+  "note": "Per-tool four-level acceptance ledger. One row per model-visible tool name claimed by a family in packages/tools/families/manifest.json (claims read with the plane DEFAULT names: readName=read, names={grep:team_grep,glob:team_glob,bash:team_bash}) plus the named-bridge jobs trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs JOBS_MANAGEMENT_NAMES). Levels: L1-definition (the family C1 suite exists, is in the root vitest population the ci-full census grades, and names the tool), L2-mounted (live Host mount, tool on the placement feed), L3-refusal (live typed refusal with zero effect), L4-positive (live authorized call whose real effect was read back). Status PROVEN | DISCLOSED | NOT_VERIFIED. PROVEN L1 carries evidence {suite}; PROVEN L2-L4 carry evidence {record, case} naming a committed u5-run-record/1 RUN record whose case verdict is PASS. DISCLOSED carries reason (verbatim from source) + pr (+ source, checked to contain the reason). Checked by scripts/eb3-tool-acceptance.mjs (ci-integration). Honesty is the merge gate; completeness (every L4 PROVEN) is the G5 release gate, not a CI colour.",
+  "rows": [
+    {
+      "tool": "read",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "write",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "edit",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "read_image",
+      "familyId": "dsh.fs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_bash",
+      "familyId": "dsh.process-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "pwsh",
+      "familyId": "dsh.process-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_grep",
+      "familyId": "dsh.search-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_glob",
+      "familyId": "dsh.search-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_skill",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_cordis_inspect_list",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "team_cordis_inspect_query",
+      "familyId": "dsh.inspect-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "subagent",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "subagent_fork",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "send_message",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "interrupt_agent",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "list_agents",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "list_subagent_models",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "workflow",
+      "familyId": "dsh.agent-control-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "ask_user_question",
+      "familyId": "dsh.ui-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "present",
+      "familyId": "dsh.ui-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "job_output",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "job_list",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    },
+    {
+      "tool": "job_kill",
+      "familyId": "dsh.jobs-family",
+      "L1-definition": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "skeleton row — backfill pending"
+      }
+    }
+  ]
+}
