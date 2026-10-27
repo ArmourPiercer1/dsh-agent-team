@@ -53,7 +53,7 @@
     },
     {
       "module": "agent-control.mjs",
-      "sha256": "3697b3e64080876039784f95a5718029ab062d4131b2f3758b63a71e7a2380c3"
+      "sha256": "b62ab60285a347eadbbb7df4632ad5e5b55d93ab7b95aaa57be830fa17e95ac0"
     },
     {
       "module": "ui.mjs",

@@ -238,9 +238,9 @@ export function createAgentControlExecutors(input) {
     subagent_fork: (raw, corr) => run('subagent_fork', raw, corr, 'forkChild',
       (fn, cl, args) => fn({ caller: cl, spec: { description: args.description, prompt: args.prompt, ...(args.run_in_background === undefined ? {} : { run_in_background: args.run_in_background }) }, context: args.context, ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     send_message: (raw, corr) => run('send_message', raw, corr, 'steer',
-      (fn, cl, args) => fn({ caller: cl, targetId: args.targetId, message: args.message })),
+      (fn, cl, args) => fn({ caller: cl, targetId: args.agent_id, message: args.message })),
     interrupt_agent: (raw, corr) => run('interrupt_agent', raw, corr, 'interrupt',
-      (fn, cl, args) => fn({ caller: cl, targetId: args.targetId, ...(args.reason === undefined ? {} : { reason: args.reason }) })),
+      (fn, cl, args) => fn({ caller: cl, targetId: args.agent_id, ...(args.reason === undefined ? {} : { reason: args.reason }) })),
     workflow: (raw, corr) => {
       const walkedP = govern('workflow', raw, corr)
       return Promise.resolve(walkedP).then((walked) => {

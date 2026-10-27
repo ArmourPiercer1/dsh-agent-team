@@ -423,17 +423,19 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
     humanAllow: allowedFor('subagent_fork').map((r) => r.requestId),
   })
 
-  // refusals — graded PASS on the typed sentence + zero extra Control row
+  // refusals — each refused call independently requires typed text, zero child
+  // starts/effect, and zero attributable Control asks. Positive-case asks do not
+  // alter this invariant.
   const requestIdsInResult = (rs) => new Set(rs.flatMap((r) => [...String(r.text ?? '').matchAll(/requestId[=: ]+([A-Za-z0-9_-]+)/g)].map((m) => m[1])))
-  const refusal = (id, rs, needles, tool, positives) => {
+  const refusal = (id, rs, needles, tool) => {
     const resultRequestIds = requestIdsInResult(rs)
     const asksForCase = asksFor(tool).filter((ask) => resultRequestIds.has(ask.requestId))
-    const ok = rs.length === 1 && rs[0].isError && needles.every((n) => rs[0].text.includes(n)) && asksForCase.length === positives
-    add(id, ok ? 'PASS' : 'FAIL', { readBack: heads(rs), expected: needles, durableAsksFor: { tool, attributedRequestIds: [...resultRequestIds], count: asksForCase.length, positivesExpected: positives } })
+    const ok = rs.length === 1 && rs[0].isError === true && needles.every((n) => rs[0].text.includes(n)) && asksForCase.length === 0
+    add(id, ok ? 'PASS' : 'FAIL', { readBack: heads(rs), expected: needles, durableAsksFor: { tool, attributedRequestIds: [...resultRequestIds], count: asksForCase.length, positivesExpected: 0 } })
   }
-  refusal('ac:refusal-tools', resultsOf('subagent', (i) => Array.isArray(i.tools)), ['agent-control-schema-refused', "unknown field 'tools'"], 'subagent', 1)
-  refusal('ac:refusal-provider', resultsOf('subagent', (i) => i.provider !== undefined), ['agent-control-amplification-refused', "provider 'deepseek-official' is outside the caller's own authority"], 'subagent', 1)
-  refusal('ac:refusal-fork-bg', resultsOf('subagent_fork', (i) => i.run_in_background === true), ['agent-control-amplification-refused', 'continuable'], 'subagent_fork', 1)
+  refusal('ac:refusal-tools', resultsOf('subagent', (i) => Array.isArray(i.tools)), ['agent-control-schema-refused', "unknown field 'tools'"], 'subagent')
+  refusal('ac:refusal-provider', resultsOf('subagent', (i) => i.provider !== undefined), ['agent-control-amplification-refused', "provider 'deepseek-official' is outside the caller's own authority"], 'subagent')
+  refusal('ac:refusal-fork-bg', resultsOf('subagent_fork', (i) => i.run_in_background === true), ['agent-control-amplification-refused', 'continuable'], 'subagent_fork')
 
   // ac:leak-check
   const stableAfter = await stableProbe()

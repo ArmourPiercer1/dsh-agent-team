@@ -9,9 +9,19 @@
  * @module agent-control-family/spawn-row
  */
 
+const NATIVE_OUTPUT = Object.freeze({
+  schema: { oneOf: [
+    { type: 'object', additionalProperties: false, required: ['kind', 'jobId'], properties: { kind: { type: 'string', const: 'background' }, jobId: { type: 'string' } } },
+    { type: 'object', additionalProperties: false, required: ['kind', 'subagentId'], properties: { kind: { type: 'string', const: 'continuable' }, subagentId: { type: 'string' } } },
+    { type: 'object', additionalProperties: false, required: ['kind', 'runId', 'output'], properties: { kind: { type: 'string', const: 'foreground' }, runId: { type: 'string' }, output: { type: 'array', items: {} } } },
+  ] },
+  render: (_args, value) => [{ type: 'text', text: value.kind === 'background' ? `started background subagent job ${value.jobId}` : value.kind === 'continuable' ? `started subagent ${value.subagentId}` : JSON.stringify(value.output) }],
+})
+
 export function buildSpawnRowDefinition({ name, spawnExecutor }) {
   return Object.freeze({
     name,
+    output: NATIVE_OUTPUT,
     description: 'Delegate a self-contained task to a governed subagent. The spawn is admission-gated before any agent is created, stays bounded by the CALLER\'s own authority (no privilege amplification), and every child is recorded on the mount\'s own scope.',
     parameters: {
       type: 'object',

@@ -10,6 +10,10 @@
 export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: { type: 'array', items: { oneOf: [
+      { type: 'object', additionalProperties: false, required: ['kind', 'id', 'label', 'status'], properties: { kind: { type: 'string', enum: ['child'] }, id: { type: 'string' }, label: { type: 'string' }, status: { type: 'string', enum: ['running', 'inactive'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
+      { type: 'object', additionalProperties: false, required: ['kind', 'id', 'reason'], properties: { kind: { type: 'string', enum: ['diagnostic'] }, id: { type: 'string' }, reason: { type: 'string', enum: ['corrupt', 'unsupported', 'unavailable'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
+    ] } }, render: (_args, entries) => [{ type: 'text', text: entries.length === 0 ? '(no subagents)' : entries.map((entry) => `${entry.id} [${entry.kind === 'child' ? entry.status : `diagnostic: ${entry.reason}`}]`).join('\\n') }] },
     description: 'List the subagents this session started (its own subagent catalog). Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.',
     parameters: {
       type: 'object',

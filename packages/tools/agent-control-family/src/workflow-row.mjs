@@ -12,6 +12,10 @@
 export function buildWorkflowRowDefinition({ name, workflowExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: { oneOf: [
+      { type: 'object', additionalProperties: false, required: ['kind', 'jobId', 'runId'], properties: { kind: { type: 'string', const: 'background' }, jobId: { type: 'string' }, runId: { type: 'string' } } },
+      { type: 'object', additionalProperties: false, required: ['kind', 'runId', 'agentsStarted', 'result'], properties: { kind: { type: 'string', const: 'foreground' }, runId: { type: 'string' }, agentsStarted: { type: 'integer' }, result: { type: 'object' } } },
+    ] }, render: (args, value) => [{ type: 'text', text: value.kind === 'background' ? `workflow "${args.description}" started in the background as job ${value.jobId}` : JSON.stringify(value.result) }] },
     description: 'Run a governed orchestration script whose agent legs execute through the caller-bound runtime delegates: every spawn re-passes the no-amplification fence and every steer re-passes the owner fence, so a workflow carries exactly THIS call\'s authority — never more.',
     parameters: {
       type: 'object',

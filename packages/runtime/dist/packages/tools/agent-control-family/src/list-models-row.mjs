@@ -9,6 +9,7 @@
 export function buildListModelsRowDefinition({ name, listModelsExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: { type: 'string' }, render: (_args, result) => [{ type: 'text', text: result }] },
     description: 'List the LLM providers/models advertised to this mount, optionally filtered by provider. Read-only enumeration of the route catalogue; it declares no mutation effect and spawns nothing.',
     parameters: {
       type: 'object',

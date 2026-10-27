@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { Context } from '@deepseek-ai/cordis'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
+import ToolRuntime from '@deepseek-ai/dsh-tools'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 const load = async (file: string) => import(new URL(`../../tools/agent-control-family/src/${file}`, import.meta.url).href)
 
 /** Native output schemas copied from the pinned Host 639ed01539 definitions. */
@@ -20,7 +24,7 @@ const NATIVE = {
   subagent_fork: null as Schema | null,
   workflow: { oneOf: [
     { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'background' }, jobId: { type: 'string', required: true }, runId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, agentsStarted: { type: 'integer', required: true }, result: { type: 'json', required: true } } },
+    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, agentsStarted: { type: 'integer', required: true }, result: { type: 'object' } } },
   ] },
 }
 NATIVE.subagent_fork = NATIVE.subagent
@@ -94,11 +98,45 @@ describe('U7-F C1 native Host output schemas', () => {
       ['interrupt_agent', interrupt.buildInterruptRowDefinition({ name: 'interrupt_agent', interruptExecutor: async () => ({ kind: 'ok', value: { accepted: true } }) })],
       ['list_agents', agents.buildListAgentsRowDefinition({ name: 'list_agents', listAgentsExecutor: async () => ({ kind: 'ok', value: [{ kind: 'child', id: 'a1', label: 'child', status: 'inactive' }] }) })],
       ['list_subagent_models', models.buildListModelsRowDefinition({ name: 'list_subagent_models', listModelsExecutor: async () => ({ kind: 'ok', value: '(no LLM providers)' }) })],
-      ['workflow', workflow.buildWorkflowRowDefinition({ name: 'workflow', workflowExecutor: async () => ({ kind: 'ok', value: { kind: 'foreground', runId: 'w1', agentsStarted: 0, result: null } }) })],
+      ['workflow', workflow.buildWorkflowRowDefinition({ name: 'workflow', workflowExecutor: async () => ({ kind: 'ok', value: { kind: 'foreground', runId: 'w1', agentsStarted: 0, result: {} } }) })],
     ] as const
     for (const [name, row] of rows) {
       const value = await row.execute(name === 'list_agents' || name === 'list_subagent_models' ? {} : name === 'send_message' || name === 'interrupt_agent' ? { agent_id: 'a1', ...(name === 'send_message' ? { message: 'x' } : {}) } : { description: 'd', prompt: 'p' }, exec)
       expect(valid(NATIVE[name], value), name).toEqual([])
+    }
+  })
+
+  it('registers all seven rows in the real ToolRuntime and validates rendered outputs', async () => {
+    driftGuard()
+    const ctx = new Context()
+    await ctx.plugin(SystemPrompt, {})
+    await ctx.plugin(ToolRuntime)
+    const spawn = await load('spawn-row.mjs')
+    const fork = await load('fork-row.mjs')
+    const steer = await load('steer-row.mjs')
+    const interrupt = await load('interrupt-row.mjs')
+    const agents = await load('list-agents-row.mjs')
+    const models = await load('list-models-row.mjs')
+    const workflow = await load('workflow-row.mjs')
+    const rows = [
+      ['subagent', spawn.buildSpawnRowDefinition({ name: 'subagent', spawnExecutor: async () => ({ kind: 'ok', value: { kind: 'foreground', runId: 'r1', output: [{ type: 'text', text: 'done' }] } }) }), {}],
+      ['subagent_fork', fork.buildForkRowDefinition({ name: 'subagent_fork', forkExecutor: async () => ({ kind: 'ok', value: { kind: 'continuable', subagentId: 'a1' } }) }), {}],
+      ['send_message', steer.buildSteerRowDefinition({ name: 'send_message', steerExecutor: async () => ({ kind: 'ok', value: { messageId: 'm1' } }) }), { agent_id: 'a1', message: 'x' }],
+      ['interrupt_agent', interrupt.buildInterruptRowDefinition({ name: 'interrupt_agent', interruptExecutor: async () => ({ kind: 'ok', value: { accepted: true } }) }), { agent_id: 'a1' }],
+      ['list_agents', agents.buildListAgentsRowDefinition({ name: 'list_agents', listAgentsExecutor: async () => ({ kind: 'ok', value: [{ kind: 'child', id: 'a1', label: 'child', status: 'inactive' }] }) }), {}],
+      ['list_subagent_models', models.buildListModelsRowDefinition({ name: 'list_subagent_models', listModelsExecutor: async () => ({ kind: 'ok', value: '(no LLM providers)' }) }), {}],
+      ['workflow', workflow.buildWorkflowRowDefinition({ name: 'workflow', workflowExecutor: async () => ({ kind: 'ok', value: { kind: 'foreground', runId: 'w1', agentsStarted: 0, result: {} } }) }), { description: 'orchestrate', prompt: 'p' }],
+    ] as const
+    const disposers = rows.map(([, definition]) => ctx.tools.register(definition))
+    try {
+      expect(rows.map(([name]) => ctx.tools.get(name as string)?.name)).toEqual(rows.map(([name]) => name))
+      for (const [name, , args] of rows) {
+        const result = await ctx.tools.execute({ signal: new AbortController().signal, callId: ToolCallId(`registry-${name}`), name, arguments: args })
+        expect(result.isError, name).toBe(false)
+        expect(result.content[0]?.type, name).toBe('text')
+      }
+    } finally {
+      for (const dispose of disposers.reverse()) dispose()
     }
   })
 })

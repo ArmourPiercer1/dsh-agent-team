@@ -129,7 +129,9 @@ export const familyAssembly = Object.freeze({
       cancelBoundary: 'the governed rows carry the host exec.signal into the runtime port legs (the same channel the native callingAgent tools use); a cancelled call settles through the runtime leg it started, the family never settles a run it did not start, and the one-shot exec-token ledger records the settled correlation so a replayed token never re-reaches the port',
     })
     return {
-      definitions: definitions.map((def) => Object.freeze({ ...def, output: cap.presentationFace })),
+      // Preserve each row's native host output face; a generic presentation face
+      // rejects native arrays and oneOf result variants during ToolRuntime validation.
+      definitions: definitions.map((def) => Object.freeze(def)),
       contribution,
       diagnostics: {
         subagent: executors.subagent,

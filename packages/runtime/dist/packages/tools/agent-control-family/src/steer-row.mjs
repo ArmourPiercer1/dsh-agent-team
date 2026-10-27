@@ -9,6 +9,7 @@
 export function buildSteerRowDefinition({ name, steerExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: { type: 'object', additionalProperties: false, required: ['messageId'], properties: { messageId: { type: 'string' } } }, render: (args) => [{ type: 'text', text: `message delivered to agent ${args.agent_id}` }] },
     description: 'Send one message to another agent inside THIS session scope. Targets outside the caller\'s own scope are refused before any runtime is reached; the call is admission-gated and its execution identity is one-shot (a settled call never re-delivers).',
     parameters: {
       type: 'object',

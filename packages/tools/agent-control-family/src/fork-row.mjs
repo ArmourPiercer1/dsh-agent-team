@@ -9,9 +9,19 @@
  * @module agent-control-family/fork-row
  */
 
+const NATIVE_OUTPUT = Object.freeze({
+  schema: { oneOf: [
+    { type: 'object', additionalProperties: false, required: ['kind', 'jobId'], properties: { kind: { type: 'string', const: 'background' }, jobId: { type: 'string' } } },
+    { type: 'object', additionalProperties: false, required: ['kind', 'subagentId'], properties: { kind: { type: 'string', const: 'continuable' }, subagentId: { type: 'string' } } },
+    { type: 'object', additionalProperties: false, required: ['kind', 'runId', 'output'], properties: { kind: { type: 'string', const: 'foreground' }, runId: { type: 'string' }, output: { type: 'array', items: {} } } },
+  ] },
+  render: (_args, value) => [{ type: 'text', text: value.kind === 'background' ? `started background subagent job ${value.jobId}` : value.kind === 'continuable' ? `started subagent ${value.subagentId}` : JSON.stringify(value.output) }],
+})
+
 export function buildForkRowDefinition({ name, forkExecutor }) {
   return Object.freeze({
     name,
+    output: NATIVE_OUTPUT,
     description: 'Delegate a task to a governed child that inherits this conversation as DATA. Inherited context is never inherited authority: the child carries no grants, approvals, or permissions from the parent, and the spawn stays bounded by the caller\'s own authority.',
     parameters: {
       type: 'object',
