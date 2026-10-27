@@ -1,8 +1,10 @@
 ## What this is
 
+**Plain statement of proof (what the production host has, and has not, seen):** PROVEN ON THE PRODUCTION HOST = the mount law in both directions and the unchanged shipped surface (boot A planes mount exactly as shipped — placement-feed + census-boot signatures, zero family witnesses; boot B enabled-without-store answers the typed `PLANE_AGENT_STATE_STORE_MISSING` fail-closed refusal on the public `/team-remote` surface, with zero placement rows behind it). DISCLOSED, NOT PASS = every POSITIVE agent-state read/write call leg on the live host — the production store port is NOT wired (`agent-bindings.mjs` passes `backends` for the jobs bridge only; this lane edits no binder line), so a positive host read/write is impossible on this tree and is claimed nowhere. Those positive legs are PROVEN at C1 only, over the real plane assembly and the real kernel `issueApprovedGrant`/consume edges.
+
 ONE governed tool family — `dsh.agent-state-family` — mounting the five agent-state members (`todo_write`, `create_goal`, `get_goal`, `update_goal`, `exit_plan_mode`) at their fixed native spellings, as an **ordinary family** (`route: ordinary-family`) through the reviewed **FamilyAssembly seam**: the `packages/tools/families/` descriptor + manifest + the generic mount loop. **ZERO lines** in `team-tool-plane.mjs`, `family-assembly.mjs`, the binder (`agent-bindings.mjs`), or any of the 33 ARC-A protected paths — the family self-mounts nothing and carries no authority handle.
 
-Mount config: the closed boolean `agentStateEnabled` (ABSENT = FALSE). Disabled ⇒ zero rows, zero witnesses, `disabledOwned` empty — `todo_write` keeps riding the host native byte-identically (the zero-flip is proven at C1 Z0 and live at C2 boot A).
+Mount config: the closed boolean `agentStateEnabled` (ABSENT = FALSE). Disabled ⇒ zero rows, zero witnesses, `disabledOwned` empty, and the shipped model surface unchanged (the zero-flip is proven at C1 Z0 and live at C2 boot A; measured disclosure: the 0.2.0-rc.2 team surface carries no native `todo_write` at all, so "unchanged" is asserted as the ABSENCE of all five spellings, never as a native ride).
 
 ## Read-vs-mutation split (in the effect declaration AND every PA request)
 
