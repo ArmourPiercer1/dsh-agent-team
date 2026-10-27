@@ -135,6 +135,17 @@ byte-clean with the suite re-greened (45/45).
 
 #407 — https://github.com/ArmourPiercer1/dsh-agent-team/pull/407 (opened
 against master; body = `pr-body.md`; NOT merged — merge is the coordinator's).
+Review baseline: `7f1eb0ad5` (everything after this commit is
+evidence-docs-only). Hosted rounds: round 1 (head 490373012) —
+candidate-protection PASS, pr-gate PASS, census-runtime PASS 18m26s,
+ci-integration FAIL (the two gaps below, fixed on-branch); hardening
+verification round (9b48ae9c8); FINAL round at the baseline head 7f1eb0ad5
+ALL GREEN — candidate-protection 40466923082 success, pr-gate 40466923207
+success, census-runtime 40466923123 success, ci-required 40466923122
+success (synthesize-merge-tree + ci-fast + ci-security + ci-integration +
+ci-full all success), grader line verbatim:
+`EB3-REQUIRED pass layers=5 green=5 nongreen=none`; merge state CLEAN/
+MERGEABLE at the baseline.
 
 Hosted round 1 (runs 40462120941 census PASS 18m26s, 40462120913
 ci-required) caught two REAL lane gaps, both fixed on-branch and

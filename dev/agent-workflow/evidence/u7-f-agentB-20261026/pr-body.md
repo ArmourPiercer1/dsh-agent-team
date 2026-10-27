@@ -91,7 +91,14 @@ both fixed on this branch, disclosed here:**
   `eb3-ci-negative-controls` reports **16/16**, leg 3d detected on this
   file. Re-verified after the fix: definitions 12/0, boundaries 38/0,
   trusted-sources 1902/0, C1/ARC-A/seam/p4t6 green, and the full local
-  8-leg gate re-run green at this head.
+  8-leg gate green (one capture showed the pre-existing S13 census-load
+  flake — proven identical on clean origin/master, green on immediate
+  re-drive; both comparisons in the evidence dir).
+- **Hosted round at the review baseline `7f1eb0ad5`: ALL GREEN** —
+  candidate-protection 40466923082, pr-gate 40466923207, census-runtime
+  40466923123, ci-required 40466923122 (synthesize-merge-tree + ci-fast +
+  ci-security + ci-integration + ci-full all success); grader line:
+  `EB3-REQUIRED pass layers=5 green=5 nongreen=none`.
 
 ## Zero-plane-edit file list (everything touched)
 
