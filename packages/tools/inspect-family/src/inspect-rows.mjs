@@ -36,7 +36,11 @@ export function buildInspectRowDefinitions({ inspectListExecutor, inspectQueryEx
         : 'refused-io executor-unavailable — the governed inspect-list executor produced no outcome'
       throw new Error(text)
     },
-    output: Object.freeze({ schema: Object.freeze({ type: 'json' }), render: jsonRender }),
+    // Any-JSON output node: the host's enforced schema subset expresses
+    // unconstrained JSON by OMITTING `type` (core/tools/json-schema.ts
+    // @639ed01539 — 'json' is the native extension DSL's spelling, not a
+    // node type the registration path accepts).
+    output: Object.freeze({ schema: Object.freeze({ description: 'The provider directory as a JSON value.' }), render: jsonRender }),
   })
   const queryRow = Object.freeze({
     name: queryName,
@@ -47,7 +51,7 @@ export function buildInspectRowDefinitions({ inspectListExecutor, inspectQueryEx
         platform: Object.freeze({ type: 'string', enum: Object.freeze(['host', 'client']), description: 'Runtime platform that owns the Provider.' }),
         provider: Object.freeze({ type: 'string', description: 'Exact Provider ID returned by team_cordis_inspect_list.' }),
         method: Object.freeze({ type: 'string', description: 'Exact method name declared by the Provider manifest.' }),
-        input: Object.freeze({ type: 'json', description: 'Optional query input; it must satisfy the method input schema.' }),
+        input: Object.freeze({ description: 'Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset\'s unconstrained form.)' }),
       }),
       required: Object.freeze(['platform', 'provider', 'method']),
       additionalProperties: false,
@@ -67,7 +71,7 @@ export function buildInspectRowDefinitions({ inspectListExecutor, inspectQueryEx
         : 'refused-io executor-unavailable — the governed inspect-query executor produced no outcome'
       throw new Error(text)
     },
-    output: Object.freeze({ schema: Object.freeze({ type: 'json' }), render: jsonRender }),
+    output: Object.freeze({ schema: Object.freeze({ description: 'The provider method result as a JSON value.' }), render: jsonRender }),
   })
   return [listRow, queryRow]
 }

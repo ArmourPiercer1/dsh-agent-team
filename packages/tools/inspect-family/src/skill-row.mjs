@@ -25,17 +25,16 @@ export const SKILL_ROW_PRESENTATION_FACE = Object.freeze({
       name: Object.freeze({ type: 'string' }),
       provider: Object.freeze({ type: 'string' }),
       resourceBase: Object.freeze({
-        oneOf: Object.freeze([
-          Object.freeze({
-            type: 'object',
-            properties: Object.freeze({
-              kind: Object.freeze({ type: 'string', const: 'directory' }),
-              path: Object.freeze({ type: 'string' }),
-            }),
-            required: Object.freeze(['kind', 'path']),
-            additionalProperties: false,
-          }),
-        ]),
+        // The directory resource-base form directly (the host subset wants
+        // oneOf to carry ≥2 branches; this value has exactly one form, so
+        // it is stated as a plain object node, not a degenerate oneOf).
+        type: 'object',
+        properties: Object.freeze({
+          kind: Object.freeze({ type: 'string', const: 'directory' }),
+          path: Object.freeze({ type: 'string' }),
+        }),
+        required: Object.freeze(['kind', 'path']),
+        additionalProperties: false,
       }),
       content: Object.freeze({ type: 'string' }),
     }),
