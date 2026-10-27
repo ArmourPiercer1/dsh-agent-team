@@ -24,6 +24,10 @@
  *       - a regular file must carry exactly ONE link (`nlink === 1`): a
  *         hardlink's in-root name passes both checks above while its inode
  *         is also named outside the anchor (`hardlinkAliasVerdict`).
+ *         Write-class paths re-ask THIS law on the SAME fd immediately
+ *         before their first byte-changing step (`recheckSingleLink`,
+ *         residual R-409-1 from PR #409's merge ruling) — the open-time
+ *         observation alone leaves a verify→truncate TOCTOU window.
  *
  * The kernel-grade guarantee (openat2 + RESOLVE_BENEATH/RESOLVE_IN_ROOT on
  * a trusted directory FD) is declared as the `OpenAtPort` seam below: a
@@ -100,6 +104,41 @@ export declare function isBeneath(anchor: string, candidate: string): boolean;
  * `hardlinkAliasVerdict`). All three answer BEFORE any byte is read.
  */
 export declare function verifyOpenedHandle(handle: FileHandle, anchorReal: string, snapshot: IdentitySnapshot | null): Promise<ExecTimeVerdict>;
+/**
+ * The outcome of the pre-first-byte-change link-count re-check: `confirmed`
+ * (single-link regular file, or the by-construction directory exemption),
+ * `hardlink-alias` (the SAME verdict shape `verifyOpenedHandle` answers, via
+ * the SAME `hardlinkAliasVerdict` wording), or `undeterminable` (fstat could
+ * not be answered on the fd — the link count cannot be re-established, so
+ * the byte-changing step must not run).
+ */
+export type SingleLinkRecheck = {
+    readonly verdict: 'confirmed';
+} | {
+    readonly verdict: 'hardlink-alias';
+    readonly nlink: number;
+    readonly detail: string;
+} | {
+    readonly verdict: 'undeterminable';
+    readonly detail: string;
+};
+/**
+ * Re-observe the link-count law on an ALREADY-VERIFIED fd, immediately
+ * BEFORE the first byte-changing step (truncate / first write) of a
+ * write-class path — the second observation of `nlink === 1` on the SAME fd
+ * (residual R-409-1, LOW, recorded on PR #409's merge ruling).
+ *
+ * `verifyOpenedHandle` proves the law once at open time; between that
+ * observation and the truncate/write an attacker can still plant a second
+ * name for the verified inode (u7-r4091 RED: the late alias mutated through
+ * untouched). One cheap `fstat` on the same fd, answered at the point of no
+ * return, shrinks the TOCTOU window to a single syscall — the same law,
+ * stated ONCE here and reused by every write-class caller (no per-family
+ * copies, exactly like `hardlinkAliasVerdict` above). It never re-states the
+ * containment or identity laws: those were the open-time check's job; this
+ * is the link count, re-asked where the bytes actually change.
+ */
+export declare function recheckSingleLink(handle: FileHandle): Promise<SingleLinkRecheck>;
 /**
  * The exec-time policy re-read seam. INTEGRATION (C-ADM freeze — LANDED in
  * the wiring round): the PR2-admission binding lives in `admission-binding.ts`

@@ -29,7 +29,7 @@ import * as path from 'node:path';
 import { EFFECT_REQUIRED_RIGHT, validateGrantForCall, } from '../../../domain/tool-governance/src/index.js';
 import { descriptorToResourceRef, resourceRefToDescriptor, } from './cf-descriptor.js';
 import { cfsDenial, cfsHidden, cfsUndetermined } from './cf-errors.js';
-import { isBeneath, NO_RECHECK, verifyOpenedHandle } from './open-at-exec.js';
+import { isBeneath, NO_RECHECK, recheckSingleLink, verifyOpenedHandle } from './open-at-exec.js';
 const lstatAsync = promisify(lstat);
 const readdirAsync = promisify(readdir);
 const FAIL = (f) => f;
@@ -434,6 +434,27 @@ export function createControlledFsLane(config) {
             if (!opened.ok)
                 return opened;
             try {
+                // Lane-internal probe seam (test-only; never passed by the wiring).
+                await hooks.onAfterVerifiedBeforeWrite?.({ op: 'writeText', fd: opened.handle.fd, locator: ref.canonicalLocator });
+                // R-409-1 defence-in-depth: the SAME-fd link-count re-check
+                // immediately before the first write on this verified fd
+                // (open-at-exec.ts `recheckSingleLink`). A second name planted after
+                // the open-time observation is caught here; the refusal is the
+                // existing `hardlink-alias` denial and writes ZERO content bytes.
+                // The O_TRUNC of the destructive open is the EXISTING disclosed lane
+                // law (it lands before any verification can run) — stated honestly
+                // in the message, never papered over.
+                const link = await recheckSingleLink(opened.handle);
+                if (link.verdict === 'hardlink-alias') {
+                    return refused('writeText', grant, ref.canonicalLocator, FAIL(cfsDenial('hardlink-alias', `${link.detail}; the second name appeared after the open-time verification — refused before the first content byte (the O_TRUNC of the destructive open at open time stands as the lane's disclosed effect)`)));
+                }
+                if (link.verdict !== 'confirmed') {
+                    // Post-destructive-open the truncate already landed, so any
+                    // unbounded re-check rides the EXISTING destructive branch
+                    // (write-side-effect-unconfirmed, sideEffectPossible true).
+                    record('writeText', memberKey(grant), ref.canonicalLocator, 'exec-refused:write-side-effect-unconfirmed', link.detail);
+                    return FAIL(cfsUndetermined('write-side-effect-unconfirmed', `exec-time re-read failed BEFORE the first content byte of a destructive open: ${link.detail}; the write side effect cannot be bounded`, { sideEffectPossible: true }));
+                }
                 await opened.handle.write(content);
                 // The receipt is {canonicalLocator, writtenFingerprint} ONLY — old
                 // content never travels back (no diff-reading, M-02).

@@ -111,7 +111,7 @@ import path from 'node:path'
 import type { FsWriteReceipt, GovernanceResult } from '../../../domain/tool-governance/src/index.js'
 
 import { cfsDenial, cfsUndetermined } from './cf-errors.js'
-import { isBeneath, verifyOpenedHandle, type IdentitySnapshot } from './open-at-exec.js'
+import { isBeneath, recheckSingleLink, verifyOpenedHandle, type IdentitySnapshot } from './open-at-exec.js'
 
 /**
  * The frozen typed plan the closure executes. Built by the ASSEMBLY from
@@ -141,6 +141,13 @@ export interface PostConsumeWriteCallContext {
   readonly parametersFingerprint: string
   /** The call's abort signal, presented at closure creation. */
   readonly signal?: { readonly aborted?: boolean }
+  /** LANE-INTERNAL PROBE SEAM ONLY (mirrors the PoC3
+   *  `onAfterPreCheckBeforeOpen` hook of controlled-fs.ts): fires AFTER the
+   *  exec-time verification and BEFORE the first byte-changing step, so the
+   *  verify→truncate window is observable without a real-time race. The
+   *  sanctioned wiring (fs-family executors) NEVER passes it — pinned by
+   *  u7-r4091 S-1; its presence changes no law. */
+  readonly onBeforeFirstByteChange?: () => void | Promise<void>
 }
 
 /** Assembly-time configuration: where the governed instance root STANDS. */
@@ -414,6 +421,33 @@ export function createPostConsumeWriteClosure(
           return settle(cfsDenial(
             'effect-outside-grant',
             'post-consume write refused: the call was cancelled after verification but before truncation — a cancelled call produces no effect; nothing was truncated or written',
+          ))
+        }
+
+        // Lane-internal probe seam (test-only; never passed by the wiring).
+        await context.onBeforeFirstByteChange?.()
+
+        // R-409-1 defence-in-depth: the SAME-fd link-count re-check at the
+        // point of no return (open-at-exec.ts `recheckSingleLink`). A second
+        // name planted after the open-time observation is caught HERE, with
+        // zero bytes changed: the refusal is the existing `hardlink-alias`
+        // denial, nothing has been truncated or written.
+        const link = await recheckSingleLink(handle)
+        if (link.verdict === 'hardlink-alias') {
+          return settle(cfsDenial(
+            'hardlink-alias',
+            `post-consume write refused: ${link.detail}; the second name appeared after the open-time verification — refused before the first byte; nothing was truncated or written`,
+          ))
+        }
+        if (link.verdict !== 'confirmed') {
+          // fstat unanswerable on a fd we just verified: the law cannot be
+          // re-confirmed at the byte-changing instant — the same honest
+          // third class as the open-time drift, sideEffectPossible FALSE
+          // because nothing has been changed.
+          return settle(cfsUndetermined(
+            'exec-time-identity-drift',
+            `post-consume write refused: pre-truncate link-count re-check — ${link.detail}; nothing was truncated or written`,
+            { sideEffectPossible: false },
           ))
         }
 

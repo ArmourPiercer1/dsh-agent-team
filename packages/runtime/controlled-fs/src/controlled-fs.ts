@@ -61,7 +61,7 @@ import {
   type FsResourceDescriptor,
 } from './cf-descriptor.js'
 import { cfsDenial, cfsHidden, cfsUndetermined, type CfDenyReason } from './cf-errors.js'
-import { isBeneath, NO_RECHECK, verifyOpenedHandle, type AdmissionRecheck, type IdentitySnapshot } from './open-at-exec.js'
+import { isBeneath, NO_RECHECK, recheckSingleLink, verifyOpenedHandle, type AdmissionRecheck, type IdentitySnapshot } from './open-at-exec.js'
 
 const lstatAsync = promisify(lstat)
 const readdirAsync = promisify(readdir)
@@ -85,6 +85,13 @@ export interface LaneHooks {
   readonly onAfterPreCheckBeforeOpen?: (info: { readonly op: string; readonly locator: string }) => void | Promise<void>
   /** Fires with the kernel fd of every successful lane-internal open. */
   readonly onFdOpened?: (info: { readonly op: string; readonly fd: number; readonly locator: string }) => void
+  /**
+   * u7-r4091 PROBE SEAM (test-only): fires on the VERIFIED write fd of
+   * `writeText` between the exec-time re-read and the first write — the
+   * fixture's deterministic second attacker window (R-409-1 re-check). No
+   * sanctioned wiring passes hooks at all; the seam itself changes no law.
+   */
+  readonly onAfterVerifiedBeforeWrite?: (info: { readonly op: string; readonly fd: number; readonly locator: string }) => void | Promise<void>
 }
 
 export interface ControlledFsLaneConfig {
@@ -572,6 +579,31 @@ export function createControlledFsLane(config: ControlledFsLaneConfig): Controll
       )
       if (!opened.ok) return opened
       try {
+        // Lane-internal probe seam (test-only; never passed by the wiring).
+        await hooks.onAfterVerifiedBeforeWrite?.({ op: 'writeText', fd: opened.handle.fd, locator: ref.canonicalLocator })
+        // R-409-1 defence-in-depth: the SAME-fd link-count re-check
+        // immediately before the first write on this verified fd
+        // (open-at-exec.ts `recheckSingleLink`). A second name planted after
+        // the open-time observation is caught here; the refusal is the
+        // existing `hardlink-alias` denial and writes ZERO content bytes.
+        // The O_TRUNC of the destructive open is the EXISTING disclosed lane
+        // law (it lands before any verification can run) — stated honestly
+        // in the message, never papered over.
+        const link = await recheckSingleLink(opened.handle)
+        if (link.verdict === 'hardlink-alias') {
+          return refused('writeText', grant, ref.canonicalLocator, FAIL(cfsDenial(
+            'hardlink-alias',
+            `${link.detail}; the second name appeared after the open-time verification — refused before the first content byte (the O_TRUNC of the destructive open at open time stands as the lane's disclosed effect)`,
+          )))
+        }
+        if (link.verdict !== 'confirmed') {
+          // Post-destructive-open the truncate already landed, so any
+          // unbounded re-check rides the EXISTING destructive branch
+          // (write-side-effect-unconfirmed, sideEffectPossible true).
+          record('writeText', memberKey(grant), ref.canonicalLocator, 'exec-refused:write-side-effect-unconfirmed', link.detail)
+          return FAIL(cfsUndetermined('write-side-effect-unconfirmed',
+            `exec-time re-read failed BEFORE the first content byte of a destructive open: ${link.detail}; the write side effect cannot be bounded`, { sideEffectPossible: true }))
+        }
         await opened.handle.write(content)
         // The receipt is {canonicalLocator, writtenFingerprint} ONLY — old
         // content never travels back (no diff-reading, M-02).
