@@ -33,7 +33,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { tmpdir } from 'node:os'
+import { hostname, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 
@@ -715,5 +715,83 @@ describe('u7as N — the per-realm scope count is bounded', () => {
     expect(results.filter((r) => r.ok === true)).toHaveLength(2)
     expect(results.filter((r) => r.code === 'AGENT_STATE_STORE_SCOPE_LIMIT')).toHaveLength(3)
     expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(2)
+  })
+})
+
+describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F-4)', () => {
+  const scopeLockPath = (scope: string): string => join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
+  const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
+  const bootId = (): string => { try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' } }
+  const host = (): string => hostname()
+
+  it('F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry', async () => {
+    await storeWith().seedGoal('agent:f', goalV(1))
+    const linesBefore = linesOf(writesPath()).length
+    let paused: (() => void) | null = null
+    const inside = new Promise<void>((resolve) => { paused = resolve })
+    const a = storeWith({ lockStaleMs: 50, lockHeartbeatMs: 20, faultAt: async (point: string) => {
+      if (point === 'after-read') { paused?.(); await new Promise((r) => { setTimeout(r, 1000) }) }
+    } })
+    const b = storeWith({ lockStaleMs: 50, lockHeartbeatMs: 20, lockTimeoutMs: 400 })
+    const pa = a.applyGoal('agent:f', { expectedRevision: 1, next: goalV(2), applyId: 'f-a' })
+    await inside // A now HOLDS the lock and is paused mid read→CAS→commit
+    const rb = await b.applyGoal('agent:f', { expectedRevision: 1, next: { ...goalV(2), objective: 'B wins?' }, applyId: 'f-b' })
+    const ra = await pa
+    const oks = [ra, rb].filter((r) => r.ok === true)
+    expect(oks, 'exactly one commit').toHaveLength(1)
+    expect(ra.ok).toBe(true)
+    expect(['AGENT_STATE_STORE_LOCK_TIMEOUT', 'GOAL_STALE_REVISION']).toContain(rb.code)
+    expect(linesOf(writesPath()).length - linesBefore).toBe(1)
+    expect(await storeWith().readGoal('agent:f')).toMatchObject({ revision: 2, objective: 'rev 2' })
+  })
+
+  it('F-b a DEAD-pid holder (same host, same boot, no heartbeat) is still broken and the apply proceeds', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:d'), JSON.stringify({ pid: 2 ** 22 + 4242, host: host(), boot: bootId(), nonce: 'dead', token: 't0', at: Date.now() }))
+    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:d', { todos: [{ content: 'after-dead', status: 'pending' }], applyId: 'f-dead' })
+    expect(r.ok).toBe(true)
+  })
+
+  it('F-b2 a holder from a PREVIOUS BOOT of this host is broken (boot id differs)', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:boot'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, host: host(), boot: 'a-previous-boot', nonce: 'old-boot', token: 't0', at: Date.now() }))
+    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:boot', { todos: [{ content: 'after-reboot', status: 'pending' }], applyId: 'f-boot' })
+    expect(bootId() === '' ? r.ok === false : r.ok === true).toBe(true)
+  })
+
+  it('F-c a LIVE pid holder (pid recycled / unknown-but-present) with an ANCIENT lock is NEVER broken → typed LOCK_TIMEOUT, ZERO write', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    // pid 1 is always alive; the lock is an hour old — under the old policy age alone broke it.
+    writeFileSync(scopeLockPath('agent:live'), JSON.stringify({ pid: 1, host: host(), boot: bootId(), nonce: 'live', token: 't0', at: Date.now() - 3_600_000 }))
+    const w0 = bytesOf(writesPath())
+    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:live', { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: 'f-live' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(existsSync(scopeLockPath('agent:live'))).toBe(true)
+    expect(await storeWith().readTodos('agent:live')).toBe(null)
+  })
+
+  it('F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT', async () => {
+    mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+    writeFileSync(scopeLockPath('agent:remote'), JSON.stringify({ pid: 2 ** 22 + 1, host: 'some-other-host.invalid', boot: 'x', nonce: 'remote', token: 't0', at: Date.now() - 3_600_000 }))
+    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:remote', { todos: [{ content: 'x', status: 'pending' }], applyId: 'f-remote' })
+    expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
+  })
+
+  it('F-d the holder BEATS: while it is inside the critical section the lock record token changes', async () => {
+    let release: (() => void) | null = null
+    const hold = new Promise<void>((r) => { release = r })
+    let entered: (() => void) | null = null
+    const inside = new Promise<void>((r) => { entered = r })
+    const a = storeWith({ lockHeartbeatMs: 20, faultAt: async (point: string) => { if (point === 'after-read') { entered?.(); await hold } } })
+    const pa = a.applyTodos('agent:beat', { todos: [{ content: 'b', status: 'pending' }], applyId: 'f-beat' })
+    await inside
+    const t1 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+    await new Promise((r) => { setTimeout(r, 120) })
+    const t2 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+    release?.()
+    expect((await pa).ok).toBe(true)
+    expect(t2).not.toBe(t1)
+    expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
   })
 })
