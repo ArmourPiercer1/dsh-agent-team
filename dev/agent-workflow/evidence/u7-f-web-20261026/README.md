@@ -99,6 +99,28 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   during their own live runs (observed listeners MOVING between polls —
   shared-machine contention, not lane state); 50/50 GREEN un-contended.
 
+## Census rounds (honest record)
+
+- Round 1 (local, post-merge tree): FAIL 7/8 — census named **4 NEW reds**,
+  two of them THIS lane's honest consequence (`a5p0-layer-audit`: the two
+  web-family executors were un-listed consumers of the tool-governance
+  lane — booked file-by-file, same thin face as fs-family, commit
+  `chore(audit)`), plus two load-sensitive suites. Capture JSONs kept in
+  `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`.
+- Round 2 (local, booked tree): FAIL 7/8 — population counts STABLE
+  (635f/8113l, identical to round 1) but the red SET MOVED
+  (`a5lsp2-streaming` spawn tests; standalone re-runs flip WHICH test is
+  red under vitest's 5000 ms default on this shared, spawn-sensitive
+  host). `rc2-sanitize-evidence` passes 13/13 with
+  `--testTimeout=30000`; `a4p7-merge-gate` green standalone between red
+  rounds. Stated, not hidden: post-booking local census reds are
+  host-load artifacts on spawn/timer-sensitive tests, NOT lane findings;
+  the AUTHORITATIVE census is the hosted one.
+- Hosted (authoritative, PR #403): pr-gate SUCCESS (run 40458857327),
+  candidate-protection SUCCESS (40458857234); census-runtime
+  (40458857196) and ci-required (40458857297) tracked to completion —
+  final verdicts reported in the PR conversation.
+
 Verdict law followed throughout: a blocked arm is DISCLOSED (ENV_BLOCK /
 verbatim refusal text), never flipped to PASS; the DECISION-3 limit (the
 host sandbox claims FILE effects only — bwrap without `--unshare-net`,

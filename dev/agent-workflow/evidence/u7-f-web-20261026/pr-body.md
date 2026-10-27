@@ -127,10 +127,37 @@ light up when the reviewed set changes), evidence logs.
 
 ## Gates
 
-`ci-pr-gate --full --census` (per-worktree pristine test-use provisioned
-per TEST_METHODS §2 — the shared baseline dir in this environment carries
-no source tree, disclosed in the evidence README), `pnpm typecheck`,
-lint-identities (new 0 — via the node-globals file above),
-check:artifacts:head, p4t6 20/20, arc-A fitness 12/12, family-seam 9/9,
-world-factory offline 50/50, registries 12/12, eb3-ci-required pass —
-full captures under `dev/agent-workflow/evidence/u7-f-web-20261026/`.
+Branch carries `origin/master @ 0ea67bee8` (normal merge, zero conflicts;
+`gen-family-index` regenerated — still 4 reviewed families — and
+`--check` green). `ci-pr-gate --full --census` (per-worktree pristine
+test-use provisioned per TEST_METHODS §2 — the shared baseline dir in this
+environment carries no source tree, disclosed in the evidence README),
+`pnpm typecheck`, lint-identities (new 0 — via the node-globals file
+above), check:artifacts:head, `diag-call-chain --self-test` (49 codes —
+this family's manifest refusalCodes resolve at their cited sites),
+eb3-ci-required pass (workflows=9 findings=0), docs:sync --check /
+docs:probe blocking=0, p4t6 20/20, arc-A fitness 12/12, family-seam 9/9,
+world-factory offline 50/50, registries 12/12 — full captures under
+`dev/agent-workflow/evidence/u7-f-web-20261026/`. Local census honesty:
+round 1 named two REAL reds of this lane (the a5p0 tool-governance
+consumer audit — booked file-by-file in a follow-up commit, same thin
+face as fs-family, zero lane edits); round 2's reds are shared-host
+load/spawn artifacts (counts stable 635f/8113l, red set MOVED between
+rounds; the failing suites pass standalone with a fair clock) — recorded
+verbatim in the evidence README. Hosted runs are the authoritative
+census; results are reported as they land.
+
+## Law choices disclosed (deliberate, not gaps)
+
+- **Zero-flip law**: `disabledOwned: () => []` — turning `webEnabled`
+  false never *disables* anything; the family simply never mounts, so the
+  disabled-set stays byte-identical to every pre-web plane (arms W-2/W-3
+  prove the byte equality). This follows the jobs-lane precedent.
+- **Fixed native claims**: the names `web_fetch`/`web_search` are claimed
+  by the family descriptor and therefore bypass Gate 0b (name-collision
+  with natives) — pinned instead by the manifest sha256 + the arc-A
+  census entry. Path drift INSIDE an approved origin grant is the same
+  class of disclosure: approved identity is per-ORIGIN.
+- **Provenance of approvals in C2**: the leader blueprint carries NO
+  control tools, so the allow/deny decisions provably came from the
+  public `team.resolveControl` v4 seam (Human resolver), not the model.
