@@ -35,6 +35,7 @@ import {
   isSafeLocatorSegment,
   validateInputSubset,
 } from './inspect-mechanics.mjs'
+import { INSPECT_LIST_ROW_NAME, INSPECT_QUERY_ROW_NAME } from './row-names.mjs'
 
 const QUERY_PARAMETER_KEYS = new Set(['platform', 'provider', 'method', 'input'])
 
@@ -101,7 +102,13 @@ export function createGovernedInspectListExecutor({ realmId, policy, decide, pa,
       return refused('admission', 'inspect-service-unmounted', 'the host cordisInspect registry service is not mounted on this ctx; the governed inspect row holds no fallback and loads nothing')
     }
     const effects = [
-      { kind: 'tool-invoke', toolName: 'cordis_inspect_list', resource: null },
+      // The tool-invoke arm carries the MOUNTED row name, not the native
+      // class: the call-level facts entry resolves the placement through
+      // `paPlacementNameOf`, whose seam arm accepts exactly the placement
+      // names it placed (team-tool-plane.mjs :957-970, the U7-9a law).
+      // Measured live C2 boot-3: spelling the native class answered
+      // `no-placement-name` → TOOL_BINDING_UNVERIFIED, zero effect.
+      { kind: 'tool-invoke', toolName: INSPECT_LIST_ROW_NAME, resource: null },
       { kind: 'meta', resource: { realmId, kind: 'metadata', canonicalLocator: INSPECT_DIRECTORY_LOCATOR, rights: ['meta'] } },
     ]
     const admitted = await admit({ realmId, policy, decide, pa, effects, corr, label: 'inspect-list', refused, observe, paNonce: nonce, paSeqRef: paSeq })
@@ -165,7 +172,7 @@ export function createGovernedInspectQueryExecutor({ realmId, policy, decide, pa
       }
     }
     const effects = [
-      { kind: 'tool-invoke', toolName: 'cordis_inspect_query', resource: null },
+      { kind: 'tool-invoke', toolName: INSPECT_QUERY_ROW_NAME, resource: null },
       { kind: 'meta', resource: { realmId, kind: 'metadata', canonicalLocator: INSPECT_DIRECTORY_LOCATOR, rights: ['meta'] } },
       { kind: 'meta', resource: { realmId, kind: 'metadata', canonicalLocator: inspectMethodLocator(platform, providerId, method), rights: ['meta'] } },
     ]

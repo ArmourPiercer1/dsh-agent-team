@@ -26,6 +26,7 @@
 import { readFile, lstat } from 'node:fs/promises'
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
 import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/fs-mechanics.mjs'
+import { SKILL_ROW_NAME } from './row-names.mjs'
 import {
   SKILL_FILE_NAME,
   SKILL_MAX_BYTES,
@@ -86,7 +87,13 @@ export function createGovernedSkillExecutor({ realmId, skillRoots, policy, decid
       candidates.push(Object.freeze({ root, locator: lex.path }))
     }
     const effects = [
-      { kind: 'tool-invoke', toolName: 'skill', resource: null },
+      // S3 spelling law (measured live, C2 boot-3): the tool-invoke arm
+      // carries the PLACEMENT name — paPlacementNameOf resolves a call only
+      // through seamPlacementNames / the names map; the native-class
+      // spelling answers undefined and the call dies TOOL_BINDING_UNVERIFIED
+      // (entry-cause=no-placement-name), exactly the fs-family boot
+      // u7fsmut3 law the plane comment at team-tool-plane.mjs:963 records.
+      { kind: 'tool-invoke', toolName: SKILL_ROW_NAME, resource: null },
       // The READ effect over each candidate instruction file (the frozen
       // vocabulary: an anchored absolute sanctioned root). The row reads at
       // most ONE of these and writes none.
