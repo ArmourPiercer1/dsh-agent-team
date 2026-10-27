@@ -21,3 +21,8 @@ Boot 2 + boot 3 together are live evidence that a STRICT (capabilities.permissio
 3. Boot budget extended by the main agent: 2 additional boots (boot 4 and boot 5), disclosed as OVER the original budget of 3 in boot-budget.jsonl and README. Use boot 5 only if boot 4 fails for a reason you fix in between; never boot 6.
 
 Offline C1 update: root and member are native; reserved `run_code` is excluded from deny computation and discovery fails closed.
+
+
+## Boot-4 diagnosis
+
+Boot 4 was authorized as the first extension boot and the native fixture mounted successfully; pilot1/pilot2/leader all completed and the host remained clean. The run was recorded FAIL only because the evidence driver referenced `AGENT_CONTROL_MANAGED_NAMES` without importing it, causing verdict finalization to fail closed after live execution. This fixture-level driver defect was corrected in commit 43129a619; boot 5 is authorized as the sole retry.
