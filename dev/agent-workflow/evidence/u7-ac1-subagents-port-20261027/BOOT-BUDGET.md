@@ -1,6 +1,7 @@
 # AC-1 C2 boot budget (declared before the first boot)
 
-- Budget: **3 live Host boots** for the whole lane (ROUTER §0 / #406 precedent).
+- Original budget: **3 live Host boots** for the whole lane (ROUTER §0 / #406 precedent).
+- Main-agent grant: **one additional boot (boot 6)**, explicitly over the original budget; no boot 7.
 - Each boot is appended to `c2/boot-budget.jsonl` by `c2/run-c2.mjs` BEFORE the
   Host starts; the runner refuses a 4th declaration (`boot budget exhausted`).
 - Every boot runs from a committed-clean drive script (`run-c2.mjs` +
