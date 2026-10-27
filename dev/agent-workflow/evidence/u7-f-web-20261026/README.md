@@ -105,8 +105,10 @@ assembly `lib/u7f-web-assembly.mjs`, read-only control probe
   two of them THIS lane's honest consequence (`a5p0-layer-audit`: the two
   web-family executors were un-listed consumers of the tool-governance
   lane — booked file-by-file, same thin face as fs-family, commit
-  `chore(audit)`), plus two load-sensitive suites. Capture JSONs kept in
-  `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`.
+  `chore(audit)`), plus two load-sensitive suites. Raw capture JSONs are
+  kept ON DISK only, untracked, per `scratch/UNTRACKED-SCRATCH.md`
+  (never committed; the cited `census-comparison-*.json` sidecars are
+  tracked — 4–8 KB each).
 - Round 2 (local, booked tree): FAIL 7/8 — population counts STABLE
   (635f/8113l, identical to round 1) but the red SET MOVED
   (`a5lsp2-streaming` spawn tests; standalone re-runs flip WHICH test is
