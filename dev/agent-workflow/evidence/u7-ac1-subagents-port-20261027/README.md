@@ -13,6 +13,10 @@ At the booted commit, `c2/run-c2.mjs:182–186` destructured injected IO default
 
 No live `ac:refusal-ptc` claim: omitted from selected cases; boots 2/3 are disclosure evidence only. A tool-less child's L4 still requires real child-effect witness; no fabricated ledger upgrade is made. :3080 was only status-probed before launch; the drive exception prevented its normal after probe, so a separate read-only postmortem status check is recorded. Stable instance was not modified.
 
+## Boot 8 conclusion (2026-10-27)
+
+Boot 7 is **VOID** (runner TDZ before drive effect), and exactly one boot 8 was granted. Boot 8 completed with host/home teardown, baseline `639ed01539` and `:3080` unchanged. **9/10 PASS; 1/10 FAIL**: `ac:fork-positive` failed the judge because the first read-back contained `Error: unknown tool "subagent_fork"`, although the subsequent fork result carried `U7AC1_FORK_SAW_TOKEN` and the child-effect witness was present. This is a harness/judge defect, not a product or Host seam failure. Binding condition applies: stop live boots for this round; no boot 9. Ledger remains DISCLOSED; no live PTC or tool-less-child L4 claim.
+
 ## Boot-3 conclusion
 
 Boot 3 was the final authorized boot (3/3), run `u7ac1-c2-mvr2f2jx`, team SHA `2f51cf81`, Host `639ed01539`, port `3184`; the Host mounted and teardown removed the world/home. C2 overall is **FAIL**, with all 11 cases fail-closed because `team.create` could not start the root. The exact typed error in `c2/c2-verdicts-boot3.json:36-44` is:
