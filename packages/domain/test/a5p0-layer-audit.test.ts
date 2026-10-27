@@ -135,6 +135,11 @@ describe('the tool-governance lane audit', () => {
       'tools/fs-family/src/image-executor.mjs',
       'tools/fs-family/src/read-executor.mjs',
       'tools/fs-family/src/write-executor.mjs',
+      // U7-f web family: the two governed executors ride the SAME single
+      // face (parseRequestedEffectSet), booked file-by-file beside the
+      // fs-family entries in the audit; sorted here to match.
+      'tools/web-family/src/fetch-executor.mjs',
+      'tools/web-family/src/search-executor.mjs',
     ])
   })
 
