@@ -363,6 +363,42 @@ export function makeTbashDecide({ assembly }) {
 export const SHELL_ROW_TOOL_NAMES = Object.freeze(['team_bash', 'bash'])
 
 /**
+ * Fail-closed extraction of the governed TeamSession identity from the
+ * frozen team.create wire value. The remote contract deliberately has no
+ * top-level rootSessionId: the identity is carried by durable and bind.
+ */
+export function extractGovernedSessionId(value, { expectedRoot, bootRoot } = {}) {
+  const out = { ok: false, createPath: value?.path ?? null, fromDurable: null, fromBind: null, reason: null }
+  if (value === null || typeof value !== 'object' || value.path !== 'fresh-root') {
+    out.reason = 'team.create must return path=fresh-root'
+    return out
+  }
+  const durable = value.durable
+  const bind = value.bind
+  const durableIds = [
+    durable?.teamSession?.rootSessionId,
+    durable?.binding?.rootSessionId,
+    durable?.rootSessionId,
+  ].filter((x) => typeof x === 'string' && x.length > 0)
+  const bindIds = [bind?.identity?.rootSessionId, bind?.rootSessionId]
+    .filter((x) => typeof x === 'string' && x.length > 0)
+  const unique = (xs) => [...new Set(xs)]
+  const d = unique(durableIds)
+  const b = unique(bindIds)
+  if (d.length > 1 || b.length > 1) { out.reason = 'ambiguous identity within durable or bind'; return out }
+  out.fromDurable = d[0] ?? null
+  out.fromBind = b[0] ?? null
+  const ids = unique([out.fromDurable, out.fromBind].filter(Boolean))
+  if (ids.length !== 1) { out.reason = ids.length === 0 ? 'missing durable/bind identity' : 'durable/bind identity mismatch'; return out }
+  const id = ids[0]
+  if (typeof expectedRoot !== 'string' || id !== expectedRoot) { out.reason = 'governed identity does not equal expected create root'; return out }
+  if (typeof bootRoot === 'string' && id === bootRoot) { out.reason = 'governed identity equals boot root'; return out }
+  out.ok = true
+  out.teamSessionId = id
+  return out
+}
+
+/**
  * THE lane-scoped grant (pure). Called by the runner for each NEW pending
  * shell row on the governed session.
  *
@@ -373,9 +409,13 @@ export const SHELL_ROW_TOOL_NAMES = Object.freeze(['team_bash', 'bash'])
  *   not been tied to an earlier row).
  * @param {string} input.pinnedCommandHash - commandHashOf(command A), pinned before boot.
  * @param {number} input.allowsGiven - allows already issued in this run.
+ * @param {string} input.governedSessionId - the only session whose rows may be allowed.
  * @returns {{decision: 'allow'|'deny', reason: string}}
  */
-export function decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven }) {
+export function decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven, governedSessionId }) {
+  if (typeof governedSessionId !== 'string' || governedSessionId === '' || String(row?.rootSessionId ?? '') !== governedSessionId) {
+    return { decision: 'deny', reason: 'row is outside the governed session' }
+  }
   if (row === null || row === undefined || !SHELL_ROW_TOOL_NAMES.includes(String(row.toolName))) {
     return { decision: 'deny', reason: 'not a shell row — outside this lane' }
   }

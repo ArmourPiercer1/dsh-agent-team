@@ -72,28 +72,41 @@ test('u7-tbash: commands are harmless printf appends inside the team root', with
   assert.notEqual(c.appr, c.deny)
 }))
 
+test('u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity', async () => {
+  const { extractGovernedSessionId } = await lib()
+  const base = { path: 'fresh-root', durable: { teamSession: { rootSessionId: 'team-1' } }, bind: { identity: { rootSessionId: 'team-1' } } }
+  assert.equal(extractGovernedSessionId({ ...base, durable: null, bind: {} }, { expectedRoot: 'team-1', bootRoot: 'boot' }).ok, false)
+  assert.equal(extractGovernedSessionId({ ...base, bind: { identity: { rootSessionId: 'other' } } }, { expectedRoot: 'team-1', bootRoot: 'boot' }).ok, false)
+  assert.equal(extractGovernedSessionId(base, { expectedRoot: 'boot', bootRoot: 'boot' }).ok, false)
+  assert.equal(extractGovernedSessionId({ ...base, path: 'cold-root' }, { expectedRoot: 'team-1', bootRoot: 'boot' }).ok, false)
+  const good = extractGovernedSessionId(base, { expectedRoot: 'team-1', bootRoot: 'boot' })
+  assert.equal(good.ok, true)
+  assert.equal(good.teamSessionId, 'team-1')
+})
+
 test('u7-tbash: the lane-scoped resolver allows exactly the pinned command once', async () => {
   const { decideResolution, commandHashOf } = await lib()
   const A = "printf 'X\\n' >> '/w/a' && echo U7TB_APPR_RAN"
   const B = "printf 'Y\\n' >> '/w/b' && echo U7TB_OTHER_RAN"
   const pinned = commandHashOf(A)
-  const row = { requestId: 'ctrl-1', toolName: 'team_bash' }
-  assert.equal(decideResolution({ row, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'allow')
+  const row = { requestId: 'ctrl-1', toolName: 'team_bash', rootSessionId: 'team-1' }
+  assert.equal(decideResolution({ row, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'allow')
+  assert.equal(decideResolution({ row: { ...row, rootSessionId: 'other' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'other session is denied')
   // mutation controls: every widening is refused
-  assert.equal(decideResolution({ row, outstanding: { step: 1, command: A }, pinnedCommandHash: pinned, allowsGiven: 1 }).decision, 'deny', 'replay after the one allow')
-  assert.equal(decideResolution({ row, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 1 }).decision, 'deny', 'second allow is unexpressable')
-  assert.equal(decideResolution({ row, outstanding: { step: 1, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'only the first issue')
-  assert.equal(decideResolution({ row, outstanding: { step: 0, command: B }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'different command hash')
-  assert.equal(decideResolution({ row, outstanding: { step: 0, command: `${A} ` }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'one byte differs = different hash')
-  assert.equal(decideResolution({ row: { ...row, toolName: 'team_skill' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'other tool')
-  assert.equal(decideResolution({ row, outstanding: null, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'unattributed row')
+  assert.equal(decideResolution({ row, outstanding: { step: 1, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 1 }).decision, 'deny', 'replay after the one allow')
+  assert.equal(decideResolution({ row, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 1 }).decision, 'deny', 'second allow is unexpressable')
+  assert.equal(decideResolution({ row, outstanding: { step: 1, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'only the first issue')
+  assert.equal(decideResolution({ row, outstanding: { step: 0, command: B }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'different command hash')
+  assert.equal(decideResolution({ row, outstanding: { step: 0, command: `${A} ` }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'one byte differs = different hash')
+  assert.equal(decideResolution({ row: { ...row, toolName: 'team_skill' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'other tool')
+  assert.equal(decideResolution({ row, outstanding: null, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'unattributed row')
   // MEASURED at boot 1 (dev/agent-workflow/evidence/u7-tbash-l4-20261027/
   // c2/c2-verdicts-boot1.json): the durable PA row for a governed team_bash
   // call carries `toolName: "bash"` — the NATIVE takeover spelling the row
   // mounts under, not the managed alias the model calls. The lane resolver
   // must recognise it; the command hash stays the ONLY widening control.
-  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'allow', 'native takeover spelling')
-  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: B }, pinnedCommandHash: pinned, allowsGiven: 0 }).decision, 'deny', 'native spelling does not widen the command')
+  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: A }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'allow', 'native takeover spelling')
+  assert.equal(decideResolution({ row: { ...row, toolName: 'bash' }, outstanding: { step: 0, command: B }, pinnedCommandHash: pinned, governedSessionId: 'team-1', allowsGiven: 0 }).decision, 'deny', 'native spelling does not widen the command')
 })
 
 test('u7-tbash: results join to calls by tool_use_id, not by position (r5 artifact)', async () => {

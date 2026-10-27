@@ -26,7 +26,7 @@ import { createRunRecord, readAuthorityBinding } from '../../../../../tests/worl
 import { testUseTree } from '../../../../../tests/paths.mjs'
 import {
   TBASH_CASES, createTbashAssembly, makeTbashDecide, askerScript, decideResolution,
-  callResultsOf, judgeTbash, commandHashOf,
+  callResultsOf, judgeTbash, commandHashOf, extractGovernedSessionId,
 } from '../../../../../tests/world-factory/lib/u7-tbash-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -199,13 +199,19 @@ async function drive({ world, assembly, planted, boot, decide }) {
     return v && typeof v === 'object' && 'data' in v ? v.data : v
   }
   const createOk = created.status === 200 && created.body?.result?.ok === true
-  const echoed = unwrap(created.body)?.rootSessionId ?? null
-  // r5 cause, closed by construction: every read/resolve below uses THIS id,
-  // asserted to be the governed session and never the boot root.
-  const teamSessionId = echoed ?? assembly.CREATE_ROOT
-  const identityOk = teamSessionId === assembly.CREATE_ROOT && teamSessionId !== assembly.ROOT
-  run.record.governedSession = { teamSessionId, echoed, bootRoot: assembly.ROOT, identityOk }
-  if (!createOk || !identityOk) {
+  const createValue = unwrap(created.body)
+  const identity = extractGovernedSessionId(createValue, { expectedRoot: assembly.CREATE_ROOT, bootRoot: assembly.ROOT })
+  const teamSessionId = identity.teamSessionId ?? null
+  const identityOk = createOk && identity.ok
+  let independent = null
+  if (teamSessionId !== null) {
+    const projection = await remoteCall(fetchJsonRetry, origin, cookie, 'team.getProjection', { teamSessionId }, 'u7tb-independent', 1)
+    const pv = unwrap(projection.body)
+    independent = pv?.rootSessionId ?? pv?.teamSessionId ?? pv?.projection?.rootSessionId ?? null
+  }
+  const independentOk = independent === teamSessionId && teamSessionId !== null
+  run.record.governedSession = { ...identity, teamSessionId, bootRoot: assembly.ROOT, identityOk: identityOk && independentOk, fromIndependentRead: independent, ledgerForeignEntries: 0, bindings: { rowToModelCall: [], modelCallToSession: [] } }
+  if (!createOk || !run.record.governedSession.identityOk) {
     add('tbash:mounted', 'FAIL', { createOk, identityOk, createBody: JSON.stringify(created.body ?? null).slice(0, 800) })
     failRest('team.create failed or governed identity mismatch')
     return
@@ -222,6 +228,10 @@ async function drive({ world, assembly, planted, boot, decide }) {
       const data = unwrap(page.body)
       const entries = Array.isArray(data?.entries) ? data.entries : []
       for (const e of entries) {
+        if (e?.rootSessionId !== teamSessionId) {
+          run.record.governedSession.ledgerForeignEntries += 1
+          continue
+        }
         if (byType[e?.factType] === undefined) continue
         let payload = e.payload
         if (typeof payload === 'string') { try { payload = JSON.parse(payload) } catch { payload = {} } }
@@ -237,7 +247,7 @@ async function drive({ world, assembly, planted, boot, decide }) {
         const p = f.payload ?? {}
         const raw = JSON.stringify(p)
         return {
-          requestId: String(p.requestId ?? ''), toolName: p.toolName ?? null, kind: p.kind ?? null,
+          requestId: String(p.requestId ?? ''), rootSessionId: e.rootSessionId ?? null, toolName: p.toolName ?? null, kind: p.kind ?? null,
           targetInstanceId: p.targetInstanceId ?? null, summary: String(p.summary ?? '').slice(0, 200),
           operationFingerprint: p.operationFingerprint ?? null,
           parametersFingerprint: p.reviewPayload?.parametersFingerprint ?? null,
@@ -267,7 +277,7 @@ async function drive({ world, assembly, planted, boot, decide }) {
           const taken = new Set(resolutions.map((r) => r.step))
           const outstanding = [...issued].reverse().find((x) => !taken.has(x.step)) ?? null
           const allowsGiven = resolutions.filter((r) => r.decision === 'allow').length
-          const verdict = decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven })
+          const verdict = decideResolution({ row, outstanding, pinnedCommandHash, allowsGiven, governedSessionId: teamSessionId })
           // zero-effect-while-pending witness (the grant never carried over)
           effectAtPending.push({ requestId: row.requestId, step: outstanding?.step ?? null, effects: { appr: assembly.readEffect('appr'), other: assembly.readEffect('other'), deny: assembly.readEffect('deny') } })
           const res = await remoteCall(fetchJsonRetry, origin, cookie, 'team.resolveControl',
