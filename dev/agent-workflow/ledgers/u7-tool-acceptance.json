@@ -672,6 +672,177 @@
           "case": "u74a:kill-live-requested"
         }
       }
+    },
+    {
+      "tool": "web_fetch",
+      "familyId": "dsh.web-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-web-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      }
+    },
+    {
+      "tool": "web_search",
+      "familyId": "dsh.web-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7f-web-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "PR #403 committed only runner.log RUN-SUMMARY lines and a README stating \"overall=PASS 7/7\" (c2-run3); no u5-run-record/1 RUN record for the u7-f-web suite is on the tree, and no level is PROVEN on prose"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "**no provider ships with the product** — with no provider the row answers typed `WEB_SEARCH_NO_PROVIDER` with zero PA and zero wire, and the capability matrix keeps the provider cell NOT_VERIFIED (we never invent a provider).",
+        "pr": "#403",
+        "source": "dev/agent-workflow/evidence/u7-f-web-20261026/pr-body.md"
+      }
+    },
+    {
+      "tool": "todo_write",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "create_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "get_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "update_goal",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
+    },
+    {
+      "tool": "exit_plan_mode",
+      "familyId": "dsh.agent-state-family",
+      "L1-definition": {
+        "status": "PROVEN",
+        "evidence": {
+          "suite": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts"
+        }
+      },
+      "L2-mounted": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L3-refusal": {
+        "status": "NOT_VERIFIED",
+        "note": "the committed #407 RUN record (u7-fagentb, overall PASS) grades the MOUNT LAW only: boot A = family key absent ⇒ zero rows (agt:zero-flip-mount); boot B = enabled without a store port ⇒ the whole plane refuses PLANE_AGENT_STATE_STORE_MISSING with zero placement rows (agt:enabled-mount-refused). Neither boot put this tool on a placement feed, so no live per-tool level can be PROVEN"
+      },
+      "L4-positive": {
+        "status": "DISCLOSED",
+        "reason": "the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane.",
+        "pr": "#407",
+        "source": "dev/agent-workflow/evidence/u7-f-agentB-20261026/pr-body.md",
+        "note": "the live mount law is graded in dev/agent-workflow/evidence/u7-f-agentB-20261026/c2/u5-u7-fagentb-x-2026-10-27T11-11-55-455Z.u7fagentb-run-record.json; the positive legs are C1-only"
+      }
     }
   ]
 }
