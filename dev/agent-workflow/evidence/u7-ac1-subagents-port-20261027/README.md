@@ -1,13 +1,13 @@
-# U7 AC-1 agent-control/subagents port
 
-## Boot-2 diagnosis (written before fixture change)
+## Boot-3 conclusion
 
-Boot 2 reached the Host and mounted the Team remote, but `team.create` failed at the root-agent permission Coverage Gate. The committed record `c2/c2-verdicts-boot2.json:36-46` reports the exact typed failure:
+Boot 3 was the final authorized boot (3/3), run `u7ac1-c2-mvr2f2jx`, team SHA `2f51cf81`, Host `639ed01539`, port `3184`; the Host mounted and teardown removed the world/home. C2 overall is **FAIL**, with all 11 cases fail-closed because `team.create` could not start the root. The exact typed error in `c2/c2-verdicts-boot3.json:36-44` is:
 
-`TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED` → `alpha2-permission-coverage-unmanaged-tools`: `run_code (unknown-unmanaged)` on the final model-facing surface. The same record's discovery surface at `:154-177` includes `run_code`; `c2/host-boot2.log:1-5` proves this was a mounted Host run, not an environment failure. The failure is therefore fixture/world-level, not an agent-control product failure.
+`tools.restrict() cannot name reserved PTC mode presentation transport "run_code"; restrict end-capability tools instead`
 
-The AC-1 C2 runner deliberately exempted `run_code` from the computed `builtinToolDeny` list (`c2/run-c2.mjs`, the discovery filter immediately before `assembly.writeMainBlueprint`). That exemption was copied from the PTC presentation rationale, but it leaves the host-reserved PTC transport unmanaged when the strict AC-1 blueprint is created. The other governed fixtures compute `builtinToolDeny` from the live surface and do not exempt this unmanaged host name; the coverage gate is intentionally fail-closed and must not be weakened.
+This disproves the initial fixture fix of putting `run_code` into `builtinToolDeny`: the alpha2 coverage gate was correctly satisfied far enough to invoke the host restriction layer, which then rejects the reserved PTC transport name. This is not a reason to weaken the coverage gate and no product code was changed. The final fixture diagnosis is two-part:
 
-**Exact fixture fix:** keep the AC-1 family names and `todo_write` as the only non-denied names, but remove `run_code` from the runner's exemption list. The resulting `denyList` writes `run_code` into both strict AC-1 templates' `capabilities.builtinToolDeny`, so the final model-facing surface is coverage-complete while the Tier-A subagent route remains fail-closed for any PTC caller. No `packages/**` product semantics or coverage-gate behavior are changed.
+1. Boot 2 exposed the unmanaged `run_code` coverage gap; leaving it omitted is invalid for a strict permissions-bearing template.
+2. Boot 3 proves the current AC-1 world also cannot deny `run_code` through `builtinToolDeny` when the PTC presentation is on that same strict template. A fixture-only resolution must keep the PTC root on a legacy/non-permissions template (or otherwise keep the PTC transport off the strict template) while retaining strict coverage on the native member template; that requires a future authorized attempt and was not run because the boot budget is exhausted.
 
-Boot-2 evidence was committed first in commit `f69873e95`; all files are below 1 MiB. Boot budget remains 1/3 and 2/3 consumed; boot 3 is the final authorized live attempt.
+Per lane instruction, no boot 4 is attempted. This lane therefore cannot claim C2 PASS or update acceptance rows.
