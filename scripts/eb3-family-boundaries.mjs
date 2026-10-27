@@ -89,6 +89,19 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  // U7-F B (agent-state family): the lane README books TWO thin faces only —
+  // node builtins and the frozen governance vocabulary/serialization face of
+  // domain/tool-governance. NO sibling-family, plane, governance-center,
+  // tool-dispatch, or Host edge. `executors.mjs` imports ONLY
+  // `parseRequestedEffectSet`; `contribution.mjs` ONLY `canonicalJsonStringify`
+  // (both registered file-by-file in audit-a5-tool-governance-imports.mjs +
+  // the pinned consumer set). The state-store port is a consumed INTERFACE,
+  // injected via cap.injected.agentState — not an import edge — so it adds no
+  // outward edge here.
+  'dsh.agent-state-family': Object.freeze([
+    'node:*',
+    'packages/domain/tool-governance/src/*',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -102,6 +115,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/agent-state-family': 'dsh.agent-state-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are
