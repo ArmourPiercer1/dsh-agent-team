@@ -1,0 +1,8 @@
+     × X scopes dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 18ms
+     × X scopes dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 15ms
+     × X realm dir swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 8ms
+     × X realm dir swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 12ms
+     × X ancestor (team-state) swapped for a symlink after build (first read only): write AND read refuse typed, ZERO bytes outside the root 8ms
+     × X ancestor (team-state) swapped for a symlink after a first write: write AND read refuse typed, ZERO bytes outside the root 13ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  6 failed | 34 passed (40)

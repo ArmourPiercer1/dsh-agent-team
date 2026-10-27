@@ -1,0 +1,1 @@
+boot 5 — over budget, granted by main agent (session-6e3bd412-ee7b-41f3-aaba-daa36f4f2b71, review round 1, 2026-10-27) to re-prove the live arms on the round-1 store code (B-1 pinned descriptor chain, B-2 scope lock); run at commit e319513fa with --max-host-starts 5; no 6th boot is authorised.

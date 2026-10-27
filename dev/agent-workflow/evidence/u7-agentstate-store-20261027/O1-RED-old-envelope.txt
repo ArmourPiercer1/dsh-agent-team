@@ -1,0 +1,4 @@
+     × O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output") 43ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: {"text":"refused: GOAL_ALREADY_EXISTS — goal \"goal-2026-10-27T16:11:13.771Z-1\" already exists with phase \"active\"",": expected [ 'refusal' ] to deeply equal []
+      Tests  1 failed | 24 skipped (25)

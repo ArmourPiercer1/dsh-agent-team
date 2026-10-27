@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore
+
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-agentstate-fs-store-c1.test.ts [ packages/runtime/test/u7-agentstate-fs-store-c1.test.ts ]
+Error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/packages/tools/agent-state-family/src/fs-state-store.mjs:1:0
+  1  |  /**
+     |  ^
+  2  |   * agent-state-family/src/fs-state-store.mjs — the PRODUCTION durable store
+  3  |   * behind the injected state-store port (`state-store.mjs` owns the contract;
+ ❯ TransformPluginContext._formatLog node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:31147:39
+ ❯ TransformPluginContext.error node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:31144:14
+ ❯ TransformPluginContext.transform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:28047:10
+ ❯ EnvironmentPluginContainer.transform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:30932:14
+ ❯ loadAndTransform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  19:55:23
+   Duration  529ms (transform 267ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+
+mutation_exit=1 (expected nonzero RED)

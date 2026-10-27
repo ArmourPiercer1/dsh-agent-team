@@ -1,0 +1,5 @@
+     × G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back 29ms
+     × E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind 23ms
+     × E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms 14ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 78 passed (81)

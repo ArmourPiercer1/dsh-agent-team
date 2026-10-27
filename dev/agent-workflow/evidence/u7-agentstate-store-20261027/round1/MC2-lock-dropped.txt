@@ -1,0 +1,4 @@
+     × L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one 43ms
+     × L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write 33ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 38 passed (40)

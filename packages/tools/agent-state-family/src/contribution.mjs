@@ -7,8 +7,14 @@
  * READ vs MUTATION is declared per row in `effectArms` below (the same
  * table the per-call PA requests are built from — the C1 test pins
  * declared == requested per tool):
- *  - `get_goal`   : the metadata `meta` arm of the caller's goal view ONLY
- *                   (a read; no mutation-bearing arm exists in its set).
+ *  - `get_goal`   : its own `tool-invoke` arm + the metadata `meta` arm of
+ *                   the caller's goal view (a READ: neither kind is a
+ *                   mutation kind). The `tool-invoke` arm is the guard-scope
+ *                   tool identity the production PA approval bridge requires
+ *                   of EVERY ask (pa-control-bridge.ts:358-361) — the shape
+ *                   every governed read row already carries (fs read,
+ *                   read_image, inspect list). Without it the live host
+ *                   denied get_goal before any Control row (u7-astore C2).
  *  - the four
  *    mutators    : their own `tool-invoke` arm (the honest carrier of a
  *                   session-state mutation — the closed vocabulary gives
@@ -29,7 +35,7 @@ const sha256Hex = (text) => createHash('sha256').update(text, 'utf8').digest('he
  *  `tool-invoke` = the row's own invocation arm; `meta:<resource>` = the
  *  metadata meta-arm of `agent-state/<scope>/<resource>`. */
 export const AGENT_STATE_EFFECT_ARMS = Object.freeze({
-  get_goal: Object.freeze(['meta:goal']),
+  get_goal: Object.freeze(['tool-invoke', 'meta:goal']),
   create_goal: Object.freeze(['tool-invoke', 'meta:goal']),
   update_goal: Object.freeze(['tool-invoke', 'meta:goal']),
   todo_write: Object.freeze(['tool-invoke', 'meta:todos']),

@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-astore/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=JdZO_1K1l8RLXP_LlszOmSZvxAHdA_tTIenrTNwQoFo
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast1-20261027t16-02-04z (durable root under DSH_HOME/team-state/agent-state)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast1-20261027t16-02-04z
+[dsh-agent-team] a5ptc: census-boot root=session-u7as-team-u5ast1-20261027t16-02-04z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-u5ast1-20261027t16-02-04z goalId=goal-2026-10-27T16:02:35.930Z-1 revision=1 phase=active
+[dsh-agent-team] a5-agent-state: get_goal pa-refused code=APPROVAL_DENIED scope=agent:session-u7as-team-u5ast1-20261027t16-02-04z (zero state access)
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-u5ast1-20261027t16-02-04z (durable root under DSH_HOME/team-state/agent-state)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast1-20261027t16-02-04z
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:session-team-child-487fe85d59e775f6fd942546b6d0a26e count=2
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:session-team-child-487fe85d59e775f6fd942546b6d0a26e
+[dsh-agent-team] a5-agent-state: get_goal pa-refused code=APPROVAL_DENIED scope=agent:session-team-child-487fe85d59e775f6fd942546b6d0a26e (zero state access)
