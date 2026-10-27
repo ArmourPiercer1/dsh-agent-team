@@ -58,6 +58,7 @@ let descriptor: {
   familyAssembly: {
     claims: (cap: Record<string, unknown>) => string[]
     enabled: (cap: Record<string, unknown>) => boolean
+    disabledOwned: (cap: Record<string, unknown>) => string[]
     build: (cap: Record<string, unknown>) => {
       definitions?: ReadonlyArray<{ name: string; description: string; parameters: Record<string, unknown>; execute: (raw: Record<string, unknown>, exec: Record<string, unknown>) => Promise<unknown>, output: Record<string, unknown> }>
       contribution?: Record<string, unknown>

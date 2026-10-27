@@ -1,0 +1,8 @@
+{
+  "schema": "eslint-node-globals/1",
+  "family": "inspect-family",
+  "summary": "u7-f (2026-10-26): the dsh.inspect-family lane runs under node and needs node globals for exactly ONE symbol the platform exports through no module — AbortController, the downstream abort handle of the governed inspect-query settle race (the lane imports node:fs/promises and the shared cancel leg instead of reaching for other ambient globals). Adding this file edits nothing in eslint.config.mjs (the u7-w0 collected-list law); the parity pin in tests/checks/eslint-node-globals.test.mjs carries the dated entry.",
+  "globals": [
+    "packages/tools/inspect-family/src/*.mjs"
+  ]
+}
