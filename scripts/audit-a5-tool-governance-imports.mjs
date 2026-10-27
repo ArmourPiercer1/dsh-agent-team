@@ -121,6 +121,14 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
+  // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // canonicalize the DERIVED per-call effect set at the PA edge; no other
+  // family module imports anything of the governance lane (mechanics/rows/
+  // port/contribution verified), and a different face stays a finding, as
+  // every booking above states.
+  'tools/agent-control-family/src/agent-control-executor.mjs',
   // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
   // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
   // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:

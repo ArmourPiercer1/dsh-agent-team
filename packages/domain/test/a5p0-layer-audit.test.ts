@@ -123,6 +123,12 @@ describe('the tool-governance lane audit', () => {
       'tools/a5p5-tools/src/render.ts',
       'tools/a5p5-tools/src/spill.ts',
       'tools/a5p5-tools/src/types.ts',
+      // U7-F: the agent-control family's ONE executor consumes the same thin
+      // effect-grammar face (`parseRequestedEffectSet`, domain/tool-governance)
+      // the fs-family executors were booked for — parse-only, zero further
+      // domain reach (file-by-file booking, zero lane edits; owner role:
+      // agent-control-family). Alphabetical here, as the fs block states.
+      'tools/agent-control-family/src/agent-control-executor.mjs',
       // U6 PR2 + U7-9a: the FS family's FOUR executors (read/write/edit/
       // read_image bodies) each consume the ONE effect-grammar face
       // (`parseRequestedEffectSet`, domain/tool-governance) — the same thin

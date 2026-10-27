@@ -1,0 +1,8 @@
+=== CONTROL 1 (2026-10-27): an UN-BOOKED edge into the lane is still a finding ===
+FINDING: un-listed production consumer of tool-governance: tools/agent-control-family/src/ac00-control-probe.mjs (the consumer set is the reviewed PR1_CONSUMERS list)
+
+=== CONTROL 2: a BOOKED entry whose wiring disappears is a finding (non-vacuity) ===
+FINDING: expected PR1 consumer never found: tools/agent-control-family/src/agent-control-executor.mjs (the wiring is gone or the walk is blind)
+
+=== RESTORED: clean run ===
+OK: pure-domain lane, no cycles, consumers = runtime/control/service.ts, runtime/control/types.ts, runtime/controlled-fs
