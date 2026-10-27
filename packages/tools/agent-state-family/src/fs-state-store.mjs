@@ -44,7 +44,12 @@
  * holds the realm lock while the per-realm scope count is checked (lock order
  * is always scope → realm).
  *
- * LOCK-OWNER POLICY (review round 2, F-4: AGE ALONE NEVER BREAKS A HOLDER).
+ * LOCK-OWNER POLICY (review round 3, R3-1: malformed records NEVER break).
+ * Unparseable or partial records are unprovable and therefore refuse with
+ * LOCK_TIMEOUT; mtime is never used as a fallback. Lock creation publishes a
+ * fully fsynced record with an atomic no-replace link, so a crash cannot leave
+ * a partial lock at the name. If BOOT_ID is empty, previous-boot proof is
+ * impossible and is never used.
  * A lock is broken only on POSITIVE PROOF its recorded owner is gone:
  *   1. the record names a different host → UNKNOWN, never broken (this store
  *      lives under one DSH_HOME; a shared-filesystem peer cannot be proven
@@ -423,20 +428,22 @@ const pidAlive = (pid) => {
   if (!Number.isSafeInteger(pid) || pid <= 0) return false
   try { process.kill(pid, 0); return true } catch (error) { return error?.code !== 'ESRCH' }
 }
+const isCompleteLockRecord = (record) => record !== null && typeof record === 'object'
+  && Number.isInteger(record.pid) && record.pid > 0
+  && typeof record.host === 'string' && record.host.length > 0
+  && typeof record.boot === 'string' && record.boot.length > 0
+  && typeof record.nonce === 'string'
+  && typeof record.token === 'string'
+  && typeof record.at === 'number' && Number.isFinite(record.at)
+
 async function readLockFile(path) {
   try {
     const read = await safeReadRecord(path, 4096)
-    if (read.ok === true) {
-      const parsed = JSON.parse(read.text)
-      if (parsed !== null && typeof parsed === 'object' && typeof parsed.nonce === 'string') return parsed
-    }
-  } catch { /* fall through to the mtime view */ }
-  try {
-    const st = await fsp.lstat(path)
-    return { nonce: null, pid: null, at: st.mtimeMs }
-  } catch {
-    return null // vanished: retry the create
-  }
+    if (read.ok !== true) return read.absent === true ? null : { invalid: true }
+    let parsed
+    try { parsed = JSON.parse(read.text) } catch { return { invalid: true } }
+    return isCompleteLockRecord(parsed) ? parsed : { invalid: true }
+  } catch { return { invalid: true } }
 }
 
 /** The lock record's identity: who, on which host, in which boot, beating
@@ -446,29 +453,45 @@ const lockRecord = (nonce, token, at) => JSON.stringify({ pid: process.pid, host
 
 /** Rewrite a lock record in place (the holder's beat, and the initial body):
  *  same atomic temp+fsync+rename path as every other durable byte. */
-async function putLockRecord(dir, name, text) {
+async function writeLockTemp(dir, name, text, faultAt = async () => {}, point = 'beat-before-rename') {
   const temp = `${dir.path}/.${name}.${String(process.pid)}.${randomUUID()}.tmp`
   let handle
   try {
     handle = await fsp.open(temp, CREATE_EXCLUSIVE, 0o600)
     await handle.writeFile(text, 'utf8')
     await handle.sync()
+    await faultAt(point)
   } finally {
     if (handle !== undefined) { try { await handle.close() } catch { /* closed */ } }
   }
+  return temp
+}
+async function putLockRecord(dir, name, text, faultAt = async () => {}) {
+  const temp = await writeLockTemp(dir, name, text, faultAt)
   try { await fsp.rename(temp, `${dir.path}/${name}`) } catch (error) {
     try { await fsp.unlink(temp) } catch { /* best effort */ }
     throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock record could not be committed: ${String(error?.code ?? error)}`)
   }
 }
+async function createLockRecord(dir, name, text, faultAt = async () => {}) {
+  const temp = await writeLockTemp(dir, name, text, faultAt, 'lock-before-publish')
+  try {
+    await fsp.link(temp, `${dir.path}/${name}`)
+  } catch (error) {
+    try { await fsp.unlink(temp) } catch { /* best effort */ }
+    throw error
+  }
+  try { await fsp.unlink(temp) } catch { /* best effort */ }
+}
 
 /** MAY this holder be broken? Positive proof only (the F-4 table). */
 async function mayBreak(dir, name, holder, staleMs) {
   if (holder === null) return true // vanished — retry the create
-  if (holder.host !== undefined && holder.host !== '' && holder.host !== HOST_ID) {
+  if (holder.invalid === true || !isCompleteLockRecord(holder)) return false // unprovable: never break
+  if (holder.host !== HOST_ID) {
     return false // another host: unprovable from here (never broken)
   }
-  if (holder.boot !== undefined && holder.boot !== '' && BOOT_ID !== '' && holder.boot !== BOOT_ID) {
+  if (BOOT_ID !== '' && holder.boot !== BOOT_ID) {
     return true // same host, previous boot: the owner died at the reboot
   }
   if (holder.pid === process.pid) return false // our own record: present by definition
@@ -476,11 +499,11 @@ async function mayBreak(dir, name, holder, staleMs) {
   // The pid is gone. Watch a FULL stale window for a beat before believing it:
   // a recycled pid would be an unrelated live process, but a holder that keeps
   // rewriting the record is alive no matter which pid number it grabbed.
-  const before = holder.token ?? null
+  const before = holder.token
   await sleep(Math.min(staleMs, 1000))
   const after = await readLockFile(`${dir.path}/${name}`)
   if (after === null) return true
-  if ((after.token ?? null) !== before || after.nonce !== holder.nonce) return false // it is beating (or was re-locked)
+  if (after.invalid === true || (after.token !== before) || after.nonce !== holder.nonce) return false // it is beating (or was re-locked)
   return !pidAlive(after.pid ?? holder.pid)
 }
 
@@ -492,7 +515,7 @@ async function mayBreak(dir, name, holder, staleMs) {
  * owner policy — and the correctness-over-liveness trade — is in the module
  * header.
  */
-async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs }) {
+async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {} }) {
   const path = `${dir.path}/${name}`
   const nonce = randomUUID()
   const started = Date.now()
@@ -500,14 +523,20 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs }) {
   for (;;) {
     let handle
     try {
-      handle = await fsp.open(path, CREATE_EXCLUSIVE, 0o600)
-      try { await handle.writeFile(lockRecord(nonce, randomUUID(), Date.now()), 'utf8') } finally { await handle.close() }
+      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now()), faultAt)
+      let stopped = false
+      let inFlight = null
       const beat = setInterval(() => {
-        putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now())).catch(() => {})
+        if (stopped || inFlight !== null) return
+        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now()), faultAt)
+          .catch(() => {})
+          .finally(() => { inFlight = null })
       }, heartbeatMs)
       beat.unref?.()
       return async () => {
+        stopped = true
         clearInterval(beat)
+        if (inFlight !== null) await inFlight
         const held = await readLockFile(path)
         if (held?.nonce === nonce) { try { await fsp.unlink(path) } catch { /* already gone */ } }
       }
@@ -685,7 +714,7 @@ export function createFsStateStore({
   }
   /** Hold the scope lock for `fn` (every apply/seed). */
   const underScopeLock = async (scope, fn) => withDir('locks', true, async (locks) => {
-    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs })
+    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt })
     try { return await fn(locks) } finally { await release() }
   })
   /** Commit `patch` onto the CURRENT record (caller holds the scope lock). */
@@ -713,7 +742,7 @@ export function createFsStateStore({
     })
     if (current !== null) return await write()
     // A NEW scope: the realm lock serialises the count against concurrent creators.
-    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs })
+    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt })
     try {
       const count = await withDir('scopes', true, async (scopes) => (await fsp.readdir(scopes.path)).filter((n) => n.endsWith('.json')).length)
       if (count >= maxScopes) {
