@@ -55,7 +55,7 @@ const REPO = resolve(HERE, '../../../..', '..')
 const REL = relative(REPO, HERE)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const ORIGINAL_BUDGET = 3
-const BUDGET = 6
+const BUDGET = 7 // exactly one final extension; no boot 8
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const SELECTED = ['ac:mounted', 'ac:list-models', 'ac:list-agents', 'ac:spawn-positive', 'ac:child-toolview', 'ac:fork-positive',
   'ac:refusal-tools', 'ac:refusal-provider', 'ac:refusal-fork-bg', 'ac:leak-check']
@@ -179,7 +179,10 @@ async function main() {
   console.log(`[u7ac1-c2] DONE overall=${run.record.overall} pass=${String(run.record.cases.length - fails)} nonpass=${String(fails)}`)
 }
 
-async function drive({ world, assembly, planted, boot, stableBefore }) {
+export async function drive({ world, assembly, planted, boot, stableBefore, io = {} }) {
+  const { fetchJsonRetry: http = fetchJsonRetry, authenticate: auth = authenticate, apiPrompt: prompt = apiPrompt,
+    sleep: pause = sleep, stableProbe: probe = stableProbe, readFile: read = readFileSync } = io
+  const fetchJsonRetry = http, authenticate = auth, apiPrompt = prompt, sleep = pause, stableProbe = probe, readFileSync = read
   const origin = `http://127.0.0.1:${boot.port}`
   const waitA = async (predicate, timeoutMs) => {
     const started = Date.now()
@@ -336,6 +339,10 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const logLines = log.split('\n')
   const results = new Map()
   for (const rec of requests) {
+    // A fork request includes a partial in-flight parent transcript. Do not
+    // attribute inherited tool blocks (including the fork's unknown-tool probe)
+    // to a second execution in the pilot lane.
+    if (userTexts(rec).some((t) => t.includes(assembly.markers.CHILD_FORK))) continue
     const uses = new Map()
     for (const m of rec?.body?.messages ?? []) {
       for (const b of Array.isArray(m?.content) ? m.content : []) {
@@ -384,7 +391,7 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   // ac:list-agents
   const la = resultsOf('list_agents')
   let catalogSize = null
-  for (const r of la) { const m = /"catalogSize"\s*:\s*(\d+)/.exec(r.text); if (m !== null) catalogSize = Number(m[1]) }
+  for (const line of logLines) { const m = /catalog-read count=(\d+)/.exec(line); if (m !== null) catalogSize = Number(m[1]) }
   add('ac:list-agents', la.length === 1 && !la[0].isError && catalogSize !== null && catalogSize >= 1 && ranLines('list_agents').length === 1 && allowedFor('list_agents').length === 1 ? 'PASS' : 'FAIL', {
     readBack: heads(la), catalogSize, ranWitness: ranLines('list_agents').map((l) => l.slice(0, 200)),
     humanAllow: allowedFor('list_agents').map((r) => r.requestId),
@@ -404,7 +411,7 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const portViews = toolviewLines.map((l) => /tools=\[([^\]]*)\]/.exec(l)?.[1] ?? '?')
   const unknownRead = childAttempt.filter((a) => a.isError && a.text.includes('unknown tool "read"'))
   add('ac:child-toolview', spawnChild.length === 2 && forkChild.length === 1 && allEmpty && unknownRead.length === 1
-    && childAttempt.length === 1 && portViews.length === 3 && portViews.every((v) => v === '') ? 'PASS' : 'FAIL', {
+    && childAttempt.length === 1 && portViews.length === 2 && portViews.every((v) => v === '') ? 'PASS' : 'FAIL', {
     spawnChildRequests: spawnChild.length,
     forkChildRequests: forkChild.length,
     childToolSurfaces: [...spawnChild, ...forkChild].map(toolsOf),
@@ -430,7 +437,11 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const refusal = (id, rs, needles, tool) => {
     const resultRequestIds = requestIdsInResult(rs)
     const asksForCase = asksFor(tool).filter((ask) => resultRequestIds.has(ask.requestId))
-    const ok = rs.length === 1 && rs[0].isError === true && needles.every((n) => rs[0].text.includes(n)) && asksForCase.length === 0
+    // No unattributed asks can hide behind missing requestId text: exactly
+    // one durable request per positive tool, all consumed, no extra requests.
+    const accounted = AC1_TOOLS.every((name) => asksFor(name).length === 1 && allowedFor(name).length === 1)
+      && (ctl?.requests ?? []).length === 4 && (ctl?.consumptions ?? []).length === 4
+    const ok = rs.length === 1 && rs[0].isError === true && needles.every((n) => rs[0].text.includes(n)) && asksForCase.length === 0 && accounted
     add(id, ok ? 'PASS' : 'FAIL', { readBack: heads(rs), expected: needles, durableAsksFor: { tool, attributedRequestIds: [...resultRequestIds], count: asksForCase.length, positivesExpected: 0 } })
   }
   refusal('ac:refusal-tools', resultsOf('subagent', (i) => Array.isArray(i.tools)), ['agent-control-schema-refused', "unknown field 'tools'"], 'subagent')
@@ -444,7 +455,7 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const startKinds = toolviewLines.map((l) => l.includes('provider=fork') ? 'fork' : l.includes('provider=spawn') ? 'spawn' : 'unknown')
   const positiveStarts = startKinds.filter((kind) => kind === 'spawn' || kind === 'fork')
   add('ac:leak-check', secretGone && secretBytes === planted.secretBefore && stableAfter.status === stableBefore.status
-    && positiveStarts.filter((kind) => kind === 'spawn').length === 2 && positiveStarts.filter((kind) => kind === 'fork').length === 1
+    && positiveStarts.filter((kind) => kind === 'spawn').length === 1 && positiveStarts.filter((kind) => kind === 'fork').length === 1
     && startKinds.every((kind) => kind === 'spawn' || kind === 'fork') ? 'PASS' : 'FAIL', {
     secretClaimInCorpus: corpus.includes(assembly.SECRET_CLAIM),
     secretClaimInHostLog: log.includes(assembly.SECRET_CLAIM),
@@ -452,11 +463,17 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
     stable3080: { before: stableBefore, after: stableAfter },
     childStarts: toolviewLines.length,
     startsByProvider: { spawn: positiveStarts.filter((kind) => kind === 'spawn').length, fork: positiveStarts.filter((kind) => kind === 'fork').length },
-    law: 'positive witnesses require exactly two spawn starts (spawn pilot retries are attributed) and one fork start; refusals are not starts',
+    law: 'positive witnesses require exactly one spawn and one fork start; refusals are not starts',
   })
 }
 
-main().then(() => process.exit(0)).catch((error) => {
+const dryRun = process.argv.includes('--dry-run')
+const execute = dryRun ? async () => {
+  if (!process.argv.includes('--fixtures')) throw Error('--dry-run requires --fixtures')
+  const { fixtures } = await import('./dryrun-fixtures.mjs')
+  await fixtures({ drive, run, here: HERE, repo: REPO, mode: process.argv.includes('--old-faces') ? 'old' : process.argv.includes('--mutation') ? 'mutation' : 'current' })
+} : main
+execute().then(() => process.exit(0)).catch((error) => {
   console.error('[u7ac1-c2] FATAL', error)
   process.exit(1)
 })

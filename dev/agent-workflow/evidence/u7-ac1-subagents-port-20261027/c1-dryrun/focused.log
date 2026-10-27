@@ -1,0 +1,84 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1
+
+ ✓ packages/runtime/test/u7-ac1-subagents-coverage-c1.test.ts (3 tests) 4ms
+ ✓ packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts (2 tests) 108ms
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F1 list_subagent_models RAN through llm (one landing, one RAN)
+[dsh-agent-team] u7f-agent-control: agent-control-list_subagent_models RAN correlation=plane-ac:mvr75wysjuyv-1
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: catalog-read count=2 oneShot=1
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)
+[dsh-agent-team] u7f-agent-control: agent-control-list_agents RAN correlation=plane-ac:mvr75wz71jy-1
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: catalog-read count=1 oneShot=0
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)
+[dsh-agent-team] u7f-agent-control: agent-control-list_agents RAN correlation=plane-ac:mvr75wz71jy-2
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-10 list_agents POSITIVE: enumeration RAN through the port once; the caller is mount-trusted
+[dsh-agent-team] u7f-agent-control: agent-control-list_agents RAN correlation=plane-ac:mvr75wz6f1o1-1
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F3 subagent POSITIVE under the build-time Tier A ceiling: one start("spawn"), toolFilter {allow:[]}, child text read back
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=spawn run=child-1 tools=[]
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F3 subagent POSITIVE under the build-time Tier A ceiling: one start("spawn"), toolFilter {allow:[]}, child text read back
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr75wzkc8lj-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-11 list_subagent_models POSITIVE: route enumeration RAN once
+[dsh-agent-team] u7f-agent-control: agent-control-list_subagent_models RAN correlation=plane-ac:mvr75wzoe1jf-1
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F4 subagent_fork POSITIVE: one start("fork"), forced filter
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: child-toolview provider=fork run=child-1 tools=[]
+
+stdout | packages/runtime/test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F4 subagent_fork POSITIVE: one start("fork"), forced filter
+[dsh-agent-team] u7f-agent-control: agent-control-subagent_fork RAN correlation=plane-ac:mvr75wzu6v2n-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-12 subagent POSITIVE: a within-authority spawn spawns through the port exactly once
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr75wzzh8oz-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-13 subagent_fork POSITIVE: the child receives INHERIT-DATA context, never an authority object
+[dsh-agent-team] u7f-agent-control: agent-control-subagent_fork RAN correlation=plane-ac:mvr75x0825la-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-14 send_message POSITIVE (in-roster target): the steer leg RAN once
+[dsh-agent-team] u7f-agent-control: agent-control-send_message RAN correlation=plane-ac:mvr75x0i4udx-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-15 interrupt_agent POSITIVE (in-roster target): the interrupt leg RAN once
+[dsh-agent-team] u7f-agent-control: agent-control-interrupt_agent RAN correlation=plane-ac:mvr75x0sjrfq-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 positives — every governed leg RANS through the fake port (observed, not assumed) > AC-16 workflow POSITIVE: the driver spawns only through the caller-bound delegate (one observed spawnChild)
+[dsh-agent-team] u7f-agent-control: agent-control-workflow RAN correlation=plane-ac:mvr75x12bcva-1
+
+ ✓ packages/runtime/test/u7-ac1-subagents-port-c1.test.ts (18 tests) 1200ms
+     ✓ AC1-F1 list_subagent_models RAN through llm (one landing, one RAN)  1060ms
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-26a no injected snapshot ⇒ the Tier A ceiling admits a route-free spawn (the ceiling is a ceiling, not an absence)
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr75x2dh5qq-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-27 WORKFLOW amplifying step (law (c)): the delegate refuses and the fake records ZERO spawnChild under the workflow
+[dsh-agent-team] u7f-agent-control: agent-control-workflow RAN correlation=plane-ac:mvr75x3fj2wn-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-32 ONE-SPAWN law: the same exec token spawns ONCE; the replayed call refuses and the port stays at one call
+[dsh-agent-team] u7f-agent-control: agent-control-subagent RAN correlation=plane-ac:mvr75x3ygal7-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-33 a different exec token is a different execution: it spawns again (the ledger keys executions, not tools)
+[dsh-agent-team] u7f-agent-control: agent-control-interrupt_agent RAN correlation=plane-ac:mvr75x42exep-1
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-33 a different exec token is a different execution: it spawns again (the ledger keys executions, not tools)
+[dsh-agent-team] u7f-agent-control: agent-control-interrupt_agent RAN correlation=plane-ac:mvr75x42exep-2
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-36 no port wired at all (and no host face mounted): every leg is a typed UNWIRED refusal, zero fake, zero bypass
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: leg spawnChild: no recognized shape among [subagents] — leg stays unwired
+
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-38b identity is EXACT strings: case and whitespace variants refuse with zero port; an inactive-but-rostered member rides the fence (runtime owns liveness)
+[dsh-agent-team] u7f-agent-control: agent-control-send_message RAN correlation=plane-ac:mvr75x4samk-1
+
+ ✓ packages/runtime/test/u7-f-agent-control-c1.test.ts (40 tests) 1318ms
+     ✓ AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)  1078ms
+
+ Test Files  4 passed (4)
+      Tests  63 passed (63)
+   Start at  21:28:01
+   Duration  1.56s (transform 1.88s, setup 0ms, import 395ms, tests 2.63s, environment 0ms)
+

@@ -350,10 +350,7 @@ export function makeAc1Decide({ assembly }) {
       fenceRounds = 0
       return { kind: 'text', content: `U7AC1_FENCE_HOLD_${ph.fence}` }
     }
-    // PTC probe: the leader (PTC presentation `both`) asks for a Tier A spawn.
-    if (!assistantToolNames(req).includes('subagent')) {
-      return toolCall('subagent', { description: 'ac1 ptc probe', prompt: 'never runs' })
-    }
+    // PTC is disclosure-only (boots 2/3), never an extra native spawn.
     return { kind: 'text', content: DONE.leader }
   }
 }

@@ -34,6 +34,7 @@ export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
       if (outcome.kind === 'ok') {
         const value = outcome.value
         if (Array.isArray(value)) return value
+        if (value?.ok === true && Array.isArray(value.agents)) return value.agents
         throw new Error('refused-agent-control — the governed list_agents executor returned a value outside the native list_agents result schema')
       }
       if (outcome.kind === 'cancelled') throw new Error('list_agents was cancelled')

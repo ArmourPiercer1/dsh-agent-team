@@ -27,6 +27,7 @@ export function buildListModelsRowDefinition({ name, listModelsExecutor }) {
       const outcome = await listModelsExecutor(raw ?? {}, corr)
       if (outcome.kind === 'ok') {
         if (typeof outcome.value === 'string') return outcome.value
+        if (outcome.value?.ok === true && Array.isArray(outcome.value.models)) return JSON.stringify(outcome.value)
         throw new Error('refused-agent-control — the governed list_subagent_models executor returned a value outside the native result schema')
       }
       if (outcome.kind === 'cancelled') throw new Error('list_subagent_models was cancelled')

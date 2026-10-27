@@ -260,6 +260,7 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
             if (entry?.mode !== 'continuable') { oneShot += 1; continue }
             agents.push({ kind: 'child', id: entry.id, label: entry.label, ...at })
           }
+          note(`catalog-read count=${entries.length} oneShot=${oneShot}`)
           return { ok: true, scope: descendants ? 'descendants' : 'children', agents, catalogSize: entries.length, oneShotChildren: oneShot }
         }
       }
