@@ -20,7 +20,7 @@ reviewed `packages/tools/families/` manifest + the generic seam loop.
 - `manifest.json` + regenerated `index.mjs` + `kernelCapabilities.agent-state`.
 - Census booking (`arc-a-family-census.json`) + p4t6 booking
   (`u7fagentb.json`, MEASURED 1322→1329) + dist placement
-  (`scripts/dist-placements/070-agent-state.json`).
+  (`scripts/dist-placements/090-agent-state.json`).
 - C1: `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` — 45 cases.
 - C2: `tests/world-factory/suites/090-u7-fagentb.mjs` (+
   `tests/world-factory/lib/u7fagentb-assembly.mjs`).
@@ -34,7 +34,7 @@ reviewed `packages/tools/families/` manifest + the generic seam loop.
 | `packages/runtime/test/u7-w0b-family-seam.test.ts` | reviewed-family COUNT expectation 3→4 (bookkeeping for the new family) |
 | `dev/agent-workflow/ledgers/arc-a-family-census.json` | census booking (required by the L3 law) |
 | `packages/testkit/test/p4t6-bookings/u7fagentb.json` | p4t6 booking (MEASURED) |
-| `scripts/dist-placements/070-agent-state.json` | dist mirror placement |
+| `scripts/dist-placements/090-agent-state.json` | dist mirror placement |
 | `packages/runtime/dist/packages/tools/**` | byte-copy mirrors (place-dist-glue) |
 | `dev/agent-workflow/evidence/u7-f-agentB-20261026/**` | this evidence |
 | `tests/world-factory/{suites/070-u7-fagentb.mjs,lib/u7fagentb-assembly.mjs}` | C2 suite (auto-collected; runner untouched) |
@@ -232,3 +232,20 @@ was right, the lane was wrong → the digest now binds each row's name +
   detached probe worktree of `origin/master`; the file is in no hosted
   gate list (the lanes that broke it merged green).
 
+
+## R1 fix-round battery (post-merge head; raw gate lines `ci-pr-gate-r1fix.log`)
+
+- `ci-pr-gate --store-dir .tmp-pnpm-store --full --census`: **DSH-CI-VERDICT
+  pass pass=8 fail=0** (typecheck clean; lint-identities baseline 76
+  distinct, new 0, resolved 0; artifacts-at-head 1862 files drift 0;
+  census PASS — counts moved 639f/8279l, SET did not).
+- C1 **52/52** · seam 9/9 (master's DERIVED-count form) · registries
+  **12/12 (NINE suites)** · a5p0 + p4t6 24/24 · ARC-A fitness 12/12 ·
+  world-factory offline 59/59 · diag-call-chain 24/24 + devex 20/20 ·
+  `diag-call-chain --self-test` OK 51 codes.
+- `eb3-ci-negative-controls` **21/21** · `eb3-evidence-guard --new-since
+  origin/master` pass added=40 findings=0 · `eb3-run-manifest --new-since
+  origin/master` **pass records=64 strict=1 findings=0** (strict-1 = the
+  new C2 record) · boundaries pass files=63 findings=0 · definitions
+  pass files=23 findings=0 · `gen-family-index --check` OK (6 reviewed
+  families) · `eb3-ci-required` pass workflows=9 findings=0.

@@ -33,7 +33,7 @@ State scope = `agent:<exec.agent.id>` — the CALLING agent from the dispatch, n
 **DISCLOSED-NO-SEAM (never coloured PASS):** the enabled-and-store-mounted LIVE positive legs (authorized read; authorized mutation with the durable fact read back; refused cross-scope write) have no production seam on this tree: `agent-bindings.mjs` wires `backends` for the jobs bridge only, and this lane adds no binder line — a durable store adapter is a separate named binder lane. Those legs are PROVEN at C1 over the real plane and the real `issueApprovedGrant`/consume edges; C2 carries the disclosure verbatim into its evidence json.
 **DISCLOSED (template law):** on the default-`deny` template every agent-state call answers `IO_POLICY_UNSUPPORTED / template-default-deny` before PA and before the store (D1) — the agent-state effect class has no rule-grammar spelling on this mount; extending the grammar is a named center-interface change (follow-up), never family self-authorization. Governed positives require the ask-default template + Control leg, which C1 exercises end-to-end.
 
-## Live C2 verdicts (recorded run `u5-u7-fagentb-x-2026-10-27T00-41-36-828Z`, overall **PASS 6/6**, verbatim)
+## Live C2 verdicts (RECORDED run `u5-u7-fagentb-x-2026-10-27T11-11-55-455Z`, overall **PASS 6/6**, verbatim — graded `u5-run-record/1`)
 
 | case | verdict | witness |
 | --- | --- | --- |
@@ -43,16 +43,78 @@ State scope = `agent:<exec.agent.id>` — the CALLING agent from the dispatch, n
 | `agt:enabled-zero-plane` | PASS | 0 placement-feed rows, 0 census-boot, 0 family RAN |
 | `agt:leak-check` | PASS | both worlds torn down clean |
 
-Boot budget: the suite's design is 2 boots/run, 3 declared, 2 used in the
-recorded run. Five runner invocations total (10 host starts) are disclosed in
+Boot budget: the suite's design is 2 boots/run; this recorded round used 2
+(declared 2; `c2/budget-ledger.jsonl` shows exactly the two starts). The
+record is the shared-runner `--run-record` output (the #400/#404 machinery):
+`schema u5-run-record/1`, FINALIZED before write (`overall=PASS`,
+`finishedAt`), `bindings` = `teamSha` (post-merge head) + `hostSha` = the
+`tests/paths.mjs` pin + LIVE `bindings.authority` (`as20261026r1` pointer +
+pointerSha256 + snapshotDigest); local `eb3-run-manifest --new-since
+origin/master`: **pass records=64 strict=1 findings=0** — the strict-1 is
+this record. Six runner invocations total (12 host starts) are disclosed in
 the evidence dir: runs 1–2 diagnosed the witness channels, run 3 kept homes
 for the post-mortem that located the typed refusal on the `team.create` body,
 run 4 proved the verdict path but carried a swallowed drive-phase reference
-error so it is **not** the record, run 5 is the clean record. `tests/homes/`
-empty after; the pristine `tests/deepseek-harness-test-use` remained byte-clean
-@ `639ed01539`.
+error, run 5 was the pre-review clean run — run 5's payload and the four
+earlier ones are labelled NOT-RUN-RECORD digests (no schema key, never
+edited); run 6 (above) is THE graded record. `tests/homes/` empty after; the
+pristine `tests/deepseek-harness-test-use` remained byte-clean @ `639ed01539`.
+
+## Review R1 fix round (PASS-WITH-FINDINGS → F-1…F-4)
+
+- **F-1 (Medium)**: the store's `log.writes` is now the DURABLE-WRITE audit —
+  an entry exists IFF the mutation COMMITTED; replays/CAS refusals/
+  `PLAN_MODE_NOT_ACTIVE` record on a separate `log.attempts` ledger with
+  `outcome` + typed code. RED-first: five new `u7fb W` legs reproduced the
+  reviewer's replay-2-writes output verbatim against the old store
+  (`R1-F1-store-writes-RED.txt`) before the fix, then went green.
+- **F-2 (Medium)**: `scopeOf` answers BYTE-EXACT `agent:<id>` — no trim, no
+  fold (string + non-empty only). The host citation the review asked for:
+  ids are minted `brandString<SessionId>(\`session-${randomUUID()}\`)`
+  (`tests/deepseek-harness-test-use/packages/api/session-controller/src/commands.ts:109`,
+  also :266) and resolved by EXACT `Map.get` (commands.ts:450) — no
+  trimming/canonicalisation law exists. New `S2` leg: `"a"`, `"a "`, `" a"`
+  are three distinct scopes; the cross-write with a's exact ref refuses
+  `GOAL_NOT_FOUND` with zero reach. A planted trim control made `"a "` READ
+  a's goal — falsifiability proven (`R1-F2-scope-trim-RED.txt`).
+- **F-3 (Low)**: `effects.kinds` is DERIVED from the single per-row
+  `AGENT_STATE_EFFECT_ARMS` table, never an independent literal. DISCLOSED:
+  the per-row `effects.byRow` face the review sketched is NOT representable
+  on this tree — the governance contribution schema is CLOSED
+  (`EFFECTS_KEYS=[declared,kinds,targets]`, arc-a ledger-protected; an extra
+  key refuses the mount `INVALID_CONTRIBUTION: UNKNOWN_FIELD`, measured).
+  Per-row exactness is pinned at three points instead: the exported table,
+  the `outputContractDigest` (binds each row's name + arms), and new `E2`
+  legs asserting each row's PA-OBSERVED arms equal its table row (the
+  #404/#406 failure class). Planted controls BOTH ways RED (executor
+  smuggles `tool-invoke`; table drifts) — `R1-F3-mc-*.txt`. C1 45 → **52/52**.
+- **F-4 (Low)**: see the recorded run above — new graded record via the
+  shared `--run-record` machinery, five pre-review digests labelled
+  NOT-RUN-RECORD in the evidence README, zero hand-editing.
+- **Master `e004c25c6` merged** (#400/#402/#404/#406): manifest keep-both +
+  REGENERATED family index via `gen-family-index` + `place-dist-glue` (never
+  hand-merged); census ledger / LANE_EDGES / PR1_CONSUMERS / a5p0 unions;
+  seam test took master's DERIVED-count form; placement prefix and suite
+  file renumbered to **090** (070/080 taken). SILENT-DROP caught in
+  auto-merge: master's rewritten `registries.test.mjs` block lacked this
+  lane's booking → re-booked (NINE suites; registries 12/12).
+- **Disclosed, inherited, NOT fixed (not this lane's check)**:
+  `tests/checks/dist-placements.test.mjs` fails 5/9 IDENTICALLY on clean
+  `origin/master` (38-placement snapshot predates #402/#404; mirror-parity
+  filter ignores `.json` placements) — probe capture
+  `master-side-dist-placements-RED.txt`; no hosted gate runs it.
 
 ## Gate results (local, at this PR's head)
+
+**R1 fix-round re-drive at the post-merge head**: full gate **8/8**
+(typecheck clean, lint-identities new 0, artifacts-at-head 1862 drift 0,
+census PASS — counts moved, SET did not); C1 **52/52**, seam 9/9 (master's
+DERIVED-count form), registries **12/12 (NINE suites)**, a5p0+p4t6 24,
+ARC-A 12, world-factory offline 59, diag 24 + devex 20, negative-controls
+**21/21**, evidence-guard added=40 findings=0, `eb3-run-manifest
+--new-since origin/master` **pass records=64 strict=1 findings=0**,
+boundaries 63/0, definitions 23/0, `gen-family-index --check` OK (6
+families), `eb3-ci-required` 9/0 — raw lines `ci-pr-gate-r1fix.log`.
 
 - `ci-pr-gate --store-dir .tmp-pnpm-store --full --census`: **DSH-CI-VERDICT
   pass pass=8 fail=0** — graph-parse, state-freshness, install,
@@ -105,7 +167,7 @@ both fixed on this branch, disclosed here:**
 
 ## Zero-plane-edit file list (everything touched)
 
-New: `packages/tools/agent-state-family/src/{agent-state-law,state-store,executors,contribution,index}.mjs` · `packages/tools/families/agent-state.mjs` · `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` (45 cases) · `tests/world-factory/suites/090-u7-fagentb.mjs` + `tests/world-factory/lib/u7fagentb-assembly.mjs` · `packages/testkit/test/p4t6-bookings/u7fagentb.json` · `scripts/dist-placements/070-agent-state.json` · `dev/agent-workflow/evidence/u7-f-agentB-20261026/**`.
+New: `packages/tools/agent-state-family/src/{agent-state-law,state-store,executors,contribution,index}.mjs` · `packages/tools/families/agent-state.mjs` · `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` (52 cases) · `tests/world-factory/suites/090-u7-fagentb.mjs` + `tests/world-factory/lib/u7fagentb-assembly.mjs` · `packages/testkit/test/p4t6-bookings/u7fagentb.json` · `scripts/dist-placements/090-agent-state.json` · `dev/agent-workflow/evidence/u7-f-agentB-20261026/**`.
 Modified (bookkeeping only): `packages/tools/families/manifest.json` (+family entry +sha, +`kernelCapabilities.agent-state`) · generated `packages/tools/families/index.mjs` · `packages/runtime/test/u7-w0b-family-seam.test.ts` (reviewed-family count 3→4) · `dev/agent-workflow/ledgers/arc-a-family-census.json` (L3 census booking) · `packages/runtime/dist/packages/tools/**` (byte-copy mirrors).
 
 Ledger notes: the p4t6 booking delta is MEASURED (1322→1329; RED-unbooked capture in evidence); the ARC-A census booking is the sanctioned registration, and the L3/L4 fitness suites pass with it. The goal/plan matrix rows in `TOOL-CAPABILITY-MATRIX-9b2.md` are NOT touched by this lane — their acceptance rows remain the matrix owner's call (disclosed as an UNKNOWN gap, not silently claimed).
