@@ -25,7 +25,10 @@
  * never read or echoed and no user intent is claimed.
  */
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-import { callAborted, raceConfinedSettle, CANCEL_CODE_ABORTED } from '../../search-family/src/cancel-leg.mjs'
+// The shared cancel leg rides the search family's PUBLIC face (the barrel
+// `export * from './cancel-leg.mjs'`), never the sibling's internals — the
+// EB3 family-boundary law (scripts/eb3-family-boundaries.mjs).
+import { callAborted, raceConfinedSettle, CANCEL_CODE_ABORTED } from '../../search-family/src/index.mjs'
 import {
   INSPECT_DIRECTORY_LOCATOR,
   INSPECT_QUERY_BUDGET_MS,

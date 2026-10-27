@@ -25,7 +25,11 @@
  */
 import { readFile, lstat } from 'node:fs/promises'
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/fs-mechanics.mjs'
+// The anchor law is borrowed through the fs family's PUBLIC face (its barrel
+// exports lexicalAnchor/resolveAnchoredPath), never the sibling's internals:
+// EB3 family-boundary law (scripts/eb3-family-boundaries.mjs) — reaching past
+// a sibling's index.mjs is cross-family influence (sibling-internals).
+import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/index.mjs'
 import { SKILL_ROW_NAME } from './row-names.mjs'
 import {
   SKILL_FILE_NAME,
