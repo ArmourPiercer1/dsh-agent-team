@@ -70,6 +70,18 @@ export const BOUNDS = Object.freeze({ inputBytes: 1024 * 1024, maxRefusals: 12, 
 const PIPE = 'packages/tools/a5p5-tools/src/pipeline.ts'
 const REG = 'packages/tools/a5p5-tools/src/register.ts'
 const PLANE = 'packages/runtime/src/plugin/live/team-tool-plane.mjs'
+/**
+ * FamilyAssembly descriptors (u7-w0b, PR #400). A family's registration refusal code is the
+ * `refusalCode:` literal in ITS descriptor; the plane returns `entry.descriptor.refusalCode` and
+ * names no family. Those codes are therefore RESOLVED, not listed: the reviewed manifest's
+ * `families[]` is scanned (only a listed module mounts, so only a listed module is an emitter;
+ * a descriptor on disk that the manifest does not list attributes nothing). A hardcoded path here
+ * is what drifted when #399/#400 moved the three plane-registration literals out of the plane.
+ */
+const FAMILY_DIR = 'packages/tools/families'
+const FAMILY_MANIFEST = `${FAMILY_DIR}/manifest.json`
+const FAMILY_TOKEN = 'refusalCode:'
+const FAMILY_CODE_RE = /refusalCode:\s*'(PLANE_[A-Z_]+_REFUSED)'/g
 
 /** Refusal kind → the pipeline stage that produces it (source-cited, line numbers at this tree). */
 export const KIND_STAGES = Object.freeze({
@@ -93,7 +105,7 @@ export const FACES = Object.freeze({
   'pa-default-deny-coverage': 'PA production admission default-deny COVERAGE gate (admitCall: template default=deny and no rule covers an effect arm) — refuses BEFORE the kernel and before any assurance check',
   canonicalization: 'operation-permission canonical operation (argument canonicalization)',
   'center-kernel': 'governance-center GovernanceKernel (enforcing for kernel-owned names; SHADOW rows are audit-only)',
-  'plane-mount': 'team-tool-plane mount/config (assembly time — no call reached a Body)',
+  'plane-mount': 'team-tool-plane mount/config, incl. a FamilyAssembly descriptor refusing registration (assembly time — no call reached a Body)',
   spill: 'a5p5 spill store',
   'shut-backend': 'plane typed shut effect face (the production adapter is absent; never a capability)',
   provider: 'sandbox provider / confined process / dispatcher termination',
@@ -117,7 +129,7 @@ const GRANT = 'packages/domain/tool-governance/src/grant.ts'
  * red instead of silently attributing to a file that no longer emits it. Vocabulary-only files
  * (errors.ts enumerations, the sandbox contract stub mirror) are deliberately NOT emitters.
  */
-export const FACE_TABLE = Object.freeze({
+const STATIC_FACE_TABLE = Object.freeze({
   // §5 frozen vocabulary (domain/tool-governance/src/errors.ts)
   TOOL_BINDING_UNVERIFIED: [['admission-kernel', AK], ['assurance', AR], ['closed-world-guard', CWG], ['closed-world-guard', SD], ['closed-world-guard', INST], ['admission-kernel', GRANT], ['pa-control-edge', PLANE]],
   APPROVAL_STALE: [['admission-kernel', AK], ['admission-kernel', 'packages/runtime/tool-admission/approval-case.ts'], ['admission-kernel', 'packages/runtime/tool-admission/clock.ts'], ['admission-kernel', GRANT]],
@@ -163,10 +175,9 @@ export const FACE_TABLE = Object.freeze({
   PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED: [['plane-mount', PLANE]],
   PLANE_KERNEL_UNAVAILABLE: [['plane-mount', PLANE]],
   PLANE_PLACEMENT_CONFLICT: [['plane-mount', PLANE]],
-  PLANE_READ_REGISTRATION_REFUSED: [['plane-mount', PLANE]],
-  PLANE_PROCESS_REGISTRATION_REFUSED: [['plane-mount', PLANE]],
-  PLANE_SEARCH_REGISTRATION_REFUSED: [['plane-mount', PLANE]],
   PLANE_JOBS_REGISTRATION_REFUSED: [['plane-mount', PLANE]],
+  // family registration refusals (PLANE_READ_/PROCESS_/SEARCH_REGISTRATION_REFUSED at this tree)
+  // are NOT listed: they are resolved from the family descriptors — see familyRefusalRows below.
   CONFINE_CONFIG_INCOMPLETE: [['plane-mount', PLANE]],
   TRUST_ROOT_SHA_MISMATCH: [['plane-mount', PLANE]],
   CFS_PROVIDER_REFUSED: [['provider', PLANE]],
@@ -174,6 +185,46 @@ export const FACE_TABLE = Object.freeze({
   'exec-token-replay': [['replay', REG]],
   'outcome-outside-closed-set': [['renderer', PIPE]],
 })
+
+/**
+ * Scan the reviewed family manifest at `root` for registration refusal codes.
+ * Returns { rows: { CODE: [[face, file, token]] }, problems: [string] }; never throws. An
+ * unreadable manifest, an unlisted-but-absent module, or a listed descriptor without a
+ * `refusalCode:` literal is a PROBLEM (the self-test reds) and contributes no row (attribution
+ * then says UNKNOWN_CODE — fail closed, never a guess).
+ */
+export function familyRefusalRows(root = REPO_ROOT) {
+  const rows = {}
+  const problems = []
+  let manifest
+  try { manifest = JSON.parse(readFileSync(join(root, FAMILY_MANIFEST), 'utf8')) } catch (e) {
+    problems.push(`family manifest ${FAMILY_MANIFEST} unreadable (${String(e?.code ?? e?.message ?? e)}) — no family refusal code is attributable`)
+    return { rows, problems }
+  }
+  const listed = Array.isArray(manifest?.families) ? manifest.families : []
+  if (listed.length === 0) problems.push(`family manifest ${FAMILY_MANIFEST} lists no families`)
+  for (const entry of listed) {
+    const mod = typeof entry?.module === 'string' ? entry.module : null
+    if (mod === null || !/^[a-z0-9-]+\.mjs$/.test(mod)) { problems.push(`family manifest entry ${JSON.stringify(entry)} has no plain module name`); continue }
+    const rel = `${FAMILY_DIR}/${mod}`
+    let text
+    try { text = readFileSync(join(root, rel), 'utf8') } catch { problems.push(`missing file ${rel} (listed in ${FAMILY_MANIFEST})`); continue }
+    const codes = [...new Set([...text.matchAll(FAMILY_CODE_RE)].map((m) => m[1]))]
+    if (codes.length === 0) problems.push(`${rel}: family descriptor carries no \`${FAMILY_TOKEN} 'PLANE_*_REFUSED'\` literal — its registration refusal is unattributable`)
+    for (const code of codes) (rows[code] ??= []).push(['plane-mount', rel, FAMILY_TOKEN])
+  }
+  return { rows, problems }
+}
+
+/** Static rows + family rows resolved at `root`. A code in both keeps both (rows appended). */
+function buildFaceTable(root) {
+  const table = Object.fromEntries(Object.entries(STATIC_FACE_TABLE).map(([k, v]) => [k, [...v]]))
+  for (const [code, rows] of Object.entries(familyRefusalRows(root).rows)) (table[code] ??= []).push(...rows)
+  return Object.freeze(Object.fromEntries(Object.entries(table).map(([k, v]) => [k, Object.freeze(v)])))
+}
+
+/** Code → [face, emitter, token] — the static table plus the family codes resolved at this tree. */
+export const FACE_TABLE = buildFaceTable(REPO_ROOT)
 
 /** The center shadow row's verdict record (audit-only), cited + self-tested like the stages. */
 const SHADOW_CITE = ['packages/runtime/src/plugin/live/center-shadow-row.mjs:203', "leg: 'shadow-verdict'"]
@@ -367,7 +418,14 @@ export function selfTest(root = REPO_ROOT, moved = []) {
     if (!existsSync(abs)) { problems.push(`missing file ${rel}`); return null }
     return readFileSync(abs, 'utf8')
   }
-  for (const [code, rows] of Object.entries(FACE_TABLE)) {
+  // FACE_TABLE was resolved at REPO_ROOT; re-resolve the family rows at `root`, and grade BOTH
+  // tables' citations at `root`: a code the shipped table attributes to a descriptor that no
+  // longer carries it is a red that NAMES the code (the table is the claim, the tree the fact).
+  const fam = familyRefusalRows(root)
+  problems.push(...fam.problems)
+  const graded = { ...FACE_TABLE }
+  for (const [code, rows] of Object.entries(buildFaceTable(root))) if (!Object.hasOwn(graded, code)) graded[code] = rows
+  for (const [code, rows] of Object.entries(graded)) {
     for (const [face, file, token] of rows) {
       if (!Object.hasOwn(FACES, face)) problems.push(`${code}: unknown face ${face}`)
       const t = read(file)
