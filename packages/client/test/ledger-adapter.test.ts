@@ -27,7 +27,7 @@
  * Matchers used: toBe / toEqual (+ .not) only.
  */
 import { describe, expect, it } from 'vitest'
-import { adaptTeamLedger, adaptTeamUi, ledgerModelFromStoreState } from '../src/model/ledger-adapter.js'
+import { adaptTeamLedger, adaptTeamUi, deriveControlScopeNotes, ledgerModelFromStoreState } from '../src/model/ledger-adapter.js'
 import { projectionFromWire } from '../src/model/projection-adapter.js'
 import type { TeamPerspective } from '../src/state/team-session-resolution.js'
 import type { TeamLedgerState } from '../src/state/team-ledger-store.js'
@@ -718,5 +718,56 @@ describe('ledgerModelFromStoreState — F11 count-based completeness (INV-9.2)',
     // (5) — `frontier >= total` would have claimed complete here.
     expect(ledgerModelFromStoreState(storeState(entries, { total: 3, completeThrough: 71 })).completeness).toBe('complete')
     expect(ledgerModelFromStoreState(storeState(entries, { total: 5, completeThrough: 71 })).completeness).toBe('partial')
+  })
+})
+
+// ── u7-f review round 1 (REVIEW-403 consent-scope): the human approving a
+// PA ask must see WHAT the grant covers. The durable row carries the full
+// strict manifest as `reviewPayload`; the derivation below turns every
+// `connect` effect over a `network-destination` into a one-line consent
+// scope, so consent matches the grant (per-origin = ANY path on it).
+// RED-first: `deriveControlScopeNotes` did not exist when these arms were
+// written. ────────────────────────────────────────────────────────────────
+describe('deriveControlScopeNotes — connect effects carry their consent scope (per-origin = any path)', () => {
+  const paManifest = (effects: unknown) => ({
+    schema: 'pa-control-manifest/v2',
+    approvalCaseId: 'case-1',
+    effects,
+  })
+  const connectEffect = (locator: string) => ({
+    kind: 'connect',
+    resource: { realmId: 'r1', kind: 'network-destination', canonicalLocator: locator, rights: ['connect'] },
+  })
+
+  it('a connect effect over a network-destination names the origin scope', () => {
+    const notes = deriveControlScopeNotes(paManifest([
+      { kind: 'tool-invoke', toolName: 'web_fetch', resource: null },
+      connectEffect('https://docs.example'),
+    ]))
+    expect(notes.length).toBe(1)
+    expect(String(notes[0])).toContain('https://docs.example')
+    expect(String(notes[0]).toLowerCase()).toContain('any path')
+  })
+
+  it('every connect effect gets its own line; non-connect effects carry nothing', () => {
+    const notes = deriveControlScopeNotes(paManifest([
+      { kind: 'tool-invoke', toolName: 'web_fetch', resource: null },
+      connectEffect('https://a.example'),
+      connectEffect('https://b.example'),
+      { kind: 'read', resource: { realmId: 'r1', kind: 'absolute-path', canonicalLocator: '/x', rights: ['read'] } },
+    ]))
+    expect(notes.length).toBe(2)
+    expect(String(notes[0])).toContain('a.example')
+    expect(String(notes[1])).toContain('b.example')
+  })
+
+  it('shape-tolerant by law: junk, absent, non-object, effects-not-array, non-string locators → NO notes, NEVER a throw', () => {
+    expect(deriveControlScopeNotes(undefined).length).toBe(0)
+    expect(deriveControlScopeNotes(null).length).toBe(0)
+    expect(deriveControlScopeNotes('a string').length).toBe(0)
+    expect(deriveControlScopeNotes(42).length).toBe(0)
+    expect(deriveControlScopeNotes(paManifest('not-an-array')).length).toBe(0)
+    expect(deriveControlScopeNotes(paManifest([{ kind: 'connect', resource: { kind: 'network-destination', canonicalLocator: 7 } }])).length).toBe(0)
+    expect(deriveControlScopeNotes(paManifest([{ kind: 'connect' }])).length).toBe(0)
   })
 })

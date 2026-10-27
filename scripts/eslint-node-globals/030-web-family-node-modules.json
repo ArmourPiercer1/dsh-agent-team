@@ -1,0 +1,8 @@
+{
+  "schema": "eslint-node-globals/1",
+  "family": "web-family-node-modules",
+  "summary": "The dsh.web-family lane (web_fetch/web_search) is node-side by construction: its ONE bounded transport port is node:http, and the mechanics reach URL/Buffer/setTimeout/AbortController. u7-f added this file; eslint.config.mjs was not edited (the u7-w0 collection law: a node-side lane ships exactly one JSON here).",
+  "globals": [
+    "packages/tools/web-family/src/*.mjs"
+  ]
+}

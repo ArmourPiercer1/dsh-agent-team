@@ -1,0 +1,46 @@
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (82.627916ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (0.9046ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.5872ms)
+✔ port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds) (64.704113ms)
+✔ port lease T1: dir-slot dead claim reclaimed BY NAME with provenance; live claim never moved (65.887512ms)
+✔ port lease T1: release is token-guarded, idempotent, and leak-check scan sees zero claims after teardown (2.941501ms)
+✔ port lease T1: cross-process race — zero double-ownership, natural AND forced stale/reclaim interleaving (7702.590456ms)
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (41.692408ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (1237.041034ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (5.524501ms)
+✔ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.8109ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (78.346715ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (0.915ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (0.2819ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (1.658ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (76.676415ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (24.071204ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (0.3854ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (0.1462ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (229.876244ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (24.025504ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (4.055901ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.314901ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (17.302303ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (21.270304ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (1.7781ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (4.593201ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (25.924605ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (5.374301ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (0.4587ms)
+✔ u6-fs: the decide script discriminates lanes by request token (4.888601ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (5.842901ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (1.1692ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (21.258303ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (4.430201ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (0.7836ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (0.3288ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (7.818802ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9910.609574

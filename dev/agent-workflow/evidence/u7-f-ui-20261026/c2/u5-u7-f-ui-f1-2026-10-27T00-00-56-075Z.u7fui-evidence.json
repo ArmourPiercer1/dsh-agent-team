@@ -1,0 +1,62 @@
+{
+  "planted": {
+    "presentedShaBefore": "a9c91a6ac0b395c526fff2ff2c41dae869784d9c912d8df572faf548116bf41d",
+    "outsideShaBefore": "e352bf2be889798ee63e642b0776045622024d0804063b0846369c42abf0d00c"
+  },
+  "oracle": {
+    "presentedShaAfter": "a9c91a6ac0b395c526fff2ff2c41dae869784d9c912d8df572faf548116bf41d",
+    "presentedBytesAfter": "U7FUI_PRESENTED_CLAIM_u5f1-20261027t00-00-56z\nthe file the governed present row tried to publish\n",
+    "outsideShaAfter": "e352bf2be889798ee63e642b0776045622024d0804063b0846369c42abf0d00c"
+  },
+  "logHits": {
+    "askRan": 0,
+    "askRefusals": [],
+    "presentRan": 0,
+    "presentProbed": 0,
+    "presentRefusals": [],
+    "planeRefusals": []
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7FUI_DISC_u5f1-20261027t00-00-56z\"}"
+    },
+    {
+      "seq": 2,
+      "d1": false,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"U7FUI_DISC_u5f1-20261027t00-00-56z\\\""
+    }
+  ],
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "uigov": false,
+    "leader": false
+  }
+}

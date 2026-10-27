@@ -1,0 +1,5 @@
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.3 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 51
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.1 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 414 commits); current contract ok (phase_id alpha5-tool-io-governance, baseline 9b2ee57bc5af…, matrix rows 26 claimed 0, drift 497 path(s))
+DSH-CI-LEG leg=install verdict=pass seconds=1.3 detail=pnpm install --frozen-lockfile ok
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.3 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 1051 tracked files, baseline 6 identities)
+DSH-CI-LEG leg=typecheck verdict=pass seconds=14.7 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)

@@ -17,7 +17,13 @@
     "inspect-read": {
       "backsExecution": "family-body"
     },
+    "network-egress": {
+      "backsExecution": "family-body"
+    },
     "agent-control": {
+      "backsExecution": "family-body"
+    },
+    "ui-interaction": {
       "backsExecution": "family-body"
     },
     "agent-state": {
@@ -42,8 +48,16 @@
       "sha256": "120d45343f9157d5c876edb53d23eefe049af502c07abe367d9287563c181274"
     },
     {
+      "module": "web.mjs",
+      "sha256": "b6c73ec43255087dcec680fbdab663ea4f53d785ea65efd4420fe47e3e20072c"
+    },
+    {
       "module": "agent-control.mjs",
       "sha256": "65497f09ee1dccf5b2d46f756006ec6b1d627e399efd77bea5113b56797f7731"
+    },
+    {
+      "module": "ui.mjs",
+      "sha256": "160c318b52820d45741bd81ac797835d3560983951a44ccde664c11139679a76"
     },
     {
       "module": "agent-state.mjs",

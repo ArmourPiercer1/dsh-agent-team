@@ -1,0 +1,23 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FUI",
+  "paths": [
+    "packages/tools/families/ui.mjs",
+    "packages/tools/ui-family/src/index.mjs",
+    "packages/tools/ui-family/src/ui-mechanics.mjs",
+    "packages/tools/ui-family/src/ui-interaction-port.mjs",
+    "packages/tools/ui-family/src/ask-executor.mjs",
+    "packages/tools/ui-family/src/present-executor.mjs",
+    "packages/tools/ui-family/src/ask-row.mjs",
+    "packages/tools/ui-family/src/present-row.mjs",
+    "packages/tools/ui-family/src/ui-family-contribution.mjs",
+    "packages/runtime/test/u7-f-ui-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1332
+  },
+  "reason": "u7-f (the governed UI family — ask_user_question + present join the FamilyAssembly\nseam as the dsh.ui-family ONE candidate; branch task/u7-f-ui-20261026 off\nmaster): the ten scannable files this round ADDS — the reviewed descriptor\n(packages/tools/families/ui.mjs, listed in the family manifest and hashed at\nmount), the eight ui-family lane sources (barrel, mechanics + the timed\ntimeout law, the injected interaction-port contract + host userQuestions\nadapter, the two executors, the two rows, the family contribution), and the\nC1 suite (packages/runtime/test/u7-f-ui-c1.test.ts). The zero-center-diff\nclaim: team-tool-plane.mjs, family-assembly.mjs, the approval-entry binder\nand every one of the ARC-A 33 protected paths carry ZERO diff (the family\narrives through the reviewed manifest + the generated index only); the\ncensus booking, the dist placements JSON, place-dist-glue output, manifest\nhash bumps and world-factory kits ride ALREADY-COUNTED paths or live\noutside packages/** (dist mirrors, scripts/**, tests/**, dev-evidence). The\neffects ride existing vocabularies only (tool-invoke/read/domain-ref; the\ninteraction arms are the family's declared Domain Authority identities) —\nzero new denylist vocabulary.\nMEASURED, not copied: the pre-booking scanner run on THIS tree (all ten\npresent, clause unbooked) reads `scanner counts 1332, ledger derives 983 +\n339 = 1322` — dev/agent-workflow/evidence/u7-f-ui-20261026/p4t6-RED-unbooked.log.",
+  "tieNote": "u7-f's tie, MEASURED on THIS tree at booking time (scanner run in-place,\nall ten files present, clause unbooked, reading `scanner counts 1332,\nledger derives 983 + 339 = 1322`; the evidence log named in the reason):\nthe chain is the booked 1322 plus exactly these ten files — no chain value\ncopied.",
+  "migratedFrom": "new in u7-f (no prior home: the first booking of the dsh.ui-family lane)"
+}

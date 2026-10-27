@@ -20,9 +20,9 @@ reviewed `packages/tools/families/` manifest + the generic seam loop.
 - `manifest.json` + regenerated `index.mjs` + `kernelCapabilities.agent-state`.
 - Census booking (`arc-a-family-census.json`) + p4t6 booking
   (`u7fagentb.json`, MEASURED 1322→1329) + dist placement
-  (`scripts/dist-placements/090-agent-state.json`).
+  (`scripts/dist-placements/110-agent-state.json`).
 - C1: `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts` — 45 cases.
-- C2: `tests/world-factory/suites/090-u7-fagentb.mjs` (+
+- C2: `tests/world-factory/suites/110-u7-fagentb.mjs` (+
   `tests/world-factory/lib/u7fagentb-assembly.mjs`).
 
 ## Files touched OUTSIDE the new lane (the complete list — zero plane lines)
@@ -34,7 +34,7 @@ reviewed `packages/tools/families/` manifest + the generic seam loop.
 | `packages/runtime/test/u7-w0b-family-seam.test.ts` | reviewed-family COUNT expectation 3→4 (bookkeeping for the new family) |
 | `dev/agent-workflow/ledgers/arc-a-family-census.json` | census booking (required by the L3 law) |
 | `packages/testkit/test/p4t6-bookings/u7fagentb.json` | p4t6 booking (MEASURED) |
-| `scripts/dist-placements/090-agent-state.json` | dist mirror placement |
+| `scripts/dist-placements/110-agent-state.json` | dist mirror placement |
 | `packages/runtime/dist/packages/tools/**` | byte-copy mirrors (place-dist-glue) |
 | `dev/agent-workflow/evidence/u7-f-agentB-20261026/**` | this evidence |
 | `tests/world-factory/{suites/070-u7-fagentb.mjs,lib/u7fagentb-assembly.mjs}` | C2 suite (auto-collected; runner untouched) |

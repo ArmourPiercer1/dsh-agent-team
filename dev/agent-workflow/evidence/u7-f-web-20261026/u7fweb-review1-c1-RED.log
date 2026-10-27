@@ -1,0 +1,317 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch default-deny dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-6 ask lane + DENYING leg: typed refusal, zero wire
+[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_URL_USERINFO_FORBIDDEN dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-limit dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-denied reason=off-destination dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TIMEOUT dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=1 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+[dsh-agent-team] web-fetch: governed-web-fetch cancelled-at-pa-edge dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_fetch — governed network effect on the real chain, every pre-wire refusal zero-wire > W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=16 hops=0 dest=http://127.0.0.1:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search RAN seq=1 sources=1 provider=u7f-c1-test-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 web_search — no provider is never invented; a provider asks for exactly its destinations > S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+[dsh-agent-team] web-search: governed-web-search pa-refused code=APPROVAL_DENIED provider=u7f-c1-test-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://10.0.0.1
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://10.0.0.1
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=502 bytes=0 hops=0 dest=http://127.0.0.2:3491
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_TRANSPORT_FAILED provider=u7f-c1-port-provider
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_TRANSPORT_FAILED provider=u7f-c1-port-provider
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts (30 tests | 11 failed) 15172ms
+     ✓ W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin) 33ms
+     ✓ W-2 zero-flip: webEnabled ABSENT — the mount is web-free by shape (no rows, no claims, no lines, zero wire) 5ms
+     ✓ W-3 explicit webEnabled:false behaves EXACTLY like absent (opt-in law) 5ms
+     ✓ W-4 config law: a non-boolean webEnabled REFUSES THE MOUNT (PLANE_CONFIG_INCOMPLETE), never coerced 1ms
+     ✓ W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire 6ms
+     ✓ W-6 ask lane + DENYING leg: typed refusal, zero wire 10ms
+     ✓ W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole 18ms
+     ✓ W-8 closed args: unknown parameters refused (NO escalation lane), zero wire 8ms
+     ✓ W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text 21ms
+     ✓ W-10 redirect loop: hop bound answers typed; the page endpoint is never reached 13ms
+     ✓ W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted 10ms
+     ✓ W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal 260ms
+     ✓ W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive 14ms
+     ✓ W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed 10ms
+     ✓ W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields 11ms
+     ✓ S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world) 8ms
+     ✓ S-2 closed args: queries is 1-8 non-empty strings, nothing else rides 8ms
+     ✓ S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire 19ms
+     ✓ S-4 invalid provider mount is REFUSED AT THE MOUNT (fail closed) — a broken provider never half-rides 4ms
+     × D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire 5005ms
+     × D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path) 5003ms
+     × D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does) 3924ms
+     × D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire) 13ms
+     × D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1) 9ms
+     × D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired 10ms
+     × D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop) 7ms
+     × S-10 a provider calling its DECLARED destination over the port: positive 7ms
+     × S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED 7ms
+     × S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only) 5ms
+     × D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:587:3
+    585|   ]
+    586|
+    587|   it('D-1 the matrix is refused on EVERY scheme on a plain mount — bef…
+       |   ^
+    588|     const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    589|     const observe: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:608:3
+    606|   })
+    607|
+    608|   it('D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local s…
+       |   ^
+    609|     const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    610|     const audit: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:625:18
+    623|     const plane = await buildWeb(ASK, {}, { controlLeg: recordingAppro…
+    624|     const r = await attempt(() => def(plane, 'web_fetch').execute({ ur…
+    625|     expect(r.ok).toBe(false)
+       |                  ^
+    626|     if (!r.ok) {
+    627|       expect(r.msg).not.toContain('WEB_DESTINATION_NON_PUBLIC') // adm…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire > D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+AssertionError: expected 'refused-admission WEB_SCHEME_NOT_ALLO…' to contain 'WEB_DESTINATION_NON_PUBLIC'
+
+Expected: "WEB_DESTINATION_NON_PUBLIC"
+Received: "refused-admission WEB_SCHEME_NOT_ALLOWED — http is refused — the trusted scheme allowlist of this mount is https-only"
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:641:30
+    639|     const r = await attempt(() => def(plane, 'web_fetch').execute({ ur…
+    640|     expect(r.ok).toBe(false)
+    641|     if (!r.ok) expect(r.msg).toContain('WEB_DESTINATION_NON_PUBLIC')
+       |                              ^
+    642|     expect(resolver.calls.length).toBe(1)
+    643|     expect(stubHits.length).toBe(wire0.stub)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:661:20
+    659|       const plane = await buildWeb(ASK, {}, { controlLeg: recordingApp…
+    660|       const r = await attempt(() => def(plane, 'web_fetch').execute({ …
+    661|       expect(r.ok).toBe(true)
+       |                    ^
+    662|       if (r.ok) expect(String(r.value.body?.content)).toBe('hello-web-…
+    663|       expect(resolver.calls.length).toBe(1) // re-resolution is STRUCT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+AssertionError: expected 'refused-admission WEB_SCHEME_NOT_ALLO…' to match /WEB_TIMEOUT|WEB_TRANSPORT_FAILED/
+
+- Expected:
+/WEB_TIMEOUT|WEB_TRANSPORT_FAILED/
+
++ Received:
+"refused-admission WEB_SCHEME_NOT_ALLOWED — http is refused — the trusted scheme allowlist of this mount is https-only"
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:678:30
+    676|     const r = await attempt(() => def(plane, 'web_fetch').execute({ ur…
+    677|     expect(r.ok).toBe(false)
+    678|     if (!r.ok) expect(r.msg).toMatch(/WEB_TIMEOUT|WEB_TRANSPORT_FAILED…
+       |                              ^
+    679|     expect(resolver.calls.length).toBe(1)
+    680|     expect(stubHits.length).toBe(wire0.stub) // never to the second an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window) > D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:691:18
+    689|     const plane = await buildWeb(ASK, {}, { controlLeg: recordingAppro…
+    690|     const r = await attempt(() => def(plane, 'web_fetch').execute({ ur…
+    691|     expect(r.ok).toBe(true)
+       |                  ^
+    692|     expect(hitsOf('/hop')).toBeGreaterThanOrEqual(1)
+    693|     expect(hitsOf('/page')).toBeGreaterThanOrEqual(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-10 a provider calling its DECLARED destination over the port: positive
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:715:18
+    713|     const plane = await buildWeb(ASK, {}, { controlLeg: approvingContr…
+    714|     const r = await attempt(() => def(plane, 'web_search').execute({ q…
+    715|     expect(r.ok).toBe(true)
+       |                  ^
+    716|     expect(hitsOf('/search')).toBeGreaterThanOrEqual(1)
+    717|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+AssertionError: expected 'refused-io WEB_TRANSPORT_FAILED — pro…' to contain 'WEB_SEARCH_DESTINATION_DENIED'
+
+Expected: "WEB_SEARCH_DESTINATION_DENIED"
+Received: "refused-io WEB_TRANSPORT_FAILED — provider leg refused (WEB_TRANSPORT_FAILED)"
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:726:30
+    724|     const r = await attempt(() => def(plane, 'web_search').execute({ q…
+    725|     expect(r.ok).toBe(false)
+    726|     if (!r.ok) expect(r.msg).toContain('WEB_SEARCH_DESTINATION_DENIED')
+       |                              ^
+    727|     expect(victimHits.length).toBe(wire0.victim) // zero wire to the u…
+    728|     expect(stubHits.length).toBe(wire0.stub)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+Error: provider declaring https://169.254.169.254 mounted — H-1 mount law broken
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:747:36
+    745|         backends: { webSearchProvider: { id: 'private-provider', desti…
+    746|       })
+    747|       if (built.ok === true) throw new Error(`provider declaring ${des…
+       |                                    ^
+    748|       expect(built.code, dest).toBe('PLANE_WEB_PROVIDER_REFUSED')
+    749|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix disclosure — consent text names the grant scope > D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin
+AssertionError: expected 'Fetch one page over the network throu…' to match /any path on the origin/i
+
+- Expected:
+/any path on the origin/i
+
++ Received:
+"Fetch one page over the network through the governed web family. HTTPS only (unless this mount explicitly opted into loopback HTTP), one hop chain bounded to one approved origin, responses size- and time-bounded, credentials in URLs refused. Every call is admitted per-destination by the Team authority chain; a refused call performs no network effect at all."
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:758:37
+    756|     for (const name of ['web_fetch', 'web_search']) {
+    757|       const d = def(plane, name)
+    758|       expect(String(d.description)).toMatch(/any path on the origin/i)
+       |                                     ^
+    759|     }
+    760|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 19 passed (30)
+   Start at  08:23:44
+   Duration  15.69s (transform 846ms, setup 0ms, import 370ms, tests 15.17s, environment 0ms)
+

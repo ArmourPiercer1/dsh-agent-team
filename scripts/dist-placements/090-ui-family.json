@@ -1,0 +1,45 @@
+{
+  "schema": "dist-placements/1",
+  "family": "ui-family",
+  "summary": "u7-f: the ui-family lane's .mjs runtime face and its reviewed descriptor packages/tools/families/ui.mjs. The seam re-hashes the descriptor against the manifest at mount and the generated index statically imports it, so the descriptor and every lane file the index reaches sit in the mirror at the same relative layout (relative edges ../../../domain/…, ../../fs-family/…, sibling ./… resolve identically from src and mirror because the mirror sits at dist/packages/…).",
+  "migratedFrom": "new in u7-f (no prior home; the family joins the 060-seam drop-in directory law through this file, the 030/040/050 per-lane pattern)",
+  "placements": [
+    {
+      "src": "packages/tools/families/ui.mjs",
+      "dist": "packages/runtime/dist/packages/tools/families/ui.mjs",
+      "note": "The reviewed descriptor (the 060-seam manifest digest law applies to it: a byte that differs from manifest.json refuses the mount)."
+    },
+    {
+      "src": "packages/tools/ui-family/src/index.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/index.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/ui-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/ui-mechanics.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/ui-interaction-port.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/ui-interaction-port.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/ask-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/ask-executor.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/present-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/present-executor.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/ask-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/ask-row.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/present-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/present-row.mjs"
+    },
+    {
+      "src": "packages/tools/ui-family/src/ui-family-contribution.mjs",
+      "dist": "packages/runtime/dist/packages/tools/ui-family/src/ui-family-contribution.mjs"
+    }
+  ]
+}

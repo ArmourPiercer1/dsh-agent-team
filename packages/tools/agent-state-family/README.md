@@ -40,10 +40,10 @@ edges file-by-file.
   sibling family, or Host modules. No lane file imports the binder or mounts
   itself: mount authority is the plane's, config is the closed boolean
   `agentStateEnabled` (ABSENT = FALSE).
-- dist mirrors are byte-copies placed by `scripts/dist-placements/090-agent-state.json`.
+- dist mirrors are byte-copies placed by `scripts/dist-placements/110-agent-state.json`.
 - Tests: C1 `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts`
   (real plane + real kernel grant, 45 cases); C2
-  `tests/world-factory/suites/090-u7-fagentb.mjs` (live host, ≤3 boots, the
+  `tests/world-factory/suites/110-u7-fagentb.mjs` (live host, ≤3 boots, the
   mount law both directions). Evidence:
   `dev/agent-workflow/evidence/u7-f-agentB-20261026/`.
 - Vocabulary law (disclosed): `metadata` resources carry the `meta` right

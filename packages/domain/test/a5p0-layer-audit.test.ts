@@ -165,6 +165,19 @@ describe('the tool-governance lane audit', () => {
       // (`canonicalJsonFingerprint`, the PR #390 effect-set law) — zero lane
       // edits (the audit script entry carries the file:line provenance).
       'tools/process-family/src/pwsh-executor.mjs',
+      // u7-f: the UI family's TWO governed executors (ask/present bodies)
+      // each consume the SAME ONE effect-grammar face
+      // (`parseRequestedEffectSet`, domain/tool-governance) the fs executors
+      // are booked for — file-by-file booking, zero lane edits (owner role:
+      // ui-family README). Alphabetical here: the expectation is the
+      // sorted-edge set the audit walks.
+      'tools/ui-family/src/ask-executor.mjs',
+      'tools/ui-family/src/present-executor.mjs',
+      // U7-f web family: the two governed executors ride the SAME single
+      // face (parseRequestedEffectSet), booked file-by-file beside the
+      // fs-family entries in the audit; sorted here to match.
+      'tools/web-family/src/fetch-executor.mjs',
+      'tools/web-family/src/search-executor.mjs',
     ])
   })
 

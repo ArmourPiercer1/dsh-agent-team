@@ -1,5 +1,5 @@
 /**
- * tests/world-factory/suites/090-u7-fagentb.mjs — the `u7-fagentb` C2 suite
+ * tests/world-factory/suites/110-u7-fagentb.mjs — the `u7-fagentb` C2 suite
  * (U7-F B): the AGENT-STATE family's live MOUNT LAW at the real host, TWO
  * boots per recorded run (three declared; every actual host start across all
  * recorded runs is listed in the run records — see the evidence dir).

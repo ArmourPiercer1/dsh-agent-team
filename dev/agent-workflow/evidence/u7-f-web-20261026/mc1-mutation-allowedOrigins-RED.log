@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-web
+
+stdout | packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_SEARCH_PROVIDER_STATUS provider=u7f-c1-port-provider
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts (30 tests | 1 failed | 29 skipped) 819ms
+     ↓ W-1 POSITIVE (ask + approval): bytes delivered; RAN witness only with a real stub hit; the leg saw EXACTLY the declared effect set (fingerprint pin)
+     ↓ W-2 zero-flip: webEnabled ABSENT — the mount is web-free by shape (no rows, no claims, no lines, zero wire)
+     ↓ W-3 explicit webEnabled:false behaves EXACTLY like absent (opt-in law)
+     ↓ W-4 config law: a non-boolean webEnabled REFUSES THE MOUNT (PLANE_CONFIG_INCOMPLETE), never coerced
+     ↓ W-5 default-deny: typed refusal BEFORE the authority walk — zero leg activity, zero wire
+     ↓ W-6 ask lane + DENYING leg: typed refusal, zero wire
+     ↓ W-7 scheme law: http is refused on a NON-opted mount (zero wire) and on a loopback-opted mount the opt reaches LOOPBACK ONLY; userinfo refused whole
+     ↓ W-8 closed args: unknown parameters refused (NO escalation lane), zero wire
+     ↓ W-9 over-cap response: refused WHOLE after the wire (honest post-wire arm) — nothing delivered, NO body bytes in the text
+     ↓ W-10 redirect loop: hop bound answers typed; the page endpoint is never reached
+     ↓ W-11 redirect OFF the approved origin: typed refusal and the VICTIM server provably never contacted
+     ↓ W-12 wall-time bound: typed WEB_TIMEOUT, nothing delivered, no leak in the refusal
+     ↓ W-13 same-origin redirect chain: the approved destination covers the hop chain; the bytes still arrive
+     ↓ W-14 one-shot law: a settled execution token replaying into the row is CANCELLED — grant not re-spent, wire not re-crossed
+     ↓ W-15 native-shape parity: the governed result envelope carries EXACTLY the native fields
+     ↓ S-1 NO provider: typed refusal with ZERO PA walk and ZERO wire (even on an ask world)
+     ↓ S-2 closed args: queries is 1-8 non-empty strings, nothing else rides
+     ↓ S-3 mounted provider: positive over the declared destination (fingerprint pin) + denying leg zero wire
+     ↓ S-4 invalid provider mount is REFUSED AT THE MOUNT (fail closed) — a broken provider never half-rides
+     ↓ D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire
+     ↓ D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)
+     ↓ D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)
+     ↓ D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)
+     ↓ D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)
+     ↓ D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired
+     ↓ D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)
+     ↓ S-10 a provider calling its DECLARED destination over the port: positive
+     × S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED 39ms
+     ↓ S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)
+     ↓ D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7f-web-c1.test.ts > u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire > S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED
+AssertionError: expected 'refused-io WEB_SEARCH_PROVIDER_STATUS…' to contain 'WEB_SEARCH_DESTINATION_DENIED'
+
+Expected: "WEB_SEARCH_DESTINATION_DENIED"
+Received: "refused-io WEB_SEARCH_PROVIDER_STATUS — provider leg refused (WEB_SEARCH_PROVIDER_STATUS)"
+
+ ❯ packages/runtime/test/u7f-web-c1.test.ts:751:30
+    749|     const r = await attempt(() => def(plane, 'web_search').execute({ q…
+    750|     expect(r.ok).toBe(false)
+    751|     if (!r.ok) expect(r.msg).toContain('WEB_SEARCH_DESTINATION_DENIED')
+       |                              ^
+    752|     expect(victimHits.length).toBe(wire0.victim) // zero wire to the u…
+    753|     expect(stubHits.length).toBe(wire0.stub)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 29 skipped (30)
+   Start at  08:38:56
+   Duration  1.30s (transform 872ms, setup 0ms, import 333ms, tests 819ms, environment 0ms)
+

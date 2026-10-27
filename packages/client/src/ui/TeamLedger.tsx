@@ -49,6 +49,7 @@ import {
   type ControlSurfaceMode,
 } from '../model/control-surface.js'
 import { formatTeamClock } from '../model/team-timeline-model.js'
+import { deriveControlScopeNotes } from '../model/ledger-adapter.js'
 import type { TeamKey } from './locales.js'
 import styles from './TeamLedger.module.css'
 
@@ -702,6 +703,24 @@ export function TeamLedger(props: TeamLedgerProps): React.JSX.Element {
                 <dt>{t('view.ledger.control.payload')}</dt>
                 <dd>
                   <pre className={styles.controlPayload}>{renderReviewPayloadText(chain.reviewPayload)}</pre>
+                </dd>
+              </div>
+            )
+            : null}
+          {/* u7-f review round 1 (consent-scope): the connect effects in
+              the strict manifest mint a PER-ORIGIN grant, so the approval
+              text the human reads names that scope in one derived line per
+              effect (ANY path on the origin). Purely derived from the
+              payload — invented only from closed-vocabulary fields, never
+              from free text; no notes → the block is OMITTED. */}
+          {deriveControlScopeNotes(chain?.reviewPayload).length > 0
+            ? (
+              <div className={`${styles.controlField} ${styles.controlFieldWide}`} data-control-detail-scope-notes>
+                <dt>{t('view.ledger.control.scopeNotes')}</dt>
+                <dd>
+                  {deriveControlScopeNotes(chain?.reviewPayload).map((note, i) => (
+                    <div key={`scope-note-${String(i)}`} className={styles.controlScopeNote}>{note}</div>
+                  ))}
                 </dd>
               </div>
             )

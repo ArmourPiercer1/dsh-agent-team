@@ -1,0 +1,5 @@
+MUTATION 1 (u7-f C1 control): dropped the pure-lexical anchor refusal in present-executor.mjs (accept lex.ok=false and carry the raw path). Command: npx vitest run packages/runtime/test/u7-f-ui-c1.test.ts — expected RED, got RED (P-2). Then reverted (byte-identical, dist re-placed, suite green 36/36).
+
+     × P-2 out-of-root paths (absolute outside, ../ traversal) are refused PURE-LEXICALLY: zero PA consumption, zero port calls, zero fs touch 11ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 35 passed (36)

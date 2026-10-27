@@ -71,6 +71,19 @@
       ]
     },
     {
+      "familyId": "dsh.web-family",
+      "lane": "packages/tools/web-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (this PR \u2014 the first network-effect family: web_fetch/web_search, opt-in webEnabled)",
+      "contributionPaths": [
+        "packages/tools/web-family/src/web-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "web_fetch",
+        "web_search"
+      ]
+    },
+    {
       "familyId": "dsh.agent-control-family",
       "lane": "packages/tools/agent-control-family",
       "mount": "product",
@@ -86,6 +99,19 @@
         "(bound-definition) list_agents",
         "(bound-definition) list_subagent_models",
         "(bound-definition) workflow"
+      ]
+    },
+    {
+      "familyId": "dsh.ui-family",
+      "lane": "packages/tools/ui-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (governed ask_user_question + present through the FamilyAssembly seam; ONE candidate)",
+      "contributionPaths": [
+        "packages/tools/ui-family/src/ui-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) ask_user_question",
+        "(bound-definition) present"
       ]
     },
     {

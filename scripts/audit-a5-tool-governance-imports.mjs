@@ -121,6 +121,18 @@ const PR1_CONSUMERS = Object.freeze([
   'tools/fs-family/src/write-executor.mjs',
   'tools/fs-family/src/edit-executor.mjs',
   'tools/fs-family/src/image-executor.mjs',
+  // U7-f (web family lane) booked FILE-BY-FILE, SAME single thin face as
+  // every executor above: both governed executors import ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // declare the family body's [tool-invoke + connect@origin] effect set
+  // pre-authority — no other lane export is reachable from these files
+  // (the audit itself enforces that; a different face stays a finding).
+  // Zero lane edits; web-mechanics / web-transport / web-search-provider /
+  // rows / contribution / index import NOTHING of the governance lane
+  // (network confinement is the admission plane per DECISION-3 — this
+  // family carries no sandbox claim), matching the fs-family slice shape.
+  'tools/web-family/src/fetch-executor.mjs',
+  'tools/web-family/src/search-executor.mjs',
   // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
   // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
   // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
@@ -154,6 +166,16 @@ const PR1_CONSUMERS = Object.freeze([
   // confined/contribution modules of the same slice import nothing of the
   // governance lane.
   'tools/process-family/src/pwsh-executor.mjs',
+  // u7-f (UI family) booked FILE-BY-FILE, SAME single thin face: the two
+  // governed executors (ask/present bodies) import ONLY
+  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
+  // mint the PA operation fingerprint pre-authority — exactly the face the
+  // read/fs executors carry; no other lane export is reachable from these
+  // files (verified by this audit itself). Zero lane edits; the mechanics/
+  // rows/port/contribution modules of the same slice import nothing of the
+  // governance lane (owner role: packages/tools/ui-family/README.md).
+  'tools/ui-family/src/ask-executor.mjs',
+  'tools/ui-family/src/present-executor.mjs',
   // U7-F B (agent-state family) booked FILE-BY-FILE, thin faces only:
   // `tools/agent-state-family/src/executors.mjs` imports ONLY
   // `parseRequestedEffectSet` (the SAME effect-grammar face the fs-family
