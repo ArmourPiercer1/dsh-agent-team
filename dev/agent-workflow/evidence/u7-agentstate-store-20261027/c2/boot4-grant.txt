@@ -1,0 +1,1 @@
+boot 4 — over budget, granted by main agent (session-6e3bd412-ee7b-41f3-aaba-daa36f4f2b71, 2026-10-27) for get_goal L4 after the bridge-shape fix; run at commit eee67dafd with --max-host-starts 4; no 5th boot is authorised.

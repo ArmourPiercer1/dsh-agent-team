@@ -1,0 +1,18 @@
+[u7-astore] approval allow ctrl-1gl05tc17 tool=create_goal status=200
+[u7-astore] approval allow ctrl-1d1ht1s1d tool=get_goal status=200
+[u7-astore] approval allow ctrl-1ccj63m08 tool=update_goal status=200
+[u7-astore] approval allow ctrl-0u0zwgy1i tool=exit_plan_mode status=200
+[u7-astore] approval allow ctrl-1np56yj0l tool=todo_write status=200
+[u7-astore] approval allow ctrl-1cz810e1m tool=update_goal status=200
+[u7-astore] approval allow ctrl-0ohn70b17 tool=get_goal status=200
+[u7-astore] case ast:mounted: PASS {"placementFeed":["[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-u5ast4-20261027t16-22-47z","[dsh-agent-team] a5g7: placement-feed rows=[team_grep,tea
+[u7-astore] case ast:store-under-world-home: PASS {"homeUnderTestsHomes":true,"storeBase":"team-state/agent-state/u7as-realm-u5ast4-20261027t16-22-47z","rootExists":true,"realpathUnderHome":true,"errors":[]}
+[u7-astore] case ast:create-goal-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast4-20261027t16-22-47z","goal":{"goalId":"goal-2026-10-27T16:23:19.779Z-1","objective":"U7AS_GOAL_EDITED_u5ast4-20261027t16-22-47z","phase":"active","revision":2,"roundsStarted":0,"maxGoalRounds":3,"armed":true}
+[u7-astore] case ast:get-goal-readback: PASS {"toolResultHead":"{\"goal\":{\"goal_id\":\"goal-2026-10-27T16:23:19.779Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5ast4-20261027t16-22-47z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}","controlRows":[{"requestI
+[u7-astore] case ast:todo-write-positive: PASS {"diskRecord":{"key":"agent:session-team-child-1cad241640501c0326bafdbda839f89b","todos":[{"content":"U7AS_TODO_CLAIM_u5ast4-20261027t16-22-47z","status":"in_progress"},{"content":"U7AS_TODO_CLAIM_u5ast4-20261027t16-22-47z second","status":"pending"}],"nlink":
+[u7-astore] case ast:update-goal-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast4-20261027t16-22-47z","goal":{"goalId":"goal-2026-10-27T16:23:19.779Z-1","objective":"U7AS_GOAL_EDITED_u5ast4-20261027t16-22-47z","phase":"active","revision":2,"roundsStarted":0,"maxGoalRounds":3,"armed":true}
+[u7-astore] case ast:exit-plan-mode-positive: PASS {"diskRecord":{"key":"agent:session-u7as-team-u5ast4-20261027t16-22-47z","planMode":{"active":false,"pendingIntents":[{"plan":"# U7AS_PLAN_u5ast4-20261027t16-22-47z\n\n- the u7as live plan","appliedBy":"plane-agent-state:46670c3f-26e5-4df4-9e77-bb32d1b21156:4"
+[u7-astore] case ast:cross-scope-zero-effect: PASS {"toolResultHead":"refused: GOAL_NOT_FOUND — no current goal","namedForeignRef":{"goal_id":"goal-2026-10-27T16:23:19.779Z-1","revision":1,"action":"complete"},"leaderRecordAfter":{"goalId":"goal-2026-10-27T16:23:19.779Z-1","objective":"U7AS_GOAL_EDITED_u5ast4-
+[u7-astore] case ast:leak-check: PASS {"ownedPidsDead":true,"portsReleased":true,"stillBound":[],"homeReleased":true,"leasesReleased":true,"heldLease":[],"notes":[]}
+[u7-astore] u7as run u5-u7-astore-ast4-2026-10-27T16-22-47-523Z: lanes={"goalTurn":true,"worker":true,"leader":true} records=2 writes=4 attempts=4
+RUN-SUMMARY run=u5-u7-astore-ast4-2026-10-27T16-22-47-523Z suite=u7-astore overall=PASS cases=10 PASS:10 worlds=u5ast4-20261027T16-22-47Z
