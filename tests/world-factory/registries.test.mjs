@@ -53,10 +53,13 @@ function plantedKinds(label) {
 
 // ── world kinds ─────────────────────────────────────────────────────────────
 
-test('world kinds: the seven hand-wired kinds of 88107ad71, in prefix order, deterministic', async () => {
+test('world kinds: the hand-wired kinds of 88107ad71 + the lane-added kinds, in prefix order, deterministic', async () => {
   const a = await loadWorldKinds()
   const b = await loadWorldKinds()
-  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut'])
+  // 88107ad71 hand-wired the first seven; u7-f ADDED u7FsUi (080) as a
+  // drop-in lane module — the registry law is enumeration, and a lane
+  // joining legitimately extends the derived list.
+  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7FsUi'])
   assert.deepEqual(a.map((k) => k.file), b.map((k) => k.file))
   assert.deepEqual(a.map((k) => k.file), [...a.map((k) => k.file)].sort())
   assert.deepEqual(WORLD_KIND_OPTIONS, a.map((k) => k.option))
@@ -158,7 +161,7 @@ test('world kinds RED-first: malformed / clashing modules refuse at load time', 
 test('a new World kind is ONE file: dropping it in registers the option, nothing else is edited', async () => {
   const { parent, dir } = plantedKinds('kind-new')
   try {
-    writeFileSync(join(dir, '080-u7-pwsh.mjs'), [
+    writeFileSync(join(dir, '090-u7-pwsh.mjs'), [
       'export default {',
       "  option: 'u7Pwsh', probe: null,",
       "  paths: { u7pwshLedgerPath: ['home', 'u7pwsh-ledger.jsonl'] }, ledgerRows: { u7pwshLedgerRows: 'u7pwshLedgerPath' },",
@@ -169,7 +172,9 @@ test('a new World kind is ONE file: dropping it in registers the option, nothing
     ].join('\n'))
     const kinds = await loadWorldKinds(dir)
     assert.equal(kinds.at(-1)?.option, 'u7Pwsh')
-    assert.equal(kinds.length, 8)
+    // shipped kinds + the one just dropped in (the shipped set grew to
+    // eight when u7-f added u7FsUi; the CONTROL law is the +1, not the age).
+    assert.equal(kinds.length, 9)
   } finally {
     rmSync(parent, { recursive: true, force: true })
   }
@@ -209,16 +214,18 @@ test('suites RED-first (review R1 F-1): a stray entry — other extension, subdi
   }
 })
 
-test('suites: the six hand-wired lane suites of 88107ad71, prefix order, budgets as the old ternary', async () => {
+test('suites: the hand-wired lane suites of 88107ad71 + the lane-added suites, prefix order, budgets as the old ternary', async () => {
   const a = await loadSuites()
   const b = await loadSuites()
+  // 88107ad71 hand-wired the first six; u7-f ADDED u7-f-ui as a drop-in
+  // lane module (enumeration law — a lane joining extends the derived list).
   assert.deepEqual(a.map((s) => [s.suite, s.totalRequests]), [
-    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80],
+    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-ui', 60],
   ])
   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-fs-mut'])
+  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-f-ui', 'u7-fs-mut'])
 })
 
 test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {
