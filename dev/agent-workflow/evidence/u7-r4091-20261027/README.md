@@ -98,3 +98,10 @@ alone changes no law (P-write passes with the seam present but inert).
 - `eb3-ci-required` findings=0; `eb3-ci-negative-controls` 24/24; `eb3-evidence-guard
   --new-since origin/master` findings=0 (bound 1 MiB respected); `eb3-family-boundaries` 0;
   `eb3-family-definitions` 0.
+
+## Hosted CI (PR #417 @ 053d9ae36) — ALL GREEN
+
+`pr-gate` 1m57s, `ci-fast` 27s, `ci-integration` 1m5s, `ci-security` 42s, `ci-required` 10s,
+`candidate-protection` 13s, `synthesize-merge-tree` 13s, `census-runtime` 19m47s,
+`ci-full` 20m35s — 9 passed, 0 failed (`ci-required-deferred` = named skip). Not merged
+(merge ruling belongs to the main agent).
