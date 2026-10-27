@@ -26,6 +26,26 @@ TRUSTED MOUNT injects (`input.backends.uiInteraction`, or the host's public
 `userQuestions` service behind `ui-interaction-port.mjs`'s adapter). Absent
 port = typed refusal, zero effect — never a bypass, never a fake.
 
+## THE OUTWARD EDGES (booked in `scripts/eb3-family-boundaries.mjs` as `dsh.ui-family`)
+
+Nothing under this directory may import the plane, the Kernel lane, or Host
+internals. The complete outward set, face by face:
+
+- `node:*` — `node:fs` (the post-consume `O_NOFOLLOW` probe in
+  `present-executor.mjs`), `node:crypto` (fingerprinting in
+  `ui-mechanics.mjs`).
+- `packages/contracts/src/index.js` — `canonicalJsonStringify` in
+  `ui-family-contribution.mjs` (the canonicalizer face, read-only).
+- `packages/domain/tool-governance/src/index.js` — the ONE effect-grammar
+  face `parseRequestedEffectSet`, imported by the TWO executors only,
+  booked consumer-by-consumer in the A5P0 layer audit (`PR1_CONSUMERS`).
+- `packages/tools/fs-family/src/index.mjs` — the SIBLING FAMILY PUBLIC
+  FACE (`lexicalAnchor`, `resolveAnchoredPath`): the anchor law has ONE
+  home and this lane reads it through the reviewed face, never through the
+  sibling's internals (`fs-mechanics.mjs` is NOT an edge of this lane).
+
+Everything else the lane imports is inward (`./`-relative, this lane).
+
 ## The two law blocks
 
 - **The timed law** (`ui-mechanics.mjs` + `ask-executor.mjs`): the variant

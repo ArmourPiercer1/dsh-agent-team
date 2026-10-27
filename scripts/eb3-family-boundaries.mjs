@@ -89,6 +89,16 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  'dsh.ui-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    // the ONE effect-grammar face, booked consumer-by-consumer in the A5P0
+    // layer audit (the two executors; same face the fs executors carry)
+    'packages/domain/tool-governance/src/*',
+    // the SIBLING FAMILY public face this lane's README books (anchor law
+    // home — lexicalAnchor + resolveAnchoredPath; never a sibling internal)
+    'packages/tools/fs-family/src/index.mjs',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -102,6 +112,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/process-family': 'dsh.process-family',
   'packages/tools/search-family': 'dsh.search-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/ui-family': 'dsh.ui-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are

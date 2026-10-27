@@ -26,7 +26,11 @@
 import { closeSync, fstatSync, openSync, realpathSync } from 'node:fs'
 import { constants as fsConstants } from 'node:fs'
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/fs-mechanics.mjs'
+// The anchor law has ONE home; the boundary law (eb3-family-boundaries)
+// forbids reaching into a sibling lane's internals, so the two anchor
+// faces arrive through fs-family's PUBLIC face `src/index.mjs` (the same
+// exports fs-mechanics carries; the precedent booked for process/search).
+import { lexicalAnchor, resolveAnchoredPath } from '../../fs-family/src/index.mjs'
 import {
   PRESENT_NATIVE_NAME,
   UI_PRESENTATION_DOMAIN_AUTHORITY,
