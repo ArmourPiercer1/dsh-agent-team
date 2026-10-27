@@ -395,19 +395,23 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const childReqs = (marker) => requests.filter((r) => userTexts(r).some((t) => t.includes(marker)))
   const spawnChild = childReqs(assembly.markers.CHILD_SPAWN)
   const forkChild = childReqs(assembly.markers.CHILD_FORK)
+  const positiveSpawnRequestIds = new Set(spawnChild.map((r) => r.seq))
+  const positiveForkRequestIds = new Set(forkChild.map((r) => r.seq))
   const toolsOf = (r) => surfaceNamesOf(r)
   const childAttempt = spawnChild.flatMap((r) => [...(r.body?.messages ?? [])].flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
     .filter((b) => b?.type === 'tool_result').map((b) => ({ isError: b.is_error === true, text: (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('').slice(0, 300) })))
   const allEmpty = [...spawnChild, ...forkChild].every((r) => toolsOf(r).length === 0)
   const portViews = toolviewLines.map((l) => /tools=\[([^\]]*)\]/.exec(l)?.[1] ?? '?')
-  add('ac:child-toolview', spawnChild.length >= 2 && forkChild.length >= 1 && allEmpty && childAttempt.length >= 1 && childAttempt.every((a) => a.isError)
-    && portViews.length === 2 && portViews.every((v) => v === '') ? 'PASS' : 'FAIL', {
+  const unknownRead = childAttempt.filter((a) => a.isError && a.text.includes('unknown tool "read"'))
+  add('ac:child-toolview', spawnChild.length === 2 && forkChild.length === 1 && allEmpty && unknownRead.length === 1
+    && childAttempt.length === 1 && portViews.length === 3 && portViews.every((v) => v === '') ? 'PASS' : 'FAIL', {
     spawnChildRequests: spawnChild.length,
     forkChildRequests: forkChild.length,
     childToolSurfaces: [...spawnChild, ...forkChild].map(toolsOf),
     spawnChildAttemptedToolResults: childAttempt,
+    unknownReadErrors: unknownRead.length,
     portToolviewLines: toolviewLines.map((l) => l.slice(0, 200)),
-    q1: 'own-scope registrations on a Tier A child at this pin = the port-measured visible list above',
+    q1: 'Tier A ceiling is an empty child tool view; the mock read probe must fail specifically as unknown tool',
   })
 
   // ac:fork-positive
@@ -420,9 +424,12 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   })
 
   // refusals — graded PASS on the typed sentence + zero extra Control row
+  const requestIdsInResult = (rs) => new Set(rs.flatMap((r) => [...String(r.text ?? '').matchAll(/requestId[=: ]+([A-Za-z0-9_-]+)/g)].map((m) => m[1])))
   const refusal = (id, rs, needles, tool, positives) => {
-    const ok = rs.length === 1 && rs[0].isError && needles.every((n) => rs[0].text.includes(n)) && asksFor(tool).length === positives
-    add(id, ok ? 'PASS' : 'FAIL', { readBack: heads(rs), expected: needles, durableAsksFor: { tool, count: asksFor(tool).length, positivesExpected: positives } })
+    const resultRequestIds = requestIdsInResult(rs)
+    const asksForCase = asksFor(tool).filter((ask) => resultRequestIds.has(ask.requestId))
+    const ok = rs.length === 1 && rs[0].isError && needles.every((n) => rs[0].text.includes(n)) && asksForCase.length === positives
+    add(id, ok ? 'PASS' : 'FAIL', { readBack: heads(rs), expected: needles, durableAsksFor: { tool, attributedRequestIds: [...resultRequestIds], count: asksForCase.length, positivesExpected: positives } })
   }
   refusal('ac:refusal-tools', resultsOf('subagent', (i) => Array.isArray(i.tools)), ['agent-control-schema-refused', "unknown field 'tools'"], 'subagent', 1)
   refusal('ac:refusal-provider', resultsOf('subagent', (i) => i.provider !== undefined), ['agent-control-amplification-refused', "provider 'deepseek-official' is outside the caller's own authority"], 'subagent', 1)
@@ -432,13 +439,18 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const stableAfter = await stableProbe()
   const secretGone = !corpus.includes(assembly.SECRET_CLAIM) && !log.includes(assembly.SECRET_CLAIM)
   const secretBytes = (() => { try { return readFileSync(assembly.SECRET_FILE, 'utf8') } catch { return null } })()
-  add('ac:leak-check', secretGone && secretBytes === planted.secretBefore && stableAfter.status === stableBefore.status && toolviewLines.length === 2 ? 'PASS' : 'FAIL', {
+  const startKinds = toolviewLines.map((l) => l.includes('provider=fork') ? 'fork' : l.includes('provider=spawn') ? 'spawn' : 'unknown')
+  const positiveStarts = startKinds.filter((kind) => kind === 'spawn' || kind === 'fork')
+  add('ac:leak-check', secretGone && secretBytes === planted.secretBefore && stableAfter.status === stableBefore.status
+    && positiveStarts.filter((kind) => kind === 'spawn').length === 2 && positiveStarts.filter((kind) => kind === 'fork').length === 1
+    && startKinds.every((kind) => kind === 'spawn' || kind === 'fork') ? 'PASS' : 'FAIL', {
     secretClaimInCorpus: corpus.includes(assembly.SECRET_CLAIM),
     secretClaimInHostLog: log.includes(assembly.SECRET_CLAIM),
     secretBytesUnchanged: secretBytes === planted.secretBefore,
     stable3080: { before: stableBefore, after: stableAfter },
     childStarts: toolviewLines.length,
-    law: 'exactly two Tier A child starts (spawn + fork); every refusal reached zero start',
+    startsByProvider: { spawn: positiveStarts.filter((kind) => kind === 'spawn').length, fork: positiveStarts.filter((kind) => kind === 'fork').length },
+    law: 'positive witnesses require exactly two spawn starts (spawn pilot retries are attributed) and one fork start; refusals are not starts',
   })
 }
 
