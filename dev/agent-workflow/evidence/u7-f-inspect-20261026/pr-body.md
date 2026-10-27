@@ -178,10 +178,17 @@ Machine copy: `c2/c2-verdicts.json` — a `u5-run-record/1` record written
 through the shared `run-record.mjs` lib (finding B-3: `overall`,
 `finishedAt`, `bindings.authority` present, finalized BEFORE the write).
 Transcripts: `c2/attempt-final.txt`, `c2/host-boot-round2.log`,
-`c2/mock-corpus.json`, `c2/home-log-hits.txt`. Superseded records kept
-verbatim, nothing hand-edited: `c2/round1-boots-1-3/` (boots 1–3, pre-RUN-rule
-shape, README labels them) and `c2/boot4-record/` (boot 4 + the envelope
-root-cause note).
+`c2/mock-corpus.json`, `c2/home-log-hits.txt`. `c2/mock-corpus.json` is a
+DECLARED EXCERPT (main-agent ruling 2026-10-27: a full mock transcript earns
+no allowlist exemption under the #408 1 MiB evidence guard) — it keeps only
+the entries the verdicts cite, selected by a structural witness predicate
+(`c2/trim-mock-corpus.mjs`, reused by the runner so every boot trims the
+same way); kept entries are byte-identical, and the header carries the
+original's byte count (1,366,568) + sha256
+(`9eeaedd97bb85de9…63a224de`) so the full capture is recoverable from git by
+digest. Superseded records kept verbatim, nothing hand-edited:
+`c2/round1-boots-1-3/` (boots 1–3, pre-RUN-rule shape, README labels them)
+and `c2/boot4-record/` (boot 4 + the envelope root-cause note).
 
 Boot 5 is the boot where the durable ask chain WORKS: the member template
 and team-root envelope now both name `request-control` (the effective member

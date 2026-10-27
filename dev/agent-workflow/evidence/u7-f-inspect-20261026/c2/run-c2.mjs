@@ -31,6 +31,7 @@ import { remoteCall, hasMarker, surfaceNamesOf } from '../../../../../tests/worl
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
 import { createU7fInspectAssembly, makeU7fInspectDecide } from './u7f-inspect-assembly.mjs'
+import { buildExcerpt } from './trim-mock-corpus.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
@@ -114,9 +115,16 @@ async function main() {
   const logCopy = join(HERE, 'host-boot-round2.log')
   if (boot !== null) { try { fsMod.copyFileSync(boot.logPath, logCopy) } catch { notes.push('host log copy failed') } }
   try {
-    fsMod.writeFileSync(join(HERE, 'mock-corpus.json'), JSON.stringify((world.mock?.requests ?? []).map((r) => ({
+    // The committed mock-corpus.json is a DECLARED EXCERPT (main-agent ruling
+    // 2026-10-27: a full transcript earns no allowlist exemption under the
+    // 1 MiB evidence guard). The same structural witness predicate
+    // (c2/trim-mock-corpus.mjs) trims every boot identically; the raw
+    // capture's byte count + sha256 ride in the header so the full transcript
+    // stays recoverable from git by digest.
+    const rawCorpus = JSON.stringify((world.mock?.requests ?? []).map((r) => ({
       seq: r.seq, path: r.path, status: r.status, body: r.body ?? null, reply: r.reply ?? null,
-    }))))
+    })))
+    fsMod.writeFileSync(join(HERE, 'mock-corpus.json'), JSON.stringify(buildExcerpt(rawCorpus), null, 1))
   } catch { notes.push('mock corpus dump failed') }
   try { await world.stopHost() } catch { /* record below */ }
   const receipts = await world.teardown({ keepHome: true }).catch((e) => ({ error: String(e?.message ?? e) }))
