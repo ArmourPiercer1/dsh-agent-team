@@ -395,6 +395,31 @@ describe('u7f-c1 inspect rows', () => {
       }
     }
   })
+  it('I10 placement-spelling law (C2 boot-3 measured): the tool-invoke arm carries the MOUNTED name', async () => {
+    // The call-level facts entry resolves the call's placement through
+    // paPlacementNameOf, whose seam arm accepts exactly the placement names
+    // the seam placed (team-tool-plane.mjs :957-970, the U7-9a family-blind
+    // law). Live boot-3 refused a native-class spelling verbatim:
+    // `entry-cause=no-placement-name` → TOOL_BINDING_UNVERIFIED, zero
+    // effect. The fs rows spell native classes ONLY because they mount at
+    // native spellings; this family mounts at aliases, so an effect arm
+    // spelling 'skill' / 'cordis_inspect_*' is a regression of a law
+    // already paid for in live boots — it must turn RED here, not there.
+    const { face } = fakeInspectFace()
+    const { cap, paCalls } = descriptorCap({ injected: { inspect: face } })
+    const { row } = buildRows(cap)
+    const arms: Record<string, string> = {
+      team_skill: 'team_skill',
+      team_cordis_inspect_list: 'team_cordis_inspect_list',
+      team_cordis_inspect_query: 'team_cordis_inspect_query',
+    }
+    for (const [rowName, mounted] of Object.entries(arms)) {
+      paCalls.length = 0
+      await row(rowName).execute(rowName === 'team_skill' ? { name: 'demo-skill' } : rowName === 'team_cordis_inspect_query' ? { platform: 'host', provider: 'p.one', method: 'echo' } : {}, { agent: {} })
+      const invoke = paCalls.flatMap((c) => c.effects).find((e) => e.kind === 'tool-invoke')
+      expect(invoke?.toolName, rowName).toBe(mounted)
+    }
+  })
 })
 
 describe('u7f-c1 mutation controls (planted bugs turn the vectors RED)', () => {
