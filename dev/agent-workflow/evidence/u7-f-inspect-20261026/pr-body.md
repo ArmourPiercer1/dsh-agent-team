@@ -324,3 +324,20 @@ ledger `scripts/eslint-node-globals/030-inspect-family.json`.
   `DSH-CI-VERDICT pass pass=8 fail=0 skip=0 skipped=none legs=8 refused=0`
   (census pass, verdict drawn from the identity set, clock declared at
   `--testTimeout=30000`). Logs `ci-pr-gate-full-8.log` / `…-9.log`.
+- Hosted CI round at the first review head: **ci-integration RED** on
+  EB3-D RUN-MANIFEST strict mode — the two boot-produced records lacked
+  `bindings.teamSha`/`hostSha` (the u7-4a suite's binding shape; my runner
+  omitted them). Fixed two ways, honestly: the runner now fills both at
+  boot (teamSha = `rev-parse HEAD`, hostSha = the asserted host-base head —
+  every FUTURE boot self-binds), and the two existing records receive a
+  **provenance-only** backfill through the committed, header-documented
+  `c2/backfill-bindings.mjs` (adds exactly the two omitted fields + a note;
+  the script itself refuses if any case/verdict/overall/finishedAt byte
+  moves — it printed `verdict payload byte-identical` for both). The
+  backfilled teamSha is the boot-time `rev-parse HEAD` (292558f70) with the
+  dirty-tree fact disclosed in the note: the boots ran the working-tree
+  fixes minutes before those fixes were committed as `edefd724f`.
+  `node scripts/eb3-run-manifest.mjs --new-since <base>` now: **`pass
+  records=58 strict=2 findings=0`** (the 11 DISCLOSED unfinalised records
+  are other lanes' history, graded NOT-A-RESULT by the checker itself).
+  All four other integration legs re-run green locally.

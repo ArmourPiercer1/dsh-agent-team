@@ -21,7 +21,10 @@
       "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
       "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
     },
-    "round": 2
+    "round": 2,
+    "teamSha": "292558f70",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "provenanceNote": "Provenance backfilled by c2/backfill-bindings.mjs (see its header): bindings.teamSha/hostSha are the boot-time truths; no verdict, case, detail, overall, or finishedAt was altered. The team tree was additionally carrying the uncommitted review-round fixes (later edefd724f) at both boots, disclosed there."
   },
   "cases": [
     {

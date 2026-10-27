@@ -25,6 +25,7 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../../../tests/world-factory/lib/world-factory.mjs'
 import { remoteCall, hasMarker, surfaceNamesOf } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
@@ -40,15 +41,21 @@ const boots = []
 const notes = []
 // The RUN-rule record (EB3): built through the SHARED lib so it carries
 // `overall` / `finishedAt` / `bindings.authority` and finalizes BEFORE the
-// write. The old round-1 hand-rolled c2-verdicts.json lacked these (PR #404
-// finding B-3) and is preserved verbatim under round1-boots-1-3/. A run
-// record is created up front so a crash before `write()` still finalizes on
-// the `finally` path with every unreached case folded to FAIL.
+// write — the u7-4a suite's binding shape (teamSha = this tree at boot,
+// hostSha = the asserted host-base HEAD, authority = the live generation
+// pointer). The old round-1 hand-rolled c2-verdicts.json lacked these
+// (PR #404 finding B-3) and is preserved verbatim under round1-boots-1-3/.
+const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
 const run = createRunRecord({
   runId: `u7f-c2-${Date.now().toString(36)}`,
   suite: 'u7f-inspect-family-c2',
   selectedCases: SELECTED,
-  bindings: { authority: readAuthorityBinding(REPO), round: 2 },
+  bindings: {
+    teamSha: git(['rev-parse', 'HEAD']),
+    hostSha: 'set-from-assertHostBase-in-main', // the pinned host-base HEAD lands below
+    authority: readAuthorityBinding(REPO),
+    round: 2,
+  },
 })
 const add = (id, verdict, detail) => {
   run.addCase(id, verdict, { detail })
@@ -65,7 +72,8 @@ async function main() {
     evidenceRoot: join(HERE, 'world'),
     hostTree: testUseTree(REPO),
   })
-  factory.assertHostBase('c2-check')
+  const hostBase = factory.assertHostBase('c2-check')
+  run.record.bindings.hostSha = hostBase.head
   const world = await factory.createWorld({ line: 'u7finsp' })
   const assembly = createU7fInspectAssembly({
     repoRoot: REPO, home: world.home, runStamp: world.id, reportDir: world.logDir, sessionRoot: factory.hostTree,
