@@ -62,6 +62,7 @@ export {
   ARG_GRAMMAR,
   CONVERSATION_CONTEXT_VIEW,
   MODEL_ROUTES_VIEW,
+  TIER_A_CEILING,
   authorityBounded,
   classifyTargetScope,
   deriveAgentControlEffects,
@@ -70,7 +71,7 @@ export {
   scopeMembership,
   workflowEffectWorld,
 } from './agent-control-mechanics.mjs'
-export { LEG_UNWIRED, PORT_LEGS, createHostAgentRuntimePort, normalizePort, resolveLeg } from './agent-runtime-port.mjs'
+export { LEG_UNWIRED, PORT_LEGS, TIER_A_CHILD_TOOL_FILTER, TIER_A_FORBIDDEN_SPEC_FIELDS, callerPtcMode, createHostAgentRuntimePort, normalizePort, resolveLeg } from './agent-runtime-port.mjs'
 export { createAgentControlExecutors } from './agent-control-executor.mjs'
 export { buildSpawnRowDefinition } from './spawn-row.mjs'
 export { buildForkRowDefinition } from './fork-row.mjs'

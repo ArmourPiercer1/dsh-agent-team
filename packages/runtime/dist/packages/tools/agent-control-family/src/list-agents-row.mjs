@@ -10,8 +10,14 @@
 export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
   return Object.freeze({
     name,
-    description: 'List the agents addressable inside this session scope with their current status. Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.',
-    parameters: { type: 'object', properties: {}, additionalProperties: false },
+    description: 'List the subagents this session started (its own subagent catalog). Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.',
+    parameters: {
+      type: 'object',
+      properties: {
+        scope: { type: 'string', enum: ['children', 'descendants'], description: 'children (default) lists your direct children only; descendants walks the complete tree below you.' },
+      },
+      additionalProperties: false,
+    },
     execute: async (raw, exec) => {
       const corr = {
         ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),

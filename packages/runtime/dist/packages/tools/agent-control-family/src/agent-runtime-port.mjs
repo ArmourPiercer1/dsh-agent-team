@@ -64,6 +64,58 @@ export function resolveLeg(port, leg) {
 }
 
 /**
+ * The Tier A spawn law AT THE PORT (AC-1, design §2.3/§2.4 + F4/F6): the
+ * child the production port starts is ≤ ANY caller by construction —
+ *   - `toolFilter: { allow: [] }` is FORCED on every child start (the public
+ *     SubagentStartRequest.toolFilter, subagent/src/types.ts:186-192, applied
+ *     as a chain-wide tools.restrict in the child's creation window,
+ *     child-agent.ts:200-218): zero inherited tools;
+ *   - NO `agentOptions` and NO `persona` are ever sent: the in-process merge
+ *     is the caller's own route (types.ts:164-171);
+ *   - a request that still carries a route / background / tool arm when it
+ *     reaches the port is refused TYPED (the executor's ceiling refuses it
+ *     earlier; this is the second gate, never a silent drop);
+ *   - a caller whose PUBLIC tool view presents the reserved PTC transport
+ *     `run_code` (core/tools/src/index.ts:1215 — present iff the scope mode is
+ *     not `native`) is refused: a tool-less child would still get `run_code`.
+ */
+export const TIER_A_CHILD_TOOL_FILTER = Object.freeze({ allow: Object.freeze([]) })
+export const TIER_A_FORBIDDEN_SPEC_FIELDS = Object.freeze(['provider', 'model', 'reasoning_effort', 'run_in_background', 'tools', 'persona', 'agentOptions', 'toolFilter'])
+
+/** The public PTC probe: does the caller agent's own tool view present the
+ *  reserved `run_code` transport? `tools.get(name, scope)` is the public
+ *  registry read (core/tools/src/index.ts:1230). An agent whose view cannot be
+ *  read answers `unknown` — the caller fences treat that as a refusal. */
+export function callerPtcMode(agent) {
+  try {
+    const tools = agent?.ctx?.tools
+    if (tools === null || tools === undefined || typeof tools.get !== 'function') return 'unknown'
+    return tools.get('run_code', agent) === undefined ? 'native' : 'ptc'
+  } catch {
+    return 'unknown'
+  }
+}
+
+/** The child's visible tool names through the public `tools.schemas(scope)`
+ *  face (the native invariant.ts read), or null when unreadable. */
+function childToolView(run) {
+  try {
+    const child = run?.localAgent
+    const tools = child?.ctx?.tools
+    if (tools === null || tools === undefined || typeof tools.schemas !== 'function') return null
+    const schemas = tools.schemas(child)
+    return Array.isArray(schemas) ? schemas.map((s) => String(s?.name ?? '')) : null
+  } catch {
+    return null
+  }
+}
+
+const textOf = (output) => (Array.isArray(output) ? output : [])
+  .filter((b) => b !== null && typeof b === 'object' && b.type === 'text' && typeof b.text === 'string')
+  .map((b) => b.text)
+  .join('')
+
+/**
  * The production resolver: build the leg provider from the mount's public
  * host-service face. NOTHING here imports host internals: the only outward
  * edge is `hostService(name)` — a lookup by the public service name, exactly
@@ -71,19 +123,22 @@ export function resolveLeg(port, leg) {
  * resolved AT CALL TIME (a service that mounts after assembly becomes
  * usable; one that goes away stops being usable — no stale handle rides).
  *
- * Pinned recognized faces (host-tools.json @ u1c sha256 35e2a63c…4f86, host
- * tree @ 639ed01539): the experimental Team face `agentTeams` answers
- * `listMembers(agent)` / `sendMessage(agent, {target, content})` /
- * `interrupt(agent, target)` / `spawnTeammate(agent, {name, description,
- * prompt, context, provider, signal})` (packages/experimental/tool-agent-team
- * /src/index.ts:215/232/277/180); the model face `llm` answers
- * `listProviders()` / `listModels(providerId)` (packages/subagent
- * /tool-subagent/src/list-models.ts:40/63 via `ctx.get('llm')`). The caller
- * is the DISPATCH-PROVIDED agent identity the row forwarded (`caller.agent`,
- * the native `callingAgent(exec.agent, …)` law) — never a model argument; a
- * call whose trusted agent identity did not arrive refuses typed with zero
- * reach. A face that resolves but answers a DIFFERENT shape contributes NO
- * leg — the row refuses `agent-runtime-leg-unwired`, never a guessed call.
+ * Pinned recognized faces (host tree @ 639ed01539, AC-1 retarget):
+ *   - `subagents` (SubagentRuntime, subagent/subagent/src/index.ts:200-215):
+ *     `listChildren(parentSessionId, signal)` :374, `listDescendants(root,
+ *     signal)` :393, `start(provider, SubagentStartRequest)` :559 with the
+ *     bundle providers `spawn` and `fork` (bundle/base/cordis.patch.yml:349-399);
+ *   - `llm`: `listProviders()` / `listModels(providerId)` (the native
+ *     list_subagent_models seam, tool-subagent/src/list-models.ts:42-63).
+ * The four AC-1 legs (listAgents, listModels, spawnChild, forkChild) NEVER
+ * consult the experimental `agentTeams` runtime (a different product the
+ * base bundle does not load). The out-of-lane `steer` / `interrupt` legs are
+ * left exactly as #406 shipped them (lanes AC-2/AC-3 retarget them).
+ * The caller is the DISPATCH-PROVIDED agent identity the row forwarded
+ * (`caller.agent`, the native `callingAgent(exec.agent, …)` law) — never a
+ * model argument; a call whose trusted agent identity did not arrive refuses
+ * typed with zero reach. A face that resolves but answers a DIFFERENT shape
+ * contributes NO leg — the row refuses `agent-runtime-leg-unwired`.
  *
  * @param {{ hostService: (name: string) => unknown, caller: object, observe?: (line: string) => void }} input
  * @returns the closed-leg port view whose legs resolve lazily.
@@ -115,30 +170,117 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
     detail: 'the dispatch-provided caller agent identity did not reach this leg — the runtime legs run as a real caller and no other (the native callingAgent law), so a call without one is refused with zero reach',
   })
   const asAgent = (c) => (c !== null && typeof c === 'object' && c.agent !== null && typeof c.agent === 'object' ? c.agent : null)
+  const isSignal = (s) => s !== null && typeof s === 'object' && typeof s.aborted === 'boolean'
+  const tierA = (detail) => Object.freeze({
+    ok: false,
+    code: 'agent-runtime-tier-a-refused',
+    detail: `the Tier A child carries no tools, no route override and no background lifetime — refused with zero reach (${detail})`,
+  })
+  /** One Tier A child start on the named bundle provider (`spawn` | `fork`). */
+  const startTierA = (leg, providerName) => {
+    const f = face(leg, ['subagents'], (svc) => (typeof svc.start === 'function' ? svc.start : undefined))
+    if (f === null) return null
+    return async ({ caller: c, spec, signal }) => {
+      const agent = asAgent(c)
+      if (agent === null) return CALLER_UNRESOLVED
+      const carried = TIER_A_FORBIDDEN_SPEC_FIELDS.filter((field) => spec?.[field] !== undefined && spec?.[field] !== null
+        && !(field === 'run_in_background' && spec[field] === false))
+      if (carried.length > 0) return tierA(`request carried ${carried.join(', ')}`)
+      if (!isSignal(signal)) return tierA('the walk carried no AbortSignal and SubagentStartRequest.signal is required (types.ts:156-163) — no never-aborted stand-in is invented')
+      const mode = callerPtcMode(agent)
+      if (mode !== 'native') {
+        return Object.freeze({
+          ok: false,
+          code: 'agent-control-child-ptc-refused',
+          detail: `the caller's tool view is ${mode === 'ptc' ? 'in PTC mode (run_code present)' : 'unreadable'}; a Tier A child would still receive the run_code transport — refused with zero reach`,
+        })
+      }
+      const request = {
+        label: String(spec?.description ?? 'governed-child').slice(0, 120),
+        prompt: [{ type: 'text', text: String(spec?.prompt ?? '') }],
+        parent: agent,
+        signal,
+        // FORCED (Tier A): zero inherited tools; never caller-chosen.
+        toolFilter: TIER_A_CHILD_TOOL_FILTER,
+      }
+      const run = await f.svc.start(providerName, request)
+      const view = childToolView(run)
+      note(`child-toolview provider=${providerName} run=${String(run?.id)} tools=[${(view ?? ['<unreadable>']).join(',')}]`)
+      if (view === null || view.length > 0) {
+        try { await run?.dispose?.() } catch { /* the refusal stands */ }
+        return Object.freeze({
+          ok: false,
+          code: 'agent-runtime-child-toolview-nonempty',
+          detail: `the started child's visible tool list is ${view === null ? 'unreadable' : `[${view.join(',')}]`}, not empty — the run was disposed and the call refused (fail closed)`,
+        })
+      }
+      let result
+      let failure
+      try {
+        result = await run.result
+      } catch (error) {
+        failure = error
+      }
+      try { await run.dispose() } catch { /* settle with the run's own outcome */ }
+      if (failure !== undefined) throw failure
+      const text = textOf(result?.output)
+      if (result?.stopReason !== 'completed') {
+        return Object.freeze({
+          ok: false,
+          code: 'agent-runtime-child-error',
+          detail: `the child ended with stopReason '${String(result?.stopReason)}'${typeof result?.diagnostic === 'string' ? ` (${result.diagnostic.slice(0, 200)})` : ''}; partial text: ${text.slice(0, 200)}`,
+        })
+      }
+      return { ok: true, kind: 'foreground', provider: providerName, runId: String(run.id), stopReason: 'completed', text, output: Array.isArray(result?.output) ? result.output : [] }
+    }
+  }
   const legResolver = (leg) => {
     switch (leg) {
       case 'listAgents': {
-        const f = face('listAgents', ['agentTeams'], (svc) => (typeof svc.listMembers === 'function' ? svc.listMembers : undefined))
+        const f = face('listAgents', ['subagents'], (svc) => (typeof svc.listChildren === 'function' && typeof svc.listDescendants === 'function' ? svc.listChildren : undefined))
         if (f === null) return null
-        return async ({ caller: c }) => {
+        return async ({ caller: c, scope, signal }) => {
           const agent = asAgent(c)
           if (agent === null) return CALLER_UNRESOLVED
-          const members = f.svc.listMembers(agent)
-          const list = Array.isArray(members) ? members : null
-          if (list === null) return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'the roster face answered a non-array — the contract refuses, never guesses' }
-          return { ok: true, agents: list }
+          const id = agent.id
+          if (typeof id !== 'string' || id.length === 0) return CALLER_UNRESOLVED
+          const descendants = scope === 'descendants'
+          const entries = descendants
+            ? await f.svc.listDescendants(id, signal)
+            : await f.svc.listChildren(id, signal)
+          if (!Array.isArray(entries)) return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'the subagent catalog answered a non-array — the contract refuses, never guesses' }
+          // The native projection (tool-subagent-control/src/list-agents.ts:60-79):
+          // one-shot children are traversal nodes the model never addresses,
+          // diagnostics pass through.
+          const agents = []
+          let oneShot = 0
+          for (const entry of entries) {
+            const at = descendants ? { parent: entry?.parentId, depth: entry?.depth } : {}
+            if (entry?.kind === 'diagnostic') { agents.push({ kind: 'diagnostic', id: entry.id, reason: entry.reason, ...at }); continue }
+            if (entry?.mode !== 'continuable') { oneShot += 1; continue }
+            agents.push({ kind: 'child', id: entry.id, label: entry.label, ...at })
+          }
+          return { ok: true, scope: descendants ? 'descendants' : 'children', agents, catalogSize: entries.length, oneShotChildren: oneShot }
         }
       }
       case 'listModels': {
         const f = face('listModels', ['llm'], (svc) => (typeof svc.listProviders === 'function' && typeof svc.listModels === 'function' ? svc.listProviders : undefined))
         if (f === null) return null
         return async ({ provider }) => {
-          const llm = service('llm')
-          if (provider === undefined) return { ok: true, models: llm.listProviders().map((p) => ({ provider: p.id, name: p.name })) }
+          const llm = f.svc
+          if (provider === undefined) {
+            const providers = llm.listProviders()
+            return { ok: true, models: (Array.isArray(providers) ? providers : []).map((p) => ({ provider: p.id, name: p.name })), spawnRoutes: 'inherit-only' }
+          }
           const models = await llm.listModels(provider)
-          return { ok: true, models: Array.isArray(models) ? models : null }
+          if (!Array.isArray(models)) return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'llm.listModels answered a non-array' }
+          // Q3 (measured): the pin answers model OBJECTS ({id,name,…}); a bare
+          // string is projected to the same shape, never guessed further.
+          return { ok: true, provider, models: models.map((m) => (typeof m === 'string' ? { id: m, name: m } : { id: m?.id, name: m?.name })), spawnRoutes: 'inherit-only' }
         }
       }
+      case 'spawnChild': return startTierA('spawnChild', 'spawn')
+      case 'forkChild': return startTierA('forkChild', 'fork')
       case 'steer': {
         const f = face('steer', ['agentTeams'], (svc) => (typeof svc.sendMessage === 'function' ? svc.sendMessage : undefined))
         if (f === null) return null
@@ -157,56 +299,9 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
           return await f.svc.interrupt(agent, targetId)
         }
       }
-      case 'spawnChild': {
-        const f = face('spawnChild', ['agentTeams'], (svc) => (typeof svc.spawnTeammate === 'function' ? svc.spawnTeammate : undefined))
-        if (f === null) return null
-        // CARRY EXACTLY OR REFUSE (review R1 F-1): the pinned face
-        // SpawnTeammateRequest is the CLOSED six-field record `name,
-        // description, prompt, context, provider, signal`
-        // (tests/deepseek-harness-test-use/packages/experimental/agent-team
-        // /src/types.ts:166-173); at runtime the face REQUIRES a provider
-        // string (roster.ts:264 `requiredText(request.provider, …)`) and
-        // folds the caller's cancellation (roster.ts:256
-        // `AbortSignal.any([request.signal, …])`). A bounded field the check
-        // APPROVED that this face cannot carry is refused TYPED with zero
-        // reach — silently dropping it would run a DIFFERENT child than the
-        // one admitted; a face-required field the walk did not carry is
-        // refused too — fabricating a route or a lifetime would restate the
-        // approved world. Never a partial guess.
-        const faceRefusal = (detail) => Object.freeze({
-          ok: false,
-          code: 'agent-runtime-port-face-cannot-carry',
-          detail: `the approved effect world has no faithful spelling on the pinned host face — refused with zero reach, the child that would run is not the child that was admitted (${detail})`,
-        })
-        return async ({ caller: c, spec, signal }) => {
-          const agent = asAgent(c)
-          if (agent === null) return CALLER_UNRESOLVED
-          const uncarryable = ['model', 'reasoning_effort', 'run_in_background']
-            .filter((field) => spec?.[field] !== undefined && spec?.[field] !== null)
-          if (uncarryable.length > 0) {
-            return faceRefusal(`caller bounded ${uncarryable.join(', ')}; the face has no such field (types.ts:166-173) — the named follow-up center round (vNext roster face) carries them`)
-          }
-          if (typeof spec?.provider !== 'string' || spec.provider.length === 0) {
-            return faceRefusal('the admitted world named no provider route, but the face requires one (roster.ts:264) — no default is expressible and none is invented')
-          }
-          if (signal === null || typeof signal !== 'object' || typeof signal.aborted !== 'boolean') {
-            return faceRefusal('the walk carried no AbortSignal and the face folds one (roster.ts:256) — a never-aborted stand-in would restate the approved lifetime')
-          }
-          return await f.svc.spawnTeammate(agent, {
-            name: String(spec?.description ?? 'governed-child').slice(0, 64),
-            description: String(spec?.description ?? ''),
-            prompt: [{ type: 'text', text: String(spec?.prompt ?? '') }],
-            context: 'fresh',
-            // The bounded provider forwards EXACTLY as approved (types.ts:171).
-            provider: spec.provider,
-            signal,
-          })
-        }
-      }
       default:
-        // forkChild / runWorkflow have NO recognized public service face at
-        // the pinned host: the legs stay unwired and the rows refuse typed.
-        // The C2 run records verbatim which legs a real mount answered.
+        // runWorkflow stays unwired at AC-1 (lane AC-4 owns workflowEngine):
+        // the row refuses typed.
         return null
     }
   }

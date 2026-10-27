@@ -18,9 +18,10 @@
  * public `hostService` face the production port resolver rides, and the
  * kit/test `injected` seam (`agentRuntime` fake, `agentScope` roster,
  * `callerAuthority` snapshot, `forkContextProvider` context DATA source).
- * The trusted trust-data inputs FAIL CLOSED: without a caller-authority
- * snapshot no spawn runs, without a scope roster no steer/interrupt runs —
- * a mount that cannot prove the bound is a mount that never reaches.
+ * The trusted trust-data inputs FAIL CLOSED: without a scope roster no
+ * steer/interrupt runs; without an injected caller-authority snapshot the
+ * spawn rows run under the Tier A CEILING (AC-1) — a tool-less, inherit-route,
+ * one-shot child that is ≤ every caller by construction.
  *
  * @module tools/families/agent-control
  */
@@ -46,9 +47,9 @@ import * as agentControlExecutorLaw from '../agent-control-family/src/agent-cont
 // precedent — never the configurable names map, no Gate 0b surface). The
 // takeover law's same-name same-meaning implementations are ASSEMBLED: the
 // governed executor bodies over the injected agent-runtime port (public
-// host faces @ 639ed01539 evidence: agentTeams.listMembers/sendMessage/
-// interrupt, llm.listProviders/listModels; every other leg refuses typed,
-// the C2 run records verbatim what a real mount answers).
+// host faces @ 639ed01539, AC-1: subagents.listChildren/listDescendants/
+// start('spawn'|'fork'), llm.listProviders/listModels; steer/interrupt keep
+// their #406 legs until AC-3; runWorkflow refuses typed until AC-4).
 const AGENT_CONTROL_NATIVE_NAMES = AGENT_CONTROL_NAMES
 
 export const familyAssembly = Object.freeze({
@@ -77,7 +78,11 @@ export const familyAssembly = Object.freeze({
     // Trusted ASSEMBLY trust data (fail-closed when absent — the mechanics
     // file states why absence is a refusal, not an inherit).
     const scopeFence = cap.injected?.agentScope ?? null
-    const callerAuthority = cap.injected?.callerAuthority ?? null
+    // AC-1 Tier A: a trusted injected snapshot wins (kit/test seam); the
+    // production default is the build-time Tier A CEILING — no grant, only
+    // a ceiling ≤ every caller (no route override, no tools, one-shot). The
+    // port FORCES toolFilter {allow:[]} on every child start.
+    const callerAuthority = cap.injected?.callerAuthority ?? agentControlMechanics.TIER_A_CEILING
     const forkContextProvider = typeof cap.injected?.forkContextProvider === 'function'
       ? cap.injected.forkContextProvider
       : undefined
