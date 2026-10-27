@@ -13,10 +13,10 @@
  *     The acpilot member runs `default: ask`, so every in-lane agent-control
  *     call opens a durable Control ask the runner settles over the human
  *     public seam (team.getLedgerPage + team.resolveControl v4).
- *   - ROOT/leader preset: the same rows + `@deepseek-ai/dsh-agent-tool-presentation`
- *     `mode: both` — the leader's public tool view carries the reserved
- *     `run_code` transport (PTC presentation) while direct calls still work,
- *     which is exactly the caller the Tier A PTC fence must refuse.
+ *   - ROOT/leader preset: the same rows with native presentation. The
+ *     reserved `run_code` PTC transport is intentionally absent from both
+ *     presets; a discovered transport is a mounted-case failure, never a
+ *     deny-list target.
  *
  * The mock model drives: leader lifecycle (create → delegate d1 → collect →
  * delegate d2 → collect → PTC probe), the pilot's two scripted turns, and the
@@ -39,13 +39,18 @@ export const AC1_SAFE_UNMANAGED = Object.freeze(['todo_write'])
 export const AC1_PERMISSION_MANAGED = Object.freeze(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
 
 /** Strict AC-1 fixture coverage: deny every unmanaged non-Team tool.
- * `run_code` is intentionally absent from the safe set: it is the host's
- * reserved PTC transport and must be governed by builtinToolDeny. */
+ * The reserved PTC transport is not a fixture surface; if discovered, the
+ * mounted case must fail closed rather than placing it in builtinToolDeny. */
 export function computeAc1BuiltinToolDeny(surface) {
   return [...new Set(surface)].filter((name) => !String(name).startsWith('team_')
     && !AC1_SAFE_UNMANAGED.includes(name)
     && !AC1_PERMISSION_MANAGED.includes(name)
+    && name !== 'run_code'
     && !AGENT_CONTROL_MANAGED_NAMES.includes(name))
+}
+
+export function assertAc1NativeSurface(surface) {
+  if ([...new Set(surface)].includes('run_code')) throw new Error('AC-1 fixture refuses to proceed: discovered reserved run_code transport')
 }
 
 const sanitize = (v) => String(v).toLowerCase().replace(/[^a-z0-9-]/g, '-')
@@ -160,6 +165,7 @@ export function createAc1Assembly({ repoRoot, home, runStamp, reportDir }) {
   /** Leader `default: ask` so the family walk reaches its fences (the PTC
    *  probe must not be pre-empted by the template-default-deny refusal). */
   function mainBlueprintYaml(denyList) {
+    assertAc1NativeSurface(denyList)
     const denyLines = denyList.length === 0 ? ['    builtinToolDeny: []'] : ['    builtinToolDeny:', ...denyList.map((n) => `      - ${n}`)]
     return [
       '---', 'schemaVersion: 3', `blueprintId: ${BP_MAIN_ID}`, 'revision: "1"',
@@ -205,8 +211,8 @@ export function createAc1Assembly({ repoRoot, home, runStamp, reportDir }) {
       }),
       presetDeclarationRow({
         id: ROOT_PRESET_ID, displayName: 'u7ac1 root',
-        description: `u7ac1 root preset (${runStamp}) = member rows + PTC presentation mode both`,
-        plugins: [...basePlugins(), { id: 'tool-presentation', name: '@deepseek-ai/dsh-agent-tool-presentation', config: { mode: 'both' } }],
+        description: `u7ac1 root preset (${runStamp}) = member rows + native presentation`,
+        plugins: basePlugins(),
       }),
     ]
   }

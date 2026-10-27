@@ -31,8 +31,8 @@
  *                       refusal, zero ask
  *   ac:refusal-fork-bg  subagent_fork {run_in_background:true} → typed
  *                       amplification refusal, zero ask
- *   ac:refusal-ptc      the PTC-presentation leader's subagent → typed
- *                       agent-control-child-ptc-refused, zero ask
+ *   ac:mounted         also fails closed if the reserved run_code transport
+ *                       is discovered on the native surface
  *   ac:leak-check       the outside secret is in no transcript and no host
  *                       log, its bytes unchanged; :3080 status unchanged;
  *                       exactly TWO child starts happened (spawn + fork)
@@ -48,7 +48,7 @@ import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../.
 import { remoteCall, hasMarker, surfaceNamesOf, messagesOf } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
-import { AC1_TOOLS, createAc1Assembly, makeAc1Decide, userTexts, computeAc1BuiltinToolDeny } from './ac1-assembly.mjs'
+import { AC1_TOOLS, createAc1Assembly, makeAc1Decide, userTexts, assertAc1NativeSurface, computeAc1BuiltinToolDeny } from './ac1-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
@@ -57,7 +57,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const BUDGET = 3
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const SELECTED = ['ac:mounted', 'ac:list-models', 'ac:list-agents', 'ac:spawn-positive', 'ac:child-toolview', 'ac:fork-positive',
-  'ac:refusal-tools', 'ac:refusal-provider', 'ac:refusal-fork-bg', 'ac:refusal-ptc', 'ac:leak-check']
+  'ac:refusal-tools', 'ac:refusal-provider', 'ac:refusal-fork-bg', 'ac:leak-check']
 const notes = []
 const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
 const run = createRunRecord({
@@ -224,9 +224,11 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   const disc = world.mock.requests.filter((r) => hasMarker(r, assembly.markers.MK_DISC)).map((r) => surfaceNamesOf(r)).sort((a, b) => b.length - a.length)[0]
   const surface = [...new Set(disc)].sort()
   // The seven family names are claimed by the plane, while todo_write is the
-  // only known safe unmanaged host tool. run_code is the host-reserved PTC
-  // transport and MUST be denied on this strict blueprint: leaving it
-  // unmanaged trips the alpha2 permission-coverage gate fail-closed.
+  // The reserved PTC transport is not a valid native fixture surface.
+  try { assertAc1NativeSurface(surface) } catch (error) {
+    add('ac:mounted', 'FAIL', { reason: String(error?.message ?? error), surface })
+    return
+  }
   const denyList = computeAc1BuiltinToolDeny(surface)
   run.record.discoverySurface = surface
   assembly.writeMainBlueprint(denyList)
@@ -424,7 +426,6 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   refusal('ac:refusal-tools', resultsOf('subagent', (i) => Array.isArray(i.tools)), ['agent-control-schema-refused', "unknown field 'tools'"], 'subagent', 1)
   refusal('ac:refusal-provider', resultsOf('subagent', (i) => i.provider !== undefined), ['agent-control-amplification-refused', "provider 'deepseek-official' is outside the caller's own authority"], 'subagent', 1)
   refusal('ac:refusal-fork-bg', resultsOf('subagent_fork', (i) => i.run_in_background === true), ['agent-control-amplification-refused', 'continuable'], 'subagent_fork', 1)
-  refusal('ac:refusal-ptc', resultsOf('subagent', (i) => i.description === 'ac1 ptc probe'), ['agent-control-child-ptc-refused'], 'subagent', 1)
 
   // ac:leak-check
   const stableAfter = await stableProbe()

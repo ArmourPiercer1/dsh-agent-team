@@ -11,3 +11,13 @@ This disproves the initial fixture fix of putting `run_code` into `builtinToolDe
 2. Boot 3 proves the current AC-1 world also cannot deny `run_code` through `builtinToolDeny` when the PTC presentation is on that same strict template. A fixture-only resolution must keep the PTC root on a legacy/non-permissions template (or otherwise keep the PTC transport off the strict template) while retaining strict coverage on the native member template; that requires a future authorized attempt and was not run because the boot budget is exhausted.
 
 Per lane instruction, no boot 4 is attempted. This lane therefore cannot claim C2 PASS or update acceptance rows.
+
+
+## Main-agent ruling 2026-10-27 (boot budget extension)
+
+Boot 2 + boot 3 together are live evidence that a STRICT (capabilities.permissions) caller with PTC presentation cannot be created at host pin 639ed01539: unmanaged `run_code` fails the alpha2 coverage gate (boot 2), and `builtinToolDeny: [run_code]` is rejected by the host because run_code is the reserved PTC transport (boot 3). Both are fail-closed refusals one layer ABOVE the agent-control family. Therefore:
+1. Remove the PTC presentation (`@deepseek-ai/dsh-agent-tool-presentation` mode both) from the AC-1 root/leader preset; the world becomes native presentation on both presets. Remove `run_code` from the fixture deny computation (it must not be on the surface any more; if it still appears in discovery, the run must FAIL at mounted — never deny or ignore it silently). Keep the coverage gate untouched.
+2. The `ac:refusal-ptc` case is REMOVED from the live case set. Its coverage is re-grounded as: (a) the family's C1 test for `agent-control-child-ptc-refused` (cite the existing test, or add one if missing, with RED/GREEN), and (b) the live boot-2/boot-3 records as evidence that a strict PTC caller cannot be mounted at this pin. The ledger must NOT claim a live PTC refusal; disclose it.
+3. Boot budget extended by the main agent: 2 additional boots (boot 4 and boot 5), disclosed as OVER the original budget of 3 in boot-budget.jsonl and README. Use boot 5 only if boot 4 fails for a reason you fix in between; never boot 6.
+
+Offline C1 update: root and member are native; reserved `run_code` is excluded from deny computation and discovery fails closed.
