@@ -135,7 +135,17 @@ export function createU7fInspectAssembly({ repoRoot, home, runStamp, reportDir, 
       '    skills:', '      kind: allow', '      items: []',
       '    mcp:', '      kind: allow', '      items: []',
       '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
-      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '  deny: []',
+      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress',
+      // Boot-4 (round 2) measured law, mirrored from u6-proc (u6prc6-8): a
+      // member's PA ask reaches the durable Control row only when
+      // `request-control` is in the member's EFFECTIVE envelope, and the
+      // effective bounds are `teamEnvelope.allow` NARROWED by the template
+      // entry (admission/envelope.ts:100-119 — template entries never
+      // widen). So BOTH halves must name it; `resolve-control` rides the
+      // team root for the leader (a leader without a memberEnvelopes entry
+      // carries the full team allow list). Closed ALL_MUTATION_OPS
+      // vocabulary; fixture data through the blueprint seam only.
+      '    - request-control', '    - resolve-control', '  deny: []',
       'members:',
       '  - templateId: strict', '    displayName: "u7f governed inspect worker"',
       `    persona: ${JSON.stringify('You are a worker of the u7f inspect assembly team (governed lane). Follow the delegated script exactly, one tool call at a time.')}`,
@@ -145,7 +155,11 @@ export function createU7fInspectAssembly({ repoRoot, home, runStamp, reportDir, 
       '      mcp:', '        kind: allow', '        items: []',
       '      permissions:', '        default: ask', '        allow: []', '        ask: []', '        deny: []',
       'memberEnvelopes:',
-      '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      '  - templateId: strict', '    envelope:', '      allow:', '        - send-message', '        - report-progress',
+      // The ASKER half: the governed inspect calls rise as durable PA asks,
+      // so the asker must own `request-control` here too (intersection law;
+      // see the teamEnvelope comment above for the measured boot-4 law).
+      '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
     ].join('\n')

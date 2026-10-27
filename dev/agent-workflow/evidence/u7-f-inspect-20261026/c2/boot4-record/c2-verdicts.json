@@ -1,0 +1,148 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7f-c2-mvqcxzjx",
+  "suite": "u7f-inspect-family-c2",
+  "startedAt": "2026-10-27T07:22:04.222Z",
+  "selectedCases": [
+    "u7f:mounted",
+    "u7f:skill-load",
+    "u7f:inspect-list",
+    "u7f:refusal-zero-effect",
+    "u7f:approval-leg",
+    "u7f:leak-check"
+  ],
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "round": 2
+  },
+  "cases": [
+    {
+      "id": "u7f:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T07:22:46.138Z",
+      "detail": {
+        "healthOk": true,
+        "stateOk": true,
+        "createOk": true,
+        "createBody": "ok",
+        "placementFeed": "[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7f-realm-u5u7finsp-20261027t07-22-04z",
+        "rootSessionSurfaceAliases": "team_skill=false,team_cordis_inspect_list=false,team_cordis_inspect_query=false",
+        "note": "the alias check on the ROOT-session discovery surface is DISCLOSED, not the law: plane rows bind per member session; the placement-feed line above is the mount truth for the governed member sessions"
+      }
+    },
+    {
+      "id": "u7f:skill-load",
+      "verdict": "FAIL",
+      "at": "2026-10-27T07:22:46.143Z",
+      "detail": {
+        "transcriptHasSkillContent": false,
+        "ranWitness": [
+          "[dsh-agent-team] a7f-skill: governed-skill pa-refused code=APPROVAL_DENIED"
+        ],
+        "refusalWitness": []
+      }
+    },
+    {
+      "id": "u7f:inspect-list",
+      "verdict": "FAIL",
+      "at": "2026-10-27T07:22:46.144Z",
+      "detail": {
+        "transcriptHasProviders": false,
+        "ranWitness": [
+          "[dsh-agent-team] a7f-ilist: governed-inspect-list pa-refused code=APPROVAL_DENIED"
+        ]
+      }
+    },
+    {
+      "id": "u7f:refusal-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-27T07:22:46.144Z",
+      "detail": {
+        "transcriptHasRefusal": true,
+        "queryRanLines": []
+      }
+    },
+    {
+      "id": "u7f:approval-leg",
+      "verdict": "FAIL",
+      "at": "2026-10-27T07:22:46.144Z",
+      "detail": {
+        "resolveIssues": 0,
+        "pendingSeenNonEmpty": 0,
+        "note": "PASS requires a durable PA ask actually raised (pending count>0) AND a leader resolve actually issued; tool-definition text never counts"
+      }
+    },
+    {
+      "id": "u7f:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T07:22:46.144Z",
+      "detail": {
+        "secretClaimInCorpus": false,
+        "secretClaimInHostLog": false,
+        "secretBytesUnchanged": true
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T07:22:42.496Z",
+        "runId": "u7f-c2-mvqcxzjx",
+        "suite": "u7f-inspect-family-c2",
+        "phase": "u7f-c2-boot",
+        "world": "u5u7finsp-20261027T07-22-04Z",
+        "port": 3184,
+        "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/world/logs/u5u7finsp-20261027T07-22-04Z/instance-port3184.log",
+        "startedAt": "2026-10-27T07:22:42.496Z",
+        "bootMs": 17604
+      }
+    ]
+  },
+  "round": "u7f-c2",
+  "boots": [
+    {
+      "phase": "u7f-c2-boot",
+      "world": "u5u7finsp-20261027T07-22-04Z",
+      "port": 3184,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/world/logs/u5u7finsp-20261027T07-22-04Z/instance-port3184.log",
+      "startedAt": "2026-10-27T07:22:42.496Z",
+      "bootMs": 17604
+    }
+  ],
+  "notes": [
+    "lanes: strict=true leader=true",
+    "home scan hits: 0"
+  ],
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": null,
+      "releasedPorts": [
+        3184,
+        3495,
+        3184
+      ],
+      "killedPids": [
+        33
+      ],
+      "notes": [
+        "home kept as evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/homes/u5u7finsp-20261027T07-22-04Z"
+      ]
+    }
+  },
+  "mockDigest": [],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-27T07:22:46.316Z"
+}

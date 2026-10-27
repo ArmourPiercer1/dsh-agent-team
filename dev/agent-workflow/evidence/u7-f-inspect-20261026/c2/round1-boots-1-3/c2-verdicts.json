@@ -1,0 +1,100 @@
+{
+  "round": "u7f-c2",
+  "at": "2026-10-27T00:34:54.630Z",
+  "boots": [
+    {
+      "phase": "u7f-c2-boot1",
+      "world": "u5u7finsp-20261027T00-34-43Z",
+      "port": 3182,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/dev/agent-workflow/evidence/u7-f-inspect-20261026/c2/world/logs/u5u7finsp-20261027T00-34-43Z/instance-port3182.log",
+      "startedAt": "2026-10-27T00:34:48.388Z",
+      "bootMs": 4558
+    }
+  ],
+  "verdicts": [
+    {
+      "id": "u7f:mounted",
+      "verdict": "PASS",
+      "detail": {
+        "healthOk": true,
+        "stateOk": true,
+        "createOk": true,
+        "createBody": "ok",
+        "placementFeed": "[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob,team_bash,read,write,edit,read_image] realm=u7f-realm-u5u7finsp-20261027t00-34-43z",
+        "rootSessionSurfaceAliases": "team_skill=false,team_cordis_inspect_list=false,team_cordis_inspect_query=false",
+        "note": "the alias check on the ROOT-session discovery surface is DISCLOSED, not the law: plane rows bind per member session; the placement-feed line above is the mount truth for the governed member sessions"
+      }
+    },
+    {
+      "id": "u7f:skill-load",
+      "verdict": "FAIL",
+      "detail": {
+        "transcriptHasSkillContent": false,
+        "ranWitness": [
+          "[dsh-agent-team] a7f-skill: governed-skill pa-refused code=TOOL_BINDING_UNVERIFIED"
+        ],
+        "refusalWitness": []
+      }
+    },
+    {
+      "id": "u7f:inspect-list",
+      "verdict": "FAIL",
+      "detail": {
+        "transcriptHasProviders": false,
+        "ranWitness": [
+          "[dsh-agent-team] a7f-ilist: governed-inspect-list pa-refused code=TOOL_BINDING_UNVERIFIED"
+        ]
+      }
+    },
+    {
+      "id": "u7f:refusal-zero-effect",
+      "verdict": "PASS",
+      "detail": {
+        "transcriptHasRefusal": true,
+        "queryRanLines": []
+      }
+    },
+    {
+      "id": "u7f:approval-leg",
+      "verdict": "FAIL",
+      "detail": {
+        "resolveIssues": 0,
+        "pendingSeenNonEmpty": 0,
+        "note": "PASS requires a durable PA ask actually raised (pending count>0) AND a leader resolve actually issued; tool-definition text never counts"
+      }
+    },
+    {
+      "id": "u7f:leak-check",
+      "verdict": "PASS",
+      "detail": {
+        "secretClaimInCorpus": false,
+        "secretClaimInHostLog": false,
+        "secretBytesUnchanged": true
+      }
+    }
+  ],
+  "notes": [
+    "lanes: strict=true leader=true",
+    "home scan hits: 0"
+  ],
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": null,
+      "releasedPorts": [
+        3182,
+        3492,
+        3182
+      ],
+      "killedPids": [
+        70
+      ],
+      "notes": [
+        "home kept as evidence: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/homes/u5u7finsp-20261027T00-34-43Z"
+      ]
+    }
+  },
+  "mockDigest": []
+}

@@ -27,6 +27,7 @@ import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../../../tests/world-factory/lib/world-factory.mjs'
 import { remoteCall, hasMarker, surfaceNamesOf } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
+import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
 import { createU7fInspectAssembly, makeU7fInspectDecide } from './u7f-inspect-assembly.mjs'
 
@@ -34,11 +35,23 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-const verdicts = []
+const SELECTED = ['u7f:mounted', 'u7f:skill-load', 'u7f:inspect-list', 'u7f:refusal-zero-effect', 'u7f:approval-leg', 'u7f:leak-check']
 const boots = []
 const notes = []
+// The RUN-rule record (EB3): built through the SHARED lib so it carries
+// `overall` / `finishedAt` / `bindings.authority` and finalizes BEFORE the
+// write. The old round-1 hand-rolled c2-verdicts.json lacked these (PR #404
+// finding B-3) and is preserved verbatim under round1-boots-1-3/. A run
+// record is created up front so a crash before `write()` still finalizes on
+// the `finally` path with every unreached case folded to FAIL.
+const run = createRunRecord({
+  runId: `u7f-c2-${Date.now().toString(36)}`,
+  suite: 'u7f-inspect-family-c2',
+  selectedCases: SELECTED,
+  bindings: { authority: readAuthorityBinding(REPO), round: 2 },
+})
 const add = (id, verdict, detail) => {
-  verdicts.push({ id, verdict, detail })
+  run.addCase(id, verdict, { detail })
   console.log(`[u7f-c2] case ${id}: ${verdict} ${JSON.stringify(detail).slice(0, 300)}`)
 }
 
@@ -81,16 +94,16 @@ async function main() {
     add('u7f:mounted', 'FAIL', { reason: `host start failed: ${String(error?.message ?? error).slice(0, 300)}` })
   }
   if (boot !== null) {
-    boots.push({ phase: 'u7f-c2-boot1', world: world.id, port: boot.port, logPath: boot.logPath, startedAt: new Date().toISOString(), bootMs: Date.now() - t0 })
+    run.logHostStart({ phase: 'u7f-c2-boot', world: world.id, port: boot.port, logPath: boot.logPath, startedAt: new Date().toISOString(), bootMs: Date.now() - t0 })
+    boots.push({ phase: 'u7f-c2-boot', world: world.id, port: boot.port, logPath: boot.logPath, startedAt: new Date().toISOString(), bootMs: Date.now() - t0 })
     await drive({ world, assembly, planted, boot })
   }
-  const remaining = ['u7f:mounted', 'u7f:skill-load', 'u7f:inspect-list', 'u7f:refusal-zero-effect', 'u7f:approval-leg', 'u7f:leak-check']
-    .filter((id) => !verdicts.some((v) => v.id === id))
+  const remaining = SELECTED.filter((id) => run.getCase(id) === undefined)
   for (const id of remaining) add(id, 'FAIL', { reason: 'leg not reached (earlier failure or timeout)' })
   // teardown (best effort) — capture BEFORE anything goes; home STAYS this
   // round (post-mortem store + real log files), operator cleans tests/homes.
   const fsMod = await import('node:fs')
-  const logCopy = join(HERE, 'host-boot1.log')
+  const logCopy = join(HERE, 'host-boot-round2.log')
   if (boot !== null) { try { fsMod.copyFileSync(boot.logPath, logCopy) } catch { notes.push('host log copy failed') } }
   try {
     fsMod.writeFileSync(join(HERE, 'mock-corpus.json'), JSON.stringify((world.mock?.requests ?? []).map((r) => ({
@@ -117,15 +130,22 @@ async function main() {
     fsMod.writeFileSync(join(HERE, 'home-log-hits.txt'), hits.slice(0, 4000).join('\n'))
     notes.push(`home scan hits: ${String(hits.length)}`)
   } catch (e) { notes.push(`home scan failed: ${String(e?.message ?? e)}`) }
-  const { writeFileSync } = await import('node:fs')
-  writeFileSync(join(HERE, 'c2-verdicts.json'), JSON.stringify({
-    round: 'u7f-c2', at: new Date().toISOString(), boots, verdicts, notes,
+  // Finalize BEFORE writing (RUN rule): `finalize()` folds every selected
+  // case with no verdict to FAIL, computes `overall`, and stamps
+  // `finishedAt`; `write()` then serializes the finalized record — a PASS
+  // token cannot be produced unless every selected case is PASS.
+  Object.assign(run.record, {
+    round: 'u7f-c2',
+    boots,
+    notes,
     teardown: { receipts: receipts ?? null },
     mockDigest: world.mock === null ? [] : world.mockRequestDigest().slice(-80),
-  }, null, 2))
-  console.log('[u7f-c2] verdicts written to c2-verdicts.json')
-  const fails = verdicts.filter((v) => v.verdict !== 'PASS').length
-  console.log(`[u7f-c2] DONE pass=${verdicts.length - fails} fail=${fails}`)
+  })
+  run.finalize()
+  run.write(join(HERE, 'c2-verdicts.json'))
+  console.log('[u7f-c2] record written to c2-verdicts.json (u5-run-record/1, finalized before write)')
+  const fails = run.record.cases.filter((v) => v.verdict !== 'PASS').length
+  console.log(`[u7f-c2] DONE overall=${run.record.overall} pass=${run.record.cases.length - fails} fail=${fails}`)
 }
 
 async function drive({ world, assembly, planted, boot }) {
