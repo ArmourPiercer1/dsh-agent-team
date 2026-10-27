@@ -1,8 +1,8 @@
 /**
  * dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs —
  * the AC-1 C2 run: ONE live Host boot per execution, each boot DECLARED in
- * `boot-budget.jsonl` BEFORE it starts (budget 3, declared in
- * ../BOOT-BUDGET.md before the first boot; the runner refuses a 4th).
+ * `boot-budget.jsonl` BEFORE it starts (original budget 3, extended to 5 by
+ * the main-agent ruling; the runner refuses a 6th).
  * Pattern: dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/run-c2.mjs
  * (human approvals over the PUBLIC remote seam: team.getLedgerPage +
  * team.resolveControl v4). The drive script is committed clean before the
@@ -54,7 +54,8 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const REL = relative(REPO, HERE)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const BUDGET = 3
+const ORIGINAL_BUDGET = 3
+const BUDGET = 5
 const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
 const SELECTED = ['ac:mounted', 'ac:list-models', 'ac:list-agents', 'ac:spawn-positive', 'ac:child-toolview', 'ac:fork-positive',
   'ac:refusal-tools', 'ac:refusal-provider', 'ac:refusal-fork-bg', 'ac:leak-check']

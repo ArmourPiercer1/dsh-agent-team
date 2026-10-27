@@ -1,0 +1,4 @@
+[u7ac1-c2] FATAL Error: boot budget exhausted: 3/3 declared in /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/boot-budget.jsonl
+    at declareBoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:92:25)
+    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:125:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
