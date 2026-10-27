@@ -602,7 +602,12 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
         add('CI_SUMMARY_NEEDS_INCOMPLETE', `summary: ${agg.workflow} has no job calling ./${layer.workflow} — layer ${layer.id} is invisible to the Required context`, { layer: layer.id })
         continue
       }
-      if ('if' in caller[1]) {
+      // THE DEFERRED TIER is the one sanctioned caller `if:`: only on the declared
+      // deferral layer, only the exact declared text. Its safety rests on the Required
+      // summary still needing this caller (graded below), so a skip grades red there.
+      const dfr = manifest.deferral
+      const sanctioned = dfr !== undefined && dfr.layer === layer.id && String(caller[1].if ?? '').trim() === String(dfr.callerIf ?? '').trim()
+      if ('if' in caller[1] && !sanctioned) {
         add('CI_LAYER_SKIPPABLE', `summary: caller "${caller[0]}" of layer ${layer.id} carries if: ${JSON.stringify(caller[1].if)}`, { layer: layer.id })
       }
       if (!needs.includes(caller[0])) {

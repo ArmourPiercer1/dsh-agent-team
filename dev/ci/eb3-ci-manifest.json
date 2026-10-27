@@ -8,11 +8,20 @@
     "note": "The synthetic merge-tree summary. `synthesize` builds the merge of base+head with git merge-tree (no ref moved) and fails hard on a conflict; `ci-required` runs if:always(), needs every layer below, and is the ONE Required branch-protection context. `jobs` names both so the undeclared-job rule stays honest about the summary's own jobs. Every entry in the summary's needs must be a declared layer or the checker reds: a layer left out of needs can fail while the summary stays green.",
     "jobs": [
       "synthesize",
-      "ci-required"
+      "ci-required",
+      "required-deferred"
     ],
     "gradedNeeds": [
       "synthesize"
     ]
+  },
+  "deferral": {
+    "label": "ci-defer-full",
+    "layer": "ci-full",
+    "callerIf": "${{ !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}",
+    "job": "required-deferred",
+    "context": "ci-required-deferred",
+    "note": "THE DEFERRED TIER. An intermediate fix-round push may carry the PR label `ci-defer-full`; the ci-full caller is then skipped. The Required job `ci-required` is NEVER skipped (a skipped required job reports skipped, which branch protection accepts as passing) and still needs ci-full, so a skipped ci-full grades red there: a deferred run cannot satisfy branch protection. `required-deferred` (check name `ci-required-deferred`, not Required) grades the other layers so the round still gets a verdict. The ci-full caller may carry exactly `callerIf` and nothing else; the deferred job may never be named ci-required. The head frozen for review must run with the label removed and the full aggregate green."
   },
   "layers": [
     {
