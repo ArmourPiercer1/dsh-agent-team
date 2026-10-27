@@ -1,0 +1,41 @@
+{
+  "head": "5bb88870ac2f730aafa54ff9f01c76189a6c72b6",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T003234Z-4-1.json",
+      "files": 635,
+      "legs": 8143,
+      "ids": [
+        "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8143,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "635f/8143l",
+      "totalsNote": "captured 635f/8143l vs baseline-declared 626 / 7936"
+    }
+  }
+}

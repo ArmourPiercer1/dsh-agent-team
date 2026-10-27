@@ -221,6 +221,16 @@ describe('evidence sanitizer — credential coverage and raw preservation', () =
     expect(out(r)).toContain('VERIFY FAIL')
   })
 
+  // 2026-10-27 measured drift repair (u7-f lane; reproduced byte-identical
+  // on PRISTINE master 0ea67bee8 in a second checkout, 9929ms): this leg
+  // spawns the standalone regression suite — 25 nested `node` processes —
+  // and budgets the CHILD at 60_000ms while the parent ran on vitest's
+  // 5000ms default. On this host profile the nested suite measures ~9.5s
+  // idle, so the parent timer could never hold the child's own declared
+  // budget. Observer repair in the U7-1 law: every assertion kept, only
+  // the parent timer raised to the child's own bound; non-vacuous — the
+  // spawn's exit code remains the sole verdict (a failing child still
+  // reds the leg, proven by the child's own non-zero status path).
   it('S13 file aliases, quoted values, and capture formats pass the standalone regressions', () => {
     const env: NodeJS.ProcessEnv = { ...process.env, SANITIZE_EVIDENCE_TOOL: TOOL }
     // A Node-based compatibility runner must not suppress nested --test runs.
@@ -231,5 +241,5 @@ describe('evidence sanitizer — credential coverage and raw preservation', () =
       env,
     })
     expect(r.status).toBe(0)
-  })
+  }, 120_000)
 })

@@ -239,7 +239,11 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     })
     expect(built.ok).toBe(true)
     const defs = built.value!.definitions
-    expect(defs.map((d) => d.name)).toEqual(['team_grep', 'team_glob', 'team_bash'])
+    // U7-F: the process family's ONE contribution now carries BOTH shell
+    // rows — the pwsh row mounts beside team_bash (no backend injected
+    // here, so it rides the pending shut face; the row mounting is law,
+    // the shut face answers refusals).
+    expect(defs.map((d) => d.name)).toEqual(['team_grep', 'team_glob', 'team_bash', 'pwsh'])
 
     const bash = await defs.find((d) => d.name === 'team_bash')!.execute({ command: 'echo a5g1' })
     expect(bash.text).toContain('a5p5-refused')

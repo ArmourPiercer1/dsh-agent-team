@@ -74,6 +74,12 @@ export const LANE_EDGES = Object.freeze({
     'packages/runtime/sandbox-provider/*',
     // the SIBLING FAMILY public face the process README books (anchor law home)
     'packages/tools/fs-family/src/index.mjs',
+    // U7-F: the pwsh row's PA edge reads the frozen effect-vocabulary and
+    // fingerprint face (parseRequestedEffectSet, canonicalJsonFingerprint) —
+    // the SAME face the fs README books; the process README now says so,
+    // and the consumer is booked file-by-file in
+    // scripts/audit-a5-tool-governance-imports.mjs + a5p0-layer-audit.
+    'packages/domain/tool-governance/src/*',
   ]),
   'dsh.search-family': Object.freeze([
     'node:*',
