@@ -16,6 +16,9 @@
     },
     "inspect-read": {
       "backsExecution": "family-body"
+    },
+    "agent-control": {
+      "backsExecution": "family-body"
     }
   },
   "families": [
@@ -25,7 +28,7 @@
     },
     {
       "module": "process.mjs",
-      "sha256": "faeb09466b84d2a0097f2b80629caadd61f4a330ebc893d877450d7e0ac0db5d"
+      "sha256": "6e71fa0dff324a1fdafdf95225c34d8b09ad4e21d1a09c06bff09733558b8289"
     },
     {
       "module": "search.mjs",
@@ -34,6 +37,10 @@
     {
       "module": "inspect.mjs",
       "sha256": "120d45343f9157d5c876edb53d23eefe049af502c07abe367d9287563c181274"
+    },
+    {
+      "module": "agent-control.mjs",
+      "sha256": "65497f09ee1dccf5b2d46f756006ec6b1d627e399efd77bea5113b56797f7731"
     }
   ]
 }

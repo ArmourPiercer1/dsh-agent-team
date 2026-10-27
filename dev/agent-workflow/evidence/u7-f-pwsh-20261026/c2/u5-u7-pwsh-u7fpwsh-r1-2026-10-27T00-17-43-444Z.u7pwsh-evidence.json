@@ -1,0 +1,388 @@
+{
+  "oracle": {
+    "denyBytes": null,
+    "apprBytes": null
+  },
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "strict": true,
+    "asker": true,
+    "leader": true
+  },
+  "appr": {
+    "pendingSeen": false,
+    "requestId": null,
+    "kind": null,
+    "attribution": null,
+    "resolveBody": null,
+    "resolvedOk": false,
+    "waitedMs": 120288,
+    "channelError": null
+  },
+  "replay": {
+    "attempted": false,
+    "refused": false,
+    "requestId": null,
+    "body": null
+  },
+  "controlRequests": [],
+  "consumptionCount": 0,
+  "logHits": {
+    "pwLines": [],
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r1-20261027t00-17-43z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r1-20261027t00-17-43z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r1-20261027t00-17-43z"
+    ]
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_DISC_u5u7fpwsh-r1-20261027t00-17-43z\"}"
+    },
+    {
+      "seq": 2,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"U7PWSH_DISC_u5u7fpwsh-r1-20261027t00"
+    },
+    {
+      "seq": 3,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:96c3a8e3a17be046005e0b04faf79d30df127afb2f6b4887cf99179b6bad727a] "
+    },
+    {
+      "seq": 4,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-cr"
+    },
+    {
+      "seq": 5,
+      "nCalls": 1,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1p4ec370pdpb\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-3c152b23ed6c3f253627876185c60b6f\",\"operationId\":\"op-15hajm50nfg4jy0ecbymf1ah\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c1-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "nCalls": 2,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-19uh2e60j0g9\",\"templateId\":\"asker\",\"childSessionId\":\"session-team-child-e99acde69dec9464c55fd2a16e94964e\",\"operationId\":\"op-0d0lnjy1v3oor11x0eq9s019\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c2-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "nCalls": 3,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1p4ec370pdpb\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 8,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z] U7PWSH_DENY_u5u7fpwsh-r1-20261027t00-17-43z\"}"
+    },
+    {
+      "seq": 9,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d1-u5"
+    },
+    {
+      "seq": 10,
+      "nCalls": 4,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-1-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 11,
+      "nCalls": 5,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-2-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 12,
+      "nCalls": 6,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-3-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 13,
+      "nCalls": 7,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-4-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 14,
+      "nCalls": 1,
+      "lastCall": "pwsh",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: permission denied: exec fingerprint sha256:22a6471f4ed18ad9058ff1e6ef8c13976c585a2f25881fd3a93c576ce8f26df1 answered deny from the fallback"
+        }
+      ]
+    },
+    {
+      "seq": 15,
+      "nCalls": 8,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-5-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "nCalls": 9,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-6-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-7-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-8-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 19,
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z]\\n\\nAn asynchronous Team work unit has settled.\\ninst"
+    },
+    {
+      "seq": 20,
+      "nCalls": 12,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1p4ec370pdpb\",\"admittedSequence\":4,\"settledSequence\":7,\"memberResult\":{\"body\":\"U7PWSH_DENY_DONE\",\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-2-1\"}"
+        }
+      ]
+    },
+    {
+      "seq": 21,
+      "nCalls": 13,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-19uh2e60j0g9\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":8,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 22,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z] U7PWSH_APPR_u5u7fpwsh-r1-20261027t00-17-43z\"}"
+    },
+    {
+      "seq": 23,
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d2-u5"
+    },
+    {
+      "seq": 24,
+      "nCalls": 14,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-1-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 25,
+      "nCalls": 15,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-2-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 26,
+      "nCalls": 1,
+      "lastCall": "pwsh",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: permission request failed: TeamRuntime: operation 'request-control' (action 'request-control') is outside the caller's mutation envelope — the boundary fails closed"
+        }
+      ]
+    },
+    {
+      "seq": 27,
+      "nCalls": 16,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-3-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 28,
+      "nCalls": 17,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-4-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 29,
+      "nCalls": 18,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-5-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 30,
+      "nCalls": 19,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-6-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 31,
+      "nCalls": 20,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-7-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 32,
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"running\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-8-u5u7fpwsh-r1-20261027t00-17-43z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 33,
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z]\\n\\nAn asynchronous Team work unit has settled.\\ninst"
+    },
+    {
+      "seq": 34,
+      "nCalls": 22,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r1-20261027t00-17-43z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"succeeded\",\"instanceId\":\"inst-19uh2e60j0g9\",\"admittedSequence\":8,\"settledSequence\":11,\"memberResult\":{\"body\":\"U7PWSH_APPR_DONE\",\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r1-20261027t00-17-43z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-2\"}"
+        }
+      ]
+    }
+  ]
+}

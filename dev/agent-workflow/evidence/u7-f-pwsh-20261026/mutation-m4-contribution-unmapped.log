@@ -1,0 +1,6 @@
+     × the contribution declares EXACTLY the table domain (neither drifts) 8ms
+     × bash: every declared kind maps into the plane-derived requested set of the bash row 5ms
+     × pwsh: every declared kind maps into the executor's ACTUAL PA-edge requested set 3ms
+     × an UNMAPPED declared kind (planted network) goes RED 2ms
+     × a REMOVED table entry (process-spawn un-mapped) goes RED 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯

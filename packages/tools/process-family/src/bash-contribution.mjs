@@ -38,27 +38,57 @@ import { canonicalJsonStringify } from '../../../contracts/src/index.js'
 import * as shellMechanics from './shell-mechanics.mjs'
 import * as bashRow from './bash-row.mjs'
 import * as confinedShellExecutor from './confined-shell-executor.mjs'
+import * as pwshMechanics from './pwsh-mechanics.mjs'
+import * as pwshRow from './pwsh-row.mjs'
+import * as pwshExecutor from './pwsh-executor.mjs'
+import * as pwshConfined from './pwsh-confined.mjs'
 
 const sha256Hex = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
 
-/** The row's closed parameter schema, exactly as `buildBashRowDefinition`
- *  places it (the digest must bind the PLACED contract, not a copy). */
-function inputContractDigestOf(definition) {
-  return sha256Hex(canonicalJsonStringify({
-    name: definition.name,
-    parameters: definition.parameters,
-    required: definition.parameters.required ?? null,
-  }))
+/**
+ * DECLARED→REQUESTED effect mapping (REVIEW-402 round-1 ruling; makes an
+ * IMPLICIT mapping explicit — implicit is how the #390 real gap slipped).
+ *
+ * The contribution below declares `process-spawn` as an honest capability
+ * statement, but `process-spawn` is NOT a requestable kind: the requestable
+ * vocabulary is the closed `EFFECT_KINDS`
+ * (`packages/domain/tool-governance/src/effects.ts`: tool-invoke, read,
+ * write, list, meta, connect, domain-ref). Under A2C-1 the shell row's
+ * process spawn is authorized by the `tool-invoke(<class>)` arm — the
+ * COMMAND IS the authority key, hashed verbatim
+ * (`process-family/src/bash-normalizer.ts`; no parsing, no claimed
+ * granularity), so the spawn carries no separate requestable arm.
+ *
+ * DATA ONLY — read by tests and reviewers, never by an executor or the
+ * Kernel: both executors' requested sets are byte-for-byte what they were
+ * before this table existed, and admission semantics did not move.
+ */
+export const DECLARED_TO_REQUESTED = Object.freeze({
+  'tool-invoke': 'tool-invoke',
+  'process-spawn': 'tool-invoke',
+})
+
+/** The family's closed parameter contracts as ONE canonical document: the
+ *  fs-family multi-row form — per-name `{name, parameters, required}` facts
+ *  in placement order (bash first, then pwsh). The digest binds the PLACED
+ *  contracts, not copies. */
+function inputContractDigestOf(rowDefs) {
+  return sha256Hex(canonicalJsonStringify(rowDefs.map((rowDef) => ({
+    name: rowDef.name,
+    parameters: rowDef.parameters,
+    required: rowDef.parameters.required ?? null,
+  }))))
 }
 
-/** The output/Result boundary digest: the presentation schema the mount
- *  decorates the placed row with (the plane's pinned presentation face). */
-function outputContractDigestOf(definition) {
-  return sha256Hex(canonicalJsonStringify({
-    output: definition.output?.schema ?? null,
-    render: definition.output?.render?.toString?.() ?? null,
-    presentationMeta: definition.output?.presentationMeta?.toString?.() ?? null,
-  }))
+/** The output/Result boundary digest over the same placement-ordered row
+ *  set: the presentation schema the mount decorates each placed row with
+ *  (the plane's pinned presentation face). */
+function outputContractDigestOf(rowDefs) {
+  return sha256Hex(canonicalJsonStringify(rowDefs.map((rowDef) => ({
+    output: rowDef.output?.schema ?? null,
+    render: rowDef.output?.render?.toString?.() ?? null,
+    presentationMeta: rowDef.output?.presentationMeta?.toString?.() ?? null,
+  }))))
 }
 
 /**
@@ -73,10 +103,24 @@ function outputContractDigestOf(definition) {
  * @param {string} [input.launcherPin] - the mount's reviewed launcher
  *   digest when the assembly carries one (CI-07 provider pin; rides the
  *   source digest so a pin change is a DIFFERENT contribution).
+ * @param {object} input.pwsh - U7-F: the shell-class SECOND row carried in
+ *   the SAME reviewed candidate (the Registry law is one live candidate per
+ *   familyId — DUP_FAMILY_ID refuses a second; the fs family carries its
+ *   four rows the same way). `{ definition, cancelBoundary }` over the live
+ *   `buildPwshRowDefinition` artifact. REQUIRED: a one-row shell candidate
+ *   is no longer a shape this family ships, and a silently-degraded
+ *   contribution is exactly what the fail-closed law refuses — the factory
+ *   throws a typed error rather than place half the reviewed family.
  * @returns a plain descriptor object (closed-world; the Kernel's validator
  *   re-checks every key fail-closed).
  */
-export function buildProcessShellContribution({ definition, cancelBoundary, launcherPin }) {
+export function buildProcessShellContribution({ definition, cancelBoundary, launcherPin, pwsh }) {
+  if (pwsh === undefined || pwsh === null || pwsh.definition === undefined) {
+    throw new TypeError('PROCESS_CONTRIBUTION_PWSH_REQUIRED: the process family ships ONE candidate over BOTH shell rows (bash + pwsh); pass the pwsh row part — a half-family contribution is refused fail-closed, never placed')
+  }
+  // ONE identifier per row definition: the ARC-A fitness scanner binds each
+  // `nativeNames` entry to a reviewable `<identifier>.name` spelling.
+  const pwshDefinition = pwsh.definition
   // LOSSLESS-JSON law (contracts canonicalJsonStringify): the bound source
   // document is DATA — every function in the lane's module namespaces is
   // pinned as its SOURCE TEXT; anything non-JSON-safe degrades to a stable
@@ -97,6 +141,17 @@ export function buildProcessShellContribution({ definition, cancelBoundary, laun
     executor: sourceLossless(confinedShellExecutor),
     mechanics: sourceLossless(shellMechanics),
     row: sourceLossless(bashRow),
+    // U7-F: the pwsh row joins the SAME bound source document — the second
+    // shell row's placed definition, its family body, its confined backend,
+    // its mechanics and its row face are all pinned HERE; a change to any
+    // of them is a DIFFERENT contribution on the kernel ledger.
+    pwshName: pwsh.definition.name,
+    pwshParameters: pwsh.definition.parameters,
+    pwshExecute: pwsh.definition.execute?.toString?.() ?? null,
+    pwshRow: sourceLossless(pwshRow),
+    pwshExecutor: sourceLossless(pwshExecutor),
+    pwshConfined: sourceLossless(pwshConfined),
+    pwshMechanics: sourceLossless(pwshMechanics),
     launcherPin: launcherPin ?? null,
   })
   return {
@@ -128,23 +183,34 @@ export function buildProcessShellContribution({ definition, cancelBoundary, laun
       owner: 'family',
       // The takeover spelling law (§ CI-04): the row carries the mount
       // spelling validated by Gate 0b (native 'bash' takeover or the
-      // managed `team_bash` alias — same row, same mechanism).
-      nativeNames: [definition.name],
+      // managed `team_bash` alias — same row, same mechanism). U7-F: the
+      // pwsh row mounts at its FIXED native spelling (the jobs / fs-mutation
+      // precedent — never the renamable `names` map); A2C-1 keeps the two
+      // shell authorities apart (`bash authority != pwsh authority`).
+      nativeNames: [definition.name, pwshDefinition.name],
       aliases: [],
       profileRequirements: [],
     },
     definition: {
       owner: 'family',
-      inputContractDigest: inputContractDigestOf(definition),
-      outputContractDigest: outputContractDigestOf(definition),
+      // The fs-family multi-row form: ONE digest over the per-name closed
+      // contracts, in placement order (bash first, then pwsh).
+      inputContractDigest: inputContractDigestOf([definition, pwsh.definition]),
+      outputContractDigest: outputContractDigestOf([definition, pwsh.definition]),
       normalization: 'pure',
     },
     effects: {
       declared: true,
       // The a5p5 effect-declaration namespace: one `tool-invoke` arm keyed
-      // by the NATIVE class ('bash'); the opaque command's process spawn
-      // is the class's effect (the authority hashes the command verbatim —
-      // bash-normalizer.ts; no parsing, no claimed granularity).
+      // by the NATIVE class ('bash'; U7-F adds 'pwsh' — the same arm, a
+      // DIFFERENT authority key per A2C-1); the opaque command's process
+      // spawn is the class's effect (the authority hashes the command
+      // verbatim — bash-normalizer.ts; no parsing, no claimed granularity).
+      // DECLARED→REQUESTED law (REVIEW-402): EVERY kind listed here maps
+      // through the exported `DECLARED_TO_REQUESTED` table above onto a
+      // kind both shell rows actually request (`tool-invoke`), and the
+      // mapping is pinned by test, per row, against EFFECT_KINDS — an
+      // unmapped declared kind is a red test, never an implicit read.
       kinds: ['tool-invoke', 'process-spawn'],
       targets: ['confined-process-realm'],
     },
@@ -155,7 +221,11 @@ export function buildProcessShellContribution({ definition, cancelBoundary, laun
     lifecycle: {
       owner: 'kernel',
       drain: 'kernel-owned',
-      cancelBoundary,
+      // ONE closed field, BOTH rows' honest boundaries (the fs-family
+      // multi-row contribution carries its per-row legs the same way).
+      cancelBoundary: pwsh.cancelBoundary === undefined
+        ? cancelBoundary
+        : `${cancelBoundary} || pwsh: ${pwsh.cancelBoundary}`,
     },
     result: {
       envelope: 'host',

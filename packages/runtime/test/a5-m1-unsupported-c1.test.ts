@@ -72,14 +72,17 @@ describe('a5-m1-unsupported-c1 — closed world: unknown names never mount, neve
     expect(built.code).toBe('NOT_GOVERNED')
   })
 
-  it('U-C1-4 closed mount domain: ONLY the seven governed names exist (U7-9a: the FS family mutation trio joins); no pwsh/job/web/tool names leak in, and NO native name beyond the accepted spellings exists', () => {
+  it('U-C1-4 closed mount domain: ONLY the eight governed names exist (U7-9a: the FS family mutation trio joins; U7-F: the pwsh shell-class row joins); no job/web/tool names leak in, and NO native name beyond the accepted spellings exists', () => {
     const built = row.createTeamToolPlaneAssembly(baseInput())
     expect(built.ok).toBe(true)
     const names = (built.value?.definitions ?? []).map((d) => d.name).sort()
     // U6 mounted {read, team_bash, team_glob, team_grep}; U7-9a adds the
     // family's three REQUIRED members, governed under their accepted native
-    // spellings (the SAME mount face — zero new assembly keys, one ledger).
-    expect(names).toEqual(['edit', 'read', 'read_image', 'team_bash', 'team_glob', 'team_grep', 'write'])
+    // spellings (the SAME mount face — zero new assembly keys, one ledger);
+    // U7-F adds the process family's SECOND row — the governed pwsh shell
+    // class at its FIXED native spelling (the family's one contribution
+    // carries both rows; zero new assembly keys here either).
+    expect(names).toEqual(['edit', 'pwsh', 'read', 'read_image', 'team_bash', 'team_glob', 'team_grep', 'write'])
     expect(names).not.toContain('bash') // default names mount the ALIAS; native bash claim is a wiring flip with its own acceptance
   })
 
@@ -106,7 +109,9 @@ describe('a5-m1-unsupported-c1 — closed world: unknown names never mount, neve
   it('U-C1-7 unknown operation spelling: asking the mount for a name it never declared answers from the closed set (the kit finds NOTHING, never proxies to native)', () => {
     const built = row.createTeamToolPlaneAssembly(baseInput())
     const names = new Set((built.value?.definitions ?? []).map((d) => d.name))
-    for (const stranger of ['pwsh', 'run_code', 'web_fetch', 'grep', 'glob', 'todo_write']) {
+    // 'pwsh' LEFT this list at U7-F: it is now a GOVERNED mounted name (the
+    // process family's second row), not a stranger — U-C1-4 pins its place.
+    for (const stranger of ['run_code', 'web_fetch', 'grep', 'glob', 'todo_write']) {
       expect(names.has(stranger), `stranger ${stranger} must NOT be mounted`).toBe(false)
     }
   })

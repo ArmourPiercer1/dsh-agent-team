@@ -292,10 +292,17 @@ describe('u7-w0b fitness F1 — the plane names no family', () => {
 describe('u7-w0b fitness F2 — the family index is the reviewed manifest', () => {
   it('gen-family-index --check is green (index derived, digests match, no unlisted module)', () => {
     const out = execFileSync('node', [join(REPO, 'scripts/gen-family-index.mjs'), '--check'], { cwd: REPO, encoding: 'utf8' })
-    // U7-F joined the reviewed set (dsh.inspect-family, the 4th family):
-    // this literal is the reviewed-manifest size read back — a reviewed
-    // family addition moves it by exactly one, and only a manifest edit
-    // (digest-verified by the very check below) can move it.
-    expect(out).toContain('OK (4 reviewed famil(ies))')
+    // The reviewed-family COUNT is DERIVED from the manifest (the very
+    // document --check validates), never hardcoded here: the law this leg
+    // pins is index==manifest, and a hardcoded count would turn every
+    // future family booking into an edit of THIS test (review #406 R2).
+    const manifest = JSON.parse(readFileSync(join(REPO, 'packages/tools/families/manifest.json'), 'utf8')) as {
+      families?: Record<string, unknown> | unknown[]
+    }
+    const count = Array.isArray(manifest.families)
+      ? manifest.families.length
+      : Object.keys(manifest.families ?? {}).length
+    expect(count, 'the reviewed manifest declares at least one family').toBeGreaterThan(0)
+    expect(out).toContain(`OK (${count} reviewed famil(ies))`)
   })
 })

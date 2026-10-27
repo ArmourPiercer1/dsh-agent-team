@@ -1,0 +1,18 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7FPWSH",
+  "paths": [
+    "packages/tools/process-family/src/pwsh-confined.mjs",
+    "packages/tools/process-family/src/pwsh-executor.mjs",
+    "packages/tools/process-family/src/pwsh-mechanics.mjs",
+    "packages/tools/process-family/src/pwsh-row.mjs",
+    "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
+    "packages/tools/a5p5-tools/test/a5p5-shell-effect-mapping.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1322,
+    "to": 1328
+  },
+  "reason": "U7-F (the governed pwsh shell-class row, branch task/u7-f-pwsh-20261026 off origin/master): the four lane files of the process family's SECOND row — the closed parser + faithful argv/env mechanics (golden recording of the host pwsh tool at 639ed01539), the confined backend over the SAME Landlock provider law as bash (executable resolved before probe, zero-spawn refusals), the family-body executor (lane verdict -> permission belt -> PA edge with the parsed-record fingerprint -> backend, token ledger, pre-abort arm), and the row Definition — plus the 49-leg C1 suite (parser law, golden fidelity table, lifecycle legs, real-provider legs over the deps seam, renderer, descriptor units, mutation controls M1-M3), plus the REVIEW-402 round-1 DECLARED→REQUESTED mapping suite (a5p5-shell-effect-mapping: the exported frozen table, per-row mapping over BOTH shell rows' ACTUAL requested effect sets — bash through the plane's parseBashArgs+deriveToolEffectSet, pwsh through the executor's captured PA-edge call — and the unmapped-kind / removed-entry mutation controls). The descriptor (families/process.mjs), the contribution, the barrel, the manifest, the census, the two re-pinned law tests (a5-m1-unsupported-c1 mount domain + a5p0-layer-audit consumer) ride ALREADY-COUNTED files; the mapping table itself rides the already-counted contribution .mjs; dist mirror and dev evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied. First booking (five files): absent, the ledger read `scanner counts 1327, ledger derives 983 + 339 = 1322` (dev/agent-workflow/evidence/u7-f-pwsh-20261026/p4t6-RED-unbooked.log) — the merged tree's 1322 plus exactly those five paths. REVIEW-402 round-1 added a sixth file (a5p5-shell-effect-mapping.test.ts); with that file on disk and this booking at the old `to: 1327`, the ledger reads `scanner counts 1328, ledger derives 983 + 344 = 1327` (dev/agent-workflow/evidence/u7-f-pwsh-20261026/p4t6-round2-red.log) — +1 for the mapping suite, so `to` moves 1327 -> 1328. No chain value copied."
+}
