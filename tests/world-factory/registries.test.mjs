@@ -59,7 +59,8 @@ test('world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl 
   // Base seven + the four U7-F lane modules (080 enumeration order:
   // agent-control, f-ui, f-web, pwsh); the registry law is enumeration, and a
   // lane joining legitimately extends the derived list.
-  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7AgentControl', 'u7FsUi', 'u7FWeb', 'u7Pwsh'])
+  // U7 agent-state store: 090-u7-astore joins after the 080 group.
+  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7AgentControl', 'u7FsUi', 'u7FWeb', 'u7Pwsh', 'u7AStore'])
   assert.deepEqual(a.map((k) => k.file), b.map((k) => k.file))
   assert.deepEqual(a.map((k) => k.file), [...a.map((k) => k.file)].sort())
   assert.deepEqual(WORLD_KIND_OPTIONS, a.map((k) => k.option))
@@ -175,7 +176,7 @@ test('a new World kind is ONE file: dropping it in registers the option, nothing
     ].join('\n'))
     const kinds = await loadWorldKinds(dir)
     assert.equal(kinds.at(-1)?.option, 'u7PlantNew')
-    assert.equal(kinds.length, 12) // 11 shipped (u7AgentControl + u7FsUi + u7FWeb + u7Pwsh joined at U7-F) + the planted one
+    assert.equal(kinds.length, 13) // 12 shipped (u7AgentControl + u7FsUi + u7FWeb + u7Pwsh joined at U7-F, u7AStore at the U7 store lane) + the planted one
   } finally {
     rmSync(parent, { recursive: true, force: true })
   }
@@ -221,12 +222,12 @@ test('suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-
   // 88107ad71 hand-wired the first six; u7-f ADDED u7-f-ui and u7-f-web as
   // drop-in lane modules (enumeration law — a lane joining extends the derived list).
   assert.deepEqual(a.map((s) => [s.suite, s.totalRequests]), [
-    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60], ['u7-f-ui', 60], ['u7-fagentb', 160],
+    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60], ['u7-f-ui', 60], ['u7-fagentb', 160], ['u7-astore', 90],
   ])
   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-f-ui', 'u7-f-web', 'u7-fagentb', 'u7-fs-mut', 'u7-pwsh'])
+  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-astore', 'u7-f-ui', 'u7-f-web', 'u7-fagentb', 'u7-fs-mut', 'u7-pwsh'])
 })
 
 test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {

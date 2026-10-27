@@ -163,10 +163,20 @@ describe('u7fb M — the mount law', () => {
     expect(built.value.centerKernel.familyIds).toContain('dsh.agent-state-family')
   })
 
-  it('M2 enabled WITHOUT the store port: the whole assembly refuses (PLANE_AGENT_STATE_STORE_MISSING) — an enabled family with no durable face never mounts', async () => {
-    const built = await mount({ agentStateEnabled: true })
-    expect(built.ok).toBe(false)
-    expect(built.code).toBe('PLANE_AGENT_STATE_STORE_MISSING')
+  it('M2 enabled WITHOUT the store port and WITHOUT a durable home: the whole assembly refuses (PLANE_AGENT_STATE_STORE_MISSING) — an enabled family with no durable face never mounts', async () => {
+    // The production store resolves its home from DSH_HOME; with none, the
+    // existing typed refusal stands (never an invented default location).
+    // The production-store arms live in u7-agentstate-fs-store-c1.test.ts.
+    const env = (process as unknown as { env: Record<string, string | undefined> }).env
+    const saved = env.DSH_HOME
+    delete env.DSH_HOME
+    try {
+      const built = await mount({ agentStateEnabled: true })
+      expect(built.ok).toBe(false)
+      expect(built.code).toBe('PLANE_AGENT_STATE_STORE_MISSING')
+    } finally {
+      if (saved !== undefined) env.DSH_HOME = saved
+    }
   })
 })
 

@@ -27,6 +27,10 @@
     {
       "src": "packages/tools/agent-state-family/src/contribution.mjs",
       "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/contribution.mjs"
+    },
+    {
+      "src": "packages/tools/agent-state-family/src/fs-state-store.mjs",
+      "dist": "packages/runtime/dist/packages/tools/agent-state-family/src/fs-state-store.mjs"
     }
   ]
 }
