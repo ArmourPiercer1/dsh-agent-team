@@ -141,6 +141,14 @@ jobs:
           set -euo pipefail
           node scripts/eb3-run-manifest.mjs --new-since "$CI_BASE"
 
+      - name: "EB3 evidence guard (no raw census capture, no unexempted file > 1 MiB added under evidence/)"
+        shell: bash
+        # ONE simple command, same base as the RUN Manifest step: the added set is
+        # `git diff --diff-filter=A $CI_BASE...HEAD -- dev/agent-workflow/evidence/`.
+        run: |
+          set -euo pipefail
+          node scripts/eb3-evidence-guard.mjs --new-since "$CI_BASE"
+
       - name: "EB3 negative controls (each enforcement check must be able to fail)"
         # The four detections the plan names, plus the five non-green summary states and
         # the two preserved positives. Exits non-zero the moment one of them stops

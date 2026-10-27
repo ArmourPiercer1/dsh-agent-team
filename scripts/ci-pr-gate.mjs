@@ -1172,6 +1172,28 @@ export function evidenceStamp(iso) {
   return String(iso).replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z').replace(/\+.*$/, 'Z')
 }
 
+/**
+ * WHERE THE CENSUS WRITES, split by what may be committed.
+ *
+ * The comparison sidecar (~2 KB, cited by path on the leg line) stays in the tracked
+ * `CENSUS_SIDECAR_REL`. The raw vitest captures (~3.8 MB each) and the load-family
+ * re-samples go to the gitignored `CENSUS_CAPTURE_REL`. They used to share the sidecar's
+ * directory, under names one `git add census-*` away from the sidecars: PR #396 untracked
+ * nine of them (32 MB) and three lanes re-committed 6–8 each within a day, with a prose
+ * rule (scratch/UNTRACKED-SCRATCH.md) as the only safeguard. The basenames are unchanged,
+ * so `scripts/eb3-evidence-guard.mjs` still recognises one that is copied back by hand.
+ */
+export const CENSUS_SIDECAR_REL = 'dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch'
+export const CENSUS_CAPTURE_REL = '.artifacts/census'
+
+export function censusCapturePath(root, stamp, pid, n) {
+  return join(root, CENSUS_CAPTURE_REL, `census-${stamp}-${String(pid)}-${String(n)}.json`)
+}
+
+export function censusResamplePath(root, pid, file, k) {
+  return join(root, CENSUS_CAPTURE_REL, `resample-${String(pid)}-${file.replace(/[^a-zA-Z0-9]/g, '_')}-${String(k)}.json`)
+}
+
 export function countsSentence(totals, setIdentical) {
   if (totals === null || !totals.moved || totals.declared == null) return ''
   const counts = `${String(totals.captured)} vs the baseline document's own ${String(totals.declared.files)} / ${String(totals.declared.legs)}`
@@ -1560,7 +1582,7 @@ const LEGS = {
       reports.push({ jsonPath: abs, ids: ctx.idsFromReport(abs, 'census-json'), ...ctx.shapeFromReport(abs), gradedFromStoredReport: true })
     }
     for (let i = 1; ctx.censusJson === null && i <= ctx.censusCaptures; i += 1) {
-      const jsonPath = join(ctx.scratchDir, `census-${ctx.stamp}-${String(process.pid)}-${i}.json`)
+      const jsonPath = censusCapturePath(REPO_ROOT, ctx.stamp, process.pid, i)
       if (i === 1) {
         // The suite's own fault-injection scratch; left over from an earlier run it changes what
         // the testkit lane sees, so every published census clears it first.
@@ -1641,7 +1663,7 @@ const LEGS = {
           let green = 0
           for (let k = 1; k <= ctx.resample; k += 1) {
             rmSync(resolve(REPO_ROOT, 'packages/testkit/test/.tmp-fault'), { recursive: true, force: true })
-            const rp = join(ctx.scratchDir, `resample-${String(process.pid)}-${file.replace(/[^a-zA-Z0-9]/g, '_')}-${String(k)}.json`)
+            const rp = censusResamplePath(REPO_ROOT, process.pid, file, k)
             const run = runCommand('pnpm', ['exec', 'vitest', 'run', file, '--reporter=json', `--outputFile.json=${rp}`,
               ...(ctx.censusTestTimeout === null ? [] : [`--testTimeout=${String(ctx.censusTestTimeout)}`])])
             ctx.capture(`census-resample-${file.replace(/[^a-zA-Z0-9]/g, '_')}-${String(k)}`, run)
@@ -1692,7 +1714,7 @@ const LEGS = {
     if (cmp.setIdentical) parts.push('identity set IDENTICAL to the published baseline')
     // Cite the sidecar by name: a transcript that says "there is a JSON somewhere in scratch/" is a
     // transcript a reader cannot check three runs later.
-    parts.push(`comparison written to dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/${sidecar}`)
+    parts.push(`comparison written to ${CENSUS_SIDECAR_REL}/${sidecar}`)
 
     ctx.writeJson(sidecar, {
       head: git(['rev-parse', 'HEAD']),
@@ -1868,8 +1890,9 @@ function main(argv) {
 
   if (opts.selfTest) return selfTest()
 
-  const scratchDir = resolve(REPO_ROOT, 'dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch')
+  const scratchDir = resolve(REPO_ROOT, CENSUS_SIDECAR_REL)
   mkdirSync(scratchDir, { recursive: true })
+  mkdirSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true })
   const transcriptDir = opts.transcriptDir === null ? null : resolve(process.cwd(), opts.transcriptDir)
   if (transcriptDir !== null) mkdirSync(transcriptDir, { recursive: true })
 
@@ -2459,7 +2482,7 @@ function selfTest() {
   // one exits 0, and a truncated transcript grades as missing-token.
   const GATE = fileURLToPath(import.meta.url)
   const tmp = mkdtempSync(join(tmpdir(), 'dsh-ci-selftest-'))
-  const scratch = resolve(REPO_ROOT, 'dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch')
+  const scratch = resolve(REPO_ROOT, CENSUS_SIDECAR_REL)
   const childScript = (flood) => `
     import { writeSync } from 'node:fs'
     import { failureEchoLines, writeEchoLine, guardStdout } from ${JSON.stringify(GATE)}
