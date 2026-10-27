@@ -48,7 +48,7 @@ import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../.
 import { remoteCall, hasMarker, surfaceNamesOf, messagesOf } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
-import { AC1_TOOLS, AGENT_CONTROL_MANAGED_NAMES, createAc1Assembly, makeAc1Decide, userTexts } from './ac1-assembly.mjs'
+import { AC1_TOOLS, createAc1Assembly, makeAc1Decide, userTexts, computeAc1BuiltinToolDeny } from './ac1-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
@@ -223,11 +223,11 @@ async function drive({ world, assembly, planted, boot, stableBefore }) {
   await sleep(1500)
   const disc = world.mock.requests.filter((r) => hasMarker(r, assembly.markers.MK_DISC)).map((r) => surfaceNamesOf(r)).sort((a, b) => b.length - a.length)[0]
   const surface = [...new Set(disc)].sort()
-  // run_code is the reserved PTC transport (never a deniable capability);
-  // the seven family names are claimed by the plane, never denied.
-  const denyList = surface.filter((n) => !n.startsWith('team_')
-    && !['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh', 'todo_write', 'run_code'].includes(n)
-    && !AGENT_CONTROL_MANAGED_NAMES.includes(n))
+  // The seven family names are claimed by the plane, while todo_write is the
+  // only known safe unmanaged host tool. run_code is the host-reserved PTC
+  // transport and MUST be denied on this strict blueprint: leaving it
+  // unmanaged trips the alpha2 permission-coverage gate fail-closed.
+  const denyList = computeAc1BuiltinToolDeny(surface)
   run.record.discoverySurface = surface
   assembly.writeMainBlueprint(denyList)
   const hostLog = () => { try { return readFileSync(boot.logPath, 'utf8') } catch { return '' } }

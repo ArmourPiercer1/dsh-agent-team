@@ -35,6 +35,18 @@ export const AGENT_CONTROL_MANAGED_NAMES = Object.freeze([
   'list_agents', 'list_subagent_models', 'workflow',
 ])
 export const AC1_TOOLS = Object.freeze(['list_subagent_models', 'list_agents', 'subagent', 'subagent_fork'])
+export const AC1_SAFE_UNMANAGED = Object.freeze(['todo_write'])
+export const AC1_PERMISSION_MANAGED = Object.freeze(['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh'])
+
+/** Strict AC-1 fixture coverage: deny every unmanaged non-Team tool.
+ * `run_code` is intentionally absent from the safe set: it is the host's
+ * reserved PTC transport and must be governed by builtinToolDeny. */
+export function computeAc1BuiltinToolDeny(surface) {
+  return [...new Set(surface)].filter((name) => !String(name).startsWith('team_')
+    && !AC1_SAFE_UNMANAGED.includes(name)
+    && !AC1_PERMISSION_MANAGED.includes(name)
+    && !AGENT_CONTROL_MANAGED_NAMES.includes(name))
+}
 
 const sanitize = (v) => String(v).toLowerCase().replace(/[^a-z0-9-]/g, '-')
 
