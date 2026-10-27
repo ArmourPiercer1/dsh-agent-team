@@ -1,0 +1,7 @@
+Review R2 — do-not-narrow control for T2 (planted mutation, restored after):
+  $ sed complete-allowed-set ['active','paused','blocked'] -> ['active','paused'] (agent-state-law.mjs:287)
+  $ npx vitest run ... -t "T2 · complete from BLOCKED"
+  -> Tests  1 failed | 53 skipped (54)
+     AssertionError: expected refusal code=GOAL_INVALID_TRANSITION path — the planted narrow set turns complete-from-blocked into a refusal:
+     [dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+  => T2 catches the exact regression the rejected review finding would have shipped.

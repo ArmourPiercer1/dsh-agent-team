@@ -415,6 +415,11 @@ describe('u7fb T — the FULL pinned transition table: typed refusals, zero dura
     { name: 'pause from paused', goal: { ...seed, phase: 'paused' }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'pause' }, code: 'GOAL_INVALID_TRANSITION' },
     { name: 'block from paused', goal: { ...seed, phase: 'paused' }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'blocked', blocked_reason: 'r' }, code: 'GOAL_INVALID_TRANSITION' },
     { name: 'complete from complete', goal: { ...seed, phase: 'complete' }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'complete' }, code: 'GOAL_INVALID_TRANSITION' },
+    // Review R2 pin: the host resumable set is ['active','paused','blocked']
+    // (tests/deepseek-harness-test-use/packages/goal/goal/src/index.ts:368 —
+    // a COMPLETE goal is never resumable); our resume refusal from complete
+    // mirrors it, typed, with zero durable writes.
+    { name: 'resume from complete (host resumable set, index.ts:368)', goal: { ...seed, phase: 'complete' }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'resume' }, code: 'GOAL_INVALID_TRANSITION' },
     { name: 'resume from paused (the USER\'s act)', goal: { ...seed, phase: 'paused' }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'resume' }, code: 'GOAL_TOOL_RESUME_PAUSED' },
     { name: 'resume of an already active+armed goal', goal: { ...seed, armed: true }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'resume' }, code: 'GOAL_INVALID_TRANSITION' },
     { name: 'resume on an exhausted round budget', goal: { ...seed, armed: false, roundsStarted: 2, maxGoalRounds: 2 }, arm: dh, args: { goal_id: 'g1', revision: 1, action: 'resume' }, code: 'GOAL_INVALID_TRANSITION' },
@@ -449,6 +454,27 @@ describe('u7fb T — the FULL pinned transition table: typed refusals, zero dura
       expect(store.stateOf('agent:alice')).toEqual(before)
     })
   }
+
+  // Review R2 pin (finding REJECTED, host law cited): complete(...) at
+  // tests/deepseek-harness-test-use/packages/goal/goal/src/index.ts:390-399
+  // transitions from ['active','paused','blocked'] to phase 'complete',
+  // disarmed — our allowed set mirrors it EXACTLY, so complete FROM BLOCKED
+  // MUST SUCCEED, with exactly ONE durable write. This leg exists so a
+  // future "fix" that narrows the set (the rejected review suggestion) is
+  // caught RED here instead of shipping a regression.
+  it('T2 · complete from BLOCKED SUCCEEDS with EXACTLY ONE durable write (host law index.ts:390-399 — do-not-narrow pin)', async () => {
+    const store = createRecordingStateStore()
+    store.seed('agent:alice', { goal: seededGoal('g1', { phase: 'blocked', armed: false }) })
+    store.setArm('agent:alice', dh)
+    const built = await mount({ agentStateEnabled: true, store })
+    const r = await rowsOf(built).update_goal.execute({ goal_id: 'g1', revision: 1, action: 'complete' }, execFor('alice'))
+    expect(r.isError ?? false).toBe(false)
+    expect(JSON.parse(r.text).goal).toMatchObject({ goal_id: 'g1', phase: 'complete', revision: 2 })
+    expect(store.stateOf('agent:alice')?.goal).toMatchObject({ phase: 'complete', armed: false })
+    const applied = store.log.attempts.filter((a) => a.outcome === 'applied')
+    expect(applied).toHaveLength(1)
+    expect(store.log.writes.filter((w) => w.op === 'goal/apply')).toHaveLength(1)
+  })
 })
 
 describe('u7fb R — durable writes are idempotent under replay', () => {
