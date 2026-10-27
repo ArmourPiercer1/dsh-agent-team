@@ -75,6 +75,15 @@ function inlinePatterns() {
  * not exist; still asserted present, so a later removal is a RED here too.
  */
 const ADDED_BY_U7W0 = ['packages/testkit/test/p4t6-bookings/*.mjs']
+/**
+ * U7-F (2026-10-26): dsh.inspect-family's node-side lane tree. The ONE
+ * ambient symbol it needs is AbortController (the downstream abort handle
+ * of the governed inspect-query settle race — a platform global with no
+ * module to import it from); the lane imports node:fs/promises and the
+ * shared cancel leg for everything else. This dated entry IS the registry:
+ * a later removal is a RED here too, exactly the u7-w0 discipline.
+ */
+const ADDED_BY_LANES = [...ADDED_BY_U7W0, 'packages/tools/inspect-family/src/*.mjs']
 
 /**
  * Does a config-style glob match any tracked path? `**` spans path separators,
@@ -91,7 +100,7 @@ function matchesTracked(pattern, tracked) {
 
 test('parity: inline patterns + collected entries == the nine pre-u7-w0 entries + what u7-w0 added', () => {
   const all = [...inlinePatterns(), ...collected()]
-  assert.deepEqual([...new Set(all)].sort(), [...PRE_U7W0_ENTRIES, ...ADDED_BY_U7W0].sort())
+  assert.deepEqual([...new Set(all)].sort(), [...PRE_U7W0_ENTRIES, ...ADDED_BY_LANES].sort())
   assert.equal(new Set(all).size, all.length, 'a pattern is declared twice (inline AND collected)')
 })
 
@@ -118,7 +127,7 @@ test('RED-first: a REMOVED collected entry breaks parity (the family deleted its
     const removed = doc.globals.pop()
     writeFileSync(target, JSON.stringify(doc, null, 2) + '\n')
     const all = [...inlinePatterns(), ...collected(dir)]
-    const missing = [...PRE_U7W0_ENTRIES, ...ADDED_BY_U7W0].filter((p) => !all.includes(p))
+    const missing = [...PRE_U7W0_ENTRIES, ...ADDED_BY_LANES].filter((p) => !all.includes(p))
     assert.deepEqual(missing, [removed])
   } finally {
     rmSync(dir, { recursive: true, force: true })

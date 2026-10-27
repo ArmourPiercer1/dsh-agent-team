@@ -123,6 +123,12 @@ describe('the tool-governance lane audit', () => {
       'tools/a5p5-tools/src/render.ts',
       'tools/a5p5-tools/src/spill.ts',
       'tools/a5p5-tools/src/types.ts',
+      // U7-F: the agent-control family's ONE executor consumes the same thin
+      // effect-grammar face (`parseRequestedEffectSet`, domain/tool-governance)
+      // the fs-family executors were booked for — parse-only, zero further
+      // domain reach (file-by-file booking, zero lane edits; owner role:
+      // agent-control-family). Alphabetical here, as the fs block states.
+      'tools/agent-control-family/src/agent-control-executor.mjs',
       // U6 PR2 + U7-9a: the FS family's FOUR executors (read/write/edit/
       // read_image bodies) each consume the ONE effect-grammar face
       // (`parseRequestedEffectSet`, domain/tool-governance) — the same thin
@@ -135,6 +141,19 @@ describe('the tool-governance lane audit', () => {
       'tools/fs-family/src/image-executor.mjs',
       'tools/fs-family/src/read-executor.mjs',
       'tools/fs-family/src/write-executor.mjs',
+      // U7-F (inspect-family lane) booked FILE-BY-FILE, SAME single thin
+      // face (`parseRequestedEffectSet`) as the fs-family executors above:
+      // the two governed executors validate their admitted effect set at
+      // the PA boundary; everything read-only, zero lane edits (booking
+      // note in scripts/audit-a5-tool-governance-imports.mjs). Alphabetical.
+      'tools/inspect-family/src/inspect-executor.mjs',
+      'tools/inspect-family/src/skill-executor.mjs',
+      // U7-F (the governed pwsh shell-class row): the executor consumes the
+      // same two thin governance faces as the fs executors — the effect
+      // grammar (`parseRequestedEffectSet`) and the parsed-record fingerprint
+      // (`canonicalJsonFingerprint`, the PR #390 effect-set law) — zero lane
+      // edits (the audit script entry carries the file:line provenance).
+      'tools/process-family/src/pwsh-executor.mjs',
       // u7-f: the UI family's TWO governed executors (ask/present bodies)
       // each consume the SAME ONE effect-grammar face
       // (`parseRequestedEffectSet`, domain/tool-governance) the fs executors

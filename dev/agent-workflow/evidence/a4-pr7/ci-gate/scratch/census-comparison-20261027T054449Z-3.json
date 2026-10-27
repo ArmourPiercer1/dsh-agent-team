@@ -1,0 +1,41 @@
+{
+  "head": "60810895d52a4b0c8c178ceec119f536bac22e0a",
+  "baseline": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+  "baselineIds": [],
+  "reports": [
+    {
+      "jsonPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-20261027T054449Z-3-1.json",
+      "files": 635,
+      "legs": 8127,
+      "ids": [
+        "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+      ]
+    }
+  ],
+  "comparison": {
+    "verdict": "fail",
+    "setIdentical": false,
+    "countsMoved": true,
+    "added": [
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newReds": [
+      "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions"
+    ],
+    "newCollections": [],
+    "escalations": [],
+    "resolved": [],
+    "totals": {
+      "files": 635,
+      "legs": 8127,
+      "declared": {
+        "files": 626,
+        "legs": 7936
+      },
+      "moved": true,
+      "capturesAgree": "single capture",
+      "captured": "635f/8127l",
+      "totalsNote": "captured 635f/8127l vs baseline-declared 626 / 7936"
+    }
+  }
+}

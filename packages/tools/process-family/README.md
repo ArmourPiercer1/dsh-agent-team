@@ -25,7 +25,13 @@ Authority forces are injected at the trusted assembly point
 (`packages/runtime/src/plugin/live/*` plane). Nothing under this directory may
 import the plane, the governance-center lane, or Host internals; the outward
 edges are repo lanes only (`contracts`, `sandbox-provider`, `controlled-fs`
-through the fs-family anchor face, the a5p5 registration face).
+through the fs-family anchor face, the a5p5 registration face, and — U7-F,
+the pwsh row's PA edge — the frozen effect-vocabulary and fingerprint face
+`../../../domain/tool-governance/src/index.js` (`parseRequestedEffectSet`,
+`canonicalJsonFingerprint` — registered consumer:
+`scripts/audit-a5-tool-governance-imports.mjs` + the pinned set in
+`packages/domain/test/a5p0-layer-audit.test.ts`), read-only, never an
+authority).
 
 ## ONE kernel, ONE ledger (ARC-B)
 

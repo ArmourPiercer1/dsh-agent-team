@@ -1,0 +1,25 @@
+=== R1 mutation controls (2026-10-27) — planted on the COMMITTED fix (989e10ff1), run, git-restored; each control names the test it trips ===
+
+--- M1 (F-1): delete the forwarded 'provider: spec.provider,' from the PRODUCTION spawnChild port
+provider-forward occurrences: 0
+     × AC-60 the bounded provider arrives EXACTLY (byte-equal) and the request is the closed six-field face shape 11ms
+      Tests  1 failed | 43 passed (44)
+restored clean: YES
+
+--- M2 (F-2): drop the domain-ref arm from the send_message/interrupt derivation
+grep: interrupt_agent:: No such file or directory
+grep: return: No such file or directory
+grep: [invoke]": No such file or directory
+mutation line planted: packages/tools/agent-control-family/src/agent-control-mechanics.mjs:0
+     × AC-42 mutation PA sets DO carry the single domain-ref(dsh-agent-runtime) arm — and fingerprint stably 26ms
+     × AC-51 every MUTATION row requests its EXACT declared set (spawn/fork/send/interrupt/workflow) 25ms
+      Tests  2 failed | 42 passed (44)
+restored clean: YES
+
+--- M3 (F-1 lifetime): drop the 'signal,' forwarding
+     × AC-60 the bounded provider arrives EXACTLY (byte-equal) and the request is the closed six-field face shape 18ms
+      Tests  1 failed | 43 passed (44)
+restored clean: YES
+
+=== restored tree re-run (GREEN expected) ===
+      Tests  44 passed (44)

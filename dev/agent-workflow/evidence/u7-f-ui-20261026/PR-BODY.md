@@ -161,7 +161,9 @@ NEW lane `packages/tools/ui-family/src/` (mechanics, port contract, two
 executors, two rows, contribution, barrel) + `README.md`; reviewed
 descriptor `packages/tools/families/ui.mjs`; family manifest entry +
 generated `packages/tools/families/index.mjs`; dist byte-mirrors +
-`scripts/dist-placements/070-ui-family.json`; census booking
+`scripts/dist-placements/090-ui-family.json` (renumbered 070→090 at the
+#406/#404 base-refresh — the placement order law is total and 070/080 were
+taken); census booking
 (`arc-a-family-census.json`, additive); p4t6 booking
 (`packages/testkit/test/p4t6-bookings/u7fui.json`); C1 suite
 `packages/runtime/test/u7-f-ui-c1.test.ts`; C2 world kind + suite +

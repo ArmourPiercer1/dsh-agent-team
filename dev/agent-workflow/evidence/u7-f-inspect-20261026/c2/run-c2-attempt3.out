@@ -1,0 +1,9 @@
+[u7f-c2] boot 1 starting (world u5u7finsp-20261027T00-30-18Z)
+[u7f-c2] case u7f:mounted: FAIL {"healthOk":true,"stateOk":true,"createOk":true,"createBody":"ok","aliases":"team_skill=false,team_cordis_inspect_list=false,team_cordis_inspect_query=false","placementFeed":"[dsh-agent-team] a5g7: placement-feed rows=[team_skill,team_cordis_inspect_list,team_cordis_inspect_query,team_grep,team_glob
+[u7f-c2] case u7f:skill-load: FAIL {"transcriptHasSkillContent":false,"ranWitness":["[dsh-agent-team] a7f-skill: governed-skill pa-refused code=TOOL_BINDING_UNVERIFIED"],"refusalWitness":[]}
+[u7f-c2] case u7f:inspect-list: FAIL {"transcriptHasProviders":false,"ranWitness":["[dsh-agent-team] a7f-ilist: governed-inspect-list pa-refused code=TOOL_BINDING_UNVERIFIED"]}
+[u7f-c2] case u7f:refusal-zero-effect: PASS {"transcriptHasRefusal":true,"queryRanLines":[]}
+[u7f-c2] case u7f:approval-leg: PASS {"resolveIssued":true,"resolveResults":36}
+[u7f-c2] case u7f:leak-check: PASS {"secretClaimInCorpus":false,"secretClaimInHostLog":false,"secretBytesUnchanged":true}
+[u7f-c2] verdicts written to c2-verdicts.json
+[u7f-c2] DONE pass=3 fail=3

@@ -71,6 +71,13 @@ const procContributionModule = async () =>
   (await import(new URL('../../tools/process-family/src/bash-contribution.mjs', import.meta.url).href)) as {
     buildProcessShellContribution(input: Record<string, unknown>): Record<string, unknown>
   }
+// U7-F: the process family is ONE candidate over BOTH shell rows (the
+// factory refuses a half-family fail-closed) — every unit contribution in
+// this file carries the pwsh row part alongside the bash one.
+const unitPwshPart = (name = 'pwsh') => ({
+  definition: { name, parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
+  cancelBoundary: 'unit',
+})
 
 async function mountValue(over: Record<string, unknown> = {}): Promise<KernelPlaneValue> {
   const built = (await planeModule()).createTeamToolPlaneAssembly({
@@ -155,6 +162,7 @@ describe('u6-pr3 A — the mount carries ONE kernel owning BOTH names', () => {
     center.registry.register((await procContributionModule()).buildProcessShellContribution({
       definition: { name: 'team_bash', parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
       cancelBoundary: 'unit',
+      pwsh: unitPwshPart(),
     }), { origin: 'reviewed-manifest' })
     expect(center.kernel.approvalFor(center.scopeKey, 'team_bash'), 'a re-registered family never resurrects approvals').toBeUndefined()
   })
@@ -181,6 +189,7 @@ async function decideMatrix(name: 'read' | 'bash'): Promise<string[]> {
     : (await procContributionModule()).buildProcessShellContribution({
         definition: { name, parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
         cancelBoundary: 'unit',
+        pwsh: unitPwshPart(),
       })
   const landed = registry.register(contribution, { origin: 'reviewed-manifest' })
   expect(landed.ok, `initial registration: ${JSON.stringify(landed)}`).toBe(true)
@@ -221,6 +230,7 @@ async function decideMatrix(name: 'read' | 'bash'): Promise<string[]> {
         definition: { name, parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
         launcherPin: 'unit-pin-b',
         cancelBoundary: 'unit',
+        pwsh: unitPwshPart(),
       })
   const reReg = registry.register(again, { origin: 'reviewed-manifest' })
   expect(reReg.ok, `re-registration: ${JSON.stringify(reReg)}`).toBe(true)
@@ -234,6 +244,10 @@ async function decideMatrix(name: 'read' | 'bash'): Promise<string[]> {
     ...(await procContributionModule()).buildProcessShellContribution({
       definition: { name: 'unit-dyn-probe', parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
       cancelBoundary: 'unit',
+      // A SECOND family in the same registry claims a distinct second-row
+      // spelling — the shared unit registry tracks name ownership, and the
+      // probe family must not re-claim the process family's `pwsh`.
+      pwsh: unitPwshPart('unit-dyn-probe-pwsh'),
     }),
     familyId: 'u6.pr3-dyn-probe',
   }
@@ -276,6 +290,7 @@ describe('u6-pr3 C — the consume edge is the SAME one-shot law for the shell g
     const registered = registry.register((await procContributionModule()).buildProcessShellContribution({
       definition: { name: 'bash', parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
       cancelBoundary: 'unit',
+      pwsh: unitPwshPart(),
     }), { origin: 'reviewed-manifest' })
     expect(registered.ok, JSON.stringify(registered)).toBe(true)
     let portCalls = 0
@@ -332,6 +347,7 @@ describe('u6-pr3 C — the consume edge is the SAME one-shot law for the shell g
     expect(registry.register((await procContributionModule()).buildProcessShellContribution({
       definition: { name: 'bash', parameters: { type: 'object' }, execute: async () => ({ text: '' }) },
       cancelBoundary: 'unit',
+      pwsh: unitPwshPart(),
     }), { origin: 'reviewed-manifest' }).ok).toBe(true)
     const seen: string[] = []
     const kernel = createGovernanceKernel({

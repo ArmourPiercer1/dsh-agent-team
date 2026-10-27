@@ -57,6 +57,16 @@ export {
   resolveAnchoredPath,
 } from './fs-mechanics.mjs'
 export { READ_ROW_PRESENTATION_FACE, readRowPresentResult } from './read-presentation.mjs'
+// U7-F review round 1 (finding H-1): the governed skill loader needs the
+// exec-time handle-identity law (`verifyOpenedHandle`) to read through an
+// fd-pinned, O_NOFOLLOW-opened handle instead of re-resolving a path string.
+// That primitive lives in the reviewed controlled-fs lane, which THIS barrel
+// already imports (fs-mechanics' `isBeneath`, read-executor's post-consume
+// closures). The inspect family books ONLY this public face in its
+// LANE_EDGES, so the law is re-exported here — a minimal additive surface,
+// the same primitive the fs read/write/edit/image rows already run, never a
+// second copy. Consumers reach it as `fs-family` → `verifyOpenedHandle`.
+export { verifyOpenedHandle } from '../../../runtime/controlled-fs/src/index.js'
 export { normalizeReadProjection } from './read-normalizer.js'
 export { createGovernedReadExecutor } from './read-executor.mjs'
 export { buildReadRowDefinition } from './read-row.mjs'
@@ -86,10 +96,3 @@ export { createGovernedReadImageExecutor } from './image-executor.mjs'
 export { createBoundedImageReadPort } from './image-read-port.mjs'
 export { buildImageRowDefinition, IMAGE_ROW_PRESENTATION_FACE } from './image-row.mjs'
 export { buildFsFamilyContribution } from './fs-family-contribution.mjs'
-// u7-f fix round 1 (PR #405 review, F-405-1): the ONE opened-handle identity
-// law, re-exported from its home (controlled-fs `open-at-exec`) so a sibling
-// family can bind an OPENED fd without reaching into another lane's
-// internals — the same public-face booking precedent as the anchor law above,
-// and the same edge `image-read-port.mjs` already imports from this module
-// (lane README: THE OUTWARD EDGES; eb3 LANE_EDGES unchanged).
-export { verifyOpenedHandle } from '../../../runtime/controlled-fs/src/index.js'

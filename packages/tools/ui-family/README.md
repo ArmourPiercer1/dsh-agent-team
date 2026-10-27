@@ -45,9 +45,10 @@ internals. The complete outward set, face by face:
   `verifyOpenedHandle`): the anchor law and the opened-handle identity law
   each have ONE home and this lane reads both through the reviewed face,
   never through a sibling's internals (`fs-mechanics.mjs` is NOT an edge
-  of this lane; `verifyOpenedHandle` is fs-family's additive re-export of
-  controlled-fs' `open-at-exec` law, added in the review F-405-1 fix —
-  no third copy).
+  of this lane; `verifyOpenedHandle` is fs-family's public re-export of
+  controlled-fs' `open-at-exec` law — landed once by the #404 review and
+  re-landed independently by the #405 fix round, deduplicated to the
+  single master copy at the base-refresh merge — no second copy).
 
 Everything else the lane imports is inward (`./`-relative, this lane).
 
@@ -94,7 +95,9 @@ Everything else the lane imports is inward (`./`-relative, this lane).
 - family manifest entry + `ui-interaction` kernel capability
   (`packages/tools/families/manifest.json`, `gen-family-index.mjs`);
 - census booking (`dev/agent-workflow/ledgers/arc-a-family-census.json`);
-- dist placements (`scripts/dist-placements/070-ui-family.json`);
+- dist placements (`scripts/dist-placements/090-ui-family.json`; renumbered
+  070→090 at the #406/#404 base-refresh — the loader's order law is total
+  and 070/080 were already taken);
 - p4t6 booking (`packages/testkit/test/p4t6-bookings/u7fui.json`).
 
 ## Proof

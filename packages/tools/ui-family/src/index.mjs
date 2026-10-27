@@ -34,9 +34,10 @@
  * effect. Authority forces are injected at the trusted assembly point.
  *
  * DIST MIRROR: every file here is a plain .mjs tracked as a BYTE COPY under
- * `packages/runtime/dist/packages/tools/ui-family/src/` (the 070-ui-family
- * placement); the relative import depths resolve identically from `src` and
- * from the dist mirror.
+ * `packages/runtime/dist/packages/tools/ui-family/src/` (the 090-ui-family
+ * placement; 070/080 were taken by the agent-control/inspect lanes at the
+ * base-refresh merge); the relative import depths resolve identically from
+ * `src` and from the dist mirror.
  *
  * @module ui-family
  */
