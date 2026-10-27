@@ -53,10 +53,10 @@ function plantedKinds(label) {
 
 // ── world kinds ─────────────────────────────────────────────────────────────
 
-test('world kinds: the seven hand-wired kinds of 88107ad71, in prefix order, deterministic', async () => {
+test('world kinds: the NINE lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7Pwsh), in prefix order, deterministic', async () => {
   const a = await loadWorldKinds()
   const b = await loadWorldKinds()
-  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7FWeb'])
+  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7AgentControl', 'u7FWeb', 'u7Pwsh'])
   assert.deepEqual(a.map((k) => k.file), b.map((k) => k.file))
   assert.deepEqual(a.map((k) => k.file), [...a.map((k) => k.file)].sort())
   assert.deepEqual(WORLD_KIND_OPTIONS, a.map((k) => k.option))
@@ -69,8 +69,11 @@ test('world kinds RED-first: a REMOVED kind module turns its option into a typed
     // positive: a registered kind creates fine
     const ok = await factory.createWorld({ line: 'regok', u7FsMut: { rows: [] } })
     assert.equal(ok.activeKind?.option, 'u7FsMut')
+    // U7-F: 'u7Pwsh' is now a SHIPPED kind (080-u7-pwsh.mjs) — positive too.
+    const okPwsh = await factory.createWorld({ line: 'regpwsh', u7Pwsh: { rows: [] } })
+    assert.equal(okPwsh.activeKind?.option, 'u7Pwsh')
     // the removed kind (simulated: an option no module declares) refuses by name
-    await assert.rejects(() => factory.createWorld({ line: 'reggone', u7Pwsh: { rows: [] } }), /unknown world option\(s\): u7Pwsh/)
+    await assert.rejects(() => factory.createWorld({ line: 'reggone', u7Ghost: { rows: [] } }), /unknown world option\(s\): u7Ghost/)
     // and the loader, with the module actually deleted, no longer declares it
     const { parent, dir } = plantedKinds('kind-removed-dir')
     try {
@@ -158,9 +161,9 @@ test('world kinds RED-first: malformed / clashing modules refuse at load time', 
 test('a new World kind is ONE file: dropping it in registers the option, nothing else is edited', async () => {
   const { parent, dir } = plantedKinds('kind-new')
   try {
-    writeFileSync(join(dir, '080-u7-pwsh.mjs'), [
+    writeFileSync(join(dir, '090-u7-plantnew.mjs'), [
       'export default {',
-      "  option: 'u7Pwsh', probe: null,",
+      "  option: 'u7PlantNew', probe: null,",
       "  paths: { u7pwshLedgerPath: ['home', 'u7pwsh-ledger.jsonl'] }, ledgerRows: { u7pwshLedgerRows: 'u7pwshLedgerPath' },",
       "  envKeys: ['U7PWSH_LEDGER'], env: ({ world }) => ({ U7PWSH_LEDGER: world.u7pwshLedgerPath }),",
       "  patchHeader: ['U7 pwsh World (u7-w0 registry control).'],",
@@ -168,9 +171,8 @@ test('a new World kind is ONE file: dropping it in registers the option, nothing
       '',
     ].join('\n'))
     const kinds = await loadWorldKinds(dir)
-    assert.equal(kinds.at(-1)?.option, 'u7Pwsh')
-    // u7-f's `u7FWeb` kind (080-u7-f-web) joins the base set: 8 real + 1 planted.
-    assert.equal(kinds.length, 9)
+    assert.equal(kinds.at(-1)?.option, 'u7PlantNew')
+    assert.equal(kinds.length, 11) // 10 shipped (u7AgentControl + u7FWeb + u7Pwsh joined at U7-F) + the planted one
   } finally {
     rmSync(parent, { recursive: true, force: true })
   }
@@ -210,17 +212,17 @@ test('suites RED-first (review R1 F-1): a stray entry — other extension, subdi
   }
 })
 
-test('suites: the six hand-wired lane suites of 88107ad71, prefix order, budgets as the old ternary', async () => {
+test('suites: the NINE lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-web), prefix order, budgets as the old ternary', async () => {
   const a = await loadSuites()
   const b = await loadSuites()
-  // u7-f joins with `u7-f-web` (budget 90): the collected set is now SEVEN.
+  // u7-f joins with `u7-f-web` (budget 90): the collected set is now NINE.
   assert.deepEqual(a.map((s) => [s.suite, s.totalRequests]), [
-    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90],
+    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60],
   ])
   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-f-web', 'u7-fs-mut'])
+  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-f-web', 'u7-fs-mut', 'u7-pwsh'])
 })
 
 test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {
@@ -231,8 +233,10 @@ test('suites RED-first: a REMOVED suite module makes the loader drop it (and --s
     assert.equal(suites.some((s) => s.suite === 'u7-fs-mut'), false)
     // the runner's own refusal law over the collected map (shipped dir has it; a name nobody declares refuses)
     const { parseArgs } = await import('./u5-canary-runner.mjs')
-    assert.throws(() => parseArgs(['--suite', 'u7-pwsh', '--evidence', '/tmp/ev']), /unknown suite: u7-pwsh/)
-    assert.equal(parseArgs(['--suite', 'u7-fs-mut', '--evidence', '/tmp/ev']).suite, 'u7-fs-mut')
+    // U7-F: 'u7-pwsh' is now a SHIPPED suite (070-u7-pwsh.mjs) — the
+    // never-declared probe name moved to 'u7-ghost'.
+    assert.throws(() => parseArgs(['--suite', 'u7-ghost', '--evidence', '/tmp/ev']), /unknown suite: u7-ghost/)
+    assert.equal(parseArgs(['--suite', 'u7-pwsh', '--evidence', '/tmp/ev']).suite, 'u7-pwsh')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

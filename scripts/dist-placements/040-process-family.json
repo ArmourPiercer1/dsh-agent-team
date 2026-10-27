@@ -24,6 +24,23 @@
     {
       "src": "packages/tools/process-family/src/bash-contribution.mjs",
       "dist": "packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/pwsh-mechanics.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/pwsh-mechanics.mjs",
+      "note": "U7-F: the governed pwsh shell-class row's four lane files ride the\nSAME byte-copy law as the bash set above (the descriptor, the barrel\nand the contribution import them by relative edge; the mirror keeps\nthose edges resolving identically)."
+    },
+    {
+      "src": "packages/tools/process-family/src/pwsh-confined.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/pwsh-confined.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/pwsh-executor.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/pwsh-executor.mjs"
+    },
+    {
+      "src": "packages/tools/process-family/src/pwsh-row.mjs",
+      "dist": "packages/runtime/dist/packages/tools/process-family/src/pwsh-row.mjs"
     }
   ]
 }

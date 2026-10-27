@@ -1,0 +1,530 @@
+{
+  "oracle": {
+    "denyBytes": null,
+    "apprBytes": null
+  },
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "strict": true,
+    "asker": true,
+    "leader": true
+  },
+  "appr": {
+    "pendingSeen": true,
+    "requestId": "ctrl-1e179nr14zyn780hodyst1qh",
+    "kind": "leader-approval",
+    "attribution": "exact-instance",
+    "resolveBody": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-approve-san2f4ljoh\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1e179nr14zyn780hodyst1qh\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\"},\"scope\":{\"rootSessionId\":\"session-u",
+    "resolvedOk": true,
+    "resolved": [
+      {
+        "requestId": "ctrl-1e179nr14zyn780hodyst1qh",
+        "attribution": "exact-instance",
+        "ok": true,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-approve-san2f4ljoh\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1e179nr14zyn780hodyst1qh\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\"},\"scope\":{\"rootSessionId\":\"session-u"
+      },
+      {
+        "requestId": "ctrl-1bvi3731xmyad40lo0aqh1g8",
+        "attribution": "exact-instance",
+        "ok": true,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-approve-5icjbp8j7j\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1bvi3731xmyad40lo0aqh1g8\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\"},\"scope\":{\"rootSessionId\":\"session-u"
+      }
+    ],
+    "waitedMs": 59,
+    "channelError": null
+  },
+  "replay": {
+    "attempted": true,
+    "refused": true,
+    "requestId": "ctrl-1e179nr14zyn780hodyst1qh",
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-replay-tyga0govoe\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-1e179nr14zyn780hodyst1qh' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":null,\"reason\":\"domain-err"
+  },
+  "pwshCalls": [
+    {
+      "seq": 13,
+      "lane": "strict",
+      "head": "[{\"type\":\"text\",\"text\":\"Error: permission denied: exec fingerprint sha256:6387eae8eb39e28bc1846fa20ea91eff11b910ce463182e2ceb3fedf80a8ab81 answered deny from the fallback\"}]"
+    },
+    {
+      "seq": 43,
+      "lane": "asker",
+      "head": "[{\"type\":\"text\",\"text\":\"refused-denied pwsh-executable-not-found — no pwsh executable exists at /usr/bin/pwsh, /usr/local/bin/pwsh, /opt/microsoft/powershell/7/pwsh — refused before probe and before spawn (the row never fabricates an unavai"
+    }
+  ],
+  "controlRequests": [
+    {
+      "requestId": "ctrl-1e179nr14zyn780hodyst1qh",
+      "kind": "leader-approval",
+      "toolName": "pwsh",
+      "summary": "pwsh [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/tests/deepseek-harness-test-use] Set-Content -Path '/srv/workspace/dsh-plugins/dsh-agen",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-1bvi3731xmyad40lo0aqh1g8",
+      "kind": "leader-approval",
+      "toolName": "pwsh",
+      "summary": "PA ask case=tadm:session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z:inst-068u73m0l26x:sha256:cd4085fd2cbbce837a3f2e8452ffc9281c0e266cbea147b202fda8467341bfcc:g",
+      "status": "settled"
+    }
+  ],
+  "consumptionCount": 2,
+  "logHits": {
+    "pwLines": [
+      "[dsh-agent-team] u7f-pwsh: confined-pwsh executable NOT-FOUND realm=u7pwsh-realm-u5u7fpwsh-r3-20261027t00-31-30z tried=/usr/bin/pwsh,/usr/local/bin/pwsh,/opt/microsoft/powershell/7/pwsh"
+    ],
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r3-20261027t00-31-30z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r3-20261027t00-31-30z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r3-20261027t00-31-30z"
+    ]
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "lane": "other",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_DISC_u5u7fpwsh-r3-20261027t00-31-30z\"}"
+    },
+    {
+      "seq": 2,
+      "lane": "other",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"U7PWSH_DISC_u5u7fpwsh-r3-20261027t00"
+    },
+    {
+      "seq": 3,
+      "lane": "leader",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:c773ee9cd553fbe487cae42aae7c2c70e3e4bc6fe80fdb7b628882a8ed2396f6] "
+    },
+    {
+      "seq": 4,
+      "lane": "leader",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-cr"
+    },
+    {
+      "seq": 5,
+      "lane": "leader",
+      "nCalls": 1,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1y0snor0acr8\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-d119fd853f841eea7136505e4c8c866c\",\"operationId\":\"op-1o1a7eo03fforb0we3xzq01d\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c1-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "lane": "leader",
+      "nCalls": 2,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-068u73m0l26x\",\"templateId\":\"asker\",\"childSessionId\":\"session-team-child-8230e1d58758f8525dd7ed9e7af2c305\",\"operationId\":\"op-18v7wou1abl6tt0gbfqls121\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c2-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "lane": "strict",
+      "nCalls": 3,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1y0snor0acr8\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 8,
+      "lane": "strict",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z] U7PWSH_DENY_u5u7fpwsh-r3-20261027t00-31-30z\"}"
+    },
+    {
+      "seq": 9,
+      "lane": "strict",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d1-u5"
+    },
+    {
+      "seq": 10,
+      "lane": "strict",
+      "nCalls": 4,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-1-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 11,
+      "lane": "strict",
+      "nCalls": 5,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-2-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 12,
+      "lane": "strict",
+      "nCalls": 6,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-3-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 13,
+      "lane": "strict",
+      "nCalls": 1,
+      "lastCall": "pwsh",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: permission denied: exec fingerprint sha256:6387eae8eb39e28bc1846fa20ea91eff11b910ce463182e2ceb3fedf80a8ab81 answered deny from the fallback"
+        }
+      ]
+    },
+    {
+      "seq": 14,
+      "lane": "strict",
+      "nCalls": 7,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-4-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 15,
+      "lane": "strict",
+      "nCalls": 8,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-5-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "lane": "strict",
+      "nCalls": 9,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-6-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "lane": "strict",
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-7-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "lane": "strict",
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-8-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 19,
+      "lane": "strict",
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z]\\n\\nAn asynchronous Team work unit has settled.\\ninst"
+    },
+    {
+      "seq": 20,
+      "lane": "strict",
+      "nCalls": 12,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1y0snor0acr8\",\"admittedSequence\":4,\"settledSequence\":7,\"memberResult\":{\"body\":\"U7PWSH_DENY_DONE\",\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-2-1\"}"
+        }
+      ]
+    },
+    {
+      "seq": 21,
+      "lane": "strict",
+      "nCalls": 13,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-068u73m0l26x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":8,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 22,
+      "lane": "asker",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z] U7PWSH_APPR_u5u7fpwsh-r3-20261027t00-31-30z\"}"
+    },
+    {
+      "seq": 23,
+      "lane": "asker",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d2-u5"
+    },
+    {
+      "seq": 24,
+      "lane": "strict",
+      "nCalls": 14,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-1-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 25,
+      "lane": "strict",
+      "nCalls": 15,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-2-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 26,
+      "lane": "strict",
+      "nCalls": 16,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-3-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 27,
+      "lane": "strict",
+      "nCalls": 17,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-4-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 28,
+      "lane": "strict",
+      "nCalls": 18,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-5-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 29,
+      "lane": "strict",
+      "nCalls": 19,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-6-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 30,
+      "lane": "strict",
+      "nCalls": 20,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-7-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 31,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r3-20261027t00-31-30z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z\",\"status\":\"running\",\"instanceId\":\"inst-068u73m0l26x\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-8-u5u7fpwsh-r3-20261027t00-31-30z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 32,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-1e179nr14zyn780hodyst1qh]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: c"
+    },
+    {
+      "seq": 33,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 34,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-1bvi3731xmyad40lo0aqh1g8]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: c"
+    },
+    {
+      "seq": 35,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 36,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 37,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 38,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 39,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 40,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 41,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 42,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 43,
+      "lane": "asker",
+      "nCalls": 1,
+      "lastCall": "pwsh",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "refused-denied pwsh-executable-not-found — no pwsh executable exists at /usr/bin/pwsh, /usr/local/bin/pwsh, /opt/microsoft/powershell/7/pwsh — refused before probe and before spawn (the row never fabricates an unavailable shell)"
+        }
+      ]
+    },
+    {
+      "seq": 44,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7pwsh-d2-u5u7fpwsh-r3-20261027t00-31-30z]\\n\\nAn asynchronous Team work unit has settled.\\ninst"
+    }
+  ]
+}

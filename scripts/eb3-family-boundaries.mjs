@@ -74,6 +74,12 @@ export const LANE_EDGES = Object.freeze({
     'packages/runtime/sandbox-provider/*',
     // the SIBLING FAMILY public face the process README books (anchor law home)
     'packages/tools/fs-family/src/index.mjs',
+    // U7-F: the pwsh row's PA edge reads the frozen effect-vocabulary and
+    // fingerprint face (parseRequestedEffectSet, canonicalJsonFingerprint) —
+    // the SAME face the fs README books; the process README now says so,
+    // and the consumer is booked file-by-file in
+    // scripts/audit-a5-tool-governance-imports.mjs + a5p0-layer-audit.
+    'packages/domain/tool-governance/src/*',
   ]),
   'dsh.search-family': Object.freeze([
     'node:*',
@@ -102,6 +108,16 @@ export const LANE_EDGES = Object.freeze({
     'packages/contracts/src/*',
     'packages/domain/tool-governance/src/*',
   ]),
+  // U7-F (agent-control family), transcribed from
+  // packages/tools/agent-control-family/README.md: canonical JSON + the ONE
+  // thin effect-grammar face, NOTHING else — no plane, no center, no
+  // tool-dispatch, no sibling family (the runtime reaches the rows only
+  // through the port face THIS lane declares, never the reverse).
+  'dsh.agent-control-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -116,6 +132,7 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/search-family': 'dsh.search-family',
   'packages/tools/web-family': 'dsh.web-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/agent-control-family': 'dsh.agent-control-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are

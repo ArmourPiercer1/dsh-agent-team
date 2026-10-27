@@ -1,0 +1,518 @@
+{
+  "oracle": {
+    "denyBytes": null,
+    "apprBytes": null
+  },
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "laneDone": {
+    "strict": true,
+    "asker": false,
+    "leader": true
+  },
+  "appr": {
+    "pendingSeen": true,
+    "requestId": "ctrl-1cvcaz61l35wsx0u2tgvg0ck",
+    "kind": "leader-approval",
+    "attribution": "exact-instance",
+    "resolveBody": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-approve-stk7rqbmxt\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1cvcaz61l35wsx0u2tgvg0ck\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\"},\"scope\":{\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1ycqz5i01roo\"},\"targetInstanceId\":\"inst-1ycqz5i01roo\",\"actionName\":\"parameter-permission\",\"correlation\":\"cal",
+    "resolvedOk": true,
+    "waitedMs": 51,
+    "channelError": null
+  },
+  "replay": {
+    "attempted": true,
+    "refused": true,
+    "requestId": "ctrl-1cvcaz61l35wsx0u2tgvg0ck",
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"u7pwsh-replay-fe9xdbio4s\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-1cvcaz61l35wsx0u2tgvg0ck' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":null,\"reason\":\"domain-err"
+  },
+  "controlRequests": [
+    {
+      "requestId": "ctrl-1cvcaz61l35wsx0u2tgvg0ck",
+      "kind": "leader-approval",
+      "toolName": "pwsh",
+      "summary": "pwsh [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-pwsh/tests/deepseek-harness-test-use] Set-Content -Path '/srv/workspace/dsh-plugins/dsh-agen",
+      "status": "settled"
+    },
+    {
+      "requestId": "ctrl-0yku0j41m1dox70esloau0aq",
+      "kind": "leader-approval",
+      "toolName": "pwsh",
+      "summary": "PA ask case=tadm:session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z:inst-1ycqz5i01roo:sha256:cd4085fd2cbbce837a3f2e8452ffc9281c0e266cbea147b202fda8467341bfcc:g",
+      "status": "pending"
+    }
+  ],
+  "consumptionCount": 1,
+  "logHits": {
+    "pwLines": [],
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7pwsh-realm-u5u7fpwsh-r2-20261027t00-25-24z"
+    ]
+  },
+  "mockLaneTranscript": [
+    {
+      "seq": 1,
+      "lane": "other",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_DISC_u5u7fpwsh-r2-20261027t00-25-24z\"}"
+    },
+    {
+      "seq": 2,
+      "lane": "other",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"U7PWSH_DISC_u5u7fpwsh-r2-20261027t00"
+    },
+    {
+      "seq": 3,
+      "lane": "leader",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:495d0439c48aa9c88b4c5622b4ff2f0f20c850cb7f5168a023054b61571a9a24] "
+    },
+    {
+      "seq": 4,
+      "lane": "leader",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-cr"
+    },
+    {
+      "seq": 5,
+      "lane": "leader",
+      "nCalls": 1,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0ektkj306fkb\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-d76507240678a81767458104fbb64619\",\"operationId\":\"op-1776w5g0v8q4zn0008g9m0l6\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c1-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 6,
+      "lane": "leader",
+      "nCalls": 2,
+      "lastCall": "team_create_member",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ycqz5i01roo\",\"templateId\":\"asker\",\"childSessionId\":\"session-team-child-019250017ecfaafb069207a1f0eb67f8\",\"operationId\":\"op-070fuhw17pscgn0qn289a1c6\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7pwsh-c2-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 7,
+      "lane": "strict",
+      "nCalls": 3,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0ektkj306fkb\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 8,
+      "lane": "strict",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z] U7PWSH_DENY_u5u7fpwsh-r2-20261027t00-25-24z\"}"
+    },
+    {
+      "seq": 9,
+      "lane": "strict",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d1-u5"
+    },
+    {
+      "seq": 10,
+      "lane": "strict",
+      "nCalls": 4,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-1-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 11,
+      "lane": "strict",
+      "nCalls": 5,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-2-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 12,
+      "lane": "strict",
+      "nCalls": 6,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-3-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 13,
+      "lane": "strict",
+      "nCalls": 1,
+      "lastCall": "pwsh",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "Error: permission denied: exec fingerprint sha256:5ed4cd62ff1f8f5e1a4f4573498cf38d6d84942ea1729786993febfe671e4f28 answered deny from the fallback"
+        }
+      ]
+    },
+    {
+      "seq": 14,
+      "lane": "strict",
+      "nCalls": 7,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-4-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 15,
+      "lane": "strict",
+      "nCalls": 8,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-5-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 16,
+      "lane": "strict",
+      "nCalls": 9,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-6-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 17,
+      "lane": "strict",
+      "nCalls": 10,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-7-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 18,
+      "lane": "strict",
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd1-8-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 19,
+      "lane": "strict",
+      "nCalls": 11,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z]\\n\\nAn asynchronous Team work unit has settled.\\ninst"
+    },
+    {
+      "seq": 20,
+      "lane": "strict",
+      "nCalls": 12,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0ektkj306fkb\",\"admittedSequence\":4,\"settledSequence\":7,\"memberResult\":{\"body\":\"U7PWSH_DENY_DONE\",\"requestToken\":\"u7pwsh-d1-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-2-1\"}"
+        }
+      ]
+    },
+    {
+      "seq": 21,
+      "lane": "strict",
+      "nCalls": 13,
+      "lastCall": "team_delegate",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ycqz5i01roo\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":8,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 22,
+      "lane": "asker",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z] U7PWSH_APPR_u5u7fpwsh-r2-20261027t00-25-24z\"}"
+    },
+    {
+      "seq": 23,
+      "lane": "asker",
+      "nCalls": 0,
+      "lastCall": null,
+      "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=u7pwsh-d2-u5"
+    },
+    {
+      "seq": 24,
+      "lane": "strict",
+      "nCalls": 14,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-1-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 25,
+      "lane": "strict",
+      "nCalls": 15,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-2-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 26,
+      "lane": "strict",
+      "nCalls": 16,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-3-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 27,
+      "lane": "strict",
+      "nCalls": 17,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-4-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 28,
+      "lane": "strict",
+      "nCalls": 18,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-5-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 29,
+      "lane": "strict",
+      "nCalls": 19,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-6-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 30,
+      "lane": "strict",
+      "nCalls": 20,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-7-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 31,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": [
+        {
+          "type": "text",
+          "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7pwsh-team-u5u7fpwsh-r2-20261027t00-25-24z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7pwsh-d2-u5u7fpwsh-r2-20261027t00-25-24z\",\"status\":\"running\",\"instanceId\":\"inst-1ycqz5i01roo\",\"admittedSequence\":8,\"resumePossible\":true}]},\"requestToken\":\"u7pwsh-fd2-8-u5u7fpwsh-r2-20261027t00-25-24z\"}"
+        }
+      ]
+    },
+    {
+      "seq": 32,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-1cvcaz61l35wsx0u2tgvg0ck]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: c"
+    },
+    {
+      "seq": 33,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 34,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-0yku0j41m1dox70esloau0aq]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: c"
+    },
+    {
+      "seq": 35,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 36,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 37,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 38,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 39,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 40,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 41,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 42,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 43,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 44,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 45,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 46,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    },
+    {
+      "seq": 47,
+      "lane": "strict",
+      "nCalls": 21,
+      "lastCall": "team_collect",
+      "resultHead": "{\"type\":\"text\",\"text\":\"U7PWSH_PHASE_a\"}"
+    }
+  ]
+}

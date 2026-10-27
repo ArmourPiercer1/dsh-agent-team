@@ -1,0 +1,7 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=rZ9UEEhSX__UAHAVjT4NG4HINPJZugA2RdDnIZWAxIA
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa4-20261027t00-20-18z
+[dsh-agent-team] a5ptc: census-boot root=session-u7fa-team-u5u7fa4-20261027t00-20-18z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa4-20261027t00-20-18z
+[dsh-agent-team] u7f-agent-control: agent-runtime host-port: leg listAgents: no recognized shape among [agentTeams] — leg stays unwired

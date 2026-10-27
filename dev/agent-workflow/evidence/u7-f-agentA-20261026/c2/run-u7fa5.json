@@ -1,0 +1,216 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u7-agent-control-u7fa5-2026-10-27T00-22-36-203Z",
+  "suite": "u7-agent-control",
+  "startedAt": "2026-10-27T00:22:36.524Z",
+  "selectedCases": [
+    "ac:mounted",
+    "ac:enumerate-governed",
+    "ac:spawn-failclosed",
+    "ac:interrupt-foreign-zero",
+    "ac:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "0ea0848acd22b5c2a78f1219781c844b89164531",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5u7fa5-20261027T00-22-36Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "ac:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T00:23:24.664Z",
+      "healthOk": true,
+      "stateOk": true,
+      "hostAlive": true,
+      "placementFeed": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa5-20261027t00-22-36z",
+      "planeRefusals": [],
+      "placementHas7": "subagent=true,subagent_fork=true,send_message=true,interrupt_agent=true,list_agents=true,list_subagent_models=true,workflow=true",
+      "pilotCarriedFamilyRow": true,
+      "bootRootSurface": "edit,glob,grep,read,read_image,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,u5_canary,write"
+    },
+    {
+      "id": "ac:enumerate-governed",
+      "verdict": "REFUSED",
+      "at": "2026-10-27T00:23:24.665Z",
+      "witness": "governed Control ask on the GOVERNED session (team.getLedgerPage) settled ONCE via team.resolveControl v4; port answer verbatim below",
+      "listAgentsRows": [
+        {
+          "requestId": "ctrl-1eoib0h1jnfsym0xbah8r0oe",
+          "toolName": "list_agents",
+          "summary": "PA ask case=tadm:session-u7fa-team-u5u7fa5-20261027t00-22-36z:inst-1ckbckx0d6vt:sha256:e784e17381698d1cf5753a2b2314dcfaa",
+          "status": "settled"
+        }
+      ],
+      "settledByRunner": true,
+      "toolResultHead": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
+      "pilotLaneDone": true,
+      "note": "the governed walk completed but the port answered typed — recorded VERBATIM as REFUSED, never flipped to PASS"
+    },
+    {
+      "id": "ac:spawn-failclosed",
+      "verdict": "REFUSED",
+      "at": "2026-10-27T00:23:24.665Z",
+      "witness": "fence before the PA edge: zero Control rows for the spawn, zero spawn",
+      "toolResultHead": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)",
+      "controlRowsForSubagent": 0
+    },
+    {
+      "id": "ac:interrupt-foreign-zero",
+      "verdict": "PASS",
+      "at": "2026-10-27T00:23:24.665Z",
+      "witness": "typed structural refusal; ZERO Control rows opened for the interrupt (fence BEFORE PA); ZERO RAN witnesses",
+      "toolResultHead": "Error: refused-agent-control agent-control-scope-foreign — target is outside this mount's scope (target names scope 'u7fa-foreign-scope-u5u7f', not this mount's own scope) — zero reach, nothing was probed",
+      "controlRowsForInterrupt": 0,
+      "ranWitnesses": 0
+    },
+    {
+      "id": "ac:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T00:23:24.922Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-27T00:23:25.027Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/budget-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T00:22:57.087Z",
+        "runId": "u5-u7-agent-control-u7fa5-2026-10-27T00-22-36-203Z",
+        "suite": "u7-agent-control",
+        "world": "u5u7fa5-20261027T00-22-36Z",
+        "phase": "u7fa-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "u7fa-boot1",
+      "world": "u5u7fa5-20261027T00-22-36Z",
+      "port": 3184,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-agentA/dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/logs/u5u7fa5-20261027T00-22-36Z/instance-port3184.log"
+    }
+  ],
+  "u7faLanes": {
+    "pilot": true,
+    "leader": true
+  },
+  "u7faDigest": {
+    "teamSessionId": "session-u7fa-team-u5u7fa5-20261027t00-22-36z",
+    "surface": [
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "write"
+    ],
+    "pilotExchangeHeads": [
+      {
+        "name": "list_agents",
+        "head": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')"
+      },
+      {
+        "name": "interrupt_agent",
+        "head": "Error: refused-agent-control agent-control-scope-foreign — target is outside this mount's scope (target names scope 'u7fa-foreign-scope-u5u7f', not this mount's own scope) — zero reach, nothing was probed"
+      },
+      {
+        "name": "subagent",
+        "head": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)"
+      }
+    ],
+    "controlRows": [
+      {
+        "requestId": "ctrl-1eoib0h1jnfsym0xbah8r0oe",
+        "toolName": "list_agents",
+        "summary": "PA ask case=tadm:session-u7fa-team-u5u7fa5-20261027t00-22-36z:inst-1ckbckx0d6vt:sha256:e784e17381698d1cf5753a2b2314dcfaa",
+        "status": "settled"
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-1eoib0h1jnfsym0xbah8r0oe",
+        "toolName": "list_agents",
+        "status": 200,
+        "ok": true
+      }
+    ],
+    "approverErrors": [],
+    "logHits": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa5-20261027t00-22-36z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa5-20261027t00-22-36z"
+    ]
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "REFUSED",
+  "finishedAt": "2026-10-27T00:23:25.027Z"
+}

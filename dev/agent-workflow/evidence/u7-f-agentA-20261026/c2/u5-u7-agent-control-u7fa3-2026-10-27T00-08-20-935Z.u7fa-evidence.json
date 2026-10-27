@@ -1,0 +1,40 @@
+{
+  "teamSessionId": "session-u7fa-team-u5u7fa3-20261027t00-08-21z",
+  "surface": [
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "pilotExchangeHeads": [
+    {
+      "name": "list_agents",
+      "head": "Error: refused-agent-control template-default-deny — the template policy defaults to DENY and the closed rule grammar names no agent-control tool — an effect the policy never names is not an effect the policy allows"
+    }
+  ],
+  "controlRows": [],
+  "resolutions": [],
+  "approverErrors": [],
+  "logHits": [
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa3-20261027t00-08-21z",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa3-20261027t00-08-21z"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+ "schema": "dist-placements/1",
+ "family": "agent-control-family",
+ "summary": "U7-F: the AGENT-CONTROL family lane (seven governed rows: subagent, subagent_fork, send_message, interrupt_agent, list_agents, list_subagent_models, workflow) + its FamilyAssembly descriptor, mirrored under the runtime dist root for the production glue mount.",
+ "placements": [
+  {
+   "src": "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+   "note": "U7-F (agent-control family): every lane .mjs byte-mirrors under the runtime dist mirror (tsc never emits .mjs); relative edges (../../../domain/tool-governance/src/index.js, ../../../contracts/src/index.js, sibling ./\u2026) resolve identically from src and mirror because the mirror sits at dist/packages/\u2026 ."
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-executor.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-mechanics.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/agent-runtime-port.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/fork-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/fork-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/index.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/index.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/interrupt-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/interrupt-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/list-agents-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/list-agents-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/list-models-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/list-models-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/spawn-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/spawn-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/steer-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/steer-row.mjs"
+  },
+  {
+   "src": "packages/tools/agent-control-family/src/workflow-row.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/workflow-row.mjs"
+  },
+  {
+   "src": "packages/tools/families/agent-control.mjs",
+   "dist": "packages/runtime/dist/packages/tools/families/agent-control.mjs",
+   "note": "U7-F: the reviewed descriptor of the AGENT-CONTROL family. The seam re-hashes every reviewed module against manifest.json at mount, so the descriptor and the regenerated index/manifest must sit in the mirror at the same relative layout (the u7-w0b 060 list carries the directory law; this entry extends it for the fourth family)."
+  }
+ ]
+}

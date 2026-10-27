@@ -1,6 +1,6 @@
 {
   "schema": "u6-arc-a-family-census/1",
-  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only \u21d4 tests/**).",
+  "note": "ARC-A fitness law L3 (first booking): EVERY family contribution on the tree, product or test-only. A new family lane without a census booking fails the fitness gate (census-missing); a vanished booked contribution fails too (census-stale). mount must match where the contribution lives (test-only ⇔ tests/**).",
   "families": [
     {
       "familyId": "dsh.fs-family",
@@ -22,19 +22,20 @@
       "familyId": "dsh.process-family",
       "lane": "packages/tools/process-family",
       "mount": "product",
-      "reviewedBy": "PR #377 (U6 PR3)",
+      "reviewedBy": "PR #377 (U6 PR3); U7-F (the governed pwsh row joins the ONE candidate)",
       "contributionPaths": [
         "packages/tools/process-family/src/bash-contribution.mjs"
       ],
       "nativeNames": [
-        "(bound-definition) bash"
+        "(bound-definition) bash",
+        "(bound-definition) pwsh"
       ]
     },
     {
       "familyId": "dsh.search-family",
       "lane": "packages/tools/search-family",
       "mount": "product",
-      "reviewedBy": "U6 PR5 (this slice \u2014 the search move)",
+      "reviewedBy": "U6 PR5 (this slice — the search move)",
       "contributionPaths": [
         "packages/tools/search-family/src/search-contribution.mjs"
       ],
@@ -66,6 +67,24 @@
       "nativeNames": [
         "web_fetch",
         "web_search"
+      ]
+    },
+    {
+      "familyId": "dsh.agent-control-family",
+      "lane": "packages/tools/agent-control-family",
+      "mount": "product",
+      "reviewedBy": "U7-F (task/u7-f-agentcontrol-a-20261026): ONE candidate, seven governed agent-control rows over the FamilyAssembly seam",
+      "contributionPaths": [
+        "packages/tools/agent-control-family/src/agent-control-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) subagent",
+        "(bound-definition) subagent_fork",
+        "(bound-definition) send_message",
+        "(bound-definition) interrupt_agent",
+        "(bound-definition) list_agents",
+        "(bound-definition) list_subagent_models",
+        "(bound-definition) workflow"
       ]
     }
   ]
