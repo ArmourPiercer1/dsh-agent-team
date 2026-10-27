@@ -73,12 +73,12 @@ const makeFakeRuntime = (opts: { workflowSteps?: Array<Record<string, unknown>> 
   return {
     calls,
     callsFor: (leg) => calls.filter((c) => c.leg === leg),
-    listAgents: async (c) => { rec('listAgents', c); return { ok: true, agents: [{ id: 'member-alpha', status: 'running' }, { id: 'member-beta', status: 'inactive' }] } },
-    listModels: async (c) => { rec('listModels', c); return { ok: true, models: [{ provider: 'prov-a', model: 'model-1' }] } },
-    spawnChild: async (c) => { rec('spawnChild', c); return { ok: true, childId: 'child-1' } },
-    forkChild: async (c) => { rec('forkChild', c); return { ok: true, childId: 'fork-1' } },
-    steer: async (c) => { rec('steer', c); return { ok: true, delivered: true } },
-    interrupt: async (c) => { rec('interrupt', c); return { ok: true, requested: true } },
+    listAgents: async (c) => { rec('listAgents', c); return [{ kind: 'child', id: 'member-alpha', label: 'alpha', status: 'running' }, { kind: 'child', id: 'member-beta', label: 'beta', status: 'inactive' }] },
+    listModels: async (c) => { rec('listModels', c); return 'prov-a/model-1 — model-1' },
+    spawnChild: async (c) => { rec('spawnChild', c); return { kind: 'foreground', runId: 'child-run-1', output: [{ type: 'text', text: 'child-1' }] } },
+    forkChild: async (c) => { rec('forkChild', c); return { kind: 'foreground', runId: 'fork-run-1', output: [{ type: 'text', text: 'fork-1' }] } },
+    steer: async (c) => { rec('steer', c); return { messageId: 'message-1' } },
+    interrupt: async (c) => { rec('interrupt', c); return { accepted: true } },
     runWorkflow: async (c) => {
       rec('runWorkflow', c)
       const driver = c as unknown as { script: unknown; spawn: (s: Record<string, unknown>) => Promise<Record<string, unknown> | null>; steer: (s: Record<string, unknown>) => Promise<Record<string, unknown> | null>; enumerate: () => Promise<unknown> }
@@ -92,7 +92,7 @@ const makeFakeRuntime = (opts: { workflowSteps?: Array<Record<string, unknown>> 
         results.push({ step: i, r: r ?? { refused: true } })
         if (r !== null && typeof r === 'object' && r.ok === false) break
       }
-      return { ok: true, steps: results }
+      return { kind: 'foreground', runId: 'workflow-run-1', agentsStarted: results.length, result: { steps: results } }
     },
   }
 }
@@ -386,7 +386,7 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     // The workflow call itself was admitted (its declared domain-ref arm
     // covers spawn); the STEP refused inside the caller-bound delegate:
     expect(r.ok).toBe(true)
-    const steps = (r.ok ? (r.value as { steps?: Array<{ r?: { ok?: boolean; code?: string } }> }) : { steps: [] }).steps ?? []
+    const steps = (r.ok ? ((r.value as { result?: { steps?: Array<{ r?: { ok?: boolean; code?: string } }> } }).result?.steps ?? []) : [])
     expect(steps[0]?.r?.code).toBe('agent-control-amplification-refused')
     expect(fake.callsFor('spawnChild')).toHaveLength(0)
     expect(fake.calls.filter((c) => c.leg === 'runWorkflow')).toHaveLength(1)
@@ -470,8 +470,7 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     const ac = new AbortController()
     ac.abort()
     const r = await attempt(() => def(plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'x' }, { signal: ac.signal }))
-    expect(r.ok).toBe(true) // the row answers the cancelled fact, it does not throw
-    if (r.ok) expect(r.value.cancelled).toBe(true)
+    expect(r.ok).toBe(false) // native output schemas have no cancellation envelope; cancellation is an error result
     expect(fake.calls).toHaveLength(0)
   })
 

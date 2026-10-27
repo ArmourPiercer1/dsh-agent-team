@@ -28,8 +28,12 @@ export function buildSteerRowDefinition({ name, steerExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await steerExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { delivered: true }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'send_message · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (value !== null && typeof value === 'object' && typeof value.messageId === 'string') return { messageId: value.messageId }
+        throw new Error('refused-agent-control — the governed send_message executor returned a value outside the native result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('send_message was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed send_message executor produced no outcome')
     },
   })

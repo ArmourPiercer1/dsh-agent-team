@@ -27,8 +27,12 @@ export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await listAgentsExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { agents: [] }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'list_agents · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (Array.isArray(value)) return value
+        throw new Error('refused-agent-control — the governed list_agents executor returned a value outside the native list_agents result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('list_agents was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed list_agents executor produced no outcome')
     },
   })

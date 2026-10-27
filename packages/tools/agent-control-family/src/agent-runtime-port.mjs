@@ -231,7 +231,7 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
           detail: `the child ended with stopReason '${String(result?.stopReason)}'${typeof result?.diagnostic === 'string' ? ` (${result.diagnostic.slice(0, 200)})` : ''}; partial text: ${text.slice(0, 200)}`,
         })
       }
-      return { ok: true, kind: 'foreground', provider: providerName, runId: String(run.id), stopReason: 'completed', text, output: Array.isArray(result?.output) ? result.output : [] }
+      return { kind: 'foreground', runId: String(run.id), output: Array.isArray(result?.output) ? result.output : [] }
     }
   }
   const legResolver = (leg) => {
