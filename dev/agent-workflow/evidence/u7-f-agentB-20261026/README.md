@@ -71,18 +71,30 @@ from args turns S1b RED.
 | `update_goal` | PROVEN: pause/edit/complete/blocked(goal-round ≥3)/resume positives (P6); FULL transition table typed refusals with ZERO durable writes (T1, 24 legs); stale-revision CAS (R1d); field-leg refusals | same as above |
 | `todo_write` | PROVEN: whole-list replacement + counts (P4); list law (unique content, ≤1 in_progress, status enum) pre-PA | same as above |
 | `exit_plan_mode` | PROVEN: plan-law pre-PA (`# heading`), PLAN_MODE_NOT_ACTIVE refusal zero-write, approved commit post-consume (P5) | same as above |
-| all | mount: enabled WITHOUT store port → whole assembly refuses `PLANE_AGENT_STATE_STORE_MISSING` (M2); default-DENY template → every call answers `IO_POLICY_UNSUPPORTED / template-default-deny` with zero PA entry and zero store access (D1 — honest fail-closed: the agent-state effect class has NO rule-grammar spelling on this mount; extending the grammar is a named center-interface change, never family self-authorization) | PROVEN live: zero-flip mount + native ride (A); enabled-refused mount with the typed code + zero placement rows (B) |
+| all | mount: enabled WITHOUT store port → whole assembly refuses `PLANE_AGENT_STATE_STORE_MISSING` (M2); default-DENY template → every call answers `IO_POLICY_UNSUPPORTED / template-default-deny` with zero PA entry and zero store access (D1 — honest fail-closed: the agent-state effect class has NO rule-grammar spelling on this mount; extending the grammar is a named center-interface change, never family self-authorization) | PROVEN live: zero-flip mount + unchanged shipped surface (A); enabled-refused mount with the typed code riding the team.create body + zero placement rows (B) |
 
-## C2 (live, declared ≤3 boots, used 2)
+## C2 (recorded run `u5-u7-fagentb-x-2026-10-27T00-41-36-828Z`, overall PASS 6/6; declared ≤3 boots, used 2)
 
 - boot A (`agentStateEnabled` ABSENT): plane mounts exactly as shipped
-  (placement-feed witness), ZERO family witnesses, `todo_write` rides the
-  model surface as the HOST NATIVE.
+  (`a5g7: placement-feed rows=[…]` + `a5ptc: census-boot`), ZERO family
+  witnesses, zero agent-state spelling on any captured model surface.
+  DISCLOSED measured truth: the 0.2.0-rc.2 team-session surface carries NO
+  native `todo_write` at all, so the surface law is asserted as measured
+  ABSENCE (`agt:surface-unchanged-witness`), never as a native ride.
 - boot B (`agentStateEnabled: true`, production wiring): the production
   binder passes `backends` for the jobs bridge ONLY — no agent-state store
   adapter exists on this tree and this lane edits no binder line — so the
-  mount answers `PLANE_AGENT_STATE_STORE_MISSING` at the real host; zero
-  placement rows, zero RAN witnesses behind it.
+  real host answers the typed fail-closed refusal on the PUBLIC
+  `/team-remote` surface: `team.create` fails with
+  `TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED … alpha.5 Team tool plane
+  refused the mount … (code: PLANE_AGENT_STATE_STORE_MISSING)` — the
+  runner's own scan witnesses it (`team-create-body` channel); zero
+  placement rows, zero census-boot, zero RAN witnesses behind it.
+- boot accounting: 5 runner invocations (10 host starts) are disclosed in
+  `c2/` — runs 1–2 diagnosed witness channels, run 3 kept homes for the
+  post-mortem, run 4 carried a swallowed drive-phase error so it is NOT the
+  record, run 5 is the clean record (stdout files beside this README).
+  `tests/homes/` empty after; pristine test-use byte-clean @ `639ed01539`.
 
 DISCLOSED-NO-SEAM (never coloured PASS): the enabled-and-store-mounted
 positive legs (authorized read; authorized mutation with the durable fact
@@ -98,6 +110,28 @@ See `mutation-control.txt` — two planted bugs (CAS leg disabled; scope
 derived from args), each turned EXACTLY its own test RED, then restored
 byte-clean with the suite re-greened (45/45).
 
-## Gate results
+## Gate results (local, at this PR's head — raw lines in `ci-pr-gate-final.log`)
 
-(recorded below after the run)
+- `ci-pr-gate --store-dir .tmp-pnpm-store --full --census`: **pass 8/8**
+  (graph-parse, state-freshness, install, blueprint-fence, typecheck,
+  lint-identities new 0 / resolved 0 vs baseline 76 distinct,
+  artifacts-at-head 1835 files drift 0, **census PASS**, 286s nine roots).
+- `eb3-ci-required` pass findings=0; docs sync/probe blocking=0;
+  `gen-family-index --check` OK(4); `diag-call-chain --self-test` OK 49 codes.
+- C1 45/45 · seam 9/9 · ARC-A fitness 12/12 · p4t6 20/20 · world-factory
+  offline 38/38 · diag+devex node --test 44/44.
+- Census booking addendum: the merge-capture listed exactly two
+  lane-caused reds — the un-booked tool-governance consumer edges
+  (`executors.mjs`: `parseRequestedEffectSet`; `contribution.mjs`:
+  `canonicalJsonStringify`) — booked file-by-file in the a5p0 audit +
+  pinned set (fs-family precedent; comparisons in
+  `../a4-pr7/ci-gate/scratch/census-comparison-20261027T05*/0619*`).
+  Three further drift reds were proven on clean origin/master in this
+  worktree (a4p7 §7.6 + rc2 S13 need the gitignored client `dist`
+  (environment); a5p4 is a 5s-timeout flake under census load) and all
+  cleared after `pnpm build` — none lane-caused.
+
+## PR
+
+#407 — https://github.com/ArmourPiercer1/dsh-agent-team/pull/407 (opened
+against master; body = `pr-body.md`; NOT merged — merge is the coordinator's).
