@@ -25,9 +25,11 @@
  * never read or echoed and no user intent is claimed.
  */
 import { parseRequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
-// The shared cancel leg rides the search family's PUBLIC face (the barrel
-// `export * from './cancel-leg.mjs'`), never the sibling's internals — the
-// EB3 family-boundary law (scripts/eb3-family-boundaries.mjs).
+// The shared cancel leg rides the search family's PUBLIC face (its barrel
+// re-exports cancel-leg), never the sibling's internals — the EB3
+// family-boundary law (scripts/eb3-family-boundaries.mjs). The prose names
+// no quoted `from '…'` on purpose: M4's closure walk (alpha5-search-backend)
+// reads raw text, and a cited specifier in a comment parses as an edge.
 import { callAborted, raceConfinedSettle, CANCEL_CODE_ABORTED } from '../../search-family/src/index.mjs'
 import {
   INSPECT_DIRECTORY_LOCATOR,
