@@ -53,10 +53,10 @@ function plantedKinds(label) {
 
 // ── world kinds ─────────────────────────────────────────────────────────────
 
-test('world kinds: the seven hand-wired kinds of 88107ad71, in prefix order, deterministic', async () => {
+test('world kinds: the eight hand-wired kinds (7 at 88107ad71 + u7AgentControl from U7-F), in prefix order, deterministic', async () => {
   const a = await loadWorldKinds()
   const b = await loadWorldKinds()
-  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut'])
+  assert.deepEqual(a.map((k) => k.option), ['u6Fs', 'u6Proc', 'u6ArcA', 'u6ArcD', 'u6Jobs', 'u7Census', 'u7FsMut', 'u7AgentControl'])
   assert.deepEqual(a.map((k) => k.file), b.map((k) => k.file))
   assert.deepEqual(a.map((k) => k.file), [...a.map((k) => k.file)].sort())
   assert.deepEqual(WORLD_KIND_OPTIONS, a.map((k) => k.option))
@@ -169,7 +169,7 @@ test('a new World kind is ONE file: dropping it in registers the option, nothing
     ].join('\n'))
     const kinds = await loadWorldKinds(dir)
     assert.equal(kinds.at(-1)?.option, 'u7Pwsh')
-    assert.equal(kinds.length, 8)
+    assert.equal(kinds.length, 9) // 8 shipped (u7AgentControl joined at U7-F) + the planted one
   } finally {
     rmSync(parent, { recursive: true, force: true })
   }
@@ -209,16 +209,16 @@ test('suites RED-first (review R1 F-1): a stray entry — other extension, subdi
   }
 })
 
-test('suites: the six hand-wired lane suites of 88107ad71, prefix order, budgets as the old ternary', async () => {
+test('suites: the seven hand-wired lane suites (6 at 88107ad71 + u7-agent-control from U7-F), prefix order, budgets as the old ternary', async () => {
   const a = await loadSuites()
   const b = await loadSuites()
   assert.deepEqual(a.map((s) => [s.suite, s.totalRequests]), [
-    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80],
+    ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 100], ['u6-arc-a', 90], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-agent-control', 60],
   ])
   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-fs-mut'])
+  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-fs-mut'])
 })
 
 test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {
