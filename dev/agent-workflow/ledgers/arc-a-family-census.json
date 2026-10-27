@@ -55,6 +55,24 @@
       "nativeNames": [
         "u6arc_probe"
       ]
+    },
+    {
+      "familyId": "dsh.agent-control-family",
+      "lane": "packages/tools/agent-control-family",
+      "mount": "product",
+      "reviewedBy": "U7-F (task/u7-f-agentcontrol-a-20261026): ONE candidate, seven governed agent-control rows over the FamilyAssembly seam",
+      "contributionPaths": [
+        "packages/tools/agent-control-family/src/agent-control-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) subagent",
+        "(bound-definition) subagent_fork",
+        "(bound-definition) send_message",
+        "(bound-definition) interrupt_agent",
+        "(bound-definition) list_agents",
+        "(bound-definition) list_subagent_models",
+        "(bound-definition) workflow"
+      ]
     }
   ]
 }

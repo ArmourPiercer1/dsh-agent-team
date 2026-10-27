@@ -801,6 +801,100 @@ test('u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge i
   }
 })
 
+// U7-F C2 (the AGENT-CONTROL family over the FamilyAssembly seam): the
+// wiring pin, the ONE-plane assembly shape (the family rides the single
+// boolean gate — no fsInstance, no confinedProvider, no new key), and the
+// judge sensitivity with ZERO host boots: the judge consumes only
+// runner-collected facts (transcript heads, ledger rows, log lines), so the
+// full PASS bundle + each planted law-break is testable offline.
+test('u7-agent-control: SUITE_CASES entry and parseArgs wiring', async () => {
+  const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
+  assert.deepEqual(SUITE_CASES['u7-agent-control'], [
+    'ac:mounted', 'ac:enumerate-governed', 'ac:spawn-failclosed', 'ac:interrupt-foreign-zero', 'ac:leak-check',
+  ])
+  const opts = parseArgs(['--suite', 'u7-agent-control', '--line', 'u7fax', '--evidence', '/tmp/ev'])
+  assert.equal(opts.suite, 'u7-agent-control')
+  assert.throws(() => parseArgs(['--suite', 'u7-agent-control', '--evidence', '/tmp/ev', '--only', 'nope']))
+})
+
+test('u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven', async () => {
+  const { createU7FaAssembly, judgeU7Fa, AGENT_CONTROL_MANAGED_NAMES } = await import('./lib/u7fa-assembly.mjs')
+  const home = mkdtempSync(join(tmpdir(), 'u7fa-asm-'))
+  try {
+    const assembly = createU7FaAssembly({ repoRoot: join(HERE, '..', '..'), home, runStamp: 'UNITSTAMP', reportDir: home })
+    const plane = assembly.teamRowConfig().teamToolPlane
+    // THE family gate: realmId + the single boolean. NO fsInstance, NO
+    // confinedProvider, NO names map — the family claims its seven names as
+    // FIXED (the fs write/edit precedent), so the World carries zero extra
+    // config surface (CA-01 at the assembly face).
+    assert.deepEqual(Object.keys(plane).sort(), ['agentControlEnabled', 'realmId'])
+    assert.equal(plane.agentControlEnabled, true)
+    const yaml = await import('yaml')
+    const doc = yaml.parseDocument(assembly.mainBlueprintYaml(['weird_tool'])).toJS()
+    const pilot = doc.members.find((m) => m.templateId === 'acpilot')
+    // the pilot runs the ASK lane with NO center rule naming an agent-control
+    // tool (the closed PermissionTool grammar cannot name them — the family
+    // rows live BEYOND center; the u6-arc-a probe precedent; boot-3 proved the
+    // plane policy channel reaches the family, so default:ask is what makes
+    // the C2 enumeration AUTHORIZED: Control ask → runner settles → run).
+    assert.equal(pilot.capabilities.permissions.default, 'ask')
+    assert.deepEqual(pilot.capabilities.permissions.allow, [])
+    const env = doc.memberEnvelopes.find((e) => e.templateId === 'acpilot')
+    assert.ok(env.envelope.allow.includes('request-control'), 'the ASK lane needs request-control (u74a both-sides law)')
+    assembly.writePreBootFiles()
+    const log = [
+      'a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=r',
+      'agent-control-list_agents RAN correlation=plane-ac:n-1',
+    ]
+    const base = {
+      healthOk: true, stateOk: true, hostAlive: true,
+      surface: [...AGENT_CONTROL_MANAGED_NAMES, 'read', 'grep'],
+      laneDone: { pilot: true, leader: true },
+      pilotExchanges: [
+        { name: 'list_agents', resultHead: '{"agents":[{"id":"member-alpha","status":"running"}]}' },
+        { name: 'interrupt_agent', resultHead: 'Error: refused-agent-control agent-control-scope-foreign — target is outside this mount\'s scope' },
+        { name: 'subagent', resultHead: 'Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: no caller-authority snapshot is wired for this mount (fail closed)' },
+      ],
+      controlRows: [{ requestId: 'r-1', toolName: 'list_agents', summary: 'enumerate', status: 'settled' }],
+      resolutions: [{ requestId: 'r-1', ok: true }],
+      log,
+    }
+    const verdicts = new Map(judgeU7Fa(base).map(([id, v]) => [id, v]))
+    assert.equal(verdicts.get('ac:mounted'), 'PASS')
+    assert.equal(verdicts.get('ac:enumerate-governed'), 'PASS')
+    // the DESIGNED fail-closed spawn is recorded REFUSED — never PASS:
+    assert.equal(verdicts.get('ac:spawn-failclosed'), 'REFUSED')
+    assert.equal(verdicts.get('ac:interrupt-foreign-zero'), 'PASS')
+    // planted law-breaks — each flips EXACTLY its own case:
+    const flip = (patch, id, want = 'FAIL') => {
+      const merged = { ...base, ...patch }
+      const v = new Map(judgeU7Fa(merged).map(([cid, cv]) => [cid, cv]))
+      assert.equal(v.get(id), want, `mutation must turn ${id} ${want}`)
+    }
+    // a placement-feed WITHOUT all seven governed rows is not the mount:
+    flip({ log: ['a5g7: placement-feed rows=[team_grep,team_glob,team_bash]'] }, 'ac:mounted')
+    flip({ log: [] }, 'ac:mounted')
+    // a mount that no GOVERNED session ever carried is not the mount:
+    flip({ pilotExchanges: [] }, 'ac:mounted')
+    // a plane mount-REFUSED line is the registration refusal, never PASS:
+    flip({ log: [...log, 'a5-plane: mount-REFUSED PLANE_AGENT_CONTROL_REGISTRATION_REFUSED'] }, 'ac:mounted')
+    // an enumeration that never opened a Control row is UNGOVERNED, not PASS:
+    flip({ controlRows: [], resolutions: [] }, 'ac:enumerate-governed')
+    // a typed port answer can only ever be REFUSED verbatim — never PASS:
+    flip({ pilotExchanges: [{ name: 'list_agents', resultHead: 'Error: refused-agent-control agent-runtime-leg-unwired' }], controlRows: base.controlRows }, 'ac:enumerate-governed', 'REFUSED')
+    // a spawn that EXECUTED (no refusal head) is FAIL, not the designed REFUSED:
+    flip({ pilotExchanges: base.pilotExchanges.map((e) => e.name === 'subagent' ? { name: 'subagent', resultHead: '{"childId":"c-9"}' } : e) }, 'ac:spawn-failclosed')
+    // a foreign interrupt that OPENED a Control row breaks the fence-before-PA law:
+    flip({ controlRows: [...base.controlRows, { requestId: 'r-2', toolName: 'interrupt_agent', summary: 'foreign', status: 'pending' }] }, 'ac:interrupt-foreign-zero')
+    // a foreign interrupt with a RAN witness reaches the host — FAIL:
+    flip({ log: [...log, 'agent-control-interrupt_agent RAN correlation=plane-ac:n-2'] }, 'ac:interrupt-foreign-zero')
+    // a silent interrupt leg (no exchange at all) is FAIL:
+    flip({ pilotExchanges: base.pilotExchanges.filter((e) => e.name !== 'interrupt_agent') }, 'ac:interrupt-foreign-zero')
+  } finally {
+    rmSync(home, { recursive: true, force: true })
+  }
+})
+
 test('u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint', async () => {
   const { createJobsAssembly, JOBS_WORLD_MANAGED_NAMES } = await import('./lib/u6-jobs-assembly.mjs')
   const { emitPatchLayer } = await import('./lib/world-factory.mjs')

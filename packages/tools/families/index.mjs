@@ -5,6 +5,7 @@
 import { familyAssembly as f0 } from './fs.mjs'
 import { familyAssembly as f1 } from './process.mjs'
 import { familyAssembly as f2 } from './search.mjs'
+import { familyAssembly as f3 } from './agent-control.mjs'
 
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,4 +15,5 @@ export const FAMILY_INDEX = Object.freeze([
   Object.freeze({ module: 'fs.mjs', familyAssembly: f0 }),
   Object.freeze({ module: 'process.mjs', familyAssembly: f1 }),
   Object.freeze({ module: 'search.mjs', familyAssembly: f2 }),
+  Object.freeze({ module: 'agent-control.mjs', familyAssembly: f3 }),
 ])

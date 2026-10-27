@@ -1,0 +1,62 @@
+{
+  "teamSessionId": "session-u7fa-team-u5u7fa4-20261027t00-20-18z",
+  "surface": [
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "write"
+  ],
+  "pilotExchangeHeads": [
+    {
+      "name": "list_agents",
+      "head": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')"
+    },
+    {
+      "name": "interrupt_agent",
+      "head": "Error: refused-agent-control agent-control-schema-refused — unknown field 'message'"
+    },
+    {
+      "name": "subagent",
+      "head": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)"
+    }
+  ],
+  "controlRows": [
+    {
+      "requestId": "ctrl-0qfreo113ibh4e0gjngnr1k6",
+      "toolName": "list_agents",
+      "summary": "PA ask case=tadm:session-u7fa-team-u5u7fa4-20261027t00-20-18z:inst-1vro91n0ztqj:sha256:bc32ffa0774125ba7d717761a844488c3",
+      "status": "settled"
+    }
+  ],
+  "resolutions": [
+    {
+      "requestId": "ctrl-0qfreo113ibh4e0gjngnr1k6",
+      "toolName": "list_agents",
+      "status": 200,
+      "ok": true
+    }
+  ],
+  "approverErrors": [],
+  "logHits": [
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa4-20261027t00-20-18z",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow] realm=u7fa-realm-u5u7fa4-20261027t00-20-18z"
+  ]
+}
