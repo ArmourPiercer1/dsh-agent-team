@@ -1,0 +1,12 @@
+     ✓ L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one  2389ms
+     × F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry 1034ms
+     × F-c a LIVE pid holder (pid recycled / unknown-but-present) with an ANCIENT lock is NEVER broken → typed LOCK_TIMEOUT, ZERO write 22ms
+     × F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT 20ms
+     × F-d the holder BEATS: while it is inside the critical section the lock record token changes 143ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/u7-agentstate-fs-store-c1.test.ts > u7as F — age alone NEVER breaks a live lock holder (review round-2 F-4) > F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry
+AssertionError: exactly one commit: expected [ …(2) ] to have a length of 1 but got 2
+AssertionError: expected { ok: true, todos: [ { …(2) } ] } to match object { ok: false, …(1) }
+AssertionError: expected { ok: true, todos: [ { …(2) } ] } to match object { ok: false, …(1) }
+AssertionError: expected undefined not to be undefined // Object.is equality
+      Tests  4 failed | 42 passed (46)
