@@ -1,0 +1,19 @@
+=== M1 remove toolFilter
+     × AC1-P3 spawnChild = subagents.start("spawn") with toolFilter {allow:[]} FORCED, no agentOptions, no persona; result read back; run disposed 6ms
+     × AC1-P4 forkChild = subagents.start("fork") with the SAME forced filter (the provider seeds the context; the family ships no context bytes) 1ms
+     × AC1-P10 a non-completed child settles as a typed refusal carrying the stop reason (never success) 2ms
+     × AC1-F3 subagent POSITIVE under the build-time Tier A ceiling: one start("spawn"), toolFilter {allow:[]}, child text read back 10ms
+     × AC1-F4 subagent_fork POSITIVE: one start("fork"), forced filter 10ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  5 failed | 13 passed (18)
+restored: packages/tools/agent-control-family/src/agent-runtime-port.mjs clean
+=== M2 resolve agentTeams for listAgents
+     × AC1-P8 the in-scope legs never resolve the experimental agentTeams face (even when it is present) 4ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 17 passed (18)
+restored: packages/tools/agent-control-family/src/agent-runtime-port.mjs clean
+=== M3 resolve agentTeams for spawn/fork
+     × AC1-P8 the in-scope legs never resolve the experimental agentTeams face (even when it is present) 7ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 17 passed (18)
+restored: packages/tools/agent-control-family/src/agent-runtime-port.mjs clean
