@@ -95,6 +95,17 @@ export const LANE_EDGES = Object.freeze({
     'node:*',
     'packages/contracts/src/*',
   ]),
+  // U7-F: transcribed from packages/tools/inspect-family/README.md. The two
+  // sibling edges are PUBLIC faces only (the anchor law and the cancel-leg
+  // race, each the one home of its law), and the domain edge is the ONE
+  // thin effect-grammar face the fs executors already carry.
+  'dsh.inspect-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    'packages/domain/tool-governance/src/*',
+    'packages/tools/fs-family/src/index.mjs',
+    'packages/tools/search-family/src/index.mjs',
+  ]),
   // U7-f (web family lane), transcribed from its README (the law home):
   // the ONE network family rides node builtins for its single bounded
   // transport port, contracts for the closed vocabulary, and the SAME
@@ -118,6 +129,16 @@ export const LANE_EDGES = Object.freeze({
     'packages/contracts/src/*',
     'packages/domain/tool-governance/src/*',
   ]),
+  'dsh.ui-family': Object.freeze([
+    'node:*',
+    'packages/contracts/src/*',
+    // the ONE effect-grammar face, booked consumer-by-consumer in the A5P0
+    // layer audit (the two executors; same face the fs executors carry)
+    'packages/domain/tool-governance/src/*',
+    // the SIBLING FAMILY public face this lane's README books (anchor law
+    // home — lexicalAnchor + resolveAnchoredPath; never a sibling internal)
+    'packages/tools/fs-family/src/index.mjs',
+  ]),
 })
 
 /** Which lane a repo-relative path belongs to, if any. */
@@ -132,7 +153,9 @@ const LANE_ID_BY_LANE = Object.freeze({
   'packages/tools/search-family': 'dsh.search-family',
   'packages/tools/web-family': 'dsh.web-family',
   'tests/u6-arc-a-probe-family': 'dsh.u6-probe-family',
+  'packages/tools/inspect-family': 'dsh.inspect-family',
   'packages/tools/agent-control-family': 'dsh.agent-control-family',
+  'packages/tools/ui-family': 'dsh.ui-family',
 })
 
 /** Repo-relative static imports/re-exports of one file. Relative specifiers are

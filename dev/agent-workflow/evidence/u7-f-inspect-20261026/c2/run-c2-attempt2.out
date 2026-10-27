@@ -1,0 +1,9 @@
+[u7f-c2] boot 1 starting (world u5u7finsp-20261027T00-25-29Z)
+[u7f-c2] case u7f:mounted: FAIL {"healthOk":true,"stateOk":true,"createOk":false,"createBody":"{\"type\":\"server-response\",\"rpcId\":\"u6fs-1w9ief4lcc\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-u7f-team-u5u7
+[u7f-c2] case u7f:skill-load: FAIL {"reason":"leg not reached (earlier failure or timeout)"}
+[u7f-c2] case u7f:inspect-list: FAIL {"reason":"leg not reached (earlier failure or timeout)"}
+[u7f-c2] case u7f:refusal-zero-effect: FAIL {"reason":"leg not reached (earlier failure or timeout)"}
+[u7f-c2] case u7f:approval-leg: FAIL {"reason":"leg not reached (earlier failure or timeout)"}
+[u7f-c2] case u7f:leak-check: FAIL {"reason":"leg not reached (earlier failure or timeout)"}
+[u7f-c2] verdicts written to c2-verdicts.json
+[u7f-c2] DONE pass=0 fail=6

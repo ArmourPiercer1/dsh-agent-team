@@ -1,0 +1,1 @@
+RED transcript: S9 on pre-fix head answered kind:ok content:SWAP-SECRET-OUTSIDE-THE-ANCHOR (this file's vitest capture below)

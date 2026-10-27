@@ -45,6 +45,20 @@
       ]
     },
     {
+      "familyId": "dsh.inspect-family",
+      "lane": "packages/tools/inspect-family",
+      "mount": "product",
+      "reviewedBy": "U7-F (governed skill/cordis_inspect rows through the u7-w0b FamilyAssembly seam)",
+      "contributionPaths": [
+        "packages/tools/inspect-family/src/inspect-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) team_skill",
+        "(bound-definition) team_cordis_inspect_list",
+        "(bound-definition) team_cordis_inspect_query"
+      ]
+    },
+    {
       "familyId": "dsh.u6-probe-family",
       "lane": "tests/u6-arc-a-probe-family",
       "mount": "test-only",
@@ -85,6 +99,19 @@
         "(bound-definition) list_agents",
         "(bound-definition) list_subagent_models",
         "(bound-definition) workflow"
+      ]
+    },
+    {
+      "familyId": "dsh.ui-family",
+      "lane": "packages/tools/ui-family",
+      "mount": "product",
+      "reviewedBy": "u7-f (governed ask_user_question + present through the FamilyAssembly seam; ONE candidate)",
+      "contributionPaths": [
+        "packages/tools/ui-family/src/ui-family-contribution.mjs"
+      ],
+      "nativeNames": [
+        "(bound-definition) ask_user_question",
+        "(bound-definition) present"
       ]
     }
   ]

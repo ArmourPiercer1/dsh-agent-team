@@ -1,0 +1,3393 @@
+{
+ "excerpt": true,
+ "note": "Declared EXCERPT of the boot-5 mock corpus: only entries the C2 verdicts cite (structural witness predicate — see c2/trim-mock-corpus.mjs). Kept entries are byte-identical to the capture; the rest were dropped per the #404 round-2 evidence-size ruling (no allowlist exemption for a full transcript). Original recoverable from git by the digest below.",
+ "original": {
+  "bytes": 1366568,
+  "sha256": "9eeaedd97bb85de9e9227f099a3ac274b5a3da549cb04015db79977863a224de",
+  "entries": 44
+ },
+ "kept": [
+  {
+   "index": 4
+  },
+  {
+   "index": 6
+  },
+  {
+   "index": 12
+  },
+  {
+   "index": 19
+  },
+  {
+   "index": 43
+  }
+ ],
+ "entries": [
+  {
+   "index": 4,
+   "entry": {
+    "seq": 5,
+    "path": "/v1/messages",
+    "status": 200,
+    "body": {
+     "model": "u7f-model",
+     "stream": true,
+     "messages": [
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-root-work requestToken=team-create:initial-work:sha256:2079d8717f6b19549ecbaa6633dbe7eb6ca646e90600234ef0c8e22bbf739073] U7F_L1_u5u7finsp-20261027t07-32-27z"
+        },
+        {
+         "type": "text",
+         "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-tnz9rqdw",
+         "name": "team_create_member",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-c1-u5u7finsp-20261027t07-32-27z",
+          "delegationTemplateId": "strict",
+          "label": "u7f-strict"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-tnz9rqdw",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0m7vmo913mte\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-93679c3f194198098a2d2c2461512e06\",\"operationId\":\"op-00ik09l1jtnr1e06ol4nr07p\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7f-c1-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      }
+     ],
+     "max_tokens": 256000,
+     "thinking": {
+      "type": "enabled"
+     },
+     "output_config": {
+      "effort": "high"
+     },
+     "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u7f inspect assembly team. U7F_L1_u5u7finsp-20261027t07-32-27z drives your chain: create one governed member, delegate the inspect script, resolve its pending approvals, collect, and close.\n\n[team-root-context rootSessionId=session-u7f-team-u5u7finsp-20261027t07-32-27z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" and a unique requestToken.\n\nYou are a coding agent powered by the u7f-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use.",
+     "tools": [
+      {
+       "name": "bash",
+       "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+         }
+        },
+        "required": [
+         "command"
+        ]
+       }
+      },
+      {
+       "name": "edit",
+       "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "old_string": {
+          "type": "string",
+          "description": "the exact text to replace (non-empty, must appear verbatim)"
+         },
+         "new_string": {
+          "type": "string",
+          "description": "the replacement text (empty string deletes)"
+         },
+         "replace_all": {
+          "type": "boolean",
+          "description": "replace every occurrence instead of requiring a unique match (default false)"
+         }
+        },
+        "required": [
+         "file_path",
+         "old_string",
+         "new_string"
+        ]
+       }
+      },
+      {
+       "name": "read",
+       "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "offset": {
+          "type": "number",
+          "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+         },
+         "limit": {
+          "type": "number",
+          "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "read_image",
+       "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "team_bash",
+       "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string"
+         },
+         "cwd": {
+          "type": "string"
+         },
+         "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+         },
+         "background": {
+          "type": "boolean"
+         }
+        },
+        "required": [
+         "command"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_collect",
+       "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestTokens": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestTokens"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_list",
+       "description": "List every Cordis Inspect Provider currently known to the Host, governed: the listing is read through the host registry public face after PA admission. Each entry includes its platform, purpose, read-only methods, and input/output schemas. Call this tool before configuring a plugin, then select the provider and method for team_cordis_inspect_query from its result. Do not guess names or treat an Inspect method as a business Service that plugin code can call.",
+       "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_query",
+       "description": "Run a read-only query declared by an Inspect Provider, governed: platform, provider, and method must come from team_cordis_inspect_list, and input must satisfy that method's schema (invalid or unverifiable input is refused before dispatch). The query waits under a bounded settle race: on timeout or cancellation the call answers a typed refusal and a late result is NEVER delivered. This tool cannot invoke business Service methods or modify the runtime.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "platform": {
+          "type": "string",
+          "enum": [
+           "host",
+           "client"
+          ],
+          "description": "Runtime platform that owns the Provider."
+         },
+         "provider": {
+          "type": "string",
+          "description": "Exact Provider ID returned by team_cordis_inspect_list."
+         },
+         "method": {
+          "type": "string",
+          "description": "Exact method name declared by the Provider manifest."
+         },
+         "input": {
+          "description": "Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset's unconstrained form.)"
+         }
+        },
+        "required": [
+         "platform",
+         "provider",
+         "method"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_create_member",
+       "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "The blueprint template id the new member is created from."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for the new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for the new member."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "delegationTemplateId",
+         "label"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_delegate",
+       "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "Present: create a new member from this template and delegate to it."
+         },
+         "delegationInstanceId": {
+          "type": "string",
+          "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for a new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for a new member."
+         },
+         "taskSummary": {
+          "type": "string",
+          "description": "Optional short summary of the delegated work unit (audit context)."
+         },
+         "prompt": {
+          "type": "string",
+          "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+         },
+         "attachedContext": {
+          "type": "string",
+          "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+         },
+         "async": {
+          "type": "boolean",
+          "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "label",
+         "prompt"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_glob",
+       "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_grep",
+       "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         },
+         "glob": {
+          "type": "string"
+         },
+         "output_mode": {
+          "type": "string",
+          "enum": [
+           "content",
+           "files_with_matches",
+           "count"
+          ]
+         },
+         "fixed_string": {
+          "type": "boolean"
+         },
+         "ignore_case": {
+          "type": "boolean"
+         },
+         "multiline": {
+          "type": "boolean"
+         },
+         "context": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+         },
+         "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_members",
+       "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_pending_control",
+       "description": "List this Team's unresolved approvals across every carrier: each open approval case at its CURRENT leg (whatever rung that leg is waiting on and whichever carrier it rides), plus any pending legacy request. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "limit": {
+          "type": "integer",
+          "description": "Optional: the maximum number of pending requests to return (default 50, minimum 1, maximum 100)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_resolve_control",
+       "description": "Record an allow/deny decision on a pending control request, or ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestId": {
+          "type": "string",
+          "description": "The durable control request id to decide (max 128 chars)."
+         },
+         "decision": {
+          "type": "string",
+          "enum": [
+           "allow",
+           "deny",
+           "escalate"
+          ],
+          "description": "The decision: allow | deny | escalate."
+         },
+         "note": {
+          "type": "string",
+          "description": "Optional decision note (max 256 chars)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestId",
+         "decision"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_skill",
+       "description": "Load the full instructions for a skill, governed: reads only the host-sanctioned skill root(s) this mount configures, resolves the name through the anchor law (no parent segments, no symlink escape), and refuses unknown skills. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "The exact skill name from the available skills list."
+         }
+        },
+        "required": [
+         "name"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "write",
+       "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "content": {
+          "type": "string",
+          "description": "the full UTF-8 content to write (empty string clears the file)"
+         }
+        },
+        "required": [
+         "file_path",
+         "content"
+        ]
+       }
+      }
+     ]
+    },
+    "reply": {
+     "kind": "tool-call",
+     "toolCalls": [
+      {
+       "id": "call-u6fs-up705z7c",
+       "name": "team_delegate",
+       "arguments": {
+        "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+        "requestToken": "u7f-d1-u5u7finsp-20261027t07-32-27z",
+        "delegationInstanceId": "inst-0m7vmo913mte",
+        "label": "u7f-d1",
+        "prompt": "U7F_SCRIPT_u5u7finsp-20261027t07-32-27z: call team_skill with {\"name\":\"u7f-demo-skill\"}, then team_cordis_inspect_list with {}, then team_cordis_inspect_query with {\"platform\":\"host\",\"provider\":\"u7f-no-such-provider\",\"method\":\"nope\"}; then report done.",
+        "async": true
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "index": 6,
+   "entry": {
+    "seq": 7,
+    "path": "/v1/messages",
+    "status": 200,
+    "body": {
+     "model": "u7f-model",
+     "stream": true,
+     "messages": [
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-work requestToken=u7f-d1-u5u7finsp-20261027t07-32-27z] U7F_SCRIPT_u5u7finsp-20261027t07-32-27z: call team_skill with {\"name\":\"u7f-demo-skill\"}, then team_cordis_inspect_list with {}, then team_cordis_inspect_query with {\"platform\":\"host\",\"provider\":\"u7f-no-such-provider\",\"method\":\"nope\"}; then report done."
+        },
+        {
+         "type": "text",
+         "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+       ]
+      }
+     ],
+     "max_tokens": 256000,
+     "thinking": {
+      "type": "enabled"
+     },
+     "output_config": {
+      "effort": "high"
+     },
+     "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the u7f inspect assembly team (governed lane). Follow the delegated script exactly, one tool call at a time.\n\n[team-member-context rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" instanceId=\"inst-0m7vmo913mte\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.\n\nYou are a coding agent powered by the u7f-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use.",
+     "tools": [
+      {
+       "name": "bash",
+       "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+         }
+        },
+        "required": [
+         "command"
+        ]
+       }
+      },
+      {
+       "name": "edit",
+       "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "old_string": {
+          "type": "string",
+          "description": "the exact text to replace (non-empty, must appear verbatim)"
+         },
+         "new_string": {
+          "type": "string",
+          "description": "the replacement text (empty string deletes)"
+         },
+         "replace_all": {
+          "type": "boolean",
+          "description": "replace every occurrence instead of requiring a unique match (default false)"
+         }
+        },
+        "required": [
+         "file_path",
+         "old_string",
+         "new_string"
+        ]
+       }
+      },
+      {
+       "name": "read",
+       "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "offset": {
+          "type": "number",
+          "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+         },
+         "limit": {
+          "type": "number",
+          "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "read_image",
+       "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "team_bash",
+       "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string"
+         },
+         "cwd": {
+          "type": "string"
+         },
+         "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+         },
+         "background": {
+          "type": "boolean"
+         }
+        },
+        "required": [
+         "command"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_list",
+       "description": "List every Cordis Inspect Provider currently known to the Host, governed: the listing is read through the host registry public face after PA admission. Each entry includes its platform, purpose, read-only methods, and input/output schemas. Call this tool before configuring a plugin, then select the provider and method for team_cordis_inspect_query from its result. Do not guess names or treat an Inspect method as a business Service that plugin code can call.",
+       "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_query",
+       "description": "Run a read-only query declared by an Inspect Provider, governed: platform, provider, and method must come from team_cordis_inspect_list, and input must satisfy that method's schema (invalid or unverifiable input is refused before dispatch). The query waits under a bounded settle race: on timeout or cancellation the call answers a typed refusal and a late result is NEVER delivered. This tool cannot invoke business Service methods or modify the runtime.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "platform": {
+          "type": "string",
+          "enum": [
+           "host",
+           "client"
+          ],
+          "description": "Runtime platform that owns the Provider."
+         },
+         "provider": {
+          "type": "string",
+          "description": "Exact Provider ID returned by team_cordis_inspect_list."
+         },
+         "method": {
+          "type": "string",
+          "description": "Exact method name declared by the Provider manifest."
+         },
+         "input": {
+          "description": "Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset's unconstrained form.)"
+         }
+        },
+        "required": [
+         "platform",
+         "provider",
+         "method"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_glob",
+       "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_grep",
+       "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         },
+         "glob": {
+          "type": "string"
+         },
+         "output_mode": {
+          "type": "string",
+          "enum": [
+           "content",
+           "files_with_matches",
+           "count"
+          ]
+         },
+         "fixed_string": {
+          "type": "boolean"
+         },
+         "ignore_case": {
+          "type": "boolean"
+         },
+         "multiline": {
+          "type": "boolean"
+         },
+         "context": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+         },
+         "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_skill",
+       "description": "Load the full instructions for a skill, governed: reads only the host-sanctioned skill root(s) this mount configures, resolves the name through the anchor law (no parent segments, no symlink escape), and refuses unknown skills. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "The exact skill name from the available skills list."
+         }
+        },
+        "required": [
+         "name"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "write",
+       "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "content": {
+          "type": "string",
+          "description": "the full UTF-8 content to write (empty string clears the file)"
+         }
+        },
+        "required": [
+         "file_path",
+         "content"
+        ]
+       }
+      }
+     ]
+    },
+    "reply": {
+     "kind": "tool-call",
+     "toolCalls": [
+      {
+       "id": "call-u6fs-nl7hgx8g",
+       "name": "team_skill",
+       "arguments": {
+        "name": "u7f-demo-skill"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "index": 12,
+   "entry": {
+    "seq": 13,
+    "path": "/v1/messages",
+    "status": 200,
+    "body": {
+     "model": "u7f-model",
+     "stream": true,
+     "messages": [
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-root-work requestToken=team-create:initial-work:sha256:2079d8717f6b19549ecbaa6633dbe7eb6ca646e90600234ef0c8e22bbf739073] U7F_L1_u5u7finsp-20261027t07-32-27z"
+        },
+        {
+         "type": "text",
+         "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-tnz9rqdw",
+         "name": "team_create_member",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-c1-u5u7finsp-20261027t07-32-27z",
+          "delegationTemplateId": "strict",
+          "label": "u7f-strict"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-tnz9rqdw",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0m7vmo913mte\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-93679c3f194198098a2d2c2461512e06\",\"operationId\":\"op-00ik09l1jtnr1e06ol4nr07p\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7f-c1-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-up705z7c",
+         "name": "team_delegate",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-d1-u5u7finsp-20261027t07-32-27z",
+          "delegationInstanceId": "inst-0m7vmo913mte",
+          "label": "u7f-d1",
+          "prompt": "U7F_SCRIPT_u5u7finsp-20261027t07-32-27z: call team_skill with {\"name\":\"u7f-demo-skill\"}, then team_cordis_inspect_list with {}, then team_cordis_inspect_query with {\"platform\":\"host\",\"provider\":\"u7f-no-such-provider\",\"method\":\"nope\"}; then report done.",
+          "async": true
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-up705z7c",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0m7vmo913mte\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ppaanyoy",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp1-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ppaanyoy",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-z5tnh2qr",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-2-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-z5tnh2qr",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-2-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ykb9z9ms",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp3-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ykb9z9ms",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-2cc9phgi",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-4-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-2cc9phgi",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-4-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-6pe1ekwb",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp5-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-6pe1ekwb",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[{\"requestId\":\"ctrl-0oknj0q0rt6rw10tf3r1k0jr\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0m7vmo913mte\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0m7vmo913mte\"},\"targetInstanceId\":\"inst-0m7vmo913mte\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0:plane-skill:66bcd336-1c88-4bea-9201-e6e491969b89-1\",\"status\":\"pending\",\"createdAt\":\"2026-10-27T07:33:10.992Z\",\"requestSequence\":5,\"toolName\":\"team_skill\",\"operationFingerprint\":\"sha256:4667e31b0e6563e35d64eca6fe57e6213533e5fc85907a2d25142a627fa3f007\",\"summary\":\"PA ask case=tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0 rung=leader tool=team_skill effects=2\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0\",\"authorityGeneration\":0,\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"u7f-realm-u5u7finsp-20261027t07-32-27z|tool:team_skill\"},\"operationClass\":\"tool-invoke\"},\"binding\":{\"agentScopeKey\":\"session-team-child-93679c3f194198098a2d2c2461512e06\",\"assurance\":{\"assurance\":{\"alias\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"content-read\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"directory-metadata\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"inherit-cancel\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"network-destination\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"write\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null}},\"executionBoundary\":\"trusted-host\",\"implementationOrigin\":\"team-trusted-extension\"},\"authorityGeneration\":0,\"bindingId\":\"team-own:session-team-child-93679c3f194198098a2d2c2461512e06:team_skill\",\"definitionIdentity\":\"def#22\",\"executionBoundary\":\"trusted-host\",\"implementationOrigin\":\"team-trusted-extension\",\"policyGeneration\":0,\"providerId\":\"dsh-agent-team\",\"revision\":1,\"status\":\"ACTIVE\",\"toolName\":\"team_skill\"},\"callId\":\"plane-skill:66bcd336-1c88-4bea-9201-e6e491969b89-1\",\"deniedEffects\":[],\"effectSetFingerprint\":\"sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5\",\"effects\":[{\"kind\":\"read\",\"resource\":{\"canonicalLocator\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/homes/u5u7finsp-20261027T07-32-27Z/skills/u7f-demo-skill/SKILL.md\",\"kind\":\"absolute-path\",\"realmId\":\"u7f-realm-u5u7finsp-20261027t07-32-27z\",\"rights\":[\"read\"]}},{\"kind\":\"tool-invoke\",\"resource\":null,\"toolName\":\"team_skill\"}],\"member\":{\"instanceId\":\"inst-0m7vmo913mte\",\"teamSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\"},\"parametersFingerprint\":\"sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5\",\"perEffectRequired\":[\"leader\",\"leader\"],\"realmId\":\"u7f-realm-u5u7finsp-20261027t07-32-27z\",\"requiredAuthority\":\"leader\",\"schema\":\"a5m1.pa-control-manifest.v2\"},\"reviewPayloadDigest\":\"sha256:4667e31b0e6563e35d64eca6fe57e6213533e5fc85907a2d25142a627fa3f007\"}],\"count\":1,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      }
+     ],
+     "max_tokens": 256000,
+     "thinking": {
+      "type": "enabled"
+     },
+     "output_config": {
+      "effort": "high"
+     },
+     "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u7f inspect assembly team. U7F_L1_u5u7finsp-20261027t07-32-27z drives your chain: create one governed member, delegate the inspect script, resolve its pending approvals, collect, and close.\n\n[team-root-context rootSessionId=session-u7f-team-u5u7finsp-20261027t07-32-27z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" and a unique requestToken.\n\nYou are a coding agent powered by the u7f-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use.",
+     "tools": [
+      {
+       "name": "bash",
+       "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+         }
+        },
+        "required": [
+         "command"
+        ]
+       }
+      },
+      {
+       "name": "edit",
+       "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "old_string": {
+          "type": "string",
+          "description": "the exact text to replace (non-empty, must appear verbatim)"
+         },
+         "new_string": {
+          "type": "string",
+          "description": "the replacement text (empty string deletes)"
+         },
+         "replace_all": {
+          "type": "boolean",
+          "description": "replace every occurrence instead of requiring a unique match (default false)"
+         }
+        },
+        "required": [
+         "file_path",
+         "old_string",
+         "new_string"
+        ]
+       }
+      },
+      {
+       "name": "read",
+       "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "offset": {
+          "type": "number",
+          "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+         },
+         "limit": {
+          "type": "number",
+          "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "read_image",
+       "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "team_bash",
+       "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string"
+         },
+         "cwd": {
+          "type": "string"
+         },
+         "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+         },
+         "background": {
+          "type": "boolean"
+         }
+        },
+        "required": [
+         "command"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_collect",
+       "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestTokens": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestTokens"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_list",
+       "description": "List every Cordis Inspect Provider currently known to the Host, governed: the listing is read through the host registry public face after PA admission. Each entry includes its platform, purpose, read-only methods, and input/output schemas. Call this tool before configuring a plugin, then select the provider and method for team_cordis_inspect_query from its result. Do not guess names or treat an Inspect method as a business Service that plugin code can call.",
+       "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_query",
+       "description": "Run a read-only query declared by an Inspect Provider, governed: platform, provider, and method must come from team_cordis_inspect_list, and input must satisfy that method's schema (invalid or unverifiable input is refused before dispatch). The query waits under a bounded settle race: on timeout or cancellation the call answers a typed refusal and a late result is NEVER delivered. This tool cannot invoke business Service methods or modify the runtime.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "platform": {
+          "type": "string",
+          "enum": [
+           "host",
+           "client"
+          ],
+          "description": "Runtime platform that owns the Provider."
+         },
+         "provider": {
+          "type": "string",
+          "description": "Exact Provider ID returned by team_cordis_inspect_list."
+         },
+         "method": {
+          "type": "string",
+          "description": "Exact method name declared by the Provider manifest."
+         },
+         "input": {
+          "description": "Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset's unconstrained form.)"
+         }
+        },
+        "required": [
+         "platform",
+         "provider",
+         "method"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_create_member",
+       "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "The blueprint template id the new member is created from."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for the new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for the new member."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "delegationTemplateId",
+         "label"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_delegate",
+       "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "Present: create a new member from this template and delegate to it."
+         },
+         "delegationInstanceId": {
+          "type": "string",
+          "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for a new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for a new member."
+         },
+         "taskSummary": {
+          "type": "string",
+          "description": "Optional short summary of the delegated work unit (audit context)."
+         },
+         "prompt": {
+          "type": "string",
+          "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+         },
+         "attachedContext": {
+          "type": "string",
+          "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+         },
+         "async": {
+          "type": "boolean",
+          "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "label",
+         "prompt"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_glob",
+       "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_grep",
+       "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         },
+         "glob": {
+          "type": "string"
+         },
+         "output_mode": {
+          "type": "string",
+          "enum": [
+           "content",
+           "files_with_matches",
+           "count"
+          ]
+         },
+         "fixed_string": {
+          "type": "boolean"
+         },
+         "ignore_case": {
+          "type": "boolean"
+         },
+         "multiline": {
+          "type": "boolean"
+         },
+         "context": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+         },
+         "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_members",
+       "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_pending_control",
+       "description": "List this Team's unresolved approvals across every carrier: each open approval case at its CURRENT leg (whatever rung that leg is waiting on and whichever carrier it rides), plus any pending legacy request. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "limit": {
+          "type": "integer",
+          "description": "Optional: the maximum number of pending requests to return (default 50, minimum 1, maximum 100)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_resolve_control",
+       "description": "Record an allow/deny decision on a pending control request, or ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestId": {
+          "type": "string",
+          "description": "The durable control request id to decide (max 128 chars)."
+         },
+         "decision": {
+          "type": "string",
+          "enum": [
+           "allow",
+           "deny",
+           "escalate"
+          ],
+          "description": "The decision: allow | deny | escalate."
+         },
+         "note": {
+          "type": "string",
+          "description": "Optional decision note (max 256 chars)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestId",
+         "decision"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_skill",
+       "description": "Load the full instructions for a skill, governed: reads only the host-sanctioned skill root(s) this mount configures, resolves the name through the anchor law (no parent segments, no symlink escape), and refuses unknown skills. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "The exact skill name from the available skills list."
+         }
+        },
+        "required": [
+         "name"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "write",
+       "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "content": {
+          "type": "string",
+          "description": "the full UTF-8 content to write (empty string clears the file)"
+         }
+        },
+        "required": [
+         "file_path",
+         "content"
+        ]
+       }
+      }
+     ]
+    },
+    "reply": {
+     "kind": "tool-call",
+     "toolCalls": [
+      {
+       "id": "call-u6fs-ki5gwwsx",
+       "name": "team_resolve_control",
+       "arguments": {
+        "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+        "requestToken": "u7f-r1-u5u7finsp-20261027t07-32-27z",
+        "requestId": "ctrl-0oknj0q0rt6rw10tf3r1k0jr",
+        "decision": "allow"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "index": 19,
+   "entry": {
+    "seq": 20,
+    "path": "/v1/messages",
+    "status": 200,
+    "body": {
+     "model": "u7f-model",
+     "stream": true,
+     "messages": [
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-work requestToken=u7f-d1-u5u7finsp-20261027t07-32-27z] U7F_SCRIPT_u5u7finsp-20261027t07-32-27z: call team_skill with {\"name\":\"u7f-demo-skill\"}, then team_cordis_inspect_list with {}, then team_cordis_inspect_query with {\"platform\":\"host\",\"provider\":\"u7f-no-such-provider\",\"method\":\"nope\"}; then report done."
+        },
+        {
+         "type": "text",
+         "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-nl7hgx8g",
+         "name": "team_skill",
+         "input": {
+          "name": "u7f-demo-skill"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-nl7hgx8g",
+         "content": [
+          {
+           "type": "text",
+           "text": "<skill_content name=\"u7f-demo-skill\">\n<skill_resources>\nBase directory for this skill: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/homes/u5u7finsp-20261027T07-32-27Z/skills/u7f-demo-skill\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nTHE DEMO SKILL BODY u5u7finsp-20261027t07-32-27z: multiply everything by two.\n</skill_instructions>\n</skill_content>"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      }
+     ],
+     "max_tokens": 256000,
+     "thinking": {
+      "type": "enabled"
+     },
+     "output_config": {
+      "effort": "high"
+     },
+     "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a worker of the u7f inspect assembly team (governed lane). Follow the delegated script exactly, one tool call at a time.\n\n[team-member-context rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" instanceId=\"inst-0m7vmo913mte\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.\n\nYou are a coding agent powered by the u7f-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use.",
+     "tools": [
+      {
+       "name": "bash",
+       "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+         }
+        },
+        "required": [
+         "command"
+        ]
+       }
+      },
+      {
+       "name": "edit",
+       "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "old_string": {
+          "type": "string",
+          "description": "the exact text to replace (non-empty, must appear verbatim)"
+         },
+         "new_string": {
+          "type": "string",
+          "description": "the replacement text (empty string deletes)"
+         },
+         "replace_all": {
+          "type": "boolean",
+          "description": "replace every occurrence instead of requiring a unique match (default false)"
+         }
+        },
+        "required": [
+         "file_path",
+         "old_string",
+         "new_string"
+        ]
+       }
+      },
+      {
+       "name": "read",
+       "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "offset": {
+          "type": "number",
+          "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+         },
+         "limit": {
+          "type": "number",
+          "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "read_image",
+       "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "team_bash",
+       "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string"
+         },
+         "cwd": {
+          "type": "string"
+         },
+         "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+         },
+         "background": {
+          "type": "boolean"
+         }
+        },
+        "required": [
+         "command"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_list",
+       "description": "List every Cordis Inspect Provider currently known to the Host, governed: the listing is read through the host registry public face after PA admission. Each entry includes its platform, purpose, read-only methods, and input/output schemas. Call this tool before configuring a plugin, then select the provider and method for team_cordis_inspect_query from its result. Do not guess names or treat an Inspect method as a business Service that plugin code can call.",
+       "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_query",
+       "description": "Run a read-only query declared by an Inspect Provider, governed: platform, provider, and method must come from team_cordis_inspect_list, and input must satisfy that method's schema (invalid or unverifiable input is refused before dispatch). The query waits under a bounded settle race: on timeout or cancellation the call answers a typed refusal and a late result is NEVER delivered. This tool cannot invoke business Service methods or modify the runtime.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "platform": {
+          "type": "string",
+          "enum": [
+           "host",
+           "client"
+          ],
+          "description": "Runtime platform that owns the Provider."
+         },
+         "provider": {
+          "type": "string",
+          "description": "Exact Provider ID returned by team_cordis_inspect_list."
+         },
+         "method": {
+          "type": "string",
+          "description": "Exact method name declared by the Provider manifest."
+         },
+         "input": {
+          "description": "Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset's unconstrained form.)"
+         }
+        },
+        "required": [
+         "platform",
+         "provider",
+         "method"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_glob",
+       "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_grep",
+       "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         },
+         "glob": {
+          "type": "string"
+         },
+         "output_mode": {
+          "type": "string",
+          "enum": [
+           "content",
+           "files_with_matches",
+           "count"
+          ]
+         },
+         "fixed_string": {
+          "type": "boolean"
+         },
+         "ignore_case": {
+          "type": "boolean"
+         },
+         "multiline": {
+          "type": "boolean"
+         },
+         "context": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+         },
+         "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_skill",
+       "description": "Load the full instructions for a skill, governed: reads only the host-sanctioned skill root(s) this mount configures, resolves the name through the anchor law (no parent segments, no symlink escape), and refuses unknown skills. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "The exact skill name from the available skills list."
+         }
+        },
+        "required": [
+         "name"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "write",
+       "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "content": {
+          "type": "string",
+          "description": "the full UTF-8 content to write (empty string clears the file)"
+         }
+        },
+        "required": [
+         "file_path",
+         "content"
+        ]
+       }
+      }
+     ]
+    },
+    "reply": {
+     "kind": "tool-call",
+     "toolCalls": [
+      {
+       "id": "call-u6fs-ab430flq",
+       "name": "team_cordis_inspect_list",
+       "arguments": {}
+      }
+     ]
+    }
+   }
+  },
+  {
+   "index": 43,
+   "entry": {
+    "seq": 44,
+    "path": "/v1/messages",
+    "status": 200,
+    "body": {
+     "model": "u7f-model",
+     "stream": true,
+     "messages": [
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-root-work requestToken=team-create:initial-work:sha256:2079d8717f6b19549ecbaa6633dbe7eb6ca646e90600234ef0c8e22bbf739073] U7F_L1_u5u7finsp-20261027t07-32-27z"
+        },
+        {
+         "type": "text",
+         "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-tnz9rqdw",
+         "name": "team_create_member",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-c1-u5u7finsp-20261027t07-32-27z",
+          "delegationTemplateId": "strict",
+          "label": "u7f-strict"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-tnz9rqdw",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0m7vmo913mte\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-93679c3f194198098a2d2c2461512e06\",\"operationId\":\"op-00ik09l1jtnr1e06ol4nr07p\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7f-c1-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-up705z7c",
+         "name": "team_delegate",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-d1-u5u7finsp-20261027t07-32-27z",
+          "delegationInstanceId": "inst-0m7vmo913mte",
+          "label": "u7f-d1",
+          "prompt": "U7F_SCRIPT_u5u7finsp-20261027t07-32-27z: call team_skill with {\"name\":\"u7f-demo-skill\"}, then team_cordis_inspect_list with {}, then team_cordis_inspect_query with {\"platform\":\"host\",\"provider\":\"u7f-no-such-provider\",\"method\":\"nope\"}; then report done.",
+          "async": true
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-up705z7c",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0m7vmo913mte\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ppaanyoy",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp1-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ppaanyoy",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-z5tnh2qr",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-2-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-z5tnh2qr",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-2-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ykb9z9ms",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp3-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ykb9z9ms",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-2cc9phgi",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-4-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-2cc9phgi",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-4-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-6pe1ekwb",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp5-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-6pe1ekwb",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[{\"requestId\":\"ctrl-0oknj0q0rt6rw10tf3r1k0jr\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0m7vmo913mte\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0m7vmo913mte\"},\"targetInstanceId\":\"inst-0m7vmo913mte\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0:plane-skill:66bcd336-1c88-4bea-9201-e6e491969b89-1\",\"status\":\"pending\",\"createdAt\":\"2026-10-27T07:33:10.992Z\",\"requestSequence\":5,\"toolName\":\"team_skill\",\"operationFingerprint\":\"sha256:4667e31b0e6563e35d64eca6fe57e6213533e5fc85907a2d25142a627fa3f007\",\"summary\":\"PA ask case=tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0 rung=leader tool=team_skill effects=2\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0\",\"authorityGeneration\":0,\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"u7f-realm-u5u7finsp-20261027t07-32-27z|tool:team_skill\"},\"operationClass\":\"tool-invoke\"},\"binding\":{\"agentScopeKey\":\"session-team-child-93679c3f194198098a2d2c2461512e06\",\"assurance\":{\"assurance\":{\"alias\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"content-read\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"directory-metadata\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"inherit-cancel\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"network-destination\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null},\"write\":{\"evidence\":null,\"level\":\"untested\",\"mechanism\":null,\"realmId\":\"dsh-host-realm:team-trusted-assembly\",\"trustRoot\":null}},\"executionBoundary\":\"trusted-host\",\"implementationOrigin\":\"team-trusted-extension\"},\"authorityGeneration\":0,\"bindingId\":\"team-own:session-team-child-93679c3f194198098a2d2c2461512e06:team_skill\",\"definitionIdentity\":\"def#22\",\"executionBoundary\":\"trusted-host\",\"implementationOrigin\":\"team-trusted-extension\",\"policyGeneration\":0,\"providerId\":\"dsh-agent-team\",\"revision\":1,\"status\":\"ACTIVE\",\"toolName\":\"team_skill\"},\"callId\":\"plane-skill:66bcd336-1c88-4bea-9201-e6e491969b89-1\",\"deniedEffects\":[],\"effectSetFingerprint\":\"sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5\",\"effects\":[{\"kind\":\"read\",\"resource\":{\"canonicalLocator\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/homes/u5u7finsp-20261027T07-32-27Z/skills/u7f-demo-skill/SKILL.md\",\"kind\":\"absolute-path\",\"realmId\":\"u7f-realm-u5u7finsp-20261027t07-32-27z\",\"rights\":[\"read\"]}},{\"kind\":\"tool-invoke\",\"resource\":null,\"toolName\":\"team_skill\"}],\"member\":{\"instanceId\":\"inst-0m7vmo913mte\",\"teamSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\"},\"parametersFingerprint\":\"sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5\",\"perEffectRequired\":[\"leader\",\"leader\"],\"realmId\":\"u7f-realm-u5u7finsp-20261027t07-32-27z\",\"requiredAuthority\":\"leader\",\"schema\":\"a5m1.pa-control-manifest.v2\"},\"reviewPayloadDigest\":\"sha256:4667e31b0e6563e35d64eca6fe57e6213533e5fc85907a2d25142a627fa3f007\"}],\"count\":1,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ki5gwwsx",
+         "name": "team_resolve_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-r1-u5u7finsp-20261027t07-32-27z",
+          "requestId": "ctrl-0oknj0q0rt6rw10tf3r1k0jr",
+          "decision": "allow"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ki5gwwsx",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0oknj0q0rt6rw10tf3r1k0jr\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0m7vmo913mte\"},\"targetInstanceId\":\"inst-0m7vmo913mte\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0:plane-skill:66bcd336-1c88-4bea-9201-e6e491969b89-1\",\"toolName\":\"team_skill\",\"operationFingerprint\":\"sha256:4667e31b0e6563e35d64eca6fe57e6213533e5fc85907a2d25142a627fa3f007\"},\"requestSequence\":5,\"decisionSequence\":6,\"createdAt\":\"2026-10-27T07:33:11.126Z\"}}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-y4kxb8i7",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-6-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-y4kxb8i7",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-6-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-54r8ip9h",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp7-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-54r8ip9h",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-gkxcve7n",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-8-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-gkxcve7n",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-8-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-as8piz0b",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp9-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-as8piz0b",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-fjr72ufe",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-10-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-fjr72ufe",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-10-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-m9autyut",
+         "name": "team_list_pending_control",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-lp11-u5u7finsp-20261027t07-32-27z"
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-m9autyut",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"pending\":[],\"count\":0,\"truncated\":false}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "tool_use",
+         "id": "call-u6fs-ma90j2dw",
+         "name": "team_collect",
+         "input": {
+          "rootSessionId": "session-u7f-team-u5u7finsp-20261027t07-32-27z",
+          "requestToken": "u7f-fd1-12-u5u7finsp-20261027t07-32-27z",
+          "requestTokens": [
+           "u7f-d1-u5u7finsp-20261027t07-32-27z"
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "tool_result",
+         "tool_use_id": "call-u6fs-ma90j2dw",
+         "content": [
+          {
+           "type": "text",
+           "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7f-team-u5u7finsp-20261027t07-32-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7f-d1-u5u7finsp-20261027t07-32-27z\",\"status\":\"running\",\"instanceId\":\"inst-0m7vmo913mte\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7f-fd1-12-u5u7finsp-20261027t07-32-27z\"}"
+          }
+         ],
+         "is_error": false
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_FENCE_HOLD_U7F_STRICT_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-control requestId=ctrl-0oknj0q0rt6rw10tf3r1k0jr]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0oknj0q0rt6rw10tf3r1k0jr\nrequester: inst-0m7vmo913mte\nsubject: instance inst-0m7vmo913mte\ntarget: inst-0m7vmo913mte\ntool: team_skill\nsummary: PA ask case=tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:74bd663b6d526b021cd026911b063a4d72fff0ae75538fff5c003f4656d21bf5:g0 rung=leader tool=team_skill effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "[team-control requestId=ctrl-13zy3130ixp3gi0i0h3rd0ew]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-13zy3130ixp3gi0i0h3rd0ew\nrequester: inst-0m7vmo913mte\nsubject: instance inst-0m7vmo913mte\ntarget: inst-0m7vmo913mte\ntool: team_cordis_inspect_list\nsummary: PA ask case=tadm:session-u7f-team-u5u7finsp-20261027t07-32-27z:inst-0m7vmo913mte:sha256:b2e1779455b3f0c4d883c1234c39406ee5e1135d940e1444dbade130255c6bce:g0 rung=leader tool=team_cordis_inspect_list effects=2\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      },
+      {
+       "role": "assistant",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+        }
+       ]
+      },
+      {
+       "role": "user",
+       "content": [
+        {
+         "type": "text",
+         "text": "U7F_PHASE_s"
+        }
+       ]
+      }
+     ],
+     "max_tokens": 256000,
+     "thinking": {
+      "type": "enabled"
+     },
+     "output_config": {
+      "effort": "high"
+     },
+     "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are the leader of the u7f inspect assembly team. U7F_L1_u5u7finsp-20261027t07-32-27z drives your chain: create one governed member, delegate the inspect script, resolve its pending approvals, collect, and close.\n\n[team-root-context rootSessionId=session-u7f-team-u5u7finsp-20261027t07-32-27z leaderInstanceId=inst-leader]\nEvery team_* tool call must include rootSessionId=\"session-u7f-team-u5u7finsp-20261027t07-32-27z\" and a unique requestToken.\n\nYou are a coding agent powered by the u7f-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @\"...\" quotes a path containing spaces.\n\nUse the read tool — not shell commands like cat — to inspect text files. Use offset and limit to continue reading large files.\n\nRead an existing file before overwriting it with write (the default fs-observation-policy requires it) and prefer edit for targeted changes.\n\nRead a file before editing it (the default fs-observation-policy requires it), unless you just created or edited it in this session.\n\nPrefer showing the primary results within your final response alongside a brief explanation. Use ![Description](<path/to/image.png>) when an image supports an explanation or comparison. Use [Description](<path/to/image.png>) when referring to an image or listing files. Enclose Markdown file destinations in angle brackets, especially paths containing spaces. Do not call present just to list edited source files, or run commands to check whether a diff view will appear. Use present when a separate file card helps the user open the complete deliverable, including images, Office documents, spreadsheets, and slide decks. Each presented file adds a card below the reply, with preview and native-open actions. Avoid repeating results already shown inline unless the separate card adds useful access. Outside commands, configuration expressions, and code blocks, link every mention of an existing file, including repeats and tables, to its full path relative to the working directory or absolute; append #L24 or #L24-L30 to the target for known lines. Use the filename or a clear alias as the label, adding only enough parent directories to distinguish files; keep full paths out of labels. Default to the name alone; when precise locations matter, append :24 or :24–30, with no # or L in the line suffix.\n\nThe DeepSeek Harness implementation checkout is at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use/. The checkout location and current working directory are separate values and may differ; never infer the working directory from this path. Use pwd to determine the current working directory. Use this checkout only to inspect or extend DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3184. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-f-inspect/tests/deepseek-harness-test-use.",
+     "tools": [
+      {
+       "name": "bash",
+       "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+         }
+        },
+        "required": [
+         "command"
+        ]
+       }
+      },
+      {
+       "name": "edit",
+       "description": "Perform exact string replacements in one governed file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. old_string must appear verbatim (and uniquely unless replace_all is true); the edit never creates a file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "old_string": {
+          "type": "string",
+          "description": "the exact text to replace (non-empty, must appear verbatim)"
+         },
+         "new_string": {
+          "type": "string",
+          "description": "the replacement text (empty string deletes)"
+         },
+         "replace_all": {
+          "type": "boolean",
+          "description": "replace every occurrence instead of requiring a unique match (default false)"
+         }
+        },
+        "required": [
+         "file_path",
+         "old_string",
+         "new_string"
+        ]
+       }
+      },
+      {
+       "name": "read",
+       "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "offset": {
+          "type": "number",
+          "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+         },
+         "limit": {
+          "type": "number",
+          "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "read_image",
+       "description": "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to the session's attachment store and referenced as an image block.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         }
+        },
+        "required": [
+         "file_path"
+        ]
+       }
+      },
+      {
+       "name": "team_bash",
+       "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "command": {
+          "type": "string"
+         },
+         "cwd": {
+          "type": "string"
+         },
+         "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600000
+         },
+         "background": {
+          "type": "boolean"
+         }
+        },
+        "required": [
+         "command"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_collect",
+       "description": "Read the durable state of admitted work units by their request tokens (the async work-status read-back): each token reports running (the async continuation is still in flight, or the chain crashed before settlement — a same-token re-delegate RESUMES the unit instead of admitting a second one) or the terminal member result (succeeded / failed / unavailable, served verbatim from the durable settlement fact). Read-only: it writes nothing and delivers nothing.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestTokens": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "The work request tokens to read: the requestToken each team_delegate / team_follow_up call was given (1..64 non-empty strings, max 128 chars each)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestTokens"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_list",
+       "description": "List every Cordis Inspect Provider currently known to the Host, governed: the listing is read through the host registry public face after PA admission. Each entry includes its platform, purpose, read-only methods, and input/output schemas. Call this tool before configuring a plugin, then select the provider and method for team_cordis_inspect_query from its result. Do not guess names or treat an Inspect method as a business Service that plugin code can call.",
+       "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_cordis_inspect_query",
+       "description": "Run a read-only query declared by an Inspect Provider, governed: platform, provider, and method must come from team_cordis_inspect_list, and input must satisfy that method's schema (invalid or unverifiable input is refused before dispatch). The query waits under a bounded settle race: on timeout or cancellation the call answers a typed refusal and a late result is NEVER delivered. This tool cannot invoke business Service methods or modify the runtime.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "platform": {
+          "type": "string",
+          "enum": [
+           "host",
+           "client"
+          ],
+          "description": "Runtime platform that owns the Provider."
+         },
+         "provider": {
+          "type": "string",
+          "description": "Exact Provider ID returned by team_cordis_inspect_list."
+         },
+         "method": {
+          "type": "string",
+          "description": "Exact method name declared by the Provider manifest."
+         },
+         "input": {
+          "description": "Optional query input; it must satisfy the method input schema. (Any JSON value; a node without `type` is the host subset's unconstrained form.)"
+         }
+        },
+        "required": [
+         "platform",
+         "provider",
+         "method"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_create_member",
+       "description": "Create a NEW member instance from a blueprint template (explicit creation; the activation authority enforces quota, envelope, and gates).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "The blueprint template id the new member is created from."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for the new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for the new member."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "delegationTemplateId",
+         "label"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_delegate",
+       "description": "Delegate work: either create a NEW member from a template and admit the work on it, or admit new work on an EXISTING member instance. Provide exactly one of delegationTemplateId / delegationInstanceId. Asynchronous by default: with no async argument the work is admitted durably and the call returns immediately (the response carries the admission receipt — workStatus \"admitted\", settled false, no result); read the terminal result back with team_collect (the same request token). Pass async: false for the synchronous behavior (the call returns when the work unit has settled and the member result is in the response).",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "delegationTemplateId": {
+          "type": "string",
+          "description": "Present: create a new member from this template and delegate to it."
+         },
+         "delegationInstanceId": {
+          "type": "string",
+          "description": "Present: delegate new work to this existing member instance (its persistent context is kept)."
+         },
+         "label": {
+          "type": "string",
+          "description": "A short human-readable label for the new member instance (non-empty)."
+         },
+         "groupId": {
+          "type": "string",
+          "description": "Optional group id for a new member."
+         },
+         "workspace": {
+          "type": "string",
+          "description": "Optional workspace path override for a new member."
+         },
+         "taskSummary": {
+          "type": "string",
+          "description": "Optional short summary of the delegated work unit (audit context)."
+         },
+         "prompt": {
+          "type": "string",
+          "description": "REQUIRED: the exact work prompt delivered (model-visible) to the member's bound child session. No default inheritance from the caller or sibling transcripts."
+         },
+         "attachedContext": {
+          "type": "string",
+          "description": "Optional explicit context attached to the work unit and delivered with the prompt."
+         },
+         "async": {
+          "type": "boolean",
+          "description": "Optional (default true when omitted): the DEFAULT is ASYNCHRONOUS — with no argument the call returns as soon as the durable admission is committed (the response effect carries workStatus \"admitted\", settled false, and NO member result); the terminal result is then read back with team_collect. Pass async: false for the synchronous behavior (the call blocks until the work unit settles and the response carries the member result — reserve it for work you know will not wait on a leader approval, which the Leader cannot resolve from inside a blocked turn)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "label",
+         "prompt"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_glob",
+       "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_grep",
+       "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "pattern": {
+          "type": "string"
+         },
+         "path": {
+          "type": "string"
+         },
+         "glob": {
+          "type": "string"
+         },
+         "output_mode": {
+          "type": "string",
+          "enum": [
+           "content",
+           "files_with_matches",
+           "count"
+          ]
+         },
+         "fixed_string": {
+          "type": "boolean"
+         },
+         "ignore_case": {
+          "type": "boolean"
+         },
+         "multiline": {
+          "type": "boolean"
+         },
+         "context": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+         },
+         "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+         }
+        },
+        "required": [
+         "pattern"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_members",
+       "description": "List every member instance of the team with its template id, label, lifecycle state, and bound child session id.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_list_pending_control",
+       "description": "List this Team's unresolved approvals across every carrier: each open approval case at its CURRENT leg (whatever rung that leg is waiting on and whichever carrier it rides), plus any pending legacy request. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "limit": {
+          "type": "integer",
+          "description": "Optional: the maximum number of pending requests to return (default 50, minimum 1, maximum 100)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_resolve_control",
+       "description": "Record an allow/deny decision on a pending control request, or ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "rootSessionId": {
+          "type": "string",
+          "description": "The TeamSession (root session) id this operation belongs to."
+         },
+         "requestToken": {
+          "type": "string",
+          "description": "A token unique to THIS logical operation (non-empty, max 128 chars). Reuse the exact same token only when retrying the same logical operation; never reuse it for a different one."
+         },
+         "requestId": {
+          "type": "string",
+          "description": "The durable control request id to decide (max 128 chars)."
+         },
+         "decision": {
+          "type": "string",
+          "enum": [
+           "allow",
+           "deny",
+           "escalate"
+          ],
+          "description": "The decision: allow | deny | escalate."
+         },
+         "note": {
+          "type": "string",
+          "description": "Optional decision note (max 256 chars)."
+         }
+        },
+        "required": [
+         "rootSessionId",
+         "requestToken",
+         "requestId",
+         "decision"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "team_skill",
+       "description": "Load the full instructions for a skill, governed: reads only the host-sanctioned skill root(s) this mount configures, resolves the name through the anchor law (no parent segments, no symlink escape), and refuses unknown skills. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "The exact skill name from the available skills list."
+         }
+        },
+        "required": [
+         "name"
+        ],
+        "additionalProperties": false
+       }
+      },
+      {
+       "name": "write",
+       "description": "Create or fully replace one governed UTF-8 text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused. Overwrites an existing file only when the target is a regular file.",
+       "input_schema": {
+        "type": "object",
+        "properties": {
+         "file_path": {
+          "type": "string",
+          "description": "path relative to the governed root, or an absolute path inside it"
+         },
+         "content": {
+          "type": "string",
+          "description": "the full UTF-8 content to write (empty string clears the file)"
+         }
+        },
+        "required": [
+         "file_path",
+         "content"
+        ]
+       }
+      }
+     ]
+    },
+    "reply": {
+     "kind": "text",
+     "content": "U7F_L1_DONE_u5u7finsp-20261027t07-32-27z"
+    }
+   }
+  }
+ ]
+}
