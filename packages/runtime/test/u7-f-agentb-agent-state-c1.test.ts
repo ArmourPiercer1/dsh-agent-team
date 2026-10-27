@@ -468,7 +468,7 @@ describe('u7fb T — the FULL pinned transition table: typed refusals, zero dura
     store.setArm('agent:alice', dh)
     const built = await mount({ agentStateEnabled: true, store })
     const r = await rowsOf(built).update_goal.execute({ goal_id: 'g1', revision: 1, action: 'complete' }, execFor('alice'))
-    expect(r.isError ?? false).toBe(false)
+    expect(r.refusal).toBeUndefined()
     expect(JSON.parse(r.text).goal).toMatchObject({ goal_id: 'g1', phase: 'complete', revision: 2 })
     expect(store.stateOf('agent:alice')?.goal).toMatchObject({ phase: 'complete', armed: false })
     const applied = store.log.attempts.filter((a) => a.outcome === 'applied')
