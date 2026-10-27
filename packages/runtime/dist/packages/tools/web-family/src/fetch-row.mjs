@@ -74,7 +74,7 @@ export const FETCH_ROW_PRESENTATION_FACE = Object.freeze({
 export function buildFetchRowDefinition({ name = WEB_FETCH_NATIVE_NAME, fetchExecutor }) {
   return Object.freeze({
     name,
-    description: 'Fetch one page over the network through the governed web family. HTTPS only (unless this mount explicitly opted into loopback HTTP), one hop chain bounded to one approved origin, responses size- and time-bounded, credentials in URLs refused. Every call is admitted per-destination by the Team authority chain; a refused call performs no network effect at all.',
+    description: 'Fetch one page over the network through the governed web family. HTTPS only (unless this mount explicitly opted into loopback HTTP), one hop chain bounded to one approved origin, responses size- and time-bounded, credentials in URLs refused. Every call is admitted per-destination by the Team authority chain; a refused call performs no network effect at all. An approval covers the ORIGIN, not one URL: allowing a fetch permits any path on the origin on that approved host (grant scope is per-origin). Non-public destinations (loopback unless this mount opted in, private/CGNAT/link-local/metadata space, IPv6 equivalents) are refused before any socket, whatever the approval said.',
     parameters: {
       type: 'object',
       // Native parity at the host pin (fetch.ts): exactly one required

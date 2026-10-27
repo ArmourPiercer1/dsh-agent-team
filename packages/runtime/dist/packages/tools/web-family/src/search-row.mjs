@@ -68,7 +68,7 @@ export const SEARCH_ROW_PRESENTATION_FACE = Object.freeze({
 export function buildSearchRowDefinition({ name = WEB_SEARCH_NATIVE_NAME, searchExecutor }) {
   return Object.freeze({
     name,
-    description: 'Search the web through this mount\'s governed search provider. Without a configured provider the call is refused typed and nothing leaves the machine. With one, every call is admitted per-destination by the Team authority chain before the provider is contacted.',
+    description: 'Search the web through this mount\'s governed search provider. Without a configured provider the call is refused typed and nothing leaves the machine. With one, every call is admitted per-destination by the Team authority chain before the provider is contacted. The provider reaches ONLY the destinations the trusted mount declared for it, an approval covers any path on the origin it names, and any provider call toward an undeclared origin is refused with zero wire.',
     parameters: {
       type: 'object',
       // Native parity at the host pin (search.ts): `queries`, 1–max.

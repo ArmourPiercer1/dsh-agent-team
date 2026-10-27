@@ -160,6 +160,7 @@ export type TeamKey =
   | 'view.ledger.control.renderMode'
   | 'view.ledger.control.digest'
   | 'view.ledger.control.payload'
+  | 'view.ledger.control.scopeNotes'
   | 'view.ledger.control.cannotReview'
   | 'view.ledger.externalPolicy.teamDecision'
   | 'view.ledger.externalPolicy.execution'
@@ -448,6 +449,7 @@ export const zh: Record<TeamKey, string> = {
   'view.ledger.control.renderMode': '渲染模式',
   'view.ledger.control.digest': 'ledger wire: reviewPayloadDigest（账本线值）',
   'view.ledger.control.payload': '审阅载荷 reviewPayload（线载 JSON 全文）',
+  'view.ledger.control.scopeNotes': '授权范围 consent scope',
   'view.ledger.control.cannotReview': '无法完整审阅：审阅载荷或其摘要缺失/损坏——已禁用“允许”（“拒绝”仍可用）。',
   'view.ledger.externalPolicy.teamDecision': '团队裁决：已允许',
   'view.ledger.externalPolicy.execution': '执行：被托管策略阻止',
@@ -733,6 +735,7 @@ export const en: Record<TeamKey, string> = {
   'view.ledger.control.renderMode': 'Rendering mode',
   'view.ledger.control.digest': 'ledger wire: reviewPayloadDigest',
   'view.ledger.control.payload': 'reviewPayload (wire JSON, full text)',
+  'view.ledger.control.scopeNotes': 'consent scope',
   'view.ledger.control.cannotReview': 'Cannot fully review: the reviewed payload or its digest is missing or corrupted — Allow is disabled (Deny stays available).',
   'view.ledger.externalPolicy.teamDecision': 'Team decision: Allowed',
   'view.ledger.externalPolicy.execution': 'Execution: Blocked by managed policy',

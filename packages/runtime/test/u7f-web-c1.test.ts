@@ -62,7 +62,7 @@ interface RowOutcome {
   url?: string; statusCode?: number; body?: { kind?: string; content?: string }; truncated?: boolean
   content?: string; sources?: Array<{ url?: string }>; cancelled?: boolean
 }
-interface Definition { name: string; execute: (raw: unknown, exec?: Record<string, unknown>) => Promise<RowOutcome> }
+interface Definition { name: string; description?: string; execute: (raw: unknown, exec?: Record<string, unknown>) => Promise<RowOutcome> }
 interface PlaneValue {
   definitions: ReadonlyArray<Definition>
   ownNames: readonly string[]
@@ -523,5 +523,264 @@ describe('u7-f C1 web_search — no provider is never invented; a provider asks 
     if (built.ok === true) throw new Error('an invalid provider mounted — fail-closed law broken')
     expect(built.code).toBe('PLANE_WEB_PROVIDER_REFUSED')
     expect(stubHits.length).toBe(wire0.stub)
+  })
+})
+
+// ── review round 1 (#403 REVIEW-403.md): H-1 non-public destinations,
+// H-2/M-1 resolve-once + pinned connect, H-3 provider endpoint pinned to
+// the mount-declared destinations, and the consent-scope row text. Every
+// item was written RED-first; the zero-wire proofs are the stub counters.
+// ─────────────────────────────────────────────────────────────────────────
+const LANE = new URL('../../tools/web-family/src/', import.meta.url).href
+
+/** A recording fake resolver: answers each call from `answers` in order
+ *  (last answer repeats). NOTHING resolves unless this list says so —
+ *  an arm that sees a second call entry FAILED the resolve-once law. */
+function mkResolver(answers: Array<Array<{ address: string; family: number }>>) {
+  const calls: string[] = []
+  const fn = async (_host: string) => {
+    const answer = answers[Math.min(calls.length, answers.length - 1)]
+    calls.push(_host)
+    return answer
+  }
+  return Object.assign(fn, { calls })
+}
+
+async function listenOn(server: Server, host: string): Promise<number> {
+  for (const port of portsOfBands(MOCK_PORT_BANDS)) {
+    try {
+      await new Promise<void>((res, rej) => {
+        const onError = (e: unknown) => rej(e)
+        server.once('error', onError)
+        server.listen(port, host, () => { server.removeListener('error', onError); res() })
+      })
+      return port
+    } catch { /* occupied: next */ }
+  }
+  throw new Error(`no free MOCK-band port on ${host}`)
+}
+
+describe('u7-f C1 review-fix H-1 — every scheme, the RESOLVED address, BEFORE connect: non-public destinations are typed refusals with zero wire', () => {
+  const NON_PUBLIC: Array<[string, string]> = [
+    ['RFC1918 10/8', 'https://10.0.0.1/x'],
+    ['RFC1918 172.16/12', 'https://172.16.5.9/x'],
+    ['RFC1918 172.31 edge', 'https://172.31.255.255/x'],
+    ['RFC1918 192.168/16', 'https://192.168.0.5/x'],
+    ['CGNAT 100.64/10', 'https://100.64.0.1/x'],
+    ['CGNAT 100.127 edge', 'https://100.127.255.255/x'],
+    ['link-local incl. metadata', 'https://169.254.169.254/latest/meta-data/'],
+    ['IPv6 loopback', 'https://[::1]/x'],
+    ['IPv6 ULA fc00::/7', 'https://[fd00::1]/x'],
+    ['IPv6 link-local', 'https://[fe80::1]/x'],
+    // The ZONE form is refused at URL PARSE (a zone-scoped literal has no
+    // canonical origin — the WHATWG parser itself rejects it): still a
+    // typed, pre-wire, zero-wire refusal, just a different code. The arm
+    // accepts either code; what it never accepts is a fetch.
+    ['IPv6 link-local + zone', 'https://[fe80::1%25eth0]/x'],
+    ['IPv4 unspecified', 'https://0.0.0.0/x'],
+    ['IPv4 broadcast', 'https://255.255.255.255/x'],
+    ['v4-mapped loopback', 'https://[::ffff:127.0.0.1]/x'],
+    ['v4-compatible loopback', 'https://[::127.0.0.1]/x'],
+    ['v4-mapped private', 'https://[::ffff:10.0.0.1]/x'],
+    ['well-known NAT64 → loopback', 'https://[64:ff9b::7f00:1]/x'],
+    ['decimal IPv4 spelling', 'https://2130706433/x'],
+    ['hex IPv4 spelling', 'https://0x7f000001/x'],
+    ['octal IPv4 spelling', 'https://0177.0.0.1/x'],
+  ]
+
+  it('D-1 the matrix is refused on EVERY scheme on a plain mount — before any PA walk, zero wire', async () => {
+    const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    const observe: string[] = []
+    const audit: string[] = []
+    const plane = await buildWeb(ASK, { webAllowHttpLoopback: false }, { controlLeg: recordingApprovingLeg(audit) }, observe)
+    for (const [label, url] of NON_PUBLIC) {
+      const r = await attempt(() => def(plane, 'web_fetch').execute({ url }))
+      expect(r.ok, label).toBe(false)
+      if (!r.ok) {
+        if (label.includes('+ zone')) {
+          expect(r.msg, label).toContain('WEB_URL_INVALID') // parse-level typed refusal (see matrix note)
+        } else {
+          expect(r.msg, label).toContain('WEB_DESTINATION_NON_PUBLIC')
+        }
+      }
+    }
+    // loopback literals are NOT special without the trusted opt either:
+    for (const url of ['https://127.0.0.1:8080/x', 'https://127.0.0.2/x', 'https://[::1]:443/y']) {
+      const r = await attempt(() => def(plane, 'web_fetch').execute({ url }))
+      expect(r.ok, url).toBe(false)
+      if (!r.ok) expect(r.msg).toContain('WEB_DESTINATION_NON_PUBLIC')
+    }
+    expect(audit).toHaveLength(0) // the refusal is PRE-PA: nothing consumed
+    expect(stubHits.length).toBe(wire0.stub)
+    expect(victimHits.length).toBe(wire0.victim)
+  })
+
+  it('D-1b the opt re-admits LOOPBACK ONLY: private/CGNAT/link-local stay refused on an opted mount (https path)', async () => {
+    const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    const audit: string[] = []
+    const plane = await buildWeb(ASK, {}, { controlLeg: recordingApprovingLeg(audit) }) // webAllowHttpLoopback: true
+    for (const url of ['https://10.0.0.1/x', 'https://169.254.169.254/x', 'https://[fd00::1]/x', 'https://100.64.1.2/x', 'https://[64:ff9b::a00:1]/x']) {
+      const r = await attempt(() => def(plane, 'web_fetch').execute({ url }))
+      expect(r.ok, url).toBe(false)
+      if (!r.ok) expect(r.msg).toContain('WEB_DESTINATION_NON_PUBLIC')
+    }
+    expect(audit).toHaveLength(0)
+    expect(stubHits.length).toBe(wire0.stub)
+  })
+
+  it('D-2 with the trusted opt, loopback re-enters and the WIRE TRIES (consent shape changes, private never does)', async () => {
+    const audit: string[] = []
+    const plane = await buildWeb(ASK, {}, { controlLeg: recordingApprovingLeg(audit) })
+    // 127.0.0.2 is the whole-loopback-block test (the opt re-admits 127/8,
+    // not one blessed literal). NOTE (environment, disclosed): this host's
+    // network sandbox intercepts non-:80-loopback dials with a 502 from
+    // its own layer — so the arm pins the LAW shape (admitted + PA walked
+    // + the socket was actually attempted), not which downstream answered
+    // the refused dial. Zero private destinations changed shape: D-1b.
+    const r = await attempt(() => def(plane, 'web_fetch').execute({ url: `http://127.0.0.2:${String(stubPort)}/x` }))
+    if (!r.ok) expect(r.msg).not.toContain('WEB_DESTINATION_NON_PUBLIC') // admitted — never a destination-law refusal
+    expect(audit.length).toBe(1) // the PA walk RAN for the opted-in loopback effect
+  })
+
+  it('D-3 the law runs on the RESOLVED set: ONE address private in a mixed answer refuses the whole connect (zero wire)', async () => {
+    const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    const resolver = mkResolver([[{ address: '93.184.216.34', family: 4 }, { address: '10.0.0.1', family: 4 }]])
+    const transport = (await import(/* @vite-ignore */ `${LANE}web-transport.mjs`)).createWebTransport({ resolver, allowHttpLoopback: true })
+    const audit: string[] = []
+    const plane = await buildWeb(ASK, {}, { controlLeg: recordingApprovingLeg(audit), backends: { webTransport: transport } }, [])
+    // https: the scheme carries NO address promise — exactly why the law
+    // must run on the answer bytes. (No connect happens: the mixed set is
+    // refused before the socket — the stub never sees TLS either way.)
+    const r = await attempt(() => def(plane, 'web_fetch').execute({ url: 'https://mixed.example/x' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toContain('WEB_DESTINATION_NON_PUBLIC')
+    expect(resolver.calls.length).toBe(1) // resolve ONCE even for a refusal
+    expect(stubHits.length).toBe(wire0.stub)
+  })
+})
+
+describe('u7-f C1 review-fix H-2/M-1 — resolve ONCE, check every answer, CONNECT TO THE CHECKED ADDRESS (DNS rebinding has no window)', () => {
+  it('D-4 the socket goes to the FIRST checked address; a hostile second answer is NEVER consulted (calls === 1)', async () => {
+    const attacker = createServer((req, res) => { victimHits.push(`attacker:${String(req.url ?? '')}`); res.writeHead(200); res.end('ATTACKER') })
+    attacker.on('clientError', () => {})
+    const attackerPort = await listenOn(attacker, '127.0.0.2')
+    try {
+      const wire0 = victimHits.length
+      // 'localhost' is a NAME: the http leg resolves it (loopback-only law
+      // on the bytes) and this arm's fake resolver answers the classic
+      // rebinding pair — checked loopback first, hostile second answer.
+      // The delivery coming from the stub IS the pin proof: the socket
+      // landed on the FIRST checked address and the resolver was never
+      // asked again before the connect (calls === 1 deletes the window).
+      const resolver = mkResolver([[{ address: '127.0.0.1', family: 4 }], [{ address: '127.0.0.2', family: 4 }]])
+      const transport = (await import(/* @vite-ignore */ `${LANE}web-transport.mjs`)).createWebTransport({ resolver, allowHttpLoopback: true })
+      const audit: string[] = []
+      const plane = await buildWeb(ASK, {}, { controlLeg: recordingApprovingLeg(audit), backends: { webTransport: transport } }, [])
+      const r = await attempt(() => def(plane, 'web_fetch').execute({ url: `http://localhost:${String(stubPort)}/page` }))
+      expect(r.ok).toBe(true)
+      if (r.ok) expect(String(r.value.body?.content)).toBe('hello-web-family')
+      expect(resolver.calls.length).toBe(1) // re-resolution is STRUCTURALLY impossible
+      expect(victimHits.length).toBe(wire0) // the second answer was never contacted
+      expect(attackerPort).toBeGreaterThan(0)
+    } finally {
+      await new Promise<void>((res) => attacker.close(() => res()))
+    }
+  })
+
+  it('D-5 public-first, loopback-second: the PINNED public address is tried (typed timeout), the loopback rebind answer is never wired', async () => {
+    const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    // https: the scheme admits any host, so the address law + pin carry
+    // the whole weight here. The attacker's answer pair is public first
+    // (TEST-NET-2, unroutable by law of the range) and loopback second —
+    // an approval-rebinding attack that would make the socket SLAM from an
+    // approved public shape into the host's own loopback on re-resolve.
+    const resolver = mkResolver([[{ address: '198.51.100.10', family: 4 }], [{ address: '127.0.0.1', family: 4 }]])
+    const transport = (await import(/* @vite-ignore */ `${LANE}web-transport.mjs`)).createWebTransport({ resolver, allowHttpLoopback: true })
+    const audit: string[] = []
+    const plane = await buildWeb(ASK, { webFetchTimeoutMs: 1500 }, { controlLeg: recordingApprovingLeg(audit), backends: { webTransport: transport } }, [])
+    const r = await attempt(() => def(plane, 'web_fetch').execute({ url: 'https://rebind2.example/page' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toMatch(/WEB_TIMEOUT|WEB_TRANSPORT_FAILED/) // the PINNED public dial was tried and died bound
+    expect(resolver.calls.length).toBe(1)
+    expect(stubHits.length).toBe(wire0.stub) // never to the second answer
+    expect(victimHits.length).toBe(wire0.victim)
+  })
+
+  it('D-6 every redirect hop resolves + checks + pins AGAIN (same origin, fresh law each hop)', async () => {
+    const resolver = mkResolver([[{ address: '127.0.0.1', family: 4 }]])
+    const transport = (await import(/* @vite-ignore */ `${LANE}web-transport.mjs`)).createWebTransport({ resolver, allowHttpLoopback: true })
+    const audit: string[] = []
+    const observe: string[] = []
+    const plane = await buildWeb(ASK, {}, { controlLeg: recordingApprovingLeg(audit), backends: { webTransport: transport } }, observe)
+    const r = await attempt(() => def(plane, 'web_fetch').execute({ url: `http://localhost:${String(stubPort)}/hop` }))
+    expect(r.ok).toBe(true)
+    expect(hitsOf('/hop')).toBeGreaterThanOrEqual(1)
+    expect(hitsOf('/page')).toBeGreaterThanOrEqual(1)
+    expect(resolver.calls.length).toBe(2) // one resolve per hop — each hop re-pinned
+  })
+})
+
+describe('u7-f C1 review-fix H-3 — the provider endpoint is fixed by the MOUNT: a provider call leaving its declared origins is a typed refusal with zero wire', () => {
+  /** Provider shape that USES the bounded port (the real provider leg). */
+  const portProvider = (url: () => string) => ({
+    id: 'u7f-c1-port-provider',
+    destination: () => ORIGIN(),
+    search: async ({ queries, port }: { queries: string[]; port: { postJson: (a: unknown) => Promise<{ ok?: boolean; json?: unknown; code?: string }> } }) => {
+      const out = await port.postJson({ url: url(), json: { queries }, maxBytes: 64 * 1024 })
+      if (out.ok !== true) return { ok: false, code: out.code ?? 'WEB_SEARCH_FAILED', detail: `provider leg refused (${String(out.code)})` }
+      const parsed = out.json as { content?: string; sources?: Array<{ url: string }>; truncated?: boolean }
+      return { ok: true, content: parsed.content, sources: parsed.sources ?? [], truncated: parsed.truncated === true }
+    },
+  })
+
+  it('S-10 a provider calling its DECLARED destination over the port: positive', async () => {
+    const observe: string[] = []
+    const plane = await buildWeb(ASK, {}, { controlLeg: approvingControlLeg([]), backends: { webSearchProvider: portProvider(() => `${ORIGIN()}/search`) } }, observe)
+    const r = await attempt(() => def(plane, 'web_search').execute({ queries: ['u7-f-port'] }))
+    expect(r.ok).toBe(true)
+    expect(hitsOf('/search')).toBeGreaterThanOrEqual(1)
+  })
+
+  it('S-11 a provider calling OUTSIDE its declared destinations is refused at the port: typed, VICTIM NEVER CONTACTED', async () => {
+    const wire0 = { stub: stubHits.length, victim: victimHits.length }
+    const observe: string[] = []
+    const rogue = portProvider(() => `http://127.0.0.1:${String(victimPort)}/victim`)
+    const plane = await buildWeb(ASK, {}, { controlLeg: approvingControlLeg([]), backends: { webSearchProvider: rogue } }, observe)
+    const r = await attempt(() => def(plane, 'web_search').execute({ queries: ['rebind'] }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.msg).toContain('WEB_SEARCH_DESTINATION_DENIED')
+    expect(victimHits.length).toBe(wire0.victim) // zero wire to the undeclared origin
+    expect(stubHits.length).toBe(wire0.stub)
+    expect(observe.some((l) => l.includes('WEB_SEARCH_DESTINATION_DENIED'))).toBe(true)
+  })
+
+  it('S-12 mount law H-1: a provider DECLARING a non-public destination refuses the MOUNT (opt re-admits loopback only)', async () => {
+    for (const dest of ['https://169.254.169.254', 'https://10.0.0.1', 'http://10.0.0.1:8080', 'https://[fd00::7]']) {
+      const built = (await loadRow()).createTeamToolPlaneAssembly({
+        dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+        teamSessionId: 'u7f-test-team-root',
+        permissionPolicy: policy(),
+        realmId: REALM,
+        templateId: 'u7f-tpl',
+        role: 'member',
+        instanceId: 'u7f-instance-priv-provider',
+        onObserve: () => {},
+        fs: { subtreeContains },
+        plane: { fsInstance: fsInstance(), webEnabled: true, webAllowHttpLoopback: true },
+        backends: { webSearchProvider: { id: 'private-provider', destination: () => dest, search: async () => ({ ok: true, sources: [] }) } },
+      })
+      if (built.ok === true) throw new Error(`provider declaring ${dest} mounted — H-1 mount law broken`)
+      expect(built.code, dest).toBe('PLANE_WEB_PROVIDER_REFUSED')
+    }
+  })
+})
+
+describe('u7-f C1 review-fix disclosure — consent text names the grant scope', () => {
+  it('D-7 the row descriptions state the per-origin scope: an approval covers ANY PATH on the origin', async () => {
+    const plane = await buildWeb(ASK, {}, { controlLeg: approvingControlLeg([]) })
+    for (const name of ['web_fetch', 'web_search']) {
+      const d = def(plane, name)
+      expect(String(d.description)).toMatch(/any path on the origin/i)
+    }
   })
 })

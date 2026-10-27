@@ -109,10 +109,18 @@ export const familyAssembly = Object.freeze({
     // before any row exists; here it simply means "not opted in").
     const httpLoopbackAllowed = cap.planeConfig.webAllowHttpLoopback === true
     const transport = cap.injected.webTransport ?? createWebTransport({ allowHttpLoopback: httpLoopbackAllowed })
-    const searchPort = cap.injected.webSearchPort ?? createWebTransportSearchPort(transport, { allowHttpLoopback: httpLoopbackAllowed })
+    // Provider validation FIRST (H-1 at the mount), THEN the search port —
+    // the port's POST allowlist IS the mount-declared destination set
+    // (H-3: a provider call leaving its declared origins is refused typed,
+    // zero wire; an empty set reaches nothing). The injected seams stay
+    // the kit's escape hatch, unchanged.
     const providerMount = cap.injected.webSearchProvider === undefined || cap.injected.webSearchProvider === null
       ? { ok: true, provider: null, destinations: [] }
       : validateWebSearchProvider(cap.injected.webSearchProvider, { allowHttpLoopback: httpLoopbackAllowed })
+    const searchPort = cap.injected.webSearchPort ?? createWebTransportSearchPort(transport, {
+      allowHttpLoopback: httpLoopbackAllowed,
+      allowedOrigins: providerMount.ok === true ? providerMount.destinations : [],
+    })
     return {
       webTransport: transport,
       webSearchPort: searchPort,

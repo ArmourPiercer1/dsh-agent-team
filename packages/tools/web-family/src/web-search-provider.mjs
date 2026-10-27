@@ -48,7 +48,7 @@
 /** The closed key set of a provider object. */
 const PROVIDER_KEYS = ['id', 'destination', 'extraDestinations', 'search']
 
-import { isLoopbackHost } from './web-mechanics.mjs'
+import { isLoopbackHost, literalHostScope } from './web-mechanics.mjs'
 
 const isOrigin = (value, allowHttpLoopback) => {
   if (typeof value !== 'string') return false
@@ -59,6 +59,25 @@ const isOrigin = (value, allowHttpLoopback) => {
     return (httpsShape || loopbackHttp) && u.username === '' && u.password === ''
   } catch {
     return false
+  }
+}
+
+/** H-1 at the MOUNT (REVIEW-403): a provider declaring a non-public
+ *  destination would enter the PA requested set an approval could not
+ *  honestly cover, and the mount-declared set is what the transport will
+ *  later pin POSTs to. A LITERAL non-public host in a declared destination
+ *  refuses the mount (loopback only where the trusted opt says so);
+ *  hostnames are re-checked at the transport on their RESOLVED bytes —
+ *  the same law, same opt law, no second vocabulary. */
+function destinationScopeProblem(destination, allowHttpLoopback) {
+  try {
+    const host = new URL(destination).hostname.replace(/^\[/, '').replace(/\]$/, '')
+    const scope = literalHostScope(host)
+    if (scope === null || scope === 'public') return null
+    if (scope === 'loopback' && allowHttpLoopback === true) return null
+    return `provider destination ${destination} resolves to a literal ${scope} address — a mount-declared provider destination must be public (loopback only on a mount that opted into loopback, never private/CGNAT/link-local space)`
+  } catch {
+    return `provider destination ${destination} does not parse`
   }
 }
 
@@ -93,6 +112,8 @@ export function validateWebSearchProvider(candidate, options = {}) {
   if (!isOrigin(primary, allowHttpLoopback)) {
     return { ok: false, detail: 'provider.destination() must answer a canonical https origin (scheme://host[:port], no path, no userinfo; plain http only on a mount that opted into loopback http)' }
   }
+  const primaryScope = destinationScopeProblem(primary, allowHttpLoopback)
+  if (primaryScope !== null) return { ok: false, detail: primaryScope }
   const destinations = [primary]
   if (candidate.extraDestinations !== undefined) {
     if (typeof candidate.extraDestinations !== 'function') {
@@ -101,6 +122,10 @@ export function validateWebSearchProvider(candidate, options = {}) {
     const extra = candidate.extraDestinations()
     if (!Array.isArray(extra) || extra.some((d) => !isOrigin(d, allowHttpLoopback))) {
       return { ok: false, detail: 'provider.extraDestinations() must answer an array of canonical https origins' }
+    }
+    for (const d of extra) {
+      const scopeProblem = destinationScopeProblem(d, allowHttpLoopback)
+      if (scopeProblem !== null) return { ok: false, detail: scopeProblem }
     }
     for (const d of extra) if (!destinations.includes(d)) destinations.push(d)
   }

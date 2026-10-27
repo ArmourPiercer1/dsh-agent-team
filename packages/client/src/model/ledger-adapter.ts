@@ -912,3 +912,35 @@ export function ledgerModelFromStoreState(
   const complete = state.total !== null && state.orderedSequences.length >= state.total
   return adaptTeamLedger(entries, complete)
 }
+
+/**
+ * u7-f review round 1 (REVIEW-403, consent-scope disclosure) — the human
+ * approving a durable PA ask must be able to see WHAT the approval grants.
+ * The row's `reviewPayload` carries the strict operation manifest, whose
+ * `connect` effects name the network destinations; the GRANT they mint is
+ * PER-ORIGIN (contracts: a network destination never carries a path), so
+ * the honest one-line consent scope for every connect effect is "ANY path
+ * on this origin". This derivation is display-only and family-neutral: it
+ * keys on the CLOSED effect vocabulary (`connect` + `network-destination`)
+ * — never a family id, never a tool name — and it NEVER throws: any shape
+ * it cannot read answers with no notes (a guess would be invented
+ * consent text, which is worse than none).
+ */
+export function deriveControlScopeNotes(reviewPayload: unknown): readonly string[] {
+  if (reviewPayload === null || typeof reviewPayload !== 'object' || Array.isArray(reviewPayload)) return []
+  const effects = (reviewPayload as { effects?: unknown }).effects
+  if (!Array.isArray(effects)) return []
+  const notes: string[] = []
+  for (const effect of effects) {
+    if (effect === null || typeof effect !== 'object') continue
+    const e = effect as { kind?: unknown; resource?: unknown }
+    if (e.kind !== 'connect') continue
+    const resource = e.resource as { kind?: unknown; canonicalLocator?: unknown } | null | undefined
+    if (resource === null || typeof resource !== 'object') continue
+    if (resource.kind !== 'network-destination') continue
+    const locator = resource.canonicalLocator
+    if (typeof locator !== 'string' || locator.trim() === '') continue
+    notes.push(`connect: this approval permits ANY path on the origin ${locator.trim()} — the grant covers the whole origin, not a single URL`)
+  }
+  return notes
+}

@@ -387,6 +387,11 @@
   word-break: break-all;
   user-select: text;
 }
+.controlScopeNote {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 2px 0;
+}
 
 .cannotReview {
   flex: 1 1 100%;
