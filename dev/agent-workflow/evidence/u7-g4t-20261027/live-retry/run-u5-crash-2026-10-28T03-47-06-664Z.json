@@ -19,6 +19,12 @@
     ],
     "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
     "mode": "crash-reclaim",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": { "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4", "snapshot_version": "as20261026r1" },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
     "note": "A = core runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance",
     "hostBasePost": {
       "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
