@@ -78,6 +78,7 @@ import {
 } from './lib/u74a-jobs-assembly.mjs'
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
+import { bindWorldProfile, captureOracleBinding, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -152,6 +153,10 @@ async function main() {
     bindings: {
       teamSha: git(['rev-parse', 'HEAD'], REPO_ROOT),
       hostSha: hostBaseStartup.head,
+      hostTreeSha: hostBaseStartup.head,
+      composedProfileDigest: {},
+      ...trustedSourcesUnavailable(),
+      ...captureOracleBinding({ artifactPath: fileURLToPath(import.meta.url), sourceRoot: HERE, suite: 'u7-4a-jobs', evidencePath: join(evidence, `${runId}.oracle.json`) }),
       authority: readAuthorityBinding(REPO_ROOT),
       plant,
       worldIds: [],
@@ -173,6 +178,7 @@ async function main() {
     }
   }
 
+  factory.onProfileBinding = (entry) => bindWorldProfile(record.record.bindings, entry)
   const rc = createRunControl({
     log,
     writeEvidence: (name, content) => writeFileSync(join(evidence, `${runId}.${name}`), JSON.stringify(content, null, 2) + '\n'),

@@ -51,6 +51,7 @@ import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 import { acquireFirstFreeLease, pidAlive, reclaimStaleLease, sweepLegacyLease } from './port-lease.mjs'
 import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, validateKindSpec } from './world-kinds.mjs'
+import { captureProfileBinding } from './binding-digests.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -635,6 +636,8 @@ export class TestWorld {
     if (this.badMount === 'corrupt-patch') {
       appendFileSync(this.instance.patchFile, '\n- insert: [[{unparseable\n  :::\n\t- "broken\n')
     }
+    this.profileBinding = captureProfileBinding({ patchFile: this.instance.patchFile, logDir: this.logDir, worldId: this.id })
+    this.factory.onProfileBinding?.(this.profileBinding)
     const startPromise = this.instance.start({ timeoutMs: bootTimeoutMs })
     const child = this.instance.child // captured BEFORE the first await
     this.#writeOwnership({ hostPid: child?.pid ?? null, hostPort: lease.port, mockPort: this.mock?.port ?? null })

@@ -56,6 +56,7 @@ import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
 import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
 import { loadSuites } from './lib/suites.mjs'
+import { bindWorldProfile, captureOracleBinding, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
 import { findIssuedResult, makeCanaryDecide, resultClaimsRan } from './lib/mock-script.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -901,6 +902,17 @@ export async function runSuite(opts) {
       teamSha,
       teamTreeClean: git(['status', '--porcelain', '--untracked-files=no'], REPO_ROOT) === '',
       hostSha: hostBaseStartup.head,
+      hostTreeSha: hostBaseStartup.head, // alias: pristine runtime tree, not Team SHA
+      composedProfileDigest: {},
+      ...trustedSourcesUnavailable(),
+      ...captureOracleBinding({
+        artifactPath: COLLECTED_SUITES.some((s) => s.suite === suite)
+          ? join(HERE, 'suites', COLLECTED_SUITES.find((s) => s.suite === suite).file)
+          : fileURLToPath(import.meta.url),
+        evidencePath: join(evidence, `${runId}.oracle.json`),
+        sourceRoot: HERE,
+        suite,
+      }),
       hostPorcelainEmptyAtStartup: true,
       authority: readAuthorityBinding(REPO_ROOT),
       canaryPluginSha256: sha256Text(readFileSync(CANARY_PLUGIN_SRC, 'utf8')),
@@ -911,6 +923,8 @@ export async function runSuite(opts) {
       profileDisclosure: 'World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.',
     },
   })
+
+  factory.onProfileBinding = (entry) => bindWorldProfile(record.record.bindings, entry)
 
   const rc = createRunControl({
     log,
