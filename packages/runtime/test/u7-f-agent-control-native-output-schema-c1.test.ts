@@ -19,7 +19,7 @@ const NATIVE = {
   subagent: { oneOf: [
     { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'background' }, jobId: { type: 'string', required: true } } },
     { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'continuable' }, subagentId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, output: { type: 'array', required: true, items: {} } } },
+    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, output: { type: 'array', required: true, items: { type: 'json' } } } },
   ] },
   subagent_fork: null as Schema | null,
   workflow: { oneOf: [
@@ -49,6 +49,11 @@ async function driftGuard(): Promise<void> {
   for (const [name, [path, expected]] of Object.entries(SOURCES)) {
     const digest = createHash('sha256').update(readFileSync(`${root}/${path}`)).digest('hex')
     expect(digest, `native schema source drift: ${name} (${path})`).toBe(expected)
+  }
+  const host = await import(`${root}/${(await import(new URL('../../../tests/paths.mjs', import.meta.url).href)).TEST_USE_REL}/packages/core/tools/lib/index.js`)
+  const schemas = await load('native-output-schemas.mjs')
+  for (const [name, spec] of Object.entries(NATIVE)) {
+    expect(schemas.nativeOutputSchemas[name], `compiled native output schema: ${name}`).toEqual(host.valueSchemaSpecToJsonSchema(spec))
   }
 }
 
@@ -110,6 +115,24 @@ describe('U7-F C1 native Host output schemas', () => {
     for (const [name, row] of rows) {
       const value = await row.execute(name === 'list_agents' || name === 'list_subagent_models' ? {} : name === 'send_message' || name === 'interrupt_agent' ? { agent_id: 'a1', ...(name === 'send_message' ? { message: 'x' } : {}) } : { description: 'd', prompt: 'p' }, exec)
       expect(valid(NATIVE[name], value), name).toEqual([])
+    }
+  })
+
+  it('rejects one invalid native output per governed row', async () => {
+    const schemas = await load('native-output-schemas.mjs')
+    for (const name of Object.keys(NATIVE)) {
+      const invalid = name === 'list_subagent_models' ? 42 : name === 'list_agents' ? [{}] : name === 'interrupt_agent' ? { accepted: 'yes' } : name === 'send_message' ? {} : { kind: 'foreground', runId: 1 }
+      expect(valid(schemas.nativeOutputSchemas[name], invalid), name).not.toEqual([])
+    }
+  })
+
+  it('renders workflow foreground scalar, array, null, and object results', async () => {
+    const workflow = await load('workflow-row.mjs')
+    for (const result of ['scalar', [1, 2], null, { ok: true }]) {
+      const row = workflow.buildWorkflowRowDefinition({ name: 'workflow', workflowExecutor: async () => ({ kind: 'ok', value: { kind: 'foreground', runId: 'w1', agentsStarted: 0, result } }) })
+      const value = await row.execute({ description: 'd', prompt: 'p' }, exec)
+      expect(valid(NATIVE.workflow, value)).toEqual([])
+      expect(row.output.render({}, value)[0]?.type).toBe('text')
     }
   })
 
