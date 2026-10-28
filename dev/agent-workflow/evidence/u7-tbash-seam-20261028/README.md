@@ -174,3 +174,43 @@ test (e) additionally parses that committed ledger (`parse → 0 → boot 1 allo
 | `dry-run-GREEN-vs-committed.diff` / `dry-run-RED-vs-committed.diff` | the ONLY diff is the recorded absolute `fixture` path |
 | `dry-run-SEAM-GREEN.log`, `arc-b/dry-run-GREEN.json` | seam-routed dry-run: lands in `--evidence`, byte-identical verdicts |
 | `cli-refusals.log` | five fail-closed CLI refusals, exit 1, zero boot |
+| `R1-RED.log` | review round 1: legs (f)–(i) RED before implementation + pre-fix ELF-trap crash |
+| `R1-GREEN.log` | review round 1: seam 9/9, trio 18/18, invariants re-confirmed |
+| `R1-MUTATION-RED.log` | five mutants (one per fix), each killed by its leg; restored GREEN |
+| `fixture-next-lane/arc-b/boot-budget.jsonl`, `arc-b/boot-budget.jsonl` | committed zero-entry ledgers the tests cite |
+
+## 9. Review round 1 (2026-10-28) — verdict **补充内容**, F1–F4 closed
+
+The independent review of PR #428 returned 补充内容 (supplement): the seam was correct as plumbing but
+left authority with code review instead of code. Four findings were fixed on this branch; the no-flag
+#415 default stayed byte-for-byte (leg (a) green; no-flag dry-run rerun differs from the committed
+record only in the pre-existing absolute `fixture` line — `R1-GREEN.log`).
+
+| finding | defect | fix (seam plumbing in `run-c2.mjs` only) | closing test |
+| --- | --- | --- | --- |
+| **F1 (HIGH, governance)** | `--budget` unbounded + self-declared: empty ledger + `--budget 999` authorised arbitrarily many Host boots | flagged `--budget` capped at the committed `MAX_FLAGGED_BUDGET = 3` (this lane's history is 1 boot per acceptance run; 3 = acceptance + 2 declared retries) with a typed refusal; the ONLY override is the named env `U7TB_BUDGET_OVERRIDE_REASON="<short reason ≤200 chars>"`, and when used the marker `{budget, cap, env, reason}` is stamped into the boot-ledger entry AND the produced record (`bootBudgetOverride`) — an over-budget run is impossible to hide. No-flag default budget stays exactly 7. | seam leg **(f)**; mutant M1 (cap disabled) → (f) RED |
+| **F2 (MEDIUM)** | `--budget-ledger` accepted any in-repo path outside the closed lane → a lane could exhaust or inherit ANOTHER lane's ledger | the ledger must live inside `--evidence` or share its lane root (`dev/agent-workflow/evidence/<lane>`; outside the evidence tree: the same parent dir), typed refusal otherwise | seam leg **(g)** (foreign committed ledger refused, same-lane sibling accepted); mutant M2 (check disabled) → (g) RED |
+| **F3 (MEDIUM)** | record cited `<own dir names> ∩ existsSync` while boot numbering restarts at 1 → files left by an earlier run in a reused dir could be cited as this run's | flagged mode stamps the run's id into every output name (`boot<N>-<runId>`); the record's evidence list is built ONLY from files this run wrote successfully (no dir scan); a flagged run REFUSES a non-empty `--evidence` dir unless `--allow-reused-dir` is passed. No-flag names stay `boot<N>` byte-for-byte. | seam leg **(h)** incl. real-process spawn (refusal writes nothing; opt-in writes); mutants M3a (stamp removed) / M3b (fresh-dir refusal removed) → (h) RED |
+| **F4 (LOW)** | `process.argv[indexOf('--fixtures')+1]` yielded `argv[0]` (the node ELF binary) when the flag was absent — the guard never fired and the run died in `JSON.parse` on ELF bytes | `resolveFixturesArg(argv)` reads the flag by name: missing flag or flag-without-value fails closed with a message naming `--fixtures` | seam leg **(i)** incl. the real process (pre-fix crash in `R1-RED.log`, post-fix message in `R1-GREEN.log`); mutant M4 (trap restored) → (i) RED |
+
+RED before implementing: `R1-RED.log` (legs (f)–(i) fail, legs (a)–(e) stay green, pre-fix ELF crash).
+GREEN after: `R1-GREEN.log` (seam 9/9; u7 offline trio 18/18; no-flag defaults and closed-lane artefacts
+byte-unchanged). Mutations: `R1-MUTATION-RED.log` (M1/M2/M3a/M3b/M4 each turn exactly their leg RED;
+restored 9/9; `git status` afterwards shows only the intended changes).
+
+**Disclosed limitations (recorded, not coded around):**
+
+1. `declareBoot` is an **unlocked check-then-write** (assert-then-append): two concurrent runs sharing
+   one ledger could double-spend a boot slot. This repo's single-writer law (1 task = 1 branch =
+   1 worktree = 1 writer, `docs/ROUTER_RULES.md`) is what covers it; the limitation is noted at the
+   function ([run-c2.mjs declareBoot](../u7-tbash-l4-20261027/c2/run-c2.mjs)), no lock is taken.
+2. `--dry-run` writes `dry-run-*.json` into the evidence dir while consuming **no boot** (no ledger
+   entry). The artefact itself carries `mode: "dry-run"` — **never mistake a dry-run artefact for
+   boot evidence**: it only proves the offline judge passes on fixtures.
+
+New test-cited fixtures committed in this lane (docs:probe cited-paths law): `arc-b/boot-budget.jsonl`
+(zero-entry, same-lane-root sibling for the F2 acceptance case).
+
+§1's law list is superseded where narrower: the seam header comment in
+[run-c2.mjs](../u7-tbash-l4-20261027/c2/run-c2.mjs) is the law text (F1 cap + override law,
+F2 same-lane rule, F3 own-bytes rule, F4 named-flag rule).

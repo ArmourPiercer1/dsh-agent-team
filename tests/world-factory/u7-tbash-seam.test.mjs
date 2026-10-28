@@ -19,15 +19,27 @@
  *       are REFUSED;
  *   (e) a ledger already at budget is REFUSED before the next boot (fail
  *       closed), including the committed closed-lane ledger itself.
+ * Review round 1 (PR #428 补充内容) added legs:
+ *   (f) F1 — flagged --budget above the committed cap MAX_FLAGGED_BUDGET is
+ *       REFUSED; a deliberate override is possible only through the named env
+ *       var and returns the marker+reason the record must carry;
+ *   (g) F2 — --budget-ledger must live in the SAME lane as --evidence
+ *       (inside it or sharing its lane root); another lane's ledger is REFUSED;
+ *   (h) F3 — a flagged run refuses a non-empty --evidence dir without
+ *       --allow-reused-dir; flagged output names carry the runId, so a record
+ *       can cite only files this run wrote (no-flag names stay historical);
+ *   (i) F4 — --dry-run without --fixtures fails closed naming the flag (the
+ *       old argv[indexOf+1] trap yielded argv[0] = the node ELF binary).
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const RUNNER = new URL('../../dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs', import.meta.url)
-const { resolveRunConfig, parseBootLedger, assertBootBudget, evidencePathOf } = await import(RUNNER)
+const { resolveRunConfig, parseBootLedger, assertBootBudget, evidencePathOf, MAX_FLAGGED_BUDGET, BUDGET_OVERRIDE_ENV, assertFreshEvidenceDir, outputTagOf, recordEvidencePaths, recordBudgetStamp, resolveFixturesArg } = await import(RUNNER)
 const REPO = resolve(dirname(fileURLToPath(RUNNER)), '../../../..', '..')
 const OLD_LANE = 'dev/agent-workflow/evidence/u7-tbash-l4-20261027'
 // The byte-for-byte #415 constants, spelled out HERE so a mutation of the
@@ -129,4 +141,112 @@ test('u7-tbash seam (e): a ledger already at budget is refused before the next b
   assert.equal(fresh, 0)
   assert.equal(assertBootBudget({ declared: fresh, budget: cfg.budget, ledgerPath: cfg.budgetPath }), 1)
   assert.throws(() => assertBootBudget({ declared: 1, budget: cfg.budget, ledgerPath: cfg.budgetPath }), /boot budget exhausted: 1\/1/)
+})
+
+// ── review round 1 (PR #428 补充内容): F1–F4 legs ─────────────────────────────
+test('u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing', () => {
+  assert.equal(MAX_FLAGGED_BUDGET, 3, 'this lane historically needed 1 boot per acceptance run; 3 is the committed ceiling')
+  assert.equal(BUDGET_OVERRIDE_ENV, 'U7TB_BUDGET_OVERRIDE_REASON')
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
+  const ledger = `${dir}/boot-budget.jsonl`
+  const base = ['--evidence', dir, '--budget-ledger', ledger]
+  // at or below the cap: allowed, and NO marker (the record stays plain)
+  for (const n of ['1', '3']) assert.equal(resolveRunConfig([...base, '--budget', n], {}).budgetOverride, null)
+  // above the cap: typed refusal — a fresh empty ledger is NOT self-authorising
+  assert.throws(() => resolveRunConfig([...base, '--budget', '4'], {}), /--budget 4 exceeds the committed cap 3 \(MAX_FLAGGED_BUDGET\)/)
+  assert.throws(() => resolveRunConfig([...base, '--budget', '999'], {}), /U7TB_BUDGET_OVERRIDE_REASON/)
+  // an empty/whitespace reason is not a reason; a long reason is refused (it must be SHORT)
+  assert.throws(() => resolveRunConfig([...base, '--budget', '4'], { [BUDGET_OVERRIDE_ENV]: '   ' }), /U7TB_BUDGET_OVERRIDE_REASON/)
+  assert.throws(() => resolveRunConfig([...base, '--budget', '4'], { [BUDGET_OVERRIDE_ENV]: 'x'.repeat(201) }), /short reason/)
+  // the deliberate override: budget wins, and the SELF-DISCLOSING marker+reason is
+  // returned for main() to stamp into the produced record (an over-budget run then
+  // cannot hide — both the ledger entry and the record carry it).
+  const reason = 'one re-run after host OOM; authorized by the lane owner 20261029'
+  const cfg = resolveRunConfig([...base, '--budget', '999'], { [BUDGET_OVERRIDE_ENV]: reason })
+  assert.equal(cfg.budget, 999)
+  assert.deepEqual(cfg.budgetOverride, { budget: 999, cap: MAX_FLAGGED_BUDGET, env: BUDGET_OVERRIDE_ENV, reason })
+  assert.deepEqual(recordBudgetStamp(cfg), { bootBudgetOverride: cfg.budgetOverride })
+  // an unused override env leaves records plain (no marker within cap, none ever for no-flag)
+  assert.deepEqual(recordBudgetStamp({ ...cfg, budget: 3, budgetOverride: null }), {})
+  assert.deepEqual(recordBudgetStamp({ ...cfg, flagged: false, budget: 7, budgetOverride: null }), {})
+  // the NO-FLAG default stays exactly 7, never capped, never stamped, even with the env set
+  const d = resolveRunConfig([], { [BUDGET_OVERRIDE_ENV]: reason })
+  assert.equal(d.budget, 7)
+  assert.equal(d.budgetOverride, null)
+  assert.deepEqual(recordBudgetStamp(d), {})
+})
+
+test('u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence', () => {
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
+  // inside the evidence dir itself: accepted
+  assert.equal(resolveRunConfig(['--evidence', dir, '--budget-ledger', `${dir}/boot-budget.jsonl`, '--budget', '1'], {}).budgetPath, join(REPO, `${dir}/boot-budget.jsonl`))
+  // shares the lane root dev/agent-workflow/evidence/u7-tbash-seam-20261028 (another dir of the SAME lane): accepted
+  const sibling = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/arc-b/boot-budget.jsonl'
+  assert.equal(resolveRunConfig(['--evidence', dir, '--budget-ledger', sibling, '--budget', '1'], {}).budgetPath, join(REPO, sibling))
+  // ANOTHER lane's committed ledger: refused with a typed message (no cross-lane exhaustion / inheritance)
+  const foreign = 'dev/agent-workflow/evidence/u7-inspect-c2-20261027/c2/boot-budget.jsonl'
+  assert.throws(() => resolveRunConfig(['--evidence', dir, '--budget-ledger', foreign, '--budget', '1'], {}), /--budget-ledger must live inside the --evidence dir or share its lane root/)
+  // outside the evidence tree: same parent dir accepted, different parent refused
+  assert.doesNotThrow(() => resolveRunConfig(['--evidence', '.artifacts/tmp/u7tb-seam-fixture/out', '--budget-ledger', '.artifacts/tmp/u7tb-seam-fixture/boot-budget.jsonl', '--budget', '1'], {}))
+  assert.throws(() => resolveRunConfig(['--evidence', '.artifacts/tmp/u7tb-seam-fixture/out', '--budget-ledger', '.artifacts/tmp/u7tb-seam-elsewhere/boot-budget.jsonl', '--budget', '1'], {}), /lane root/)
+})
+
+test('u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote', () => {
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
+  const ledger = `${dir}/boot-budget.jsonl`
+  // --allow-reused-dir: default false, parses as a bare flag, useless without the seam trio
+  const base = ['--evidence', dir, '--budget-ledger', ledger, '--budget', '1']
+  assert.equal(resolveRunConfig(base, {}).allowReusedDir, false)
+  assert.equal(resolveRunConfig([...base, '--allow-reused-dir'], {}).allowReusedDir, true)
+  assert.throws(() => resolveRunConfig(['--allow-reused-dir'], {}), /--allow-reused-dir applies only to a flagged run/)
+  // the fresh-dir law (entries passed in, so this stays pure): flagged+non-empty is
+  // refused without the opt-in; the no-flag closed lane never checks (its dir is populated)
+  assert.throws(() => assertFreshEvidenceDir({ flagged: true, dir, entries: ['host-boot1.log'], allowReusedDir: false }), /not empty/)
+  assert.doesNotThrow(() => assertFreshEvidenceDir({ flagged: true, dir, entries: ['host-boot1.log'], allowReusedDir: true }))
+  assert.doesNotThrow(() => assertFreshEvidenceDir({ flagged: true, dir, entries: [], allowReusedDir: false }))
+  assert.doesNotThrow(() => assertFreshEvidenceDir({ flagged: false, dir, entries: ['a', 'b'], allowReusedDir: false }))
+  // output stamping: flagged tags carry THIS run's id (two runs in one dir can never
+  // collide or mis-cite); no-flag tags stay byte-for-byte the #415 history.
+  assert.equal(outputTagOf({ flagged: true, runId: 'u7tb-c2-abc123', boot: 1 }), 'boot1-u7tb-c2-abc123')
+  assert.equal(outputTagOf({ flagged: false, runId: 'u7tb-c2-abc123', boot: 7 }), 'boot7')
+  assert.notEqual(outputTagOf({ flagged: true, runId: 'u7tb-c2-aaa', boot: 1 }), outputTagOf({ flagged: true, runId: 'u7tb-c2-bbb', boot: 1 }))
+  // the record's evidence list = EXACTLY the files this run successfully wrote
+  const cfg = resolveRunConfig(base, {})
+  assert.deepEqual(recordEvidencePaths(cfg, []), [])
+  assert.deepEqual(
+    recordEvidencePaths(cfg, ['host-boot1-u7tb-c2-abc.log', 'mock-excerpt-boot1-u7tb-c2-abc.json']),
+    [`${dir}/host-boot1-u7tb-c2-abc.log`, `${dir}/mock-excerpt-boot1-u7tb-c2-abc.json`],
+  )
+  // end-to-end (offline, no boot): a real flagged --dry-run refuses a NON-EMPTY
+  // evidence dir, and writes only with the opt-in.
+  const tmp = mkdtempSync(join(REPO, '.artifacts', 'tmp', 'u7tb-seam-e2e-'))
+  try {
+    const relDir = relative(REPO, tmp).split(sep).join('/')
+    writeFileSync(join(tmp, 'stale-host-boot1.log'), 'written by an earlier run\n')
+    const common = ['--dry-run', '--fixtures', join(REPO, 'dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json'), '--evidence', relDir, '--budget-ledger', `${relDir}/boot-budget.jsonl`, '--budget', '1']
+    const refused = spawnSync(process.execPath, [fileURLToPath(RUNNER), ...common], { encoding: 'utf8', cwd: REPO, timeout: 180_000 })
+    assert.notEqual(refused.status, 0)
+    assert.match(refused.stderr, /--evidence dir is not empty/)
+    assert.match(refused.stderr, /--allow-reused-dir/)
+    assert.equal(existsSync(join(tmp, 'dry-run-GREEN.json')), false, 'the refused run must have written nothing')
+    const opted = spawnSync(process.execPath, [fileURLToPath(RUNNER), ...common, '--allow-reused-dir'], { encoding: 'utf8', cwd: REPO, timeout: 180_000 })
+    assert.equal(opted.status, 0, `opted-in dry-run failed: ${String(opted.stderr).slice(0, 500)}`)
+    assert.equal(existsSync(join(tmp, 'dry-run-GREEN.json')), true)
+  } finally {
+    rmSync(tmp, { recursive: true, force: true })
+  }
+})
+
+test('u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0]', () => {
+  assert.throws(() => resolveFixturesArg([]), /--dry-run requires --fixtures/)
+  assert.throws(() => resolveFixturesArg(['--dry-run']), /--dry-run requires --fixtures <json>: the --fixtures flag is missing/)
+  assert.throws(() => resolveFixturesArg(['--dry-run', '--fixtures']), /--fixtures was given without a value/)
+  assert.throws(() => resolveFixturesArg(['--dry-run', '--fixtures', '--evidence', 'x']), /--fixtures was given without a value/)
+  assert.equal(resolveFixturesArg(['--fixtures', 'a/b.json', '--dry-run']), 'a/b.json')
+  // the original trap: absent flag yielded argv[0] (the node ELF), so the guard never
+  // fired and the run died in JSON.parse on ELF bytes without ever naming the flag.
+  const r = spawnSync(process.execPath, [fileURLToPath(RUNNER), '--dry-run'], { encoding: 'utf8', cwd: REPO, timeout: 180_000 })
+  assert.notEqual(r.status, 0)
+  assert.match(r.stderr, /--dry-run requires --fixtures/)
+  assert.doesNotMatch(r.stderr, /SyntaxError|JSON\.parse|Unexpected/)
 })
