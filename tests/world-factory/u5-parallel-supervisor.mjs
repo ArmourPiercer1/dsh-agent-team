@@ -57,7 +57,7 @@
  * Opt-in only (live Host children): never collected by vitest/CI.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, closeSync, readdirSync, readFileSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, openSync, closeSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, reclaimWorld, homesCensus, stableInstanceProbe } from './lib/world-factory.mjs'
@@ -114,6 +114,9 @@ export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivor
 }
 
 export async function runSurvivorDryRun({ io = undefined } = {}) {
+  mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
+  const sharedLeaseRoot = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-evidence') }).leaseRoot
+  const sharedBefore = leaseRootSnapshot(sharedLeaseRoot)
   const holdUntil = join(REPO_ROOT, `.tmp-survivor-dry-run-${process.pid}`)
   try {
     const fakeWorld = { id: 'fake-survivor', home: '<FAKE_HOME>', token: 'fake-token', workspaceDir: '<FAKE_WORKSPACE>', instance: { child: { pid: 42 } } }
@@ -130,7 +133,7 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
     await sleep(1)
     writeFileSync(holdUntil, 'victimKilledAndReclaimed\n')
     const hold = await holdPromise
-    return evaluateSurvivorSequencing({
+    const sequencing = evaluateSurvivorSequencing({
       survivorHealthyAt: hold.healthyAt,
       killAt: hold.healthyAt + 1,
       victimKilledAndReclaimedAt: hold.lastProbeAt - 1,
@@ -144,6 +147,12 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
       victimWorld: 'fake-victim',
       reclaimedResources: [{ world: 'fake-victim', kind: 'home' }, { world: 'fake-victim', kind: 'lease' }],
     })
+    const sharedAfter = leaseRootSnapshot(sharedLeaseRoot)
+    const simulationFactory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-evidence') })
+    const simulation = await crashSimulationControl({ factory: simulationFactory })
+    const sharedFinal = leaseRootSnapshot(sharedLeaseRoot)
+    const sharedLeaseRootUnchanged = JSON.stringify(sharedBefore) === JSON.stringify(sharedAfter) && JSON.stringify(sharedBefore) === JSON.stringify(sharedFinal)
+    return { ...sequencing, simulation, sharedLeaseRoot, sharedLeaseRootUnchanged, pass: sequencing.pass && simulation.ok && sharedLeaseRootUnchanged }
   } finally {
     try { unlinkSync(holdUntil) } catch {}
     try { unlinkSync(`${holdUntil}.jsonl`) } catch {}
@@ -270,11 +279,30 @@ function tailFile(path, n = 2000) {
  * the production `reclaimWorld` over it. Deterministic — unlike the live kill,
  * which can lose the race against a fast self-cleaning victim.
  */
-async function crashSimulationControl({ factory }) {
+function leaseRootSnapshot(leaseRoot) {
+  let names = []
+  try { names = readdirSync(leaseRoot).sort() } catch { return { exists: false, names: [], seqMtimes: {} } }
+  const seqMtimes = {}
+  for (const name of names) {
+    if (!name.endsWith('.lease')) continue
+    try {
+      const seq = join(leaseRoot, name, 'seq')
+      seqMtimes[name] = statSync(seq).mtimeMs
+    } catch {
+      seqMtimes[name] = null
+    }
+  }
+  return { exists: true, names, seqMtimes }
+}
+
+export async function crashSimulationControl({ factory, leaseRoot = null }) {
+  const sharedBefore = leaseRootSnapshot(factory.leaseRoot)
+  const simulationLeaseRoot = leaseRoot ?? mkdtempSync(join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-leases-'))
+  mkdirSync(simulationLeaseRoot, { recursive: true })
   const world = await factory.createWorld({ line: 'dryclm' })
   const orphan = spawn('sleep', ['300'], { env: { ...process.env, DSH_HOME: world.home }, stdio: 'ignore' })
   const { acquireFirstFreeLease } = await import('./lib/port-lease.mjs')
-  const lease = await acquireFirstFreeLease({ leaseRoot: factory.leaseRoot, world: world.id, purpose: 'sim-host', include: [3498, 3499, 3500], preferred: [] })
+  const lease = await acquireFirstFreeLease({ leaseRoot: simulationLeaseRoot, world: world.id, purpose: 'sim-host', include: [3498, 3499, 3500], preferred: [] })
   writeFileSync(join(world.home, '.u5-ownership.json'), JSON.stringify({ worldId: world.id, runnerPid: process.pid, hostPid: orphan.pid, hostPort: lease.port, mockPort: null }, null, 2))
   // "Crash": the simulated runner dies; the orphan + lease + home survive.
   // Our OWN pid must not be the reclaim target, so record a dead holder in
@@ -285,7 +313,7 @@ async function crashSimulationControl({ factory }) {
   // `<port>.lease/` slot dir — exactly what a dead runner leaves behind.
   mkdirSync(lease.slotPath, { recursive: true })
   writeFileSync(join(lease.slotPath, 'c-000000000001-w-4194303-simcontrol.json'), JSON.stringify({ pid: 4_194_303, startedAt: new Date().toISOString(), world: world.id, purpose: 'sim-host', token: 'simcontrol', seq: 1 }, null, 2) + '\n')
-  const stale = scanStaleLeases(factory.leaseRoot).filter((s) => s.by?.world === world.id)
+  const stale = scanStaleLeases(simulationLeaseRoot).filter((s) => s.by?.world === world.id)
   const reclaim = await reclaimWorld({ home: world.home, worldId: world.id, leasePaths: stale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })) })
   await sleep(1_200)
   const checks = {
@@ -296,7 +324,10 @@ async function crashSimulationControl({ factory }) {
     homeDeleted: reclaim.homeDeleted === world.home,
     mechanism: 'identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill',
   }
-  return { ok: checks.orphanKilledOnlyAfterEnvironProof && checks.leaseReleased && checks.homeDeleted && reclaim.refused.length === 0, ...checks }
+  const sharedRootUnchanged = JSON.stringify(sharedBefore) === JSON.stringify(leaseRootSnapshot(factory.leaseRoot))
+  const result = { ok: checks.orphanKilledOnlyAfterEnvironProof && checks.leaseReleased && checks.homeDeleted && reclaim.refused.length === 0 && sharedRootUnchanged, ...checks, sharedRootUnchanged, simulationLeaseRoot }
+  rmSync(simulationLeaseRoot, { recursive: true, force: true })
+  return result
 }
 
 export async function runParallelSupervisor(opts) {
