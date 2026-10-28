@@ -1,0 +1,12 @@
+# post-commit gate receipts, captured 2026-10-28T13:57:41Z on 35ff47418
+
+## git diff --check origin/master...HEAD
+clean (exit 0)
+
+## eb3-run-manifest --new-since origin/master
+EB3-RUN-MANIFEST pass records=99 strict=0 incomplete=11 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)
+
+## eb3-evidence-guard --new-since origin/master
+EB3-EVIDENCE-GUARD pass added=10 bound=1048576 exempted=0 findings=0 base=origin/master
+LIMIT grades files ADDED under the evidence root only; a green here says no raw capture and no unexempted file over the bound was added, not that every added file is worth keeping

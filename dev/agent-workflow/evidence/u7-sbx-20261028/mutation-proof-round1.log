@@ -1,0 +1,13 @@
+baseline suite    : tests=22 pass=22 fail=0 (exit 0)
+F8  provision-host-sandbox.mjs   fail= 1 killed=true legs=[T18] restored=sha-ok
+    mutation      : the FAIL-CLOSED printer exits 1 (the code the CLI documents as "environment")
+F5  host-sandbox-assets.mjs      fail= 1 killed=true legs=[T19] restored=sha-ok
+    mutation      : the source-tree trust gate is not applied (the pre-F5 behaviour: any path, imported for layout)
+F6  host-sandbox-assets.mjs      fail= 1 killed=true legs=[T20] restored=sha-ok
+    mutation      : the pre-write path validation is skipped (only the post-publish bin/ check remains)
+F7  host-sandbox-assets.mjs      fail= 1 killed=true legs=[T21] restored=sha-ok
+    mutation      : the staged file is chmodded to a hardcoded 0o755 instead of the pinned mode
+F1  host-sandbox-assets.mjs      fail= 3 killed=true legs=[T15,T16,T22] restored=sha-ok
+    mutation      : isSandboxPreflightRecord accepts any matching SHAPE (the pre-F1 behaviour: a forgery opens ENV_BLOCK)
+suite after revert: tests=22 pass=22 fail=0 (exit 0)
+MUTATION-PROOF pass: 5/5 mutations killed, every new leg died, suite restored to 22/22

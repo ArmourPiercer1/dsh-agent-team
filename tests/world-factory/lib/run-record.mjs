@@ -132,7 +132,37 @@ export function formatSummary(record) {
   const counts = {}
   for (const c of r.cases) counts[c.verdict] = (counts[c.verdict] ?? 0) + 1
   const parts = Object.entries(counts).sort().map(([k, v]) => `${k}:${v}`).join(' ')
-  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}`
+  // u7-sbx: a native-confinement run whose HOST backend probed unusable says
+  // so on the summary line. It is a disclosure, not a colour: it never changes
+  // `overall`, and it never turns anything into a PASS.
+  const native = r.bindings?.nativeConfinementBackend
+  const marker = native === 'unusable' || native === 'unknown' ? ` nativeBackend=${native}` : ''
+  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}`
+}
+
+/**
+ * u7-sbx: bind the pre-flight NATIVE SANDBOX verdict into a run record. One
+ * home for every runner (same role as `readAuthorityBinding`): the pre-flight
+ * is measured by `preflightHostSandbox()` in
+ * `lib/host-sandbox-assets.mjs` BEFORE the first Host start, and this is the
+ * only place it is normalised into bindings.
+ *
+ * What it makes visible: the backend verdict the HOST's own `probe()`
+ * answered, the launcher digest, and the provisioning provenance — plus a
+ * standing disclosure on the record and the summary line whenever the backend
+ * is not usable. Ordering of `overallVerdict` is untouched: an unusable
+ * backend does not soften any FAIL, and it never produces a PASS; it is the
+ * reason a native-confinement leg may legitimately be judged ENV_BLOCK.
+ */
+export function bindSandboxPreflight(bindings, preflight) {
+  if (bindings === null || typeof bindings !== 'object') return bindings
+  if (preflight === null || preflight === undefined) return bindings
+  bindings.sandboxPreflight = preflight
+  bindings.nativeConfinementBackend = String(preflight.backend ?? 'unknown')
+  if (bindings.nativeConfinementBackend !== 'full') {
+    bindings.nativeConfinementDisclosure = `native (non-governed) confinement legs ran on a host whose sandbox probe answered "${bindings.nativeConfinementBackend}" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)`
+  }
+  return bindings
 }
 
 function finalizedCopy(record) {

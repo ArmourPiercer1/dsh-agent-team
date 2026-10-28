@@ -37,6 +37,7 @@ import { presetDeclarationRow, smokePresetPlugins } from '../../kits/_shared/pre
 // [{id, name, arguments}] } (u6-arc-a-assembly header; the measured
 // STREAM_CLOSED failure of run u6arca4 punished any other shape).
 import { messagesOf, textOf, lastUserTextOfStatic, extractInstanceId, toolCall } from './u6-fs-assembly.mjs'
+import { nativeConfinementEnvBlock } from './host-sandbox-assets.mjs'
 
 const sanitize = (v) => String(v).toLowerCase().replace(/[^a-z0-9-]/g, '-')
 
@@ -471,10 +472,12 @@ export function makeArcDDecide({ assembly }) {
  * log. It returns one
  * [caseId, PASS|FAIL|ENV_BLOCK, detail] row per suite case, in SUITE_CASES
  * order. A verdict is derived, never transcribed: every FAIL row says which
- * fact was missing. ENV_BLOCK is emitted by NOBODY else (the runner's early
- * bail-outs are FAIL).
+ * fact was missing. ENV_BLOCK is emitted by exactly TWO doors and nobody
+ * else: the runner's early bail-outs (host not alive / boot failed) and the
+ * native-confinement environment gate below — and neither can ever produce a
+ * PASS.
  */
-export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity = null, pairEvidence = {}, hostAlive, bootOk = true }) {
+export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity = null, pairEvidence = {}, hostAlive, bootOk = true, sandboxPreflight = null, nativeLaneSignal = null }) {
   const legRow = (leg, extra = {}) => probeRows.find((r) => r.leg === leg && Object.entries(extra).every(([k, v]) => r[k] === v)) ?? null
   const has = (f) => markerFiles.includes(f)
   const nonceAt = (f) => markerNonces[f] ?? null
@@ -538,9 +541,20 @@ export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEviden
   // surface touched the world.
   {
     const ne = nativeEvidence ?? {}
-    add('arcd:ci03-native-parity', ne.readFromDisk === true && ne.present === true && ne.contentMatches === true ? 'PASS' : 'FAIL', {
+    const diskOk = ne.readFromDisk === true && ne.present === true && ne.contentMatches === true
+    // VERDICT FIDELITY (u7-sbx): a missing effect has TWO different causes and
+    // they must not share a verdict. Bytes that EXIST but are not this run's
+    // marker are a product finding whatever the host reports. The absence of
+    // any effect is ENV_BLOCK only through the conjunction in
+    // `nativeConfinementEnvBlock` — a real pre-flight whose probe answered
+    // `unusable` AND the typed host refusal observed in this lane (the
+    // recorded shape of a missing native asset, docs/TEST_METHODS.md §9).
+    const couldNotRunAtAll = !(ne.readFromDisk === true && ne.present === true)
+    const envBlock = couldNotRunAtAll ? nativeConfinementEnvBlock({ observedSignal: nativeLaneSignal, preflight: sandboxPreflight }) : null
+    add('arcd:ci03-native-parity', diskOk ? 'PASS' : (envBlock === null ? 'FAIL' : 'ENV_BLOCK'), {
       diskEffect: { present: ne.present === true, contentMatches: ne.contentMatches === true, readFromDisk: ne.readFromDisk === true, path: ne.pathTail ?? null },
       nativeGrepParity: nativeGrepParity ?? null,
+      ...(envBlock ?? {}),
     })
   }
   // restrict-veto (R-U6P6-1, the live d_restrict_veto twin): the DURABLE

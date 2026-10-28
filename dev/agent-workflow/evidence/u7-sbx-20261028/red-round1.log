@@ -1,0 +1,35 @@
+# RED (review round 1, before the fix): node --test tests/world-factory/host-sandbox-assets.test.mjs  — 2026-10-28
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (324.831564ms)
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (1.352316ms)
+✖ T19 (F5) the provisioning source must be a real directory inside a trusted tree — the source tree's JS is imported, so its path is a code-supply decision (0.76256ms)
+✖ T20 (F6) a manifest path outside the platform bin/ is refused before ANY filesystem mutation (66.530215ms)
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (125.50376ms)
+✖ T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight record; a structurally perfect forgery stays FAIL (0.659873ms)
+ℹ tests 22
+ℹ pass 16
+ℹ fail 6
+ℹ duration_ms 1995.852501
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (324.831564ms)
+  AssertionError [ERR_ASSERTION]: a hand-built schema+probed+backend record is a forgery, not a measurement
+    actual: 'ENV_BLOCK',
+    expected: 'FAIL',
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (1.352316ms)
+  AssertionError [ERR_ASSERTION]: review round 1 (F1): a hand-built schema+probed+backend record stays FAIL — a shape is not a measurement
+    actual: 'ENV_BLOCK',
+    expected: 'FAIL',
+✖ T19 (F5) the provisioning source must be a real directory inside a trusted tree — the source tree's JS is imported, so its path is a code-supply decision (0.76256ms)
+  AssertionError [ERR_ASSERTION]: lib/host-sandbox-assets.mjs must export allowedSourceRoots() (review round 1)
+    actual: 'undefined',
+    expected: 'function',
+✖ T20 (F6) a manifest path outside the platform bin/ is refused before ANY filesystem mutation (66.530215ms)
+  AssertionError [ERR_ASSERTION]: hostile key "../landlock-evil": got WRITES_OUTSIDE_PLATFORM_BIN
+    actual: 'WRITES_OUTSIDE_PLATFORM_BIN',
+    expected: 'MANIFEST_PATH_UNSAFE',
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (125.50376ms)
+  AssertionError [ERR_ASSERTION]: bin/glibc/system.node: the published mode must equal the PIN (the record says 0o755)
+    actual: 493,
+    expected: 488,
+✖ T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight record; a structurally perfect forgery stays FAIL (0.659873ms)
+  AssertionError [ERR_ASSERTION]: a JSON round-trip loses the brand: identity, not shape, is the guarantee
+    actual: true,
+    expected: false,

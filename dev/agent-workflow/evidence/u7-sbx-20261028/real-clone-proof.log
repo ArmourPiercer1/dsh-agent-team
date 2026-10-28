@@ -1,0 +1,53 @@
+# captured 2026-10-28 on a real 'git clone --local --no-hardlinks' runtime checkout (offline, 0 host boots)
+# rollback immediately before this run: rm -f <clone>/native/system/packages/linux-x64/bin/{landlock-run,glibc/system.node}
+
+# runtime checkout
+path                     : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/.artifacts/tmp/sbx-clone/tests/deepseek-harness-test-use
+HEAD                     : 639ed015397290b3745d163aafe02ffee4aa3f84 (pinned = 639ed015397290b3745d163aafe02ffee4aa3f84)
+git status --porcelain   : ""
+platform bin/ exists     : true ["glibc"]
+launcher present         : false
+
+# gitignored native assets (the reason a clone has no binaries)
+native/system/packages/linux-x64/bin/landlock-run
+   -> native/system/.gitignore:4:packages/*/bin/	native/system/packages/linux-x64/bin/landlock-run
+native/system/packages/linux-x64/bin/glibc/system.node
+   -> native/system/.gitignore:4:packages/*/bin/	native/system/packages/linux-x64/bin/glibc/system.node
+
+# factory pre-flight (the path every C2 runner takes before its first host start)
+verdicts                 : before-provision=unusable  ->  after-provision=partial
+backend / usable         : partial / true
+launcher present / digest : true / a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+porcelainEmpty           : true []
+asset action / bytes     : provisioned / 55912
+asset source             : default-team-checkout /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+asset source HEAD        : 639ed015397290b3745d163aafe02ffee4aa3f84 matches pinned: true
+    bin/glibc/system.node copied 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc 0o755
+    bin/landlock-run copied a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31 0o755
+
+# the RUN record bindings the factory wrote
+bindings.nativeConfinementBackend    : partial
+bindings.sandboxPreflight.backend    : partial
+bindings.nativeConfinementDisclosure : native (non-governed) confinement legs ran on a host whose sandbox probe answered "partial" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)
+
+# the host launcher answers, post-provision
+landlock: partially enforced (older ABI)
+
+# runtime checkout AFTER provisioning (must be byte-clean)
+git status --porcelain   : ""
+HEAD                     : 639ed015397290b3745d163aafe02ffee4aa3f84
+
+# second pre-flight is a no-op (assets present, nothing rewritten)
+verdicts                 : before-provision=partial  ->  after-provision=partial
+
+# exit=0
+
+# CLI --check on the same tree, then --check again:
+runtime tree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/.artifacts/tmp/sbx-clone/tests/deepseek-harness-test-use
+baseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+probe        : before-provision=partial -> after-provision=partial
+backend      : partial (usable: true)
+launcher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+porcelain    : empty (assets are gitignored)
+cli exit=0

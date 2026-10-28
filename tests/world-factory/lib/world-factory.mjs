@@ -52,6 +52,8 @@ import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mj
 import { acquireFirstFreeLease, pidAlive, reclaimStaleLease, sweepLegacyLease } from './port-lease.mjs'
 import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, validateKindSpec } from './world-kinds.mjs'
 import { captureProfileBinding, verifyProfileBindingLaunched } from './binding-digests.mjs'
+import { preflightHostSandbox as measureSandboxPreflight } from './host-sandbox-assets.mjs'
+import { bindSandboxPreflight } from './run-record.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -236,6 +238,52 @@ export class TestWorldFactory {
     // created from sibling worktrees contend on the SAME lease files.
     this.leaseRoot = resolve(leaseRoot ?? this.#defaultLeaseRoot())
     this.worlds = []
+    /**
+     * u7-sbx: the NATIVE SANDBOX pre-flight of `hostTree` — measured once,
+     * before the first Host start, by `preflightHostSandbox()` below. `null`
+     * means "not measured yet", never "usable".
+     */
+    this.sandboxPreflight = null
+    /** RUN records that must carry the pre-flight in their bindings. */
+    this.runRecords = []
+  }
+
+  /**
+   * u7-sbx: register a RUN record so the native-sandbox pre-flight lands in
+   * its `bindings` (verdict + launcher digest + provisioning provenance).
+   * Records created after the measurement are bound immediately; ones created
+   * before it are bound when the measurement runs — so a runner cannot forget
+   * the disclosure by starting its World first.
+   */
+  bindRunRecord(record) {
+    if (record?.record?.bindings && !this.runRecords.includes(record)) this.runRecords.push(record)
+    if (this.sandboxPreflight !== null) bindSandboxPreflight(record?.record?.bindings, this.sandboxPreflight)
+    return record
+  }
+
+  /**
+   * The C2 pre-flight for the host base: run the HOST's own sandbox probe (and,
+   * when the launcher is simply missing from this runtime checkout — the
+   * gitignored native asset gap of a fresh clone, docs/TEST_METHODS.md §9 —
+   * provision the PINNED bytes from the local source tree) BEFORE any child is
+   * spawned, and record it.
+   *
+   * What it never does: soften a verdict. A backend it cannot make usable is
+   * recorded (`unusable`, with the probe evidence) and the native-confinement
+   * legs judge it as ENV_BLOCK; a supply-chain mismatch (a byte that hashes
+   * against nothing pinned) THROWS, because that is not an environment state.
+   *
+   * @param {object} [options]
+   * @param {boolean} [options.provision] copy pinned assets when missing
+   * @param {boolean} [options.force] re-measure instead of returning the cache
+   */
+  async preflightHostSandbox({ provision = true, force = false } = {}) {
+    if (this.sandboxPreflight !== null && force !== true) return this.sandboxPreflight
+    const record = await measureSandboxPreflight({ runtimeTree: this.hostTree, repoRoot: this.repoRoot, provision })
+    this.sandboxPreflight = record
+    for (const r of this.runRecords) bindSandboxPreflight(r?.record?.bindings, record)
+    this.onSandboxPreflight?.(record)
+    return record
   }
 
   #defaultLeaseRoot() {
@@ -536,9 +584,21 @@ export class TestWorld {
         throw new Error(`World ${this.id}: ${what} escapes the owned home (${this.home}): ${p}`)
       }
     }
+    // u7-sbx PRE-FLIGHT (before the first Host start, every World, every
+    // suite): ask the host runtime tree whether a sandbox backend is actually
+    // usable, provision the pinned native assets when the checkout simply
+    // never received them (gitignored: docs/TEST_METHODS.md §9), and bind the
+    // verdict into every registered RUN record. A backend that stays unusable
+    // is a RECORDED environment state — the native-confinement legs judge it
+    // ENV_BLOCK, never a product FAIL, and it is never a PASS. A digest that
+    // matches nothing pinned throws instead: that is supply chain, not env.
+    try {
+      await this.factory.preflightHostSandbox({})
+    } catch (error) {
+      throw new HostBaseError(`sandbox pre-flight refused before the first host start: ${String(error?.message ?? error)}`)
+    }
     let lease = this.hostLease
-    if (lease === null) {
-      lease = await acquireFirstFreeLease({
+    if (lease === null) {      lease = await acquireFirstFreeLease({
         leaseRoot: this.factory.leaseRoot,
         world: this.id,
         purpose: 'host',

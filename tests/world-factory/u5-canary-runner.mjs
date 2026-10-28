@@ -938,6 +938,10 @@ export async function runSuite(opts) {
   // object (bindWorldProfile is identity-idempotent), so a
   // `composedProfileDigestMismatch` written after the spawn is on the record.
   factory.onProfileBinding = (entry) => bindWorldProfile(record.record.bindings, entry)
+  // u7-sbx: the native-sandbox PRE-FLIGHT (host probe + launcher digest +
+  // provisioning provenance) is measured before the first host start and
+  // bound here, so every suite's RUN record carries the backend verdict.
+  factory.bindRunRecord(record)
 
   const rc = createRunControl({
     log,
