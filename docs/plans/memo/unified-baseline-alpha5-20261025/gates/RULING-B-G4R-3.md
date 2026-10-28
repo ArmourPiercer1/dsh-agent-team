@@ -38,8 +38,10 @@ without a new main-agent ruling"); user standing ruling that boot-budget extensi
    and the documented fresh-worktree provisioning (`git clone --local --no-hardlinks`,
    TEST_METHODS §2) does not copy untracked files. The same leg genuinely PASSED on 2026-10-26
    (`landlock-run: partial enforcement (older Landlock ABI)`,
-   `u7-4a-jobs-producer-20261026/logs/u5u74a-…/u74a-main-4.u74a-evidence.json`).
-   A provisioning gap was recorded as a product-level FAIL.
+   `u7-4a-jobs-producer-20261026/logs/u5u74a-…/u74a-main-4.u74a-evidence.json`) —
+   PASSED *under partial Landlock enforcement*; `partial` is an admissible launcher state by this
+   ruling's own precondition below (`partial` or `full`), and no partial⇒`full` equivalence is
+   claimed here or needed by the verdict. A provisioning gap was recorded as a product-level FAIL.
    *(Location note for a cold reader: `native/system/.gitignore` is in the host runtime tree, not
    this repo — at the test checkout it is `tests/deepseek-harness-test-use/native/system/.gitignore`
    line 4 `packages/*/bin/`; the Team repo tracks no `native/system` directory, which is exactly
@@ -55,7 +57,9 @@ without a new main-agent ruling"); user standing ruling that boot-budget extensi
 
    The working note just named is **gitignored scratch**, so the measurement is restated here; a
    tracked reader can re-verify from these commands alone (all reproduce in a fresh worktree;
-   re-checked 2026-10-28 in the worktree that produced this PR, where master = `a23f11a3b`):
+   re-checked 2026-10-28 in the worktree that produced this PR, where master = `a23f11a3b`; the
+   same three counts were independently recomputed by the R2 reviewer at master `c2b03fc34`, also
+   34 (review `.artifacts/reviews/R431-R2-d2-flash.md`, check 1)):
 
        $ git diff --name-only d8f40c0d origin/master -- packages scripts | wc -l
        34
@@ -103,12 +107,19 @@ harness defect fixed in between) + 2 (crash equivalence breaks) = 6. Phase 2 con
 (two ARC-D starts — one lost to an operator omission — and one Jobs start). This ruling therefore
 authorises **6 further starts, taking G4-R to 9**, which **exceeds the original envelope by 3**.
 It is granted because the overrun is caused by the two defects in inputs 1–2, i.e. exactly the
-"ENV or a harness defect fixed in between" class the envelope already anticipated paying for, and
-because a single-candidate packet cannot be assembled otherwise. Every start is declared in its own
+"ENV or a harness defect fixed in between" class the envelope already anticipated paying for — and
+with the explicit disclosure that this class prices at only +1 inside the envelope, so the +2 beyond
+that are a **new over-budget authorization by this ruling under the user standing ruling**, not a
+claim of in-envelope coverage — and because a single-candidate packet cannot be assembled
+otherwise. Every start is declared in its own
 lane ledger before the spawn; over-budget status is stated in the PR and the gate doc, not hidden.
 **Hard ceiling: 8 starts, +1 reserved strictly for an ENV/harness defect fixed between attempts.**
 The crash-survivor pair may collapse to 1 if its first start yields a finalized overall PASS and no
 interval re-run is needed; unused starts are not spendable on anything else.
+*(Ceiling reading, stated so it is not implicit: the planned total is 3 (phase 2) + 6 = 9, so the
++1 reserve is only real headroom if the crash pair collapses to 1 — the plan consuming 8. If the
+pair needs both starts, all 9 authorized starts are plan legs and the reserve is already spent;
+a further ENV/harness defect then requires a NEW ruling, it cannot draw on the reserve.)*
 
 **Preconditions, all mandatory before the first spawn:**
 - the ARC-B seam fix round (#428) merged;
