@@ -1,5 +1,5 @@
 C1 MUTATION RED: profile + oracle one-byte tamper rejected
-✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (358.713068ms)
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (355.477167ms)
 ℹ tests 1
 ℹ suites 0
 ℹ pass 1
@@ -7,4 +7,4 @@ C1 MUTATION RED: profile + oracle one-byte tamper rejected
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 762.679044
+ℹ duration_ms 742.078741

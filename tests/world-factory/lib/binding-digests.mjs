@@ -7,6 +7,7 @@ export const digestFile = (path) => createHash('sha256').update(readFileSync(pat
 
 /** Persist launch bytes before spawn; evidence survives home teardown. */
 export function captureProfileBinding({ patchFile, logDir, worldId }) {
+  if (readFileSync(patchFile).length > 1024 * 1024) throw new Error('profile binding artifact exceeds 1 MiB evidence cap')
   mkdirSync(logDir, { recursive: true })
   const path = join(logDir, `composed-profile-${digestFile(patchFile)}.patch.yml`)
   copyFileSync(patchFile, path)

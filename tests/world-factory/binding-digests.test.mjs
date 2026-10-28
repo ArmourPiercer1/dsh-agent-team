@@ -7,10 +7,10 @@ import { join } from 'node:path'
 import test from 'node:test'
 import { context, validateRunRecord } from '../../scripts/eb3-run-manifest.mjs'
 import { createRunRecord, readAuthorityBinding } from './lib/run-record.mjs'
-import { captureOracleBinding, captureProfileBinding, digestFile, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
+import { captureOracleBinding, captureProfileBinding, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
-const sha = (p) => digestFile(p)
+const sha = (p) => createHash('sha256').update(readFileSync(p)).digest('hex')
 
 test('C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells', () => {
   const dir = mkdtempSync(join(tmpdir(), 'u7-g4r-c1-'))

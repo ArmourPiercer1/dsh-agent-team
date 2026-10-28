@@ -2,9 +2,13 @@
 
 Offline-only implementation; no Host boot and no writes to `:3080`/`~/.dsh`.
 
+## Gates and delivery
+
+Frozen install succeeded with `.tmp-pnpm-store`. Local `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store` exited 0: 7 pass / 0 fail / 1 explicit default census skip (not a census PASS), 253 seconds. Manifest: 99 records / 11 incomplete disclosed / 0 findings. `git diff --check` clean. PR #426, no merge; remote CI conclusions are reported separately after checks settle.
+
 ## Cells
 
-* `composedProfileDigest` is recorded per World and per boot by `TestWorldFactory.startHost`. The exact bytes are the materialized `cordis.patch.yml` copied to the run evidence directory before the Host spawn, including comments and the final newline. The digest is SHA-256 of those bytes. This is the same profile patch the World launches, not an invented normalized object.
+* `composedProfileDigest` is recorded per World and per boot by `TestWorldFactory.startHost`. The exact bytes are the materialized `cordis.patch.yml` copied to the run evidence directory before the Host spawn, including comments and the final newline. The digest is SHA-256 of those bytes. This is the same profile patch the World launches, not an invented normalized object. Capture fails closed above 1 MiB; content-addressed copies preserve distinct restart patches.
 * `worldOracleDigest` and `worldOracle: {suite, digest, sources}` bind the PER-SUITE executable oracle sources. Starting with the selected suite module (or core/Jobs runner), follow literal relative `.mjs` imports inside `tests/world-factory`, excluding launcher/registry/binding helper modules. Sort relative paths lexically, then SHA-256 the concatenated RAW source bytes in that order, without separators or text normalization. This includes imported assembly expected constants and judges; no generic oracle is substituted for ARC-A. A JSON artifact stores base64 byte copies plus entry/path inventory and is capped at 1 MiB. External dependencies remain Team/Host SHA-bound. These are runner filesystem reads, not model returns; this is reproducible provenance, not cryptographic protection against an operator rewriting both source and record.
 * `trustedSourcesDigest` remains `null`. The public runner seam exposes no plane TrustedSources/admission-source document or digest. `authoritative-tool-sources.v1.json` is a census/inventory input, not the plane's recorded admission source document, so hashing it would fabricate the requested fact. The record carries `trustedSourcesUnavailableReason` naming this public limitation.
 * `hostTreeSha` is an explicit clarity alias for the pristine Host checkout SHA; existing `hostSha` is retained unchanged. No misleading new product/Team SHA is introduced.
