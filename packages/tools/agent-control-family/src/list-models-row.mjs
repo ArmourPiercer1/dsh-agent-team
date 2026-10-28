@@ -10,18 +10,19 @@ export function buildListModelsRowDefinition({ name, listModelsExecutor }) {
   return Object.freeze({
     name,
     output: { schema: { type: 'string' }, render: (_args, result) => [{ type: 'text', text: result }] },
-    description: 'List the LLM providers/models advertised to this mount, optionally filtered by provider. Read-only enumeration of the route catalogue; it declares no mutation effect and spawns nothing.',
+    description: 'Discover LLM routes for subagents without changing the current Agent. Call with no arguments to list providers, with provider to list its advertised models, or with provider and model to inspect that exact model and its reasoning efforts.',
     parameters: {
       type: 'object',
-      properties: { provider: { type: 'string', description: 'Exact provider id to inspect; omit to list providers.' } },
+      properties: {
+        provider: { type: 'string', description: 'Exact provider id to inspect; omit to list providers.' },
+        model: { type: 'string', description: 'Exact model id to inspect. Requires provider; omit to list that provider\'s advertised models.' },
+      },
       additionalProperties: false,
     },
     execute: async (raw, exec) => {
       const corr = {
         ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
-        // The DISPATCH-provided caller identity (native callingAgent law):
-        // trusted transport data — the model cannot express or restate it.
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await listModelsExecutor(raw ?? {}, corr)

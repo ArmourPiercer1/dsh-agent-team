@@ -14,8 +14,8 @@ export function buildWorkflowRowDefinition({ name, workflowExecutor }) {
     name,
     output: { schema: { oneOf: [
       { type: 'object', additionalProperties: false, required: ['kind', 'jobId', 'runId'], properties: { kind: { type: 'string', const: 'background' }, jobId: { type: 'string' }, runId: { type: 'string' } } },
-      { type: 'object', additionalProperties: false, required: ['kind', 'runId', 'agentsStarted', 'result'], properties: { kind: { type: 'string', const: 'foreground' }, runId: { type: 'string' }, agentsStarted: { type: 'integer' }, result: { type: 'object' } } },
-    ] }, render: (args, value) => [{ type: 'text', text: value.kind === 'background' ? `workflow "${args.description}" started in the background as job ${value.jobId}` : JSON.stringify(value.result) }] },
+      { type: 'object', additionalProperties: false, required: ['kind', 'runId', 'agentsStarted', 'result'], properties: { kind: { type: 'string', const: 'foreground' }, runId: { type: 'string' }, agentsStarted: { type: 'integer' }, result: { type: 'json', required: true } } },
+    ] }, render: (args, value) => [{ type: 'text', text: value.kind === 'background' ? `workflow "${args.meta?.name ?? args.description}" started in the background as job ${value.jobId}. Its return value arrives with the completion notice; check on it with job_output, stop it with job_kill.` : JSON.stringify(value.result) }] },
     description: 'Run a governed orchestration script whose agent legs execute through the caller-bound runtime delegates: every spawn re-passes the no-amplification fence and every steer re-passes the owner fence, so a workflow carries exactly THIS call\'s authority — never more.',
     parameters: {
       type: 'object',

@@ -24,7 +24,7 @@ const NATIVE = {
   subagent_fork: null as Schema | null,
   workflow: { oneOf: [
     { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'background' }, jobId: { type: 'string', required: true }, runId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, agentsStarted: { type: 'integer', required: true }, result: { type: 'object' } } },
+    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, agentsStarted: { type: 'integer', required: true }, result: { type: 'json', required: true } } },
   ] },
 }
 NATIVE.subagent_fork = NATIVE.subagent

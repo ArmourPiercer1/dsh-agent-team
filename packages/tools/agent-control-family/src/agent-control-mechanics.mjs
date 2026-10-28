@@ -108,7 +108,7 @@ export const ARG_GRAMMAR = Object.freeze({
   // AC-1: the native `scope` arm (tool-subagent-control list-agents.ts),
   // closed to its two values; absent = children (the native default).
   list_agents: Object.freeze({ scope: Object.freeze({ kind: 'enum', required: false, values: Object.freeze(['children', 'descendants']) }) }),
-  list_subagent_models: Object.freeze({ provider: S(false) }),
+  list_subagent_models: Object.freeze({ provider: S(false), model: S(false) }),
   workflow: Object.freeze({
     description: S(), prompt: S(),
   }),

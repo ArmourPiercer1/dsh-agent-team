@@ -89,6 +89,7 @@ const makeHost = (opts: { childTools?: (req: Rec) => string[]; output?: string; 
   const llm = {
     listProviders: () => [{ id: 'prov-a', name: 'Provider A' }],
     listModels: async () => opts.models ?? [{ id: 'model-1', name: 'Model One', reasoning: { efforts: [] } }],
+    resolveModelInfo: async (_provider: string, model: string) => ({ id: model, name: 'Resolved Model', description: 'resolved', reasoning: { defaultEffort: 'balanced', efforts: [{ id: 'balanced', name: 'Balanced' }, { id: 'fast', name: 'Fast' }] } }),
   }
   const agentTeams = {
     listMembers: () => [{ id: 'teammate-x' }],
@@ -345,6 +346,15 @@ describe('AC-1 C1 family — production port + Tier A ceiling over the real plan
     const refused = await attempt(() => def('list_subagent_models').execute({ provider: 'prov-b' }, exec(makeAgent())))
     expect(refused.ok).toBe(false)
     if (!refused.ok) expect(refused.msg).toContain('agent-runtime-authority-refused')
+    const modelWithoutProvider = await attempt(() => def('list_subagent_models').execute({ model: 'model-2' }, exec(makeAgent())))
+    expect(modelWithoutProvider.ok).toBe(false)
+    if (!modelWithoutProvider.ok) expect(modelWithoutProvider.msg).toContain('model')
+    const modelInfo = await attempt(() => def('list_subagent_models').execute({ provider: 'prov-a', model: 'model-2' }, exec(makeAgent())))
+    expect(modelInfo.ok).toBe(true)
+    if (modelInfo.ok) expect(modelInfo.value).toContain('model-2 — Resolved Model')
+    const outsideModel = await attempt(() => def('list_subagent_models').execute({ provider: 'prov-a', model: 'model-1' }, exec(makeAgent())))
+    expect(outsideModel.ok).toBe(false)
+    if (!outsideModel.ok) expect(outsideModel.msg).toContain('agent-runtime-authority-refused')
   })
 
   it('AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)', async () => {

@@ -275,24 +275,30 @@ export function createHostAgentRuntimePort({ hostService, caller, callerAuthorit
       case 'listModels': {
         const f = face('listModels', ['llm'], (svc) => (typeof svc.listProviders === 'function' && typeof svc.listModels === 'function' ? svc.listProviders : undefined))
         if (f === null) return null
-        return async ({ provider }) => {
+        return async ({ provider, model, signal }) => {
           const llm = f.svc
+          if (model !== undefined && provider === undefined) return { ok: false, code: 'agent-runtime-authority-refused', detail: '`model` requires `provider`' }
           const authority = callerAuthority
           const allowedProviders = authority !== null && authority !== undefined && typeof authority === 'object' && Array.isArray(authority.providers) ? authority.providers : []
           const allowedModels = authority !== null && authority !== undefined && typeof authority === 'object' && Array.isArray(authority.models) ? authority.models : []
           if (provider === undefined) {
             const advertised = llm.listProviders()
-            const providers = (Array.isArray(advertised) ? advertised : [])
-              .filter((p) => allowedProviders.includes(p.id))
+            const providers = (Array.isArray(advertised) ? advertised : []).filter((p) => allowedProviders.includes(p.id))
             return providers.length === 0 ? '(no LLM providers)' : providers.map((p) => `${p.id} — ${p.name}`).join('\\n')
           }
           if (!allowedProviders.includes(provider)) return { ok: false, code: 'agent-runtime-authority-refused', detail: `provider '${String(provider)}' is outside the caller authority` }
+          if (model !== undefined) {
+            if (!allowedModels.includes(model)) return { ok: false, code: 'agent-runtime-authority-refused', detail: `child LLM route '${provider}/${model}' is outside the caller authority` }
+            if (typeof llm.resolveModelInfo !== 'function') return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'llm.resolveModelInfo is unavailable' }
+            const info = await llm.resolveModelInfo(provider, model, signal)
+            const efforts = Array.isArray(info?.reasoning?.efforts) ? info.reasoning.efforts : []
+            const rendered = efforts.length === 0 ? '(no advertised reasoning efforts)' : efforts.map((effort) => `${effort.id}${info.reasoning?.defaultEffort === effort.id ? ' (default)' : ''} — ${effort.name}${effort.description === undefined ? '' : `: ${effort.description}`}`).join('\\n')
+            return `${provider}/${info.id ?? model} — ${info.name ?? model}${info.description === undefined ? '' : `: ${info.description}`}\\nReasoning efforts:\\n${rendered}`
+          }
           const models = await llm.listModels(provider)
           if (!Array.isArray(models)) return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'llm.listModels answered a non-array' }
           const allowed = models.filter((m) => allowedModels.includes(typeof m === 'string' ? m : m?.id))
-          return allowed.length === 0
-            ? `(no advertised models for ${provider})`
-            : allowed.map((m) => `${provider}/${typeof m === 'string' ? m : m?.id} — ${typeof m === 'string' ? m : m?.name}`).join('\\n')
+          return allowed.length === 0 ? `(no advertised models for ${provider})` : allowed.map((m) => `${provider}/${typeof m === 'string' ? m : m?.id} — ${typeof m === 'string' ? m : m?.name}`).join('\\n')
         }
       }
       case 'spawnChild': return startTierA('spawnChild', 'spawn')
