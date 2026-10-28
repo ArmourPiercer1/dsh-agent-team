@@ -7,9 +7,12 @@
  *
  * @module agent-control-family/interrupt-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildInterruptRowDefinition({ name, interruptExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: nativeOutputSchemas.interrupt_agent, render: (args) => [{ type: 'text', text: `interrupt requested for agent ${args.agent_id}` }] },
     description: 'Request cancellation of one agent\'s current turn inside THIS session scope. Foreign-scope targets are refused with zero reach; the request rides the runtime\'s own cancel leg and never settles cancellation itself.',
     parameters: {
       type: 'object',
@@ -29,8 +32,12 @@ export function buildInterruptRowDefinition({ name, interruptExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await interruptExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { requested: true }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'interrupt_agent · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (value !== null && typeof value === 'object' && typeof value.accepted === 'boolean') return { accepted: value.accepted }
+        throw new Error('refused-agent-control — the governed interrupt executor returned a value outside the native result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('interrupt_agent was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed interrupt executor produced no outcome')
     },
   })

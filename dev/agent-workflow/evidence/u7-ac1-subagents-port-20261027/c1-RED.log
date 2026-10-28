@@ -1,0 +1,40 @@
+- true
++ false
+
+ ❯ test/u7-ac1-subagents-port-c1.test.ts:332:18
+    330|     const { def } = await mountFamily(host)
+    331|     const r = await attempt(() => def('subagent_fork').execute({ descr…
+    332|     expect(r.ok).toBe(true)
+       |                  ^
+    333|     expect(host.starts.map((s) => [s.provider, s.request.toolFilter]))…
+    334|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  test/u7-ac1-subagents-port-c1.test.ts > AC-1 C1 family — production port + Tier A ceiling over the real plane chain > AC1-F6 a PTC-mode caller is refused BEFORE the PA edge (zero landing, zero start)
+AssertionError: subagent: expected 'refused-agent-control agent-control-a…' to contain 'agent-control-child-ptc-refused'
+
+Expected: "agent-control-child-ptc-refused"
+Received: "refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)"
+
+ ❯ test/u7-ac1-subagents-port-c1.test.ts:363:38
+    361|       const r = await attempt(() => def(name).execute({ description: '…
+    362|       expect(r.ok, name).toBe(false)
+    363|       if (!r.ok) expect(r.msg, name).toContain('agent-control-child-pt…
+       |                                      ^
+    364|       expect(audit, name).toHaveLength(0)
+    365|       expect(host.starts, name).toHaveLength(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  15 failed | 3 passed (18)
+   Start at  18:29:02
+   Duration  1.53s (transform 950ms, setup 0ms, import 54ms, tests 1.33s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

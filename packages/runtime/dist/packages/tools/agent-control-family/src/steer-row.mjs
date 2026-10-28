@@ -6,9 +6,12 @@
  *
  * @module agent-control-family/steer-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildSteerRowDefinition({ name, steerExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: nativeOutputSchemas.send_message, render: (args) => [{ type: 'text', text: `message delivered to agent ${args.agent_id}` }] },
     description: 'Send one message to another agent inside THIS session scope. Targets outside the caller\'s own scope are refused before any runtime is reached; the call is admission-gated and its execution identity is one-shot (a settled call never re-delivers).',
     parameters: {
       type: 'object',
@@ -28,8 +31,12 @@ export function buildSteerRowDefinition({ name, steerExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await steerExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { delivered: true }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'send_message · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (value !== null && typeof value === 'object' && typeof value.messageId === 'string') return { messageId: value.messageId }
+        throw new Error('refused-agent-control — the governed send_message executor returned a value outside the native result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('send_message was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed send_message executor produced no outcome')
     },
   })

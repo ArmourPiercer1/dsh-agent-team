@@ -1,0 +1,12 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-storage-domain' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/deepseek-harness-test-use/apps/cli/lib/__resolver__.js
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    at packageResolve (node:internal/modules/esm/resolve:784:25)
+    at moduleResolve (node:internal/modules/esm/resolve:873:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolve (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs:197:12)
+    at async nextResolve (node:internal/modules/esm/hooks:785:22)
+    at async AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:24)
+    at async MessagePort.handleMessage (node:internal/modules/esm/worker:251:18)
+dsh web: http://127.0.0.1:3184/?token=iqpMbDF5ziqpq5NVniBAdJnwUEnV4W4VokFPj3wFRf8

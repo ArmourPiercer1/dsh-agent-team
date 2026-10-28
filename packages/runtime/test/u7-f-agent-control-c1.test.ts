@@ -73,12 +73,12 @@ const makeFakeRuntime = (opts: { workflowSteps?: Array<Record<string, unknown>> 
   return {
     calls,
     callsFor: (leg) => calls.filter((c) => c.leg === leg),
-    listAgents: async (c) => { rec('listAgents', c); return { ok: true, agents: [{ id: 'member-alpha', status: 'running' }, { id: 'member-beta', status: 'inactive' }] } },
-    listModels: async (c) => { rec('listModels', c); return { ok: true, models: [{ provider: 'prov-a', model: 'model-1' }] } },
-    spawnChild: async (c) => { rec('spawnChild', c); return { ok: true, childId: 'child-1' } },
-    forkChild: async (c) => { rec('forkChild', c); return { ok: true, childId: 'fork-1' } },
-    steer: async (c) => { rec('steer', c); return { ok: true, delivered: true } },
-    interrupt: async (c) => { rec('interrupt', c); return { ok: true, requested: true } },
+    listAgents: async (c) => { rec('listAgents', c); return [{ kind: 'child', id: 'member-alpha', label: 'alpha', status: 'running' }, { kind: 'child', id: 'member-beta', label: 'beta', status: 'inactive' }] },
+    listModels: async (c) => { rec('listModels', c); return 'prov-a/model-1 — model-1' },
+    spawnChild: async (c) => { rec('spawnChild', c); return { kind: 'foreground', runId: 'child-run-1', output: [{ type: 'text', text: 'child-1' }] } },
+    forkChild: async (c) => { rec('forkChild', c); return { kind: 'foreground', runId: 'fork-run-1', output: [{ type: 'text', text: 'fork-1' }] } },
+    steer: async (c) => { rec('steer', c); return { messageId: 'message-1' } },
+    interrupt: async (c) => { rec('interrupt', c); return { accepted: true } },
     runWorkflow: async (c) => {
       rec('runWorkflow', c)
       const driver = c as unknown as { script: unknown; spawn: (s: Record<string, unknown>) => Promise<Record<string, unknown> | null>; steer: (s: Record<string, unknown>) => Promise<Record<string, unknown> | null>; enumerate: () => Promise<unknown> }
@@ -92,7 +92,7 @@ const makeFakeRuntime = (opts: { workflowSteps?: Array<Record<string, unknown>> 
         results.push({ step: i, r: r ?? { refused: true } })
         if (r !== null && typeof r === 'object' && r.ok === false) break
       }
-      return { ok: true, steps: results }
+      return { kind: 'foreground', runId: 'workflow-run-1', agentsStarted: results.length, result: { steps: results } }
     },
   }
 }
@@ -165,6 +165,32 @@ const trustedInjected = (fake: FakePort, extra: Record<string, unknown> = {}): R
 })
 
 // ─────────────────────────────────────────────────────────────────────────
+describe('u7-f C1 authority refusal confidentiality', () => {
+  it('does not echo unauthorized provider or model sentinels in list-models refusals', async () => {
+    const { createHostAgentRuntimePort } = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as { createHostAgentRuntimePort: (input: Record<string, unknown>) => Record<string, unknown> }
+    const providerSentinel = 'unauthorized-provider-sentinel'
+    const modelSentinel = 'unauthorized-model-sentinel'
+    const port = createHostAgentRuntimePort({
+      caller: {},
+      callerAuthority: { providers: ['allowed-provider'], models: ['allowed-model'] },
+      hostService: (name: string) => name === 'llm' ? {
+        listProviders: () => [],
+        listModels: async () => [],
+        resolveModelInfo: async () => ({ id: 'allowed-model', name: 'allowed-model', reasoning: { efforts: [] } }),
+      } : undefined,
+    })
+    const listModels = (port as { legResolver: (leg: string) => ((input: Record<string, unknown>) => Promise<unknown>) | null }).legResolver('listModels')
+    if (listModels === null) throw new Error('listModels leg was not wired')
+    const providerRefusal = await listModels({ provider: providerSentinel })
+    const modelRefusal = await listModels({ provider: 'allowed-provider', model: modelSentinel })
+    for (const refusal of [providerRefusal, modelRefusal]) {
+      expect(refusal).toMatchObject({ ok: false, code: 'agent-runtime-authority-refused' })
+      expect(JSON.stringify(refusal)).not.toContain(providerSentinel)
+      expect(JSON.stringify(refusal)).not.toContain(modelSentinel)
+    }
+  })
+})
+
 describe('u7-f C1 mount gate — the zero-flip law and the seven claims', () => {
   it('AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)', async () => {
     const plane = await buildAC({ planeCfg: { agentControlEnabled: undefined } })
@@ -348,13 +374,36 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     expect(fake.calls).toHaveLength(0)
   })
 
-  it('AC-26 no caller-authority snapshot: spawn FAILS CLOSED (an unbounded caller can never prove a bounded child), zero port', async () => {
+  // AC-1 (design F3(a)): the production build no longer runs with NO
+  // snapshot — it runs under the build-time TIER A CEILING (a ceiling ≤ every
+  // caller: no route override, no tools, one-shot). The fail-closed law now
+  // applies to a snapshot that is present but NOT a bounded record.
+  it('AC-26a no injected snapshot ⇒ the Tier A ceiling admits a route-free spawn (the ceiling is a ceiling, not an absence)', async () => {
     const fake = makeFakeRuntime()
     const { plane } = await setup({ injected: { agentRuntime: fake, agentScope: AGENT_SCOPE } })
+    const r = await attempt(() => def(plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(r.ok).toBe(true)
+    expect(fake.callsFor('spawnChild')).toHaveLength(1)
+  })
+
+  it('AC-26b a NON-RECORD caller-authority snapshot fails closed: typed refusal, zero port', async () => {
+    const fake = makeFakeRuntime()
+    const { plane } = await setup({ injected: { agentRuntime: fake, agentScope: AGENT_SCOPE, callerAuthority: 'not-a-record' } })
     const r = await attempt(() => def(plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.msg).toContain('agent-control-amplification-refused')
     expect(fake.calls).toHaveLength(0)
+  })
+
+  it('AC-26c the Tier A ceiling REFUSES every route/effort/background arm (no provider/model/effort/tools, one-shot)', async () => {
+    for (const arm of [{ provider: 'prov-a' }, { model: 'model-1' }, { reasoning_effort: 'high' }, { run_in_background: true }]) {
+      const fake = makeFakeRuntime()
+      const { plane } = await setup({ injected: { agentRuntime: fake, agentScope: AGENT_SCOPE } })
+      const r = await attempt(() => def(plane, 'subagent').execute({ description: 'd', prompt: 'p', ...arm }))
+      expect(r.ok, JSON.stringify(arm)).toBe(false)
+      if (!r.ok) expect(r.msg).toContain('agent-control-amplification-refused')
+      expect(fake.calls, JSON.stringify(arm)).toHaveLength(0)
+    }
   })
 
   it('AC-27 WORKFLOW amplifying step (law (c)): the delegate refuses and the fake records ZERO spawnChild under the workflow', async () => {
@@ -363,7 +412,7 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     // The workflow call itself was admitted (its declared domain-ref arm
     // covers spawn); the STEP refused inside the caller-bound delegate:
     expect(r.ok).toBe(true)
-    const steps = (r.ok ? (r.value as { steps?: Array<{ r?: { ok?: boolean; code?: string } }> }) : { steps: [] }).steps ?? []
+    const steps = (r.ok ? ((r.value as { result?: { steps?: Array<{ r?: { ok?: boolean; code?: string } }> } }).result?.steps ?? []) : [])
     expect(steps[0]?.r?.code).toBe('agent-control-amplification-refused')
     expect(fake.callsFor('spawnChild')).toHaveLength(0)
     expect(fake.calls.filter((c) => c.leg === 'runWorkflow')).toHaveLength(1)
@@ -447,8 +496,7 @@ describe('u7-f C1 refusals — typed answers with ZERO port calls (the fake reco
     const ac = new AbortController()
     ac.abort()
     const r = await attempt(() => def(plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'x' }, { signal: ac.signal }))
-    expect(r.ok).toBe(true) // the row answers the cancelled fact, it does not throw
-    if (r.ok) expect(r.value.cancelled).toBe(true)
+    expect(r.ok).toBe(false) // native output schemas have no cancellation envelope; cancellation is an error result
     expect(fake.calls).toHaveLength(0)
   })
 
@@ -745,80 +793,13 @@ describe('u7-f C1 effect-split arm — the PA requested sets ARE the law (a)', (
 })
 
 // ─────────────────────────────────────────────────────────────────────────
-// F-1 (review R1): the PRODUCTION port factory itself, driven with a
-// RECORDING `spawnTeammate` shaped exactly like the pinned host face
-// (tests/deepseek-harness-test-use/packages/experimental/agent-team/src/
-// types.ts:166-173 — the CLOSED six-field SpawnTeammateRequest; runtime law
-// roster.ts:256 signal fold, roster.ts:264 provider requiredText). The fake
-// PORT of the suites above cannot see this law — only the real resolver can
-// be caught dropping an approved field. The law: CARRY EXACTLY OR REFUSE.
-describe('u7-f C1 the PRODUCTION host-port resolver — carry exactly or refuse (F-1)', () => {
-  const AGENT = { id: 'agent-1' }
-  const SIGNAL = () => new AbortController().signal
-  const makeHost = () => {
-    const seen: Array<{ agent: unknown; request: Record<string, unknown> }> = []
-    const svc = {
-      listMembers: () => [{ id: 'member-alpha' }],
-      sendMessage: async () => ({ ok: true }),
-      interrupt: async () => ({ ok: true }),
-      spawnTeammate: async (agent: unknown, request: Record<string, unknown>) => {
-        seen.push({ agent, request })
-        return { ok: true, member: { id: 'child-1' } }
-      },
-    }
-    return { seen, hostService: (name: string) => (name === 'agentTeams' ? svc : undefined) }
-  }
-  const callSpawn = async (host: ReturnType<typeof makeHost>, spec: Record<string, unknown>, signal?: AbortSignal) => {
-    const mod = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as {
-      createHostAgentRuntimePort: (i: Record<string, unknown>) => Record<string, unknown>
-      normalizePort: (c: unknown) => { staticLegs: Record<string, unknown>; legResolver: (l: string) => unknown }
-      resolveLeg: (p: unknown, leg: string) => ((a: Record<string, unknown>) => Promise<Record<string, unknown>>) | null
-    }
-    const port = mod.createHostAgentRuntimePort({ hostService: host.hostService, caller: { agent: AGENT }, observe: () => {} })
-    const fn = mod.resolveLeg(mod.normalizePort(port), 'spawnChild')
-    if (fn === null) throw new Error('spawnChild leg unexpectedly unwired against a face that answers it')
-    return await fn({ caller: { agent: AGENT }, spec, ...(signal === undefined ? {} : { signal }) })
-  }
-
-  it('AC-60 the bounded provider arrives EXACTLY (byte-equal) and the request is the closed six-field face shape', async () => {
-    const host = makeHost()
-    const signal = SIGNAL()
-    const r = await callSpawn(host, { description: 'route-task', prompt: 'do it', provider: 'prov-a' }, signal)
-    expect(r.ok).toBe(true)
-    expect(host.seen).toHaveLength(1)
-    const req = host.seen[0]?.request as Record<string, unknown>
-    expect(req.provider).toBe('prov-a')
-    expect(req.context).toBe('fresh')
-    expect(req.signal).toBe(signal)
-    expect(req.description).toBe('route-task')
-    expect(Object.keys(req).slice().sort()).toEqual(['context', 'description', 'name', 'prompt', 'provider', 'signal'])
-  })
-
-  for (const field of ['model', 'reasoning_effort', 'run_in_background'] as const) {
-    it(`AC-61 a bounded ${field} the face cannot carry refuses TYPED with ZERO spawnTeammate reach (never a silent drop)`, async () => {
-      const host = makeHost()
-      const value = field === 'run_in_background' ? false : 'bounded-value'
-      const r = await callSpawn(host, { description: 'd', prompt: 'p', provider: 'prov-a', [field]: value }, SIGNAL())
-      expect(r.ok).toBe(false)
-      expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
-      expect(String(r.detail)).toContain(field)
-      expect(host.seen).toHaveLength(0)
-    })
-  }
-
-  it('AC-62 no named provider route: refused (the face REQUIRES one — roster.ts:264), zero reach, no invented default', async () => {
-    const host = makeHost()
-    const r = await callSpawn(host, { description: 'd', prompt: 'p' }, SIGNAL())
-    expect(r.ok).toBe(false)
-    expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
-    expect(host.seen).toHaveLength(0)
-  })
-
-  it('AC-63 no AbortSignal from the walk: refused (the face folds one — roster.ts:256), zero reach, no never-aborted stand-in', async () => {
-    const host = makeHost()
-    const r = await callSpawn(host, { description: 'd', prompt: 'p', provider: 'prov-a' })
-    expect(r.ok).toBe(false)
-    expect(r.code).toBe('agent-runtime-port-face-cannot-carry')
-    expect(host.seen).toHaveLength(0)
-  })
-})
+// F-1 (review R1) RETARGETED (AC-1): the PRODUCTION port factory is now
+// driven against the PUBLIC `subagents` face (SubagentStartRequest:
+// subagent/subagent/src/types.ts:145-198). The #406 `face-cannot-carry`
+// legs pinned the EXPERIMENTAL `agentTeams` SpawnTeammateRequest, whose
+// six-field shape is what made provider-required / model-unexpressible
+// look like a law; on `subagents` every one of those fields is
+// first-class, and the Tier A law replaces the whole arm. The port-level
+// AC-1 laws live in `u7-ac1-subagents-port-c1.test.ts` (AC1-P1…P10): forced
+// `toolFilter`, no agentOptions/persona, the typed route/PTC refusals and
+// the child-toolview witness. Nothing here re-pins the wrong face.

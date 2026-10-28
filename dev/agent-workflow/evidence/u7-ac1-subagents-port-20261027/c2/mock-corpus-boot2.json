@@ -1,0 +1,36 @@
+{
+ "note": "Declared EXCERPT of the boot2 mock corpus: every CHILD request (spawn/fork), the last pilot turn-2 request (full pilot chain) and the final request. Kept entries are byte-identical to the capture; the raw capture is not committed (evidence guard).",
+ "rawSha256": "5623990e0ee660c0d490be1d3d8103d3dedd13dc01b609008e632012be53cc6e",
+ "rawEntries": 2,
+ "entries": [
+  {
+   "seq": 2,
+   "path": "/v1/messages",
+   "status": 200,
+   "body": {
+    "model": "u7ac1-model",
+    "stream": true,
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"U7AC1_DISC_u5u7ac1-20261027t18-52-28z\"}]"
+       }
+      ]
+     }
+    ],
+    "max_tokens": 64,
+    "thinking": {
+     "type": "disabled"
+    },
+    "system": "Create a concise title for an AI coding-assistant session from the supplied human messages.\nReturn only the title on one line, **in plain text of natural language**, with no quotes, prefix, explanation, Markdown, XML, or terminal control codes. No code is allowed.\nUse the language of the messages.\nAim for about 5 words in non-CJK languages or 10 CJK characters."
+   },
+   "reply": {
+    "kind": "text",
+    "content": "u7ac1 session"
+   }
+  }
+ ]
+}

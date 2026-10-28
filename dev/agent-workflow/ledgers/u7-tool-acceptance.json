@@ -385,10 +385,9 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: a spawn with no bounded caller can never prove it stays inside it (fail closed)",
-        "pr": "#406",
-        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
-        "note": "ac:spawn-failclosed: the production leg is wired fail-closed — no trusted caller-authority snapshot is injected into the production assembly (a named center round)"
+        "reason": "the cited live record binds teamSha ab8a5f236 (pre-fix output faces/authority/status), while the current head changed product code; live re-proof is deferred to the candidate-bound C2 lane",
+        "pr": "#418",
+        "source": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/README.md"
       }
     },
     {
@@ -413,9 +412,10 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "`forkChild` has NO recognized public host face at the 639ed01539 pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
-        "pr": "#406",
-        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+        "reason": "the cited live record binds teamSha ab8a5f236 (pre-fix output faces/authority/status); boot 8's fork case was a judge re-grade with no new live run, and live re-proof is deferred to the candidate-bound C2 lane",
+        "pr": "#418",
+        "source": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/README.md",
+        "note": "boot 8's fork case was a judge re-grade (no new live run)"
       }
     },
     {
@@ -495,10 +495,9 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "Error: refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'listAgents')",
-        "pr": "#406",
-        "source": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
-        "note": "ac:enumerate-governed: the governed approval walk RAN and its durable Control row settled once; the port leg then answered typed and the record grades the case REFUSED, never flipped to PASS"
+        "reason": "the cited live record binds teamSha ab8a5f236 (pre-fix output faces/authority/status), while the current head changed product code; live re-proof is deferred to the candidate-bound C2 lane",
+        "pr": "#418",
+        "source": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/README.md"
       }
     },
     {
@@ -523,9 +522,9 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "not booted live this round (same face family as list_agents) — DISCLOSED",
-        "pr": "#406",
-        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+        "reason": "the cited live record binds teamSha ab8a5f236 (pre-fix output faces/authority/status), while the current head changed product code; live re-proof is deferred to the candidate-bound C2 lane",
+        "pr": "#418",
+        "source": "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/README.md"
       }
     },
     {
@@ -550,9 +549,9 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "`runWorkflow` has NO recognized public host face at the pin → typed `agent-runtime-leg-unwired` (DISCLOSED: never simulated)",
-        "pr": "#406",
-        "note": "quoted from the merged PR body (\"PROVEN vs DISCLOSED, per tool\"), which is where #406 states it — no tracked tree file carries these sentences, so this level names no `source`"
+        "reason": "no recognized public host face at the pin",
+        "pr": "#418",
+        "note": "The live boot's refusal case is disclosed, not promoted to L4."
       }
     },
     {
