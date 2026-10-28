@@ -233,7 +233,7 @@ backend is usable (T15 (iv), T16).
 | `node --test tests/world-factory/u6-arc-d.test.mjs tests/world-factory/world-factory.test.mjs` | `tests 51 / pass 51 / fail 0` |
 | `node scripts/eb3-run-manifest.mjs --new-since origin/master` | `EB3-RUN-MANIFEST pass records=99 strict=0 incomplete=11 findings=0` |
 | `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | `EB3-EVIDENCE-GUARD pass added=24 bound=1048576 exempted=0 findings=0` (round 0's files + this round's 9, all graded clean; counted on the delivered tree) |
-| `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store` | `DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=66.1` on the delivered round-1 tree (`ci-pr-gate-round1-postcommit.log`, taken at head `7f4c0a523`; the only later delta is this receipt text and that log line, so no code/test path differs). The earlier pre-commit run is `ci-pr-gate-round1.log` |
+| `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store` | `DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none` — twice on the round-1 tree: `seconds=66.1` at head `7f4c0a523` (kept as `ci-pr-gate-round1-postcommit.log`) and `seconds=50.5` at the delivered head `1a48e66e5` (the two heads differ only in this receipts section). Pre-commit run: `ci-pr-gate-round1.log` |
 | `git diff --check origin/master...HEAD` | clean |
 | main checkout runtime tree untouched | `git -C …/tests/deepseek-harness-test-use status --porcelain` → **empty**; `landlock-run` `a752bc72…659b31` and `glibc/system.node` `54a9c25c…7600bc` — both equal to the manifest pins |
 | whole `tests/world-factory` sweep | 100 tests / 100 pass / 0 fail |
