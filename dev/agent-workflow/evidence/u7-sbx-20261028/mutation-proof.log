@@ -1,0 +1,28 @@
+
+=== MUTATION a: skip the hash verification (source/staged/published digests no longer refuse a mismatch)
+  KILLED T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue
+  KILLED T13 a supply-chain digest mismatch is a THROWN pre-flight error, never a recorded backend
+  result: pass=15 fail=2
+  after revert: pass=17 fail=0
+
+=== MUTATION b: treat a missing binary as success instead of provisioning it
+  KILLED T3 a fresh-clone shaped tree is unusable, gets provisioned, and the host probe then works
+  KILLED T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue
+  KILLED T7 a source tree without the asset fails closed with a typed error
+  KILLED T8 the source tree is never the destination, and the env override is honoured
+  KILLED T9 provisioning keeps the destination runtime tree git status --porcelain EMPTY
+  KILLED T11 the pre-flight record binds probe verdict + launcher digest + provenance
+  KILLED T12 an unprovisionable tree records unusable + the provision error and never throws
+  KILLED T13 a supply-chain digest mismatch is a THROWN pre-flight error, never a recorded backend
+  result: pass=9 fail=8
+  after revert: pass=17 fail=0
+
+=== MUTATION c: judge the u74a native leg FAIL even when the probe says the backend is unusable
+  KILLED T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction
+  result: pass=16 fail=1
+  after revert: pass=17 fail=0
+
+=== MUTATION d: judge the ARC-D native-parity leg FAIL even when the probe says the backend is unusable
+  KILLED T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree
+  result: pass=16 fail=1
+  after revert: pass=17 fail=0

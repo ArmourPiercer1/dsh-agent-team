@@ -384,6 +384,10 @@ export async function runParallelSupervisor(opts) {
     },
   })
 
+  // u7-sbx: bind the native-sandbox pre-flight (measured before the first
+  // host start) into this record's bindings.
+  factory.bindRunRecord(record)
+
   const runnerLogDir = join(evidence, 'logs', 'runners')
   const recA = join(evidence, `run-${runId}-A.json`)
   const recB = join(evidence, `run-${runId}-B.json`)
@@ -615,6 +619,10 @@ export async function runCrashReclaimSupervisor(opts) {
       note: `A = ${aSuite} runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance`,
     },
   })
+
+  // u7-sbx: bind the native-sandbox pre-flight (measured before the first
+  // host start) into this record's bindings.
+  factory.bindRunRecord(record)
 
   const runnerLogDir = join(evidence, 'logs', 'runners')
   const recA = join(evidence, `run-${runId}-A.json`)
@@ -942,6 +950,10 @@ export async function reconstructCrash(opts) {
       reconstruction: { sourceRecord: resolve(reconstruct), sourceOverall: live.overall, spawns: 0, note: 're-judgement of a completed crash-reclaim run from stored receipts; global checks probed fresh' },
     },
   })
+
+  // u7-sbx: bind the native-sandbox pre-flight (measured before the first
+  // host start) into this record's bindings.
+  factory.bindRunRecord(record)
   const stored = (live.cases ?? []).find((c) => c.id === 'abnormal-kill-reclaim') ?? {}
   const conds = stored.conditions ?? {}
   const storedPass = Object.values(conds).every((v) => v === true)
@@ -1030,6 +1042,10 @@ export async function reconstructParallel(opts) {
       },
     },
   })
+
+  // u7-sbx: bind the native-sandbox pre-flight (measured before the first
+  // host start) into this record's bindings.
+  factory.bindRunRecord(record)
   // (1) abnormal kill: reuse the stored live receipts verbatim
   const stored = (live.cases ?? []).find((c) => c.id === 'abnormal-kill-reclaim') ?? {}
   const crashRaced = (stored.killedPids ?? []).length + (stored.leasesReleased ?? []).length > 0 || (stored.homeDeleted ?? null) !== null

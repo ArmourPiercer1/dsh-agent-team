@@ -12,6 +12,7 @@
 import { apiPrompt, authenticate, fetchJson } from '../lib/world-factory.mjs'
 import { remoteCall, hasMarker, surfaceNamesOf, toolMsgsOf, MANAGED_TOOL_NAMES, SAFE_UNMANAGED_TOOL_NAMES } from '../lib/u6-fs-assembly.mjs'
 import { createArcDAssembly, makeArcDDecide, judgeU6ArcD } from '../lib/u6-arc-d-assembly.mjs'
+import { sandboxUnavailableSignal } from '../lib/host-sandbox-assets.mjs'
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -242,8 +243,25 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
     }
   }
   const effectNotes = { distinct: settleSeen.size, heads: [...settleSeen.entries()].slice(0, 10).map(([t, n]) => n > 1 ? `${t} [x${n}]` : t) }
+  // u7-sbx (verdict fidelity): does a tool_result of this run carry the host's
+  // TYPED "no sandbox backend is usable" refusal? That is the second half of
+  // the ENV_BLOCK conjunction for the CI-03 native-parity leg; the first half
+  // is the pre-flight probe (`unusable`), measured before this boot. The
+  // conjunction can never produce a PASS — it only separates "the native lane
+  // could not run at all" from "the native lane ran and left wrong bytes".
+  let nativeLaneSignal = { present: false, markers: [], head: null }
+  for (const r of world.mock?.requests ?? []) {
+    for (const m of toolMsgsOf(r)) {
+      const s = sandboxUnavailableSignal(String(m?.text ?? ''))
+      if (s.present === true) { nativeLaneSignal = s; break }
+    }
+    if (nativeLaneSignal.present === true) break
+  }
   const alive = hostAlive()
-  const verdicts = judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity, pairEvidence, hostAlive: alive })
+  const verdicts = judgeU6ArcD({
+    probeRows, markerFiles, markerNonces, nativeEvidence, nativeGrepParity, pairEvidence, hostAlive: alive,
+    sandboxPreflight: factory.sandboxPreflight, nativeLaneSignal,
+  })
   for (const [id, verdict, detail] of verdicts) {
     if (done.has(id)) continue
     add(id, verdict, {
@@ -263,7 +281,8 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
     mockTail: world.mockRequestDigest().slice(-8),
     surface, denyList, markerFiles,
     nonceMatches: nonceOf('pos-1-marker.txt') === assembly.probe.posNonce,
-    nativeEvidence, nativeGrepParity, pairEvidence, effectNotes, laneDone, probeLedgerRows: probeRows.length,
+    nativeEvidence, nativeGrepParity, pairEvidence, effectNotes, nativeLaneSignal, laneDone, probeLedgerRows: probeRows.length,
+    nativeConfinementBackend: record.record.bindings?.nativeConfinementBackend ?? 'unmeasured',
     governRows: probeRows.filter((r) => String(r.leg) === 'govern').map((r) => ({ action: r.action ?? null, ok: r.ok, detail: r.detail ?? null })),
     probeRows: probeRows
       .filter((r) => ['family-mount', 'register', 'walk', 'teardown', 'unload-settle', 'govern', 'pair-effect'].includes(String(r.leg)))

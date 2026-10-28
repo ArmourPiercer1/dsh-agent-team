@@ -68,6 +68,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { personaRow, presetDeclarationRow } from '../../kits/_shared/preset-seam.mjs'
 import { toolCall, messagesOf, textOf, lastUserTextOfStatic, extractInstanceId } from './u6-fs-assembly.mjs'
+import { nativeConfinementEnvBlock } from './host-sandbox-assets.mjs'
 
 /** The CI-05 planted id (regression pin: never attributed, never exists). */
 export const U74A_PLANTED_JOB_ID = 'bash-does-not-exist-u74a'
@@ -672,9 +673,18 @@ export { laneToolExchanges as u74aToolExchanges }
  *
  * @param {object} d
  * @param {boolean} hostAlive
- * @returns {Array<[string, 'PASS'|'FAIL', object]>}
+ * @param {object} [opts]
+ * @param {object} [opts.sandboxPreflight] the pre-flight record from
+ *        `lib/host-sandbox-assets.mjs` (measured BEFORE the first Host start).
+ *        It moves ONE verdict, and only through the conjunction in
+ *        `nativeConfinementEnvBlock`: `u74a:native-ctl-unaffected` may be
+ *        ENV_BLOCK (never PASS) when the host's own probe said `unusable` AND
+ *        this lane observed the host's typed "no sandbox backend is usable"
+ *        refusal. Without that conjunction — or with no pre-flight at all —
+ *        the leg is judged exactly as before.
+ * @returns {Array<[string, 'PASS'|'FAIL'|'ENV_BLOCK', object]>}
  */
-export function judgeU74a(d, hostAlive) {
+export function judgeU74a(d, hostAlive, opts = {}) {
   const out = []
   const add = (id, ok, detail) => out.push([id, ok ? 'PASS' : 'FAIL', detail])
   const k = d.kernelHits ?? {}
@@ -825,14 +835,28 @@ export function judgeU74a(d, hostAlive) {
   // 9) (f) the un-governed NATIVE lane is untouched: boot-root foreground
   //    bash answers its claim natively, kernel words absent from its
   //    transcript (CI-03, the u6-proc ctl-leg shape).
+  //    VERDICT FIDELITY (u7-sbx): when this leg fails, the FIRST question is
+  //    whether the native lane could run at all. It is ENV_BLOCK exactly when
+  //    the pre-flight probe of THIS host answered `unusable` and the lane
+  //    observed the host's typed `SANDBOX_UNAVAILABLE` refusal — the recorded
+  //    shape of a missing native asset (docs/TEST_METHODS.md §9), not a
+  //    product regression. Every other failure stays FAIL, and ENV_BLOCK is
+  //    never a PASS.
   const ctl = String(d.ctlResult ?? '')
-  add('u74a:native-ctl-unaffected', ctl.includes(d.claims?.ctl ?? '\u0000')
+  const ctlOk = ctl.includes(d.claims?.ctl ?? '\u0000')
     && (d.rootKernelMentions ?? -1) === 0
-    && d.laneDone?.ctl === true, {
+    && d.laneDone?.ctl === true
+  const nativeEnvBlock = ctlOk ? null : nativeConfinementEnvBlock({ observedText: ctl, preflight: opts.sandboxPreflight ?? null })
+  out.push(['u74a:native-ctl-unaffected', ctlOk ? 'PASS' : (nativeEnvBlock === null ? 'FAIL' : 'ENV_BLOCK'), {
     ctlHead: ctl.slice(0, 200),
     rootKernelMentions: d.rootKernelMentions ?? null,
-    note: 'the boot-root session is not a Team mount: foreground native bash keeps its byte-identical posture, the kernel never spoke about those calls',
-  })
+    ...(nativeEnvBlock ?? {}),
+    note: ctlOk
+      ? 'the boot-root session is not a Team mount: foreground native bash keeps its byte-identical posture, the kernel never spoke about those calls'
+      : (nativeEnvBlock === null
+        ? 'the boot-root native lane did not answer its claim (functional failure of the native control leg)'
+        : 'ENV_BLOCK: ' + nativeEnvBlock.note),
+  }])
   // 10) approvals: every durable ask row was a bash ask, each settled EXACTLY
   //     ONCE through the public seam; the trio opened ZERO rows (the
   //     no-second-ledger law) and no foreign arming row was invented.

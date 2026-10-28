@@ -1,0 +1,25 @@
+✔ T1 the pinned asset manifest is committed and keyed by the pinned host baseline (1.297505ms)
+✔ T2 a tree whose assets are present and match the manifest reports present and writes nothing (124.85727ms)
+✔ T3 a fresh-clone shaped tree is unusable, gets provisioned, and the host probe then works (133.227814ms)
+✔ T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue (66.483927ms)
+✔ T5 a destination whose existing bytes mismatch the manifest fails closed and is never overwritten (7.546268ms)
+✔ T6 an unmanifested host baseline fails closed instead of copying anything (6.248663ms)
+✔ T7 a source tree without the asset fails closed with a typed error (61.552266ms)
+✔ T8 the source tree is never the destination, and the env override is honoured (185.13647ms)
+✔ T9 provisioning keeps the destination runtime tree git status --porcelain EMPTY (72.419016ms)
+✔ T10 the provisioner has no network path (local copy only) (1.072449ms)
+✔ T11 the pre-flight record binds probe verdict + launcher digest + provenance (106.072384ms)
+✔ T12 an unprovisionable tree records unusable + the provision error and never throws (126.281142ms)
+✔ T13 a supply-chain digest mismatch is a THROWN pre-flight error, never a recorded backend (67.821963ms)
+✔ T14 only the host typed unavailable signal matches (0.28406ms)
+✔ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (1.751054ms)
+✔ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (1.27972ms)
+✔ T17 the pre-flight is visible on the RUN record and in the summary line (0.574119ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1071.100512
