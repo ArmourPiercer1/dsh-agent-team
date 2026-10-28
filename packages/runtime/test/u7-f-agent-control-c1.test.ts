@@ -165,6 +165,32 @@ const trustedInjected = (fake: FakePort, extra: Record<string, unknown> = {}): R
 })
 
 // ─────────────────────────────────────────────────────────────────────────
+describe('u7-f C1 authority refusal confidentiality', () => {
+  it('does not echo unauthorized provider or model sentinels in list-models refusals', async () => {
+    const { createHostAgentRuntimePort, resolveLeg } = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as { createHostAgentRuntimePort: (input: Record<string, unknown>) => Record<string, unknown>; resolveLeg: (port: Record<string, unknown>, leg: string) => ((input: Record<string, unknown>) => Promise<unknown>) | null }
+    const providerSentinel = 'unauthorized-provider-sentinel'
+    const modelSentinel = 'unauthorized-model-sentinel'
+    const port = createHostAgentRuntimePort({
+      caller: {},
+      callerAuthority: { providers: ['allowed-provider'], models: ['allowed-model'] },
+      hostService: (name: string) => name === 'llm' ? {
+        listProviders: () => [],
+        listModels: async () => [],
+        resolveModelInfo: async () => ({ id: 'allowed-model', name: 'allowed-model', reasoning: { efforts: [] } }),
+      } : undefined,
+    })
+    const listModels = (port as { legResolver: (leg: string) => ((input: Record<string, unknown>) => Promise<unknown>) | null }).legResolver('listModels')
+    if (listModels === null) throw new Error('listModels leg was not wired')
+    const providerRefusal = await listModels({ provider: providerSentinel })
+    const modelRefusal = await listModels({ provider: 'allowed-provider', model: modelSentinel })
+    for (const refusal of [providerRefusal, modelRefusal]) {
+      expect(refusal).toMatchObject({ ok: false, code: 'agent-runtime-authority-refused' })
+      expect(JSON.stringify(refusal)).not.toContain(providerSentinel)
+      expect(JSON.stringify(refusal)).not.toContain(modelSentinel)
+    }
+  })
+})
+
 describe('u7-f C1 mount gate — the zero-flip law and the seven claims', () => {
   it('AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)', async () => {
     const plane = await buildAC({ planeCfg: { agentControlEnabled: undefined } })

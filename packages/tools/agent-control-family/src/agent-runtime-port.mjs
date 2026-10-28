@@ -286,9 +286,9 @@ export function createHostAgentRuntimePort({ hostService, caller, callerAuthorit
             const providers = (Array.isArray(advertised) ? advertised : []).filter((p) => allowedProviders.includes(p.id))
             return providers.length === 0 ? '(no LLM providers)' : providers.map((p) => `${p.id} — ${p.name}`).join('\\n')
           }
-          if (!allowedProviders.includes(provider)) return { ok: false, code: 'agent-runtime-authority-refused', detail: `provider '${String(provider)}' is outside the caller authority` }
+          if (!allowedProviders.includes(provider)) return { ok: false, code: 'agent-runtime-authority-refused', detail: 'the requested provider is outside the caller authority' }
           if (model !== undefined) {
-            if (!allowedModels.includes(model)) return { ok: false, code: 'agent-runtime-authority-refused', detail: `child LLM route '${provider}/${model}' is outside the caller authority` }
+            if (!allowedModels.includes(model)) return { ok: false, code: 'agent-runtime-authority-refused', detail: 'the requested model route is outside the caller authority' }
             if (typeof llm.resolveModelInfo !== 'function') return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'llm.resolveModelInfo is unavailable' }
             const info = await llm.resolveModelInfo(provider, model, signal)
             const efforts = Array.isArray(info?.reasoning?.efforts) ? info.reasoning.efforts : []

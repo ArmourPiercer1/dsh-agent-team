@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
@@ -7,54 +6,38 @@ import ToolRuntime from '@deepseek-ai/dsh-tools'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 const load = async (file: string) => import(new URL(`../../tools/agent-control-family/src/${file}`, import.meta.url).href)
 
-/** Native output schemas copied from the pinned Host 639ed01539 definitions. */
-const NATIVE = {
-  list_agents: { type: 'array', items: { oneOf: [
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, enum: ['child'] }, id: { type: 'string', required: true }, label: { type: 'string', required: true }, status: { type: 'string', required: true, enum: ['running', 'inactive'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, enum: ['diagnostic'] }, id: { type: 'string', required: true }, reason: { type: 'string', required: true, enum: ['corrupt', 'unsupported', 'unavailable'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
-  ] } },
-  list_subagent_models: { type: 'string' },
-  send_message: { type: 'object', additionalProperties: false, properties: { messageId: { type: 'string', required: true } } },
-  interrupt_agent: { type: 'object', additionalProperties: false, properties: { accepted: { type: 'boolean', required: true } } },
-  subagent: { oneOf: [
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'background' }, jobId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'continuable' }, subagentId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, output: { type: 'array', required: true, items: { type: 'json' } } } },
-  ] },
-  subagent_fork: null as Schema | null,
-  workflow: { oneOf: [
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'background' }, jobId: { type: 'string', required: true }, runId: { type: 'string', required: true } } },
-    { type: 'object', additionalProperties: false, properties: { kind: { type: 'string', required: true, const: 'foreground' }, runId: { type: 'string', required: true }, agentsStarted: { type: 'integer', required: true }, result: { type: 'json', required: true } } },
-  ] },
-}
-NATIVE.subagent_fork = NATIVE.subagent
-
-const SOURCES = {
-  subagent: ['tests/deepseek-harness-test-use/packages/subagent/tool-subagent/src/index.ts', 'f7a1227d625d32dec5523d6a4f7b34dde5bba38c516a88fe08a1657679ac6aea'],
-  list_subagent_models: ['tests/deepseek-harness-test-use/packages/subagent/tool-subagent/src/list-models.ts', '90e8adaa3188aca4b1f1437b43094969a069324de84e44bdbb5dccaf96198067'],
-  list_agents: ['tests/deepseek-harness-test-use/packages/subagent/tool-subagent-control/src/list-agents.ts', 'dc4d2bc603dfb954ea0f90c8eb9655c767a4b4ab458fb70d359d9d2e066d7add'],
-  send_message: ['tests/deepseek-harness-test-use/packages/subagent/tool-subagent-control/src/index.ts', '8da3b00799be6a2781a18d6849770a61c5c103a2d54d31a369d42320287cb3a2'],
-  workflow: ['tests/deepseek-harness-test-use/packages/workflow/tool-workflow/src/index.ts', 'be42a318b61c5d8515272c06bae7b014f1bddab9ad257e5efe967b7490b56ee7'],
-} as const
-
-async function sourceRoot(): Promise<string> {
+/**
+ * Read compiled output schemas from the pinned Host's built native definitions.
+ * This intentionally imports host lib/ESM entries (not the public package
+ * entry and not a copied author spec): `defineTool` has already compiled each
+ * author schema into `definition.output.schema`. Therefore any host source
+ * change that alters a schema changes this value and fails the row comparison
+ * until the row is deliberately updated.
+ */
+const nativeSchemas = async (): Promise<Record<string, Schema | null>> => {
   const { TEST_USE_REL } = await import(new URL('../../../tests/paths.mjs', import.meta.url).href)
   const root = process.cwd()
   const pristine = `${root}/${TEST_USE_REL}`
-  if (!existsSync(pristine)) throw new Error(`native-schema C1 requires the pristine test-use checkout at ${TEST_USE_REL}; provision it from tests/paths.mjs before running this CI leg`)
-  return root
+  if (!existsSync(pristine)) throw new Error(`native-schema C1 requires the pristine test-use checkout at ${TEST_USE_REL}`)
+  const definitions: Record<string, { output: { schema: Schema } }> = {}
+  const capture = (definition: { name: string; output: { schema: Schema } }) => { definitions[definition.name] = definition }
+  const control = await import(`${pristine}/packages/subagent/tool-subagent-control/lib/index.js`)
+  control.apply({ tools: { register: (d: { name: string; output: { schema: Schema } }) => { capture(d); return () => {} } }, subagents: { sendMessage: () => {}, interrupt: () => {} } })
+  const agents = await import(`${pristine}/packages/subagent/tool-subagent-control/lib/types/list-agents.js`)
+  agents.apply({ tools: { register: (d: { name: string; output: { schema: Schema } }) => { capture(d); return () => {} } }, subagents: {}, agents: {} })
+  const models = await import(`${pristine}/packages/subagent/tool-subagent/lib/types/list-models.js`)
+  models.registerListSubagentModels({ tools: { register: (d: { name: string; output: { schema: Schema } }) => { capture(d); return () => {} } } }, { routes: [] })
+  const subagent = await import(`${pristine}/packages/subagent/tool-subagent/lib/index.js`)
+  const provider = { name: 'p', capabilities: { depthLimit: true, agentOptions: true }, inheritsParentContext: false }
+  subagent.apply({ tools: { register: (d: { name: string; output: { schema: Schema } }) => { capture(d); return () => {} } }, sessionProjections: { register: () => {} }, subagents: { resolveMaxDepth: () => undefined, getProvider: () => provider }, on: () => {} }, { provider: 'p', maxDepth: 'provider-managed', modelSelectionSettings: false, enableRunInBackground: true, backgroundMode: 'one-shot' })
+  const workflow = await import(`${pristine}/packages/workflow/tool-workflow/lib/index.js`)
+  workflow.apply({ tools: { register: (d: { name: string; output: { schema: Schema } }) => { capture(d); return () => {} } }, systemPrompt: { section: () => {}, getSectionOrder: () => 0 }, on: () => {}, get: () => undefined, workflowEngine: {} }, { toolName: 'workflow', maxResultChars: 1000, enableRunInBackground: true })
+  return Object.fromEntries(['list_agents', 'list_subagent_models', 'send_message', 'interrupt_agent', 'subagent', 'workflow'].map((name) => [name, definitions[name]?.output.schema ?? null]).concat([['subagent_fork', definitions.subagent?.output.schema ?? null]]))
 }
+const NATIVE = await nativeSchemas()
 async function driftGuard(): Promise<void> {
-  const root = await sourceRoot()
-  for (const [name, [path, expected]] of Object.entries(SOURCES)) {
-    const digest = createHash('sha256').update(readFileSync(`${root}/${path}`)).digest('hex')
-    expect(digest, `native schema source drift: ${name} (${path})`).toBe(expected)
-  }
-  const host = await import(`${root}/${(await import(new URL('../../../tests/paths.mjs', import.meta.url).href)).TEST_USE_REL}/packages/core/tools/lib/index.js`)
   const schemas = await load('native-output-schemas.mjs')
-  for (const [name, spec] of Object.entries(NATIVE)) {
-    expect(schemas.nativeOutputSchemas[name], `compiled native output schema: ${name}`).toEqual(host.valueSchemaSpecToJsonSchema(spec))
-  }
+  for (const [name, schema] of Object.entries(NATIVE)) expect(schemas.nativeOutputSchemas[name], `compiled native output schema: ${name}`).toEqual(schema)
 }
 
 type Schema = Record<string, unknown>
