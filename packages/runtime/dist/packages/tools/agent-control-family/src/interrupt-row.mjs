@@ -7,10 +7,12 @@
  *
  * @module agent-control-family/interrupt-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildInterruptRowDefinition({ name, interruptExecutor }) {
   return Object.freeze({
     name,
-    output: { schema: { type: 'object', additionalProperties: false, required: ['accepted'], properties: { accepted: { type: 'boolean' } } }, render: (args) => [{ type: 'text', text: `interrupt requested for agent ${args.agent_id}` }] },
+    output: { schema: nativeOutputSchemas.interrupt_agent, render: (args) => [{ type: 'text', text: `interrupt requested for agent ${args.agent_id}` }] },
     description: 'Request cancellation of one agent\'s current turn inside THIS session scope. Foreign-scope targets are refused with zero reach; the request rides the runtime\'s own cancel leg and never settles cancellation itself.',
     parameters: {
       type: 'object',

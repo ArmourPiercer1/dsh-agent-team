@@ -232,7 +232,7 @@ export function createAgentControlExecutors(input) {
     list_agents: (raw, corr) => run('list_agents', raw, corr, 'listAgents',
       (fn, cl, args) => fn({ caller: cl, ...(args.scope === undefined ? {} : { scope: args.scope }), ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     list_subagent_models: (raw, corr) => run('list_subagent_models', raw, corr, 'listModels',
-      (fn, cl, args) => fn({ caller: cl, ...(args.provider === undefined ? {} : { provider: args.provider }) })),
+      (fn, cl, args) => fn({ caller: cl, ...(args.provider === undefined ? {} : { provider: args.provider }), ...(args.model === undefined ? {} : { model: args.model }), ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     subagent: (raw, corr) => run('subagent', raw, corr, 'spawnChild',
       (fn, cl, args) => fn({ caller: cl, spec: args, ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     subagent_fork: (raw, corr) => run('subagent_fork', raw, corr, 'forkChild',

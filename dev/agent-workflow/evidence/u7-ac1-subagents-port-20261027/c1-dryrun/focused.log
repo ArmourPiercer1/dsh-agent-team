@@ -81,4 +81,3 @@ stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals 
       Tests  63 passed (63)
    Start at  21:28:01
    Duration  1.56s (transform 1.88s, setup 0ms, import 395ms, tests 2.63s, environment 0ms)
-

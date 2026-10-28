@@ -4,12 +4,13 @@
   "paths": [
     "packages/runtime/test/u7-ac1-subagents-coverage-c1.test.ts",
     "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
-    "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts"
+    "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts",
+    "packages/tools/agent-control-family/src/native-output-schemas.mjs"
   ],
   "expectedDelta": {
     "from": 1385,
-    "to": 1388
+    "to": 1389
   },
-  "reason": "U7 AC-1 agent-control retarget and coverage suites: both newly scannable C1 files are booked; production edits ride already-counted agent-control-family paths and evidence/dist are outside the scan. Zero new denylist vocabulary.",
-  "tieNote": "MEASURED, not copied: after merging origin/master, with both AC-1 scannable suites on disk and this booking absent, the ledger law reads scanner counts 1388, ledger derives 983 + 403 = 1386 (dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/p4t6-RED-unbooked.log). Exactly these two paths are booked."
+  "reason": "U7 AC-1 agent-control retarget and coverage suites: the three newly scannable C1 files plus the shared raw native output schema module (native-output-schemas.mjs, imported by all seven governed rows) are booked; every other production edit rides already-counted agent-control-family paths and evidence/dist are outside the scan. Zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: after merging origin/master, with the AC-1 scannable files on disk and only the first three booked, the ledger law reads scanner counts 1389, ledger derives 983 + 405 = 1388; the one unbooked path is the new native-output-schemas.mjs module. Exactly these four paths are booked."
 }
