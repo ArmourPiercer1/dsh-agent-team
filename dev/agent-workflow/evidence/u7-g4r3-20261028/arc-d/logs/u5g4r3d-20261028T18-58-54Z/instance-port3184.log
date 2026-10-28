@@ -1,0 +1,5 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3184/?token=mkPkToj-liNHGkkprfqb6j6jZxEngVTFfvKzeF6Tci4
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arcd-realm-u5g4r3d-20261028t18-58-54z
+[dsh-agent-team] a5ptc: census-boot root=session-u6arcd-team-u5g4r3d-20261028t18-58-54z selectedRunner=none enforcement=confine-unset (host sandbox default)

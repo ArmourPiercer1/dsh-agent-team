@@ -1,0 +1,24 @@
+U5-IN-RUN u5ca-20261028T19-10-46Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-10-46Z 225
+SURVIVOR-PROBE 1793214751820 health-effect ok=true
+SURVIVOR-PROBE 1793214752141 health-effect ok=true
+SURVIVOR-PROBE 1793214752457 after-reclaim ok=true
+RUN-SUMMARY run=u5-core-ca-2026-10-28T19-10-46-170Z suite=core overall=PASS cases=7 PASS:7 worlds=u5ca-20261028T19-10-46Z
+U5-IN-RUN u5ca-20261028T19-29-36Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z 247
+SURVIVOR-PROBE 1793215856079 health-effect ok=true
+SURVIVOR-PROBE 1793215884928 health-effect ok=true
+SURVIVOR-PROBE 1793215856764 health-effect ok=true
+SURVIVOR-PROBE 1793215857081 health-effect ok=true
+SURVIVOR-PROBE 1793215857388 health-effect ok=true
+SURVIVOR-PROBE 1793215857693 health-effect ok=true
+SURVIVOR-PROBE 1793215857997 health-effect ok=true
+SURVIVOR-PROBE 1793215858305 health-effect ok=true
+SURVIVOR-PROBE 1793215858634 health-effect ok=true
+SURVIVOR-PROBE 1793215858939 health-effect ok=true
+SURVIVOR-PROBE 1793215859247 health-effect ok=true
+SURVIVOR-PROBE 1793215859560 health-effect ok=true
+SURVIVOR-PROBE 1793215859855 health-effect ok=true
+SURVIVOR-PROBE 1793215860161 health-effect ok=true
+SURVIVOR-PROBE 1793215860469 health-effect ok=true
+SURVIVOR-PROBE 1793215860794 health-effect ok=true
+SURVIVOR-PROBE 1793215861103 after-reclaim ok=true
+RUN-SUMMARY run=u5-core-ca-2026-10-28T19-29-36-275Z suite=core overall=PASS cases=7 PASS:7 worlds=u5ca-20261028T19-29-36Z
