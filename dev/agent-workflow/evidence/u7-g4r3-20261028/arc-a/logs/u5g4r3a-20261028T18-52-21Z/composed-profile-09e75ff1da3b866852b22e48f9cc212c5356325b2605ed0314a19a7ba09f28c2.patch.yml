@@ -1,0 +1,103 @@
+# U6-arc-a World: canary + probe-FAMILY row (the ARC-A lane, zero
+# center diff) + the production Team row, p6t6 observer and preset
+# declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "u6-arc-a-probe-host"
+      name: "./u6-arc-a-probe-host.mjs"
+    - id: "dsh-agent-team"
+      name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-u6arca-root-u5g4r3a-20261028t18-52-21z"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.u6arca.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the u6arca assembly team. U6ARCA_DISC_u5g4r3a-20261028t18-52-21z is the discovery marker.\"\nmembers:\n  - templateId: greper\n    persona: \"You are a worker of the u6arca assembly team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5g4r3a-20261028T18-52-21Z/blueprints"
+        rootPresetId: "u6arca-base-u5g4r3a-20261028t18-52-21z"
+        memberPresetId: "u6arca-base-u5g4r3a-20261028t18-52-21z"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "u6arca-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/runtime/root-binding/harness/seam.mjs"
+        teamToolPlane:
+          realmId: "u6arca-realm-u5g4r3a-20261028t18-52-21z"
+          fsInstance:
+            fs: "team-ctl"
+            rootDir: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5g4r3a-20261028T18-52-21Z/workspace"
+            realmId: "u6arca-realm-u5g4r3a-20261028t18-52-21z"
+            kind: "absolute-path"
+          confinedProvider:
+            trustRoot: "sha256:1264ea584e3438d6#/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+            assembly:
+              launcherPath: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+              launcherSha256: "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+              minAbiVersion: 3
+          centerAssembly: "enforcing"
+    - id: "p6t6-team-tools"
+      name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/packages/tools/harness/plugin.mjs"
+    - id: "preset-u6arca-base-u5g4r3a-20261028t18-52-21z"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "u6arca-base-u5g4r3a-20261028t18-52-21z"
+        name: "u6arca base"
+        description: "u6arca base preset (u5g4r3a-20261028T18-52-21Z) = smoke + tool-fs-search"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
