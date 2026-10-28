@@ -139,11 +139,15 @@ no native substitution, no product patch was used.
 
 Commands run on the final committed tree, logs in this directory:
 `node scripts/eb3-run-manifest.mjs --new-since origin/master`
-(`run-manifest.log`), `node scripts/evidence-guard`
-(`evidence-guard.log`), `git diff --check origin/master...HEAD`
-(`diff-check.log`), `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store`
-(`ci-pr-gate.log`). PR number and CI conclusions are recorded in the PR and the
-session log, not asserted here.
+(`run-manifest.log`: pass, records=101, findings=0),
+`node scripts/eb3-evidence-guard.mjs --new-since origin/master`
+(`evidence-guard.log`: pass, added=32, findings=0),
+`git diff --check origin/master...HEAD` (`diff-check.log`: first run exit 2 on
+ss-capture column padding in 3 files, whitespace-only normalization commit,
+final run clean), `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store`
+(`ci-pr-gate.log`: 7 pass / 0 fail / 1 named census skip, exit 0).
+Delivery: PR **#427** (base master, plain push, no merge); remote CI
+conclusions are recorded in the session log, not asserted here.
 
 ## What this lane did NOT do
 
