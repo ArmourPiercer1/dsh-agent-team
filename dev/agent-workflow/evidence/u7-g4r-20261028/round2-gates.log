@@ -31,4 +31,4 @@ DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refused
   exit 0 (7 pass / 0 fail / 1 named skip = census, opt-in only; a named skip is a disclosure, not a census PASS)
 
 $ git diff --check origin/master...HEAD
-  (recorded after the round-2 commit — see the verification line at the end of this file)
+  exit 0 (no output) at the shipped head of this PR: the round-1 blank line at p4t6.log:10 is stripped (F4) and the round-2 evidence files are whitespace-clean (commits 961b165ec + 472362162). Re-run the command to verify.
