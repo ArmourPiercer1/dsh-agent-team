@@ -145,6 +145,7 @@ async function main() {
   const hostRepoRoot = findTestRepoRoot(REPO_ROOT) ?? REPO_ROOT
   const factory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: evidence, hostTree: testUseTree(hostRepoRoot) })
   const hostBaseStartup = factory.assertHostBase('startup')
+  const oracleBinding = captureOracleBinding({ artifactPath: fileURLToPath(import.meta.url), sourceRoot: HERE, repoRoot: REPO_ROOT, suite: 'u7-4a-jobs', evidencePath: join(evidence, `${runId}.oracle.json`) })
   const record = createRunRecord({
     runId,
     suite: 'u7-4a-jobs',
@@ -156,7 +157,7 @@ async function main() {
       hostTreeSha: hostBaseStartup.head,
       composedProfileDigest: {},
       ...trustedSourcesUnavailable(),
-      ...captureOracleBinding({ artifactPath: fileURLToPath(import.meta.url), sourceRoot: HERE, suite: 'u7-4a-jobs', evidencePath: join(evidence, `${runId}.oracle.json`) }),
+      ...oracleBinding,
       authority: readAuthorityBinding(REPO_ROOT),
       plant,
       worldIds: [],
@@ -166,6 +167,8 @@ async function main() {
       askLaneDisclosure: 'member bash asks settle EXACTLY ONCE through the PUBLIC team.resolveControl v4 remote seam (the GUI human-lane endpoint); discovery of pending rows rides this suite\'s read-only /__u74a/controls probe row with the p6t6 observer as disclosed fallback; no token invented, no private seam.',
     },
   })
+  // The retained oracle artifact is CITED evidence (eb3 RUN_EVIDENCE_* rules).
+  record.record.evidence = [...(record.record.evidence ?? []), ...oracleBinding.worldOracle.evidence]
   const done = new Set()
   const add = (id, verdict, detail = {}) => {
     done.add(id)

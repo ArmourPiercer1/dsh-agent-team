@@ -893,6 +893,18 @@ export async function runSuite(opts) {
 
   const teamSha = git(['rev-parse', 'HEAD'], REPO_ROOT)
   const hostBaseStartup = factory.assertHostBase('startup')
+  // The PER-SUITE oracle closure, captured before any World exists: the suite
+  // module for a collected suite, this runner's own module for the core-shaped
+  // suites (their expected answers are defined here).
+  const oracleBinding = captureOracleBinding({
+    artifactPath: COLLECTED_SUITES.some((s) => s.suite === suite)
+      ? join(HERE, 'suites', COLLECTED_SUITES.find((s) => s.suite === suite).file)
+      : fileURLToPath(import.meta.url),
+    evidencePath: join(evidence, `${runId}.oracle.json`),
+    sourceRoot: HERE,
+    repoRoot: REPO_ROOT,
+    suite,
+  })
   const record = createRunRecord({
     runId,
     suite,
@@ -905,14 +917,7 @@ export async function runSuite(opts) {
       hostTreeSha: hostBaseStartup.head, // alias: pristine runtime tree, not Team SHA
       composedProfileDigest: {},
       ...trustedSourcesUnavailable(),
-      ...captureOracleBinding({
-        artifactPath: COLLECTED_SUITES.some((s) => s.suite === suite)
-          ? join(HERE, 'suites', COLLECTED_SUITES.find((s) => s.suite === suite).file)
-          : fileURLToPath(import.meta.url),
-        evidencePath: join(evidence, `${runId}.oracle.json`),
-        sourceRoot: HERE,
-        suite,
-      }),
+      ...oracleBinding,
       hostPorcelainEmptyAtStartup: true,
       authority: readAuthorityBinding(REPO_ROOT),
       canaryPluginSha256: sha256Text(readFileSync(CANARY_PLUGIN_SRC, 'utf8')),
@@ -923,7 +928,15 @@ export async function runSuite(opts) {
       profileDisclosure: 'World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.',
     },
   })
+  // EB3 evidence binding: the retained oracle artifact is a CITED evidence
+  // file, so eb3-run-manifest's RUN_EVIDENCE_MISSING / _DIGEST_MISMATCH rules
+  // grade it, and recomputeWorldOracle(record, repoRoot) re-derives the digest
+  // from the repo-relative source list.
+  record.record.evidence = [...(record.record.evidence ?? []), ...oracleBinding.worldOracle.evidence]
 
+  // Pre-spawn capture AND post-spawn proof land in the same live bindings
+  // object (bindWorldProfile is identity-idempotent), so a
+  // `composedProfileDigestMismatch` written after the spawn is on the record.
   factory.onProfileBinding = (entry) => bindWorldProfile(record.record.bindings, entry)
 
   const rc = createRunControl({
