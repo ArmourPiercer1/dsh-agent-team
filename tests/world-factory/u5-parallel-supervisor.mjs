@@ -73,6 +73,19 @@ const RUNNER = process.env.DSH_U5_RUNNER ?? join(HERE, 'u5-canary-runner.mjs')
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * Pure C1 law for the live survivor conjunction. The kill must be strictly
+ * inside the survivor's healthy-to-last-probe interval, and every reclaim
+ * effect must be scoped to the victim world/resources.
+ */
+export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, victimWorld, reclaimedResources = [] }) {
+  const ordered = [survivorHealthyAt, killAt, survivorLastProbeAt].every(Number.isFinite)
+    && survivorHealthyAt < killAt
+    && killAt < survivorLastProbeAt
+  const victimOnly = reclaimedResources.every((resource) => resource?.world === victimWorld)
+  return { killInsideSurvivorWindow: ordered, reclaimVictimOnly: victimOnly, pass: ordered && victimOnly }
+}
+
 export function parseArgs(argv) {
   const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000 }
   for (let i = 0; i < argv.length; i += 1) {

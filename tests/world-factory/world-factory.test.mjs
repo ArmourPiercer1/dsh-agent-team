@@ -41,6 +41,7 @@ import { acquireFirstFreeLease, acquirePortLease, candidatePorts, reclaimStaleLe
 import { appendCappedLine, DEFAULT_LEDGER_CAP_BYTES, MAX_LEDGER_CAP_BYTES } from './canary/ledger-cap.mjs'
 import { createOracle } from './lib/oracle.mjs'
 import { createRunRecord, formatSummary, exitCodeFor, overallVerdict } from './lib/run-record.mjs'
+import { evaluateSurvivorSequencing } from './u5-parallel-supervisor.mjs'
 import { deleteWorldHomeIfMarked, validateWorldName, TestWorldFactory, HostBaseError } from './lib/world-factory.mjs'
 import { makeCanaryDecide, findToolResultInMessages, requestHasTool } from './lib/mock-script.mjs'
 import { HOST_PORT_BANDS, isSanctionedTestPort, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../paths.mjs'
@@ -60,6 +61,26 @@ function deadPid() {
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url))
+
+test('C1 survivor sequencing law: kill straddles healthy-to-last-probe and reclaim is victim-only', () => {
+  assert.deepEqual(evaluateSurvivorSequencing({
+    survivorHealthyAt: 10,
+    killAt: 20,
+    survivorLastProbeAt: 30,
+    victimWorld: 'victim',
+    reclaimedResources: [{ world: 'victim', kind: 'home' }, { world: 'victim', kind: 'lease' }],
+  }), { killInsideSurvivorWindow: true, reclaimVictimOnly: true, pass: true })
+  // Pre-fix/non-overlap replay: a fast survivor finished before the kill.
+  assert.equal(evaluateSurvivorSequencing({
+    survivorHealthyAt: 10, killAt: 30, survivorLastProbeAt: 20,
+    victimWorld: 'victim', reclaimedResources: [{ world: 'victim', kind: 'home' }],
+  }).pass, false)
+  // Mutation guard: victim reclaim must never include a survivor resource.
+  assert.equal(evaluateSurvivorSequencing({
+    survivorHealthyAt: 10, killAt: 20, survivorLastProbeAt: 30,
+    victimWorld: 'victim', reclaimedResources: [{ world: 'survivor', kind: 'home' }],
+  }).pass, false)
+})
 
 test('port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced', async () => {
   const root = tmp('lease')
