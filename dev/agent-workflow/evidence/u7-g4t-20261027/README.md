@@ -16,4 +16,12 @@ For a timeline with `survivor_healthy_at`, `kill_at`, and `survivor_last_probe_a
 
 The pristine runtime is cloned into `tests/deepseek-harness-test-use` from `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use` with `--local --no-hardlinks`, detached at `639ed015397290b3745d163aafe02ffee4aa3f84`; porcelain was empty. It was installed with `pnpm install --ignore-scripts --frozen-lockfile` and built with `DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build`. No upstream source was modified.
 
-Live commands, host-start count, records, and final verdicts will be appended below.
+## Live attempts and verdict
+
+Preflight `ss -ltn` showed only the stable :3080 listener in the prohibited stable range; no 3180/13000 test ports were occupied. The first live command used the authorized two-start shape but failed for the declared environment reason: the cloned test-use checkout had no `apps/cli/lib/bin.js` build artifact. Its record is under `live/` and has one attempted Host start, `victim-in-flight=FAIL`, `overall=FAIL`, with `MODULE_NOT_FOUND` for that artifact; stable :3080 remained 401 and the host tree remained clean.
+
+After installing the test-use dependencies with `--store-dir ../../.tmp-pnpm-store` and rebuilding via `DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build` (exit 0), the one permitted retry used exactly two Host starts (victim + survivor) with `--mode crash-reclaim --survivor-suite core --max-host-starts 2`. The finalized record is `live-retry/run-u5-crash-2026-10-28T03-47-06-664Z.json` (`schema: u5-run-record/1`, `teamSha=4193bfcd5de0d9f430648e4962bd339a93b70dd1`, `hostSha=639ed015397290b3745d163aafe02ffee4aa3f84`, host tree clean, stable :3080 unchanged 401).
+
+Retry case verdicts: `abnormal-kill-reclaim=PASS` (in-flight marker, absent completion marker and victim record, victim host/home/leases reclaimed with provenance, zero refusals); `crash-simulation-reclaim=PASS`; `pristine-host-and-stable-untouched=PASS`; `sibling-homes-untouched=PASS`; `other-world-unaffected=FAIL`. The survivor RUN was `overall=PASS`, but `aAliveWhileBCrashedAndReclaimed=false`: the survivor completed before the reclaim instant despite the fixed start ordering. Therefore the live conjunction remains unproven and the overall run is correctly `FAIL`. This lane does not recolor it; R-G3-1/R-REM-1 remain open. No further Host starts are authorized in this lane (first attempt consumed by environment failure; one retry consumed by the rebuilt live run).
+
+Offline C1 is green (41/41 world-factory tests); EB3 manifest and evidence guard are green, and `git diff --check origin/master...HEAD` is clean. Homes and test-use tree were checked after the run; no stable instance was modified.
