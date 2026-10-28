@@ -7009,3 +7009,116 @@ master 跑 production-run-recipe 全链）。
 - **对抗式复核未发现产品缺陷**（这是"不予晋级"而非"阻塞产品"的关键区分）：protected-center 33 booked + 3 个具名 override 可解释，未见无具名 center-interface PR 的中心移动；family capability 明确排除 grant/consumeOnce，无 family 自行授权或绕过 kernel；ARC-D 磁盘 oracle 由 runner `readFileSync` 直读、mock claim 只作 note，无法被伪造；CI-05 未归属 job 在 host reach 前 typed 拒绝。
 - **风险台账**：R-G4R-1 runner 未持久化 composed-profile/trusted-source/world-oracle digest（候选绑定为 PARTIAL，字段显式 null，未伪造）；R-G4R-2 本机无法创建非特权 user namespace（bwrap 失败）→ 一切 native workspace-write 腿为 ENV_BLOCK，**ENV_BLOCK 永不算 PASS**（Jobs `u74a:native-ctl-unaffected` 即为该情形）；R-G4R-3 `eb3-tool-acceptance` 只校验诚实性、不要求 `overall: PASS`（审计发现，另立 CI 加严项，未擅自改标）。
 - **下一 lane G4-R（已定，待执行）**：在一个新冻结的干净候选上产出三份 finalized overall-PASS C2 —— ARC-B 1 boot（allow-once/replay/other-command/deny-zero/cleanup）、ARC-D 1 boot（代际/scope/撤销-lift/冷启动/teardown/restrict-veto/lift-control/直读磁盘 CI-03）、Jobs Bridge 1 boot（归属/ring/owner/kill/finished-kill/cross-scope 拒绝/exactly-once；native 腿记 ENV_BLOCK 且不得决定判决）；runner 需持久化 profile/source/oracle digest；ARC-A 随候选重跑；崩溃等价失效则再 2 starts。预算 3 starts，+1 仅限 ENV/harness 缺陷，另需主代理新裁决才可超。
+
+## 2026-10-28 会话接手（TAKEOVER-20261028）：状态重核 + R-G4R-2 误诊更正 + R-G3-1 等价性回退 + 裁决 B-G4R-3
+
+- **接手背景**：上一执行体连续报错中止，其压缩摘要作为信息抢救件移交。核对该摘要后确认**严重过时**（称 #415/#418
+  仍 open、master=392cc9475）。以 git/gh 实测重建前沿：#413/#415/#416/#417/#418/#419/#420–#426 **均已合并**，
+  `origin/master = 6457b9675`，活跃 open PR 仅 **#427、#428**（#363/#361/#360/#355/#350/#347/#346/#337/#319 为
+  draft/hold，不触碰）。摘要中多项待办实测已闭合（#415 投机通过已合并、R-409-1 已入册、R-415-1 dry-run 已覆盖
+  `drive()`、AC-1 已合并），不再重做。
+- **更正一：R-G4R-2 是误诊（HIGH）**。在册表述为"本机拒绝非特权 user namespace ⇒ native workspace-write 腿在此
+  只能是 ENV_BLOCK"。实测：`bwrap` 确实不可用（`bwrap: No permissions to create new namespace…`），**但宿主
+  Landlock 后端可用**——主检出 `tests/deepseek-harness-test-use/…/entry/lib/index.js` 的 `probe()` 返回
+  **`partial`**；G4-R 那棵 worktree 返回 `unusable`，因为 `native/system/packages/*/bin/` 被 **gitignore**
+  （`native/system/.gitignore:4 packages/*/bin/`），TEST_METHODS §2 的 `git clone --local --no-hardlinks`
+  无法携带未跟踪文件。同一条腿 2026-10-26 真 PASS（`u74a-main-4.u74a-evidence.json` ctlResult
+  `landlock-run: partial enforcement (older Landlock ABI)`）。即：**一个 provisioning 缺口被记成了产品级 FAIL**，
+  而 Jobs 的 `overall: FAIL` 与据其做出的 ENV 裁决都建立在它之上。处置：历史字节不改（FAIL 保持 FAIL），只更正
+  **归因**——#427 分支以只追加 dated correction 入册（commit `d76691c5b`，+62/−0，已随 PR #427 合并）；
+  R-G4R-2 重定为"fresh worktree 运行时克隆缺少被 gitignore 的宿主沙箱启动器，除非显式 provisioning"，后续再命中
+  一律 `ENV_BLOCK` + probe 收据，不得再判产品 FAIL。修复走独立 lane PR #429。
+- **更正二：R-G3-1 / R-REM-1 等价性论证不成立，该行由"已在候选闭合"回退为 open（HIGH）**。
+  `G4-PROMOTION-REVIEW-R1.md` 与 #421 README §45 均称 `git diff d8f40c0d..HEAD -- packages scripts` 为空；实测对
+  `origin/master`、对 R1 自述输入 `1e3ec41a6`、对 #421 分支终态 `72e51b1f9` **都是 34 个文件**（#418 的
+  agent-control family + `packages/tools/families/manifest.json` 等）。按 `u7-g4i-20261028/
+  DEPENDENCY-EQUIVALENCE.md` 自定包络（"production package input + 全部 World/kit 执行模块，命中即 AFFECTED，
+  不主张 hunk 豁免"）该记录为 AFFECTED——同一律不能把 ARC-A/B/D/Jobs 判 AFFECTED 却对这一条放行。取证与自我更正
+  见 `.artifacts/findings/R-G3R-EQUIV-20261028.md`（初稿曾误称 gate doc 引错 SHA，实测 `live/crash-reclaim-1/
+  run-u5-crash-2026-10-28T05-53-32-928Z.json` 的 teamSha 确为 `d8f40c0d`，主代理自查后更正；等价性仅凭 product
+  diff 一条即已不成立）。**新采证据规则**：等价性行必须写明从 JSON 读出的记录自身 teamSha、参照 commit、diff
+  命令逐字输出；散文式"is empty"不算证据。附带陷阱：`u7-g4t-20261027/` 下 `live/`、`live-final/`、`live-retry/`
+  三份 crash 记录 teamSha 各不相同且 `live-final/` wall-clock 更早，glob 取首个会绑错树（本轮即犯过）。
+- **裁决 B-G4R-3（boot 预算与 G4-R phase 3 范围；披露为超额执行）**：因 (a) 等价性律被证伪、(b) 同一包络把
+  `tests/world-factory` 的 63 个执行模块计入输入 ⇒ 待合并的 ARC-B seam 与沙箱 provisioning 两处 runner 改动使既有
+  候选绑定一律 AFFECTED，**phase 3 在一个新冻结干净候选上重跑全部五项**：ARC-A 1 + ARC-B 1 + ARC-D 1 + Jobs 1 +
+  crash survivor 2 = **6 starts**。R1 原信封 3+1+2=6，phase 2 已用 3（一次 ARC-D 操作失误 + 一次 ARC-D PASS +
+  一次 Jobs ENV），故本裁决使 G4-R 累计 9、**超出原信封 3**；理由=超出来自两个"中途修复的 ENV/harness 缺陷"类问题，
+  正是信封预留要付的账。**硬上限 8，另 +1 仅用于两次尝试之间修复的 ENV/harness 缺陷**。全部 spawn 前在各自 lane
+  ledger 声明，超额写进 PR 与 gate 文档，不隐匿。前置硬条件：#428/#429 合并、**启动前 probe 必须 `partial`/`full`**
+  （`unusable` 是停止信号而非腿结论）、`CANDIDATE.md` 先于任何 boot 提交、运行时克隆 porcelain-clean、:3080 只读探测。
+  若修复后 Jobs native 腿仍不可运行：记 `ENV_BLOCK` + probe 收据，按 R1 item 3 提交晋级复审显式裁决；永不改标 PASS，
+  也不擅自断言 Bridge 结论与之无关。
+- **#428 审查轮 1 = 补充内容 → 修复 → 复审通过**（两份独立窄幅审查）。Part B：默认路径字节不变（budget 7 / 同目录
+  ledger / 闭栏 evidence 前缀 / 输出同目录），judge 与 drive 未动，14/14 绿，三个变异全杀。Part A：8 条 CLI 拒绝路径
+  全部 rc=1 且都在任何 spawn/写盘之前（`resolveRunConfig` 在模块顶层 :126，先于 `world.startHost` :241），零副作用。
+  发现 **F1 HIGH** `--budget` 自声明且无上限（空 ledger + `--budget 999` 即可授权任意 boot，上限只存在于 code
+  review 而非代码）、F2 MEDIUM 可指向他栏 ledger、F3 MEDIUM `existsSync` 过滤会引用复用目录里的陈旧文件、F4 LOW
+  `--fixtures` 缺失时 `argv[indexOf+1]` 取到 `argv[0]`。修复 commit `ce4ca22b4`：committed cap
+  `MAX_FLAGGED_BUDGET=3` + 唯一 env override 且把 override 写进 ledger 与 record（自我披露）、同栏 ledger 约束、
+  非空 `--evidence` 拒绝 + `boot<N>-<runId>` 命名 + 只引用本次实写文件、`resolveFixturesArg` 命名查找。复审四项
+  全部 CLOSED、`ROUND-1 RE-REVIEW: 通过`，新增 LOW：`--allow-reused-dir` 下重复 dry-run 覆盖同名 `dry-run-GREEN.json`。
+  披露不改：`declareBoot` assert→append 无锁（单写者律覆盖）、dry-run 产物不耗 boot。
+- **#427 独立复审 = 0 CRITICAL / 0 HIGH / 1 MEDIUM**。A 部：32 文件全在 evidence 目录内、`ef9fbad53` 为 HEAD 祖先
+  且其 tree 内含 CANDIDATE.md、post-freeze 五个 commit 均为证据 commit、两条 run record teamSha 一致、实跑
+  run-manifest（records=101 findings=0）与 evidence-guard（added=32 findings=0）与在册收据逐字节一致。C 部：
+  ARC-D 12/12 PASS、21 个 binding key、`composedProfileDigest`/`worldOracleDigest` 填充、`trustedSources.digest=null`
+  带显式 `unavailableReason` 且无任何 null 被描述为已满足；Jobs `overall=FAIL` 且唯一非 PASS 为
+  `u74a:native-ctl-unaffected`；ARC-B `arc-b/host-starts.jsonl` 不存在=0 boot（闭栏 ledger 8 行中第 6 行为
+  disclosure 标记，`Number.isInteger(boot)` 过滤后恰 7 条，全为 10-27 历史）；两次 ARC-D boot 均有 ledger 行且
+  README 显式披露 start 1 因"operator omission"未落 record。**裁决**：README 把 FAIL 腿的因果注记标题写作
+  "ENV_BLOCK note" 属 MEDIUM 简写风险（verdict 与 overall 均保持 FAIL、文中三处明写"never PASS"），且已被同日
+  dated correction 取代，不予回退历史；改进取决于 PR #429 让该腿真正可运行后由判据自己说话。已合并
+  （merge commit `89b455f0e`）。
+- **PR #429（沙箱资产 provisioning + 预检 + 判据保真）两份独立审查**：判据保真维度 **通过**——
+  `nativeConfinementEnvBlock` 仅在"真实 probe 记录 backend=`unusable` ∧ 本腿观测到宿主类型化拒绝"合取时开
+  ENV_BLOCK，单靠文本或伪造形状为 null⇒FAIL，`VERDICT_SEVERITY`/`overallVerdict`/退出码未动
+  （`overallVerdict([PASS,ENV_BLOCK])=ENV_BLOCK`、`exitCodeFor(ENV_BLOCK)=1`），无预检时判据与改前逐字节等价；
+  预检在 `world-factory.mjs:596` 于 lease/spawn 之前执行并写入 `bindings.sandboxPreflight`。供给完整性维度
+  **补充内容**：F8（LOW，文档宣传的 `--manifest` 因 `repoRoot: HERE` 与仓库相对 `MANIFEST_REL` 拼错路径而抛未捕获
+  错误、绕过 FAIL-CLOSED 打印器）、F5（LOW，`DSH_TEAM_SANDBOX_ASSET_SOURCE` 未做 realpath/包含校验且会 `import()`
+  该树的 JS——digest 只保护字节不保护代码）、F6（LOW，写盘范围校验发生在写之后、manifest key 无 traversal 校验）、
+  F7（LOW，manifest 钉的 `mode` 从未被强制）；另 F1（LOW，预检记录仅形状校验，建议 WeakSet 打标）。主代理裁决：
+  四项在合并前一并修复（同文件、代价小、均真实）。
+- **执行环境事实（入册免后人重踩）**：`qiyuan-inter/*` 与 `qiyuan-inter-claude/*` 路由本轮不可用（用户确认上游故障；
+  症状=子代理 turn 中途无输出死亡、trivial 任务正常，与上一执行体"连续报错"同源；本轮 6 个子代理因此死亡）。
+  `qiyuan-self/qwen3.8-max` 被本 Session 拒绝为子代理解析路由。故本轮审查一律用 `qiyuan-self/qwen3.8-flash-next`
+  的**独立会话 + 窄幅任务 + 输出封顶 + 增量落盘**（ROUTER_RULES §0.2：独立性来自独立会话，非模型身份），
+  "重型/审查模型路由偏离"记录在此。本机事实：`bwrap` 不可用（非特权 user namespace 被拒），Landlock（`partial`）
+  是唯一可用后端。
+- **已合并**：PR #427（G4-R phase-2 证据 + dated correction）→ merge commit `89b455f0e`；PR #428（ARC-B runner
+  lane-independent seam，含审查轮 1 修复）→ merge commit `e9d92f963`；PR #429（沙箱资产供给 + 预检 + 判据保真，
+  含审查轮 1 修复）→ （合并中，合入后由后续条目补记 merge commit）。合并均一次一个、先 `git merge origin/master` 刷新基座、CI（pr-gate /
+  ci-required / census-runtime / ci-full）全绿后才合。
+- **#429 审查轮 1 = 补充内容 → 修复 → 复审通过**。两份独立窄幅审查。判据保真维度直接**通过**：
+  `nativeConfinementEnvBlock` 仅在"真实 probe 记录 backend=`unusable` ∧ 本腿观测到宿主类型化拒绝"合取时开
+  ENV_BLOCK，单靠文本或伪造形状为 null⇒FAIL，`VERDICT_SEVERITY`/`overallVerdict`/退出码未动
+  （`overallVerdict([PASS,ENV_BLOCK])=ENV_BLOCK`、`exitCodeFor(ENV_BLOCK)=1`），无预检时判据与改前等价。
+  供给完整性维度**补充内容**四项：F8（LOW，文档宣传的 `--manifest` 因 `repoRoot: HERE` 与仓库相对
+  `MANIFEST_REL` 拼错路径而抛未捕获错误、绕过 FAIL-CLOSED 打印器）、F5（LOW，
+  `DSH_TEAM_SANDBOX_ASSET_SOURCE` 未做 realpath/包含校验且会 `import()` 该树的 JS——digest 只保护字节不保护代码）、
+  F6（LOW，写盘范围校验发生在写之后、manifest key 无 traversal 校验）、F7（LOW，manifest 钉的 `mode` 从未被强制）。
+  修复轮 `f94550436`：`repoRoot: TEAM_TREE` 入 try、`assertTrustedSourceTree` realpath 包含 + 允许根列表、
+  `manifestAssetPathIsSafe` 先于任何变更、`parseManifestMode` 严格解析 + 发布后 mode 校验不符即 unlink、
+  另加 `PREFLIGHT_RECORDS` WeakSet 身份打标（关闭另一审查者的伪造形状发现）。C1 17→22 条，轮 1 变异 5/5 被杀。
+  复审四项全 CLOSED、**通过**；遗留 NEW-1（LOW：`present` 路径只校验 digest 不校验 mode，digest 对但 mode 漂移的
+  在盘启动器会被静默接受 ⇒ 记 ENV_BLOCK 而非 MODE 违规）、NEW-2（INFO：`SHARED_BASELINE_ROOTS` 在测试码里硬编码
+  宿主绝对路径，与 `tests/paths.mjs` 单源约定漂移）→ 入遗留台账不阻塞。
+- **下一步**：#429 修复轮复审通过后合并 → 冻结单一候选 → 按裁决 B-G4R-3 跑五项（lane brief
+  `.artifacts/briefs/G4R3-live-candidate-lane.md`）→ G4 晋级复审 R2（brief
+  `.artifacts/briefs/G4-R2-promotion-review-brief.md`；要求复审者**自行重算**每条等价性 diff 并写明参照 commit）
+  → 写 `GATE-LEDGER.md` 与 `G4-PROMOTION-REVIEW-R2.md` → U8 E5 + G5 与遗留项（R-413-1 deflake、
+  R-G4R-3 收紧 `eb3-tool-acceptance`、AC-2/3/4）。
+- **审查路由事实补记**：本轮 6 个子代理在 `qiyuan-inter/*` 上无输出死亡；换 `qiyuan-self/qwen3.8-flash-next` 的
+  **窄幅 + 输出封顶 + 增量落盘**模式后，10 个窄任务全部正常完成。今后审查/审核任务默认按此形态派发（每单 ≤18 tool
+  call、命令输出必须 `head`/`tail` 截断、报告先建后追加），这不是风格偏好而是可用性前提。
+- **主代理自记纪律违规（流程，非产品）**：#429 复审时我把审查子代理指向了**实现 lane 正在占用的同一 worktree**
+  （`.worktrees/u7-sbx`），审查者执行 `git checkout -q <sha>` 使该 worktree 进入 detached HEAD，违反
+  ROUTER_RULES"1 task = 1 worktree = 1 writer"。实测零损失（远端 `e608e609c` 完整、local-only commit 数 0、
+  tree 干净），但这是运气不是设计。已改为：**审查一律用独立 detached worktree**（`git worktree add
+  .worktrees/rv-<pr>-<n> <head>`），实现 lane 独占其自有 worktree，主代理负责配对与回收；本条入册以免重犯。
+- **R-G4R-3 范围已实测钉死**（详见 `.artifacts/findings/R-G4R-3-scope-20261028.md`）：
+  `scripts/eb3-tool-acceptance.mjs` 已校验被引 case 的 verdict（`:331-333`）但**从不看 record.overall**。实测
+  95 个 PROVEN 单元引用 11 份记录，其中恰 1 份 `overall: REFUSED`
+  （`u7-f-agentA-20261026/c2/run-u7fa5.json`，4 PASS + 2 REFUSED，被引 case 本身是 `ac:mounted = PASS`），
+  影响 3 行。收紧代价小、越拖越贵；属 G5 前置加固，不在 G4-R 轮内做（会在晋级复审阅读台账时改变台账语义）。
