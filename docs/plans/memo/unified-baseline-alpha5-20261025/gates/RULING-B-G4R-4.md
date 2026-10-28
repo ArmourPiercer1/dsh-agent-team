@@ -15,7 +15,9 @@ extensions are executed **with disclosure as over-budget**, never silently.
 
 ## The defect this authorizes a retry for (measured, ENV class)
 
-- Leg 1 record: `dev/agent-workflow/evidence/u7-g4r3-20261028/arc-a/run-record.json`, run
+- Leg 1 record: `.worktrees/u7-g4r3/dev/agent-workflow/evidence/u7-g4r3-20261028/arc-a/run-record.json`
+  (lane worktree; every file named in this section lives under `.worktrees/u7-g4r3/` and becomes tracked
+  when the lane's Finish commit lands on PR #432), run
   `u5-u6-arc-a-g4r3a-2026-10-28T17-15-44-158Z`, `overall: FAIL` (9 of 10 cases fail on `mount readiness
   failed` / the mount itself; the one PASS is the `stable-instance-unchanged` guard case — its 401 read
   proves :3080 stayed untouched). The world log
