@@ -1,0 +1,11 @@
+{
+  "schema":"u7-tbash-offline-rejudge/1",
+  "source":"c2-verdicts-boot5.json",
+  "rawLiveVerdict":"PASS 6/6 (boot 5; prior record, not overwritten)",
+  "strengthenedJudge":"FAIL",
+  "reason":"boot-5 digest has hostForensic but lacks ledger.requests and binding arrays are empty; strict host/ledger witness cannot be established offline",
+  "identity":"PASS: fresh-root, durable and bind present/equal, expected create root, distinct boot root",
+  "mutationResults":{"durableOnly":"FAIL","bindOnly":"FAIL","missingHostForensic":"FAIL","missingLedgerRequests":"FAIL","runnerIdentityFallback":"RED (offline test path)"},
+  "bootDecision":"NO BOOT 6: boot-5 record lacks required ledger/binding data; disclosed over-budget final record retained",
+  "evidenceBytesUnder1MiB":true
+}

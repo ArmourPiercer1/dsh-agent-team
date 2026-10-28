@@ -1,0 +1,24 @@
+# u7-tbash review round 4 gate transcript (head 5234a60dc, 2026-10-27T22:04:52Z)
+
+$ node scripts/eb3-tool-acceptance.mjs
+EB3-TOOL-ACCEPTANCE pass tools=31 L4-proven=13 L4-disclosed=17 L4-unverified=1
+
+$ node scripts/eb3-run-manifest.mjs --new-since origin/master
+EB3-RUN-MANIFEST pass records=75 strict=7 incomplete=11 findings=0
+
+$ node scripts/eb3-evidence-guard.mjs --new-since origin/master
+EB3-EVIDENCE-GUARD pass added=41 bound=1048576 exempted=0 findings=0 base=origin/master
+
+$ node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store
+DSH-CI-RUN head=5234a60dc mode=default node=v24.21.0 cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash store-dir=.tmp-pnpm-store allow-refused=none
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.3 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 51
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.2 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 568 commits); current contract ok (phase_id alpha5-tool-io-governance, baseline 9b2ee57bc5af…, matrix rows 26 claimed 0, drift 624 path(s))
+DSH-CI-LEG leg=install verdict=pass seconds=1 detail=pnpm install --frozen-lockfile --store-dir=.tmp-pnpm-store ok (store-dir workaround in force)
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=0.3 detail=no new offending path (dirty 6 files/15 sites, unknown 0 files, universe 1072 tracked files, baseline 6 identities)
+DSH-CI-LEG leg=typecheck verdict=pass seconds=16.5 detail=pnpm typecheck clean (all packages, tests included — tsc is the only leg that sees a bad .test.ts)
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=19.2 detail=identity diff clean (baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0) — exit code of `pnpm lint` is NOT the authority here; the identity set is
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=18.8 detail=HEAD carries its own build (DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1881 drift=0)
+DSH-CI-LEG leg=census verdict=skip seconds=0 detail=NOT RUN — heaviest leg, opt-in. Enable with --census (or --full, which is what CI runs). A named skip is a disclosure, never a silence.
+DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=56.2
+
+# dry-run (step 2) re-recorded in dry-run-GREEN.log / dry-run-RED.log; C1 + offline drive = 9/9 pass

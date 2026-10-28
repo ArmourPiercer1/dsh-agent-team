@@ -1,0 +1,34 @@
+✔ u7-tbash: blueprints pass the host validator; leader has no shell lane; asker can open an ask row (73.114914ms)
+✔ u7-tbash: commands are harmless printf appends inside the team root (0.9793ms)
+✖ u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity (0.9399ms)
+✔ u7-tbash: the lane-scoped resolver allows exactly the pinned command once (0.7216ms)
+✔ u7-tbash: results join to calls by tool_use_id, not by position (r5 artifact) (0.423ms)
+✔ u7-tbash: the brain issues the 4-step script from the transcript; fence never self-satisfies (2.088701ms)
+✔ u7-tbash: judge — all-green PASSes, and every case flips on its own evidence (mutation controls) (3.0547ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 171.794132
+
+✖ failing tests:
+
+test at tests/world-factory/u7-tbash.test.mjs:75:1
+✖ u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity (0.9399ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/world-factory/u7-tbash.test.mjs:78:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

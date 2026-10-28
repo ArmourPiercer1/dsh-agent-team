@@ -1,0 +1,211 @@
+{
+  "mode": "dry-run",
+  "fixture": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json",
+  "mutation": true,
+  "governedSession": {
+    "createOk": true,
+    "identity": {
+      "ok": true,
+      "createPath": "fresh-root",
+      "fromDurable": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+      "fromBind": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+      "reason": null,
+      "teamSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z"
+    },
+    "teamSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+    "fromIndependentRead": null,
+    "projectionStatus": null,
+    "identityOk": false,
+    "createBodyExcerpt": "{\"type\":\"server-response\",\"rpcId\":\"u6fs-vbvpbu3nr9\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t21-25-04z\",\"blueprint\":{\"blueprintId\":\"team.u7tb.main\",\"revision\":\"1\",\"contentHash\":\"sha256:e0ffeb1752cd36f35291476b2f3b114333668e5df59a49e05b88accefcba4c6b\"},\"createdAt\":\"2026-10-27T21:25:45.584Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/deepseek-harness-test-use\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-u7tb-team-u5u7tb-20261027t21-25-04z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t21-25-04z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"labe",
+    "ledgerForeignEntries": 0,
+    "bindings": {
+      "rowToModelCall": [
+        {
+          "requestId": "ctrl-1f1oteb18elk6s0yx18cp0tz",
+          "ledgerRequestId": "ctrl-1f1oteb18elk6s0yx18cp0tz",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "toolName": "bash",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "parametersFingerprint": "sha256:95553772d846fefe5d1f4e539d5961bbbf6d9157c97154522653b7f510381ac7",
+          "step": 0,
+          "toolUseId": "call-u6fs-gt7s1vwo",
+          "callIndex": 0,
+          "commandHash": "sha256:35a473dc7258d140235eb2033f84f6d3ac77ca9a8c901bea93c0b76af335bf03",
+          "decision": "allow",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerMatched": true
+        },
+        {
+          "requestId": "ctrl-0kipkcx15sdhp2177tarr1c8",
+          "ledgerRequestId": "ctrl-0kipkcx15sdhp2177tarr1c8",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "toolName": "bash",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "parametersFingerprint": "sha256:95553772d846fefe5d1f4e539d5961bbbf6d9157c97154522653b7f510381ac7",
+          "step": 1,
+          "toolUseId": "call-u6fs-asgchw07",
+          "callIndex": 1,
+          "commandHash": "sha256:35a473dc7258d140235eb2033f84f6d3ac77ca9a8c901bea93c0b76af335bf03",
+          "decision": "deny",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerMatched": true
+        },
+        {
+          "requestId": "ctrl-15tpj9m0ka15550cej62c1l6",
+          "ledgerRequestId": "ctrl-15tpj9m0ka15550cej62c1l6",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "toolName": "bash",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "parametersFingerprint": "sha256:8fc9eb14c50db66927640c54dd788f054ebf62fff58bcea214468c70db1caf6a",
+          "step": 2,
+          "toolUseId": "call-u6fs-zhhxkixn",
+          "callIndex": 2,
+          "commandHash": "sha256:756db05fa0adb8a48c5058e08eacd0c27f0b827e0185ec125965208668d07bb0",
+          "decision": "deny",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerMatched": true
+        },
+        {
+          "requestId": "ctrl-02dvia00utc3sr1t2xob20w4",
+          "ledgerRequestId": "ctrl-02dvia00utc3sr1t2xob20w4",
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "toolName": "bash",
+          "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+          "parametersFingerprint": "sha256:d4e1d57fb64e486d684e7427fab38962f76545930fa4e1e7fbc4c62d8be1f12d",
+          "step": 3,
+          "toolUseId": "call-u6fs-m98vertq",
+          "callIndex": 3,
+          "commandHash": "sha256:e60ee4c3f0fc83835d582a65abd7e45b99db59671cc804a2a5377d7ce7787ba9",
+          "decision": "deny",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerMatched": true
+        }
+      ],
+      "modelCallToSession": [
+        {
+          "toolUseId": "call-u6fs-gt7s1vwo",
+          "callIndex": 0,
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerRequestIds": [
+            "ctrl-1f1oteb18elk6s0yx18cp0tz"
+          ]
+        },
+        {
+          "toolUseId": "call-u6fs-asgchw07",
+          "callIndex": 1,
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerRequestIds": [
+            "ctrl-0kipkcx15sdhp2177tarr1c8"
+          ]
+        },
+        {
+          "toolUseId": "call-u6fs-zhhxkixn",
+          "callIndex": 2,
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerRequestIds": [
+            "ctrl-15tpj9m0ka15550cej62c1l6"
+          ]
+        },
+        {
+          "toolUseId": "call-u6fs-m98vertq",
+          "callIndex": 3,
+          "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "sessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+          "ledgerRequestIds": [
+            "ctrl-02dvia00utc3sr1t2xob20w4"
+          ]
+        }
+      ]
+    }
+  },
+  "ledger": {
+    "ledgerForeignEntries": 0,
+    "requests": [
+      {
+        "requestId": "ctrl-1f1oteb18elk6s0yx18cp0tz",
+        "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+        "toolName": "bash",
+        "kind": "leader-approval",
+        "targetInstanceId": "inst-0fsc9d70ges0",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "operationFingerprint": "sha256:7ddf0840bb7f7a2332941eee420d5dee21650c4b4bcd0f8ae8b91d6de653224e",
+        "parametersFingerprint": "sha256:95553772d846fefe5d1f4e539d5961bbbf6d9157c97154522653b7f510381ac7",
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-0kipkcx15sdhp2177tarr1c8",
+        "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+        "toolName": "bash",
+        "kind": "leader-approval",
+        "targetInstanceId": "inst-0fsc9d70ges0",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "operationFingerprint": "sha256:1344e20c86348aa56f8805d7c6ef408ab3277a5b9e65da1bffc9612ff863127d",
+        "parametersFingerprint": "sha256:95553772d846fefe5d1f4e539d5961bbbf6d9157c97154522653b7f510381ac7",
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-15tpj9m0ka15550cej62c1l6",
+        "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+        "toolName": "bash",
+        "kind": "leader-approval",
+        "targetInstanceId": "inst-0fsc9d70ges0",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "operationFingerprint": "sha256:ea2eee847159a8bd54c332a923a11433e625c70382c541c6144edd4bf5af02d2",
+        "parametersFingerprint": "sha256:8fc9eb14c50db66927640c54dd788f054ebf62fff58bcea214468c70db1caf6a",
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-02dvia00utc3sr1t2xob20w4",
+        "rootSessionId": "session-u7tb-team-u5u7tb-20261027t21-25-04z",
+        "toolName": "bash",
+        "kind": "leader-approval",
+        "targetInstanceId": "inst-0fsc9d70ges0",
+        "summary": "PA ask case=tadm:session-u7tb-team-u5u7tb-20261027t21-25-04z:inst-0fsc9d70ges0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+        "operationFingerprint": "sha256:3a46087911daa38a28e5022aeacb6edd382f459e3aa2d0e4822b4abc380b807a",
+        "parametersFingerprint": "sha256:d4e1d57fb64e486d684e7427fab38962f76545930fa4e1e7fbc4c62d8be1f12d",
+        "carriesPinnedCommandHash": false,
+        "status": "settled"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-1f1oteb18elk6s0yx18cp0tz",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0kipkcx15sdhp2177tarr1c8",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-15tpj9m0ka15550cej62c1l6",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-02dvia00utc3sr1t2xob20w4",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-1f1oteb18elk6s0yx18cp0tz"
+      }
+    ],
+    "abandoned": []
+  },
+  "verdicts": [
+    [
+      "tbash:mounted",
+      "FAIL",
+      {
+        "mutation": true
+      }
+    ]
+  ],
+  "overall": "FAIL"
+}

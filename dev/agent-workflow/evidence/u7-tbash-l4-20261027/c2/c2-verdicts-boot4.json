@@ -1,0 +1,140 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7tb-c2-mvr3fyzz",
+  "suite": "u7-team-bash-l4",
+  "startedAt": "2026-10-27T19:43:53.372Z",
+  "selectedCases": [
+    "tbash:mounted",
+    "tbash:approve-spawn-once",
+    "tbash:replay-refused",
+    "tbash:other-command-refused",
+    "tbash:deny-zero-effect",
+    "tbash:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "8d1475464460eba498452ad62d8c31206d7c4502",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "tbash:mounted",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "tbash:approve-spawn-once",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "tbash:replay-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "tbash:other-command-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "tbash:deny-zero-effect",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "tbash:leak-check",
+      "verdict": "FAIL",
+      "at": "2026-10-27T19:44:38.173Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T19:44:33.192Z",
+        "runId": "u7tb-c2-mvr3fyzz",
+        "suite": "u7-team-bash-l4",
+        "phase": "u7tb-c2-boot",
+        "boot": 4,
+        "world": "u5u7tb-20261027T19-43-53Z",
+        "port": 3184,
+        "bootMs": 18302
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 4,
+    "budget": 4,
+    "declaredAt": "2026-10-27T19:44:14.889Z",
+    "runId": "u7tb-c2-mvr3fyzz",
+    "world": "u5u7tb-20261027T19-43-53Z",
+    "teamSha": "8d1475464460eba498452ad62d8c31206d7c4502"
+  },
+  "notes": [
+    "drive threw: ReferenceError: projection is not defined\n    at drive (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs:213:180)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs:115:11)"
+  ],
+  "stableInstance": {
+    "port": 3080,
+    "statusBefore": 401,
+    "statusAfter": 401,
+    "unchanged": true,
+    "touched": false
+  },
+  "hostTreeAfter": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T19-43-53Z",
+      "releasedPorts": [
+        3184,
+        3498,
+        3184
+      ],
+      "killedPids": [
+        50
+      ],
+      "notes": []
+    },
+    "homeRemoved": true
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/host-boot4.log",
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/mock-excerpt-boot4.json"
+  ],
+  "mockDigest": [],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-27T19:44:38.173Z"
+}

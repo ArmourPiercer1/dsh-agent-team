@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=<redacted>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7tb-realm-u5u7tb-20261027t17-56-24z
+[dsh-agent-team] a5ptc: census-boot root=session-u7tb-team-u5u7tb-20261027t17-56-24z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u7tb-realm-u5u7tb-20261027t17-56-24z
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u7tb-realm-u5u7tb-20261027t17-56-24z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=u7tb-realm-u5u7tb-20261027t17-56-24z call=team-inst-0tijb8f1ai8p-bash:hexec:ec2b80eb-b71a-4082-bbcc-2426293b3332-1 pid=255 exit=0 timedOut=false cancelled=false

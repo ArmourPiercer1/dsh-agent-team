@@ -1,0 +1,7 @@
+# C1 RED — projection identity extraction (2026-10-27)
+
+Before implementation, the new C1 contract was added with no `extractProjectionSessionId` export. Running:
+
+    node --test tests/world-factory/u7-tbash.test.mjs
+
+failed at module use with `TypeError: extractProjectionSessionId is not a function` (the intended RED: the pure seam did not yet exist). The failure was confined to the new projection identity test; existing U7 C1 tests remained green.

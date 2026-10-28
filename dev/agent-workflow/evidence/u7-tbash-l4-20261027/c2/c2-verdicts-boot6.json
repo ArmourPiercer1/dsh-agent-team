@@ -1,0 +1,160 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7tb-c2-mvr614b4",
+  "suite": "u7-team-bash-l4",
+  "startedAt": "2026-10-27T20:56:19.261Z",
+  "selectedCases": [
+    "tbash:mounted",
+    "tbash:approve-spawn-once",
+    "tbash:replay-refused",
+    "tbash:other-command-refused",
+    "tbash:deny-zero-effect",
+    "tbash:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "47da3da07e16de675f64dac17d1e206ad429b91c",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "tbash:mounted",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.845Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    },
+    {
+      "id": "tbash:approve-spawn-once",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.845Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    },
+    {
+      "id": "tbash:replay-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.845Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    },
+    {
+      "id": "tbash:other-command-refused",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.846Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    },
+    {
+      "id": "tbash:deny-zero-effect",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.846Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    },
+    {
+      "id": "tbash:leak-check",
+      "verdict": "FAIL",
+      "at": "2026-10-27T20:57:02.846Z",
+      "detail": {
+        "reason": "team.create failed or governed identity mismatch"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T20:56:58.998Z",
+        "runId": "u7tb-c2-mvr614b4",
+        "suite": "u7-team-bash-l4",
+        "phase": "u7tb-c2-boot",
+        "boot": 6,
+        "world": "u5u7tb-20261027T20-56-19Z",
+        "port": 3184,
+        "bootMs": 17896
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 6,
+    "budget": 6,
+    "declaredAt": "2026-10-27T20:56:41.102Z",
+    "runId": "u7tb-c2-mvr614b4",
+    "world": "u5u7tb-20261027T20-56-19Z",
+    "teamSha": "47da3da07e16de675f64dac17d1e206ad429b91c"
+  },
+  "governedSession": {
+    "createOk": true,
+    "identity": {
+      "ok": true,
+      "createPath": "fresh-root",
+      "fromDurable": "session-u7tb-team-u5u7tb-20261027t20-56-19z",
+      "fromBind": "session-u7tb-team-u5u7tb-20261027t20-56-19z",
+      "reason": null,
+      "teamSessionId": "session-u7tb-team-u5u7tb-20261027t20-56-19z"
+    },
+    "teamSessionId": "session-u7tb-team-u5u7tb-20261027t20-56-19z",
+    "fromIndependentRead": null,
+    "projectionStatus": 200,
+    "identityOk": false,
+    "createBodyExcerpt": "{\"type\":\"server-response\",\"rpcId\":\"u6fs-tz8774j3am\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-56-19z\",\"blueprint\":{\"blueprintId\":\"team.u7tb.main\",\"revision\":\"1\",\"contentHash\":\"sha256:ff7b77fb6234cd0aafe30d4e1f2b0a0cbf030617f31a02623f264024b6e13009\"},\"createdAt\":\"2026-10-27T20:57:01.653Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/deepseek-harness-test-use\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-u7tb-team-u5u7tb-20261027t20-56-19z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-56-19z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"labe",
+    "bootRoot": "session-u7tb-root-u5u7tb-20261027t20-56-19z",
+    "projectionExcerpt": "{\"type\":\"server-response\",\"rpcId\":\"u7tb-independent-xazvpuksos\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-56-19z\",\"blueprint\":{\"blueprintId\":\"team.u7tb.main\",\"revision\":\"1\",\"contentHash\":\"sha256:ff7b77fb6234cd0aafe30d4e1f2b0a0cbf030617f31a02623f264024b6e13009\"},\"generation\":8,\"generatedAt\":\"2026-10-27T20:57:02.840Z\",\"root\":{\"teamSessionId\":\"session-u7tb-team-u5u7tb-20261027t20-56-19z\",\"createdAt\":\"2026-10-27T20:57:01.653Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration",
+    "bindings": {
+      "rowToModelCall": [],
+      "modelCallToSession": []
+    }
+  },
+  "notes": [],
+  "stableInstance": {
+    "port": 3080,
+    "statusBefore": 401,
+    "statusAfter": 401,
+    "unchanged": true,
+    "touched": false
+  },
+  "hostTreeAfter": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbash/tests/homes/u5u7tb-20261027T20-56-19Z",
+      "releasedPorts": [
+        3184,
+        3498,
+        3184
+      ],
+      "killedPids": [
+        51
+      ],
+      "notes": []
+    },
+    "homeRemoved": true
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/host-boot6.log",
+    "dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/mock-excerpt-boot6.json"
+  ],
+  "mockDigest": [],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-27T20:57:03.135Z"
+}
