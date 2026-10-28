@@ -1,0 +1,34 @@
+# G4-R round 2 gates — 2026-10-28, branch task/u7-g4r-bindings-20261028, base HEAD 5efef6d5fad411d15e28b4fd2298744df35aae29 (round-1 head)
+
+$ node --test tests/world-factory/binding-digests.test.mjs    # full output + RED/GREEN lines: c1-round2.log
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+  exit 0
+
+$ node --test tests/world-factory/world-factory.test.mjs
+ℹ tests 43
+ℹ pass 43
+ℹ fail 0
+  exit 0  (zero Host boots, zero ports bound)
+
+$ node scripts/eb3-run-manifest.mjs --new-since origin/master
+  DISCLOSED 11 unfinalised record(s) (no finishedAt/overall) graded as NOT-A-RESULT, not as pass: dev/agent-workflow/evidence/u6-pr5-20261026/c2/run4-evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca5-2026-10-26T06-15-58-353Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca6-2026-10-26T06-27-14-670Z.evidence.json, dev/agent-workflow/evidence/u6-pr5-20261026/c2/u5-u6-arc-a-u6arca8-2026-10-26T06-59-02-141Z.evidence.json, dev/agent-workflow/evidence/u6-pr6-20261026/c2/u5-u6-arc-d-arc-d1-2026-10-26T08-30-55-354Z.evidence.json, dev/agent-workflow/evidence/u7-6-glue4-20261026/c2/u5-u6-arc-a-u76r1-2026-10-26T11-57-28-224Z.evidence.json …
+EB3-RUN-MANIFEST pass records=99 strict=0 incomplete=11 findings=0
+LIMIT a green here means the record is internally honest and tied to THIS tree/host-pin/authority generation; it is not a claim that the graded behaviour was correct (that is the suite C2 evidence)
+  exit 0
+
+$ node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store      # full transcript: ci-pr-gate-round2.log
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.7
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.4
+DSH-CI-LEG leg=install verdict=pass seconds=2.6
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=1.1
+DSH-CI-LEG leg=typecheck verdict=pass seconds=70.8
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=70.7
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=56.8
+DSH-CI-LEG leg=census verdict=skip seconds=0
+DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=203.1
+  exit 0 (7 pass / 0 fail / 1 named skip = census, opt-in only; a named skip is a disclosure, not a census PASS)
+
+$ git diff --check origin/master...HEAD
+  exit 0 (no output) at the shipped head of this PR: the round-1 blank line at p4t6.log:10 is stripped (F4) and the round-2 evidence files are whitespace-clean (commits 961b165ec + 472362162). Re-run the command to verify.

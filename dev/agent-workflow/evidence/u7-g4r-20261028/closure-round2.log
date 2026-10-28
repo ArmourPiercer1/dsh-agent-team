@@ -1,0 +1,76 @@
+$ node dev/agent-workflow/evidence/u7-g4r-20261028/closure-round2.mjs   # teamSha 5efef6d5fad411d15e28b4fd2298744df35aae29, branch task/u7-g4r-bindings-20261028
+# oracle closures measured at teamSha 5efef6d5fad411d15e28b4fd2298744df35aae29
+# hashLaw sha256(path + 0x00 + bytes + 0x00) per source, sources in lexically ascending repo-relative posix order
+suite=core_(u5-canary_runner) entry=tests/world-factory/u5-canary-runner.mjs
+  complete=true literalReadsComplete=false sources=10 excludedHelpers=tests/world-factory/lib/binding-digests.mjs|tests/world-factory/lib/suites.mjs|tests/world-factory/lib/world-factory.mjs
+  sources=tests/characterization/lib/util.mjs|tests/kits/rc2-real-host-smoke/run-budget.mjs|tests/kits/rc2-real-host-smoke/run-control.mjs|tests/paths.mjs|tests/world-factory/canary/ledger-cap.mjs|tests/world-factory/lib/mock-script.mjs|tests/world-factory/lib/oracle.mjs|tests/world-factory/lib/port-lease.mjs|tests/world-factory/lib/run-record.mjs|tests/world-factory/u5-canary-runner.mjs
+  outsideTestsWorldFactory=tests/characterization/lib/util.mjs|tests/kits/rc2-real-host-smoke/run-budget.mjs|tests/kits/rc2-real-host-smoke/run-control.mjs|tests/paths.mjs
+  unresolvedLiteralReads=tests/world-factory/lib/port-lease.mjs:163|tests/world-factory/lib/run-record.mjs:166|tests/world-factory/u5-canary-runner.mjs:364
+  externalSpecifiers=node:child_process|node:crypto|node:fs|node:net|node:path|node:url
+suite=u7-4a-jobs_(standalone_runner) entry=tests/world-factory/u7-4a-jobs-suite.mjs
+  complete=true literalReadsComplete=false sources=10 excludedHelpers=tests/world-factory/lib/binding-digests.mjs|tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/kits/rc2-real-host-smoke/run-budget.mjs|tests/kits/rc2-real-host-smoke/run-control.mjs|tests/paths.mjs|tests/world-factory/canary/ledger-cap.mjs|tests/world-factory/lib/run-record.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u6-jobs-assembly.mjs|tests/world-factory/lib/u74a-jobs-assembly.mjs|tests/world-factory/u7-4a-jobs-suite.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs|tests/kits/rc2-real-host-smoke/run-budget.mjs|tests/kits/rc2-real-host-smoke/run-control.mjs|tests/paths.mjs
+  unresolvedLiteralReads=tests/world-factory/lib/run-record.mjs:166
+  externalSpecifiers=node:child_process|node:crypto|node:fs|node:path|node:url
+suite=010-u6-fs entry=tests/world-factory/suites/010-u6-fs.mjs
+  complete=true literalReadsComplete=true sources=3 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/suites/010-u6-fs.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:fs|node:path|node:url
+suite=020-u6-proc entry=tests/world-factory/suites/020-u6-proc.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u6-proc-assembly.mjs|tests/world-factory/suites/020-u6-proc.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url
+suite=030-u6-jobs entry=tests/world-factory/suites/030-u6-jobs.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u6-jobs-assembly.mjs|tests/world-factory/suites/030-u6-jobs.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url
+suite=040-u6-arc-a entry=tests/world-factory/suites/040-u6-arc-a.mjs
+  complete=true literalReadsComplete=true sources=5 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/paths.mjs|tests/world-factory/lib/u6-arc-a-assembly.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/suites/040-u6-arc-a.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs|tests/paths.mjs
+  externalSpecifiers=node:crypto|node:fs|node:module|node:path|node:url
+suite=050-u6-arc-d entry=tests/world-factory/suites/050-u6-arc-d.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-arc-d-assembly.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/suites/050-u6-arc-d.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:fs|node:module|node:path|node:url
+suite=060-u7-fs-mut entry=tests/world-factory/suites/060-u7-fs-mut.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7-fsmut-assembly.mjs|tests/world-factory/suites/060-u7-fs-mut.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url
+suite=070-u7-f-web entry=tests/world-factory/suites/070-u7-f-web.mjs
+  complete=true literalReadsComplete=true sources=5 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/paths.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7f-web-assembly.mjs|tests/world-factory/suites/070-u7-f-web.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs|tests/paths.mjs
+  externalSpecifiers=node:fs|node:http|node:path|node:url
+suite=070-u7-pwsh entry=tests/world-factory/suites/070-u7-pwsh.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7-pwsh-assembly.mjs|tests/world-factory/suites/070-u7-pwsh.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url
+suite=080-u7-agent-control entry=tests/world-factory/suites/080-u7-agent-control.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7fa-assembly.mjs|tests/world-factory/suites/080-u7-agent-control.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:fs|node:path|node:url
+suite=080-u7-f-ui entry=tests/world-factory/suites/080-u7-f-ui.mjs
+  complete=true literalReadsComplete=true sources=4 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7-fui-assembly.mjs|tests/world-factory/suites/080-u7-f-ui.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url
+suite=110-u7-fagentb entry=tests/world-factory/suites/110-u7-fagentb.mjs
+  complete=true literalReadsComplete=true sources=5 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7-fsmut-assembly.mjs|tests/world-factory/lib/u7fagentb-assembly.mjs|tests/world-factory/suites/110-u7-fagentb.mjs
+  outsideTestsWorldFactory=tests/kits/_shared/preset-seam.mjs
+  externalSpecifiers=node:crypto|node:fs|node:path|node:url|node:zlib
+suite=120-u7-astore entry=tests/world-factory/suites/120-u7-astore.mjs
+  complete=true literalReadsComplete=false sources=5 excludedHelpers=tests/world-factory/lib/world-factory.mjs
+  sources=packages/tools/agent-state-family/src/fs-state-store.mjs|tests/kits/_shared/preset-seam.mjs|tests/world-factory/lib/u6-fs-assembly.mjs|tests/world-factory/lib/u7astore-assembly.mjs|tests/world-factory/suites/120-u7-astore.mjs
+  outsideTestsWorldFactory=packages/tools/agent-state-family/src/fs-state-store.mjs|tests/kits/_shared/preset-seam.mjs
+  unresolvedLiteralReads=tests/world-factory/lib/u7astore-assembly.mjs:235
+  externalSpecifiers=node:buffer|node:crypto|node:fs|node:os|node:path|node:process|node:timers|node:timers/promises|node:url

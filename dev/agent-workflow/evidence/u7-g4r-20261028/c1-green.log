@@ -1,0 +1,57 @@
+C1 MUTATION RED: profile + oracle one-byte tamper rejected
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (342.492692ms)
+SURVIVOR-PROBE 1793181151631 health-effect ok=true
+SURVIVOR-PROBE 1793181151884 after-reclaim ok=true
+SURVIVOR-PROBE 1793181153149 health-effect ok=true
+SURVIVOR-PROBE 1793181153402 after-reclaim ok=true
+✔ C1 dry-run uses supervisor path without starts and proves hold ordering (3020.900087ms)
+✔ C1 team-tree provenance is independent and fail-closed on dirty tracked paths (3.525805ms)
+✔ C1 survivor sequencing is fail-closed with real successful probes and identity continuity (1.379128ms)
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (270.147312ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (3.455519ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (2.408325ms)
+✔ port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds) (331.676893ms)
+✔ port lease T1: dir-slot dead claim reclaimed BY NAME with provenance; live claim never moved (274.105015ms)
+✔ port lease T1: release is token-guarded, idempotent, and leak-check scan sees zero claims after teardown (15.587418ms)
+✔ port lease T1: cross-process race — zero double-ownership, natural AND forced stale/reclaim interleaving (16960.860144ms)
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (62.915625ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (3445.1987ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (5.210901ms)
+✔ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (1.1238ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (222.781842ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (4.975901ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (1.149ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (7.969302ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (209.559439ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (3.171401ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (3.487301ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (2.654501ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (310.059859ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (24.936905ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (1.422301ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.4116ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (21.828904ms)
+✔ u7-agent-control: SUITE_CASES entry and parseArgs wiring (0.9711ms)
+✔ u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven (15.708302ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (24.595105ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (9.247802ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (4.796501ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (25.947805ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (10.770703ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (2.1268ms)
+✔ u6-fs: the decide script discriminates lanes by request token (3.791301ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (5.486601ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (4.347901ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (39.966708ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (5.172301ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (2.475701ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (1.5711ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (4.558401ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25946.669306

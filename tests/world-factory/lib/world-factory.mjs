@@ -51,6 +51,7 @@ import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
 import { acquireFirstFreeLease, pidAlive, reclaimStaleLease, sweepLegacyLease } from './port-lease.mjs'
 import { applyKindEnv, CORE_WORLD_OPTIONS, loadWorldKinds, validateKindSpec } from './world-kinds.mjs'
+import { captureProfileBinding, verifyProfileBindingLaunched } from './binding-digests.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -635,11 +636,38 @@ export class TestWorld {
     if (this.badMount === 'corrupt-patch') {
       appendFileSync(this.instance.patchFile, '\n- insert: [[{unparseable\n  :::\n\t- "broken\n')
     }
+    // F3 (G4-R): hash the EXACT bytes about to be launched, keep them as the
+    // evidence copy, then — after the spawn — re-read the launched file and
+    // re-hash it. The digest only claims "the profile this World ran" if both
+    // hashes agree; otherwise the entry carries composedProfileDigestMismatch
+    // and this boot fails closed.
+    this.profileBinding = captureProfileBinding({ patchFile: this.instance.patchFile, logDir: this.logDir, worldId: this.id })
+    this.factory.onProfileBinding?.(this.profileBinding)
     const startPromise = this.instance.start({ timeoutMs: bootTimeoutMs })
     const child = this.instance.child // captured BEFORE the first await
     this.#writeOwnership({ hostPid: child?.pid ?? null, hostPort: lease.port, mockPort: this.mock?.port ?? null })
     lease.note({ hostPid: child?.pid ?? null })
-    const booted = await startPromise
+    let booted = null
+    let bootError = null
+    try {
+      booted = await startPromise
+    } catch (error) {
+      bootError = error
+    }
+    // The proof runs whether or not the boot succeeded: a profile that changed
+    // between capture and spawn is a finding even when the Host refused to
+    // start for an unrelated reason. `bindWorldProfile` re-publishes the same
+    // entry so the mismatch flag reaches the RUN record before the throw.
+    let proofError = null
+    try {
+      verifyProfileBindingLaunched(this.profileBinding)
+    } catch (error) {
+      proofError = error
+    } finally {
+      this.factory.onProfileBinding?.(this.profileBinding)
+    }
+    if (bootError !== null) throw bootError
+    if (proofError !== null) throw proofError
     this.token = new URL(booted.url).searchParams.get('token') ?? undefined
     this.receipts.booted.push({ at: new Date().toISOString(), port: lease.port, tokenFingerprint: this.token === undefined ? 'absent' : sha256Text(this.token).slice(0, 8) })
     return { url: booted.url, redacted: redactLaunchToken(booted.url), port: lease.port, logPath: booted.logPath, child }

@@ -1,0 +1,25 @@
+$ node --test tests/world-factory/binding-digests.test.mjs   # teamSha 5efef6d5fad411d15e28b4fd2298744df35aae29 (F1/F2/F3 C1, round 2)
+$ git rev-parse --abbrev-ref HEAD  # task/u7-g4r-bindings-20261028
+
+C1-F1a GREEN: u7-astore binds 5 sources incl. packages/tools/agent-state-family/src/fs-state-store.mjs
+C1-F1b GREEN: import(x) -> complete:false ["entry.mjs:3"]
+C1-F1c RED: one byte in the dynamically imported file no longer matches the digest
+C1-F2 GREEN: 5 relative sources recompute under /tmp/u7-g4r-checkout--nePbJr
+C1-F3 RED: capture → mutate → spawn is refused (composedProfileDigestMismatch=true)
+C1 MUTATION RED: profile + oracle one-byte tamper rejected
+C1 GREEN: validator accepts the cited artifact; one byte on it is RUN_EVIDENCE_DIGEST_MISMATCH
+C1 GREEN: eb3-run-manifest CLI grades the cited fixture (records=1 findings=0)
+✔ C1-F1a the oracle closure follows dynamic imports out of tests/world-factory (27.484405ms)
+✔ C1-F1b a non-literal dynamic import fails the closure closed (complete:false) (2.721601ms)
+✔ C1-F1c one byte inside a dynamically imported file turns the digest RED (2.4004ms)
+✔ C1-F2 sources are repo-relative and the digest recomputes in ANOTHER checkout root (22.719605ms)
+✔ C1-F3 the profile digest is the launched bytes; a writer mutating before spawn is RED (3.2575ms)
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (406.835276ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 790.864349

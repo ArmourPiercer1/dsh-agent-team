@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 49ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  09:51:40
+   Duration  2.04s (transform 361ms, setup 0ms, import 1.32s, tests 49ms, environment 0ms)
