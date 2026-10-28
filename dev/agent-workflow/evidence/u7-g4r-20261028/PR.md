@@ -18,4 +18,3 @@ Four review findings fixed in `tests/world-factory/lib/binding-digests.mjs` + it
 * **F4** the blank line at EOF in `p4t6.log` is stripped; `git diff --check origin/master...HEAD` is clean.
 
 Round-2 gates in `round2-gates.log`; C1 RED/GREEN in `c1-round2.log`; per-suite closures and the documented helper exclusions in `README.md` + `closure-round2.log`. Stray scratch `.artifacts-g4r-gate.log` in the worktree root removed (byte-identical duplicate of the committed `ci-pr-gate.log`).
-

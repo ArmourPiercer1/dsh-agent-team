@@ -19,14 +19,14 @@ LIMIT a green here means the record is internally honest and tied to THIS tree/h
   exit 0
 
 $ node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store      # full transcript: ci-pr-gate-round2.log
-DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.7 
-DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.4 
-DSH-CI-LEG leg=install verdict=pass seconds=2.6 
-DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=1.1 
-DSH-CI-LEG leg=typecheck verdict=pass seconds=70.8 
-DSH-CI-LEG leg=lint-identities verdict=pass seconds=70.7 
-DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=56.8 
-DSH-CI-LEG leg=census verdict=skip seconds=0 
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.7
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.4
+DSH-CI-LEG leg=install verdict=pass seconds=2.6
+DSH-CI-LEG leg=blueprint-fence verdict=pass seconds=1.1
+DSH-CI-LEG leg=typecheck verdict=pass seconds=70.8
+DSH-CI-LEG leg=lint-identities verdict=pass seconds=70.7
+DSH-CI-LEG leg=artifacts-at-head verdict=pass seconds=56.8
+DSH-CI-LEG leg=census verdict=skip seconds=0
 DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=203.1
   exit 0 (7 pass / 0 fail / 1 named skip = census, opt-in only; a named skip is a disclosure, not a census PASS)
 
