@@ -1,0 +1,15 @@
+$ node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json --evidence dev/agent-workflow/evidence/u7-tbash-seam-20261028/arc-b
+exit=1
+Error: --evidence, --budget-ledger and --budget must be given together (got 1 of 3); refusing to fall back to the closed lane's committed ledger
+$ node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json --evidence dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2 --budget-ledger dev/agent-workflow/evidence/u7-tbash-seam-20261028/x/boot-budget.jsonl --budget 1
+exit=1
+Error: --evidence must not point inside the closed lane dir dev/agent-workflow/evidence/u7-tbash-l4-20261027/: dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2
+$ node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json --evidence /tmp/evil --budget-ledger dev/agent-workflow/evidence/u7-tbash-seam-20261028/x/boot-budget.jsonl --budget 1
+exit=1
+Error: --evidence must stay inside the repo: /tmp/evil
+$ node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json --evidence dev/agent-workflow/evidence/u7-tbash-seam-20261028/arc-b --budget-ledger dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget.jsonl --budget 1
+exit=1
+Error: --budget-ledger must not point inside the closed lane dir dev/agent-workflow/evidence/u7-tbash-l4-20261027/: dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget.jsonl
+$ node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs --dry-run --fixtures dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/dry-run-fixtures.json --budget-ledger dev/agent-workflow/evidence/u7-tbash-seam-20261028/arc-b/boot-budget.jsonl --budget 1
+exit=1
+Error: --evidence, --budget-ledger and --budget must be given together (got 2 of 3); refusing to fall back to the closed lane's committed ledger

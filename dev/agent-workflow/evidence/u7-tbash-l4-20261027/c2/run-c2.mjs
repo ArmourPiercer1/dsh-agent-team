@@ -14,9 +14,50 @@
  * ledger. Verdicts: the shared `judgeTbash`; `tbash:mounted` is boot-time.
  *
  * Run:  node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs
+ *
+ * Lane-independent seam (u7-tbash-seam-20261028): a NEW lane runs this C2
+ * without rewriting the closed #415 lane's committed ledger:
+ *   node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs \
+ *     --evidence dev/agent-workflow/evidence/<new-lane>/arc-b \
+ *     --budget-ledger dev/agent-workflow/evidence/<new-lane>/arc-b/boot-budget.jsonl \
+ *     --budget 1
+ * `--evidence` is the dir this run writes host/mock logs, digests and the
+ * record into; `--budget-ledger` is the ledger to declare against; `--budget`
+ * a positive integer. ALL THREE are required together (fail closed: giving
+ * one never silently falls back to the closed lane's ledger). Paths must stay
+ * inside the repo and outside the closed lane dir. With NO flags the
+ * behaviour is byte-for-byte the #415 default (BUDGET 7, boot-budget.jsonl
+ * beside this file, the closed lane's evidence prefix, HERE for outputs).
+ *
+ * Review round 1 (PR #428 补充内容) laws — the seam cannot be steered around
+ * the closed lane's budget history or another lane's bytes:
+ *  F1 CAP: a flagged `--budget` above MAX_FLAGGED_BUDGET (3 — this lane
+ *     historically needed 1 boot per acceptance run; 3 = acceptance + 2
+ *     declared retries) is REFUSED. The only override is the explicitly named
+ *     env var U7TB_BUDGET_OVERRIDE_REASON, whose value MUST be a short (≤200
+ *     char) reason; when used, the reason + marker are stamped into the boot
+ *     ledger entry AND the produced record (bootBudgetOverride) — an
+ *     over-budget run is impossible to hide: it is self-disclosing. A fresh
+ *     empty ledger plus a big --budget is NOT self-authorising. The no-flag
+ *     default budget stays exactly 7 (closed #415 history, never capped).
+ *  F2 SAME LANE: `--budget-ledger` must live inside the `--evidence` dir or
+ *     share its lane root (under the evidence tree: the
+ *     `dev/agent-workflow/evidence/<lane>` segment; elsewhere: the same
+ *     parent dir). Another lane's ledger — whose exhaustion or inherited
+ *     counts would be hijacked — is REFUSED with a typed message.
+ *  F3 OWN BYTES ONLY: boot numbering restarts at 1 with a new ledger, so a
+ *     flagged run REFUSES to enter a non-empty `--evidence` dir unless
+ *     `--allow-reused-dir` is given, and every flagged output name is stamped
+ *     with this run's id (tag `boot<N>-<runId>`). The record's evidence list
+ *     is built from the files this run wrote successfully — never from a
+ *     directory scan — so a record can never cite bytes it did not write.
+ *     No-flag names stay byte-for-byte the #415 history (`host-boot<N>.log`).
+ *  F4 The `--fixtures` lookup reads the flag by name (an absent flag fails
+ *     closed naming the flag — the old argv[indexOf+1] trap yielded argv[0],
+ *     the node ELF binary, straight into JSON.parse).
  */
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve, dirname } from 'node:path'
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { isAbsolute, join, relative, resolve, dirname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -33,9 +74,177 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-// Original budget was 3; user-authorized disclosed extension permits exactly one final boot 6.
-const BUDGET = 7
-const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
+// ── lane-independent seam (u7-tbash-seam-20261028) ──────────────────────────────
+// The #415 lane is closed history: its committed ledger is full (7/7) and its
+// evidence prefix is its own. A new lane declares against ITS OWN ledger and
+// writes INTO ITS OWN dir via --evidence/--budget-ledger/--budget (all three
+// together, fail closed). With no flags the defaults below pin the exact #415
+// behaviour byte-for-byte (original budget 3; user-authorized disclosed
+// extensions took it to boot 6, then boot 7 at budget 7).
+export const CLOSED_LANE_REL = 'dev/agent-workflow/evidence/u7-tbash-l4-20261027'
+export const DEFAULT_BUDGET = 7
+export const DEFAULT_BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
+export const DEFAULT_EVIDENCE_DIR = HERE
+export const DEFAULT_EVIDENCE_REL = `${CLOSED_LANE_REL}/c2`
+// F1 (review round 1): the ceiling a FLAGGED --budget may declare without a
+// stated override. One boot per acceptance run is this lane's history; 3 gives
+// acceptance + 2 declared retries. The no-flag DEFAULT_BUDGET (7) is closed
+// #415 history and is NOT governed by the cap.
+export const MAX_FLAGGED_BUDGET = 3
+export const BUDGET_OVERRIDE_ENV = 'U7TB_BUDGET_OVERRIDE_REASON'
+const BUDGET_OVERRIDE_REASON_MAX = 200
+const EVIDENCE_TREE_REL = 'dev/agent-workflow/evidence'
+
+const inRepoOutsideClosedLane = (given, flag) => {
+  const abs = resolve(REPO, given)
+  const rel = relative(REPO, abs)
+  if (rel === '' || rel === '..' || rel.startsWith(`..${sep}`)) throw new Error(`${flag} must stay inside the repo: ${given}`)
+  const relPosix = rel.split(sep).join('/')
+  if (relPosix === CLOSED_LANE_REL || relPosix.startsWith(`${CLOSED_LANE_REL}/`)) throw new Error(`${flag} must not point inside the closed lane dir ${CLOSED_LANE_REL}/: ${given}`)
+  return abs
+}
+
+const isInsideDir = (dirPath, target) => {
+  const r = relative(dirPath, target)
+  return r !== '' && r !== '..' && !isAbsolute(r) && !r.startsWith(`..${sep}`)
+}
+
+/** F2: lane root of an in-repo POSIX path — under the evidence tree it is
+ *  `dev/agent-workflow/evidence/<lane>`; anywhere else the parent dir. */
+const laneRootOf = (relPosix) => {
+  const parts = relPosix.split('/')
+  if (parts.length > 3 && parts.slice(0, 3).join('/') === EVIDENCE_TREE_REL) return parts.slice(0, 4).join('/')
+  return parts.slice(0, -1).join('/') || '.'
+}
+
+/**
+ * Pure CLI seam resolution (C1-pinned by tests/world-factory/u7-tbash-seam.test.mjs).
+ * No flags → the #415 defaults byte-for-byte. Any one of --evidence /
+ * --budget-ledger / --budget given without the other two is REFUSED (the
+ * closed lane's full ledger is never an implicit fallback). Paths must be
+ * repo-relative (or absolute) inside the repo and outside the closed lane.
+ * A flagged --budget is capped at MAX_FLAGGED_BUDGET unless BUDGET_OVERRIDE_ENV
+ * carries a short reason (F1); the budget ledger must share the evidence dir's
+ * lane (F2). `env` is injectable so the law is testable without touching the
+ * process environment.
+ */
+export function resolveRunConfig(argv, env = process.env) {
+  let evidence = null
+  let ledger = null
+  let budgetRaw = null
+  let allowReusedDir = false
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i]
+    if (a === '--evidence') {
+      if (evidence !== null) throw new Error('duplicate --evidence')
+      evidence = argv[++i]
+      if (evidence === undefined) throw new Error('--evidence requires <dir>')
+    } else if (a === '--budget-ledger') {
+      if (ledger !== null) throw new Error('duplicate --budget-ledger')
+      ledger = argv[++i]
+      if (ledger === undefined) throw new Error('--budget-ledger requires <jsonl>')
+    } else if (a === '--budget') {
+      if (budgetRaw !== null) throw new Error('duplicate --budget')
+      budgetRaw = argv[++i]
+      if (budgetRaw === undefined) throw new Error('--budget requires <n>')
+    } else if (a === '--allow-reused-dir') {
+      if (allowReusedDir) throw new Error('duplicate --allow-reused-dir')
+      allowReusedDir = true
+    }
+  }
+  const given = [evidence, ledger, budgetRaw].filter((x) => x !== null).length
+  if (given === 0) {
+    if (allowReusedDir) throw new Error('--allow-reused-dir applies only to a flagged run (with --evidence/--budget-ledger/--budget)')
+    return { flagged: false, budget: DEFAULT_BUDGET, budgetPath: DEFAULT_BUDGET_PATH, evidenceDir: DEFAULT_EVIDENCE_DIR, evidenceRel: DEFAULT_EVIDENCE_REL, allowReusedDir: false, budgetOverride: null }
+  }
+  if (given !== 3) throw new Error(`--evidence, --budget-ledger and --budget must be given together (got ${String(given)} of 3); refusing to fall back to the closed lane's committed ledger`)
+  const budget = Number(budgetRaw)
+  if (!Number.isInteger(budget) || budget < 1) throw new Error(`bad --budget: ${String(budgetRaw)} (positive integer required)`)
+  let budgetOverride = null
+  if (budget > MAX_FLAGGED_BUDGET) {
+    const reason = String(env?.[BUDGET_OVERRIDE_ENV] ?? '').trim()
+    if (reason === '') throw new Error(`bad --budget: --budget ${String(budget)} exceeds the committed cap ${String(MAX_FLAGGED_BUDGET)} (MAX_FLAGGED_BUDGET); a deliberate over-cap budget requires ${BUDGET_OVERRIDE_ENV}="<short reason ≤${String(BUDGET_OVERRIDE_REASON_MAX)} chars>" — the marker and reason are then stamped into the boot entry and the record (self-disclosing, F1)`)
+    if (reason.length > BUDGET_OVERRIDE_REASON_MAX) throw new Error(`bad ${BUDGET_OVERRIDE_ENV}: F1 requires a short reason (≤${String(BUDGET_OVERRIDE_REASON_MAX)} chars, got ${String(reason.length)})`)
+    budgetOverride = { budget, cap: MAX_FLAGGED_BUDGET, env: BUDGET_OVERRIDE_ENV, reason }
+  }
+  const evidenceDir = inRepoOutsideClosedLane(String(evidence), '--evidence')
+  const budgetPath = inRepoOutsideClosedLane(String(ledger), '--budget-ledger')
+  if (!isInsideDir(evidenceDir, budgetPath)) {
+    const laneRoot = laneRootOf(relative(REPO, evidenceDir).split(sep).join('/'))
+    if (laneRootOf(relative(REPO, budgetPath).split(sep).join('/')) !== laneRoot) {
+      throw new Error(`--budget-ledger must live inside the --evidence dir or share its lane root ${laneRoot}/ (F2: one lane declares against ITS OWN ledger, never another lane's): ${String(ledger)}`)
+    }
+  }
+  return { flagged: true, budget, budgetPath, evidenceDir, evidenceRel: relative(REPO, evidenceDir).split(sep).join('/'), allowReusedDir, budgetOverride }
+}
+
+/** Parse ledger text into valid boot declarations (disclosure lines filtered). */
+export function parseBootLedger(text) {
+  return String(text).split('\n').filter((l) => l.trim() !== '').map((l) => { try { return JSON.parse(l) } catch { return null } }).filter((x) => Number.isInteger(x?.boot))
+}
+
+/** Next boot number, or THROW when the ledger already holds `declared` ≥ budget. */
+export function assertBootBudget({ declared, budget, ledgerPath }) {
+  const n = declared + 1
+  if (n > budget) throw new Error(`boot budget exhausted: ${String(declared)}/${String(budget)} declared in ${ledgerPath}`)
+  return n
+}
+
+/** Record evidence path for a file written into this run's evidence dir. */
+export function evidencePathOf(cfg, file) {
+  return `${cfg.evidenceRel}/${file}`
+}
+
+/** F1: the record stamp for a used budget override — {} for plain runs, so the
+ *  no-flag record shape never changes; {bootBudgetOverride} self-discloses an
+ *  over-cap run (marker + reason) exactly where a reviewer will read it. */
+export function recordBudgetStamp(cfg) {
+  return cfg.flagged && cfg.budgetOverride ? { bootBudgetOverride: cfg.budgetOverride } : {}
+}
+
+/** F3: a flagged run must not enter a reused evidence dir (boot numbering
+ *  restarts at 1, so earlier runs' files could be mis-cited) unless the
+ *  caller opted in with --allow-reused-dir. Entries are passed in (pure). */
+export function assertFreshEvidenceDir({ flagged, dir, entries, allowReusedDir }) {
+  if (!flagged || allowReusedDir || entries.length === 0) return
+  const preview = entries.slice(0, 3).join(', ')
+  throw new Error(`--evidence dir is not empty: ${String(entries.length)} existing entries (${preview}${entries.length > 3 ? ', …' : ''}) in ${dir}; boot numbering restarts with a fresh ledger, so a reused dir risks citing bytes this run did not write — run into a fresh dir or pass --allow-reused-dir to opt in`)
+}
+
+/** F3: output tag for this boot. No flags → the exact #415 tag (byte-for-byte
+ *  history). Flagged → the run's id is stamped in, so two runs sharing a dir
+ *  can never overwrite or mis-cite each other's files. */
+export function outputTagOf({ flagged, runId, boot }) {
+  return flagged ? `boot${String(boot)}-${String(runId)}` : `boot${String(boot)}`
+}
+
+/** F3: the record's evidence list is built ONLY from files this run wrote
+ *  successfully (the caller appends after each write) — never a dir scan. */
+export function recordEvidencePaths(cfg, writtenFiles) {
+  return writtenFiles.map((f) => evidencePathOf(cfg, f))
+}
+
+/** F4: absent-flag lookup that fails closed. `argv.indexOf(f)+1` yields
+ *  argv[0] (the node ELF) when the flag is absent — never do that again. */
+export function resolveFixturesArg(argv) {
+  const i = argv.indexOf('--fixtures')
+  if (i === -1) throw new Error('--dry-run requires --fixtures <json>: the --fixtures flag is missing')
+  const v = argv[i + 1]
+  if (v === undefined || v.startsWith('--')) throw new Error(`--dry-run requires --fixtures <json>: --fixtures was given without a value${v === undefined ? '' : ` (next token ${v} is a flag)`}`)
+  return v
+}
+
+const RUN = resolveRunConfig(process.argv.slice(2))
+const BUDGET = RUN.budget
+const BUDGET_PATH = RUN.budgetPath
+const OUT_DIR = RUN.evidenceDir
+// F3: names this run wrote successfully; the record cites NOTHING else.
+const writtenOut = []
+const ensureOutDir = () => {
+  if (!RUN.flagged) return
+  assertFreshEvidenceDir({ flagged: true, dir: OUT_DIR, entries: existsSync(OUT_DIR) ? readdirSync(OUT_DIR) : [], allowReusedDir: RUN.allowReusedDir })
+  mkdirSync(OUT_DIR, { recursive: true })
+}
 const notes = []
 const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
 const run = createRunRecord({
@@ -67,10 +276,13 @@ async function stableStatus() {
   } catch (e) { return `unreachable:${String(e?.name ?? e)}` }
 }
 function declareBoot(world) {
-  const prior = existsSync(BUDGET_PATH) ? readFileSync(BUDGET_PATH, 'utf8').split('\n').filter((l) => l.trim() !== '').map((l) => { try { return JSON.parse(l) } catch { return null } }).filter((x) => Number.isInteger(x?.boot)) : []
-  const n = prior.length + 1
-  if (n > BUDGET) throw new Error(`boot budget exhausted: ${String(prior.length)}/${String(BUDGET)} declared in ${BUDGET_PATH}`)
-  const entry = { boot: n, budget: BUDGET, declaredAt: new Date().toISOString(), runId: run.record.runId, world: world.id, teamSha: run.record.bindings.teamSha }
+  // DISCLOSED LIMITATION (review round 1): this assert-then-append is an
+  // UNLOCKED check-then-write — two concurrent runs sharing one ledger could
+  // double-spend a slot. The repo's single-writer law (1 task = 1 branch = 1
+  // worktree = 1 writer, docs/ROUTER_RULES.md) is what covers it; no lock.
+  const prior = existsSync(BUDGET_PATH) ? parseBootLedger(readFileSync(BUDGET_PATH, 'utf8')) : []
+  const n = assertBootBudget({ declared: prior.length, budget: BUDGET, ledgerPath: BUDGET_PATH })
+  const entry = { boot: n, budget: BUDGET, declaredAt: new Date().toISOString(), runId: run.record.runId, world: world.id, teamSha: run.record.bindings.teamSha, ...(RUN.budgetOverride ? { budgetOverride: RUN.budgetOverride } : {}) }
   appendFileSync(BUDGET_PATH, JSON.stringify(entry) + '\n')
   return entry
 }
@@ -81,8 +293,9 @@ export const LIVE_IO = Object.freeze({ fetchJson: fetchJsonRetry, readHostLog: (
 export function resolveDriveIo(overrides = {}) { return { ...LIVE_IO, ...overrides } }
 
 async function dryRun() {
-  const fixturePath = process.argv[process.argv.indexOf('--fixtures') + 1]
-  if (!fixturePath) throw new Error('--dry-run requires --fixtures <json>')
+  // F4: named-flag lookup; absent or valueless --fixtures fails closed here,
+  // never as argv[0] (the node ELF) read into JSON.parse below.
+  const fixturePath = resolveFixturesArg(process.argv)
   const fixture = JSON.parse(readFileSync(resolve(fixturePath), 'utf8'))
   const createResponse = fixture.create
   const projectionResponse = fixture.projection
@@ -109,13 +322,15 @@ async function dryRun() {
   digest.governed = assembled.governedSession
   const verdicts = process.env.U7TB_DRY_RUN_MUTATE === '1' ? [['tbash:mounted', 'FAIL', { mutation: true }]] : [['tbash:mounted', governed.identityOk ? 'PASS' : 'FAIL', { identityOk: governed.identityOk }], ...judgeTbash(digest, fixture.hostAlive)]
   const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: digest.governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
-  const outPath = join(HERE, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
+  const outPath = join(OUT_DIR, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
+  ensureOutDir()
   writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n')
   console.log(JSON.stringify(out, null, 2))
   process.exit(out.overall === 'PASS' || out.mutation ? 0 : 1)
 }
 
 async function main() {
+  ensureOutDir()
   const stableBefore = await stableStatus()
   const factory = new TestWorldFactory({
     repoRoot: REPO,
@@ -150,11 +365,11 @@ async function main() {
   } catch (error) {
     add('tbash:mounted', 'START_FAILED', { reason: `host start failed: ${String(error?.message ?? error).slice(0, 300)}` })
   }
-  const tag = `boot${String(declared.boot)}`
+  const tag = outputTagOf({ flagged: RUN.flagged, runId: run.record.runId, boot: declared.boot })
   if (boot !== null) {
     run.logHostStart({ phase: 'u7tb-c2-boot', boot: declared.boot, world: world.id, port: boot.port, bootMs: Date.now() - t0 })
     try { await drive({ world, assembly, planted, boot, decide }) } catch (e) { notes.push(`drive threw: ${String(e?.stack ?? e).slice(0, 600)}`) }
-    try { writeFileSync(join(HERE, `host-${tag}.log`), redact(readFileSync(boot.logPath, 'utf8'))) } catch { notes.push('host log copy failed') }
+    try { writeFileSync(join(OUT_DIR, `host-${tag}.log`), redact(readFileSync(boot.logPath, 'utf8'))); writtenOut.push(`host-${tag}.log`) } catch { notes.push('host log copy failed') }
   }
   try {
     const reqs = world.mock?.requests ?? []
@@ -165,11 +380,12 @@ async function main() {
     const lastAsker = [...reqs].reverse().find(isAsker) ?? null
     const lastLeader = [...reqs].reverse().find((r) => !isAsker(r) && JSON.stringify(r?.body?.messages ?? []).includes(assembly.markers.MK_L1)) ?? null
     const pick = (r) => (r === null ? null : { seq: r.seq, messages: r.body?.messages ?? null, reply: r.reply ?? null })
-    writeFileSync(join(HERE, `mock-excerpt-${tag}.json`), JSON.stringify({
+    writeFileSync(join(OUT_DIR, `mock-excerpt-${tag}.json`), JSON.stringify({
       note: 'Declared EXCERPT (last asker-lane request + last leader request, byte-identical message arrays); the raw capture is not committed.',
       rawSha256: createHash('sha256').update(raw).digest('hex'), rawRequests: reqs.length,
       asker: pick(lastAsker), leader: pick(lastLeader),
     }, null, 1))
+    writtenOut.push(`mock-excerpt-${tag}.json`)
   } catch (e) { notes.push(`mock excerpt failed: ${String(e?.message ?? e)}`) }
   try { await world.stopHost() } catch { /* receipts below */ }
   const receipts = await world.teardown({ keepHome: false }).catch((e) => ({ error: String(e?.message ?? e) }))
@@ -180,11 +396,15 @@ async function main() {
     stableInstance: { port: 3080, statusBefore: stableBefore, statusAfter: stableAfter, unchanged: stableBefore === stableAfter, touched: false },
     hostTreeAfter: { head: hostAfter.head },
     teardown: { receipts: receipts ?? null, homeRemoved: !existsSync(world.home) },
-    evidence: [`host-${tag}.log`, `mock-excerpt-${tag}.json`].map((f) => `dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/${f}`).filter((p) => existsSync(join(REPO, p))),
+    // F3: cite ONLY the files this run wrote (names stamped with runId when
+    // flagged) — never a dir scan or existsSync over stale leftovers.
+    evidence: recordEvidencePaths(RUN, writtenOut),
+    // F1: {} unless an over-cap override was used; then the record self-discloses.
+    ...recordBudgetStamp(RUN),
     mockDigest: world.mock === null ? [] : world.mockRequestDigest().slice(-60),
   })
   run.finalize()
-  const out = join(HERE, `c2-verdicts-${tag}.json`)
+  const out = join(OUT_DIR, `c2-verdicts-${tag}.json`)
   run.write(out)
   console.log(`[u7tb-c2] record written to ${out} (u5-run-record/1, finalized before write); :3080 ${String(stableBefore)} -> ${String(stableAfter)}`)
   const fails = run.record.cases.filter((v) => v.verdict !== 'PASS').length

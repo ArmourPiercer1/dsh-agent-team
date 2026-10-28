@@ -1,0 +1,32 @@
+# R1-GREEN — after implementing F1-F4 in run-c2.mjs
+# date: 2026-10-28T13:54:21Z  head: 83b4eb977 (+ uncommitted round-1 fixes)
+
+## node --test tests/world-factory/u7-tbash-seam.test.mjs
+✔ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (1.3448ms)
+✔ u7-tbash seam (b): flags override budget, ledger and evidence dir (0.5515ms)
+✔ u7-tbash seam (c): --evidence without the other two flags is refused (0.5795ms)
+✔ u7-tbash seam (d): paths outside the repo or inside the closed lane are refused (0.455999ms)
+✔ u7-tbash seam (e): a ledger already at budget is refused before the next boot (0.5668ms)
+✔ u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing (0.4909ms)
+✔ u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence (1.0161ms)
+✔ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (255.953448ms)
+✔ u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0] (125.175923ms)
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+exit=0
+
+## node --test u7-tbash.test.mjs u7-tbash-seam.test.mjs u7-tbash-offline-drive.test.mjs
+ℹ tests 18
+ℹ pass 18
+ℹ fail 0
+
+## F4 post-fix behaviour (node run-c2.mjs --dry-run):
+[u7tb-c2] DRY-RUN FATAL Error: --dry-run requires --fixtures <json>: the --fixtures flag is missing
+    at resolveFixturesArg (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs:231:23)
+
+## Invariants re-confirmed (no-flag default byte-for-byte):
+# resolveRunConfig([]) → budget 7, ledger join(HERE, boot-budget.jsonl), evidence prefix dev/.../u7-tbash-l4-20261027/c2 — pinned by seam test legs (a)+(e), both green above.
+# No-flag dry-run rerun (exit 0, overall PASS) vs committed c2/dry-run-GREEN.json diff = the pre-existing single line:
+# (absolute worktree path only — pre-existing behaviour, documented in §4 of this README); file restored via git checkout -- after the rerun.
+# git status over the closed lane shows ONLY c2/run-c2.mjs modified (the seam host); every committed artefact byte-unchanged.
