@@ -57,13 +57,14 @@
  * Opt-in only (live Host children): never collected by vitest/CI.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, closeSync, readdirSync, readFileSync, writeFileSync, writeSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, closeSync, readdirSync, readFileSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, reclaimWorld, homesCensus, stableInstanceProbe } from './lib/world-factory.mjs'
 import { pidAlive, scanAllLeases, scanStaleLeases } from './lib/port-lease.mjs'
 import { portInUse } from '../characterization/lib/util.mjs'
 import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
+import { holdSurvivor } from './u5-canary-runner.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -78,38 +79,75 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * inside the survivor's healthy-to-last-probe interval, and every reclaim
  * effect must be scoped to the victim world/resources.
  */
-export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt, victimWorld, reclaimedResources = [], survivorProbes = [] }) {
+export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt = null, victimWorld, reclaimedResources = [], survivorProbes = [], survivorHostPidBefore = null, survivorHostPidAfter = null, survivorWorldIdBefore = null, survivorWorldIdAfter = null }) {
+  const probes = survivorProbes.filter((probe) => probe !== null && typeof probe === 'object')
+  const successful = probes.filter((probe) => probe.ok === true && Number.isFinite(Number(probe.at)))
+  const failed = probes.filter((probe) => probe.ok !== true)
+  const preKillSuccess = successful.some((probe) => Number(probe.at) < killAt)
+  const postReclaimSuccess = successful.some((probe) => Number(probe.at) > Number(victimKilledAndReclaimedAt ?? killAt))
+  const failedInWindow = failed.filter((probe) => Number(probe.at) >= Number(survivorHealthyAt) && Number(probe.at) <= Number(survivorTornDownAt))
+  const probeAfterReclaim = successful.some((probe) => Number(probe.at) > killAt)
   const timestamps = [survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt]
   const ordered = timestamps.every(Number.isFinite)
     && survivorHealthyAt < killAt
     && killAt < survivorLastProbeAt
     && survivorLastProbeAt <= survivorTornDownAt
-  const probeAfterReclaim = survivorProbes.some((probe) => Number.isFinite(probe) && probe > killAt)
   const victimOnly = reclaimedResources.every((resource) => resource?.world === victimWorld)
   const reclaimTouchedOnlyVictim = reclaimedResources.length > 0 && victimOnly
+  const identityContinuous = survivorHostPidBefore !== null
+    && survivorHostPidBefore === survivorHostPidAfter
+    && survivorWorldIdBefore !== null
+    && survivorWorldIdBefore === survivorWorldIdAfter
+  const failureReason = failedInWindow[0] ?? null
   return {
     killInsideSurvivorWindow: ordered,
     survivorHeldUntilReclaim: ordered,
     survivorProbeAfterReclaim: probeAfterReclaim,
+    preKillProbeSucceeded: preKillSuccess,
+    postReclaimProbeSucceeded: postReclaimSuccess,
+    failedProbeInWindow: failedInWindow.length > 0,
+    failedProbe: failureReason,
+    survivorHostIdentityContinuous: identityContinuous,
     reclaimVictimOnly: reclaimTouchedOnlyVictim,
-    pass: ordered && probeAfterReclaim && reclaimTouchedOnlyVictim,
+    pass: ordered && preKillSuccess && postReclaimSuccess && failedInWindow.length === 0 && reclaimTouchedOnlyVictim && identityContinuous,
   }
 }
 
-export function runSurvivorDryRun() {
-  const survivorHealthyAt = 100
-  const killAt = 200
-  const survivorLastProbeAt = 300
-  const survivorTornDownAt = 301
-  return evaluateSurvivorSequencing({
-    survivorHealthyAt,
-    killAt,
-    survivorLastProbeAt,
-    survivorTornDownAt,
-    survivorProbes: [survivorHealthyAt, 150, survivorLastProbeAt],
-    victimWorld: 'fake-victim',
-    reclaimedResources: [{ world: 'fake-victim', kind: 'home' }, { world: 'fake-victim', kind: 'lease' }],
-  })
+export async function runSurvivorDryRun({ io = undefined } = {}) {
+  const holdUntil = join(REPO_ROOT, `.tmp-survivor-dry-run-${process.pid}`)
+  try {
+    const fakeWorld = { id: 'fake-survivor', home: '<FAKE_HOME>', token: 'fake-token', workspaceDir: '<FAKE_WORKSPACE>', instance: { child: { pid: 42 } } }
+    let calls = 0
+    const probeIo = io ?? {
+      async probe({ released }) {
+        calls += 1
+        if (calls === 1) return { ok: true, status: 200, evidence: { health: { contentMatch: true }, effect: { contentMatch: true }, released } }
+        return { ok: true, status: 200, evidence: { health: { contentMatch: true }, effect: { contentMatch: true }, released } }
+      },
+    }
+    const probeLog = `${holdUntil}.jsonl`
+    const holdPromise = holdSurvivor({ world: fakeWorld, origin: 'http://fake-survivor', holdUntil, probeLog, oracle: null, io: probeIo })
+    await sleep(1)
+    writeFileSync(holdUntil, 'victimKilledAndReclaimed\n')
+    const hold = await holdPromise
+    return evaluateSurvivorSequencing({
+      survivorHealthyAt: hold.healthyAt,
+      killAt: hold.healthyAt + 1,
+      victimKilledAndReclaimedAt: hold.lastProbeAt - 1,
+      survivorLastProbeAt: hold.lastProbeAt,
+      survivorTornDownAt: hold.lastProbeAt + 1,
+      survivorProbes: readFileSync(probeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => JSON.parse(line)),
+      survivorHostPidBefore: 42,
+      survivorHostPidAfter: hold.survivorIdentity.pid,
+      survivorWorldIdBefore: 'fake-survivor',
+      survivorWorldIdAfter: hold.survivorIdentity.worldId,
+      victimWorld: 'fake-victim',
+      reclaimedResources: [{ world: 'fake-victim', kind: 'home' }, { world: 'fake-victim', kind: 'lease' }],
+    })
+  } finally {
+    try { unlinkSync(holdUntil) } catch {}
+    try { unlinkSync(`${holdUntil}.jsonl`) } catch {}
+  }
 }
 
 export function parseArgs(argv) {
@@ -657,7 +695,7 @@ export async function runCrashReclaimSupervisor(opts) {
   const leasesAfterReclaim = scanAllLeases(factory.leaseRoot)
   // Survivor liveness AT the reclaim instant — the only honest moment to
   // observe it (captured here, not reconstructed after the verdict plumbing).
-  const aAliveAtReclaim = A.child.exitCode === null && A.child.signalCode === null
+  const aAliveAtReclaim = pidAlive(Number(aInRun[3]))
   const sweptByPeer = leasesAfterReclaim
     .filter((l) => String(l.by?.reclaimedFrom?.world) === bWorld)
     .map((l) => ({ port: l.port, claimPid: l.by?.pid, reclaimedFrom: l.by?.reclaimedFrom }))
@@ -777,16 +815,22 @@ export async function runCrashReclaimSupervisor(opts) {
   })()
   const release = safeReadJson(survivorRelease)
   const survivorHold = aRecord?.survivorHold ?? {}
-  const survivorHealthyAt = Number(survivorHold.healthyAt)
+  const survivorHealthyAt = Number.isFinite(Number(survivorHold.healthyAt)) ? Number(survivorHold.healthyAt) : NaN
   const survivorLastProbeAt = Number(survivorHold.lastProbeAt)
   const survivorTornDownAt = Date.parse(aRecord?.finishedAt ?? '')
+  const survivorIdentity = survivorHold.survivorIdentity ?? {}
   const sequencing = evaluateSurvivorSequencing({
     survivorHealthyAt,
     killAt: Date.parse(groupKill.at),
+    victimKilledAndReclaimedAt: Number(release?.at),
     survivorLastProbeAt,
     survivorTornDownAt,
+    survivorHostPidBefore: Number(aInRun[3]),
+    survivorHostPidAfter: Number(survivorIdentity.pid),
+    survivorWorldIdBefore: aInRun[1],
+    survivorWorldIdAfter: survivorIdentity.worldId,
     victimWorld: bWorld,
-    survivorProbes: probeRows.map((row) => Number(row.at)),
+    survivorProbes: probeRows,
     reclaimedResources: [
       ...reclaim.leasesReleased.map((port) => ({ world: bWorld, kind: 'lease', port })),
       ...(reclaim.homeDeleted === bHome ? [{ world: bWorld, kind: 'home' }] : []),
@@ -994,7 +1038,7 @@ async function main() {
   let rec
   try {
     if (opts.dryRun) {
-      const dry = runSurvivorDryRun()
+      const dry = await runSurvivorDryRun()
       rec = { schema: 'u5-dry-run/1', runId: 'u5-dry-run', suite: 'crash-reclaim', overall: dry.pass ? 'PASS' : 'FAIL', cases: [{ id: 'survivor-hold-ordering', verdict: dry.pass ? 'PASS' : 'FAIL', ...dry }], bindings: { mode: 'dry-run', spawns: 0, authority: readAuthorityBinding(REPO_ROOT), teamTreeClean: true } }
     } else if (opts.reconstruct !== null) {
       const live = safeReadJson(opts.reconstruct)

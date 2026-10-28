@@ -16,6 +16,10 @@ For a timeline with `survivor_healthy_at`, `kill_at`, and `survivor_last_probe_a
 
 The pristine runtime is cloned into `tests/deepseek-harness-test-use` from `/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use` with `--local --no-hardlinks`, detached at `639ed015397290b3745d163aafe02ffee4aa3f84`; porcelain was empty. It was installed with `pnpm install --ignore-scripts --frozen-lockfile` and built with `DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build`. No upstream source was modified.
 
+## Probe design and live attempts
+
+Each survivor probe now performs an authenticated health request and a real session-create effect/read. The JSONL row records `at`, `kind`, `ok`, HTTP status, and bounded evidence: health response byte count/SHA-256/content match plus session-create response byte count/SHA-256/session id/content match. Only `ok: true` rows count; any failed row in the held window fails the verdict. The post-reclaim row is emitted only by a request made after the `victimKilledAndReclaimed` sentinel. Host identity continuity is checked using the same survivor world id and host pid before/after reclaim; the supervisor no longer treats runner-process liveness as survivor-host liveness.
+
 ## Live attempts and verdict
 
 Preflight `ss -ltn` showed only the stable :3080 listener in the prohibited stable range; no 3180/13000 test ports were occupied. The earlier authorized attempt and retry remain preserved under `live/` and `live-retry/`: the first was an environment failure (missing built `apps/cli/lib/bin.js`), and the retry correctly recorded the pre-fix scheduling failure (`other-world-unaffected=FAIL`) rather than recoloring it.

@@ -62,32 +62,30 @@ function deadPid() {
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
-test('C1 dry-run uses supervisor path without starts and proves hold ordering', () => {
-  assert.equal(runSurvivorDryRun().pass, true)
+test('C1 dry-run uses supervisor path without starts and proves hold ordering', async () => {
+  assert.equal((await runSurvivorDryRun()).pass, true)
 })
 
-test('C1 survivor sequencing law: kill straddles healthy-to-last-probe and reclaim is victim-only', () => {
-  assert.deepEqual(evaluateSurvivorSequencing({
-    survivorHealthyAt: 10,
-    killAt: 20,
-    survivorLastProbeAt: 30,
-    survivorTornDownAt: 40,
-    survivorProbes: [10, 25, 30],
-    victimWorld: 'victim',
-    reclaimedResources: [{ world: 'victim', kind: 'home' }, { world: 'victim', kind: 'lease' }],
-  }), { killInsideSurvivorWindow: true, survivorHeldUntilReclaim: true, survivorProbeAfterReclaim: true, reclaimVictimOnly: true, pass: true })
-  // Pre-fix/non-overlap replay: a fast survivor finished before the kill.
-  assert.equal(evaluateSurvivorSequencing({
-    survivorHealthyAt: 10, killAt: 30, survivorLastProbeAt: 20, survivorTornDownAt: 40,
-    survivorProbes: [10, 20],
+test('C1 survivor sequencing is fail-closed with real successful probes and identity continuity', () => {
+  const base = {
+    survivorHealthyAt: 10, killAt: 20, victimKilledAndReclaimedAt: 25, survivorLastProbeAt: 30, survivorTornDownAt: 40,
+    survivorHostPidBefore: 42, survivorHostPidAfter: 42, survivorWorldIdBefore: 'survivor', survivorWorldIdAfter: 'survivor',
     victimWorld: 'victim', reclaimedResources: [{ world: 'victim', kind: 'home' }],
-  }).pass, false)
-  // Mutation guard: victim reclaim must never include a survivor resource.
-  assert.equal(evaluateSurvivorSequencing({
-    survivorHealthyAt: 10, killAt: 20, survivorLastProbeAt: 30, survivorTornDownAt: 40,
-    survivorProbes: [10, 25, 30],
-    victimWorld: 'victim', reclaimedResources: [{ world: 'survivor', kind: 'home' }],
-  }).pass, false)
+  }
+  const successful = [{ at: 10, kind: 'health-effect', ok: true, evidence: { contentMatch: true } }, { at: 30, kind: 'after-reclaim', ok: true, evidence: { contentMatch: true } }]
+  assert.equal(evaluateSurvivorSequencing({ ...base, survivorProbes: successful }).pass, true)
+  // Reviewer's exact false-positive shape: timestamp-only rows must FAIL.
+  assert.equal(evaluateSurvivorSequencing({ ...base, survivorProbes: [10, 25, 30] }).pass, false)
+  // Missing post-reclaim probe, failed post-reclaim probe, and kill after last probe all FAIL.
+  assert.equal(evaluateSurvivorSequencing({ ...base, survivorProbes: [{ at: 10, ok: true }] }).pass, false)
+  assert.equal(evaluateSurvivorSequencing({ ...base, survivorProbes: [...successful.slice(0, 1), { at: 30, ok: false, evidence: { error: 'dead' } }] }).pass, false)
+  assert.equal(evaluateSurvivorSequencing({ ...base, killAt: 35, survivorProbes: successful }).pass, false)
+  // A restarted survivor (different pid/world identity) is never accepted.
+  assert.equal(evaluateSurvivorSequencing({ ...base, survivorHostPidAfter: 99, survivorProbes: successful }).pass, false)
+  // Any failed probe in the held window names the failure and forces FAIL.
+  const failure = evaluateSurvivorSequencing({ ...base, survivorProbes: [...successful, { at: 22, ok: false, status: 0, evidence: { error: 'unreachable' } }] })
+  assert.equal(failure.pass, false)
+  assert.deepEqual(failure.failedProbe.evidence, { error: 'unreachable' })
 })
 
 test('port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced', async () => {

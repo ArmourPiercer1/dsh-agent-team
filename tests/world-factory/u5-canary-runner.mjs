@@ -282,25 +282,58 @@ async function evaluateLeak({ world, receipts, factory }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // core: one World, one boot (plus optional restart leg)
 // ─────────────────────────────────────────────────────────────────────────────
-async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle }) {
-  const healthyAt = Date.now()
-  const writeProbe = (kind) => {
-    const row = { at: Date.now(), kind, world: world.id, home: world.home }
+export async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle, io = undefined }) {
+  // The default is the production IO path. Tests may inject the same shape, but
+  // never a parallel timing implementation: every probe still goes through this
+  // function and is recorded with its result evidence.
+  const probeIo = io ?? {
+    async probe() {
+      const cookie = await authenticate(origin, world.token)
+      const health = await fetch(`${origin}/`, { headers: { cookie }, signal: AbortSignal.timeout(10_000) })
+      const healthBytes = await health.text()
+      const effect = await apiSessionCreate(origin, cookie, world.workspaceDir, `survivor-${world.id}`)
+      const effectBytes = JSON.stringify(effect.body ?? null)
+      const sessionId = findFirstKey(effect.body, 'sessionId')
+      return {
+        ok: health.status === 200 && healthBytes.length > 0 && effect.status === 200 && typeof sessionId === 'string',
+        status: health.status,
+        evidence: {
+          health: { status: health.status, bytes: healthBytes.length, digest: sha256Text(healthBytes), contentMatch: healthBytes.length > 0 },
+          effect: { status: effect.status, bytes: Buffer.byteLength(effectBytes), digest: sha256Text(effectBytes), sessionId: typeof sessionId === 'string' ? sessionId : null, contentMatch: typeof sessionId === 'string' },
+        },
+      }
+    },
+  }
+  const healthy = { at: null }
+  const writeProbe = (kind, result) => {
+    const row = {
+      at: Date.now(), kind, ok: result.ok === true, status: result.status ?? 0,
+      evidence: result.evidence ?? { reason: 'probe IO returned no evidence' },
+      world: world.id, home: world.home,
+    }
     if (probeLog !== null) {
       mkdirSync(dirname(probeLog), { recursive: true })
       appendFileSync(probeLog, JSON.stringify(row) + '\\n')
     }
-    console.log(`SURVIVOR-PROBE ${row.at} ${kind}`)
+    console.log(`SURVIVOR-PROBE ${row.at} ${kind} ok=${String(row.ok)}`)
+    if (row.ok && healthy.at === null) healthy.at = row.at
     return row
   }
-  writeProbe('healthy')
   for (;;) {
-    if (holdUntil !== null && existsSync(holdUntil)) {
-      const released = writeProbe('after-reclaim')
-      return { healthyAt, lastProbeAt: released.at, releasedAt: Date.now() }
+    const released = holdUntil !== null && existsSync(holdUntil)
+    let result
+    try { result = await probeIo.probe({ world, origin, oracle, released }) } catch (error) {
+      result = { ok: false, status: 0, evidence: { error: String(error?.message ?? error) } }
     }
-    const probe = await probeNoToken(origin)
-    writeProbe(probe === 401 ? 'health' : 'health-failed')
+    const row = writeProbe(released ? 'after-reclaim' : 'health-effect', result)
+    if (released) {
+      return {
+        healthyAt: healthy.at,
+        lastProbeAt: row.at,
+        releasedAt: Date.now(),
+        survivorIdentity: { worldId: world.id, pid: world.instance?.child?.pid ?? null },
+      }
+    }
     await sleep(250)
   }
 }
