@@ -7122,3 +7122,13 @@ master 跑 production-run-recipe 全链）。
   95 个 PROVEN 单元引用 11 份记录，其中恰 1 份 `overall: REFUSED`
   （`u7-f-agentA-20261026/c2/run-u7fa5.json`，4 PASS + 2 REFUSED，被引 case 本身是 `ac:mounted = PASS`），
   影响 3 行。收紧代价小、越拖越贵；属 G5 前置加固，不在 G4-R 轮内做（会在晋级复审阅读台账时改变台账语义）。
+
+## 2026-10-28 takeover-2 轮（主 Agent，G4-R phase-3 boot 车道执行轮；只追加）
+
+- 接管 `.artifacts/HANDOVER-20261028-B.md`，逐项命令复核后自 step1 续跑。OpenCode Go 路由实测可用并按用户指令启用（R1/R2=deepseek-v4.1-flash，R3 阶段验收=glm-5.3；spec+台账经 #433 入库）。
+- 审查面：#431 合并（B-G4R-3 裁决+台账）；#433/#435(RV-406 落地)/#436(B-G4R-5 用户 boot 预授权入档)/#437(路由台账同步)/#438(B-G4R-6 crash 重试裁决) 全部走 og 独立复审（R433/R434/R435/R438 PASS 或 PASS-WITH-FINDINGS，发现项当轮修复并 closure 复核 ALL-CLOSED）。`.artifacts/reviews/R43*.md` + 路由台账为准。
+- boot 车道（冻结候选 `5d0c8ff5830271b7e2ab3e7c855bb85fb2090bf3`，证据 `dev/agent-workflow/evidence/u7-g4r3-20261028/`）：五腿闭合集 **全 PASS**——ARC-A 重试 10/10（首跑 ENV 失败：lane team-root 未装 node_modules；记录以 FAIL 存世不涂改，重试经 B-G4R-4+用户预授权）；ARC-D 12/12；Jobs Bridge 12/12（native-ctl 真 PASS，partial-Landlock 披露）；ARC-B 6/6（--allow-reused-dir 披露；F3 配置期拒绝零 boot）；crash 对 PASS 5/5+survivor 7/7（首跑 harness 时序竞态 FAIL=RCA `.artifacts/findings/crash-sequencing-rca-20261028.md`，重试依 B-G4R-6 `--kill-after 6000` 新账本，**PASS-by-knob 披露**，持久修复 R-CRASH-1 排冻结后）。全部记录 teamSha=候选、hostSha=639ed01539、backend=partial、:3080 未动、world 清理。
+- boot 计数：G4-R 累计 12（用户预授权 25 内；每超包络格=具名裁决+独立复审+disclosed，见 gates/RULING-B-G4R-4/5/6 + 路由台账）。
+- 并行车道裁决：外部审查建议的 R-G4R-3 CI 加严与 G5-L3 补证**维持延后**（各自既有门：判据文件改动=phase-3 冻结解除后；G5 PRODUCT-GATE=§4 保留事项入账不代答，且 L3 输入=G4 完整候选证据，本方才齐）——决定记录 `.artifacts/findings/parallel-lanes-decision-20261028.md`。
+- 收据链：EB3-RUN-MANIFEST pass(110/0)、EB3-EVIDENCE-GUARD pass(added=56/0)、git diff --check 清零（原始构建日志按 phase-2 先例不入库，sha256 锚点存 setup/SETUP-NOTES.md）、ci-pr-gate pass(7/0/skip=census 具名)。磁盘回收 ~18G；worktree 审计 `.artifacts/findings/worktree-audit-20261028.md`。
+- 未闭合（入账排队）：#432 合并与 G4 promotion R2 阶段复审（glm-5.3，审查者亲量 diff）在本日志后续条目；R-G4R-3/R-CRASH-1/R-413-1/F-1..F-3/OG-1 整改=冻结解除后；§4 保留事项等用户。G4 状态不变：G4-CORE-PASS / BRIDGE-BLOCKED。
