@@ -22,11 +22,18 @@ Live budget: one boot; at most one retry only after ENV failure or a fixed harne
 
 Boot 1 at committed `e286081b7` completed: overall FAIL, CI-03 FAIL, all ten other ARC-D cases and cleanup PASS. Native read now occurred (recorded line-numbered PENDING placeholder), but effect remained unchanged. Further harness inspection identified missing public `defaultWorkspace`: Team defaults cwd to Host launch checkout, while fixture is in World workspace. Native workspace-write confinement cannot mutate that out-of-cwd file. Correction explicitly binds teamRowConfig.defaultWorkspace to workspaceDir; C1 pins this. No sandbox relaxation or product edit. Diagnostic capture now includes sandbox denial strings. Runner additionally records `teamTreeClean` from tracked porcelain at startup (untracked generated evidence is excluded, as it is not executable input). Boot 1 had no such field; it must not be retrospectively claimed present.
 
-The single authorized retry is used ONLY after fixing that concrete harness workspace defect, not to retry unchanged. Both raw boot records will remain.
+The single authorized retry is used ONLY after fixing that concrete harness workspace defect, not to retry unchanged. Both raw boot records remain.
+
+## Final live result
+
+`c2-retry/run-record.json`: schema u5-run-record/1, finalized 2026-10-28T03:44:10.677Z, **overall PASS**. Team SHA `752e713a2b43899ab76183b1cbd247fae8a0b022`, teamTreeClean=true; pristine Host SHA `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty before/after. All eleven ARC-D cases PASS: mounted, positive, spoof-zero-authority, swap-refused, unbound-refused, replay-refused, ci03-native-parity, restrict-veto, lift-control, marker-ledger, teardown-honest. Stable-instance-unchanged PASS (existing runner performs only its documented read-only status check; no stable state mutation). Disk oracle readFromDisk=true, present=true, contentMatches=true. Native grep parity remains separately recorded. Native effect is now a real native edit, not the pair's test-only writer. World homes were fresh and removed by normal teardown. Total starts=2 (initial plus authorized harness-fixed retry); no further boots.
+
+## Gates / delivery boundary
+
+World-factory tests PASS; ARC-D adversarial/matrix 17/17 PASS; regression RED→GREEN and actual no-read mutation RED. Local `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store` PASS (7 pass, 0 fail; census explicitly skipped by default and delegated to CI full). Run-manifest and evidence-guard PASS; final checks repeated after evidence commit. Evidence whitespace normalized only, no verdict edits. No product paths changed, no new canonical authority writer, no GATE-LEDGER edits. E1 and strict R-U6P6-1 now have the requested named overall-PASS receipt; independent full-G4 ruling and integrated-candidate qualification remain the parent/integrator's work.
 
 ## Harness fix and C1 (pre-boot)
 
 Actual mock drive now emits grep → read(exact effect path) → edit → DONE. No dry-run or alternate IO implementation was added. Pure C1 consumes bounded recorded data and runs makeArcDDecide itself against simulated public observation receipts; historical unchanged placeholder judges FAIL, corrected drive judges PASS, no-read mutation judges FAIL. Regression RED recorded before fix, actual source mutation (replace read with grep) RED, restored source GREEN. Judge additionally requires readFromDisk=true, refusing tool-return-only claims. World-factory C1 and ARC-D adversarial/matrix C1 pass.
 
 Runtime first install (default store) failed ERR_SQLITE_ERROR unable to open database; retried with workspace-local `--store-dir ../../.tmp-pnpm-store`, install and full build PASS. No Host boot used for this setup failure. Pristine source remains unmodified.
-

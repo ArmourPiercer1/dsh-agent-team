@@ -13,9 +13,9 @@
 test at tests/world-factory/u6-arc-d.test.mjs:27:1
 ✖ G4-D recorded native failure: same mock drive reads exact effect before edit; missing observation mutation stays RED (5.460901ms)
   AssertionError [ERR_ASSERTION]: recorded failure: edit without native read must remain RED
-  
+
   false !== true
-  
+
       at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4d/tests/world-factory/u6-arc-d.test.mjs:52:14)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
