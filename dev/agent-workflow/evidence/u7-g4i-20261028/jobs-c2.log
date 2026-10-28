@@ -1,0 +1,2 @@
+[u7-4a] RUN CONTROL: received SIGTERM — unwinding through the owner's cleanup
+[u7-4a] RUN CONTROL: aborted — received SIGTERM (evidence: run-abort.json)

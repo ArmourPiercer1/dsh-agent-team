@@ -1,0 +1,6 @@
+  L1-definition: PROVEN=31 DISCLOSED=0 NOT_VERIFIED=0
+  L2-mounted: PROVEN=31 DISCLOSED=0 NOT_VERIFIED=0
+  L3-refusal: PROVEN=14 DISCLOSED=0 NOT_VERIFIED=17
+  L4-positive: PROVEN=19 DISCLOSED=11 NOT_VERIFIED=1
+EB3-TOOL-ACCEPTANCE pass tools=31 L4-proven=19 L4-disclosed=11 L4-unverified=1
+LIMIT honesty, not completeness: DISCLOSED and NOT_VERIFIED never fail this leg; every L4 PROVEN is the G5 release gate

@@ -1,0 +1,30 @@
+git diff --stat 752e713a2b43899ab76183b1cbd247fae8a0b022 HEAD -- <exact paths in arc-d-dependencies.txt>
+.../src/agent-control-executor.mjs                 |  18 +-
+ .../src/agent-control-mechanics.mjs                |  29 ++-
+ .../src/agent-runtime-port.mjs                     | 265 +++++++++++++++------
+ .../tools/agent-control-family/src/fork-row.mjs    |  22 +-
+ .../tools/agent-control-family/src/index.mjs       |   3 +-
+ .../agent-control-family/src/interrupt-row.mjs     |  11 +-
+ .../agent-control-family/src/list-agents-row.mjs   |  30 ++-
+ .../agent-control-family/src/list-models-row.mjs   |  20 +-
+ .../src/native-output-schemas.mjs                  |  22 ++
+ .../tools/agent-control-family/src/spawn-row.mjs   |  22 +-
+ .../tools/agent-control-family/src/steer-row.mjs   |  11 +-
+ .../agent-control-family/src/workflow-row.mjs      |  16 +-
+ .../dist/packages/tools/families/agent-control.mjs |  32 ++-
+ .../dist/packages/tools/families/manifest.json     |   2 +-
+ .../src/agent-control-executor.mjs                 |  18 +-
+ .../src/agent-control-mechanics.mjs                |  29 ++-
+ .../src/agent-runtime-port.mjs                     | 265 +++++++++++++++------
+ .../tools/agent-control-family/src/fork-row.mjs    |  22 +-
+ packages/tools/agent-control-family/src/index.mjs  |   3 +-
+ .../agent-control-family/src/interrupt-row.mjs     |  11 +-
+ .../agent-control-family/src/list-agents-row.mjs   |  30 ++-
+ .../agent-control-family/src/list-models-row.mjs   |  20 +-
+ .../src/native-output-schemas.mjs                  |  22 ++
+ .../tools/agent-control-family/src/spawn-row.mjs   |  22 +-
+ .../tools/agent-control-family/src/steer-row.mjs   |  11 +-
+ .../agent-control-family/src/workflow-row.mjs      |  16 +-
+ packages/tools/families/agent-control.mjs          |  32 ++-
+ packages/tools/families/manifest.json              |   2 +-
+ 28 files changed, 762 insertions(+), 244 deletions(-)
