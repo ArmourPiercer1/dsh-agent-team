@@ -1,2 +1,2 @@
-EB3-EVIDENCE-GUARD pass added=28 bound=1048576 exempted=0 findings=0 base=origin/master
+EB3-EVIDENCE-GUARD pass added=32 bound=1048576 exempted=0 findings=0 base=origin/master
 LIMIT grades files ADDED under the evidence root only; a green here says no raw capture and no unexempted file over the bound was added, not that every added file is worth keeping
