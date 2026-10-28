@@ -16,7 +16,7 @@ re-review + disclosure). **Authorization + disclosure, not a gate verdict; G4 re
 
 - Attempt record: `.worktrees/u7-g4r3/dev/agent-workflow/evidence/u7-g4r3-20261028/crash/run-u5-crash-2026-10-28T19-09-04-633Z.json`,
   run `u5-crash-2026-10-28T19-09-04-633Z`, supervisor `overall: FAIL` (4 product cases PASS; only
-  `other-world-unaffected` FAIL). Survivor suite `run-…-A.json` `overall: PASS` 7/7. Both bind
+  `other-world-unaffected` FAIL). Survivor suite `run-…-A.json` `overall: PASS` (7/7 case verdicts; note the cell mix includes designed negative controls — e.g. the :3080 401 guard — PASS here means correct behavior, not product action). Both bind
   `teamSha=5d0c8ff5830271b7e2ab3e7c855bb85fb2090bf3`. The failed records stand, unedited.
 - RCA (`.artifacts/findings/crash-sequencing-rca-20261028.md`, read-only): the single failing edge is
   `u5-parallel-supervisor.mjs:92` `survivorHealthyAt < killAt`, violated by 1174 ms
