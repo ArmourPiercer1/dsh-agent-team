@@ -1,0 +1,1597 @@
+{
+ "note": "Declared EXCERPT (last asker-lane request + last leader request, byte-identical message arrays); the raw capture is not committed.",
+ "rawSha256": "168666d4d06eef591248035b69005ca3e3cb742d9670cf4b18abf15bd9969bec",
+ "rawRequests": 56,
+ "asker": {
+  "seq": 53,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-work requestToken=u7tb-d1-u5u7tb-20261028t19-07-21z] U7TB_SCRIPT_u5u7tb-20261028t19-07-21z: run your four team_bash commands one at a time, then report done."
+     },
+     {
+      "type": "text",
+      "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-3yrny2le",
+      "name": "team_bash",
+      "input": {
+       "command": "printf 'U7TB_APPR_u5u7tb-20261028t19-07-21z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5u7tb-20261028T19-07-21Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-3yrny2le",
+      "content": [
+       {
+        "type": "text",
+        "text": "bash · exit=0\n> U7TB_APPR_RAN\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-1zictjjm",
+      "name": "team_bash",
+      "input": {
+       "command": "printf 'U7TB_APPR_u5u7tb-20261028t19-07-21z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5u7tb-20261028T19-07-21Z/workspace/u7tb-appr.txt' && echo U7TB_APPR_RAN"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-1zictjjm",
+      "content": [
+       {
+        "type": "text",
+        "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-gq5kcpg6",
+      "name": "team_bash",
+      "input": {
+       "command": "printf 'U7TB_OTHER_u5u7tb-20261028t19-07-21z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5u7tb-20261028T19-07-21Z/workspace/u7tb-other.txt' && echo U7TB_OTHER_RAN"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-gq5kcpg6",
+      "content": [
+       {
+        "type": "text",
+        "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-y6jyjmqm",
+      "name": "team_bash",
+      "input": {
+       "command": "printf 'U7TB_DENY_u5u7tb-20261028t19-07-21z\\n' >> '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5u7tb-20261028T19-07-21Z/workspace/u7tb-deny.txt' && echo U7TB_DENY_RAN"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-y6jyjmqm",
+      "content": [
+       {
+        "type": "text",
+        "text": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   }
+  ],
+  "reply": {
+   "kind": "text",
+   "content": "U7TB_ASKER_DONE_u5u7tb-20261028t19-07-21z"
+  }
+ },
+ "leader": {
+  "seq": 56,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-root-work requestToken=team-create:initial-work:sha256:6a8c807cd1ae845859c31c06868ca6a69a8e67803df3ff51e0d3144d2157c9bf] U7TB_L1_u5u7tb-20261028t19-07-21z"
+     },
+     {
+      "type": "text",
+      "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/deepseek-harness-test-use\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-wge6l5kn",
+      "name": "team_create_member",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-c1-u5u7tb-20261028t19-07-21z",
+       "delegationTemplateId": "asker",
+       "label": "u7tb-asker"
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-wge6l5kn",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1gruu1z0afp7\",\"templateId\":\"asker\",\"childSessionId\":\"session-team-child-d9b92164cfe577f56ee8d06f9afe374c\",\"operationId\":\"op-1ob9ls11d1gapy1jsek0b108\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"u7tb-c1-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-gbvpr2be",
+      "name": "team_delegate",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-d1-u5u7tb-20261028t19-07-21z",
+       "delegationInstanceId": "inst-1gruu1z0afp7",
+       "label": "u7tb-d1",
+       "prompt": "U7TB_SCRIPT_u5u7tb-20261028t19-07-21z: run your four team_bash commands one at a time, then report done.",
+       "async": true
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-gbvpr2be",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1gruu1z0afp7\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-4rusquvj",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525350-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-4rusquvj",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525350-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-w196bh9d",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525396-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-w196bh9d",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525396-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-nqiabre3",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525424-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-nqiabre3",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525424-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-tk9tspws",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525448-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-tk9tspws",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525448-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-8fx1p8h8",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525483-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-8fx1p8h8",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525483-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-ja19yzmw",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525523-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-ja19yzmw",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525523-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-control requestId=ctrl-0ypnl5t1vip5k61cf194b1qy]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0ypnl5t1vip5k61cf194b1qy\nrequester: inst-1gruu1z0afp7\nsubject: instance inst-1gruu1z0afp7\ntarget: inst-1gruu1z0afp7\ntool: bash\nsummary: PA ask case=tadm:session-u7tb-team-u5u7tb-20261028t19-07-21z:inst-1gruu1z0afp7:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-otxwpd5f",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525730-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-otxwpd5f",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525730-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-6rh9wpzm",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525842-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-6rh9wpzm",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525842-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-t4qbf743",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525860-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-t4qbf743",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525860-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-wti0ner0",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525876-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-wti0ner0",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525876-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-ilr0x4ks",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525893-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-ilr0x4ks",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525893-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-xgjzmsow",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214525909-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-xgjzmsow",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214525909-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_PHASE_a"
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-m5t4z6td",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526172-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-m5t4z6td",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526172-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-yrto4jbr",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526274-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-yrto4jbr",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526274-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-9e7bsjth",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526309-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-9e7bsjth",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526309-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-oluo3gvu",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526563-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-oluo3gvu",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526563-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-u583jsi5",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526583-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-u583jsi5",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526583-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-rnynndnp",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526607-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-rnynndnp",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526607-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-control requestId=ctrl-02bni460sjb75d0i9xxdw04g]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-02bni460sjb75d0i9xxdw04g\nrequester: inst-1gruu1z0afp7\nsubject: instance inst-1gruu1z0afp7\ntarget: inst-1gruu1z0afp7\ntool: bash\nsummary: PA ask case=tadm:session-u7tb-team-u5u7tb-20261028t19-07-21z:inst-1gruu1z0afp7:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-6ris9duf",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526844-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-6ris9duf",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526844-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-5hx8l49c",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526964-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-5hx8l49c",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526964-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-n96sqf40",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214526982-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-n96sqf40",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214526982-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-u8q0olxb",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527001-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-u8q0olxb",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527001-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-4lsrf13g",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527018-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-4lsrf13g",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527018-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-isw4blc9",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527035-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-isw4blc9",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527035-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-control requestId=ctrl-0q2350f102f2cw1e4z72t0m1]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-0q2350f102f2cw1e4z72t0m1\nrequester: inst-1gruu1z0afp7\nsubject: instance inst-1gruu1z0afp7\ntarget: inst-1gruu1z0afp7\ntool: bash\nsummary: PA ask case=tadm:session-u7tb-team-u5u7tb-20261028t19-07-21z:inst-1gruu1z0afp7:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-42mvhxri",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527253-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-42mvhxri",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527253-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-b1816hk9",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527353-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-b1816hk9",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527353-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-ojo7hhvk",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527371-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-ojo7hhvk",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527371-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-iakuqoqr",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527389-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-iakuqoqr",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527389-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-6ttly45q",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527413-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-6ttly45q",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527413-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-s91qy014",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527431-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-s91qy014",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527431-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "[team-control requestId=ctrl-15svhf914tqnx600zz37b0hm]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-15svhf914tqnx600zz37b0hm\nrequester: inst-1gruu1z0afp7\nsubject: instance inst-1gruu1z0afp7\ntarget: inst-1gruu1z0afp7\ntool: bash\nsummary: PA ask case=tadm:session-u7tb-team-u5u7tb-20261028t19-07-21z:inst-1gruu1z0afp7:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-2noo3ixw",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527658-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-2noo3ixw",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527658-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-wn0ocv5h",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527783-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-wn0ocv5h",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527783-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-1kwe2746",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527806-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-1kwe2746",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527806-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-klgmwkki",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527826-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-klgmwkki",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527826-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-6hzy6ooz",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527845-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-6hzy6ooz",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527845-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-nmydvq1t",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214527863-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-nmydvq1t",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"running\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"resumePossible\":true}]},\"requestToken\":\"u7tb-fd1-1793214527863-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_FENCE_HOLD_d1"
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "U7TB_PHASE_z"
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-ip5tp3xs",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-fd1-1793214528271-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-ip5tp3xs",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"settledSequence\":16,\"memberResult\":{\"body\":\"U7TB_ASKER_DONE_u5u7tb-20261028t19-07-21z\",\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"u7tb-fd1-1793214528271-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     },
+     {
+      "type": "text",
+      "text": "[team-work-settled requestToken=u7tb-d1-u5u7tb-20261028t19-07-21z]\n\nAn asynchronous Team work unit has settled.\ninstanceId: inst-1gruu1z0afp7\nrequestToken: u7tb-d1-u5u7tb-20261028t19-07-21z\n\nUse team_collect with this requestToken to read the durable result."
+     }
+    ]
+   },
+   {
+    "role": "assistant",
+    "content": [
+     {
+      "type": "tool_use",
+      "id": "call-u6fs-x23o1h17",
+      "name": "team_collect",
+      "input": {
+       "rootSessionId": "session-u7tb-team-u5u7tb-20261028t19-07-21z",
+       "requestToken": "u7tb-coll-1-u5u7tb-20261028t19-07-21z",
+       "requestTokens": [
+        "u7tb-d1-u5u7tb-20261028t19-07-21z"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "tool_result",
+      "tool_use_id": "call-u6fs-x23o1h17",
+      "content": [
+       {
+        "type": "text",
+        "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u7tb-team-u5u7tb-20261028t19-07-21z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1gruu1z0afp7\",\"admittedSequence\":3,\"settledSequence\":16,\"memberResult\":{\"body\":\"U7TB_ASKER_DONE_u5u7tb-20261028t19-07-21z\",\"requestToken\":\"u7tb-d1-u5u7tb-20261028t19-07-21z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"u7tb-coll-1-u5u7tb-20261028t19-07-21z\"}"
+       }
+      ],
+      "is_error": false
+     }
+    ]
+   }
+  ],
+  "reply": {
+   "kind": "text",
+   "content": "U7TB_L1_DONE_u5u7tb-20261028t19-07-21z"
+  }
+ }
+}

@@ -1,0 +1,702 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-crash-2026-10-28T19-27-56-518Z",
+  "suite": "parallel",
+  "startedAt": "2026-10-28T19:28:25.485Z",
+  "selectedCases": [
+    "abnormal-kill-reclaim",
+    "crash-simulation-reclaim",
+    "other-world-unaffected",
+    "pristine-host-and-stable-untouched",
+    "sibling-homes-untouched"
+  ],
+  "bindings": {
+    "teamSha": "5d0c8ff5830271b7e2ab3e7c855bb85fb2090bf3",
+    "hostTreePristine": true,
+    "teamTreeClean": false,
+    "teamTreeDirtyPaths": [
+      "ev/agent-workflow/evidence/u7-g4r3-20261028/arc-a/host-starts.jsonl\n M dev/agent-workflow/evidence/u7-g4r3-20261028/arc-b/boot-budget.jsonl\n M dev/agent-workflow/evidence/u7-g4r3-20261028/arc-d/host-starts.jsonl\n M dev/agent-workflow/evidence/u7-g4r3-20261028/crash/host-starts.jsonl\n M dev/agent-workflow/evidence/u7-g4r3-20261028/jobs/host-starts.jsonl"
+    ],
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [
+      "u5cbv-20261028T19-27-57Z",
+      "u5ca-20261028T19-29-36Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "mode": "crash-reclaim",
+    "note": "A = core runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance",
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    }
+  },
+  "cases": [
+    {
+      "id": "abnormal-kill-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-28T19:31:02.231Z",
+      "conditions": {
+        "killLandedInFlight": true,
+        "inFlightMarkerPresent": true,
+        "completionMarkerAbsent": true,
+        "victimRunRecordAbsent": true,
+        "reclaimProvenanceForEveryReleasedLease": true,
+        "hostLeaseReclaimedWithProvenance": true,
+        "mockLeaseReclaimedWithProvenance": true,
+        "victimHostDead": true,
+        "hostKillPathResolved": true,
+        "reclaimKillsOnlyRecordedPids": true,
+        "zeroProcessesClaimVictimHome": true,
+        "zeroRefusals": true,
+        "homeDeletedViaOwnershipMarker": true,
+        "hostPortIdle": true,
+        "mockPortIdle": true
+      },
+      "verdictRule": "PASS ONLY with the full conjunction — the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; anything else FAILs (this mode has no SKIP)",
+      "ownershipVerification": "reclaimWorld kills ONLY pids recorded in .u5-ownership.json re-verified via /proc/<pid>/environ DSH_HOME == victim home (no pattern/name kills)",
+      "windowsProcessTreeCleanup": "n/a (Linux)"
+    },
+    {
+      "id": "crash-simulation-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-28T19:31:03.470Z",
+      "ok": true,
+      "orphanPid": 379,
+      "orphanKilledOnlyAfterEnvironProof": true,
+      "refused": [],
+      "leaseReleased": true,
+      "homeDeleted": true,
+      "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill",
+      "sharedRootUnchanged": true,
+      "simulationLeaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/.artifacts/tmp/dryrun-leases-3Y8w2L"
+    },
+    {
+      "id": "other-world-unaffected",
+      "verdict": "PASS",
+      "at": "2026-10-28T19:31:03.976Z",
+      "aSuite": "core",
+      "aWorld": {
+        "id": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z",
+        "hostPid": 247
+      },
+      "aAliveWhileBCrashedAndReclaimed": true,
+      "aExit": {
+        "via": "record+dead"
+      },
+      "aOverall": "PASS",
+      "aCases": [
+        "token-gate=PASS",
+        "positive-control=PASS",
+        "error-return-with-effect=PASS",
+        "planted-defect-detected=PASS",
+        "oracle-blinding-divergence=PASS",
+        "leak-check=PASS",
+        "stable-instance-unchanged=PASS"
+      ],
+      "sequencing": {
+        "killInsideSurvivorWindow": true,
+        "survivorHeldUntilReclaim": true,
+        "survivorProbeAfterReclaim": true,
+        "preKillProbeSucceeded": true,
+        "postReclaimProbeSucceeded": true,
+        "failedProbeInWindow": false,
+        "failedProbe": null,
+        "survivorHostIdentityContinuous": true,
+        "reclaimVictimOnly": true,
+        "pass": true
+      }
+    },
+    {
+      "id": "pristine-host-and-stable-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-28T19:31:04.285Z",
+      "hostBasePre": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "pre"
+      },
+      "hostBasePost": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "post"
+      },
+      "stableInstance": {
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "sibling-homes-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-28T19:31:04.285Z",
+      "foreignChanges": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7-g4r3-20261028/crash/retry-host-starts.jsonl",
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "runners": {
+    "B": {
+      "pid": 77,
+      "pgid": 77,
+      "record": "dev/agent-workflow/evidence/u7-g4r3-20261028/crash/run-u5-crash-2026-10-28T19-27-56-518Z-B.json",
+      "detachedGroup": true
+    },
+    "A": {
+      "pid": 177,
+      "record": "dev/agent-workflow/evidence/u7-g4r3-20261028/crash/run-u5-crash-2026-10-28T19-27-56-518Z-A.json"
+    }
+  },
+  "bWorld": {
+    "id": "u5cbv-20261028T19-27-57Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5cbv-20261028T19-27-57Z",
+    "hostPid": 147,
+    "inFlightTag": "crashfly-ai3mrp"
+  },
+  "aWorld": {
+    "id": "u5ca-20261028T19-29-36Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z",
+    "hostPid": 247
+  },
+  "abnormalKill": {
+    "at": "2026-10-28T19:30:59.196Z",
+    "pgid": 77,
+    "runnerPid": 77,
+    "signal": "SIGKILL",
+    "scope": "process-group",
+    "delivered": "process-group",
+    "runnerCloseReceipt": {
+      "code": null,
+      "signal": "SIGKILL"
+    },
+    "killedWhat": "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+    "bWorld": {
+      "id": "u5cbv-20261028T19-27-57Z",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5cbv-20261028T19-27-57Z",
+      "hostPid": 147,
+      "tag": "crashfly-ai3mrp"
+    },
+    "ownershipFile": {
+      "worldId": "u5cbv-20261028T19-27-57Z",
+      "runnerPid": 77,
+      "runnerStartedAt": "2026-10-28T19:29:28.215Z",
+      "hostPid": 147,
+      "hostPort": 3184,
+      "mockPort": 13050
+    },
+    "markersAtKill": [
+      "crashfly-ai3mrp.pre"
+    ],
+    "hostKillPath": "process-group-kill",
+    "hostProvenancePath": "reclaim-scan",
+    "mockProvenancePath": "reclaim-scan",
+    "sweptByPeer": [],
+    "homeClaimantsAfterReclaim": [],
+    "reclaimReceipts": {
+      "killed": [],
+      "refused": [],
+      "leasesReleased": [
+        13050,
+        3184
+      ],
+      "leaseProvenance": [
+        {
+          "port": 13050,
+          "reclaimedFrom": {
+            "pid": 77,
+            "startedAt": "2026-10-28T19:28:36.214Z",
+            "world": "u5cbv-20261028T19-27-57Z",
+            "purpose": "mock-provider"
+          }
+        },
+        {
+          "port": 3184,
+          "reclaimedFrom": {
+            "pid": 77,
+            "startedAt": "2026-10-28T19:29:28.170Z",
+            "world": "u5cbv-20261028T19-27-57Z",
+            "purpose": "host"
+          }
+        }
+      ],
+      "leaseNotes": [],
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5cbv-20261028T19-27-57Z"
+    }
+  },
+  "crashSimulationControl": {
+    "ok": true,
+    "orphanPid": 379,
+    "orphanKilledOnlyAfterEnvironProof": true,
+    "refused": [],
+    "leaseReleased": true,
+    "homeDeleted": true,
+    "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill",
+    "sharedRootUnchanged": true,
+    "simulationLeaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/.artifacts/tmp/dryrun-leases-3Y8w2L"
+  },
+  "survivorSequencing": {
+    "killInsideSurvivorWindow": true,
+    "survivorHeldUntilReclaim": true,
+    "survivorProbeAfterReclaim": true,
+    "preKillProbeSucceeded": true,
+    "postReclaimProbeSucceeded": true,
+    "failedProbeInWindow": false,
+    "failedProbe": null,
+    "survivorHostIdentityContinuous": true,
+    "reclaimVictimOnly": true,
+    "pass": true,
+    "survivorHealthyAt": 1793215856079,
+    "killAt": 1793215859196,
+    "survivorLastProbeAt": 1793215861103,
+    "survivorTornDownAt": 1793215862130,
+    "victimKilledAndReclaimedAt": 1793215860967,
+    "probeRows": [
+      {
+        "at": 1793215856079,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "f508ad1238f4f867c66caee2306b98cd4ed743ec4bcf3f7eebb3355474623950",
+            "sessionId": "session-173cb697-15eb-4d6a-912c-7b05438044c6",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215884928,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "4c3bb6c1936a00ad6b926cd71eae04222865f9df39c49c8180d88d2b917d512f",
+            "sessionId": "session-8373d22e-a1ad-4dfa-9e12-19517dbed696",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215856764,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "480210de88f1aefd25fc3bd8fdade3e9e1740d84813d391948c3c2f7d1be501c",
+            "sessionId": "session-e7eee024-35ca-4087-853f-b675f516056b",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215857081,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "4924621da5952a45b8013212d2f6f205640fad3516bcfc8457103d78da73fcd1",
+            "sessionId": "session-615b618b-1f17-4375-98d1-d6b0789a5717",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215857388,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "1a2bf27265996b0760047dbb446d831fdc96327d7d16cd36ad291f4958c79d1d",
+            "sessionId": "session-1d102ff4-bedc-4e80-aa3f-93c0a98226c0",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215857693,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "798889332563662d03fea71957a9c9f7bf221596fd766ee7cd9f66473b89a3d2",
+            "sessionId": "session-b9cd1559-9255-47e7-a6d4-7f9625d5bd9c",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215857997,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "1f4e65feb469ec99cf55e878daeebf0a7db2ca4948cc0617d2abde258d353249",
+            "sessionId": "session-891ca16d-b89f-4ae4-9c2b-3e48c29e2711",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215858305,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "65719c1b28d88efa8490a8944bd749bcacb2fa6182e3b62329fd807bb6845f15",
+            "sessionId": "session-4281d5c7-fa61-4943-b2cd-2325012cec99",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215858634,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "3a9798a4933b4c89d275857840d886b64716009e96ed736ff4deb12861ffbab3",
+            "sessionId": "session-715643c7-2e75-4cdb-8b0c-5b7663956276",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215858939,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "d4e74df4a9a86b34c146865b39e0f057c093971fc2c9f6205610e733868ca6ea",
+            "sessionId": "session-84cafece-8adf-4f41-a8ae-79e99aee4aac",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215859247,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "db1050d383d047e0093581464f7be8bdfe68a4cbe236bc3439f61df0098c4aba",
+            "sessionId": "session-cb1f989c-d329-4dd7-a04e-8d9755a890bd",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215859560,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "bd48def03c6fde2e262ed602e2327e8d29bba58e10f7725f82602d35a31eaec7",
+            "sessionId": "session-f1e2cbb1-e1d5-4a49-b4fd-b95918b3d5c4",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215859855,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "d0acc07efd16e686cb076d4e8253c0fdeb843e49ade41771cc472f6b2d47e45e",
+            "sessionId": "session-a0c70558-8b6d-4452-98d7-550f6b377264",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215860161,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "a1bd1f08899e75a1353aaf6f3b6066b0a6e20944bce9c01dc02b65aa625770f3",
+            "sessionId": "session-843aeb49-bf27-482e-95bf-90e363e6663c",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215860469,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "d510a09ff0ee193b40ad06bbffec60548444b771039badc8c08b9e78b358cf94",
+            "sessionId": "session-0b4b2b6a-e691-45e8-86eb-62901ceb38ee",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215860794,
+        "kind": "health-effect",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "cb4324180e214820805b0912a42fb6f5d0bbf61b7887f697c237ce0b42c65c60",
+            "sessionId": "session-61cfda54-68f0-4689-ad8d-bee2fff19de4",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      },
+      {
+        "at": 1793215861103,
+        "kind": "after-reclaim",
+        "ok": true,
+        "status": 200,
+        "simulated": false,
+        "evidenceKind": "real-io",
+        "evidence": {
+          "health": {
+            "status": 200,
+            "bytes": 34845,
+            "digest": "dee9ce2e5f44192788a86fdd2edc6ed4176aabebc2d2e3709d1ca85fc7546e6a",
+            "contentMatch": true
+          },
+          "effect": {
+            "status": 200,
+            "bytes": 195,
+            "digest": "324e57b93fb3433073705f438716c6518574d89f1b3700d9a2ad68cd1fe2d5f3",
+            "sessionId": "session-7049716c-f1fb-42a2-a67b-227e001c0cd2",
+            "contentMatch": true
+          }
+        },
+        "world": "u5ca-20261028T19-29-36Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r3/tests/homes/u5ca-20261028T19-29-36Z"
+      }
+    ]
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-28T19:31:04.286Z"
+}
