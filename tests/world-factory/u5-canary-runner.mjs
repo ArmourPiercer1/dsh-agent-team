@@ -899,6 +899,7 @@ export async function runSuite(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      teamTreeClean: git(['status', '--porcelain', '--untracked-files=no'], REPO_ROOT) === '',
       hostSha: hostBaseStartup.head,
       hostPorcelainEmptyAtStartup: true,
       authority: readAuthorityBinding(REPO_ROOT),
