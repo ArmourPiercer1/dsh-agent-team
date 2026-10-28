@@ -1,0 +1,385 @@
+{
+  "schema": "u7ac1-dryrun/1",
+  "runId": "u7ac1-c2-mvr7xyzd",
+  "suite": "u7-ac1-agent-control-subagents-c2",
+  "startedAt": "2026-10-27T21:49:51.626Z",
+  "selectedCases": [
+    "ac:mounted",
+    "ac:list-models",
+    "ac:list-agents",
+    "ac:spawn-positive",
+    "ac:child-toolview",
+    "ac:fork-positive",
+    "ac:refusal-tools",
+    "ac:refusal-provider",
+    "ac:refusal-fork-bg",
+    "ac:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "3347213e03288a63005d2aa9f8eb2b3c11a1644f",
+    "teamTreeClean": true,
+    "driveScriptClean": true,
+    "hostSha": "set-from-assertHostBase-in-main",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "ac:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.638Z",
+      "detail": {
+        "createOk": true,
+        "createBody": "ok",
+        "placementFeed": [
+          "placement-feed rows=[subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow]"
+        ],
+        "planeRefusals": []
+      }
+    },
+    {
+      "id": "ac:list-models",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.638Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": false,
+            "text": "{\"ok\":true,\"models\":[{\"provider\":\"deepseek-official\",\"name\":\"Mock\"}]}"
+          }
+        ],
+        "providersParsed": [
+          {
+            "provider": "deepseek-official",
+            "name": "Mock"
+          }
+        ],
+        "ranWitness": [
+          "agent-control-list_subagent_models RAN"
+        ],
+        "humanAllow": [
+          "ask-0"
+        ]
+      }
+    },
+    {
+      "id": "ac:spawn-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.638Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": false,
+            "text": "[{\"type\":\"text\",\"text\":\"U7AC1_CHILD_PONG\"}]"
+          }
+        ],
+        "ranWitness": [
+          "agent-control-subagent RAN"
+        ],
+        "humanAllow": [
+          "ask-1"
+        ],
+        "toolviewLines": [
+          "agent-runtime host-port: child-toolview provider=spawn tools=[]",
+          "agent-runtime host-port: child-toolview provider=fork tools=[]"
+        ]
+      }
+    },
+    {
+      "id": "ac:list-agents",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.638Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": false,
+            "text": "(no subagents)"
+          }
+        ],
+        "catalogSize": 1,
+        "ranWitness": [
+          "agent-control-list_agents RAN"
+        ],
+        "humanAllow": [
+          "ask-2"
+        ],
+        "note": "the native projection lists continuable children only; the one-shot spawn child is witnessed through catalogSize/oneShotChildren from the same subagents.listChildren answer"
+      }
+    },
+    {
+      "id": "ac:child-toolview",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.639Z",
+      "detail": {
+        "spawnChildRequests": 2,
+        "forkChildRequests": 1,
+        "childToolSurfaces": [
+          [],
+          [],
+          []
+        ],
+        "spawnChildAttemptedToolResults": [
+          {
+            "isError": true,
+            "text": "Error: unknown tool \"read\""
+          }
+        ],
+        "unknownReadErrors": 1,
+        "portToolviewLines": [
+          "agent-runtime host-port: child-toolview provider=spawn tools=[]",
+          "agent-runtime host-port: child-toolview provider=fork tools=[]"
+        ],
+        "q1": "Tier A ceiling is an empty child tool view; the mock read probe must fail specifically as unknown tool"
+      }
+    },
+    {
+      "id": "ac:fork-positive",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.639Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": false,
+            "text": "[{\"type\":\"text\",\"text\":\"U7AC1_FORK_SAW_TOKEN\"}]"
+          }
+        ],
+        "forkChildRequestCarriedToken": true,
+        "ranWitness": [
+          "agent-control-subagent_fork RAN"
+        ],
+        "humanAllow": [
+          "ask-3"
+        ]
+      }
+    },
+    {
+      "id": "ac:refusal-tools",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.639Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-schema-refused — unknown field 'tools'"
+          }
+        ],
+        "expected": [
+          "agent-control-schema-refused",
+          "unknown field 'tools'"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 0
+        }
+      }
+    },
+    {
+      "id": "ac:refusal-provider",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.639Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-amplification-refused — a child may not carry broader authority than its caller: provider 'deepseek-official' is outside the caller's own authority"
+          }
+        ],
+        "expected": [
+          "agent-control-amplification-refused",
+          "provider 'deepseek-official' is outside the caller's own authority"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 0
+        }
+      }
+    },
+    {
+      "id": "ac:refusal-fork-bg",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.640Z",
+      "detail": {
+        "readBack": [
+          {
+            "isError": true,
+            "text": "Error: refused-agent-control agent-control-amplification-refused — a forked child may not carry broader authority than its caller: a continuable child outlives a caller that is not itself continuable"
+          }
+        ],
+        "expected": [
+          "agent-control-amplification-refused",
+          "continuable"
+        ],
+        "durableAsksFor": {
+          "tool": "subagent_fork",
+          "attributedRequestIds": [],
+          "count": 0,
+          "positivesExpected": 0
+        }
+      }
+    },
+    {
+      "id": "ac:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-27T21:49:51.640Z",
+      "detail": {
+        "secretClaimInCorpus": false,
+        "secretClaimInHostLog": false,
+        "secretBytesUnchanged": true,
+        "stable3080": {
+          "before": {
+            "status": 401
+          },
+          "after": {
+            "status": 401
+          }
+        },
+        "childStarts": 2,
+        "startsByProvider": {
+          "spawn": 1,
+          "fork": 1
+        },
+        "law": "positive witnesses require exactly one spawn and one fork start; refusals are not starts"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "discoverySurface": [
+    "interrupt_agent",
+    "list_agents",
+    "list_subagent_models",
+    "send_message",
+    "subagent",
+    "subagent_fork",
+    "workflow"
+  ],
+  "controlLedger": {
+    "requests": [
+      {
+        "requestId": "ask-0",
+        "toolName": "list_subagent_models",
+        "status": "settled"
+      },
+      {
+        "requestId": "ask-1",
+        "toolName": "subagent",
+        "status": "settled"
+      },
+      {
+        "requestId": "ask-2",
+        "toolName": "list_agents",
+        "status": "settled"
+      },
+      {
+        "requestId": "ask-3",
+        "toolName": "subagent_fork",
+        "status": "settled"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ask-0",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ask-1",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ask-2",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ask-3",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ask-0"
+      },
+      {
+        "requestId": "ask-1"
+      },
+      {
+        "requestId": "ask-2"
+      },
+      {
+        "requestId": "ask-3"
+      }
+    ],
+    "abandoned": []
+  },
+  "humanResolutions": [
+    {
+      "requestId": "ask-0",
+      "toolName": "list_subagent_models",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ask-1",
+      "toolName": "subagent",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ask-2",
+      "toolName": "list_agents",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    },
+    {
+      "requestId": "ask-3",
+      "toolName": "subagent_fork",
+      "decision": "allow",
+      "ok": true,
+      "status": 200,
+      "body": "ok"
+    }
+  ],
+  "approverErrors": [],
+  "fixture": {
+    "mode": "no-overrides",
+    "source": "mock-corpus-boot6.json",
+    "trace": [
+      "health",
+      "state",
+      "authenticate",
+      "prompt",
+      "blueprint",
+      "team.create",
+      "team.getLedgerPage",
+      "team.resolveControl",
+      "team.resolveControl",
+      "team.resolveControl",
+      "team.resolveControl",
+      "team.getLedgerPage"
+    ],
+    "syntheticLedger": true,
+    "live": false,
+    "ioPath": "live-defaults-without-overrides"
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-27T21:49:51.640Z"
+}

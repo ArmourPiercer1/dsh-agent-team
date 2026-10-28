@@ -105,8 +105,10 @@ export const ARG_GRAMMAR = Object.freeze({
   interrupt_agent: Object.freeze({
     agent_id: S(), reason: S(false),
   }),
-  list_agents: Object.freeze({}),
-  list_subagent_models: Object.freeze({ provider: S(false) }),
+  // AC-1: the native `scope` arm (tool-subagent-control list-agents.ts),
+  // closed to its two values; absent = children (the native default).
+  list_agents: Object.freeze({ scope: Object.freeze({ kind: 'enum', required: false, values: Object.freeze(['children', 'descendants']) }) }),
+  list_subagent_models: Object.freeze({ provider: S(false), model: S(false) }),
   workflow: Object.freeze({
     description: S(), prompt: S(),
   }),
@@ -134,6 +136,9 @@ export function parseAgentControlArgs(name, raw) {
     }
     if (spec.kind === 'string') {
       if (typeof value !== 'string' || value.trim().length === 0) problems.push(`field '${key}' must be a non-empty string`)
+      else args[key] = value
+    } else if (spec.kind === 'enum') {
+      if (typeof value !== 'string' || !spec.values.includes(value)) problems.push(`field '${key}' must be one of ${spec.values.join('|')}`)
       else args[key] = value
     } else if (spec.kind === 'boolean') {
       if (typeof value !== 'boolean') problems.push(`field '${key}' must be a boolean`)
@@ -257,6 +262,7 @@ export function authorityBounded(callerAuthority, requested) {
   }
   within(callerAuthority.providers, requested.provider, 'provider')
   within(callerAuthority.models, requested.model, 'model')
+  within(callerAuthority.efforts, requested.reasoning_effort, 'reasoning_effort')
   if (requested.tools !== undefined) {
     const callerTools = Array.isArray(callerAuthority.tools) ? callerAuthority.tools : []
     for (const tool of requested.tools) {
@@ -270,6 +276,25 @@ export function authorityBounded(callerAuthority, requested) {
 }
 
 // ── the fork-context boundary (law (e)) ───────────────────────────────────
+/**
+ * THE TIER A CEILING (AC-1, design F3(a)): the build-time caller-authority
+ * snapshot the production family uses when no trusted snapshot is injected.
+ * It asserts NO grant — only a ceiling that is ≤ every caller by
+ * construction: no provider/model/effort route override (the child runs on
+ * the caller's own route), no tools (the port forces `toolFilter:{allow:[]}`),
+ * no continuable lifetime (one-shot only at AC-1). `authorityBounded` over
+ * this ceiling therefore admits exactly the requests that ask for nothing
+ * beyond inheritance; anything more refuses typed BEFORE the PA edge.
+ */
+export const TIER_A_CEILING = Object.freeze({
+  tier: 'A',
+  providers: Object.freeze([]),
+  models: Object.freeze([]),
+  efforts: Object.freeze([]),
+  tools: Object.freeze([]),
+  continuable: false,
+})
+
 /** Context that crosses to a forked child is DATA. The family never ships
  *  an authority-shaped context: these keys inside anything the fork request
  *  or the runtime's context answer carries are a refusal, never a strip. */

@@ -9,9 +9,17 @@
  * @module agent-control-family/spawn-row
  */
 
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
+const NATIVE_OUTPUT = Object.freeze({
+  schema: nativeOutputSchemas.subagent,
+  render: (_args, value) => [{ type: 'text', text: value.kind === 'background' ? `started background subagent job ${value.jobId}` : value.kind === 'continuable' ? `started subagent ${value.subagentId}` : JSON.stringify(value.output) }],
+})
+
 export function buildSpawnRowDefinition({ name, spawnExecutor }) {
   return Object.freeze({
     name,
+    output: NATIVE_OUTPUT,
     description: 'Delegate a self-contained task to a governed subagent. The spawn is admission-gated before any agent is created, stays bounded by the CALLER\'s own authority (no privilege amplification), and every child is recorded on the mount\'s own scope.',
     parameters: {
       type: 'object',
@@ -35,8 +43,18 @@ export function buildSpawnRowDefinition({ name, spawnExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await spawnExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { delegated: true }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'subagent · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (value !== null && typeof value === 'object') {
+          if (value.kind === 'background' && typeof value.jobId === 'string') return { kind: 'background', jobId: value.jobId }
+          if (value.kind === 'continuable' && typeof value.subagentId === 'string') return { kind: 'continuable', subagentId: value.subagentId }
+          if (value.kind === 'foreground' && typeof value.runId === 'string' && Array.isArray(value.output)) {
+            return { kind: 'foreground', runId: value.runId, output: value.output }
+          }
+        }
+        throw new Error('refused-agent-control — the governed subagent executor returned a value outside the native subagent result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('subagent run was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed subagent executor produced no outcome')
     },
   })

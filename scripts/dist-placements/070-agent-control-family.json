@@ -41,6 +41,10 @@
    "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/list-models-row.mjs"
   },
   {
+   "src": "packages/tools/agent-control-family/src/native-output-schemas.mjs",
+   "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/native-output-schemas.mjs"
+  },
+  {
    "src": "packages/tools/agent-control-family/src/spawn-row.mjs",
    "dist": "packages/runtime/dist/packages/tools/agent-control-family/src/spawn-row.mjs"
   },

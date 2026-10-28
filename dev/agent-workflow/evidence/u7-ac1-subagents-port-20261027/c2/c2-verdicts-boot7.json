@@ -1,0 +1,172 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7ac1-c2-mvr783ml",
+  "suite": "u7-ac1-agent-control-subagents-c2",
+  "startedAt": "2026-10-27T21:29:44.593Z",
+  "selectedCases": [
+    "ac:mounted",
+    "ac:list-models",
+    "ac:list-agents",
+    "ac:spawn-positive",
+    "ac:child-toolview",
+    "ac:fork-positive",
+    "ac:refusal-tools",
+    "ac:refusal-provider",
+    "ac:refusal-fork-bg",
+    "ac:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "64ca32738354e1709cdd80844d0d4df7f216a81e",
+    "teamTreeClean": true,
+    "driveScriptClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
+  },
+  "cases": [
+    {
+      "id": "ac:mounted",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:list-models",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:list-agents",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:spawn-positive",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:child-toolview",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:fork-positive",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:refusal-tools",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:refusal-provider",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:refusal-fork-bg",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ac:leak-check",
+      "verdict": "FAIL",
+      "at": "2026-10-27T21:30:54.904Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-27T21:30:54.602Z",
+        "runId": "u7ac1-c2-mvr783ml",
+        "suite": "u7-ac1-agent-control-subagents-c2",
+        "phase": "u7ac1-c2-boot",
+        "boot": 7,
+        "world": "u5u7ac1-20261027T21-29-44Z",
+        "port": 3184,
+        "bootMs": 18993
+      }
+    ]
+  },
+  "bootDeclaration": {
+    "boot": 7,
+    "budget": 7,
+    "declaredAt": "2026-10-27T21:30:35.608Z",
+    "runId": "u7ac1-c2-mvr783ml",
+    "world": "u5u7ac1-20261027T21-29-44Z",
+    "teamSha": "64ca32738354e1709cdd80844d0d4df7f216a81e",
+    "driveScriptClean": true
+  },
+  "notes": [
+    "drive threw: ReferenceError: Cannot access 'fetchJsonRetry' before initialization\n    at drive (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:183:34)\n    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/run-c2.mjs:138:17)"
+  ],
+  "hostBaseAfter": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "phase": "c2-after"
+  },
+  "teardown": {
+    "receipts": {
+      "host": {
+        "wasRunning": false
+      },
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-ac1/tests/homes/u5u7ac1-20261027T21-29-44Z",
+      "releasedPorts": [
+        3184,
+        3498,
+        3184
+      ],
+      "killedPids": [
+        209
+      ],
+      "notes": []
+    }
+  },
+  "evidence": [
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/host-boot7.log",
+    "dev/agent-workflow/evidence/u7-ac1-subagents-port-20261027/c2/mock-corpus-boot7.json"
+  ],
+  "mockDigest": [],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-27T21:30:54.904Z"
+}

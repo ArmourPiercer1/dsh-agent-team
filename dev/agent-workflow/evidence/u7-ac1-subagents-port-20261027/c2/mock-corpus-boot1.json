@@ -1,0 +1,6 @@
+{
+ "note": "Declared EXCERPT of the boot1 mock corpus: every CHILD request (spawn/fork), the last pilot turn-2 request (full pilot chain) and the final request. Kept entries are byte-identical to the capture; the raw capture is not committed (evidence guard).",
+ "rawSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+ "rawEntries": 0,
+ "entries": []
+}

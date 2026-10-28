@@ -38,7 +38,7 @@ import {
   scopeMembership,
   workflowEffectWorld,
 } from './agent-control-mechanics.mjs'
-import { LEG_UNWIRED, resolveLeg } from './agent-runtime-port.mjs'
+import { LEG_UNWIRED, callerPtcMode, resolveLeg } from './agent-runtime-port.mjs'
 
 const refused = (code, detail) => ({ kind: 'refused', code, text: `refused-agent-control ${code} — ${detail}` })
 
@@ -93,9 +93,15 @@ export function createAgentControlExecutors(input) {
       if (!member.ok) return refused(member.code, member.detail)
       parsed.args.targetId = scoped.id
     }
+    if ((name === 'subagent' || name === 'subagent_fork') && callerPtcMode(corr?.agent) === 'ptc') {
+      // AC-1 Tier A: a PTC-mode caller (its public tool view presents the
+      // reserved run_code transport) would hand a tool-less child run_code —
+      // refused BEFORE the PA edge (the port re-checks as the second gate).
+      return refused('agent-control-child-ptc-refused', 'the calling agent runs in PTC mode (run_code in its tool view); a Tier A child would still receive the run_code transport — refused with zero reach')
+    }
     if (name === 'subagent') {
       const bound = authorityBounded(callerAuthority, {
-        provider: parsed.args.provider, model: parsed.args.model, continuable: parsed.args.run_in_background === true,
+        provider: parsed.args.provider, model: parsed.args.model, reasoning_effort: parsed.args.reasoning_effort, continuable: parsed.args.run_in_background === true,
       })
       if (!bound.ok) return refused('agent-control-amplification-refused', `a child may not carry broader authority than its caller: ${bound.violations.join('; ')}`)
     }
@@ -224,17 +230,17 @@ export function createAgentControlExecutors(input) {
 
   return Object.freeze({
     list_agents: (raw, corr) => run('list_agents', raw, corr, 'listAgents',
-      (fn, cl) => fn({ caller: cl })),
+      (fn, cl, args) => fn({ caller: cl, ...(args.scope === undefined ? {} : { scope: args.scope }), ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     list_subagent_models: (raw, corr) => run('list_subagent_models', raw, corr, 'listModels',
-      (fn, cl, args) => fn({ caller: cl, ...(args.provider === undefined ? {} : { provider: args.provider }) })),
+      (fn, cl, args) => fn({ caller: cl, ...(args.provider === undefined ? {} : { provider: args.provider }), ...(args.model === undefined ? {} : { model: args.model }), ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     subagent: (raw, corr) => run('subagent', raw, corr, 'spawnChild',
       (fn, cl, args) => fn({ caller: cl, spec: args, ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     subagent_fork: (raw, corr) => run('subagent_fork', raw, corr, 'forkChild',
       (fn, cl, args) => fn({ caller: cl, spec: { description: args.description, prompt: args.prompt, ...(args.run_in_background === undefined ? {} : { run_in_background: args.run_in_background }) }, context: args.context, ...(corr?.signal === undefined ? {} : { signal: corr.signal }) })),
     send_message: (raw, corr) => run('send_message', raw, corr, 'steer',
-      (fn, cl, args) => fn({ caller: cl, targetId: args.targetId, message: args.message })),
+      (fn, cl, args) => fn({ caller: cl, targetId: args.agent_id, message: args.message })),
     interrupt_agent: (raw, corr) => run('interrupt_agent', raw, corr, 'interrupt',
-      (fn, cl, args) => fn({ caller: cl, targetId: args.targetId, ...(args.reason === undefined ? {} : { reason: args.reason }) })),
+      (fn, cl, args) => fn({ caller: cl, targetId: args.agent_id, ...(args.reason === undefined ? {} : { reason: args.reason }) })),
     workflow: (raw, corr) => {
       const walkedP = govern('workflow', raw, corr)
       return Promise.resolve(walkedP).then((walked) => {

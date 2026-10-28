@@ -9,9 +9,12 @@
  *
  * @module agent-control-family/workflow-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildWorkflowRowDefinition({ name, workflowExecutor }) {
   return Object.freeze({
     name,
+    output: { schema: nativeOutputSchemas.workflow, render: (args, value) => [{ type: 'text', text: value.kind === 'background' ? `workflow "${args.meta?.name ?? args.description}" started in the background as job ${value.jobId}. Its return value arrives with the completion notice; check on it with job_output, stop it with job_kill.` : JSON.stringify(value.result) }] },
     description: 'Run a governed orchestration script whose agent legs execute through the caller-bound runtime delegates: every spawn re-passes the no-amplification fence and every steer re-passes the owner fence, so a workflow carries exactly THIS call\'s authority — never more.',
     parameters: {
       type: 'object',
@@ -31,8 +34,17 @@ export function buildWorkflowRowDefinition({ name, workflowExecutor }) {
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await workflowExecutor(raw ?? {}, corr)
-      if (outcome.kind === 'ok') return outcome.value ?? { completed: true }
-      if (outcome.kind === 'cancelled') return { cancelled: true, content: [{ type: 'text', text: 'workflow · cancelled' }], meta: { cancelled: true } }
+      if (outcome.kind === 'ok') {
+        const value = outcome.value
+        if (value !== null && typeof value === 'object') {
+          if (value.kind === 'background' && typeof value.jobId === 'string' && typeof value.runId === 'string') return { kind: 'background', jobId: value.jobId, runId: value.runId }
+          if (value.kind === 'foreground' && typeof value.runId === 'string' && Number.isInteger(value.agentsStarted) && 'result' in value) {
+            return { kind: 'foreground', runId: value.runId, agentsStarted: value.agentsStarted, result: value.result }
+          }
+        }
+        throw new Error('refused-agent-control — the governed workflow executor returned a value outside the native workflow result schema')
+      }
+      if (outcome.kind === 'cancelled') throw new Error('workflow was cancelled')
       throw new Error(outcome.text ?? 'refused-agent-control — the governed workflow executor produced no outcome')
     },
   })
