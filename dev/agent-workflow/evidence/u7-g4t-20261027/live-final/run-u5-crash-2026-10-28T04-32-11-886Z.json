@@ -1,0 +1,319 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-crash-2026-10-28T04-32-11-886Z",
+  "suite": "parallel",
+  "startedAt": "2026-10-28T04:32:12.009Z",
+  "selectedCases": [
+    "abnormal-kill-reclaim",
+    "crash-simulation-reclaim",
+    "other-world-unaffected",
+    "pristine-host-and-stable-untouched",
+    "sibling-homes-untouched"
+  ],
+  "bindings": {
+    "teamSha": "c1045d3077b48c70d36d11cd6a729675f794fe84",
+    "teamTreeClean": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [
+      "u5cbv-20261028T04-32-12Z",
+      "u5ca-20261028T04-32-54Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "mode": "crash-reclaim",
+    "note": "A = core runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance",
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    }
+  },
+  "cases": [
+    {
+      "id": "abnormal-kill-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-28T04:33:39.825Z",
+      "conditions": {
+        "killLandedInFlight": true,
+        "inFlightMarkerPresent": true,
+        "completionMarkerAbsent": true,
+        "victimRunRecordAbsent": true,
+        "reclaimProvenanceForEveryReleasedLease": true,
+        "hostLeaseReclaimedWithProvenance": true,
+        "mockLeaseReclaimedWithProvenance": true,
+        "victimHostDead": true,
+        "hostKillPathResolved": true,
+        "reclaimKillsOnlyRecordedPids": true,
+        "zeroProcessesClaimVictimHome": true,
+        "zeroRefusals": true,
+        "homeDeletedViaOwnershipMarker": true,
+        "hostPortIdle": true,
+        "mockPortIdle": true
+      },
+      "verdictRule": "PASS ONLY with the full conjunction — the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; anything else FAILs (this mode has no SKIP)",
+      "ownershipVerification": "reclaimWorld kills ONLY pids recorded in .u5-ownership.json re-verified via /proc/<pid>/environ DSH_HOME == victim home (no pattern/name kills)",
+      "windowsProcessTreeCleanup": "n/a (Linux)"
+    },
+    {
+      "id": "crash-simulation-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-28T04:33:41.097Z",
+      "ok": true,
+      "orphanPid": 278,
+      "orphanKilledOnlyAfterEnvironProof": true,
+      "refused": [],
+      "leaseReleased": true,
+      "homeDeleted": true,
+      "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+    },
+    {
+      "id": "other-world-unaffected",
+      "verdict": "PASS",
+      "at": "2026-10-28T04:33:41.599Z",
+      "aSuite": "core",
+      "aWorld": {
+        "id": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z",
+        "hostPid": 146
+      },
+      "aAliveWhileBCrashedAndReclaimed": true,
+      "aExit": {
+        "via": "record+dead"
+      },
+      "aOverall": "PASS",
+      "aCases": [
+        "token-gate=PASS",
+        "positive-control=PASS",
+        "error-return-with-effect=PASS",
+        "planted-defect-detected=PASS",
+        "oracle-blinding-divergence=PASS",
+        "leak-check=PASS",
+        "stable-instance-unchanged=PASS"
+      ],
+      "sequencing": {
+        "killInsideSurvivorWindow": true,
+        "survivorHeldUntilReclaim": true,
+        "survivorProbeAfterReclaim": true,
+        "reclaimVictimOnly": true,
+        "pass": true
+      }
+    },
+    {
+      "id": "pristine-host-and-stable-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-28T04:33:41.699Z",
+      "hostBasePre": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "pre"
+      },
+      "hostBasePost": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "post"
+      },
+      "stableInstance": {
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "sibling-homes-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-28T04:33:41.699Z",
+      "foreignChanges": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7-g4t-20261027/live-final/budget.jsonl",
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "runners": {
+    "B": {
+      "pid": 46,
+      "pgid": 46,
+      "record": "dev/agent-workflow/evidence/u7-g4t-20261027/live-final/run-u5-crash-2026-10-28T04-32-11-886Z-B.json",
+      "detachedGroup": true
+    },
+    "A": {
+      "pid": 111,
+      "record": "dev/agent-workflow/evidence/u7-g4t-20261027/live-final/run-u5-crash-2026-10-28T04-32-11-886Z-A.json"
+    }
+  },
+  "bWorld": {
+    "id": "u5cbv-20261028T04-32-12Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5cbv-20261028T04-32-12Z",
+    "hostPid": 81,
+    "inFlightTag": "crashfly-0q9vrr"
+  },
+  "aWorld": {
+    "id": "u5ca-20261028T04-32-54Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z",
+    "hostPid": 146
+  },
+  "abnormalKill": {
+    "at": "2026-10-28T04:33:37.180Z",
+    "pgid": 46,
+    "runnerPid": 46,
+    "signal": "SIGKILL",
+    "scope": "process-group",
+    "delivered": "process-group",
+    "runnerCloseReceipt": {
+      "code": null,
+      "signal": "SIGKILL"
+    },
+    "killedWhat": "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+    "bWorld": {
+      "id": "u5cbv-20261028T04-32-12Z",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5cbv-20261028T04-32-12Z",
+      "hostPid": 81,
+      "tag": "crashfly-0q9vrr"
+    },
+    "ownershipFile": {
+      "worldId": "u5cbv-20261028T04-32-12Z",
+      "runnerPid": 46,
+      "runnerStartedAt": "2026-10-28T04:32:51.659Z",
+      "hostPid": 81,
+      "hostPort": 3184,
+      "mockPort": 3500
+    },
+    "markersAtKill": [
+      "crashfly-0q9vrr.pre"
+    ],
+    "hostKillPath": "process-group-kill",
+    "hostProvenancePath": "reclaim-scan",
+    "mockProvenancePath": "reclaim-scan",
+    "sweptByPeer": [],
+    "homeClaimantsAfterReclaim": [],
+    "reclaimReceipts": {
+      "killed": [],
+      "refused": [],
+      "leasesReleased": [
+        3184,
+        3500
+      ],
+      "leaseProvenance": [
+        {
+          "port": 3184,
+          "reclaimedFrom": {
+            "pid": 46,
+            "startedAt": "2026-10-28T04:32:51.650Z",
+            "world": "u5cbv-20261028T04-32-12Z",
+            "purpose": "host"
+          }
+        },
+        {
+          "port": 3500,
+          "reclaimedFrom": {
+            "pid": 46,
+            "startedAt": "2026-10-28T04:32:35.005Z",
+            "world": "u5cbv-20261028T04-32-12Z",
+            "purpose": "mock-provider"
+          }
+        }
+      ],
+      "leaseNotes": [],
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5cbv-20261028T04-32-12Z"
+    }
+  },
+  "crashSimulationControl": {
+    "ok": true,
+    "orphanPid": 278,
+    "orphanKilledOnlyAfterEnvironProof": true,
+    "refused": [],
+    "leaseReleased": true,
+    "homeDeleted": true,
+    "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+  },
+  "survivorSequencing": {
+    "killInsideSurvivorWindow": true,
+    "survivorHeldUntilReclaim": true,
+    "survivorProbeAfterReclaim": true,
+    "reclaimVictimOnly": true,
+    "pass": true,
+    "survivorHealthyAt": 1793162016809,
+    "killAt": 1793162017180,
+    "survivorLastProbeAt": 1793162018832,
+    "survivorTornDownAt": 1793162019118,
+    "victimKilledAndReclaimedAt": 1793162018759,
+    "probeRows": [
+      {
+        "at": 1793162016809,
+        "kind": "healthy",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162016811,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162017065,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162017318,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162017571,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162017824,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162018076,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162018329,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162018581,
+        "kind": "health",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      },
+      {
+        "at": 1793162018832,
+        "kind": "after-reclaim",
+        "world": "u5ca-20261028T04-32-54Z",
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T04-32-54Z"
+      }
+    ]
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-28T04:33:41.699Z"
+}
