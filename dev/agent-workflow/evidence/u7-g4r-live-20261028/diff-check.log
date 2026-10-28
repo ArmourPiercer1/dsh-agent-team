@@ -1,0 +1,54 @@
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:78: trailing whitespace.
++LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:79: trailing whitespace.
++LISTEN 0      50           0.0.0.0:139       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:80: trailing whitespace.
++LISTEN 0      50           0.0.0.0:445       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:81: trailing whitespace.
++LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:82: trailing whitespace.
++LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:83: trailing whitespace.
++LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:84: trailing whitespace.
++LISTEN 0      4096            [::]:22           [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:85: trailing whitespace.
++LISTEN 0      50              [::]:139          [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/BLOCKED.md:86: trailing whitespace.
++LISTEN 0      50              [::]:445          [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:2: trailing whitespace.
++LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:3: trailing whitespace.
++LISTEN 0      50           0.0.0.0:139       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:4: trailing whitespace.
++LISTEN 0      50           0.0.0.0:445       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:5: trailing whitespace.
++LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:6: trailing whitespace.
++LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:7: trailing whitespace.
++LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:8: trailing whitespace.
++LISTEN 0      4096            [::]:22           [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:9: trailing whitespace.
++LISTEN 0      50              [::]:139          [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-b/ss-ltn-pre.txt:10: trailing whitespace.
++LISTEN 0      50              [::]:445          [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:2: trailing whitespace.
++LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:3: trailing whitespace.
++LISTEN 0      50           0.0.0.0:139       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:4: trailing whitespace.
++LISTEN 0      50           0.0.0.0:445       0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:5: trailing whitespace.
++LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:6: trailing whitespace.
++LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:7: trailing whitespace.
++LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:8: trailing whitespace.
++LISTEN 0      4096            [::]:22           [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:9: trailing whitespace.
++LISTEN 0      50              [::]:139          [::]:*          
+dev/agent-workflow/evidence/u7-g4r-live-20261028/ss-ltn-baseline.txt:10: trailing whitespace.
++LISTEN 0      50              [::]:445          [::]:*          
