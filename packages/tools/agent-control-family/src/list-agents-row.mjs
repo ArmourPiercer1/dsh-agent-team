@@ -1,19 +1,14 @@
 /**
  * agent-control-family/src/list-agents-row.mjs — the governed `list_agents`
- * ROW Definition (U7-F). READ-ONLY ENUMERATION (law (a)): this row's effect
- * world is `tool-invoke` + `meta` ONLY — it never derives the domain-ref arm
- * and therefore never requests a mutation effect (the C1 leg pins it from
- * the PA request the row actually carries).
- *
+ * ROW Definition (U7-F). READ-ONLY ENUMERATION (law (a)).
  * @module agent-control-family/list-agents-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
   return Object.freeze({
     name,
-    output: { schema: { type: 'array', items: { oneOf: [
-      { type: 'object', additionalProperties: false, required: ['kind', 'id', 'label', 'status'], properties: { kind: { type: 'string', enum: ['child'] }, id: { type: 'string' }, label: { type: 'string' }, status: { type: 'string', enum: ['running', 'inactive'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
-      { type: 'object', additionalProperties: false, required: ['kind', 'id', 'reason'], properties: { kind: { type: 'string', enum: ['diagnostic'] }, id: { type: 'string' }, reason: { type: 'string', enum: ['corrupt', 'unsupported', 'unavailable'] }, parent: { type: 'string' }, depth: { type: 'number' } } },
-    ] } }, render: (_args, entries) => [{ type: 'text', text: entries.length === 0 ? '(no subagents)' : entries.map((entry) => `${entry.id} [${entry.kind === 'child' ? entry.status : `diagnostic: ${entry.reason}`}]`).join('\\n') }] },
+    output: { schema: nativeOutputSchemas.list_agents, render: (_args, entries) => [{ type: 'text', text: entries.length === 0 ? '(no subagents)' : entries.map((entry) => `${entry.id} [${entry.kind === 'child' ? entry.status : `diagnostic: ${entry.reason}`}]`).join('\\n') }] },
     description: 'List the subagents this session started (its own subagent catalog). Read-only enumeration: it declares no mutation effect and reaches no spawn, steer, or interrupt face of the runtime.',
     parameters: {
       type: 'object',
@@ -26,8 +21,6 @@ export function buildListAgentsRowDefinition({ name, listAgentsExecutor }) {
       const corr = {
         ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
-        // The DISPATCH-provided caller identity (native callingAgent law):
-        // trusted transport data — the model cannot express or restate it.
         ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await listAgentsExecutor(raw ?? {}, corr)

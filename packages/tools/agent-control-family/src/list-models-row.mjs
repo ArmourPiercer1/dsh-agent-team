@@ -6,10 +6,12 @@
  *
  * @module agent-control-family/list-models-row
  */
+import { nativeOutputSchemas } from './native-output-schemas.mjs'
+
 export function buildListModelsRowDefinition({ name, listModelsExecutor }) {
   return Object.freeze({
     name,
-    output: { schema: { type: 'string' }, render: (_args, result) => [{ type: 'text', text: result }] },
+    output: { schema: nativeOutputSchemas.list_subagent_models, render: (_args, result) => [{ type: 'text', text: result }] },
     description: 'Discover LLM routes for subagents without changing the current Agent. Call with no arguments to list providers, with provider to list its advertised models, or with provider and model to inspect that exact model and its reasoning efforts.',
     parameters: {
       type: 'object',
