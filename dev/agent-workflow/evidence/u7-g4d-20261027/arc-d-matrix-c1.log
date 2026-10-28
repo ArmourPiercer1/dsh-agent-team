@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4d
+
+ ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 160ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-matrix.test.ts (4 tests) 820ms
+     ✓ every offline leg PASSES on production seams — same oracle as sup-a: bodies, settle-class, event rows  793ms
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  03:36:13
+   Duration  1.32s (transform 1.15s, setup 0ms, import 726ms, tests 981ms, environment 0ms)
