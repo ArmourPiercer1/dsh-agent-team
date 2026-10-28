@@ -1,0 +1,676 @@
+{
+  "schema": "u6arcd-digest/1",
+  "runId": "u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z",
+  "snapshot": {
+    "schema": "u5-run-record/1",
+    "runId": "u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z",
+    "suite": "u6-arc-d",
+    "startedAt": "2026-10-28T11:22:54.573Z",
+    "selectedCases": [
+      "arcd:mounted",
+      "arcd:positive",
+      "arcd:spoof-zero-authority",
+      "arcd:swap-refused",
+      "arcd:unbound-refused",
+      "arcd:replay-refused",
+      "arcd:ci03-native-parity",
+      "arcd:restrict-veto",
+      "arcd:lift-control",
+      "arcd:marker-ledger",
+      "arcd:teardown-honest"
+    ],
+    "bindings": {
+      "teamSha": "ef9fbad53323893ecdb3651a7c2cdd7c8c0839a8",
+      "teamTreeClean": true,
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "composedProfileDigest": {
+        "u5g4rd2-20261028T11-22-54Z": [
+          "708c516ef20c1ccb5adfbbde128d0c9c965d311ae8e52d8e9b4e849f38b705a2"
+        ]
+      },
+      "trustedSourcesDigest": null,
+      "trustedSourcesUnavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.",
+      "trustedSources": {
+        "digest": null,
+        "unavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+      },
+      "worldOracleDigest": "16e25d723a5ca36e30ef50f353162654dbc38939ea33a3afed086592fbe330b5",
+      "worldOracle": {
+        "suite": "u6-arc-d",
+        "digest": "16e25d723a5ca36e30ef50f353162654dbc38939ea33a3afed086592fbe330b5",
+        "complete": true,
+        "entry": "tests/world-factory/suites/050-u6-arc-d.mjs",
+        "sources": [
+          "tests/kits/_shared/preset-seam.mjs",
+          "tests/world-factory/lib/u6-arc-d-assembly.mjs",
+          "tests/world-factory/lib/u6-fs-assembly.mjs",
+          "tests/world-factory/suites/050-u6-arc-d.mjs"
+        ],
+        "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+        "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+        "excludedHelpers": [
+          "tests/world-factory/lib/world-factory.mjs"
+        ],
+        "externalSpecifiers": [
+          "node:fs",
+          "node:module",
+          "node:path",
+          "node:url"
+        ],
+        "unfollowedPaths": [],
+        "unresolvedDynamicImports": [],
+        "unresolvedLiteralReads": [],
+        "literalReadsComplete": true,
+        "missingSources": [],
+        "artifactPath": "dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z.oracle.json",
+        "artifactSha256": "e982783f3c108d776d3171ecbf4b61db1f97de26c03ad6b686d16e2f039698f2",
+        "evidence": [
+          {
+            "path": "dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z.oracle.json",
+            "sha256": "e982783f3c108d776d3171ecbf4b61db1f97de26c03ad6b686d16e2f039698f2",
+            "kind": "world-oracle-source-artifact"
+          }
+        ]
+      },
+      "oracleArtifactPath": "dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z.oracle.json",
+      "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+      "hostPorcelainEmptyAtStartup": true,
+      "authority": {
+        "pointerPath": "dev/engineering/current-authority.json",
+        "pointer": {
+          "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+          "snapshot_version": "as20261026r1"
+        },
+        "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+        "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+      },
+      "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+      "worldIds": [
+        "u5g4rd2-20261028T11-22-54Z"
+      ],
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/tests/deepseek-harness-test-use",
+      "provider": {
+        "kind": "mock-deepseek",
+        "base": "injected http://127.0.0.1:<leased-port>"
+      },
+      "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+      "profileArtifacts": [
+        {
+          "worldId": "u5g4rd2-20261028T11-22-54Z",
+          "composedProfileDigest": "708c516ef20c1ccb5adfbbde128d0c9c965d311ae8e52d8e9b4e849f38b705a2",
+          "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/logs/u5g4rd2-20261028T11-22-54Z/composed-profile-708c516ef20c1ccb5adfbbde128d0c9c965d311ae8e52d8e9b4e849f38b705a2.patch.yml",
+          "artifactDigest": "708c516ef20c1ccb5adfbbde128d0c9c965d311ae8e52d8e9b4e849f38b705a2",
+          "launchPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/tests/homes/u5g4rd2-20261028T11-22-54Z/profiles/web/cordis.patch.yml",
+          "launchedBytes": 4715,
+          "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+          "launchedDigest": "708c516ef20c1ccb5adfbbde128d0c9c965d311ae8e52d8e9b4e849f38b705a2",
+          "composedProfileDigestMismatch": false
+        }
+      ]
+    },
+    "cases": [],
+    "hostStarts": {
+      "ledgerPath": "dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/host-starts-retry.jsonl",
+      "thisRunCount": 1,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-28T11:23:23.485Z",
+          "runId": "u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z",
+          "suite": "u6-arc-d",
+          "world": "u5g4rd2-20261028T11-22-54Z",
+          "phase": "u6arcd-boot1"
+        }
+      ]
+    },
+    "evidence": [
+      {
+        "path": "dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/u5-u6-arc-d-g4rd2-2026-10-28T11-22-54-448Z.oracle.json",
+        "sha256": "e982783f3c108d776d3171ecbf4b61db1f97de26c03ad6b686d16e2f039698f2",
+        "kind": "world-oracle-source-artifact"
+      }
+    ],
+    "boots": [
+      {
+        "phase": "u6arcd-boot1",
+        "world": "u5g4rd2-20261028T11-22-54Z",
+        "port": 3184,
+        "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/dev/agent-workflow/evidence/u7-g4r-live-20261028/arc-d/logs/u5g4rd2-20261028T11-22-54Z/instance-port3184.log"
+      }
+    ],
+    "u6arcdLanes": {
+      "native": true,
+      "pos": true,
+      "spoof": true,
+      "swap": true,
+      "unbound": true,
+      "replay": true,
+      "teardown": true,
+      "postTeardown": true,
+      "pairRestrict": true,
+      "pairLift": true,
+      "leader": true
+    },
+    "u6arcdDigest": {
+      "mockTail": [
+        {
+          "seq": 26,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "bash",
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_pair_effect",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 27,
+          "replyKind": "tool-call"
+        },
+        {
+          "seq": 27,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "bash",
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_pair_effect",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 29,
+          "replyKind": "text"
+        },
+        {
+          "seq": 28,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "bash",
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_pair_effect",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 31,
+          "replyKind": "tool-call"
+        },
+        {
+          "seq": 29,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 33,
+          "replyKind": "tool-call"
+        },
+        {
+          "seq": 30,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 35,
+          "replyKind": "text"
+        },
+        {
+          "seq": 31,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 37,
+          "replyKind": "tool-call"
+        },
+        {
+          "seq": 32,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "bash",
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_pair_effect",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 39,
+          "replyKind": "tool-call"
+        },
+        {
+          "seq": 33,
+          "path": "/v1/messages",
+          "status": 200,
+          "mockError": null,
+          "model": "u6arcd-model",
+          "stream": true,
+          "toolNames": [
+            "bash",
+            "edit",
+            "glob",
+            "grep",
+            "read",
+            "read_image",
+            "team_archive_member",
+            "team_collect",
+            "team_create_member",
+            "team_delegate",
+            "team_follow_up",
+            "team_grant_permission",
+            "team_inspect_config",
+            "team_list_members",
+            "team_list_pending_control",
+            "team_list_templates",
+            "team_report_progress",
+            "team_request_control",
+            "team_resolve_control",
+            "team_revoke_permission",
+            "team_send_message",
+            "u5_canary",
+            "u6arcd_govern",
+            "u6arcd_pair_effect",
+            "u6arcd_probe",
+            "write"
+          ],
+          "nMessages": 41,
+          "replyKind": "text"
+        }
+      ],
+      "surface": [
+        "bash",
+        "edit",
+        "glob",
+        "grep",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6arcd_govern",
+        "u6arcd_pair_effect",
+        "u6arcd_probe",
+        "write"
+      ],
+      "denyList": [
+        "glob",
+        "grep",
+        "u5_canary",
+        "u6arcd_govern",
+        "u6arcd_pair_effect",
+        "u6arcd_probe"
+      ],
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "nonceMatches": true,
+      "nativeEvidence": {
+        "readFromDisk": true,
+        "present": true,
+        "contentMatches": true,
+        "pathTail": "u6arcd-native-effect.txt"
+      },
+      "nativeGrepParity": {
+        "claimOccurrences": 3
+      },
+      "pairEvidence": {
+        "pairDeny": {
+          "readFromDisk": true,
+          "present": false,
+          "contentMatches": false,
+          "marker": "U6ARCD_PAIR_DENY_u5g4rd2-20261028t11-22-54z",
+          "pathTail": "u6arcd-pair-denied.txt"
+        },
+        "pairLift": {
+          "readFromDisk": true,
+          "present": true,
+          "contentMatches": true,
+          "marker": "U6ARCD_PAIR_LIFT_u5g4rd2-20261028t11-22-54z",
+          "pathTail": "u6arcd-pair-lift.txt"
+        }
+      },
+      "effectNotes": {
+        "distinct": 8,
+        "heads": [
+          "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u6arcd-team-u5g4rd2-20261028t11-22-54z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-15jbn1p0wz73 [x4]",
+          "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u6arcd-team-u5g4rd2-20261028t11-22-54z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-15jbn1p0wz73\",\"fromL [x3]",
+          "Found 1 match\n\nnotes/u6arcd-native.txt\nLine 1: U6ARCD_NATIVE_CLAIM_u5g4rd2-20261028t11-22-54z [x3]",
+          "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/tests/homes/u5g4rd2-20261028T11-22-54Z/workspace/u6arcd-native-effect.txt</path>\n<type>file</type>\n<content>\n1: PENDING_U6ARCD_EFFECT [x2]",
+          "The file /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/tests/homes/u5g4rd2-20261028T11-22-54Z/workspace/u6arcd-native-effect.txt has been updated successfully.",
+          "{\"action\":\"walk\",\"ok\":true,\"stage\":\"executed\",\"marker\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/tests/homes/u5g4rd2-20261028T11-22-54Z/workspace/u6arcd-markers/pos-1-marker.txt\"} [x19]",
+          "{\"ok\":true,\"action\":\"restrict-on\",\"detail\":\"restricted:bash,u6arcd_pair_effect\"} [x5]",
+          "Error: unknown tool \"u6arcd_pair_effect\" [x4]"
+        ]
+      },
+      "laneDone": {
+        "native": true,
+        "pos": true,
+        "spoof": true,
+        "swap": true,
+        "unbound": true,
+        "replay": true,
+        "teardown": true,
+        "postTeardown": true,
+        "pairRestrict": true,
+        "pairLift": true,
+        "leader": true
+      },
+      "probeLedgerRows": 15,
+      "governRows": [
+        {
+          "action": "restrict-on",
+          "ok": true,
+          "detail": "restricted:bash,u6arcd_pair_effect"
+        },
+        {
+          "action": "restrict-off",
+          "ok": true,
+          "detail": "restriction-lifted"
+        }
+      ],
+      "probeRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "callId": "pos-1",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "spoof",
+          "callId": "spoof-1",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "swap",
+          "callId": "swap-1",
+          "ok": false,
+          "code": "IDENTITY_MISMATCH",
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "callId": "unbound-1",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "callId": "replay-1",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "callId": "post-1",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        },
+        {
+          "leg": "govern",
+          "action": "restrict-on",
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "govern",
+          "action": "restrict-off",
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "pair-effect",
+          "action": null,
+          "callId": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        }
+      ]
+    }
+  }
+}
