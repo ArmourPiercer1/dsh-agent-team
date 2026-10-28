@@ -75,15 +75,15 @@ both OUT OF SCOPE for this lane and deliberately NOT done here.
 ```
 ```
 State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
-LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
-LISTEN 0      50           0.0.0.0:139       0.0.0.0:*          
-LISTEN 0      50           0.0.0.0:445       0.0.0.0:*          
-LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
-LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
-LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
-LISTEN 0      4096            [::]:22           [::]:*          
-LISTEN 0      50              [::]:139          [::]:*          
-LISTEN 0      50              [::]:445          [::]:*          
+LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*
+LISTEN 0      50           0.0.0.0:139       0.0.0.0:*
+LISTEN 0      50           0.0.0.0:445       0.0.0.0:*
+LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*
+LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*
+LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*
+LISTEN 0      4096            [::]:22           [::]:*
+LISTEN 0      50              [::]:139          [::]:*
+LISTEN 0      50              [::]:445          [::]:*
 ```
 
 ps -eo pid,cmd | grep -E "apps/cli|canary-runner" — empty (no stray processes). curl :3080 → 401 (unchanged).
