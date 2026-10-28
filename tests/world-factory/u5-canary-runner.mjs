@@ -282,12 +282,8 @@ async function evaluateLeak({ world, receipts, factory }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // core: one World, one boot (plus optional restart leg)
 // ─────────────────────────────────────────────────────────────────────────────
-export async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle, io = undefined }) {
-  // The default is the production IO path. Tests may inject the same shape, but
-  // never a parallel timing implementation: every probe still goes through this
-  // function and is recorded with its result evidence.
-  const probeIo = io ?? {
-    async probe() {
+const REAL_SURVIVOR_IO = Object.freeze({
+  async probe({ world, origin }) {
       const cookie = await authenticate(origin, world.token)
       const health = await fetch(`${origin}/`, { headers: { cookie }, signal: AbortSignal.timeout(10_000) })
       const healthBytes = await health.text()
@@ -303,11 +299,20 @@ export async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle,
         },
       }
     },
-  }
+})
+export { REAL_SURVIVOR_IO }
+
+export async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle, io = undefined, simulated: simulatedOverride = undefined }) {
+  // The default is the frozen production IO path. Tests may inject the same
+  // shape, but injected rows are explicitly simulated and cannot be live evidence.
+  const simulated = simulatedOverride ?? (io !== undefined)
+  const probeIo = io ?? REAL_SURVIVOR_IO
   const healthy = { at: null }
   const writeProbe = (kind, result) => {
     const row = {
       at: Date.now(), kind, ok: result.ok === true, status: result.status ?? 0,
+      simulated,
+      evidenceKind: simulated ? 'injected-io' : 'real-io',
       evidence: result.evidence ?? { reason: 'probe IO returned no evidence' },
       world: world.id, home: world.home,
     }

@@ -114,6 +114,8 @@ export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivor
 }
 
 export async function runSurvivorDryRun({ io = undefined } = {}) {
+  const injected = io !== undefined
+  const simulated = true
   mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
   const sharedLeaseRoot = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-evidence') }).leaseRoot
   const sharedBefore = leaseRootSnapshot(sharedLeaseRoot)
@@ -129,7 +131,7 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
       },
     }
     const probeLog = `${holdUntil}.jsonl`
-    const holdPromise = holdSurvivor({ world: fakeWorld, origin: 'http://fake-survivor', holdUntil, probeLog, oracle: null, io: probeIo })
+    const holdPromise = holdSurvivor({ world: fakeWorld, origin: 'http://fake-survivor', holdUntil, probeLog, oracle: null, io: probeIo, simulated: injected })
     await sleep(1)
     writeFileSync(holdUntil, 'victimKilledAndReclaimed\n')
     const hold = await holdPromise
@@ -139,7 +141,10 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
       victimKilledAndReclaimedAt: hold.lastProbeAt - 1,
       survivorLastProbeAt: hold.lastProbeAt,
       survivorTornDownAt: hold.lastProbeAt + 1,
-      survivorProbes: readFileSync(probeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => JSON.parse(line)),
+      survivorProbes: readFileSync(probeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => {
+        const digest = JSON.parse(line)
+        return injected ? digest : assertLiveDigest(digest)
+      }),
       survivorHostPidBefore: 42,
       survivorHostPidAfter: hold.survivorIdentity.pid,
       survivorWorldIdBefore: 'fake-survivor',
@@ -152,7 +157,15 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
     const simulation = await crashSimulationControl({ factory: simulationFactory })
     const sharedFinal = leaseRootSnapshot(sharedLeaseRoot)
     const sharedLeaseRootUnchanged = JSON.stringify(sharedBefore) === JSON.stringify(sharedAfter) && JSON.stringify(sharedBefore) === JSON.stringify(sharedFinal)
-    return { ...sequencing, simulation, sharedLeaseRoot, sharedLeaseRootUnchanged, pass: sequencing.pass && simulation.ok && sharedLeaseRootUnchanged }
+    return {
+      ...sequencing,
+      simulation,
+      sharedLeaseRoot,
+      sharedLeaseRootUnchanged,
+      simulated: injected,
+      evidenceKind: injected ? 'injected-io' : 'real-io',
+      pass: sequencing.pass && simulation.ok && sharedLeaseRootUnchanged,
+    }
   } finally {
     try { unlinkSync(holdUntil) } catch {}
     try { unlinkSync(`${holdUntil}.jsonl`) } catch {}
@@ -184,6 +197,19 @@ function git(args) {
   const r = spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' })
   if (r.status !== 0) throw new Error(`git ${args.join(' ')} exit ${String(r.status)}`)
   return String(r.stdout).trim()
+}
+
+/** Team-repo provenance is distinct from the pristine test-use Host tree. */
+export function teamTreeBinding({ runGit = git } = {}) {
+  const porcelain = runGit(['status', '--porcelain', '--untracked-files=no'])
+  const paths = porcelain.split('\\n').filter(Boolean).slice(0, 8).map((line) => line.slice(3))
+  return { teamTreeClean: paths.length === 0, ...(paths.length > 0 ? { teamTreeDirtyPaths: paths } : {}) }
+}
+
+/** A simulated digest must never be accepted as a live verdict input. */
+export function assertLiveDigest(digest) {
+  if (digest?.simulated === true) throw new Error('simulated evidence cannot be consumed as a live verdict')
+  return digest
 }
 
 /**
@@ -348,7 +374,8 @@ export async function runParallelSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
-      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
       authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
@@ -578,7 +605,8 @@ export async function runCrashReclaimSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
-      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
       authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
@@ -904,7 +932,8 @@ export async function reconstructCrash(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
-      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
       authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
@@ -987,7 +1016,8 @@ export async function reconstructParallel(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
-      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
       authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
@@ -1071,7 +1101,7 @@ async function main() {
   try {
     if (opts.dryRun) {
       const dry = await runSurvivorDryRun()
-      rec = { schema: 'u5-dry-run/1', runId: 'u5-dry-run', suite: 'crash-reclaim', overall: dry.pass ? 'PASS' : 'FAIL', cases: [{ id: 'survivor-hold-ordering', verdict: dry.pass ? 'PASS' : 'FAIL', ...dry }], bindings: { mode: 'dry-run', spawns: 0, authority: readAuthorityBinding(REPO_ROOT), teamTreeClean: true } }
+      rec = { schema: 'u5-dry-run/1', runId: 'u5-dry-run', suite: 'crash-reclaim', overall: dry.pass ? 'PASS' : 'FAIL', simulated: dry.simulated, evidenceKind: dry.evidenceKind, cases: [{ id: 'survivor-hold-ordering', verdict: dry.pass ? 'PASS' : 'FAIL', ...dry }], bindings: { mode: 'dry-run', spawns: 0, authority: readAuthorityBinding(REPO_ROOT), hostTreePristine: true, ...teamTreeBinding() } }
     } else if (opts.reconstruct !== null) {
       const live = safeReadJson(opts.reconstruct)
       rec = live?.bindings?.mode === 'crash-reclaim' ? await reconstructCrash(opts) : await reconstructParallel(opts)

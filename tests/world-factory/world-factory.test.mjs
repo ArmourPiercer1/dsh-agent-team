@@ -41,7 +41,8 @@ import { acquireFirstFreeLease, acquirePortLease, candidatePorts, reclaimStaleLe
 import { appendCappedLine, DEFAULT_LEDGER_CAP_BYTES, MAX_LEDGER_CAP_BYTES } from './canary/ledger-cap.mjs'
 import { createOracle } from './lib/oracle.mjs'
 import { createRunRecord, formatSummary, exitCodeFor, overallVerdict } from './lib/run-record.mjs'
-import { evaluateSurvivorSequencing, runSurvivorDryRun } from './u5-parallel-supervisor.mjs'
+import { assertLiveDigest, evaluateSurvivorSequencing, runSurvivorDryRun, teamTreeBinding } from './u5-parallel-supervisor.mjs'
+import { REAL_SURVIVOR_IO } from './u5-canary-runner.mjs'
 import { deleteWorldHomeIfMarked, validateWorldName, TestWorldFactory, HostBaseError } from './lib/world-factory.mjs'
 import { makeCanaryDecide, findToolResultInMessages, requestHasTool } from './lib/mock-script.mjs'
 import { HOST_PORT_BANDS, isSanctionedTestPort, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../paths.mjs'
@@ -63,7 +64,25 @@ function deadPid() {
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 test('C1 dry-run uses supervisor path without starts and proves hold ordering', async () => {
-  assert.equal((await runSurvivorDryRun()).pass, true)
+  const real = await runSurvivorDryRun({ io: undefined })
+  assert.equal(real.pass, true)
+  assert.equal(real.simulated, false)
+  assert.equal(real.evidenceKind, 'real-io')
+  const injected = await runSurvivorDryRun({ io: { async probe() { return { ok: true, status: 200, evidence: { fake: true } } } } })
+  assert.equal(injected.pass, true)
+  assert.equal(injected.simulated, true)
+  assert.equal(injected.evidenceKind, 'injected-io')
+  assert.throws(() => assertLiveDigest({ simulated: true }), /simulated evidence/)
+  assert.equal(assertLiveDigest({ simulated: false }).simulated, false)
+  assert.equal(REAL_SURVIVOR_IO === Object.freeze(REAL_SURVIVOR_IO), true)
+})
+
+test('C1 team-tree provenance is independent and fail-closed on dirty tracked paths', () => {
+  assert.deepEqual(teamTreeBinding({ runGit: () => ' M tests/world-factory/world-factory.test.mjs' }), {
+    teamTreeClean: false,
+    teamTreeDirtyPaths: ['tests/world-factory/world-factory.test.mjs'],
+  })
+  assert.deepEqual(teamTreeBinding({ runGit: () => '' }), { teamTreeClean: true })
 })
 
 test('C1 survivor sequencing is fail-closed with real successful probes and identity continuity', () => {
