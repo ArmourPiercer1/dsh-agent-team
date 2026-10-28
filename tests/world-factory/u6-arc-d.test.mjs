@@ -24,6 +24,46 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+test('G4-D recorded native failure: same mock drive reads exact effect before edit; missing observation mutation stays RED', async () => {
+  const { createArcDAssembly, makeArcDDecide, judgeU6ArcD } = await import('./lib/u6-arc-d-assembly.mjs')
+  const recorded = JSON.parse(readFileSync(new URL('../../dev/agent-workflow/evidence/u7-g4d-20261027/recorded-native-failure.json', import.meta.url), 'utf8'))
+  assert.equal(recorded.overall, 'FAIL')
+  assert.deepEqual(recorded.cases.filter((c) => c.verdict !== 'PASS').map((c) => c.id), ['arcd:ci03-native-parity'])
+  assert.ok(recorded.effectNotes.heads.some((s) => s.includes('file has not been read')))
+  const a = createArcDAssembly({ repoRoot: process.cwd(), home: '/tmp/g4d-replay', runStamp: 'recorded-replay', reportDir: '/tmp/g4d-replay' })
+  const messages = [{ role: 'user', content: `[team-work requestToken=${a.tokens('d1')} x]` }]
+  const decide = makeArcDDecide({ assembly: a })
+  // Pure simulated public observation/effect receipt: no disk write or boot.
+  // This executes the actual production mock driver, not a second recipe.
+  let observed = false
+  let bytes = `${a.files.nativeEffect.placeholder}\n`
+  const calls = []
+  for (let i = 0; i < 5; i += 1) {
+    const reply = decide({ req: { body: { messages } } })
+    if (reply.kind === 'text') break
+    const call = reply.toolCalls[0]
+    calls.push(call.name)
+    const args = call.arguments
+    if (call.name === 'read') {
+      assert.equal(args.file_path, a.files.nativeEffect.path)
+      observed = true
+    }
+    if (call.name === 'edit') {
+      assert.equal(observed, true, 'recorded failure: edit without native read must remain RED')
+      assert.equal(args.file_path, a.files.nativeEffect.path)
+      bytes = bytes.replace(args.old_string, args.new_string)
+    }
+    messages.push({ role: 'assistant', content: [{ type: 'tool_use', id: `t${i}`, name: call.name, input: args }] }, { role: 'user', content: [{ type: 'tool_result', tool_use_id: `t${i}`, content: [{ type: 'text', text: 'settled' }] }] })
+  }
+  assert.deepEqual(calls, ['grep', 'read', 'edit'])
+  const verdict = (ne) => judgeU6ArcD({ probeRows: [], markerFiles: [], markerNonces: {}, nativeEvidence: ne, hostAlive: true }).find(([id]) => id === 'arcd:ci03-native-parity')[1]
+  assert.equal(verdict(recorded.nativeEvidence), 'FAIL', 'historical direct-disk oracle correctly stays RED')
+  const corrected = { readFromDisk: true, present: true, contentMatches: bytes === `${a.files.nativeEffect.marker}\n` }
+  assert.equal(verdict(corrected), 'PASS')
+  assert.equal(verdict({ ...corrected, contentMatches: false }), 'FAIL', 'missing-read/unchanged-placeholder mutation is RED')
+  assert.equal(verdict({ ...corrected, readFromDisk: false }), 'FAIL', 'tool-result-only mutation is RED')
+})
+
 const CASE_IDS = [
   'arcd:mounted', 'arcd:positive', 'arcd:spoof-zero-authority', 'arcd:swap-refused',
   'arcd:unbound-refused', 'arcd:replay-refused', 'arcd:ci03-native-parity',
@@ -322,15 +362,10 @@ test('u6-arc-d: makeArcDDecide answers each trigger with ONE probe call and clos
     assert.equal(argsOf(g).path, join(a.workspaceDir, 'notes'))
     assert.ok(argsOf(g).path.startsWith('/'), 'ABSOLUTE path everywhere the fs-proven convention')
     const w = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true })] } } })
-    // E1: the native lane PRODUCES a disk effect — it tries BOTH native
-    // write spellings (bash redirect at a FLAT workspace-root path, then
-    // the builtin write tool), because boot-3 measured the confined
-    // provider refusing bash writes and CI-03 compares the whole legacy
-    // surface. The verdict basis is what the ORACLE reads back off disk.
-    assert.equal(nameOf(w), 'bash', 'the native lane PRODUCES its disk effect through native tools (E1) — the verdict basis is what the oracle reads off disk, not any tool answer')
-    assert.ok(String(argsOf(w).command).includes(a.files.nativeEffect.path), 'the effect path is the assembly file the oracle will read')
-    assert.ok(String(argsOf(w).command).includes(a.files.nativeEffect.marker), 'the effect command carries the run-unique marker')
-    assert.ok(String(argsOf(w).command).includes('>'), 'the effect command WRITES (a pure read would launder the verdict)')
+    // E1: native read of the exact effect placeholder must precede edit.
+    // Grep of notes is only the separately recorded parity arm.
+    assert.equal(nameOf(w), 'read', 'native read establishes edit observation on the exact effect file')
+    assert.equal(argsOf(w).file_path, a.files.nativeEffect.path)
     assert.ok(!a.files.nativeEffect.path.includes('/notes/'), 'FLAT workspace-root shape (sub-dir writes measure sandbox refusal, not the lane)')
     // boot-4 measured law: this pin's census-boot surface carries NO builtin
     // write tool (toolNames: bash/edit/glob/grep/read/read_image + team_*),
@@ -338,12 +373,12 @@ test('u6-arc-d: makeArcDDecide answers each trigger with ONE probe call and clos
     // spelling the oracle compares is the NATIVE EDIT surface on the
     // placeholder-seeded effect file: only the lane's edit can turn the
     // placeholder into the run-unique marker.
-    const wr = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'bash', {}), result('tb', { stdout: 'Permission denied' })] } } })
-    assert.equal(nameOf(wr), 'edit', 'the native lane also drives the builtin edit surface — the whole legacy write surface is compared, and a sandbox-refused bash is answered by the next native spelling, never by laundering')
+    const wr = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'read', { file_path: a.files.nativeEffect.path }), result('tb', { text: a.files.nativeEffect.placeholder })] } } })
+    assert.equal(nameOf(wr), 'edit', 'native edit follows the required read observation')
     assert.equal(argsOf(wr).file_path, a.files.nativeEffect.path, 'the edit targets the same assembly file the oracle reads')
     assert.equal(argsOf(wr).old_string, a.files.nativeEffect.placeholder, 'the edit replaces ONLY the fixture placeholder')
     assert.ok(String(argsOf(wr).new_string).includes(a.files.nativeEffect.marker), 'the edit content is the run-unique marker')
-    const g2 = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'bash', {}), result('tb', { stdout: 'Permission denied' }), use('te', 'edit', {}), result('te', { ok: true })] } } })
+    const g2 = nd({ req: { body: { messages: [...nreq.body.messages, use('t9', 'grep', {}), result('t9', { hit: true }), use('tb', 'read', { file_path: a.files.nativeEffect.path }), result('tb', { text: a.files.nativeEffect.placeholder }), use('te', 'edit', {}), result('te', { ok: true })] } } })
     assert.deepEqual(g2, { kind: 'text', content: 'U6ARCD_NATIVE_DONE' })
     // the leader chain (the arc-a PHASES idiom): create -> the REAL
     // instance id from the tool_result -> async delegate with requestToken

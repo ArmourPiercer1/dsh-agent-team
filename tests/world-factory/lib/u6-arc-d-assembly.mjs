@@ -287,7 +287,7 @@ export function makeArcDDecide({ assembly }) {
   const pair = { leg: null, step: 0 }
   const PHASES = [
     { kind: 'create', template: 'native', tok: 'c1', label: 'arcd-native' },
-    { kind: 'delegate', tok: 'd1', prompt: `${markers.MK_NATIVE} run the native script exactly: one grep for the claim, then say U6ARCD_NATIVE_DONE.`, which: 'native', fence: 'U6ARCD_NATIVE_DONE' },
+    { kind: 'delegate', tok: 'd1', prompt: `${markers.MK_NATIVE} run the native script exactly: grep the claim, read the effect placeholder, edit it to the run marker, then say U6ARCD_NATIVE_DONE.`, which: 'native', fence: 'U6ARCD_NATIVE_DONE' },
   ]
   let phase = 0
   let fenceRounds = 0
@@ -322,7 +322,7 @@ export function makeArcDDecide({ assembly }) {
       if (tool === 'u6arcd_probe') return 'trigger-close'
       if (tool === 'u6arcd_govern') return 'pair-step2'
       if ((tool === 'u6arcd_pair_effect' || tool === 'bash') && pair.step === 2) return 'pair-close'
-      if (tool === 'grep' || tool === 'edit' || (tool === 'write' && steps.native === 3) || (tool === 'bash' && steps.native === 2)) return 'native'
+      if (tool === 'grep' || tool === 'read' || tool === 'edit') return 'native'
       if (tool !== null && tool.startsWith('team_')) return 'leader'
       return 'other'
     }
@@ -395,14 +395,10 @@ export function makeArcDDecide({ assembly }) {
       // DISK EFFECT the oracle reads independently of any tool return — the
       // verdict's real basis.
       if (steps.native === 0) { steps.native = 1; return toolCall('grep', { pattern: assembly.files.native.claim, path: join(assembly.workspaceDir, 'notes') }) }
-      // boot-3 measured: the confined provider refuses bash workspace writes
-      // (Permission denied in the settle). The native lane now tries BOTH
-      // native write spellings — the bash redirect AND the builtin write
-      // tool — because the ORACLE decides on disk, and every spelling the
-      // legacy surface actually has is part of what CI-03 compares. Whichever
-      // (if any) lands is the honest effect; the settle texts ride the
-      // digest's effectNotes as diagnosis.
-      if (steps.native === 1) { steps.native = 2; return toolCall('bash', { command: `printf '%s\\n' '${assembly.files.nativeEffect.marker}' > '${assembly.files.nativeEffect.path}' 2>&1; cat '${assembly.files.nativeEffect.path}' 2>&1`, description: 'u6arcd CI-03 native effect attempt 1: bash redirect (flat workspace root)' }) }
+      // #400 recorded: bash was sandbox-refused; edit then failed because
+      // shell cat/grep of a different file is NOT native read observation.
+      // Drive the public native read-before-edit contract on the exact file.
+      if (steps.native === 1) { steps.native = 2; return toolCall('read', { file_path: assembly.files.nativeEffect.path }) }
       if (steps.native === 2) { steps.native = 3; return toolCall('edit', { file_path: assembly.files.nativeEffect.path, old_string: assembly.files.nativeEffect.placeholder, new_string: assembly.files.nativeEffect.marker }) }
       return { kind: 'text', content: 'U6ARCD_NATIVE_DONE' }
     }
@@ -541,7 +537,7 @@ export function judgeU6ArcD({ probeRows, markerFiles, markerNonces, nativeEviden
   // surface touched the world.
   {
     const ne = nativeEvidence ?? {}
-    add('arcd:ci03-native-parity', ne.present === true && ne.contentMatches === true ? 'PASS' : 'FAIL', {
+    add('arcd:ci03-native-parity', ne.readFromDisk === true && ne.present === true && ne.contentMatches === true ? 'PASS' : 'FAIL', {
       diskEffect: { present: ne.present === true, contentMatches: ne.contentMatches === true, readFromDisk: ne.readFromDisk === true, path: ne.pathTail ?? null },
       nativeGrepParity: nativeGrepParity ?? null,
     })

@@ -1,0 +1,89 @@
+{
+  "source": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/arc-d-r2/run-record.json",
+  "overall": "FAIL",
+  "cases": [
+    {
+      "id": "arcd:mounted",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:positive",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:spoof-zero-authority",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:swap-refused",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:unbound-refused",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:replay-refused",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:ci03-native-parity",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "arcd:restrict-veto",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:lift-control",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:marker-ledger",
+      "verdict": "PASS"
+    },
+    {
+      "id": "arcd:teardown-honest",
+      "verdict": "PASS"
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS"
+    }
+  ],
+  "nativeEvidence": {
+    "readFromDisk": true,
+    "present": true,
+    "contentMatches": false,
+    "pathTail": "u6arcd-native-effect.txt"
+  },
+  "nativeGrepParity": {
+    "claimOccurrences": 3
+  },
+  "effectNotes": {
+    "distinct": 8,
+    "heads": [
+      "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-u6arcd-team-u5u7w0br2-20261026t21-16-07z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-008ejwx198 [x4]",
+      "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-u6arcd-team-u5u7w0br2-20261026t21-16-07z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-008ejwx198bk\",\"fro [x3]",
+      "Found 1 match\n\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0br2-20261026T21-16-07Z/workspace/notes/u6arcd-native.txt\nLine 1: U6ARCD_NATIVE_CLAIM_u5u7w0br2-20261026t21- [x3]",
+      "bash: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0br2-20261026T21-16-07Z/workspace/u6arcd-native-effect.txt: Permission denied\nPENDING_U6ARCD_EFFECT\n[Command finished [x2]",
+      "Error: cannot modify \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0br2-20261026T21-16-07Z/workspace/u6arcd-native-effect.txt\": file has not been read — read the file, ",
+      "{\"action\":\"walk\",\"ok\":true,\"stage\":\"executed\",\"marker\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-w0b/tests/homes/u5u7w0br2-20261026T21-16-07Z/workspace/u6arcd-markers/pos-1-marker.txt\"} [x19]",
+      "{\"ok\":true,\"action\":\"restrict-on\",\"detail\":\"restricted:bash,u6arcd_pair_effect\"} [x5]",
+      "Error: unknown tool \"u6arcd_pair_effect\" [x4]"
+    ]
+  },
+  "laneDone": {
+    "native": true,
+    "pos": true,
+    "spoof": true,
+    "swap": true,
+    "unbound": true,
+    "replay": true,
+    "teardown": true,
+    "postTeardown": true,
+    "pairRestrict": true,
+    "pairLift": true,
+    "leader": true
+  }
+}
