@@ -156,3 +156,65 @@ ledger edit, no merge, no force-push, no `git add -A`; nothing but the evidence
 paths was committed until after all boots finished; `:3080` never booted nor
 written; no gate verdict claimed; the ARC-B blockage and the Jobs ENV leg are
 reported as-is.
+
+## Dated correction (2026-10-28) — the native-leg root cause was a provisioning gap, not a host limit
+
+Append-only; cross-references the ENV_BLOCK note above ("a **host-environment
+block** identical in cause to G4-R carried risk R-G4R-2") and the same
+attribution in the PR #427 body. No evidence record is edited or relabeled.
+The attribution was wrong for this machine: the host CAN confine — THIS
+worktree's runtime clone lacked the gitignored Landlock launcher binary.
+
+**Resolution chain.** `tests/deepseek-harness-test-use/native/system/packages/entry/lib/index.js`:
+`launcherPath()` = `<hostTree>/native/system/packages/linux-x64/bin/landlock-run`
+(`LAUNCHER_BIN = 'landlock-run'`); `probe()` runs it via
+`spawnSync(launcher, ['--probe'])` — a missing binary probes `unusable`.
+
+**Re-verified 2026-10-28 from `/srv/workspace/dsh-plugins/dsh-agent-team`.
+Main checkout — the host itself is fine:**
+
+```
+$ node --input-type=module -e "const m=await import('./tests/deepseek-harness-test-use/native/system/packages/entry/lib/index.js');console.log(m.launcherPath(),m.probe())"
+…/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run partial
+```
+
+**This worktree's runtime clone (the tree the Jobs leg ran against) — unusable:**
+
+```
+$ node --input-type=module -e "const m=await import('./.worktrees/u7-g4r2/tests/deepseek-harness-test-use/native/system/packages/entry/lib/index.js');console.log(m.launcherPath(),m.probe())"
+…/.worktrees/u7-g4r2/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run unusable
+$ ls …/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/        # main checkout
+-rwxr-xr-x 1 user user 38552 Oct  1 12:31 landlock-run
+$ ls …/.worktrees/u7-g4r2/tests/…/native/system/packages/linux-x64/bin/             # this worktree
+drwxr-xr-x 2 user user 4096 Oct 28 11:12 glibc      # landlock-run ABSENT
+```
+
+**Why the clone cannot carry it.** The binary is untracked: `git -C
+tests/deepseek-harness-test-use check-ignore -v native/system/packages/linux-x64/bin/landlock-run`
+→ `native/system/.gitignore:4:packages/*/bin/`. TEST_METHODS §2's documented
+fresh-worktree provisioning is `git clone --local --no-hardlinks …` — tracked
+objects only — so the gitignored launcher never travels with it.
+
+**bwrap is genuinely unusable here** (real error, both with and without
+`--unshare-user`): `bwrap: No permissions to create new namespace, likely
+because the kernel does not allow non-privileged user namespaces.` Landlock is
+therefore the only usable confinement backend on this machine.
+
+**Conclusion.** The `ctlResult` refusal in
+`jobs/logs/u5g4rj-20261028T11-24-11Z/u7g4r-jobs-1.u74a-evidence.json`
+("…no sandbox backend is usable on this host…") is a **test-runtime
+provisioning gap — not a host capability limit and not a Team product defect**.
+Corroboration: the identical leg genuinely PASSED on 2026-10-26; its
+`ctlResult` in
+`dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74a-20261026T11-57-55Z/u74a-main-4.u74a-evidence.json`
+carries `landlock-run: partial enforcement (older Landlock ABI)`.
+
+**Consequences.**
+- The record's `overall: FAIL` stands unmodified — a FAIL is never rewritten.
+  What is corrected is the root-cause attribution only.
+- Carried risk **R-G4R-2 is re-scoped** from "this host cannot confine" to
+  "a fresh worktree's runtime clone lacks the gitignored host sandbox launcher
+  unless provisioned". A lane hitting it again must record **ENV_BLOCK** with
+  probe evidence (main-tree `partial` vs worktree `unusable`), not a product FAIL.
+- The fix (runtime provisioning that carries/copies the launcher, plus a
+  pre-flight probe) is a separate lane/PR — deliberately NOT this evidence PR.
