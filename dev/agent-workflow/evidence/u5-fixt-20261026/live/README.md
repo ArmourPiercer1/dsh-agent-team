@@ -22,7 +22,7 @@
   claim — see 3180 seq log decode during triage). Protocol-correct behavior,
   wrong-condition RED. Forward fix: provenance accepted from reclaim receipt
   OR live-peer sweep (snapshot taken immediately at reclaim). Fail-closed
-  cascade again marked dependents FAIL (survivor itself was mid-suite).
+  cascade again marked dependents FAIL (survivor runner A itself was mid-suite).
 - crash-reclaim-3/ — third live run with both condition fixes.
   abnormal-kill-reclaim = PASS with the FULL conjunction: kill landed in
   flight (pre marker, no post, no victim record), host+mock leases reclaimed
@@ -32,12 +32,12 @@
   (real orphan process killed through the /proc-environ proof gate).
   other-world-unaffected = FAIL: supervisor sequencing flaw (NOT a factory
   defect) — the survivor started concurrently and finished its ~5s suite
-  before the kill landed, so 'alive at reclaim' could not be proven; plus
-  the child 'close' event lagged the exited runner (kept fd) into the
+  before the kill landed, so 'alive at reclaim' could not be proven; plus the
+  child 'close' event lagged the exited runner (kept fd) into the
   9-minute backstop. Both fixed forward: survivor now starts only AFTER the
   victim holds its in-flight call and the kill waits for the survivor's own
-  U5-IN-RUN; completion settles on RUN RECORD + dead pid, 'close' is only
-  the fast path.
+  U5-IN-RUN; completion settles on RUN RECORD + dead pid, 'close' is only the
+  fast path.
 - crash-reclaim-3-reconstruct/ — zero-spawn reconstruction of run 3:
   abnormal-kill + simulation replay PASS, other-world stays FAIL (stored
   aAliveWhileBCrashedAndReclaimed=false) — the reconstruction deliberately
@@ -49,3 +49,26 @@
   authorization; the factory-side T2 acceptance conjunction (in-flight kill
   + provenance reclaim + proof-gated kill + zero refusals + marker-only home
   delete) is live-PASSED and reconstruct-replayable TODAY.
+
+## Review round 2 closure + provenance disclosure
+
+The supervisor now emits `hostTreePristine` for the pristine TEST_USE host
+checkout and a separately computed Team-repository `teamTreeClean`, with
+`teamTreeDirtyPaths` when tracked files are dirty. C1 injects a dirty tracked
+status through the git seam and requires `teamTreeClean === false`.
+
+The committed live record at `teamSha` **d8f40c0d** predates this field. Its
+legacy `bindings.teamTreeClean` therefore means only “TEST_USE host-tree
+pristine”; it must not be read as Team-tree cleanliness. The only delta
+between that live teamSha and the current PR head is docs/evidence:
+`git diff d8f40c0d..HEAD --stat -- packages tests scripts` is empty, so the
+proven CODE equals the current head's code.
+
+Injected IO is explicitly marked `simulated: true` and
+`evidenceKind: 'injected-io'`; the frozen production IO object produces
+`simulated: false` / `real-io`. `assertLiveDigest()` rejects simulated digests
+before verdict consumption. The live record's probe digests are real: they
+were produced by the default real IO path (HTTP health plus session/create
+requests), not an injected seam; reviewers can verify this by checking the
+record's digest/evidence rows and the absence of an injected `io` argument in
+production `main`.

@@ -57,13 +57,14 @@
  * Opt-in only (live Host children): never collected by vitest/CI.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, closeSync, readdirSync, readFileSync, writeFileSync, writeSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, openSync, closeSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, reclaimWorld, homesCensus, stableInstanceProbe } from './lib/world-factory.mjs'
 import { pidAlive, scanAllLeases, scanStaleLeases } from './lib/port-lease.mjs'
 import { portInUse } from '../characterization/lib/util.mjs'
-import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
+import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
+import { holdSurvivor } from './u5-canary-runner.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -73,8 +74,106 @@ const RUNNER = process.env.DSH_U5_RUNNER ?? join(HERE, 'u5-canary-runner.mjs')
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * Pure C1 law for the live survivor conjunction. The kill must be strictly
+ * inside the survivor's healthy-to-last-probe interval, and every reclaim
+ * effect must be scoped to the victim world/resources.
+ */
+export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt = null, victimWorld, reclaimedResources = [], survivorProbes = [], survivorHostPidBefore = null, survivorHostPidAfter = null, survivorWorldIdBefore = null, survivorWorldIdAfter = null }) {
+  const probes = survivorProbes.filter((probe) => probe !== null && typeof probe === 'object')
+  const successful = probes.filter((probe) => probe.ok === true && Number.isFinite(Number(probe.at)))
+  const failed = probes.filter((probe) => probe.ok !== true)
+  const preKillSuccess = successful.some((probe) => Number(probe.at) < killAt)
+  const postReclaimSuccess = successful.some((probe) => Number(probe.at) > Number(victimKilledAndReclaimedAt ?? killAt))
+  const failedInWindow = failed.filter((probe) => Number(probe.at) >= Number(survivorHealthyAt) && Number(probe.at) <= Number(survivorTornDownAt))
+  const probeAfterReclaim = successful.some((probe) => Number(probe.at) > killAt)
+  const timestamps = [survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt]
+  const ordered = timestamps.every(Number.isFinite)
+    && survivorHealthyAt < killAt
+    && killAt < survivorLastProbeAt
+    && survivorLastProbeAt <= survivorTornDownAt
+  const victimOnly = reclaimedResources.every((resource) => resource?.world === victimWorld)
+  const reclaimTouchedOnlyVictim = reclaimedResources.length > 0 && victimOnly
+  const identityContinuous = survivorHostPidBefore !== null
+    && survivorHostPidBefore === survivorHostPidAfter
+    && survivorWorldIdBefore !== null
+    && survivorWorldIdBefore === survivorWorldIdAfter
+  const failureReason = failedInWindow[0] ?? null
+  return {
+    killInsideSurvivorWindow: ordered,
+    survivorHeldUntilReclaim: ordered,
+    survivorProbeAfterReclaim: probeAfterReclaim,
+    preKillProbeSucceeded: preKillSuccess,
+    postReclaimProbeSucceeded: postReclaimSuccess,
+    failedProbeInWindow: failedInWindow.length > 0,
+    failedProbe: failureReason,
+    survivorHostIdentityContinuous: identityContinuous,
+    reclaimVictimOnly: reclaimTouchedOnlyVictim,
+    pass: ordered && preKillSuccess && postReclaimSuccess && failedInWindow.length === 0 && reclaimTouchedOnlyVictim && identityContinuous,
+  }
+}
+
+export async function runSurvivorDryRun({ io = undefined } = {}) {
+  const injected = io !== undefined
+  const simulated = true
+  mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
+  const sharedLeaseRoot = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-evidence') }).leaseRoot
+  const sharedBefore = leaseRootSnapshot(sharedLeaseRoot)
+  const holdUntil = join(REPO_ROOT, `.tmp-survivor-dry-run-${process.pid}`)
+  try {
+    const fakeWorld = { id: 'fake-survivor', home: '<FAKE_HOME>', token: 'fake-token', workspaceDir: '<FAKE_WORKSPACE>', instance: { child: { pid: 42 } } }
+    let calls = 0
+    const probeIo = io ?? {
+      async probe({ released }) {
+        calls += 1
+        if (calls === 1) return { ok: true, status: 200, evidence: { health: { contentMatch: true }, effect: { contentMatch: true }, released } }
+        return { ok: true, status: 200, evidence: { health: { contentMatch: true }, effect: { contentMatch: true }, released } }
+      },
+    }
+    const probeLog = `${holdUntil}.jsonl`
+    const holdPromise = holdSurvivor({ world: fakeWorld, origin: 'http://fake-survivor', holdUntil, probeLog, oracle: null, io: probeIo, simulated: injected })
+    await sleep(1)
+    writeFileSync(holdUntil, 'victimKilledAndReclaimed\n')
+    const hold = await holdPromise
+    const sequencing = evaluateSurvivorSequencing({
+      survivorHealthyAt: hold.healthyAt,
+      killAt: hold.healthyAt + 1,
+      victimKilledAndReclaimedAt: hold.lastProbeAt - 1,
+      survivorLastProbeAt: hold.lastProbeAt,
+      survivorTornDownAt: hold.lastProbeAt + 1,
+      survivorProbes: readFileSync(probeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => {
+        const digest = JSON.parse(line)
+        return injected ? digest : assertLiveDigest(digest)
+      }),
+      survivorHostPidBefore: 42,
+      survivorHostPidAfter: hold.survivorIdentity.pid,
+      survivorWorldIdBefore: 'fake-survivor',
+      survivorWorldIdAfter: hold.survivorIdentity.worldId,
+      victimWorld: 'fake-victim',
+      reclaimedResources: [{ world: 'fake-victim', kind: 'home' }, { world: 'fake-victim', kind: 'lease' }],
+    })
+    const sharedAfter = leaseRootSnapshot(sharedLeaseRoot)
+    const simulationFactory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-evidence') })
+    const simulation = await crashSimulationControl({ factory: simulationFactory })
+    const sharedFinal = leaseRootSnapshot(sharedLeaseRoot)
+    const sharedLeaseRootUnchanged = JSON.stringify(sharedBefore) === JSON.stringify(sharedAfter) && JSON.stringify(sharedBefore) === JSON.stringify(sharedFinal)
+    return {
+      ...sequencing,
+      simulation,
+      sharedLeaseRoot,
+      sharedLeaseRootUnchanged,
+      simulated: injected,
+      evidenceKind: injected ? 'injected-io' : 'real-io',
+      pass: sequencing.pass && simulation.ok && sharedLeaseRootUnchanged,
+    }
+  } finally {
+    try { unlinkSync(holdUntil) } catch {}
+    try { unlinkSync(`${holdUntil}.jsonl`) } catch {}
+  }
+}
+
 export function parseArgs(argv) {
-  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000 }
+  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000, dryRun: false }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--evidence') out.evidence = String(argv[++i])
@@ -85,6 +184,7 @@ export function parseArgs(argv) {
     else if (a === '--mode') out.mode = String(argv[++i])
     else if (a === '--survivor-suite') out.survivorSuite = String(argv[++i])
     else if (a === '--reconstruct') out.reconstruct = String(argv[++i])
+    else if (a === '--dry-run') out.dryRun = true
     else throw new Error(`unknown argument: ${a}`)
   }
   if (out.evidence === null) throw new Error('--evidence is required')
@@ -97,6 +197,19 @@ function git(args) {
   const r = spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' })
   if (r.status !== 0) throw new Error(`git ${args.join(' ')} exit ${String(r.status)}`)
   return String(r.stdout).trim()
+}
+
+/** Team-repo provenance is distinct from the pristine test-use Host tree. */
+export function teamTreeBinding({ runGit = git } = {}) {
+  const porcelain = runGit(['status', '--porcelain', '--untracked-files=no'])
+  const paths = porcelain.split('\\n').filter(Boolean).slice(0, 8).map((line) => line.slice(3))
+  return { teamTreeClean: paths.length === 0, ...(paths.length > 0 ? { teamTreeDirtyPaths: paths } : {}) }
+}
+
+/** A simulated digest must never be accepted as a live verdict input. */
+export function assertLiveDigest(digest) {
+  if (digest?.simulated === true) throw new Error('simulated evidence cannot be consumed as a live verdict')
+  return digest
 }
 
 /**
@@ -192,11 +305,31 @@ function tailFile(path, n = 2000) {
  * the production `reclaimWorld` over it. Deterministic — unlike the live kill,
  * which can lose the race against a fast self-cleaning victim.
  */
-async function crashSimulationControl({ factory }) {
+function leaseRootSnapshot(leaseRoot) {
+  let names = []
+  try { names = readdirSync(leaseRoot).sort() } catch { return { exists: false, names: [], seqMtimes: {} } }
+  const seqMtimes = {}
+  for (const name of names) {
+    if (!name.endsWith('.lease')) continue
+    try {
+      const seq = join(leaseRoot, name, 'seq')
+      seqMtimes[name] = statSync(seq).mtimeMs
+    } catch {
+      seqMtimes[name] = null
+    }
+  }
+  return { exists: true, names, seqMtimes }
+}
+
+export async function crashSimulationControl({ factory, leaseRoot = null }) {
+  const sharedBefore = leaseRootSnapshot(factory.leaseRoot)
+  mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
+  const simulationLeaseRoot = leaseRoot ?? mkdtempSync(join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-leases-'))
+  mkdirSync(simulationLeaseRoot, { recursive: true })
   const world = await factory.createWorld({ line: 'dryclm' })
   const orphan = spawn('sleep', ['300'], { env: { ...process.env, DSH_HOME: world.home }, stdio: 'ignore' })
   const { acquireFirstFreeLease } = await import('./lib/port-lease.mjs')
-  const lease = await acquireFirstFreeLease({ leaseRoot: factory.leaseRoot, world: world.id, purpose: 'sim-host', include: [3498, 3499, 3500], preferred: [] })
+  const lease = await acquireFirstFreeLease({ leaseRoot: simulationLeaseRoot, world: world.id, purpose: 'sim-host', include: [3498, 3499, 3500], preferred: [] })
   writeFileSync(join(world.home, '.u5-ownership.json'), JSON.stringify({ worldId: world.id, runnerPid: process.pid, hostPid: orphan.pid, hostPort: lease.port, mockPort: null }, null, 2))
   // "Crash": the simulated runner dies; the orphan + lease + home survive.
   // Our OWN pid must not be the reclaim target, so record a dead holder in
@@ -207,7 +340,7 @@ async function crashSimulationControl({ factory }) {
   // `<port>.lease/` slot dir — exactly what a dead runner leaves behind.
   mkdirSync(lease.slotPath, { recursive: true })
   writeFileSync(join(lease.slotPath, 'c-000000000001-w-4194303-simcontrol.json'), JSON.stringify({ pid: 4_194_303, startedAt: new Date().toISOString(), world: world.id, purpose: 'sim-host', token: 'simcontrol', seq: 1 }, null, 2) + '\n')
-  const stale = scanStaleLeases(factory.leaseRoot).filter((s) => s.by?.world === world.id)
+  const stale = scanStaleLeases(simulationLeaseRoot).filter((s) => s.by?.world === world.id)
   const reclaim = await reclaimWorld({ home: world.home, worldId: world.id, leasePaths: stale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })) })
   await sleep(1_200)
   const checks = {
@@ -218,7 +351,10 @@ async function crashSimulationControl({ factory }) {
     homeDeleted: reclaim.homeDeleted === world.home,
     mechanism: 'identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill',
   }
-  return { ok: checks.orphanKilledOnlyAfterEnvironProof && checks.leaseReleased && checks.homeDeleted && reclaim.refused.length === 0, ...checks }
+  const sharedRootUnchanged = JSON.stringify(sharedBefore) === JSON.stringify(leaseRootSnapshot(factory.leaseRoot))
+  const result = { ok: checks.orphanKilledOnlyAfterEnvironProof && checks.leaseReleased && checks.homeDeleted && reclaim.refused.length === 0 && sharedRootUnchanged, ...checks, sharedRootUnchanged, simulationLeaseRoot }
+  rmSync(simulationLeaseRoot, { recursive: true, force: true })
+  return result
 }
 
 export async function runParallelSupervisor(opts) {
@@ -238,6 +374,9 @@ export async function runParallelSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
       leaseRoot: factory.leaseRoot,
@@ -466,6 +605,9 @@ export async function runCrashReclaimSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
       leaseRoot: factory.leaseRoot,
@@ -477,6 +619,8 @@ export async function runCrashReclaimSupervisor(opts) {
   const runnerLogDir = join(evidence, 'logs', 'runners')
   const recA = join(evidence, `run-${runId}-A.json`)
   const recB = join(evidence, `run-${runId}-B.json`)
+  const survivorRelease = join(evidence, `${runId}.victimKilledAndReclaimed`)
+  const survivorProbeLog = join(evidence, `${runId}.survivor-probes.jsonl`)
   const common = ['--evidence', evidence, '--max-host-starts', String(maxHostStarts), ...(budgetLedger !== null ? ['--budget-ledger', budgetLedger] : [])]
   // FIX-T T2 (run-3 lesson): the survivor starts only AFTER the victim has
   // proven its held in-flight call, and the kill waits until the survivor
@@ -542,7 +686,7 @@ export async function runCrashReclaimSupervisor(opts) {
   // alive). Start the survivor and wait until it is provably mid-suite —
   // THEN land the kill, so the survivor straddles kill+reclaim, which is
   // exactly what 'other-world-unaffected' must prove.
-  const A = startRunner({ tag: 'A', args: ['--suite', aSuite, '--line', 'ca', '--run-record', recA, ...common], logDir: runnerLogDir })
+  const A = startRunner({ tag: 'A', args: ['--suite', aSuite, '--line', 'ca', '--run-record', recA, '--hold-until', survivorRelease, '--probe-log', survivorProbeLog, ...common], logDir: runnerLogDir })
   record.record.runners.A = { pid: A.child.pid, record: recA }
   const aInRun = await waitForLine(A.buffer, /^U5-IN-RUN (\S+) (\S+) (\d+)$/m, 300_000)
   if (aInRun === null) {
@@ -601,6 +745,7 @@ export async function runCrashReclaimSupervisor(opts) {
     worldId: bWorld,
     leasePaths: bStale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })),
   })
+  writeFileSync(survivorRelease, JSON.stringify({ signal: 'victimKilledAndReclaimed', at: Date.now(), victimWorld: bWorld }) + '\n')
   // Captured IMMEDIATELY after reclaim: a peer World's next boot may sweep
   // the victim's stale claim itself (measured in run 2: the survivor's boot
   // claimed 3180 one second before this scan ran). The protocol's
@@ -610,7 +755,7 @@ export async function runCrashReclaimSupervisor(opts) {
   const leasesAfterReclaim = scanAllLeases(factory.leaseRoot)
   // Survivor liveness AT the reclaim instant — the only honest moment to
   // observe it (captured here, not reconstructed after the verdict plumbing).
-  const aAliveAtReclaim = A.child.exitCode === null && A.child.signalCode === null
+  const aAliveAtReclaim = pidAlive(Number(aInRun[3]))
   const sweptByPeer = leasesAfterReclaim
     .filter((l) => String(l.by?.reclaimedFrom?.world) === bWorld)
     .map((l) => ({ port: l.port, claimPid: l.by?.pid, reclaimedFrom: l.by?.reclaimedFrom }))
@@ -725,13 +870,41 @@ export async function runCrashReclaimSupervisor(opts) {
   const aExit = await Promise.race([aDone, sleep(9 * 60_000).then(() => ({ timeout: true }))])
   if (aExit.timeout === true) await killOwnChild(A.child)
   const aRecord = safeReadJson(recA)
-  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' ? 'PASS' : 'FAIL', {
+  const probeRows = (() => {
+    try { return readFileSync(survivorProbeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => JSON.parse(line)) } catch { return [] }
+  })()
+  const release = safeReadJson(survivorRelease)
+  const survivorHold = aRecord?.survivorHold ?? {}
+  const survivorHealthyAt = Number.isFinite(Number(survivorHold.healthyAt)) ? Number(survivorHold.healthyAt) : NaN
+  const survivorLastProbeAt = Number(survivorHold.lastProbeAt)
+  const survivorTornDownAt = Date.parse(aRecord?.finishedAt ?? '')
+  const survivorIdentity = survivorHold.survivorIdentity ?? {}
+  const sequencing = evaluateSurvivorSequencing({
+    survivorHealthyAt,
+    killAt: Date.parse(groupKill.at),
+    victimKilledAndReclaimedAt: Number(release?.at),
+    survivorLastProbeAt,
+    survivorTornDownAt,
+    survivorHostPidBefore: Number(aInRun[3]),
+    survivorHostPidAfter: Number(survivorIdentity.pid),
+    survivorWorldIdBefore: aInRun[1],
+    survivorWorldIdAfter: survivorIdentity.worldId,
+    victimWorld: bWorld,
+    survivorProbes: probeRows,
+    reclaimedResources: [
+      ...reclaim.leasesReleased.map((port) => ({ world: bWorld, kind: 'lease', port })),
+      ...(reclaim.homeDeleted === bHome ? [{ world: bWorld, kind: 'home' }] : []),
+    ],
+  })
+  record.record.survivorSequencing = { ...sequencing, survivorHealthyAt, killAt: Date.parse(groupKill.at), survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt: Number(release?.at), probeRows }
+  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' && sequencing.pass ? 'PASS' : 'FAIL', {
     aSuite,
     aWorld: record.record.aWorld,
     aAliveWhileBCrashedAndReclaimed: aAliveAtReclaim,
     aExit,
     aOverall: aRecord?.overall ?? 'record-missing',
     aCases: aRecord?.cases?.map((c) => `${c.id}=${c.verdict}`) ?? [],
+    sequencing,
   })
 
   return finish(record.record)
@@ -759,6 +932,9 @@ export async function reconstructCrash(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
       leaseRoot: factory.leaseRoot,
@@ -840,6 +1016,9 @@ export async function reconstructParallel(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      hostTreePristine: hostBasePre.porcelainEmpty === true,
+      ...teamTreeBinding(),
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
       leaseRoot: factory.leaseRoot,
@@ -920,7 +1099,10 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2))
   let rec
   try {
-    if (opts.reconstruct !== null) {
+    if (opts.dryRun) {
+      const dry = await runSurvivorDryRun()
+      rec = { schema: 'u5-dry-run/1', runId: 'u5-dry-run', suite: 'crash-reclaim', overall: dry.pass ? 'PASS' : 'FAIL', simulated: dry.simulated, evidenceKind: dry.evidenceKind, cases: [{ id: 'survivor-hold-ordering', verdict: dry.pass ? 'PASS' : 'FAIL', ...dry }], bindings: { mode: 'dry-run', spawns: 0, authority: readAuthorityBinding(REPO_ROOT), hostTreePristine: true, ...teamTreeBinding() } }
+    } else if (opts.reconstruct !== null) {
       const live = safeReadJson(opts.reconstruct)
       rec = live?.bindings?.mode === 'crash-reclaim' ? await reconstructCrash(opts) : await reconstructParallel(opts)
     } else if (opts.mode === 'crash-reclaim') {
