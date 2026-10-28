@@ -64,7 +64,8 @@ const makeHost = (opts: { childTools?: (req: Rec) => string[]; output?: string; 
         : (filter !== undefined && Array.isArray(filter.allow) ? inherited.filter((n) => filter.allow?.includes(n)) : inherited)
       const childAgent = {
         id,
-        ctx: { tools: { schemas: (scope: unknown) => (scope === childAgent ? visible.map((name) => ({ name })) : []), get: () => undefined } },
+        status: 'inactive',
+        ctx: { tools: { schemas: (scope: unknown) => (scope === childAgent ? visible.map((name) => ({ name })) : []), get: () => undefined }, agents: { get: (lookup: string) => lookup === id ? childAgent : undefined } },
       }
       return {
         id,
@@ -104,9 +105,10 @@ const makeHost = (opts: { childTools?: (req: Rec) => string[]; output?: string; 
 
 /** A dispatch-provided caller Agent. `ptc` makes the public tool view
  *  present the reserved `run_code` transport for THIS agent's scope. */
-const makeAgent = (opts: { ptc?: boolean; id?: string } = {}) => {
+const makeAgent = (opts: { ptc?: boolean; id?: string; authority?: Rec } = {}) => {
   const agent: Rec = { id: opts.id ?? 'session-member-1' }
   agent.ctx = {
+    agents: { get: () => ({ status: 'inactive' }) },
     tools: {
       get: (name: string, scope: unknown) => (opts.ptc === true && name === 'run_code' && scope === agent ? { name: 'run_code' } : undefined),
     },
@@ -120,11 +122,11 @@ const loadPort = async () => {
   if (!portMod) portMod = (await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href)) as typeof portMod
   return portMod
 }
-const portOver = async (host: FakeHost, observe: string[] = []) => (await loadPort()).createHostAgentRuntimePort({
-  hostService: host.hostService, caller: {}, observe: (l: string) => { observe.push(l) },
+const portOver = async (host: FakeHost, observe: string[] = [], callerAuthority: Rec = { providers: ['prov-a'], models: ['model-1'] }) => (await loadPort()).createHostAgentRuntimePort({
+  hostService: host.hostService, caller: {}, callerAuthority, observe: (l: string) => { observe.push(l) },
 })
-const leg = async (host: FakeHost, name: string, observe: string[] = []) => {
-  const fn = (await portOver(host, observe)).legResolver(name)
+const leg = async (host: FakeHost, name: string, observe: string[] = [], callerAuthority?: Rec) => {
+  const fn = (await portOver(host, observe, callerAuthority)).legResolver(name)
   if (fn === null) throw new Error(`leg ${name} unwired`)
   return fn
 }
@@ -163,6 +165,14 @@ describe('AC-1 C1 port — the public subagents/llm faces, Tier A forced at the 
     expect(r.catalogSize).toBe(2)
   })
 
+  it('AC1-P1c missing child status is a typed refusal', async () => {
+    const host = makeHost()
+    const agent = makeAgent()
+    agent.ctx = { ...agent.ctx as Rec, agents: { get: () => undefined } }
+    const r = await (await leg(host, 'listAgents'))({ caller: { agent }, signal: SIGNAL() })
+    expect(r).toMatchObject({ ok: false, code: 'agent-runtime-agent-status-unavailable' })
+  })
+
   it('AC1-P1b listAgents scope=descendants rides subagents.listDescendants', async () => {
     const host = makeHost()
     const r = await (await leg(host, 'listAgents'))({ caller: { agent: makeAgent() }, scope: 'descendants', signal: SIGNAL() })
@@ -173,10 +183,9 @@ describe('AC-1 C1 port — the public subagents/llm faces, Tier A forced at the 
   it('AC1-P2 listModels rides llm.listProviders / llm.listModels and projects model objects to {id,name}', async () => {
     const host = makeHost()
     const providers = await (await leg(host, 'listModels'))({ caller: { agent: makeAgent() } })
-    expect(providers.models).toEqual([{ provider: 'prov-a', name: 'Provider A' }])
-    expect(providers.spawnRoutes).toBe('inherit-only')
+    expect(providers).toBe('prov-a — Provider A')
     const models = await (await leg(host, 'listModels'))({ caller: { agent: makeAgent() }, provider: 'prov-a' })
-    expect(models.models).toEqual([{ id: 'model-1', name: 'Model One' }])
+    expect(models).toBe('prov-a/model-1 — Model One')
   })
 
   it('AC1-P3 spawnChild = subagents.start("spawn") with toolFilter {allow:[]} FORCED, no agentOptions, no persona; result read back; run disposed', async () => {
@@ -318,9 +327,24 @@ describe('AC-1 C1 family — production port + Tier A ceiling over the real plan
     const { def, audit, observe } = await mountFamily(host)
     const r = await attempt(() => def('list_subagent_models').execute({}, exec(makeAgent())))
     expect(r.ok).toBe(true)
-    if (r.ok) expect(JSON.parse(r.value as unknown as string).models).toEqual([{ provider: 'prov-a', name: 'Provider A' }])
+    if (r.ok) expect(r.value).toBe('(no LLM providers)')
     expect(audit).toHaveLength(1)
     expect(observe.filter((l) => l.includes('agent-control-list_subagent_models RAN'))).toHaveLength(1)
+  })
+
+  it('AC1-F1b injected authority lists only authorized provider/model routes and refuses an outside provider', async () => {
+    const host = makeHost({ models: [{ id: 'model-1', name: 'Model One' }, { id: 'model-2', name: 'Model Two' }] })
+    const authority = { providers: ['prov-a'], models: ['model-2'] }
+    const { def } = await mountFamily(host, { injected: { callerAuthority: authority } })
+    const listed = await attempt(() => def('list_subagent_models').execute({}, exec(makeAgent())))
+    expect(listed.ok).toBe(true)
+    if (listed.ok) expect(listed.value).toBe('prov-a — Provider A')
+    const models = await attempt(() => def('list_subagent_models').execute({ provider: 'prov-a' }, exec(makeAgent())))
+    expect(models.ok).toBe(true)
+    if (models.ok) expect(models.value).toBe('prov-a/model-2 — Model Two')
+    const refused = await attempt(() => def('list_subagent_models').execute({ provider: 'prov-b' }, exec(makeAgent())))
+    expect(refused.ok).toBe(false)
+    if (!refused.ok) expect(refused.msg).toContain('agent-runtime-authority-refused')
   })
 
   it('AC1-F2 list_agents RAN through subagents.listChildren keyed by the DISPATCH agent id (Q4)', async () => {

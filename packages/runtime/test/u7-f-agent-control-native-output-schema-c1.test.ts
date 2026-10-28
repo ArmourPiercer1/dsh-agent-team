@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
@@ -37,10 +37,17 @@ const SOURCES = {
   workflow: ['tests/deepseek-harness-test-use/packages/workflow/tool-workflow/src/index.ts', 'be42a318b61c5d8515272c06bae7b014f1bddab9ad257e5efe967b7490b56ee7'],
 } as const
 
-function sourceRoot(): string { return process.cwd() }
-function driftGuard(): void {
+async function sourceRoot(): Promise<string> {
+  const { TEST_USE_REL } = await import(new URL('../../../tests/paths.mjs', import.meta.url).href)
+  const root = process.cwd()
+  const pristine = `${root}/${TEST_USE_REL}`
+  if (!existsSync(pristine)) throw new Error(`native-schema C1 requires the pristine test-use checkout at ${TEST_USE_REL}; provision it from tests/paths.mjs before running this CI leg`)
+  return root
+}
+async function driftGuard(): Promise<void> {
+  const root = await sourceRoot()
   for (const [name, [path, expected]] of Object.entries(SOURCES)) {
-    const digest = createHash('sha256').update(readFileSync(`${sourceRoot()}/${path}`)).digest('hex')
+    const digest = createHash('sha256').update(readFileSync(`${root}/${path}`)).digest('hex')
     expect(digest, `native schema source drift: ${name} (${path})`).toBe(expected)
   }
 }
@@ -83,7 +90,7 @@ const exec = { correlation: 'c1-native-schema' }
 
 describe('U7-F C1 native Host output schemas', () => {
   it('guards the pinned schema source and validates every governed row output', async () => {
-    driftGuard()
+    await driftGuard()
     const spawn = await load('spawn-row.mjs')
     const fork = await load('fork-row.mjs')
     const steer = await load('steer-row.mjs')
@@ -107,7 +114,7 @@ describe('U7-F C1 native Host output schemas', () => {
   })
 
   it('registers all seven rows in the real ToolRuntime and validates rendered outputs', async () => {
-    driftGuard()
+    await driftGuard()
     const ctx = new Context()
     await ctx.plugin(SystemPrompt, {})
     await ctx.plugin(ToolRuntime)

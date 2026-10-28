@@ -13,6 +13,10 @@ At the booted commit, `c2/run-c2.mjs:182–186` destructured injected IO default
 
 No live `ac:refusal-ptc` claim: omitted from selected cases; boots 2/3 are disclosure evidence only. A tool-less child's L4 still requires real child-effect witness; no fabricated ledger upgrade is made. :3080 was only status-probed before launch; the drive exception prevented its normal after probe, so a separate read-only postmortem status check is recorded. Stable instance was not modified.
 
+## AC-1 ruling and ledger consequence (2026-10-27)
+
+The governed production listing now receives the exact `callerAuthority` object used by the executor's spawn-amplification fence. Tier A's default authority has empty `providers` and `models`, so `list_subagent_models` correctly renders the native `(no LLM providers)` string. A positive provider/model listing is valid only with an injected authority snapshot; C1 proves provider/model filtering and typed refusal outside that snapshot. The boot-8 non-empty list therefore exceeded caller authority and is downgraded to **DISCLOSED**; this is an offline judge correction/re-grade disclosure, not a new live run. The judge now asserts every listed provider is a member of caller authority.
+
 ## Boot 8 conclusion (2026-10-27)
 
 Boot 7 is **VOID** (runner TDZ before drive effect), and exactly one boot 8 was granted. Boot 8 completed with host/home teardown, baseline `639ed01539` and `:3080` unchanged. **9/10 PASS; 1/10 FAIL**: `ac:fork-positive` failed the judge because the first read-back contained `Error: unknown tool "subagent_fork"`, although the subsequent fork result carried `U7AC1_FORK_SAW_TOKEN` and the child-effect witness was present. This is a harness/judge defect, not a product or Host seam failure. Binding condition applies: stop live boots for this round; no boot 9. Ledger remains DISCLOSED; no live PTC or tool-less-child L4 claim.

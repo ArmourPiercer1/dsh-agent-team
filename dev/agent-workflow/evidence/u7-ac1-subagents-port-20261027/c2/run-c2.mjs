@@ -392,11 +392,19 @@ export async function drive({ world, assembly, planted, boot, stableBefore, io =
   })
   if (!createOk) return
 
-  // ac:list-models
+  // ac:list-models: every displayed provider must be inside the caller
+  // authority. Tier A's default authority is empty, so the native empty
+  // rendering is the expected governed result; positive provider listings
+  // require an injected authority and are covered by the C1 family test.
   const lm = resultsOf('list_subagent_models')
   let providers = null
-  for (const r of lm) { if (!r.isError && r.text.includes('"models"')) { try { providers = JSON.parse(r.text).models } catch { providers = r.text.includes('deepseek-official') ? ['<text>'] : null } } }
-  add('ac:list-models', lm.length === 1 && !lm[0].isError && lm[0].text.includes('deepseek-official') && ranLines('list_subagent_models').length === 1 && allowedFor('list_subagent_models').length === 1 ? 'PASS' : 'FAIL', {
+  for (const r of lm) {
+    if (!r.isError && r.text.includes('"models"')) { try { providers = JSON.parse(r.text).models } catch { providers = r.text.includes('deepseek-official') ? ['<text>'] : null } }
+    if (!r.isError && r.text.includes('(no LLM providers)')) providers = []
+  }
+  const callerProviders = []
+  const providersWithinAuthority = Array.isArray(providers) && providers.every((p) => callerProviders.includes(p?.provider ?? p))
+  add('ac:list-models', lm.length === 1 && !lm[0].isError && providersWithinAuthority && ranLines('list_subagent_models').length === 1 && allowedFor('list_subagent_models').length === 1 ? 'PASS' : 'FAIL', {
     readBack: heads(lm), providersParsed: providers, ranWitness: ranLines('list_subagent_models').map((l) => l.slice(0, 200)),
     humanAllow: allowedFor('list_subagent_models').map((r) => r.requestId),
   })

@@ -69,20 +69,23 @@ export const familyAssembly = Object.freeze({
     // lane's `injected.search ?? realSearch` law); production resolves
     // LAZILY through the mount's public hostService face, and every leg a
     // real host does not answer stays a typed refusal, never a fake.
-    const port = normalizePort(cap.injected?.agentRuntime
-      ?? createHostAgentRuntimePort({
-        hostService: (name) => cap.hostService(name),
-        caller: { realmId: cap.realmId, templateId: cap.templateId, instanceId: cap.instanceId },
-        observe,
-      }))
     // Trusted ASSEMBLY trust data (fail-closed when absent — the mechanics
     // file states why absence is a refusal, not an inherit).
     const scopeFence = cap.injected?.agentScope ?? null
     // AC-1 Tier A: a trusted injected snapshot wins (kit/test seam); the
     // production default is the build-time Tier A CEILING — no grant, only
     // a ceiling ≤ every caller (no route override, no tools, one-shot). The
-    // port FORCES toolFilter {allow:[]} on every child start.
+    // port FORCES toolFilter {allow:[]} on every child start. The exact same
+    // object is passed to the executor and the production port so model
+    // discovery and spawn amplification enforce one authority snapshot.
     const callerAuthority = cap.injected?.callerAuthority ?? agentControlMechanics.TIER_A_CEILING
+    const port = normalizePort(cap.injected?.agentRuntime
+      ?? createHostAgentRuntimePort({
+        hostService: (name) => cap.hostService(name),
+        caller: { realmId: cap.realmId, templateId: cap.templateId, instanceId: cap.instanceId },
+        callerAuthority,
+        observe,
+      }))
     const forkContextProvider = typeof cap.injected?.forkContextProvider === 'function'
       ? cap.injected.forkContextProvider
       : undefined

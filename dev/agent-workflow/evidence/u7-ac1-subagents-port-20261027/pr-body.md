@@ -14,7 +14,7 @@ AC-1 judge correction for boot 8 `ac:fork-positive`, C1 regression coverage, off
 
 ## Offline re-grade and ledger
 - `c2/fork-regraded-boot8.json` records raw FAIL, defect rationale, exact correction, evidence, and re-graded PASS without modifying raw boot-8 evidence.
-- Ledger promotes `subagent_fork` L4 using the re-grade + boot-8 record combination; `subagent`, `list_subagent_models`, and `list_agents` L4 are promoted from boot-8 PASS cases. `list_agents` is conservative: its native array projection is read back as `(no subagents)`, with catalogSize/oneShotChildren from the same governed listChildren effect.
+- Ledger promotes `subagent_fork` L4 using the re-grade + boot-8 record combination; `subagent` and `list_agents` remain backed by their valid PASS cases. `list_subagent_models` is **DISCLOSED**, not L4: boot 8 listed a provider while Tier A authority was empty, so that positive exceeded caller authority. The judge now asserts every listed provider is within caller authority; C1 covers the valid injected-authority positive and the default `(no LLM providers)` rendering.
 
 ## Gates
 - `pnpm typecheck`: PASS.

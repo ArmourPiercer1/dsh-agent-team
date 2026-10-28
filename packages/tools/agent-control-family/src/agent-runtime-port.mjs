@@ -140,10 +140,10 @@ const textOf = (output) => (Array.isArray(output) ? output : [])
  * typed with zero reach. A face that resolves but answers a DIFFERENT shape
  * contributes NO leg — the row refuses `agent-runtime-leg-unwired`.
  *
- * @param {{ hostService: (name: string) => unknown, caller: object, observe?: (line: string) => void }} input
+ * @param {{ hostService: (name: string) => unknown, caller: object, callerAuthority?: object|null, observe?: (line: string) => void }} input
  * @returns the closed-leg port view whose legs resolve lazily.
  */
-export function createHostAgentRuntimePort({ hostService, caller, observe = () => {} }) {
+export function createHostAgentRuntimePort({ hostService, caller, callerAuthority, observe = () => {} }) {
   const service = (name) => {
     try {
       return typeof hostService === 'function' ? hostService(name) : undefined
@@ -253,12 +253,20 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
           // one-shot children are traversal nodes the model never addresses,
           // diagnostics pass through.
           const agents = []
+          const registry = agent?.ctx?.agents
+          if (registry === null || typeof registry !== 'object' || typeof registry.get !== 'function') {
+            return { ok: false, code: 'agent-runtime-agent-status-unavailable', detail: 'the public agents registry is unavailable; list_agents refuses rather than inventing child status' }
+          }
           let oneShot = 0
           for (const entry of entries) {
             const at = descendants ? { parent: entry?.parentId, depth: entry?.depth } : {}
             if (entry?.kind === 'diagnostic') { agents.push({ kind: 'diagnostic', id: entry.id, reason: entry.reason, ...at }); continue }
             if (entry?.mode !== 'continuable') { oneShot += 1; continue }
-            agents.push({ kind: 'child', id: entry.id, label: entry.label, ...at })
+            const live = registry.get(entry.id)
+            if (live === undefined || live === null || (live.status !== 'running' && live.status !== 'inactive')) {
+              return { ok: false, code: 'agent-runtime-agent-status-unavailable', detail: `the public agents registry could not determine status for child '${String(entry.id)}'` }
+            }
+            agents.push({ kind: 'child', id: entry.id, label: entry.label, status: live.status, ...at })
           }
           note(`catalog-read count=${entries.length} oneShot=${oneShot}`)
           return { ok: true, scope: descendants ? 'descendants' : 'children', agents, catalogSize: entries.length, oneShotChildren: oneShot }
@@ -269,15 +277,22 @@ export function createHostAgentRuntimePort({ hostService, caller, observe = () =
         if (f === null) return null
         return async ({ provider }) => {
           const llm = f.svc
+          const authority = callerAuthority
+          const allowedProviders = authority !== null && authority !== undefined && typeof authority === 'object' && Array.isArray(authority.providers) ? authority.providers : []
+          const allowedModels = authority !== null && authority !== undefined && typeof authority === 'object' && Array.isArray(authority.models) ? authority.models : []
           if (provider === undefined) {
-            const providers = llm.listProviders()
-            return { ok: true, models: (Array.isArray(providers) ? providers : []).map((p) => ({ provider: p.id, name: p.name })), spawnRoutes: 'inherit-only' }
+            const advertised = llm.listProviders()
+            const providers = (Array.isArray(advertised) ? advertised : [])
+              .filter((p) => allowedProviders.includes(p.id))
+            return providers.length === 0 ? '(no LLM providers)' : providers.map((p) => `${p.id} — ${p.name}`).join('\\n')
           }
+          if (!allowedProviders.includes(provider)) return { ok: false, code: 'agent-runtime-authority-refused', detail: `provider '${String(provider)}' is outside the caller authority` }
           const models = await llm.listModels(provider)
           if (!Array.isArray(models)) return { ok: false, code: 'agent-runtime-shape-unrecognized', detail: 'llm.listModels answered a non-array' }
-          // Q3 (measured): the pin answers model OBJECTS ({id,name,…}); a bare
-          // string is projected to the same shape, never guessed further.
-          return { ok: true, provider, models: models.map((m) => (typeof m === 'string' ? { id: m, name: m } : { id: m?.id, name: m?.name })), spawnRoutes: 'inherit-only' }
+          const allowed = models.filter((m) => allowedModels.includes(typeof m === 'string' ? m : m?.id))
+          return allowed.length === 0
+            ? `(no advertised models for ${provider})`
+            : allowed.map((m) => `${provider}/${typeof m === 'string' ? m : m?.id} — ${typeof m === 'string' ? m : m?.name}`).join('\\n')
         }
       }
       case 'spawnChild': return startTierA('spawnChild', 'spawn')
