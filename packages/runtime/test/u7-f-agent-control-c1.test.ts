@@ -167,7 +167,7 @@ const trustedInjected = (fake: FakePort, extra: Record<string, unknown> = {}): R
 // ─────────────────────────────────────────────────────────────────────────
 describe('u7-f C1 authority refusal confidentiality', () => {
   it('does not echo unauthorized provider or model sentinels in list-models refusals', async () => {
-    const { createHostAgentRuntimePort, resolveLeg } = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as { createHostAgentRuntimePort: (input: Record<string, unknown>) => Record<string, unknown>; resolveLeg: (port: Record<string, unknown>, leg: string) => ((input: Record<string, unknown>) => Promise<unknown>) | null }
+    const { createHostAgentRuntimePort } = await import(new URL('../../tools/agent-control-family/src/agent-runtime-port.mjs', import.meta.url).href) as { createHostAgentRuntimePort: (input: Record<string, unknown>) => Record<string, unknown> }
     const providerSentinel = 'unauthorized-provider-sentinel'
     const modelSentinel = 'unauthorized-model-sentinel'
     const port = createHostAgentRuntimePort({
