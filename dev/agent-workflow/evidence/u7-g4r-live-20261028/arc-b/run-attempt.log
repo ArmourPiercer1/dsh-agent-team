@@ -1,0 +1,5 @@
+[u7tb-c2] FATAL Error: boot budget exhausted: 7/7 declared in /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget.jsonl
+    at declareBoot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs:72:25)
+    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4r2/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs:143:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+exit=1

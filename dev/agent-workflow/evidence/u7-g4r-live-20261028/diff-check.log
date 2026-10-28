@@ -1,0 +1,4 @@
+git diff --check origin/master...HEAD — receipts (raw ss-capture padding never embedded here, to keep this file itself whitespace-clean):
+run 1: exit 2 — 9 findings, trailing column-padding from 'ss -ltn' captures in arc-b/BLOCKED.md, arc-b/ss-ltn-pre.txt, ss-ltn-baseline.txt.
+normalization: whitespace-only strip in commit 'docs(evidence): strip trailing capture padding from ss snapshots' (capture content otherwise byte-identical).
+final run: exit 0 — no findings, diff clean.
