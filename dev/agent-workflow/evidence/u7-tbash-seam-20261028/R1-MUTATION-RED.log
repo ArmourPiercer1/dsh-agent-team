@@ -1,0 +1,51 @@
+# R1-MUTATION-RED — each fix reverted to its defect; the matching leg must turn RED
+# date: 2026-10-28T13:55:25Z  (5 mutants: M1 F1 cap · M2 F2 same-lane · M3a F3 stamp · M3b F3 fresh-dir · M4 F4 argv trap)
+
+## M1 (F1): cap check disabled  —  expect leg (f) RED
+1
+✖ u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing (0.6386ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing (0.6386ms)
+
+## M2 (F2): same-lane check disabled  —  expect leg (g) RED
+1
+✖ u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence (0.9428ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence (0.9428ms)
+
+## M3a (F3): runId stamp removed from outputTagOf  —  expect leg (h) RED
+mutation applied
+✖ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (1.1115ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (1.1115ms)
+
+## M3b (F3): fresh-dir refusal removed  —  expect leg (h) RED
+✖ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (0.758ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (0.758ms)
+
+## M4 (F4): argv[indexOf+1] trap restored in resolveFixturesArg  —  expect leg (i) RED
+1
+✖ u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0] (0.9286ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0] (0.9286ms)
+
+## restored: seam test must be GREEN again
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+exit=0
+
+## git diff of runner after restore (only the intended round-1 fixes remain):
+ .../evidence/u7-tbash-l4-20261027/c2/run-c2.mjs    | 151 +++++++++++++++++++--
+ 1 file changed, 139 insertions(+), 12 deletions(-)
