@@ -53,7 +53,7 @@ test('u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults', (
 })
 
 test('u7-tbash seam (b): flags override budget, ledger and evidence dir', () => {
-  const dir = 'dev/agent-workflow/evidence/u7-next-lane/arc-b'
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
   const ledger = `${dir}/boot-budget.jsonl`
   const cfg = resolveRunConfig(['--evidence', dir, '--budget-ledger', ledger, '--budget', '1'])
   assert.equal(cfg.flagged, true)
@@ -76,7 +76,7 @@ test('u7-tbash seam (b): flags override budget, ledger and evidence dir', () => 
 })
 
 test('u7-tbash seam (c): --evidence without the other two flags is refused', () => {
-  const dir = 'dev/agent-workflow/evidence/u7-next-lane/arc-b'
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
   const ledger = `${dir}/boot-budget.jsonl`
   assert.throws(() => resolveRunConfig(['--evidence', dir]), /must be given together/)
   assert.throws(() => resolveRunConfig(['--evidence', dir, '--budget-ledger', ledger]), /must be given together/)
@@ -92,7 +92,7 @@ test('u7-tbash seam (c): --evidence without the other two flags is refused', () 
 })
 
 test('u7-tbash seam (d): paths outside the repo or inside the closed lane are refused', () => {
-  const ledger = 'dev/agent-workflow/evidence/u7-next-lane/arc-b/boot-budget.jsonl'
+  const ledger = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b/boot-budget.jsonl'
   for (const bad of [OLD_LANE, `${OLD_LANE}/`, `${OLD_LANE}/c2`, `${OLD_LANE}/c2/boot-budget.jsonl`, join(REPO, OLD_LANE, 'c2')]) {
     assert.throws(() => resolveRunConfig(['--evidence', bad, '--budget-ledger', ledger, '--budget', '1']), /closed lane/)
   }
@@ -100,7 +100,7 @@ test('u7-tbash seam (d): paths outside the repo or inside the closed lane are re
     assert.throws(() => resolveRunConfig(['--evidence', bad, '--budget-ledger', ledger, '--budget', '1']), /inside the repo/)
   }
   // same law for the ledger itself
-  const dir = 'dev/agent-workflow/evidence/u7-next-lane/arc-b'
+  const dir = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
   assert.throws(() => resolveRunConfig(['--evidence', dir, '--budget-ledger', `${OLD_LANE}/c2/boot-budget.jsonl`, '--budget', '1']), /closed lane/)
   assert.throws(() => resolveRunConfig(['--evidence', dir, '--budget-ledger', '/tmp/ledger.jsonl', '--budget', '1']), /inside the repo/)
   assert.throws(() => resolveRunConfig(['--evidence', dir, '--budget-ledger', ledger, '--budget', '1', '--evidence', dir]), /duplicate --evidence/)
@@ -118,9 +118,15 @@ test('u7-tbash seam (e): a ledger already at budget is refused before the next b
   assert.throws(() => assertBootBudget({ declared, budget: OLD_BUDGET, ledgerPath: OLD_BUDGET_REL }), /boot budget exhausted: 7\/7/)
   // disclosure lines (no integer boot field) never count as declarations
   assert.equal(parseBootLedger('{"disclosure":"extension"}\n').length, 0)
-  // a flagged lane pointing at its OWN empty ledger declares boot 1 and would be allowed
-  const cfg = resolveRunConfig(['--evidence', 'dev/agent-workflow/evidence/u7-next-lane/arc-b', '--budget-ledger', 'dev/agent-workflow/evidence/u7-next-lane/arc-b/boot-budget.jsonl', '--budget', '1'])
+  // a flagged lane pointing at its OWN empty ledger declares boot 1 and would be allowed.
+  // The fixture dir is COMMITTED (with a zero-entry boot-budget.jsonl = the exact state a
+  // new lane starts in) because docs:probe requires every dev/agent-workflow/evidence/…
+  // path cited from tests/world-factory to exist in a cold clone.
+  const fixture = 'dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b'
+  const cfg = resolveRunConfig(['--evidence', fixture, '--budget-ledger', `${fixture}/boot-budget.jsonl`, '--budget', '1'])
   assert.ok(isAbsolute(cfg.budgetPath) && !cfg.budgetPath.startsWith(join(REPO, OLD_LANE)))
-  assert.equal(assertBootBudget({ declared: 0, budget: cfg.budget, ledgerPath: cfg.budgetPath }), 1)
+  const fresh = parseBootLedger(readFileSync(cfg.budgetPath, 'utf8')).length
+  assert.equal(fresh, 0)
+  assert.equal(assertBootBudget({ declared: fresh, budget: cfg.budget, ledgerPath: cfg.budgetPath }), 1)
   assert.throws(() => assertBootBudget({ declared: 1, budget: cfg.budget, ledgerPath: cfg.budgetPath }), /boot budget exhausted: 1\/1/)
 })

@@ -124,9 +124,9 @@ All three flags, always together; `<new-lane>` must not be `u7-tbash-l4-20261027
 
 ```
 dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs
-dev/agent-workflow/evidence/u7-tbash-seam-20261028/README.md
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/C1-GREEN.log
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/C1-MUTATION-RED.log
+dev/agent-workflow/evidence/u7-tbash-seam-20261028/README.md
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/arc-b/dry-run-GREEN.json
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/cli-refusals.log
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/dry-run-GREEN-vs-committed.diff
@@ -134,11 +134,21 @@ dev/agent-workflow/evidence/u7-tbash-seam-20261028/dry-run-GREEN.log
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/dry-run-RED-vs-committed.diff
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/dry-run-RED.log
 dev/agent-workflow/evidence/u7-tbash-seam-20261028/dry-run-SEAM-GREEN.log
+dev/agent-workflow/evidence/u7-tbash-seam-20261028/fixture-next-lane/arc-b/boot-budget.jsonl
 tests/world-factory/u7-tbash-seam.test.mjs
 ```
 
 NOTHING under `packages/` or `scripts/` — quoted list contains no such path.
 (run-c2.mjs diff: +106/−13, path/budget plumbing only.)
+
+**CI round 1 (honest record).** `docs:probe --base` went RED on the first head with two
+`CITED_PATH_MISSING` findings: `tests/world-factory` is a cited-paths root
+(`scripts/doc-checks.mjs` `CITED_PATH_ROOTS`), and the test's fictional fixture
+`dev/agent-workflow/evidence/u7-next-lane/arc-b(/boot-budget.jsonl)` existed nowhere.
+Fixed the lane, not the rule: the fixtures now cite a COMMITTED zero-entry ledger
+`fixture-next-lane/arc-b/boot-budget.jsonl` (= the exact state a new lane starts in), and
+test (e) additionally parses that committed ledger (`parse → 0 → boot 1 allowed`).
+`docs:probe --base origin/master` → blocking=0; seam test still 5/5.
 
 ## 7. Gates
 
