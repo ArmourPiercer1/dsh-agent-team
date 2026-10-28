@@ -48,8 +48,11 @@ export function captureOracleBinding({ artifactPath, evidencePath, sourceRoot = 
     oracleCoverage: 'suite and literal relative mjs imports within tests/world-factory; base64 byte copies retained in artifact; external inputs remain teamSha/hostSha-bound' }
 }
 
-export const trustedSourcesUnavailable = () => ({ trustedSourcesDigest: null,
-  trustedSourcesUnavailableReason: 'The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.' })
+export function trustedSourcesUnavailable() {
+  const unavailableReason = 'The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.'
+  return { trustedSourcesDigest: null, trustedSourcesUnavailableReason: unavailableReason,
+    trustedSources: { digest: null, unavailableReason } }
+}
 
 /** Update the same live object before each boot (including restart attempts). */
 export function bindWorldProfile(bindings, entry) {
