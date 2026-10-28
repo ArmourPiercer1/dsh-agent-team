@@ -133,6 +133,7 @@ test('u6-arc-d: the assembly materializes the CI-03 lane (NO capabilities block)
     // the plane: enforcing, workspace-rooted (the same generation of truth
     // beside the attacked family — arc-a law).
     const cfg = a.teamRowConfig()
+    assert.equal(cfg.defaultWorkspace, a.workspaceDir, 'native edit must run in the World workspace, not the Host launch tree')
     assert.equal(cfg.teamToolPlane.centerAssembly, 'enforcing')
     assert.ok(cfg.teamToolPlane.realmId.startsWith('u6arcd-realm-'))
     assert.equal(cfg.teamToolPlane.fsInstance.realmId, cfg.teamToolPlane.realmId)

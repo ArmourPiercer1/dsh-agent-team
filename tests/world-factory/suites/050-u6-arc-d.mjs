@@ -235,7 +235,7 @@ async function runU6ArcD({ factory, record, rc, log, line, worlds, keepHome, evi
   for (const r of world.mock?.requests ?? []) {
     for (const m of toolMsgsOf(r)) {
       const t = String(m?.text ?? '')
-      if (/u6arcd|not permitted|Permission denied|not-visible|Tool Binding|no such tool|not available|Unknown tool/i.test(t)) {
+      if (/u6arcd|sandbox:|file access denied|not permitted|Permission denied|not-visible|Tool Binding|no such tool|not available|Unknown tool/i.test(t)) {
         const k = t.slice(0, 200)
         settleSeen.set(k, (settleSeen.get(k) ?? 0) + 1)
       }

@@ -107,6 +107,7 @@ export function createArcDAssembly({ repoRoot, home, runStamp, reportDir }) {
   function teamRowConfig() {
     return {
       rootSessionId: ROOT,
+      defaultWorkspace: workspaceDir,
       bootPhase: 'create',
       blueprintSource: BP_ANCHOR_YAML,
       blueprintDir,

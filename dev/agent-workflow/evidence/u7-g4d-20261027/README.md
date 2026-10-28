@@ -18,6 +18,12 @@ Root dependency installation: `pnpm install --frozen-lockfile --store-dir .tmp-p
 
 Live budget: one boot; at most one retry only after ENV failure or a fixed harness defect. No boot has occurred at diagnosis time.
 
+## Boot 1 / authorized retry disclosure
+
+Boot 1 at committed `e286081b7` completed: overall FAIL, CI-03 FAIL, all ten other ARC-D cases and cleanup PASS. Native read now occurred (recorded line-numbered PENDING placeholder), but effect remained unchanged. Further harness inspection identified missing public `defaultWorkspace`: Team defaults cwd to Host launch checkout, while fixture is in World workspace. Native workspace-write confinement cannot mutate that out-of-cwd file. Correction explicitly binds teamRowConfig.defaultWorkspace to workspaceDir; C1 pins this. No sandbox relaxation or product edit. Diagnostic capture now includes sandbox denial strings. Runner additionally records `teamTreeClean` from tracked porcelain at startup (untracked generated evidence is excluded, as it is not executable input). Boot 1 had no such field; it must not be retrospectively claimed present.
+
+The single authorized retry is used ONLY after fixing that concrete harness workspace defect, not to retry unchanged. Both raw boot records will remain.
+
 ## Harness fix and C1 (pre-boot)
 
 Actual mock drive now emits grep → read(exact effect path) → edit → DONE. No dry-run or alternate IO implementation was added. Pure C1 consumes bounded recorded data and runs makeArcDDecide itself against simulated public observation receipts; historical unchanged placeholder judges FAIL, corrected drive judges PASS, no-read mutation judges FAIL. Regression RED recorded before fix, actual source mutation (replace read with grep) RED, restored source GREEN. Judge additionally requires readFromDisk=true, refusing tool-return-only claims. World-factory C1 and ARC-D adversarial/matrix C1 pass.
