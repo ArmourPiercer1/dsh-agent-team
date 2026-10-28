@@ -6,6 +6,12 @@ recorded as 0.
 
 ## Route verification (not reviews)
 
+> **Dated supersede (2026-10-28, takeover session):** the table below is the first-half-of-day snapshot taken before the
+> `dsh-opencode-go` channel was registered. It is kept unedited as history; the live route table is
+> `docs/plans/memo/unified-baseline-alpha5-20261025/REVIEW-MODEL-ROUTING.md` §一 (measured same day) and
+> entry DEV-3 below: `deepseek-v4-pro` **is** registered (R2 escalation path real), all `qiyuan-inter/*`
+> routes are retired from review dispatch.
+
 | route | probe | result |
 | --- | --- | --- |
 | `qiyuan-self/qwen3.8-flash-next` | ≥10 narrow tasks today | available |
@@ -104,6 +110,7 @@ review_route:
   next_action: "reviews for #431 dispatched on dsh-opencode-go/deepseek-v4.1-flash; G4 promotion R2 (R3) → glm-5.3;
   routing-draft §一 table to be updated in the docs PR"
 
+```
 ## RR-428 / RR-429 — retroactive cross-model reviews (DEV-1 debt) CLOSED on OpenCode Go (2026-10-28)
 
 ```yaml
@@ -128,6 +135,7 @@ review_route:
   unresolved: []
   next_action: "F-1/F-2/F-3/OG-1 => post-phase-3 remediation ledger (touching runners now would disturb the frozen candidate 5d0c8ff58); boot lane passes all seam flags explicitly + verifies argv parse before spawn as mitigation; OG-1 rule-text scoping joins the docs PR"
 
+```
 ## R431 — PR #431 gate-ledger + boot-budget ruling, full R2 loop on OpenCode Go (2026-10-28)
 
 ```yaml
@@ -147,3 +155,4 @@ review_route:
     - {severity: P3, location: "RULING overrun rationale; partial-enforcement PASS; ledger typed-refusal gloss; un-pinned origin/master", issue: "4 wording/evidence findings", evidence: "all CLOSED; finding 4 needed two steps: first fix over-claimed the ruling section as conjunction source (NOT-CLOSED, R431-R2-closure-flash.md), second fix cites nativeConfinementEnvBlock code gate (CLOSED, R431-R3-closure2-flash.md)"}
   unresolved: []
   next_action: "merge #431; reviewer note carried: ruling's pre-boot unusable stop and the code's per-run pre-flight record are distinct objects - any future tying needs a ruling, not a gloss"
+```
