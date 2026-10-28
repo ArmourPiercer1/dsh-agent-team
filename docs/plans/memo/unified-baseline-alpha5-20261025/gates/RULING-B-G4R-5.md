@@ -14,13 +14,18 @@ section is the operational reading.
 2. **The stop-on-same-failure law is NOT exempted.** Two consecutive SAME-CLASS failures ⇒ line stops.
    Pre-authorization must not be used to extend a dying line ("不得用预授权续命"). Restart requires a
    root-cause correction document (B-G4R-3/B-G4R-4 style, dated) FIRST, and only then may pre-authorized
-   budget be spent again.
+   budget be spent again. The correction must be a NEW, dated document issued AFTER the stop: "B-G4R-3/4
+   style" names the FORM, not those documents themselves. An earlier ruling never lifts a stop that its
+   own retry caused — B-G4R-4 authorized the ONE retry after the first failure; it cannot exempt a second
+   consecutive same-class failure from stopping ("如 B-G4R-3/4 式" 是格式示例，非既往豁免引用).
 3. **Per-cell disclosure stands.** Every boot cell beyond the ORIGINAL envelope (R1's 6) still requires:
    a named ruling + an independent re-review signature + a `disclosed` marking. Not one of the three may
-   be skipped ("一条不能省"). For boot 10 (the ARC-A ENV retry), the named rulings are B-G4R-4 (scope:
-   that exact retry) and this document (budget basis); the independent re-review signature for B-G4R-4
-   was recorded before merge (og `deepseek-v4.1-flash`, artifact `.artifacts/reviews/R434-og.md`,
-   verdict PASS). Retries beyond boot 10 each need their own ruling + review + disclosure.
+   be skipped ("一条不能省"). For the ARC-A ENV retry — chronologically the 5th boot of the lane, which
+   B-G4R-4 authorized while computing an eventual G4-R ceiling of 10 (its lines 46–51; "10" is the
+   ceiling position, never a boot number) — the named rulings are B-G4R-4 (scope: that exact retry) and
+   this document (budget basis); the independent re-review signature for B-G4R-4 was recorded before
+   merge (og `deepseek-v4.1-flash`, artifact `.artifacts/reviews/R434-og.md`, verdict PASS). Retries
+   beyond that each need their own ruling + review + disclosure.
 4. **Hard exclusions — pre-authorization does NOT touch**: capability-scope or security-semantics
    changes; deletion of historical evidence; G5 PRODUCT-GATE release verdicts; any plan §4
    reserved-matters item. Such questions are logged and QUEUED for the user ("入账排队"), never answered
@@ -40,11 +45,16 @@ was ENV-class; if the retry fails with the SAME ENV class again, that is two con
 failures ⇒ STOP the lane and report; the lane resumes only after a root-cause correction document per §2.
 
 **Boot-sequence deviation disclosed (this session).** The lane brief requires the authorizing ruling to
-be MERGED before the spawn it authorizes. The ARC-A retry (boot 10) spawns under the USER's
-pre-authorization, which is effective on issue ("失联期间生效") and does not wait on this document's CI;
-B-G4R-4 + B-G4R-5 land via PR #434 as the tracked record. Deviation is disclosed here and in the lane
-README per §3. The pre-flight conditions of B-G4R-4 (candidate HEAD, clean trees, sandbox probe
-`partial`/`full`, :3080 probe) were all re-checked immediately before the spawn and recorded.
+be MERGED before the spawn it authorizes. That prerequisite is NOT waived by the ceiling raise; it is
+separately overridden only by the user's own words "失聯期間生效" / effective on issue — the user's
+authorization is in force the moment it was issued, so it authorizes the ARC-A retry (chronologically the
+5th boot) without waiting for THIS recording document's CI. That is the sole basis for the deviation, and
+it is a deviation, disclosed here and in the lane README per §3 — it does not exempt any future spawn whose
+authority is a main-agent ruling rather than a directly user-issued authorization. B-G4R-4 landed via the
+already-merged PR #434; THIS ruling (B-G4R-5) lands via its own PR #436 as the tracked record (they are
+not in the same merge — #434 records B-G4R-4 only). The pre-flight conditions of B-G4R-4 (candidate HEAD,
+clean trees, sandbox probe `partial`/`full`, :3080 probe) were all re-checked immediately before the spawn
+and recorded.
 
 ## Verbatim user text (authority)
 
