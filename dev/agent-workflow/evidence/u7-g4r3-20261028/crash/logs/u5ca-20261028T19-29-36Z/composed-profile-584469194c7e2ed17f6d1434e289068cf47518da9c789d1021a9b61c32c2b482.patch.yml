@@ -1,0 +1,13 @@
+# U5 canary World — one test-only plugin row via the public profile-patch seam.
+- insert:
+    - id: u5-canary
+      name: "./u5-canary-plugin.mjs"
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
