@@ -156,3 +156,42 @@ review_route:
   unresolved: []
   next_action: "merge #431; reviewer note carried: ruling's pre-boot unusable stop and the code's per-run pre-flight record are distinct objects - any future tying needs a ruling, not a gloss"
 ```
+## R433 + R434 + boot-lane LEG1-ENV — routing round (2026-10-28 evening)
+
+```yaml
+review_route:
+  target: "PR #433 routing docs (7967b0b72 -> d9b68c571); PR #434 RULING-B-G4R-4 (4f6b9ff35); boot-lane leg-1 ENV failure handled via new ruling"
+  risk: R2          # governance docs + boot-budget authorization
+  model: dsh-opencode-go/deepseek-v4.1-flash
+  provider: dsh-opencode-go
+  route_reason: "OpenCode Go is the review lane per user directive; both PRs are >= R2 by REVIEW-MODEL-ROUTING 判定要点"
+  independence: independent
+  budget_status: unknown
+  estimated_cost: null
+  actual_cost: null
+  result: IN_FLIGHT # R433 round1 PASS-WITH-FINDINGS (2 P2 fences/table + P3s) -> fixed d9b68c571 -> closure check dispatched; R434 review dispatched
+  findings:
+    - {severity: P2, location: "ROUTING-LEDGER fences", issue: "3 unclosed yaml fences from scratch import (my append via heredoc dropped closers)", evidence: "R433-og.md; fixed: fence count 10, extractor 5/5 (closure pending)"}
+    - {severity: P2, location: "route table staleness inside ledger", issue: "first-half-of-day table contradicted DEV-3/spec", evidence: "fixed via dated supersede banner, history rows unedited"}
+  next_action: "merge order: #433 then #434 after closures; ARC-A retry only after #434 merged (tracked authorization before boot)"
+```
+
+## R435 + parallel worker dispatches (2026-10-28 late)
+
+```yaml
+review_route:
+  target: "PR #435 RV-406 evidence landing (39666cae2); non-review parallel packages: worktree reclaim audit, G4R3 executor pack"
+  risk: R1          # pure evidence docs, verbatim content
+  model: dsh-opencode-go/deepseek-v4.1-flash
+  provider: dsh-opencode-go
+  route_reason: "R1 per routing spec; parallel worker packages are non-review and ran on child defaults"
+  independence: independent
+  budget_status: unknown
+  estimated_cost: null
+  actual_cost: null
+  result: PASS
+  findings: []
+  next_action: "merge #435 with #434 once CI CLEAN; then ARC-A retry under B-G4R-4"
+```
+
+> Dated note (2026-10-28): the two entries above (R433/R434/LEG1-ENV round, R435 round) are session-scratch entries folded verbatim from `.artifacts/review-routing/LOG.md` into this live ledger (append-only; null costs + `budget_status: unknown` preserved).
