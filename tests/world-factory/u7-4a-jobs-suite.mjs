@@ -182,6 +182,10 @@ async function main() {
   }
 
   factory.onProfileBinding = (entry) => bindWorldProfile(record.record.bindings, entry)
+  // u7-sbx: native-sandbox pre-flight in the bindings BEFORE any boot; the
+  // u74a judge reads it for the one native-confinement leg (ENV_BLOCK only on
+  // the probe+typed-refusal conjunction — docs/TEST_METHODS.md §9).
+  factory.bindRunRecord(record)
   const rc = createRunControl({
     log,
     writeEvidence: (name, content) => writeFileSync(join(evidence, `${runId}.${name}`), JSON.stringify(content, null, 2) + '\n'),
@@ -537,7 +541,7 @@ async function main() {
     digest.hostAlive = hostAlive()
 
     const alive = hostAlive()
-    const verdicts = judgeU74a(digest, alive)
+    const verdicts = judgeU74a(digest, alive, { sandboxPreflight: factory.sandboxPreflight })
     for (const [id, verdict, detail] of verdicts) add(id, verdict, { laneDone: digest.laneDone, ...(detail ?? {}) })
     if (!alive) failRest('host died during the run')
     log(`attributed host lines: ${String(digest.attributedLog.length)}; ask rows: ${String(digest.askRows.length)}; kernelHits job_output: ${String(digest.kernelHits['job_output']?.count ?? 0)}`)

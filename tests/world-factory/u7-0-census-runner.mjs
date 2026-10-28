@@ -136,6 +136,9 @@ async function runCensus(opts) {
       disclosure: 'The pristine host base is the main checkout tests/deepseek-harness-test-use tree, mounted READ-ONLY through the factory (HEAD/porcelain asserted before every spawn). Worlds live under tests/homes/<world>; ports 3180-family via leases; the census row registers ONE tool and reads only public seams.',
     },
   })
+
+  // u7-sbx: the native-sandbox pre-flight is bound into this record too.
+  factory.bindRunRecord(record)
   const rc = createRunControl({
     log,
     writeEvidence: (name, content) => { writeFileSync(join(evRoot, `${runId}.${name}`), JSON.stringify(content, null, 2) + '\n') },

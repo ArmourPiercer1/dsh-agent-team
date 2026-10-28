@@ -1,0 +1,8 @@
+# node --test sweep over every tests/world-factory/*.test.mjs, post-commit (35ff47418), 2026-10-28T13:58:15Z
+tests/world-factory/binding-digests.test.mjs            ℹ tests 6 ℹ pass 6 ℹ fail 0
+tests/world-factory/host-sandbox-assets.test.mjs        ℹ tests 17 ℹ pass 17 ℹ fail 0
+tests/world-factory/registries.test.mjs                 ℹ tests 12 ℹ pass 12 ℹ fail 0
+tests/world-factory/u6-arc-d.test.mjs                   ℹ tests 8 ℹ pass 8 ℹ fail 0
+tests/world-factory/u7-tbash-offline-drive.test.mjs     ℹ tests 1 ℹ pass 1 ℹ fail 0
+tests/world-factory/u7-tbash.test.mjs                   ℹ tests 8 ℹ pass 8 ℹ fail 0
+tests/world-factory/world-factory.test.mjs              ℹ tests 43 ℹ pass 43 ℹ fail 0

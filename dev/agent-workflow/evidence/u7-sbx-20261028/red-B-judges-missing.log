@@ -1,0 +1,73 @@
+✔ T1 the pinned asset manifest is committed and keyed by the pinned host baseline (1.473361ms)
+✔ T2 a tree whose assets are present and match the manifest reports present and writes nothing (129.734032ms)
+✔ T3 a fresh-clone shaped tree is unusable, gets provisioned, and the host probe then works (137.088041ms)
+✔ T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue (65.669372ms)
+✔ T5 a destination whose existing bytes mismatch the manifest fails closed and is never overwritten (6.699948ms)
+✔ T6 an unmanifested host baseline fails closed instead of copying anything (5.16521ms)
+✔ T7 a source tree without the asset fails closed with a typed error (66.145398ms)
+✔ T8 the source tree is never the destination, and the env override is honoured (186.706086ms)
+✔ T9 provisioning keeps the destination runtime tree git status --porcelain EMPTY (74.178459ms)
+✔ T10 the provisioner has no network path (local copy only) (1.137584ms)
+✔ T11 the pre-flight record binds probe verdict + launcher digest + provenance (108.518596ms)
+✔ T12 an unprovisionable tree records unusable + the provision error and never throws (130.970276ms)
+✔ T13 a supply-chain digest mismatch is a THROWN pre-flight error, never a recorded backend (71.22417ms)
+✔ T14 only the host typed unavailable signal matches (0.276805ms)
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (2.432065ms)
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (1.119116ms)
+✔ T17 the pre-flight is visible on the RUN record and in the summary line (0.557008ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 15
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1103.29926
+
+✖ failing tests:
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:443:1
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (2.432065ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'FAIL'
+  - 'ENV_BLOCK'
+
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/tests/world-factory/host-sandbox-assets.test.mjs:468:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'FAIL',
+    expected: 'ENV_BLOCK',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:516:1
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (1.119116ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'FAIL'
+  - 'ENV_BLOCK'
+
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/tests/world-factory/host-sandbox-assets.test.mjs:528:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'FAIL',
+    expected: 'ENV_BLOCK',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

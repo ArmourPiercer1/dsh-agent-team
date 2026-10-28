@@ -13,7 +13,7 @@
 | DSH_HOME | `<repo>/tests/homes/<world>`（一世界一目录；**位于会话工作区内**——见 §5 沙箱约束；与稳定实例的默认 `~/.dsh` 完全隔离；`tests/homes/` 已被 `.gitignore` 覆盖；协议见 §7） |
 | 端口 | 测试端口段（唯一来源 `tests/paths.mjs` 的 `TEST_PORT_RANGES`）：**3180-3199 / 3491-3500 / 13000-13099**（2026-10-26 用户裁决放宽，见 §6；此前 3180-3186 / 3491-3500）；WorldFactory 按角色分段租用：宿主 `HOST_PORT_BANDS` = 3181-3199 → 13000-13049（**3180 不租给 World**，留给 §2 手动启动与 kit），mock `MOCK_PORT_BANDS` = 3491-3500 → 13050-13099；旧 `tests/kits/**` 自带候选表仍在旧段内、不改；稳定实例占 3080；测试实例**禁止**使用 3080 |
 
-> 落位方法（**历史**，本环境实测 2026-09-12，0.1.2 时代）：`git clone --local references/deepseek-harness tests/deepseek-harness-test-use && git -C tests/deepseek-harness-test-use checkout --detach a66e470204`（冻结 legacy 参考仓含完整 upstream 历史，无需网络；等价地可从 upstream 远端 clone）。**当前流程（2026-09-24 宿主升级轮起；2026-10-03 0.2.0-rc.2 轮补充 fresh-worktree 情形）**：checkout 已在位（detached @ 基线）时，升级/重建基线 = `git -C tests/deepseek-harness-test-use fetch origin && git -C tests/deepseek-harness-test-use checkout --detach <TEST_USE_BASELINE_SHA>`；全新 worktree 尚无 checkout 时 = `git clone --local --no-hardlinks <只读 baseline 树> tests/deepseek-harness-test-use` + `git checkout --detach <TEST_USE_BASELINE_SHA>`（本仓库 worktree 与 baseline 常跨设备，`--local` 的硬链接会被 `Invalid cross-device link` 拒；`--no-hardlinks` = 完整对象副本）。canonical 常量唯一来源 = `tests/paths.mjs`，当前 `639ed015397290b3745d163aafe02ffee4aa3f84`（0.2.0-rc.2）。落位后必须复核 `git status --porcelain` 为空。
+> 落位方法（**历史**，本环境实测 2026-09-12，0.1.2 时代）：`git clone --local references/deepseek-harness tests/deepseek-harness-test-use && git -C tests/deepseek-harness-test-use checkout --detach a66e470204`（冻结 legacy 参考仓含完整 upstream 历史，无需网络；等价地可从 upstream 远端 clone）。**当前流程（2026-09-24 宿主升级轮起；2026-10-03 0.2.0-rc.2 轮补充 fresh-worktree 情形）**：checkout 已在位（detached @ 基线）时，升级/重建基线 = `git -C tests/deepseek-harness-test-use fetch origin && git -C tests/deepseek-harness-test-use checkout --detach <TEST_USE_BASELINE_SHA>`；全新 worktree 尚无 checkout 时 = `git clone --local --no-hardlinks <只读 baseline 树> tests/deepseek-harness-test-use` + `git checkout --detach <TEST_USE_BASELINE_SHA>`（本仓库 worktree 与 baseline 常跨设备，`--local` 的硬链接会被 `Invalid cross-device link` 拒；`--no-hardlinks` = 完整对象副本）。canonical 常量唯一来源 = `tests/paths.mjs`，当前 `639ed015397290b3745d163aafe02ffee4aa3f84`（0.2.0-rc.2）。落位后必须复核 `git status --porcelain` 为空；**并复核原生沙箱资产已供给**（`node tests/world-factory/provision-host-sandbox.mjs --check`，见 §9——clone 不携带 `native/system/packages/*/bin/`，未供给时宿主沙箱后端 `unusable`）。
 
 ## 2. 启动 / 停止 / 验证
 
@@ -97,3 +97,43 @@ DSH_HOME=<repo>/tests/homes/<world> node apps/cli/lib/bin.js web --port 3180 --n
 - **已迁出的历史证据**：PR #366 将 20,148 个历史 tracked evidence 文件（约 498 MiB）`git rm` 出当前树（不改写历史）。索引 = `dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv`（tracked）；内容存于**本地临时**内容寻址库 `.artifacts/evidence/blobs/`（gitignored，与工作区同盘；用户裁决：临时方案，现存储体系后续废弃）。工具 = `node scripts/evidence-store.mjs verify | restore <path>… [--from-git] | ingest --from-commit <sha>`；本地库丢失时用 `--from-git` / `ingest --from-commit 95fbe95cf` 从 git 历史恢复。代码/CI 运行时读取的证据、文档链接目标与全部 evidence `*.md` 仍 tracked（keep-set，见 manifest 头注）。
 - **新 worktree 默认全量 checkout**：仓库曾在根 `.git/config.worktree` 启用 sparse-checkout，`git worktree add` 会继承 `.git/info/sparse-checkout` 模板并静默隐藏 manifest 等文件（U3 实测）。2026-10-25 起根 checkout 已 `git sparse-checkout disable`；如遇继承，在新 worktree 内执行 `git sparse-checkout disable`。需要稀疏时须显式声明并在 evidence 登记。
 - **空间纪律**：一任务一 worktree，合并即 `git worktree remove`；临时文件/日志放任务 evidence 或 `.artifacts/tmp/`，不得散落在 `.worktrees/` 根；`tests/homes/` 世界按 §7 用完即删。2026-10-25 U3 收口后实测：worktree 50→1（PR #360 头），df 可用 31 GiB→59 GiB。
+
+## 9. 原生沙箱资产：gitignored 缺口、供给命令与预检裁决律（u7-sbx，2026-10-28 新增）
+
+**缺陷（实测，非推测）**：宿主的 Linux 沙箱启动器由运行时 checkout 内 `native/system/packages/entry/lib/index.js` 解析——`launcherPath()` → 平台包 `@deepseek-ai/node-addon-system-<platform>-<arch>` 的 `bin/landlock-run`，`probe()` 以 `--probe` 真跑该二进制并返回 `full` / `partial` / `unusable`。而 `native/system/.gitignore` 的 `packages/*/bin/`（与 `packages/*/lib/`）使这些**原生资产从不进 git**：§1 记录的 fresh-worktree 流程（`git clone --local --no-hardlinks` + `checkout --detach`）得到的树里 `bin/`、`bin/glibc/` 目录在而**二进制缺失**（`git check-ignore -v` 指回该规则；宿主 `flock` addon 同理）。本机 `bwrap` 无法运行（非特权 user namespace 被拒），Landlock 是唯一可用后端，故缺启动器＝原生约束整体失效：宿主 fail closed 报 `sandbox mode "workspace-write" is requested but no sandbox backend is usable on this host`。
+
+| 检查 | 主 checkout | 新建 worktree（未供给） |
+| --- | --- | --- |
+| `import('…/entry/lib/index.js').probe()` | `partial` | **`unusable`** |
+| `bin/landlock-run` · `bin/glibc/system.node` | 存在 | 目录在、文件缺失 |
+
+**为什么这属于测试基础设施**：PR #427 的 Jobs Bridge 记录在 `u74a:native-ctl-unaffected` 上 `overall: FAIL` 并被归因于"宿主限制"，而同一条腿 2026-10-26 真实 PASS 且记录 `landlock-run: partial enforcement (older Landlock ABI)`（evidence `dev/agent-workflow/evidence/u7-4a-jobs-producer-20261026/logs/u5u74a-20261026T11-57-55Z/u74a-main-4.u74a-evidence.json`）。环境/供给缺口被当作产品缺陷写进了 gate 记录；本节使两者不再可混淆。
+
+**供给命令（本地复制、零网络、零源树写入）**：
+
+```bash
+# 运行时 checkout 已在位（detached @ 基线）之后：
+node tests/world-factory/provision-host-sandbox.mjs              # 预检 + 按需供给
+node tests/world-factory/provision-host-sandbox.mjs --check      # 只报告，不写
+node tests/world-factory/provision-host-sandbox.mjs --manifest   # 打印 pin
+# exit 0 = 后端可用 · 1 = 仍 unusable（环境态，套件记 ENV_BLOCK）· 2 = fail-closed（摘要/manifest 不符）
+```
+
+源树默认 = **主 Team checkout 自身**的 `tests/deepseek-harness-test-use`；覆盖 = 环境变量 `DSH_TEAM_SANDBOX_ASSET_SOURCE=<本地树>`（唯一覆盖点；关闭自动供给 = `DSH_TEAM_SANDBOX_ASSET_PROVISION=0`）。WorldFactory 在**第一次 host start 之前**执行同一预检（`tests/world-factory/lib/host-sandbox-assets.mjs`），把 backend 判定、启动器摘要与供给 provenance 绑定进 RUN record 的 `bindings.sandboxPreflight` / `bindings.nativeConfinementBackend`；`RUN-SUMMARY` 行在后端不可用时追加 `nativeBackend=unusable` 披露。
+
+**Pinned 摘要与 provenance**：`tests/world-factory/lib/host-sandbox-assets-manifest.json`（tracked），键 = `tests/paths.mjs` 的 `DSH_BASELINE_VERSION@TEST_USE_BASELINE_SHA`，平台 `linux-x64`（`libc: glibc`，与宿主 `entry/src/flock.ts` 的 libc 选择一致）：
+
+| 文件（平台包相对路径） | sha256 | bytes | 出处 |
+| --- | --- | --- | --- |
+| `bin/landlock-run`（launcher） | `a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31` | 38552 | 主 checkout 运行时树 @ `639ed01539`（porcelain 空）实测；与官方 `@deepseek-ai/node-addon-system-linux-x64` tarball 同字节（该包 `prebuilds.json` 列明同一路径） |
+| `bin/glibc/system.node` | `54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc` | 17360 | 同上 |
+
+复核：`sha256sum tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run`。**供给纪律**（由 `tests/world-factory/host-sandbox-assets.test.mjs` 17 条 C1 锁死，含 mutation 证据）：先校验后落地——源字节先对表、暂存文件再对表、发布后再对表，任一步不符即删除该副本并以 typed error 命名期望/实际摘要，摘要不符的二进制永不到达宿主 exec 的路径；**不是自己写的字节永不覆盖或删除**（目的地已存在但不符 → `DESTINATION_DIGEST_MISMATCH`，原样留给人类）；未在 manifest pin 的基线 / 平台 / libc 变体一律 fail closed，绝不"顺手复制"；launcher 路径只经宿主自身 `launcherPath()` 解析，不硬编码。**回滚**：删除这两个 gitignored 文件即回到未供给态（实测供给前后 `git status --porcelain` 皆为空）。
+
+**裁决律（verdict fidelity，硬性）**：
+
+1. 原生（非 governed）约束腿——至少 `u74a:native-ctl-unaffected` 与 ARC-D 的 `arcd:ci03-native-parity`——判 `ENV_BLOCK` 的**唯一**通路是**合取**：真实预检记录（`schema=u7-sbx-sandbox-preflight/1` 且 `probed:true`）的 probe 判定为 `unusable` **且** 该腿观测到宿主 typed 拒绝信号（`no sandbox backend is usable on this host` / `SANDBOX_UNAVAILABLE` / `(sandbox-unavailable)` / `SandboxUnavailableError`）。
+2. 合取不成立即维持原判定：功能性失败仍是 **FAIL**（unusable 单独存在不洗白失败；typed 消息单独存在也不成立；手工伪造的 preflight 对象不成立）。ARC-D 磁盘法不受影响：效果文件存在但字节不是本轮 marker → 永远 FAIL。
+3. 环境状态**永不计入 PASS**：`overallVerdict` 的 `VERDICT_SEVERITY` 顺序本轮未改，`SKIP/REFUSED/ENV_BLOCK` 仍不是 PASS，ENV_BLOCK 仍使 `overall != PASS` 且退出码 1。
+4. 摘要不符是供给链事件不是环境态：预检**抛出**并拒绝启动 Host，而非记成 `unusable` 继续跑。
+5. 套件不得为变绿放宽沙箱、替换原生工具或 patch 宿主（CORE PATCH BUDGET = 0）。

@@ -1,0 +1,38 @@
+{
+  "schema": "u7-sbx-host-sandbox-assets/1",
+  "purpose": "Pinned sha256 of the gitignored native sandbox assets a fresh runtime checkout does NOT carry (native/system/.gitignore ignores every platform package bin/). tests/world-factory/lib/host-sandbox-assets.mjs copies them from a LOCAL source tree and refuses to publish any file whose bytes do not hash to this table.",
+  "transport": "local copy only - the provisioner has no download path",
+  "provenance": {
+    "measuredAt": "2026-10-28",
+    "measuredFrom": "the main Team checkout runtime tree at detached HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 (porcelain empty), built by the 0.2.0-rc.2 host-upgrade round",
+    "upstream": "the same bytes the official @deepseek-ai/node-addon-system-linux-x64 package carries (native/system/packages/linux-x64/prebuilds.json names these paths); host source is never patched - CORE PATCH BUDGET = 0",
+    "verifyCommand": "sha256sum tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+    "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state"
+  },
+  "entries": {
+    "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84": {
+      "hostBaseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platforms": {
+        "linux-x64": {
+          "libc": "glibc",
+          "launcher": "bin/landlock-run",
+          "files": {
+            "bin/glibc/system.node": {
+              "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+              "bytes": 17360,
+              "mode": "0o755"
+            },
+            "bin/landlock-run": {
+              "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+              "bytes": 38552,
+              "mode": "0o755"
+            }
+          }
+        }
+      }
+    }
+  }
+}
