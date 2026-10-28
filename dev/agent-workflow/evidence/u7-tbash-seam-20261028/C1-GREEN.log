@@ -1,0 +1,13 @@
+✔ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (1.199575ms)
+✔ u7-tbash seam (b): flags override budget, ledger and evidence dir (0.48115ms)
+✔ u7-tbash seam (c): --evidence without the other two flags is refused (0.602338ms)
+✔ u7-tbash seam (d): paths outside the repo or inside the closed lane are refused (0.461152ms)
+✔ u7-tbash seam (e): a ledger already at budget is refused before the next boot (0.871109ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.650161

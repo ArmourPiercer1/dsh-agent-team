@@ -1,0 +1,36 @@
+✖ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (1.421553ms)
+✔ u7-tbash seam (b): flags override budget, ledger and evidence dir (0.9618ms)
+✔ u7-tbash seam (c): --evidence without the other two flags is refused (0.500548ms)
+✔ u7-tbash seam (d): paths outside the repo or inside the closed lane are refused (0.453753ms)
+✔ u7-tbash seam (e): a ledger already at budget is refused before the next boot (0.473751ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 141.321204
+
+✖ failing tests:
+
+test at tests/world-factory/u7-tbash-seam.test.mjs:39:1
+✖ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (1.421553ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget-elsewhere.jsonl'
+  - '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget.jsonl'
+
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/tests/world-factory/u7-tbash-seam.test.mjs:43:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget-elsewhere.jsonl',
+    expected: '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-tbseam/dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/boot-budget.jsonl',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

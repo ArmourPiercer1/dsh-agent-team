@@ -14,9 +14,23 @@
  * ledger. Verdicts: the shared `judgeTbash`; `tbash:mounted` is boot-time.
  *
  * Run:  node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs
+ *
+ * Lane-independent seam (u7-tbash-seam-20261028): a NEW lane runs this C2
+ * without rewriting the closed #415 lane's committed ledger:
+ *   node dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs \
+ *     --evidence dev/agent-workflow/evidence/<new-lane>/arc-b \
+ *     --budget-ledger dev/agent-workflow/evidence/<new-lane>/arc-b/boot-budget.jsonl \
+ *     --budget 1
+ * `--evidence` is the dir this run writes host/mock logs, digests and the
+ * record into; `--budget-ledger` is the ledger to declare against; `--budget`
+ * a positive integer. ALL THREE are required together (fail closed: giving
+ * one never silently falls back to the closed lane's ledger). Paths must stay
+ * inside the repo and outside the closed lane dir. With NO flags the
+ * behaviour is byte-for-byte the #415 default (BUDGET 7, boot-budget.jsonl
+ * beside this file, the closed lane's evidence prefix, HERE for outputs).
  */
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve, dirname } from 'node:path'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, relative, resolve, dirname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -33,9 +47,87 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '../../../..', '..')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-// Original budget was 3; user-authorized disclosed extension permits exactly one final boot 6.
-const BUDGET = 7
-const BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
+// ── lane-independent seam (u7-tbash-seam-20261028) ──────────────────────────────
+// The #415 lane is closed history: its committed ledger is full (7/7) and its
+// evidence prefix is its own. A new lane declares against ITS OWN ledger and
+// writes INTO ITS OWN dir via --evidence/--budget-ledger/--budget (all three
+// together, fail closed). With no flags the defaults below pin the exact #415
+// behaviour byte-for-byte (original budget 3; user-authorized disclosed
+// extensions took it to boot 6, then boot 7 at budget 7).
+export const CLOSED_LANE_REL = 'dev/agent-workflow/evidence/u7-tbash-l4-20261027'
+export const DEFAULT_BUDGET = 7
+export const DEFAULT_BUDGET_PATH = join(HERE, 'boot-budget.jsonl')
+export const DEFAULT_EVIDENCE_DIR = HERE
+export const DEFAULT_EVIDENCE_REL = `${CLOSED_LANE_REL}/c2`
+
+const inRepoOutsideClosedLane = (given, flag) => {
+  const abs = resolve(REPO, given)
+  const rel = relative(REPO, abs)
+  if (rel === '' || rel === '..' || rel.startsWith(`..${sep}`)) throw new Error(`${flag} must stay inside the repo: ${given}`)
+  const relPosix = rel.split(sep).join('/')
+  if (relPosix === CLOSED_LANE_REL || relPosix.startsWith(`${CLOSED_LANE_REL}/`)) throw new Error(`${flag} must not point inside the closed lane dir ${CLOSED_LANE_REL}/: ${given}`)
+  return abs
+}
+
+/**
+ * Pure CLI seam resolution (C1-pinned by tests/world-factory/u7-tbash-seam.test.mjs).
+ * No flags → the #415 defaults byte-for-byte. Any one of --evidence /
+ * --budget-ledger / --budget given without the other two is REFUSED (the
+ * closed lane's full ledger is never an implicit fallback). Paths must be
+ * repo-relative (or absolute) inside the repo and outside the closed lane.
+ */
+export function resolveRunConfig(argv) {
+  let evidence = null
+  let ledger = null
+  let budgetRaw = null
+  for (let i = 0; i < argv.length; i += 1) {
+    const a = argv[i]
+    if (a === '--evidence') {
+      if (evidence !== null) throw new Error('duplicate --evidence')
+      evidence = argv[++i]
+      if (evidence === undefined) throw new Error('--evidence requires <dir>')
+    } else if (a === '--budget-ledger') {
+      if (ledger !== null) throw new Error('duplicate --budget-ledger')
+      ledger = argv[++i]
+      if (ledger === undefined) throw new Error('--budget-ledger requires <jsonl>')
+    } else if (a === '--budget') {
+      if (budgetRaw !== null) throw new Error('duplicate --budget')
+      budgetRaw = argv[++i]
+      if (budgetRaw === undefined) throw new Error('--budget requires <n>')
+    }
+  }
+  const given = [evidence, ledger, budgetRaw].filter((x) => x !== null).length
+  if (given === 0) return { flagged: false, budget: DEFAULT_BUDGET, budgetPath: DEFAULT_BUDGET_PATH, evidenceDir: DEFAULT_EVIDENCE_DIR, evidenceRel: DEFAULT_EVIDENCE_REL }
+  if (given !== 3) throw new Error(`--evidence, --budget-ledger and --budget must be given together (got ${String(given)} of 3); refusing to fall back to the closed lane's committed ledger`)
+  const budget = Number(budgetRaw)
+  if (!Number.isInteger(budget) || budget < 1) throw new Error(`bad --budget: ${String(budgetRaw)} (positive integer required)`)
+  const evidenceDir = inRepoOutsideClosedLane(String(evidence), '--evidence')
+  const budgetPath = inRepoOutsideClosedLane(String(ledger), '--budget-ledger')
+  return { flagged: true, budget, budgetPath, evidenceDir, evidenceRel: relative(REPO, evidenceDir).split(sep).join('/') }
+}
+
+/** Parse ledger text into valid boot declarations (disclosure lines filtered). */
+export function parseBootLedger(text) {
+  return String(text).split('\n').filter((l) => l.trim() !== '').map((l) => { try { return JSON.parse(l) } catch { return null } }).filter((x) => Number.isInteger(x?.boot))
+}
+
+/** Next boot number, or THROW when the ledger already holds `declared` ≥ budget. */
+export function assertBootBudget({ declared, budget, ledgerPath }) {
+  const n = declared + 1
+  if (n > budget) throw new Error(`boot budget exhausted: ${String(declared)}/${String(budget)} declared in ${ledgerPath}`)
+  return n
+}
+
+/** Record evidence path for a file written into this run's evidence dir. */
+export function evidencePathOf(cfg, file) {
+  return `${cfg.evidenceRel}/${file}`
+}
+
+const RUN = resolveRunConfig(process.argv.slice(2))
+const BUDGET = RUN.budget
+const BUDGET_PATH = RUN.budgetPath
+const OUT_DIR = RUN.evidenceDir
+const ensureOutDir = () => { if (RUN.flagged) mkdirSync(OUT_DIR, { recursive: true }) }
 const notes = []
 const git = (args) => execFileSync('git', ['-C', REPO, ...args], { encoding: 'utf8' }).trim()
 const run = createRunRecord({
@@ -67,9 +159,8 @@ async function stableStatus() {
   } catch (e) { return `unreachable:${String(e?.name ?? e)}` }
 }
 function declareBoot(world) {
-  const prior = existsSync(BUDGET_PATH) ? readFileSync(BUDGET_PATH, 'utf8').split('\n').filter((l) => l.trim() !== '').map((l) => { try { return JSON.parse(l) } catch { return null } }).filter((x) => Number.isInteger(x?.boot)) : []
-  const n = prior.length + 1
-  if (n > BUDGET) throw new Error(`boot budget exhausted: ${String(prior.length)}/${String(BUDGET)} declared in ${BUDGET_PATH}`)
+  const prior = existsSync(BUDGET_PATH) ? parseBootLedger(readFileSync(BUDGET_PATH, 'utf8')) : []
+  const n = assertBootBudget({ declared: prior.length, budget: BUDGET, ledgerPath: BUDGET_PATH })
   const entry = { boot: n, budget: BUDGET, declaredAt: new Date().toISOString(), runId: run.record.runId, world: world.id, teamSha: run.record.bindings.teamSha }
   appendFileSync(BUDGET_PATH, JSON.stringify(entry) + '\n')
   return entry
@@ -109,13 +200,15 @@ async function dryRun() {
   digest.governed = assembled.governedSession
   const verdicts = process.env.U7TB_DRY_RUN_MUTATE === '1' ? [['tbash:mounted', 'FAIL', { mutation: true }]] : [['tbash:mounted', governed.identityOk ? 'PASS' : 'FAIL', { identityOk: governed.identityOk }], ...judgeTbash(digest, fixture.hostAlive)]
   const out = { mode: 'dry-run', fixture: resolve(fixturePath), mutation: process.env.U7TB_DRY_RUN_MUTATE === '1', governedSession: digest.governed, ledger, verdicts, overall: verdicts.every(([, v]) => v === 'PASS') ? 'PASS' : 'FAIL' }
-  const outPath = join(HERE, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
+  const outPath = join(OUT_DIR, `dry-run-${out.mutation ? 'RED' : 'GREEN'}.json`)
+  ensureOutDir()
   writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n')
   console.log(JSON.stringify(out, null, 2))
   process.exit(out.overall === 'PASS' || out.mutation ? 0 : 1)
 }
 
 async function main() {
+  ensureOutDir()
   const stableBefore = await stableStatus()
   const factory = new TestWorldFactory({
     repoRoot: REPO,
@@ -154,7 +247,7 @@ async function main() {
   if (boot !== null) {
     run.logHostStart({ phase: 'u7tb-c2-boot', boot: declared.boot, world: world.id, port: boot.port, bootMs: Date.now() - t0 })
     try { await drive({ world, assembly, planted, boot, decide }) } catch (e) { notes.push(`drive threw: ${String(e?.stack ?? e).slice(0, 600)}`) }
-    try { writeFileSync(join(HERE, `host-${tag}.log`), redact(readFileSync(boot.logPath, 'utf8'))) } catch { notes.push('host log copy failed') }
+    try { writeFileSync(join(OUT_DIR, `host-${tag}.log`), redact(readFileSync(boot.logPath, 'utf8'))) } catch { notes.push('host log copy failed') }
   }
   try {
     const reqs = world.mock?.requests ?? []
@@ -165,7 +258,7 @@ async function main() {
     const lastAsker = [...reqs].reverse().find(isAsker) ?? null
     const lastLeader = [...reqs].reverse().find((r) => !isAsker(r) && JSON.stringify(r?.body?.messages ?? []).includes(assembly.markers.MK_L1)) ?? null
     const pick = (r) => (r === null ? null : { seq: r.seq, messages: r.body?.messages ?? null, reply: r.reply ?? null })
-    writeFileSync(join(HERE, `mock-excerpt-${tag}.json`), JSON.stringify({
+    writeFileSync(join(OUT_DIR, `mock-excerpt-${tag}.json`), JSON.stringify({
       note: 'Declared EXCERPT (last asker-lane request + last leader request, byte-identical message arrays); the raw capture is not committed.',
       rawSha256: createHash('sha256').update(raw).digest('hex'), rawRequests: reqs.length,
       asker: pick(lastAsker), leader: pick(lastLeader),
@@ -180,11 +273,11 @@ async function main() {
     stableInstance: { port: 3080, statusBefore: stableBefore, statusAfter: stableAfter, unchanged: stableBefore === stableAfter, touched: false },
     hostTreeAfter: { head: hostAfter.head },
     teardown: { receipts: receipts ?? null, homeRemoved: !existsSync(world.home) },
-    evidence: [`host-${tag}.log`, `mock-excerpt-${tag}.json`].map((f) => `dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/${f}`).filter((p) => existsSync(join(REPO, p))),
+    evidence: [`host-${tag}.log`, `mock-excerpt-${tag}.json`].map((f) => evidencePathOf(RUN, f)).filter((p) => existsSync(join(REPO, p))),
     mockDigest: world.mock === null ? [] : world.mockRequestDigest().slice(-60),
   })
   run.finalize()
-  const out = join(HERE, `c2-verdicts-${tag}.json`)
+  const out = join(OUT_DIR, `c2-verdicts-${tag}.json`)
   run.write(out)
   console.log(`[u7tb-c2] record written to ${out} (u5-run-record/1, finalized before write); :3080 ${String(stableBefore)} -> ${String(stableAfter)}`)
   const fails = run.record.cases.filter((v) => v.verdict !== 'PASS').length
