@@ -63,7 +63,7 @@ import { fileURLToPath } from 'node:url'
 import { TestWorldFactory, reclaimWorld, homesCensus, stableInstanceProbe } from './lib/world-factory.mjs'
 import { pidAlive, scanAllLeases, scanStaleLeases } from './lib/port-lease.mjs'
 import { portInUse } from '../characterization/lib/util.mjs'
-import { createRunRecord, exitCodeFor, formatSummary } from './lib/run-record.mjs'
+import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -78,16 +78,42 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * inside the survivor's healthy-to-last-probe interval, and every reclaim
  * effect must be scoped to the victim world/resources.
  */
-export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, victimWorld, reclaimedResources = [] }) {
-  const ordered = [survivorHealthyAt, killAt, survivorLastProbeAt].every(Number.isFinite)
+export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt, victimWorld, reclaimedResources = [], survivorProbes = [] }) {
+  const timestamps = [survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt]
+  const ordered = timestamps.every(Number.isFinite)
     && survivorHealthyAt < killAt
     && killAt < survivorLastProbeAt
+    && survivorLastProbeAt <= survivorTornDownAt
+  const probeAfterReclaim = survivorProbes.some((probe) => Number.isFinite(probe) && probe > killAt)
   const victimOnly = reclaimedResources.every((resource) => resource?.world === victimWorld)
-  return { killInsideSurvivorWindow: ordered, reclaimVictimOnly: victimOnly, pass: ordered && victimOnly }
+  const reclaimTouchedOnlyVictim = reclaimedResources.length > 0 && victimOnly
+  return {
+    killInsideSurvivorWindow: ordered,
+    survivorHeldUntilReclaim: ordered,
+    survivorProbeAfterReclaim: probeAfterReclaim,
+    reclaimVictimOnly: reclaimTouchedOnlyVictim,
+    pass: ordered && probeAfterReclaim && reclaimTouchedOnlyVictim,
+  }
+}
+
+export function runSurvivorDryRun() {
+  const survivorHealthyAt = 100
+  const killAt = 200
+  const survivorLastProbeAt = 300
+  const survivorTornDownAt = 301
+  return evaluateSurvivorSequencing({
+    survivorHealthyAt,
+    killAt,
+    survivorLastProbeAt,
+    survivorTornDownAt,
+    survivorProbes: [survivorHealthyAt, 150, survivorLastProbeAt],
+    victimWorld: 'fake-victim',
+    reclaimedResources: [{ world: 'fake-victim', kind: 'home' }, { world: 'fake-victim', kind: 'lease' }],
+  })
 }
 
 export function parseArgs(argv) {
-  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000 }
+  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000, dryRun: false }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--evidence') out.evidence = String(argv[++i])
@@ -98,6 +124,7 @@ export function parseArgs(argv) {
     else if (a === '--mode') out.mode = String(argv[++i])
     else if (a === '--survivor-suite') out.survivorSuite = String(argv[++i])
     else if (a === '--reconstruct') out.reconstruct = String(argv[++i])
+    else if (a === '--dry-run') out.dryRun = true
     else throw new Error(`unknown argument: ${a}`)
   }
   if (out.evidence === null) throw new Error('--evidence is required')
@@ -251,6 +278,8 @@ export async function runParallelSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
       leaseRoot: factory.leaseRoot,
@@ -479,6 +508,8 @@ export async function runCrashReclaimSupervisor(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: [],
       leaseRoot: factory.leaseRoot,
@@ -490,6 +521,8 @@ export async function runCrashReclaimSupervisor(opts) {
   const runnerLogDir = join(evidence, 'logs', 'runners')
   const recA = join(evidence, `run-${runId}-A.json`)
   const recB = join(evidence, `run-${runId}-B.json`)
+  const survivorRelease = join(evidence, `${runId}.victimKilledAndReclaimed`)
+  const survivorProbeLog = join(evidence, `${runId}.survivor-probes.jsonl`)
   const common = ['--evidence', evidence, '--max-host-starts', String(maxHostStarts), ...(budgetLedger !== null ? ['--budget-ledger', budgetLedger] : [])]
   // FIX-T T2 (run-3 lesson): the survivor starts only AFTER the victim has
   // proven its held in-flight call, and the kill waits until the survivor
@@ -555,7 +588,7 @@ export async function runCrashReclaimSupervisor(opts) {
   // alive). Start the survivor and wait until it is provably mid-suite —
   // THEN land the kill, so the survivor straddles kill+reclaim, which is
   // exactly what 'other-world-unaffected' must prove.
-  const A = startRunner({ tag: 'A', args: ['--suite', aSuite, '--line', 'ca', '--run-record', recA, ...common], logDir: runnerLogDir })
+  const A = startRunner({ tag: 'A', args: ['--suite', aSuite, '--line', 'ca', '--run-record', recA, '--hold-until', survivorRelease, '--probe-log', survivorProbeLog, ...common], logDir: runnerLogDir })
   record.record.runners.A = { pid: A.child.pid, record: recA }
   const aInRun = await waitForLine(A.buffer, /^U5-IN-RUN (\S+) (\S+) (\d+)$/m, 300_000)
   if (aInRun === null) {
@@ -614,6 +647,7 @@ export async function runCrashReclaimSupervisor(opts) {
     worldId: bWorld,
     leasePaths: bStale.map((s) => ({ path: s.leasePath, port: s.port, by: s.by, legacy: s.legacy === true })),
   })
+  writeFileSync(survivorRelease, JSON.stringify({ signal: 'victimKilledAndReclaimed', at: Date.now(), victimWorld: bWorld }) + '\n')
   // Captured IMMEDIATELY after reclaim: a peer World's next boot may sweep
   // the victim's stale claim itself (measured in run 2: the survivor's boot
   // claimed 3180 one second before this scan ran). The protocol's
@@ -738,13 +772,35 @@ export async function runCrashReclaimSupervisor(opts) {
   const aExit = await Promise.race([aDone, sleep(9 * 60_000).then(() => ({ timeout: true }))])
   if (aExit.timeout === true) await killOwnChild(A.child)
   const aRecord = safeReadJson(recA)
-  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' ? 'PASS' : 'FAIL', {
+  const probeRows = (() => {
+    try { return readFileSync(survivorProbeLog, 'utf8').trim().split('\\n').filter(Boolean).map((line) => JSON.parse(line)) } catch { return [] }
+  })()
+  const release = safeReadJson(survivorRelease)
+  const survivorHold = aRecord?.survivorHold ?? {}
+  const survivorHealthyAt = Number(survivorHold.healthyAt)
+  const survivorLastProbeAt = Number(survivorHold.lastProbeAt)
+  const survivorTornDownAt = Date.parse(aRecord?.finishedAt ?? '')
+  const sequencing = evaluateSurvivorSequencing({
+    survivorHealthyAt,
+    killAt: Date.parse(groupKill.at),
+    survivorLastProbeAt,
+    survivorTornDownAt,
+    victimWorld: bWorld,
+    survivorProbes: probeRows.map((row) => Number(row.at)),
+    reclaimedResources: [
+      ...reclaim.leasesReleased.map((port) => ({ world: bWorld, kind: 'lease', port })),
+      ...(reclaim.homeDeleted === bHome ? [{ world: bWorld, kind: 'home' }] : []),
+    ],
+  })
+  record.record.survivorSequencing = { ...sequencing, survivorHealthyAt, killAt: Date.parse(groupKill.at), survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt: Number(release?.at), probeRows }
+  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' && sequencing.pass ? 'PASS' : 'FAIL', {
     aSuite,
     aWorld: record.record.aWorld,
     aAliveWhileBCrashedAndReclaimed: aAliveAtReclaim,
     aExit,
     aOverall: aRecord?.overall ?? 'record-missing',
     aCases: aRecord?.cases?.map((c) => `${c.id}=${c.verdict}`) ?? [],
+    sequencing,
   })
 
   return finish(record.record)
@@ -772,6 +828,8 @@ export async function reconstructCrash(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
       leaseRoot: factory.leaseRoot,
@@ -853,6 +911,8 @@ export async function reconstructParallel(opts) {
     ledgerPath: budgetLedger,
     bindings: {
       teamSha,
+      teamTreeClean: hostBasePre.porcelainEmpty === true,
+      authority: readAuthorityBinding(REPO_ROOT),
       hostSha: hostBasePre.head,
       worldIds: live.bWorld ? [live.bWorld.id] : [],
       leaseRoot: factory.leaseRoot,
@@ -933,7 +993,10 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2))
   let rec
   try {
-    if (opts.reconstruct !== null) {
+    if (opts.dryRun) {
+      const dry = runSurvivorDryRun()
+      rec = { schema: 'u5-dry-run/1', runId: 'u5-dry-run', suite: 'crash-reclaim', overall: dry.pass ? 'PASS' : 'FAIL', cases: [{ id: 'survivor-hold-ordering', verdict: dry.pass ? 'PASS' : 'FAIL', ...dry }], bindings: { mode: 'dry-run', spawns: 0, authority: readAuthorityBinding(REPO_ROOT), teamTreeClean: true } }
+    } else if (opts.reconstruct !== null) {
       const live = safeReadJson(opts.reconstruct)
       rec = live?.bindings?.mode === 'crash-reclaim' ? await reconstructCrash(opts) : await reconstructParallel(opts)
     } else if (opts.mode === 'crash-reclaim') {

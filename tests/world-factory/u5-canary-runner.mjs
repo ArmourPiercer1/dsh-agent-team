@@ -35,7 +35,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRunControl } from '../kits/rc2-real-host-smoke/run-control.mjs'
@@ -127,7 +127,7 @@ const CANARY_VOLATILE = ['at', 'world']
 const SHADOW_VOLATILE = ['at', 'world', 'scope', 'callId']
 
 export function parseArgs(argv) {
-  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: 15, keepHome: false, only: null }
+  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: 15, keepHome: false, only: null, holdUntil: null, probeLog: null }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--suite') out.suite = String(argv[++i])
@@ -138,6 +138,8 @@ export function parseArgs(argv) {
     else if (a === '--max-host-starts') out.maxHostStarts = Number(argv[++i])
     else if (a === '--keep-home') out.keepHome = true
     else if (a === '--only') out.only = String(argv[++i])
+    else if (a === '--hold-until') out.holdUntil = String(argv[++i])
+    else if (a === '--probe-log') out.probeLog = String(argv[++i])
     else throw new Error(`unknown argument: ${a}`)
   }
   if (!Object.keys(SUITE_CASES).includes(out.suite)) throw new Error(`unknown suite: ${out.suite}`)
@@ -280,7 +282,30 @@ async function evaluateLeak({ world, receipts, factory }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // core: one World, one boot (plus optional restart leg)
 // ─────────────────────────────────────────────────────────────────────────────
-async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome, casePrefix = '', nonce: nonceIn = undefined, afterBoot = null, collect = null, extraWorldOpts = {} }) {
+async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle }) {
+  const healthyAt = Date.now()
+  const writeProbe = (kind) => {
+    const row = { at: Date.now(), kind, world: world.id, home: world.home }
+    if (probeLog !== null) {
+      mkdirSync(dirname(probeLog), { recursive: true })
+      appendFileSync(probeLog, JSON.stringify(row) + '\\n')
+    }
+    console.log(`SURVIVOR-PROBE ${row.at} ${kind}`)
+    return row
+  }
+  writeProbe('healthy')
+  for (;;) {
+    if (holdUntil !== null && existsSync(holdUntil)) {
+      const released = writeProbe('after-reclaim')
+      return { healthyAt, lastProbeAt: released.at, releasedAt: Date.now() }
+    }
+    const probe = await probeNoToken(origin)
+    writeProbe(probe === 401 ? 'health' : 'health-failed')
+    await sleep(250)
+  }
+}
+
+async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome, casePrefix = '', nonce: nonceIn = undefined, afterBoot = null, collect = null, extraWorldOpts = {}, holdUntil = null, probeLog = null }) {
   const ctx = await bootWorld({ factory, record, rc, worldOpts: { line, ...extraWorldOpts }, phase: `${casePrefix}boot1`, nonce: nonceIn })
   worlds.push(ctx.world)
   const { world, nonce, queue, issued } = ctx
@@ -448,6 +473,10 @@ async function runCore({ factory, record, rc, log, line, suite, worlds, keepHome
     collect.shadowRowsNormalized = homeNorm(world.shadowLedgerRows(), SHADOW_VOLATILE)
     collect.canaryDigest = sha256Text(JSON.stringify(collect.canaryRowsNormalized))
     collect.markerFiles = oracle.observe({ tag: `pos-${nonce}` }).channels.markers.files.slice()
+  }
+  if (holdUntil !== null) {
+    const hold = await holdSurvivor({ world, origin, holdUntil, probeLog, oracle })
+    record.record.survivorHold = hold
   }
   await rc.stopChild()
   const receipts = await world.teardown({ keepHome })
@@ -811,7 +840,7 @@ async function caseCrashVictim({ factory, record, rc, line, worlds, keepHome }) 
 }
 
 export async function runSuite(opts) {
-  const { suite, line, evidence, runRecord: runRecordPath, budgetLedger, maxHostStarts, keepHome, only = null } = opts
+  const { suite, line, evidence, runRecord: runRecordPath, budgetLedger, maxHostStarts, keepHome, only = null, holdUntil = null, probeLog = null } = opts
   mkdirSync(evidence, { recursive: true })
   const selected = only !== null ? [only] : SUITE_CASES[suite]
   // the pristine host tree lives at the nearest team-repo root that HAS it
@@ -887,7 +916,7 @@ export async function runSuite(opts) {
   const worlds = []
   try {
     if (suite === 'core' || suite === 'core-restart') {
-      await runCore({ factory, record, rc, log, line, suite, worlds, keepHome })
+      await runCore({ factory, record, rc, log, line, suite, worlds, keepHome, holdUntil, probeLog })
     } else if (suite === 'u6-shadow') {
       await runShadowParity({ factory, record, rc, log, line, worlds, keepHome, evidence })
     } else if (COLLECTED_SUITES.some((s) => s.suite === suite)) {
