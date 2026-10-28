@@ -18,7 +18,7 @@ extensions are executed **with disclosure as over-budget**, never silently.
 - Leg 1 record: `.worktrees/u7-g4r3/dev/agent-workflow/evidence/u7-g4r3-20261028/arc-a/run-record.json`
   (lane worktree; every file named in this section lives under `.worktrees/u7-g4r3/` and becomes tracked
   when the lane's Finish commit lands on PR #432), run
-  `u5-u6-arc-a-g4r3a-2026-10-28T17-15-44-158Z`, `overall: FAIL` (9 of 10 cases fail on `mount readiness
+  `u5-u6-arc-a-g4r3a-2026-10-28T17-15-44-158Z` (`bindings.teamSha` = the candidate; top-level `teamSha` is null), `overall: FAIL` (9 of 10 cases fail on `mount readiness
   failed` / the mount itself; the one PASS is the `stable-instance-unchanged` guard case — its 401 read
   proves :3080 stayed untouched). The world log
   `logs/u5g4r3a-20261028T17-15-44Z/setup-failure.json` reads verbatim:
