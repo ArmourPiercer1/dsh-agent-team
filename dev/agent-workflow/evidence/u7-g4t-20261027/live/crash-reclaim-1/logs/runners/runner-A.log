@@ -1,0 +1,11 @@
+U5-IN-RUN u5ca-20261028T05-54-54Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4t/tests/homes/u5ca-20261028T05-54-54Z 138
+SURVIVOR-PROBE 1793166976011 health-effect ok=true
+SURVIVOR-PROBE 1793166976277 health-effect ok=true
+SURVIVOR-PROBE 1793166976543 health-effect ok=true
+SURVIVOR-PROBE 1793166976808 health-effect ok=true
+SURVIVOR-PROBE 1793166977074 health-effect ok=true
+SURVIVOR-PROBE 1793166977336 health-effect ok=true
+SURVIVOR-PROBE 1793166977604 health-effect ok=true
+SURVIVOR-PROBE 1793166977869 health-effect ok=true
+SURVIVOR-PROBE 1793166978135 after-reclaim ok=true
+RUN-SUMMARY run=u5-core-ca-2026-10-28T05-54-54-316Z suite=core overall=PASS cases=7 PASS:7 worlds=u5ca-20261028T05-54-54Z
