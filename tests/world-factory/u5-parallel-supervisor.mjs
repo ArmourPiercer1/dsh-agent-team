@@ -297,6 +297,7 @@ function leaseRootSnapshot(leaseRoot) {
 
 export async function crashSimulationControl({ factory, leaseRoot = null }) {
   const sharedBefore = leaseRootSnapshot(factory.leaseRoot)
+  mkdirSync(join(REPO_ROOT, '.artifacts', 'tmp'), { recursive: true })
   const simulationLeaseRoot = leaseRoot ?? mkdtempSync(join(REPO_ROOT, '.artifacts', 'tmp', 'dryrun-leases-'))
   mkdirSync(simulationLeaseRoot, { recursive: true })
   const world = await factory.createWorld({ line: 'dryclm' })
