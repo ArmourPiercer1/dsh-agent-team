@@ -44,19 +44,23 @@ const opt = (name) => {
   return i === -1 ? null : args[i + 1] ?? null
 }
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0) }
-if (args.includes('--manifest')) {
-  console.log(JSON.stringify(readHostSandboxAssetManifest({ repoRoot: HERE }), null, 2))
-  process.exit(0)
-}
 
-const runtimeTree = resolve(opt('runtime-tree') ?? testUseTree(findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE))
-const sourceTree = opt('source-tree')
-const check = args.includes('--check')
-
-console.log(`runtime tree : ${runtimeTree}`)
-console.log(`baseline pin : ${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}`)
-console.log(`manifest     : ${MANIFEST_REL}`)
 try {
+  if (args.includes('--manifest')) {
+    // MANIFEST_REL is repo-root-relative, so the root passed here is the TEAM
+    // tree — never `HERE` (that spells tests/world-factory twice, and the
+    // advertised flag then crashed instead of printing the pin: review round 1).
+    console.log(JSON.stringify(readHostSandboxAssetManifest({ repoRoot: TEAM_TREE }), null, 2))
+    process.exit(0)
+  }
+
+  const runtimeTree = resolve(opt('runtime-tree') ?? testUseTree(findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE))
+  const sourceTree = opt('source-tree')
+  const check = args.includes('--check')
+
+  console.log(`runtime tree : ${runtimeTree}`)
+  console.log(`baseline pin : ${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}`)
+  console.log(`manifest     : ${MANIFEST_REL}`)
   const p = await preflightHostSandbox({
     runtimeTree,
     sourceTree,
@@ -75,6 +79,9 @@ try {
   console.log(`porcelain    : ${p.porcelainEmpty === true ? 'empty (assets are gitignored)' : `NOT clean/unavailable: ${JSON.stringify(p.porcelain?.lines ?? [])}`}`)
   process.exit(p.usable ? 0 : 1)
 } catch (error) {
+  // Every typed failure — manifest, probe, provisioning — leaves through THIS
+  // printer with exit 2. Nothing above may throw past it: an uncaught error
+  // exits 1, which this CLI documents as "environment", not "fail closed".
   if (error instanceof HostSandboxAssetError) {
     console.error(`FAIL-CLOSED ${error.code}`)
     console.error(String(error.message))

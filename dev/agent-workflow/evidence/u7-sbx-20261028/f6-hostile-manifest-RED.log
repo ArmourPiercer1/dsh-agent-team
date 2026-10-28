@@ -1,0 +1,12 @@
+manifest key      : "../landlock-evil" (bytes = the pinned launcher, so a copy WOULD succeed)
+threw             : HostSandboxAssetError WRITES_OUTSIDE_PLATFORM_BIN
+message           : host-sandbox-assets: WRITES_OUTSIDE_PLATFORM_BIN: refusing to keep /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/.artifacts/tmp/f6-proof-3/destina
+residue outside bin/: true
+packages/ before  : entry entry/lib entry/lib/index.js entry/node_modules entry/node_modules/@deepseek-ai entry/node_modules/@deepseek-ai/node-addon-system-linux-x64 entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/bin entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/bin/glibc entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/package.json linux-x64 linux-x64/bin linux-x64/bin/glibc linux-x64/package.json
+packages/ after   : entry entry/lib entry/lib/index.js entry/node_modules entry/node_modules/@deepseek-ai entry/node_modules/@deepseek-ai/node-addon-system-linux-x64 entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/bin entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/bin/glibc entry/node_modules/@deepseek-ai/node-addon-system-linux-x64/package.json landlock-evil linux-x64 linux-x64/bin linux-x64/bin/glibc linux-x64/package.json
+bin/ after        : glibc
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: the refusal is the pre-write path validation, not a post-write cleanup

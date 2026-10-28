@@ -1,0 +1,14 @@
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (64.621013ms)
+✔ T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight record; a structurally perfect forgery stays FAIL (2.635601ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+--
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (64.621013ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: PUBLISHED_MODE_MISMATCH: bin/glibc/system.node is mode 0o755 after publish, the manifest pins 0o750 — the file was removed again rather than left un-/over-executable
+      at provisionHostSandboxAssets (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/tests/world-factory/lib/host-sandbox-assets.mjs:468:15)
+      at async TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-sbx/tests/world-factory/host-sandbox-assets.test.mjs:896:13)

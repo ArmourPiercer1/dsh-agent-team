@@ -154,3 +154,91 @@ Main checkout and the other lanes' worktrees were used read-only: the main runti
    `rm -f tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run
    tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/glibc/system.node`
    (both gitignored; `git status --porcelain` stays empty either way).
+
+---
+
+## 9. Review round 1 (2026-10-28): F8 · F5 · F6 · F7 · F1
+
+Two independent reviews of the round-0 head `27afc935e`: one **通过** on the verdict-fidelity
+dimension, one **补充内容** on supply integrity. F8 is the only 补充内容 driver; F5–F7 and F1 are
+supply/identity gaps the same round found in the code. Each was done RED → GREEN → one mutation
+(never to a test, restored from a byte copy, restore verified by sha256). No finding is disputed;
+no behaviour outside these five was touched. `docs/TEST_METHODS.md` §9 was corrected where the
+fixes changed a documented sentence (source containment, the exit-code contract, the pinned mode,
+the identity of a pre-flight record).
+
+**C1 legs: 17 → 22** (`host-sandbox-assets.test.mjs` T18–T22). Section C (T15/T16/T17) was also
+**reworked**: it no longer accepts a hand-built record even where a hand-built record used to be
+enough — the ENV_BLOCK legs now run on records minted by `preflightHostSandbox()`
+(`realPreflightRecords()`), and `preflightLike()` survives only as the forgery fixture.
+
+| # | finding (as filed) | the fix | typed code | RED evidence | mutation killed |
+| --- | --- | --- | --- | --- | --- |
+| **F8** | `--manifest` — the flag §9 advertises — called `readHostSandboxAssetManifest({ repoRoot: HERE })` (`HERE = tests/world-factory`) against a repo-root-relative `MANIFEST_REL`, and the call sat outside the `try`: uncaught `MANIFEST_UNREADABLE`, **exit 1**, while the CLI documents 0/1/2 | pass the real Team root (`TEAM_TREE`) and move the flag **inside** the fail-closed `try`, so every typed failure — manifest, probe, provisioning — leaves through the same printer with exit 2 | `MANIFEST_UNREADABLE` / `MANIFEST_SCHEMA` → exit 2 | `red-round1.log` + direct repro below | `provision-host-sandbox.mjs`: fail-closed printer exits 1 → **T18** dies (17/1) |
+| **F5** | `DSH_TEAM_SANDBOX_ASSET_SOURCE` was a bare `resolve()`, and a source tree's entry module is `import()`ed during layout resolution — digests pinned bytes, not code | `assertTrustedSourceTree()`: must exist, must be a **directory**, and its **realpath** must stay inside `allowedSourceRoots()` = the named Team root (incl. the main checkout that owns the default tree) + `SHARED_BASELINE_ROOTS` (the one documented read-only baseline, `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`, TEST_METHODS §6/§9). Applied to the env override and the explicit argument alike, before the first read of the source; all three codes are FATAL, so an untrusted source aborts the run instead of being recorded as `unusable` | `SOURCE_TREE_MISSING` · `SOURCE_TREE_NOT_A_DIRECTORY` · `SOURCE_TREE_OUTSIDE_ALLOWED_ROOTS` | `red-round1.log` (leg absent) | trust gate replaced by `resolve()` → **T19** dies; the control half of T19 then shows the untrusted entry module being imported |
+| **F6** | manifest file keys were joined onto the platform dir with no traversal validation, and `WRITES_OUTSIDE_PLATFORM_BIN` ran at the **end** of the publish loop — after `mkdir`/copy/rename | `manifestAssetPathIsSafe()` + the resolved-`binDir` containment check run as step (0), over every `files` key **and** the launcher name, before any filesystem mutation; the post-publish check stays as a second belt | `MANIFEST_PATH_UNSAFE` | `f6-hostile-manifest-RED.log`: key `../landlock-evil` → `WRITES_OUTSIDE_PLATFORM_BIN` **after** the copy, `residue outside bin/: true` | pre-write filter skips unsafe keys → **T20** dies (the stray file reappears) |
+| **F7** | the manifest pins `"mode": "0o755"`; `chmodSync` hardcoded `0o755` and the published mode was never compared with the spec | `parseManifestMode()` (strict `0o[0-7]{3}`) parsed in step (0), applied to the staged file, then the **published file's mode re-read and compared**; drift deletes the file again | `MANIFEST_MODE_INVALID` · `PUBLISHED_MODE_MISMATCH` | `red-round1.log`: pin `0o750` published `0o755` (493 vs 488) | chmod hardcoded again → **T21** dies with the typed drift error (`f7-drift-mutation-detail.log`) |
+| **F1** | `isSandboxPreflightRecord()` validated shape only, so a hand-built `{schema:'…/1',probed:true,backend:'unusable'}` opened the ENV_BLOCK path while the comment claimed the record was "produced in this process" | a module-private `WeakSet` (`PREFLIGHT_RECORDS`) brands every record `preflightHostSandbox()` returns — added at construction, so the probe-error path is branded too — and `isSandboxPreflightRecord` requires **identity first, shape second**; the overclaiming wording (header law 6/7, the `SANDBOX_PREFLIGHT_SCHEMA` and `isSandboxPreflightRecord` comments, TEST_METHODS §9 裁决律 1) now says what is actually guaranteed | n/a (the absence of a code is the refusal) | `red-round1.log`: `preflightLike()` judged `ENV_BLOCK`, expected `FAIL` (T15, T16); T22 brand absent | brand check removed → **T15, T16, T22** all die (3 failing) |
+
+### Reproduce / verify
+
+```bash
+node --test tests/world-factory/host-sandbox-assets.test.mjs                 # 22 / 22 pass
+node tests/world-factory/provision-host-sandbox.mjs --manifest               # F8: exit 0, prints the pin
+node dev/agent-workflow/evidence/u7-sbx-20261028/f6-hostile-manifest-proof.mjs # F6: refused, zero residue
+node dev/agent-workflow/evidence/u7-sbx-20261028/mutation-proof-round1.mjs     # 5/5 mutations killed
+```
+
+- **F8 direct repro (before the fix)**: `node tests/world-factory/provision-host-sandbox.mjs --manifest`
+  → `HostSandboxAssetError MANIFEST_UNREADABLE` uncaught, doubled path
+  `…/tests/world-factory/tests/world-factory/lib/host-sandbox-assets-manifest.json`, `exit=1`.
+- **RED (all five at once)**: `red-round1.log` — `tests 22 / pass 16 / fail 6`, T15/T16 (F1),
+  T19 (F5), T20 (F6), T21 (F7), T22 (F1); the other 16 legs still passed, so nothing else moved.
+- **GREEN**: `tests 22 / pass 22 / fail 0`; whole `tests/world-factory` sweep
+  **100 tests / 100 pass / 0 fail** (was 95 + the 5 new legs).
+- **Mutations**: `mutation-proof-round1.log` — 5/5 killed, each by exactly its own leg
+  (`F8→T18`, `F5→T19`, `F6→T20`, `F7→T21`, `F1→T15,T16,T22`), every restore `sha-ok`, and
+  `suite after revert: 22/22`.
+- **F5 code-execution proof** (T19, run as a pair): the same entry module that writes a sentinel
+  the moment it is imported — untrusted ⇒ no sentinel + `SOURCE_TREE_OUTSIDE_ALLOWED_ROOTS`;
+  the identical module inside the named root ⇒ sentinel written. That pair is the evidence that
+  the layout resolution really executes the source tree's JS, and that the digests never gated it.
+- **F6 pre-fix residue** (`f6-hostile-manifest-RED.log`): with the check where it used to be, the
+  hostile key left `native/system/packages/landlock-evil` behind (the rollback loop only removes
+  what the loop recorded as published, and the throw happened before the push).
+
+### Disclosed limitation (no code change requested, recorded here)
+
+`sandboxUnavailableSignal()` matches the four typed signals as **substrings**
+(`lib/host-sandbox-assets.mjs:124-129`; lines `:89-94` as filed at `27afc935e`): anything in the
+observed lane text that merely *contains* `no sandbox backend is usable on this host`,
+`SANDBOX_UNAVAILABLE`, `(sandbox-unavailable)` or `SandboxUnavailableError` counts as the signal —
+the detector cannot tell the host's refusal from a quotation of it. Two properties bound the
+damage, and both are pinned by tests rather than asserted:
+
+1. the signal is only half of a **conjunction** — the other half is a record this process
+   **measured** (F1 brand + `probed:true` + `backend:'unusable'`), which a lane cannot fabricate;
+2. the strongest verdict the conjunction can produce is `ENV_BLOCK`, which is never a PASS:
+   `VERDICT_SEVERITY` is untouched, `overall != PASS`, and the run still exits 1 (T17).
+
+So a false substring can at worst turn a leg that already failed into an ENV_BLOCK on a host whose
+probe really answered `unusable`; it can never turn a failure into a pass, and never on a host whose
+backend is usable (T15 (iv), T16).
+
+### Gate receipts (final tree, review round 1)
+
+| gate | result |
+| --- | --- |
+| `node --test tests/world-factory/host-sandbox-assets.test.mjs` | `tests 22 / pass 22 / fail 0` |
+| `node --test tests/world-factory/u6-arc-d.test.mjs tests/world-factory/world-factory.test.mjs` | `tests 51 / pass 51 / fail 0` |
+| `node scripts/eb3-run-manifest.mjs --new-since origin/master` | `EB3-RUN-MANIFEST pass records=99 strict=0 incomplete=11 findings=0` |
+| `node scripts/eb3-evidence-guard.mjs --new-since origin/master` | `EB3-EVIDENCE-GUARD pass added=23 bound=1048576 exempted=0 findings=0` (23 = round 0's files + this round's 8, all graded clean) |
+| `node scripts/ci-pr-gate.mjs --store-dir .tmp-pnpm-store` | `DSH-CI-VERDICT pass pass=7 fail=0 skip=1 skipped=census legs=8 refused=0 refusedlegs=none seconds=66.1` on the delivered round-1 tree (`ci-pr-gate-round1-postcommit.log`, taken at head `7f4c0a523`; the only later delta is this receipt text and that log line, so no code/test path differs). The earlier pre-commit run is `ci-pr-gate-round1.log` |
+| `git diff --check origin/master...HEAD` | clean |
+| main checkout runtime tree untouched | `git -C …/tests/deepseek-harness-test-use status --porcelain` → **empty**; `landlock-run` `a752bc72…659b31` and `glibc/system.node` `54a9c25c…7600bc` — both equal to the manifest pins |
+| whole `tests/world-factory` sweep | 100 tests / 100 pass / 0 fail |
+
+Round-1 files added here: `red-round1.log`, `mutation-proof-round1.mjs` + `.log`,
+`f6-hostile-manifest-proof.mjs` + `f6-hostile-manifest-RED.log`, `f7-drift-mutation-detail.log`,
+`ci-pr-gate-round1.log` + `ci-pr-gate-round1-postcommit.log` — all far below the 1 MiB evidence
+bound (`EB3-EVIDENCE-GUARD pass added=23 … findings=0`).
