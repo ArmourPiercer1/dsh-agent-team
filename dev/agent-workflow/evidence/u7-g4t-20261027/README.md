@@ -37,3 +37,11 @@ The pristine test-use tree remained clean at `639ed015397290b3745d163aafe02ffee4
 ## Law and diagnosis
 
 The earlier failure was orchestration, not reclaim: the survivor completed before the victim kill. The fixed run holds the survivor through reclaim, performs authenticated health/effect reads before and after reclaim, and fails closed on any failed probe, missing strict interval, identity restart, or non-victim reclaim. Earlier attempts remain historical evidence and are not recolored.
+
+## Provenance disclosure (review round 2)
+
+The committed live record `live/crash-reclaim-1/run-u5-crash-2026-10-28T05-53-32-928Z.json` was produced at `teamSha d8f40c0d`. Its `bindings.teamTreeClean` field was written by the supervisor **before** this round's fix and meant HOST-tree pristine (`assertHostBase()` over the pinned test-use tree), **not** Team-repo cleanliness — the field name was misleading. From `6964df8a3` the supervisor emits `hostTreePristine` (the host-tree check) and a real `teamTreeClean` computed from the Team repo's tracked porcelain, with `teamTreeDirtyPaths` on failure; a C1 leg drives an injected dirty tracked status and requires fail-closed. The live record is annotated rather than recolored.
+
+The live proof is still bound to the current code: `git diff d8f40c0d..HEAD --stat -- packages scripts` is EMPTY, so no product or shipped-script byte changed after the run. Testing/harness files that changed afterwards are evidence/provenance plumbing only (`u5-canary-runner.mjs`, `u5-parallel-supervisor.mjs`, `world-factory.test.mjs`), i.e. the judged behaviour and its probes are the ones that ran.
+
+Simulated evidence is now unmistakable: an injected IO seam yields `simulated: true` / `evidenceKind: 'injected-io'`, the frozen production path `REAL_SURVIVOR_IO` yields `simulated: false` / `evidenceKind: 'real-io'`, and `assertLiveDigest()` throws on simulated rows, so a stubbed probe can never be read as a live verdict (C1 covers both directions plus "production passes no io seam"). The live record's probe digests came from `REAL_SURVIVOR_IO`; a reviewer verifies them by re-running the dry-run against the recorded fixture and comparing the per-probe `evidence` digests quoted in §live above.
