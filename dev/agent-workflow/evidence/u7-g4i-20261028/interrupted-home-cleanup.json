@@ -1,0 +1,22 @@
+[
+  {
+    "worldId": "u5g4ia-20261028T07-24-29Z",
+    "killed": [],
+    "refused": [],
+    "leasesReleased": [],
+    "leaseProvenance": [],
+    "leaseNotes": [],
+    "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4i/tests/homes/u5g4ia-20261028T07-24-29Z"
+  },
+  {
+    "worldId": "u5g4ij2-20261028T07-28-52Z",
+    "killed": [],
+    "refused": [
+      3
+    ],
+    "leasesReleased": [],
+    "leaseProvenance": [],
+    "leaseNotes": [],
+    "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4i/tests/homes/u5g4ij2-20261028T07-28-52Z"
+  }
+]

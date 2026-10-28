@@ -1,0 +1,45 @@
+git diff --stat ab8a5f236a3d8c21e3777a20b37d0b6a4f4bf9ae HEAD -- <exact paths in agent-control-dependencies.txt>
+.../src/agent-control-executor.mjs                 |   2 +-
+ .../src/agent-control-mechanics.mjs                |   2 +-
+ .../src/agent-runtime-port.mjs                     |  39 +-
+ .../tools/agent-control-family/src/fork-row.mjs    |   8 +-
+ .../agent-control-family/src/interrupt-row.mjs     |   4 +-
+ .../agent-control-family/src/list-agents-row.mjs   |  15 +-
+ .../agent-control-family/src/list-models-row.mjs   |  13 +-
+ .../src/native-output-schemas.mjs                  |  22 +
+ .../tools/agent-control-family/src/spawn-row.mjs   |   8 +-
+ .../tools/agent-control-family/src/steer-row.mjs   |   4 +-
+ .../agent-control-family/src/workflow-row.mjs      |   7 +-
+ .../tools/agent-state-family/src/contribution.mjs  |  12 +-
+ .../tools/agent-state-family/src/executors.mjs     |  17 +-
+ .../agent-state-family/src/fs-state-store.mjs      | 893 +++++++++++++++++++++
+ .../tools/agent-state-family/src/index.mjs         |  19 +-
+ .../dist/packages/tools/families/agent-control.mjs |  17 +-
+ .../dist/packages/tools/families/agent-state.mjs   |  77 +-
+ .../dist/packages/tools/families/manifest.json     |   4 +-
+ .../src/agent-control-executor.mjs                 |   2 +-
+ .../src/agent-control-mechanics.mjs                |   2 +-
+ .../src/agent-runtime-port.mjs                     |  39 +-
+ .../tools/agent-control-family/src/fork-row.mjs    |   8 +-
+ .../agent-control-family/src/interrupt-row.mjs     |   4 +-
+ .../agent-control-family/src/list-agents-row.mjs   |  15 +-
+ .../agent-control-family/src/list-models-row.mjs   |  13 +-
+ .../src/native-output-schemas.mjs                  |  22 +
+ .../tools/agent-control-family/src/spawn-row.mjs   |   8 +-
+ .../tools/agent-control-family/src/steer-row.mjs   |   4 +-
+ .../agent-control-family/src/workflow-row.mjs      |   7 +-
+ .../tools/agent-state-family/src/contribution.mjs  |  12 +-
+ .../tools/agent-state-family/src/executors.mjs     |  17 +-
+ .../agent-state-family/src/fs-state-store.mjs      | 893 +++++++++++++++++++++
+ packages/tools/agent-state-family/src/index.mjs    |  19 +-
+ packages/tools/families/agent-control.mjs          |  17 +-
+ packages/tools/families/agent-state.mjs            |  77 +-
+ packages/tools/families/manifest.json              |   4 +-
+ tests/world-factory/lib/u6-arc-d-assembly.mjs      |  19 +-
+ tests/world-factory/lib/u7-tbash-assembly.mjs      | 721 +++++++++++++++++
+ tests/world-factory/lib/u7astore-assembly.mjs      | 485 +++++++++++
+ tests/world-factory/suites/050-u6-arc-d.mjs        |   2 +-
+ tests/world-factory/suites/120-u7-astore.mjs       | 280 +++++++
+ tests/world-factory/u5-canary-runner.mjs           |   1 +
+ tests/world-factory/world-kinds/090-u7-astore.mjs  |  24 +
+ 43 files changed, 3682 insertions(+), 176 deletions(-)

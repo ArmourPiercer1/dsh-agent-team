@@ -1,0 +1,35 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4i/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3186/?token=<redacted>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5bg: producer-mounted instance=inst-leader session=session-u74a-team-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5ptc: census-boot root=session-u74a-team-u5g4ij2-20261028t07-28-52z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7-g4i/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5bg: producer-mounted instance=inst-1vzga4005c3i session=session-team-child-eb517e6e2bcea88e9b4fddecb61475e3
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-11jnzv902yhw session=session-team-child-ec299ab4eb8e3371e094e18f92f0cdbc
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-1rbbrup05ccj session=session-team-child-7e46abb0ae20249ccd40053589b1014e
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-095bwh7058ke session=session-team-child-981280014a63b966a4674a773af03830
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-0k1yx1l0hspn session=session-team-child-c5d7b9dbdbbee169ba68f46f1abcd5e3
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-1t7yxnr1xjb8 session=session-team-child-584bfa97547fd47db2c566b34e3f8611
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5bg: producer-mounted instance=inst-1bjn3d813zkw session=session-team-child-50667faf4e5f5e0257099be73397ca98
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5g4ij2-20261028t07-28-52z
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm-u5g4ij2-20261028t07-28-52z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm-u5g4ij2-20261028t07-28-52z call=team-inst-1vzga4005c3i-bash:hexec:ee8caf0d-d5a1-45ad-9e46-8e40aa31a716-1 (same provider, same request; registration+attribution are the producer's)
+[dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-1vzga4005c3i tool=bash
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm-u5g4ij2-20261028t07-28-52z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm-u5g4ij2-20261028t07-28-52z call=team-inst-11jnzv902yhw-bash:hexec:813a194f-ff65-49ba-ae74-cbd45643e263-1 (same provider, same request; registration+attribution are the producer's)
+[dsh-agent-team] a5bg: attributed hostJobId=bash-2 instance=inst-11jnzv902yhw tool=bash
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm-u5g4ij2-20261028t07-28-52z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm-u5g4ij2-20261028t07-28-52z call=team-inst-1rbbrup05ccj-bash:hexec:e2b9f1ac-6861-4147-82b2-9cd67146c80f-1 (same provider, same request; registration+attribution are the producer's)
+[dsh-agent-team] a5bg: attributed hostJobId=bash-3 instance=inst-1rbbrup05ccj tool=bash
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm-u5g4ij2-20261028t07-28-52z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm-u5g4ij2-20261028t07-28-52z call=team-inst-095bwh7058ke-bash:hexec:682fb93f-43c2-464e-bf3a-db8b643aac38-1 (same provider, same request; registration+attribution are the producer's)
+[dsh-agent-team] a5bg: attributed hostJobId=bash-4 instance=inst-095bwh7058ke tool=bash
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=u74a-realm-u5g4ij2-20261028t07-28-52z rows=6
+[dsh-agent-team] a5g7-shell: confined-shell background-ARM realm=u74a-realm-u5g4ij2-20261028t07-28-52z call=team-inst-0k1yx1l0hspn-bash:hexec:501655f4-7967-4b62-8cb8-7c3dcc203a28-1 (same provider, same request; registration+attribution are the producer's)
+[dsh-agent-team] a5bg: attributed hostJobId=bash-5 instance=inst-0k1yx1l0hspn tool=bash

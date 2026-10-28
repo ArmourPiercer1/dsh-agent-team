@@ -1,0 +1,15 @@
+{
+  "kind": "aborted",
+  "detail": "received SIGTERM",
+  "extra": null,
+  "at": "2026-10-28T07:30:00.591Z",
+  "budget": {
+    "totalRequests": 0,
+    "scenarioLabel": null,
+    "scenarioRequests": 0,
+    "consecutiveMisses": 0,
+    "perSession": {},
+    "perState": {},
+    "history": []
+  }
+}
