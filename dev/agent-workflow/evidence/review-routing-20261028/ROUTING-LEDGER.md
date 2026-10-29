@@ -437,3 +437,14 @@ routing_amendment:
   new_default: "implementation seats default qwen3.8-27b (quota window; qwen3.8-flash-next for small mechanical packages); deepseek-v4-pro reserved for its defined role (review R2 escalation, e.g. G5-boundary packages); review independence rules unchanged"
   disclosed_as: "self-correction of a routing-table drift, not a rule violation (rules constrain reviewer independence, not implementer choice)"
 ```
+
+```yaml
+external_review_intake:
+  at: "2026-10-29T13:10:00Z"
+  session: "post-return main agent"
+  source: "EXTERNAL review (user-relayed) — first outside reviewer to hit a real seam this round; credited"
+  finding: "#447 merged at 11:25Z with DO-NOT-MERGE on title+body and zero PR comments; promotion decision lived only in session receipts"
+  verification: "TRUE, and broader: #448/#449 same class; #449 aggravated (main agent itself rewrote the body at 12:36Z retaining the label line, merged 12:58Z). Content integrity NOT in question: every affected PR has real out-of-lane seats + tracked reports + (where applicable) pre-declared machine criteria; #412 remains untouched as the open-vs-closed negative control."
+  law: "R-DM-1 (row in REVIEW-REMEDIATION-20261028.md): settle-before-merge. Waiter gate added (grep title+body; label present => refuse). Five dated settlement comments posted retroactively; #450 settled pre-merge as first compliant case."
+  discipline_note: "the reviewer's framing is exact: paper-vs-fact drift is the failure mode this program declares hatred for; caught externally, fixed internally, credited on record."
+```
