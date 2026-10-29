@@ -630,7 +630,7 @@ const storeWithBoot = (boot: string, opts: StoreOpts = {}): FsStore => storeWith
  * self-bounding even if the fake test timeout cannot fire while Date is
  * faked.
  */
-const underClock = async <T>(p: Promise<T>, budgetMs = 60_000): Promise<T> => {
+const underClock = async <T>(p: Promise<T>, budgetMs = 60_000, onStep?: () => void): Promise<T> => {
   let settled = false
   void p.then(
     () => { settled = true },
@@ -642,6 +642,7 @@ const underClock = async <T>(p: Promise<T>, budgetMs = 60_000): Promise<T> => {
     await vi.advanceTimersByTimeAsync(25)
     left -= 25
     step += 1
+    if (onStep !== undefined) onStep()
     if (step % 50 === 0) await fsp.realpath(tmpdir())
   }
   if (!settled) throw new Error(`the store operation did not settle within ${String(budgetMs)} ms of fake time`)
@@ -706,27 +707,47 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
   afterEach(() => { vi.useRealTimers() })
 
   it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
-    // R-413-1: the per-scope lock serialises the four appliers completely,
-    // so the scheduling race between them adds nothing to the asserted
-    // outcome (exactly one CAS winner, three stale refusals, one write
-    // line): a fixed sequence over the same four applyIds is the same
-    // interleaving minus the wall-clock non-determinism.
+    // R-413-1: the per-scope lock serialises the four appliers completely;
+    // R449 MED: the arrival is DETERMINISTICALLY concurrent — all four
+    // applies are started with NO await between them (each takes its first
+    // lock attempt while the clock is parked), then they SETTLE under the
+    // fake clock (concurrent START, deterministic SETTLE — no wall-clock
+    // dependence). With the lock in place, exactly one CAS can win; with a
+    // lock-removal regression, several appliers could commit concurrently
+    // and the same outcome assertion below goes RED again.
+    const raceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:race').digest('hex')}.lock`)
     for (let round = 1; round <= 25; round += 1) {
       await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const w0 = bytesOf(writesPath())
       const linesBefore = linesOf(writesPath()).length
-      const results: Array<{ ok: boolean, code?: string }> = []
-      for (let i = 0; i < 4; i += 1) {
-        results.push(await storeWith().applyGoal('agent:race', {
-          expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
-          next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-        }))
-      }
+      const seenHolders = new Map<string, number>()
+      const racers = [0, 1, 2, 3].map((i) => storeWith().applyGoal('agent:race', {
+        expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      }))
+      const results = await underClock(Promise.all(racers), 60_000, () => {
+        let text: string
+        try { text = readFileSync(raceLock, 'utf8') } catch { return } // released between check and read
+        const rec = JSON.parse(text) as { nonce: string, at: number }
+        if (!seenHolders.has(rec.nonce)) seenHolders.set(rec.nonce, rec.at)
+      })
       expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
       expect(linesOf(writesPath()).length - linesBefore).toBe(1)
       expect(bytesOf(writesPath())).toBeGreaterThan(w0)
       expect(await storeWith().readGoal('agent:race')).toMatchObject({ revision: round + 1 })
+      // R449 MED ordering assertion: the LOCK-ACQUIRE set over the round is
+      // a permutation of the four instances — each of the four acquired the
+      // scope lock exactly once (its unique nonce observed on the lock
+      // record while it held; the O_EXCL create makes the lock exclusive —
+      // exactly one holder at a time — and each of the three stale refusals
+      // only happens after its instance acquired, i.e. only after the
+      // previous holder released). A lock-removal regression leaves no lock
+      // record to observe, so this goes RED with it — the concurrent-
+      // arrival coverage the strict sequence had lost. (The record's `at`
+      // timestamp is stamped at attempt construction and the fake clock has
+      // 25 ms step resolution, so it is NOT asserted as an order.)
+      expect(seenHolders.size, `round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
     }
   })
 
@@ -929,21 +950,32 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   })
 
   it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
-    // R-413-1: the realm lock serialises the four appliers completely, so a
-    // fixed sequence over the same four applyIds is the same interleaving
-    // minus the wall-clock non-determinism (one CAS winner, three stale).
+    // R-413-1 + R449 MED: deterministic concurrent arrival, same pattern as
+    // L1 — all four started with NO await between them (each takes its
+    // first lock attempt while the clock is parked), then settled under
+    // the fake clock (concurrent START, deterministic SETTLE).
+    const emptyRaceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:empty-race').digest('hex')}.lock`)
     for (let round = 1; round <= 10; round += 1) {
       const seeded = storeWithBoot('')
       await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
-      const results: Array<{ ok: boolean, code?: string }> = []
-      for (let i = 0; i < 4; i += 1) {
-        results.push(await storeWithBoot('').applyGoal('agent:empty-race', {
-          expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
-          next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-        }))
-      }
+      const seenHolders = new Map<string, number>()
+      const racers = [0, 1, 2, 3].map((i) => storeWithBoot('').applyGoal('agent:empty-race', {
+        expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
+        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+      }))
+      const results = await underClock(Promise.all(racers), 60_000, () => {
+        let text: string
+        try { text = readFileSync(emptyRaceLock, 'utf8') } catch { return } // released between check and read
+        const rec = JSON.parse(text) as { nonce: string, at: number }
+        if (!seenHolders.has(rec.nonce)) seenHolders.set(rec.nonce, rec.at)
+      })
       expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
+      // R449 MED ordering assertion: same as L1 — the lock-acquire set is a
+      // permutation of the four instances (each acquires exactly once; the
+      // O_EXCL create keeps it exclusive); a lock-removal regression goes
+      // RED here (no lock record to observe).
+      expect(seenHolders.size, `empty boot round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
     }
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
