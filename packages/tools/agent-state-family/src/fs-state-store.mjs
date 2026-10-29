@@ -605,11 +605,17 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
     }
     const holder = await readLockFile(path, bootId)
     if (await mayBreak(dir, name, holder, staleMs, bootId)) {
+      // P0-2b seams: 'lock-before-break-rename' fires AFTER the break decision
+      // and BEFORE any holder-affecting move; 'lock-after-break-rename' fires
+      // AFTER the move and BEFORE the verification/reclaim. Both are the
+      // decision→action window this lane characterises (default no-op).
+      await faultAt('lock-before-break-rename')
       // Break by rename-aside: exactly one breaker wins the rename; the winner
       // verifies it took the SAME lock it judged, else restores it.
       const aside = `${dir.path}/.${name}.broken.${randomUUID()}`
       try {
         await fsp.rename(path, aside)
+        await faultAt('lock-after-break-rename')
         const taken = await readLockFile(aside, bootId)
         if (taken !== null && taken.nonce !== holder?.nonce) {
           try { await fsp.link(aside, path) } catch { /* someone already re-locked */ }
@@ -724,8 +730,13 @@ const REALM_LOCK = '_realm.lock'
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
  *        C1 crash/latency-simulation seam ONLY ('after-read' fires inside the
  *        critical section, between the read and the commit; 'after-commit'
- *        between the record rename and the marker). The descriptor never
- *        passes it.
+ *        between the record rename and the marker; 'lock-before-publish'
+ *        before the lock temp is linked to the name; 'beat-before-rename'
+ *        inside a beat, before its rename; 'lock-before-break-rename' after
+ *        the break DECISION and before any holder-affecting move, and
+ *        'lock-after-break-rename' after the move and before its
+ *        verification/reclaim — the P0-2b decision→action window). The
+ *        descriptor never passes it.
  */
 export function createFsStateStore({
   rootDir, realmId, anchorDir = rootDir, armProvider = () => Object.freeze({ kind: 'model' }),
