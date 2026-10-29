@@ -20,6 +20,14 @@
  *  R  refusals keep ZERO durable write (writes.jsonl byte-identical, one
  *     attempts line) — stale CAS, already-exists, plan-mode inactive,
  *     cross-scope (by construction), replay (durable across restart).
+ *  A  UNAUTHORIZED AUTHORITY answers the TYPED refusal with ZERO durable
+ *     write (U7-R3-C1-GOALFAM, 2026-10-30, C1 ONLY — the L3 grade is the
+ *     live C2 lane): create_goal from SUBAGENT authority (the isRoot leg of
+ *     the arm provider), get_goal / todo_write from an UNATTRIBUTED caller
+ *     (refused BEFORE any store touch — zero reads too), exit_plan_mode
+ *     outside plan mode AT THE ROW LEG (no apply ever reaches the store —
+ *     zero attempts lines, the discriminator against R2's store-level leg).
+ *     Each case flips to a committed positive in the SAME world (non-vacuity).
  *  S  byte-exact scoping — `a`, `a `, ` a` are three scopes, never aliases.
  *  B  bounds — an oversized record refuses typed; corrupt/foreign-key
  *     records fail CLOSED (typed), never "empty state".
@@ -1084,5 +1092,220 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     expect((await pa).ok).toBe(true)
     expect(t2).not.toBe(t1)
     expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
+  })
+})
+
+// ── u7as A: the four authority-refusal arms (U7-R3-C1-GOALFAM, 2026-10-30) ──
+/**
+ * A — WHAT AN UNAUTHORIZED AUTHORITY COSTS THE DURABLE STORE: NOTHING,
+ * measured (the four ungraded cells of u7-tool-acceptance: create_goal,
+ * get_goal, exit_plan_mode, todo_write — L3-refusal NOT_VERIFIED because the
+ * graded u7-astore record proves the live typed zero-effect refusal on the
+ * UPDATE path only, `ast:cross-scope-zero-effect`).
+ *
+ * THE CELLS PINNED HERE are the refusal arms the SHIPPED code actually
+ * answers — read from the lane, never invented:
+ *  - create_goal / update_goal direct-human leg
+ *    (agent-state-law.mjs GOAL_TRANSITION_LAW.create.authority ←
+ *    tool-goal/src/index.ts:224 @639ed01539; the arm fact itself is the
+ *    production createHostArmProvider — `direct-human` iff a
+ *    user/message(source.kind==='user') sits in the OPEN TURN of a ROOT
+ *    agent, fs-state-store.mjs:814). A SUBAGENT session — one the host does
+ *    NOT report in agents.roots() — is never direct-human even when its
+ *    turn carries user bytes: that is the `top-level agent` leg of
+ *    GOAL_TOOL_NOT_DIRECT_HUMAN, graded here (executors.mjs:230-234).
+ *  - get_goal / create_goal with NO attributable caller —
+ *    GOAL_TOOL_AGENT_REQUIRED, refused by the scope-first front BEFORE PA
+ *    and BEFORE the store (executors.mjs:129-132 + the row's missingAgent);
+ *    the witness is ZERO reads AND zero writes, not just zero writes.
+ *  - exit_plan_mode outside plan mode — PLAN_MODE_NOT_ACTIVE at the ROW's
+ *    state leg (executors.mjs:285-289 + agent-state-law.mjs
+ *    planModeExitStateLeg ← plan-mode/src/index.ts:298). Distinct from R2,
+ *    which graded the STORE-level code INSIDE applyPlanModeExit (one
+ *    attempts line): at the row leg no apply ever reaches the store, so the
+ *    attempts ledger must NOT move — the assertion that discriminates the
+ *    two lanes (a mutant that deletes the row leg answers the SAME code via
+ *    the store and goes RED on the attempts witness).
+ *  - todo_write's OWN authority semantics: it carries NO direct-human arm
+ *    (any attributed agent — root or subagent — writes its own list), and
+ *    its refusal lanes are (a) unattributed caller → TODO_WRITE_AGENT_
+ *    REQUIRED before any store touch (executors.mjs:258), (b) the strict
+ *    list law (DEFAULT_TODO_CONFIG, at most one in_progress) refused in the
+ *    CLOSED parse — zero PA entry, zero store touch (agent-state-law.mjs
+ *    parseTodoWriteArgs:220-223).
+ *
+ * C1-ONLY HONESTY (USER-RULING-20261029B item 2: "mock/C1 只证拒绝逻辑"):
+ * this is an OFFLINE proof of the refusal LOGIC over the PRODUCTION store
+ * with a C1 stand-in host (the same public `agents`/`sessionProjections`
+ * shapes the graded arms ride) — it is NOT the L3 grade. L3 = a real-Host
+ * typed refusal with zero effect, graded by the live C2 lane after merge.
+ * Nothing here lifts the ledger level; the notes record the C1 lineage.
+ */
+describe('u7as A — unauthorized authority answers the typed refusal with ZERO durable write (C1 arms; L3 graded live)', () => {
+  /** The A-world mount: the same real plane + production store as
+   *  mountProduction, but the host stand-in models the TOP-LEVEL fact:
+   *  agents.roots() answers ONLY the ids the world declares as roots. A
+   *  session known to `agents.get` but absent from roots() is a SUBAGENT —
+   *  the exact shape the createHostArmProvider isRoot leg reads. */
+  async function mountAuthorityWorld(opts: { rootIds: readonly string[], humanTurnFor?: readonly string[] }): Promise<{ built: Built, rows: Record<RowName, Row>, store: FsStore }> {
+    const built = await plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 },
+      teamSessionId: 'u7asg-root',
+      controlLeg: approvingControlLeg(),
+      permissionPolicy: POLICY_ASK,
+      realmId: REALM,
+      templateId: 'u7asg-tpl',
+      role: 'member',
+      instanceId: 'u7asg-inst',
+      onObserve: () => {},
+      plane: { agentStateEnabled: true },
+    }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean, message?: string }, backends?: Record<string, unknown> } }
+    if (built.ok !== true) throw new Error(`mount refused: ${String(built.code)} ${String(built.message ?? '')}`)
+    const humans = new Set(opts.humanTurnFor ?? [])
+    const rootIds = new Set(opts.rootIds)
+    const agentOf = (id: string) => ({
+      id,
+      session: {
+        id,
+        snapshotEvents: () => [
+          { type: 'turn/start' },
+          ...(humans.has(id) ? [{ type: 'user/message', data: { source: { kind: 'user' } } }] : [{ type: 'user/message', data: { source: { kind: 'agent' } } }]),
+        ],
+      },
+    })
+    const known = new Map<string, ReturnType<typeof agentOf>>()
+    const agents = {
+      get: (id: string) => { if (!known.has(id)) known.set(id, agentOf(id)); return known.get(id) },
+      // THE TOP-LEVEL TEST (GREEN; the RED commit wired this naively — every
+      // known session a root — and A1 went RED on exactly that): the arm
+      // provider's direct-human leg is `agents.roots().includes(agent)`
+      // (fs-state-store.mjs:814 mirroring tool-goal authority.ts:81-117
+      // @639ed01539). A session `get` resolves but roots() omits is a
+      // SUBAGENT — never direct-human, even carrying user bytes.
+      roots: () => [...known.values()].filter((a) => rootIds.has(a.id)),
+    }
+    const services: Record<string, unknown> = {
+      agents,
+      sessionProjections: { stateOf: () => ({ openTurnStartSeq: 0 }) },
+    }
+    const mounted = built.value.mount({ get: (name: string) => services[name], tools: { register: () => () => {} } })
+    expect(mounted.ok, String(mounted.message ?? '')).toBe(true)
+    const rows: Record<string, Row> = {}
+    for (const d of built.value.definitions) rows[d.name] = d
+    const store = (built.value.backends ?? {}).agentStateStore as FsStore | undefined
+    expect(store, 'the plane exposes the mounted production store under backends.agentStateStore').toBeDefined()
+    expect((store as FsStore).name).toBe('agent-state:fs')
+    return { built, rows: rows as Record<RowName, Row>, store: store as FsStore }
+  }
+
+  const scopeFiles = (): string[] => (existsSync(join(storeRoot(), 'scopes'))
+    ? readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))
+    : [])
+  const scopeBytes = (): string[] => scopeFiles().map((f) => readFileSync(join(storeRoot(), 'scopes', f), 'utf8'))
+
+  it('A1 create_goal from SUBAGENT authority refuses GOAL_TOOL_NOT_DIRECT_HUMAN with zero durable write; root-human flip commits', async () => {
+    // 'child' carries a user/message in its open turn but is NOT a host root
+    // (subagent authority); 'rootmodel' is a root whose open turn is
+    // agent-initiated (the conservative model arm). 'alice' is the flip.
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice', 'rootmodel'], humanTurnFor: ['alice', 'child'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const sub = await rows.create_goal.execute({ objective: 'a subagent wants its own goal' }, exec('child'))
+    expect(codeOf(sub)).toBe('GOAL_TOOL_NOT_DIRECT_HUMAN')
+    expect(bytesOf(writesPath()), 'GOAL_TOOL_NOT_DIRECT_HUMAN: writes.jsonl must not grow').toBe(w0)
+    expect(linesOf(attemptsPath()).length, 'the refused call never reaches store.applyGoal').toBe(a0)
+    expect(store.log.reads.length, 'exactly one bounded fresh read, no write, no apply').toBe(r0 + 1)
+    expect(scopeFiles()).toEqual([])
+    // the conservative arm: a root agent on a model-initiated turn meets
+    // the same typed refusal (arm.kind === model, fs-state-store.mjs:775)
+    const modelRoot = await rows.create_goal.execute({ objective: 'model turn wants a goal' }, exec('rootmodel'))
+    expect(codeOf(modelRoot)).toBe('GOAL_TOOL_NOT_DIRECT_HUMAN')
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeFiles()).toEqual([])
+    // NON-VACUITY in the SAME world: the direct-human flip commits durably
+    const ok = await rows.create_goal.execute({ objective: 'a human starts a goal' }, exec('alice'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w0)
+    expect(linesOf(writesPath()).at(-1)).toMatchObject({ op: 'goal/apply' })
+    expect(await reopen().readGoal('agent:alice')).toMatchObject({ objective: 'a human starts a goal', revision: 1, phase: 'active' })
+    expect(await reopen().readGoal('agent:child')).toBe(null)
+  })
+
+  it('A2 get_goal with NO attributable caller refuses GOAL_TOOL_AGENT_REQUIRED BEFORE any store touch; a subagent read stays scope-bound', async () => {
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    // setup fact: a durable goal EXISTS for alice, so "untouched" below is a
+    // statement about real bytes, not about an empty world.
+    const created = await rows.create_goal.execute({ objective: 'alice durable goal' }, exec('alice'))
+    expect(codeOf(created)).toBe('ACCEPTED')
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const files0 = scopeBytes()
+    const anon = await rows.get_goal.execute({}, {})
+    expect(codeOf(anon)).toBe('GOAL_TOOL_AGENT_REQUIRED')
+    expect(store.log.reads.length, 'the row refused in the scope-first front: ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(linesOf(attemptsPath()).length).toBe(a0)
+    // the scope law (executors.mjs SCOPE LAW): a SUBAGENT reading its own
+    // scope meets the honest null — never alice's snapshot; alice's record
+    // bytes are byte-identical across the whole case.
+    const child = await rows.get_goal.execute({}, exec('child'))
+    expect(codeOf(child)).toBe('ACCEPTED')
+    expect(JSON.parse(child.text)).toEqual({ goal: null })
+    expect(store.log.reads.length, 'exactly the bounded own-scope read').toBe(r0 + 1)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeBytes()).toEqual(files0)
+  })
+
+  it('A3 exit_plan_mode OUTSIDE plan mode refuses PLAN_MODE_NOT_ACTIVE at the ROW leg — zero writes AND zero applies; the seeded flip commits', async () => {
+    const { rows } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const files0 = scopeFiles()
+    const r = await rows.exit_plan_mode.execute({ plan: '# Plan that never existed\n\n- step' }, exec('alice'))
+    expect(codeOf(r)).toBe('PLAN_MODE_NOT_ACTIVE')
+    expect(bytesOf(writesPath()), 'PLAN_MODE_NOT_ACTIVE (row leg): writes.jsonl must not grow').toBe(w0)
+    // the DISCRIMINATOR against R2: at the row leg the store never sees an
+    // apply, so the attempts ledger must NOT move (R2's store-level leg
+    // answers the same code WITH one attempts line inside applyPlanModeExit).
+    expect(linesOf(attemptsPath()).length, 'the row leg precedes any apply — no attempts line').toBe(a0)
+    expect(scopeFiles()).toEqual(files0)
+    // NON-VACUITY in the SAME world: plan mode ON (production seed path,
+    // the same disclosed seed shape as the graded ast:exit-plan-mode-positive)
+    await reopen().seedPlanMode('agent:alice', true)
+    const w1 = bytesOf(writesPath())
+    const ok = await rows.exit_plan_mode.execute({ plan: '# Durable exit' }, exec('alice'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(JSON.parse(ok.text)).toEqual({ exited: true, planMode: { active: false } })
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w1)
+    expect((await reopen().readPlanMode('agent:alice')).active).toBe(false)
+  })
+
+  it('A4 todo_write: unattributed refuses TODO_WRITE_AGENT_REQUIRED (zero store touch); strict list law refuses in the CLOSED parse; a SUBAGENT still commits its own list', async () => {
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const anon = await rows.todo_write.execute({ todos: [{ content: 'orphan list', status: 'pending' }] }, {})
+    expect(codeOf(anon)).toBe('TODO_WRITE_AGENT_REQUIRED')
+    expect(store.log.reads.length, 'scope-first front: ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(linesOf(attemptsPath()).length).toBe(a0)
+    expect(scopeFiles()).toEqual([])
+    // its list-law lane: the STRICT posture (DEFAULT_TODO_CONFIG) refuses a
+    // second in_progress in the CLOSED parse — before PA, before the store.
+    const bad = await rows.todo_write.execute({ todos: [{ content: 'a', status: 'in_progress' }, { content: 'b', status: 'in_progress' }] }, exec('child'))
+    expect(codeOf(bad)).toBe('AGENT_STATE_ARGS_INVALID')
+    expect(store.log.reads.length, 'parse refusal: still ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeFiles()).toEqual([])
+    // todo_write carries NO direct-human arm — the attributed SUBAGENT is
+    // authorized over its OWN list and commits durably (non-vacuity).
+    const ok = await rows.todo_write.execute({ todos: [{ content: 'child owns this list', status: 'pending' }] }, exec('child'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w0)
+    expect(await reopen().readTodos('agent:child')).toEqual([{ content: 'child owns this list', status: 'pending' }])
+    expect(await reopen().readTodos('agent:alice')).toBe(null)
   })
 })

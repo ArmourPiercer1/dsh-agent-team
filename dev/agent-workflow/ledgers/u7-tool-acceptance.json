@@ -858,7 +858,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's. todo_write carries NO direct-human authority arm: any attributed agent writes its OWN list; its refusal lanes are attribution + the closed list law. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A4 grades those lanes offline over the PRODUCTION store - unattributed caller meets TODO_WRITE_AGENT_REQUIRED with ZERO store touch (reads unchanged, writes/attempts unmoved); the strict posture (at most one in_progress) refuses in the CLOSED parse, before PA and before the store, zero effect; the attributed SUBAGENT flip commits its own list durably (non-vacuity, and the honest proof the row carries no authority gate); mutants M2+M4 kill the case. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -888,7 +888,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); no committed RUN record grades a live refusal on create_goal. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A1 in packages/runtime/test/u7-agentstate-fs-store-c1.test.ts grades the SUBAGENT-authority arm offline over the PRODUCTION store - a non-root session carrying user bytes in its open turn meets GOAL_TOOL_NOT_DIRECT_HUMAN (the isRoot leg of createHostArmProvider, the direct-human-on-a-TOP-LEVEL-agent guard) with writes.jsonl byte-measured zero growth, NO attempts line (no apply reaches the store) and exactly one bounded fresh read; the same-world root-human flip commits (non-vacuity); RED proved discriminating (naive all-root mount: the subagent call was ACCEPTED) and mutant M1 (isRoot leg deleted) kills the case. Offline refusal-LOGIC proof only (USER-RULING-20261029B item 2): C1 does NOT lift L3; NOT_VERIFIED holds until a live C2 boot grades the arm on the real Host."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -918,7 +918,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's; get_goal's graded C2 case is the L4 readback only. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A2 grades the authority lanes offline over the PRODUCTION store - an UNATTRIBUTED caller (no exec.agent) meets GOAL_TOOL_AGENT_REQUIRED in the scope-first front BEFORE any store touch (store.log.reads unchanged, writes.jsonl and attempts.jsonl unmoved), and the subagent read stays scope-bound: own-scope honest null, never the human's snapshot, the human's record bytes byte-identical across the case; mutant M2 (anonymous scope invented for an unattributed call) kills the case. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -982,7 +982,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A3 grades the row-level PLAN_MODE_NOT_ACTIVE arm offline over the PRODUCTION store - outside plan mode the row's OWN state leg refuses with writes.jsonl byte-measured zero growth AND ZERO attempts lines (the discriminator against the R2 store-level leg inside applyPlanModeExit, which answers the same code WITH one attempts line); the seeded-plan-mode flip in the SAME world commits durably (non-vacuity); mutant M3 (row leg deleted, store-level code kept) kills the case on the attempts witness. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",
