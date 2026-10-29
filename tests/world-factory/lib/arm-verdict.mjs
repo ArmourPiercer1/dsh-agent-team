@@ -111,9 +111,17 @@ function reverifySignal(sig) {
   if (!BRANDED_SIGNALS.has(sig)) return { ok: false, why: 'unbranded — this object was not produced by envSignal(); a shape-identical forgery proves nothing' }
   const prov = SIGNAL_PROVENANCE.get(sig)
   if (prov === undefined) return { ok: false, why: 'no recorded provenance (a deserialised copy of a signal is not a signal)' }
-  const rederived = envSignal({ channel: sig.channel, text: sig.text, observed: prov.corpus, preflight: prov.preflight })
+  // R-ENVBLOCK-2 F-2: the CHANNEL comes from the provenance record, never from
+  // sig.channel. A branded object is still a mutable object, and a field flipped
+  // after minting must not change which rules the signal is judged by. (The text
+  // needs no such binding: a mutated quote fails corpus membership anyway.)
+  const rederived = envSignal({ channel: prov.channel, text: sig.text, observed: prov.corpus, preflight: prov.preflight })
   if (rederived === null) return { ok: false, why: 'the quoted line is no longer a verbatim member of the corpus it was proved against, or it classifies as a product refusal' }
-  return { ok: true, rederived }
+  return {
+    ok: true,
+    rederived,
+    mismatch: sig.channel === prov.channel ? null : { claimedChannel: sig.channel, boundChannel: prov.channel },
+  }
 }
 
 /**
@@ -154,7 +162,8 @@ export function envSignal({ channel = null, text = null, observed = [], prefligh
   // it, so shape carries no authority (R-ENVBLOCK-2). The corpus is held by
   // REFERENCE, which is what lets the gate re-check the quote causally.
   BRANDED_SIGNALS.add(signal)
-  SIGNAL_PROVENANCE.set(signal, { corpus: observed, preflight: preflight ?? null })
+  // The channel is bound HERE, at mint, alongside the corpus reference (F-2).
+  SIGNAL_PROVENANCE.set(signal, { channel, corpus: observed, preflight: preflight ?? null })
   return signal
 }
 
@@ -184,9 +193,14 @@ export function classifyUnwitnessedArm({ step = 'the expected step', reachedStep
     return {
       verdict: 'ENV_BLOCK',
       detail: {
-        reason: `the drive never reached ${step}; the environment itself refused what this arm needs — quoted signal (${signal.channel}): ${signal.text}`,
+        reason: `the drive never reached ${step}; the environment itself refused what this arm needs — quoted signal (${trust.rederived.channel}): ${trust.rederived.text}`,
         envSignal: signal,
-        envSignalRecheck: { ok: true, proof: trust.rederived.proof },
+        envSignalRecheck: {
+          ok: true,
+          proof: trust.rederived.proof,
+          boundChannel: trust.rederived.channel,
+          channelMismatch: trust.mismatch,
+        },
         ...extra,
       },
     }
@@ -218,7 +232,19 @@ export function gateEnvBlock(verdict, detail = {}) {
   if (verdict !== 'ENV_BLOCK') return { verdict, detail }
   const trust = reverifySignal(detail?.envSignal)
   if (trust.ok) {
-    return { verdict, detail: { ...detail, envSignalRecheck: { ok: true, proof: trust.rederived.proof, at: 'gate' } } }
+    return {
+      verdict,
+      detail: {
+        ...detail,
+        envSignalRecheck: {
+          ok: true,
+          proof: trust.rederived.proof,
+          boundChannel: trust.rederived.channel,
+          channelMismatch: trust.mismatch,
+          at: 'gate',
+        },
+      },
+    }
   }
   return {
     verdict: NOT_REACHED,

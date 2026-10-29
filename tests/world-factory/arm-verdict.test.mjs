@@ -168,3 +168,21 @@ test('T15 the suite wire (envSignal → classify → add()/gate) honors a genuin
   const arm = classifyUnwitnessedArm({ step: 'the governed web_fetch PA step', reachedStep: false, signal: noWall })
   assert.equal(gateEnvBlock(arm.verdict, arm.detail).verdict, NOT_REACHED)
 })
+
+test('T17 (R-ENVBLOCK-2 F-2) the channel is bound at MINT: a post-mutated sig.channel buys nothing', () => {
+  const sig = envSignal({ channel: 'host-log', text: MOUNT_REFUSED, observed: [MOUNT_REFUSED] })
+  sig.channel = 'sandbox-preflight' // the channel that REQUIRES the pre-flight conjunction
+  const c = classifyUnwitnessedArm({ step: 'the governed fetch', reachedStep: false, signal: sig })
+  assert.equal(c.verdict, 'ENV_BLOCK', 'judged by the bound host-log channel, not by the flipped field')
+  assert.equal(c.detail.envSignalRecheck.boundChannel, 'host-log')
+  assert.deepEqual(c.detail.envSignalRecheck.channelMismatch, { claimedChannel: 'sandbox-preflight', boundChannel: 'host-log' })
+  assert.equal(gateEnvBlock(c.verdict, c.detail).verdict, 'ENV_BLOCK')
+  // the other direction: a sandbox signal cannot be re-ruled by renaming either
+  const line = 'sandbox backend: unusable (probe: no usable launcher)'
+  const sc = envSignal({ channel: 'sandbox-preflight', text: line, observed: [line], preflight: { backend: 'unusable' } })
+  sc.channel = 'host-log'
+  const d = classifyUnwitnessedArm({ step: 'x', reachedStep: false, signal: sc })
+  assert.equal(d.verdict, 'ENV_BLOCK')
+  assert.equal(d.detail.envSignalRecheck.boundChannel, 'sandbox-preflight')
+  assert.equal(d.detail.envSignalRecheck.channelMismatch.boundChannel, 'sandbox-preflight')
+})
