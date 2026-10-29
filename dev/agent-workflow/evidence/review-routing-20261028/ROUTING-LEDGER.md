@@ -448,3 +448,13 @@ external_review_intake:
   law: "R-DM-1 (row in REVIEW-REMEDIATION-20261028.md): settle-before-merge. Waiter gate added (grep title+body; label present => refuse). Five dated settlement comments posted retroactively; #450 settled pre-merge as first compliant case."
   discipline_note: "the reviewer's framing is exact: paper-vs-fact drift is the failure mode this program declares hatred for; caught externally, fixed internally, credited on record."
 ```
+
+```yaml
+external_review_intake_2:
+  at: "2026-10-29T14:50:00Z"
+  session: "post-return main agent"
+  source: "EXTERNAL architecture review (user-relayed, 2026-10-29 21:10 CST, against master e0c60bc43) — second external pass; verdict: no re-architecture needed, risks now concentrate in tool-level capability gaps + evidence semantics + production capability"
+  verified_true: "P1-1 matrix classified mock-provable as L3-PROVEN-able (contract: L3=live typed refusal) — matrix rewritten v2 with two iron laws (no mock promotion of L3; no typed-refusal-as-L4) + production-interface precondition column; workflow's borrowed state-family mock arm voided. P1-2 six AC cells cannot be C2-rerun-only (workflow runWorkflow unwired; send/interrupt need agentTeams; list_subagent_models Tier-A empty) — precondition added before C2 batch. Code rows: R-MODEBITS / R-AUDIT-DEPTH(3 items) / R-DYNIMPORT / R-ENVBLOCK-2(P3→P2, causal re-derivation added) — all dispatched as own branches; R-FAMILY-SCOPE-1 QUEUED (center-kernel stop-line: named Center Interface PR + user ruling only); R-GROWTH-1 registered."
+  not_answered_for_user: "the review's grading-gate suggestions (pilot-before-batch, boot for #446+#448 post-merge C2s, G5 pre-work) remain USER decisions — the review endorses direction, it does not grant budget or scope."
+  matrix: "v2 at dev/agent-workflow/gates/U7-R3-GAP-MATRIX-20261029.md — still PENDING USER CONFIRMATION; pilot proposal (team_glob + job_list full-chain) added per review gate-3."
+```
