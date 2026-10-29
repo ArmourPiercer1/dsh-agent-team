@@ -2,7 +2,7 @@
 
 **文档状态**：执行路由协议 / 对当前会话主代理与其拉起的全部子代理有约束力
 **适用任务**：Agent Team vNext 无人值守长开发任务（`dsh-agent-team` 独立仓库重构）
-**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）
+**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）；2026-10-29 R-DM-1 裁决轮（见 §8.5）
 
 > 本文档是把 vNext 开发计划作为**无人值守长任务**运行的路由与门禁协议。
 > 它只规定四件事：**谁执行、允许尝试几次、门禁如何验收、状态如何流转**。
@@ -178,3 +178,9 @@ Gate 编号
 2. Gate 执行顺序按开发计划 §11（Phase 总览）与任务分包 §10（全局 Phase DAG）：`G0 → G1 → G2 → G3 → G4 → G5 → G6 → G7 → G8 → G9 → G10`，**严格串行**；任何 Gate 未通过，不进入下一个 Phase。**G1 是硬门禁**：G1/G2 通过前不得大规模开发新的 Team capability（开发计划 §11）。Phase 内部任务并行按任务分包 §8 的六个同时条件与 §24/§25 任务簇划分判定；P9 的 UI 任务不得在 P8 的 Remote/DTO 冻结前提前执行（任务分包 §12）。
 3. Git 纪律按任务分包 §3：一任务一分支（`task/Pn-Tm-*`）一 worktree 一写者；task 经 review 后由主代理 `cherry-pick -x` 进入 `int/Px-*` integration 分支；Phase Gate 通过后才进入主发布线；**gated 历史禁止 force-push**；LOCKED_SURFACE（任务分包 §3.7）只能由 owner task 修改，其他 worker 必须提出 `CONTRACT_CHANGE_REQUEST` 而非直接编辑；`legacy-team-reference`（a3ab3199 只读 worktree）绝不作为 task branch 的 base（开发计划 §3）。首个正式 release 之前，主发布线分为：`master` = 下一 alpha 的持续开发/集成线，`stable` = 仅跟踪已裁决发布的 RC；RC 修复仍须从 task/int 线经过对应 Gate 后进入 `stable`，不得把未经 RC 裁决的 master alpha 提交直接并入 stable。首个正式 release 后另行裁决长期分支模型。
 4. **完成判据**：G0–G10 全部通过、开发计划 §43 Definition of Done 全部可答“是”、First Production Release 定义（开发计划 §40，12 项条件）与 Release Compliance Gates C1–C7（开发计划 §33）通过，并产出最终交付总结。
+5. **PR 合并清偿门禁（settle-before-merge，R-DM-1）**【2026-10-29 用户裁决 USER-RULING-20261029B 第 5 项批准入规；本文档改动 = 用户裁决 + 记录，裁决原文见 `docs/plans/memo/unified-baseline-alpha5-20261025/gates/USER-RULING-20261029B.md` §5】：
+   1. **禁并标记**：标题或正文标注 `DO-NOT-MERGE` 的 PR **不得合并**。
+   2. **唯一放行前提 = 该 PR 上的 dated 清偿记录（settlement record）**：阻断态 PR 提升为可合并，必须以一条 **dated 的 on-PR 清偿记录**为正面前提，且记录四要素齐备：**审查裁决（review verdict）**、**审查者席位与模型披露（seat + model disclosure）**、**报告 / 证据引用（report / evidence citation）**、**该记录所覆盖的 head sha**；缺一即无效，不构成清偿。
+   3. **机器拒绝；CI 全绿不解锁**：合并工具与执行合并的主体在阻断状态下必须**机器拒绝**合并；**不得以 CI 全绿单独作为解锁依据**——CI 状态与清偿状态相互独立，CI 通过不是清偿记录，也不产生放行效力。
+   4. **阻断状态定义（标记文字与记录的关系）**：阻断状态由「标记存在**或**无有效清偿记录」两者任一构成；**仅删除标记文字而不存在有效清偿记录不构成清偿**，合并仍被禁止。清偿评论是放行的**正面前提条件**，不是阻断的辅助证据。
+   5. **不得追改历史**：已发布的清偿记录**不得追改**（编辑、替换、重排均禁止）；更正一律以**新的 dated 评论**发布，原记录保持原样。
