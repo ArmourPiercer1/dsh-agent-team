@@ -71,3 +71,15 @@ Reviewer A's F6: the lane README now quotes the final receipt values (dated adde
 - Next gate in plan order: G5 opens only under the user's PRODUCT-GATE ruling (§4 reserved — queued).
 - R-G4R-3 (CI tightening) and R-CRASH-1 open post-freeze; family-class lanes now unblocked (candidate-
   bound evidence exists).
+
+## Dated addendum — R440 package review adopted (2026-10-29)
+
+The promotion package itself was independently reviewed (`deepseek-v4.1-flash`, R2 tier; report tracked at
+`dev/agent-workflow/evidence/review-routing-20261028/R440-og.md`): **补充内容** — substance verified
+6/6 (closure rows cited and spot-checked from record bytes; no laundering; append-only holds; receipts
+green), two MEDIUM wording defects, both fixed in this branch: **M1** the digest/preflight persistence
+claim is now scoped to the four canary-runner records (the arc-b c-suite schema emits no digest cells —
+folded into BL-21, matching R2-B's own MEDIUM-1); **M2** BL-23's closed-by claim now states the merge-order
+dependency and the missing-file downgrade instead of presenting an unlanded artifact as settled. **L1**
+(mixed citation styles across historical ledger rows): accepted LOW — historical rows are immutable;
+the rows added here use repo-relative paths.
