@@ -50,10 +50,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
   mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync,
-  linkSync, symlinkSync, existsSync, statSync, realpathSync, constants as fsConstants,
+  linkSync, symlinkSync, existsSync, statSync, realpathSync, renameSync, unlinkSync, readdirSync,
+  constants as fsConstants,
 } from 'node:fs'
 import { open as openAsync } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { tmpdir, hostname } from 'node:os'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 
 type Refusal = { ok: false, code: string, detail: string }
@@ -98,6 +100,8 @@ const bytesOf = (p: string): number => (existsSync(p) ? (statSync(p) as unknown 
 // The package's minimal node shim types neither `process.env` nor `Stats.size`
 // (same narrow local view as u7-agentstate-fs-store-c1.test.ts, not a shim edit).
 const sizeOf = (p: string): number => (statSync(p) as unknown as { size: number }).size
+// The shim likewise types neither `process.pid` (same narrow local view).
+const pidOf = (process as unknown as { pid: number }).pid
 
 describe('u7as-audit HL1 — the write leg of the hard-link law', () => {
   it('writes.jsonl hard-linked to a file OUTSIDE the root: the apply commits the STATE but refuses the aliased ledger typed, leaving the external file byte-unchanged', async () => {
@@ -304,3 +308,242 @@ describe('u7as-audit HL3 — the nlink-at-open law\'s RESIDUAL boundary, pinned 
     expect(await store().readTodos('agent:a')).toEqual([{ content: 'committed', status: 'pending' }])
   })
 })
+
+// ---------------------------------------------------------------------------
+// u7as-lockbreak P0-2b — LOCK ACQUISITION/CLEANUP characterisation legs
+// (external audit intake #3, 2026-10-29; lane u7r3-al).
+//
+// The suspected defect: acquireLock's breaker DECIDES staleness against a
+// lock RECORD, then acts on the lock NAME (rename-aside), and only checks
+// AFTER the move whether what it moved was still what it judged — a
+// decision→action→verify order in which the holder-affecting effect (the
+// move, and the mismatch-restore's unlink) lands before the check, so a
+// concurrent interleaving can (i) steal a NEW holder's lock for a moment
+// (two writers both hold the scope), (ii) destroy the bytes of a live
+// holder's lock when the mismatch-restore loses the race, or (iii) let a
+// robbed holder's own beat clobber a new holder's lock. Each interleaving
+// gets its own characterisation test FIRST; the law asserted is the module
+// header's own SERIALISATION law, not an invention of this file.
+//
+// Determinism: every actor is parked at an explicit fault seam
+// ('after-read' / 'beat-before-rename' inside the store, and the two
+// decision→action seams added for this leg, 'lock-before-break-rename' and
+// 'lock-after-break-rename'); the "concurrent" parties are driven by the
+// test itself in the exact order that real thread/fd scheduling may
+// produce. The bounded waits are disclosed caps on RED-side arrival, never
+// correctness premises (same house style as the c1 T-legs).
+// ---------------------------------------------------------------------------
+
+const lockPathOf = (scope: string): string =>
+  join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
+const writeLockRecord = (scope: string, record: Record<string, unknown>): void => {
+  mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
+  writeFileSync(lockPathOf(scope), JSON.stringify(record))
+}
+const readLockOf = (scope: string): { nonce?: string, token?: string, host?: string, boot?: string } | null => {
+  try { return JSON.parse(readFileSync(lockPathOf(scope), 'utf8')) as { nonce?: string } } catch { return null }
+}
+const raceTimeout = (p: Promise<unknown>, ms: number): Promise<boolean> =>
+  Promise.race([p.then(() => true), new Promise<false>((r) => { setTimeout(() => r(false), ms) })])
+const goalApplyLines = (): number => {
+  try { return readFileSync(writesPath(), 'utf8').split('\n').filter((l) => l.includes('"goal/apply"')).length } catch { return 0 }
+}
+const gatePair = (): { wait: Promise<void>, open: () => void, arm: () => void, armed: Promise<void> } => {
+  let fire!: () => void
+  let release!: () => void
+  const armed = new Promise<void>((r) => { fire = r })
+  const wait = new Promise<void>((r) => { release = r })
+  return { wait, open: release, arm: fire, armed }
+}
+
+describe('u7as-lockbreak P0-2b — break/cleanup decision→action races', () => {
+  // Interleaving (iii) — holder vs cleaner: a live holder's lock is removed
+  // under it by a concurrent cleaner; a fresh holder then acquires the
+  // scope cleanly; the robbed holder's in-flight beat must NEVER rename its
+  // own generation over the fresh holder's lock (that clobber would leave
+  // TWO live holders each seeing "its" lock at the name). Characterised on
+  // the pre-fix code with ONLY the pre-existing seams.
+  it('iii — a beat must never overwrite a lock generation it does not own (live holder robbed, fresh holder clobbered)', async () => {
+    const s = store()
+    await s.applyTodos('agent:iii', { todos: [{ content: 'seed', status: 'pending' }], applyId: 'iii-seed' })
+
+    // Victim C holds the scope, parked INSIDE the critical section; its
+    // beat is parked at the pre-existing 'beat-before-rename' seam.
+    const insideC = gatePair()
+    const beat1 = gatePair()
+    const victim = store({ lockHeartbeatMs: 10, faultAt: async (point: string) => {
+      if (point === 'after-read') { insideC.arm(); await insideC.wait }
+      if (point === 'beat-before-rename') { beat1.arm(); await beat1.wait }
+    } })
+    const pendingC = victim.applyTodos('agent:iii', { todos: [{ content: 'from-C', status: 'pending' }], applyId: 'iii-C' })
+    await insideC.armed
+    await beat1.armed
+    const cNonce = (readLockOf('agent:iii') as { nonce: string }).nonce
+
+    // The concurrent cleaner removes the LIVE holder's lock (byte-preserving
+    // rename-aside — this is exactly what a breaker's rename does).
+    const aside = join(scratch, 'iii-cleaner-aside')
+    renameSync(lockPathOf('agent:iii'), aside)
+
+    // Fresh holder D acquires the now-free name and enters its critical
+    // section believing (rightly, by the published protocol) it holds the
+    // scope exclusively.
+    const insideD = gatePair()
+    const thief = store({ lockHeartbeatMs: 10_000, faultAt: async (point: string) => {
+      if (point === 'after-read') { insideD.arm(); await insideD.wait }
+    } })
+    const pendingD = thief.applyTodos('agent:iii', { todos: [{ content: 'from-D', status: 'pending' }], applyId: 'iii-D' })
+    await insideD.armed
+    const dNonce = (readLockOf('agent:iii') as { nonce: string }).nonce
+    expect(dNonce).not.toBe(cNonce)
+
+    // Release the victim's parked beat. PRE-FIX it renames C's generation
+    // over D's live lock. POST-FIX the beat reads the current generation
+    // first and refuses to overwrite a record it does not own.
+    beat1.open()
+    // Disclosed bounded settle: watch up to 400 ms (≈40 C-beats) for the
+    // name to change hands; a clobber lands within a couple of beats.
+    let captured = dNonce
+    for (let i = 0; i < 100; i += 1) {
+      const now = readLockOf('agent:iii')
+      if (now !== null && now.nonce !== dNonce) { captured = now.nonce as string; break }
+      await new Promise<void>((r) => setTimeout(r, 4))
+    }
+    insideC.open()
+    insideD.open()
+    await Promise.all([pendingC, pendingD])
+    expect(captured, 'a live holder’s lock generation was overwritten by a robbed holder’s stale beat — mutual exclusion was silently voided').toBe(dNonce)
+  })
+
+  // Interleaving (i) — breaker A judges the OLD generation stale; breaker B
+  // wins the same move race first and clears it; holder C acquires the free
+  // name; A's rename then STEALS C's live lock (the name is momentarily
+  // empty); writer D wins the scope in that gap. Pre-fix, C and D both
+  // commit off the same expectedRevision — the header's own SERIALISATION
+  // law ("two concurrent appliers at the same expectedRevision cannot both
+  // win") is voided. Post-fix the move is revalidated against the name
+  // before it happens, the name is never emptied under C, and D refuses.
+  it('i — two appliers at the SAME expectedRevision must never both win: the break must not empty the name under a live holder', async () => {
+    const s = store()
+    await s.seedGoal('agent:i', { goalId: 'g', objective: 'seed', phase: 'active', revision: 1, roundsStarted: 0, armed: true })
+    const lines0 = goalApplyLines()
+    // Lock the scope with a DEAD-AT-REBOOT proof against the breaker's boot
+    // identity (bootId seam: 'older-boot' vs the breaker's 'breaker-boot').
+    writeLockRecord('agent:i', { pid: 2 ** 22 + 4242, host: hostname(), boot: 'older-boot', nonce: 'older-gen-i', token: 'older-tok-i', at: Date.now() })
+
+    const beforeRename = gatePair()
+    const afterRename = gatePair()
+    let firstJudge = true
+    const breaker = store({ bootId: 'breaker-boot', lockTimeoutMs: 400, faultAt: async (point: string) => {
+      if (point === 'lock-before-break-rename' && firstJudge) { firstJudge = false; beforeRename.arm(); await beforeRename.wait }
+      if (point === 'lock-after-break-rename') { afterRename.arm(); await afterRename.wait }
+    } })
+    const pendingA = breaker.applyTodos('agent:i', { todos: [{ content: 'from-breaker', status: 'pending' }], applyId: 'i-breaker' })
+    await beforeRename.armed // breaker A has DECIDED (stale by boot proof) and not yet acted
+
+    // Concurrent breaker B wins the same rename race and clears the stale record.
+    const asideB = join(scratch, 'i-breakerB-aside')
+    renameSync(lockPathOf('agent:i'), asideB)
+    unlinkSync(asideB)
+
+    // New holder C acquires the now-free name and parks INSIDE its critical section.
+    const insideC = gatePair()
+    const holderC = store({ bootId: 'breaker-boot', faultAt: async (point: string) => {
+      if (point === 'after-read') { insideC.arm(); await insideC.wait }
+    } })
+    const pendingC = holderC.applyGoal('agent:i', {
+      expectedRevision: 1, applyId: 'i-C',
+      next: { goalId: 'g', objective: 'from-C', phase: 'active', revision: 2, roundsStarted: 0, armed: true },
+    })
+    await insideC.armed
+    beforeRename.open() // A acts on its stale decision
+
+    // RED world: A moves C's record aside and parks at the second seam — the
+    // name is EMPTY. GREEN world: A revalidates, refuses, and the seam never
+    // fires. Disclosed cap on RED arrival (lands in ms); the asserted law is
+    // world-independent.
+    const stole = await raceTimeout(afterRename.armed, 1_000)
+    let dResult: ApplyResult
+    if (stole) {
+      // Writer D wins the scope in the momentary gap (full apply under the
+      // stolen-then-restored name), same expectedRevision as C.
+      const thief = store({ bootId: 'breaker-boot', lockTimeoutMs: 200 })
+      dResult = await thief.applyGoal('agent:i', {
+        expectedRevision: 1, applyId: 'i-D',
+        next: { goalId: 'g', objective: 'from-D', phase: 'active', revision: 2, roundsStarted: 0, armed: true },
+      })
+      afterRename.open() // A now verifies the moved object, mismatches, restores (path empty again after D's release)
+    } else {
+      const thief = store({ bootId: 'breaker-boot', lockTimeoutMs: 200 })
+      dResult = await thief.applyGoal('agent:i', {
+        expectedRevision: 1, applyId: 'i-D',
+        next: { goalId: 'g', objective: 'from-D', phase: 'active', revision: 2, roundsStarted: 0, armed: true },
+      })
+    }
+    const aResult = await pendingA // both worlds: A ends refused (C's live record is never provably dead)
+    expect(aResult.ok).toBe(false)
+    insideC.open()
+    const cResult = await pendingC
+    const winners = [cResult, dResult].filter((r) => r.ok === true)
+    expect(winners.length, `mutual exclusion voided: ${String(winners.length)} appliers won the SAME expectedRevision=1 (C=${String(cResult.ok)} D=${String(dResult.ok)})`).toBe(1)
+    expect(await store().readGoal('agent:i')).toMatchObject({ revision: 2 })
+    expect(goalApplyLines() - lines0, 'exactly one durable goal/apply commit may answer the same expectedRevision').toBe(1)
+  })
+
+  // Interleaving (ii) — the restore-failure path: A's rename moved a record
+  // it never judged (C's live generation); C's owner is alive; the reclaim
+  // link loses the race against a re-lock; the pre-fix code swallows the
+  // EEXIST and UNCONDITIONALLY unlinks the aside — destroying the live
+  // holder's lock bytes. Law (module header, CORRECTNESS OVER LIVENESS /
+  // never-steal): a generation the breaker did not prove dead must never be
+  // destroyed — it stays at the name, or its bytes are retained aside.
+  it('ii — a reclaim that loses the race must retain the foreign generation’s bytes, never unlink a live holder’s lock', async () => {
+    const s = store()
+    await s.applyTodos('agent:ii', { todos: [{ content: 'seed', status: 'pending' }], applyId: 'ii-seed' })
+    writeLockRecord('agent:ii', { pid: 2 ** 22 + 4242, host: hostname(), boot: 'older-boot', nonce: 'older-gen-ii', token: 'older-tok-ii', at: Date.now() })
+
+    const beforeRename = gatePair()
+    const afterRename = gatePair()
+    let firstJudge = true
+    const breaker = store({ bootId: 'breaker-boot', lockTimeoutMs: 400, faultAt: async (point: string) => {
+      if (point === 'lock-before-break-rename' && firstJudge) { firstJudge = false; beforeRename.arm(); await beforeRename.wait }
+      if (point === 'lock-after-break-rename') { afterRename.arm(); await afterRename.wait }
+    } })
+    const pendingA = breaker.applyTodos('agent:ii', { todos: [{ content: 'x', status: 'pending' }], applyId: 'ii-breaker' })
+    await beforeRename.armed
+    const asideB = join(scratch, 'ii-breakerB-aside')
+    renameSync(lockPathOf('agent:ii'), asideB)
+    unlinkSync(asideB)
+
+    const insideC = gatePair()
+    const holderC = store({ bootId: 'breaker-boot', faultAt: async (point: string) => {
+      if (point === 'after-read') { insideC.arm(); await insideC.wait }
+    } })
+    const pendingC = holderC.applyTodos('agent:ii', { todos: [{ content: 'from-C', status: 'pending' }], applyId: 'ii-C' })
+    await insideC.armed
+    const cNonce = (readLockOf('agent:ii') as { nonce: string }).nonce
+    beforeRename.open()
+
+    const stole = await raceTimeout(afterRename.armed, 1_000) // disclosed cap (see leg i)
+    if (stole) {
+      // Someone re-locks the momentarily-empty name with CREATE semantics
+      // (link — never overwrites), so A's reclaim link must lose with EEXIST.
+      const dTemp = join(storeRoot(), 'locks', '.d-generation.tmp')
+      writeFileSync(dTemp, JSON.stringify({ pid: pidOf, host: hostname(), boot: 'breaker-boot', nonce: 'd-gen-ii', token: 'd-tok-ii', at: Date.now() }))
+      try { linkSync(dTemp, lockPathOf('agent:ii')) } catch { /* name taken */ }
+      unlinkSync(dTemp)
+      afterRename.open() // pre-fix: EEXIST swallowed, then the unconditional unlink DESTROYS C's bytes
+    }
+    const aResult = await pendingA
+    expect(aResult.ok).toBe(false) // both worlds end in a typed refusal, never a steal-through
+    const locksDir = join(storeRoot(), 'locks')
+    const candidateNames = readdirSync(locksDir).filter((n) => n.endsWith('.lock') || n.includes('.broken.'))
+    const cGenerationPresent = candidateNames.some((n) => {
+      try { return (JSON.parse(readFileSync(join(locksDir, n), 'utf8')) as { nonce?: string }).nonce === cNonce } catch { return false }
+    })
+    expect(cGenerationPresent, 'the breaker destroyed the bytes of a live holder’s lock generation (restore lost the race and the aside was unlinked anyway)').toBe(true)
+    insideC.open()
+    await pendingC
+  })
+})
+
