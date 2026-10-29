@@ -729,8 +729,18 @@
         }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "no job_list refusal case in the u7-4a suite. C1 lineage 2026-10-29 (PR #456, MERGED 2026-10-29 @ 47eba5f4e): offline G5 arms shipped in packages/runtime/test/u74a-jobs-producer.test.ts. Pilot C2 live attempt 2026-10-29: live leg jobs:list-deny-leg-honest-zero (suite 030) graded against boot u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z (dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/run-record.json): recorded FAIL at boot with ZERO live witnesses - the foreign deny lane never ran (no job id ever minted in this world: its member bash birth answered the closed-world guard refusal; leader parked at wait_ids), the identical wall the committed u7-t1 baseline records (birth/owner-fence/kill-refusal FAIL, lane gaps foreign,leader). Post-boot suite law maps exactly this digest shape to an honestly minted ENV_BLOCK (disclosed: the boot record keeps the FAIL it measured). No live refusal witness exists; NOT_VERIFIED holds. Next live route: the deny leg on the u7-4a-jobs world (that world's live boot already mints and lists an owned job)."
+        "status": "PROVEN",
+        "proof": "CASE",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.u74a-run-record.json",
+          "case": "u74a:list-deny-leg-honest-zero"
+        },
+        "runOverall": "FAIL",
+        "failedScope": [
+          "u74a:kill-live-requested - pre-existing timing flake of the committed early-DELTA-read witness on an INDEPENDENT lane: the early read answered '(no new output)' before the confined child's first stdout flush, while the decisive late read past the FINAL window still proves the settle (status killed, liveFinal bytes absent). Recorded as measured, no relabel; it reads no deny-leg witness."
+        ],
+        "caseIndependence": "u74a:list-deny-leg-honest-zero asserts only on its own witnesses: the denyLedger row (seen, denied 200 ok via the public team.resolveControl seam), the fdeny-lane bash answer (typed code=APPROVAL_DENIED, zero spawn wording, claim unechoed), the foreign job_list honest zero, and zero minted ids in that lane - the kill-live lane's early/late delta reads are not among them.",
+        "note": "Live typed ask-lane refusal with zero-effect witnesses, graded 2026-10-29 pilot C2 boot#4 (run u7r3c2j2, world u5u7r3c2j2-20261029T19-13-44Z, host-starts.jsonl line 4 at 19:14Z; code 7ed2d92fb + a4215c55f on PR #458; bindings.teamSha b7aac2980, real host 639ed01539): the J4 deny-leg re-homed into the u7-4a-jobs world (the world whose committed boot MINTS and LISTS owned jobs). The foreign lane's OWN background birth armed its durable ask row (foreign memberEnvelope widened with request-control - disclosed); the RUNNER answered DENY exactly once through the public team.resolveControl seam (row ctrl-0f6rljb0j6dexw17uzeql0xw, 200 ok); the call answered a5p5-refused kind=refused-admission code=APPROVAL_DENIED fingerprint-bound to that very row (detail sha256:77b14744144ea4ac...); the foreign job_list stayed the honest zero '(no background jobs)'; the DENIED birth minted no id and echoed no claim bytes. CASE proof per schema header (record overall FAIL from ONE independent pre-existing case - see failedScope/caseIndependence). C1 lineage 2026-10-29 (PR #456, MERGED 2026-10-29 @ 47eba5f4e): offline G5 arms in packages/runtime/test/u74a-jobs-producer.test.ts. The earlier u6-jobs-world boot (u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z) keeps the FAIL it measured (world-shape wall = committed u7-t1 baseline parity, never a pass)."
       },
       "L4-positive": {
         "status": "PROVEN",

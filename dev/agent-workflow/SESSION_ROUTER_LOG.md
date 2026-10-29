@@ -7207,3 +7207,9 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **授权**：父会话（PILOT lane-C2 worker）于 18:4xZ 收到主 Agent float 授权消息（大意："Two follow-ups, remaining float budget 2/4 (pre-register both lines before any start): (1) GLOB RE-BOOT (1 start) … (2) JOBS RE-HOME (code + 1 start) …"），属 USER-RULING-20261029B 机动（4）包络内的当期授权。
 - **boot 总账**：boot#3（run u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z，账本行 18:53:39Z）计入总账 → **7/24**（4 = #446 收口；2 = pilot lane-C2 第一轮 boot#1/#2（18:2xZ/18:31Z，此前漏记）；1 = 本次 float boot#3）。BOOT-BUDGET-20261029B.md 已同步。
 - **violation-on-record（F-1 成立，pilot 自验同意）**：boot#3 的登记文件 host-starts-PRE-REGISTRATION-float.json 创建于 18:56:57Z，晚于该 boot spawn（18:53:39Z）——违反 RULING-B 硬律「事前登记后才准启动」；授权真实且在前，程序仍属违规。纠正：boot#4（u7-4a-jobs）登记先于 spawn 且额外等待主 Agent push 确认后启动；pilot 侧完整披露见 dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts-PRE-REGISTRATION-float.json 的 VIOLATION-DISCLOSURE-20261029 段。boot#3 记录保持其测得的 FAIL（10/11），判法修正另提交，不追溯改判。
+
+
+## 2026-10-29 (19:2xZ) — U7-R3 pilot lane-C2：boot#4 落地（float 4/4，总账 8/24），job_list L3-refusal 升级 PROVEN(CASE)
+- **boot#4**（u7-4a-jobs，run u7r3c2j2，账本行 19:14:33Z；登记先行 + 主 Agent PUSH-CONFIRMATION 后启动——F-1 纠正生效）：overall FAIL 12/13。**u74a:list-deny-leg-honest-zero 实机 PASS**：foreign 泳道自身 birth 的 durable ask 行被 DENIER 经公开 seam 恰好一次 DENY（200 ok），调用面回 `code=APPROVAL_DENIED` 且按指纹绑定该行，foreign `job_list` 保持诚实零 `(no background jobs)`，零 id 诞生、claim 零回显。ledger job_list L3-refusal → **PROVEN（proof:CASE**，runOverall/failedScope/caseIndependence 三项披露齐备，eb3 绿）。
+- 唯一 FAIL 为既有独立案例 u74a:kill-live-requested（committed 早读 delta 竞态：早读先于子进程首次 flush 返回 '(no new output)'；决定性晚读仍证 settle：status killed、liveFinal 缺席）——按测得记录，不改判。team_glob cell 保持 NOT_VERIFIED（本 boot 未测该腿；其 boot#3 见证与判法修正已在案）。
+- 证据：dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/（u7r3c2j2.u74a-run-record.json + oracle + logs）；PR #458 dated 评论汇报。
