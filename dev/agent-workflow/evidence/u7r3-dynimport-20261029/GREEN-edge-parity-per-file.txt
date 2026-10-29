@@ -1,0 +1,1 @@
+per-file edge-parity diffs = 0 over 82 files x 2 engines (empty-edge-list grading: every real edge is a finding)

@@ -1,0 +1,11 @@
+ok  multiline literal dynamic import: ast=cross regex=cross (want cross)
+ok  template with substitution: ast=computed@L1 regex=computed@L1 (want computed)
+ok  template static backtick spec: ast=cross regex=cross (want cross)
+ok  prose with quotes: ast=clean regex=clean (want clean)
+ok  import.meta guarded: ast=clean regex=clean (want clean)
+ok  side-effect import: ast=cross regex=cross (want cross)
+ok  export-star: ast=cross regex=cross (want cross)
+ok  require literal: ast=cross regex=cross (want cross)
+ok  member from not keyword: ast=clean regex=clean (want clean)
+ok  computed concat: ast=computed@L2 regex=computed@L2 (want computed)
+ALL OK
