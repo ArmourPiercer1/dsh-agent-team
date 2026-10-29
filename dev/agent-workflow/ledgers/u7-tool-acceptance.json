@@ -266,7 +266,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal"
+        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal. C1 lineage 2026-10-29 (PR #457, OPEN): offline ask-DENY arm shipped in packages/runtime/test/u6-pr5-kernel-flow.test.ts. Pilot C2 live attempt 2026-10-29: the live leg arca:glob-ask-deny-refusal-zero-effect (suite 040, offline 45/45 green) never reached the live face - boot u5-u6-arc-a-u7r3c2a-2026-10-29T18-24-41-088Z died at mount readiness on a worktree provisioning gap (missing pnpm farm -> host bootstrap ERR_MODULE_NOT_FOUND; farm repaired in-lane after the boot; dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/run-record.json). Boot budget 2/2 spent; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -730,7 +730,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no job_list refusal case in the u7-4a suite"
+        "note": "no job_list refusal case in the u7-4a suite. C1 lineage 2026-10-29 (PR #456, OPEN): offline G5 arms shipped in packages/runtime/test/u74a-jobs-producer.test.ts. Pilot C2 live attempt 2026-10-29: live leg jobs:list-deny-leg-honest-zero (suite 030) graded against boot u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z (dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/run-record.json): recorded FAIL at boot with ZERO live witnesses - the foreign deny lane never ran (no job id ever minted in this world: its member bash birth answered the closed-world guard refusal; leader parked at wait_ids), the identical wall the committed u7-t1 baseline records (birth/owner-fence/kill-refusal FAIL, lane gaps foreign,leader). Post-boot suite law maps exactly this digest shape to an honestly minted ENV_BLOCK (disclosed: the boot record keeps the FAIL it measured). No live refusal witness exists; NOT_VERIFIED holds. Next live route: the deny leg on the u7-4a-jobs world (that world's live boot already mints and lists an owned job)."
       },
       "L4-positive": {
         "status": "PROVEN",

@@ -453,16 +453,28 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
 
   // ── verdicts (shared judge; the digest is its entire input) ─────────────
   // Three-way law for the deny-leg arm (no ENV_BLOCK forging): ENV_BLOCK is
-  // minted ONLY when the leg genuinely issued its birth attempt, NO ask
-  // row ever reached the ledger face, and nothing was born either (the
-  // approval lane died upstream — the 070-web precedent's honest shape). A
-  // row that WAS seen, or a birth that DID happen, is graded: FAIL.
+  // minted ONLY on one of two honestly observed environment shapes —
+  // (a) the leg issued its birth attempt but NO ask row reached the ledger
+  // face and nothing was born either (the approval lane died upstream — the
+  // 070-web precedent's shape); (b) the leg never got to live at all: the
+  // foreign lane produced ZERO exchanges because the upstream birth leg
+  // stayed harness-gap-blocked (no attribution producer at this pin — the
+  // exact wall the committed u7-t1 boot recorded: birth/owner-fence/
+  // kill-refusal FAIL + lane gaps foreign,leader; the positive arms await
+  // the U7-4a producer, PR #456 OPEN). Anything else — a row seen-but-not-
+  // denied, a foreign lane that ran and lied — is graded FAIL unchanged.
   for (const [id, verdict, detail] of judgeU6Jobs(digest, hostAlive())) {
-    if (id === 'jobs:list-deny-leg-honest-zero' && verdict === 'FAIL'
-      && digest.denyRow?.seen !== true && digest.denyLegIssued === true
-      && (digest.foreignJobIds ?? []).length === 0) {
-      add(id, 'ENV_BLOCK', { ...detail, reason: 'the foreign deny-leg birth attempt was issued but no ask row reached the durable ledger face (the observer saw zero rows, and nothing was born either — the leg died upstream of the approval lane, no refusal witness exists)' })
-      continue
+    if (id === 'jobs:list-deny-leg-honest-zero' && verdict === 'FAIL') {
+      if (digest.denyRow?.seen !== true && digest.denyLegIssued === true
+        && (digest.foreignJobIds ?? []).length === 0) {
+        add(id, 'ENV_BLOCK', { ...detail, reason: 'the foreign deny-leg birth attempt was issued but no ask row reached the durable ledger face (the observer saw zero rows, and nothing was born either — the leg died upstream of the approval lane, no refusal witness exists)' })
+        continue
+      }
+      if (digest.denyLegIssued !== true && digest.foreignList === null
+        && digest.lanes?.foreign !== true) {
+        add(id, 'ENV_BLOCK', { ...detail, reason: 'the deny-leg never got to live: the foreign lane produced ZERO exchanges — the leader stayed parked at wait_ids because no job id was ever minted (the member bash birth answered the closed-world guard refusal in the tool result), and the observer saw no ask row for it either; the committed u7-t1 baseline boot records the identical wall (birth/owner-fence/kill-refusal FAIL, lane gaps foreign,leader). An environment/harness gap upstream of this arm, recorded honestly: no refusal witness exists, this is not a product verdict and never a pass.' })
+        continue
+      }
     }
     add(id, verdict, detail)
   }

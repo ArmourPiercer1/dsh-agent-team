@@ -1,0 +1,90 @@
+# U6-jobs World: canary row + the production Team row (jobsEnabled ON),
+# p6t6 observer and preset declarations, one public profile-patch layer.
+- insert:
+    - id: "u5-canary"
+      name: "./u5-canary-plugin.mjs"
+    - id: "dsh-agent-team"
+      name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-u6jobs-root-u5u7r3c2j-20261029t18-30-55z"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.u6jobs.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the u6jobs assembly team. U6JOBS_DISC_u5u7r3c2j-20261029t18-30-55z is the discovery marker.\"\nmembers:\n  - templateId: worker\n    persona: \"You are a worker of the u6jobs assembly team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/homes/u5u7r3c2j-20261029T18-30-55Z/blueprints"
+        rootPresetId: "u6jobs-base-u5u7r3c2j-20261029t18-30-55z"
+        memberPresetId: "u6jobs-base-u5u7r3c2j-20261029t18-30-55z"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "u6jobs-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/root-binding/harness/seam.mjs"
+        teamToolPlane:
+          realmId: "u6jobs-realm-u5u7r3c2j-20261029t18-30-55z"
+          jobsEnabled: true
+          fsInstance:
+            fs: "team-ctl"
+            rootDir: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/homes/u5u7r3c2j-20261029T18-30-55Z/workspace"
+            realmId: "u6jobs-realm-u5u7r3c2j-20261029t18-30-55z"
+            kind: "absolute-path"
+          confinedProvider:
+            trustRoot: "sha256:1264ea584e3438d6#/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+            assembly:
+              launcherPath: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+              launcherSha256: "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+              minAbiVersion: 3
+    - id: "p6t6-team-tools"
+      name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/tools/harness/plugin.mjs"
+    - id: "jobs"
+      name: "@deepseek-ai/dsh-jobs-local"
+    - id: "tool-jobs"
+      name: "@deepseek-ai/dsh-tool-jobs"
+    - id: "preset-u6jobs-base-u5u7r3c2j-20261029t18-30-55z"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "u6jobs-base-u5u7r3c2j-20261029t18-30-55z"
+        name: "u6jobs base"
+        description: "u6jobs base preset (u5u7r3c2j-20261029T18-30-55Z) = smoke + tool-fs-search"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+          - id: "tool-bash"
+            name: "@deepseek-ai/dsh-tool-bash"
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
