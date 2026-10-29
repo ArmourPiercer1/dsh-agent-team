@@ -299,3 +299,20 @@ review_route:
   budget_status: unknown
   result: "#440 restructured at 90cd044ca; --check CHECK OK; no residual unnamed"
 ```
+
+```yaml
+review_route:
+  at: "2026-10-29T02:10:00Z"
+  session: "takeover-2 main agent"
+  target: "PR #440 restructure delta (de49f503c -> a0b904b42): backlog-out/remediation-rows-in + M1 scope-narrowing + census addendum; delta review by dsh-opencode-go/deepseek-v4.1-flash"
+  risk: R2
+  tier: R2
+  model: "dsh-opencode-go/deepseek-v4.1-flash"
+  independence: "fresh session; verified backlog blob byte-identical to master, generator --check OK, gate substance unchanged, all four residuals homed; found the PR body understated the M1 narrowing (fixed in body) + two cosmetic LOWs (both adopted in a0b904b4)"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "通过 (delta); report tracked as review-routing-20261028/R440delta-og.md inside #440"
+```
