@@ -1162,6 +1162,7 @@ describe('u7as A — unauthorized authority answers the typed refusal with ZERO 
     }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean, message?: string }, backends?: Record<string, unknown> } }
     if (built.ok !== true) throw new Error(`mount refused: ${String(built.code)} ${String(built.message ?? '')}`)
     const humans = new Set(opts.humanTurnFor ?? [])
+    const rootIds = new Set(opts.rootIds)
     const agentOf = (id: string) => ({
       id,
       session: {
@@ -1175,11 +1176,13 @@ describe('u7as A — unauthorized authority answers the typed refusal with ZERO 
     const known = new Map<string, ReturnType<typeof agentOf>>()
     const agents = {
       get: (id: string) => { if (!known.has(id)) known.set(id, agentOf(id)); return known.get(id) },
-      // RED step (naive wiring): every known session is reported as a root —
-      // the top-level leg is NOT yet modelled. A1 must go RED on exactly
-      // this: the subagent's create_goal would be ACCEPTED, proving the case
-      // measures the isRoot leg of the guard, not just the user-source leg.
-      roots: () => [...known.values()],
+      // THE TOP-LEVEL TEST (GREEN; the RED commit wired this naively — every
+      // known session a root — and A1 went RED on exactly that): the arm
+      // provider's direct-human leg is `agents.roots().includes(agent)`
+      // (fs-state-store.mjs:814 mirroring tool-goal authority.ts:81-117
+      // @639ed01539). A session `get` resolves but roots() omits is a
+      // SUBAGENT — never direct-human, even carrying user bytes.
+      roots: () => [...known.values()].filter((a) => rootIds.has(a.id)),
     }
     const services: Record<string, unknown> = {
       agents,
