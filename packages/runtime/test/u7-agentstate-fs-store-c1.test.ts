@@ -30,19 +30,26 @@
  *     record intact. MUTATION CONTROL: a store whose writer skips the
  *     temp+rename (writes the target in place) goes RED on the same check.
  *  T  R-413-1 — the lock/stale/timeout/race legs (describes L and F) are
- *     deterministic under ANY runner context (v3, root-pool safe): the
- *     store measures lock elapsed-time against the PUBLIC `nowMs` seam
- *     (factory option, default Date.now — the v2 design mocked node:timers,
- *     which CANNOT follow the store's direct module import across vitest
- *     roots and went RED in the root pool). Timeout legs pass a test-owned
- *     clock and advance it (settleTimeout); the store's acquire loop keeps
- *     its REAL short backoff sleeps, so the outcome is fixed at the clock
- *     advance — load stretches the leg's duration, never its result.
- *     Stale legs use small real windows. Race legs (L1/R4-1) run
- *     CONCURRENTLY on real timers with FROZEN nowMs clocks (their timeout
- *     can never fire; the lock makes the round self-terminating) and
- *     observe the store's own durable lock record (unique nonce per holder)
- *     to pin the serialised acquisitions (R449 MED).
+ *     deterministic under ANY runner context (v3: the store measures lock
+ *     elapsed-time against the PUBLIC `nowMs` seam, factory option,
+ *     default Date.now — the v2 design mocked node:timers, which CANNOT
+ *     follow the store's direct module import across vitest roots and went
+ *     RED in the root pool). Timeout legs pass a test-owned clock and
+ *     advance it (settleTimeout); the store's acquire loop keeps its REAL
+ *     short backoff sleeps, so the outcome is fixed at the clock advance —
+ *     load stretches the leg's duration, never its result. Stale legs use
+ *     small real windows. Race legs (L1/R4-1) run CONCURRENTLY on real
+ *     timers with FROZEN nowMs clocks (their timeout can never fire; the
+ *     lock makes the round self-terminating) and settle by plain
+ *     event-driven Promise.all — NO test-owned wall-clock cap, NO disk
+ *     polling (v3's 2 ms nonce-poll observer went RED under nine-root pool
+ *     load, #450 census); each instance's critical-section entry is pinned
+ *     by the store's own 'after-read' fault seam (fires exactly once per
+ *     apply, after lock acquisition) — deterministic and load-independent
+ *     (R449 MED, rebased). The 25-round leg's DURATION is load-stretched
+ *     (real fs under the pool); L1/R4-1 carry an explicit 30 s per-test
+ *     timeout as the disclosed guard (observed census-class worst case
+ *     ≈ 8 s) — a slow settle passes, a true hang fails there.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
@@ -635,34 +642,6 @@ const settleTimeout = async <T>(p: Promise<T>, clock: { advance: (ms: number) =>
   return await p
 }
 
-/**
- * Run a four-way race on REAL timers (deterministic under any pool) and
- * observe the store's own durable lock record on the way: every holder that
- * appears on disk is recorded by its unique nonce. The racers carry FROZEN
- * nowMs clocks so their lock timeout can never fire — the round always
- * settles by the lock + CAS (one winner, three stale refusals), no matter
- * the wall load. The final `await all` rethrows any racer error, so the
- * handled promise above can never mask a failure.
- */
-const raceSettle = async (
-  racers: Array<Promise<{ ok: boolean, code?: string }>>,
-  lockPath: string,
-): Promise<{ results: Array<{ ok: boolean, code?: string }>, seen: Set<string> }> => {
-  const seen = new Set<string>()
-  const poll = (): void => {
-    try { seen.add(JSON.parse(readFileSync(lockPath, 'utf8')).nonce) } catch { /* absent or released */ }
-  }
-  const all = Promise.all(racers)
-  const settled = (): Promise<boolean> => all.then(() => true, () => true)
-  for (let i = 0; i < 20_000; i += 1) { // 20 000 × 2 ms real = 40 s hard cap
-    if (await Promise.race([settled(), new Promise<boolean>((r) => { setTimeout(() => r(false), 2) })])) break
-    poll()
-  }
-  const results = await all
-  poll()
-  return { results, seen }
-}
-
 describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
   // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
   const targets: Array<[string, () => string]> = [
@@ -720,41 +699,54 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
   // note in the file header).
 
   it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
-    // R-413-1 v3 + R449 MED: DETERMINISTICALLY concurrent arrival on REAL
-    // timers (any runner context) — all four applies are started with NO
-    // await between them, each carries a FROZEN nowMs clock (its lock
-    // timeout can never fire), and the round settles by the lock + CAS:
-    // exactly one CAS winner, three stale refusals. With the lock in
-    // place, nothing else can happen; with a lock-removal regression,
-    // several appliers could commit concurrently and the same outcome
-    // assertion goes RED.
-    const raceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:race').digest('hex')}.lock`)
+    // R-413-1 v3 + R449 MED (rebased v4 after the #450 census red):
+    // DETERMINISTICALLY concurrent arrival on REAL timers (any runner
+    // context) — all four applies are started with NO await between them,
+    // each carries a FROZEN nowMs clock (its lock timeout can never fire),
+    // and the round settles by the lock + CAS via a plain event-driven
+    // await (no test-owned wall-clock cap, no polling): exactly one CAS
+    // winner, three stale refusals. With the lock in place, nothing else
+    // can happen; with a lock-removal regression, several appliers could
+    // commit concurrently and the same outcome assertion goes RED.
+    // The 25-round leg's DURATION is load-stretched (real fs); the
+    // explicit 30 s per-test timeout below is the disclosed guard (observed
+    // census-class worst case ≈ 8 s) — a true hang fails there, a slow
+    // settle does not.
     for (let round = 1; round <= 25; round += 1) {
       await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const w0 = bytesOf(writesPath())
       const linesBefore = linesOf(writesPath()).length
       const frozen = testClock() // never advanced: the racers' timeout can never fire
-      const { results, seen } = await raceSettle([0, 1, 2, 3].map((i) => storeWith({ nowMs: frozen.now }).applyGoal('agent:race', {
+      const acquires = new Set<string>()
+      const racers = [0, 1, 2, 3].map((i) => storeWith({
+        nowMs: frozen.now,
+        // 'after-read' fires exactly once per apply, INSIDE the critical
+        // section, after lock acquisition (store fs-state-store.mjs:853) —
+        // a deterministic per-instance acquire mark, no disk sampling
+        faultAt: (point: string) => { if (point === 'after-read') acquires.add(`race-${String(round)}-${String(i)}`) },
+      }).applyGoal('agent:race', {
         expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
         next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })), raceLock)
+      }))
+      // event-driven settle: no wall-clock cap, no polling — the lock +
+      // CAS terminate the round under any load; a TRUE hang (none
+      // observed) would fail via vitest's own testTimeout (disclosed)
+      const results = await Promise.all(racers)
       expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
       expect(linesOf(writesPath()).length - linesBefore).toBe(1)
       expect(bytesOf(writesPath())).toBeGreaterThan(w0)
       expect(await storeWith().readGoal('agent:race')).toMatchObject({ revision: round + 1 })
-      // R449 MED ordering assertion: the LOCK-ACQUIRE set over the round is
-      // a permutation of the four instances — the store's own durable lock
-      // record (unique nonce per holder) was observed for ALL FOUR: each
-      // acquired the scope lock exactly once (the O_EXCL create makes it
-      // exclusive — exactly one holder at a time — and each of the three
-      // stale refusals only happens after its own acquisition, i.e. only
-      // after the previous holder released). A lock-removal regression
-      // leaves no lock record to observe, so this goes RED with it — the
-      // concurrent-arrival coverage the strict sequence had lost.
-      expect(seen.size, `round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
+      // R449 MED ordering assertion (rebased after the #450 census red):
+      // every one of the four instances ENTERED the lock's critical
+      // section exactly once — the 'after-read' seam fires per apply only
+      // after lock acquisition; the 1-ok/3-stale outcome above proves the
+      // entries were mutually exclusive (simultaneous entries would
+      // double-commit and RED the outcome). No sampling, no wall-clock
+      // budget — deterministic under any pool load.
+      expect(acquires.size, `round ${String(round)}: all four instances must have entered the critical section exactly once`).toBe(4)
     }
-  })
+  }, 30_000)
 
   it('L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write', async () => {
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
@@ -961,27 +953,38 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   })
 
   it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
-    // R-413-1 v3 + R449 MED: deterministic concurrent arrival on REAL
-    // timers, same pattern as L1 — all four started with NO await between
-    // them, each on a FROZEN nowMs clock (its timeout can never fire), the
-    // round settles by the lock + CAS, and the store's own lock record
-    // (nonce per holder) is observed on the way.
-    const emptyRaceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:empty-race').digest('hex')}.lock`)
+    // R-413-1 v3 + R449 MED (rebased v4 after the #450 census red):
+    // deterministic concurrent arrival on REAL timers, same pattern as L1
+    // — all four started with NO await between them, each on a FROZEN
+    // nowMs clock (its timeout can never fire), the round settles by the
+    // lock + CAS via a plain event-driven await (no test-owned wall-clock
+    // cap, no polling), and each instance's critical-section entry is
+    // marked by the store's 'after-read' fault seam. The leg's duration is
+    // load-stretched (real fs); the explicit 30 s per-test timeout is the
+    // disclosed guard (see L1).
     for (let round = 1; round <= 10; round += 1) {
       const seeded = storeWithBoot('')
       await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const frozen = testClock() // never advanced: the racers' timeout can never fire
-      const { results, seen } = await raceSettle([0, 1, 2, 3].map((i) => storeWithBoot('', { nowMs: frozen.now }).applyGoal('agent:empty-race', {
+      const acquires = new Set<string>()
+      const racers = [0, 1, 2, 3].map((i) => storeWithBoot('', {
+        nowMs: frozen.now,
+        // 'after-read' fires exactly once per apply, INSIDE the critical
+        // section, after lock acquisition — a deterministic per-instance
+        // acquire mark, no disk sampling
+        faultAt: (point: string) => { if (point === 'after-read') acquires.add(`empty-race-${String(round)}-${String(i)}`) },
+      }).applyGoal('agent:empty-race', {
         expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
         next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })), emptyRaceLock)
+      }))
+      // event-driven settle: no wall-clock cap, no polling (see L1)
+      const results = await Promise.all(racers)
       expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
-      // R449 MED ordering assertion: same as L1 — the lock-acquire set is a
-      // permutation of the four instances (each acquires exactly once; the
-      // O_EXCL create keeps it exclusive); a lock-removal regression goes
-      // RED here (no lock record to observe).
-      expect(seen.size, `empty boot round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
+      // R449 MED ordering assertion (rebased, same as L1): all four
+      // instances entered the critical section exactly once (after
+      // acquisition); the outcome proves the entries were exclusive.
+      expect(acquires.size, `empty boot round ${String(round)}: all four instances must have entered the critical section exactly once`).toBe(4)
     }
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
@@ -993,7 +996,7 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     const refused = await settleTimeout(storeWithBoot('local-boot', { lockTimeoutMs: 80, nowMs: clock.now }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' }), clock, 80)
     expect(refused).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
     expect(bytesOf(writesPath())).toBe(before)
-  })
+  }, 30_000)
 
   it('R3-atomic initial lock publication leaves no target after injected pre-publish crash', async () => {
     const crashing = storeWith({ faultAt: async (point: string) => { if (point === 'lock-before-publish') throw new Error('injected lock crash') } })
