@@ -322,7 +322,17 @@ export async function holdSurvivor({ world, origin, holdUntil, probeLog, oracle,
       appendFileSync(probeLog, JSON.stringify(row) + '\\n')
     }
     console.log(`SURVIVOR-PROBE ${row.at} ${kind} ok=${String(row.ok)}`)
-    if (row.ok && healthy.at === null) healthy.at = row.at
+    if (row.ok && healthy.at === null) {
+      healthy.at = row.at
+      // R-CRASH-1: the exactly-once authenticated readiness marker. It is
+      // emitted ONLY after a successful authenticated health probe (the
+      // production REAL_SURVIVOR_IO path authenticates with the World launch
+      // token — cookie + health read + session-create effect — before this
+      // line can exist), and never for simulated/injected rows (they cannot
+      // be live evidence). The supervisor may arm the graded kill on this
+      // line, validated against the survivor World id it carries.
+      if (simulated !== true) console.log(`U5-SURVIVOR-READY ${world.id} ${String(row.at)} ${kind}`)
+    }
     return row
   }
   for (;;) {

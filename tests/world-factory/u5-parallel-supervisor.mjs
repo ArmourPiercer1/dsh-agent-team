@@ -32,27 +32,43 @@
  *   node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> \
  *     [--mode parallel|crash-reclaim] [--survivor-suite core|core-restart] \
  *     [--budget-ledger <jsonl>] [--max-host-starts 15] [--kill-after ms] \
- *     [--inflight-timeout ms] [--reconstruct <run-record.json>]
+ *     [--inflight-timeout ms] [--ready-timeout ms] [--reconstruct <run-record.json>]
  *
  * MODES
  *   parallel (default, G3 shape) — A core-restart ∥ B core, B's RUNNER killed.
- *   crash-reclaim (FIX-T T2 — closes the G3 SKIP gap): B runs the
- *   `crash-victim` suite: the victim World boots, authenticates and holds a
- *   canary tool call IN FLIGHT (tool body blocked on its gate file, canary
- *   plugin marker `<tag>.pre` written, `<tag>.post` never). Only after the
- *   runner prints U5-IN-FLIGHT does the supervisor SIGKILL the victim's WHOLE
- *   OWNED PROCESS GROUP (B spawned detached → group = victim runner + its
- *   host + mock; nobody else can be in a group we created). The reclaim then
- *   runs while survivor A keeps working, and PASS requires the conjunction:
- *   in-flight marker present + completion marker absent + no victim RUN
- *   record (the kill provably landed mid-tool), every stale lease (host AND
- *   mock port) reclaimed with `reclaimedFrom` provenance naming the killed
- *   runner, victim host pid dead (killed by the reclaim with /proc environ
- *   proof if it survived the group kill), zero refusals, home deleted via its
- *   ownership marker, ports free. If the in-flight gate fails the case FAILS
- *   — this mode has no SKIP. A (`--survivor-suite`, default `core` = one
- *   boot) proves the surviving parallel World is unaffected. Total host
- *   starts this mode: 2.
+ *   crash-reclaim (FIX-T T2 — closes the G3 SKIP gap; R-CRASH-1 handshake):
+ *   B runs the `crash-victim` suite: the victim World boots, authenticates
+ *   and holds a canary tool call IN FLIGHT (tool body blocked on its gate
+ *   file, canary plugin marker `<tag>.pre` written, `<tag>.post` never).
+ *   Once the runner prints U5-IN-FLIGHT the supervisor EMITS HELD (the kill
+ *   handshake opens), starts survivor A, and then the graded kill may fire
+ *   ONLY after an authenticated READY receipt: A prints U5-SURVIVOR-READY
+ *   exactly once, after a successful authenticated health probe, naming its
+ *   World; the supervisor waits for that line (bounded `--ready-timeout`,
+ *   default 240 s — inside the victim's 300 s gate cap) and validates the
+ *   receipt names the survivor World it started. Receipt observed →
+ *   SIGKILL to the victim's WHOLE OWNED PROCESS GROUP (B spawned detached →
+ *   group = victim runner + its host + mock; nobody else can be in a group
+ *   we created). No receipt in budget → the kill is WITHHELD (never
+ *   kill-blind), the victim self-cleans under its own gate cap, the reclaim
+ *   scan still runs over the real resulting state, and the kill leg grades
+ *   the named fact NOT_REACHED — the case FAILs; this mode has no SKIP.
+ *   The `--kill-after` knob is still accepted but DEMOTED: recorded as
+ *   disclosure, it never authorizes the kill, and a kill leg graded without
+ *   a READY receipt is NOT_REACHED, never PASS. The reclaim then runs while
+ *   survivor A keeps working, and PASS of `abnormal-kill-reclaim` requires
+ *   the conjunction: HELD + READY receipt + kill fired on receipt + in-flight
+ *   marker present + completion marker absent + no victim RUN record (the
+ *   kill provably landed mid-tool), every stale lease (host AND mock port)
+ *   reclaimed with `reclaimedFrom` provenance naming the killed runner,
+ *   victim host pid dead (killed by the reclaim with /proc environ proof if
+ *   it survived the group kill), zero refusals, home deleted via its
+ *   ownership marker, ports free. `other-world-unaffected` is judged on the
+ *   survivor's OWN facts (alive at reclaim, own suite PASS, split sequencing
+ *   cells, identity continuous) — each criterion cell reports its own fact;
+ *   no single boolean feeds two case ids. A (`--survivor-suite`, default
+ *   `core` = one boot) proves the surviving parallel World is unaffected.
+ *   Total host starts this mode: 2.
  *
  * Opt-in only (live Host children): never collected by vitest/CI.
  */
@@ -78,6 +94,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * Pure C1 law for the live survivor conjunction. The kill must be strictly
  * inside the survivor's healthy-to-last-probe interval, and every reclaim
  * effect must be scoped to the victim world/resources.
+ *
+ * R-CRASH-1: the formerly-aliased `ordered` boolean (one value fed BOTH
+ * `killInsideSurvivorWindow` and `survivorHeldUntilReclaim`) is split into
+ * independently computed facts — no two cells may report one shared boolean.
  */
 export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt = null, victimWorld, reclaimedResources = [], survivorProbes = [], survivorHostPidBefore = null, survivorHostPidAfter = null, survivorWorldIdBefore = null, survivorWorldIdAfter = null }) {
   const probes = survivorProbes.filter((probe) => probe !== null && typeof probe === 'object')
@@ -87,11 +107,17 @@ export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivor
   const postReclaimSuccess = successful.some((probe) => Number(probe.at) > Number(victimKilledAndReclaimedAt ?? killAt))
   const failedInWindow = failed.filter((probe) => Number(probe.at) >= Number(survivorHealthyAt) && Number(probe.at) <= Number(survivorTornDownAt))
   const probeAfterReclaim = successful.some((probe) => Number(probe.at) > killAt)
-  const timestamps = [survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt]
-  const ordered = timestamps.every(Number.isFinite)
-    && survivorHealthyAt < killAt
-    && killAt < survivorLastProbeAt
-    && survivorLastProbeAt <= survivorTornDownAt
+  // Independent time facts (R-CRASH-1 split — each cell computes its own
+  // predicate; `pass` is their conjunction, never a reused boolean).
+  const finiteSpan = [survivorHealthyAt, killAt, survivorLastProbeAt, survivorTornDownAt].every((t) => Number.isFinite(Number(t)))
+  const survivorHealthyBeforeKill = finiteSpan && Number(survivorHealthyAt) < Number(killAt)
+  const killBeforeLastProbe = finiteSpan && Number(killAt) < Number(survivorLastProbeAt)
+  const lastProbeWithinHoldSpan = finiteSpan && Number(survivorLastProbeAt) <= Number(survivorTornDownAt)
+  const killInsideSurvivorWindow = survivorHealthyBeforeKill && killBeforeLastProbe
+  const reclaimAt = victimKilledAndReclaimedAt !== null && Number.isFinite(Number(victimKilledAndReclaimedAt))
+    ? Number(victimKilledAndReclaimedAt)
+    : Number(killAt)
+  const survivorHeldUntilReclaim = finiteSpan && Number(survivorLastProbeAt) >= reclaimAt && lastProbeWithinHoldSpan
   const victimOnly = reclaimedResources.every((resource) => resource?.world === victimWorld)
   const reclaimTouchedOnlyVictim = reclaimedResources.length > 0 && victimOnly
   const identityContinuous = survivorHostPidBefore !== null
@@ -100,8 +126,11 @@ export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivor
     && survivorWorldIdBefore === survivorWorldIdAfter
   const failureReason = failedInWindow[0] ?? null
   return {
-    killInsideSurvivorWindow: ordered,
-    survivorHeldUntilReclaim: ordered,
+    survivorHealthyBeforeKill,
+    killBeforeLastProbe,
+    lastProbeWithinHoldSpan,
+    killInsideSurvivorWindow,
+    survivorHeldUntilReclaim,
     survivorProbeAfterReclaim: probeAfterReclaim,
     preKillProbeSucceeded: preKillSuccess,
     postReclaimProbeSucceeded: postReclaimSuccess,
@@ -109,7 +138,58 @@ export function evaluateSurvivorSequencing({ survivorHealthyAt, killAt, survivor
     failedProbe: failureReason,
     survivorHostIdentityContinuous: identityContinuous,
     reclaimVictimOnly: reclaimTouchedOnlyVictim,
-    pass: ordered && preKillSuccess && postReclaimSuccess && failedInWindow.length === 0 && reclaimTouchedOnlyVictim && identityContinuous,
+    pass: killInsideSurvivorWindow && survivorHeldUntilReclaim && preKillSuccess && postReclaimSuccess && failedInWindow.length === 0 && reclaimTouchedOnlyVictim && identityContinuous,
+  }
+}
+
+/**
+ * R-CRASH-1 kill-handshake state machine (pure, C1-law).
+ *
+ * The abnormal kill may fire ONLY after two named facts:
+ *   HELD  — the victim booted and its canary call is provably HELD in flight
+ *           (the supervisor emitted the HELD fact on U5-IN-FLIGHT);
+ *   READY — the survivor's authenticated readiness receipt: the survivor
+ *           runner prints U5-SURVIVOR-READY exactly once, ONLY after a
+ *           successful authenticated health probe (launch-token cookie +
+ *           health + session-create), naming its World; the receipt is only
+ *           a receipt if it names the survivor World the supervisor started
+ *           and arrives at or after HELD.
+ *
+ * The `--kill-after` knob (`killAfterMs`) is accepted but DEMOTED: it is
+ * recorded as disclosure only. It never authorizes the kill; with no READY
+ * receipt the kill is withheld (never kill-blind) and the kill leg grades
+ * the named fact `NOT_REACHED` — never PASS (R-ENVBLOCK-1 spirit:
+ * orchestration state is never counted into a PASS).
+ */
+export function decideKillHandshake({ heldAt = null, readyAt = null, readyWorldId = null, survivorWorldId = null, readyBudgetMs = 0, killAfterMs = 0, now = 0 }) {
+  const held = heldAt !== null && Number.isFinite(Number(heldAt)) && Number(heldAt) > 0
+  const readyFinite = readyAt !== null && Number.isFinite(Number(readyAt))
+  const worldMatched = survivorWorldId === null || readyWorldId === survivorWorldId
+  const afterHeld = !held || (readyFinite && Number(readyAt) >= Number(heldAt))
+  const readyReceipt = held && readyFinite && worldMatched && afterHeld
+  const budgetExhausted = held && readyAt === null && Number.isFinite(Number(readyBudgetMs)) && Number(readyBudgetMs) > 0
+    && Number(now) >= Number(heldAt) + Number(readyBudgetMs)
+  const killFired = readyReceipt
+  const killLeg = killFired ? 'fired-after-ready-receipt' : 'NOT_REACHED'
+  const reason = !held
+    ? 'HELD_NOT_OBSERVED'
+    : readyFinite && !worldMatched
+      ? 'READY_WORLD_MISMATCH'
+      : readyFinite && !afterHeld
+        ? 'READY_BEFORE_HELD'
+        : readyReceipt
+          ? null
+          : (budgetExhausted ? 'SURVIVOR_READY_TIMEOUT' : 'SURVIVOR_READY_PENDING')
+  return {
+    held,
+    readyReceipt,
+    readyAt: readyReceipt ? Number(readyAt) : null,
+    killFired,
+    killLeg,
+    reason,
+    killAfterKnobMs: Number(killAfterMs) > 0 ? Number(killAfterMs) : null,
+    readyBudgetMs: Number(readyBudgetMs) > 0 ? Number(readyBudgetMs) : null,
+    rule: 'the graded kill fires ONLY after HELD + an authenticated survivor READY receipt; the --kill-after knob is accepted but demoted (disclosure only) — without a receipt the kill is withheld (never kill-blind) and the kill leg grades NOT_REACHED, never PASS',
   }
 }
 
@@ -173,7 +253,7 @@ export async function runSurvivorDryRun({ io = undefined } = {}) {
 }
 
 export function parseArgs(argv) {
-  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000, dryRun: false }
+  const out = { evidence: null, budgetLedger: null, maxHostStarts: 15, killAfterMs: 1_500, reconstruct: null, mode: 'parallel', survivorSuite: null, inflightTimeoutMs: 300_000, readyTimeoutMs: 240_000, dryRun: false }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--evidence') out.evidence = String(argv[++i])
@@ -181,6 +261,7 @@ export function parseArgs(argv) {
     else if (a === '--max-host-starts') out.maxHostStarts = Number(argv[++i])
     else if (a === '--kill-after') out.killAfterMs = Number(argv[++i])
     else if (a === '--inflight-timeout') out.inflightTimeoutMs = Number(argv[++i])
+    else if (a === '--ready-timeout') out.readyTimeoutMs = Number(argv[++i])
     else if (a === '--mode') out.mode = String(argv[++i])
     else if (a === '--survivor-suite') out.survivorSuite = String(argv[++i])
     else if (a === '--reconstruct') out.reconstruct = String(argv[++i])
@@ -592,7 +673,7 @@ function scanPidsClaimingHome(home) {
  * No SKIP in this mode — an unlanded kill is a FAIL.
  */
 export async function runCrashReclaimSupervisor(opts) {
-  const { evidence, budgetLedger, maxHostStarts, killAfterMs, survivorSuite, inflightTimeoutMs } = opts
+  const { evidence, budgetLedger, maxHostStarts, killAfterMs, survivorSuite, inflightTimeoutMs, readyTimeoutMs = 240_000 } = opts
   const aSuite = survivorSuite ?? 'core'
   mkdirSync(evidence, { recursive: true })
   const factory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: evidence })
@@ -616,7 +697,7 @@ export async function runCrashReclaimSupervisor(opts) {
       worldIds: [],
       leaseRoot: factory.leaseRoot,
       mode: 'crash-reclaim',
-      note: `A = ${aSuite} runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group once A signals U5-IN-RUN (survivor straddles kill+reclaim); reclaim = factory crash recovery with provenance`,
+      note: `A = ${aSuite} runner (survivor, 1 boot) started AFTER B's U5-IN-FLIGHT; B = crash-victim runner (1 boot, held canary call), SIGKILL to B's OWN process group ONLY after the R-CRASH-1 handshake (HELD emitted on U5-IN-FLIGHT + authenticated survivor U5-SURVIVOR-READY receipt, bounded --ready-timeout ${String(readyTimeoutMs)} ms; without a receipt the kill is withheld and the kill leg grades NOT_REACHED); the --kill-after knob (${String(killAfterMs)} ms) is accepted but demoted — disclosure only, never authorizes the kill; reclaim = factory crash recovery with provenance`,
     },
   })
 
@@ -689,6 +770,18 @@ export async function runCrashReclaimSupervisor(opts) {
   const bHostPid = Number(bHostPidRaw)
   record.record.bWorld = { id: bWorld, home: bHome, hostPid: bHostPid, inFlightTag: bTag }
   record.record.bindings.worldIds.push(bWorld)
+  // ── R-CRASH-1 handshake, step 1: EMIT HELD ──────────────────────────────────
+  // The victim is booted and its canary call is provably held in flight; the
+  // kill handshake opens from this instant. The graded kill may only fire
+  // after a READY receipt that arrives AT OR AFTER this moment.
+  const heldAt = Date.now()
+  const heldAtIso = new Date(heldAt).toISOString()
+  record.record.handshake = {
+    held: { at: heldAt, atIso: heldAtIso, basis: 'U5-IN-FLIGHT', victimWorld: bWorld, inFlightTag: bTag },
+    ready: null,
+    kill: null,
+  }
+  console.log(`U5-HELD ${bWorld} ${bTag} ${heldAt}`)
 
   // The victim is now HELD mid-call (gate closed, capMs budget keeps it
   // alive). Start the survivor and wait until it is provably mid-suite —
@@ -698,7 +791,9 @@ export async function runCrashReclaimSupervisor(opts) {
   record.record.runners.A = { pid: A.child.pid, record: recA }
   const aInRun = await waitForLine(A.buffer, /^U5-IN-RUN (\S+) (\S+) (\d+)$/m, 300_000)
   if (aInRun === null) {
-    record.addCase('abnormal-kill-reclaim', 'FAIL', { reason: 'survivor runner never reached U5-IN-RUN inside its budget — the kill was withheld rather than landed against a half-booted World; the crash path was NOT exercised against a live survivor', aTail: tailFile(join(runnerLogDir, 'runner-A.log')) })
+    record.record.handshake.ready = { observed: false, reason: 'SURVIVOR_NEVER_REACHED_IN_RUN' }
+    record.record.handshake.kill = { fired: false, leg: 'NOT_REACHED', reason: 'SURVIVOR_NEVER_REACHED_IN_RUN' }
+    record.addCase('abnormal-kill-reclaim', 'FAIL', { reason: 'survivor runner never reached U5-IN-RUN inside its budget — the kill was withheld rather than landed against a half-booted World; the crash path was NOT exercised against a live survivor', killLeg: 'NOT_REACHED', aTail: tailFile(join(runnerLogDir, 'runner-A.log')) })
     await killOwnChild(B.child)
     await killOwnChild(A.child)
     record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'fail-closed: live crash case failed; the offline control cannot recolour it' })
@@ -707,33 +802,74 @@ export async function runCrashReclaimSupervisor(opts) {
   }
   record.record.aWorld = { id: aInRun[1], home: aInRun[2], hostPid: Number(aInRun[3]) }
   record.record.bindings.worldIds.push(aInRun[1])
-  await sleep(killAfterMs) // a beat inside the held window, not at its boundary
+
+  // ── R-CRASH-1 handshake, step 2: wait for the authenticated READY receipt ──
+  // The survivor runner prints U5-SURVIVOR-READY exactly once, ONLY after a
+  // successful authenticated health probe (REAL_SURVIVOR_IO: launch-token
+  // cookie + health read + session-create effect), naming its World. The
+  // wait is bounded; on timeout the kill is WITHHELD (never kill-blind) and
+  // the kill leg grades the named fact NOT_REACHED. The --kill-after knob is
+  // accepted but demoted — it is recorded as disclosure and never fires the
+  // graded kill.
+  const readyLine = await waitForLine(A.buffer, /^U5-SURVIVOR-READY (\S+) (\d+)(?: (\S+))?$/m, readyTimeoutMs)
+  const decision = decideKillHandshake({
+    heldAt,
+    readyAt: readyLine !== null ? Date.now() : null,
+    readyWorldId: readyLine !== null ? readyLine[1] : null,
+    survivorWorldId: aInRun[1],
+    readyBudgetMs: readyTimeoutMs,
+    killAfterMs,
+    now: Date.now(),
+  })
+  record.record.handshake.ready = decision.readyReceipt
+    ? { at: decision.readyAt, atIso: new Date(decision.readyAt).toISOString(), receiptWorldId: readyLine[1], probeAtFromLine: Number(readyLine[2]), kind: readyLine[3] ?? null, authenticated: 'survivor runner prints U5-SURVIVOR-READY only after a successful authenticated health probe, and the supervisor validated the receipt names the survivor World it started' }
+    : { observed: false, reason: decision.reason, boundedWaitMs: readyTimeoutMs }
+  record.record.handshake.kill = {
+    fired: decision.killFired,
+    leg: decision.killLeg,
+    reason: decision.reason,
+    killAfterKnobMs: decision.killAfterKnobMs,
+    knobDemoted: 'the --kill-after knob is accepted and recorded but never authorizes the kill; without a READY receipt the kill leg grades NOT_REACHED, never PASS',
+    rule: decision.rule,
+  }
+  console.log(decision.killFired
+    ? `U5-KILL-ARMED ${aInRun[1]} readyAt=${String(decision.readyAt)} receiptWorldId=${String(readyLine[1])}`
+    : `U5-KILL-WITHHELD leg=${decision.killLeg} reason=${decision.reason}`)
 
   // ── the abnormal kill: SIGKILL the victim's OWNED PROCESS GROUP ────────────
+  // fired ONLY on the READY receipt; otherwise withheld (the victim's own
+  // gate cap bounds its self-cleanup; the reclaim scan below grades the real
+  // resulting state, and the case FAILs on the named receipt facts).
   const pgid = B.child.pid // detached spawn → the runner IS the group leader
-  const groupKill = { at: new Date().toISOString(), pgid, runnerPid: B.child.pid, signal: 'SIGKILL', scope: 'process-group' }
+  const groupKill = { at: new Date().toISOString(), pgid, runnerPid: B.child.pid, signal: 'SIGKILL', scope: 'process-group', graded: decision.killFired, leg: decision.killLeg }
   const exitedP = new Promise((r) => B.child.once('close', (code, signal) => r({ code, signal })))
-  if (B.child.exitCode === null && B.child.signalCode === null) {
-    try {
-      process.kill(-pgid, 'SIGKILL')
-      groupKill.delivered = 'process-group'
-    } catch (error) {
-      if (error.code === 'ESRCH') groupKill.delivered = 'already-exited-group'
-      else throw error
+  if (decision.killFired) {
+    if (B.child.exitCode === null && B.child.signalCode === null) {
+      try {
+        process.kill(-pgid, 'SIGKILL')
+        groupKill.delivered = 'process-group'
+      } catch (error) {
+        if (error.code === 'ESRCH') groupKill.delivered = 'already-exited-group'
+        else throw error
+      }
+    } else {
+      groupKill.delivered = 'already-exited'
     }
+    // Belt for OUR direct child handle (the group kill normally got it first).
+    if (B.child.exitCode === null && B.child.signalCode === null) {
+      try {
+        B.child.kill('SIGKILL')
+      } catch {
+        /* group kill raced us */
+      }
+    }
+    groupKill.runnerCloseReceipt = await Promise.race([exitedP, sleep(10_000).then(() => ({ timedOut: true }))])
   } else {
-    groupKill.delivered = 'already-exited'
+    // NOT_REACHED: never kill-blind. Wait (bounded) for the victim's own
+    // gate-cap self-cleanup so the reclaim scan grades the real state.
+    groupKill.delivered = 'withheld-no-ready-receipt'
+    groupKill.runnerCloseReceipt = await Promise.race([exitedP, sleep(10 * 60_000).then(() => ({ timedOut: true }))])
   }
-  // Belt for OUR direct child handle (the group kill normally got it first).
-  if (B.child.exitCode === null && B.child.signalCode === null) {
-    try {
-      B.child.kill('SIGKILL')
-    } catch {
-      /* group kill raced us */
-    }
-  }
-  const exited = await Promise.race([exitedP, sleep(10_000).then(() => ({ timedOut: true }))])
-  groupKill.runnerCloseReceipt = exited
   const victimRecordBefore = existsSync(recB)
 
   // ── crash-state proofs BEFORE reclaim (they need the home on disk) ────────
@@ -800,6 +936,11 @@ export async function runCrashReclaimSupervisor(opts) {
   const hostProvenancePath = hostProv?.reclaimedFrom?.pid === B.child.pid ? 'reclaim-scan' : peerProvFor(hostPort) !== null ? 'swept-by-live-peer' : 'missing'
   const mockProvenancePath = mockPort === null ? 'no-mock' : mockProv?.reclaimedFrom?.pid === B.child.pid ? 'reclaim-scan' : peerProvFor(mockPort) !== null ? 'swept-by-live-peer' : 'missing'
   const conditions = {
+    // R-CRASH-1 handshake cells — each criterion reports its OWN fact; no
+    // shared boolean, no verdict value feeding more than this case.
+    victimHeldInFlight: true, // explicit boot-held cell: U5-IN-FLIGHT observed (the flow fail-closed above otherwise)
+    survivorReadyReceipt: decision.readyReceipt,
+    killFiredOnReceipt: decision.killFired,
     killLandedInFlight,
     inFlightMarkerPresent: preMarker,
     completionMarkerAbsent: !postMarker,
@@ -824,7 +965,10 @@ export async function runCrashReclaimSupervisor(opts) {
   record.record.abnormalKill = {
     at: groupKill.at,
     ...groupKill,
-    killedWhat: "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn",
+    killLeg: decision.killLeg,
+    killedWhat: decision.killFired
+      ? "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn"
+      : 'WITHHELD — no READY receipt inside the bounded wait; no signal was sent to the victim by this supervisor (never kill-blind); the victim self-cleaned under its own gate cap',
     bWorld: { id: bWorld, home: bHome, hostPid: bHostPid, tag: bTag },
     ownershipFile: ownership,
     markersAtKill: markers,
@@ -838,19 +982,16 @@ export async function runCrashReclaimSupervisor(opts) {
   const killVerdict = Object.values(conditions).every((v) => v === true) ? 'PASS' : 'FAIL'
   record.addCase('abnormal-kill-reclaim', killVerdict, {
     conditions,
-    verdictRule: 'PASS ONLY with the full conjunction — the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; anything else FAILs (this mode has no SKIP)',
+    killLeg: decision.killLeg,
+    handshake: record.record.handshake,
+    verdictRule: 'PASS ONLY with the full conjunction — the handshake (victim HELD in flight + authenticated survivor READY receipt + kill fired on receipt) proves the kill was receipt-gated, and the in-flight trio (pre marker present, post marker absent, no victim RUN record) proves the SIGKILL landed mid-tool; the host is resolved dead either by the group kill or by a proof-gated reclaim kill, no live process anywhere claims the destroyed home, and reclaim REFUSED nothing; a kill leg without a READY receipt grades the named fact NOT_REACHED and this case never PASSes (this mode has no SKIP)',
     ownershipVerification: 'reclaimWorld kills ONLY pids recorded in .u5-ownership.json re-verified via /proc/<pid>/environ DSH_HOME == victim home (no pattern/name kills)',
     windowsProcessTreeCleanup: process.platform === 'win32' ? 'ENV_BLOCK — descendant-tree cleanup beyond recorded pids is not implemented on Windows; not claimed' : 'n/a (Linux)',
   })
-  if (killVerdict === 'FAIL') {
-    // fail-closed: do not spend the survivor/global checks pretending; kill
-    // both children, honest reds.
-    await killOwnChild(B.child)
-    await killOwnChild(A.child)
-    record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'live crash case failed; offline control cannot recolour it' })
-    record.addCase('other-world-unaffected', 'FAIL', { reason: 'live crash case failed before survivor proof' })
-    return finish(record.record)
-  }
+  // R-CRASH-1: no verdict propagation across case ids — each case below is
+  // judged on its OWN facts. A FAIL here (e.g. NOT_REACHED) stays this
+  // case's red; it neither recolors nor force-fails the offline control or
+  // the survivor's own proof.
 
   // ── offline control still runs: the proof-gated kill stays live-fired ─────
   record.record.crashSimulationControl = await crashSimulationControl({ factory })
@@ -905,13 +1046,25 @@ export async function runCrashReclaimSupervisor(opts) {
     ],
   })
   record.record.survivorSequencing = { ...sequencing, survivorHealthyAt, killAt: Date.parse(groupKill.at), survivorLastProbeAt, survivorTornDownAt, victimKilledAndReclaimedAt: Number(release?.at), probeRows }
-  record.addCase('other-world-unaffected', aExit.timeout !== true && aAliveAtReclaim === true && aRecord?.overall === 'PASS' && sequencing.pass ? 'PASS' : 'FAIL', {
+  // R-CRASH-1: this case is judged on the survivor's OWN facts only (its
+  // liveness at reclaim, its own suite PASS, its split sequencing cells, its
+  // identity continuity) — it neither reads nor is force-failed by the
+  // kill-verdict above; each cell reports its own fact.
+  const survivedKillAndReclaim = aExit.timeout !== true && aAliveAtReclaim === true
+  const survivorSuitePass = aRecord?.overall === 'PASS'
+  const noRestart = sequencing.survivorHostIdentityContinuous === true
+  const stateConsistent = sequencing.pass === true
+  record.addCase('other-world-unaffected', survivedKillAndReclaim && survivorSuitePass && noRestart && stateConsistent ? 'PASS' : 'FAIL', {
     aSuite,
     aWorld: record.record.aWorld,
     aAliveWhileBCrashedAndReclaimed: aAliveAtReclaim,
     aExit,
     aOverall: aRecord?.overall ?? 'record-missing',
     aCases: aRecord?.cases?.map((c) => `${c.id}=${c.verdict}`) ?? [],
+    survivedKillAndReclaim,
+    survivorSuitePass,
+    noRestart,
+    stateConsistent,
     sequencing,
   })
 
@@ -957,7 +1110,7 @@ export async function reconstructCrash(opts) {
   const stored = (live.cases ?? []).find((c) => c.id === 'abnormal-kill-reclaim') ?? {}
   const conds = stored.conditions ?? {}
   const storedPass = Object.values(conds).every((v) => v === true)
-  record.addCase('abnormal-kill-reclaim', storedPass ? 'PASS' : 'FAIL', { fromLiveRecord: conds, killReceipt: live.abnormalKill ?? null })
+  record.addCase('abnormal-kill-reclaim', storedPass ? 'PASS' : 'FAIL', { fromLiveRecord: conds, killReceipt: live.abnormalKill ?? null, handshake: live.handshake ?? 'absent (pre-R-CRASH-1 record — knob-era reading: the kill was graded on the time relation between the survivor probes and the kill event via --kill-after; the READY-receipt law applies from merge forward)' })
   const simStored = (live.cases ?? []).find((c) => c.id === 'crash-simulation-reclaim') ?? {}
   // The offline control ran DURING the live record (real orphan process,
   // real reclaimWorld); replaying its stored verdict with zero spawns is a

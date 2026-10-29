@@ -41,7 +41,7 @@ import { acquireFirstFreeLease, acquirePortLease, candidatePorts, reclaimStaleLe
 import { appendCappedLine, DEFAULT_LEDGER_CAP_BYTES, MAX_LEDGER_CAP_BYTES } from './canary/ledger-cap.mjs'
 import { createOracle } from './lib/oracle.mjs'
 import { createRunRecord, formatSummary, exitCodeFor, overallVerdict } from './lib/run-record.mjs'
-import { assertLiveDigest, evaluateSurvivorSequencing, runSurvivorDryRun, teamTreeBinding } from './u5-parallel-supervisor.mjs'
+import { assertLiveDigest, decideKillHandshake, evaluateSurvivorSequencing, runSurvivorDryRun, teamTreeBinding } from './u5-parallel-supervisor.mjs'
 import { REAL_SURVIVOR_IO } from './u5-canary-runner.mjs'
 import { deleteWorldHomeIfMarked, validateWorldName, TestWorldFactory, HostBaseError } from './lib/world-factory.mjs'
 import { makeCanaryDecide, findToolResultInMessages, requestHasTool } from './lib/mock-script.mjs'
@@ -105,6 +105,77 @@ test('C1 survivor sequencing is fail-closed with real successful probes and iden
   const failure = evaluateSurvivorSequencing({ ...base, survivorProbes: [...successful, { at: 22, ok: false, status: 0, evidence: { error: 'unreachable' } }] })
   assert.equal(failure.pass, false)
   assert.deepEqual(failure.failedProbe.evidence, { error: 'unreachable' })
+})
+
+test('C1 kill handshake: kill fires ONLY after HELD + authenticated READY receipt; knob without receipt is NOT_REACHED', () => {
+  // Fixture 1: READY observed before the bounded budget => kill allowed, leg named by the receipt.
+  const ok = decideKillHandshake({ heldAt: 1000, readyAt: 2000, readyWorldId: 'survivor', survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 6000, now: 2000 })
+  assert.equal(ok.held, true)
+  assert.equal(ok.readyReceipt, true)
+  assert.equal(ok.killFired, true)
+  assert.equal(ok.killLeg, 'fired-after-ready-receipt')
+  assert.equal(ok.reason, null)
+  // Fixture 2: no READY within the bounded budget => NO kill + named non-PASS fact (never kill-blind).
+  const timedOut = decideKillHandshake({ heldAt: 1000, readyAt: null, readyWorldId: null, survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 6000, now: 1000 + 240_000 })
+  assert.equal(timedOut.readyReceipt, false)
+  assert.equal(timedOut.killFired, false)
+  assert.equal(timedOut.killLeg, 'NOT_REACHED')
+  assert.equal(timedOut.reason, 'SURVIVOR_READY_TIMEOUT')
+  // Fixture 3: the --kill-after knob (accepted, demoted) NEVER fires the kill without a receipt —
+  // knob elapsed with no READY => the kill leg grades NOT_REACHED, not PASS.
+  const knobOnly = decideKillHandshake({ heldAt: 1000, readyAt: null, readyWorldId: null, survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 6000, now: 1000 + 6000 })
+  assert.equal(knobOnly.killFired, false)
+  assert.equal(knobOnly.killLeg, 'NOT_REACHED')
+  // ... and a knob value far beyond any budget is not a trigger either.
+  const knobBeyond = decideKillHandshake({ heldAt: 1000, readyAt: null, readyWorldId: null, survivorWorldId: 'survivor', readyBudgetMs: 1000, killAfterMs: 6000, now: 1000 + 600_000 })
+  assert.equal(knobBeyond.killFired, false)
+  assert.equal(knobBeyond.killLeg, 'NOT_REACHED')
+  // A READY line naming a DIFFERENT world is not a receipt for this survivor (the receipt is
+  // authenticated against the survivor World the supervisor started).
+  const mismatch = decideKillHandshake({ heldAt: 1000, readyAt: 2000, readyWorldId: 'other', survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 0, now: 2000 })
+  assert.equal(mismatch.readyReceipt, false)
+  assert.equal(mismatch.killFired, false)
+  assert.equal(mismatch.killLeg, 'NOT_REACHED')
+  assert.equal(mismatch.reason, 'READY_WORLD_MISMATCH')
+  // A READY line observed BEFORE the victim was HELD is not a receipt.
+  const beforeHeld = decideKillHandshake({ heldAt: 3000, readyAt: 2000, readyWorldId: 'survivor', survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 0, now: 2000 })
+  assert.equal(beforeHeld.readyReceipt, false)
+  assert.equal(beforeHeld.killFired, false)
+  assert.equal(beforeHeld.reason, 'READY_BEFORE_HELD')
+  // No HELD observation => no kill, named fact.
+  const noHeld = decideKillHandshake({ heldAt: null, readyAt: 2000, readyWorldId: 'survivor', survivorWorldId: 'survivor', readyBudgetMs: 240_000, killAfterMs: 0, now: 2000 })
+  assert.equal(noHeld.killFired, false)
+  assert.equal(noHeld.killLeg, 'NOT_REACHED')
+  assert.equal(noHeld.reason, 'HELD_NOT_OBSERVED')
+})
+
+test('C1 survivor sequencing: window and held-until-reclaim are independent facts (no aliased boolean)', () => {
+  const base = {
+    survivorHealthyAt: 10, killAt: 20, victimKilledAndReclaimedAt: 25, survivorLastProbeAt: 30, survivorTornDownAt: 40,
+    survivorHostPidBefore: 42, survivorHostPidAfter: 42, survivorWorldIdBefore: 'survivor', survivorWorldIdAfter: 'survivor',
+    victimWorld: 'victim', reclaimedResources: [{ world: 'victim', kind: 'home' }],
+    survivorProbes: [
+      { at: 10, kind: 'health-effect', ok: true, evidence: { contentMatch: true } },
+      { at: 30, kind: 'after-reclaim', ok: true, evidence: { contentMatch: true } },
+    ],
+  }
+  const full = evaluateSurvivorSequencing(base)
+  assert.equal(full.survivorHealthyBeforeKill, true)
+  assert.equal(full.killInsideSurvivorWindow, true)
+  assert.equal(full.survivorHeldUntilReclaim, true)
+  assert.equal(full.pass, true)
+  // The probe chain stopped AFTER the kill but BEFORE the reclaim completed:
+  // the kill is still strictly inside the probe window, yet the survivor was NOT
+  // held until reclaim — two cells that used to be one aliased boolean.
+  const shortHold = evaluateSurvivorSequencing({
+    ...base,
+    survivorLastProbeAt: 23,
+    survivorProbes: [{ at: 10, kind: 'health-effect', ok: true, evidence: { contentMatch: true } }],
+  })
+  assert.equal(shortHold.killInsideSurvivorWindow, true)
+  assert.equal(shortHold.survivorHeldUntilReclaim, false)
+  assert.equal(shortHold.postReclaimProbeSucceeded, false)
+  assert.equal(shortHold.pass, false)
 })
 
 test('port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced', async () => {
