@@ -26,6 +26,9 @@
  *  K  hardlink + symlink law on the read path (nlink>1 refused — the #409
  *     law, pinned here so the swap to the shared symbol is behaviour-
  *     preserving).
+ *  I  applyId consumption is cross-scope-GLOBAL and ATOMIC (audit P0-2a):
+ *     the same applyId at two different scopes commits at most once, forced
+ *     through the faultAt barrier past the first-witness check.
  *  C  crash atomicity — a writer that dies mid-record leaves the PREVIOUS
  *     record intact. MUTATION CONTROL: a store whose writer skips the
  *     temp+rename (writes the target in place) goes RED on the same check.
@@ -773,10 +776,10 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
   })
 })
 
-describe('u7as M — the applyId is consumed WITH the commit, never before it', () => {
+describe('u7as M — the applyId is consumed ATOMICALLY (O_EXCL marker), clean failures refund', () => {
   const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
 
-  it('M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later', async () => {
+  it('M1 failure BEFORE the commit (writer dies mid-record): the grant is REFUNDED — the same applyId applies later', async () => {
     await storeWith().seedGoal('agent:m', goalV(1))
     const dying = storeWith({ recordWriter: async (h: { writeFile: (t: string, e: string) => Promise<void> }, t: string) => { await h.writeFile(t.slice(0, 10), 'utf8'); throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
     expect((await dying.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(false)
@@ -784,11 +787,14 @@ describe('u7as M — the applyId is consumed WITH the commit, never before it', 
     expect((await storeWith().applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(true)
   })
 
-  it('M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id)', async () => {
+  it('M2 die AFTER the commit landed (seam between rename and ledgers): BOTH witnesses hold the id (record + consumed marker) — a replay is STILL refused', async () => {
     await storeWith().seedGoal('agent:m', goalV(1))
     const crashing = storeWith({ faultAt: (point: string) => { if (point === 'after-commit') throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
     await crashing.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-2' })
-    expect(existsSync(join(storeRoot(), 'applied')) ? readdirSync(join(storeRoot(), 'applied')) : []).toEqual([])
+    // P0-2a order: the marker is the consumption point and lands BEFORE the
+    // commit, so a stop at 'after-commit' (rename done, ledgers pending)
+    // leaves BOTH witnesses: the record carries the id AND the marker exists.
+    expect(readdirSync(join(storeRoot(), 'applied'))).toHaveLength(1)
     const restarted = storeWith()
     expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
     const w0 = bytesOf(writesPath())
@@ -796,6 +802,52 @@ describe('u7as M — the applyId is consumed WITH the commit, never before it', 
     expect(replay).toMatchObject({ ok: false, code: 'STATE_APPLY_REPLAY' })
     expect(bytesOf(writesPath())).toBe(w0)
     expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+  })
+})
+
+describe('u7as I — applyId consumption is cross-scope-GLOBAL and atomic (audit P0-2a)', () => {
+  // The port contract (state-store.mjs DURABLE IDEMPOTENCE) makes applyId
+  // consumption realm-GLOBAL: the same applyId commits AT MOST ONCE across all
+  // scopes. Persistence locking is PER-SCOPE (locks/<scope-digest>.lock), so
+  // two applies carrying the same applyId at DIFFERENT scopes never contend
+  // through that lock. This leg forces the interleaving with the C1 `faultAt`
+  // seam: a two-arrival barrier parks each apply AFTER its first-witness
+  // check ('after-read' fires past the appliedIds/markerPresent check) and
+  // BEFORE any commit or marker can land, so both legs enter the commit
+  // window with zero global witness. The VALVE (release on either apply
+  // settling) keeps the leg deterministic in both worlds: pre-fix both reach
+  // settling) keeps the leg deterministic in both worlds: pre-fix both reach
+  // the seam (two commits → RED); once consumption is atomic only the winner
+  // reaches it — the loser refuses before the seam, settles, and releases.
+  it('I1 the same applyId at two DIFFERENT scopes commits at most once (forced interleaving)', async () => {
+    const ID = 'x-global-1'
+    let arrivals = 0
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const seam = { faultAt: async (point: string) => {
+      if (point !== 'after-read') return
+      arrivals += 1
+      if (arrivals === 2) { release(); return }
+      await gate
+    } }
+    const sa = storeWith(seam)
+    const sb = storeWith(seam)
+    const pa = sa.applyTodos('agent:ia', { todos: [{ content: 'A', status: 'pending' }], applyId: ID })
+    const pb = sb.applyTodos('agent:ib', { todos: [{ content: 'B', status: 'pending' }], applyId: ID })
+    // valve: if an apply settles WITHOUT reaching the barrier (an atomic
+    // consumption refusal), the parked twin must not hang.
+    void pa.then(release, release)
+    void pb.then(release, release)
+    const [ra, rb] = await Promise.all([pa, pb])
+    const results = [ra, rb]
+    expect(arrivals, 'the interleaving must have been forced — at least one apply reached the seam').toBeGreaterThanOrEqual(1)
+    expect(results.filter((r) => r.ok === true), 'contract law: at most ONE durable commit for the same applyId, whichever scope carries it').toHaveLength(1)
+    expect(results.filter((r) => r.code === 'STATE_APPLY_REPLAY'), 'the loser answers STATE_APPLY_REPLAY').toHaveLength(1)
+    // DISK facts, not memory testimony:
+    expect(linesOf(writesPath()).filter((l) => l.applyId === ID), 'exactly one durable write-audit line for the applyId').toHaveLength(1)
+    const records = [await storeWith().stateOf('agent:ia'), await storeWith().stateOf('agent:ib')]
+    expect(records.filter((rec) => ((rec?.appliedIds ?? []) as string[]).includes(ID)), 'exactly one scope record carries the id').toHaveLength(1)
+    expect(readdirSync(join(storeRoot(), 'applied')), 'exactly one global marker').toHaveLength(1)
   })
 })
 

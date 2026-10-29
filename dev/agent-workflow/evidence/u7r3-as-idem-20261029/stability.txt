@@ -1,0 +1,4 @@
+I1 stability (vitest -t I1), same command each run:
+PRE-FIX (fix stashed, test present): 3 runs x "Tests 1 failed | 50 skipped (51)" (RED 3/3)
+POST-FIX: 3 runs x "Tests 1 passed | 50 skipped (51)" (GREEN 3/3)
+Full file post-fix: 51/51; family set (5 files incl p4t6): 138/138 (GREEN-full-family.txt)

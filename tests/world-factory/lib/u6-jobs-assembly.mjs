@@ -79,6 +79,10 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
     killWarm: `U6JOBS_KILLWARM_${rs}`,
     killFinal: `U6JOBS_KILLFINAL_${rs}`,
     ctl: `U6JOBS_CTLCLAIM_${rs}`,
+    // U7-R3 pilot C2 (job_list deny-leg, J4's live mirror): the subject of
+    // the DENIED background birth. It must NEVER appear anywhere — the
+    // denial is zero-write; this claim names the leg for the receipt.
+    denyLeg: `U6JOBS-DENY-LEG-MARKER-${rs}`,
   }
   // FLAT children of the workspace root — the proven oracle shape (PR3's
   // u6-proc world wrote its disk facts exactly this way). Run 2 measured
@@ -111,6 +115,12 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
       // the host settles NO cancellation — a killed job never prints it.
       birth2: `printf '%s\\n' ${md(claims.killWarm)} && sleep 35 && printf '%s\\n' ${md(claims.killFinal)}`,
       ctl: `printf '%s\\n' ${md(claims.ctl)} && sleep 45`,
+      // U7-R3 pilot C2 (J4 live mirror): the DENY-LANE subject — a foreign
+      // background birth the runner answers DENY. Ring-only (no disk arm:
+      // a denied call must leave NOTHING, and the witness is that this
+      // command's vocabulary never appears in any job row, list, or the
+      // host's spawn line).
+      denyBirth: `printf '%s\\n' ${md(claims.denyLeg)} && sleep 30`,
     }
   }
 
@@ -214,15 +224,18 @@ export function createJobsAssembly({ repoRoot, home, runStamp, reportDir }) {
       '      skills:', '        kind: allow', '        items: []',
       '      mcp:', '        kind: allow', '        items: []',
       '      permissions:', '        default: ask', '        allow: []', '        ask: []', '        deny: []',
-            // worker: names request-control (the ask lane above). foreign stays
-      // NARROWER (its only calls are the plane trio, which never ask). The
+            // worker: names request-control (the ask lane above). U7-R3 pilot C2:
+      // foreign grows request-control TOO — its deny-leg ask row is a durable-row
+      // creation exactly like the worker's birth (the same ask-lane law this
+      // comment always named; pre-C2 the foreign lane issued only trio calls,
+      // which never ask). The
       // leader entry pins its OLD bounds exactly — teamEnvelope widened,
       // so an entry-less leader would widen with it (PR3 discipline:
       // leader lanes stay byte-identical).
       'memberEnvelopes:',
       '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
-      '  - templateId: foreign', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      '  - templateId: foreign', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
     ].join('\n')
@@ -481,11 +494,19 @@ export function makeJobsDecide({ assembly }) {
     }
     // ── foreign viewer: manage the OWNER's real job id (from the
     // delegation prompt), then attempt the kill; both must be refused.
+    // U7-R3 pilot C2 extends the lane with the DENY-LEG tail (J4's live
+    // mirror): the foreign lane attempts its OWN background birth — the
+    // runner's Control-lane observer answers that ask row DENY — and then
+    // reads job_list: the denied birth must be UNBORN through the list
+    // face, and the list must answer the honest zero with the OWNER's row
+    // absent from the foreign scope.
     if (lane === 'fence') {
       const m = /job_id=([A-Za-z0-9_.-]+)/.exec(userTextOf(req))
       const jobId = m === null ? 'job-unknown' : m[1]
       if (exchanges.length === 0) return toolCall('job_output', { job_id: jobId })
       if (exchanges.length === 1) return toolCall('job_kill', { job_id: jobId, reason: 'u6jobs-foreign-attempt' })
+      if (exchanges.length === 2) return toolCall('bash', { command: cmds.denyBirth, description: 'U6JOBS-DENY-LEG background birth (runner DENIES this ask)', run_in_background: true })
+      if (exchanges.length === 3) return toolCall('job_list', {})
       return { kind: 'text', content: 'U6JOBS_FENCE_DONE' }
     }
     // ── leader: the proven phase machine (create, create, delegate,
@@ -566,6 +587,10 @@ export function makeJobsDecide({ assembly }) {
  *   jobIds          [id1, id2]    — REAL host job ids from the transcripts
  *   list1 output1 kill2 list2      — worker lane's trio ANSWERS (last per name)
  *   foreignOutput foreignKill      — foreign lane's answers
+ *   foreignDenyBash foreignList    — U7-R3 pilot C2 deny-leg answers (the
+ *   foreignJobIds   denyRow          DENIED birth refusal, the honest-zero
+ *                                    list, zero spawn vocabulary, the
+ *                                    observed+DENIED durable ask row)
  *   ctlOutput                      — boot-root NATIVE job_output answer
  *   trioUses        n             — trio tool_use count across the whole corpus
  *   controlRows     [{toolName,summary,status}] — durable Control lane of the GOVERNED
@@ -654,6 +679,41 @@ export function judgeU6Jobs(d, hostAlive) {
     ownerRowInAnyGovernedList: lineFor(d.list2, d.jobIds?.[0]),
     foreignKillHostEvents: d.settle?.foreignKillLines ?? null,
     note: 'the foreign read/kill is refused by the TEAM layer before the host fence is even consulted (CI-05 unattributed-job) — the answer carries no ring bytes, no host status word, and nothing settled (zero cancel/abort events: the host was never reached); the un-attributed row appears in NO governed list',
+  })
+  // 4b) U7-R3 pilot C2 — the job_list DENY-LEG arm (J4's live mirror, the
+  //     ledger's L3-refusal cell for job_list): the FOREIGN lane's own
+  //     background birth is answered DENY on the durable Control lane
+  //     (OBSERVED, settled — the positive read), and what job_list can
+  //     OBSERVE of the denied call is NOTHING: the birth refusal is typed
+  //     (APPROVAL_DENIED — the approval-deny lane's own code, no host
+  //     spawn vocabulary), the foreign-scope list answers the honest zero
+  //     with the OWNER's row absent (cross-scope clean), and the whole
+  //     foreign transcript carries zero 'started background job' words —
+  //     the store saw no write. The counted host-touch accounting J4
+  //     measures on the offline double (svc.calls == [own-scope list]) is
+  //     C1's half (u74a G5, PR #456 — lineage, never identity); the live
+  //     witness here is absence-based: the list face, the spawn vocabulary,
+  //     and the ZERO settlement events.
+  add('jobs:list-deny-leg-honest-zero', d.denyRow?.seen === true && d.denyRow?.denied === true
+    && String(d.foreignDenyBash ?? '').includes('APPROVAL_DENIED')
+    // R458d N3 (2026-10-30) defense-in-depth, mirroring the 040 veto list: a
+    // genuine approval-deny refusal is a single-line APPROVAL_DENIED with no
+    // shut-face vocabulary. If a shut-face code ever CO-OCCURS with the deny
+    // code in one refusal text, the refusal is ambiguous (which lane answered?)
+    // — veto PASS rather than grade an unclear refusal as the deny-lane proof.
+    && !/IO_POLICY_UNSUPPORTED|template-default-deny|template-deny-lane|no durable ControlService|APPROVAL_NOT_RESOLVED|refused-admission/i
+      .test(String(d.foreignDenyBash ?? ''))
+    && !String(d.foreignDenyBash ?? '').includes('started background job')
+    && String(d.foreignList ?? '').includes('(no background jobs)')
+    && lineFor(d.foreignList, d.jobIds?.[0]) === null
+    && (d.foreignJobIds ?? []).length === 0
+    && (d.settle?.foreignKillLines ?? -1) === 0, {
+    denyRow: d.denyRow ?? { seen: false },
+    foreignDenyBash: String(d.foreignDenyBash ?? '').slice(0, 200),
+    foreignList: String(d.foreignList ?? '').slice(0, 120),
+    foreignJobIds: d.foreignJobIds ?? null,
+    ownerRowInForeignList: lineFor(d.foreignList, d.jobIds?.[0]),
+    note: 'J4 live mirror (C1 twin: u74a G5 / PR #456): the DENIED foreign birth is UNBORN through the list face — typed approval-deny refusal, honest zero, no owner row in the foreign scope, zero spawn vocabulary and zero settlement events; the counted store-call law itself stays C1-measured (disclosed lineage)',
   })
   // 5) KILL REFUSAL, ZERO REACH (CI-05 posture): the governed kill of the
   //    un-attributed job is the typed refusal — the bridge never claims a
