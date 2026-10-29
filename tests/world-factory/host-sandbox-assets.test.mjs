@@ -35,6 +35,12 @@
  *                   the pin is refused (ASSET_MODE_DRIFT, fatal — never an
  *                   environment claim) · T24 a present asset at the pinned mode
  *                   still reports present (the present path re-verifies mode)
+ *   F remediation u7r3 (2026-10-29, R-MODEBITS from external review) T25 a
+ *                   present asset carrying SETUID on top of the pinned bits is
+ *                   refused (ASSET_MODE_DRIFT thrown by preflightHostSandbox) ·
+ *                   T26 same for SETGID: the present-path re-check compares the
+ *                   FULL mode (special bits included), not just 0o777 — a pin
+ *                   never carries special bits, so ANY special bit is drift
  *
  * Scratch lives in the repo (`.artifacts/tmp/`, gitignored) per the workspace
  * rule; no /tmp. The pinned bytes for the fixture source tree are read from
@@ -993,4 +999,50 @@ test('T24 (R-ASSET-MODE-1) a present asset at the pinned mode still reports pres
     assert.equal(statSync(path).mode & 0o755, 0o755, `${f.relPath}: on-disk mode is the pinned mode`)
     assert.equal(f.mode, '0o755', `${f.relPath}: the record carries the re-verified mode`)
   }
+})
+
+/**
+ * R-MODEBITS (external architecture review 2026-10-29): the T23 re-check masked
+ * the on-disk mode with 0o777, so setuid/setgid/sticky were invisible — a file
+ * the manifest pins at 0o600-ish bits passed at 0o4600. Pins are 3 octal digits
+ * (MANIFEST_MODE_RE), so a pin NEVER carries a special bit: ANY special bit on a
+ * present asset is drift and must take the same fatal ASSET_MODE_DRIFT path
+ * (preflightHostSandbox rethrows FATAL_PROVISION_CODES; never an ENV_BLOCK claim).
+ * Shared driver: plant the special-bit mode on the present launcher, then the
+ * PRE-FLIGHT (the real entry point the WorldFactory runs before the first Host
+ * start) must throw ASSET_MODE_DRIFT naming the FULL observed mode octal, and
+ * must leave the bytes and the mode untouched for a human.
+ */
+async function assertSpecialBitDrift(label, plantedMode, bitName) {
+  const tree = pinnedSourceFixture(label)
+  const source = pinnedSourceFixture(`${label}-src`)
+  const launcher = join(tree, 'native/system/packages/linux-x64/bin/landlock-run')
+  const digestBefore = sha256File(launcher)
+  chmodSync(launcher, plantedMode)
+  assert.equal(statSync(launcher).mode & 0o7777, plantedMode,
+    `fixture guard: the ${bitName} bit must actually be on disk (0o${(statSync(launcher).mode & 0o7777).toString(8)})`)
+  await assert.rejects(
+    preflightHostSandbox({ runtimeTree: tree, sourceTree: source, repoRoot: REPO_ROOT }),
+    (e) => {
+      assert.ok(e instanceof HostSandboxAssetError, `typed error expected, got ${String(e)}`)
+      assert.equal(e.code, 'ASSET_MODE_DRIFT', `expected ASSET_MODE_DRIFT, got ${String(e.code)}`)
+      assert.match(e.message, new RegExp(`0o${plantedMode.toString(8)}`),
+        `the message names the FULL observed mode 0o${plantedMode.toString(8)} (special bit included)`)
+      assert.match(e.message, /0o755/, 'the message names the PINNED mode')
+      return true
+    },
+    `a present file at 0o${plantedMode.toString(8)} (${bitName}) must abort the pre-flight, not read as present`,
+  )
+  // Law 4 (same as T23): bytes and mode this module did not create are left in
+  // place, unmodified, for a human.
+  assert.equal(sha256File(launcher), digestBefore, 'the drifted file is left in place (digest untouched)')
+  assert.equal(statSync(launcher).mode & 0o7777, plantedMode, 'the special-bit mode is not silently re-published')
+}
+
+test('T25 (R-MODEBITS) a present asset at 0o4600 (SETUID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT', async () => {
+  await assertSpecialBitDrift('mode-drift-setuid', 0o4600, 'setuid')
+})
+
+test('T26 (R-MODEBITS) a present asset at 0o2644 (SETGID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT', async () => {
+  await assertSpecialBitDrift('mode-drift-setgid', 0o2644, 'setgid')
 })
