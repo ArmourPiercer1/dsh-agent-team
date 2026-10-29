@@ -1,0 +1,30 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD f7fbc0f67, 8 tracked file(s) changed vs HEAD, 9 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — tree before: HEAD f7fbc0f67, 8 tracked file(s) changed vs HEAD, 9 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+    tree after:  HEAD f7fbc0f67, 8 tracked file(s) changed vs HEAD, 9 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+lint-visibility: eslint read 1336 of 2380 OFFERED tracked lintable file(s); 1044 are hidden by an ignore pattern (dev/ 8, docs/ 4, packages/client/composition-shim/ 2, packages/runtime/dist/ 881, tests/ 149); 1336 + 1044 = 2380 offered, + 0 skipped = 2380 tracked lintable path(s); nothing skipped
+(node:16) Warning: Keys with collection values will be stringified due to JS Object restrictions: "{ x: 1 }". Set mapAsMap: true to use object keys.
+(Use `node --trace-warnings ...` to show where the warning was created)
+a5p4 law(4) live named provider mounts on this tree: runtime/src/plugin/live/glob-backend.mjs , runtime/src/plugin/live/plane-effect-backends.mjs , runtime/src/plugin/live/search-backend.mjs
+2026-10-25T15:35:07.010Z MOUNT definitions=[team_grep,team_glob,bash,read] backends=[glob:a5glb-anchored-confined-rg-glob,search:a5srgp-anchored-confined-rg-grep,shell:a5g7-confined-exec-shell]
+2026-10-25T15:35:07.029Z PASS A1 read POS: inside bytes came back: {"path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes
+2026-10-25T15:35:07.029Z PASS A2 read NEG: target="../outside/secret.txt" -> threw: refused-schema locator-rejected — the lexical target escapes the governed root (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes/a5intr3-
+2026-10-25T15:35:07.029Z PASS A2 read NEG: target="/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes/a5intr3-kit-20261025T153506/outside/secret.txt" -> threw: refused-schema locator-rejected — the lexical target escapes the governed root (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes/a5intr3-
+2026-10-25T15:35:07.360Z PASS B1 search POS: hit line: search · content · 1 matches > /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/hom
+2026-10-25T15:35:07.363Z PASS B2a search NEG (absolute out-of-root): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root
+2026-10-25T15:35:07.363Z PASS B2b search NEG (relative escaping locator): measured: a5p5-refused kind=refused-schema code=locator-rejected detail=[{"code":"locator-rejected","path":"$.path","detail":"relative `..` segments are refused"}]
+2026-10-25T15:35:07.670Z PASS C1 glob POS: measured: search · files_with_matches · 2 matches > data/needle.txt > data/other.txt a5p5-meta {"kind":"search","outputMode":"files_with_matches","totalMatches":2,"truncated":false}
+2026-10-25T15:35:07.731Z PASS C2 glob NEG (cross-root pattern; shape RECORDED): shape=ZERO-RESULTS (recorded as measured, not bent): search · files_with_matches · 0 matches > (no matches) a5p5-meta {"kind":"search","outputMode":"files_with_matches","totalMatches":0,"truncated":false}
+2026-10-25T15:35:07.732Z PASS C2b glob NEG (absolute out-of-root path): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target is outside the governed root
+2026-10-25T15:35:08.031Z PASS D1 shell POS (inside write): host-side file=true; wire: bash · exit=0 > SHELL-WROTE > a5p5-meta {"kind":"shell","exitCode":0,"timedOut":
+2026-10-25T15:35:08.085Z PASS D2 shell NEG (out-of-root write refused): outside file created=false (must be false); wire: bash · exit=2 > (empty stdout) stderr: > /bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.
+2026-10-25T15:35:08.087Z PASS E non-team delta=[]: shut rows=[a5-effect-face-pending,a5-effect-face-pending,a5-effect-face-pending] listing 303de9443fbb07ee -> 303de9443fbb07ee
+2026-10-25T15:35:08.090Z PASS G :3080 probe (read-only, unchanged): http-401 -> http-401 (GET only)
+2026-10-25T15:35:08.094Z PASS F homes=[]: surviving a5intr3-kit-* worlds: 0
+JSON report written to /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u6-pr1-20261025/logs/root-vitest.json
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,104 @@
+{
+  "artifact": "s2-authority-map-20261025/ERRATA-20261025.json",
+  "kind": "Single narrow erratum round for the independent Map review (NEEDS_TARGETED_FIX). Supersedes the affected sentences in the two documents named below wherever they conflict. It adds no research, no test, no Host run, no paid model, no child agent, and implements no migration.",
+  "utc": {
+    "source_reviewer_measurements": "2026-10-25T02:01:55.258Z - 02:01:55.302Z",
+    "this_round_remeasurement_start": "2026-10-25T02:09:19.664Z",
+    "this_round_remeasurement_end": "2026-10-25T02:09:19.694Z",
+    "this_round_write": "2026-10-25T02:09:36.454Z",
+    "clock": "real UTC from date -u"
+  },
+  "review_disposition": "NEEDS_TARGETED_FIX applied; the corrected Map remains a candidate deliverable, NOT a gate result and NOT a grant of permission. G2 has not passed.",
+  "errata": [
+    {
+      "id": "E1",
+      "retracts": "AUTHORITY-MIGRATION-MAP.json steps[1] and migration_targets.single_write_point, and MACHINE-CONSUMERS.json MC-07 notes: the claim that widening GENERATED_FILES is \"the only sanctioned expansion\" of the writable surface / the mechanism step 2 must use.",
+      "why": "That sentence assigned a migration meaning to a source-level fact it does not carry. scripts/generated-write.mjs GENERATED_AREAS + GENERATED_FILES is the allow-list of the DERIVATIVE WRITE MODULE only: it governs which generated files that module may write. It makes no statement about where execution authority may live, and pnpm docs:sync --write continues to write derivatives only (dev/engineering/current-state.json, docs/contracts/engineering-baseline/INDEX.md) and cannot reverse-decide authority.",
+      "replacement": "Step 2 remains an engineering choice still to be frozen: the new authority schema, the versioned authority snapshot, and the single write point. This round authorizes NO authority write of any kind. Whether GENERATED_FILES is later widened is a decision to be made when that schema is proposed and reviewed, not a route pre-authorized here.",
+      "affected_refs": [
+        "AUTHORITY-MIGRATION-MAP.json: execution_order.steps step 2",
+        "AUTHORITY-MIGRATION-MAP.json: migration_targets.single_write_point",
+        "MACHINE-CONSUMERS.json: MC-07 notes",
+        "MACHINE-CONSUMERS.json: MC-06 notes"
+      ]
+    },
+    {
+      "id": "E2",
+      "retracts": "AUTHORITY-MIGRATION-MAP.json gaps_found_this_round G5, and MACHINE-CONSUMERS.json MC-18 notes: the inference that because the statement is REQ-EB-0003 with normative_status: proposed-not-ratified, the migration is therefore unauthorized.",
+      "why": "Work authorization does not come from a contract file status field. It comes from the user approving PR363 and from the G1-I PASS decision recorded in dev/agent-workflow/evidence/s1-f0-issued-20261025/, whose unlocked scope is S2 document and engineering-governance work without unproven safety-critical dependencies. A proposed-not-ratified status does not decide that question, and nothing in this round ratifies any of the 18 IDs (still 0 ratified).",
+      "replacement": "REQ-EB-0003 stays recorded as the text that describes the current arrangement, with its own status reported as found. INV-EB-0012 cited at docs/contracts/engineering-baseline/plan-citation-interface.md:40 is recorded as a citation to be corrected later; this round creates no new invariant, declares no id, and adds no general gate. The two observations kept as OBSERVATIONS ONLY, not asserted as present defects: checkCurrentContract surfaces 4 of 6 values in info.contract (scripts/ci-pr-gate.mjs:313), and the doc-consistency-controls fixture graph carries 3 of 6 fields (scripts/doc-consistency-controls.mjs:63-68). Whether either is extended is decided by the interface and assertion needs of the next work package, not by this Map.",
+      "status_of_gaps": "G5 withdrawn; G8 downgraded from defect to citation-to-correct; G2 and G3 restated as observations, not current bugs",
+      "affected_refs": [
+        "AUTHORITY-MIGRATION-MAP.json: gaps_found_this_round G5, G8, and negative_controls_planned missing-field row",
+        "MACHINE-CONSUMERS.json: MC-18 notes, MC-01 notes"
+      ]
+    },
+    {
+      "id": "E3",
+      "adds_to": "MACHINE-CONSUMERS.json MC-16 (human/agent entry documents)",
+      "fact": "Physical session-start injection and the git target are NOT the same object, measured read-only twice and identical both times.",
+      "measurement": {
+        "R": "/srv/workspace/dsh-plugins/dsh-agent-team",
+        "pwd_equals_toplevel": true,
+        "physical_head": "6259cf4bc4d61af74d84bbd9d265184f95493172",
+        "physical_AGENTS_md": {
+          "git_blob": "47659f458709f1b9faa3dfc1d091a3a84986d679",
+          "bytes": 12755,
+          "sha256": "2248b657544d7a259f2816a24a32ce0fba30f540d186dc3b49571fa8cfdfa87e"
+        },
+        "fixed_target_4aaaa7b2_AGENTS_md": {
+          "git_blob": "97b74d4fb50fc2de6746ab02c24505ee370a1f42",
+          "bytes": 11644,
+          "sha256": "62c668542e1bb3c8078235618ce3aa85688446d9ea73e852eb4dff9fd3f3980a"
+        },
+        "match": "physical mirror != git target (12755 vs 11644 bytes, different blob, different sha256)",
+        "reproduced": "reviewer source command at 02:01:55.258-302Z and this round re-measurement at 02:09:19.664-.694Z produced the same five values"
+      },
+      "limit": "The verbatim hash of the workspace-instructions text actually injected at session start is NOT proven by this measurement. This round reads only the working-tree file and the git objects. Therefore no claim may be made that all new sessions have consumed the target AGENTS.md content.",
+      "follow_up_only": "Record one follow-up point for the §7.4 work: bind the start-entry injection to the same authority digest as the authority snapshot, so a resumed session can tell which AGENTS.md content it was handed. This round does NOT checkout, reset, or otherwise move the parent repository, does not change the workspace, and does not touch the stable service.",
+      "affected_refs": [
+        "MACHINE-CONSUMERS.json: MC-16"
+      ]
+    }
+  ],
+  "unchanged_and_untouched": {
+    "three_delivered_files_read_before_this_write": [
+      {
+        "path": "dev/agent-workflow/evidence/s2-authority-map-20261025/AUTHORITY-MIGRATION-MAP.json",
+        "sha256": "df3eb5e53832a260c1818a01854bedc2228bee6a5cbf3d6a261856bf787d3b26",
+        "bytes": 19695
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s2-authority-map-20261025/MACHINE-CONSUMERS.json",
+        "sha256": "b54b7dba96187b8828dd18214ef40af5d5fa023e53699c74d937f698b5dabbdf",
+        "bytes": 12268
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s2-authority-map-20261025/manifest.json",
+        "sha256": "d3d2f84b40f8b90f7508d3702ecbb37b0e36c680c88cc6d27a8406da30d639c2",
+        "bytes": 4999
+      }
+    ],
+    "note": "this erratum is a new file only; the three delivered files and every pre-existing object were not modified by this round",
+    "protected_still": "AGENTS.md, graph.yaml, SESSION_ROUTER_LOG.md, docs/plans (incl. PR361 memo), CI config, scripts, dev/engineering, packages, .agents/notes, all sealed evidence dirs, .worktrees/, tests/deepseek-harness-test-use/"
+  },
+  "mode": {
+    "host": 0,
+    "paid": 0,
+    "subagents": 0,
+    "new_tests": 0,
+    "new_research": 0,
+    "cleanup": 0,
+    "merge": 0,
+    "push": 0,
+    "checkout_or_reset": 0,
+    "workspace_mutation": 0,
+    "permission_escalation": 0,
+    "authority_switch": 0,
+    "migration_implementation": 0,
+    "overwrites_of_pre_existing_objects": 0,
+    "overwrites_of_delivered_files": 0
+  },
+  "gate_statement": "No gate result is claimed or changed. G2 remains not passed. G1 verdicts remain G1-I PASS, G1-F NOT_PASSED, overall G1 PARTIAL as issued. The Map remains a candidate deliverable.",
+  "budget": "Single narrow correction round; original deadline 2026-10-25T02:14:12Z unchanged and not reset; still inside the existing cumulative 16 Owner-h and the 13:00Z absolute cap."
+}

@@ -1,0 +1,4 @@
+{"at":"2026-10-25T13:24:04.202Z","step":"preflight","status":"ok","detail":{"check":"port-sanctioned","ok":true,"detail":"3184"},"budget_left_ms":1799800}
+{"at":"2026-10-25T13:24:04.202Z","step":"preflight","status":"fail","detail":{"check":"port-free","ok":false,"detail":"3184"},"budget_left_ms":1799800}
+{"at":"2026-10-25T13:24:04.202Z","step":"run","status":"fail","detail":{"error":"preflight failed: port-free — 3184"},"budget_left_ms":1799800}
+{"at":"2026-10-25T13:24:04.300Z","step":"post-check-htu","status":"ok","detail":{"head":"639ed0153972","porcelain":""},"budget_left_ms":1799702}

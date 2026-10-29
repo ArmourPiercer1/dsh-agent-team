@@ -1,0 +1,35 @@
+{"at":"2026-10-25T00:18:10.118Z","step":"preflight","status":"ok","detail":{"check":"port-sanctioned","ok":true,"detail":"3183"},"budget_left_ms":1799801}
+{"at":"2026-10-25T00:18:10.118Z","step":"preflight","status":"ok","detail":{"check":"htu-rev-parse-equals-pin","ok":true,"detail":"639ed0153972"},"budget_left_ms":1799801}
+{"at":"2026-10-25T00:18:10.118Z","step":"preflight","status":"ok","detail":{"check":"htu-status-porcelain-empty","ok":true,"detail":0},"budget_left_ms":1799801}
+{"at":"2026-10-25T00:18:10.118Z","step":"preflight","status":"ok","detail":{"check":"htu-entry-exists","ok":true,"detail":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"},"budget_left_ms":1799801}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"htu-tools-lib-exists","ok":true,"detail":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"bin-echo-exists","ok":true,"detail":"/bin/echo"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"host-port-free-per-proc-net","ok":true,"detail":"3183"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"sealed-m2-runner-bytes-unchanged","ok":true,"detail":"ef2bf20f30c1"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"sealed-m2-probe-unchanged","ok":true,"detail":"03d36a895cea"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"sealed-m2-run-dir-preserved","ok":true,"detail":"M2 run/FAIL must stay untouched"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"m2-probe-exists","ok":true,"detail":"probe-m3-plugin.mjs"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"m1-sealed-runner-bytes-unchanged","ok":true,"detail":"4542782e71d2b73b"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"m1-sealed-probe-unchanged","ok":true,"detail":"c883ac3f80efcfe4"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"mock-copy-matches-4aaaa-blob","ok":true,"detail":"8beade69588c105e"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.119Z","step":"preflight","status":"ok","detail":{"check":"world-absent","ok":true,"detail":"s1-h0-m3-2026-10-25T00-18-09Z"},"budget_left_ms":1799800}
+{"at":"2026-10-25T00:18:10.120Z","step":"world-skeleton","status":"ok","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/s1-h0-m3-2026-10-25T00-18-09Z"},"budget_left_ms":1799799}
+{"at":"2026-10-25T00:18:10.120Z","step":"patch","status":"ok","detail":{"sha256":"a6f3124c39bf9b04673ca813552b9038e3af37b8049df067d3d2cc6f996ad6d1","probe":"./s1m3-probe-plugin.mjs","disabled_rows":["session-log-deepseek","plugin-package-inventory-deepseek"],"kept":["deepseek-llm-api-extensions registry row","request.signal abort path","all tools","Guard","dispatch"]},"budget_left_ms":1799799}
+{"at":"2026-10-25T00:18:10.120Z","step":"env-scrub","status":"ok","detail":{"removed_keys":[]},"budget_left_ms":1799799}
+{"at":"2026-10-25T00:18:10.128Z","step":"mock","status":"info","detail":"mock: listening on 127.0.0.1:35251","budget_left_ms":1799791}
+{"at":"2026-10-25T00:18:10.128Z","step":"mock-listen","status":"ok","detail":{"port":35251},"budget_left_ms":1799791}
+{"at":"2026-10-25T00:18:11.885Z","step":"host-boot","status":"ok","detail":{"owned_pid":103,"log":"/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m3/runs/s1-h0-m3-2026-10-25T00-18-09Z/instance-port3183.log","token_fingerprint":"39d186e4"},"budget_left_ms":1798034}
+{"at":"2026-10-25T00:18:11.906Z","step":"token-gate","status":"ok","detail":{"status":401},"budget_left_ms":1798013}
+{"at":"2026-10-25T00:18:11.910Z","step":"authenticate","status":"ok","budget_left_ms":1798009}
+{"at":"2026-10-25T00:18:11.944Z","step":"session-create","status":"ok","detail":{"status":200,"body":"{\"type\":\"server-response\",\"rpcId\":\"s1m3-vdfc74auyk\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-6794f75c-9448-4472-92d9-ba62f17c81b8\",\"agentPreset\":\"standard\"}}}"},"budget_left_ms":1797975}
+{"at":"2026-10-25T00:18:11.960Z","step":"prompt","status":"ok","detail":{"status":200,"body":"{\"type\":\"server-response\",\"rpcId\":\"s1m3-frwbeozzwb\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"},"budget_left_ms":1797959}
+{"at":"2026-10-25T00:18:12.089Z","step":"mock","status":"info","detail":"mock: 1 [messages] tool-call reply: s1_m1_probe","budget_left_ms":1797830}
+{"at":"2026-10-25T00:18:12.090Z","step":"mock","status":"info","detail":"mock: 2 [messages] text reply (14 chars): \"s1-m2-complete\"","budget_left_ms":1797829}
+{"at":"2026-10-25T00:18:42.172Z","step":"mock","status":"info","detail":"mock: 3 [messages] tool-call reply: s1_m1_probe","budget_left_ms":1767747}
+{"at":"2026-10-25T00:18:42.209Z","step":"mock","status":"info","detail":"mock: 4 [messages] text reply (14 chars): \"s1-m2-complete\"","budget_left_ms":1767710}
+{"at":"2026-10-25T00:18:42.518Z","step":"oracle","status":"ok","detail":{"outcome":"delivered-change-abort","settled":true},"budget_left_ms":1767401}
+{"at":"2026-10-25T00:18:42.708Z","step":"teardown-host","status":"ok","detail":{"killed":true,"portFree":true},"budget_left_ms":1767211}
+{"at":"2026-10-25T00:18:42.709Z","step":"teardown-mock","status":"ok","budget_left_ms":1767210}
+{"at":"2026-10-25T00:18:42.709Z","step":"redact-log","status":"ok","detail":{"raw_kept":"/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m3/runs/s1-h0-m3-2026-10-25T00-18-09Z/instance-port3183.log","redacted":"/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m3/runs/s1-h0-m3-2026-10-25T00-18-09Z/instance-port3183.log.redacted","token_fingerprint":"39d186e4"},"budget_left_ms":1767210}
+{"at":"2026-10-25T00:18:42.710Z","step":"port-recheck","status":"ok","detail":{"port":3183,"in_use":{}},"budget_left_ms":1767209}
+{"at":"2026-10-25T00:18:42.710Z","step":"world-kept","status":"info","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/s1-h0-m3-2026-10-25T00-18-09Z","note":"kept; deletion forbidden"},"budget_left_ms":1767209}

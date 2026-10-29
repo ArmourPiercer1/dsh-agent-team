@@ -1,0 +1,26 @@
+{
+  "artifact": "s2-pr364-u0u1-20261025/manifest-13.json",
+  "kind": "U2 candidate-integration package (N1 + root's three static-review items + workflow consumption). Entry NOT switched; not G2.",
+  "utc": { "start": "2026-10-25T09:23:51Z", "commit": "2026-10-25T09:27:37Z (date -u)", "budget": "30-minute bound honored" },
+  "commit": { "sha": "bc869d9f667833e04b731a21b04a6da39db30358", "parent": "8af1ef5c0d2e7cb367c4cc2963f217de8214b10d", "diff": "6 files +83/-9", "porcelain": "empty" },
+  "n1": "fixed-name temp baseline modules -> EXCLUSIVE unique creation (openSync wx) INSIDE scripts/ (relative sibling imports preserved — no blind dir move); S11 proves the fault (second wx open on a fixed name EEXIST) and mkdtemp distinctness",
+  "static_review_items": {
+    "six_field_dual_read": "checkSnapshotCurrentContract(+root) runs existing dualReadReport; divergence -> refused=SNAPSHOT_VS_LEGACY_DIVERGENT, DUAL_READ_* findings, grades nothing; leg passes root=REPO_ROOT -> candidate-vs-old-current conflict reddens whole CI (S12 both polarities)",
+    "state_pointers": "S13 asserts historical current_phase requirement intact; retirement to read-only mirror recorded as future coordinated transaction",
+    "t5_digest": "sync T5 zero-write proof now per-file sha256 content digests, not filenames"
+  },
+  "workflow_integration": {
+    "census_runtime": "unchanged legacy awk reads remain the single legacy grammar definition; IF dev/engineering/current-authority.json + .expected-digest exist, resolver must agree else job red (refused/empty/conflict named); absent = pre-migration legacy; presence+ancestry over MASTER_SHA/BASELINE untouched; NOT a switch, NOT census completion",
+    "pr_gate": "docs:sync --check + docs:probe now inside the SAME required pr-gate job (no second Required system). NOT locally proable green: sparse worktree lacks full docs tree (worktree-only exit=1 with 83 findings is a sparse artifact, NOT the CI claim); a full-tree red would surface G6 honestly — flagged for root",
+    "yaml": "no yaml lib installed (no install allowed); insertions tab-free, indentation matched to siblings by inspection"
+  },
+  "exits_direct": "ci-snapshot-reader 13/13 exit=0; isolated 30/30 0; dual-read 9/9 0; consumer 10/10 0; probe 7/7 0; sync-resolver 8/8 0; controls exit=1 with nine historical reds (unchanged). Logs u2-*.log here",
+  "remaining_entry_switch_items": [
+    "publish current-authority.json (+ .expected-digest convention — name frozen this round in census yml; root may rename before first publication)",
+    "registry/AGENTS/plan-doc/graph alignment + retirement of legacy block to read-only mirror (checkStatePointers coordination)",
+    "a5 testkit real-CI negative suite (plan step-5)",
+    "full-tree verification of docs:sync --check on a real checkout (G6)"
+  ],
+  "zero_claims": { "backup": 0, "push": 0, "install": 0, "host": 0, "clone": 0, "big_copy": 0, "asset_deletion": 0, "parent_router_writes": 0, "default_entry_switch": 0 },
+  "U3_note": "U3 non-destructive preparation belongs to the parallel read-only session; this package touches nothing it would collide with beyond these recorded files."
+}

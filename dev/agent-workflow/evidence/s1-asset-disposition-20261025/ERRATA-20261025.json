@@ -1,0 +1,54 @@
+{
+  "errata_for": "ASSET-DISPOSITION.json (sha256 823a4f41ccd35ac919efa221d2780849bb5fec3d0f2cba5edd05f345c1887f3a, 15774 B) — 该件未覆写，本件为唯一修正源",
+  "package": "S1-A2 errata（窄修正四处；不新增门禁、不复测容量、不跑 Host/cleanup、不动其他文件、不续调查）",
+  "utc": { "start": "2026-10-25T00:57:23Z", "end": "2026-10-25T00:57:29Z", "deadline": "2026-10-25T01:05:43Z", "clock": "start 由本包首条 date -u 实取；end 由同一写入会话内 date -u 实取并与文件 mtime 印证；均非估计、非 now-ish、非未来" },
+  "corrections": [
+    {
+      "id": "E1-roles",
+      "supersedes": "原 roles.s1_asset_custodian_coordinator / collection_execution_owner_this_package / independent_acceptance_open_items[1]",
+      "corrected": {
+        "s1_asset_custodian_coordinator_current": "dot",
+        "collection_execution_owner": "DSH session-91d30e71-5cfa-4639-ad43-b0ec521de0b6 / Qwen",
+        "historical_development_owner": "UNKNOWN —— 事实性未证记录，**不是** Gate 缺口、不构成独立验收项",
+        "independent_acceptance_second_gap": "runtime Definition/execute 身份（不是'逐对象历史开发 Owner 身份记录'）"
+      },
+      "note": "原文把 root 记为协调 Custodian、并把身份缺口写成'历史开发 Owner 记录'，两处均作废。"
+    },
+    {
+      "id": "E2-signals-are-not-value",
+      "supersedes": "原 groups.G2.unknown_in_use_protection / G2.suggested_disposition / G5.suggested_disposition 中'一律 PROTECTED/KEEP'的读法",
+      "corrected": {
+        "dirty_tracked_gt_0_or_head_in_master_NO_or_uniq_vs_master_gt_0": "仅为**回收前的安全暂缓（safety hold）**，不是回收价值判断，也不是长期保留理由",
+        "disposition_basis": "去向一律引用既有 47 树价值表（NOT_LOCAL, libfile_fb4f94abef0c819189d16a7166514de8, 33439 B, 云端 join），从中筛**必要实现 / 回归资产 / 关键证据**三类；其余不因其状态而留",
+        "explicit_retraction": "不把 G2 的 45 棵注册树整体判为 KEEP；G5 各 scratch/expansion/tmp 同理为安全暂缓，非保留结论",
+        "unchanged": "本包仍不删、不移、不改任何对象；安全暂缓仅约束'在具名价值确认与可恢复性核验前不得清'"
+      }
+    },
+    {
+      "id": "E3-gate-timing",
+      "supersedes": "原 groups.*.latest_review_gate 中'不早于 S1 冻结窗 2026-10-25T13:00:00Z'的表述",
+      "corrected": {
+        "13:00Z_is": "S1 预算截止（budget cap），不是审查日期下限，也不构成'不早于'的复核时点",
+        "responsibility_quantification_table": "本件+原 JSON 的责任/量化表须在 **G1-I 复核**",
+        "unknown_objects_deadline": "未知对象的具体处置最迟 **S2/G2 前**定案，且**任何删除动作前须再复核**；到期不自动延期、不顺延成新门"
+      }
+    },
+    {
+      "id": "E4-space-exception",
+      "supersedes": "原 space_named_exception.still_not_met 的'未获删除授权'笼统表述 与 df_now/df_census 的对比读法",
+      "corrected": {
+        "nature": "所列具名对象是**仍需逐目标价值/可恢复性确认**的对象，不是'一律不许删'；每项须带明确责任与下一 Gate：recovery/a5-m2-int-damaged-20261023 → dot / PR360 裁决；.s1-asset-preserve-q6、q7 → dot / S2 前（Q6 账本补登为具名事实项）；tests/homes/.playwright-browsers → dot / 证据 5 件先分离；.worktrees/.pnpm-store、.pnpm-home → dot / S2 前可再生性核验；G2 注册树 → dot / G1-I（去向=47 表）",
+        "df": "14,771,527,680 B free = 本包**全盘同次读数**（同 FS 整体），非本项目占用；与此前约 18.41 GB free 的差额**不归因本项目**（同窗他写、缓存、其它项目均可致因，未核）",
+        "deletions_this_package": 0,
+        "unchanged_facts": "Q6/Q7 来源退役与归档事实不变：q6 源 a5m2-wire-g1/tests/…-test-use 已 GONE、归档 820,248,620 B = ac542a96…、tar --diff RC=0；q7 源已按 root GO 删除、归档 769,046,371 B = ff04f805…、全内容流式 compare0 满足退役前置"
+      }
+    }
+  ],
+  "unchanged": [
+    "容量数字全部来自既有 du 文本或本包唯一一次 du -ksx，未复测、未编造",
+    "H 行不可相加（硬链接去重差 +5.93 GiB）、du 占用不等于可释放字节、嵌套 pack-int 不重复累加",
+    "保守继承约 12h21 总账计入 16 Owner-h；PoC 4/20、Host 4/12 不增；S1 预算截止 2026-10-25T13:00:00Z",
+    "0 Host / 0 cleanup / 0 paid / 0 子代理 / 0 提权 / 0 受阻；SESSION_ROUTER_LOG、F0 草稿、封存件、三计划、AGENTS.md、graph.yaml 均未触碰"
+  ],
+  "write_boundary": { "created_files": ["dev/agent-workflow/evidence/s1-asset-disposition-20261025/ERRATA-20261025.json"], "overwrites": 0, "method": "test -e 预检 + bash noclobber(set -C) 独占建，存在即停", "review": "原 JSON + 本 ERRATA 交独立 Reviewer 一次复核；仍阻断即停" }
+}

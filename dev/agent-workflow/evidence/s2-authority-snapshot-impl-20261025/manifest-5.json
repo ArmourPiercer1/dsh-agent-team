@@ -1,0 +1,34 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-5.json",
+  "kind": "S2 §7.4 step-4 first-consumer wiring package (controlled migration preparation). Explicit scope: gen-current-state derived-view ONLY; current default stays the legacy reader; live pointer and the actual current switch remain a future single transaction. Not a step-3 deployment, not G2. No older evidence edited.",
+  "utc": { "round_start": "2026-10-25T03:16:08Z", "delivered": "2026-10-25T03:18:36Z", "clock": "date -u", "budget": "25-minute bound honored" },
+  "head": { "branch": "feat/s2-authority-snapshot-iso-20261025", "new_commit": "bab5704828ce9796ff439882287f8e56cb152bd7", "parent": "5f0d0e58e11c193087ad8918ef2c8f0c33d5446c (accepted, unamended)", "diff": "3 files +188/-3 (new read-only helper + additive build(opts) wiring + tests)", "tree_bytes_total": 10817306, "cap_mib": 300 },
+  "source_only_T0_controls": {
+    "method": "graph original fetched with git show 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84:dev/agent-workflow/graph.yaml into task-temp roots; physical parent-tree graph (6259 drift, ERRATA E3) was NOT used and is NOT treated as current fact",
+    "positive": "legal example snapshot vs 4aaaa graph original: dual-read exit=0, ok:true, compared=6 (step4-pos-control.log)",
+    "negative": "temp copy with exactly one field changed (phase_id -> alpha6-divergent, grep-verified 1): exit=2 with SNAPSHOT_VS_LEGACY_VALUE (step4-neg-control.log); temp roots removed after (0 residue)"
+  },
+  "interface": {
+    "helper": "scripts/authority-candidate-source.mjs — export loadCandidateAuthority({file, expectedDigest}) -> {ok:true, file, six, snapshot_version, content_digest} | {ok:false, refused, detail?}; refusals: CANDIDATE_PATH_REQUIRED / CANDIDATE_EXPECTED_DIGEST_REQUIRED / CANDIDATE_MISSING / CANDIDATE_IO_* / CANDIDATE_SYMLINK / CANDIDATE_NOT_REGULAR / CANDIDATE_PARSE / CANDIDATE_SHAPE / CANDIDATE_EXPECTED_VS_RECORDED / CANDIDATE_DIGEST_MISMATCH; reuses frozen schema validateShape + canonical snapshotDigest + LEGACY_MIRROR_KEYS (no new parser, no second ledger, read-only)",
+    "consumer": "gen-current-state.mjs build(root, opts = {}): NO opts -> previous legacy path byte-identical (view JSON equality asserted, no binding key emitted); opts.authorityCandidate -> candidate is THE source (explicit human selection by path+digest), view.authority_source_binding = {kind:'authority-snapshot-candidate', candidate_file, snapshot_version, content_digest, expected_digest, expected_digest_verified, view_may_not_reverse_decide_authority:true, legacy_divergence:[{key,snapshot,legacy}]}; graph read only to RECORD divergence (never auto-select); any CANDIDATE_* refusal returns {refused, detail?} with view undefined — no fallback to graph or current-state anywhere",
+    "untouched": "publisher / authority-snapshot module / frozen schema / generated-write / docs-sync whitelist / all other consumers; ESM cycle helper<->gen-current-state is call-time-only by design (documented in source)"
+  },
+  "tests": {
+    "suite": "tests/s2-authority/consumer-candidate.test.mjs, 7 cases actual count: C0 digest discipline (missing expected digest refused; wrong expected refused EXPECTED_VS_RECORDED) | C1 default unchanged byte-identical + no binding | C2 legal candidate sourced with binding incl. anti-reverse-decision flag | C3 wrong expected digest: refused, view undefined | C4 missing candidate + mirror present: CANDIDATE_MISSING, zero MIRROR-PHASE leakage | C5 corrupt trio {oops / null / bad-shape all refused with no view | C6 old/new divergence kept on candidate, divergence recorded, no auto source switch",
+    "red_first": "step4-red.log exit=1 with helper present and wiring absent: 6/7 FAIL (C2 no binding, C3/C4/C5 built a view = fallback risk, C6 auto-switched to graph) — exact defects the fix removes",
+    "green": "step4-green.log exit=0 7/7",
+    "note_two_expectation_codings": "C0/C3 assert EXPECTED_VS_RECORDED (expected!=recorded refused before use); DIGEST_MISMATCH remains reserved for recorded!=recomputed; rejection requirement unchanged, only the specific code was pinned after red",
+    "regressions": "dual-read 9/9 exit=0; snapshot suite 30/30 exit=0 (step4-reg30.log byte-identical hash 2c781e08...); doc-consistency controls exit=1 with the SAME nine historical reds (NEG-21 NEG-79 POS-1 POS-3 POS-4 POS-6 POS-8 POS-10 POS-11) kept as-is, nothing forced green (step4-reg-controls.log)"
+  },
+  "evidence_sha256": {
+    "step4-pos-control.log": "92055e9d490a1736d15e1b1a6f768de16424f4555a3bf177d3382ebcdb614340",
+    "step4-neg-control.log": "73f59b9d83f2d8771c59646b351406e51d4d7aafeb13a9578367e69d79841104",
+    "step4-red.log": "f3f558cb68f472b8056c7ff02e7aef3b61fb41e93c32dd7d0cd622d85e2fd3c4",
+    "step4-green.log": "9ce456d0e4a1361f01818c33c6af28a32b50ac2a6a6cb87da7ce9ab0ff9592ea",
+    "step4-reg30.log": "2c781e08eb24e3a1e471563195f7ad2123148eda62b11abe36aab4aab4043c28",
+    "step4-reg-controls.log": "b4c6566612af2b05ebf28ed566b8f6fd9d28e62597b6ffeb391cd49398a39461"
+  },
+  "not_covered": "actual current switch (future single transaction), live pointer/CAS, other consumers (census awk, ci-pr-gate, doc-checks, docs-probe), reality checks (Q1-Q8/Git/content), CI negative wiring, 16-case fixture execution",
+  "mode_zero_claims": { "host": 0, "install": 0, "paid": 0, "subagents": 0, "stash": 0, "push": 0, "merge": 0, "ci": 0, "graph_AGENTS_product_registry_writes": 0, "live_pointer": 0, "consumer_expansion_beyond_first": 0 },
+  "gate_statement": "No gate claimed; G2 remains not passed. Idle awaiting one bounded review; no self-initiated further consumers or plans."
+}

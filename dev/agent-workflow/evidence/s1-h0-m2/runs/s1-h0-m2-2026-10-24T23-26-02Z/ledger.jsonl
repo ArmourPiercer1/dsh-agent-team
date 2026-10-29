@@ -1,0 +1,16 @@
+{"at":"2026-10-24T23:26:03.752Z","leg":"register","body":"A","ok":true}
+{"at":"2026-10-24T23:26:34.459Z","leg":"fence-enter","callId":"s1m2-tc-1","tag":"call1","fence_call":1,"body_visible_before":"A"}
+{"at":"2026-10-24T23:26:34.610Z","leg":"fence-swapped","callId":"s1m2-tc-1","tag":"call1","from":"A","to":"B"}
+{"at":"2026-10-24T23:26:34.611Z","leg":"marker-ran","body":"B","callId":"s1m2-tc-1","tag":"call1","ok":true}
+{"at":"2026-10-24T23:26:34.611Z","leg":"read-ran","body":"B","callId":"s1m2-tc-1","tag":"call1","ok":true,"sentinelBytes":38}
+{"at":"2026-10-24T23:26:34.616Z","leg":"process-ran","body":"B","callId":"s1m2-tc-1","tag":"call1","ok":true,"echoOut":"s1m2-echo B call1"}
+{"at":"2026-10-24T23:26:34.616Z","leg":"body-ran","body":"B","callId":"s1m2-tc-1","tag":"call1","ran":true,"failed":[]}
+{"at":"2026-10-24T23:26:34.620Z","leg":"fence-exit","callId":"s1m2-tc-1","tag":"call1","phase":"swap","result":"settled","body_visible":"B"}
+{"at":"2026-10-24T23:26:34.621Z","leg":"fence-restored","callId":"s1m2-tc-1","tag":"call1","to":"A"}
+{"at":"2026-10-24T23:26:34.656Z","leg":"fence-enter","callId":"s1m2-tc-2","tag":"call2","fence_call":2,"body_visible_before":"A"}
+{"at":"2026-10-24T23:26:34.656Z","leg":"fence-control","callId":"s1m2-tc-2","tag":"call2","body_visible_before":"A"}
+{"at":"2026-10-24T23:26:34.659Z","leg":"marker-ran","body":"A","callId":"s1m2-tc-2","tag":"call2","ok":true}
+{"at":"2026-10-24T23:26:34.659Z","leg":"read-ran","body":"A","callId":"s1m2-tc-2","tag":"call2","ok":true,"sentinelBytes":38}
+{"at":"2026-10-24T23:26:34.663Z","leg":"process-ran","body":"A","callId":"s1m2-tc-2","tag":"call2","ok":true,"echoOut":"s1m2-echo A call2"}
+{"at":"2026-10-24T23:26:34.663Z","leg":"body-ran","body":"A","callId":"s1m2-tc-2","tag":"call2","ran":true,"failed":[]}
+{"at":"2026-10-24T23:26:34.663Z","leg":"fence-exit","callId":"s1m2-tc-2","tag":"call2","phase":"control","result":"settled"}

@@ -1,0 +1,12 @@
+PASS C0 candidate source helper exists and demands expected digest (no silent use)
+fatal: could not open '.tmp-s2-cw-o1CbTd/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-o1CbTd/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C1 default mode unchanged: legacy reader, no source_binding, same rendered view
+fatal: could not open '.tmp-s2-cw-DZeW2u/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C2 legal candidate + correct expected digest: view sourced from snapshot, binding recorded
+PASS C3 wrong expected digest: structured refusal, NO fallback to graph
+PASS C4 missing candidate file: CANDIDATE_MISSING, no fallback (mirror present but never consulted)
+PASS C5 corrupt candidates (parse error / falsy value / shape error): refused, no fallback
+fatal: could not open '.tmp-s2-cw-Zp1shC/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C6 old/new divergence: explicit candidate mode keeps candidate (no auto source switch), divergence RECORDED
+ALL GREEN (7 cases, actual count)

@@ -1,0 +1,205 @@
+{
+  "worldName": "g1fa-2026-10-25T14-29-16Z",
+  "port": 3185,
+  "owned_pid": 58,
+  "run_error": null,
+  "pass": true,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 7568,
+  "budget": {
+    "host_start": 1,
+    "note": "G1F-SUP-A: ≤2 starts / ≤6 experiments package"
+  },
+  "oracle": {
+    "pass": true,
+    "settled": true,
+    "final": true,
+    "outcome": "host-equivalent-guard-passes-all-cells",
+    "counts": {
+      "bodyRows": 18,
+      "markers": 30,
+      "results": 94,
+      "vetoes": 5,
+      "ctlVetoes": 3,
+      "equiv": 12,
+      "mockRequests": 90
+    },
+    "cells": {
+      "fixture_heal": {
+        "pass": true,
+        "detail": "G1:true,G2:true,G3:true,G4:true,G4b:true,G5:true,G5b:true,G5c:true,G6:true,G7:true,G8:true,G9:true,G9b:true,G10:true,G11:true"
+      },
+      "a_stable": {
+        "pass": true,
+        "detail": "ran=true;class=SUCCESS"
+      },
+      "b_regen_at_rest": {
+        "pass": true,
+        "detail": "ran=true;class=SUCCESS"
+      },
+      "c_preguard_veto": {
+        "pass": true,
+        "detail": "veto=identity-mismatch;class=U4_GUARD_VETO"
+      },
+      "c_restore_control": {
+        "pass": true,
+        "detail": "ran=true;class=SUCCESS"
+      },
+      "d_restrict_veto": {
+        "pass": true,
+        "detail": "veto=not-visible;class=U4_GUARD_VETO"
+      },
+      "d_lift_control": {
+        "pass": true,
+        "detail": "ran=true;class=SUCCESS"
+      },
+      "c1_foreign_midbody": {
+        "pass": true,
+        "detail": "abort=true;class=ABORTED;watchAbort=true"
+      },
+      "b2_regen_inflight": {
+        "pass": true,
+        "detail": "A-only;class=ABORTED"
+      },
+      "e_races": {
+        "pass": true,
+        "detail": "e1=ABORTED_BEFORE_DISPATCH,e2=ABORTED_BEFORE_DISPATCH (prevented pre-dispatch);e3=ABORTED (mid-body abort)"
+      },
+      "f_plant_executes": {
+        "pass": true,
+        "detail": "B-ran=true;marker+process observed"
+      },
+      "f_after_restore": {
+        "pass": true,
+        "detail": "ran=true;class=SUCCESS"
+      },
+      "eq1_pre_aborted_signal": {
+        "pass": true,
+        "detail": "equiv=ABORTED_BEFORE_DISPATCH;result=ABORTED_BEFORE_DISPATCH;starts=0"
+      },
+      "eq2_cancel_during_body": {
+        "pass": true,
+        "detail": "equiv=ABORTED;bodyInvoked-by-body-start+ABORTED(not BEFORE_DISPATCH)"
+      },
+      "eq3_signal_fuse_restore": {
+        "pass": true,
+        "detail": "code=ABORTED;restored=true;post=drift"
+      },
+      "eq4_swap_in_guard_window": {
+        "pass": true,
+        "detail": "equiv=ABORTED_BEFORE_DISPATCH;Host :1572 prevented body (watcher abort synchronous pre-dispatch)"
+      },
+      "eq5_post_value_parity": {
+        "pass": true,
+        "detail": "valueNote=G1A-VALUE-REPLACED"
+      },
+      "eq6a_post_value_swapped_parity": {
+        "pass": true,
+        "detail": "content=B-render:{\"ran\":true,\"tag\":\"eq6a\",\"faile;then-live swapped definition validated+rendered (parity)"
+      },
+      "eq6b_post_value_divergent": {
+        "pass": true,
+        "detail": "code=INVALID_TOOL_OUTPUT;Bdiv body never ran"
+      },
+      "eq7_post_block": {
+        "pass": true,
+        "detail": "msg=G1A-POST-BLOCKED eq7"
+      },
+      "eq8_finalize_project_capture": {
+        "pass": true,
+        "detail": "finalize/project=A;content=FINALIZED-BY-A;class=ABORTED"
+      },
+      "eq9_execmode_race_failclosed": {
+        "pass": true,
+        "detail": "before=parallel;after=exclusive;dispatch=U4_GUARD_VETO"
+      },
+      "eq10_nested_approved": {
+        "pass": true,
+        "detail": "guard-nested=true;body-nested=true;class=SUCCESS"
+      },
+      "eq11_nested_veto": {
+        "pass": true,
+        "detail": "veto-nested=true;dispatch=U4_GUARD_VETO"
+      },
+      "p5a_late_shadow_veto": {
+        "pass": true,
+        "detail": "veto=identity-mismatch;Bp-runs=1"
+      },
+      "p5b_explicit_bind_runs": {
+        "pass": true,
+        "detail": "Bp executed ONLY after center-table bind;class=SUCCESS"
+      },
+      "p6_send_message_veto": {
+        "pass": true,
+        "detail": "class=U4_GUARD_VETO:agent-control-deny"
+      },
+      "p6_interrupt_agent_veto": {
+        "pass": true,
+        "detail": "class=U4_GUARD_VETO"
+      },
+      "p6_plugin_manager_veto": {
+        "pass": true,
+        "detail": "class=U4_GUARD_VETO"
+      },
+      "p6_plant_native_when_guard_off": {
+        "pass": true,
+        "detail": "plant class=NOT_RESUMABLE (native body ran; the veto above is the guard, not native validation)"
+      },
+      "p6_spoof_zero_effects": {
+        "pass": true,
+        "detail": "no mock request of session N carries the spoof payload (message never delivered)"
+      },
+      "p6_profile_zero_effects": {
+        "pass": true,
+        "detail": "profile tree digest pre=673d08953fbe post=673d08953fbe"
+      },
+      "n_native_plugin_manager_list": {
+        "pass": true,
+        "detail": "non-governed plugin_manager reached the NATIVE body: class=UNKNOWN_TOOL;msg=Error: unknown tool \"plugin_manager\""
+      },
+      "n_native_list_agents": {
+        "pass": true,
+        "detail": "list_agents class=SUCCESS (native behavior kept; name is NOT governed)"
+      },
+      "n_native_send_message": {
+        "pass": true,
+        "detail": "class=NOT_RESUMABLE (native, ungoverned session)"
+      },
+      "global_b_exactly_plant": {
+        "pass": true,
+        "detail": "B starts=f1;B markers=B-f1.echo,B-f1.marker"
+      },
+      "global_bp_exactly_bound": {
+        "pass": true,
+        "detail": "Bp rows=1"
+      },
+      "global_bdiv_never_ran": {
+        "pass": true,
+        "detail": "Bdiv body legs never ran"
+      },
+      "global_never_zero": {
+        "pass": true,
+        "detail": "never-called name untouched"
+      },
+      "global_markers_exact": {
+        "pass": true,
+        "detail": "got=30;expected=30;diff=-|missing=-"
+      },
+      "global_guard_vetoes_seen": {
+        "pass": true,
+        "detail": "vetoes=c2:identity-mismatch,d1:not-visible,eq9:identity-mismatch,eq11:identity-mismatch/nested,p5a:identity-mismatch"
+      },
+      "protocol": {
+        "pass": true,
+        "detail": "401=401;prompts=200,200,200,200,200,200,200,200,200,200,200,200"
+      },
+      "wire_secondary": {
+        "pass": true,
+        "detail": "toolNames-probes recorded (see steps wire-probe)",
+        "gating": false
+      }
+    },
+    "scope_note": "PASS proves, on the pinned pristine Host through public seams only: the next()-passing center guard reaches Host-native cancellation settlement (ABORTED vs ABORTED_BEFORE_DISPATCH via bodyInvoked), keeps the Host signal fuse/restore intact, blocks in-window swaps via the Host pre-dispatch abort check fed by a synchronous tools/change watcher, characterizes the result-path re-resolve semantics (post-execute value replacement under parity/divergence, block, finalize/project capture at createExecution, scheduler classification race), serves nested parent-token sub-dispatches through the same guard, refuses late registrations by non-center plugins for governed names unless explicitly bound, and denies agent-control names for governed sessions with zero observable effects while a non-governed session keeps native behavior. PTC run_code transport itself is not mounted (native mode) — nested dispatch is simulated via the public parent-token execute path (limit stated in README)."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-12.json",
+  "kind": "Adjacent pair package: docs:sync explicit-candidate read-only --check (A) + census-preparation baseline resolver (B). Not G2, not plan step-5, not census completion; workflow NOT wired.",
+  "utc": { "start": "2026-10-25T04:30:45Z", "delivered": "2026-10-25T04:34:12Z (date -u)", "budget": "25-minute bound honored" },
+  "disk": { "start_free_B": 2197614592, "end_free_B": 2690809856, "gate": ">=1.5e9 throughout; no write-stop; new bytes ~15KB source + small logs << 10MiB; git -c gc.auto=0" },
+  "head": { "commit": "8af1ef5c0d2e7cb367c4cc2963f217de8214b10d", "parent": "61df0b424df27d2a1d5cffaa7038da309dee7307", "diff": "5 files +191/-7 (bulk = new suite; production delta small)", "porcelain": "empty" },
+  "A_docs_sync": {
+    "check": "check(root, opts) — presence-not-truthiness candidate mode identical to docs-probe (buildStateView authorityCandidate + dualReadReport); CANDIDATE_VIEW_REFUSED / DUAL_READ_IO / DUAL_READ_<code>; ALL existing checks still run (links/ids/anchors/deprecated/claims/ratification/registry/plan-citation mirror from the VERIFIED candidate/contract shapes) and derived-view freshness compares against the CANDIDATE-rendered view — a real un-migrated repo shows STALE honestly; nothing skipped to keep candidate green",
+    "cli": "pair both-or-neither (REFUSED AUTHORITY_CANDIDATE_ARGS_INCOMPLETE exit 2); candidate+--write -> REFUSED CANDIDATE_WRITE_REFUSED exit 2 BEFORE any build or write (T5 proves zero side effects via directory walk); plain --write untouched (T7 create->no-op, two-file whitelist unchanged); AUTHORITY_SOURCE_BINDING echo line only in candidate mode",
+    "classification": "CANDIDATE_/DUAL_READ_ moved into the ONE shared BLOCKING_PREFIXES; docs-probe's local extension deleted — no second classification exists"
+  },
+  "B_resolver": "scripts/authority-baseline-resolver.mjs: explicit --snapshot + --expected-digest -> loadCandidateAuthority; success stdout EXACTLY '<baseline sha>\\n'; every failure non-zero + EMPTY stdout + named stderr (RESOLVER_ARGS / CANDIDATE_*); no graph, no derived mirror, no default; Git existence/ancestry remain the census's existing pre-checks; MASTER_SHA legacy graph read unchanged; no workflow file touched — explicitly NOT census completion",
+  "tests": { "suite": "sync-candidate-resolver 8/8 real exits, awaited runner (no fake-green counters); T1 default --check byte-identical to fixed parent 61df closure (10-module git-show temp closure, same fixture, exit+stdout compared)", "red_first": "step7-red.log 6/8 -> fixture honesty pass (registry/ids/schema/glossary had to be VALID for docs-sync; 5/8 red) -> green; disclosed test-side artifact: the rendered view embeds git-reality probes (baseline_exists/ancestor), so the mirror positive-control render moved after git init — recorded, production untouched" },
+  "exits_direct_captured": "new suite 8/8 exit=0; reg10ci exit=0; reg30 exit=0; reg9 exit=0; reg10 exit=0; reg7 exit=0; controls exit=1 nine historical reds comm-diff 0 (kept)",
+  "evidence": ["step7-red.log", "step7-green.log", "step7-reg10ci.log", "step7-reg30.log", "step7-reg9.log", "step7-reg10.log", "step7-reg7.log", "step7-reg-controls.log"],
+  "not_done": "workflow YAML wiring of the resolver (explicitly out of phase); census consumption; entry switch; real-repo candidate publication",
+  "mode_zero_claims": { "install": 0, "host": 0, "clone": 0, "paid": 0, "subagents": 0, "full_ci": 0, "push": 0, "stash": 0, "schema_publisher_graph_registry_AGENTS_product_workflow": 0 },
+  "gate_statement": "No gate claimed. Idle; no automatic next package; awaiting root review."
+}

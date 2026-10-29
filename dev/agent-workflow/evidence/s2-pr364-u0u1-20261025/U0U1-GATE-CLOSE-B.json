@@ -1,0 +1,49 @@
+{
+  "artifact": "s2-pr364-u0u1-20261025/U0U1-GATE-CLOSE-B.json",
+  "kind": "Item-by-item closure strictly against the ACTUAL plan text (6e4ada1:docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md, obtained via ONE `git fetch --no-tags origin pull/364/head`, no checkout/clone; read by git show). Supersedes the two-English-sentence mapping in GATE-CLOSE-A, which was the PR body, not the plan. No stage PASS stamped here.",
+  "utc": "2026-10-25T09:40:03Z (date -u)",
+  "freeze_list_digests_sha256": {
+    "U0-FREEZE-EXEMPTION.json": "1e3e0690713acc76c05e5e0c438187750f2fc263806de04703a43baf98ad9f64",
+    "U1-THREE-AXIS.json": "43582479c7734973d03f40698e42c068a3522c59bb14d82f3bcbf7f7c233728d",
+    "manifest-13.json": "57b7d2ff1c04d41bccb673961303ba96a09a226bf101ebc8df0b74fe177134de",
+    "U0U1-GATE-CLOSE.json": "618983de8ff2710d9cde021db9e52fe2dc27d6e5b616ba5a169f63d94bd22156",
+    "worktree dev/engineering/authority-snapshot.schema.json (== evidence r2)": "d70fcec29b0bd719b388c51821c83eaffb4bd7a4ede4ceb39b8a50f85855ee89",
+    "tests/s2-authority/snapshot-example.json (== evidence r2 example)": "66bb37ae2bfc9f7cb13df8aabe1a8bec149de65ba5c582a2eb75d507f124e29d",
+    "inputs frozen earlier": "MAP df3eb5e53832a260 / CONSUMERS b54b7dba96187b88 / ERRATA ef47cbf88fd0cf5f / r1-schema 945ee18c6f3d91a3 (all 16-hex prefixes, full values in prior tool output)"
+  },
+  "U0_items_per_plan_text": {
+    "停止product_writes_合并_Host安装_不批量kill": "MET (every manifest zero-claims; no kill ever issued)",
+    "新F0采集_observed_excluded_unknown": "PARTIAL — observed: all refs/SHAs, 6 local-only commits, foreign stash (named), homes dir, storage volume df; source-cited: Host Pin (TEST_METHODS 0.2.0-rc.2@639ed01539); NOT-OBSERVED this round → 处置队列: 端口/进程表、Profile、路径owner、#360/WIP 明细。缺口，不宣称覆盖。",
+    "独立位置备份+哈希+抽样恢复": "WAIVED-BY-USER verbatim 09:18Z (放弃备份/接受任何损失). Plan's exit sentence '不可替代资产拥有可读可恢复副本' is therefore USER-OVERRIDDEN, not satisfied by evidence; recorded as exemption, root已确认。",
+    "精确路径回收需单独批准_dryrun_前后df_du": "VACUOUS-MET (zero cleanup executed anywhere this session; task products retained; no du/df cleanup ceremony needed)",
+    "禁止操作清单_UNKNOWN送处置队列": "MET for the named list (:3080/user DSH_HOME/活动worktree/事故证据/pristine Host in U0 protected_paths) + queue lines in GATE-CLOSE-A/B",
+    "负控_唯一内容或活跃World清理必须拒绝": "MET for the tested domain: C10 sentinel negative (below) proves the real staging/cleanup path refuses EEXIST and leaves a foreign unique file byte-intact; World-deletion refusal NOT exercised (no World cleanup exists in this line) → N/A-no-cleanup-scope, honest",
+    "出口_不可变digest": "MET (table above)",
+    "出口_空间不引发ENOSPC": "MET (39.5GB free, zero write failures)"
+  },
+  "U1_items_per_plan_text": {
+    "EB0-1 权威文档四真值消费者核对": "INHERITED map+errata+manifests; verified: 18-consumer three-axis + 4 new candidate consumers delta-listed; adopted: PENDING root",
+    "EB0-2 九包测试/CI DAG/9红与22Root红来源": "9红来源 MET (controls log, comm-diff 0, source lines cited); CI DAG partially read (pr-gate/census this session); 九包测试 BLOCKED-SPARSE (packages/ absent in this tree, not fabricated); 22 Root 红来源 NOT-OBSERVED → queue",
+    "EB0-3 Team/Host/Profile/MCP与93种子差集": "NOT-DONE this round → gap (bounded follow-up)",
+    "EB0-4 Evidence/World/Worktree A/B/C/UNKNOWN": "PARTIAL (local-only commits/stash/evidence dirs observed; full A/B/C classification not redone per instruction) → queue remainder",
+    "EB0-5 p50_p95 有界重复样本": "NOT_VERIFIED per plan's own allowance; dependent gates stay BLOCKED; no fabricated measurements",
+    "冻结后增量diff_S1_F0_G1I": "MET (digest equality checks + schema r1/r2 layering verified byte-wise; new-consumer delta)",
+    "EB1_A..G 用负控而非脚本存在": "MET via #362 controls ACTUAL PASSES in u2-controls.log (85 PASS): fake verified=NEG-35/36/42/43; fake merged=NEG-37; fake released=NEG-38; wrong id=NEG-39/33/5; stale generated dir=NEG-9/54/55/56/68; source-change-without-owner-doc=NEG-52(+POS-12); unimplemented-proposal=NEG-4; the 9 historical reds are DISTINCT items, not substitutes",
+    "过时叙述修正_proposed不自动ratified_生成文件禁手改": "recorded as U2-side standing obligations (NEG-19/20 + NEG-55 enforce them in-tool; narrative edits belong to the entry transaction)",
+    "全部当前消费者含ci_pr_gate_Q1-Q8_testkit_AGENTS_检查器": "MET as table; testkit(a5) entry listed with BLOCKED-SPARSE execution note",
+    "新Agent冷读_九包README": "NOT-DONE (packages/ absent; a real cold read needs a fresh agent + full tree) → the key named gap for U1, honestly open",
+    "负控组假verified_merged_released_错ID_陈旧目录_owner_docs_未实现Proposal": "MET (id mapping above, real PASS lines)",
+    "测量实际CI与本地探针耗时": "NOT_VERIFIED (no timing campaign run; no CI run locally)",
+    "SHA_环境分组": "MET (parent-pinned byte-equality cases S1/T1 vs fixed commits; environment = this tree recorded)",
+    "出口_初版Authority_Migration_Map": "MET (map+errata+consumer-delta = 初版 in place)",
+    "出口_EB0-5不可得则NOT_VERIFIED并保持依赖阻断": "APPLIED exactly as written"
+  },
+  "test_safety_gap_closed": {
+    "defect": "consumer-candidate staged its parent-module copy with wx INSIDE try while finally rmSync(force) was unconditional: on EEXIST the foreign file would be deleted",
+    "fix": "stageExclusiveModule(dest,src) returns {owned,error}; cleanup runs `if (owned)` ONLY; the C9 comparison uses this single tested path; ci-snapshot-reader S1 received the identical ownership guard (same defect class, one-line diff, disclosed scope)",
+    "real_path_collision_negative": "C10: pre-places SENTINEL-CONTENT at the destination, invokes the REAL staging function, asserts EEXIST refusal + sentinel byte-intact + no cleanup deletion. u1fix-consumer.log exit=0 ALL GREEN (11 cases, actual count); u1fix-cireader.log exit=0 ALL GREEN (13). sha256 of both logs in digests table.",
+    "U2_census_half_pair": "NOT TOUCHED per instruction — still staged (xor named refusal pending)"
+  },
+  "remaining_gaps_minimal": ["new-agent cold read (needs full tree + fresh agent)", "EB0-3 93-seed diff", "EB0-2 nine-package tests + 22 root reds source", "F0 端口/进程/Profile 明细采集", "EB0-5 NOT_VERIFIED (by rule)", "probe/CI timing NOT_VERIFIED"],
+  "zero_claims": { "stage_pass_stamp": 0, "checkout_or_clone": 0, "u2_census_edit": 0, "six_suites_redone": 0, "fabricated_measurements": 0 }
+}

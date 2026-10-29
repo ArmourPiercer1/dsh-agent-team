@@ -1,0 +1,141 @@
+{
+ "package": "U5 TestWorldFactory + real-Host Canary/Oracle (gate G3)",
+ "generatedAt": "2026-10-25T14:10:00Z",
+ "branch": "task/u5-testworld-canary-20261025",
+ "teamShaNote": "see RUN records bindings.teamSha (worktree HEAD at run time)",
+ "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+ "hostStartLedger": {
+  "file": "host-start-ledger.jsonl",
+  "startsRecorded": 15,
+  "budgetCap": 15,
+  "bySuite": {
+   "core": 8,
+   "core-restart": 2,
+   "negatives": 5
+  }
+ },
+ "verdictVocabulary": [
+  "PASS",
+  "FAIL",
+  "REFUSED",
+  "ENV_BLOCK",
+  "SKIP",
+  "TIMEOUT",
+  "START_FAILED"
+ ],
+ "greenSignalBearer": "core suite (r1..r3); negatives/parallel overall are worst-of by design",
+ "files": [
+  {
+   "path": "FINDINGS-request-extension.md",
+   "bytes": 2396,
+   "sha256": "ad105b9b1c2e686e6bdb5d47aa98e6f8e64bbcdc944f949900c0bed72aeba9a3"
+  },
+  {
+   "path": "VITEST-BASELINE-DIFF.md",
+   "bytes": 1197,
+   "sha256": "ad0fe289d70a7967479bc75f4fea370a3008887418d3f76884aba667f9107d05"
+  },
+  {
+   "path": "host-start-ledger.jsonl",
+   "bytes": 2334,
+   "sha256": "452aa3a49666a15e2ae0f3ab9281bc9406408247433d3588adc59ade9a2c6a36"
+  },
+  {
+   "path": "request-extension-evidence.txt",
+   "bytes": 1206,
+   "sha256": "cbffe17efef4a6724633876169e08b8e4572c34850a436f5baf12b34712605b4"
+  },
+  {
+   "path": "run-core-dbg.json",
+   "bytes": 6341,
+   "sha256": "7a802eecc23cffa02e38e3bd376324d31dbd6f1e9391b4d03075444c629ae35b"
+  },
+  {
+   "path": "run-core-dbg2.json",
+   "bytes": 7079,
+   "sha256": "87e21e9dca0cb7647becf403d67e371b3ff2706db27c3102cf5a27b00b4f55c1"
+  },
+  {
+   "path": "run-core-r0-bringup.json",
+   "bytes": 4588,
+   "sha256": "efd6417044e102c3eda909ae14a31941b7a40a2a3f906cba3d99e5dfc4d900a5"
+  },
+  {
+   "path": "run-core-r0-bringup2.json",
+   "bytes": 5335,
+   "sha256": "c06b718c6079b6865f5cf0430c5f860ec4e77a0af4b0196ca7e5a87b93d8e4e2"
+  },
+  {
+   "path": "run-core-r1.json",
+   "bytes": 7117,
+   "sha256": "891459fb200a515d646131026b1b8ac4be912a3f4d85ca1f1fc899220785bb1c"
+  },
+  {
+   "path": "run-core-r2.json",
+   "bytes": 7115,
+   "sha256": "f45c538d9d7da1a87f765072c24469e4f3b993f15eed18f333f09d9c525e3843"
+  },
+  {
+   "path": "run-core-r3.json",
+   "bytes": 7115,
+   "sha256": "a88602ff46cd70299420b565647b1297420ba35d2316fed953dd9eb903dbc0a9"
+  },
+  {
+   "path": "run-negatives-n1.json",
+   "bytes": 7116,
+   "sha256": "287b1a8787327dbe02f7b7c0dfe8a4133e73d43af857b28ac4e87250922f2992"
+  },
+  {
+   "path": "run-negatives-n2-startfail.json",
+   "bytes": 4158,
+   "sha256": "d78878dac7a2914749dffb86cf422ce83a2e3f9191b25d5f41e6df16a0027e33"
+  },
+  {
+   "path": "run-u5-parallel-2026-10-25T13-50-33-134Z-A.json",
+   "bytes": 8105,
+   "sha256": "3435b6b7b01de9d9c290f29fcb31a5077ef13bc0fb346e26d03c7a76a564487f"
+  },
+  {
+   "path": "run-u5-parallel-2026-10-25T13-50-33-134Z-B.json",
+   "bytes": 7161,
+   "sha256": "e95b30e6d2945ed05d9eeaa2881c4f90b320a52d8335a4b6010041b1b2326bdb"
+  },
+  {
+   "path": "run-u5-parallel-2026-10-25T13-50-33-134Z.json",
+   "bytes": 3790,
+   "sha256": "b7f200d46dcea50a8639915f4f78e0b681263ac890b470ce6bc54f52e763d209"
+  },
+  {
+   "path": "run-u5-parallel-recon-2026-10-25T13-52-30-200Z.json",
+   "bytes": 4250,
+   "sha256": "5b2bff8e0d549cb26606bb8467105812630455783bf9e7e906e15e00d0908ac2"
+  },
+  {
+   "path": "vitest-worktree2.json",
+   "bytes": 3621966,
+   "sha256": "cba7f4111b26a3fe93cafe67eaff4afd0d18db3bb8a883a5626b0254a6f2ee3e"
+  }
+ ],
+ "rawLogsDir": {
+  "path": "logs/",
+  "note": "per-World Host instance logs + runner stdout; uncommitted (size), lives in this evidence tree only"
+ },
+ "pr": {
+  "number": 368,
+  "head": "ce496a362",
+  "branch": "task/u5-testworld-canary-20261025",
+  "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/368",
+  "checks": {
+   "pr-gate": "pass",
+   "candidate-protection": "pass",
+   "census-runtime": "pass"
+  },
+  "merged": false
+ },
+ "vitest": {
+  "file": "vitest-worktree2.json",
+  "reds": 10,
+  "newVsBaseline": 0,
+  "note": "one apparent extra red in pass1 was stale scratch residue from running the suite twice in one worktree; file passes 74/74 with a clean scratch base \u2014 see VITEST-BASELINE-DIFF.md"
+ }
+}

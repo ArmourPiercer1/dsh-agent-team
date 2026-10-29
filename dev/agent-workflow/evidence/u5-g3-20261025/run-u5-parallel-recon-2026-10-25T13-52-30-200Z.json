@@ -1,0 +1,126 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-parallel-recon-2026-10-25T13-52-30-200Z",
+  "suite": "parallel",
+  "startedAt": "2026-10-25T13:52:30.324Z",
+  "selectedCases": [
+    "abnormal-kill-reclaim",
+    "crash-simulation-reclaim",
+    "other-world-unaffected",
+    "pristine-host-and-stable-untouched",
+    "sibling-homes-untouched"
+  ],
+  "bindings": {
+    "teamSha": "3288567d36794394ce2af0401cee4fe218b11d03",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [
+      "u5pb-20261025T13-50-33Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "reconstruction": {
+      "sourceRecord": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/run-u5-parallel-2026-10-25T13-50-33-134Z.json",
+      "sourceOverall": "FAIL",
+      "spawns": 0,
+      "note": "re-judgement of a completed live run (A core-restart 8/8 PASS under the kill window; B core completed before the kill landed) plus the offline crash-simulation control over the identical reclaimWorld path; budget stayed at its live value"
+    }
+  },
+  "cases": [
+    {
+      "id": "abnormal-kill-reclaim",
+      "verdict": "SKIP",
+      "at": "2026-10-25T13:52:30.324Z",
+      "fromLiveRecord": {
+        "killedPids": [],
+        "refusedPids": [],
+        "leasesReleased": [],
+        "homeDeleted": null,
+        "orphanedHostPidDead": true,
+        "victimFinishedBeforeKill": true,
+        "victimRecord": "present, overall=PASS (finished before the kill landed)",
+        "killReceipt": {
+          "alreadyExited": true,
+          "code": 0,
+          "signal": null
+        }
+      },
+      "skipReason": "live kill landed after the victim runner had self-cleaned (kill receipt: alreadyExited code=0); the crash-residue recovery race was not exercised live — exercised offline by crash-simulation-reclaim; verdict kept SKIP, not recoloured"
+    },
+    {
+      "id": "crash-simulation-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:52:31.533Z",
+      "ok": true,
+      "orphanPid": 50,
+      "orphanKilledOnlyAfterEnvironProof": true,
+      "refused": [],
+      "leaseReleased": true,
+      "homeDeleted": true,
+      "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+    },
+    {
+      "id": "other-world-unaffected",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:52:31.534Z",
+      "aRecord": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/run-u5-parallel-2026-10-25T13-50-33-134Z-A.json",
+      "aOverall": "PASS",
+      "aCases": [
+        "token-gate=PASS",
+        "positive-control=PASS",
+        "error-return-with-effect=PASS",
+        "planted-defect-detected=PASS",
+        "oracle-blinding-divergence=PASS",
+        "restart-persistence=PASS",
+        "leak-check=PASS",
+        "stable-instance-unchanged=PASS"
+      ],
+      "aAliveWhileBWasReclaimed": true
+    },
+    {
+      "id": "pristine-host-and-stable-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:52:31.635Z",
+      "hostBasePre": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "pre"
+      },
+      "hostBasePost": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "post"
+      },
+      "stableInstance": {
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "sibling-homes-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:52:31.635Z",
+      "foreignChanges": []
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "crashSimulationControl": {
+    "ok": true,
+    "orphanPid": 50,
+    "orphanKilledOnlyAfterEnvironProof": true,
+    "refused": [],
+    "leaseReleased": true,
+    "homeDeleted": true,
+    "mechanism": "identical reclaimWorld entry point as the live path; orphan verified via /proc/<pid>/environ DSH_HOME before kill"
+  },
+  "overall": "SKIP",
+  "finishedAt": "2026-10-25T13:52:31.636Z"
+}

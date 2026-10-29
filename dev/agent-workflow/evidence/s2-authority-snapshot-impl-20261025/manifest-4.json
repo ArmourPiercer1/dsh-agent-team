@@ -1,0 +1,25 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-4.json",
+  "kind": "Single bounded targeted fix for the step-3 limited review (NEEDS_TARGETED_FIX). 16962ed03 preserved unamended; delivered as new commit 5f0d0e58. No older evidence file edited. No third self-initiated round; idle for the one re-review. Not G2.",
+  "utc": { "round_start": "2026-10-25T03:10:03Z", "delivered": "2026-10-25T03:10:32Z (date -u readings as reported by the host clock)", "budget": "15-minute bound from request; honored" },
+  "defect_and_fix": {
+    "defect_root_found": "runDualRead held the parsed JSON value and gated on its truthiness: a successfully parsed candidate whose VALUE is falsy (null / false / 0 / empty string) skipped validateShape, digest verification and the six-field loop; with graph present the run printed ok:true compared:0 exit 0",
+    "fix": "explicit parse-state flags: candidateParsed (read+JSON.parse succeeded, independent of the parsed value) and candidateShapeOk; EVERY successful parse now runs validateShape (null/false/0/\"\" -> SNAPSHOT_SHAPE TYPE red); the six-field comparison is gated on parsed AND shape-clean AND graph-present, so no valid candidate can never produce exit 0; a digest-invalid-but-shape-clean candidate is still compared (D5 semantics unchanged); the invalid-digest line is additionally gated to shape-clean so a shape-dirty candidate reports shape errors once, without noise",
+    "scope": "scripts/authority-dual-read.mjs and its test only; publisher / authority-snapshot / frozen schema / generated-write / docs-sync / consumer paths untouched (diff stat: 2 files +34/-8)"
+  },
+  "test_changes": {
+    "new_D8": "parameterized negative over the four literal JSON texts null, false, 0, \"\" with a graph-present six-field-consistent root; asserts exit 2, !ok, and a red SNAPSHOT_SHAPE verdict from the successful parse",
+    "red_at_16962ed03": "step3f-red.log exit=1 — FAIL D8: \"null\": exit=0 ok=true compared=0 — reproducing the root's observation exactly (1/9 failing)",
+    "D6_fix": "digest for the missing-matrix negative now recomputed via snapshotDigest (the one canonical path reused), plus assertion that no spurious SNAPSHOT_INVALID_DIGEST red rides along",
+    "green": "step3f-green.log exit=0, ALL GREEN 9/9 (actual counter)",
+    "regressions_kept": "step-2 suite re-run: exit=0 30/30 (step3f-reg30.log byte-identical to the earlier step3-reg30.log, sha256 2c781e08...); valid-positive D1 and zero-write walk-hash D7 retained unchanged in the 9-case suite"
+  },
+  "head": { "branch": "feat/s2-authority-snapshot-iso-20261025", "new_commit": "5f0d0e58e11c193087ad8918ef2c8f0c33d5446c", "parent": "16962ed03d6674de3ed7e882e180ae0dffd5d5ac", "tree_bytes_total": 10805884, "cap_mib": 300 },
+  "evidence_sha256": {
+    "step3f-red.log": "3b04b15a6ca268f11906a8c230ada57ae15c5608c0137ec189e0eb7211c72bf6",
+    "step3f-green.log": "4d70c2c0197c006a630cf49d4baf178d0fa41f98515e512de2037aefbdf076b2",
+    "step3f-reg30.log": "2c781e08eb24e3a1e471563195f7ad2123148eda62b11abe36aab4aab4043c28"
+  },
+  "unchanged_claims": "no diagnostic-capability expansion (same verdict set, same limits: not Q1-Q8, not Git/content reality, no pointer/CAS, no writes); no promises widened",
+  "mode_zero_claims": { "host": 0, "install": 0, "ci": 0, "push": 0, "merge": 0, "stash": 0, "paid": 0, "subagents": 0, "old_evidence_edits": 0 }
+}

@@ -1,0 +1,176 @@
+{
+ "worktree_counts": {
+  "REUSE-CANDIDATE": 29,
+  "REGENERABLE": 16,
+  "KEEP-ACTIVE": 5
+ },
+ "worktree_du_by_cls": {
+  "REUSE-CANDIDATE": 61260611189,
+  "REGENERABLE": 8274624809,
+  "KEEP-ACTIVE": 4090327337
+ },
+ "homes": {
+  "count": 542,
+  "total": 9797048638,
+  "regenerable": 8035678483,
+  "keep": 674466361,
+  "keep_referenced": 1086903794
+ },
+ "root_untracked": {
+  "scratch": 692309459,
+  "by_cls_du": {
+   "SCRATCH": 692309459,
+   "EVIDENCE": 7515861541,
+   "RECOVERY": 3237070160,
+   "UNKNOWN": 577216057
+  },
+  "unknown_paths": [
+   "1f405968808141d8bd09aaedb1e3718a9b1faf2e",
+   "a5m2-kiit.msg",
+   "a5m2-kitfix.msg",
+   "b5c06f09984c4da8bbbe9fe2ec23898bb29d4374",
+   "c3780bb936161045622f2e0ba6fcab81370b29cb",
+   ".candidate-efb5",
+   ".census-diag-tmp",
+   "center-fs-subtool-entry-audit.md",
+   ".center-tmp",
+   "ci-00743fb85.log",
+   "ci-00743fb85-store.log",
+   "dev/agent-workflow/tools/evidence.mjs",
+   "dev-verify-pack",
+   ".df0",
+   "docs/memo",
+   "FAIL",
+   "full-run-final.txt",
+   ".gate",
+   ".glob-flake-diag",
+   "h10.log",
+   "h11.log",
+   "h3.log",
+   "h4.log",
+   "h5.log",
+   "h6.log",
+   "h7.log",
+   "h8_1.log",
+   "h8_2.log",
+   "h9.log",
+   "handoff-tests2.log",
+   "handoff-tests.log",
+   "kernel-full2.log",
+   "kernel-full2.summary",
+   "kernel-full.log",
+   "kit.diff",
+   ".merge-scratch-g3a",
+   "p6t3-base.log",
+   "p6t3.log",
+   "pack2.log",
+   "pack3.log",
+   "pack4.log",
+   "packages-pins",
+   "pack.log",
+   ".plan-msg.txt",
+   "rc11b.log",
+   ".selftest.out",
+   "tests/checks",
+   "tests/kits/a5m2-todo-c2",
+   "tests/kits/lib",
+   "tmp",
+   "tsc2.log",
+   ".vitest-revfix.json"
+  ]
+ },
+ "local_only": {
+  "branch_count": 24,
+  "commit_total": 384,
+  "stashes": 1
+ },
+ "top20": [
+  [
+   5473154563,
+   "root-untracked:dev/agent-workflow/evidence/u1-closure-20261025"
+  ],
+  [
+   3237070160,
+   "root-untracked:recovery"
+  ],
+  [
+   2644507199,
+   "worktree:.worktrees/a5-m2-int"
+  ],
+  [
+   1726796302,
+   "worktree:.worktrees/a5m2-wire-g6"
+  ],
+  [
+   1679493247,
+   "root-untracked:dev/agent-workflow/evidence/retired-trees-2026-10-23"
+  ],
+  [
+   1183775379,
+   "worktree:.worktrees/a5m2-wire-schedule"
+  ],
+  [
+   1180407184,
+   "worktree:.worktrees/a5m2-wire-team"
+  ],
+  [
+   1179319897,
+   "worktree:.worktrees/a5m2-g1asm"
+  ],
+  [
+   1179228999,
+   "worktree:.worktrees/a5m2-wire-g3a"
+  ],
+  [
+   1176512872,
+   "worktree:.worktrees/a5m2-wire-g2"
+  ],
+  [
+   1169394055,
+   "worktree:.worktrees/a5m2-provider-id"
+  ],
+  [
+   1169108115,
+   "worktree:.worktrees/a5m2-newfam"
+  ],
+  [
+   1141909042,
+   "worktree:.worktrees/a5m2-wire-g1"
+  ],
+  [
+   977440737,
+   "worktree:.worktrees/a5m2-subagent-fix"
+  ],
+  [
+   900164910,
+   "home:a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ"
+  ],
+  [
+   879799886,
+   "worktree:.worktrees/a5-lsp-keyfix"
+  ],
+  [
+   851470276,
+   "worktree:.worktrees/int-alpha3-stage2"
+  ],
+  [
+   847497246,
+   "worktree:.worktrees/a5-read-slice"
+  ],
+  [
+   812783420,
+   "worktree:.worktrees/u1-audit-master"
+  ],
+  [
+   674466361,
+   "home:.playwright-browsers"
+  ]
+ ],
+ "totals": {
+  ".worktrees": 29398280966,
+  "tests/homes": 3744809488,
+  "recovery": 3237070160,
+  "dev/agent-workflow/evidence": 7764530055,
+  ".git": 776767576
+ }
+}

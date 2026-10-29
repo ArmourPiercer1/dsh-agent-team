@@ -1,0 +1,47 @@
+# s1-runtime-census launcher — mode=--dry-run (default, read-only) port=3183 world=s1-census-DRYRUN-20261025T010730Z
+  [OK] input validation
+  [OK] port-sanctioned — 3183
+  [OK] htu-rev-parse-equals-pin — 639ed0153972
+  [OK] htu-status-porcelain-empty — 0
+  [OK] htu-entry-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] htu-tools-lib-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] bin-echo-exists — /bin/echo
+  [OK] host-port-free-per-proc-net — 3183
+  [OK] sealed-m3-runner-bytes-unchanged — d581e559656be472
+  [OK] sealed-m3-probe-bytes-unchanged — 181fc9a73fc77151
+  [OK] sealed-m3-run-dir-preserved — M3 run/PASS must stay untouched
+  [OK] m1-sealed-runner-bytes-unchanged — 4542782e71d2b73b
+  [OK] m1-sealed-probe-unchanged — c883ac3f80efcfe4
+  [OK] mock-copy-matches-4aaaa-blob — 8beade69588c105e
+  [OK] census-plugin-exists — census-probe-plugin.mjs
+  [OK] census-plugin-no-private-no-identity-tostring — 
+  [OK] seeds-union-sha — 2ce3e3e2b2c1f4a9
+  [OK] world-absent — s1-census-DRYRUN-20261025T010730Z
+
+## profiles/web/cordis.patch.yml (sha256 976d28ee2da46a96093259563f38bf7dd8312610d6f811e056d5ab9f2392434c):
+# S1 CENSUS: ONE plain plugin row via the public profile-patch seam (written by DshInstance.mountRows).
+# Relative name resolves beside this patch file (app-boot/src/index.ts:532,:994 @639ed015).
+# No preset, no Team row, no PR360 assembly.
+- insert:
+    - id: s1c-census
+      name: "./s1c-census-plugin.mjs"
+# Variant layer (public profile-patch composition, root-authorized differential probe):
+# disables ONLY the two deepseekLlmApiExtensions metadata contributors through their own
+# public config flag — syntax precedent at apps/cli/tests/profiles/headless/goal-snapshot.patch.yml:28-30
+# (id + config.enabled:false); schemas: session-log-deepseek/src/index.ts:51-52,
+# plugin-package-inventory-deepseek/src/index.ts:38-39. NOT a private map, NOT a monkeypatch,
+# NOT disabling the registry row (deepseek-llm-api-extensions stays mounted; base/cordis.patch.yml:37-38),
+# so registry + request.signal abort (deepseek-llm-api-extensions/src/index.ts:109-114) and every
+# tool / Guard / dispatch path remain in effect.
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
+
+## seeds union offline: records=93 tools=86 surface=4 (kept separate; fixture off-book)
+## decide script: call1 swap arm → call2 restored-A control arm; census = ONE exec.agent ref → schemas(scope) + get(name,scope) (public :1260/:1230).
+## scope: census binds registered-visible identity/sets only; guard admission + foreign functional execution stay NOT_TESTED.
+
+DRY-RUN: nothing written, no Host started.

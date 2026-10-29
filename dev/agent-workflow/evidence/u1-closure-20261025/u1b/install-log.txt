@@ -1,0 +1,7 @@
+START 2026-10-25T10:06:54Z
+ATTEMPT1 cmd='pnpm install --frozen-lockfile --offline' exit=1 duration=0s
+ATTEMPT2 cmd='pnpm install --frozen-lockfile --prefer-offline' exit=1 duration=0s
+START 2026-10-25T10:09:20Z
+ATTEMPT3 cmd='pnpm install --frozen-lockfile --offline --store-dir <OUT>/scratch/store' exit=1 duration=6s
+START 2026-10-25T10:10:00Z
+ATTEMPT4 cmd='pnpm install --frozen-lockfile --offline --store-dir <OUT>/scratch/store2' exit=0 duration=6s

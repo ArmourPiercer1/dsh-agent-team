@@ -1,0 +1,14 @@
+{
+  "generated": "U1-C outputs sha256 (all files in this dir except manifest.json)",
+  "algorithm": "sha256",
+  "files": {
+    "SUMMARY.md": "aec060a97c014ebed9bddb8710b3906fbe89d61fabab55ad90912b8449057622",
+    "agg-counts.json": "6c465f4a6da90efb12bf491018e6bb4df3fd339c3b5ca0c13e7aa7aa6558d071",
+    "build-outputs.mjs": "a106c205f44c0860c22b53e01787eefb0ff7366e38957c47e3d3d17aa1571dd6",
+    "host-definetool-raw.json": "9c258387d9d8814dcd30453035575712a599809872a83aec03cb7c8d8b1dc6db",
+    "host-tools.json": "35e2a63c5feed18d47e4e03665785efa911616a9ff450c3a040f88520eca4f86",
+    "scan-tools.mjs": "e91d9792ebf600d9bb3c7d425d8777d70477349b77f7170c410798f2fce45047",
+    "seed-diff.json": "2d9aadf300bfd488128c95b51283dfb097239da195b4fb00330071765dd3a4bb",
+    "team-tools.json": "019d0522f4964d82e7d5eaa49b8919d7e5e1f3dff6f5c6d73bdc11e4bcd3dcd5"
+  }
+}

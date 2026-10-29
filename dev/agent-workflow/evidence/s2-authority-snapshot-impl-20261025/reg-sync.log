@@ -1,0 +1,85 @@
+FAIL LINK_DANGLING: docs/contracts/engineering-baseline/plan-citation-interface.md: [inventory](../../../dev/agent-workflow/evidence/EB-E0-E1/baseline-inventory.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [P0-SELECTION-REPORT](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [negative-cases](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EXECUTION-LOG](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/EXECUTION-LOG.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [corrections-addendum](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/corrections-addendum.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [landlock-diagnosis.md §1–§2](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/landlock-diagnosis.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [10-landlock-lanes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [landlock-diagnosis.md §4](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/landlock-diagnosis.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [09 notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [stage2b notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [03-fs notes 发现 2](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [p01-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/01-routing/p01-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [02-search notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [10-landlock-lanes notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [05-ptc notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [06-lsp（"素材，非宣告"字样出自 P0-SELECTION-REPORT.md:28） notes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [stage2b notes run 22-32-37](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [p07-review-R1 §3-F2](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R1.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [R2 §1#12](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R2.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [p07-review-R2 §4](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R2.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EV/03-fs/p03-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/p03-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [h6-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/h6-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [REG1 §2a](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-REG1.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EV/02-search/p02-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/p02-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [spill-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/spill-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [lanes-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/lanes-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [notes 判定表](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EV/05-ptc/p05-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/p05-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [ptc-outer-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/ptc-outer-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EV/06-lsp/p05-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/p05-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EV/09-web-jobs-mcp/p09-web-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-web-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [notes 判定表](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [p09-jobs-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-jobs-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [p09-mcp-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-mcp-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [stage2b summary（run-22-44-01）](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/run-2026-10-15T22-44-01)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [02-search notes §2 SRCH-01](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [corrections-addendum](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/corrections-addendum.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [REG1 §1](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-REG1.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [h6-result.json](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/h6-result.json)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [P0-SELECTION-REPORT.md](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [decision.md](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/decision.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [negative-cases.md](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [EXECUTION-LOG.md](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/EXECUTION-LOG.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [04-process/](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/corrections-addendum.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [10-landlock-lanes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [09-web-jobs-mcp](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [03-stage2b](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md: [08-review](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R1.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md: [P0-SELECTION-REPORT](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md: [NEG-1..12](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md: [landlock lanes](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md: [P0 原始选型报告](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md: [PoC 反例](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md)
+FAIL LINK_DANGLING: docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md: [Landlock 增补](../../../../dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md)
+FAIL CONTRACT_ANCHOR_MISSING: ids.yaml:110: dev/agent-workflow/graph.yaml
+FAIL CONTRACT_ANCHOR_MISSING: ids.yaml:131: .agents/notes/README.md
+FAIL FAKE_VERIFICATION: EB1-A: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-A: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-A: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL REGISTRY_REF_UNRESOLVED: EB1-A: EB-ADR-0001 has id grammar but is declared nowhere (ids.yaml or an agent note)
+FAIL REF_MISSING: EB1-A: .agents/notes/README.md
+FAIL FAKE_VERIFICATION: EB1-B: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-B: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-B: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL FAKE_VERIFICATION: EB1-C: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-C: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-C: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL ARTIFACT_MISSING: EB1-C: dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log
+FAIL ARTIFACT_MISSING: EB1-C: dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log
+FAIL FAKE_VERIFICATION: EB1-D: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-D: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-D: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL FAKE_VERIFICATION: EB1-E: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-E: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-E: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL FAKE_VERIFICATION: EB1-F: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-F: dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log
+FAIL ARTIFACT_MISSING: EB1-F: dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log
+FAIL ARTIFACT_MISSING: EB1-F: dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log
+FAIL FAKE_VERIFICATION: EB1-G: verification_status=verified_local with no existing artifact (refused; INV-EB-0009)
+FAIL ARTIFACT_MISSING: EB1-G: dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log
+FAIL ARTIFACT_MISSING: EB1-G: dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log
+FAIL STALE_GENERATED_VIEW: out of date; run --write
+docs:sync --check: docs=44 notes=0 plans=22(0 declaring) findings=83 blocking=83 contracts=not applicable
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof

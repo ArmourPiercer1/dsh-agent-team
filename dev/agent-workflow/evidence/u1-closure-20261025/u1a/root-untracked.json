@@ -1,0 +1,991 @@
+{
+ "root_checkout": {
+  "branch": "master",
+  "head": "6259cf4bc4d61af74d84bbd9d265184f95493172",
+  "behind_origin_master": 796,
+  "ahead_origin_master": 0,
+  "origin_master_tip": "4aaaa7b2a"
+ },
+ "uncommitted_incident_entry": {
+  "path": "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+  "diff": "+17 / -0 (git diff --numstat)",
+  "sha256": "e3e49b1346c11e3e4c2e5f5f1e58d370d65cac2a44812fd87e983c92e1f22fe9",
+  "protection": "KEEP-PROTECTED (uncommitted SESSION_ROUTER_LOG incident entry)"
+ },
+ "du_note": "du measured 2026-10-25; dev/agent-workflow/evidence/u1-closure-20261025 grew during capture (this task writes there)",
+ "counts_by_class": {
+  "UNKNOWN": 52,
+  "SCRATCH": 61,
+  "EVIDENCE": 47,
+  "RECOVERY": 1
+ },
+ "scratch_total_bytes": 692309459,
+ "entries": [
+  {
+   "path": "1f405968808141d8bd09aaedb1e3718a9b1faf2e",
+   "du_bytes": 9,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "a5m2-kiit.msg",
+   "du_bytes": 1134,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "a5m2-kitfix.msg",
+   "du_bytes": 1725,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "b5c06f09984c4da8bbbe9fe2ec23898bb29d4374",
+   "du_bytes": 5,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".bteam-005x-mirror-msg.txt",
+   "du_bytes": 439,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-005x-msg.txt",
+   "du_bytes": 2979,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-010x-msg.txt",
+   "du_bytes": 3257,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-2235-msg.txt",
+   "du_bytes": 3255,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-2249-msg.txt",
+   "du_bytes": 2480,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-232x-mirrors-msg.txt",
+   "du_bytes": 606,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-232x-msg.txt",
+   "du_bytes": 3249,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-240x-msg.txt",
+   "du_bytes": 3179,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-242x-msg.txt",
+   "du_bytes": 3504,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-accept-msg.txt",
+   "du_bytes": 1879,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-artifact-msg.txt",
+   "du_bytes": 2621,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-c2prep-msg.txt",
+   "du_bytes": 3349,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-commit-msg.txt",
+   "du_bytes": 5416,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-create-msg.txt",
+   "du_bytes": 1706,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-env-msg.txt",
+   "du_bytes": 2003,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-facts-msg.txt",
+   "du_bytes": 3259,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-fix1953-msg.txt",
+   "du_bytes": 3064,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-frame-msg.txt",
+   "du_bytes": 2260,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-gate-value-msg.txt",
+   "du_bytes": 2382,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-legs-msg.txt",
+   "du_bytes": 2322,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-live-msg.txt",
+   "du_bytes": 2253,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-members-msg.txt",
+   "du_bytes": 2769,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-mirror-msg.txt",
+   "du_bytes": 433,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-outcome-msg.txt",
+   "du_bytes": 2347,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-pair-msg.txt",
+   "du_bytes": 3334,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-prod-msg.txt",
+   "du_bytes": 2522,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-query-msg.txt",
+   "du_bytes": 1930,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-resolve-msg.txt",
+   "du_bytes": 3432,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-reuse-msg.txt",
+   "du_bytes": 1728,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-revert-msg.txt",
+   "du_bytes": 1629,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-runner-msg.txt",
+   "du_bytes": 3036,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-single-msg.txt",
+   "du_bytes": 1561,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-supply-msg.txt",
+   "du_bytes": 1484,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".bteam-three-msg.txt",
+   "du_bytes": 3638,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "c3780bb936161045622f2e0ba6fcab81370b29cb",
+   "du_bytes": 5,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".candidate-efb5",
+   "du_bytes": 22394240,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".census-diag-tmp",
+   "du_bytes": 4631987,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "center-fs-subtool-entry-audit.md",
+   "du_bytes": 4975,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".center-tmp",
+   "du_bytes": 1244171,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "ci-00743fb85.log",
+   "du_bytes": 4165,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "ci-00743fb85-store.log",
+   "du_bytes": 3622,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-contract-candidate",
+   "du_bytes": 274124,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-family-rules",
+   "du_bytes": 73089,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-g5-host-window-b",
+   "du_bytes": 15056,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-g6host",
+   "du_bytes": 12439,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-image-wiring",
+   "du_bytes": 12445,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-img-r18",
+   "du_bytes": 276520,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-int-incident-2026-10-23",
+   "du_bytes": 39702858,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-schedule-c2",
+   "du_bytes": 201947,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5m2-todo-c2",
+   "du_bytes": 37992031,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5-parallel-worlds",
+   "du_bytes": 1197996,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a5-world-safety",
+   "du_bytes": 511706,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle",
+   "du_bytes": 747437,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5",
+   "du_bytes": 275676452,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5-pr1r",
+   "du_bytes": 24414,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/chromium-sandbox-probe-20261001",
+   "du_bytes": 4855,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/COORDINATION.md",
+   "du_bytes": 6200,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/COORDINATION-tmp",
+   "du_bytes": 0,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/dod20-browser-20261001",
+   "du_bytes": 1912294,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/browser-capability-inventory-20261001.md",
+   "du_bytes": 7150,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-install-aborted-20261001.md",
+   "du_bytes": 9117,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-new25-20261001.txt",
+   "du_bytes": 346,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-sim-20261001.txt",
+   "du_bytes": 4756,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/chromium-install-probe-20261001.md",
+   "du_bytes": 10805,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/helper-placement-20261001.md",
+   "du_bytes": 3483,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/landlock-install-acceptance/phase1-facts-20261001.md",
+   "du_bytes": 21731,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/retired-4tree-evidence-leaf-20261025b",
+   "du_bytes": 1847671,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/retired-iso-evidence-leaf-cleanup-20261125",
+   "du_bytes": 748566,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/retired-trees-2026-10-23",
+   "du_bytes": 1679493247,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-asset-disposition-20261025",
+   "du_bytes": 20829,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-f0-issued-20261025",
+   "du_bytes": 20314,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-freeze-receipt-20261025",
+   "du_bytes": 11931,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-frozen-refs-index.md",
+   "du_bytes": 7035,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-h0-m1",
+   "du_bytes": 221788,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-h0-m2",
+   "du_bytes": 76891,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-h0-m3",
+   "du_bytes": 131366,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-h0-m3-safety-determination",
+   "du_bytes": 9489,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-inventory-lane-a",
+   "du_bytes": 73242,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds",
+   "du_bytes": 538561,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-runtime-census",
+   "du_bytes": 177381,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-stage-f0-draft",
+   "du_bytes": 15813,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025",
+   "du_bytes": 64639,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s2-authority-map-20261025",
+   "du_bytes": 45000,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s2-authority-snapshot-impl-20261025",
+   "du_bytes": 309273,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s2-pr364-u0u1-20261025",
+   "du_bytes": 105115,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s2-schema-candidate-20261025",
+   "du_bytes": 52021,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/system-chrome-sandbox-20261001",
+   "du_bytes": 37555,
+   "classification": "EVIDENCE",
+   "protection": null
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u1-closure-20261025",
+   "du_bytes": 5473154563,
+   "classification": "EVIDENCE",
+   "protection": "KEEP-PROTECTED (s1-*/s2-*/u1-* line)"
+  },
+  {
+   "path": "dev/agent-workflow/tools/evidence.mjs",
+   "du_bytes": 26320,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "dev-verify-pack",
+   "du_bytes": 3648470,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".df0",
+   "du_bytes": 11,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "docs/memo",
+   "du_bytes": 13789,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "FAIL",
+   "du_bytes": 104,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "full-run-final.txt",
+   "du_bytes": 189708,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".gate",
+   "du_bytes": 533070434,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".glob-flake-diag",
+   "du_bytes": 1696479,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h10.log",
+   "du_bytes": 84579,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h11.log",
+   "du_bytes": 84470,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h3.log",
+   "du_bytes": 86944,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h4.log",
+   "du_bytes": 87791,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h5.log",
+   "du_bytes": 84422,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h6.log",
+   "du_bytes": 7441,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h7.log",
+   "du_bytes": 90910,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h8_1.log",
+   "du_bytes": 84412,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h8_2.log",
+   "du_bytes": 84412,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "h9.log",
+   "du_bytes": 84610,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "handoff-tests2.log",
+   "du_bytes": 83687,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "handoff-tests.log",
+   "du_bytes": 84839,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "kernel-full2.log",
+   "du_bytes": 275790,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "kernel-full2.summary",
+   "du_bytes": 781,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "kernel-full.log",
+   "du_bytes": 277145,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "kit.diff",
+   "du_bytes": 1385,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".merge-scratch-g3a",
+   "du_bytes": 1905890,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".npm-cache",
+   "du_bytes": 124560,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".npm-probe-cache",
+   "du_bytes": 545447,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "p6t3-base.log",
+   "du_bytes": 8302,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "p6t3.log",
+   "du_bytes": 8302,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "pack2.log",
+   "du_bytes": 122143,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "pack3.log",
+   "du_bytes": 122143,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "pack4.log",
+   "du_bytes": 122143,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "packages-pins",
+   "du_bytes": 3770473,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "pack.log",
+   "du_bytes": 122143,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".plan-msg.txt",
+   "du_bytes": 4427,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".pnpm-store-a5ie-r2b",
+   "du_bytes": 562025676,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".probe-plan",
+   "du_bytes": 2188,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".probe-plan-tmp",
+   "du_bytes": 80438897,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "rc11b.log",
+   "du_bytes": 3451,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "recovery",
+   "du_bytes": 3237070160,
+   "classification": "RECOVERY",
+   "protection": "recovery/ per F0"
+  },
+  {
+   "path": ".rt-_0gbddsv",
+   "du_bytes": 4060950,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".rt-lcor36qe",
+   "du_bytes": 51,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".rt-vrme5k5c",
+   "du_bytes": 1866271,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".scratch-logs",
+   "du_bytes": 6489200,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".selftest.out",
+   "du_bytes": 161,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "tests/checks",
+   "du_bytes": 15388,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "tests/kits/a5m2-todo-c2",
+   "du_bytes": 124254,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "tests/kits/lib",
+   "du_bytes": 9634,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": "tmp",
+   "du_bytes": 40827,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5g1-rev",
+   "du_bytes": 1531768,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5g5-readme",
+   "du_bytes": 68895,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5g5-rev2",
+   "du_bytes": 6663516,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5l1",
+   "du_bytes": 1601,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5live-ref",
+   "du_bytes": 46927,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5ptc4-preflight",
+   "du_bytes": 20,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-a5w4-scratch",
+   "du_bytes": 3908,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-all-hits.txt",
+   "du_bytes": 101593,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-ccr-body.json",
+   "du_bytes": 2297,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-center",
+   "du_bytes": 4465,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-commit-msgs",
+   "du_bytes": 28052166,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-evidence-tree.txt",
+   "du_bytes": 27243,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-f739-grep.txt",
+   "du_bytes": 101593,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-homes.txt",
+   "du_bytes": 1477,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-pr-files.txt",
+   "du_bytes": 27243,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-pr-hits.txt",
+   "du_bytes": 3055,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tmp-pr-tree.txt",
+   "du_bytes": 27243,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": ".tmp-publish",
+   "du_bytes": 5904,
+   "classification": "SCRATCH",
+   "protection": null
+  },
+  {
+   "path": "tsc2.log",
+   "du_bytes": 218,
+   "classification": "UNKNOWN",
+   "protection": null
+  },
+  {
+   "path": ".vitest-revfix.json",
+   "du_bytes": 2401187,
+   "classification": "UNKNOWN",
+   "protection": null
+  }
+ ]
+}

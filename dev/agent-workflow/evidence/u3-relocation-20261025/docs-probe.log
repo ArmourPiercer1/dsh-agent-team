@@ -1,0 +1,7 @@
+docs:probe base=origin/master head=53c2f8414 changed=0 rules=derived-view,contracts-shape
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared

@@ -1,0 +1,108 @@
+{
+  "artifact": "s2-authority-map-20261025/manifest.json",
+  "kind": "PR363 S2 first-deliverable package manifest (Authority Migration Map + machine consumer inventory). Inventory-only round; no authority switch.",
+  "utc": {
+    "start": "2026-10-25T01:44:55.962Z",
+    "end": "2026-10-25T01:49:12.845Z",
+    "clock": "real UTC"
+  },
+  "execution_identity": {
+    "session_model": "qwen3.8-flash-next",
+    "file_policy": "workspace-write",
+    "approval_policy": "ask",
+    "subagents": 0,
+    "paid_models": 0,
+    "escalation_used": false
+  },
+  "input_gate_reverification": {
+    "source": "dev/agent-workflow/evidence/s1-f0-issued-20261025/",
+    "inputSnapshotDigest_recomputed": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "matches_claimed_digest": true,
+    "local_inputs": "18/18 sha256+bytes matched",
+    "git_objects": "2 commits resolve; 3 blobs match recorded byte length and equal rev-parse <pr363>:<path>",
+    "external_reference": "1 NOT_LOCAL, absence confirmed, no local claim",
+    "gate_guard": "no divergence"
+  },
+  "fixed_sources": {
+    "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+    "access": "git show/grep/cat-file on fixed refs only"
+  },
+  "files": [
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-map-20261025/AUTHORITY-MIGRATION-MAP.json",
+      "sha256": "df3eb5e53832a260c1818a01854bedc2228bee6a5cbf3d6a261856bf787d3b26",
+      "bytes": 19695
+    },
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-map-20261025/MACHINE-CONSUMERS.json",
+      "sha256": "b54b7dba96187b8828dd18214ef40af5d5fa023e53699c74d937f698b5dabbdf",
+      "bytes": 12268
+    }
+  ],
+  "total_new_bytes": 31963,
+  "budget_note": "1 MiB cap on new text; two payload documents = 31963 bytes",
+  "validation": {
+    "json_parse": "all three documents re-parsed after every correction",
+    "line_refs": "every file:line cited was re-read from the fixed ref; three off-by-a-few refs were corrected before this manifest was written"
+  },
+  "self_correction": {
+    "pre_existing_objects_overwritten": 0,
+    "events": [
+      "line-reference precision: generated-write.mjs 25-29,71,102 -> 27-31,71-74,100; doc-consistency-controls fixture 60-66 -> 63-68 (both files)",
+      "contract-id attribution: the \"authority until an approved migration\" statement is REQ-EB-0003 (ids.yaml:105-108 / INDEX.md:150-155), not INV-EB-0012; gap G8 added because plan-citation-interface.md:40 cites INV-EB-0012 which is declared nowhere (ids.yaml declares INV-EB-0001..0010)",
+      "substantive correction: backlog and matrix are NOT leaf/existence-only pointers. Re-reading ci-pr-gate showed the backlog feeds the accepted ready:/blocked: id set (:351-356), the matrix file content is graded by Q5 (:372-406) and Q6 re-reads the phase-baseline-ref line of AGENTS.md and all three targets (:485-492). Field notes, migration-target notes, the negative-control status and gap G2 were rewritten to match; checkCurrentContract span pinned at 283-517",
+      "one malformed-JSON intermediate state was produced by a bad edit during the correction and was repaired in the same round; every file was re-parsed before and after this manifest rewrite",
+      "manifest.json rewritten in place so recorded sha256/bytes match the corrected documents (file created by this round)"
+    ],
+    "lesson": "each correction came from re-reading the fixed ref rather than from a claim in the draft; all of them are documentation-level, the inputSnapshotDigest was never affected"
+  },
+  "mode": {
+    "host": 0,
+    "paid": 0,
+    "subagents": 0,
+    "cleanup": 0,
+    "new_gates": 0,
+    "rescans": 0,
+    "plan_or_graph_edits": 0,
+    "authority_switch": 0,
+    "merge": 0,
+    "push": 0,
+    "ci_or_host_runs": 0,
+    "new_worktree_or_clone": 0,
+    "new_install": 0,
+    "permission_escalation": 0,
+    "overwrites_of_pre_existing_objects": 0,
+    "artifact_rewrites_this_round": 11
+  },
+  "write_boundary": {
+    "created_only": "dev/agent-workflow/evidence/s2-authority-map-20261025/",
+    "method": "fs.mkdirSync (refused if existed) + per-file O_WRONLY|O_CREAT|O_EXCL"
+  },
+  "protected_untouched": [
+    "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+    "dev/agent-workflow/graph.yaml",
+    "AGENTS.md",
+    "docs/plans (all, incl. PR361 memo files, unmoved)",
+    "README.md",
+    "docs/STATUS.md",
+    ".github/workflows (all)",
+    "dev/engineering (all)",
+    "scripts (all)",
+    "packages (all)",
+    ".agents/notes (all)",
+    "s1-f0-issued-20261025/",
+    "all other evidence dirs",
+    "tests/deepseek-harness-test-use/",
+    ".worktrees/"
+  ],
+  "not_claimed": [
+    "S2 Gate / G2 pass",
+    "E0 or E1 overall pass (the #362 tool base is reusable, not proven)",
+    "ratification of the 18 IDs",
+    "any status change of the 93 PROPOSED seeds",
+    "Q6/Q7 space closure",
+    "build provenance"
+  ]
+}

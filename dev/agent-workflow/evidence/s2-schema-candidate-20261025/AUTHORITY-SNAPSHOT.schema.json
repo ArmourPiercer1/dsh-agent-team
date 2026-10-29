@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "x-candidate://s2/authority-snapshot/0.1.0-CANDIDATE",
+  "title": "Versioned immutable execution-authority snapshot — CANDIDATE v0.1.0 (not frozen, not active, grants nothing)",
+  "description": "PR363 §7.4 step-2 candidate. One minimal shape for a versioned immutable authority snapshot. Field names, grammars and semantics of the six current_contract fields are carried over UNCHANGED from scripts/ci-pr-gate.mjs checkCurrentContract at fixed master 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (Q2 grammar :325-330, Q4 baseline :333-336); this schema validates SHAPE only. Every external reality check the legacy block gets today must keep running against the snapshot after any switch: active_plan/backlog/matrix target existence (Q2 fileExists), baseline resolves AND is HEAD-or-ancestor (Q4 revExists/baselineCurrent — git object reality, never a copy), backlog BL-/BR id population (GROUP C ci-pr-gate.mjs:351-356), matrix row contract (Q5 :372-406), phase-baseline-ref lines (Q6 :485-492), and the second independent awk reader at .github/workflows/census-runtime.yml:129. Those are publisher/CI duties, not schema duties; dropping any of them at switch time is a regression, not a simplification.",
+  "x-status": {
+    "state": "CANDIDATE_FOR_ROOT_REVIEW",
+    "not": [
+      "not frozen; freezing happens only after the one merged root review (§7.4 step 2 completion is a decision, not this file)",
+      "not active; no consumer reads this shape today and no authority is decided by it",
+      "not a new permission law; it authorizes no write of any kind (ERRATA-20261025 E1)",
+      "not ratification; the 18 IDs remain proposed (0 ratified)"
+    ],
+    "digest_algorithm_reused": "content_digest is computed with the EXISTING F0 canonical rules (dev/agent-workflow/evidence/s1-f0-issued-20261025/F0-ISSUED-20261025.json canonical_digest_algorithm: UTF-8 no BOM, keys sorted by code point recursively, arrays order-preserved, compact separators, raw non-ASCII, zero 0x0A, sha256 lowercase hex prefixed sha256:) over the snapshot object with the content_digest key itself removed. No new digest law is invented here."
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_version",
+    "supersedes",
+    "authored_from",
+    "published_by",
+    "published_utc",
+    "current_contract",
+    "content_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "snapshot_version": {
+      "type": "string",
+      "pattern": "^as[0-9]{8}r[0-9]{1,3}$",
+      "description": "Explicit version id (asYYYYMMDDrN). Unique per publication; a published version is never rewritten (immutability is a publisher rule — the schema can only name it)."
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "pattern": "^as[0-9]{8}r[0-9]{1,3}$",
+      "description": "The single immediately-preceding version, or null for the first. One linear chain; forks mean two publishers, which the publisher contract forbids."
+    },
+    "authored_from": {
+      "type": "string",
+      "pattern": "^(dev/agent-workflow/graph\\.yaml#current_contract|previous-snapshot:as[0-9]{8}r[0-9]{1,3})@[0-9a-f]{40}$",
+      "description": "Unique source of the values, recorded as one pointer: either the legacy block at a named commit, or a prior snapshot at a named commit. Naming the commit is what makes the provenance checkable later."
+    },
+    "published_by": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The single registered publisher identity that produced this snapshot (see PUBLISHER-CONTRACT.md §sole-publisher). One identity, named, no anonymous or shared bulk accounts."
+    },
+    "published_utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "description": "Publication wall-clock. Unlike baseline_collected this is snapshot metadata, deliberately OUTSIDE any digested inputs object if a future F-style gate hashes this file."
+    },
+    "current_phase_statement": {
+      "type": "string",
+      "description": "OPTIONAL carrier for the adjacent live statement graph.yaml:64 current_phase. NOT a seventh current_contract field and NOT a synonym of phase_id: its graded relationship to phase_id is a digit-agreement check (ci-pr-gate.mjs:343-345: pm=/^alpha(\\d+)/i.exec(phase_id); the statement must contain ALPHA\\.?<N>) plus the Alpha.4 ban (:343) and the state-freshness bans (:186-195: must not embed a revision, must not enumerate PR numbers). The digit cross-check is cross-field and therefore a publisher-side check, not expressible in this draft-07 shape; the two machine-bannable shapes are pinned below. Whether current_phase is retired or restated at switch time is §7.4 step-6 adjudication (AUTHORITY-MIGRATION-MAP adjacent_live_statement), still open."
+    },
+    "current_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase_id", "active_plan", "backlog", "matrix", "baseline", "baseline_collected"],
+      "description": "Exactly the six fields, same names, same original semantics (AUTHORITY-MIGRATION-MAP old_current_contract_fields). No additions: an unknown seventh key is exactly the silent drift Q3 counts against today.",
+      "properties": {
+        "phase_id": {
+          "type": "string",
+          "pattern": "^alpha\\d+-[a-z0-9][a-z0-9-]*$",
+          "description": "Grammar copied verbatim from ci-pr-gate.mjs:326. Sole downstream machine consumer of its value today is doc-checks checkPlanCitationBlocks via the derived mirror (MACHINE-CONSUMERS MC-04)."
+        },
+        "active_plan": {
+          "type": "string",
+          "pattern": "^docs/plans/active/",
+          "description": "Prefix check per Q2 (:328-330); target existence is a publisher/CI duty."
+        },
+        "backlog": {
+          "type": "string",
+          "pattern": "^(?!.*\\s)\\S+$",
+          "description": "A single non-space path. Not a leaf pointer: its content authorises graph ready:/blocked: BL-/BR ids (GROUP C ci-pr-gate.mjs:351-356) and Q6 re-reads its phase-baseline-ref line (:485-492); the content contract travels with the value."
+        },
+        "matrix": {
+          "type": "string",
+          "pattern": "^(?!.*\\s)\\S+$",
+          "description": "A single non-space path. Not a leaf pointer: Q5 grades the file itself (boundary markers, region order, 9-cell rows, positive-claim set, ci-pr-gate.mjs:372-406)."
+        },
+        "baseline": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "Exactly 40 hex per Q4 (:333). The value's MEANING lives in git object reality (must resolve; HEAD or ancestor; equality with HEAD legal) — the snapshot records the string, git decides it. census-runtime.yml:129 is a second independent reader and must be repointed in any switch transaction."
+        },
+        "baseline_collected": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+          "description": "ISO8601Z per Q2 (:330). Timestamp only; no external corroboration exists (MIGRATION-MAP field note)."
+        }
+      }
+    },
+    "content_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "The authority digest every parallel Agent must explicitly bind to during the switch window (§7.4 fixed order, last sentence). Computed per x-status.digest_algorithm_reused over this object with content_digest itself removed."
+    }
+  },
+  "x-current-phase-bans": {
+    "note": "If current_phase_statement is present, the publisher additionally refuses (machine shape; the wording rules are Q1/state-freshness, cited in the property above):",
+    "bans": [
+      "an embedded revision: /\\b[0-9a-f]{7,40}\\b/ inside the statement (state-freshness leg, ci-pr-gate.mjs:192)",
+      "a PR census: /PR\\s*#?\\d/ inside the statement (state-freshness leg, ci-pr-gate.mjs:195)",
+      "naming Alpha.4: /ALPHA\\.?4|A4-PR7/i (Q1, ci-pr-gate.mjs:343)"
+    ]
+  }
+}

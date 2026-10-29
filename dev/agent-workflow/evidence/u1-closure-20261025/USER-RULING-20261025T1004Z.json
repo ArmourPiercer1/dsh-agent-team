@@ -1,0 +1,21 @@
+{
+  "artifact": "u1-closure-20261025/USER-RULING-20261025T1004Z.json",
+  "utc": "2026-10-25T10:04Z",
+  "rulings_verbatim_summary": [
+    "(a) PR #364 adopted as the single unified implementation plan (U0-U8). #361/#363 remain design sources only.",
+    "S1 execution already performed (F0, H0 M1/M2/M3, G1 decision G1-I PASS / G1-F NOT_PASSED) is ratified retroactively.",
+    "Continue subsequent work; delegate execution to subagents on qiyuan-self/qwen3.8-flash-next; main agent = overall control and acceptance."
+  ],
+  "deviation_recorded": "ROUTER_RULES §1 names qiyuan-self/qwen3.8-27b as sole model; user ruling of this turn routes executors to qwen3.8-flash-next. Recorded per AGENTS.md (user ruling may amend; change must be recorded).",
+  "carried_forward": [
+    "backup waiver 2026-10-25T09:18Z (U0-FREEZE-EXEMPTION.json) remains in force",
+    "S1 shared budget not reset (PoC 4/20, Host starts 4/12 as last reconstructed)",
+    "G1-F NOT_PASSED => U6 locked; H0 = UNPROVEN/NEEDS-RULING"
+  ],
+  "backup_waiver_reaffirmed": {
+    "utc": "2026-10-25T10:1xZ",
+    "user_words_summary": "Backup would take ~10h on this machine; most meaningful products are on GitHub; local data is mostly evidence/history/rebuildable env. No raw-data backup. On accidental loss, recover what git can recover.",
+    "consequence": "U0 exit item '不可替代资产拥有可读可恢复副本' = USER-WAIVED (not satisfied by evidence). U3 deletion does not wait for an external copy. Near-zero-cost mitigation kept: before deleting any branch/worktree that holds local-only commits, those refs are captured in a local git bundle (seconds, KB-MB) — a git-object safety net against our own cleanup mistakes, not a raw-data backup; uncommitted non-evidence edits are listed per path in the delete list."
+  },
+  "open_user_decisions_from_364": ["(c) final authority location + migration window", "(d) evidence external store + delete list", "(e) extra G1-F PoC budget"]
+}

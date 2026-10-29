@@ -1,0 +1,2 @@
+ingest verdict=pass source-commit=95fbe95cf094d8368faf1e356ba6b56fc5a70f15 prefix=dev/agent-workflow/evidence/ listed=21141 kept=993 relocated=20148 bytes=521862486 blobs_written=1 blobs_skipped_existing=20147 manifest=dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv manifest_sha256=4f49b36bbaefb9d4ca37342920aac78246678fa77554f48efc550a3f72ec7ecd
+ingest(recover) exit=0

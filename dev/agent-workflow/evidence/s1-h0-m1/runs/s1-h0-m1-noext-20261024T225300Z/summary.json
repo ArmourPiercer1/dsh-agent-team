@@ -1,0 +1,35 @@
+{
+  "worldName": "s1-h0-m1-noext-20261024T225300Z",
+  "port": 3180,
+  "variant": "no-ext-contributors",
+  "pass": true,
+  "oracle": {
+    "pass": true,
+    "checks": {
+      "register_ok_once": true,
+      "body_ran_exactly_once": true,
+      "body_ran_true_and_tag_A1": true,
+      "marker_A1_exists_and_only": true,
+      "read_leg_ok": true,
+      "process_leg_ok": true,
+      "prompt_admitted_200": true,
+      "session_created": true,
+      "token_gate_401": true,
+      "mock_two_requests": true,
+      "call_terminal_determined": true,
+      "tool_result_returned": true,
+      "tool_result_round_tripped": true,
+      "untriggered_name_zero": true
+    },
+    "counts": {
+      "body_ran": 1,
+      "markers": 1,
+      "untriggered_rows": 0
+    },
+    "stamp": "noext-20261024T225300Z"
+  },
+  "failed": false,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 32927
+}

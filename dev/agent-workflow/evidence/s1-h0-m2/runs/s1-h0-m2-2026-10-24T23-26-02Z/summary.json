@@ -1,0 +1,62 @@
+{
+  "worldName": "s1-h0-m2-2026-10-24T23-26-02Z",
+  "port": 3180,
+  "owned_pid": 100,
+  "run_error": null,
+  "pass": false,
+  "outcome": "not-delivered-call1-result",
+  "oracle": {
+    "pass": false,
+    "settled": false,
+    "pending": false,
+    "final": true,
+    "checks": {
+      "token_gate_401": true,
+      "session_created": true,
+      "prompt_admitted_200": true,
+      "register_a_once": true,
+      "fence_entered_twice": true,
+      "distinct_call_ids": true,
+      "callid_correspondence": true,
+      "swap_leg_bound_to_call1_callid": true,
+      "restore_leg_bound_to_call1_callid": true,
+      "control_leg_bound_to_call2_callid": true,
+      "call1_ran_body_B": true,
+      "call1_body_ran_true": true,
+      "call2_ran_body_A_control": true,
+      "call2_body_ran_true": true,
+      "legs_all_ok_call1_by_callid": true,
+      "legs_all_ok_call2_by_callid": true,
+      "markers_exact_pair": true,
+      "result_delivered_call1_and_second_call_issued": false,
+      "result_delivered_call2_final_text": false,
+      "untriggered_name_zero": true
+    },
+    "outcome": "not-delivered-call1-result",
+    "counts": {
+      "bodies": 2,
+      "markers": 2,
+      "mock_requests": 4,
+      "distinct_call_ids": 2
+    },
+    "call_ids": {
+      "fence": [
+        "s1m2-tc-1",
+        "s1m2-tc-2"
+      ],
+      "bodies": [
+        "s1m2-tc-1",
+        "s1m2-tc-2"
+      ]
+    },
+    "markers": [
+      "A-call2.marker",
+      "B-call1.marker"
+    ],
+    "scope_note": "PASS here proves late resolution of a same-name Definition inside the public tools/execute fence, plus the restored-A control. It is NOT a safety PASS and NOT an authorization bypass: no authorization check in this pipeline is bound to the Definition identity (tools/src/index.ts:1493-1519,:700-711 decide by name/arguments)."
+  },
+  "failed": true,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 165561
+}

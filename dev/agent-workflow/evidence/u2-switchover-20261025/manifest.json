@@ -1,0 +1,21 @@
+{
+  "package": "u2-switchover-20261025",
+  "generated_utc": "2026-10-25T11:27:22Z",
+  "commits": {
+    "A": "56b62dfbe411c90f5e66a4505e94b972b06fea12",
+    "B": "f44ca07dd23a62ee67d891afd02d1e1413dd0f3a",
+    "C": "8552597c391c4ef4c839956f0731223fcdf7cda8",
+    "D": "bd30dfd077a8c7f7de3266d5029c4fa9582d2837"
+  },
+  "snapshot": "dev/engineering/authority-snapshots/as20261025r1.json",
+  "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+  "pointer_bytes_sha256": "sha256:5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee",
+  "files": {
+    "GATES.md": "sha256:97393834573926f2fafd280a64211b66e0f11e2b5346023ca2868fb4345b8b53",
+    "ROLLBACK-DRILL.md": "sha256:7759baa01cfa8f3a21ee6dc8db8daa75dde11311102f9ce2fa683c630588952b",
+    "VERIFICATION.md": "sha256:06042a8b895bf1d5891ed6ec0ed4971f25ccea42178c7a26235c1fce9354bcb3",
+    "VITEST-ATTRIBUTION.log": "sha256:89f1db6d8a01e7c9541f793cc2e7a27373021710e5a12336b31d3b34f02dbc20",
+    "switch-record.md": "sha256:a73789e5eec4ffc49afe631fae92eeda83a6dd793d6e18a88feadae864086366"
+  },
+  "pr": "#365 base master, head feat/s2-authority-snapshot-iso-20261025 @ bd30dfd077a8c7f7de3266d5029c4fa9582d2837 (NOT merged \u2014 merge belongs to main agent)"
+}

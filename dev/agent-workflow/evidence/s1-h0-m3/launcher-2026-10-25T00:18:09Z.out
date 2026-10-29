@@ -1,0 +1,47 @@
+REAL_START=2026-10-25T00:18:09Z
+# s1-h0-m2 launcher — mode=--go (SINGLE REAL RUN: 1 Host start, 0 retries, 30-min watchdog) port=3183 world=s1-h0-m3-2026-10-25T00-18-09Z
+  [OK] input validation
+  [OK] port-sanctioned — 3183
+  [OK] htu-rev-parse-equals-pin — 639ed0153972
+  [OK] htu-status-porcelain-empty — 0
+  [OK] htu-entry-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] htu-tools-lib-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] bin-echo-exists — /bin/echo
+  [OK] host-port-free-per-proc-net — 3183
+  [OK] sealed-m2-runner-bytes-unchanged — ef2bf20f30c1
+  [OK] sealed-m2-probe-unchanged — 03d36a895cea
+  [OK] sealed-m2-run-dir-preserved — M2 run/FAIL must stay untouched
+  [OK] m2-probe-exists — probe-m3-plugin.mjs
+  [OK] m1-sealed-runner-bytes-unchanged — 4542782e71d2b73b
+  [OK] m1-sealed-probe-unchanged — c883ac3f80efcfe4
+  [OK] mock-copy-matches-4aaaa-blob — 8beade69588c105e
+  [OK] world-absent — s1-h0-m3-2026-10-25T00-18-09Z
+
+## profiles/web/cordis.patch.yml (sha256 a6f3124c39bf9b04673ca813552b9038e3af37b8049df067d3d2cc6f996ad6d1):
+# S1 H0-M2: ONE plain plugin row via the public profile-patch seam (written by DshInstance.mountRows).
+# Relative name resolves beside this patch file (app-boot/src/index.ts:532,:994 @639ed015).
+# No preset, no Team row, no PR360 assembly.
+- insert:
+    - id: s1m3-probe
+      name: "./s1m3-probe-plugin.mjs"
+# Variant layer (public profile-patch composition, root-authorized differential probe):
+# disables ONLY the two deepseekLlmApiExtensions metadata contributors through their own
+# public config flag — syntax precedent at apps/cli/tests/profiles/headless/goal-snapshot.patch.yml:28-30
+# (id + config.enabled:false); schemas: session-log-deepseek/src/index.ts:51-52,
+# plugin-package-inventory-deepseek/src/index.ts:38-39. NOT a private map, NOT a monkeypatch,
+# NOT disabling the registry row (deepseek-llm-api-extensions stays mounted; base/cordis.patch.yml:37-38),
+# so registry + request.signal abort (deepseek-llm-api-extensions/src/index.ts:109-114) and every
+# tool / Guard / dispatch path remain in effect.
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
+
+## decide script: stage0 → tool-call {id:s1m3-tc-1,tag:call1} on the prompt-marked request; result(call1) → tool-call {id:s1m3-tc-2,tag:call2}; else text.
+## expected markers on PASS: B-call1.marker (swap arm) + A-call2.marker (control arm)
+## scope: PASS ⇒ late resolution only; not a safety PASS, not an authorization bypass.
+
+RESULT: PASS (evidence under /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m3/runs/s1-h0-m3-2026-10-25T00-18-09Z)
+REAL_END=2026-10-25T00:18:42Z RC=0

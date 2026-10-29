@@ -1,0 +1,124 @@
+PASS D0 legacy reader is exported with its old semantics (present:false when no graph, six keys when present)
+{
+  "ok": true,
+  "compared": 6,
+  "verdicts": []
+}
+PASS D1 positive: candidate vs graph six fields agree -> exit 0, compared=6
+{
+  "ok": false,
+  "compared": 6,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_VS_LEGACY_VALUE",
+      "detail": "phase_id: snapshot=\"alpha5-tool-io-governance\" graph=\"alpha6-something\"",
+      "red": true
+    }
+  ]
+}
+PASS D2 REAL divergence: graph phase_id differs -> SNAPSHOT_VS_LEGACY_VALUE red, both values shown
+{
+  "ok": false,
+  "compared": 5,
+  "verdicts": [
+    {
+      "code": "MISSING_LEGACY_FIELD",
+      "detail": "baseline_collected: snapshot=\"2026-10-22T07:20:56Z\" graph=<absent> (not backfilled from anywhere)",
+      "red": true
+    }
+  ]
+}
+PASS D3 legacy field missing in graph -> MISSING_LEGACY_FIELD (not filled from anywhere)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "MISSING_LEGACY_AUTHORITY",
+      "detail": "dev/agent-workflow/graph.yaml#current_contract is absent; the derived mirror is NOT a source of authority and was not consulted for any value",
+      "red": true
+    },
+    {
+      "code": "DERIVED_MIRROR_PRESENT_NOT_CONSULTED",
+      "detail": "dev/engineering/current-state.json exists; read-only mirror, deliberately not used to backfill the missing authority (§7.4: derived views never reverse-decide)",
+      "red": false
+    }
+  ]
+}
+PASS D4 no graph.yaml + mirror present -> MISSING_LEGACY_AUTHORITY; NO backfill from derived mirror
+{
+  "ok": false,
+  "compared": 6,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_INVALID_DIGEST",
+      "detail": "recorded sha256:0000000000000000000000000000000000000000000000000000000000000000 != recomputed sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64 (F0 canonical, content_digest excluded, published_utc covered)",
+      "red": true
+    }
+  ]
+}
+PASS D5 invalid digest in candidate -> SNAPSHOT_INVALID_DIGEST red (fields still compared)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "MISSING_KEY current_contract.matrix",
+      "red": true
+    }
+  ]
+}
+PASS D6 missing snapshot field -> SNAPSHOT_SHAPE red with field name (digest recomputed via snapshotDigest, not ad-hoc stringify)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+PASS D8 successfully-parsed falsy candidates (null/false/0/empty string) must NEVER read green
+{
+  "ok": true,
+  "compared": 6,
+  "verdicts": []
+}
+PASS D7 read-only: zero new files, graph bytes identical after the diagnostic
+ALL GREEN (9 cases, actual count)

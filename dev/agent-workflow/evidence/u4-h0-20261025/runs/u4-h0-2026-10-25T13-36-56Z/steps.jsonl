@@ -1,0 +1,95 @@
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"port-sanctioned","ok":true,"detail":"3184"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"port-free-per-proc-net","ok":true,"detail":"3184"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"htu-rev-parse-equals-pin","ok":true,"detail":"639ed0153972"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"htu-status-porcelain-empty","ok":true,"detail":""},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"htu-entry-exists","ok":true,"detail":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"bin-echo-exists","ok":true,"detail":"/bin/echo"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"mock-copy-bytes","ok":true,"detail":"8beade69588c"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"plugin-exists","ok":true,"detail":"u4h0-probe-plugin.mjs"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:m1-run.mjs","ok":true,"detail":"4542782e71d2"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:probe-plugin.mjs","ok":true,"detail":"c883ac3f80ef"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:m2-run.mjs","ok":true,"detail":"ef2bf20f30c1"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.964Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:probe-m2-plugin.mjs","ok":true,"detail":"03d36a895cea"},"budget_left_ms":1799803}
+{"at":"2026-10-25T13:36:56.965Z","step":"world-skeleton","status":"ok","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/u4-h0-2026-10-25T13-36-56Z"},"budget_left_ms":1799802}
+{"at":"2026-10-25T13:36:56.965Z","step":"patch","status":"ok","detail":{"sha256":"dcdb2bd00b86c6aaebe8e52d9f4c7613c882e23e1993fa145e1c754ec9bd79ff"},"budget_left_ms":1799802}
+{"at":"2026-10-25T13:36:56.965Z","step":"env-scrub","status":"ok","detail":{"removed_keys":[]},"budget_left_ms":1799802}
+{"at":"2026-10-25T13:36:56.972Z","step":"mock","status":"info","detail":"mock: listening on 127.0.0.1:43101","budget_left_ms":1799795}
+{"at":"2026-10-25T13:36:56.972Z","step":"mock-listen","status":"ok","detail":{"port":43101},"budget_left_ms":1799795}
+{"at":"2026-10-25T13:36:58.729Z","step":"host-boot","status":"ok","detail":{"owned_pid":54,"token_fingerprint":"923a8ce8"},"budget_left_ms":1798038}
+{"at":"2026-10-25T13:36:58.729Z","step":"plugin-activation","status":"ok","detail":{"activated":true,"importFailed":false},"budget_left_ms":1798038}
+{"at":"2026-10-25T13:36:58.751Z","step":"token-gate","status":"ok","detail":{"status":401},"budget_left_ms":1798016}
+{"at":"2026-10-25T13:36:58.755Z","step":"authenticate","status":"ok","budget_left_ms":1798012}
+{"at":"2026-10-25T13:36:58.791Z","step":"session-create","status":"ok","budget_left_ms":1797976}
+{"at":"2026-10-25T13:36:58.808Z","step":"prompt","status":"ok","detail":{"group":"G1","status":200},"budget_left_ms":1797959}
+{"at":"2026-10-25T13:36:58.929Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":1,"toolsCount":29,"toolsHasTarget":true,"toolsHasCtl":true,"toolNames":["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","u4_h0_never","u4_h0_target","u4h0_ctl","update_goal","web_fetch","web_search","workflow","write"]},"budget_left_ms":1797838}
+{"at":"2026-10-25T13:36:58.935Z","step":"mock","status":"info","detail":"mock: 1 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0001.json","budget_left_ms":1797832}
+{"at":"2026-10-25T13:36:58.936Z","step":"mock","status":"info","detail":"mock: 1 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797831}
+{"at":"2026-10-25T13:36:58.937Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":1,"toolsCount":0,"toolsHasTarget":false,"toolsHasCtl":false,"toolNames":[]},"budget_left_ms":1797830}
+{"at":"2026-10-25T13:36:58.937Z","step":"mock","status":"info","detail":"mock: 2 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0002.json","budget_left_ms":1797830}
+{"at":"2026-10-25T13:36:58.937Z","step":"mock","status":"info","detail":"mock: 2 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797830}
+{"at":"2026-10-25T13:36:59.613Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":3,"toolsCount":29,"toolsHasTarget":true,"toolsHasCtl":true,"toolNames":["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","u4_h0_never","u4_h0_target","u4h0_ctl","update_goal","web_fetch","web_search","workflow","write"]},"budget_left_ms":1797154}
+{"at":"2026-10-25T13:36:59.614Z","step":"mock","status":"info","detail":"mock: 3 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0003.json","budget_left_ms":1797153}
+{"at":"2026-10-25T13:36:59.614Z","step":"mock","status":"info","detail":"mock: 3 [messages] tool-call reply: u4_h0_target","budget_left_ms":1797153}
+{"at":"2026-10-25T13:36:59.647Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":5,"toolsCount":29,"toolsHasTarget":true,"toolsHasCtl":true,"toolNames":["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","u4_h0_never","u4_h0_target","u4h0_ctl","update_goal","web_fetch","web_search","workflow","write"]},"budget_left_ms":1797120}
+{"at":"2026-10-25T13:36:59.648Z","step":"mock","status":"info","detail":"mock: 4 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0004.json","budget_left_ms":1797119}
+{"at":"2026-10-25T13:36:59.649Z","step":"mock","status":"info","detail":"mock: 4 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797118}
+{"at":"2026-10-25T13:36:59.677Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":7,"toolsCount":29,"toolsHasTarget":true,"toolsHasCtl":true,"toolNames":["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","u4_h0_never","u4_h0_target","u4h0_ctl","update_goal","web_fetch","web_search","workflow","write"]},"budget_left_ms":1797090}
+{"at":"2026-10-25T13:36:59.677Z","step":"mock","status":"info","detail":"mock: 5 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0005.json","budget_left_ms":1797090}
+{"at":"2026-10-25T13:36:59.678Z","step":"mock","status":"info","detail":"mock: 5 [messages] tool-call reply: u4_h0_target","budget_left_ms":1797089}
+{"at":"2026-10-25T13:36:59.707Z","step":"wire-probe","status":"info","detail":{"marker":true,"msgCount":9,"toolsCount":29,"toolsHasTarget":true,"toolsHasCtl":true,"toolNames":["ask_user_question","bash","create_goal","edit","exit_plan_mode","get_goal","glob","grep","interrupt_agent","job_kill","job_list","job_output","list_agents","present","read","read_image","send_message","skill","subagent","subagent_fork","todo_write","u4_h0_never","u4_h0_target","u4h0_ctl","update_goal","web_fetch","web_search","workflow","write"]},"budget_left_ms":1797060}
+{"at":"2026-10-25T13:36:59.709Z","step":"mock","status":"info","detail":"mock: 6 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0006.json","budget_left_ms":1797058}
+{"at":"2026-10-25T13:36:59.709Z","step":"mock","status":"info","detail":"mock: 6 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797058}
+{"at":"2026-10-25T13:36:59.741Z","step":"mock","status":"info","detail":"mock: 7 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0007.json","budget_left_ms":1797026}
+{"at":"2026-10-25T13:36:59.741Z","step":"mock","status":"info","detail":"mock: 7 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797026}
+{"at":"2026-10-25T13:36:59.766Z","step":"mock","status":"info","detail":"mock: 8 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0008.json","budget_left_ms":1797001}
+{"at":"2026-10-25T13:36:59.766Z","step":"mock","status":"info","detail":"mock: 8 [messages] tool-call reply: u4_h0_target","budget_left_ms":1797001}
+{"at":"2026-10-25T13:36:59.946Z","step":"mock","status":"info","detail":"mock: 9 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0009.json","budget_left_ms":1796821}
+{"at":"2026-10-25T13:36:59.946Z","step":"mock","status":"info","detail":"mock: 9 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796821}
+{"at":"2026-10-25T13:36:59.971Z","step":"mock","status":"info","detail":"mock: 10 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0010.json","budget_left_ms":1796796}
+{"at":"2026-10-25T13:36:59.973Z","step":"mock","status":"info","detail":"mock: 10 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796794}
+{"at":"2026-10-25T13:36:59.995Z","step":"mock","status":"info","detail":"mock: 11 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0011.json","budget_left_ms":1796772}
+{"at":"2026-10-25T13:36:59.996Z","step":"mock","status":"info","detail":"mock: 11 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796771}
+{"at":"2026-10-25T13:37:00.011Z","step":"group","status":"ok","detail":{"group":"G1","settled":true},"budget_left_ms":1796756}
+{"at":"2026-10-25T13:37:00.018Z","step":"prompt","status":"ok","detail":{"group":"G2","status":200},"budget_left_ms":1796748}
+{"at":"2026-10-25T13:37:00.024Z","step":"mock","status":"info","detail":"mock: 12 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0012.json","budget_left_ms":1796743}
+{"at":"2026-10-25T13:37:00.024Z","step":"mock","status":"info","detail":"mock: 12 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796743}
+{"at":"2026-10-25T13:37:00.056Z","step":"mock","status":"info","detail":"mock: 13 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0013.json","budget_left_ms":1796711}
+{"at":"2026-10-25T13:37:00.056Z","step":"mock","status":"info","detail":"mock: 13 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796711}
+{"at":"2026-10-25T13:37:00.082Z","step":"mock","status":"info","detail":"mock: 14 fixture -> /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u4-h0-20261025/runs/u4-h0-2026-10-25T13-36-56Z/wire/probe-req-POST-0014.json","budget_left_ms":1796685}
+{"at":"2026-10-25T13:37:00.082Z","step":"mock","status":"info","detail":"mock: 14 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796685}
+{"at":"2026-10-25T13:37:00.109Z","step":"mock","status":"info","detail":"mock: 15 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796658}
+{"at":"2026-10-25T13:37:00.131Z","step":"mock","status":"info","detail":"mock: 16 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796636}
+{"at":"2026-10-25T13:37:00.165Z","step":"mock","status":"info","detail":"mock: 17 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796602}
+{"at":"2026-10-25T13:37:00.205Z","step":"mock","status":"info","detail":"mock: 18 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796562}
+{"at":"2026-10-25T13:37:00.230Z","step":"mock","status":"info","detail":"mock: 19 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796537}
+{"at":"2026-10-25T13:37:00.281Z","step":"mock","status":"info","detail":"mock: 20 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796486}
+{"at":"2026-10-25T13:37:00.304Z","step":"mock","status":"info","detail":"mock: 21 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796463}
+{"at":"2026-10-25T13:37:00.327Z","step":"mock","status":"info","detail":"mock: 22 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796440}
+{"at":"2026-10-25T13:37:00.349Z","step":"mock","status":"info","detail":"mock: 23 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796418}
+{"at":"2026-10-25T13:37:00.371Z","step":"mock","status":"info","detail":"mock: 24 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796396}
+{"at":"2026-10-25T13:37:00.391Z","step":"mock","status":"info","detail":"mock: 25 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796376}
+{"at":"2026-10-25T13:37:00.413Z","step":"mock","status":"info","detail":"mock: 26 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796354}
+{"at":"2026-10-25T13:37:00.419Z","step":"group","status":"ok","detail":{"group":"G2","settled":true},"budget_left_ms":1796348}
+{"at":"2026-10-25T13:37:00.424Z","step":"prompt","status":"ok","detail":{"group":"G3","status":200},"budget_left_ms":1796343}
+{"at":"2026-10-25T13:37:00.424Z","step":"group","status":"ok","detail":{"group":"G3","settled":true},"budget_left_ms":1796343}
+{"at":"2026-10-25T13:37:00.429Z","step":"prompt","status":"ok","detail":{"group":"G4","status":200},"budget_left_ms":1796338}
+{"at":"2026-10-25T13:37:00.429Z","step":"group","status":"ok","detail":{"group":"G4","settled":true},"budget_left_ms":1796338}
+{"at":"2026-10-25T13:37:00.435Z","step":"prompt","status":"ok","detail":{"group":"G5","status":200},"budget_left_ms":1796331}
+{"at":"2026-10-25T13:37:00.447Z","step":"mock","status":"info","detail":"mock: 27 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796320}
+{"at":"2026-10-25T13:37:00.630Z","step":"mock","status":"info","detail":"mock: 28 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796137}
+{"at":"2026-10-25T13:37:00.663Z","step":"mock","status":"info","detail":"mock: 29 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796104}
+{"at":"2026-10-25T13:37:00.685Z","step":"mock","status":"info","detail":"mock: 30 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796082}
+{"at":"2026-10-25T13:37:00.708Z","step":"mock","status":"info","detail":"mock: 31 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796059}
+{"at":"2026-10-25T13:37:00.731Z","step":"mock","status":"info","detail":"mock: 32 [messages] tool-call reply: u4_h0_target","budget_left_ms":1796036}
+{"at":"2026-10-25T13:37:00.752Z","step":"mock","status":"info","detail":"mock: 33 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1796015}
+{"at":"2026-10-25T13:37:00.775Z","step":"mock","status":"info","detail":"mock: 34 [messages] tool-call reply: u4_h0_target","budget_left_ms":1795992}
+{"at":"2026-10-25T13:37:00.795Z","step":"mock","status":"info","detail":"mock: 35 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1795972}
+{"at":"2026-10-25T13:37:00.818Z","step":"mock","status":"info","detail":"mock: 36 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1795949}
+{"at":"2026-10-25T13:37:00.836Z","step":"group","status":"ok","detail":{"group":"G5","settled":true},"budget_left_ms":1795931}
+{"at":"2026-10-25T13:37:00.842Z","step":"prompt","status":"ok","detail":{"group":"G6","status":200},"budget_left_ms":1795925}
+{"at":"2026-10-25T13:37:00.842Z","step":"group","status":"ok","detail":{"group":"G6","settled":true},"budget_left_ms":1795925}
+{"at":"2026-10-25T13:37:00.858Z","step":"oracle","status":"fail","detail":{"outcome":"UNVERIFIED-BODY-OR-MISSING-CELL","counts":{"bodyRows":7,"aStarts":6,"bStarts":1,"markers":12,"vetoes":7,"mockRequests":36}},"budget_left_ms":1795909}
+{"at":"2026-10-25T13:37:00.860Z","step":"mock","status":"info","detail":"mock: 37 [messages] text reply (11 chars): \"u4-complete\"","budget_left_ms":1795907}
+{"at":"2026-10-25T13:37:00.972Z","step":"teardown-host","status":"ok","detail":{"killed":true,"portFree":true},"budget_left_ms":1795795}
+{"at":"2026-10-25T13:37:00.972Z","step":"teardown-mock","status":"ok","budget_left_ms":1795795}
+{"at":"2026-10-25T13:37:01.068Z","step":"post-check-htu","status":"ok","detail":{"head":"639ed0153972","porcelain":""},"budget_left_ms":1795699}

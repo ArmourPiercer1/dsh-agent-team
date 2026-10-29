@@ -1,0 +1,22 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-6.json",
+  "kind": "Single bounded targeted fix for the first-consumer limited review. bab57048 preserved unamended; delivered as new commit 09fd3946. No third self-initiated round. Not G2.",
+  "utc": { "round_start": "2026-10-25T03:23:28Z", "delivered": "2026-10-25T03:24:34Z (date -u as reported)", "budget": "15-minute bound from request; honored" },
+  "fix_1_presence_not_truthiness": {
+    "defect": "build(root, {authorityCandidate: null/false/0/''}) took the silent legacy default (truthy gate); helper threw TypeError on null options",
+    "fix": "build gates on Object.hasOwn(opts,'authorityCandidate') — only a genuinely ABSENT option keeps the legacy default; any explicitly provided value routes to loadCandidateAuthority: non-object -> CANDIDATE_OPTIONS_INVALID, partial {file}/{expectedDigest} -> CANDIDATE_PATH_REQUIRED / CANDIDATE_EXPECTED_DIGEST_REQUIRED; refusal returns {refused,detail?} with view undefined. Helper never throws on bad options",
+    "red_at_bab57048": "step4f-red.log exit=1: FAIL C8 null -> keys=[view,findings,runtime,topLevel] fell through to legacy; FAIL C9 null threw TypeError",
+    "green": "step4f-green.log exit=0 ALL GREEN 10/10 (actual count); not-provided (no opts / {}) asserted to remain legacy inside C8"
+  },
+  "fix_2_one_way_deps": "six-field list extracted VERBATIM to scripts/authority-contract-fields.mjs; gen-current-state imports and re-exports the same binding (LEGACY_MIRROR_KEYS name and values unchanged — authority-dual-read and controls imports keep working, controls ID-set md5 unchanged); candidate helper now imports only the shared module. Dependency consumer->helper->shared: no ESM cycle, no framework, no second list; schema/validator/publisher untouched",
+  "fix_3_real_baseline_proof": "C10: git show 5f0d0e58:scripts/gen-current-state.mjs into task-owned scripts/.tmp-gcs-baseline-5f0d0e58.mjs (deleted in finally); same fixture; OLD.build+renderView vs current build+renderView: full structure {view,findings,runtime,topLevel} JSON-equal AND rendered 1748 bytes Buffer-identical. Replaces the self-comparison C1 as the compatibility proof (C1 kept as cheap guard). No stash, no reset, no old-tree mutation",
+  "head_and_regressions": {
+    "new_commit": "09fd39464d86e3a9d58cde2e3ec2823fbf9a5f35", "parent": "bab5704828ce9796ff439882287f8e56cb152bd7",
+    "diff": "4 files +89/-7 (new shared module, two source edits, test additions)", "tree_bytes_total": 10822388,
+    "suites": "consumer 10/10 exit=0; dual-read 9/9 exit=0 (step4f-reg9.log hash 4d70c2c0..., matches accepted suite output); snapshot 30/30 exit=0 (2c781e08... unchanged); controls exit=1 nine historical reds kept, ID-set md5 2b1f38e77c... identical to the pre-existing set — nothing forced green"
+  },
+  "evidence_sha256": { "step4f-red.log": "94b73219158f4d6a0aab055e56ad4c0f9b99332665a7abe5d1683cb747304ddc", "step4f-green.log": "bafd1d2a7b3c5f1604964a8cdb18b278b4dd5918d0e513490ed27cecbec806a2", "step4f-reg9.log": "4d70c2c0197c006a630cf49d4baf178d0fa41f98515e512de2037aefbdf076b2", "step4f-reg30.log": "2c781e08eb24e3a1e471563195f7ad2123148eda62b11abe36aab4aab4043c28", "step4f-reg-controls.log": "c4688fa8f4b9e7fa76ccb0e29dab56518c37542a04c454ebe316e326ea0a6f05" },
+  "raw_receipt_after_commit": { "git_status_porcelain": "(empty)", "status_exit": 0, "HEAD": "09fd39464d86e3a9d58cde2e3ec2823fbf9a5f35", "utc": "2026-10-25T03:24:34Z" },
+  "mode_zero_claims": { "host": 0, "install": 0, "paid": 0, "subagents": 0, "ci": 0, "entry_switch": 0, "other_consumers": 0, "push": 0, "merge": 0, "stash": 0, "old_evidence_edits": 0 },
+  "gate_statement": "No gate claimed; G2 remains not passed. Idle awaiting the single re-review; if still blocked, stop and report."
+}

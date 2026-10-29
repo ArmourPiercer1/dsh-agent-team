@@ -1,0 +1,416 @@
+[
+ {
+  "file": "boot/plugin-manager/src/tools.ts",
+  "line": 19,
+  "pkg": "boot/plugin-manager",
+  "rawName": "'plugin_manager'"
+ },
+ {
+  "file": "core/tools/src/ptc.ts",
+  "line": 335,
+  "pkg": "core/tools",
+  "rawName": "RUN_CODE_NAME"
+ },
+ {
+  "file": "core/tools/src/schema.ts",
+  "line": 554,
+  "pkg": "core/tools",
+  "rawName": "NO_NAME_FOUND"
+ },
+ {
+  "file": "core/tools/src/schema.ts",
+  "line": 575,
+  "pkg": "core/tools",
+  "rawName": "NO_NAME_FOUND"
+ },
+ {
+  "file": "core/tools/src/testing.ts",
+  "line": 32,
+  "pkg": "core/tools",
+  "rawName": "NO_NAME_FOUND"
+ },
+ {
+  "file": "deliverables/tool-present/src/index.ts",
+  "line": 38,
+  "pkg": "deliverables/tool-present",
+  "rawName": "'present'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 175,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'spawn_teammate'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 215,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'send_message'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 232,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'list_agents'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 242,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'wait_agent'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 277,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'interrupt_agent'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 289,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'team_task_create'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 313,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'team_task_list'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 345,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'team_task_get'"
+ },
+ {
+  "file": "experimental/tool-agent-team/src/index.ts",
+  "line": 360,
+  "pkg": "experimental/tool-agent-team",
+  "rawName": "'team_task_update'"
+ },
+ {
+  "file": "extensions/cordis-host-runner/src/guard.ts",
+  "line": 497,
+  "pkg": "extensions/cordis-host-runner",
+  "rawName": "NO_NAME_FOUND"
+ },
+ {
+  "file": "extensions/tool-cordis/src/index.ts",
+  "line": 22,
+  "pkg": "extensions/tool-cordis",
+  "rawName": "'cordis_inspect_list'"
+ },
+ {
+  "file": "extensions/tool-cordis/src/index.ts",
+  "line": 41,
+  "pkg": "extensions/tool-cordis",
+  "rawName": "'cordis_inspect_query'"
+ },
+ {
+  "file": "fs/tool-fs/src/edit.ts",
+  "line": 84,
+  "pkg": "fs/tool-fs",
+  "rawName": "'edit'"
+ },
+ {
+  "file": "fs/tool-fs/src/read-image.ts",
+  "line": 209,
+  "pkg": "fs/tool-fs",
+  "rawName": "'read_image'"
+ },
+ {
+  "file": "fs/tool-fs/src/read.ts",
+  "line": 77,
+  "pkg": "fs/tool-fs",
+  "rawName": "'read'"
+ },
+ {
+  "file": "fs/tool-fs/src/write.ts",
+  "line": 72,
+  "pkg": "fs/tool-fs",
+  "rawName": "'write'"
+ },
+ {
+  "file": "fs/tool-fs-search/src/glob.ts",
+  "line": 306,
+  "pkg": "fs/tool-fs-search",
+  "rawName": "'glob'"
+ },
+ {
+  "file": "fs/tool-fs-search/src/grep.ts",
+  "line": 284,
+  "pkg": "fs/tool-fs-search",
+  "rawName": "'grep'"
+ },
+ {
+  "file": "fs/tool-str-replace-editor/src/index.ts",
+  "line": 429,
+  "pkg": "fs/tool-str-replace-editor",
+  "rawName": "'str_replace_editor'"
+ },
+ {
+  "file": "goal/tool-goal/src/index.ts",
+  "line": 195,
+  "pkg": "goal/tool-goal",
+  "rawName": "'get_goal'"
+ },
+ {
+  "file": "goal/tool-goal/src/index.ts",
+  "line": 207,
+  "pkg": "goal/tool-goal",
+  "rawName": "'create_goal'"
+ },
+ {
+  "file": "goal/tool-goal/src/index.ts",
+  "line": 234,
+  "pkg": "goal/tool-goal",
+  "rawName": "'update_goal'"
+ },
+ {
+  "file": "interaction/tool-ask-user/src/index.ts",
+  "line": 38,
+  "pkg": "interaction/tool-ask-user",
+  "rawName": "'ask_user_question'"
+ },
+ {
+  "file": "interaction/tool-ask-user/src/timed.ts",
+  "line": 106,
+  "pkg": "interaction/tool-ask-user",
+  "rawName": "'ask_user_question'"
+ },
+ {
+  "file": "jobs/tool-jobs/src/index.ts",
+  "line": 310,
+  "pkg": "jobs/tool-jobs",
+  "rawName": "'job_output'"
+ },
+ {
+  "file": "jobs/tool-jobs/src/index.ts",
+  "line": 351,
+  "pkg": "jobs/tool-jobs",
+  "rawName": "'job_list'"
+ },
+ {
+  "file": "jobs/tool-jobs/src/index.ts",
+  "line": 371,
+  "pkg": "jobs/tool-jobs",
+  "rawName": "'job_kill'"
+ },
+ {
+  "file": "lsp/tool-lsp/src/index.ts",
+  "line": 109,
+  "pkg": "lsp/tool-lsp",
+  "rawName": "'lsp'"
+ },
+ {
+  "file": "mcp/mcp-resources/src/tools.ts",
+  "line": 33,
+  "pkg": "mcp/mcp-resources",
+  "rawName": "'list_mcp_resources'"
+ },
+ {
+  "file": "mcp/mcp-resources/src/tools.ts",
+  "line": 42,
+  "pkg": "mcp/mcp-resources",
+  "rawName": "'list_mcp_resource_templates'"
+ },
+ {
+  "file": "mcp/mcp-resources/src/tools.ts",
+  "line": 51,
+  "pkg": "mcp/mcp-resources",
+  "rawName": "'read_mcp_resource'"
+ },
+ {
+  "file": "plan/plan-mode/src/index.ts",
+  "line": 278,
+  "pkg": "plan/plan-mode",
+  "rawName": "EXIT_PLAN_MODE"
+ },
+ {
+  "file": "schedule/schedule/src/tools.ts",
+  "line": 416,
+  "pkg": "schedule/schedule",
+  "rawName": "'schedule_create'"
+ },
+ {
+  "file": "schedule/schedule/src/tools.ts",
+  "line": 451,
+  "pkg": "schedule/schedule",
+  "rawName": "'schedule_list'"
+ },
+ {
+  "file": "schedule/schedule/src/tools.ts",
+  "line": 469,
+  "pkg": "schedule/schedule",
+  "rawName": "'schedule_delete'"
+ },
+ {
+  "file": "schedule/schedule/src/tools.ts",
+  "line": 492,
+  "pkg": "schedule/schedule",
+  "rawName": "'schedule_update'"
+ },
+ {
+  "file": "session-query/tool-session-query/src/index.ts",
+  "line": 65,
+  "pkg": "session-query/tool-session-query",
+  "rawName": "'session_search'"
+ },
+ {
+  "file": "session-query/tool-session-query/src/index.ts",
+  "line": 75,
+  "pkg": "session-query/tool-session-query",
+  "rawName": "'session_event_search'"
+ },
+ {
+  "file": "session-query/tool-session-query/src/index.ts",
+  "line": 85,
+  "pkg": "session-query/tool-session-query",
+  "rawName": "'session_trace'"
+ },
+ {
+  "file": "session-query/tool-session-query/src/index.ts",
+  "line": 95,
+  "pkg": "session-query/tool-session-query",
+  "rawName": "'session_event_trace'"
+ },
+ {
+  "file": "session-query/tool-session-query/src/index.ts",
+  "line": 108,
+  "pkg": "session-query/tool-session-query",
+  "rawName": "'session_event_read'"
+ },
+ {
+  "file": "shell/tool-bash/src/index.ts",
+  "line": 373,
+  "pkg": "shell/tool-bash",
+  "rawName": "'bash'"
+ },
+ {
+  "file": "shell/tool-bash-persistent/src/index.ts",
+  "line": 413,
+  "pkg": "shell/tool-bash-persistent",
+  "rawName": "'bash'"
+ },
+ {
+  "file": "shell/tool-pwsh/src/index.ts",
+  "line": 383,
+  "pkg": "shell/tool-pwsh",
+  "rawName": "'pwsh'"
+ },
+ {
+  "file": "shell/tool-pwsh-persistent/src/index.ts",
+  "line": 426,
+  "pkg": "shell/tool-pwsh-persistent",
+  "rawName": "'pwsh'"
+ },
+ {
+  "file": "skill/tool-skill/src/index.ts",
+  "line": 81,
+  "pkg": "skill/tool-skill",
+  "rawName": "'skill'"
+ },
+ {
+  "file": "skill/tool-workspace-dependencies/src/index.ts",
+  "line": 249,
+  "pkg": "skill/tool-workspace-dependencies",
+  "rawName": "'load_workspace_dependencies'"
+ },
+ {
+  "file": "subagent/tool-subagent/src/index.ts",
+  "line": 379,
+  "pkg": "subagent/tool-subagent",
+  "rawName": "toolName"
+ },
+ {
+  "file": "subagent/tool-subagent/src/list-models.ts",
+  "line": 87,
+  "pkg": "subagent/tool-subagent",
+  "rawName": "'list_subagent_models'"
+ },
+ {
+  "file": "subagent/tool-subagent-control/src/index.ts",
+  "line": 28,
+  "pkg": "subagent/tool-subagent-control",
+  "rawName": "'send_message'"
+ },
+ {
+  "file": "subagent/tool-subagent-control/src/index.ts",
+  "line": 74,
+  "pkg": "subagent/tool-subagent-control",
+  "rawName": "'interrupt_agent'"
+ },
+ {
+  "file": "subagent/tool-subagent-control/src/list-agents.ts",
+  "line": 86,
+  "pkg": "subagent/tool-subagent-control",
+  "rawName": "'list_agents'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 163,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_open'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 198,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_send'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 301,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_read'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 334,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_signal'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 359,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_close'"
+ },
+ {
+  "file": "terminal/tool-terminal/src/index.ts",
+  "line": 390,
+  "pkg": "terminal/tool-terminal",
+  "rawName": "'terminal_list'"
+ },
+ {
+  "file": "todo/tool-todo/src/index.ts",
+  "line": 135,
+  "pkg": "todo/tool-todo",
+  "rawName": "'todo_write'"
+ },
+ {
+  "file": "web/tool-web/src/fetch.ts",
+  "line": 456,
+  "pkg": "web/tool-web",
+  "rawName": "'web_fetch'"
+ },
+ {
+  "file": "web/tool-web/src/search.ts",
+  "line": 325,
+  "pkg": "web/tool-web",
+  "rawName": "'web_search'"
+ },
+ {
+  "file": "workflow/tool-ralph/src/index.ts",
+  "line": 410,
+  "pkg": "workflow/tool-ralph",
+  "rawName": "'ralph'"
+ },
+ {
+  "file": "workflow/tool-workflow/src/index.ts",
+  "line": 328,
+  "pkg": "workflow/tool-workflow",
+  "rawName": "toolName"
+ }
+]

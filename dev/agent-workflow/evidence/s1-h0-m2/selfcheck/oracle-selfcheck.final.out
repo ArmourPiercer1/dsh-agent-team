@@ -1,0 +1,26 @@
+ok   [want pass=true got=true]  POS real decide sequence (title idle, tc1, tc2, final text)  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=[]
+ok   [want pass=false got=false]  NEG early binding (call1 ran A)  outcome=early-binding-A pending=false settled=true  failing=["call1_ran_body_B","legs_all_ok_call1_by_callid","markers_exact_pair"]
+ok   [want pass=false got=false]  NEG zero bodies  outcome=no-body pending=false settled=false  failing=["callid_correspondence","swap_leg_bound_to_call1_callid","restore_leg_bound_to_call1_callid","control_leg_bound_to_call2_callid","call1_ran_body_B","call1_body_ran_true","call2_ran_body_A_control","call2_body_ran_true","legs_all_ok_call1_by_callid","legs_all_ok_call2_by_callid","markers_exact_pair","result_delivered_call1_and_second_call_issued","result_delivered_call2_final_text"]
+ok   [want pass=false got=false]  NEG final with no result request  outcome=not-delivered-call1-result pending=false settled=false  failing=["result_delivered_call1_and_second_call_issued","result_delivered_call2_final_text"]
+ok   [want pass=false got=false]  NEG protocol violation: R1 answered with text (built from the real R1 object)  outcome=not-delivered-call1-result pending=false settled=false  failing=["result_delivered_call1_and_second_call_issued"]
+ok   [want pass=false got=false]  NEG R2 without native termination frames  outcome=not-delivered-call2-result pending=false settled=false  failing=["result_delivered_call2_final_text"]
+ok   [want pass=false got=false]  NEG extra marker  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["markers_exact_pair"]
+ok   [want pass=false got=false]  NEG one leg failed  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["legs_all_ok_call1_by_callid"]
+ok   [want pass=false got=false]  NEG swap never happened  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["swap_leg_bound_to_call1_callid"]
+ok   [want pass=false got=false]  NEG body-ran ran=false  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["call1_body_ran_true"]
+ok   [want pass=false got=false]  NEG tool_result is_error  outcome=not-delivered-call1-result pending=false settled=false  failing=["result_delivered_call1_and_second_call_issued"]
+ok   [want pass=false got=false]  NEG fake string result  outcome=not-delivered-call1-result pending=false settled=false  failing=["result_delivered_call1_and_second_call_issued"]
+ok   [want pass=false got=false]  NEG wrong tool_use_id  outcome=not-delivered-call1-result pending=false settled=false  failing=["result_delivered_call1_and_second_call_issued"]
+ok   [want pass=false got=false]  NEG fence legs bound to a callId no body used  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["swap_leg_bound_to_call1_callid","restore_leg_bound_to_call1_callid"]
+ok   [want pass=false got=false]  NEG body callId does NOT correspond to the fence callId  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["callid_correspondence","swap_leg_bound_to_call1_callid","restore_leg_bound_to_call1_callid"]
+ok   [want pass=false got=false]  NEG control arm missing (call2 also swapped)  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["control_leg_bound_to_call2_callid"]
+ok   [want pass=false got=false]  NEG restore leg bound to the wrong callId  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["restore_leg_bound_to_call1_callid"]
+ok   [want pass=false got=false]  NEG untriggered tool name in ledger  outcome=late-resolution-B-then-control-A pending=false settled=true  failing=["untriggered_name_zero"]
+
+--- ordering (intermediate async states stay pending; replies are real decide outputs) ---
+ok   S1 body1 only                     pending=true outcome=pending
+ok   S2 R1 arrived (reply.kind=tool-call), tc2 issued  pending=true outcome=pending
+ok   S3 body2 done, R2 in flight       pending=true outcome=pending
+ok   S4 R2 final text + termination    pass=true outcome=late-resolution-B-then-control-A
+
+ALL CONTROLS OK

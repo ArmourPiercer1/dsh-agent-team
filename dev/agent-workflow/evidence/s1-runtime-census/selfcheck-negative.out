@@ -1,0 +1,6 @@
+[OK] baseline_all_true
+[OK] neg1_drop_row_fails
+[OK] neg2_wrong_scope_fails
+[OK] neg3_names_without_identity_fails
+[OK] neg4_calibration_not_a_substitute
+SELFCHECK-NEGATIVE: ALL REQUIRED FAILURES BEHAVE (gate exactly as scoped)

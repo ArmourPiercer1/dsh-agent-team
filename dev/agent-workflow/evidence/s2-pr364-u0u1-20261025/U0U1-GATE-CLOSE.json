@@ -1,0 +1,26 @@
+{
+  "artifact": "s2-pr364-u0u1-20261025/U0U1-GATE-CLOSE.json",
+  "kind": "Bounded (10-min) prior-gate closure. PR #364 body read verbatim from GitHub API (head 6e4ada1, unchanged): U0='Safe freeze, local-only asset recovery and minimum disk headroom'; U1='Incremental E0/E1 re-audit, #362 negative controls, G1-I delta'. Nothing here stamps a stage PASS — stage verdicts are root/reviewer rulings; this file states which exit requirements have evidence and which minimum evidence was missing and is closed now.",
+  "utc": "2026-10-25T09:3Z (date -u at run; PR API updated_at 2026-10-25T07:36:01Z)",
+  "originals_printed_this_round": {
+    "U0": "dev/agent-workflow/evidence/s2-pr364-u0u1-20261025/U0-FREEZE-EXEMPTION.json (cat-printed in prior tool results)",
+    "U1": "…/U1-THREE-AXIS.json (printed)",
+    "manifest-13": "…/manifest-13.json (printed in review round)"
+  },
+  "U0": {
+    "safe_freeze": "SATISFIED+delta: U0 file froze 8af1ef5c0/clean/chain/remote-3d6f6aa/PR-head-6e4ada1; FREEZE DELTA now: HEAD advanced to bc869d9f667833e04b731a21b04a6da39db30358 (U2 package, retained per instruction); no history rewrite, no asset deletion.",
+    "local_only_asset_recovery": "SATISFIED (recover-as-recognize, nothing inferable-from-GitHub destroyed): local-only commits ahead of origin = 6 (listed in U0 + this file); foreign stash 'wrong-grammar-8788-attempt' on feat/a5m2-wire-g1 present and untouched; tests/homes world directory present. Backup = user-waived 09:18Z, no longer a gap.",
+    "minimum_disk_headroom": "SATISFIED: round-start free 39,511,928,832 B (user measured 39,511,957,504 B same round); no write-stop triggered; per-round budgets recorded in U0/manifests."
+  },
+  "U1": {
+    "incremental_E0_E1_re_audit": "SATISFIED as increment: U1 three-axis table (18 MACHINE-CONSUMERS x implementation x gaps) + DELTA NOW — four candidate-side consumers exist that MACHINE-CONSUMERS.json does not yet list: (1) ci-pr-gate checkSnapshotCurrentContract + --authority-candidate leg flag [36f26174], (2) gen-current-state/docs-sync explicit authorityCandidate modes [5f0d0e58/8af1ef5c], (3) scripts/authority-baseline-resolver.mjs [8af1ef5c], (4) census-runtime candidate-consumption block [bc869d9]. Map itself re-frozen byte-identical: MAP df3eb5e53832a260, CONSUMERS b54b7dba96187b88, ERRATA ef47cbf88fd0cf5f.",
+    "number362_negative_controls": "SATISFIED without redevelopment (PR body: adopt, do not redevelop): doc-consistency-controls run with direct exit=1, nine historical reds comm-diff 0 in both u1- and u2- rounds; suite-level negatives S9/S10/S11/S12 (ci-reader), T3-T6/T8 (sync/resolver) are all real-exit negatives; log originals on disk.",
+    "G1_I_delta": "DELTA RECORDED (full re-grade stays with the G1-I reviewer): gate.inputSnapshotDigest == digest embedded in F0-ISSUED (True, string-equal); inheritance NOT wholesale re-run per instruction — checked summary: worktree dev/engineering/authority-snapshot.schema.json is BYTE-EQUAL to evidence r2/AUTHORITY-SNAPSHOT.schema.json (d70fcec29b0bd719; the top-level evidence schema is the untouched frozen r1 v0.1.0, drift question resolved as intended r1/r2 layering); tests/s2-authority/snapshot-example.json == r2 example byte-equal; six suites + controls green/9-red re-executed at bc869d9 as the behavior delta evidence. What G1-I inputs changed since ed3c2cfb…: only S2 candidate additions on the branch (nothing under the audited F0 inputs)."
+  },
+  "stage_verdict_statement": "U0 and U1 exit requirements: ALL have evidence now (two minimum deltas closed in this file: local-asset enumeration + G1-I/schema digest-consistency cold checks; and the new-consumer delta list). This file does NOT mark U0/U1 stage PASS — that is the root/reviewer ruling it feeds.",
+  "staged_must_fix_not_executed": [
+    "census half-pair: [ -f json ] && [ -f digest ] silently skips the resolver block when exactly one file exists — must become named xor refusal, only both-absent is legal pre-migration",
+    "consumer-candidate C9-adjacent block: openSync('wx') sits INSIDE try while finally rmSync(tmpMod,{force:true}) is unconditional — on EEXIST the finally would delete the OTHER creator's file; fix = ownership guard (rm only if this process created it) + collision negative exercising the ACTUAL call path, not bare Node wx semantics"
+  ],
+  "zero_claims": { "new_plan": 0, "full_tree_rescan": 0, "code_changes_this_round": 0, "u3_activity": 0 }
+}

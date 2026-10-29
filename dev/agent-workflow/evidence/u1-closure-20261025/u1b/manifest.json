@@ -1,0 +1,30 @@
+{
+  "package": "U1-B (EB0-2)",
+  "head": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+  "generated_utc": "2026-10-25T10:23:40Z",
+  "files": {
+    "analyze-reds.mjs": "c26473d61623b4636170b432c068b042742759cf816b8bdab8ea3d5817d1a99b",
+    "ci-dag.md": "49f8835c30eb83560ecc9bd61c8c06e3839feddab0945b005d6521abf80b1e9f",
+    "docs-probe.log": "4e2cf40ec677b32b55c085ef99ec618b82ad6ab6881e538fdc4a47c03d426d8e",
+    "install-attempt1.log": "f9c6b7d0637beaa0aa52e80e744152a86e8633183dc091d061960c1cfda1a298",
+    "install-attempt2.log": "f9c6b7d0637beaa0aa52e80e744152a86e8633183dc091d061960c1cfda1a298",
+    "install-attempt3.log": "69beeb1a44698acc46d8ddc43dcec6e38a7353e9058317d165e280cbf14d85fa",
+    "install-attempt4.log": "872ca7d5b552d4689d425a4987383c300ebc7daf83dc1f14df2a0a72fa6639f4",
+    "install-log.txt": "3146cfda39d721ec60f5639a1fc4f282c0506fd5dd95e77f0e29ec41c91e4e29",
+    "reds.json": "9476d7e61a0f0a762fa7eef84ea3d17c27e337f84793155cbf236c0387d7cf7c",
+    "scratch/cp-store.log": "3afd44f8ea0f75713f59dda29570905a372f650f1baada12b2b853b594963ba3",
+    "scratch/mirror2.log": "541e63bb829f3ed34e6b4f16944f17301f3a07227e16fda5c44d8224f20cbc8b",
+    "scratch/my-controls-fails.txt": "26ae32e65f6d20b4bcd227274cab3660ffb67a2aa35d634040adac9d73a6d199",
+    "scratch/run1.ids.txt": "d36c0517aaaed6abc4dfeda37db88ff4f5074f7f2a820fa2b7d72ef9e10218d7",
+    "scratch/run2.ids.txt": "d36c0517aaaed6abc4dfeda37db88ff4f5074f7f2a820fa2b7d72ef9e10218d7",
+    "scratch/u1c-controls-fails.txt": "26ae32e65f6d20b4bcd227274cab3660ffb67a2aa35d634040adac9d73a6d199",
+    "SUMMARY.md": "7c355edaa09b57c6c7c682fa00c3e7acd4048628fc31a93a3d87a38d63d4882f",
+    "typecheck.log": "28a758856e0aff34beb27b242175c59549e82f572b2669be1c4a16b6177240c1",
+    "typecheck-run.log": "c7ed90af2867ebf3b12f4e839e95e0969e5c643a2182c4226daa2083da5d59fd",
+    "vitest-run1.json": "c81f070833e40a06c950c4ef33583d05cf8de1f9ea5b39169a9aaafcfc1eeb99",
+    "vitest-run1.log": "0bfbbc18cc69c98cb00e68c57d5a80d71d086f746bcad71cd3d8a2c3838837e9",
+    "vitest-run2.json": "2a8535b96aa01f08ff41884e275dc25446abcfa21a2542cc2374d7ca1cecd96e",
+    "vitest-run2.log": "164710b17a6b6ad83ae525e628fb4ffceaa6f80eac96ee5846b5e48e3dbe6c4e",
+    "vitest-runs.log": "832625707a95592ef431ffdf244bdf38b36df9e3c726307ef5260c35a3ea6768"
+  }
+}

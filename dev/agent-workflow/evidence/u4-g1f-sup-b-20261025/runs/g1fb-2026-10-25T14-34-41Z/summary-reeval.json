@@ -1,0 +1,339 @@
+{
+  "note": "OFFLINE re-evaluation with corrected cell semantics (grant-leg ledger coverage; not-yet-bound dynamic-source accepted as unknown-dynamic-source refusal). Inputs (ledger.jsonl, markers/, world fs) are the ORIGINAL run bytes; nothing re-ran. b_admitted_runs (alpha) cannot pass offline: with the group-gate fix disclosed for the next executor, its orchestration bug is understood; beta covers the same admitted-executes path.",
+  "world_intact": true,
+  "pass": false,
+  "cells": {
+    "enroll8": {
+      "pass": true,
+      "detail": "[{\"name\":\"write\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"edit\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"read\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"grep\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"bash\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":"
+    },
+    "p1_write_allow": {
+      "pass": true,
+      "detail": "ok.txt=\"G1F-EDITED\""
+    },
+    "p1_write_deny_zero_effect": {
+      "pass": true,
+      "detail": "refused=\"refused\" file-absent=true"
+    },
+    "p1_edit": {
+      "pass": true,
+      "detail": "content=\"G1F-EDITED\""
+    },
+    "p1_collision_refused": {
+      "pass": true,
+      "detail": "collision-row=true; dupe-attempt-ctl-ok=true; owner-kept=true"
+    },
+    "p1_zerodiff_second_family": {
+      "pass": true,
+      "detail": "registered=10; distinct-registry-sha=1; write+edit present=true"
+    },
+    "p2_read_allow": {
+      "pass": true,
+      "detail": "marker.first8=\"G1FDATA1\""
+    },
+    "p2_read_deny": {
+      "pass": true,
+      "detail": "decision=\"refused\""
+    },
+    "p2_grep_ask_consume": {
+      "pass": true,
+      "detail": "grep-marker=\"exit=0 matches=2\"; phases=requested,approved,consumed,replay-refused"
+    },
+    "p2_grep_replay_refused": {
+      "pass": true,
+      "detail": "g3-refused=\"replay-refused\"; body=zero"
+    },
+    "p2_bash_deny_zero_process": {
+      "pass": true,
+      "detail": "denydir/x.txt-absent=true; decision=\"refused\""
+    },
+    "p2_bash_ask_consume": {
+      "pass": true,
+      "detail": "askdir/y.txt=\"askok\\n\""
+    },
+    "p2_bash_revoke_before_body": {
+      "pass": true,
+      "detail": "z.txt-absent=true; decision=\"revoked-refused\""
+    },
+    "p2_bash_allow": {
+      "pass": true,
+      "detail": "shell.txt=\"ok\\n\""
+    },
+    "p2_one_ledger_all_classes": {
+      "pass": true,
+      "detail": "distinct-ledger-instances=1 (g1fb-center-1#ledger-1); names=[\"write\",\"edit\",\"read\",\"grep\",\"bash\",\"job_list\",\"job_output\",\"mcp__beta__ping\"]; job-admits=4"
+    },
+    "ci03_pre_enroll_native": {
+      "pass": true,
+      "detail": "native files=true/true; center-empty-at-A0=true; governed-rows-before-enroll=0; governed-rows-tagged-pre=0"
+    },
+    "p3_job_born_real_process": {
+      "pass": true,
+      "detail": "job_id=\"bash-1\"; jobfile=\"JOBOUT-p3s\\n\""
+    },
+    "p3_bridge_list_output": {
+      "pass": true,
+      "detail": "job_list text contains born id: bash-1 [bash] completed — echo JOBOUT-p3s && echo JOBOUT-p3s > w/jobfile.txt"
+    },
+    "p3_bridge_output_ring": {
+      "pass": true,
+      "detail": "job_output contains real ring bytes: \"JOBOUT-p3s\\n\\n[status: completed, exit=0]\""
+    },
+    "p3_owner_fence_host_nonreach": {
+      "pass": true,
+      "detail": "fence-row=present; svc.kill calls for born job=0"
+    },
+    "p3_old_disposer_keeps_new_mount": {
+      "pass": true,
+      "detail": "rows=[\"disposed:job_list\",\"refused-stale:job_list\",\"PLANT-naive:job_list\",\"PLANT-naive:job_list\"]"
+    },
+    "p3_no_second_ledger": {
+      "pass": true,
+      "detail": "grant-names=[\"grep\",\"bash\"]; bridge-rows=19"
+    },
+    "plant1_path_guard": {
+      "pass": true,
+      "detail": "out/plant.txt=true"
+    },
+    "plant2_ledger_off": {
+      "pass": true,
+      "detail": "denydir/p.txt=true"
+    },
+    "plant3_naive_disposer_kills_new_mount": {
+      "pass": true,
+      "detail": "naive-row=true; governed body for p3p4=zero (native took over — mount gone); approved-without-job_list=true"
+    },
+    "protocol": {
+      "pass": true,
+      "detail": "carried from original summary: 401=401; prompts=200,200,200,200,200,200,200,200 of 8"
+    },
+    "b_late_binding": {
+      "pass": true,
+      "detail": "alpha discovered after ctl session-created stamp: {\"at\":\"2026-10-25T14:35:47.142Z\",\"leg\":\"mcp-watch\",\"phase\":\"discovered\",\"name\":\"mcp__alpha__ping\",\"afterSessionCreated\":true}"
+    },
+    "b_unknown_refused_before_body": {
+      "pass": true,
+      "detail": "b1 refused=\"unknown-dynamic-source\"; alpha marker b1 absent=true"
+    },
+    "b_admitted_runs": {
+      "pass": false,
+      "detail": "alpha served b2 server-side=false"
+    },
+    "b_second_server_no_inherit": {
+      "pass": true,
+      "detail": "beta(b3) refused=\"unknown-dynamic-source\"; beta marker b3 absent=true"
+    },
+    "b_admitted_beta_runs": {
+      "pass": true,
+      "detail": "beta served b4 server-side=true"
+    },
+    "b_plant_admission_off": {
+      "pass": true,
+      "detail": "plant row + beta served b5=true"
+    },
+    "b_after_heal_refused": {
+      "pass": true,
+      "detail": "b6 refused again=\"unknown-dynamic-source\"; marker b6 absent=true"
+    }
+  },
+  "diff": [
+    {
+      "cell": "enroll8",
+      "before": true,
+      "after": true,
+      "detail": "[{\"name\":\"write\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"edit\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"read\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"grep\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"bash\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":"
+    },
+    {
+      "cell": "p1_write_allow",
+      "before": true,
+      "after": true,
+      "detail": "ok.txt=\"G1F-EDITED\""
+    },
+    {
+      "cell": "p1_write_deny_zero_effect",
+      "before": true,
+      "after": true,
+      "detail": "refused=\"refused\" file-absent=true"
+    },
+    {
+      "cell": "p1_edit",
+      "before": true,
+      "after": true,
+      "detail": "content=\"G1F-EDITED\""
+    },
+    {
+      "cell": "p1_collision_refused",
+      "before": true,
+      "after": true,
+      "detail": "collision-row=true; dupe-attempt-ctl-ok=true; owner-kept=true"
+    },
+    {
+      "cell": "p1_zerodiff_second_family",
+      "before": true,
+      "after": true,
+      "detail": "registered=10; distinct-registry-sha=1; write+edit present=true"
+    },
+    {
+      "cell": "p2_read_allow",
+      "before": true,
+      "after": true,
+      "detail": "marker.first8=\"G1FDATA1\""
+    },
+    {
+      "cell": "p2_read_deny",
+      "before": true,
+      "after": true,
+      "detail": "decision=\"refused\""
+    },
+    {
+      "cell": "p2_grep_ask_consume",
+      "before": true,
+      "after": true,
+      "detail": "grep-marker=\"exit=0 matches=2\"; phases=requested,approved,consumed,replay-refused"
+    },
+    {
+      "cell": "p2_grep_replay_refused",
+      "before": true,
+      "after": true,
+      "detail": "g3-refused=\"replay-refused\"; body=zero"
+    },
+    {
+      "cell": "p2_bash_deny_zero_process",
+      "before": true,
+      "after": true,
+      "detail": "denydir/x.txt-absent=true; decision=\"refused\""
+    },
+    {
+      "cell": "p2_bash_ask_consume",
+      "before": true,
+      "after": true,
+      "detail": "askdir/y.txt=\"askok\\n\""
+    },
+    {
+      "cell": "p2_bash_revoke_before_body",
+      "before": true,
+      "after": true,
+      "detail": "z.txt-absent=true; decision=\"revoked-refused\""
+    },
+    {
+      "cell": "p2_bash_allow",
+      "before": true,
+      "after": true,
+      "detail": "shell.txt=\"ok\\n\""
+    },
+    {
+      "cell": "p2_one_ledger_all_classes",
+      "before": false,
+      "after": true,
+      "detail": "distinct-ledger-instances=1 (g1fb-center-1#ledger-1); names=[\"write\",\"edit\",\"read\",\"grep\",\"bash\",\"job_list\",\"job_output\",\"mcp__beta__ping\"]; job-admits=4"
+    },
+    {
+      "cell": "ci03_pre_enroll_native",
+      "before": true,
+      "after": true,
+      "detail": "native files=true/true; center-empty-at-A0=true; governed-rows-before-enroll=0; governed-rows-tagged-pre=0"
+    },
+    {
+      "cell": "p3_job_born_real_process",
+      "before": true,
+      "after": true,
+      "detail": "job_id=\"bash-1\"; jobfile=\"JOBOUT-p3s\\n\""
+    },
+    {
+      "cell": "p3_bridge_list_output",
+      "before": true,
+      "after": true,
+      "detail": "job_list text contains born id: bash-1 [bash] completed — echo JOBOUT-p3s && echo JOBOUT-p3s > w/jobfile.txt"
+    },
+    {
+      "cell": "p3_bridge_output_ring",
+      "before": true,
+      "after": true,
+      "detail": "job_output contains real ring bytes: \"JOBOUT-p3s\\n\\n[status: completed, exit=0]\""
+    },
+    {
+      "cell": "p3_owner_fence_host_nonreach",
+      "before": true,
+      "after": true,
+      "detail": "fence-row=present; svc.kill calls for born job=0"
+    },
+    {
+      "cell": "p3_old_disposer_keeps_new_mount",
+      "before": true,
+      "after": true,
+      "detail": "rows=[\"disposed:job_list\",\"refused-stale:job_list\",\"PLANT-naive:job_list\",\"PLANT-naive:job_list\"]"
+    },
+    {
+      "cell": "p3_no_second_ledger",
+      "before": true,
+      "after": true,
+      "detail": "grant-names=[\"grep\",\"bash\"]; bridge-rows=19"
+    },
+    {
+      "cell": "plant1_path_guard",
+      "before": true,
+      "after": true,
+      "detail": "out/plant.txt=true"
+    },
+    {
+      "cell": "plant2_ledger_off",
+      "before": true,
+      "after": true,
+      "detail": "denydir/p.txt=true"
+    },
+    {
+      "cell": "plant3_naive_disposer_kills_new_mount",
+      "before": true,
+      "after": true,
+      "detail": "naive-row=true; governed body for p3p4=zero (native took over — mount gone); approved-without-job_list=true"
+    },
+    {
+      "cell": "protocol",
+      "before": true,
+      "after": true,
+      "detail": "carried from original summary: 401=401; prompts=200,200,200,200,200,200,200,200 of 8"
+    },
+    {
+      "cell": "b_late_binding",
+      "before": true,
+      "after": true,
+      "detail": "alpha discovered after ctl session-created stamp: {\"at\":\"2026-10-25T14:35:47.142Z\",\"leg\":\"mcp-watch\",\"phase\":\"discovered\",\"name\":\"mcp__alpha__ping\",\"afterSessionCreated\":true}"
+    },
+    {
+      "cell": "b_unknown_refused_before_body",
+      "before": true,
+      "after": true,
+      "detail": "b1 refused=\"unknown-dynamic-source\"; alpha marker b1 absent=true"
+    },
+    {
+      "cell": "b_admitted_runs",
+      "before": false,
+      "after": false,
+      "detail": "alpha served b2 server-side=false"
+    },
+    {
+      "cell": "b_second_server_no_inherit",
+      "before": true,
+      "after": true,
+      "detail": "beta(b3) refused=\"unknown-dynamic-source\"; beta marker b3 absent=true"
+    },
+    {
+      "cell": "b_admitted_beta_runs",
+      "before": true,
+      "after": true,
+      "detail": "beta served b4 server-side=true"
+    },
+    {
+      "cell": "b_plant_admission_off",
+      "before": true,
+      "after": true,
+      "detail": "plant row + beta served b5=true"
+    },
+    {
+      "cell": "b_after_heal_refused",
+      "before": true,
+      "after": true,
+      "detail": "b6 refused again=\"unknown-dynamic-source\"; marker b6 absent=true"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "artifact": "s1-f0-issued-20261025/G1-GATE-DECISION.json",
+  "kind": "machine-readable gate decision for PR363 S1 G1",
+  "gate": "S1/G1",
+  "verdicts": {
+    "G1_I": "PASS",
+    "G1_F": "NOT_PASSED",
+    "overall_G1": "PARTIAL"
+  },
+  "decided_by": {
+    "identity": "dot",
+    "role": "Freeze Owner",
+    "nature": "technical sign-off decision; not a human signature, not a cryptographic signature"
+  },
+  "utc": {
+    "start": "2026-10-25T01:32:40.173Z",
+    "clock": "date/node Date real UTC, not estimated"
+  },
+  "inputSnapshotDigest": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+  "digest_consistency": "the identical digest string above is embedded in F0-ISSUED-20261025.json; the two are byte-identical",
+  "review_basis": {
+    "reviewer": "independent read-only G1-I Reviewer",
+    "verdict": "READY_TO_SIGN",
+    "substantive_gaps_closed": 2
+  },
+  "unlocks": [
+    {
+      "scope": "S2 document and engineering-governance work",
+      "precondition": "only work with no unproven safety-critical dependency; every dependency asserted must carry an existing path+hash or receipt"
+    }
+  ],
+  "does_not_unlock": [
+    "S4",
+    "product/source writes",
+    "release or publish",
+    "ratification of the 18 IDs (0 ratified)",
+    "status change of the 93 PROPOSED seeds",
+    "any deletion (re-review required before any delete)",
+    "Q6/Q7 space closure as achieved"
+  ],
+  "carried_obligations": [
+    "4 surface obligations stay adjudicated and separate (do not re-request T1)",
+    "UNKNOWN items keep named responsibility and a follow-up point",
+    "capacity is not released bytes",
+    "build provenance NOT_VERIFIED",
+    "13:00Z is budget cap, not review floor",
+    "no new gate added"
+  ],
+  "guard": "re-evaluate and stop if any referenced input hash diverges"
+}

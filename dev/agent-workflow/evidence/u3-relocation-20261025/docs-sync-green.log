@@ -1,0 +1,3 @@
+docs:sync --check: docs=53 notes=4 plans=23(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+docs-sync exit=0

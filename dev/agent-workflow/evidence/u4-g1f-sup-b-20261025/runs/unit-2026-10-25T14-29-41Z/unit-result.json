@@ -1,0 +1,110 @@
+{
+  "pass": false,
+  "results": [
+    {
+      "name": "register-write",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "register-edit-second-family-generically",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "zerodiff-registry-self-sha-constant",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "write-allow-executes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "write-deny-throws-before-body",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "collision-refused",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ask-pending",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "approve-issued",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one-shot-consume",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "replay-refused",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "revoke-before-consume-refuses",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plant-ledger-off-allows-deny-lane",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plant-pathguard-off-lane-allow",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "regen-same-family-ok",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "old-disposer-refused-law-keeps-mount",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plant-naive-disposer-kills-current-mount",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "master-law-old-identity-revoked-false",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "bridge-fence-refuses-foreign",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "name": "bridge-owner-passes-to-host-once",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "bridge-list-visible-to-owner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "bridge-list-hides-foreign-row",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

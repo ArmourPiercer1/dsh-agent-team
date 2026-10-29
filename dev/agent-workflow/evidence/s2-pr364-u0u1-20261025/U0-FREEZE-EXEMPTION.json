@@ -1,0 +1,30 @@
+{
+  "artifact": "s2-pr364-u0u1-20261025/U0-FREEZE-EXEMPTION.json",
+  "kind": "U0 increment record for resuming PR #364 work: freeze pointers, backup exemption, protected paths, capacity budget. Short by instruction; adds no new plan.",
+  "utc": { "written": "2026-10-25T09:26Z (date -u at run round)" },
+  "freeze": {
+    "isolation_tree": ".worktrees/s2-authority-iso-20261025 @ 8af1ef5c0d2e7cb367c4cc2963f217de8214b10d (clean; single writer, same Qwen session — no tree copy, no session switch)",
+    "chain": "4aaaa7b2 … 3d6f6aad8 (pushed remote) + 5 local commits 36f26174 d027fc08 aa408af5 61df0b42 8af1ef5c; the first three S2 packages' commits are retained IN-BRANCH — strategy is the full branch, NOT a cherry-picked five-commit subset",
+    "remote": "origin branch tip 3d6f6aad8; PR #364 head 6e4ada1 unchanged; Draft status is not a blocker per user",
+    "upstream_inputs_reused_not_replanned": ["s1-f0-issued-20261025/F0-ISSUED + G1-GATE-DECISION (G1-I PASS / G1-F NOT_PASSED / overall PARTIAL)", "s2-authority-map-20261025/AUTHORITY-MIGRATION-MAP + MACHINE-CONSUMERS (18) + ERRATA (E1-E3; G5 withdrawn, G8 downgraded, G2/G3 restated as observations)", "s2-schema-candidate-20261025 (frozen schema, PUBLISHER-CONTRACT)", "manifests 1-12 incl. manifest-11 (statement semantics + S1 fixture honesty) and manifest-12 (docs:sync candidate --check + baseline resolver)"]
+  },
+  "backup_exemption": {
+    "user_words_utc": "2026-10-25T09:18Z — 我放弃了备份…scp 大量小文件预计还要至少8h…重要内容都在 github 上了，我可以接受任何损失。开工。不要备份。",
+    "consequence": "NO backup is made or awaited anywhere in this line of work; history logs are not reconstructed; accepted-loss is an explicit user decision, not a derived assumption"
+  },
+  "protected_paths": "母仓旧 router/日志、产品树、现权威指针 (graph.yaml current_contract, AGENTS.md, dev/engineering/registry.yaml + schema + current-state.json)、workflows、docs/plans — 0 writes from this line; no push/merge",
+  "capacity_budget": "this round small text + test products <= 20MiB; df at round start 39,511,928,832 B free (64%) — low-disk era constraints lifted but no clone/install/full-test/Host/full-disk-du is authorized",
+  "incident_correction": {
+    "bans": "fixed /tmp/dbg paths, wildcard deletion (rm -rf glob), whole-directory sweeps, overwriting unknown existing files — banned for this line going forward; my own prior shell patterns rm -rf .tmp-s2-* and /tmp/dbg.mjs are named as what is now forbidden",
+    "static_test_audit_performed": "every suite's write/cleanup targets statically listed and matched to mkdtemp return paths before ANY run",
+    "verdicts": {
+      "provable_run": ["authority-snapshot-isolated (30)", "authority-dual-read (9)", "probe-candidate (7)", "sync-candidate-resolver (8)", "doc-consistency-controls (RUN_ROOT=mkdtemp + OWNED-set guard)"],
+      "stopped_not_run": {
+        "ci-snapshot-reader (10)": "writes+rmSync a FIXED path scripts/.tmp-gate-baseline.mjs (line 75) — cleanup not confined to an mkdtemp return path; cannot prove under the new rule",
+        "consumer-candidate (10)": "same pattern: scripts/.tmp-gcs-baseline-5f0d0e58.mjs (line 151)"
+      },
+      "note": "both fixed files are ABSENT from the tree now (porcelain clean); stopping the tests leaves them absent. Neither file is deleted as an extra cleanup action, per instruction. Fix = move temp module into a mkdtemp dir (next minimal package, root-approved)"
+    }
+  },
+  "task_products_policy": "new artifacts of this task are RETAINED here; no secondary cleanup runs are created"
+}

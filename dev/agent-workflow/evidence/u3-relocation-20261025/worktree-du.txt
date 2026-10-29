@@ -1,0 +1,17 @@
+Two-worktree proof (shared store /srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence/blobs = 501,713,768 B):
+
+du -sb <worktree>/dev/agent-workflow/evidence
+  17,353,572  .worktrees/u3-evidence-reloc            (primary, task branch 53c2f8414)
+  17,353,572  .worktrees/u3-evidence-reloc-verify     (fresh detached worktree at 53c2f8414; removed after the run)
+
+verify in BOTH:  node scripts/evidence-store.mjs verify
+  -> verify verdict=pass entries=20148 bytes_ok=521862486 findings=0   (exit 0 in both worktrees)
+
+Neither checkout materializes the 509 MB of relocated evidence (was ~535 MB of tracked files on disk
+per checkout on origin/master); both read the one shared store via the tracked manifest.
+Full-checkout du -sb at time of run: primary 646,570,504 (incl. node_modules), verify worktree 67,534,510 (no node_modules).
+
+Note: `git worktree add` copies the shared .git/info/sparse-checkout into a NEW worktree and enables
+non-cone sparse mode; on the verify worktree that initially masked everything but a few prefixes
+(MANIFEST_MISSING). `git sparse-checkout disable` restored the full checkout. Consumers creating
+worktrees in this repo must be aware; nothing relocation-specific.

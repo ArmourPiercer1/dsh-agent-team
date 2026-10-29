@@ -1,0 +1,10 @@
+{"server":"alpha","phase":"fixture-up"}
+{"server":"beta","phase":"fixture-up"}
+{"server":"beta","phase":"initialized"}
+{"server":"beta","phase":"tools-list"}
+dsh web: http://127.0.0.1:3186/?token=REDACTED-TOKEN
+{"server":"alpha","phase":"fixture-up"}
+{"server":"beta","phase":"tools-call","msg":"b4"}
+{"server":"beta","phase":"tools-call","msg":"b5"}
+{"server":"alpha","phase":"initialized"}
+{"server":"alpha","phase":"tools-list"}

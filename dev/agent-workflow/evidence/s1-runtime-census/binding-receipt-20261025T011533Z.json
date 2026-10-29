@@ -1,0 +1,48 @@
+{
+ "receipt": "s1-census-binding-20261025T011533Z",
+ "written_utc": "2026-10-25T01:16:39Z",
+ "independent_of_summary": true,
+ "run": {
+   "world": "s1-census-20261025T011533Z (kept under tests/homes, deletion forbidden)",
+   "run_dir": "runs/s1-census-20261025T011533Z",
+   "rc": 0, "pass": true, "outcome": "delivered-change-abort",
+   "used_ms": 32890, "summary_sha256": "f8122ca97396f81138b330c3fbdde94236e0dd3bd0d23f7bcccd5327cd33de60", "ledger_sha256": "91d2683caf17e5edf3384833c692fcf73b5566dee6033e5071c743e6eb3afba5", "steps_sha256": "c59474354c89a185c3b627557a19b7038a77d3b39d96038bfc9df517cff65de5",
+   "raw_artifacts_kept_unmodified": ["summary.json", "ledger.jsonl", "steps.jsonl", "instance-port3183.log(+.redacted)", "markers/A-call2.marker"]
+ },
+ "counters": {"poc": "5/20", "host_starts": "5/12", "registered_before_start": true, "retries": 0},
+ "preflight_pins_matched": {
+   "runner": "aceddd542625862843d76a6d8814d0d1ed3dc33e29bd5336cafca39479384ff5",
+   "probe": "6e8f2acbf568bec79bc1c0c5283951029e327b33eaefce28fa1fbfe059eaee8a",
+   "seeds": "2ce3e3e2b2c1f4a9682ccb554d75d50e55511ec7ff405d7d0efb8c705a5f9ae2",
+   "port_fresh_free": true, "world_absent_at_start": true
+ },
+ "host_artifacts": {
+   "HOST_ENTRY_bin_js": "1a03dee18683483ff6a1b27b2a1e650230da6bcca9a0f55f7d81b3308c3f307f",
+   "TOOLS_LIB_index_js": "40f47709337c3c205d4e09e647f8588f4977e66f6d52f019b3cc7ef81159d84f",
+   "pre_start_equals_post_start": true,
+   "coverage": "named build artifacts only, not full tree; build provenance still NOT_VERIFIED",
+   "htu_head": "639ed015397290b3745d163aafe02ffee4aa3f84 (tag dsh-v0.2.0-rc.2), porcelain 0 before and after"
+ },
+ "config_binding": {
+   "world_base_web_cordis_yml_sha256": "c300dcf2ebc5f02062d6591268d29d3db6fe45e0cb138f5467276fe2ba06076e",
+   "world_base_note": "empty entry list = pinned-artifact standard base composition root",
+   "world_patch_sha256": "976d28ee2da46a96093259563f38bf7dd8312610d6f811e056d5ab9f2392434c",
+   "world_plugin_copy_sha256": "6e8f2acbf568bec79bc1c0c5283951029e327b33eaefce28fa1fbfe059eaee8a",
+   "standard_preset_file_hash": "NOT_OBSERVED (no standalone standard preset yml found in pinned artifact tree; not fabricated)",
+   "agentPreset_actual": "standard",
+   "agentPreset_source": "raw session/create response recorded verbatim in steps.jsonl: value{sessionId,agentPreset:\"standard\"} — summary.preset_selected='none' means only NO CUSTOM PRESET ROW",
+   "session_id": "session-747044d1-3bd6-463d-9f60-997e4c55dcc7"
+ },
+ "census_core": {
+   "registered_visible_count": 27, "identity_rows": 27, "one_to_one": true,
+   "model_wire": "request carries tools[] member, 27 names (recorded in summary, untouched)",
+   "fixtures_off_book": ["s1_m1_probe"],
+   "surface_obligations_kept_separate": ["surface:domain_family", "surface:mcp_http_dynamic", "surface:mcp_stdio", "surface:neg4_preset_selfregister"],
+   "seeds_only_count": 60, "registered_visible_only": 0
+ },
+ "ownership_teardown": {
+   "owned_pid": 104, "pid_absent_after": true, "instance_stop": {"killed": true, "portFree": true},
+   "port_3183_listen_lines_after": 0, "stable_3080_before_after": "401/401 unchanged"
+ },
+ "limits": "mock model + public registered-view collection only; fixture-controlled marker/read/echo side effects; other tool bodies NOT executed; 0 real providers; 0 Host/Core/product changes (HTU porcelain 0); Census PASS != G1 != functional acceptance — independent review to decide"
+}

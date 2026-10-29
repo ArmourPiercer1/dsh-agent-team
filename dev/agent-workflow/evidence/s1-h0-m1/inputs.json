@@ -1,0 +1,122 @@
+{
+  "task": "S1 H0-M1 fixture seal (bounded implementation round; no experiment executed)",
+  "sealed_at_utc": "2026-10-24T21:51:28Z",
+  "route": "qiyuan-self/qwen3.8-flash-next (S1 H0-M1 limited-scope owner, single-directory)",
+  "host": {
+    "tree": "tests/deepseek-harness-test-use (main-tree HTU, pristine, read-only)",
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84 (= dsh-v0.2.0-rc.2)",
+    "pin_reverified_this_round": { "rev_parse_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84", "status_porcelain": "empty" },
+    "entry": "apps/cli/lib/bin.js",
+    "launch_form": "DSH_HOME=<world> node <HTU>/apps/cli/lib/bin.js web --port <3180-family> --no-open (spawned via copied DshInstance.start, instance.mjs:79-99)",
+    "build_or_install_performed": false
+  },
+  "mount": {
+    "mechanism": "public profile-patch: $DSH_HOME/profiles/web/cordis.patch.yml, ONE plain plugin row id=s1m1-probe, name './s1m1-probe-plugin.mjs' relative to the patch file",
+    "written_by": "DshInstance.mountRows (4aaaa7b2 copied instance.mjs:194-209) — reused, not re-invented; preview text matches its byte output",
+    "relative_anchor_evidence": "HTU 639ed015 packages/boot/app-boot/src/index.ts:532 (:994 baseUrl = config dir; :550 '.'-prefixed names via super.import -> tree baseUrl)",
+    "registration_evidence": "packages/bundle/base/cordis.patch.yml:499-500 tools row + :281-282 tool-fs row are plain profile-root rows; packages/fs/tool-fs/src/index.ts:22 export const inject=['tools',...]; packages/core/tools/src/index.ts:1058,1063 register() global-or-calling-agent-scope; :849 super(ctx,'tools') provide",
+    "excluded": ["PR360/a5-m2-int tree", "packages/runtime/dist production Team row", "kit rereg/order legs", "preset declaration rows", "install", "new Team tree"]
+  },
+  "effect_contract": {
+    "framework_location": "Cordis core is VENDORED in the pin tree at vendor/cordis (no @cordisjs in node_modules; HTU has no @deepseek-ai/dsh-... — pin-tree equivalent of the framework source)",
+    "citations": [
+      "vendor/cordis/src/fiber.ts:402-413 JSDoc: ':405 execute runs immediately'; reverse-order disposal on returned-disposer call or fiber unload :405-406; double-call no-op :406-407; INACTIVE_EFFECT / invalid-shape TypeError :407-409",
+      "vendor/cordis/src/fiber.ts:68-73 Disposable: function RETURNED by an effect releases resources during disposal; reverse registration order on fiber unload",
+      "vendor/cordis/src/fiber.ts:366-368 _execute: body called synchronously; `if (typeof effect === 'function') runner.collect(effect)` — returned function = collected disposer",
+      "vendor/cordis/src/fiber.ts:521-536: synchronous body throw unwinds and RE-RAISES (`throw reason` :536) — failed register() fails the mount visibly",
+      "packages/core/agent-loop/src/index.ts:368 upstream usage: ctx.effect(() => () => this.ownership.dispose(), 'agentLoop.transactions()')"
+    ],
+    "form_chosen": "register INSIDE the effect body, RETURN () => dispose() (form 2: effect returns the cleanup function); the previous pre-fix form disposed at apply time because the body runs immediately",
+    "no_swallow": "apply(): register error is ledger-recorded then RE-THROWN (mount fails visibly)"
+  },
+  "tool_schema_dialect": {
+    "register_validation": "packages/core/tools/src/index.ts:1063-1075 (output {schema, render} required); :1071 assertSupportedJsonSchema(output.schema)",
+    "wire_dialect": "packages/core/tools/src/json-schema.ts:39 required?: string[]; :209-217 required MUST be an array of strings naming declared properties; :267 unknown keywords reject",
+    "defineTool_note": "property-level required:true (tool-fs/src/read.ts:81-104) is the defineTool INPUT dialect; schema.ts:24 converts it — a raw register() must use wire form",
+    "static_proof": "against the pinned compiled validator (packages/core/tools/lib/index.js): probe output.schema ACCEPTED; old property-required:true dialect REJECTED ('required is not supported on type boolean')",
+    "parameters": "JSON Schema object (packages/llm/llm/src/types.ts:473-483 ToolSchema), same wire form defineTool emits (schema.ts:30)"
+  },
+  "oracle": {
+    "authority": "LEDGER-FIRST conjunction; FAIL on any false with raw evidence kept (m1-run.mjs evaluateOracle)",
+    "checks": [
+      "register_ok_once",
+      "body_ran_exactly_once (tool s1_m1_probe)",
+      "body ran=true AND tag=A1 AND failed=[]",
+      "marker A1.marker exists and is the only marker",
+      "read-ran ok (sentinel read once, content === sealed expectation)",
+      "process-ran ok (echo exit 0 AND exact stdout)",
+      "session/prompt admitted HTTP 200",
+      "session created (sessionId string present)",
+      "token gate 401 without token (kit:750 pattern)",
+      ">=2 mock requests",
+      "tool result round-tripped (request #2 carries s1m1-tc-1)",
+      "UNTRIGGERED-NAME rows+markers == 0 (counting only)"
+    ],
+    "body_hard_failure": "any failed leg => ran=false, failed=[legs], per-leg ledger rows (marker-ran / read-ran / process-ran each ok/error)"
+  },
+  "tool_semantics": {
+    "s1_m1_probe": { "registered": true, "expected_call_count": 1 },
+    "s1_m1_other": {
+      "registered": false,
+      "role": "UNTRIGGERED NAME ONLY — never scripted, never sent, counted (expected 0). NOT a discriminating negative control: an unregistered name proves no guard decision. The real cross-generation negative control belongs to M2."
+    }
+  },
+  "world": {
+    "root": "tests/homes/",
+    "name_form": "s1-h0-m1-<UTCstamp>",
+    "input_hard_validation": "validateInputs: integer sanctioned port; world fixed prefix + single safe basename regex; '..'/'/'/'\\\\'/absolute refused; lstat refuses ANY existing path incl. symlink; lock must be ENOENT",
+    "port_rules_evidence": "4aaaa7b2:tests/paths.mjs:81-93 TEST_PORT_RANGES [[3180,3186],[3491,3500]], STABLE_INSTANCE_PORT=3080, isSanctionedTestPort (transcribed; :3080 never probed/bound)",
+    "created_this_round": false,
+    "deletion": "FORBIDDEN (root pause); finally keeps world + runs/ evidence"
+  },
+  "credentials_and_token": {
+    "env_scrub_before_spawn": { "names_only": ["DEEPSEEK_API_KEY", "DEEPSEEK_SEARCH_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY", "AZURE_OPENAI_API_KEY"], "then_injected": "DEEPSEEK_API_KEY=<fake s1-m1-mock-key>, DEEPSEEK_BASE_URL=http://127.0.0.1:<mockPort> (loopback 127.0.0.1 explicit)", "values_logged": false },
+    "launch_token": "in memory only; instance log post-run redacted token->fingerprint (sha256 hex8); never printed, never in README/inputs/report; redaction runs in finally even on failure"
+  },
+  "mock": {
+    "source": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84:packages/tools/harness/mock-deepseek.mjs (git blob 65ed64e6a9e535af79294a95630b2dadfbaf4e42)",
+    "sha256": "8beade69588c105efb66df6a7a99dd915cb41b7aba91635ec0ebf73e6278fb06",
+    "head_version_NOT_USED_sha256": "e0b334901075f881eb946fa0464f80678e5fc8fbba47002878248ed62b9156cf (DIFFERENT file, deliberately not used)",
+    "bind": "127.0.0.1 port 0 ephemeral",
+    "decide": "seq==1 -> tool-call s1_m1_probe {tag:'A1'} once; seq>1 -> text 's1-m1-complete'"
+  },
+  "budget": { "experiments": 1, "host_starts": 1, "retries": 0, "watchdog_ms": 1800000, "consumed_this_round": 0 },
+  "copied_helpers": {
+    "instance.mjs": { "rev": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84", "path": "tests/characterization/lib/instance.mjs", "git_blob": "36ce2e3715c6ba8ce42e6d2eefe0a5906f781dd2", "sha256": "77880a8eec88b874d662efdb4c9fb38caef129b2eb9fea006c9b7da9120bf351", "byte_identical": true },
+    "util.mjs": { "rev": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84", "path": "tests/characterization/lib/util.mjs", "git_blob": "4f0cf580545d59bfc2236532507aafc2f9dac9f9", "sha256": "7dd44280c8b03d7ea59e24d581c0d2430b407ca8a4e031c3feca30034c3fff71", "byte_identical": true },
+    "s1m1-session-client.mjs": { "extracted_from": "4aaaa7b2 tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs (blob 6815b41e330f2a4731f2a287f00f0e84ea802144, sha256 de581347c7bea9f6e596e6b57dddc18fed280889ec472af4e32fc7d61d249357)", "verbatim_functions": { "fetchJson": ":257-261", "authenticate": ":266-271", "apiPrompt": ":279-291", "probeNoToken": ":750 pattern" }, "derived": "apiSessionCreate (same client-request envelope targeting @Remote('create') 639ed015 packages/api/session-controller/src/index.ts:272-274; SessionCreateRequest types.ts:285) — live wire shape NOT_OBSERVED until the authorized run" }
+  },
+  "host_content_hash": {
+    "aggregation_method": "find -H <dir> -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum",
+    "aggregation_note": "paths enter as ABSOLUTE (re-verified last round: absolute-path invocation reproduces both aggregates bit-for-bit)",
+    "apps/cli/lib": { "files": 45, "bytes": 206395, "aggregate_sha256": "5c16604e9f1128bbed9f5b8e45330e4db24c4b03ffc37d6cb76456240a18cb11" },
+    "packages/core/tools/lib": { "files": 43, "bytes": 696323, "aggregate_sha256": "0b7677fcc06c5ef4ff1d8203d0a4022f7f2f9345a010068c07ab90d7a3a1c02c" },
+    "single_files": {
+      "apps/cli/lib/bin.js": { "sha256_prefix": "1a03dee18683483f", "bytes": 11697 },
+      "packages/core/tools/lib/index.js": { "sha256_prefix": "40f47709337c3c20", "bytes": 157954 },
+      "node_modules/.modules.yaml": { "sha256_prefix": "10df5faade161173", "bytes": 102628 },
+      "pnpm-lock.yaml": { "sha256_prefix": "80fe05eae33582ae", "bytes": 1020774 },
+      "apps/web/dist/index.html": { "sha256_prefix": "50dfa6c7ad6387c2", "bytes": 824 }
+    },
+    "build_provenance": "NOT_VERIFIED — grep '639ed015' inside apps/cli/lib and packages/core/tools/lib hits 0 (re-verified last round 0/0); lib mtimes all fall 2026-10-17T20:36-20:37 while the HTU checkout is 2026-10-22. lib presence does NOT prove it is the 639ed015 build output. Unsoftened."
+  },
+  "fixture_files_sha256": {
+    "probe-plugin.mjs": "c883ac3f80efcfe4a4fe462b137f32cbfc1724fafb0662d19c92848a8618f195",
+    "m1-run.mjs": "95e48b08c941f61904c9b467b834ab6d6a2c4868b8cf674d7f414de93b2b4457",
+    "s1m1-session-client.mjs": "162d05b7601569b521c7636590edaa9524d3cc110533cb71cc93f5df213074b5",
+    "instance.mjs": "77880a8eec88b874d662efdb4c9fb38caef129b2eb9fea006c9b7da9120bf351",
+    "util.mjs": "7dd44280c8b03d7ea59e24d581c0d2430b407ca8a4e031c3feca30034c3fff71",
+    "mock-deepseek.mjs": "8beade69588c105efb66df6a7a99dd915cb41b7aba91635ec0ebf73e6278fb06"
+  },
+  "NOT_OBSERVED": [
+    "F0 full set: Team SHA + active refs / build digest / World digest / runtime census",
+    "Host runnability on this world (boot line, plugin tree load) — no --go executed",
+    "launch token value / any real listener pid / port hold",
+    "session/create live wire envelope shape (apiSessionCreate is the one derived body)",
+    "that a plain-row register actually lands in the live model tool surface (positive-control round observes marker+ledger)",
+    "marker/ledger/read/process legs actually firing (no experiment executed)",
+    ":3080 before/after state (never probed, never touched — no baseline claim)",
+    "lib/ runtime-load verification and 639-build-provenance (see build_provenance NOT_VERIFIED)"
+  ],
+  "not_claimed": ["Gate grant", "F0 sign-off", "Kernel/CA verification", "race/closure proof", "closure of :1578->:1580 missing-surface face", "any negative-control power for s1_m1_other (M2 owns controls)"]
+}

@@ -1,0 +1,2 @@
+TYPECHECK START 2026-10-25T10:10:19Z
+TYPECHECK cmd='pnpm -r run typecheck' exit=0 duration=17s END 2026-10-25T10:10:36Z

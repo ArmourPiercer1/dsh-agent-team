@@ -1,0 +1,13 @@
+{
+ "free_before": 33406578688,
+ "remove_wts": 44,
+ "wt_upper": 22766718747,
+ "wt_lower": 19708902271,
+ "homes_upper": 2392066910,
+ "homes_lower": 1488889317,
+ "scratch_upper": 691932410,
+ "scratch_lower": 135673883,
+ "salvage_bytes": 626008204,
+ "salvage_rows": 360,
+ "nshared_files_wt": 244399
+}

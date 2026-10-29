@@ -1,0 +1,14 @@
+{
+  "worldName": "u4-h0-2026-10-25T13-24-04Z",
+  "port": 3184,
+  "owned_pid": null,
+  "run_error": "preflight failed: port-free — 3184",
+  "pass": false,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 298,
+  "budget": {
+    "poc_experiment": "this run = 1 experiment (≤8 remaining of package allocation; see README ledger)",
+    "host_starts": 1
+  }
+}

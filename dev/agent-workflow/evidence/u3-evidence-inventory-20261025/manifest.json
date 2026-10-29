@@ -1,0 +1,26 @@
+{
+ "generated": "2026-10-25",
+ "authority": "origin/master @ 95fbe95cf094d8368faf1e356ba6b56fc5a70f15",
+ "files": {
+  "SUMMARY.md": {
+   "sha256": "b43949351bd8324d061a25878f9e286ea346f1221a5b0eb211bb7153d0fa90c8",
+   "bytes": 5613
+  },
+  "runtime-readers.json": {
+   "sha256": "52a004c7ec63ddea888ffe993a9bca8784fa5381def487926e1b5ff02f70dc49",
+   "bytes": 137316
+  },
+  "doc-citations.json": {
+   "sha256": "0f38273e1d2a21cd5f9e73fb0c8951758221014b32287626bce60a42cd0b0818",
+   "bytes": 6955
+  },
+  "keep-set.json": {
+   "sha256": "fc29105359a72abaec997493ebe61351c9e79581019a6f23d213c7d9413b8124",
+   "bytes": 27870
+  },
+  "relocate-set-stats.json": {
+   "sha256": "7abd07242038576d9f6a6f9d28ae073690fc97145d0b15f2118c24a28550cd6f",
+   "bytes": 3508
+  }
+ }
+}

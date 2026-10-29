@@ -1,0 +1,15 @@
+FAIL C0 candidate source helper exists and demands expected digest (no silent use): {"ok":false,"refused":"CANDIDATE_EXPECTED_VS_RECORDED","detail":"expected sha256:1111111111111111111111111111111111111111111111111111111111111111 recorded sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64"}
+fatal: could not open '.tmp-s2-cw-4ZfiqG/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-4ZfiqG/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C1 default mode unchanged: legacy reader, no source_binding, same rendered view
+fatal: could not open '.tmp-s2-cw-7seFE4/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C2 legal candidate + correct expected digest: view sourced from snapshot, binding recorded: no structured source binding in the view
+fatal: could not open '.tmp-s2-cw-PTqyNk/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C3 wrong expected digest: structured refusal, NO fallback to graph: ["view","findings","runtime","topLevel"]
+fatal: could not open '.tmp-s2-cw-IMnjMA/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C4 missing candidate file: CANDIDATE_MISSING, no fallback (mirror present but never consulted): ["view","findings","runtime","topLevel"]
+fatal: could not open '.tmp-s2-cw-yGY5w5/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C5 corrupt candidates (parse error / falsy value / shape error): refused, no fallback: "{oops": ["view","findings","runtime","topLevel"]
+fatal: could not open '.tmp-s2-cw-SU09e9/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C6 old/new divergence: explicit candidate mode keeps candidate (no auto source switch), divergence RECORDED: source auto-switched away from the explicit candidate
+RED (6/7 failing)

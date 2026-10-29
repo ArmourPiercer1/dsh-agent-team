@@ -1,0 +1,12 @@
+{
+  "artifact": "s2-pr364-u0u1-20261025/U0-DELTA-1.json",
+  "kind": "Explicit delta from the U0 freeze point 8af1ef5c0 to current 2e10100a5 (coordinator note 2026-10-25; original freeze files untouched; do NOT read the old summary as current).",
+  "utc": "2026-10-25T09:47:43Z",
+  "acceptance": "coordinator accepted U0-PASS within the bounded scope (no cleanup / no Host / unknown assets untouched); backup waived; :3080 observation-only; test ports idle in visible netns; outer PIDs invisible; pristine clean @639ed015; mother-repo legacy paths.mjs 46a7 distinguished by SHA, pin unchanged; PR360 head bef38934 with mother-repo merge-ref stale; other UNKNOWN remain protected.",
+  "delta_commits": [
+    "bc869d9f66 U2 candidate integration — WORKFLOWS ARE NO LONGER ZERO-CHANGE: census-runtime.yml candidate-consumption block + pr-gate.yml docs:sync/docs:probe step (both disclosed in manifest-13; census half-pair silent-skip still a staged defect)",
+    "c7a8be41b5 U1 test-safety: ownership-guarded staging + C10 real-path sentinel negative (consumer 11/11, ci-reader 13/13)",
+    "2e10100a59 U1 cold-read factual corrections (registry merge facts, citation-to-correct, enum/SHA-copy/lane-count README facts, tool-regenerated view); sparse cone += .github, packages; controls baseline 9->8 reds (NEG-79 was a sparse artifact — disclosed)"
+  ],
+  "current_baseline_reds_8": "POS-1 POS-3 POS-4 POS-6 POS-8 POS-10 POS-11 NEG-21 (named; POS-3 real red = positive future-Proposal text wrongly demands runtime evidence — tool-side root cause, fixed baseline, NOT substitutable by NEG-4)"
+}

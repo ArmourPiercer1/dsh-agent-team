@@ -1,0 +1,3 @@
+verify verdict=pass entries=20148 bytes_ok=521862486 findings=0 store=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence
+verify(green) exit=0
+blob restored identical

@@ -1,0 +1,638 @@
+{
+ "generated": "2026-10-25",
+ "authority": "origin/master @ 95fbe95cf",
+ "definition": "minimal evidence set that MUST remain tracked = targets of RUNTIME-READ references (code/gate existence checks incl. ci-pr-gate Q5, gen-current-state ARTIFACT_MISSING) + evidence-internal files those files themselves read; doc-link targets listed separately as a gate constraint with mitigation options",
+ "total_files": 92,
+ "total_bytes": 1349896,
+ "files": [
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log",
+   "bytes": 573,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
+   "bytes": 3778,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-10.log",
+   "bytes": 12654,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-11.log",
+   "bytes": 12984,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log",
+   "bytes": 13722,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-9.log",
+   "bytes": 11864,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
+   "bytes": 1195,
+   "reason": "registry verification_artifacts (gen-current-state ARTIFACT_MISSING, blocking)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T1/compliance-report.md",
+   "bytes": 17564,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T2/router-rerun.log",
+   "bytes": 16918,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T2/seam-report.md",
+   "bytes": 13429,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T3/compliance-report.md",
+   "bytes": 9102,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T3/router-rerun.log",
+   "bytes": 14662,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T3/seam-report.md",
+   "bytes": 23145,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T4/compliance-report.md",
+   "bytes": 11305,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T4/router-rerun.log",
+   "bytes": 16358,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T4/seam-report.md",
+   "bytes": 16467,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T5/router-rerun.log",
+   "bytes": 15195,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T5/seam-report.md",
+   "bytes": 11083,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/debug-b1/live-diag.json",
+   "bytes": 6701,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/g2-pre-audit.md",
+   "bytes": 6958,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/dump-config-b1.txt",
+   "bytes": 17174,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b3.log",
+   "bytes": 9765,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/instance-port3401-negative-b4.log",
+   "bytes": 7097,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/obs/host-probe-activated.json",
+   "bytes": 255,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-reconnect.json",
+   "bytes": 4885,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/logs/obs/obs-slot.json",
+   "bytes": 12535,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/run/run-log.txt",
+   "bytes": 95837,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/P2-T6/seam-report.md",
+   "bytes": 16214,
+   "reason": "seam-manifest evidence (characterization remote-client probe rules evidence-exists/verdicts-consistent)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt",
+   "bytes": 14508,
+   "reason": "ci-pr-gate baseline (lint/census/fence legs + self-test)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt",
+   "bytes": 2372,
+   "reason": "ci-pr-gate baseline (lint/census/fence legs + self-test)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-coloured-fourth-failure.raw.txt",
+   "bytes": 1350,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-coloured-trio.raw.txt",
+   "bytes": 1206,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-forced-colour.raw.txt",
+   "bytes": 25036,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-no-summary.raw.txt",
+   "bytes": 586,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-plain-trio.raw.txt",
+   "bytes": 951,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-report.sample.json",
+   "bytes": 366054,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/client-lane-summary-unparseable.raw.txt",
+   "bytes": 388,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/g2-summary-parser/fixtures/hosted-census-capture-1.raw.txt",
+   "bytes": 200635,
+   "reason": "G2 hosted-bytes fixtures (a4p7-merge-gate.test.ts g2Fixture)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+   "bytes": 12386,
+   "reason": "ci-pr-gate baseline (lint/census/fence legs + self-test)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f01-yaml-string-carrier.txt",
+   "bytes": 722,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f02-quoted-value-carrier.txt",
+   "bytes": 720,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f03-typed-code-literal.txt",
+   "bytes": 829,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f04-template-literal-carrier.txt",
+   "bytes": 583,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f05-untyped-file-carrier.txt",
+   "bytes": 478,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f06-comment-carrier.txt",
+   "bytes": 673,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f07-trap-projection-service.txt",
+   "bytes": 1199,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f08-trap-projection-envelope.txt",
+   "bytes": 917,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f09-trap-session-binding.txt",
+   "bytes": 791,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f10-trap-member-record.txt",
+   "bytes": 994,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f11-trap-registry-row.txt",
+   "bytes": 1231,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f12-trap-ledger-row.txt",
+   "bytes": 1410,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f13-trap-session-record.txt",
+   "bytes": 1003,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f14-trap-governance-override.txt",
+   "bytes": 794,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f15-trap-governance-rows.txt",
+   "bytes": 1166,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f16-trap-artifact-grant.txt",
+   "bytes": 811,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f17-prose-non-blueprint.txt",
+   "bytes": 478,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f18-ambiguous-shape.txt",
+   "bytes": 740,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f19-json-data.txt",
+   "bytes": 452,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f20-yaml-config-carrier.txt",
+   "bytes": 529,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f21-supported-version.txt",
+   "bytes": 546,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f22-trap-string-embedded-session-record.txt",
+   "bytes": 966,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f23-trap-string-embedded-binding.txt",
+   "bytes": 964,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f24-string-carrier-with-doc-keys.txt",
+   "bytes": 1018,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f25-trap-nested-doc-under-row.txt",
+   "bytes": 1238,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f26-doc-plus-row-keys-one-object.txt",
+   "bytes": 1155,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f27-template-carrier-equals-quoted.txt",
+   "bytes": 1851,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f28-doc-in-template-under-row.txt",
+   "bytes": 1296,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f29-regex-backtick-no-phantom-template.txt",
+   "bytes": 744,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f30-backslash-newline-continuation.txt",
+   "bytes": 719,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f31-quoted-key-carrier-parity.txt",
+   "bytes": 929,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f32-members-partial-document.txt",
+   "bytes": 1358,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f32b-members-without-identity-is-still-a-row.txt",
+   "bytes": 828,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f33-nested-doc-under-row-same-line.txt",
+   "bytes": 1608,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/fixtures/f35-continuation-closes-mid-line.txt",
+   "bytes": 863,
+   "reason": "fence scan-scope fixtures (a4p7-blueprint-version-clean.test.ts)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json",
+   "bytes": 8443,
+   "reason": "blueprint-fence adjudication ledger (fence refuses untracked; test reads it too)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+   "bytes": 6564,
+   "reason": "executed kit fixture: imported by 4 a5p1 kit scripts"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+   "bytes": 14100,
+   "reason": "executed kit: imported by a5intr3-kit-runner.test.ts (census root)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/ci-39235428022/README.md",
+   "bytes": 1096,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/live/README.md",
+   "bytes": 7314,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/natexe/glue7-rerun-run1-E2-drift-before-commit.log",
+   "bytes": 7266,
+   "reason": "test fixture logs (a5int-r3 MATRIX_RECEIPT; a5b2 EVIDENCE_LOGS)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/natexe/glue7-rerun-run2-GREEN-24-24.log",
+   "bytes": 7263,
+   "reason": "test fixture logs (a5int-r3 MATRIX_RECEIPT; a5b2 EVIDENCE_LOGS)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native-receipt.log",
+   "bytes": 56969,
+   "reason": "test fixture logs (a5int-r3 MATRIX_RECEIPT; a5b2 EVIDENCE_LOGS)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/ptc-fs-impl/README.md",
+   "bytes": 40016,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/srgp/probes/README.md",
+   "bytes": 12571,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/w-ptc-c2/README.md",
+   "bytes": 10652,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/README.md",
+   "bytes": 9290,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/bind-diag/a5bd-diag-row.mjs",
+   "bytes": 6858,
+   "reason": "executed kit row: imported by a5p1-kit.mjs"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/real-lsp/README.md",
+   "bytes": 16647,
+   "reason": "Q5 matrix dir witness (>=1 file must exist for ci-pr-gate Q5)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs",
+   "bytes": 24723,
+   "reason": "executed kit chain: spawned by alpha5-pr8-e2e/kit.mjs (run-w5-live -> a5w5-assembly-row -> a5w5-fixtures; + build-lane-esm)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs",
+   "bytes": 24249,
+   "reason": "executed kit chain: spawned by alpha5-pr8-e2e/kit.mjs (run-w5-live -> a5w5-assembly-row -> a5w5-fixtures; + build-lane-esm)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/w5/build-lane-esm.mjs",
+   "bytes": 3638,
+   "reason": "executed kit chain: spawned by alpha5-pr8-e2e/kit.mjs (run-w5-live -> a5w5-assembly-row -> a5w5-fixtures; + build-lane-esm)"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/alpha5/wiring/w5/run-w5-live.mjs",
+   "bytes": 34743,
+   "reason": "executed kit chain: spawned by alpha5-pr8-e2e/kit.mjs (run-w5-live -> a5w5-assembly-row -> a5w5-fixtures; + build-lane-esm)"
+  }
+ ],
+ "q5_dir_witnesses": {
+  "alpha5/jobs-isolation": "dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/ci-39235428022/README.md",
+  "alpha5/live": "dev/agent-workflow/evidence/alpha5/live/README.md",
+  "alpha5/ptc-fs-impl": "dev/agent-workflow/evidence/alpha5/ptc-fs-impl/README.md",
+  "alpha5/srgp": "dev/agent-workflow/evidence/alpha5/srgp/probes/README.md",
+  "alpha5/w-ptc-c2": "dev/agent-workflow/evidence/alpha5/w-ptc-c2/README.md",
+  "alpha5/w-ptc-outerfs": "dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/README.md",
+  "alpha5/wiring/real-lsp": "dev/agent-workflow/evidence/alpha5/wiring/real-lsp/README.md"
+ },
+ "doc_link_targets_gate_constraint": {
+  "total_files": 30,
+  "total_bytes": 481627,
+  "targets": [
+   {
+    "target": "dev/agent-workflow/evidence/EB-E0-E1/baseline-inventory.md",
+    "bytes": 11098,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/01-routing/p01-result.json",
+    "bytes": 2409,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/notes.md",
+    "bytes": 10545,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/p02-result.json",
+    "bytes": 112417,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/spill-result.json",
+    "bytes": 4759,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/notes.md",
+    "bytes": 12344,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/p03-result.json",
+    "bytes": 64589,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/corrections-addendum.md",
+    "bytes": 2999,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/landlock-diagnosis.md",
+    "bytes": 5658,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/notes.md",
+    "bytes": 5823,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/p05-result.json",
+    "bytes": 8301,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/ptc-outer-result.json",
+    "bytes": 13924,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/notes.md",
+    "bytes": 7612,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/p05-result.json",
+    "bytes": 16812,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/h6-result.json",
+    "bytes": 10580,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/notes.md",
+    "bytes": 14365,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/run-2026-10-15T22-44-01",
+    "bytes": 48741,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R1.md",
+    "bytes": 12575,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R2.md",
+    "bytes": 18281,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-REG1.md",
+    "bytes": 9443,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/notes.md",
+    "bytes": 6975,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-jobs-result.json",
+    "bytes": 5165,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-mcp-result.json",
+    "bytes": 5815,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-web-result.json",
+    "bytes": 6645,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/lanes-result.json",
+    "bytes": 24646,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md",
+    "bytes": 9350,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/EXECUTION-LOG.md",
+    "bytes": 8530,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md",
+    "bytes": 11525,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/decision.md",
+    "bytes": 5205,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md",
+    "bytes": 4496,
+    "note": "markdown-link target from a full-scope doc; keep tracked OR rewrite the link OR make the checker manifest-aware"
+   }
+  ]
+ },
+ "notes": [
+  "evidence/alpha5-pr1r/seam-record-post-door-resolution.md is read by the lint-g-g-wording walker but deletion-tolerant; NOT in the minimal keep-set",
+  "evidence/alpha5/ stays resolvable for Q5 because kept alpha5/** files live under it"
+ ]
+}

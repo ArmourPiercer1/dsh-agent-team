@@ -1,0 +1,27 @@
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T2 candidate --check on candidate-rendered mirror: binding recorded, no STALE/DUAL_READ/PLAN conflict
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T3 candidate mirror feeds the existing plan-citation rule: divergent phase_id gets PLAN_CITATION_CONFLICT
+PASS T4 missing digest flag and empty values: named refusal, never a silent legacy --check
+PASS T5 candidate + --write: refused exit 2 with zero filesystem side effects
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T6 dual-read divergence blocks candidate --check (graph vs snapshot, named, no auto-pick)
+PASS T7 plain --write unchanged: creates then byte no-ops on the same fixture (legacy chain)
+PASS T8 baseline resolver: exact one-line stdout on success; named stderr + empty stdout on every failure; no fallback
+PASS T1 default --check byte-identical to fixed parent 61df closure on same fixture
+ALL GREEN (8 cases, actual count)

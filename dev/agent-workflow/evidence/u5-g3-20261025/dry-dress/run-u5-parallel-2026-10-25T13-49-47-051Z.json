@@ -1,0 +1,117 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-parallel-2026-10-25T13-49-47-051Z",
+  "suite": "parallel",
+  "startedAt": "2026-10-25T13:49:47.171Z",
+  "selectedCases": [
+    "abnormal-kill-reclaim",
+    "other-world-unaffected",
+    "pristine-host-and-stable-untouched",
+    "sibling-homes-untouched"
+  ],
+  "bindings": {
+    "teamSha": "3288567d36794394ce2af0401cee4fe218b11d03",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [
+      "u5drypb-20261025T13-49-47Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "note": "A = core-restart runner (2 boots); B = core runner SIGKILLed mid-run; reclaim = factory crash recovery"
+  },
+  "cases": [
+    {
+      "id": "abnormal-kill-reclaim",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:49:52.431Z",
+      "killedPids": [
+        57
+      ],
+      "refusedPids": [],
+      "leasesReleased": [
+        3497
+      ],
+      "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5drypb-20261025T13-49-47Z",
+      "orphanedHostPidDead": true,
+      "ownershipVerification": "Linux /proc/<pid>/environ carried DSH_HOME == B home for every killed pid (no pattern/name kills)",
+      "windowsProcessTreeCleanup": "n/a (Linux)"
+    },
+    {
+      "id": "other-world-unaffected",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:49:59.243Z",
+      "aAliveWhileBWasReclaimed": true,
+      "aExit": {
+        "code": 0,
+        "signal": null
+      },
+      "aOverall": "PASS",
+      "aCases": []
+    },
+    {
+      "id": "pristine-host-and-stable-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:49:59.343Z",
+      "hostBasePre": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "pre"
+      },
+      "hostBasePost": {
+        "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+        "porcelainEmpty": true,
+        "phase": "post"
+      },
+      "stableInstance": {
+        "pre": {
+          "reachable": true,
+          "status": 401
+        },
+        "post": {
+          "reachable": true,
+          "status": 401
+        }
+      }
+    },
+    {
+      "id": "sibling-homes-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:49:59.343Z",
+      "foreignChanges": [],
+      "note": "homes of other agents (e.g. the G1-F lane) + durable worlds must be identical by census (name+mtime)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": null,
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "runners": {
+    "A": {
+      "pid": 41,
+      "record": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/dry-dress/run-u5-parallel-2026-10-25T13-49-47-051Z-A.json"
+    },
+    "B": {
+      "pid": 42,
+      "record": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/dry-dress/run-u5-parallel-2026-10-25T13-49-47-051Z-B.json"
+    }
+  },
+  "bWorld": {
+    "id": "u5drypb-20261025T13-49-47Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5drypb-20261025T13-49-47Z",
+    "hostPid": 57
+  },
+  "abnormalKill": {
+    "at": "2026-10-25T13:49:48.928Z",
+    "killedRunnerPid": 42,
+    "receipt": {
+      "exited": {
+        "code": null,
+        "signal": "SIGKILL"
+      }
+    },
+    "signal": "SIGKILL",
+    "killedWhat": "own child runner process (handle-held) — its host child deliberately orphaned to exercise crash recovery"
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-25T13:49:59.343Z"
+}

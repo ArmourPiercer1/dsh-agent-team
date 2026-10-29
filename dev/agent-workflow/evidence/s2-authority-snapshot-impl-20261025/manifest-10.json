@@ -1,0 +1,18 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-10.json",
+  "kind": "Correction + follow-up for manifest-9 (ci-reader-candidate package). No older originals edited.",
+  "utc": { "written": "2026-10-25T04:10:48Z (date -u)" },
+  "correction": {
+    "what_manifest_9_overstated": "S1 'default byte-equal vs fixed parent' had shown PASS, but the runner never awaited async cases: the async body executed only after process.exit — the PASS was a harness race, not a real comparison. Discovered by my own fix chain, disclosed here rather than left standing.",
+    "chain": [
+      "d027fc08c — runner now awaits async cases before summary/exit; this immediately turned S1 RED (real crash), proving the earlier green was false",
+      "aa408af5d — real failure root-caused TEST-SIDE: provider ternary called o.files.get with o.files undefined; fixed readFile/fileExists to select ONE map; parent-vs-current byte equality on all three inputs (clean / Q8-absent / bad-enum) now GENUINELY executes and passes",
+      "two consecutive full runs after fix: ALL GREEN 8/8 (actual count), 0 tmp residue, porcelain empty"
+    ],
+    "production_code_impact": "none — both follow-up commits touch only the test file; scripts/* unchanged since 36f26174 whose other 7 cases (S2-S8) were synchronous and really ran in every recorded run"
+  },
+  "head": { "final": "aa408af5d", "chain_this_package": "3d6f6aad8 -> 36f26174d (core+entry+wiring+suite) -> d027fc08c (harness await) -> aa408af5d (provider ternary; S1 real)" },
+  "regressions_after_final": "not re-run (final two commits modify only ci-snapshot-reader.test.mjs, which no other suite imports; 30/9/10/7 all exit=0 were recorded at 36f26174 and the production files are unchanged since)",
+  "mode_zero_claims": { "push": 0, "stash": 0, "merge": 0, "ci_edits": 0, "paid": 0, "subagents": 0, "install": 0, "gc": 0 },
+  "gate_statement": "Not G2, not plan step-5. Idle; no automatic next round."
+}

@@ -1,0 +1,12 @@
+Scope: all 10 workspace projects
+? Verifying lockfile against supply-chain policies (908 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +815
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 815, reused 127, downloaded 0, added 0
+Progress: resolved 815, reused 359, downloaded 0, added 0
+Progress: resolved 815, reused 374, downloaded 0, added 373
+Progress: resolved 815, reused 374, downloaded 0, added 374
+✓ Lockfile passes supply-chain policies (908 entries in 5.1s)
+[ERR_PNPM_NO_OFFLINE_TARBALL] A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://registry.npmjs.org/@deepseek-ai/dsh/-/dsh-0.2.0-rc.2.tgz.

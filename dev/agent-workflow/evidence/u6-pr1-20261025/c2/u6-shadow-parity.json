@@ -1,0 +1,187 @@
+{
+  "nonce": "u6px",
+  "off": {
+    "effects": {
+      "positive-control": {
+        "effect": true,
+        "roundTripped": true,
+        "resultErrored": false
+      },
+      "error-return-with-effect": {
+        "effect": true,
+        "resultErrored": true,
+        "roundTripped": true
+      },
+      "planted-defect-detected": {
+        "toolClaimedRan": true,
+        "soundOracleEffect": false,
+        "blindedOracleEffect": true
+      }
+    },
+    "canaryRowsNormalized": [
+      {
+        "leg": "register",
+        "tool": "u5_canary",
+        "ok": true
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "ok",
+        "tag": "pos-u6px"
+      },
+      {
+        "leg": "marker-ran",
+        "tool": "u5_canary",
+        "mode": "ok",
+        "tag": "pos-u6px",
+        "ok": true,
+        "path": "<HOME>/workspace/markers/pos-u6px.marker"
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "error-after-effect",
+        "tag": "err-u6px"
+      },
+      {
+        "leg": "marker-ran",
+        "tool": "u5_canary",
+        "mode": "error-after-effect",
+        "tag": "err-u6px",
+        "ok": true
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "defect",
+        "tag": "def-u6px"
+      },
+      {
+        "leg": "return-only",
+        "tool": "u5_canary",
+        "mode": "defect",
+        "tag": "def-u6px",
+        "lied": true
+      }
+    ],
+    "shadowRowsNormalized": [
+      {
+        "leg": "center-skipped",
+        "assembly": "off"
+      }
+    ],
+    "canaryDigest": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+    "markerFiles": [
+      "err-u6px.marker",
+      "pos-u6px.marker"
+    ]
+  },
+  "shd": {
+    "effects": {
+      "positive-control": {
+        "effect": true,
+        "roundTripped": true,
+        "resultErrored": false
+      },
+      "error-return-with-effect": {
+        "effect": true,
+        "resultErrored": true,
+        "roundTripped": true
+      },
+      "planted-defect-detected": {
+        "toolClaimedRan": true,
+        "soundOracleEffect": false,
+        "blindedOracleEffect": true
+      }
+    },
+    "canaryRowsNormalized": [
+      {
+        "leg": "register",
+        "tool": "u5_canary",
+        "ok": true
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "ok",
+        "tag": "pos-u6px"
+      },
+      {
+        "leg": "marker-ran",
+        "tool": "u5_canary",
+        "mode": "ok",
+        "tag": "pos-u6px",
+        "ok": true,
+        "path": "<HOME>/workspace/markers/pos-u6px.marker"
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "error-after-effect",
+        "tag": "err-u6px"
+      },
+      {
+        "leg": "marker-ran",
+        "tool": "u5_canary",
+        "mode": "error-after-effect",
+        "tag": "err-u6px",
+        "ok": true
+      },
+      {
+        "leg": "body-ran",
+        "tool": "u5_canary",
+        "mode": "defect",
+        "tag": "def-u6px"
+      },
+      {
+        "leg": "return-only",
+        "tool": "u5_canary",
+        "mode": "defect",
+        "tag": "def-u6px",
+        "lied": true
+      }
+    ],
+    "shadowRowsNormalized": [
+      {
+        "leg": "shadow-installed",
+        "published": true,
+        "state": "ACTIVE",
+        "generation": 0
+      },
+      {
+        "leg": "center-mounted",
+        "row": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs"
+      },
+      {
+        "leg": "shadow-verdict",
+        "name": "u5_canary",
+        "outcome": "defer",
+        "code": "NO_APPROVAL_ENTRY",
+        "generation": 0,
+        "identityReadable": true
+      },
+      {
+        "leg": "shadow-verdict",
+        "name": "u5_canary",
+        "outcome": "defer",
+        "code": "NO_APPROVAL_ENTRY",
+        "generation": 0,
+        "identityReadable": true
+      },
+      {
+        "leg": "shadow-verdict",
+        "name": "u5_canary",
+        "outcome": "defer",
+        "code": "NO_APPROVAL_ENTRY",
+        "generation": 0,
+        "identityReadable": true
+      }
+    ],
+    "canaryDigest": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+    "markerFiles": [
+      "err-u6px.marker",
+      "pos-u6px.marker"
+    ]
+  }
+}

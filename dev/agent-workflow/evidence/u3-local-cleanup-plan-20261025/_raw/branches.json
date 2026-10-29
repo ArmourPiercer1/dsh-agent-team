@@ -1,0 +1,1162 @@
+{
+"a5-abort-cause": {
+"sha": "a1bf18fa995fd61f5168b19bdc49600c934b1d46",
+"date": "2026-10-18 22:23:06 +0000",
+"local_only": 0
+},
+"a5-bg-shell": {
+"sha": "f48484f20d2eb28239bb357f49a8349b8135ec44",
+"date": "2026-10-22 06:27:03 +0000",
+"local_only": 14
+},
+"a5-cancel-leg": {
+"sha": "d123760911d0076617083a6ad9c3ecd2c947ba79",
+"date": "2026-10-22 03:41:27 +0000",
+"local_only": 2
+},
+"a5-candidate-pkg": {
+"sha": "090b87b57e06da3854ddd9a36646ed8700fa4eef",
+"date": "2026-10-19 02:19:45 +0000",
+"local_only": 0
+},
+"a5-docs-matrix": {
+"sha": "e0f5be5b3a5380889a48b0737a7e9e4851521c2e",
+"date": "2026-10-19 07:39:09 +0000",
+"local_only": 0
+},
+"a5-docs-realign": {
+"sha": "4fc25116a6420c8b5b5f3e860bcba75cc798d1fc",
+"date": "2026-10-22 08:43:34 +0000",
+"local_only": 0
+},
+"a5-globoff-key": {
+"sha": "27f7045797c8951bd1313d076e14ff353c6f218c",
+"date": "2026-10-18 21:10:20 +0000",
+"local_only": 0
+},
+"a5-guard-schema": {
+"sha": "1566c1eae5bf6bd3ad2e9ccd4bfe3d133a333ad7",
+"date": "2026-10-19 07:50:54 +0000",
+"local_only": 0
+},
+"a5-inventory": {
+"sha": "5bb460e3cd2e242c81092385f2e8c75e0f4f5d13",
+"date": "2026-10-19 09:35:34 +0000",
+"local_only": 0
+},
+"a5-jobs-guard-fix": {
+"sha": "933ac771fddce2bf870f73c6c35f7c3288d7d1e7",
+"date": "2026-10-20 12:27:14 +0000",
+"local_only": 65
+},
+"a5-jobs-int2": {
+"sha": "582812908172429373992eb8b738642b5e5ff13b",
+"date": "2026-10-20 08:33:35 +0000",
+"local_only": 0
+},
+"a5-jobs-iso-int": {
+"sha": "59cfa579b6f63e3e2a2aeb6c08b4740e868dcc7b",
+"date": "2026-10-20 08:17:46 +0000",
+"local_only": 1
+},
+"a5-jobs-isolation": {
+"sha": "be25519c5f82d6b4ea5b04e9f87548f6748222b0",
+"date": "2026-10-20 07:28:33 +0000",
+"local_only": 2
+},
+"a5-legs-runner": {
+"sha": "fbcee244e073b98f44736092fb5757281c03fedb",
+"date": "2026-10-19 10:00:50 +0000",
+"local_only": 0
+},
+"a5-lsp-keyfix": {
+"sha": "7242a1f4526ccf07b6c9a239efb1a73557738964",
+"date": "2026-10-20 07:38:19 +0000",
+"local_only": 1
+},
+"a5-m0-contract-docs": {
+"sha": "c09f94bfae5e80ca774ab09ac7296679f2fff5bb",
+"date": "2026-10-22 08:08:56 +0000",
+"local_only": 0
+},
+"a5-mcp-binding": {
+"sha": "62b529a19245e8fc59b782777db7c8e352418e86",
+"date": "2026-10-20 07:38:47 +0000",
+"local_only": 0
+},
+"a5-p4t6-race": {
+"sha": "8f9099966bfc06fa66994f3f7aa2958e025edb57",
+"date": "2026-10-19 01:03:17 +0000",
+"local_only": 0
+},
+"a5-pindir": {
+"sha": "86ab4b512f664339e5366b50ca61a22dc802ec43",
+"date": "2026-10-18 21:43:58 +0000",
+"local_only": 0
+},
+"a5-r5-probe": {
+"sha": "1753b3de9d34c924e7961303a6266aece3c06848",
+"date": "2026-10-20 07:03:25 +0000",
+"local_only": 0
+},
+"a5-read-pilot": {
+"sha": "4f08204c97fb6073f5142bf0b33bea2cb2e8228d",
+"date": "2026-10-20 15:18:03 +0000",
+"local_only": 161
+},
+"a5-read-slice": {
+"sha": "dad3d42073dea45d3c3eb35b7ae54da39284f8de",
+"date": "2026-10-21 21:31:11 +0000",
+"local_only": 0
+},
+"a5-tools-gov": {
+"sha": "8ae606fabab9b463f1afb3fd4945413e9dbeccf0",
+"date": "2026-10-20 07:38:41 +0000",
+"local_only": 2
+},
+"a5ie-r2b": {
+"sha": "b071b4f5f49005023d41a65820cd8725c55bda0d",
+"date": "2026-10-18 14:07:11 +0000",
+"local_only": 2
+},
+"a5ie-r4-b2-evidence": {
+"sha": "b071b4f5f49005023d41a65820cd8725c55bda0d",
+"date": "2026-10-18 14:07:11 +0000",
+"local_only": 2
+},
+"a5ie-r5": {
+"sha": "c44f51e447cb1c1b6951cbf21bdeb3c5e3386f5a",
+"date": "2026-10-18 20:43:20 +0000",
+"local_only": 3
+},
+"a5m2-local-candidate": {
+"sha": "5b9a7262df583761c7ad6030ab9152a4429e0f16",
+"date": "2026-10-23 04:27:30 +0000",
+"local_only": 1
+},
+"a5m2-review": {
+"sha": "ba15846c19703f60efb45b64a7cd1fd041bbd21e",
+"date": "2026-10-23 04:53:13 +0000",
+"local_only": 0
+},
+"a5pkg-rootdeps-efb5": {
+"sha": "c747d75b457096672c6b1a950f3065a51e135a7f",
+"date": "2026-10-21 17:53:24 +0000",
+"local_only": 0
+},
+"a5poc7-gbj5-distfix": {
+"sha": "18e707baecadf9a4cfc4111017e8d7f64696718c",
+"date": "2026-10-20 10:56:26 +0000",
+"local_only": 73
+},
+"a5rc-inventory-fix": {
+"sha": "4cffdbd866d40e440a37e4225ebad8573af7e519",
+"date": "2026-10-18 21:33:33 +0000",
+"local_only": 0
+},
+"alpha5-acceptance-status": {
+"sha": "af30cd62f26843b743641d877f167a657bcf1ab9",
+"date": "2026-10-17 01:33:07 +0000",
+"local_only": 0
+},
+"alpha5-b2-rc-pr": {
+"sha": "28dbc60b8d3ecd340f73d2f9bc21a66fbdf7a35e",
+"date": "2026-10-18 13:19:22 +0000",
+"local_only": 0
+},
+"alpha5-b2c-comment": {
+"sha": "28af2e5204b636a0fea787fa85bafe20e7857af7",
+"date": "2026-10-18 14:25:06 +0000",
+"local_only": 0
+},
+"alpha5-b3-cancel-pr": {
+"sha": "0f28083159d0388b2992c4c607bcbb20e13d685d",
+"date": "2026-10-18 19:44:35 +0000",
+"local_only": 0
+},
+"alpha5-bind-diag": {
+"sha": "8e554d4a727bf94f4feb0af1fe4fa7fa5ddf9dd1",
+"date": "2026-10-17 07:16:37 +0000",
+"local_only": 0
+},
+"alpha5-c12-brief": {
+"sha": "4198d1d0d8a52a950488cad1b6aaeb6a586e1770",
+"date": "2026-10-17 05:23:53 +0000",
+"local_only": 0
+},
+"alpha5-c12-l1-poc": {
+"sha": "35c331bb06ab74677c176d70291fb776d62dbbd7",
+"date": "2026-10-17 05:15:16 +0000",
+"local_only": 0
+},
+"alpha5-checklist-r2": {
+"sha": "a425adaa51431def2272bdb6d475f87c11f925c1",
+"date": "2026-10-17 23:08:22 +0000",
+"local_only": 0
+},
+"alpha5-checklist-r3": {
+"sha": "4026227201ef8251e589a86549419aeebc7849dd",
+"date": "2026-10-18 05:10:22 +0000",
+"local_only": 0
+},
+"alpha5-d2-skills": {
+"sha": "4545ce4ab088c509d1fcb94924a2836dd9f02175",
+"date": "2026-10-17 00:41:25 +0000",
+"local_only": 0
+},
+"alpha5-d2-verify": {
+"sha": "545fc00eae50daf91f9c170cb6ed0fc5da047a8f",
+"date": "2026-10-17 01:03:21 +0000",
+"local_only": 0
+},
+"alpha5-decision-pack-20261016": {
+"sha": "5e15873e2527e94bac4bd799dcba2e1c1b6973fe",
+"date": "2026-10-16 21:32:57 +0000",
+"local_only": 0
+},
+"alpha5-doc-correct": {
+"sha": "8f40ed668a5fb0ed8fa1476284d3cb3ffd436cae",
+"date": "2026-10-17 15:36:26 +0000",
+"local_only": 0
+},
+"alpha5-docs5": {
+"sha": "eaa26081cad441da1c927cb314cdb134295cd516",
+"date": "2026-10-18 10:11:46 +0000",
+"local_only": 0
+},
+"alpha5-docsync": {
+"sha": "00754204756ae6f3220a4dd3bea5ccc15114b833",
+"date": "2026-10-18 03:25:33 +0000",
+"local_only": 0
+},
+"alpha5-docsync-r2": {
+"sha": "dbe50fcf1482053f6f1589c259636a33eed62c78",
+"date": "2026-10-18 05:03:43 +0000",
+"local_only": 0
+},
+"alpha5-fold-ins": {
+"sha": "f5b22f030185dc2ff13bacfcf460781d9de51939",
+"date": "2026-10-17 01:03:39 +0000",
+"local_only": 0
+},
+"alpha5-g-g-gate": {
+"sha": "8f00bc784ed49b087c1fb4f4c20a6fc3024e5032",
+"date": "2026-10-17 01:05:36 +0000",
+"local_only": 0
+},
+"alpha5-g-g-landing": {
+"sha": "76b083729a06c963f27a078f70ea6233a855d20a",
+"date": "2026-10-17 01:23:18 +0000",
+"local_only": 0
+},
+"alpha5-g-g-probes": {
+"sha": "3ee77729f6a15bb533bd52f6c74db61aaa6656ac",
+"date": "2026-10-16 20:04:54 +0000",
+"local_only": 0
+},
+"alpha5-g1-denyfix": {
+"sha": "10460fe18349af42d021f2f30baf685680f86c82",
+"date": "2026-10-17 18:55:34 +0000",
+"local_only": 0
+},
+"alpha5-gap-c0405": {
+"sha": "62903638b9bedb443e71f4f6a3fcd366ced4e761",
+"date": "2026-10-17 06:35:50 +0000",
+"local_only": 0
+},
+"alpha5-gap-c08": {
+"sha": "37f5689710e8934e9de31881ed3f7ec44a669446",
+"date": "2026-10-17 05:12:54 +0000",
+"local_only": 0
+},
+"alpha5-gap-classify": {
+"sha": "9a7a0552a9db3f847c91267e3951a9481ca972ab",
+"date": "2026-10-17 03:52:26 +0000",
+"local_only": 0
+},
+"alpha5-glob-backend": {
+"sha": "8747d33178922e1c6b9cc50afc032e81fcb5cde8",
+"date": "2026-10-18 08:26:40 +0000",
+"local_only": 0
+},
+"alpha5-glue-a5p5": {
+"sha": "6d2405397bd882d9b3d0a478a9bb8443fe0b26fa",
+"date": "2026-10-17 04:52:14 +0000",
+"local_only": 0
+},
+"alpha5-glue-jobs": {
+"sha": "7451f34e05d1b5dab209160ef3092d3fffac14bc",
+"date": "2026-10-17 03:09:45 +0000",
+"local_only": 0
+},
+"alpha5-glue4-prodentry": {
+"sha": "b752fedf94ad565a7b969ba59f9f2897c0864283",
+"date": "2026-10-17 08:30:19 +0000",
+"local_only": 0
+},
+"alpha5-glue5-entry": {
+"sha": "032271e5d0032bcda2004640d31e1bb1768454cb",
+"date": "2026-10-17 12:00:43 +0000",
+"local_only": 0
+},
+"alpha5-glue6-fix": {
+"sha": "ae114c617045845f08db5ff437395f333619f8d8",
+"date": "2026-10-17 18:13:17 +0000",
+"local_only": 0
+},
+"alpha5-glue7-backend": {
+"sha": "2a2a623b8ead56c8f0f12ca614f81c17c25d4850",
+"date": "2026-10-18 00:55:04 +0000",
+"local_only": 0
+},
+"alpha5-glue8-v4feed": {
+"sha": "8b1dbb5ac157ea5bcec11f8d337dda2d8af3008c",
+"date": "2026-10-18 02:12:46 +0000",
+"local_only": 0
+},
+"alpha5-int-a5b": {
+"sha": "5171f59963ae96e9e1e25f56d6fb3ef9baefcf52",
+"date": "2026-10-17 20:03:07 +0000",
+"local_only": 0
+},
+"alpha5-int-gg": {
+"sha": "e56fc3a9772227076a7ded4f6ab2c62ad4e2042e",
+"date": "2026-10-16 20:05:34 +0000",
+"local_only": 0
+},
+"alpha5-int-mnt": {
+"sha": "342b266cd157986f6466e32d879dc7a8d843ba5a",
+"date": "2026-10-18 04:45:40 +0000",
+"local_only": 2
+},
+"alpha5-int-pr3": {
+"sha": "de9aa169ba816783cd767f9b7111f0a5f75bbaaf",
+"date": "2026-10-16 18:07:35 +0000",
+"local_only": 0
+},
+"alpha5-int-pr4": {
+"sha": "165af298144c0aa5af7f73679d75a99be4ce9f28",
+"date": "2026-10-16 18:34:30 +0000",
+"local_only": 0
+},
+"alpha5-int-pr5": {
+"sha": "7cd20e9650c6abb37dcc8359d5e0c546595b04bd",
+"date": "2026-10-16 19:12:57 +0000",
+"local_only": 0
+},
+"alpha5-int-pr6": {
+"sha": "37c6fbf5f2fa42d6060fcfcef5efa18ef25b8956",
+"date": "2026-10-16 18:07:35 +0000",
+"local_only": 0
+},
+"alpha5-int-pr7": {
+"sha": "c383e11515bcb96066299467723a5be53eebb85f",
+"date": "2026-10-16 19:38:21 +0000",
+"local_only": 0
+},
+"alpha5-int-pr8": {
+"sha": "44e43452a806790661b68aaf5856d86c288d69ad",
+"date": "2026-10-16 18:07:35 +0000",
+"local_only": 0
+},
+"alpha5-int-r3": {
+"sha": "8ed9fd069d2c95dc4999e14505438c0c2e46fe3b",
+"date": "2026-10-18 11:51:37 +0000",
+"local_only": 0
+},
+"alpha5-int-wiring": {
+"sha": "d1464185169286e6e03922a1c8188ec90e43c14e",
+"date": "2026-10-17 00:06:47 +0000",
+"local_only": 0
+},
+"alpha5-jobs-recheck": {
+"sha": "078e6d1e8b9b90ce3c9fb8457d13d02e00cbd3cc",
+"date": "2026-10-17 03:53:00 +0000",
+"local_only": 0
+},
+"alpha5-live-pr3": {
+"sha": "9e9853c954878efba2491ee1f58434be010d677d",
+"date": "2026-10-17 00:40:49 +0000",
+"local_only": 0
+},
+"alpha5-lsp-dr": {
+"sha": "16909f8f60f4851afe1eba4fa79596458d8e4915",
+"date": "2026-10-17 05:42:18 +0000",
+"local_only": 0
+},
+"alpha5-lsp-rulings": {
+"sha": "c73e9af43858b2645e87e8fd2ddd201ce9163763",
+"date": "2026-10-17 05:02:08 +0000",
+"local_only": 0
+},
+"alpha5-master-cleanup": {
+"sha": "a572c160f6cd28a99a5fe6446eb96d34033c85ef",
+"date": "2026-10-18 14:49:04 +0000",
+"local_only": 0
+},
+"alpha5-natexe": {
+"sha": "c883236f024ae522308c298bb3dfb6239e0dc6a2",
+"date": "2026-10-18 05:10:46 +0000",
+"local_only": 0
+},
+"alpha5-natexe-pr": {
+"sha": "467bda610541fe2dd759837b70cb0d3dab12d02b",
+"date": "2026-10-18 07:26:54 +0000",
+"local_only": 0
+},
+"alpha5-pa-review": {
+"sha": "865952b2f9c1eacc609f298023d41b526e4278c8",
+"date": "2026-10-17 08:32:48 +0000",
+"local_only": 0
+},
+"alpha5-pb-binding-feed": {
+"sha": "94abdd9037760b222665bd90de36954181d8960e",
+"date": "2026-10-17 17:56:54 +0000",
+"local_only": 0
+},
+"alpha5-poc3-flake": {
+"sha": "0012d87a0f4649f24110e6dd6e5535ccd1874bea",
+"date": "2026-10-17 10:57:04 +0000",
+"local_only": 0
+},
+"alpha5-pr0-contracts": {
+"sha": "cd13f7812a6e796825d200bb18c1d310233acae8",
+"date": "2026-10-16 05:41:11 +0000",
+"local_only": 0
+},
+"alpha5-pr0-onto-master": {
+"sha": "72f603eeab6276da8b709b7d6672ada83118c3d7",
+"date": "2026-10-16 07:28:40 +0000",
+"local_only": 0
+},
+"alpha5-pr1-guard-dispatcher": {
+"sha": "2c045840ff789007e20fbe0b6daf81f8eee30e47",
+"date": "2026-10-16 07:35:39 +0000",
+"local_only": 0
+},
+"alpha5-pr1-onto-master": {
+"sha": "45425a303a0170d194b8ecb78751145ebff282e4",
+"date": "2026-10-16 07:45:23 +0000",
+"local_only": 0
+},
+"alpha5-pr1r-followup": {
+"sha": "c2a1319cf9a16b40925e2d1d8eeaefc8a25aca7f",
+"date": "2026-10-17 00:43:00 +0000",
+"local_only": 0
+},
+"alpha5-pr1r-residual-boundaries": {
+"sha": "d5890103d3b83e58db45a3ebeca18d104c73b2c3",
+"date": "2026-10-16 16:41:26 +0000",
+"local_only": 0
+},
+"alpha5-pr2-admission-grant": {
+"sha": "8471ecace0f0bd09b4ae4cb11147b7d3e05b730d",
+"date": "2026-10-16 17:34:20 +0000",
+"local_only": 0
+},
+"alpha5-pr3-fs": {
+"sha": "15002c26b76d60a630fb08eebd3a3236cf594792",
+"date": "2026-10-16 16:55:14 +0000",
+"local_only": 0
+},
+"alpha5-pr4-prov": {
+"sha": "83e0ab9a9fa1409e8346a1354d182dc1cf5fc52f",
+"date": "2026-10-16 17:15:50 +0000",
+"local_only": 0
+},
+"alpha5-pr5-tools": {
+"sha": "5ccc5839258fe934b0e593ea683cfe238dae7c25",
+"date": "2026-10-16 19:11:18 +0000",
+"local_only": 0
+},
+"alpha5-pr6-ptclsp": {
+"sha": "76780bb654f621b261d777411edd4a65b7f8c03d",
+"date": "2026-10-16 16:56:23 +0000",
+"local_only": 0
+},
+"alpha5-pr7-adapters": {
+"sha": "a919a4a3c0147c53bf26704baaa9637b5f0cbdf4",
+"date": "2026-10-16 16:55:05 +0000",
+"local_only": 0
+},
+"alpha5-pr8-accept": {
+"sha": "8118ff48b7a782bde9574667c127227d9b01e2b8",
+"date": "2026-10-16 17:27:31 +0000",
+"local_only": 0
+},
+"alpha5-pr8-runner": {
+"sha": "cc16917c0bf15e4a0a735a787558c156bb1b1caf",
+"date": "2026-10-17 00:43:40 +0000",
+"local_only": 0
+},
+"alpha5-prod-checklist": {
+"sha": "5bea01c64c3c2380d49c4407be8b53f0af06343c",
+"date": "2026-10-17 07:23:23 +0000",
+"local_only": 0
+},
+"alpha5-prod-lsp": {
+"sha": "9606a423425344f38fb2a006814a7158afa021c5",
+"date": "2026-10-17 11:00:53 +0000",
+"local_only": 0
+},
+"alpha5-prod-pr23": {
+"sha": "6ca4649633825db1bb972f224ee966fe9c6af019",
+"date": "2026-10-17 08:28:02 +0000",
+"local_only": 0
+},
+"alpha5-prod-pr45": {
+"sha": "9a49cc1a212f7e76d82efdd0c59413ffaddb520f",
+"date": "2026-10-17 10:01:08 +0000",
+"local_only": 0
+},
+"alpha5-prod-pr7": {
+"sha": "ce44fd4eae4d7977a323124eb540432305a2721b",
+"date": "2026-10-17 07:50:04 +0000",
+"local_only": 0
+},
+"alpha5-prod-vnext-adr": {
+"sha": "9d76b4a0a1614559b8b7dc782fa750c2874f8061",
+"date": "2026-10-17 08:42:54 +0000",
+"local_only": 0
+},
+"alpha5-ptc-chain": {
+"sha": "87403917898295a0f1e12f96297f386a0547322e",
+"date": "2026-10-17 05:09:00 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outer": {
+"sha": "06c3b502eaf4250f15794a46813d28b7ca426bd9",
+"date": "2026-10-17 07:00:04 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outerfs": {
+"sha": "a35811972f85fbed38dab793e83f2bcdea382be7",
+"date": "2026-10-17 16:04:00 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outerfs-l2": {
+"sha": "e80ca6eba9cbe826b497f97d06c6fb782695e2c0",
+"date": "2026-10-17 09:58:12 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outerfs-l2fix": {
+"sha": "a35811972f85fbed38dab793e83f2bcdea382be7",
+"date": "2026-10-17 16:04:00 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outerfs-rev-l2": {
+"sha": "303e11958152fea89a5e973a345d611ad8c7d83e",
+"date": "2026-10-17 10:28:57 +0000",
+"local_only": 0
+},
+"alpha5-ptc-outerfs-rev-sec": {
+"sha": "0848aa66af59d5a4da6ae0f41c574f1f42655190",
+"date": "2026-10-17 08:46:37 +0000",
+"local_only": 0
+},
+"alpha5-ptc-pr": {
+"sha": "e06b72af3e14ec931fe55f6aa82de155b1b363fe",
+"date": "2026-10-18 16:33:08 +0000",
+"local_only": 0
+},
+"alpha5-ptc-recheck": {
+"sha": "00a515a5543a82e00a40880f88c7b5fd629d7254",
+"date": "2026-10-17 04:31:01 +0000",
+"local_only": 0
+},
+"alpha5-ptc-rowfix": {
+"sha": "1aaeedd654cea7de5b09fdbfcae5ce91d682d60b",
+"date": "2026-10-17 07:35:55 +0000",
+"local_only": 0
+},
+"alpha5-ptc-stack": {
+"sha": "0b89e688ff0838b7deb578632585f65ceadd7767",
+"date": "2026-10-18 15:07:57 +0000",
+"local_only": 9
+},
+"alpha5-ra-review": {
+"sha": "4ba92b77ea0fd5382e8ab07b7dfdaa750bcd14da",
+"date": "2026-10-17 08:27:33 +0000",
+"local_only": 0
+},
+"alpha5-real-lsp": {
+"sha": "5a052b83c4411f891818f9eb6aad2f5d2e54eb43",
+"date": "2026-10-17 11:56:15 +0000",
+"local_only": 0
+},
+"alpha5-runtime-base-narrow": {
+"sha": "bfa527ba728e969e2902b8ff8bb25e907401a415",
+"date": "2026-10-17 23:15:32 +0000",
+"local_only": 0
+},
+"alpha5-s0-selection-matrix": {
+"sha": "b68c3b476e016f03b42ab1583bbb72b94d5e7cc9",
+"date": "2026-10-16 07:10:48 +0000",
+"local_only": 0
+},
+"alpha5-schema-rev": {
+"sha": "264956a48c3633d221fd4d1ec3e468fc8726a66e",
+"date": "2026-10-17 20:38:58 +0000",
+"local_only": 0
+},
+"alpha5-semantics-a234": {
+"sha": "91a10858f8fbcd56689055a899df3bbc2803069a",
+"date": "2026-10-17 16:54:02 +0000",
+"local_only": 0
+},
+"alpha5-space-doc-fix": {
+"sha": "6e1b57dc9d0aa4c08580d064c067b5cdaf3e27f5",
+"date": "2026-10-17 04:08:50 +0000",
+"local_only": 0
+},
+"alpha5-srgp": {
+"sha": "69f4334eaab0253ca3d23b4b4558f5b2ef0d2d78",
+"date": "2026-10-18 05:04:15 +0000",
+"local_only": 0
+},
+"alpha5-srgp-pr": {
+"sha": "5143867650685cb4f2f5751d4129a9d0278292f4",
+"date": "2026-10-18 06:09:28 +0000",
+"local_only": 3
+},
+"alpha5-srgp-pr2": {
+"sha": "3f78fccedea047f7385e5c8741e426ea9d665dd2",
+"date": "2026-10-18 09:33:28 +0000",
+"local_only": 0
+},
+"alpha5-testuse-audit": {
+"sha": "57f97fcf895d0b1143e0b95c3cfa2c49762479ad",
+"date": "2026-10-17 05:41:57 +0000",
+"local_only": 0
+},
+"alpha5-u1-probe": {
+"sha": "e9bafdd707ab9d90ab9668d146ceb2960cc51f26",
+"date": "2026-10-18 02:50:52 +0000",
+"local_only": 0
+},
+"alpha5-v4-flip": {
+"sha": "4a5f5b6ca94df39fc7420324fccd1f19530f3948",
+"date": "2026-10-18 03:12:53 +0000",
+"local_only": 0
+},
+"alpha5-v4-route": {
+"sha": "de6f38a4e9ce37ccde50ee0032146763da741e41",
+"date": "2026-10-17 20:09:27 +0000",
+"local_only": 0
+},
+"alpha5-w7m-kit": {
+"sha": "b8ac7acb243a190bb6592d72976e0d5369c4ae4c",
+"date": "2026-10-17 04:27:32 +0000",
+"local_only": 0
+},
+"alpha5-w7m-rev-w7m": {
+"sha": "6f340a369e931e3f7ef52d424666e99683a93632",
+"date": "2026-10-17 05:12:05 +0000",
+"local_only": 0
+},
+"alpha5-w7m2-covgate": {
+"sha": "addb4ea07685319fbff43086cf1bc64408531339",
+"date": "2026-10-17 05:38:48 +0000",
+"local_only": 0
+},
+"alpha5-w8-formal-review": {
+"sha": "b7ac08562b1de450d27dabb594c742cd46c36ca7",
+"date": "2026-10-17 03:26:24 +0000",
+"local_only": 0
+},
+"alpha5-wire-pr4": {
+"sha": "3aef2d2e4b46fb148b2af8e34d53d7876f95c899",
+"date": "2026-10-17 02:27:29 +0000",
+"local_only": 0
+},
+"alpha5-wire-pr5": {
+"sha": "c5931ca572ce965b1eacc3bed69c5ccc096ed30a",
+"date": "2026-10-17 02:25:18 +0000",
+"local_only": 0
+},
+"alpha5-wire-pr7": {
+"sha": "d87e641c8929d531754a3e60cfb5bd21a6cf9a18",
+"date": "2026-10-17 02:23:17 +0000",
+"local_only": 0
+},
+"alpha5-wire-pr8": {
+"sha": "a88731488e80eea8b9b5e5bbbc18c383f2459bf1",
+"date": "2026-10-17 03:35:59 +0000",
+"local_only": 0
+},
+"alpha5-wire-pr8prep": {
+"sha": "d91fbfb96d69f258301e3c0efcd96b81987c2d55",
+"date": "2026-10-17 02:40:53 +0000",
+"local_only": 0
+},
+"alpha5-wire-tools2": {
+"sha": "f26c397182699856383558b97c3dff7d51f788de",
+"date": "2026-10-17 04:21:45 +0000",
+"local_only": 0
+},
+"backup/pre-rebase-55bd5e78": {
+"sha": "55bd5e788ea4304f07331437e80a92a2a41cc775",
+"date": "2026-10-17 10:40:19 +0000",
+"local_only": 12
+},
+"cand/a5-world-safety-20261023": {
+"sha": "19b7046099261eeea019bd4d88592d1197628e80",
+"date": "2026-10-23 16:42:09 +0000",
+"local_only": 0
+},
+"ci-dispatch-trigger": {
+"sha": "4573dde785a25d52153bcd149104be7ea0137699",
+"date": "2026-10-18 02:24:46 +0000",
+"local_only": 0
+},
+"ci/a5-m2-census-r9": {
+"sha": "4061d04c60717c7dc160b7f04f33a5071928bd40",
+"date": "2026-10-23 11:46:54 +0000",
+"local_only": 0
+},
+"coord/routerlog-20261020": {
+"sha": "03cd0e697f6059ae1a2bb3a99730e8e09780c9e2",
+"date": "2026-10-20 07:10:47 +0000",
+"local_only": 1
+},
+"diag/a5-m1-facts-detail": {
+"sha": "7bb44675c96e0adf126e23434be68da84d0c5167",
+"date": "2026-10-23 02:29:32 +0000",
+"local_only": 0
+},
+"docs-a5r4": {
+"sha": "baeb98ca4c1c73b472766150e385b06fdc9537a5",
+"date": "2026-10-18 09:21:22 +0000",
+"local_only": 0
+},
+"docs/a5-m0-contract-package": {
+"sha": "3e7afeba6ae6e1bda16afa636ff3c1c0878e8149",
+"date": "2026-10-22 19:08:09 +0000",
+"local_only": 0
+},
+"docs/alpha5-reset-pr363-review-20261025": {
+"sha": "1310b959595b211e5da7a5f727dadf522f79d60b",
+"date": "2026-10-24 20:59:37 +0000",
+"local_only": 0
+},
+"docs/pending-decisions-20261016": {
+"sha": "9ff3ad386a7dde9519eb80ee8ec63b118e6aa84b",
+"date": "2026-10-16 02:45:13 +0000",
+"local_only": 0
+},
+"exp/alpha5-poc-20261016": {
+"sha": "a2e741a02c4f0126f0aa6615c02c51877f7f3dba",
+"date": "2026-10-16 02:44:24 +0000",
+"local_only": 0
+},
+"feat/a5-m1-auth-bridge": {
+"sha": "b1eda9ebe0a4b40b36eeafc1249ff8f1fe3811aa",
+"date": "2026-10-22 22:31:42 +0000",
+"local_only": 0
+},
+"feat/a5-m1-census-p4t6-pin": {
+"sha": "c978eb2fc7141b33cce9de50fb8dceae47934b91",
+"date": "2026-10-23 07:04:21 +0000",
+"local_only": 0
+},
+"feat/a5-m1-center-kernel": {
+"sha": "c978eb2fc7141b33cce9de50fb8dceae47934b91",
+"date": "2026-10-23 07:04:21 +0000",
+"local_only": 0
+},
+"feat/a5-m1-ci-census": {
+"sha": "ac9d068ea77de8fe4dd44d3f14819ab26d9f1a5f",
+"date": "2026-10-22 23:17:55 +0000",
+"local_only": 0
+},
+"feat/a5-m1-facts-seam": {
+"sha": "c1a8378bc4a682c1ff532c95967da14a8fff6de4",
+"date": "2026-10-23 00:58:50 +0000",
+"local_only": 0
+},
+"feat/a5-m1-fence-line-drift": {
+"sha": "2e6e8a5da9f5b436aca9c0079ea0393acde6eba3",
+"date": "2026-10-23 01:33:38 +0000",
+"local_only": 0
+},
+"feat/a5-m1-fence-stale-key": {
+"sha": "b81c18133022871da3000ce7b3619cafb38de5b0",
+"date": "2026-10-23 02:04:15 +0000",
+"local_only": 0
+},
+"feat/a5-m1-fixtures": {
+"sha": "d88248390621e437168f8b0f3d60ff052956e869",
+"date": "2026-10-23 00:47:17 +0000",
+"local_only": 0
+},
+"feat/a5-m1-flaky-diag": {
+"sha": "086aaf230610617aa18cabde42aa7537179d243d",
+"date": "2026-10-23 01:31:07 +0000",
+"local_only": 0
+},
+"feat/a5-m1-host-diag": {
+"sha": "d88248390621e437168f8b0f3d60ff052956e869",
+"date": "2026-10-23 00:47:17 +0000",
+"local_only": 0
+},
+"feat/a5-m2-census-booking": {
+"sha": "421d5add6e9d7c670c11ec31a4c5ebfd99488a40",
+"date": "2026-10-23 08:47:31 +0000",
+"local_only": 1
+},
+"feat/a5-m2-integration": {
+"sha": "bef38934fc1cf40407bdae435af5bf6e84dedaf4",
+"date": "2026-10-24 17:48:33 +0000",
+"local_only": 0
+},
+"feat/a5-m2-pa-read-handoff": {
+"sha": "5b9a7262df583761c7ad6030ab9152a4429e0f16",
+"date": "2026-10-23 04:27:30 +0000",
+"local_only": 1
+},
+"feat/a5m2-auth-schedule-vocab": {
+"sha": "267c98d3a511ba389549cdb6b757261606b6ec14",
+"date": "2026-10-23 22:37:27 +0000",
+"local_only": 0
+},
+"feat/a5m2-b-mcp": {
+"sha": "3954d6368cd6fb533c03f20e0017126f1b5880ba",
+"date": "2026-10-24 08:48:13 +0000",
+"local_only": 0
+},
+"feat/a5m2-bsearch-team": {
+"sha": "4ea593fca0f070a954f755baad71b4e72a499641",
+"date": "2026-10-24 09:05:13 +0000",
+"local_only": 0
+},
+"feat/a5m2-checkinstall-handlers": {
+"sha": "833e261dab41858407d609db614d3c435b344c5f",
+"date": "2026-10-23 20:57:39 +0000",
+"local_only": 0
+},
+"feat/a5m2-family-rules": {
+"sha": "4e96decc6bc3666b900f9b6ab71b2a87d013df25",
+"date": "2026-10-23 21:38:30 +0000",
+"local_only": 0
+},
+"feat/a5m2-g1asm": {
+"sha": "9293c7890a68b430d7f65126d98db2ebf0ebd672",
+"date": "2026-10-24 08:44:25 +0000",
+"local_only": 0
+},
+"feat/a5m2-g1fix": {
+"sha": "18f181d6a87af34bc3e834908a1fe127afde4510",
+"date": "2026-10-23 16:18:50 +0000",
+"local_only": 0
+},
+"feat/a5m2-g2fix": {
+"sha": "c80ec68e06d0796d3b1cadefcff8f8833d7548c0",
+"date": "2026-10-23 17:01:09 +0000",
+"local_only": 0
+},
+"feat/a5m2-g3-cancel-close": {
+"sha": "c270e0e85d11b7546b1b5cd2dcee0bf63656e3b0",
+"date": "2026-10-23 17:04:23 +0000",
+"local_only": 0
+},
+"feat/a5m2-g3-pty-spawn": {
+"sha": "15b76a8aa8f7005e1b395505e9547c750626825e",
+"date": "2026-10-23 17:44:35 +0000",
+"local_only": 0
+},
+"feat/a5m2-g6-eventread-driver": {
+"sha": "cd359c367dbc598185298a8ae818305ae921f76e",
+"date": "2026-10-24 17:25:50 +0000",
+"local_only": 2
+},
+"feat/a5m2-g6-mintfix": {
+"sha": "eab9a9c007afafea36685db9f91131a5bab37466",
+"date": "2026-10-23 19:32:47 +0000",
+"local_only": 0
+},
+"feat/a5m2-g6-pa-supply": {
+"sha": "2efe54446b069aa2e907e1b6b5c8198645aa407c",
+"date": "2026-10-24 00:09:11 +0000",
+"local_only": 0
+},
+"feat/a5m2-g6fix": {
+"sha": "e95e7c3fd2fbcae08834c3e29a5655c6e0e537a6",
+"date": "2026-10-23 17:15:48 +0000",
+"local_only": 0
+},
+"feat/a5m2-imgverify": {
+"sha": "b811fac7ca2db45d62e15fa8c38ca901ffd9c3a8",
+"date": "2026-10-23 22:58:36 +0000",
+"local_only": 0
+},
+"feat/a5m2-job-family": {
+"sha": "e97d38f8ccba2ecf2805b1464bf4570031415f5f",
+"date": "2026-10-24 09:46:20 +0000",
+"local_only": 0
+},
+"feat/a5m2-joint-cand": {
+"sha": "6e2279286a30502f711f4b255d22e77f597e0e56",
+"date": "2026-10-23 21:50:28 +0000",
+"local_only": 0
+},
+"feat/a5m2-joint-cand2": {
+"sha": "9b5c9f4b29171d4cf8a2d0ecc7864b567b6a8b79",
+"date": "2026-10-23 22:20:36 +0000",
+"local_only": 0
+},
+"feat/a5m2-new-family": {
+"sha": "9f95a81157bf6e368fa5389c7162bfddd91bc470",
+"date": "2026-10-23 22:11:03 +0000",
+"local_only": 0
+},
+"feat/a5m2-provider-id": {
+"sha": "477f16fae12a10000fe6b71e02d737993179b11e",
+"date": "2026-10-23 23:16:06 +0000",
+"local_only": 0
+},
+"feat/a5m2-subagent-fix": {
+"sha": "7c686987934c2785c8de8030b933ad38f01e518f",
+"date": "2026-10-23 22:18:14 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g1": {
+"sha": "04c38b735ffa31cde9bd25a5efeb51a2243c02fc",
+"date": "2026-10-24 17:34:50 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g1-human": {
+"sha": "5d6bf9a6ed4ceae3c308292515c35531520616e7",
+"date": "2026-10-24 08:37:03 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g1-present": {
+"sha": "bd31d1ed777d712294e31e08c82cdc3eea8f867c",
+"date": "2026-10-24 08:43:10 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g1-skill": {
+"sha": "8d560d305a031b592554be84446e599bebe32d9a",
+"date": "2026-10-24 08:40:25 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g1-surfaces": {
+"sha": "314f149a19df521f03dacef685a88877cc758895",
+"date": "2026-10-24 06:21:19 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g2": {
+"sha": "88636fcd178ae89420659ede6af5a12f4679fb85",
+"date": "2026-10-24 09:43:53 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g2-dmts": {
+"sha": "9b00b74a1701bc27199bc6fb2aa234f4606f766a",
+"date": "2026-10-24 05:38:39 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g3": {
+"sha": "a2d9839cc3130ca0e58f27d297111557676dee23",
+"date": "2026-10-24 14:49:44 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g3a": {
+"sha": "c6cd05a8c13fd9f2a9970bca1f74d496c10bc83d",
+"date": "2026-10-24 08:31:13 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g5": {
+"sha": "ff421cf2502bb512ba94126ac27e47bb765255b3",
+"date": "2026-10-24 17:47:17 +0000",
+"local_only": 4
+},
+"feat/a5m2-wire-g6": {
+"sha": "3a0662bad09fc8d33ffaf4a0e5c075117066fbb8",
+"date": "2026-10-24 05:13:13 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g6-intre": {
+"sha": "95ce75255f643c3f1ff1c8a23844ba331d47db9d",
+"date": "2026-10-24 05:22:23 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-g6-pasup": {
+"sha": "7e86a85b616211f6c8ba6094a7ae395d2e51fac8",
+"date": "2026-10-24 05:37:45 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-merge": {
+"sha": "fd555c117dc64ed865fae776a8271562a6e71f29",
+"date": "2026-10-23 16:26:02 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-schedule": {
+"sha": "b2099e7db82320aff82247fe78a183d19766d784",
+"date": "2026-10-24 09:48:04 +0000",
+"local_only": 0
+},
+"feat/a5m2-wire-team": {
+"sha": "d7e0616d79ee0dff2c0d566b883c1c487fe08814",
+"date": "2026-10-24 09:12:04 +0000",
+"local_only": 0
+},
+"feat/alpha5-install-entry-evidence": {
+"sha": "6a0f8e1934ebbaf565a6aad8765a189f7077de6c",
+"date": "2026-10-17 17:10:14 +0000",
+"local_only": 0
+},
+"feat/s2-authority-snapshot-iso-20261025": {
+"sha": "2c137d6c137b80de3be4b428544a5d27d24a72b1",
+"date": "2026-10-25 10:27:32 +0000",
+"local_only": 9
+},
+"fix/a5p7-f-typefix": {
+"sha": "fce30866355305ba41d32cb5bbb7384ea446caa7",
+"date": "2026-10-16 19:30:33 +0000",
+"local_only": 0
+},
+"fix/control-authz-boundary": {
+"sha": "aa97fc2caecc2a6596dc681ce4439b6e8489b060",
+"date": "2026-10-01 09:41:09 +0000",
+"local_only": 0
+},
+"fix/effective-policy-reset-fallback": {
+"sha": "a509cffa97d83408127a8b64b348930d32fd3667",
+"date": "2026-10-01 06:09:06 +0000",
+"local_only": 0
+},
+"fix/mcp-target-materialization": {
+"sha": "aab727574601bd9b891a71ddc05eb7e45ca641d0",
+"date": "2026-10-01 10:41:45 +0000",
+"local_only": 0
+},
+"fix/persona-kind-preflight": {
+"sha": "a6e2d90c94d43459d19b9349cf9a917dbd91b9bf",
+"date": "2026-10-01 06:45:43 +0000",
+"local_only": 0
+},
+"fix/post-alpha4-20261016": {
+"sha": "9a44cf66bca5885f70481d005c36cba69aec6628",
+"date": "2026-10-16 02:33:27 +0000",
+"local_only": 0
+},
+"fix/runtime-template-consent": {
+"sha": "73ed19d1ad0294f8b5067c260c237ebfdec34eb0",
+"date": "2026-10-01 07:49:11 +0000",
+"local_only": 0
+},
+"g6b-flake": {
+"sha": "097fccf9922ce009c0184d514ac365f1f22b634f",
+"date": "2026-10-18 23:31:59 +0000",
+"local_only": 0
+},
+"master": {
+"sha": "6259cf4bc4d61af74d84bbd9d265184f95493172",
+"date": "2026-10-02 07:30:30 +0800",
+"local_only": 0
+},
+"ptc290-rebase": {
+"sha": "0df2bf4b7bd1009d464c51fb53fd50fdb52188fb",
+"date": "2026-10-17 08:59:24 +0000",
+"local_only": 0
+},
+"release/a5m2-5c313-distfix": {
+"sha": "37646ac288dbd0ee3c998343dc91fd1a8da7a2d5",
+"date": "2026-10-24 08:55:11 +0000",
+"local_only": 0
+},
+"review-LaneD-72a2c1b2": {
+"sha": "e3f660faf77320783e07567ffbc9043505b9d520",
+"date": "2026-10-16 17:37:35 +0000",
+"local_only": 0
+},
+"review-lane-f": {
+"sha": "fe587d743808d3d8fbc0f1dec6555054fbd8cadf",
+"date": "2026-10-16 17:28:34 +0000",
+"local_only": 0
+},
+"sec/a5-jobs-sanitize-2026-10-20": {
+"sha": "febb4990ea5b9115eb60029df063a834a6580117",
+"date": "2026-10-20 07:29:14 +0000",
+"local_only": 0
+},
+"task/alpha3-pr1-permission-overlay": {
+"sha": "5bc775f9c6c7fac4ce03e5233e62d257ad370495",
+"date": "2026-10-01 19:10:14 +0000",
+"local_only": 0
+},
+"task/alpha3-pr2-effective-assembler": {
+"sha": "f13a1f46458eb995ed4e9edb456d98ca4b03efcf",
+"date": "2026-10-01 20:01:38 +0000",
+"local_only": 0
+},
+"task/alpha3-pr3-permission-mutation": {
+"sha": "cad9333a13081e53b44079d1ddf74d7eadf0d6b8",
+"date": "2026-10-01 21:15:55 +0000",
+"local_only": 0
+},
+"task/alpha3-pr4-permission-lifecycle": {
+"sha": "1f75a8b2bb08dd821174e9cb4b6c7c84efb10dd1",
+"date": "2026-10-02 01:24:29 +0000",
+"local_only": 0
+},
+"task/alpha3-pr5-notification-projection": {
+"sha": "a77e204610dac8f41ee405fd373bbe705470f0b6",
+"date": "2026-10-02 02:25:22 +0000",
+"local_only": 0
+},
+"task/dsh-020rc2-upgrade-20261003": {
+"sha": "f235c5cb7089c14c17258ade15b1b23844811537",
+"date": "2026-10-06 04:55:55 +0000",
+"local_only": 0
+},
+"task/eb-e0-e1-doc-baseline-20261029": {
+"sha": "346064b3a21573c31cf3bb5fd6fd30a45be922e7",
+"date": "2026-10-24 09:18:01 +0000",
+"local_only": 0
+},
+"task/int-alpha3-stage2": {
+"sha": "e63da1256f7313822a2205b34696d330bba79e65",
+"date": "2026-10-01 22:40:58 +0000",
+"local_only": 12
+},
+"task/pre-alpha3-handoff-closure": {
+"sha": "bbb19a13e30a5b4554013c8b342a0d4265e74ea0",
+"date": "2026-10-01 23:22:49 +0000",
+"local_only": 0
+},
+"task/pre-alpha3-pr54-ui-observe": {
+"sha": "ac603c28c5ce77ce5830b8bac27be1626ad319e4",
+"date": "2026-10-01 22:59:37 +0000",
+"local_only": 0
+},
+"task/pre-alpha3-pr55-dod20-driver": {
+"sha": "46043f78d4a956f992517acb49bfe2d780f762d5",
+"date": "2026-10-01 18:48:42 +0000",
+"local_only": 0
+},
+"task/pre-alpha3-pr56-client-panel": {
+"sha": "284169779ec3be4a113fc2c4c47d7be9ff742ee1",
+"date": "2026-10-01 22:07:31 +0000",
+"local_only": 0
+},
+"task/test-infra-fixture-parameterization": {
+"sha": "4200c4b68bc375e0287b042ba6725b9121159fd0",
+"date": "2026-10-01 14:15:44 +0000",
+"local_only": 0
+},
+"test/kits-stable-probe-consent-fix": {
+"sha": "4757112c7153b12ed9a81f31699bb39d69c51fa7",
+"date": "2026-10-01 12:15:21 +0000",
+"local_only": 0
+},
+"tmp-int": {
+"sha": "452a04c0bcfd720b51ee2a4cd1da36d2b74e34ab",
+"date": "2026-10-17 01:02:19 +0800",
+"local_only": 0
+},
+"wirecheck": {
+"sha": "2c95513328a5c1a58d6d299b29e2ef692d4e58f8",
+"date": "2026-10-16 21:23:29 +0000",
+"local_only": 0
+}
+}

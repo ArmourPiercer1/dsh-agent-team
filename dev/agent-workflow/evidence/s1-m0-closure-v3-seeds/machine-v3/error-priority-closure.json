@@ -1,0 +1,105 @@
+{
+ "$status": "exact multiset 比较；优先级=本表顺序（同位置错误按此排序后比较）",
+ "priority": [
+  {
+   "code": "E_MISSING",
+   "rank": 0
+  },
+  {
+   "code": "E_TYPE",
+   "rank": 1
+  },
+  {
+   "code": "E_ENUM",
+   "rank": 2
+  },
+  {
+   "code": "E_ROUTE",
+   "rank": 3
+  },
+  {
+   "code": "E_UNIQUE_KEY",
+   "rank": 4
+  },
+  {
+   "code": "E_COVERAGE_MISSING",
+   "rank": 5
+  },
+  {
+   "code": "E_COVERAGE_NAME",
+   "rank": 6
+  },
+  {
+   "code": "E_COVERAGE",
+   "rank": 7
+  },
+  {
+   "code": "E_OWN_LAYER",
+   "rank": 8
+  },
+  {
+   "code": "E_NA_SCOPE",
+   "rank": 9
+  },
+  {
+   "code": "E_CEILING_MISSING",
+   "rank": 10
+  },
+  {
+   "code": "E_EFF_UNKNOWN",
+   "rank": 11
+  },
+  {
+   "code": "E_TRANSITION",
+   "rank": 12
+  },
+  {
+   "code": "E_WRONG_BRANCH",
+   "rank": 13
+  },
+  {
+   "code": "E_FORGED_APPROVAL",
+   "rank": 14
+  },
+  {
+   "code": "E_OWNERSHIP",
+   "rank": 15
+  },
+  {
+   "code": "E_IDENTITY",
+   "rank": 16
+  },
+  {
+   "code": "E_REPLAY",
+   "rank": 17
+  },
+  {
+   "code": "E_STALE",
+   "rank": 18
+  },
+  {
+   "code": "E_LEDGER_CLAIM",
+   "rank": 19
+  },
+  {
+   "code": "E_TERMINAL",
+   "rank": 20
+  },
+  {
+   "code": "E_COLD_RECOVERY",
+   "rank": 21
+  },
+  {
+   "code": "E_META",
+   "rank": 22
+  },
+  {
+   "code": "E_EXPECTATION",
+   "rank": 23
+  },
+  {
+   "code": "E_FIXED_INPUT",
+   "rank": 24
+  }
+ ]
+}

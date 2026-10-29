@@ -1,0 +1,4 @@
+VITEST RUN1 START 2026-10-25T10:11:07Z
+VITEST RUN1 cmd='pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=<OUT>/vitest-run1.json' exit=1 duration=345s END 2026-10-25T10:16:52Z
+VITEST RUN2 START 2026-10-25T10:16:59Z
+VITEST RUN2 cmd='pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=<OUT>/vitest-run2.json' exit=1 duration=310s END 2026-10-25T10:22:09Z

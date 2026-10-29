@@ -1,0 +1,4204 @@
+{
+ "generated": "2026-10-25",
+ "authority": "origin/master 95fbe95cf094d8368faf1e356ba6b56fc5a70f15 (read-only git plumbing: ls-tree/grep/show; no checkout)",
+ "scope_note": "every tracked non-evidence file referencing a path under dev/agent-workflow/evidence/. Classes: RUNTIME-READ = code opens/reads/imports/spawns tracked evidence or existence-checks it; RUNTIME-WRITE = creates fresh evidence dirs at run time (mkdir-p, deletion-safe); RUNTIME-SCANNER = walks the evidence tree tolerantly; SYNTHETIC-FIXTURE-STRING = in-test string, no disk access; CONFIG; COMMENT/DOC-CITATION = prose.",
+ "counts": {
+  "files_referencing_total": 250,
+  "code_config_files": 155,
+  "markdown_files": 95,
+  "literal_reference_lines_non_md": 521,
+  "runtime_read_files": [
+   "dev/engineering/registry.yaml",
+   "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
+   "packages/runtime/test/a5int-r3-mount-integration.test.ts",
+   "packages/runtime/test/a5intr3-kit-runner.test.ts",
+   "packages/testkit/test/a4p7-blueprint-version-clean.test.ts",
+   "packages/testkit/test/a4p7-merge-gate.test.ts",
+   "scripts/ci-pr-gate.mjs",
+   "scripts/gen-current-state.mjs",
+   "scripts/verify-blueprint-version-clean.mjs",
+   "tests/characterization/seam-manifest/manifest.json",
+   "tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs",
+   "tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs",
+   "tests/kits/a5p1diag/a5p1-kit.mjs",
+   "tests/kits/a5p1diag/a5p1-order-hazard.mjs",
+   "tests/kits/a5p1diag/a5p1r-rereg-window.mjs",
+   "tests/kits/alpha5-pr8-e2e/kit.mjs"
+  ],
+  "runtime_write_files": [
+   ".github/workflows/characterization.yml",
+   "packages/tools/harness/t12-vertical.mjs",
+   "scripts/prepare-blueprint-v4-flip.mjs",
+   "tests/characterization/probes/preset-persona-model/index.mjs",
+   "tests/characterization/probes/preset-persona-model/plugins/main.js",
+   "tests/characterization/probes/preset-persona-model/plugins/resume.js",
+   "tests/kits/alpha5-pr8-e2e/kit.mjs",
+   "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+   "tests/kits/pr-a-governance-smoke/pr-a-governance-smoke.mjs",
+   "tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs",
+   "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs",
+   "tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs",
+   "tests/kits/team-view-sync-complete-e2e/browser-smoke-host.mjs",
+   "tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs",
+   "tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs"
+  ]
+ },
+ "hard_runtime_read_sites": [
+  {
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    105,
+    1300
+   ],
+   "target": "evidence/a4-lint-baseline/lint-identities-0237d487.txt",
+   "how": "lint-identities leg: scripts/lint-identities.mjs --diff <baseline>; non-zero exit fails the leg"
+  },
+  {
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    106,
+    1308,
+    1797,
+    1808
+   ],
+   "target": "evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+   "how": "census leg readFileSync+parsePopulationBaseline; --self-test parses the committed file and asserts its corpus numbers"
+  },
+  {
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    107,
+    1203
+   ],
+   "target": "evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt",
+   "how": "blueprint-fence leg readLineBaseline; NEW identities fail, RESOLVED pass with disclosure"
+  },
+  {
+   "file": "scripts/verify-blueprint-version-clean.mjs",
+   "lines": [
+    1169,
+    1173,
+    1183
+   ],
+   "target": "evidence/a4-pr7/scan-scope/unknown-adjudications.json",
+   "how": "fence ledger; git ls-files --error-unmatch REFUSES an untracked ledger (git rm of it = fence not-run)"
+  },
+  {
+   "file": "packages/testkit/test/a4p7-merge-gate.test.ts",
+   "lines": [
+    82,
+    825,
+    1300
+   ],
+   "target": "evidence/a4-lint-baseline/lint-identities-0237d487.txt",
+   "how": "existsSync must be true + same --diff leg in test"
+  },
+  {
+   "file": "packages/testkit/test/a4p7-merge-gate.test.ts",
+   "lines": [
+    1776,
+    1777,
+    1783
+   ],
+   "target": "evidence/a4-pr7/g2-summary-parser/fixtures/ (8 files)",
+   "how": "g2Fixture() existsSync+readFileSync (\"the hosted-bytes regression has no bytes\")"
+  },
+  {
+   "file": "packages/testkit/test/a4p7-blueprint-version-clean.test.ts",
+   "lines": [
+    67,
+    106,
+    111,
+    139
+   ],
+   "target": "evidence/a4-pr7/scan-scope/fixtures/ (35 .txt)",
+   "how": "readdirSync+readFileSync fence fixtures; fixture() throws on a missing named one"
+  },
+  {
+   "file": "packages/testkit/test/a4p7-blueprint-version-clean.test.ts",
+   "lines": [
+    257,
+    258
+   ],
+   "target": "evidence/a4-pr7/scan-scope/unknown-adjudications.json",
+   "how": "readFileSync at module load"
+  },
+  {
+   "file": "packages/runtime/test/a5intr3-kit-runner.test.ts",
+   "lines": [
+    12,
+    21
+   ],
+   "target": "evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+   "how": "dynamic import under vitest — graded inside the census roots"
+  },
+  {
+   "file": "packages/runtime/test/a5int-r3-mount-integration.test.ts",
+   "lines": [
+    52,
+    297
+   ],
+   "target": "evidence/alpha5/natexe/matrix-reserved-native-receipt.log",
+   "how": "readFileSync"
+  },
+  {
+   "file": "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
+   "lines": [
+    61,
+    286,
+    287
+   ],
+   "target": "evidence/alpha5/natexe/glue7-rerun-run1-E2-drift-before-commit.log + glue7-rerun-run2-GREEN-24-24.log",
+   "how": "readFileSync per file, content asserted (\"Read here, NEVER rewritten\")"
+  },
+  {
+   "file": "tests/characterization/probes/remote-client/index.mjs",
+   "lines": [
+    481,
+    517,
+    519,
+    521,
+    535
+   ],
+   "target": "the 21 evidence paths listed in tests/characterization/seam-manifest/manifest.json",
+   "how": "validateManifest evidence-exists (existsSync per path) + verdicts-consistent (readFileSync per-task seam reports); characterization suite (manual/workflow_dispatch)"
+  },
+  {
+   "file": "tests/kits/a5p1diag/a5p1-kit.mjs",
+   "lines": [
+    99
+   ],
+   "target": "evidence/alpha5/wiring/bind-diag/a5bd-diag-row.mjs",
+   "how": "pathToFileURL import"
+  },
+  {
+   "file": "tests/kits/{a5p1diag,a5-pr1-guard-dispatch}/{a5p1-order-hazard.mjs,a5p1r-rereg-window.mjs}",
+   "lines": [
+    53,
+    60
+   ],
+   "target": "evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+   "how": "pathToFileURL dynamic import of the tracked P0 fixture (4 kit files)"
+  },
+  {
+   "file": "tests/kits/alpha5-pr8-e2e/kit.mjs",
+   "lines": [
+    147,
+    159,
+    171
+   ],
+   "target": "evidence/alpha5/wiring/w5/{run-w5-live.mjs,build-lane-esm.mjs} (+ internal a5w5-assembly-row.mjs -> a5w5-fixtures.mjs)",
+   "how": "prereq check + spawn node <evidence script>; chain: run-w5-live.mjs:64 -> a5w5-assembly-row.mjs:104 -> a5w5-fixtures.mjs"
+  },
+  {
+   "file": "scripts/gen-current-state.mjs",
+   "lines": [
+    149,
+    206,
+    215,
+    219,
+    220
+   ],
+   "target": "registry verification_artifacts: evidence/EB-E0-E1/*.log (7 files)",
+   "how": "existsSync; missing => blocking ARTIFACT_MISSING / FAKE_VERIFICATION in docs:probe, docs:sync --check, gen-current-state --check"
+  },
+  {
+   "file": "dev/engineering/registry.yaml",
+   "lines": [
+    71,
+    81,
+    91,
+    109,
+    119,
+    129,
+    151
+   ],
+   "target": "evidence/EB-E0-E1/{controls-run-1,controls-run-9,controls-run-10,controls-run-11,controls-run-12,mutation-control-1,contracts-field-agreement-1}.log",
+   "how": "input to the check above"
+  },
+  {
+   "file": "ci-pr-gate Q5 matrix existence law",
+   "lines": [
+    430,
+    433
+   ],
+   "target": "matrix ⑥-column citations: evidence/alpha5/, dirs jobs-isolation/, live/, natexe/, ptc-fs-impl/, srgp/, w-ptc-c2/, w-ptc-outerfs/, wiring/real-lsp/ (matrix = docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md, pointer graph.yaml:95)",
+   "how": "fileExists(bare)||fileExists(\"dev/agent-workflow/\"+bare); each cited dir must keep >=1 tracked file"
+  }
+ ],
+ "runtime_scanners": [
+  {
+   "file": "scripts/lint-g-g-wording.mjs",
+   "lines": [
+    70,
+    136,
+    150
+   ],
+   "behavior": "lintRepo walks every dev/agent-workflow/**.md incl. evidence; retraction window names evidence/alpha5-pr1r/seam-record-post-door-resolution.md:99-122; deletion-tolerant (no existence assertion)"
+  },
+  {
+   "file": "tests/kits/{a5p1diag,a5-pr1-guard-dispatch}/sweep-worlds.mjs",
+   "lines": [
+    82,
+    92
+   ],
+   "behavior": "--scrub-raw walks the whole evidence root for host-stdout.raw (read+redact+rm); relocated store escapes the scrub — 0 tracked host-stdout.raw today, 5 tracked instance.raw.log"
+  }
+ ],
+ "counting_or_pinning_checks": [
+  {
+   "check": "p4t6 session-event total pin (MEASURED TOTAL 1228; 980-file title)",
+   "file": "packages/testkit/test/p4t6-session-event-scan.test.ts",
+   "lines": [
+    243,
+    311
+   ],
+   "scope_source": "packages/testkit/fault-injection/session-event-scan.mjs:202,262-268 (walks packages/ only)",
+   "impact": "UNAFFECTED — evidence is outside the scanner roots by construction"
+  },
+  {
+   "check": "ci-pr-gate census leg (nine-root identity set)",
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    106,
+    1308,
+    1425
+   ],
+   "scope_source": "vitest.config.ts:24-27 (packages/*/test, controlled-fs/test, a5p5-tools/test)",
+   "impact": "CORPUS UNAFFECTED (no evidence in vitest roots); NEW REDS appear only if a collected test loses an evidence fixture — keep-set covers a5int-r3 / a5intr3-kit-runner / a5b2"
+  },
+  {
+   "check": "blueprint-fence (universe count + identity diff)",
+   "file": "scripts/verify-blueprint-version-clean.mjs; scripts/ci-pr-gate.mjs",
+   "lines": [
+    1170,
+    1212
+   ],
+   "scope_source": "fence scope tests/kits,scripts,harness; evidence excluded (asserted by packages/testkit/test/a4p7-blueprint-version-clean.test.ts:870)",
+   "impact": "UNAFFECTED verdict — universe \"N tracked files\" is printed context; deletions cannot create NEW identities; ledger must stay tracked"
+  },
+  {
+   "check": "a4p7-merge-gate lint-visibility census",
+   "file": "packages/testkit/test/a4p7-merge-gate.test.ts",
+   "lines": [
+    588,
+    597,
+    638,
+    694
+   ],
+   "impact": "UNAFFECTED — denominator computed from live git ls-files (no absolute pin); evidence candidates fall under ratified-invisible prefix dev/ (line 566; eslint.config.mjs:102 ignores dev/**)"
+  },
+  {
+   "check": "lint-identities baseline diff",
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    1232,
+    1243
+   ],
+   "impact": "UNAFFECTED — eslint ignores dev/**; lint-identities-0237d487.txt contains 0 evidence identities; only NEW identities fail"
+  },
+  {
+   "check": "check:artifacts / artifacts-at-head / a4-artifacts-nonempty",
+   "file": "scripts/check-artifacts-committed.mjs; scripts/check-artifacts-at-head.mjs",
+   "lines": [
+    98
+   ],
+   "scope_source": "scripts/client-composition-surface.mjs:98 (INSTALL_SURFACES = packages/runtime/dist + client composition dir)",
+   "impact": "UNAFFECTED — evidence is not an install surface; \"OK N files\" counts do not move"
+  },
+  {
+   "check": "ci-pr-gate Q5 evidence existence",
+   "file": "scripts/ci-pr-gate.mjs",
+   "lines": [
+    430,
+    433
+   ],
+   "impact": "AFFECTED — keep >=1 file in the 8 cited dirs + evidence/alpha5/ root (witnesses in keep-set.json) or rows report \"cites evidence path(s) ... do not resolve in-repo\""
+  },
+  {
+   "check": "gen-current-state ARTIFACT_MISSING / FAKE_VERIFICATION",
+   "file": "scripts/gen-current-state.mjs",
+   "lines": [
+    215,
+    220
+   ],
+   "impact": "AFFECTED — keep the 7 EB-E0-E1 logs (or amend registry in the same PR); blocking ARTIFACT_*/FAKE_VERIFICATION"
+  },
+  {
+   "check": "seam-manifest evidence-exists",
+   "file": "tests/characterization/probes/remote-client/index.mjs",
+   "lines": [
+    517,
+    521
+   ],
+   "impact": "AFFECTED — all 21 manifest paths kept; if any is removed the P2-T6 probe rule fails"
+  },
+  {
+   "check": "docs-sync --check LINK_DANGLING (full scope)",
+   "file": "scripts/doc-checks.mjs; scripts/docs-sync.mjs",
+   "lines": [
+    111,
+    184,
+    63
+   ],
+   "impact": "AFFECTED — 54 markdown links / 30 distinct evidence targets from 4 full-scope docs dangle; see doc-citations.json"
+  },
+  {
+   "check": "docs:probe (diff-scoped)",
+   "file": "scripts/docs-probe.mjs",
+   "lines": [
+    117,
+    118
+   ],
+   "impact": "UNAFFECTED for a deletion-only PR (changed set holds no full-scope md)"
+  },
+  {
+   "check": "CLAIM_WITHOUT_EVIDENCE",
+   "file": "scripts/doc-checks.mjs",
+   "lines": [
+    233
+   ],
+   "impact": "UNAFFECTED — before/after simulation over all 16 current-state md docs: 0 newly unsupported claims"
+  },
+  {
+   "check": "candidate-protection pinned run",
+   "file": ".github/workflows/candidate-protection.yml",
+   "lines": [
+    59,
+    63,
+    89
+   ],
+   "impact": "UNAFFECTED by a master git rm — checks out a5-candidate-pkg@090b87b5 (own tree incl. evidence/alpha5/candidate-package, ABSENT on master); RISK only if re-pinned at a post-relocation head"
+  },
+  {
+   "check": "pre-commit hook",
+   "file": "dev/agent-workflow/hooks/pre-commit",
+   "impact": "UNAFFECTED — 0 evidence references (grep count), parses graph.yaml only"
+  },
+  {
+   "check": "rc2 kit scanners",
+   "file": "packages/testkit/test/rc2-kit-pin-hygiene.test.ts + rc2-kit-preset-seam.test.ts",
+   "lines": [
+    77,
+    138,
+    283
+   ],
+   "impact": "UNAFFECTED — enumerate tests/kits, harness dirs, packages only"
+  },
+  {
+   "check": "artifact-check-scratch / fail-set / a4-artifact-provenance",
+   "impact": "UNAFFECTED — scratch cleanup, argv-fed report parsing, install-surface provenance; no tracked-evidence reads"
+  }
+ ],
+ "entries": {
+  "tests/characterization/seam-manifest/manifest.json": [
+   {
+    "line": 9,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 12,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 23,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 24,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 25,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 27,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 37,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 38,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 39,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 41,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 51,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 52,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 53,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 55,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 65,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 66,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 67,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 69,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 79,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 80,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 81,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 83,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 93,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 94,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 95,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 97,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 107,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 108,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 109,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 111,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 121,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 122,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 123,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 125,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 135,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 136,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 137,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 139,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 149,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 150,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 151,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 153,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 164,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 165,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 166,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 168,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 179,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 180,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 181,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 183,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 194,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 195,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 196,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 198,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 209,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 210,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 211,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 213,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 224,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 225,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 226,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 228,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 238,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 239,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 240,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 242,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 252,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 253,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 254,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 256,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 266,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 267,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 268,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 270,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 281,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 282,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 283,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 284,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 285,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 286,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 288,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 299,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 300,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 301,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 303,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 314,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 315,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 316,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 318,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 329,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 330,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 332,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 343,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 344,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 346,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 357,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 358,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 360,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 371,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 372,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 373,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 375,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 386,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 387,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 388,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 390,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 399,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 406,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 413,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 420,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 427,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 434,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 441,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 448,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 455,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 462,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 469,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 476,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 483,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 490,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 497,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 504,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 511,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 518,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 525,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 532,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 539,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 546,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 553,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   },
+   {
+    "line": 560,
+    "class": "RUNTIME-READ",
+    "target": "(this file is the read target)",
+    "note": "consumed by tests/characterization/probes/remote-client/index.mjs validateManifest (481-521): evidence-exists rule existsSync-checks every listed evidence path; verdicts-consistent rule readFileSync-checks per-task seam reports"
+   }
+  ],
+  "packages/testkit/test/p4t6-session-event-scan.test.ts": [
+   {
+    "line": 76,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 82,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 110,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 138,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 154,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 165,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 209,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 311,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "test title; scanner walks packages/** only (session-event-scan.mjs:202,262-268) - evidence out of scope; 1228 pin unaffected"
+   },
+   {
+    "line": 690,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1131,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1134,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1135,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1148,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1160,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1171,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1182,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1192,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1204,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1233,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1248,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1270,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1283,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1313,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1984,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2035,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2037,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2063,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2065,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2088,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2106,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2107,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2108,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2124,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2215,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2235,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2251,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2259,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2264,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2278,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2297,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2309,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2318,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2329,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2342,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2347,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2351,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2371,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2374,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2394,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2398,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2410,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2566,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2698,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2707,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2745,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2757,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2775,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2817,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3126,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3140,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3148,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3158,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3171,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3183,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3193,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3208,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3216,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3235,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3278,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3305,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3310,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3378,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3383,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3391,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3397,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3403,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3408,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3419,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 3426,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "dev/agent-workflow/graph.yaml": [
+   {
+    "line": 12,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 14,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 31,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 61,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 185,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 189,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 191,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 192,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 193,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 194,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 195,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 196,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 207,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 212,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 215,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 218,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 219,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 242,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 256,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 263,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 264,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 271,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 272,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 278,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 279,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 292,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 312,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 327,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 329,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 341,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 346,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 360,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 389,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 405,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 421,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 435,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 446,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 457,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 466,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 502,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 517,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 538,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 550,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 553,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 555,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 567,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 580,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 594,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 596,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 598,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 609,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 611,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 619,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 626,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 627,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 629,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 641,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 653,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 656,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 669,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 680,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 692,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 695,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 703,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 725,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 732,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 740,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 747,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 754,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 761,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 774,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 789,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 799,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 811,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 823,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 826,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 831,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 832,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 833,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 848,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 852,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 853,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 858,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 881,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 889,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 892,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 903,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 912,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 916,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 918,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 922,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 933,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 936,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 937,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 939,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 942,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 956,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 958,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 967,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 981,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   },
+   {
+    "line": 994,
+    "class": "COMMENT/DOC-CITATION",
+    "note": "graph history-phase note; graph.yaml#current_contract.matrix feeds ci-pr-gate Q5 existence checks over evidence paths cited in the MATRIX document"
+   }
+  ],
+  "dev/engineering/current-state.json": [
+   {
+    "line": 165,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 169,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 197,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 201,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 227,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 231,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 235,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 239,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 263,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 267,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 293,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 297,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 322,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 326,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 330,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 355,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   },
+   {
+    "line": 359,
+    "class": "DERIVED-VIEW",
+    "target": "(generated)",
+    "note": "generated by gen-current-state.mjs; path strings mirrored from registry.yaml; regenerate if registry changes"
+   }
+  ],
+  "packages/testkit/test/a4p7-blueprint-version-clean.test.ts": [
+   {
+    "line": 44,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 67,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/scan-scope/fixtures/",
+    "note": "FIXTURE_DIR; readdirSync(106)+readFileSync(111)"
+   },
+   {
+    "line": 216,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 231,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 253,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 257,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/scan-scope/unknown-adjudications.json",
+    "note": "LEDGER_FILE; readFileSync at module load (258)"
+   },
+   {
+    "line": 496,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 684,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 870,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic path asserting evidence OUT of fence scan scope (no disk read)"
+   },
+   {
+    "line": 875,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/ci-pr-gate.mjs": [
+   {
+    "line": 59,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 62,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 105,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-lint-baseline/lint-identities-0237d487.txt",
+    "note": "BASELINES.lint; lint-identities leg runs scripts/lint-identities.mjs --diff <file> (1240); --self-test also parses it"
+   },
+   {
+    "line": 106,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md",
+    "note": "BASELINES.census; census leg readFileSync+parsePopulationBaseline (1308); --self-test reads committed file (1797/1808)"
+   },
+   {
+    "line": 107,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt",
+    "note": "BASELINES.fence; blueprint-fence leg readLineBaseline (1203)"
+   },
+   {
+    "line": 130,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1481,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1659,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 2185,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/testkit/test/a4p7-merge-gate.test.ts": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 82,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-lint-baseline/lint-identities-0237d487.txt",
+    "note": "LINT_BASELINE; existsSync at 825 (hard fail) + lint-identities --diff at 1300"
+   },
+   {
+    "line": 90,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 600,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 790,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1140,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1245,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic lint-identities stdout string (unit fixture, no disk read)"
+   },
+   {
+    "line": 1368,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic eslint report path (unit fixture)"
+   },
+   {
+    "line": 1369,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic census candidate (unit fixture)"
+   },
+   {
+    "line": 1771,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1776,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/g2-summary-parser/fixtures/",
+    "note": "G2_FIXTURES; g2Fixture() existsSync+readFileSync (1777-1782): 8 hosted-bytes fixtures"
+   }
+  ],
+  "dev/engineering/registry.yaml": [
+   {
+    "line": 71,
+    "class": "RUNTIME-READ",
+    "target": "evidence/EB-E0-E1/*.log",
+    "note": "verification_artifacts existence-checked by gen-current-state; blocking ARTIFACT_MISSING; same pattern lines 81,91,109,119,129,151"
+   }
+  ],
+  ".github/workflows/characterization.yml": [
+   {
+    "line": 22,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 35,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 72,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 118,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 122,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "packages/runtime/test/a4p7-carrier-width-under-ceiling.test.ts": [
+   {
+    "line": 9,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 19,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 26,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 42,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 315,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/alpha5-pr8-e2e/kit.mjs": [
+   {
+    "line": 29,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 74,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   },
+   {
+    "line": 137,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 144,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   },
+   {
+    "line": 147,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/wiring/w5/run-w5-live.mjs",
+    "note": "prereq existence check"
+   },
+   {
+    "line": 159,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/wiring/w5/build-lane-esm.mjs",
+    "note": "spawn node build-lane-esm.mjs"
+   },
+   {
+    "line": 171,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/wiring/w5/run-w5-live.mjs",
+    "note": "spawn node run-w5-live.mjs"
+   }
+  ],
+  "scripts/a4-client-lane-report.mjs": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 46,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5p1r-gg-wording-lint.test.ts": [
+   {
+    "line": 61,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "path string used as lint label (no disk read)"
+   },
+   {
+    "line": 93,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "scratch fixture dir under tmp root"
+   },
+   {
+    "line": 104,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic dangling-link fixture"
+   },
+   {
+    "line": 105,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic dangling-link fixture"
+   }
+  ],
+  "packages/runtime/src/plugin/live/team-tool-plane.mjs": [
+   {
+    "line": 317,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 355,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 457,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1551,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1576,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs": [
+   {
+    "line": 317,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 355,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 457,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1551,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1576,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/activation/provider.js": [
+   {
+    "line": 82,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 83,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 688,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/controlled-fs/test/poc3-probes.test.ts": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 261,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 340,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/activation/provider.ts": [
+   {
+    "line": 164,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 165,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 892,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.mjs": [
+   {
+    "line": 13,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 65,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs": [
+   {
+    "line": 32,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 91,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 180,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs": [
+   {
+    "line": 8,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 53,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+    "note": "pathToFileURL FIXTURE_URL dynamic import"
+   }
+  ],
+  "tests/kits/a5p1diag/a5p1-order-hazard.mjs": [
+   {
+    "line": 8,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 53,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+    "note": "pathToFileURL FIXTURE_URL dynamic import"
+   }
+  ],
+  "tests/kits/a5p1diag/a5p1-kit.mjs": [
+   {
+    "line": 18,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 98,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 99,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/wiring/bind-diag/a5bd-diag-row.mjs",
+    "note": "pathToFileURL import of evidence row module"
+   }
+  ],
+  "scripts/verify-blueprint-version-clean.mjs": [
+   {
+    "line": 1112,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1170,
+    "class": "RUNTIME-READ",
+    "target": "evidence/a4-pr7/scan-scope/unknown-adjudications.json",
+    "note": "ADJUDICATIONS_FILE; fence reads it, REFUSES if not git-tracked (CI blueprint-fence leg)"
+   }
+  ],
+  "scripts/doc-checks.mjs": [
+   {
+    "line": 220,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 320,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/composition-smoke-closure.mjs": [
+   {
+    "line": 58,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "pnpm-workspace.yaml": [
+   {
+    "line": 26,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 36,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/testkit/test/a4p75-composition-smoke-classification.test.ts": [
+   {
+    "line": 1159,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1538,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5p4-lane-hygiene.test.ts": [
+   {
+    "line": 37,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 160,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5b2-exit-code-fidelity.test.ts": [
+   {
+    "line": 62,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/natexe/glue7-rerun-run1-E2-drift-before-commit.log",
+    "note": "EVIDENCE_LOGS read at 286"
+   },
+   {
+    "line": 63,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/natexe/glue7-rerun-run2-GREEN-24-24.log",
+    "note": "EVIDENCE_LOGS read at 286"
+   }
+  ],
+  "packages/runtime/test/a4p7-v3-grammar-enforced.test.ts": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 186,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/src/plugin/live/search-backend.mjs": [
+   {
+    "line": 11,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 42,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/governance/service.ts": [
+   {
+    "line": 1526,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1527,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/governance/permission-mutation.ts": [
+   {
+    "line": 1185,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1387,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1389,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs": [
+   {
+    "line": 11,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 42,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/governance/service.js": [
+   {
+    "line": 1257,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 1258,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/governance/service.d.ts": [
+   {
+    "line": 102,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 103,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/governance/permission-mutation.js": [
+   {
+    "line": 747,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 924,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 926,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/governance/permission-mutation.d.ts": [
+   {
+    "line": 512,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 580,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 582,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/legacy/session-reader/e2e/run.mjs": [
+   {
+    "line": 37,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 42,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/client/test/s3-client-generation-spike.test.ts": [
+   {
+    "line": 13,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 59,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  ".github/workflows/census-runtime.yml": [
+   {
+    "line": 29,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 84,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/paths.mjs": [
+   {
+    "line": 66,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/mock/scripts/dump-session-log.mjs": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/work-completion-wakeup-smoke/work-completion-wakeup-smoke.mjs": [
+   {
+    "line": 106,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 210,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/team-view-sync-complete-e2e/team-view-sync-complete-e2e.mjs": [
+   {
+    "line": 124,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 177,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-fixtures.mjs": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/team-view-sync-complete-e2e/browser-smoke-host.mjs": [
+   {
+    "line": 196,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   },
+   {
+    "line": 354,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/send-message-liveness-smoke/send-message-liveness-smoke.mjs": [
+   {
+    "line": 108,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 208,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/pr-d-control-real-host/pr-d-control-real-host.mjs": [
+   {
+    "line": 98,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 145,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/pr-a-governance-smoke/pr-a-governance-smoke.mjs": [
+   {
+    "line": 75,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 116,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs": [
+   {
+    "line": 133,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 227,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs": [
+   {
+    "line": 60,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+    "note": "pathToFileURL dynamic import"
+   }
+  ],
+  "tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs": [
+   {
+    "line": 18,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/kits/a5p1diag/a5p1r-rereg-window.mjs": [
+   {
+    "line": 60,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs",
+    "note": "pathToFileURL dynamic import"
+   }
+  ],
+  "tests/characterization/probes/storage-fork-descendants/index.mjs": [
+   {
+    "line": 43,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "tests/characterization/probes/preset-persona-model/plugins/resume.js": [
+   {
+    "line": 21,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 35,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/characterization/probes/preset-persona-model/plugins/main.js": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 45,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "tests/characterization/probes/preset-persona-model/index.mjs": [
+   {
+    "line": 29,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 44,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "scripts/prepare-blueprint-v4-flip.mjs": [
+   {
+    "line": 142,
+    "class": "RUNTIME-WRITE",
+    "target": "evidence/alpha5/schema-rev/runs/v4-flip-PREP.md",
+    "note": "default --out; mkdirSync(dirname,recursive) at 147 -> deletion-safe"
+   }
+  ],
+  "scripts/lint-identities.mjs": [
+   {
+    "line": 8,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/lint-g-g-wording.mjs": [
+   {
+    "line": 70,
+    "class": "RUNTIME-SCANNER",
+    "target": "evidence/alpha5-pr1r/seam-record-post-door-resolution.md",
+    "note": "retraction-window allowlist; lintRepo walks all dev/**.md incl. evidence; deletion-tolerant"
+   }
+  ],
+  "scripts/gen-current-state.mjs": [
+   {
+    "line": 149,
+    "class": "RUNTIME-READ",
+    "target": "evidence/EB-E0-E1/*.log (via registry.yaml)",
+    "note": "EVIDENCE_ROOTS + existsSync ARTIFACT_MISSING/FAKE_VERIFICATION (206-220)"
+   }
+  ],
+  "scripts/fail-set.mjs": [
+   {
+    "line": 49,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/check-artifacts-committed.mjs": [
+   {
+    "line": 187,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/check-artifacts-at-head.mjs": [
+   {
+    "line": 19,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/build-client-composition.mjs": [
+   {
+    "line": 7,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "scripts/a4-artifact-provenance.mjs": [
+   {
+    "line": 15,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/tools/test/h3-hostile-seam.test.ts": [
+   {
+    "line": 24,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/tools/harness/t12-vertical.mjs": [
+   {
+    "line": 96,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 151,
+    "class": "RUNTIME-WRITE",
+    "note": "kit/harness output directory under evidence (mkdir-p fresh run; no read of tracked evidence)"
+   }
+  ],
+  "packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts": [
+   {
+    "line": 4,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/testkit/test/plugin-dsh-compat.test.ts": [
+   {
+    "line": 37,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/testkit/test/a5-current-contract.test.ts": [
+   {
+    "line": 115,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic Q5 matrix row text"
+   },
+   {
+    "line": 132,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 134,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic fileExists map (Q5 unit fixture)"
+   },
+   {
+    "line": 269,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "test title (counterexample fixture)"
+   },
+   {
+    "line": 276,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic matrix row text"
+   },
+   {
+    "line": 308,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "synthetic matrix row text"
+   }
+  ],
+  "packages/runtime/tool-admission/admission-kernel.ts": [
+   {
+    "line": 62,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/t12a-live-bridge.mjs": [
+   {
+    "line": 1382,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/requirement-probe-blueprint-scoping.test.ts": [
+   {
+    "line": 33,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/requirement-d1-d3-decision-scoping.test.ts": [
+   {
+    "line": 891,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/pbf-default-artifact-urls.test.ts": [
+   {
+    "line": 42,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/p8s5a-production-assembly.test.ts": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/p8s5a-host-loadability.test.ts": [
+   {
+    "line": 19,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/p8s5a-artifacts.mjs": [
+   {
+    "line": 17,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/p6t1-parallel.test.ts": [
+   {
+    "line": 22,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/multi-mcp-wiring.test.ts": [
+   {
+    "line": 62,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/issue2-real-preset-restriction.test.ts": [
+   {
+    "line": 47,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/issue1-serial-blocking.test.ts": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 183,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/h5-bash-effects.test.ts": [
+   {
+    "line": 36,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/d3-member-identity-context.test.ts": [
+   {
+    "line": 322,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/control-guard-leader.test.ts": [
+   {
+    "line": 44,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/consent-scope-hash-binding.test.ts": [
+   {
+    "line": 126,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/artifact-read-permission-lane.test.ts": [
+   {
+    "line": 351,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/alpha5-glob-backend.test.ts": [
+   {
+    "line": 12,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 625,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/alpha5-g1-deny-lane.test.ts": [
+   {
+    "line": 23,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5w-integration-wiring.test.ts": [
+   {
+    "line": 149,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5-read-slice-window.test.ts": [
+   {
+    "line": 7,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5r-cause-relay.test.ts": [
+   {
+    "line": 4,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5rbn-runtime-base-narrow.test.ts": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5-pindir-reserved-native.test.ts": [
+   {
+    "line": 14,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 183,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5p2-composition.test.ts": [
+   {
+    "line": 157,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5p2-admission-kernel.test.ts": [
+   {
+    "line": 724,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5p1-closed-world-guard.test.ts": [
+   {
+    "line": 8,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5natexe-native-takeover.test.ts": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5mcp-native-trust-filter.test.ts": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a5int-r3-mount-integration.test.ts": [
+   {
+    "line": 21,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 52,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/natexe/matrix-reserved-native-receipt.log",
+    "note": "MATRIX_RECEIPT readFileSync at 297"
+   }
+  ],
+  "packages/runtime/test/a5intr3-kit-runner.test.ts": [
+   {
+    "line": 3,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 13,
+    "class": "RUNTIME-READ",
+    "target": "evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+    "note": "dynamic import of evidence kit; vitest root -> graded by census"
+   }
+  ],
+  "packages/runtime/test/a5g6-install-face-render.test.ts": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p7-shipped-composition-blueprint.test.ts": [
+   {
+    "line": 26,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p7-live-descendant-authority.test.ts": [
+   {
+    "line": 3,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p7-descendant-change-proposal-valid.test.ts": [
+   {
+    "line": 3,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts": [
+   {
+    "line": 576,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p7-ceiling-no-context-refusal.test.ts": [
+   {
+    "line": 29,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p6-governance-warning.test.ts": [
+   {
+    "line": 10,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p4-operation-approval-authority.test.ts": [
+   {
+    "line": 47,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4p1-authority-envelope.test.ts": [
+   {
+    "line": 486,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4f1-row-version-not-document-version.test.ts": [
+   {
+    "line": 7,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4-escalate-act-truth.test.ts": [
+   {
+    "line": 7,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a4-compat-atomic-state.test.ts": [
+   {
+    "line": 12,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/test/a3p3-governance-lane-hygiene.test.ts": [
+   {
+    "line": 141,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/src/plugin/live/plane-effect-backends.mjs": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 465,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/sandbox-provider/provider.ts": [
+   {
+    "line": 620,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/root-binding/harness/run.mjs": [
+   {
+    "line": 13,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/requirements/scope-requirements.ts": [
+   {
+    "line": 108,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/requirements/creation-preflight.ts": [
+   {
+    "line": 217,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/operation-permission/permission-coverage.ts": [
+   {
+    "line": 105,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/member-residency/harness/run.mjs": [
+   {
+    "line": 16,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/jobs-gateway/types.ts": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/intervention/index.ts": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/tool-admission/admission-kernel.js": [
+   {
+    "line": 62,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/tool-admission/admission-kernel.d.ts": [
+   {
+    "line": 62,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 465,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/sandbox-provider/provider.js": [
+   {
+    "line": 376,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/requirements/scope-requirements.js": [
+   {
+    "line": 77,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/requirements/creation-preflight.js": [
+   {
+    "line": 118,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/operation-permission/permission-coverage.js": [
+   {
+    "line": 95,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/jobs-gateway/types.js": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/jobs-gateway/types.d.ts": [
+   {
+    "line": 28,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/intervention/index.js": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/intervention/index.d.ts": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/compatibility/probe.js": [
+   {
+    "line": 44,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/compatibility/probe.d.ts": [
+   {
+    "line": 44,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/compatibility/blueprint.js": [
+   {
+    "line": 72,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/dist/packages/runtime/admission/requirement-gate.js": [
+   {
+    "line": 240,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs": [
+   {
+    "line": 8,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/controlled-fs/test/cf-descriptor.test.ts": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/controlled-fs/src/admission-binding.ts": [
+   {
+    "line": 162,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/compatibility/probe.ts": [
+   {
+    "line": 44,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/compatibility/blueprint.ts": [
+   {
+    "line": 81,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/runtime/admission/requirement-gate.ts": [
+   {
+    "line": 460,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/domain/test/a5fl1-blueprint-v4-flip.test.ts": [
+   {
+    "line": 6,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/domain/test/a4p1-blueprint-v3-governance.test.ts": [
+   {
+    "line": 474,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/client/test/pr56-control-subject-payload.test.ts": [
+   {
+    "line": 35,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/client/test/client-plugin-mount.test.ts": [
+   {
+    "line": 5,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/client/src/plugin/team-mount-core.ts": [
+   {
+    "line": 15,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  "packages/client/composition-shim/client-bundle.js": [
+   {
+    "line": 1368,
+    "class": "COMMENT/DOC-CITATION"
+   }
+  ],
+  ".gitignore": [
+   {
+    "line": 66,
+    "class": "COMMENT/DOC-CITATION"
+   },
+   {
+    "line": 67,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": ".private-raw-evidence/ ignore (not evidence/)"
+   },
+   {
+    "line": 76,
+    "class": "SYNTHETIC-FIXTURE-STRING",
+    "note": "gitignore rule for evidence scratch (config only)"
+   }
+  ],
+  ".agents/notes/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  ".agents/notes/implemented/EB-ADR-0003-document-consistency-gates-implemented.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  ".agents/notes/proposed/EB-ADR-0004-plugin-manager-install-action-boundary.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  ".agents/skills/team-blueprint-authoring/SKILL.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  ".agents/skills/team-leader-operations/SKILL.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "AGENTS.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 8
+   }
+  ],
+  "dev/agent-workflow/PENDING-GATES.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "dev/agent-workflow/SESSION_ROUTER_LOG.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 124
+   }
+  ],
+  "dev/agent-workflow/briefs/G6-REVIEW-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "dev/agent-workflow/briefs/G7-review-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "dev/agent-workflow/briefs/G8-S1-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/G8-review-brief-r2.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "dev/agent-workflow/briefs/G8-review-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "dev/agent-workflow/briefs/P6-T6-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "dev/agent-workflow/briefs/P7-T2-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "dev/agent-workflow/briefs/P7-T7-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 6
+   }
+  ],
+  "dev/agent-workflow/briefs/P7-first-wave-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "dev/agent-workflow/briefs/P8-T1-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "dev/agent-workflow/briefs/P8-T2-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/P8-T3-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "dev/agent-workflow/briefs/P8-T4-brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "dev/agent-workflow/briefs/a4-75-deletion-lane.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/exec-contract/brief.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/multi-mcp/00-contract.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "dev/agent-workflow/briefs/multi-mcp/a-config.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/multi-mcp/b-runtime.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/multi-mcp/c-tests.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/multi-mcp/d-docs-smoke.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "dev/agent-workflow/briefs/rc2-repair/a2.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "dev/agent-workflow/briefs/rc2-repair/a6.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/agent-workflow/briefs/rc2-repair/smoke-kit-design.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "dev/engineering/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/INSTALL.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 6
+   }
+  ],
+  "docs/STATUS.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 26
+   }
+  ],
+  "docs/TEST_METHODS.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "docs/blueprint-authoring.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/contracts/engineering-baseline/plan-citation-interface.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/contracts/engineering-baseline/promotion-rules.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/contracts/g3-report.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/active/alpha4-permission-governance/ADR-alpha4-hard-governance.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 6
+   }
+  ],
+  "docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 26
+   }
+  ],
+  "docs/plans/active/alpha4-permission-governance/alpha4-permission-governance-spec.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/0.1.1-alpha.1-hardening-fix-and-test-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/DSH_Agent_Team_vNext_G8_Major_Issue_Audit_Report_20260831.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/DSH_Agent_Team_vNext_P8-S_Backend_Closure_Plan_20260831.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/DSH_Agent_Team_vNext_P9_UI_T12_T24_Legacy_Reuse_Implementation_Test_Plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "docs/plans/finished/DSH_Agent_Team_vNext_T12_Production_Vertical_Closure_Plan_V2_OLD_DSH_PINNED.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/DSH_Agent_Team_vNext_Team_Create_Root_Work_Workspace_Fix_Plan_20260905.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 3
+   }
+  ],
+  "docs/plans/finished/MCP_BLUEPRINT_INITIAL_GRANT_FIX_PLAN.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/PR26-final-supplemental-fix-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/PR26-supplemental-fix-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/PR27_PR28_supplemental_fix_and_real_ui_validation.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/PR29-review-supplement-fix-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/PR30-model-preference-review-supplement-fix-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/TEAM_D1-D6_REPAIR_PLAN.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 13
+   }
+  ],
+  "docs/plans/finished/TEAM_D1-D6_REPAIR_PLAN_V2.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/TEAM_DTEST_WORKSPACE_PLAN.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-0.1.7-rc.1-upgrade-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-alpha2-capability-completion-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-alpha2-hardening-followup-repair-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-alpha2-permission-boundary-hardening.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-exec-autonomy-contract-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-model-preference-routing-fix-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-repair-guide-20260927.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/dsh-agent-team-restart-recovery-0.1.7-rc.1-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/finished/pr31_supplemental_fix_guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/issue-fix/a4-pre0-ledger-category-closure.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/issue-fix/issue#2/dsh-agent-team-alpha2-issue2-permission-repair-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 5
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/P0-independent-adapter-poc-implementation-guide.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 30
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/ADR-CANDIDATE-blueprint-schema-vnext.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/e2e-skeleton/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/plans/memo/post-alpha4-debt-register.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 5
+   }
+  ],
+  "docs/plans/paused/0.1.1-alpha.1-execution-plan-24h.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "docs/repairs/team-projection-recovery-20260927.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "packages/runtime/controlled-fs/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "packages/runtime/member-residency/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "packages/runtime/root-binding/harness/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "packages/runtime/tool-admission/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/characterization/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 2
+   }
+  ],
+  "tests/doc-consistency/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/kits/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/kits/a5-pr1-guard-dispatch/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/kits/a5-w7-jobs-wiring/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/kits/a5-w7m-m13-domain-veto/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 4
+   }
+  ],
+  "tests/kits/a5p1diag/README.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ],
+  "tests/mock/evidence/F9-PLAYWRIGHT-ASSETS.md": [
+   {
+    "line": null,
+    "class": "COMMENT/DOC-CITATION",
+    "mention_count": 1
+   }
+  ]
+ }
+}

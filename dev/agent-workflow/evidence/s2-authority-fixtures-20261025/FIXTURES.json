@@ -1,0 +1,253 @@
+{
+  "artifact": "s2-authority-fixtures-20261025/FIXTURES.json",
+  "kind": "S2 bounded-prep data fixture set for current_contract authority semantics (Map step 2 input). Pure data: 16 cases, each with inputs, expected diagnosis, and the existing control or the to-be-implemented assertion it maps to. NOT a checker, NOT a test suite, NOT executable in this round.",
+  "status": {
+    "execution": "UNEXECUTED for every case. No validator (ci-pr-gate, doc-consistency-controls, docs-sync, docs-probe, registry validate) was invoked; nothing here was run in CI or on Host.",
+    "expected_diagnosis_basis": "STATIC READING of checker source at the fixed refs (file:line given per finding). Expectations are derivations, not observations.",
+    "not_claimed": [
+      "A-package s2-schema-candidate is NOT frozen; nothing here freezes any schema",
+      "these cases are semantics (B-level) only; NO conformance to a new schema is claimed",
+      "no test-pass claim of any kind",
+      "the Map remains a candidate deliverable; G2 is not passed; this round rides READY_FOR_BOUNDED_PREP, not a gate"
+    ]
+  },
+  "derivation_basis": {
+    "fixed_refs": {
+      "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+      "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+      "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+      "access": "git show / git grep / git cat-file on these refs only; the physical 6259cf4b working tree was not used as source for any citation (ERRATA E3: physical AGENTS.md blob 47659f45/12755B != fixed-target 97b74d4f/11644B)"
+    },
+    "semantics_reused_from": [
+      "scripts/ci-pr-gate.mjs checkCurrentContract Q1-Q8 at 4aaaa7b2:283-517 (Q8:288-290, Q3:316-323, Q2:325-332, Q4:334-337, Q1:339-359, Q6:480-496)",
+      "packages/testkit/test/a5-current-contract.test.ts P1/P1b/P3/P4, N1-N6, batch-3 ①-⑥, GROUP A (MC-10)",
+      "scripts/doc-consistency-controls.mjs inline fixture graph :63-68 (MC-11; carries only phase_id/active_plan/baseline — 3 of 6) and CLAIM_UNBOUND :542, CLAIM_TIER_MISMATCH :549, FAKE_VERIFICATION :335",
+      "scripts/gen-current-state.mjs checkLegacyMirror :321-350 (LEGACY_MIRROR_INCOMPLETE/_VALUE/_SCHEMA_MISMATCH), FAKE_VERIFICATION :217 (INV-EB-0009)",
+      "s2-authority-map-20261025/{AUTHORITY-MIGRATION-MAP,MACHINE-CONSUMERS,ERRATA-20261025}.json (ERRATA wins on conflict; E1: no pre-authorized GENERATED_FILES widening; E2: G5 withdrawn, G2/G3 restated as observations)"
+    ],
+    "graph_pin": "dev/agent-workflow/graph.yaml at 4aaaa7b2: current_phase:64 (top-level prose), current_contract:91, phase_id:92, baseline:96, baseline_collected:97; nested historical baseline keys :120/:262 are Alpha.4 history, deliberately out of block scope"
+  },
+  "current_phase_vs_phase_id": {
+    "ruling": "NOT synonyms; never treated as interchangeable in any case below.",
+    "phase_id": "a current_contract block field with a grammar (alpha<N>-<kebab-name>), graded by Q2 (:326) and counted by Q3 (:320-323)",
+    "current_phase": "a top-level adjacent live statement (graph.yaml:64), NOT a member of current_contract; Q1 requires its wording to agree with phase_id (:343-345) and Q3 requires exactly one (:318); a migration must move both in one transaction (Map adjacent_live_statement)"
+  },
+  "conventions": {
+    "graph_yaml": "each case gives the full minimal graph.yaml text the checker would see (block-scoped lookups make a minimal graph faithful to grammar checks)",
+    "extra_files": "declares the non-graph inputs a grader dereferences: {EXISTS} = file present, content irrelevant to this case; a string = verbatim content; {ABSENT} = must not exist",
+    "carrier_lines": "Q6 grades AGENTS.md + the three pointer targets for 'phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract' and a phase-identity line equal to phase_id (ci-pr-gate.mjs:483-494); cases assume minimal carriers present via extra_files unless the case targets Q6",
+    "git_state": "assumed checkout state for baseline resolution, described per case; equality of baseline with HEAD is legal (P1b)",
+    "scoping": "expected lists the findings THIS case provokes; unrelated green legs are omitted",
+    "framework_note": "deliberately no generic fixture-runner framework is built here; step 5 will decide where these semantics land (candidates named in Map: a5-current-contract.test.ts widening, doc-consistency-controls fixture widening)"
+  },
+  "base_inputs": {
+    "note": "POS-01 is the base; every other case is POS-01 with exactly the stated delta",
+    "graph_yaml": "current_phase: \"ALPHA.5 FIXTURE-PREP PHASE (authority = current_contract)\"\ncurrent_contract:\n  phase_id: alpha5-fixture-prep\n  active_plan: docs/plans/active/alpha5-fixture-prep/current-execution-plan.md\n  backlog: docs/plans/active/alpha5-fixture-prep/EFFECTIVE-BACKLOG.md\n  matrix: docs/plans/active/alpha5-fixture-prep/CAPABILITY-MATRIX.md\n  baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912\n  baseline_collected: \"2026-10-22T07:20:56Z\"\n",
+    "extra_files": {
+      "docs/plans/active/alpha5-fixture-prep/current-execution-plan.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n",
+      "docs/plans/active/alpha5-fixture-prep/EFFECTIVE-BACKLOG.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\nBL-01 fixture item\nBR-01 fixture blocker\n",
+      "docs/plans/active/alpha5-fixture-prep/CAPABILITY-MATRIX.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n",
+      "AGENTS.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n"
+    },
+    "git_state": "baseline 9b2ee57bc5afd30e89855e09d1769d2e5ec83912 resolves and is HEAD or a HEAD-ancestor"
+  },
+  "cases": [
+    {
+      "id": "POS-01",
+      "family": "positive",
+      "intent": "complete six-field contract with a coherent adjacent current_phase grades green",
+      "inputs": "base_inputs verbatim",
+      "expected_diagnosis": [],
+      "maps_to": { "kind": "existing", "control": "checkCurrentContract Q1-Q8 all-pass path; a5-current-contract.test.ts P1 (:154), P1b baseline==HEAD legal (:160); P4 nested historical baselines out of scope (:185)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-01-phase_id",
+      "family": "missing-field",
+      "intent": "phase_id line removed from the block",
+      "inputs": { "delta": "delete block line 'phase_id: ...' from base graph_yaml" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.phase_id must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323 (count!=1 admits 0)" },
+        { "finding": "Q2: current_contract.phase_id must be a canonical id (alpha<N>-<kebab-name>); got undefined", "source": "ci-pr-gate.mjs:326" }
+      ],
+      "maps_to": { "kind": "existing", "control": "Q2+Q3 block-level presence exists (Map negative_controls 'missing individual field' row); no testkit case pins phase_id absence specifically → widening assertion for step 5" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-02-active_plan",
+      "family": "missing-field",
+      "intent": "active_plan line removed",
+      "inputs": { "delta": "delete block line 'active_plan: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.active_plan must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.active_plan missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing", "control": "Q2 presence :328; nearest existing test is N2 target-missing (:175), not field-missing — field-missing expressiveness is the step-5 widening" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-03-backlog",
+      "family": "missing-field",
+      "intent": "backlog line removed (backlog is NOT a leaf pointer: it feeds the BL/BR accepted-id set)",
+      "inputs": { "delta": "delete block line 'backlog: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.backlog must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.backlog missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "Q2 presence exists; GAP (Map G3/E2-observation): doc-consistency-controls fixture carries 3 of 6 fields (:63-68), so this negative is inexpressible there until widened" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-04-matrix",
+      "family": "missing-field",
+      "intent": "matrix line removed",
+      "inputs": { "delta": "delete block line 'matrix: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.matrix must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.matrix missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "same gap family as MIS-03; matrix content (Q5 :372-406) is graded only when the path exists" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-05-baseline",
+      "family": "missing-field",
+      "intent": "baseline line removed",
+      "inputs": { "delta": "delete block line 'baseline: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.baseline must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q4: current_contract.baseline must be exactly 40 hex chars", "source": "ci-pr-gate.mjs:335 (empty/absent takes this branch)" }
+      ],
+      "maps_to": { "kind": "existing", "control": "Q3 GROUP-A counting test 'duplicated collected/matrix' family (:322 test); census-runtime.yml awk reader (:129, MC-08) is a SECOND independent parse whose missing-value behavior is NOT covered by any in-tree fixture — to_be_implemented: grammar pin for the awk leg in the same transaction (Map step 4 machine-readers-first)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-06-baseline_collected",
+      "family": "missing-field",
+      "intent": "baseline_collected line removed",
+      "inputs": { "delta": "delete block line 'baseline_collected: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.baseline_collected must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: baseline_collected must be an ISO8601Z timestamp", "source": "ci-pr-gate.mjs:332" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "Q2 grammar exists; not expressible in the 3-of-6 DCC fixture (MC-11); no external corroboration exists for this field (Map candidate_target note) — semantics stay presence+grammar" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-01-duplicate-in-block",
+      "family": "old-new-conflict",
+      "intent": "old/new conflict inside the authority itself: a second active_plan aimed at a retired phase inside the same block",
+      "inputs": { "delta": "add a second block line '  active_plan: docs/plans/active/alpha4-old/plan.md' after the first" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.active_plan must appear exactly once inside the block (found 2; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" }
+      ],
+      "maps_to": { "kind": "existing", "control": "a5-current-contract.test.ts N3 duplicate baseline (:180), GROUP A duplicated collected/matrix (:322), batch-3 ③ duplicated active_plan aimed at Alpha.4 (:259)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-02-mirror-vs-graph",
+      "family": "old-new-conflict",
+      "intent": "old/new disagreement across artefacts in one tree: derived mirror legacy_authority carries a phase_id the graph block does not record (the pre-switch double-read shape)",
+      "inputs": { "graph_yaml": "base graph_yaml", "dev/engineering/current-state.json": "legacy_authority.phase_id = 'alpha5-renamed-late' while graph says alpha5-fixture-prep", "dev/engineering/registry.schema.json": "mirror annotation names the same six keys in order" },
+      "expected_diagnosis": [
+        { "finding": "LEGACY_MIRROR_VALUE (detail: the mirror records a value the graph does not)", "source": "gen-current-state.mjs checkLegacyMirror :321-350, docstring :313-317" }
+      ],
+      "maps_to": { "kind": "existing", "control": "checkLegacyMirror triple cross-check (mirror/graph/schema); Map negative_controls row 'old and new authority disagree in the same tree' — status: exists, needs widening to the post-switch shape" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-03-post-switch-divergence",
+      "family": "old-new-conflict",
+      "intent": "post-switch shape: registry (new authority) and the graph historical mirror disagree after the switch — the graph block may be ABSENT, so checkLegacyMirror's graph re-read no longer holds",
+      "inputs": { "graph_yaml": "block retired to a historical mirror (no live current_contract), registry.yaml carries the live six-field snapshot at a different phase_id", "registry.yaml": "authority.phase_id = alpha6-next, graph mirror still says alpha5-fixture-prep" },
+      "expected_diagnosis": [
+        { "finding": "post-switch divergence finding (name TBD by the frozen step-2 schema); today checkLegacyMirror reads the graph block it no longer holds, so it cannot raise — a dedicated refusal is required", "source": "Map step 7 + MC-03 notes; Map E1: no mechanism (incl. GENERATED_FILES widening) is pre-authorized for this" }
+      ],
+      "maps_to": { "kind": "to_be_implemented", "control": "assertion pending on the frozen new schema; this case exists so step 2 freezes a shape that can express it" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "UID-01-phantom-backlog-id",
+      "family": "unknown-id",
+      "intent": "graph blocked: references a BL id that does not exist in the graded backlog content",
+      "inputs": { "delta": "graph adds top-level 'blocked: [BL-999]'; backlog extra file still contains only BL-01/BR-01" },
+      "expected_diagnosis": [
+        { "finding": "Q1: blocked item \"BL-999\" is not a backlog ID conflict — exact string: Q1: blocked references BL-999, which does not exist in the backlog — a phantom ID is an instruction to nothing", "source": "ci-pr-gate.mjs:359 (what='blocked'); id-shape gate :357" }
+      ],
+      "maps_to": { "kind": "existing", "control": "a5-current-contract.test.ts batch-3 ⑥ phantom BL-999 graded, existing BL-01 not (:292); GROUP C id population ci-pr-gate.mjs:351-356" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "UID-02-unresolvable-baseline",
+      "family": "unknown-id",
+      "intent": "baseline is 40 hex but resolves to no commit object",
+      "inputs": { "delta": "baseline: 0000000000000000000000000000000000000000", "git_state": "that id does not resolve" },
+      "expected_diagnosis": [
+        { "finding": "Q4: baseline 0000000000000000000000000000000000000000 does not resolve to a commit object — FAIL, an unresolvable anchor is never green", "source": "ci-pr-gate.mjs:336" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "N5b (:198) pins the hard fail; GAP: hosted census-runtime.yml awk (:129) only checks non-empty + same ancestry loop — an unresolvable-in-practice value that merely is non-empty passes the awk leg; migration must repoint or co-grade both readers in one transaction (step 4)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "TIER-01-C1-as-C2",
+      "family": "tier-forgery",
+      "intent": "forged C1 evidence standing in for C2: an entry claims verification whose bound artifact only supports the lower tier (verification_status set while artifacts are absent/lower-tier)",
+      "inputs": { "registry_entry": "verification_status: verified with verification_artifacts: [] (or an artifact that proves only C1)", "current_contract": "base graph_yaml — deliberately present, to prove the contract leg stays GREEN on this input" },
+      "expected_diagnosis": [
+        { "finding": "FAKE_VERIFICATION: verification_status=verified with no existing artifact (refused; INV-EB-0009)", "source": "gen-current-state.mjs:217" },
+        { "finding": "CLAIM_TIER_MISMATCH / CLAIM_UNBOUND on tier-vs-artifact binding", "source": "control rows doc-consistency-controls.mjs:542 (:549 tier mismatch), :335 (FAKE_VERIFICATION)" },
+        { "finding": "current_contract leg: NO finding — the six fields carry no tier concept today, so a C1-standing-in-for-C2 claim about 'the current phase is verified' is invisible to checkCurrentContract", "source": "Map negative_controls row 'forged C1 standing in for C2', status: exists at registry level, NOT wired to current_contract fields" }
+      ],
+      "maps_to": { "kind": "to_be_implemented", "control": "assertion pending: a versioned authority snapshot must carry an explicit tier field (per Map step 2 'versioned authority snapshot'); until then any tier claim attached to the six fields is ungraded — this case freezes that expectation, it does not add the check" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "HIST-01-legal-history-not-red",
+      "family": "history-false-red",
+      "intent": "a legal historical proposal / Alpha.4 historical state must NOT be graded as live duplicates or stale current pointers",
+      "inputs": { "delta": "base graph_yaml PLUS: top-level 'state_pointers:' Alpha.4 block (round/master_sha), two nested 'baseline:' keys inside history nodes, and a proposed note/proposal doc citing an old phase as history" },
+      "expected_diagnosis": [],
+      "expected_direction": "must stay green; a red here is a checker bug, not a fixture failure",
+      "maps_to": { "kind": "existing", "control": "P4 nested historical baselines legal (:185, block-scoped field() ci-pr-gate.mjs:293-297); checkStatePointers grades Alpha.4 shape on its own terms (integrity, not currency — test :44-58); doc-checks plan-citation rules + INV-EB-0009 four-axis separation (Map negative_controls row 'legal historical proposal'); docs-probe LIMITS self-declaration (MC-05, docs-probe.mjs:41-45)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "DERIV-01-no-block-no-fallback",
+      "family": "derived-readonly",
+      "intent": "a derived mirror holds a full-looking authority while the graph block is ABSENT: the mirror must not backfill — the production path fails",
+      "inputs": { "graph_yaml": "current_phase + state_pointers (Alpha.4 shape) only, no current_contract block", "dev/engineering/current-state.json": "legacy_authority carries all six fields verbatim, all valid" },
+      "expected_diagnosis": [
+        { "finding": "Q8: current_contract block is absent — the production path fails; it never falls back to the Alpha.4 legacy state_pointers shape", "source": "ci-pr-gate.mjs:288-290 (checked first)" }
+      ],
+      "maps_to": { "kind": "existing", "control": "N5 no-fallback (:69) + Q8; §7.4 explicit prohibition: current-state.json can be deleted and regenerated, it can never be a source (Map rollback.prohibition)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "DERIV-02-post-switch-read-back-refusal",
+      "family": "derived-readonly",
+      "intent": "after the switch, an attempt to (re)derive live authority from the derived view (docs-probe/gen-current-state readers hitting current-state.json when the snapshot moved) must be RED, not silently blind",
+      "inputs": { "state": "authority snapshot lives in the new versioned location; current-state.json is stale but parseable; a reader is asked to resolve the live phase from the derived view" },
+      "expected_diagnosis": [
+        { "finding": "a refusal finding (code TBD by frozen schema) — today MC-04/MC-05 read the mirror only and would go BLIND, not red (Map G6-observation pattern: 'a new authority without a mirror would leave the probe blind rather than red')", "source": "MACHINE-CONSUMERS MC-04/MC-05/MC-15; Map steps 4+7" },
+        { "finding": "write-direction invariant: no generated writer may target the authority (graph.yaml is not and must not be in GENERATED_FILES for authority writes; docs:sync --write writes derivatives only and cannot reverse-decide authority)", "source": "ERRATA E1 replacement text verbatim semantics; MC-06/MC-07 post-erratum reading" }
+      ],
+      "maps_to": { "kind": "to_be_implemented", "control": "assertion pending on the frozen step-2 schema (Map step 7 'a dedicated refusal is required'); this case records the required direction: derived→authority reads DECIDE nothing and a stale mirror must fail loudly" },
+      "execution_status": "UNEXECUTED"
+    }
+  ],
+  "coverage_against_required_list": {
+    "完整六字段正例": "POS-01",
+    "逐字段缺失": "MIS-01..MIS-06 (all six, including the two content-bearing pointers backlog/matrix)",
+    "旧新冲突": "CONF-01 (in-block), CONF-02 (pre-switch mirror), CONF-03 (post-switch shape)",
+    "未知ID": "UID-01 (phantom backlog id), UID-02 (unresolvable baseline)",
+    "C1证据冒C2": "TIER-01 (registry-level red; contract-leg blindness frozen as expectation)",
+    "合法历史proposal不误拒": "HIST-01 (green-forbidden-to-turn-red direction pinned)",
+    "读派生物不能反向成为权威或回退来源": "DERIV-01 (no-fallback, existing), DERIV-02 (post-switch refusal, pending)"
+  },
+  "known_limits": [
+    "expected findings are static derivations from source at the fixed refs; a checker change after 4aaaa7b2 could shift strings — re-derivation is a step-5 duty",
+    "the minimal graph in inputs omits unrelated top-level keys; legs that grade them (Q5 rows, Q6 carriers, state-freshness) are neutralized via carrier_lines/base assumptions, so a case's expected list is scoped to the case intent",
+    "MIS-* cases expect TWO findings (Q3 count!=1 plus the Q2/Q4 message); a future schema may fold these — the pair is recorded, not idealized",
+    "no fixture-runner was written; wiring these semantics into a5-current-contract.test.ts / doc-consistency-controls.mjs is implementation, explicitly out of this round"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "work_package": "U1-D cold read",
+  "created_utc": "2026-10-25T10:13:29Z",
+  "audited_worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u1-audit-master",
+  "audited_head": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+  "files": {
+    "COLD-READ.md": { "sha256": "0f886e23de40ff1341d6f1911545588405968f35c3eda70669e7f1222e1ff6c4" },
+    "defects.json": { "sha256": "7318a76fba7bf3494b75e5d26df17f467a9898970ef925cf8b2fc6a71a50273d" }
+  }
+}

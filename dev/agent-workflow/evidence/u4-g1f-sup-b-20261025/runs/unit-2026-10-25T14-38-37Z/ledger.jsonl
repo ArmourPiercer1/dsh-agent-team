@@ -1,0 +1,23 @@
+{"at":"2026-10-25T14:38:37.358Z","leg":"family-register","phase":"registered","family":"P1-B-WRITE","name":"write","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"unit#ledger-1"}
+{"at":"2026-10-25T14:38:37.358Z","leg":"family-register","phase":"registered","family":"P1-B-EDIT","name":"edit","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"unit#ledger-1"}
+{"at":"2026-10-25T14:38:37.358Z","leg":"admit","ledger":"unit#ledger-1","name":"write","decision":"execute","lane":"allow","callId":"c1"}
+{"at":"2026-10-25T14:38:37.358Z","leg":"body-start","name":"write","tag":"u1","callId":"c1"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"body-end","name":"write","tag":"u1","ok":true,"path":"w/ok.txt","bytes":1}
+{"at":"2026-10-25T14:38:37.359Z","leg":"admit","ledger":"unit#ledger-1","name":"write","decision":"refused","reason":"deny-lane","lane":"deny","callId":"c2"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"refused-before-body","name":"write","decision":"refused","tag":"u2"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"family-register","phase":"refused","reason":"name-collision","name":"write","by":"OTHER","owner":"P1-B-WRITE"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"requested","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-001","grantKey":"gr::gr:x"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"approved","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-001"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"consumed","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-001","grantKey":"gr::gr:x"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"replay-refused","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-001"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"requested","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-002","grantKey":"gr::gr:y"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"revoked","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-002"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"grant","phase":"revoked-refused","ledger":"unit#ledger-1","name":"gr","requestId":"g1fb-req-002"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"admit","ledger":"unit#ledger-1","name":"write","decision":"execute","reason":"PLANT-ledger-disabled","lane":"deny"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"policy","phase":"replaced-regeneration","ledger":"unit#ledger-1","name":"write","family":"P1-B-WRITE"}
+{"at":"2026-10-25T14:38:37.359Z","leg":"family-register","phase":"registered","family":"P1-B-WRITE","name":"write","generation":2,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"unit#ledger-1"}
+{"at":"2026-10-25T14:38:37.360Z","leg":"mount-dispose","phase":"refused-stale","name":"write","generation":2}
+{"at":"2026-10-25T14:38:37.360Z","leg":"mount-dispose","phase":"PLANT-naive","name":"write","generation":2}
+{"at":"2026-10-25T14:38:37.360Z","leg":"bridge","phase":"attributed","jobId":"bash-1","viewer":"agentS1"}
+{"at":"2026-10-25T14:38:37.360Z","leg":"bridge","phase":"observe","msg":"a5jobs: refused foreign-attribution"}
+{"at":"2026-10-25T14:38:37.361Z","leg":"bridge","phase":"kill-requested","jobId":"bash-1"}

@@ -1,0 +1,161 @@
+{
+ "total_files": 21049,
+ "total_bytes": 533594534,
+ "top30_dirs_by_bytes": [
+  {
+   "dir": "dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e",
+   "files": 910,
+   "bytes": 66239368
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/ci-gate",
+   "files": 98,
+   "bytes": 52373543
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr6/gates",
+   "files": 42,
+   "bytes": 16983159
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/w-ptc-outerfs",
+   "files": 874,
+   "bytes": 16440783
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/7-6-closure",
+   "files": 55,
+   "bytes": 16071783
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/baseline-classes",
+   "files": 48,
+   "bytes": 15685182
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/P9/P9",
+   "files": 235,
+   "bytes": 15632600
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/restart-017rc1/phase0",
+   "files": 514,
+   "bytes": 15451163
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/ptc-fs-impl",
+   "files": 71,
+   "bytes": 13187469
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/pr2",
+   "files": 35,
+   "bytes": 13084744
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/glue7",
+   "files": 342,
+   "bytes": 12048661
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/7-5-delete",
+   "files": 43,
+   "bytes": 11884393
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/pre-alpha3-refactor/pr-d",
+   "files": 94,
+   "bytes": 10828411
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/pre-alpha3-refactor/pr-f",
+   "files": 383,
+   "bytes": 9595891
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/pr0",
+   "files": 12,
+   "bytes": 6403743
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/7-6-gaps",
+   "files": 102,
+   "bytes": 6391849
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/G1-REVIEW/G1-R2",
+   "files": 65,
+   "bytes": 5636573
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/gates",
+   "files": 137,
+   "bytes": 4845789
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/team-d1-d6-repair-v2/G5",
+   "files": 88,
+   "bytes": 4747220
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/collection-errors",
+   "files": 39,
+   "bytes": 4689179
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/a5ie-r3",
+   "files": 173,
+   "bytes": 4503979
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/wiring",
+   "files": 1077,
+   "bytes": 4360527
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/restart-017rc1/commit4",
+   "files": 486,
+   "bytes": 4013514
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/p6t1-flake",
+   "files": 243,
+   "bytes": 3628855
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/7-6-ceiling-pin",
+   "files": 65,
+   "bytes": 3453158
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/capability-negatives",
+   "files": 47,
+   "bytes": 3417622
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/a5ie-r2b",
+   "files": 143,
+   "bytes": 3317090
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/dsh-020rc2-upgrade/logs",
+   "files": 33,
+   "bytes": 3161722
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/a4-pr7/d3-4-rejection",
+   "files": 24,
+   "bytes": 3135613
+  },
+  {
+   "dir": "dev/agent-workflow/evidence/alpha5/glue6",
+   "files": 85,
+   "bytes": 3116779
+  }
+ ],
+ "definition": "all tracked files under dev/agent-workflow/evidence/ not in keep-set.json",
+ "evidence_total_files": 21141,
+ "evidence_total_bytes": 534944430,
+ "percent_of_repo_bytes": 91.2,
+ "top30_note": "directories keyed at depth evidence/<task>/<subtask>"
+}

@@ -1,0 +1,9 @@
+PASS S2 bad candidate inputs refuse with named codes and grade nothing (no skip, no fallback)
+PASS S3 snapshot without current_phase_statement: new entry refuses; nothing borrowed from graph
+PASS S4 legal snapshot + real graph: clean; missing target and non-ancestor baseline still graded
+PASS S5 real graph feeds the core: phantom BL-999 in ready[] is graded, never swallowed
+PASS S6 matrix enum red and Q6 single expected ref: snapshot mode fixes current-authority.json
+PASS S7 drift=null is Q7 fail; NEEDS_REVALIDATION with V@B=yes is contradiction (via snapshot path)
+PASS S8 half-given CLI pair: named refusal exit 2 before any leg runs
+PASS S1 legacy default behavior byte-equal to fixed parent on clean / Q8-absent / bad-enum inputs
+ALL GREEN (8 cases, actual count)

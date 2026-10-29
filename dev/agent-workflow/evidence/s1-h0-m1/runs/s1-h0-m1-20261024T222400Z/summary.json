@@ -1,0 +1,10 @@
+{
+  "worldName": "s1-h0-m1-20261024T222400Z",
+  "port": 3180,
+  "pass": false,
+  "oracle": null,
+  "failed": true,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 182732
+}

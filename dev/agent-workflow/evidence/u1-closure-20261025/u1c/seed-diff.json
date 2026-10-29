@@ -1,0 +1,844 @@
+{
+  "meta": {
+    "generatedBy": "U1-C (EB0-3) build-outputs.mjs",
+    "hostPin": "tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84 (git describe: dsh-v0.2.0-rc.2)",
+    "teamPin": ".worktrees/u1-audit-master @ 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (read-only)",
+    "seedPin": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json",
+    "seedVerifiedCounts": {
+      "records": 93,
+      "uniqueNames": 90,
+      "surfaceObligations": 4,
+      "uniqueNonSurface": 86,
+      "doubleRecordedNames": [
+        [
+          "interrupt_agent",
+          2
+        ],
+        [
+          "list_agents",
+          2
+        ],
+        [
+          "send_message",
+          2
+        ]
+      ]
+    },
+    "statusLegend": {
+      "PRESENT_HOST": "name has a registration source in host 0.2.0-rc.2@639ed015 source tree",
+      "PRESENT_TEAM": "name declared in team master@4aaaa7b2 (tools.ts plane-owned set or DEFAULT_PLANE_NAMES)",
+      "PRESENT_HOST_AND_TEAM": "declared on both sides",
+      "ABSENT": "not found as a tool name in any current source",
+      "RENAMED": "fuzzy candidate — none asserted; every seed non-surface name resolved exactly"
+    }
+  },
+  "names": {
+    "read": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "read_image": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "write": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "edit": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "str_replace_editor": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "grep": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true,
+      "team_note": "also name-matched by DORMANT a5p5 lane (not shipped)"
+    },
+    "glob": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true,
+      "team_note": "also name-matched by DORMANT a5p5 lane (not shipped)"
+    },
+    "team_grep": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_glob": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "bash": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true,
+      "team_note": "also name-matched by DORMANT a5p5 lane (not shipped)"
+    },
+    "pwsh": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_bash": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "terminal_open": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "terminal_close": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "terminal_list": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "terminal_read": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "terminal_send": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "terminal_signal": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "job_output": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "job_list": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "job_kill": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "lsp": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "web_fetch": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "web_search": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "skill": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "load_workspace_dependencies": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "todo_write": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "create_goal": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "get_goal": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "update_goal": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "schedule_create": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "schedule_delete": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "schedule_list": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "schedule_update": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "session_search": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "session_trace": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "session_event_read": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "session_event_search": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "session_event_trace": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "subagent": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "subagent_fork": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "subagent_codex": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "subagent_claude_code": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "list_subagent_models": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "interrupt_agent": {
+      "records": 2,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "list_agents": {
+      "records": 2,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "send_message": {
+      "records": 2,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "workflow": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "ralph": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "ask_user_question": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "exit_plan_mode": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "present": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "plugin_manager": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "cordis_inspect_list": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "cordis_inspect_query": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "list_mcp_resource_templates": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "list_mcp_resources": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "read_mcp_resource": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_act": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_extract": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_navigate": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_observe": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_screenshot": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "stagehand_tabs": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "run_code": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "spawn_teammate": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "wait_agent": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_task_create": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_task_get": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_task_list": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_task_update": {
+      "records": 1,
+      "status": "PRESENT_HOST",
+      "in_host_static_source": true,
+      "in_host_generated_catalog": true,
+      "in_team_declaration": false,
+      "in_team_reserved_table": true
+    },
+    "team_list_members": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_list_templates": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_inspect_config": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_create_member": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_delegate": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_follow_up": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_collect": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_send_message": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_report_progress": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_request_control": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_resolve_control": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_list_pending_control": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_archive_member": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_grant_permission": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "team_revoke_permission": {
+      "records": 1,
+      "status": "PRESENT_TEAM",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": true,
+      "in_team_reserved_table": false
+    },
+    "surface:mcp_stdio": {
+      "records": 1,
+      "status": "OBLIGATION_NOT_A_TOOL_NAME",
+      "mapping": "dynamic source class host mcp__<server>__<tool> (mcp-client syncTools) — recorded as dynamic, not enumerated",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": false
+    },
+    "surface:mcp_http_dynamic": {
+      "records": 1,
+      "status": "OBLIGATION_NOT_A_TOOL_NAME",
+      "mapping": "dynamic source class host mcp__<server>__<tool> (mcp-client syncTools) — recorded as dynamic, not enumerated",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": false
+    },
+    "surface:domain_family": {
+      "records": 1,
+      "status": "ABSENT",
+      "mapping": "no current source tool name; family obligation — ABSENT as a name",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": false
+    },
+    "surface:neg4_preset_selfregister": {
+      "records": 1,
+      "status": "OBLIGATION_NOT_A_TOOL_NAME",
+      "mapping": "dynamic source class host client-plugin registration (cordis-host-runner guard.ts:628) — recorded as dynamic, not enumerated",
+      "in_host_static_source": false,
+      "in_host_generated_catalog": false,
+      "in_team_declaration": false,
+      "in_team_reserved_table": false
+    }
+  },
+  "newNames": {
+    "note": "current-source names not in the seed — classified UNKNOWN/NOT_VERIFIED, never authorized",
+    "entries": [
+      {
+        "name": "structured_output",
+        "source": "host",
+        "classification": "UNKNOWN/NOT_VERIFIED — never authorized",
+        "sites": [
+          "packages/subagent/subagent-in-process-driver/src/structured.ts:74"
+        ]
+      }
+    ]
+  },
+  "dynamicSourceClasses": {
+    "host": [
+      {
+        "class": "mcp__<server>__<tool>",
+        "rule": "publicToolName = `mcp__${serverName}__${rawName}` (normalized/hashed on overflow)",
+        "package": "@deepseek-ai/dsh-mcp-client",
+        "file": "packages/mcp/mcp-client/src/tools.ts",
+        "line": 81,
+        "register": "packages/mcp/mcp-client/src/tools.ts:150 (syncTools per connected server)",
+        "note": "per-MCP-server dynamic generation — recorded as dynamic source class, individual names NOT enumerated"
+      },
+      {
+        "class": "cua_driver_native__<tool>",
+        "rule": "`cua_driver_native__${tool.name}` from driver tool list",
+        "package": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native",
+        "file": "packages/experimental/computer-use-cua-driver-native/src/index.ts",
+        "line": 97,
+        "register": "packages/experimental/computer-use-cua-driver-native/src/index.ts:117",
+        "note": "experimental driver-list dynamic; not mounted in shipped bundles"
+      },
+      {
+        "class": "client-plugin dynamic tools (any name via harness.defineTool)",
+        "rule": "assertDynamicTool gate; registration passthrough",
+        "package": "@deepseek-ai/dsh-cordis-host-runner",
+        "file": "packages/extensions/cordis-host-runner/src/guard.ts",
+        "line": 495,
+        "register": "packages/extensions/cordis-host-runner/src/guard.ts:628",
+        "note": "client plugins register model tools at runtime (e.g. browser_*); enumeration at build time is impossible"
+      }
+    ],
+    "team": [
+      {
+        "class": "mcp__<server>__<tool>",
+        "rule": "team-side MCP binding name rule: prefix `mcp__${serverName}__` (bindMcpTools); the mcp__ family NEVER inherits dsh-native guard trust",
+        "files": [
+          "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (prefix build)",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs:723 (trust exclusion)",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES = [\"mcp__\"])"
+        ],
+        "note": "dynamic source class; individual MCP names NOT enumerated"
+      }
+    ],
+    "note": "MCP and other runtime-generated tool families are recorded as classes; individual dynamic names are NOT enumerated (seed surfaces surface:mcp_stdio / surface:mcp_http_dynamic / surface:neg4_preset_selfregister map here)"
+  },
+  "reservedNameTableVsHost": {
+    "table": "PLANE_RESERVED_NATIVE @ packages/runtime/src/plugin/live/team-tool-plane.mjs:403 (team@4aaaa7b2)",
+    "pinnedHost": "0.2.0-rc.2@639ed01539",
+    "prefixRule": "PLANE_RESERVED_NATIVE_PREFIXES=[\"mcp__\"] team-tool-plane.mjs:464",
+    "tableSize": 68,
+    "hostStaticSourceSize": 69,
+    "hostGeneratedCatalogSize": 66,
+    "missing_from_reserved_vs_host_static_source": [
+      "structured_output"
+    ],
+    "reserved_extra_vs_host_static_source": [],
+    "vs_host_generated_catalog": {
+      "catalog_missing_from_reserved": [],
+      "reserved_extra_vs_catalog": [
+        "subagent_codex",
+        "subagent_claude_code"
+      ]
+    },
+    "notes": [
+      "host static set includes structured_output (internal child tool) and subagent_codex/subagent_claude_code (source routes, default-disabled); the generated catalog docs/tool-catalog.md is the host authority the team drift test consumes.",
+      "structured_output is absent from PLANE_RESERVED_NATIVE — but it is child-internal and not part of the catalog harvest; flagged for reviewer judgement, NOT asserted as drift."
+    ]
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "artifact": "s1-f0-issued-20261025/F0-ISSUED-20261025.json",
+  "kind": "Formal S1 F0 issuance record (integration of already-reviewed inputs). Supersedes s1-stage-f0-draft/F0-DRAFT.md as the S1 F0 record; the draft is left untouched.",
+  "not_a": {
+    "planning_round": "this is not a new plan-document round",
+    "new_experiment": "no new experiment or rescan performed",
+    "new_gate": "no new gate added",
+    "human_or_crypto_signature": "sign-off recorded here is a technical decision record, not a human signature and not a cryptographic signature"
+  },
+  "issuer": {
+    "identity": "dot",
+    "role": "Freeze Owner",
+    "basis": "formal technical sign-off decision on the G1-I outcome"
+  },
+  "issued_utc": {
+    "start": "2026-10-25T01:32:40.173Z",
+    "clock": "date/node Date real UTC, not estimated"
+  },
+  "execution_identity": {
+    "session_model": "qwen3.8-flash-next",
+    "route_confirmed": "qiyuan-self/qwen3.8-flash-next advertised via provider model listing; runtime self-reports qwen3.8-flash-next",
+    "reasoning_efforts": "none advertised for this route",
+    "file_policy": "workspace-write",
+    "approval_policy": "ask",
+    "escalation_used": false,
+    "blocked_hit": false
+  },
+  "gate_verdicts": {
+    "G1_I": "PASS",
+    "G1_F": "NOT_PASSED",
+    "overall_G1": "PARTIAL",
+    "decided_by": "dot as Freeze Owner"
+  },
+  "review_record": {
+    "reviewer": "independent read-only G1-I Reviewer",
+    "verdict": "READY_TO_SIGN",
+    "substantive_gaps_closed": 2,
+    "gap_note": "both substantive gaps closed and endorsed by dot prior to this issuance",
+    "inputs_are": "already-reviewed inputs integrated here, unchanged"
+  },
+  "canonical_digest_algorithm": {
+    "encoding": "UTF-8 (no BOM)",
+    "object_keys": "sorted lexicographically by Unicode code point, recursively at every nesting level",
+    "arrays": "order preserved",
+    "separators": "compact: single \",\" between members/items, single \":\" between key and value, zero other whitespace",
+    "strings": "RFC 8259 minimal escapes; non-ASCII emitted as raw UTF-8 (ensure_ascii=false)",
+    "newlines": "digest input contains zero 0x0A bytes (compact form); files on disk end with one trailing LF that is NOT part of any digested bytes",
+    "hash": "SHA-256, lowercase hex, prefixed \"sha256:\""
+  },
+  "inputSnapshotDigest": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+  "inputs": {
+    "local_files": [
+      {
+        "path": ".worktrees/.s1-f0-census-20261025/gittrees-1.txt",
+        "sha256": "469000d2e18a04ed744b756ad1a842b88e891cd92eb246f62962fe43d9ee6cb6",
+        "bytes": 17226
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-asset-disposition-20261025/ASSET-DISPOSITION.json",
+        "sha256": "823a4f41ccd35ac919efa221d2780849bb5fec3d0f2cba5edd05f345c1887f3a",
+        "bytes": 15774
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-asset-disposition-20261025/ERRATA-20261025.json",
+        "sha256": "608aecb40f39ef4717fdb2e18f7581a0776a824d526bdb0b93d3e8bf40e12ed7",
+        "bytes": 5055
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-freeze-receipt-20261025/manifest.json",
+        "sha256": "032070776622102ffd8fe4a2a8d654800f45a9339b3809bb3fd92ddd87aa51df",
+        "bytes": 10263
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-A-LIFECYCLE-CONTRACT-v1.1.md",
+        "sha256": "208ba98cf0b9ddca91cb34d403f479b6994cf283f4fed04b75e1f40f3cdfb61c",
+        "bytes": 17609
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md",
+        "sha256": "1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b",
+        "bytes": 54670
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json",
+        "sha256": "e1b8b29aae79c5bdcb0ffbada6ab97f21301d446c8b210098e92480fa5b418f8",
+        "bytes": 172136
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-PLANB-ASSEMBLY.md",
+        "sha256": "dc2747ae4265a4e2261853e81db8efcb5b66563d6007800824ce3ef039c46419",
+        "bytes": 26042
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/MANIFEST.md",
+        "sha256": "ec05902e6e9b9ba4575382280daae0f2675f8bd5f6c346eed39222fd38f328f0",
+        "bytes": 9007
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/machine-v3/route-record.schema.json",
+        "sha256": "0620a715f23d4233ebe140aff09f9d28847719be76d83f9f0e0339556414ecb8",
+        "bytes": 9043
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/route-records-v3c.json",
+        "sha256": "55233426a022531cb5049587ffb605c5e487608cdcc08004e68509c2e535c929",
+        "bytes": 80539
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-runtime-census/binding-receipt-20261025T011533Z.json",
+        "sha256": "329580de812cf7bfb26e5b8698f218e70c2fada08759ce85b6cccc8f164b1611",
+        "bytes": 3442
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-runtime-census/runs/s1-census-20261025T011533Z/ledger.jsonl",
+        "sha256": "91d2683caf17e5edf3384833c692fcf73b5566dee6033e5071c743e6eb3afba5",
+        "bytes": 9422
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-runtime-census/runs/s1-census-20261025T011533Z/steps.jsonl",
+        "sha256": "c59474354c89a185c3b627557a19b7038a77d3b39d96038bfc9df517cff65de5",
+        "bytes": 6948
+      },
+      {
+        "path": "dev/agent-workflow/evidence/s1-runtime-census/runs/s1-census-20261025T011533Z/summary.json",
+        "sha256": "f8122ca97396f81138b330c3fbdde94236e0dd3bd0d23f7bcccd5327cd33de60",
+        "bytes": 19765
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml",
+        "sha256": "9c2be64f46a193eff3cca190c26e697e8e8eee25c9b40149dfdb56f8142c252d",
+        "bytes": 20780
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/cordis.patch.yml",
+        "sha256": "df7653ee4c324dca706034631926c86f13a2cf17c280cc018f8c070a0aaad19e",
+        "bytes": 21637
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml",
+        "sha256": "6cd2f197737fc94a45e487d0bb57869461dd6f392d45f6429b576e75d973eda8",
+        "bytes": 7511
+      }
+    ],
+    "external_references": [
+      {
+        "kind": "not_local",
+        "reference": "dsh-worktree-value-inventory-20261025.md",
+        "sha256": "5b4a545bede42ef75401f0daa7ee9c432b7094f5cb5e941bdeeede3018ff9851",
+        "bytes": 33439,
+        "library": "libfile_fb4f94abef0c819189d16a7166514de8",
+        "verified": "targeted ls this round: absent locally; NOT_LOCAL external reference only; no recompile, no local-existence claim"
+      }
+    ],
+    "git_objects": [
+      {
+        "kind": "commit",
+        "id": "1310b959595b211e5da7a5f727dadf522f79d60b",
+        "role": "pr363_plan"
+      },
+      {
+        "kind": "blob",
+        "id": "2ff2cd36739d9077489b4daa4a283cd5550b4f9a",
+        "bytes": 29682,
+        "path": "docs/plans/memo/alpha5-reset-20261025/phase-1-freeze-inventory-feasibility.md"
+      },
+      {
+        "kind": "blob",
+        "id": "3283426d3e110075ea093095b0c2e6b6ec4c62a9",
+        "bytes": 26686,
+        "path": "docs/plans/memo/alpha5-reset-20261025/center-assembly-architecture.md"
+      },
+      {
+        "kind": "commit",
+        "id": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+        "role": "origin_master"
+      },
+      {
+        "kind": "blob",
+        "id": "66a540b9066d8f937696e99450b850398b0ccc5a",
+        "bytes": 25220,
+        "path": "docs/plans/memo/alpha5-reset-20261025/five-stage-implementation-plan.md"
+      }
+    ],
+    "digest_scope": "inputSnapshotDigest is computed over the pure inputs object {git_objects, external_references, local_files} only — no timestamps, verdicts, issuers, or digests enter it"
+  },
+  "anchors": {
+    "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "three_plans": "three git blobs pinned in inputs.git_objects",
+    "htu": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "tag": "dsh-v0.2.0-rc.2",
+      "porcelain_before_after": 0
+    }
+  },
+  "m0_seeds": {
+    "source": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/",
+    "records": 93,
+    "uniqueNames": 90,
+    "families": 27,
+    "surface_declaration_union": [
+      "surface:domain_family",
+      "surface:mcp_http_dynamic",
+      "surface:mcp_stdio",
+      "surface:neg4_preset_selfregister"
+    ],
+    "surface_note": "4 surface obligations already adjudicated; do not re-request T1",
+    "tree_facts": {
+      "count": 48,
+      "basis": ".worktrees/.s1-f0-census-20261025/gittrees-1.txt = 47 rows under .worktrees/ + 1 main-repo row; anchored by existing path hash, not rescanned"
+    },
+    "proposed_status": "all 93 records remain PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED; this issuance changes no status and ratifies 0 IDs (the 18 IDs are NOT ratified)"
+  },
+  "value_inventory_47": {
+    "reference": "dsh-worktree-value-inventory-20261025.md",
+    "status": "NOT_LOCAL",
+    "bytes": 33439,
+    "sha256": "5b4a545bede42ef75401f0daa7ee9c432b7094f5cb5e941bdeeede3018ff9851",
+    "library": "libfile_fb4f94abef0c819189d16a7166514de8",
+    "note": "external reference only; targeted check this round confirms absence locally; no recompile, no local-existence claim"
+  },
+  "asset_disposition": {
+    "base": {
+      "path": "dev/agent-workflow/evidence/s1-asset-disposition-20261025/ASSET-DISPOSITION.json",
+      "sha256": "823a4f41ccd35ac919efa221d2780849bb5fec3d0f2cba5edd05f345c1887f3a",
+      "bytes": 15774
+    },
+    "errata": {
+      "path": "dev/agent-workflow/evidence/s1-asset-disposition-20261025/ERRATA-20261025.json",
+      "sha256": "608aecb40f39ef4717fdb2e18f7581a0776a824d526bdb0b93d3e8bf40e12ed7",
+      "bytes": 5055,
+      "precedence": "ERRATA-20261025.json wins wherever it conflicts with the base JSON (sole corrections source, 4 corrections E1–E4)"
+    },
+    "roles_corrected": {
+      "custodian_coordinator_current": "dot",
+      "collection_execution_owner": "DSH session-91d30e71-5cfa-4639-ad43-b0ec521de0b6 / Qwen",
+      "historical_development_owner": "UNKNOWN — factual unproven record, not a gate gap"
+    }
+  },
+  "census": {
+    "run_id": "s1-census-20261025T011533Z",
+    "run_dir": "dev/agent-workflow/evidence/s1-runtime-census/runs/s1-census-20261025T011533Z",
+    "identity_rows": 27,
+    "wire_tool_names": 27,
+    "one_to_one": true,
+    "non_fixture_registered_visible": 26,
+    "fixture_off_book": "s1_m1_probe",
+    "seeds_only": 60,
+    "named_union": "26 non-fixture registered-visible + 60 seed-only = 86 named identities",
+    "surface_obligations_kept_separate": 4,
+    "native_claim_limit": "native-capability inference is grounded only in that run slice; identity references bind to that RUN identity only; package attribution UNKNOWN with named responsibility and follow-up point — NOT functional takeover completion",
+    "agentPreset_evidence": "raw session/create response verbatim in steps.jsonl: value{sessionId:\"session-747044d1-3bd6-463d-9f60-997e4c55dcc7\",agentPreset:\"standard\"}; summary preset_selected none means only NO CUSTOM PRESET ROW, not none",
+    "census_counters": {
+      "poc": "5/20",
+      "host_starts": "5/12",
+      "note": "recorded as-is from the binding receipt; freeze-receipt earlier claim was 4/20 and 4/12; no re-arbitration"
+    }
+  },
+  "config_reverification_htu": {
+    "pinned": "tests/deepseek-harness-test-use @ 639ed015... (tag dsh-v0.2.0-rc.2, porcelain 0), files tracked at pinned HEAD",
+    "files": [
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/presets/standard.patch.yml",
+        "sha256": "6cd2f197737fc94a45e487d0bb57869461dd6f392d45f6429b576e75d973eda8",
+        "bytes": 7511
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/base/cordis.patch.yml",
+        "sha256": "9c2be64f46a193eff3cca190c26e697e8e8eee25c9b40149dfdb56f8142c252d",
+        "bytes": 20780
+      },
+      {
+        "path": "tests/deepseek-harness-test-use/packages/bundle/web-app/cordis.patch.yml",
+        "sha256": "df7653ee4c324dca706034631926c86f13a2cf17c280cc018f8c070a0aaad19e",
+        "bytes": 21637
+      }
+    ],
+    "correction": "this fixed-point verification corrects the census binding receipt config_binding.standard_preset_file_hash = NOT_OBSERVED: all three named config files now have observed sha256+bytes",
+    "build_provenance": "still NOT_VERIFIED; named-artifact hashes are not a complete build package"
+  },
+  "recovery_boundaries_reused_by_existing_hash": {
+    "rule": "existing path+hash records only; nothing rescanned or re-derived",
+    "items": {
+      "h0_runs": "four prior runs (h0-m1 first, h0-m1-noext, h0-m2 FAIL unchanged, h0-m3 mechanism PASS) anchored by summary sha256 in dev/agent-workflow/evidence/s1-freeze-receipt-20261025/manifest.json",
+      "archive_q6": "a5m2-wire-g1-host-copy-639ed015.tar.zst 820248620B sha ac542a96103249b02b88b2a519bab78925bca06643c5a8ad3a11fb3e7887ab27; tar-diff receipts 0B",
+      "archive_q7": "a5-m2-int-host-copy-639ed015.tar.zst 769046371B sha ff04f805fd019fcb53688af4840cd4a018fb3e8b11e1632a931c5dd1795677fe; full-content streaming compare0",
+      "lock_0a3f11b2_final": "7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659",
+      "lock_d703affb_final": "b76e19639f3f9d39a031502c14e80dc47240dd6db95445a9c84427e1f5529c25"
+    }
+  },
+  "retained_open_items_no_new_gates": [
+    "router incident: unknown loss quantity remains unknown",
+    "Q6/Q7: real recovery qualification only; named space target not met",
+    "capacity figures are not released bytes",
+    "build provenance NOT_VERIFIED",
+    "census package attribution UNKNOWN (named responsibility + follow-up point)",
+    "18 IDs not ratified; 93 seeds stay PROPOSED"
+  ],
+  "budget": {
+    "caps_unchanged": [
+      "16 Owner-h",
+      "2026-10-25T13:00:00Z deadline"
+    ],
+    "interpretation": "13:00Z is a budget cap, not a review-date floor",
+    "poc_host": "no increase claimed beyond what receipts record"
+  },
+  "mode": {
+    "host": 0,
+    "paid": 0,
+    "subagents": 0,
+    "cleanup": 0,
+    "overwrites": 0,
+    "escalation": 0,
+    "rescans": 0,
+    "new_gates": 0,
+    "plan_or_graph_edits": 0
+  },
+  "write_boundary": {
+    "created": [
+      "<OUT>/F0-ISSUED-20261025.json",
+      "<OUT>/G1-GATE-DECISION.json",
+      "<OUT>/manifest.json"
+    ],
+    "method": "fs.mkdirSync (stop if exists) + per-file O_WRONLY|O_CREAT|O_EXCL exclusive create",
+    "protected_untouched": [
+      "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+      "dev/agent-workflow/graph.yaml",
+      "docs/plans (all)",
+      "AGENTS.md",
+      "s1-stage-f0-draft/",
+      "s1-freeze-receipt-20261025/",
+      "s1-m0-closure-v3-seeds/",
+      "s1-asset-disposition-20261025/",
+      "s1-runtime-census/",
+      "tests/deepseek-harness-test-use/",
+      ".worktrees/"
+    ]
+  },
+  "gate_unlock_scope": "see G1-GATE-DECISION.json — S2 document/engineering-governance work only, without unproven safety dependencies; S4 / product writes / release remain locked",
+  "self_correction": {
+    "event_utc": "2026-10-25T01:33:05.331Z",
+    "what": "anchors.htu.head was garbled during construction; replaced with the exact git-observed HEAD in the same issuance round before reporting",
+    "inputs_digest_impact": "none — head is metadata outside the pure inputs snapshot; inputSnapshotDigest unchanged",
+    "artifact_rewrites": 1,
+    "protected_inputs_untouched": true
+  }
+}

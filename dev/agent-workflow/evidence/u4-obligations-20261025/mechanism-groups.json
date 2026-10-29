@@ -1,0 +1,271 @@
+{
+ "meta": {
+  "note": "one PoC per shared mechanism group; groups blocked_by_H0=true cannot be declared ready before the H0 PoC (owned by a separate agent). H0 target evidence: tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target",
+  "shared_interception_seam_reference": {
+   "register": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1063 (public tools.register(definition) -> disposer)",
+   "guard": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1136 (public tools.guard(guard)); guard evaluation loop tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:768-770",
+   "restrict": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1121 (layer.restrictions.append; masked names)",
+   "resolve": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1247-1252 (resolveExecution: name+scope -> ToolDefinition)",
+   "toctou": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target",
+   "schemas": "tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1259 (public scoped schemas view)"
+  },
+  "counts": {
+   "groups": 12,
+   "h0_blocked": 12
+  }
+ },
+ "groups": [
+  {
+   "id": "MG-FS-READ",
+   "name": "FS-read (governed read row)",
+   "members": [
+    "read"
+   ],
+   "interception": "own-layer same-name takeover Definition registered via public tools.register (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1063 (public tools.register(definition) -> disposer)) at packages/runtime/src/plugin/live/team-tool-plane.mjs:1726-1780 (governed read takeover row definition, native file_path shape); PA admission inside the row body (packages/runtime/tool-admission/admission-kernel.ts (1132 lines, PA admission kernel; file present on master)); install order packages/runtime/tool-dispatch/install.ts:1-12 (documented order: tools.guard -> tools.restrict mask -> tools.register dispatcher -> validate -> PUBLISH)",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1726-1780 (governed read takeover row definition, native file_path shape)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2623 (createTeamToolPlaneAssembly), :2697 (built.value.mount(agentCtx)) — matrix L21 historical LIVE-CONFIRMED (baseline not re-run)"
+   ],
+   "poc": "PoC-2 (shared read/search/process lifecycle PoC; no separate PoC)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-FS-WRITE",
+   "name": "FS-write (write/edit/str_replace/read_image write side)",
+   "members": [
+    "write",
+    "edit",
+    "str_replace_editor",
+    "read_image"
+   ],
+   "interception": "same register/PA seam as MG-FS-READ, but NO governed arm exists on master: native-name claim is refused today (packages/runtime/src/plugin/live/team-tool-plane.mjs:492-494 (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED: no same-name/same-meaning implementation assembled = mount refused; this is why write/edit/'todo' cannot take native names today)); route = Family Contribution writing through ControlledFs-style post-consume closures (#360 write.mjs WIP)",
+   "governed_on_master": false,
+   "gov_cite": [
+    "master: none (matrix L22/L23 NOT_IMPLEMENTED/NOT_WIRED); WIP: origin/feat/a5-m2-integration@bef38934f (PR #360, OPEN/DRAFT, NOT merged — WIP asset, evaluated by source only, never assumed assembled) packages/runtime/src/plugin/live/governed-families/write.mjs/edit.mjs/image.mjs + packages/tools/a5p5-tools/src/write-slice.ts"
+   ],
+   "poc": "PoC-1 (governed write row: Family Contribution + pre-Body deny; doubles as ARC-A minimal proof)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-SEARCH",
+   "name": "Search (native grep/glob + team aliases over confined rg)",
+   "members": [
+    "grep",
+    "glob",
+    "team_grep",
+    "team_glob"
+   ],
+   "interception": "alias rows via DEFAULT_PLANE_NAMES registration; native grep/glob rows NOT taken over (takeover grep/glob = []); confined-rg through host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath; glob shut key",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:84 (DEFAULT_PLANE_NAMES team_grep/team_glob/team_bash)",
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:296-306,512 (host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath over confined rg)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:759-767 (globEnabled closed consumption key)",
+    "matrix L27/L29 WIRED (row-level acceptance missing)"
+   ],
+   "poc": "PoC-2",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-PROCESS",
+   "name": "Process (bash/team_bash/pwsh over confined sandbox provider)",
+   "members": [
+    "bash",
+    "team_bash",
+    "pwsh"
+   ],
+   "interception": "plane shell row + sandbox-provider prepare/execute/spawnStreaming with launcher --confined-exec-stream; native 'bash' takeover assembled (packages/runtime/src/plugin/live/team-tool-plane.mjs:465-477 (PLANE_SUPPORTED_NATIVE_TAKEOVERS: bash:['bash'], read:['read'], grep/glob:[], jobs:['job_output','job_list','job_kill'])); pwsh has no arm on master",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/sandbox-provider/provider.ts:146,731 (spawnStreaming arm; launcher --confined-exec-stream)",
+    "matrix L30 LIVE-CONFIRMED @1fb14c4d; team_bash = OPEN R2 approval-penetration blocker (docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L13); pwsh ENV win32 missing"
+   ],
+   "poc": "PoC-2 (bash arm); pwsh separately ENV-BLOCKED, not PoC'd on Linux",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-JOBS-BRIDGE",
+   "name": "Named Bridge: Jobs (JobRegistry owner/lease face)",
+   "members": [
+    "job_list",
+    "job_output",
+    "job_kill"
+   ],
+   "interception": "createGovernedJobsBridge over host JobRegistry PUBLIC face; rows at FIXED native spelling under closed jobsEnabled key (no config spelling, no Gate 0b surface)",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/plane-effect-backends.mjs:1579 (createGovernedJobsBridge over host JobRegistry public face)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:1684-1722 (governed job_list/job_kill rows at fixed native spellings, shut face when bridge absent)",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs:775-783 (jobsEnabled default OFF: enabled only when === true)",
+    "matrix L33-35 LIVE-CONFIRMED @efb5bb55 C3 24/24 (baseline not re-run)"
+   ],
+   "poc": "PoC-3 (named-Bridge representative, ARC-C minimal; re-anchor owner-fence + cancel semantics on current SHA)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-PTC-BRIDGE",
+   "name": "Named Bridge: PTC (run_code outer/nested)",
+   "members": [
+    "run_code"
+   ],
+   "interception": "PTC escalation row on host PUBLIC approval/request waterfall (packages/runtime/src/plugin/live/ptc-escalation-row.mjs:1-14 (PTC fs escalation row on host public approval/request waterfall)); inner/outer two execution faces of one name must stay separated (CA-03)",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/ptc-escalation-row.mjs:1-14 (PTC fs escalation row on host public approval/request waterfall)",
+    "matrix L38 PROBE-GATED outer (fs half-arm merged #334) / L39 ENFORCE-PARTIAL nested inner edge"
+   ],
+   "poc": "PoC-3 alternate (if PTC is chosen as the single Bridge representative instead of Jobs)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-LSP-BRIDGE",
+   "name": "Named Bridge: LSP (per-realm server pool)",
+   "members": [
+    "lsp"
+   ],
+   "interception": "sandbox-provider LSP assembly: probe gate -> spawnStreaming -> readiness, policy-generation rebuild (packages/runtime/sandbox-provider/lsp-assembly.ts:174-191 (per-instance spawnStreaming assembly))",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/sandbox-provider/lsp-assembly.ts:174-191 (per-instance spawnStreaming assembly)",
+    "matrix L40 LIVE-CONFIRMED @1d0d03d0 real clangd/tsserver; host tool-lsp package itself opt-in/unmounted (census gating)"
+   ],
+   "poc": "none beyond H0 for G1-F (existing real-server evidence + master assembly face; family-level GO stays open)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-WEB",
+   "name": "Network (web_fetch/web_search)",
+   "members": [
+    "web_fetch",
+    "web_search"
+   ],
+   "interception": "would ride the same register/mask seam (row per tool); no production provider assembly exists on master; loopback deny-list is host-side fixture evidence",
+   "governed_on_master": false,
+   "gov_cite": [
+    "matrix L36/L37 NOT_VERIFIED; no Team web row on master; #360 g2-web-supply.mjs is WIP"
+   ],
+   "poc": "PoC-4a (deny-side effect boundary: refused fetch/spawn = zero socket, loopback refusal before the fetch call site); full positive is ENV-BLOCKED (no authorized outbound)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-MCP-DYNAMIC",
+   "name": "Dynamic source class: mcp__* + MCP-resource trio (Bridge: MCP)",
+   "members": [
+    "mcp__<server>__<tool> (class)",
+    "list_mcp_resources",
+    "list_mcp_resource_templates",
+    "read_mcp_resource"
+   ],
+   "interception": "mount gates: filterMcpServers + durable facet + template allow (packages/runtime/src/plugin/live/agent-bindings.mjs:2927 (filterMcpServers), :3003 (bindOwnTools), :3017 (bindMcpTools), :3027 (publish)); trust exclusion (packages/runtime/src/plugin/live/agent-bindings.mjs:723-725 (GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX='mcp__'; mcp__ never inherits dsh-native guard trust)); admission per call via bindMcpTools-bound identity; NEW servers must go through the single DynamicSourceAdmissionRecord path (refs/center-assembly-architecture.md §10.4)",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2927 (filterMcpServers), :3003 (bindOwnTools), :3017 (bindMcpTools), :3027 (publish)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (agent-scope prefix mcp__<server>__)",
+    "matrix L41 WIRED-NOT-ACCEPTED / L42 NOT_VERIFIED — guard binding-completeness UNVERIFIED"
+   ],
+   "poc": "PoC-4b (dynamic source: post-Guard late-binding, same-name override, new-server-no-auto-authorize)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-CLIENT-PLUGIN-DYNAMIC",
+   "name": "Dynamic source class: client-plugin registrations (NEG-4)",
+   "members": [
+    "client-plugin dynamic tools (class)"
+   ],
+   "interception": "host cordis-host-runner assertDynamicTool gate + registration passthrough (guard.ts:495/:628 @639ed015); Team side must bind or refuse unbound names at the Coverage Gate",
+   "governed_on_master": false,
+   "gov_cite": [
+    "matrix L46 bind-diag: preset-realm never reaches global schemas face; ABSTAIN layer never VERIFIED; Coverage Gate exists (packages/runtime/operation-permission/permission-coverage.ts:1-9 (Coverage Gate: every final model-facing tool needs an authority owner)) but the admission lane for this class is unwired"
+   ],
+   "poc": "PoC-5 (client-plugin late registration negative controls: unbound name refused, no Grant inheritance)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-TEAM-NATIVE",
+   "name": "Team own-layer leader tools (15 team_*)",
+   "members": [
+    "team_list_members",
+    "team_list_templates",
+    "team_inspect_config",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_collect",
+    "team_send_message",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_list_pending_control",
+    "team_archive_member",
+    "team_grant_permission",
+    "team_revoke_permission"
+   ],
+   "interception": "own-layer registration only (packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)); own-layer typed refusal for reserved names; last-mile consultGuard -> ControlService (packages/tools/src/guard.ts:72-91)",
+   "governed_on_master": true,
+   "gov_cite": [
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2536-2555 (team tool selector + registration loop via agentCtx.tools.register at :2553)",
+    "packages/runtime/control/service.ts + packages/tools/src/guard.ts:72-91 (consultGuard -> ControlService.guardOperation, fail-closed)",
+    "matrix L44 ENFORCE-PARTIAL @0e0b605a (historical round)"
+   ],
+   "poc": "PoC-6b (per-name approval-chain negative spot-check rides PoC-6 harness; no separate launcher)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  },
+  {
+   "id": "MG-AGENT-CONTROL",
+   "name": "Session/agent-control inherited names (subagent/workflow/goal/todo/skill/present/interaction/plugin-manager/cordis)",
+   "members": [
+    "subagent",
+    "subagent_fork",
+    "list_subagent_models",
+    "send_message",
+    "interrupt_agent",
+    "list_agents",
+    "workflow",
+    "create_goal",
+    "get_goal",
+    "update_goal",
+    "todo_write",
+    "skill",
+    "present",
+    "ask_user_question",
+    "exit_plan_mode",
+    "plugin_manager",
+    "cordis_inspect_list",
+    "cordis_inspect_query"
+   ],
+   "interception": "no governance mount exists on master for this class; only the generic public seams (tools.restrict mask / tools.register replacement / tools.guard) are available (packages/runtime/tool-dispatch/install.ts:1-12 (documented order: tools.guard -> tools.restrict mask -> tools.register dispatcher -> validate -> PUBLISH)); Coverage Gate forces an authority owner per final-surface name",
+   "governed_on_master": false,
+   "gov_cite": [
+    "matrix A-3..A-6 per-name UNKNOWN gap registrations (no acceptance rows); #360 governed-families/* (subagent-*, workflow-*, g5-goal-*, todo.mjs, human.mjs, present.mjs, sre.mjs...) is unmerged WIP"
+   ],
+   "poc": "PoC-6 (agent-control negatives: cross-agent send_message/interrupt refused, spawn-class effect identity mapped to an admitted effect kind, plugin_manager deny = zero process)",
+   "h0": true,
+   "blocked_by_H0": true,
+   "h0_note": "Host dispatch re-resolves the tool by NAME after the pre/guard stage (tests/deepseek-harness-test-use/packages/core/tools/src/index.ts:1578-1581 (AFTER the pre/guard stage, dispatch RE-RESOLVES by name and invokes the body; re-resolve also at :1807 and :1876) — this is the H0 target). Every group above ultimately admits/intercepts on that name-keyed dispatch, so all groups inherit H0's pre-Body-identity verdict. H0 PoC is owned by a separate agent; no group may be declared READY before H0 PASS."
+  }
+ ]
+}

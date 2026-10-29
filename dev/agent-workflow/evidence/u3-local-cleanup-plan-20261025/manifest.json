@@ -1,0 +1,27 @@
+{
+ "artifact": "u3-local-cleanup-plan-20261025",
+ "captured_utc": "2026-10-25T10:48Z",
+ "mode": "DRY-RUN \u2014 nothing deleted or moved by the planner",
+ "inputs": {
+  "bundle_sha256": "abf9ae3b5572e66d2a91d60f1f8bf11fb0cb7dd624aa586fee5fb3549b918f51"
+ },
+ "sha256": {
+  "SUMMARY.md": "5ca25e03309ecd0399f842fdb00d4943e0c15aecd63350cc372335847573a053",
+  "_raw/branches.json": "044fde95ecfca3953301439434499aa47121dd1a353e0672bed391b2c947aab7",
+  "_raw/bundle-heads.json": "0cce339a9da70912bceb58ddfeb6d6bd7ae731c2561dd24473d0c14a3de63df5",
+  "_raw/numbers.json": "a797ee9d1f98ff900def25ba76892ecf257d55bdf7f756ba3ac79b00350fda20",
+  "_raw/plan.py": "77e4015a180a47d40890447ec4175362a69fb88b066a6979c331971da562cb9c",
+  "_raw/porcelain.json": "d98f96802ed9ee589cdf2adadd5dae789e0b2a34abadff252b9b743e797fc776",
+  "_raw/refs-heads.tsv": "e7d6aec3997025f34217a5911162a92bd20698f7e01117714196bf2551225f9a",
+  "_raw/remove-rows.json": "578745873961c28e0dc8acd02e8f66a26cf8bd5f1a10bef77e1e7708a0617d6a",
+  "_raw/wt-live.txt": "512992b1a6f7d744674b5f962fbc0068cb9c1a7a14ffa205f6838613ede11623",
+  "_raw/wtsize.json": "4cbde0ace68f6f2c614e8ff9cfd59ee608e1f78d52873823e38ebe24a7d124cf",
+  "branches.tsv": "9bab9cd58623c8e8be3ccdc5d90c79bcce09843b68d5600924c797518a22397b",
+  "dry-run.txt": "da55e144f2e81072a49e0bb141fadd2c99393f950e333c5a369e40c0b5934624",
+  "execute.sh": "16bd48f89ac39759c772dfe2cf711a7b9ec6ff81501e7f27def5cfc9e8e976c7",
+  "homes.tsv": "95f1d6f9a474bf29b75d592dc5de19a6c60549143972fe82f71594b5294c1436",
+  "root-scratch.tsv": "9314894c1961a21852476a918c99b2529943e12b58fc1ed2777924e748572483",
+  "salvage.tsv": "7689d4c97b2e7d55270bda578a27d884b9239741bac891db18a9168b7ede0ae1",
+  "worktree-remove.tsv": "eb0fa57e6aa70d6b06526acba0e9924f6ba2181c800035ce856fd5d33af6fe62"
+ }
+}

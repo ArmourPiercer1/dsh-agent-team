@@ -1,0 +1,14 @@
+{
+  "recordedAt": "2026-10-25T10:17:01Z",
+  "source": "direct user message in main session",
+  "rulings": [
+    {"id": "push-merge-u0-u3",
+     "text": "User states gh is logged in on this machine (account ArmourPiercer1, verified via gh auth status) and push/merge may be executed.",
+     "scope": "push task branches, open PRs, merge into origin/master after the corresponding gate (G2 / U3-PASS) passes, for U0-U3 of the PR #364 plan in this round",
+     "constraints": ["no force-push", "no history rewrite", "normal merge or squash with expectedHeadOid guard", "stable branch untouched"]},
+    {"id": "plan-364-decision-d",
+     "text": "Evidence relocation target = a new directory inside the current workspace (same disk). Treated as temporary: the current evidence storage system is expected to be retired later, so no long-term architecture commitment.",
+     "acceptedRisk": "same-disk store has no independent durability; consistent with the earlier no-backup waiver (USER-RULING-20261025T1004Z); loss recovery = whatever git/GitHub retains",
+     "deviationFromPlanText": "U3 text asks for an 'out-of-repo artifact store'; the chosen store is out of git tracking but not off-machine"}
+  ]
+}

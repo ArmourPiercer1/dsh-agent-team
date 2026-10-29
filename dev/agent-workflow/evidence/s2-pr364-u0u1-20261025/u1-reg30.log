@@ -1,0 +1,32 @@
+PASS W1 docs:sync whitelist verbatim (2 files, unchanged)
+PASS W2 publisher whitelist is authority-snapshots only
+PASS V1 example shape validates against frozen schema
+PASS V2 recomputed digest matches example vector (published_utc covered)
+PASS V3 digest is NOT the raw whole-file byte hash (engineering ruling B)
+PASS V4 canonical bytes: zero 0x0A, compact separators, keys code-point sorted
+PASS V5 published_utc is covered by the digest (mutate -> mismatch)
+PASS V6 digest mismatch detected when content_digest edited
+PASS N1 missing current_contract.matrix rejected
+PASS N2 7th current_contract field rejected
+PASS N3 unknown top-level key rejected
+PASS N4 version placeholder "v3" is not a legal version
+PASS N5 baseline not 40hex rejected
+PASS N6 backlog with space rejected
+PASS N7 active_plan wrong prefix rejected
+PASS N8 bad published_utc grammar rejected
+PASS N9 authored_from without commit anchor rejected
+{"ok":true,"published":"dev/engineering/authority-snapshots/as20261025r1.json","digest":"sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64"}
+PASS P1 publish writes only the whitelisted immutable snapshot (canonical bytes + trailing LF)
+PASS P2 republish refused (immutable); bytes verbatim before/after
+PASS P3 symlinked snapshots dir refused; outside target untouched
+PASS P4 hardlink second-name target refused
+PASS P5 no pointer / registry / other artifact is ever produced
+PASS P6 invalid draft refused at publish (bad version path rejected before any write)
+PASS P7 check CLI exits 0 on example, 2 on digest-corrupted copy
+PASS P8 symlinked dev/engineering ancestor: refused BEFORE any mkdir; external dir gains nothing
+PASS N10 own "constructor" key at root rejected (hasOwn, not in)
+PASS N11 own "__proto__" key: rejected; canonical must not swallow it
+PASS N12 own "toString" key in current_contract rejected
+PASS V7 current_phase_statement digit INCONSISTENT with phase_id refused (frozen Q1 check)
+PASS V8 current_phase_statement digit CONSISTENT positive (ALPHA.5 vs alpha5-*, still optional)
+ALL GREEN (30 cases, actual count)

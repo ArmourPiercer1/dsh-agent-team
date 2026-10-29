@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "compared": 6,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_VS_LEGACY_VALUE",
+      "detail": "phase_id: snapshot=\"alpha5-tool-io-governance\" graph=\"alpha6-divergent\"",
+      "red": true
+    }
+  ]
+}

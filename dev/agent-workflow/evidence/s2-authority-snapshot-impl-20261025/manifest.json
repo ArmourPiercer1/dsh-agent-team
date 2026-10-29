@@ -1,0 +1,73 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest.json",
+  "kind": "S2 step-2 isolated engineering implementation slice #1 — short manifest. This is the ONLY place this package's freeze decisions are recorded; no overall plan was written or edited. CANDIDATE engineering on an isolated branch: not frozen beyond this package, not active, no gate claimed, nothing pushed.",
+  "utc": {
+    "start": "2026-10-25T02:45:07Z",
+    "end_write_manifest": "2026-10-25T02:50:00Z (date -u real UTC at manifest authoring; final green run exit=0 taken at the same minute)",
+    "clock": "date -u",
+    "budget": "bounded 25-minute single-writer package as instructed; S2 records its own wall time only; S1 16 Owner-h not reset, not extended, not re-litigated"
+  },
+  "role": "S2 step-2 isolated implementation writer (same session, qiyuan-self/qwen3.8-flash-next default route; 0 paid, 0 subagents, 0 host, 0 install)",
+  "fixed_refs": {
+    "master_baseline": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "pr361": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+    "input_snapshot_digest": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "g1": "G1-I PASS / G1-F NOT_PASSED (unchanged); G2 not evaluated, no gate claimed",
+    "parent_repo_6259cf4b": "treated as historical drift per ERRATA E3; parent repo NOT checked out, NOT reset, HEAD untouched (6259cf4bc... before and after)"
+  },
+  "isolation": {
+    "branch": "feat/s2-authority-snapshot-iso-20261025 (no prior name collision, verified)",
+    "worktree": ".worktrees/s2-authority-iso-20261025 (no prior collision; sparse cone: scripts/ tests/ dev/engineering docs/)",
+    "branch_head": "291165d79a3fd35f7162d3db5b1ff8bc640814b5",
+    "parent_of_head": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (single commit on top)",
+    "new_disk_bytes_total": 10784573,
+    "budget_mib": 300,
+    "node_modules_copied": 0,
+    "clone_or_install": 0,
+    "push_or_merge": 0
+  },
+  "file_ownership_single_writer": {
+    "created": [
+      { "path": "scripts/authority-snapshot.mjs", "bytes": 8080, "role": "pure read/validate/canonical digest; no CLI, no writes" },
+      { "path": "scripts/publish-authority.mjs", "bytes": 5285, "role": "check + immutable publish CLI; no pointer mode exists" },
+      { "path": "dev/engineering/authority-snapshot.schema.json", "bytes": 10752, "sha256": "d70fcec29b0bd719b388c51821c83eaffb4bd7a4ede4ceb39b8a50f85855ee89", "role": "frozen copy byte-identical to r2 candidate schema" },
+      { "path": "tests/s2-authority/authority-snapshot-isolated.test.mjs", "bytes": 10459, "role": "isolated engineering test (pure node, 22 cases, temp fixture root; NOT CI/Host/C1/C2)" },
+      { "path": "tests/s2-authority/snapshot-example.json", "bytes": 1056, "sha256": "66bb37ae2bfc9f7cb13df8aabe1a8bec149de65ba5c582a2eb75d507f124e29d", "role": "digest test vector byte-identical to r2 example" }
+    ],
+    "modified": [
+      { "path": "scripts/generated-write.mjs", "bytes_after": 6713, "change": "extracted checkLocationBoundary(root, rel, {mustBeAbsent}); checkGeneratedTarget/writeGenerated/GENERATED_AREAS/GENERATED_FILES exports and all refusal wordings preserved verbatim; whitelist diff empty" }
+    ]
+  },
+  "freeze_decisions_this_package": [
+    "canonical content_digest = F0 rules (UTF-8 no BOM, keys code-point sorted recursively, arrays order-preserved, compact separators, raw non-ASCII, zero 0x0A, sha256: hex) over the snapshot object with content_digest REMOVED; published_utc COVERED (root ruling 4). Machine-proven: recompute of the r2 example equals sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64.",
+    "engineering ruling B: the pointer-vs-snapshot digest binding is the canonical-object digest, NOT the raw whole-file byte hash; file = canonical bytes + exactly one trailing LF that is never digested. Asserted by case V3.",
+    "v3 (fixture CONF-03 wording) is a placeholder, not a legal snapshot_version; grammar asYYYYMMDDrN enforced twice (schema pattern + independent PATH_VERSION_ILLEGAL guard before any path join).",
+    "publisher writable surface = dev/engineering/authority-snapshots/<legal version>.json ONLY. docs:sync GENERATED_FILES whitelist NOT expanded (regression case W1 pins both lists verbatim); no registry write; live current pointer NOT implemented and NOT activated (publish does not switch); no CAS; no generated-write area/file list change.",
+    "reuse of the existing generated-write safety boundary via extraction only; symlink ancestor/target, hardlink second name, parent-not-real, escape-root refusals inherited with identical wording; publisher additionally opens O_CREAT|O_EXCL|O_NOFOLLOW and refuses OVERWRITE_REFUSED on any existing version."
+  ],
+  "red_green_evidence": {
+    "red_before_impl": "node tests/s2-authority/authority-snapshot-isolated.test.mjs exit=1 (ERR_MODULE_NOT_FOUND for scripts/authority-snapshot.mjs / publish-authority.mjs — capability genuinely absent)",
+    "intermediate_runs": "RUN2 19-fail (validator construct handling), RUN3 19-fail, RUN4 3-fail (MISSING_ANCESTOR ordering), all fixed by source changes, never by weakening a case",
+    "green_at_head": "exit=0, 22/22 PASS at 291165d79a; W1 whitelist verbatim, W2 snapshots-only surface, V1-V6 canonical/digest/published_utc, N1-N9 missing-field/7th-key/unknown-key/v3/40hex/space-path/prefix/utc/authored_from, P1 immutable publish canonical bytes + trailing LF, P2 OVERWRITE_REFUSED, P3 SYMLINK_ANCESTOR sentinel intact, P4 hardlink refused, P5 no pointer/registry artifact, P6 bad-version path refused, P7 CLI exit 0/2",
+    "test_root": "temp dirs under the worktree (.tmp-s2-iso-*), created by mkdtemp, cleaned by the suite; the real repo was never a publish root; the real R authority was never invoked"
+  },
+  "existing_regressions": {
+    "doc-consistency_controls_modified": "controls=94 failed=9 exit=0",
+    "doc-consistency_controls_pristine_4aaaa": "controls=94 failed=9 exit=0 (identical via git stash -u; 9 failures are pre-existing static-check/environment conditions of the sparse baseline, NOT introduced by this package)",
+    "docs_sync_check": "identical output on baseline and modified tree (STALE_GENERATED_VIEW is the known sparse-baseline static condition); --check never wrote",
+    "ajv": "not invoked (no node_modules by rule; validator is the dedicated limited-construct checker that throws on any unsupported schema construct, so a widened schema fails loudly)"
+  },
+  "unfinished_local": [
+    "16-case rev-2 FIXTURES still UNEXECUTED — this slice executes only its own 22 isolated cases; the 16 remain the next bounded step",
+    "live pointer file, CAS/switch transaction, registry entry, consumer rewiring, CI negative-control wiring: NOT implemented by design of this package",
+    "independent second validator (ajv from existing store) cross-check deferred: would need node_modules resolution outside the worktree"
+  ],
+  "mode_zero_claims": {
+    "host": 0, "ci": 0, "paid": 0, "subagents": 0, "install": 0, "push": 0, "merge": 0,
+    "parent_repo_checkout_or_reset": 0, "entry_switch": 0, "docs_sync_whitelist_expansion": 0,
+    "pointer_or_registry_writes": 0, "graph_or_AGENTS_or_log_or_plan_writes": 0,
+    "permission_escalation": 0, "old_tree_cleanup": 0, "product_runtime_changes": 0
+  },
+  "gate_statement": "No gate claimed or changed. G2 remains not passed. This is the frozen-candidate engineering contract being exercised in isolation, not G2."
+}

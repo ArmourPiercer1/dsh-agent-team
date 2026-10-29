@@ -1,0 +1,25 @@
+{
+ "kind": "records",
+ "records": [
+  {
+   "name": "some_tool",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "s",
+   "eff": [
+    "fs-content-search-rg"
+   ],
+   "prov": "p",
+   "life": "l",
+   "attr": "a",
+   "idx": "i"
+  }
+ ],
+ "expected": [
+  "E_CEILING_MISSING"
+ ]
+}

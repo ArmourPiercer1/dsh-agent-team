@@ -1,0 +1,84 @@
+{
+ "package": "u4-g1f-sup-c-20261025",
+ "executor": "G1-F-SUP-C (static, read-only; no host boot, no commits)",
+ "generated_utc": "2026-10-25",
+ "task": "Per-name disposition of the 22 UNKNOWN required obligations (G1-F review-r1 finding 13): CREDIBLE-ROUTE / NAMED-BLOCKER / OUT_OF_SCOPE-PROPOSAL, with group+PoC, adapter route, host+team file:line, owner role, C1/C2 acceptance, next gate, conditions; no 'route presumed'.",
+ "pins": {
+  "team_master": "3288567d36794394ce2af0401cee4fe218b11d03",
+  "host": "639ed015397290b3745d163aafe02ffee4aa3f84 (tests/deepseek-harness-test-use, read-only)",
+  "pr360_branch": "origin/feat/a5-m2-integration@bef38934f (unmerged WIP, evaluated via git show)"
+ },
+ "outputs": [
+  {
+   "path": "dev/agent-workflow/evidence/u4-g1f-sup-c-20261025/unknown-dispositions.json",
+   "sha256": "5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-g1f-sup-c-20261025/SUMMARY.md",
+   "sha256": "0fa0e347308c419a70ee117d169ef56b54d18f00ab0e4b02dc9d9f188d16147c"
+  }
+ ],
+ "inputs": [
+  {
+   "path": "dev/agent-workflow/evidence/u4-g1-f-review-r1/REVIEW.md",
+   "sha256": "2110964316e307d1c5227b0b69435150ccc05f66aea95fb5057138868ded7c2d"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-obligations-20261025/feasibility.json",
+   "sha256": "99a2834ae8e9b5707c5c0c956630c56b40855b7e983da2d1ea5ff376bf36c48f"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-obligations-20261025/expected-tool-obligations.json",
+   "sha256": "0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-obligations-20261025/mechanism-groups.json",
+   "sha256": "d72251ba3e40736f2308d2a535356623151e7bd3f185f4008886bcf03f9ef6b8"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-obligations-20261025/SUMMARY.md",
+   "sha256": "b7955d36f41651d90ebef4bc3f1f3aea2dd0dfe8354d56270f306e429306733b"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/u4-obligations-20261025/refs/center-assembly-architecture.md",
+   "sha256": "063f0fb26cb66ca96e237e6636824d83c72bcb50150b58d2e9d0c1618d8c7766"
+  },
+  {
+   "path": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
+   "sha256": "5e1c87c98fdd90ca396d72957a7ecb9e5383ca2feb06966545e430a68dd4aba5"
+  },
+  {
+   "path": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+   "sha256": "cd296c623b4d707d7d710248b833336adc42c5b0967fd9caa3de47ee7b132387"
+  },
+  {
+   "path": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+   "sha256": "43bdd74399274777c7457bda3fad6d959e01169ca452a860a36ce5c78f0e6ea9"
+  },
+  {
+   "path": "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md",
+   "sha256": "ab0c133be36462a04f99526d12f96d68cf1eb543f936982ef32049652bf40534"
+  },
+  {
+   "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/M0-B-FAMILY-TARGET-CONTRACTS.md",
+   "sha256": "1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b"
+  }
+ ],
+ "counts": {
+  "CREDIBLE-ROUTE": 21,
+  "NAMED-BLOCKER": 1,
+  "OUT_OF_SCOPE-PROPOSAL": 0,
+  "total": 22
+ },
+ "named_blockers": [
+  "surface:domain_family — missing scope/enumeration DECISION + config-registry input (matrix L43); owner user/ROOT; reopen = registry delivers domain tools (B-DOMAIN route) or user scope ruling converts to OUT_OF_SCOPE w/ re-attach"
+ ],
+ "out_of_scope_proposals": [],
+ "constraints_honored": [
+  "read-only repo inspection only (git show for #360; no checkout)",
+  "no host boot",
+  "no commits/pushes",
+  "wrote only the 3 files in this directory"
+ ],
+ "notes": "Host line anchors re-read this session; where U4 refs cite N-1 (definition start vs name: line) this package cites the verified window (e.g. index.ts:379-380). #360 citations are unmerged WIP requiring reviewed extraction (GC-5)."
+}

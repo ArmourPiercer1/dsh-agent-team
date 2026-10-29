@@ -1,0 +1,249 @@
+{
+  "artifact": "s2-authority-map-20261025/MACHINE-CONSUMERS.json",
+  "kind": "Machine-readable consumer inventory for graph.yaml#current_contract, enumerated at fixed refs. Read/write direction is what this code does to the authority, not what it does to files.",
+  "enumerated_at": {
+    "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+    "method": "git grep / git cat-file against fixed refs; working tree not used"
+  },
+  "consumers": [
+    {
+      "id": "MC-01",
+      "consumer": "scripts/ci-pr-gate.mjs checkCurrentContract",
+      "ref": "scripts/ci-pr-gate.mjs:283-517 (function span; docstring at 253-254)",
+      "direction": "READ graph.yaml text (block-scoped regex)",
+      "fields": [
+        "phase_id",
+        "active_plan",
+        "backlog",
+        "matrix",
+        "baseline",
+        "baseline_collected"
+      ],
+      "writes_authority": false,
+      "authority_source": "git object reality for baseline (revExists, baselineCurrent); file existence for the three paths; regex grammar for phase_id and timestamp",
+      "notes": "the merge-gate owner of the pointer grammar; Q1-Q8; no fallback (Q8). Reads all six: Q2 presence, Q3 single declaration, Q4 baseline git reality, Q5 matrix row contract (:372-406), GROUP C backlog id population (:351-356), Q6 phase-baseline-ref/phase-identity discipline across AGENTS.md + the three targets (:485-492). info.contract surfaces only 4 of the 6 values (:313)."
+    },
+    {
+      "id": "MC-02",
+      "consumer": "scripts/gen-current-state.mjs readLegacyAuthority + LEGACY_MIRROR_KEYS",
+      "ref": "scripts/gen-current-state.mjs:49,289,449,470",
+      "direction": "READ graph.yaml block; WRITE dev/engineering/current-state.json (derived mirror only)",
+      "fields": [
+        "phase_id",
+        "active_plan",
+        "backlog",
+        "matrix",
+        "baseline",
+        "baseline_collected"
+      ],
+      "writes_authority": false,
+      "authority_source": "verbatim string copy; the mirror never resolves values, so baseline stays a recorded SHA and matrix stays a path",
+      "notes": "this is the existing double-reader; comment at :10 states graph is read and mirrored only"
+    },
+    {
+      "id": "MC-03",
+      "consumer": "scripts/gen-current-state.mjs checkLegacyMirror",
+      "ref": "scripts/gen-current-state.mjs:321-350",
+      "direction": "READ derived mirror + READ graph block + READ registry.schema.json annotation",
+      "fields": "all six (LEGACY_MIRROR_KEYS order-pinned)",
+      "writes_authority": false,
+      "findings": [
+        "LEGACY_MIRROR_INCOMPLETE",
+        "LEGACY_MIRROR_VALUE",
+        "LEGACY_MIRROR_SCHEMA_MISMATCH"
+      ],
+      "authority_source": "cross-check between three in-tree artefacts; after a switch the graph block it re-reads may be gone",
+      "notes": "GAP-adjacent: step 7 of the migration needs a new refusal mode here"
+    },
+    {
+      "id": "MC-04",
+      "consumer": "scripts/doc-checks.mjs checkPlanCitationBlocks",
+      "ref": "scripts/doc-checks.mjs:329-356",
+      "direction": "READ derived-view mirror (phase_id only)",
+      "fields": [
+        "phase_id"
+      ],
+      "writes_authority": false,
+      "findings": [
+        "PLAN_CITATION_CONFLICT"
+      ],
+      "authority_source": "the mirror, never the graph directly (docs/contracts/engineering-baseline/plan-citation-interface.md:40)",
+      "notes": "sole downstream consumer of phase_id; blind if the mirror is absent"
+    },
+    {
+      "id": "MC-05",
+      "consumer": "scripts/docs-probe.mjs (pnpm docs:probe)",
+      "ref": "scripts/docs-probe.mjs:102,128",
+      "direction": "READ derived-view mirror via gen-current-state build",
+      "fields": [
+        "phase_id (via mirror)"
+      ],
+      "writes_authority": false,
+      "authority_source": "inherited from MC-02",
+      "notes": "self-declared LIMITS at :41-45: T0 only, no C1/C2/C3 substitution, complements and cannot replace ci-pr-gate legs"
+    },
+    {
+      "id": "MC-06",
+      "consumer": "scripts/docs-sync.mjs (pnpm docs:sync --check / --write)",
+      "ref": "scripts/docs-sync.mjs:17,51,143,150",
+      "direction": "READ everything; WRITE dev/engineering/current-state.json and docs/contracts/engineering-baseline/INDEX.md only",
+      "fields": "indirect (all six through MC-02)",
+      "writes_authority": false,
+      "authority_source": "generated-write.mjs GENERATED_AREAS + GENERATED_FILES plus symlink/O_NOFOLLOW walk",
+      "notes": "refuses write while blocking findings exist, with one named carve-out SELF_UPDATE_CODES for the files it owns"
+    },
+    {
+      "id": "MC-07",
+      "consumer": "scripts/generated-write.mjs write boundary",
+      "ref": "scripts/generated-write.mjs:27-31,71-74,100",
+      "direction": "WRITE gate; graph.yaml is NOT in GENERATED_FILES and cannot be written by it",
+      "fields": [],
+      "writes_authority": false,
+      "notes": "widening GENERATED_FILES is the only sanctioned expansion of the writable surface; this is the mechanism step 2 must use"
+    },
+    {
+      "id": "MC-08",
+      "consumer": ".github/workflows/census-runtime.yml pin precheck",
+      "ref": ".github/workflows/census-runtime.yml:129-130",
+      "direction": "READ graph.yaml via its own awk expression",
+      "fields": [
+        "baseline"
+      ],
+      "writes_authority": false,
+      "authority_source": "local git ancestry in the hosted checkout",
+      "notes": "GAP G1: second independent parse of the block outside ci-pr-gate; only non-empty and ancestor-checked, no grammar check"
+    },
+    {
+      "id": "MC-09",
+      "consumer": "dev/agent-workflow/hooks/pre-commit",
+      "ref": "dev/agent-workflow/hooks/pre-commit:14-21",
+      "direction": "READ staged graph.yaml (whole-file YAML parse)",
+      "fields": "none (structure only)",
+      "writes_authority": false,
+      "notes": "the only enforcement between an edit and a commit of the authority file"
+    },
+    {
+      "id": "MC-10",
+      "consumer": "packages/testkit/test/a5-current-contract.test.ts",
+      "ref": "packages/testkit/test/a5-current-contract.test.ts:28,69-70,144,153,398-406",
+      "direction": "READ real tree (production integration leg spawns ci-pr-gate); otherwise uses in-memory fixtures",
+      "fields": [
+        "phase_id",
+        "active_plan",
+        "baseline",
+        "baseline_collected"
+      ],
+      "writes_authority": false,
+      "notes": "positive P1-P3 and negative N1-N5 including baseline==HEAD legal and missing block FAIL"
+    },
+    {
+      "id": "MC-11",
+      "consumer": "scripts/doc-consistency-controls.mjs inline fixture graph",
+      "ref": "scripts/doc-consistency-controls.mjs:63-68",
+      "direction": "synthetic fixture input, reads nothing real",
+      "fields": [
+        "phase_id",
+        "active_plan",
+        "baseline"
+      ],
+      "writes_authority": false,
+      "notes": "GAP G3: 3 of 6 fields; backlog, matrix and baseline_collected negatives are unprovable until widened"
+    },
+    {
+      "id": "MC-12",
+      "consumer": "packages/testkit/test/p4t6-session-event-scan.test.ts",
+      "ref": "packages/testkit/test/p4t6-session-event-scan.test.ts:219",
+      "direction": "READ (comment-only reference to the state-freshness fixtures)",
+      "fields": [],
+      "writes_authority": false,
+      "notes": "scanning-scope pin, not a semantic reader; also a4p7-blueprint-version-clean.test.ts:869 pins graph.yaml OUT of scan scope"
+    },
+    {
+      "id": "MC-13",
+      "consumer": "dev/engineering/registry.yaml",
+      "ref": "dev/engineering/registry.yaml:8-9",
+      "direction": "READ/WRITE by hand: declares legacy_execution_authority and migration_of_legacy_consumers",
+      "fields": "pointer to the block as a whole",
+      "writes_authority": true,
+      "authority_source": "hand-maintained decision, no derivation",
+      "notes": "GAP G4: migration_of_legacy_consumers=not_started_requires_coordination is mirrored into the derived view but no machine reader gates on it"
+    },
+    {
+      "id": "MC-14",
+      "consumer": "dev/engineering/registry.schema.json mirror annotation",
+      "ref": "dev/engineering/registry.schema.json:6,23",
+      "direction": "READ by checkLegacyMirror as the third artefact of the cross-check",
+      "fields": "documents the same six in order",
+      "writes_authority": false,
+      "notes": "must move in lockstep with LEGACY_MIRROR_KEYS or LEGACY_MIRROR_SCHEMA_MISMATCH fires"
+    },
+    {
+      "id": "MC-15",
+      "consumer": "dev/engineering/current-state.json derived mirror",
+      "ref": "dev/engineering/current-state.json:368 and legacy_authority block",
+      "direction": "WRITE target of MC-02/MC-06; READ by MC-04/MC-05",
+      "fields": "all six mirrored verbatim",
+      "writes_authority": false,
+      "notes": "must never become a recovery source (§7.4 explicit prohibition)"
+    },
+    {
+      "id": "MC-16",
+      "consumer": "human/agent entry documents (read-only pointers, no machine)",
+      "refs": [
+        "AGENTS.md:2,22",
+        "README.md:194",
+        "docs/STATUS.md (pointer deliberately not maintained there)",
+        "dev/engineering/README.md:32,242,245",
+        ".agents/notes/README.md:9",
+        ".agents/notes/implemented/EB-ADR-0003-document-consistency-gates-implemented.md:37",
+        "tests/doc-consistency/README.md:44",
+        "dev/engineering/work-package-authorization.md:26",
+        "docs/INSTALL.md:4"
+      ],
+      "direction": "READ by humans and agents resuming a session",
+      "writes_authority": false,
+      "notes": "these are the real recovery-path consumers; each points rather than copies, which is what keeps them migration-safe"
+    },
+    {
+      "id": "MC-17",
+      "consumer": "active plan documents citing the baseline by reference",
+      "refs": [
+        "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md:3,12",
+        "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md:3,42",
+        "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md:1,3"
+      ],
+      "direction": "READ; carry phase-baseline-ref comments and forbid SHA copies",
+      "writes_authority": false,
+      "notes": "they break if the pointer target moves without the comment moving with it"
+    },
+    {
+      "id": "MC-18",
+      "consumer": "contract text that authorises the current state",
+      "refs": [
+        "docs/contracts/engineering-baseline/ids.yaml:105-108 (REQ-EB-0003; normative_status: proposed-not-ratified)",
+        "docs/contracts/engineering-baseline/INDEX.md:150-155 (mirror of the same statement)",
+        "docs/contracts/engineering-baseline/plan-citation-interface.md:5,40",
+        "docs/glossary.md:22 (C-EB-0012)",
+        "docs/terminology.md:19"
+      ],
+      "direction": "READ normative statement",
+      "writes_authority": false,
+      "notes": "GAP G5: the sentence making current_contract the authority until an approved migration is REQ-EB-0003 and is itself normative_status: proposed-not-ratified. GAP G8: plan-citation-interface.md:40 cites INV-EB-0012, which is declared nowhere (ids.yaml declares INV-EB-0001..0010); the concept C-EB-0012 in docs/glossary.md:22 carries the same substance."
+    }
+  ],
+  "not_consumers": [
+    "state_pointers (graph.yaml:79-84) is Alpha.4 historical-integrity state graded by checkStatePointers, explicitly NOT the current phase; it is a neighbour, not a consumer",
+    "nested baseline keys at graph.yaml:120 and graph.yaml:262 are Alpha.4 history and are excluded from block-scoped lookups on purpose"
+  ],
+  "write_side_summary": {
+    "who_writes_the_authority": "a human commit editing dev/agent-workflow/graph.yaml; guarded only by the YAML-parse pre-commit hook (MC-09) and the ci-pr-gate legs after the fact",
+    "machine_writers_of_the_authority": "NONE found (verified by grepping every fs write in scripts/; no script writes graph.yaml)",
+    "machine_writers_of_derived_mirrors": [
+      "MC-02",
+      "MC-06"
+    ],
+    "consequence": "the single write point is a discipline, not a tool; any claim of a single write point after migration must name the guard that makes it true"
+  }
+}

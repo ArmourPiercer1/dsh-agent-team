@@ -1,0 +1,178 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-core-r0-2026-10-25T13-25-47-944Z",
+  "suite": "core",
+  "startedAt": "2026-10-25T13:26:15.977Z",
+  "selectedCases": [
+    "token-gate",
+    "positive-control",
+    "error-return-with-effect",
+    "planted-defect-detected",
+    "oracle-blinding-divergence",
+    "leak-check"
+  ],
+  "bindings": {
+    "teamSha": "3288567d36794394ce2af0401cee4fe218b11d03",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+        "snapshot_version": "as20261025r1"
+      },
+      "pointerSha256": "5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee",
+      "snapshotDigest": "19b644b09af6026206137c10c86557562d5d62b871e7be5675af8d150df72391"
+    },
+    "canaryPluginSha256": "ffc17e7f2b435ade204de628d28b06ff45191684a56fb523eb76c8da992c696d",
+    "worldIds": [
+      "u5r0-20261025T13-26-15Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    }
+  },
+  "cases": [
+    {
+      "id": "token-gate",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:25:50.115Z",
+      "status": 401
+    },
+    {
+      "id": "positive-control",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:27:20.322Z",
+      "tag": "pos-z9uvnw",
+      "promptStatus": 200,
+      "toolCallIssued": false,
+      "resultRoundTripped": false,
+      "resultErrored": false,
+      "effect": {
+        "effect": false,
+        "basis": [
+          "marker",
+          "ledger:body-ran",
+          "processes:host-alive"
+        ],
+        "marker": false,
+        "bodyRan": false
+      },
+      "observation": {
+        "markerFiles": [],
+        "ledgerLegsForTag": [],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "waitedMs": 0
+    },
+    {
+      "id": "error-return-with-effect",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:29:16.006Z",
+      "tag": "err-z9uvnw",
+      "oracleReportedEffectDespiteError": false,
+      "resultErrored": false,
+      "resultTextHead": null,
+      "observation": {
+        "markerFiles": [],
+        "ledgerLegsForTag": [],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      }
+    },
+    {
+      "id": "planted-defect-detected",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:30:46.297Z",
+      "tag": "def-z9uvnw",
+      "toolClaimedRan": false,
+      "soundOracleEffect": false,
+      "note": "defect mode lies (ran:true, writes nothing); a sound Oracle must report NO effect — a PASS here IS the fault-planting RED",
+      "observation": {
+        "markerFiles": [],
+        "ledgerLegsForTag": [],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "resultWaitedMs": 0
+    },
+    {
+      "id": "oracle-blinding-divergence",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:30:46.297Z",
+      "soundEffect": false,
+      "blindedEffect": false,
+      "note": "the ignore-marker Oracle variant turns the planted defect GREEN — proving the sound Oracle is what catches it (fault-planting sensitivity)"
+    },
+    {
+      "id": "leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:30:46.393Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": null,
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:30:46.493Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/host-start-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-25T13:26:16.006Z",
+        "runId": "u5-core-r0-2026-10-25T13-25-47-944Z",
+        "suite": "core",
+        "world": "u5r0-20261025T13-26-15Z",
+        "phase": "boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "boot1",
+      "world": "u5r0-20261025T13-26-15Z",
+      "port": 3180,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/logs/u5r0-20261025T13-26-15Z/instance-port3180.log"
+    }
+  ],
+  "session": {
+    "sessionId": "session-ccb08850-d1d1-4028-bf45-390a12e56466",
+    "workspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5r0-20261025T13-26-15Z/workspace"
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-25T13:30:46.493Z"
+}

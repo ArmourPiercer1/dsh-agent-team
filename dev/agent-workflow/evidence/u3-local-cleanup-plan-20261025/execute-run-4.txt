@@ -1,0 +1,1003 @@
+2026-10-25T10:51:52Z	BEGIN	mode=execute	plan=/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u3-local-cleanup-plan-20261025
+2026-10-25T10:51:52Z	DF-BEFORE	-	/dev/mapper/ubuntu--vg-ubuntu--lv 114865901568 65815379968 43719159808
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-cancel-leg	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-docs-realign	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-inventory	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-jobs-iso-96e-pinned	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-jobs-iso-f739-scan	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-jobs-iso-int	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-jobs-iso-int2	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-jobs-isolation	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-legs-runner	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-lsp-keyfix	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m0-contract	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m0-docs-pr	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m1-auth-bridge	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m1-facts-seam	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m1-fixture	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m1-flaky	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-m2-auth-vocab	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-mcp-binding	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5-read-slice	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5m2-bmcp	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5m2-bsearch-team	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5m2-checkinstall	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5m2-g1asm	directory already absent
+2026-10-25T10:51:52Z	SKIP-WT	.worktrees/a5m2-imgverify	directory already absent
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-bjob-entry-probe.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-bjob-entry-probe.log bytes=533
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-battery.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-battery.log bytes=929
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-commit-msg.txt	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-commit-msg.txt bytes=5360
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-commit.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-commit.log bytes=795
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-deps-canary.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-deps-canary.log bytes=535
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-eslint.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-eslint.log bytes=681
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-eslint2.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-eslint2.log bytes=371
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-final.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-final.log bytes=808
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-job.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-job.log bytes=4639
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-job2.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-job2.log bytes=3659
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-job3.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-job3.log bytes=586
+2026-10-25T10:51:52Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-push.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-push.log bytes=409
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-tsc.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-tsc.log bytes=8095
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-tsc2.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-tsc2.log bytes=6775
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf-tsc3.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf-tsc3.log bytes=6682
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-archive-push.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-archive-push.log bytes=409
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-battery.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-battery.log bytes=5273
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-checker.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-checker.log bytes=425
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-commit-msg.txt	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-commit-msg.txt bytes=4133
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-commit.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-commit.log bytes=743
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-eslint.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-eslint.log bytes=371
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-fetch.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-fetch.log bytes=110
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-glue.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-glue.log bytes=10842
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-glue2.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-glue2.log bytes=10842
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-mount.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-mount.log bytes=532
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-push.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-push.log bytes=505
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-push2.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-push2.log bytes=142
+2026-10-25T10:51:53Z	SALVED	.worktrees/a5m2-job-family/tmp-jf2-tsc.log	-> .artifacts/evidence/salvage/a5m2-job-family/tmp-jf2-tsc.log bytes=988
+2026-10-25T10:51:54Z	WT-REMOVED	.worktrees/a5m2-job-family	salvage_items=28
+2026-10-25T10:51:54Z	PATCHED	.worktrees/a5m2-joint-cand-probe	-> .artifacts/evidence/salvage/a5m2-joint-cand-probe/tracked-mods.patch sha=4cc60b42d840753ff849514437d61bf3facef106621322df95564fa89916cf3d
+2026-10-25T10:51:54Z	SALVED	.worktrees/a5m2-joint-cand-probe/packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs	-> .artifacts/evidence/salvage/a5m2-joint-cand-probe/packages/runtime/src/plugin/live/governed-families/subagent-wiring.mjs bytes=28362
+2026-10-25T10:51:55Z	SALVED	.worktrees/a5m2-joint-cand-probe/packages/runtime/test/zz-temp-b581-joint-validator-probe.test.ts	-> .artifacts/evidence/salvage/a5m2-joint-cand-probe/packages/runtime/test/zz-temp-b581-joint-validator-probe.test.ts bytes=6700
+2026-10-25T10:51:55Z	SALVED	.worktrees/a5m2-joint-cand-probe/tmp-joint-validator-probe.mts	-> .artifacts/evidence/salvage/a5m2-joint-cand-probe/tmp-joint-validator-probe.mts bytes=5641
+2026-10-25T10:51:56Z	WT-REMOVED	.worktrees/a5m2-joint-cand-probe	salvage_items=4
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/.commitmsgs/	-> .artifacts/evidence/salvage/a5m2-newfam/.commitmsgs/ bytes=8905
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/enc-fix.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/enc-fix.log bytes=6144
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/enc-fix2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/enc-fix2.log bytes=2775
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/enc-fix3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/enc-fix3.log bytes=537
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/eslint-j3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/eslint-j3.log bytes=209
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/eslint-joint.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/eslint-joint.log bytes=776
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/eslint-joint2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/eslint-joint2.log bytes=209
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-1.log bytes=2878
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-10.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-10.log bytes=8651
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-11.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-11.log bytes=8777
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-12.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-12.log bytes=7343
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-13.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-13.log bytes=5081
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-2.log bytes=537
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-3.log bytes=5082
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-4.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-4.log bytes=5211
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-5.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-5.log bytes=605
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-6.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-6.log bytes=605
+2026-10-25T10:51:56Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-7.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-7.log bytes=7896
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-8.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-8.log bytes=7897
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/joint-9.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/joint-9.log bytes=8654
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/merge-auth-gate.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/merge-auth-gate.log bytes=5014
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/merge-family.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/merge-family.log bytes=531
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/merge-gate.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/merge-gate.log bytes=12621
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/merge-gate2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/merge-gate2.log bytes=5072
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-1.log bytes=537
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-2.log bytes=5982
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-3.log bytes=3003
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-4.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-4.log bytes=1484
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-5.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-5.log bytes=7629
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-6.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-6.log bytes=2592
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-7.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-7.log bytes=2432
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/pleg-8.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/pleg-8.log bytes=542
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-bat.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-bat.log bytes=5082
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-bat2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-bat2.log bytes=5799
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-fin.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-fin.log bytes=605
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-lint.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-lint.log bytes=209
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-lint2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-lint2.log bytes=209
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-probe.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-probe.log bytes=1254
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-tsc.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-tsc.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-w1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-w1.log bytes=2797
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/root22-w2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/root22-w2.log bytes=537
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-fix-r1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-fix-r1.log bytes=539
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-r1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-r1.log bytes=9059
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-r2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-r2.log bytes=7130
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-r3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-r3.log bytes=5788
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-r4.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-r4.log bytes=539
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/spawn-r5.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/spawn-r5.log bytes=539
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-enc.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-enc.log bytes=2247
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-enc2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-enc2.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-j3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-j3.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-joint.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-joint.log bytes=1555
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-joint2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-joint2.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-merge-auth.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-merge-auth.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-merge.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-merge.log bytes=356
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-spawn.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-spawn.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-spawnfix.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-spawnfix.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-wf.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-wf.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-wfp1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-wfp1.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-wire.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-wire.log bytes=11821
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-wire2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-wire2.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/tsc-wirefix.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/tsc-wirefix.log bytes=11248
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wf-p1-r1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wf-p1-r1.log bytes=533
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wf-r1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wf-r1.log bytes=9150
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wf-r2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wf-r2.log bytes=533
+2026-10-25T10:51:57Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wf-r3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wf-r3.log bytes=533
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-p1-fix.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-p1-fix.log bytes=5088
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-r1.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-r1.log bytes=3320
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-r2.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-r2.log bytes=534
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-r3.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-r3.log bytes=534
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-readimg.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-readimg.log bytes=535
+2026-10-25T10:51:58Z	SALVED	.worktrees/a5m2-newfam/packages/runtime/wire-regress.log	-> .artifacts/evidence/salvage/a5m2-newfam/packages/runtime/wire-regress.log bytes=4898
+2026-10-25T10:52:02Z	WT-REMOVED	.worktrees/a5m2-newfam	salvage_items=71
+2026-10-25T10:52:03Z	WT-REMOVED	.worktrees/a5m2-pinbuild	salvage_items=0
+2026-10-25T10:52:07Z	WT-REMOVED	.worktrees/a5m2-provider-id	salvage_items=0
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-battery-r8.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-battery-r8.log bytes=767
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-battery-r8b.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-battery-r8b.log bytes=536
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-commit-r8.txt	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-commit-r8.txt bytes=2039
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-eslint-r8.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-eslint-r8.log bytes=371
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-probe.mjs	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-probe.mjs bytes=3417
+2026-10-25T10:52:07Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-b581-tsc-r8.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-b581-tsc-r8.log bytes=356
+2026-10-25T10:52:08Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-joint-probe-final.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-joint-probe-final.log bytes=1252
+2026-10-25T10:52:08Z	SALVED	.worktrees/a5m2-subagent-fix/tmp-joint-probe.log	-> .artifacts/evidence/salvage/a5m2-subagent-fix/tmp-joint-probe.log bytes=1252
+2026-10-25T10:52:11Z	WT-REMOVED	.worktrees/a5m2-subagent-fix	salvage_items=8
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/.gate/	-> .artifacts/evidence/salvage/a5m2-wire-g1/.gate/ bytes=8965397
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-29-03-114Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-29-03-114Z/ bytes=4892
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-34-03-336Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-34-03-336Z/ bytes=31217
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-53-45-329Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/runs-2026-10-24T14-53-45-329Z/ bytes=3222
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-29-03Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-29-03Z/ bytes=3844
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-34-03Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-34-03Z/ bytes=6511
+2026-10-25T10:52:12Z	SALVED	.worktrees/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-53-45Z/	-> .artifacts/evidence/salvage/a5m2-wire-g1/dev/agent-workflow/evidence/a5m2-control-host-window/window-20261024T14-53-45Z/ bytes=3762
+2026-10-25T10:52:16Z	WT-REMOVED	.worktrees/a5m2-wire-g1	salvage_items=7
+2026-10-25T10:52:20Z	WT-REMOVED	.worktrees/a5m2-wire-g2	salvage_items=0
+2026-10-25T10:52:20Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-32-17-737Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-32-17-737Z/ bytes=7982
+2026-10-25T10:52:20Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-40-14-638Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-40-14-638Z/ bytes=419517
+2026-10-25T10:52:20Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-53-50-686Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-53-50-686Z/ bytes=27680
+2026-10-25T10:52:20Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-59-00-113Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T09-59-00-113Z/ bytes=27565
+2026-10-25T10:52:20Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T10-29-15-118Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T10-29-15-118Z/ bytes=3475
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T10-41-27-968Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T10-41-27-968Z/ bytes=28998
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T12-10-43-233Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T12-10-43-233Z/ bytes=9002
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-08-08-298Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-08-08-298Z/ bytes=431785
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-12-19-986Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-12-19-986Z/ bytes=123285
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-26-36-833Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-26-36-833Z/ bytes=148532
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-37-30-353Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-37-30-353Z/ bytes=12369
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-46-56-118Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-46-56-118Z/ bytes=276482
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-57-05-915Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T13-57-05-915Z/ bytes=1313396
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T14-43-23-702Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T14-43-23-702Z/ bytes=1314993
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T14-50-14-630Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-2026-10-24T14-50-14-630Z/ bytes=1737880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-36-02-867Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-36-02-867Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-36-12-284Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-36-12-284Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-50-42-283Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-50-42-283Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-58-41-428Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T09-58-41-428Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-15-30-739Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-15-30-739Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-35-24-381Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-35-24-381Z/ bytes=1514
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-36-58-145Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-36-58-145Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-41-17-733Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T10-41-17-733Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T12-06-04-935Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T12-06-04-935Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-07-57-737Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-07-57-737Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-12-12-926Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-12-12-926Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-19-34-546Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-19-34-546Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-30-32-264Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-30-32-264Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-34-36-774Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-34-36-774Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-44-38-132Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-44-38-132Z/ bytes=1880
+2026-10-25T10:52:21Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-49-28-542Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-49-28-542Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-49-46-609Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-49-46-609Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-54-10-949Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T13-54-10-949Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-22-08-648Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-22-08-648Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-23-19-055Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-23-19-055Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-30-06-343Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-30-06-343Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-31-16-541Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-31-16-541Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-31-50-695Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-31-50-695Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-37-23-530Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-37-23-530Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-38-22-162Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-38-22-162Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-47-20-423Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-47-20-423Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-49-44-247Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/runs-dry-2026-10-24T14-49-44-247Z/ bytes=1880
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-28-17Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-28-17Z/ bytes=963
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-32-17Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-32-17Z/ bytes=3672
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-40-14Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-40-14Z/ bytes=3892
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-53-50Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-53-50Z/ bytes=4014
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-58-59Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T09-58-59Z/ bytes=4014
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T10-29-14Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T10-29-14Z/ bytes=3710
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T10-41-27Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T10-41-27Z/ bytes=4117
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T12-10-42Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T12-10-42Z/ bytes=3775
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-08-08Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-08-08Z/ bytes=3997
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-12-19Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-12-19Z/ bytes=4252
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-26-36Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-26-36Z/ bytes=3922
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-37-30Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-37-30Z/ bytes=4235
+2026-10-25T10:52:22Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-46-55Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-46-55Z/ bytes=4686
+2026-10-25T10:52:23Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-57-05Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T13-57-05Z/ bytes=5074
+2026-10-25T10:52:23Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T14-43-23Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T14-43-23Z/ bytes=5702
+2026-10-25T10:52:23Z	SALVED	.worktrees/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T14-50-14Z/	-> .artifacts/evidence/salvage/a5m2-wire-g3/dev/agent-workflow/evidence/a5m2-edit-host-window/window-20261024T14-50-14Z/ bytes=5960
+2026-10-25T10:52:24Z	WT-REMOVED	.worktrees/a5m2-wire-g3	salvage_items=58
+2026-10-25T10:52:29Z	WT-REMOVED	.worktrees/a5m2-wire-g3a	salvage_items=0
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T14-48-41-116Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T14-48-41-116Z/ bytes=472512
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T15-03-36-162Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T15-03-36-162Z/ bytes=472345
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T16-46-02-066Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T16-46-02-066Z/ bytes=62625
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T16-56-03-803Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T16-56-03-803Z/ bytes=4577
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T17-10-39-173Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T17-10-39-173Z/ bytes=472622
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T17-28-22-509Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-2026-10-24T17-28-22-509Z/ bytes=94125
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T14-44-25-554Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T14-44-25-554Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T15-02-36-294Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T15-02-36-294Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T16-45-33-829Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T16-45-33-829Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T16-52-00-286Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T16-52-00-286Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T17-06-27-434Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T17-06-27-434Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T17-23-57-597Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/runs-dry-2026-10-24T17-23-57-597Z/ bytes=2827
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T14-44-25Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T14-44-25Z/ bytes=4482
+2026-10-25T10:52:29Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T14-48-40Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T14-48-40Z/ bytes=4917
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T15-02-36Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T15-02-36Z/ bytes=4482
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T15-03-36Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T15-03-36Z/ bytes=4915
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-45-33Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-45-33Z/ bytes=4482
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-46-01Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-46-01Z/ bytes=4688
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-52-00Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-52-00Z/ bytes=4482
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-56-03Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T16-56-03Z/ bytes=4714
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-06-27Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-06-27Z/ bytes=4482
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-10-39Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-10-39Z/ bytes=5016
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-23-57Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-23-57Z/ bytes=4482
+2026-10-25T10:52:30Z	SALVED	.worktrees/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-28-22Z/	-> .artifacts/evidence/salvage/a5m2-wire-g5/dev/agent-workflow/evidence/a5m2-g5-host-window-b/window-20261024T17-28-22Z/ bytes=5146
+2026-10-25T10:52:32Z	WT-REMOVED	.worktrees/a5m2-wire-g5	salvage_items=24
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-19-23-805ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-19-23-805ZZ/derived-kit.source bytes=67527
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-23-21-974ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-23-21-974ZZ/derived-kit.source bytes=67569
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-26-29-527ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-26-29-527ZZ/derived-kit.source bytes=67600
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-34-34-457ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-34-34-457ZZ/ bytes=73691
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-35-44-434ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-35-44-434ZZ/derived-kit.source bytes=67600
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-45-16-036ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-45-16-036ZZ/derived-kit.source bytes=67600
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-52-22-275ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-52-22-275ZZ/derived-kit.source bytes=67600
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-56-18-305ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T14-56-18-305ZZ/derived-kit.source bytes=67600
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-08-59-247ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-08-59-247ZZ/derived-kit.source bytes=68168
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-24-37-256ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-24-37-256ZZ/ bytes=74677
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-25-19-464ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-25-19-464ZZ/ bytes=74677
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-25-36-376ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-25-36-376ZZ/ bytes=74677
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-26-32-835ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-26-32-835ZZ/ bytes=6618
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-26-46-839ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-26-46-839ZZ/ bytes=77854
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-27-01-935ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-27-01-935ZZ/ bytes=77853
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-27-07-655ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-27-07-655ZZ/ bytes=77853
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-01-438ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-01-438ZZ/ bytes=77681
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-06-593ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-06-593ZZ/ bytes=77680
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-21-520ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T15-28-21-520ZZ/derived-kit.source bytes=70492
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T16-45-54-208ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T16-45-54-208ZZ/derived-kit.source bytes=70492
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-02-54-946ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-02-54-946ZZ/ bytes=77637
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-03-14-004ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-03-14-004ZZ/ bytes=78894
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-03-47-764ZZ/derived-kit.source	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-preflight-2026-10-24T17-03-47-764ZZ/derived-kit.source bytes=71368
+2026-10-25T10:52:32Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T15-00-21-658ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T15-00-21-658ZZ/ bytes=255994
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T15-11-57-167ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T15-11-57-167ZZ/ bytes=755255
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T16-46-33-801ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T16-46-33-801ZZ/ bytes=265853
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T17-32-39-064ZZ/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/driver-run-2026-10-24T17-32-39-064ZZ/ bytes=277695
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-687630579ed08b2b.json	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-687630579ed08b2b.json bytes=204
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-6e6ff1bf779d6a23.json	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-6e6ff1bf779d6a23.json bytes=204
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-94f7490addd4ac91.json	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-94f7490addd4ac91.json bytes=204
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-9a2c275492991ea6.json	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/go-consumed-9a2c275492991ea6.json bytes=204
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/pnpm-install-int.log	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/pnpm-install-int.log bytes=1406
+2026-10-25T10:52:33Z	SALVED	.worktrees/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/pnpm-install-int2.log	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/agent-workflow/evidence/a5m2-g6host/kit/pnpm-install-int2.log bytes=245
+2026-10-25T10:55:05Z	SALVED	.worktrees/a5m2-wire-g6/dev/plugin-install/	-> .artifacts/evidence/salvage/a5m2-wire-g6/dev/plugin-install/ bytes=467493460
+2026-10-25T10:55:14Z	WT-REMOVED	.worktrees/a5m2-wire-g6	salvage_items=34
+2026-10-25T10:55:14Z	SALVED	.worktrees/a5m2-wire-schedule/packages-pins/a66f50886b8b18bf697056d8192e8efe60d28ad7/manifest-installsurface-hashes.txt	-> .artifacts/evidence/salvage/a5m2-wire-schedule/packages-pins/a66f50886b8b18bf697056d8192e8efe60d28ad7/manifest-installsurface-hashes.txt bytes=206512
+2026-10-25T10:55:15Z	SALVED	.worktrees/a5m2-wire-schedule/packages-pins/a66f50886b8b18bf697056d8192e8efe60d28ad7/manifest-tgz-dist-hashes.txt	-> .artifacts/evidence/salvage/a5m2-wire-schedule/packages-pins/a66f50886b8b18bf697056d8192e8efe60d28ad7/manifest-tgz-dist-hashes.txt bytes=206512
+2026-10-25T10:55:19Z	WT-REMOVED	.worktrees/a5m2-wire-schedule	salvage_items=2
+2026-10-25T10:55:19Z	SALVED	.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/a5m2-team-c2/	-> .artifacts/evidence/salvage/a5m2-wire-team/dev/agent-workflow/evidence/a5m2-team-c2/ bytes=1878
+2026-10-25T10:55:19Z	SALVED	.worktrees/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/live/.current-h1-stamp	-> .artifacts/evidence/salvage/a5m2-wire-team/dev/agent-workflow/evidence/alpha5/live/.current-h1-stamp bytes=21
+2026-10-25T10:55:23Z	WT-REMOVED	.worktrees/a5m2-wire-team	salvage_items=2
+2026-10-25T10:55:23Z	PATCHED	.worktrees/alpha5-gap-c0405	-> .artifacts/evidence/salvage/alpha5-gap-c0405/tracked-mods.patch sha=75673eaea5b5dfe998f48d4c1a74a872a6722d9f9551c6e2d001302d617f8cc4
+2026-10-25T10:55:23Z	SALVED	.worktrees/alpha5-gap-c0405/dev/agent-workflow/SESSION_ROUTER_LOG.md	-> .artifacts/evidence/salvage/alpha5-gap-c0405/dev/agent-workflow/SESSION_ROUTER_LOG.md bytes=2040714
+2026-10-25T10:55:23Z	SALVED	.worktrees/alpha5-gap-c0405/dev/agent-workflow/evidence/alpha5/C12-decision-brief.md	-> .artifacts/evidence/salvage/alpha5-gap-c0405/dev/agent-workflow/evidence/alpha5/C12-decision-brief.md bytes=10656
+2026-10-25T10:55:23Z	SALVED	.worktrees/alpha5-gap-c0405/dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json	-> .artifacts/evidence/salvage/alpha5-gap-c0405/dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json bytes=6625
+2026-10-25T10:55:24Z	WT-REMOVED	.worktrees/alpha5-gap-c0405	salvage_items=4
+2026-10-25T10:55:25Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T19-42-45/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T19-42-45/ bytes=9651915
+2026-10-25T10:55:25Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-10-50/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-10-50/ bytes=7757227
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-33-43/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-33-43/ bytes=7757226
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-57-09/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T20-57-09/ bytes=499127
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T21-44-23/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T21-44-23/ bytes=499126
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T22-15-13/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T22-15-13/ bytes=499127
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T22-46-27/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/prereq-2026-10-01T22-46-27/ bytes=9863268
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T19-42-32/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T19-42-32/ bytes=85274
+2026-10-25T10:55:26Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-10-42/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-10-42/ bytes=241426
+2026-10-25T10:55:27Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-33-42/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-33-42/ bytes=223875
+2026-10-25T10:55:27Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-57-08/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T20-57-08/ bytes=48687
+2026-10-25T10:55:27Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T21-44-23/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T21-44-23/ bytes=329985
+2026-10-25T10:55:27Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-15-13/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-15-13/ bytes=345381
+2026-10-25T10:55:27Z	SALVED	.worktrees/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27/	-> .artifacts/evidence/salvage/int-alpha3-stage2/dev/agent-workflow/evidence/pre-alpha3-refactor/pr-e/stage2-live-2026-10-01T22-46-27/ bytes=494418
+2026-10-25T10:55:30Z	WT-REMOVED	.worktrees/int-alpha3-stage2	salvage_items=14
+2026-10-25T10:55:31Z	WT-REMOVED	.worktrees/pack-int/tree-37646ac2-20261024T085726Z	salvage_items=0
+2026-10-25T10:55:31Z	WT-REMOVED	.worktrees/pack-int/tree-4a26ac9a-20261024T120122Z	salvage_items=0
+2026-10-25T10:55:31Z	WT-REMOVED	.worktrees/pack-int/tree-5c313418-20261024T082308Z	salvage_items=0
+2026-10-25T10:55:31Z	SALVED	.worktrees/pr352-lintfix/dev/agent-workflow/evidence/alpha5/COORDINATION.md	-> .artifacts/evidence/salvage/pr352-lintfix/dev/agent-workflow/evidence/alpha5/COORDINATION.md bytes=1050
+2026-10-25T10:55:31Z	SALVED	.worktrees/pr352-lintfix/.nc-runs-once.log	-> .artifacts/evidence/salvage/pr352-lintfix/.nc-runs-once.log bytes=2146
+2026-10-25T10:55:31Z	SALVED	.worktrees/pr352-lintfix/.probe-plan-tmp/	-> .artifacts/evidence/salvage/pr352-lintfix/.probe-plan-tmp/ bytes=319
+2026-10-25T10:55:32Z	SALVED	.worktrees/pr352-lintfix/tests/checks/.nc-runs/	-> .artifacts/evidence/salvage/pr352-lintfix/tests/checks/.nc-runs/ bytes=30246
+2026-10-25T10:55:33Z	WT-REMOVED	.worktrees/pr352-lintfix	salvage_items=4
+2026-10-25T10:55:33Z	MOVED	1f405968808141d8bd09aaedb1e3718a9b1faf2e	-> .artifacts/evidence/unknown/1f405968808141d8bd09aaedb1e3718a9b1faf2e class=UNKNOWN bytes=9
+2026-10-25T10:55:33Z	MOVED	a5m2-kiit.msg	-> .artifacts/evidence/unknown/a5m2-kiit.msg class=UNKNOWN bytes=1134
+2026-10-25T10:55:33Z	MOVED	a5m2-kitfix.msg	-> .artifacts/evidence/unknown/a5m2-kitfix.msg class=UNKNOWN bytes=1725
+2026-10-25T10:55:33Z	MOVED	b5c06f09984c4da8bbbe9fe2ec23898bb29d4374	-> .artifacts/evidence/unknown/b5c06f09984c4da8bbbe9fe2ec23898bb29d4374 class=UNKNOWN bytes=5
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-005x-mirror-msg.txt	bytes=439
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-005x-msg.txt	bytes=2979
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-010x-msg.txt	bytes=3257
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-2235-msg.txt	bytes=3255
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-2249-msg.txt	bytes=2480
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-232x-mirrors-msg.txt	bytes=606
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-232x-msg.txt	bytes=3249
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-240x-msg.txt	bytes=3179
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-242x-msg.txt	bytes=3504
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-accept-msg.txt	bytes=1879
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-artifact-msg.txt	bytes=2621
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-c2prep-msg.txt	bytes=3349
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-commit-msg.txt	bytes=5416
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-create-msg.txt	bytes=1706
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-env-msg.txt	bytes=2003
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-facts-msg.txt	bytes=3259
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-fix1953-msg.txt	bytes=3064
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-frame-msg.txt	bytes=2260
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-gate-value-msg.txt	bytes=2382
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-legs-msg.txt	bytes=2322
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-live-msg.txt	bytes=2253
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-members-msg.txt	bytes=2769
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-mirror-msg.txt	bytes=433
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-outcome-msg.txt	bytes=2347
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-pair-msg.txt	bytes=3334
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-prod-msg.txt	bytes=2522
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-query-msg.txt	bytes=1930
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-resolve-msg.txt	bytes=3432
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-reuse-msg.txt	bytes=1728
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-revert-msg.txt	bytes=1629
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-runner-msg.txt	bytes=3036
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-single-msg.txt	bytes=1561
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-supply-msg.txt	bytes=1484
+2026-10-25T10:55:33Z	DELETED-SCRATCH	.bteam-three-msg.txt	bytes=3638
+2026-10-25T10:55:33Z	MOVED	c3780bb936161045622f2e0ba6fcab81370b29cb	-> .artifacts/evidence/unknown/c3780bb936161045622f2e0ba6fcab81370b29cb class=UNKNOWN bytes=5
+2026-10-25T10:55:33Z	MOVED	.candidate-efb5	-> .artifacts/evidence/unknown/.candidate-efb5 class=UNKNOWN bytes=22394240
+2026-10-25T10:55:33Z	MOVED	.census-diag-tmp	-> .artifacts/evidence/unknown/.census-diag-tmp class=UNKNOWN bytes=4631987
+2026-10-25T10:55:33Z	MOVED	center-fs-subtool-entry-audit.md	-> .artifacts/evidence/unknown/center-fs-subtool-entry-audit.md class=UNKNOWN bytes=4975
+2026-10-25T10:55:33Z	MOVED	.center-tmp	-> .artifacts/evidence/unknown/.center-tmp class=UNKNOWN bytes=1244171
+2026-10-25T10:55:33Z	MOVED	ci-00743fb85.log	-> .artifacts/evidence/unknown/ci-00743fb85.log class=UNKNOWN bytes=4165
+2026-10-25T10:55:33Z	MOVED	ci-00743fb85-store.log	-> .artifacts/evidence/unknown/ci-00743fb85-store.log class=UNKNOWN bytes=3622
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-contract-candidate	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-contract-candidate class=EVIDENCE bytes=274124
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-family-rules	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-family-rules class=EVIDENCE bytes=73089
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-g5-host-window-b	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-g5-host-window-b class=EVIDENCE bytes=15056
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-g6host	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-g6host class=EVIDENCE bytes=12439
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-image-wiring	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-image-wiring class=EVIDENCE bytes=12445
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-img-r18	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-img-r18 class=EVIDENCE bytes=276520
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-int-incident-2026-10-23	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-int-incident-2026-10-23 class=EVIDENCE bytes=39702858
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-schedule-c2	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-schedule-c2 class=EVIDENCE bytes=201947
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5m2-todo-c2	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-todo-c2 class=EVIDENCE bytes=37992031
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5-parallel-worlds	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5-parallel-worlds class=EVIDENCE bytes=1197996
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/a5-world-safety	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5-world-safety class=EVIDENCE bytes=511706
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle class=EVIDENCE bytes=747437
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/alpha5	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha5 class=EVIDENCE bytes=275676452
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/alpha5-pr1r	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha5-pr1r class=EVIDENCE bytes=24414
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/chromium-sandbox-probe-20261001	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/chromium-sandbox-probe-20261001 class=EVIDENCE bytes=4855
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/COORDINATION.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/COORDINATION.md class=EVIDENCE bytes=6200
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/COORDINATION-tmp	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/COORDINATION-tmp class=EVIDENCE bytes=0
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/dod20-browser-20261001	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/dod20-browser-20261001 class=EVIDENCE bytes=1912294
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/browser-capability-inventory-20261001.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/browser-capability-inventory-20261001.md class=EVIDENCE bytes=7150
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-install-aborted-20261001.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-install-aborted-20261001.md class=EVIDENCE bytes=9117
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-new25-20261001.txt	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-new25-20261001.txt class=EVIDENCE bytes=346
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-sim-20261001.txt	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-sim-20261001.txt class=EVIDENCE bytes=4756
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/chromium-install-probe-20261001.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-install-probe-20261001.md class=EVIDENCE bytes=10805
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/helper-placement-20261001.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/helper-placement-20261001.md class=EVIDENCE bytes=3483
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/landlock-install-acceptance/phase1-facts-20261001.md	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/phase1-facts-20261001.md class=EVIDENCE bytes=21731
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/retired-4tree-evidence-leaf-20261025b	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-4tree-evidence-leaf-20261025b class=EVIDENCE bytes=1847671
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/retired-iso-evidence-leaf-cleanup-20261125	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-iso-evidence-leaf-cleanup-20261125 class=EVIDENCE bytes=748566
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/retired-trees-2026-10-23	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-trees-2026-10-23 class=EVIDENCE bytes=1679493247
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/evidence/system-chrome-sandbox-20261001	-> .artifacts/evidence/root-untracked/dev/agent-workflow/evidence/system-chrome-sandbox-20261001 class=EVIDENCE bytes=37555
+2026-10-25T10:55:33Z	MOVED	dev/agent-workflow/tools/evidence.mjs	-> .artifacts/evidence/unknown/dev/agent-workflow/tools/evidence.mjs class=UNKNOWN bytes=26320
+2026-10-25T10:55:33Z	MOVED	dev-verify-pack	-> .artifacts/evidence/unknown/dev-verify-pack class=UNKNOWN bytes=3648470
+2026-10-25T10:55:33Z	MOVED	.df0	-> .artifacts/evidence/unknown/.df0 class=UNKNOWN bytes=11
+2026-10-25T10:55:33Z	MOVED	docs/memo	-> .artifacts/evidence/unknown/docs/memo class=UNKNOWN bytes=13789
+2026-10-25T10:55:33Z	MOVED	FAIL	-> .artifacts/evidence/unknown/FAIL class=UNKNOWN bytes=104
+2026-10-25T10:55:33Z	MOVED	full-run-final.txt	-> .artifacts/evidence/unknown/full-run-final.txt class=UNKNOWN bytes=189708
+2026-10-25T10:55:33Z	MOVED	.gate	-> .artifacts/evidence/unknown/.gate class=UNKNOWN bytes=533070434
+2026-10-25T10:55:33Z	MOVED	.glob-flake-diag	-> .artifacts/evidence/unknown/.glob-flake-diag class=UNKNOWN bytes=1696479
+2026-10-25T10:55:34Z	MOVED	h10.log	-> .artifacts/evidence/unknown/h10.log class=UNKNOWN bytes=84579
+2026-10-25T10:55:34Z	MOVED	h11.log	-> .artifacts/evidence/unknown/h11.log class=UNKNOWN bytes=84470
+2026-10-25T10:55:34Z	MOVED	h3.log	-> .artifacts/evidence/unknown/h3.log class=UNKNOWN bytes=86944
+2026-10-25T10:55:34Z	MOVED	h4.log	-> .artifacts/evidence/unknown/h4.log class=UNKNOWN bytes=87791
+2026-10-25T10:55:34Z	MOVED	h5.log	-> .artifacts/evidence/unknown/h5.log class=UNKNOWN bytes=84422
+2026-10-25T10:55:34Z	MOVED	h6.log	-> .artifacts/evidence/unknown/h6.log class=UNKNOWN bytes=7441
+2026-10-25T10:55:34Z	MOVED	h7.log	-> .artifacts/evidence/unknown/h7.log class=UNKNOWN bytes=90910
+2026-10-25T10:55:34Z	MOVED	h8_1.log	-> .artifacts/evidence/unknown/h8_1.log class=UNKNOWN bytes=84412
+2026-10-25T10:55:34Z	MOVED	h8_2.log	-> .artifacts/evidence/unknown/h8_2.log class=UNKNOWN bytes=84412
+2026-10-25T10:55:34Z	MOVED	h9.log	-> .artifacts/evidence/unknown/h9.log class=UNKNOWN bytes=84610
+2026-10-25T10:55:34Z	MOVED	handoff-tests2.log	-> .artifacts/evidence/unknown/handoff-tests2.log class=UNKNOWN bytes=83687
+2026-10-25T10:55:34Z	MOVED	handoff-tests.log	-> .artifacts/evidence/unknown/handoff-tests.log class=UNKNOWN bytes=84839
+2026-10-25T10:55:34Z	MOVED	kernel-full2.log	-> .artifacts/evidence/unknown/kernel-full2.log class=UNKNOWN bytes=275790
+2026-10-25T10:55:34Z	MOVED	kernel-full2.summary	-> .artifacts/evidence/unknown/kernel-full2.summary class=UNKNOWN bytes=781
+2026-10-25T10:55:34Z	MOVED	kernel-full.log	-> .artifacts/evidence/unknown/kernel-full.log class=UNKNOWN bytes=277145
+2026-10-25T10:55:34Z	MOVED	kit.diff	-> .artifacts/evidence/unknown/kit.diff class=UNKNOWN bytes=1385
+2026-10-25T10:55:34Z	MOVED	.merge-scratch-g3a	-> .artifacts/evidence/unknown/.merge-scratch-g3a class=UNKNOWN bytes=1905890
+2026-10-25T10:55:34Z	DELETED-SCRATCH	.npm-cache	bytes=124560
+2026-10-25T10:55:34Z	DELETED-SCRATCH	.npm-probe-cache	bytes=545447
+2026-10-25T10:55:34Z	MOVED	p6t3-base.log	-> .artifacts/evidence/unknown/p6t3-base.log class=UNKNOWN bytes=8302
+2026-10-25T10:55:34Z	MOVED	p6t3.log	-> .artifacts/evidence/unknown/p6t3.log class=UNKNOWN bytes=8302
+2026-10-25T10:55:34Z	MOVED	pack2.log	-> .artifacts/evidence/unknown/pack2.log class=UNKNOWN bytes=122143
+2026-10-25T10:55:34Z	MOVED	pack3.log	-> .artifacts/evidence/unknown/pack3.log class=UNKNOWN bytes=122143
+2026-10-25T10:55:34Z	MOVED	pack4.log	-> .artifacts/evidence/unknown/pack4.log class=UNKNOWN bytes=122143
+2026-10-25T10:55:34Z	MOVED	packages-pins	-> .artifacts/evidence/unknown/packages-pins class=UNKNOWN bytes=3770473
+2026-10-25T10:55:34Z	MOVED	pack.log	-> .artifacts/evidence/unknown/pack.log class=UNKNOWN bytes=122143
+2026-10-25T10:55:34Z	MOVED	.plan-msg.txt	-> .artifacts/evidence/unknown/.plan-msg.txt class=UNKNOWN bytes=4427
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.pnpm-store-a5ie-r2b	bytes=562025676
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.probe-plan	bytes=2188
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.probe-plan-tmp	bytes=80438897
+2026-10-25T10:55:35Z	MOVED	rc11b.log	-> .artifacts/evidence/unknown/rc11b.log class=UNKNOWN bytes=3451
+2026-10-25T10:55:35Z	MOVED	recovery	-> .artifacts/evidence/root-untracked/recovery class=RECOVERY bytes=3237070160
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.rt-_0gbddsv	bytes=4060950
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.rt-lcor36qe	bytes=51
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.rt-vrme5k5c	bytes=1866271
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.scratch-logs	bytes=6489200
+2026-10-25T10:55:35Z	MOVED	.selftest.out	-> .artifacts/evidence/unknown/.selftest.out class=UNKNOWN bytes=161
+2026-10-25T10:55:35Z	MOVED	tests/checks	-> .artifacts/evidence/unknown/tests/checks class=UNKNOWN bytes=15388
+2026-10-25T10:55:35Z	MOVED	tests/kits/a5m2-todo-c2	-> .artifacts/evidence/unknown/tests/kits/a5m2-todo-c2 class=UNKNOWN bytes=124254
+2026-10-25T10:55:35Z	MOVED	tests/kits/lib	-> .artifacts/evidence/unknown/tests/kits/lib class=UNKNOWN bytes=9634
+2026-10-25T10:55:35Z	MOVED	tmp	-> .artifacts/evidence/unknown/tmp class=UNKNOWN bytes=40827
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5g1-rev	bytes=1531768
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5g5-readme	bytes=68895
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5g5-rev2	bytes=6663516
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5l1	bytes=1601
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5live-ref	bytes=46927
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5ptc4-preflight	bytes=20
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-a5w4-scratch	bytes=3908
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-all-hits.txt	bytes=101593
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-ccr-body.json	bytes=2297
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-center	bytes=4465
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-commit-msgs	bytes=28052166
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-evidence-tree.txt	bytes=27243
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-f739-grep.txt	bytes=101593
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-homes.txt	bytes=1477
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-pr-files.txt	bytes=27243
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-pr-hits.txt	bytes=3055
+2026-10-25T10:55:35Z	DELETED-SCRATCH	tmp-pr-tree.txt	bytes=27243
+2026-10-25T10:55:35Z	DELETED-SCRATCH	.tmp-publish	bytes=5904
+2026-10-25T10:55:35Z	MOVED	tsc2.log	-> .artifacts/evidence/unknown/tsc2.log class=UNKNOWN bytes=218
+2026-10-25T10:55:35Z	MOVED	.vitest-revfix.json	-> .artifacts/evidence/unknown/.vitest-revfix.json class=UNKNOWN bytes=2401187
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/a5inst-cand-2026-10-21T10-47-02Z	kind=dir action=DELETE
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/.a5inst-cand-store-r20	kind=dir action=DELETE
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/a5lsp2-assembly-2026-10-18T07-49-59-085Z	kind=dir action=DELETE
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/a5lsp2-glue7rev10-2026-10-18T08-05-32-058Z	kind=dir action=DELETE
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/a5lsp2-glue7rev10-2026-10-18T08-05-46-028Z	kind=dir action=DELETE
+2026-10-25T10:55:36Z	DELETED-HOME	tests/homes/a5lsp2-glue7rev10-2026-10-18T08-05-56-254Z	kind=dir action=DELETE
+2026-10-25T10:55:37Z	DELETED-HOME	tests/homes/.a5m2-bf4-fixture-20261023T20-55-19Z	kind=dir action=DELETE
+2026-10-25T10:55:39Z	DELETED-HOME	tests/homes/a5m2-c2-r16-20261023T14-31-50Z	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-c2-r17-20261023T15-03-57Z	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-46-52-075ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-47-12-533ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T09-47-34-238ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-19-10-168ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-24-59-895ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-g5-hw-b-dry-2026-10-24T14-25-34-897ZZ	kind=dir action=DELETE
+2026-10-25T10:55:41Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T17-57-12Z	kind=dir action=DELETE
+2026-10-25T10:55:42Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T18-07-26Z	kind=dir action=DELETE
+2026-10-25T10:55:45Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T21-28-26Z	kind=dir action=DELETE
+2026-10-25T10:55:48Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T21-53-32Z	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T22-35-13Z	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-root-preflight-495-10-28-17Z	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-2026-10-23T23-36-28-733ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-2026-10-23T23-56-16-587ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-2026-10-24T00-05-06-692ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-2026-10-24T00-10-00-152ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-2026-10-24T00-24-45-737ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-48-51-872ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-49-57-827ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-50-53-751ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-51-33-123ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-51-58-962ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-52-13-761ZZ	kind=dir action=DELETE
+2026-10-25T10:55:55Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-52-46-009ZZ	kind=dir action=DELETE
+2026-10-25T10:55:56Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-54-13-589ZZ	kind=dir action=DELETE
+2026-10-25T10:56:00Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-55-18-956ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T23-31-04-740ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T23-31-16-886ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T23-40-05-297ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T23-46-32-519ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-sched-c2-dry-2026-10-23T23-53-36-349ZZ	kind=dir action=DELETE
+2026-10-25T10:56:04Z	DELETED-HOME	tests/homes/a5m2-todo-c2-20261023T09-52-43Z	kind=dir action=DELETE
+2026-10-25T10:56:06Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r10-20261023T12-42-14Z	kind=dir action=DELETE
+2026-10-25T10:56:08Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r11-20261023T12-50-04Z	kind=dir action=DELETE
+2026-10-25T10:56:10Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r12-20261023T13-04-57Z	kind=dir action=DELETE
+2026-10-25T10:56:12Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r13-20261023T13-22-20Z	kind=dir action=DELETE
+2026-10-25T10:56:15Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r14-20261023T14-18-00Z	kind=dir action=DELETE
+2026-10-25T10:56:15Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r4-20261023T10-32-35Z	kind=dir action=DELETE
+2026-10-25T10:56:16Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r5-20261023T10-39-58Z	kind=dir action=DELETE
+2026-10-25T10:56:16Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r6-20261023T10-57-06Z	kind=dir action=DELETE
+2026-10-25T10:56:17Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r7-20261023T11-32-29Z	kind=dir action=DELETE
+2026-10-25T10:56:17Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r8-20261023T12-13-54Z	kind=dir action=DELETE
+2026-10-25T10:56:17Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r9-20261023T12-22-01Z	kind=dir action=DELETE
+2026-10-25T10:56:17Z	DELETED-HOME	tests/homes/a5p4-fdclose-2026-10-17T10-33-13-691Z	kind=dir action=DELETE
+2026-10-25T10:56:17Z	DELETED-HOME	tests/homes/a5p4-poc4-2026-10-17T10-33-13-745Z	kind=dir action=DELETE
+2026-10-25T10:56:18Z	DELETED-HOME	tests/homes/.a5p7-preflight	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/.a5par-shared-249eb65ec	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5par-w1-20261023T15-52-00Z	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5par-w1-20261023T16-47-17Z	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5par-w2-20261023T15-52-00Z	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5par-w2-20261023T16-47-17Z	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5t-seamprobe-2026-10-19	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-124Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-124Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-174Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-174Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-217Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-217Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-259Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-259Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-296Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-26-296Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-301Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-301Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-499Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-499Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-581Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-35-581Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-623Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-623Z-home	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-659Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:20Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-659Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-696Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-696Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-732Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-732Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-769Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-769Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-806Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-806Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-857Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-857Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-933Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-933Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-972Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-43-972Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-008Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-008Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-044Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-044Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-080Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-080Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-116Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-116Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-117Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-117Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-123Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-123Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-125Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-58-44-125Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-06-966Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-06-966Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-265Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-265Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-557Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-557Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-748Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-748Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-787Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-07-787Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-16-794Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-16-794Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-16-993Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-16-993Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-17-072Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-17-072Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-339Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-339Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-377Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-377Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-413Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-413Z-home	kind=dir action=DELETE
+2026-10-25T10:56:21Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-449Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-449Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-486Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-486Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-524Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-524Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-575Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-575Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-649Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-649Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-691Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-691Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-728Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-728Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-765Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-765Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-801Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-801Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-835Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-835Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-836Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-836Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-842Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-842Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-844Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T12-59-25-844Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-031Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-031Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-332Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-332Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-622Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-622Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-815Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-815Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-854Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-02-854Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-11-860Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-11-860Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-12-058Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-12-058Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-12-172Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-12-172Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-463Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-463Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-503Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-503Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-540Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-540Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-575Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-575Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-612Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-612Z-home	kind=dir action=DELETE
+2026-10-25T10:56:22Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-648Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-648Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-700Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-700Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-779Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-779Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-818Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-818Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-854Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-854Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-890Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-890Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-926Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-926Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-962Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-962Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-968Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-968Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-971Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-20-971Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-024Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-024Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-325Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-325Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-615Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-615Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-808Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-808Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-845Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-24-845Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-33-852Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-33-852Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-34-051Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-34-051Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-34-164Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-34-164Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-458Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-458Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-496Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-496Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-534Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-534Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-569Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-569Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-607Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-607Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-644Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-644Z-home	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-696Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:23Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-696Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-775Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-775Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-816Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-816Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-851Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-851Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-886Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-886Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-923Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-923Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-961Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-961Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-967Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-967Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-969Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-00-42-969Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-357Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-357Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-660Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-660Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-952Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-06-952Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-07-145Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-07-145Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-07-181Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-07-181Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-186Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-186Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-383Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-383Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-494Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-16-494Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-804Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-804Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-845Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-845Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-879Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-879Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-914Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-914Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-950Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-950Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-986Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-24-986Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-040Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-040Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-114Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-114Z-home	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-156Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:24Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-156Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-191Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-191Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-227Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-227Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-264Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-264Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-299Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-299Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-306Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-306Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-308Z-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-25-308Z-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-46-545Z-15-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-46-545Z-15-1-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-46-850Z-15-2-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-46-850Z-15-2-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-143Z-15-3-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-143Z-15-3-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-334Z-15-4-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-334Z-15-4-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-371Z-15-5-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-47-371Z-15-5-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-378Z-15-6-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-378Z-15-6-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-575Z-15-7-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-575Z-15-7-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-667Z-15-8-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-01-56-667Z-15-8-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-04-963Z-15-9-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-04-963Z-15-9-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-002Z-15-10-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-002Z-15-10-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-037Z-15-11-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-037Z-15-11-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-073Z-15-12-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-073Z-15-12-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-108Z-15-13-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-108Z-15-13-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-143Z-15-14-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-143Z-15-14-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-196Z-15-15-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-196Z-15-15-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-270Z-15-16-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-270Z-15-16-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-309Z-15-17-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-309Z-15-17-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-345Z-15-18-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-345Z-15-18-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-380Z-15-19-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-380Z-15-19-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-417Z-15-20-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-417Z-15-20-home	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-455Z-15-21-dsh	kind=dir action=DELETE
+2026-10-25T10:56:25Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-455Z-15-21-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-455Z-15-22-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-455Z-15-22-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-461Z-15-24-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-461Z-15-24-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-463Z-15-25-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-05-463Z-15-25-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-173Z-4-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-173Z-4-1-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-472Z-4-2-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-472Z-4-2-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-766Z-4-3-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-766Z-4-3-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-958Z-4-4-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-958Z-4-4-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-998Z-4-5-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-12-998Z-4-5-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-22-193Z-4-7-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-22-193Z-4-7-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-22-288Z-4-8-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-22-288Z-4-8-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-584Z-4-9-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-584Z-4-9-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-621Z-4-10-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-621Z-4-10-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-656Z-4-11-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-656Z-4-11-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-693Z-4-12-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-693Z-4-12-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-728Z-4-13-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-728Z-4-13-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-765Z-4-14-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-765Z-4-14-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-816Z-4-15-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-816Z-4-15-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-894Z-4-16-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-894Z-4-16-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-934Z-4-17-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-934Z-4-17-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-970Z-4-18-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-30-970Z-4-18-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-008Z-4-19-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-008Z-4-19-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-046Z-4-20-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-046Z-4-20-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-082Z-4-21-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-082Z-4-21-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-083Z-4-22-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-083Z-4-22-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-089Z-4-24-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-089Z-4-24-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-091Z-4-25-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-091Z-4-25-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-510Z-168-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-510Z-168-1-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-807Z-168-2-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-31-807Z-168-2-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-101Z-168-3-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-101Z-168-3-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-294Z-168-4-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-294Z-168-4-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-333Z-168-5-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-32-333Z-168-5-home	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-337Z-168-6-dsh	kind=dir action=DELETE
+2026-10-25T10:56:26Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-337Z-168-6-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-532Z-168-7-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-532Z-168-7-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-626Z-168-8-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-41-626Z-168-8-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-284Z-4-6-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-284Z-4-6-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-921Z-168-9-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-921Z-168-9-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-959Z-168-10-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-959Z-168-10-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-998Z-168-11-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-49-998Z-168-11-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-037Z-168-12-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-037Z-168-12-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-076Z-168-13-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-076Z-168-13-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-119Z-168-14-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-119Z-168-14-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-172Z-168-15-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-172Z-168-15-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-245Z-168-16-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-245Z-168-16-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-288Z-168-17-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-288Z-168-17-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-323Z-168-18-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-323Z-168-18-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-360Z-168-19-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-360Z-168-19-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-397Z-168-20-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-397Z-168-20-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-433Z-168-21-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-433Z-168-21-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-433Z-168-22-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-433Z-168-22-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-439Z-168-24-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-439Z-168-24-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-442Z-168-25-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-50-442Z-168-25-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-53-990Z-3-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-53-990Z-3-1-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-288Z-3-2-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-288Z-3-2-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-580Z-3-3-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-580Z-3-3-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-774Z-3-4-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-774Z-3-4-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-812Z-3-5-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-02-54-812Z-3-5-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-03-818Z-3-6-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-03-818Z-3-6-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-04-014Z-3-7-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-04-014Z-3-7-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-04-107Z-3-8-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-04-107Z-3-8-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-402Z-3-9-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-402Z-3-9-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-440Z-3-10-dsh	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-440Z-3-10-home	kind=dir action=DELETE
+2026-10-25T10:56:27Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-476Z-3-11-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-476Z-3-11-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-513Z-3-12-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-513Z-3-12-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-551Z-3-13-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-551Z-3-13-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-588Z-3-14-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-588Z-3-14-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-640Z-3-15-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-640Z-3-15-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-713Z-3-16-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-713Z-3-16-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-757Z-3-17-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-757Z-3-17-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-793Z-3-18-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-793Z-3-18-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-829Z-3-19-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-829Z-3-19-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-865Z-3-20-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-865Z-3-20-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-901Z-3-21-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-901Z-3-21-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-901Z-3-22-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-901Z-3-22-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-908Z-3-24-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-908Z-3-24-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-910Z-3-25-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a5w5-2026-10-21T13-03-12-910Z-3-25-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T13-44-53-541Z-5-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T13-44-53-541Z-5-1-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T14-53-08-240Z-11-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T14-53-08-240Z-11-1-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T16-25-09-790Z-381-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T16-25-09-790Z-381-1-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T18-09-56-939Z-6-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T18-09-56-939Z-6-1-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T18-55-02-111Z-6-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T18-55-02-111Z-6-1-home	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T23-25-35-896Z-11-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:28Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T23-25-35-896Z-11-1-home	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T23-47-04-797Z-12-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/a6w6-2026-10-21T23-47-04-797Z-12-1-home	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/a6w6-2026-10-22T00-12-23-023Z-12-1-dsh	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/a6w6-2026-10-22T00-12-23-023Z-12-1-home	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/.dod20-private-2026-10-01T17-32-33	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/mpr-2026-10-01T13-08-04	kind=dir action=DELETE
+2026-10-25T10:56:29Z	DELETED-HOME	tests/homes/mpr-2026-10-01T13-21-34	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/.pnpmm-r18-store	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/.pnr18-home	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/prb-ep-2026-10-01T13-22-22	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/prb-ep-2026-10-01T13-52-56	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/reviewb-rgsem-NrPx	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-derive-probe-20261001T135123Z	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-derive-probe-empty-20261001T135123Z	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/.tvs-dod20-2026-10-01T15-13-44	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T14-04-27	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T14-09-38	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T14-10-28	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T15-15-02	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T15-30-21	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T17-32-57	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T17-43-13	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T18-18-15	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-01T18-36-13	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-03T19-03-23	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-03T19-05-03	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-03T19-14-02	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-03T19-14-35	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-04T09-47-43	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-04T10-23-09	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-04T11-02-23	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-05T14-45-46	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-05T18-50-48	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/tvs-smoke-2026-10-06T04-33-40	kind=dir action=DELETE
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-c2-r16-20261023T14-31-50Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-c2-r17-20261023T15-03-57Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T18-07-26Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T21-28-26Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T21-53-32Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-img-r18-20261023T22-35-13Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-todo-c2-20261023T09-52-43Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r10-20261023T12-42-14Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r11-20261023T12-50-04Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:30Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r12-20261023T13-04-57Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r13-20261023T13-22-20Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r14-20261023T14-18-00Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r4-20261023T10-32-35Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r5-20261023T10-39-58Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r6-20261023T10-57-06Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r7-20261023T11-32-29Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r8-20261023T12-13-54Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DELETED-HOME	tests/homes/a5m2-todo-c2-r9-20261023T12-22-01Z.lock	kind=lock action=DELETE-LOCK
+2026-10-25T10:56:31Z	DF-AFTER	-	/dev/mapper/ubuntu--vg-ubuntu--lv 114865901568 50209226752 59325313024
+2026-10-25T10:56:31Z	END	mode=execute	log=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence/cleanup-log-20261025T105152Z.tsv

@@ -1,0 +1,6 @@
+FAIL P0 legal explicit candidate: binding recorded, dual-read compared=6, no DUAL_READ blocking: Unexpected token 'R', "REFUSED UN"... is not valid JSON
+FAIL P1 old/new divergence: named DUAL_READ blocking, exit 1, candidate kept (no auto source switch): Unexpected token 'R', "REFUSED UN"... is not valid JSON
+PASS P2 missing one of path/digest and empty values: structured refusal, no legacy fallback
+FAIL P3 corrupt candidate: named DUAL_READ/CANDIDATE blocking, no fallback view from graph: Unexpected token 'R', "REFUSED UN"... is not valid JSON
+PASS P4 default mode CLI byte-identical to fixed parent 09fd39464 closure (same fixture, same flags)
+RED (3/5 failing)

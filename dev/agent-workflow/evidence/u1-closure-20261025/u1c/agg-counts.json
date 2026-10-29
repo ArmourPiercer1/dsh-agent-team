@@ -1,0 +1,31 @@
+{
+  "seedRecords": 93,
+  "seedUniqueNames": 90,
+  "seedSurfaceObligations": 4,
+  "seedUniqueNonSurface": 86,
+  "hostRegistrationSites": 75,
+  "hostStaticUniqueNames": 69,
+  "hostCatalogNames": 66,
+  "teamDeclaredNames": 18,
+  "diffCounts": {
+    "PRESENT_HOST": 68,
+    "PRESENT_TEAM": 18,
+    "PRESENT_HOST_AND_TEAM": 0,
+    "ABSENT": 1,
+    "OBLIGATION": 3,
+    "RENAMED": 0
+  },
+  "newNames": 1,
+  "reservedTable": {
+    "size": 68,
+    "missingVsHostStatic": [
+      "structured_output"
+    ],
+    "extraVsHostStatic": [],
+    "extraVsCatalog": [
+      "subagent_codex",
+      "subagent_claude_code"
+    ]
+  },
+  "assertionProblems": []
+}

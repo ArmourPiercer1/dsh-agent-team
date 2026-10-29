@@ -1,0 +1,24 @@
+{"at":"2026-10-24T22:27:26.027Z","step":"preflight","status":"ok","detail":{"check":"port-sanctioned","ok":true},"budget_left_ms":1799905}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"htu-rev-parse-equals-pin","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"htu-status-porcelain-empty","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"htu-entry-exists","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"htu-tools-lib-exists","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"bin-echo-exists","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"host-port-free-per-proc-net","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.028Z","step":"preflight","status":"ok","detail":{"check":"mock-copy-matches-4aaaa-blob","ok":true},"budget_left_ms":1799904}
+{"at":"2026-10-24T22:27:26.029Z","step":"world-skeleton","status":"ok","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/s1-h0-m1-20261024T222400Z"},"budget_left_ms":1799903}
+{"at":"2026-10-24T22:27:26.029Z","step":"mount-rows","status":"ok","detail":{"patchFile":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/s1-h0-m1-20261024T222400Z/profiles/web/cordis.patch.yml"},"budget_left_ms":1799903}
+{"at":"2026-10-24T22:27:26.029Z","step":"env-scrub","status":"ok","detail":{"removed_keys":[]},"budget_left_ms":1799903}
+{"at":"2026-10-24T22:27:26.037Z","step":"mock","status":"info","detail":"mock: listening on 127.0.0.1:35867","budget_left_ms":1799895}
+{"at":"2026-10-24T22:27:26.037Z","step":"mock-listen","status":"ok","detail":{"port":35867},"budget_left_ms":1799895}
+{"at":"2026-10-24T22:27:28.044Z","step":"host-boot","status":"ok","detail":{"log":"/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m1/runs/s1-h0-m1-20261024T222400Z/instance-port3180.log","token_fingerprint":"569e6bce"},"budget_left_ms":1797888}
+{"at":"2026-10-24T22:27:28.067Z","step":"token-gate","status":"ok","detail":{"status":401},"budget_left_ms":1797865}
+{"at":"2026-10-24T22:27:28.071Z","step":"authenticate","status":"ok","budget_left_ms":1797861}
+{"at":"2026-10-24T22:27:28.106Z","step":"session-create","status":"ok","detail":{"status":200,"body":"{\"type\":\"server-response\",\"rpcId\":\"s1m1-fcl1zjarex\",\"result\":{\"ok\":true,\"value\":{\"sessionId\":\"session-ec8975a5-6f8f-41f6-95d1-508f812fd845\",\"agentPreset\":\"standard\"}}}"},"budget_left_ms":1797826}
+{"at":"2026-10-24T22:27:28.124Z","step":"prompt","status":"ok","detail":{"status":200,"body":"{\"type\":\"server-response\",\"rpcId\":\"s1m1-12u1cncaow\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"},"budget_left_ms":1797808}
+{"at":"2026-10-24T22:30:28.470Z","step":"run","status":"fail","detail":{"error":"TIMEOUT: tool call/result terminal state not observed","stack":"Error: TIMEOUT: tool call/result terminal state not observed |     at runOnce (file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m1/m1-run.mjs:443:65) |     at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/s1-h0-m1/m1-run.mjs:537:20)"},"budget_left_ms":1617462}
+{"at":"2026-10-24T22:30:28.662Z","step":"teardown-host","status":"ok","detail":{"killed":true,"portFree":true},"budget_left_ms":1617270}
+{"at":"2026-10-24T22:30:28.663Z","step":"teardown-mock","status":"ok","budget_left_ms":1617269}
+{"at":"2026-10-24T22:30:28.663Z","step":"redact-log","status":"ok","budget_left_ms":1617269}
+{"at":"2026-10-24T22:30:28.664Z","step":"port-recheck","status":"ok","detail":{"port":3180,"in_use":{}},"budget_left_ms":1617268}
+{"at":"2026-10-24T22:30:28.664Z","step":"world-kept","status":"info","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/s1-h0-m1-20261024T222400Z","note":"deletion forbidden (root pause)"},"budget_left_ms":1617268}

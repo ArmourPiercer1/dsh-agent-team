@@ -1,0 +1,144 @@
+{
+  "pin": ".worktrees/u1-audit-master @ 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (read-only)",
+  "note": "createTeamTools set + DEFAULT_PLANE_NAMES + DORMANT a5p5 lane + MCP binding rule; lines re-verified",
+  "tools": [
+    {
+      "name": "team_list_members",
+      "file": "packages/tools/src/tools.ts",
+      "line": 498,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_list_templates",
+      "file": "packages/tools/src/tools.ts",
+      "line": 520,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_inspect_config",
+      "file": "packages/tools/src/tools.ts",
+      "line": 542,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_create_member",
+      "file": "packages/tools/src/tools.ts",
+      "line": 572,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_delegate",
+      "file": "packages/tools/src/tools.ts",
+      "line": 614,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_follow_up",
+      "file": "packages/tools/src/tools.ts",
+      "line": 710,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_collect",
+      "file": "packages/tools/src/tools.ts",
+      "line": 772,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_send_message",
+      "file": "packages/tools/src/tools.ts",
+      "line": 817,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_report_progress",
+      "file": "packages/tools/src/tools.ts",
+      "line": 856,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_request_control",
+      "file": "packages/tools/src/tools.ts",
+      "line": 960,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_resolve_control",
+      "file": "packages/tools/src/tools.ts",
+      "line": 1017,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_list_pending_control",
+      "file": "packages/tools/src/tools.ts",
+      "line": 1119,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_archive_member",
+      "file": "packages/tools/src/tools.ts",
+      "line": 1197,
+      "kind": "leader-team-tool (ToolSpec via createTeamTools, tools.ts:1524; consumed packages/runtime/src/plugin/root.ts:3919)"
+    },
+    {
+      "name": "team_grant_permission",
+      "file": "packages/tools/src/tools.ts",
+      "line": 1373,
+      "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1539 inside createTeamTools tools.ts:1524)"
+    },
+    {
+      "name": "team_revoke_permission",
+      "file": "packages/tools/src/tools.ts",
+      "line": 1373,
+      "kind": "leader-team-tool (name selected in permissionSpec(verb), tools.ts:1373; spec called at tools.ts:1540 inside createTeamTools tools.ts:1524)"
+    },
+    {
+      "name": "team_grep",
+      "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "line": 84,
+      "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+    },
+    {
+      "name": "team_glob",
+      "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "line": 84,
+      "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+    },
+    {
+      "name": "team_bash",
+      "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "line": 84,
+      "kind": "plane-takeover-name (DEFAULT_PLANE_NAMES replaces native grep/glob/bash spellings for governed plane tools)"
+    },
+    {
+      "name": "grep",
+      "file": "packages/tools/a5p5-tools/src/register.ts",
+      "line": 275,
+      "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+    },
+    {
+      "name": "glob",
+      "file": "packages/tools/a5p5-tools/src/register.ts",
+      "line": 281,
+      "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+    },
+    {
+      "name": "bash",
+      "file": "packages/tools/a5p5-tools/src/register.ts",
+      "line": 287,
+      "kind": "DORMANT-lane-tool (a5p5 lane registers native spelling or plane-name override; NOT wired: index.ts:12-13 \"DORMANT: nothing registers\"; A5P5_TOOL_NAMES a5p5-tools/src/types.ts:44)"
+    }
+  ],
+  "dynamicSourceClasses": [
+    {
+      "class": "mcp__<server>__<tool>",
+      "rule": "team-side MCP binding name rule: prefix `mcp__${serverName}__` (bindMcpTools); the mcp__ family NEVER inherits dsh-native guard trust",
+      "files": [
+        "packages/runtime/src/plugin/live/agent-bindings.mjs:1567 (prefix build)",
+        "packages/runtime/src/plugin/live/agent-bindings.mjs:723 (trust exclusion)",
+        "packages/runtime/src/plugin/live/team-tool-plane.mjs:464 (PLANE_RESERVED_NATIVE_PREFIXES = [\"mcp__\"])"
+      ],
+      "note": "dynamic source class; individual MCP names NOT enumerated"
+    }
+  ]
+}

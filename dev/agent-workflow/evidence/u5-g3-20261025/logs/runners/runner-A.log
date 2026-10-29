@@ -1,0 +1,3 @@
+U5-IN-RUN u5pa-20261025T13-50-33Z /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5pa-20261025T13-50-33Z 110
+[core-restart] RUN CONTROL: owned child stopped (pid=315)
+RUN-SUMMARY run=u5-core-restart-pa-2026-10-25T13-50-33-327Z suite=core-restart overall=PASS cases=8 PASS:8 worlds=u5pa-20261025T13-50-33Z

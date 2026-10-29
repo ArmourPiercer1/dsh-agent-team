@@ -1,0 +1,27 @@
+2026-10-25T10:50:06Z	BEGIN	mode=execute	plan=/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u3-local-cleanup-plan-20261025
+2026-10-25T10:50:06Z	DF-BEFORE	-	/dev/mapper/ubuntu--vg-ubuntu--lv 114865901568 65838551040 43695988736
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-cancel-leg	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-docs-realign	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-inventory	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-jobs-iso-96e-pinned	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-jobs-iso-f739-scan	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-jobs-iso-int	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-jobs-iso-int2	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-jobs-isolation	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-legs-runner	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-lsp-keyfix	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m0-contract	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m0-docs-pr	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m1-auth-bridge	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m1-facts-seam	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m1-fixture	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m1-flaky	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-m2-auth-vocab	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-mcp-binding	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5-read-slice	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5m2-bmcp	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5m2-bsearch-team	directory already absent
+2026-10-25T10:50:06Z	SKIP-WT	.worktrees/a5m2-checkinstall	directory already absent
+2026-10-25T10:50:07Z	SKIP-WT	.worktrees/a5m2-g1asm	directory already absent
+ABORT	dir sha mismatch after copy	.worktrees/a5m2-imgverify/.pinbuild-verify/
+2026-10-25T10:50:31Z	ABORT	dir sha mismatch after copy	.worktrees/a5m2-imgverify/.pinbuild-verify/

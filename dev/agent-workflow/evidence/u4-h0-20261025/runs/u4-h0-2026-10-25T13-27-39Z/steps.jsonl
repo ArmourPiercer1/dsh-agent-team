@@ -1,0 +1,37 @@
+{"at":"2026-10-25T13:27:39.644Z","step":"preflight","status":"ok","detail":{"check":"port-sanctioned","ok":true,"detail":"3184"},"budget_left_ms":1799798}
+{"at":"2026-10-25T13:27:39.644Z","step":"preflight","status":"ok","detail":{"check":"port-free-per-proc-net","ok":true,"detail":"3184"},"budget_left_ms":1799798}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"htu-rev-parse-equals-pin","ok":true,"detail":"639ed0153972"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"htu-status-porcelain-empty","ok":true,"detail":""},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"htu-entry-exists","ok":true,"detail":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"bin-echo-exists","ok":true,"detail":"/bin/echo"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"mock-copy-bytes","ok":true,"detail":"8beade69588c"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"plugin-exists","ok":true,"detail":"u4h0-probe-plugin.mjs"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:m1-run.mjs","ok":true,"detail":"4542782e71d2"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:probe-plugin.mjs","ok":true,"detail":"c883ac3f80ef"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:m2-run.mjs","ok":true,"detail":"ef2bf20f30c1"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"preflight","status":"ok","detail":{"check":"sealed-unchanged:probe-m2-plugin.mjs","ok":true,"detail":"03d36a895cea"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.645Z","step":"world-skeleton","status":"ok","detail":{"world":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/u4-h0-2026-10-25T13-27-39Z"},"budget_left_ms":1799797}
+{"at":"2026-10-25T13:27:39.646Z","step":"patch","status":"ok","detail":{"sha256":"dcdb2bd00b86c6aaebe8e52d9f4c7613c882e23e1993fa145e1c754ec9bd79ff"},"budget_left_ms":1799796}
+{"at":"2026-10-25T13:27:39.646Z","step":"env-scrub","status":"ok","detail":{"removed_keys":[]},"budget_left_ms":1799796}
+{"at":"2026-10-25T13:27:39.653Z","step":"mock","status":"info","detail":"mock: listening on 127.0.0.1:38681","budget_left_ms":1799789}
+{"at":"2026-10-25T13:27:39.653Z","step":"mock-listen","status":"ok","detail":{"port":38681},"budget_left_ms":1799789}
+{"at":"2026-10-25T13:27:41.409Z","step":"host-boot","status":"ok","detail":{"owned_pid":54,"token_fingerprint":"26f002a1"},"budget_left_ms":1798033}
+{"at":"2026-10-25T13:27:41.409Z","step":"plugin-activation","status":"ok","detail":{"activated":true,"importFailed":false},"budget_left_ms":1798033}
+{"at":"2026-10-25T13:27:41.431Z","step":"token-gate","status":"ok","detail":{"status":401},"budget_left_ms":1798011}
+{"at":"2026-10-25T13:27:41.435Z","step":"authenticate","status":"ok","budget_left_ms":1798007}
+{"at":"2026-10-25T13:27:41.474Z","step":"session-create","status":"ok","budget_left_ms":1797968}
+{"at":"2026-10-25T13:27:41.491Z","step":"prompt","status":"ok","detail":{"group":"G1","status":200},"budget_left_ms":1797951}
+{"at":"2026-10-25T13:27:41.618Z","step":"mock","status":"info","detail":"mock: 1 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797824}
+{"at":"2026-10-25T13:27:41.619Z","step":"mock","status":"info","detail":"mock: 2 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797823}
+{"at":"2026-10-25T13:27:42.306Z","step":"mock","status":"info","detail":"mock: 3 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797136}
+{"at":"2026-10-25T13:27:42.332Z","step":"mock","status":"info","detail":"mock: 4 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797110}
+{"at":"2026-10-25T13:27:42.359Z","step":"mock","status":"info","detail":"mock: 5 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797083}
+{"at":"2026-10-25T13:27:42.384Z","step":"mock","status":"info","detail":"mock: 6 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797058}
+{"at":"2026-10-25T13:27:42.413Z","step":"mock","status":"info","detail":"mock: 7 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797029}
+{"at":"2026-10-25T13:27:42.436Z","step":"mock","status":"info","detail":"mock: 8 [messages] tool-call reply: u4h0_ctl","budget_left_ms":1797006}
+{"at":"2026-10-25T13:27:42.459Z","step":"mock","status":"info","detail":"mock: 9 [messages] text reply (44 chars): \"u4-circuit-break entry=t01 repeat=9 issues=9\"","budget_left_ms":1796983}
+{"at":"2026-10-25T13:30:16.083Z","step":"group","status":"fail","detail":{"group":"G1","settled":false},"budget_left_ms":1643359}
+{"at":"2026-10-25T13:30:16.084Z","step":"run","status":"fail","detail":{"error":"group G1 not settled within bound"},"budget_left_ms":1643358}
+{"at":"2026-10-25T13:29:48.293Z","step":"teardown-host","status":"ok","detail":{"killed":true,"portFree":true},"budget_left_ms":1671149}
+{"at":"2026-10-25T13:29:48.294Z","step":"teardown-mock","status":"ok","budget_left_ms":1671148}
+{"at":"2026-10-25T13:29:48.391Z","step":"post-check-htu","status":"ok","detail":{"head":"639ed0153972","porcelain":""},"budget_left_ms":1671051}

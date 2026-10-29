@@ -1,0 +1,39 @@
+{
+ "listening_ports_of_interest": {
+  "watched": "3080, 3180-3186, 3491-3500",
+  "found": [
+   {
+    "addr": "127.0.0.1",
+    "port": 3080,
+    "process": null
+   }
+  ],
+  "none_listening_note": "only 3080 (stable dev instance \u2014 not touched) found; no test-port listeners"
+ },
+ "ss_process_column_note": "ss -ltnp showed no process/owner info in this sandbox (process table not visible); NOT_OBSERVED for owner PIDs",
+ "node_dsh_processes": {
+  "observed": [],
+  "note": "ps in sandbox sees only 4 processes (own namespace); host node/dsh processes NOT_OBSERVED"
+ },
+ "df_repo_filesystem": "Filesystem                           1B-blocks        Used   Available Use% Mounted on\n/dev/mapper/ubuntu--vg-ubuntu--lv 114865901568 76988420096 32546119680  71% /srv/workspace/dsh-plugins/dsh-agent-team\n",
+ "du_totals_bytes": {
+  ".worktrees": 29398280966,
+  "recovery": 3237070160,
+  "dev/agent-workflow/evidence": 7764530055,
+  ".git": 776767576,
+  "tests/homes": {
+   "per_dir_sum": 9797048638,
+   "tree_du_partial": 3744809488,
+   "note": "tree du -sb tests/homes exits 1: Permission denied on reviewb-rgsem-NrPx/locked"
+  },
+  ".worktrees_root_check": 29398280966
+ },
+ "host_pin": {
+  "TEST_USE_BASELINE_SHA": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+  "CLIENT_COMMIT_HASH": "46a7f68b09",
+  "tests/deepseek-harness-test_USE_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "test_use_porcelain_count": 0,
+  "pin_matches_head": false,
+  "note": "test-use checkout HEAD 639ed015397 (merge PR #5479 release dsh-0.2.0-rc.2) != pinned baseline 46a7f68b09 (0.1.7-rc.1); baseline is an ancestor of HEAD (git merge-base --is-ancestor OK); porcelain empty"
+ }
+}

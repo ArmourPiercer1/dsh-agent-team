@@ -1,0 +1,621 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-shadow-y-2026-10-25T15-45-08-219Z",
+  "suite": "u6-shadow",
+  "startedAt": "2026-10-25T15:45:08.324Z",
+  "selectedCases": [
+    "off:token-gate",
+    "off:positive-control",
+    "off:error-return-with-effect",
+    "off:planted-defect-detected",
+    "off:oracle-blinding-divergence",
+    "off:leak-check",
+    "shd:token-gate",
+    "shd:mounted",
+    "shd:positive-control",
+    "shd:error-return-with-effect",
+    "shd:planted-defect-detected",
+    "shd:oracle-blinding-divergence",
+    "shd:leak-check",
+    "shadow-parity-ledger",
+    "shadow-verdicts-observed"
+  ],
+  "bindings": {
+    "teamSha": "0178adb689b7033138b3b1d0fbc6550524b05e39",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+        "snapshot_version": "as20261025r1"
+      },
+      "pointerSha256": "5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee",
+      "snapshotDigest": "19b644b09af6026206137c10c86557562d5d62b871e7be5675af8d150df72391"
+    },
+    "canaryPluginSha256": "ffc17e7f2b435ade204de628d28b06ff45191684a56fb523eb76c8da992c696d",
+    "worldIds": [
+      "u5yoff-20261025T15-45-08Z",
+      "u5yshd-20261025T15-45-11Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "off:token-gate",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:10.119Z",
+      "status": 401
+    },
+    {
+      "id": "off:positive-control",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:10.578Z",
+      "tag": "pos-u6px",
+      "promptStatus": 200,
+      "promptBodyHead": "{\"type\":\"server-response\",\"rpcId\":\"u5u6px-rk23p9zdt1\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+      "toolCallIssued": true,
+      "resultRoundTripped": true,
+      "resultErrored": false,
+      "effect": {
+        "effect": true,
+        "basis": [
+          "marker",
+          "ledger:body-ran",
+          "processes:host-alive"
+        ],
+        "marker": true,
+        "bodyRan": true
+      },
+      "observation": {
+        "markerFiles": [
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "waitedMs": 1
+    },
+    {
+      "id": "off:error-return-with-effect",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:11.000Z",
+      "tag": "err-u6px",
+      "oracleReportedEffectDespiteError": true,
+      "resultErrored": true,
+      "resultTextHead": "[{\"type\":\"text\",\"text\":\"Error: U5_CANARY_FORCED_ERROR tag=err-u6px\"}]",
+      "observation": {
+        "markerFiles": [
+          "err-u6px.marker",
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      }
+    },
+    {
+      "id": "off:planted-defect-detected",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:11.410Z",
+      "tag": "def-u6px",
+      "toolClaimedRan": true,
+      "soundOracleEffect": false,
+      "note": "defect mode lies (ran:true, writes nothing); a sound Oracle must report NO effect — a PASS here IS the fault-planting RED",
+      "observation": {
+        "markerFiles": [
+          "err-u6px.marker",
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "return-only"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "resultWaitedMs": 1
+    },
+    {
+      "id": "off:oracle-blinding-divergence",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:11.410Z",
+      "soundEffect": false,
+      "blindedEffect": true,
+      "note": "the ignore-marker Oracle variant turns the planted defect GREEN — proving the sound Oracle is what catches it (fault-planting sensitivity)"
+    },
+    {
+      "id": "off:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:11.520Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": null,
+      "notes": []
+    },
+    {
+      "id": "shd:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:13.278Z",
+      "waitedMs": 0,
+      "rows": [
+        {
+          "leg": "shadow-installed",
+          "published": true,
+          "state": "ACTIVE",
+          "generation": 0
+        },
+        {
+          "leg": "center-mounted",
+          "row": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs"
+        }
+      ]
+    },
+    {
+      "id": "shd:token-gate",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:13.286Z",
+      "status": 401
+    },
+    {
+      "id": "shd:positive-control",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:13.739Z",
+      "tag": "pos-u6px",
+      "promptStatus": 200,
+      "promptBodyHead": "{\"type\":\"server-response\",\"rpcId\":\"u5u6px-la5qs9dipw\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+      "toolCallIssued": true,
+      "resultRoundTripped": true,
+      "resultErrored": false,
+      "effect": {
+        "effect": true,
+        "basis": [
+          "marker",
+          "ledger:body-ran",
+          "processes:host-alive"
+        ],
+        "marker": true,
+        "bodyRan": true
+      },
+      "observation": {
+        "markerFiles": [
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "waitedMs": 0
+    },
+    {
+      "id": "shd:error-return-with-effect",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.161Z",
+      "tag": "err-u6px",
+      "oracleReportedEffectDespiteError": true,
+      "resultErrored": true,
+      "resultTextHead": "[{\"type\":\"text\",\"text\":\"Error: U5_CANARY_FORCED_ERROR tag=err-u6px\"}]",
+      "observation": {
+        "markerFiles": [
+          "err-u6px.marker",
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      }
+    },
+    {
+      "id": "shd:planted-defect-detected",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.583Z",
+      "tag": "def-u6px",
+      "toolClaimedRan": true,
+      "soundOracleEffect": false,
+      "note": "defect mode lies (ran:true, writes nothing); a sound Oracle must report NO effect — a PASS here IS the fault-planting RED",
+      "observation": {
+        "markerFiles": [
+          "err-u6px.marker",
+          "pos-u6px.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "return-only"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "resultWaitedMs": 0
+    },
+    {
+      "id": "shd:oracle-blinding-divergence",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.583Z",
+      "soundEffect": false,
+      "blindedEffect": true,
+      "note": "the ignore-marker Oracle variant turns the planted defect GREEN — proving the sound Oracle is what catches it (fault-planting sensitivity)"
+    },
+    {
+      "id": "shd:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.692Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": null,
+      "notes": []
+    },
+    {
+      "id": "shadow-parity-ledger",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.692Z",
+      "canaryLedgerShaOff": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+      "canaryLedgerShaShadow": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+      "ledgerParity": true,
+      "caseParity": true,
+      "effectParity": true,
+      "markersParity": true,
+      "markerFiles": [
+        "err-u6px.marker",
+        "pos-u6px.marker"
+      ],
+      "offEffects": {
+        "positive-control": {
+          "effect": true,
+          "roundTripped": true,
+          "resultErrored": false
+        },
+        "error-return-with-effect": {
+          "effect": true,
+          "resultErrored": true,
+          "roundTripped": true
+        },
+        "planted-defect-detected": {
+          "toolClaimedRan": true,
+          "soundOracleEffect": false,
+          "blindedOracleEffect": true
+        }
+      },
+      "shadowEffects": {
+        "positive-control": {
+          "effect": true,
+          "roundTripped": true,
+          "resultErrored": false
+        },
+        "error-return-with-effect": {
+          "effect": true,
+          "resultErrored": true,
+          "roundTripped": true
+        },
+        "planted-defect-detected": {
+          "toolClaimedRan": true,
+          "soundOracleEffect": false,
+          "blindedOracleEffect": true
+        }
+      },
+      "note": "normalization: canary rows minus at/world (fixed nonce); marker NAMES not bytes; oracle channels independent of tool returns"
+    },
+    {
+      "id": "shadow-verdicts-observed",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.692Z",
+      "mounted": true,
+      "offInert": true,
+      "canaryVerdictCount": 3,
+      "verdictOutcomes": [
+        "defer:NO_APPROVAL_ENTRY",
+        "defer:NO_APPROVAL_ENTRY",
+        "defer:NO_APPROVAL_ENTRY"
+      ],
+      "anyAllow": false,
+      "shadowErrorRows": 0,
+      "note": "PR1 truth: table fed NOTHING -> every verdict defers (NO_APPROVAL_ENTRY); a non-defer outcome or any allow here would mean authority leaked into the shadow"
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-25T15:45:14.792Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u6-pr1-20261025/c2/budget.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-25T15:45:08.351Z",
+        "runId": "u5-u6-shadow-y-2026-10-25T15-45-08-219Z",
+        "suite": "u6-shadow",
+        "world": "u5yoff-20261025T15-45-08Z",
+        "phase": "off:boot1"
+      },
+      {
+        "at": "2026-10-25T15:45:11.522Z",
+        "runId": "u5-u6-shadow-y-2026-10-25T15-45-08-219Z",
+        "suite": "u6-shadow",
+        "world": "u5yshd-20261025T15-45-11Z",
+        "phase": "shd:boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "off:boot1",
+      "world": "u5yoff-20261025T15-45-08Z",
+      "port": 3180,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u6-pr1-20261025/c2/logs/u5yoff-20261025T15-45-08Z/instance-port3180.log"
+    },
+    {
+      "phase": "shd:boot1",
+      "world": "u5yshd-20261025T15-45-11Z",
+      "port": 3180,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u6-pr1-20261025/c2/logs/u5yshd-20261025T15-45-11Z/instance-port3180.log"
+    }
+  ],
+  "off:boot1Evidence": {
+    "ledgerRowsAfterBoot": [
+      {
+        "at": "2026-10-25T15:45:09.431Z",
+        "world": "u5yoff-20261025T15-45-08Z",
+        "leg": "register",
+        "tool": "u5_canary",
+        "ok": true
+      }
+    ],
+    "patchFile": "# U5 canary World — one test-only plugin row via the public profile-patch seam.\n- insert:\n    - id: u5-canary\n      name: \"./u5-canary-plugin.mjs\"\n    - id: u6-shadow-host\n      name: \"./u6-shadow-host.mjs\"\n# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata\n# contributors through their own public config flag (s1-h0-m1 noext\n# precedent; schemas session-log-deepseek/src/index.ts:51-52).\n- id: session-log-deepseek\n  config:\n    enabled: false\n- id: plugin-package-inventory-deepseek\n  config:\n    enabled: false\n"
+  },
+  "off:session": {
+    "sessionId": "session-818ada0d-a612-4b22-9967-0d9cb8df55e7",
+    "workspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes/u5yoff-20261025T15-45-08Z/workspace"
+  },
+  "shd:boot1Evidence": {
+    "ledgerRowsAfterBoot": [
+      {
+        "at": "2026-10-25T15:45:12.605Z",
+        "world": "u5yshd-20261025T15-45-11Z",
+        "leg": "register",
+        "tool": "u5_canary",
+        "ok": true
+      }
+    ],
+    "patchFile": "# U5 canary World — one test-only plugin row via the public profile-patch seam.\n- insert:\n    - id: u5-canary\n      name: \"./u5-canary-plugin.mjs\"\n    - id: u6-shadow-host\n      name: \"./u6-shadow-host.mjs\"\n# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata\n# contributors through their own public config flag (s1-h0-m1 noext\n# precedent; schemas session-log-deepseek/src/index.ts:51-52).\n- id: session-log-deepseek\n  config:\n    enabled: false\n- id: plugin-package-inventory-deepseek\n  config:\n    enabled: false\n"
+  },
+  "shd:session": {
+    "sessionId": "session-5135ff56-f1d5-43c7-bc1e-6901d448ff14",
+    "workspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/tests/homes/u5yshd-20261025T15-45-11Z/workspace"
+  },
+  "shadowParity": {
+    "nonce": "u6px",
+    "off": {
+      "effects": {
+        "positive-control": {
+          "effect": true,
+          "roundTripped": true,
+          "resultErrored": false
+        },
+        "error-return-with-effect": {
+          "effect": true,
+          "resultErrored": true,
+          "roundTripped": true
+        },
+        "planted-defect-detected": {
+          "toolClaimedRan": true,
+          "soundOracleEffect": false,
+          "blindedOracleEffect": true
+        }
+      },
+      "canaryRowsNormalized": [
+        {
+          "leg": "register",
+          "tool": "u5_canary",
+          "ok": true
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "ok",
+          "tag": "pos-u6px"
+        },
+        {
+          "leg": "marker-ran",
+          "tool": "u5_canary",
+          "mode": "ok",
+          "tag": "pos-u6px",
+          "ok": true,
+          "path": "<HOME>/workspace/markers/pos-u6px.marker"
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "error-after-effect",
+          "tag": "err-u6px"
+        },
+        {
+          "leg": "marker-ran",
+          "tool": "u5_canary",
+          "mode": "error-after-effect",
+          "tag": "err-u6px",
+          "ok": true
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "defect",
+          "tag": "def-u6px"
+        },
+        {
+          "leg": "return-only",
+          "tool": "u5_canary",
+          "mode": "defect",
+          "tag": "def-u6px",
+          "lied": true
+        }
+      ],
+      "shadowRowsNormalized": [
+        {
+          "leg": "center-skipped",
+          "assembly": "off"
+        }
+      ],
+      "canaryDigest": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+      "markerFiles": [
+        "err-u6px.marker",
+        "pos-u6px.marker"
+      ]
+    },
+    "shd": {
+      "effects": {
+        "positive-control": {
+          "effect": true,
+          "roundTripped": true,
+          "resultErrored": false
+        },
+        "error-return-with-effect": {
+          "effect": true,
+          "resultErrored": true,
+          "roundTripped": true
+        },
+        "planted-defect-detected": {
+          "toolClaimedRan": true,
+          "soundOracleEffect": false,
+          "blindedOracleEffect": true
+        }
+      },
+      "canaryRowsNormalized": [
+        {
+          "leg": "register",
+          "tool": "u5_canary",
+          "ok": true
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "ok",
+          "tag": "pos-u6px"
+        },
+        {
+          "leg": "marker-ran",
+          "tool": "u5_canary",
+          "mode": "ok",
+          "tag": "pos-u6px",
+          "ok": true,
+          "path": "<HOME>/workspace/markers/pos-u6px.marker"
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "error-after-effect",
+          "tag": "err-u6px"
+        },
+        {
+          "leg": "marker-ran",
+          "tool": "u5_canary",
+          "mode": "error-after-effect",
+          "tag": "err-u6px",
+          "ok": true
+        },
+        {
+          "leg": "body-ran",
+          "tool": "u5_canary",
+          "mode": "defect",
+          "tag": "def-u6px"
+        },
+        {
+          "leg": "return-only",
+          "tool": "u5_canary",
+          "mode": "defect",
+          "tag": "def-u6px",
+          "lied": true
+        }
+      ],
+      "shadowRowsNormalized": [
+        {
+          "leg": "shadow-installed",
+          "published": true,
+          "state": "ACTIVE",
+          "generation": 0
+        },
+        {
+          "leg": "center-mounted",
+          "row": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr1/packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs"
+        },
+        {
+          "leg": "shadow-verdict",
+          "name": "u5_canary",
+          "outcome": "defer",
+          "code": "NO_APPROVAL_ENTRY",
+          "generation": 0,
+          "identityReadable": true
+        },
+        {
+          "leg": "shadow-verdict",
+          "name": "u5_canary",
+          "outcome": "defer",
+          "code": "NO_APPROVAL_ENTRY",
+          "generation": 0,
+          "identityReadable": true
+        },
+        {
+          "leg": "shadow-verdict",
+          "name": "u5_canary",
+          "outcome": "defer",
+          "code": "NO_APPROVAL_ENTRY",
+          "generation": 0,
+          "identityReadable": true
+        }
+      ],
+      "canaryDigest": "a3a450597ceb4d0083f5380866c99619190052c75d59bbb1740a5bb49fc95ca3",
+      "markerFiles": [
+        "err-u6px.marker",
+        "pos-u6px.marker"
+      ]
+    }
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-25T15:45:14.792Z"
+}

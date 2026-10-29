@@ -1,0 +1,19 @@
+PASS C0 candidate source helper exists and demands expected digest (no silent use)
+fatal: could not open '.tmp-s2-cw-8EU7GS/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-8EU7GS/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C1 default mode unchanged: legacy reader, no source_binding, same rendered view
+fatal: could not open '.tmp-s2-cw-kbEXyD/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C2 legal candidate + correct expected digest: view sourced from snapshot, binding recorded
+PASS C3 wrong expected digest: structured refusal, NO fallback to graph
+PASS C4 missing candidate file: CANDIDATE_MISSING, no fallback (mirror present but never consulted)
+PASS C5 corrupt candidates (parse error / falsy value / shape error): refused, no fallback
+fatal: could not open '.tmp-s2-cw-xtmkbv/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C6 old/new divergence: explicit candidate mode keeps candidate (no auto source switch), divergence RECORDED
+fatal: could not open '.tmp-s2-cw-wlxJwd/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-avnjnr/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C8 explicitly-provided falsy authorityCandidate refuses structured, never silently legacy
+PASS C9 helper with null/array/string options: structured refusal, no TypeError
+fatal: could not open '.tmp-s2-cw-UVm3hI/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-UVm3hI/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C10 default == 5f0d0e58 baseline (structure equal; rendered 1748 bytes byte-identical)
+ALL GREEN (10 cases, actual count)

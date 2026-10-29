@@ -1,0 +1,64 @@
+{
+  "artifact": "s2-schema-candidate-20261025/manifest.json",
+  "kind": "PR363 S2 §7.4 step-2 candidate bundle: one minimal authority-snapshot schema + one positive example + short publisher contract. CANDIDATE only: not frozen, not active, no gate claimed, no permission granted. Final hashes freeze THIS version; later changes require a new version directory.",
+  "round": {
+    "utc_start": "2026-10-25T02:22:58Z",
+    "utc_end": "2026-10-25T02:25:39.459Z",
+    "clock": "date -u / node Date real UTC",
+    "session_model": "qwen3.8-flash-next (runtime self-report; route qiyuan-self/qwen3.8-flash-next default per request)",
+    "mode": {
+      "host": 0,
+      "paid": 0,
+      "subagents": 0,
+      "clone": 0,
+      "install": 0,
+      "ci_or_host_runs": 0,
+      "checkout_reset_worktree": 0,
+      "merge": 0,
+      "push": 0,
+      "permission_escalation": 0,
+      "authority_switch": 0,
+      "router_plans_graph_agents_edits": 0,
+      "writes_outside_new_dir": 0
+    }
+  },
+  "fixed_anchors": {
+    "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+    "access": "git show/grep/cat-file only; 6259cf4b physical tree NOT used as authority (ERRATA E3)",
+    "inputSnapshotDigest_recomputed_this_round": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "digest_match": true
+  },
+  "validations": [
+    "ajv@8.20.0 (existing pnpm store, zero install) compiled the schema; example valid=true",
+    "negatives rejected 4/4: missing matrix / bad phase_id / 7th field / bad snapshot_version",
+    "content_digest recomputed from on-disk example: match",
+    "current_phase_statement: 0 ban hits; ALPHA-digit agreement with phase_id true"
+  ],
+  "files": [
+    {
+      "path": "AUTHORITY-SNAPSHOT.schema.json",
+      "bytes": 8140,
+      "sha256": "945ee18c6f3d91a3943f63acb71a86385a49381ab9c2385b7855c3a72dd7a464"
+    },
+    {
+      "path": "snapshot-example.json",
+      "bytes": 1056,
+      "sha256": "66bb37ae2bfc9f7cb13df8aabe1a8bec149de65ba5c582a2eb75d507f124e29d"
+    },
+    {
+      "path": "PUBLISHER-CONTRACT.md",
+      "bytes": 8979,
+      "sha256": "ae90bacfdcf0f851e2deb43b57ea25e2c7ab9bc01b04f38541a64c8ebc30049d"
+    },
+    {
+      "path": "CANDIDATE-NOTES.md",
+      "bytes": 5548,
+      "sha256": "319e9f85445e75801d92c03cc68523206b0004427eed8e6363d400de7f20fbac"
+    }
+  ],
+  "total_bytes_delivered": 23723,
+  "budget": "counted into existing cumulative (16 Owner-h, 2026-10-25T13:00:00Z cap unchanged, not reset); 20-minute bound honored",
+  "gate_statement": "No gate claimed. G2 remains unevaluated. Step-2 freezing awaits one merged root review."
+}

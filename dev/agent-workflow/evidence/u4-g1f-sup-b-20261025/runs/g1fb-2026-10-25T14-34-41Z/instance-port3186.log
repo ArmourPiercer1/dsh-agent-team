@@ -1,0 +1,10 @@
+{"server":"alpha","phase":"fixture-up"}
+{"server":"beta","phase":"fixture-up"}
+{"server":"beta","phase":"initialized"}
+{"server":"beta","phase":"tools-list"}
+dsh web: http://127.0.0.1:3186/?token=nVwf_w4IzzgO1w3JCTUIZeTRg0LKTQvfv6B3aStRtug
+{"server":"alpha","phase":"fixture-up"}
+{"server":"beta","phase":"tools-call","msg":"b4"}
+{"server":"beta","phase":"tools-call","msg":"b5"}
+{"server":"alpha","phase":"initialized"}
+{"server":"alpha","phase":"tools-list"}

@@ -1,0 +1,38 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-3.json",
+  "kind": "S2 step-3 read-only dual-read diagnostic package manifest, carrying the root bounded-re-review corrections for step-2 without editing any older evidence file. The step-2 slice is closed at b0f4a371 with NO third fix round. Not G2; no gate claimed.",
+  "utc": { "round_start": "2026-10-25T03:05:21Z", "delivered": "2026-10-25T03:06:51Z", "clock": "date -u", "budget": "25-minute bound honored; no S1 ledger touched" },
+  "corrections_per_root_review": [
+    "parity scope: the fixture compared 24 plant x rel pairs (6 plants x 4 rels; each pair covering checkGeneratedTarget and writeGenerated verdict strings). The earlier '28/28' figure is corrected to 24 pairs, and the fixture did NOT include a clean-success write POSITIVE CONTROL with content read-back — success was observed at verdict level only ({ok:true} identical old vs new), never by re-reading written bytes. No claim of stronger coverage than that.",
+    "controls/sync: no whole-suite pass is claimed, and the 9 reds are NOT all independently attributed. Only the dangling-link/STALE class has the demonstrated concrete cause (docs link targets under dev/agent-workflow/evidence/** are physically absent from the sparse cone). NEG-21 and NEG-79 remain red of this round with cause not individually adjudicated here; none was fixed (old reds untouched).",
+    "/tmp/s2-red2.log: only the present absence is a fact. The earlier attribution (cross-turn tmp clearing) was inference, now recorded as unproven. Red evidence for step-2 bugs stands on fix-red-291165d7.log regenerated at the exact commit."
+  ],
+  "head": { "branch": "feat/s2-authority-snapshot-iso-20261025", "new_commit": "16962ed03d6674de3ed7e882e180ae0dffd5d5ac", "parent": "b0f4a37135ab641cb8c1b1ba0d96e84db018a2a2 (closed step-2, unamended)", "diff": "3 files +224/-1 (new diagnostic + new test + one export keyword on readLegacyAuthority)", "tree_bytes_total": 10803934, "cap_mib": 300, "new_tree_clone_deps": 0 },
+  "step3_component": {
+    "cli": "scripts/authority-dual-read.mjs — READ-ONLY. Explicit --snapshot candidate file + --root; there is no live pointer and none is consulted. NEW side validated through the frozen-shape/digest path (validateShape + snapshotDigest). OLD side through the EXISTING gen-current-state.mjs reader (readLegacyAuthority exported additively; internal call semantics byte-identical — controls failure-ID set unchanged). No new YAML parser.",
+    "verdicts_red": "SNAPSHOT_MISSING / SNAPSHOT_SYMLINK / SNAPSHOT_NOT_REGULAR / SNAPSHOT_SHAPE / SNAPSHOT_INVALID_DIGEST / MISSING_LEGACY_AUTHORITY / MISSING_LEGACY_FIELD / MISSING_SNAPSHOT_FIELD / SNAPSHOT_VS_LEGACY_VALUE (both recorded strings shown)",
+    "verdicts_note": "DERIVED_MIRROR_PRESENT_NOT_CONSULTED — when graph.yaml is absent the diagnostic records the mirror's existence and explicitly does not use it: missing legacy authority is never backfilled from dev/engineering/current-state.json (D4 asserts mirror values leak nowhere in output)",
+    "exit": "0 = no red, 2 = red verdicts, 1 = usage/IO; CLI smoke on an empty root exited 2 with MISSING_LEGACY_AUTHORITY, no crash",
+    "unchanged": "publisher, authority-snapshot module, frozen schema, generated-write, docs-sync whitelist, old consumers' current paths: all untouched this round (git diff: only the three listed files)"
+  },
+  "tests": {
+    "new_suite": "tests/s2-authority/authority-dual-read.test.mjs — 8 cases actual count (D0 old-reader export semantics incl. present:false-no-derivation; D1 six-field positive compared=6 exit 0; D2 REAL phase_id divergence shows both values exit 2; D3 graph missing field; D4 no-graph+mirror-present backfill refusal, compared=0, zero mirror-value leakage; D5 invalid digest red while six fields still compared; D6 snapshot missing field; D7 zero-write proof via sha256 tree-walk before/after plus graph byte compare)",
+    "inputs_note": "fixture semantics modelled on B rev-2 (CONF divergence, MIS missing, DERIV backfill refusal, POS positive); this does NOT claim the 16 fixture cases were executed or passed",
+    "red_first": "step3-red.log exit=1 ERR_MODULE_NOT_FOUND for the diagnostic module (capability genuinely absent)",
+    "green": "step3-green.log exit=0, 8/8; regression of the closed step-2 suite: step3-reg30.log exit=0 30/30 unchanged; old-consumer controls: step3-reg-controls.log exit=1 with failure-ID set byte-identical to the pre-change set (NEG-21 NEG-79 POS-1 POS-3 POS-4 POS-6 POS-8 POS-10 POS-11)",
+    "evidence_sha256": {
+      "step3-red.log": "7ad7ab962a0548d25fb7e037dca1ceec62650d42b6a1e0da16f5dfa76f4d702a",
+      "step3-green.log": "36b7d98ef17a51ee49289720fd6e8d4675824e8a7d4527e6cd0c17ec95042c05",
+      "step3-reg30.log": "2c781e08eb24e3a1e471563195f7ad2123148eda62b11abe36aab4aab4043c28",
+      "step3-reg-controls.log": "3055c40a55778c4985ea5529e82b1bf8a159fae017b4a618519363e042deb1e3"
+    }
+  },
+  "not_covered_by_this_diagnostic": [
+    "full legacy Q1-Q8 legs, Git/content reality checks (baseline resolve/ancestor, backlog BL/BR population, matrix row contract, Q6 lines, census awk reader) — the diagnostic compares recorded strings only",
+    "pointer staleness/contention verdicts (no pointer exists to diagnose yet)",
+    "CI negative controls and product acceptance; real-R invocation",
+    "the 16 rev-2 fixture cases as a suite"
+  ],
+  "mode_zero_claims": { "host": 0, "install": 0, "paid": 0, "subagents": 0, "stash": 0, "mother_reset": 0, "push": 0, "merge": 0, "live_pointer_or_CAS": 0, "registry_graph_AGENTS_CI_product_writes": 0, "authority_selection_or_writes_by_diagnostic": 0 },
+  "gate_statement": "No gate claimed. G2 remains not passed; this diagnostic does not substitute any reality check. Idle awaiting one bounded review."
+}

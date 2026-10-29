@@ -1,0 +1,177 @@
+[
+  {
+    "file": "docs/ROUTER_RULES.md",
+    "line": 11,
+    "kind": "broken-link",
+    "text": "Lines 11-14 cite the four frozen 20260829 docs as docs/plans/paused/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md (and UI / Development Plan / Task Decomposition)",
+    "evidence": "ls docs/plans/paused/ shows only 4 alpha.1-era files (0.1.1-alpha.1-*, ADR-001, permission-system-design); git ls-files docs/plans/finished/ lists all four 20260829 documents there. The authority-order chain in ROUTER_RULES points at a directory that does not contain them."
+  },
+  {
+    "file": "AGENTS.md",
+    "line": 20,
+    "kind": "stale",
+    "text": "docs/plans/paused/ 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威…）",
+    "evidence": "The four documents are not under docs/plans/paused/ (ls); they are tracked at docs/plans/finished/ (git ls-files), added b5c8d1dab 2026-10-07. AGENTS.md:35 repeats the same wrong content claim for paused/."
+  },
+  {
+    "file": "AGENTS.md",
+    "line": 35,
+    "kind": "stale",
+    "text": "docs/plans/paused/ | 20260829 冻结四份 + G8 审计报告 + P8-S 收束计划（2026-10-07 起纳入 git 跟踪…）",
+    "evidence": "git ls-files docs/plans/paused/ = 4 unrelated alpha.1-era files; the frozen four + G8 + P8-S are under docs/plans/finished/ (git ls-files)."
+  },
+  {
+    "file": "README.md",
+    "line": 34,
+    "kind": "contradiction",
+    "text": "Details live in the frozen Detailed Architecture doc (`docs/plans/paused/`, local, gitignored)",
+    "evidence": "Wrong twice: the Architecture doc is in docs/plans/finished/, and README.md:216-217 itself says the paused/ directory is tracked and not ignored. README.md:294-295 repeats the same stale 'paused/, local, gitignored' claim."
+  },
+  {
+    "file": "README.md",
+    "line": 214,
+    "kind": "stale",
+    "text": "the four 20260829 frozen documents … were not found in the commit history visible from this checkout … git log --all --diff-filter=A --name-only over docs/plans/ shows only alpha.1-era files",
+    "evidence": "False at HEAD 4aaaa7b2: ls/git ls-files show all four documents tracked under docs/plans/finished/, added in commit b5c8d1dab (2026-10-07), 16 days before the claim (README last edited 2026-10-23, 00e13e9ca). plan-citation-interface.md:13 even names finished/ as their location."
+  },
+  {
+    "file": "dev/engineering/README.md",
+    "line": 51,
+    "kind": "stale",
+    "text": "The four 20260829 frozen documents … were not found in the commit history visible from this checkout … git log --all --diff-filter=A --name-only over docs/plans/ lists only alpha.1-era files there",
+    "evidence": "Same false claim as README.md:214; the four files are present and tracked under docs/plans/finished/ at this commit (git ls-files; added b5c8d1dab)."
+  },
+  {
+    "file": "README.md",
+    "line": 75,
+    "kind": "stale",
+    "text": "Current master (alpha): 0.1.1-alpha.2 (all 9 packages) at master @ 2b86ee42 (2026-10-07 verified = origin/master)",
+    "evidence": "origin/master = 4aaaa7b2af87… (git rev-parse origin/master; HEAD of this audit tree). The 'Current master' phrasing carries a superseded pointer; the entry doc's own CURRENT bullet (README.md:193-207) says per-round pointers live only in graph.yaml."
+  },
+  {
+    "file": "README.md",
+    "line": 228,
+    "kind": "stale",
+    "text": "**origin/master = `427219e443ece4d57ac8558f13850c5f42ff8330`** (2026-10-01 12:27Z = PR #51 guarded SQUASH …)",
+    "evidence": "Bold present-tense pointer inside a history bullet; origin/master is 4aaaa7b2 at this checkout. A stale 'current' copy of exactly the class EB-E0/E1 was built to remove."
+  },
+  {
+    "file": "dev/engineering/registry.yaml",
+    "line": 4,
+    "kind": "stale",
+    "text": "Statuses describe THIS branch's facts as of 2026-10-23 … nothing in this set is merged to master or released",
+    "evidence": "The file is being read from origin/master 4aaaa7b2, which is the merge of PR #362 from task/eb-e0-e1-doc-baseline-20261029 (git log -1); every EB1-A…G entry still says implemented_in_branch. Status never updated post-merge."
+  },
+  {
+    "file": ".agents/notes/implemented/EB-ADR-0003-document-consistency-gates-implemented.md",
+    "line": 29,
+    "kind": "stale",
+    "text": "Implemented in `task/eb-e0-e1-doc-baseline-20261029` (this branch, **not merged**)",
+    "evidence": "git log -1 at origin/master 4aaaa7b2 = 'Merge pull request #362 from ArmourPiercer1/task/eb-e0-e1-doc-baseline-20261029' — the branch is merged; the note was not repointed."
+  },
+  {
+    "file": "dev/engineering/work-package-authorization.md",
+    "line": 44,
+    "kind": "stale",
+    "text": "18 REQ/INV/AC ids … plus 1 Idea carrying idea-no-execution-authority … (10 invariant + 4 requirement + 4 acceptance + 1 idea = 19) … its header comment … reads 'every entry below is proposed-not-ratified'",
+    "evidence": "ids.yaml now holds 20 entries including IDEA-EB-0002 (ids.yaml:154-159; INDEX.md:5 '20 ids', :43 'idea (2)'), and ids.yaml:5-8 explicitly retracted the 'every entry' header wording. IDEA-EB-0002 was added by EB-ADR-0004 (2026-10-24) without updating this count."
+  },
+  {
+    "file": "dev/engineering/README.md",
+    "line": 261,
+    "kind": "stale",
+    "text": "ratification of the 18 proposed-not-ratified ids (the single idea-no-execution-authority entry is not a ratification target …)",
+    "evidence": "ids.yaml carries two idea-no-execution-authority entries (IDEA-EB-0001 at :147-152, IDEA-EB-0002 at :154-159); INDEX.md counts 'idea (2)'."
+  },
+  {
+    "file": ".agents/notes/README.md",
+    "line": 6,
+    "kind": "broken-link",
+    "text": "Authority for this mechanism: docs/plans/memo/engineering-baseline/architecture.md §3.2 item 5 and decision D7 (PR #361, design-only)",
+    "evidence": "docs/plans/memo/ contains only alpha5-tool-io-governance/ and post-alpha4-debt-register.md (ls); no engineering-baseline/ directory exists — PR #361 is unmerged, and the citation gives no commit to fetch by."
+  },
+  {
+    "file": "dev/engineering/work-package-authorization.md",
+    "line": 18,
+    "kind": "broken-link",
+    "text": "Plan of record: PR #361, docs/plans/memo/engineering-baseline/{architecture.md, execution-plan.md}, pinned at commit b97ffdafd…",
+    "evidence": "Those paths do not exist in this tree (ls docs/plans/memo/); the plan of record is only reachable by fetching the PR/commit, which the entry docs never explain how to verify offline. Better disclosed than notes/README.md:6 (commit given) but still a dangling in-tree path."
+  },
+  {
+    "file": "dev/engineering/README.md",
+    "line": 144,
+    "kind": "broken-link",
+    "text": "the established acceptance levels written in PR #355 at head 8f84a784…, file docs/plans/active/alpha5-convergence/PLAN-B-20261022.md lines 157–159. **That file is not in this tree**",
+    "evidence": "Self-disclosed (README:144-151 gives fetch commands); still an entry-point reference that resolves nowhere locally, and no link check catches it. The canonical C1/C2/C3 definition therefore has no in-tree text."
+  },
+  {
+    "file": "docs/glossary.md",
+    "line": 19,
+    "kind": "unclear",
+    "text": "C-EB-0009 C1/C2/C3 … authoritative anchor: docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+    "evidence": "The matrix uses C2/C3 labels in rows but contains no definitions; dev/engineering/README.md:140-151 says the definitions live in PLAN-B (PR #355, not in tree). Two different anchors for one definition, and the in-tree anchor does not carry it."
+  },
+  {
+    "file": "docs/glossary.md",
+    "line": 20,
+    "kind": "unclear",
+    "text": "C-EB-0010 A/B/C evidence classes … authoritative anchor: docs/TEST_METHODS.md §7",
+    "evidence": "TEST_METHODS.md §7 is the DSH_HOME naming/cleanup protocol and defines no A/B/C evidence classes (grep for class terms finds nothing in TEST_METHODS.md). ids.yaml INV-EB-0010 anchors the same way while invoking 'A-class evidence'."
+  },
+  {
+    "file": "packages/runtime/README.md",
+    "line": 76,
+    "kind": "contradiction",
+    "text": "lane facades | `<lane>/index.ts` for each of the 30 lanes",
+    "evidence": "Same file at :22 counts '34 lane directories' and at :26 records that 'earlier text here said 30' — the table row was left uncorrected."
+  },
+  {
+    "file": "docs/TEST_METHODS.md",
+    "line": 72,
+    "kind": "stale",
+    "text": "通用不变量：DSH_HOME 必须位于会话工作区内（本环境 workspace 为 /home/user/dsh-plugins/dsh-agent-team …）",
+    "evidence": "Environment-specific path is stale: this audit runs with the repository under /srv/workspace/dsh-plugins/…; AGENTS.md:41 likewise narrates a per-environment /srv/workspace baseline path. Presented as the 'universal invariant' example, it misleads in any other environment."
+  },
+  {
+    "file": "docs/contracts/freeze-confirmation.md",
+    "line": 12,
+    "kind": "stale",
+    "text": "Freeze rule (CHANGELOG §\"Freeze rule\", lines 94–106)",
+    "evidence": "grep -n '### Freeze rule' packages/contracts/CHANGELOG.md → line 151; the cited line window moved (lines 3-4/6/8 spot-checks still match)."
+  },
+  {
+    "file": "docs/ROUTER_RULES.md",
+    "line": 179,
+    "kind": "conflation",
+    "text": "Release Compliance Gates C1–C7（开发计划 §33）通过",
+    "evidence": "A second 'C-numbered' namespace (release gates C1–C7 from Development Plan §33, now under docs/plans/finished/) collides by name with acceptance levels C1/C2/C3 (glossary.md:19, dev/engineering/README.md:140-162); no entry doc reconciles the two uses of 'C1'."
+  },
+  {
+    "file": "docs/contracts/g3-report.md",
+    "line": 8,
+    "kind": "conflation",
+    "text": "Verdict: G3 PASS — all seven criteria of Development Plan §16.4 are encoded and property-tested at the domain-integration level",
+    "evidence": "The entire evidence table (:13-24) is local run-tests.mjs + tsc — Adapter-local (C1-class) proof — reported as a Gate PASS with no tier label; under the later C-EB-0009 discipline a reader could grade this as more than branch-local verification. Historical record predates tier vocabulary, but nothing marks it as such."
+  },
+  {
+    "file": "README.md",
+    "line": 209,
+    "kind": "contradiction",
+    "text": "PR #361 (Engineering Baseline E0/E1 documents and checks) is open and deliberately unmerged until E1 completes",
+    "evidence": "The same E0/E1 content is present in this master tree via merge 4aaaa7b2 (PR #362 from task/eb-e0-e1-doc-baseline-20261029, 2026-10-24), while E1's own exit remains open (dev/engineering/README.md:236-262) and work-package-authorization.md:23 holds 'PR #361 is not merged before E1 is complete'. The #361-vs-#362 relation is explained nowhere in the entry docs."
+  },
+  {
+    "file": "scripts/docs-probe.mjs",
+    "line": 0,
+    "kind": "unclear",
+    "text": "node scripts/docs-probe.mjs --help → REFUSED BASE_REQUIRED: pass --base <verified-ref> or --worktree-only … (exit 2)",
+    "evidence": "--help is not a recognized mode: probe falls through to its base-refusal and exits 2 with no usage listing of checks or modes, so the CLI cannot teach a cold reader what it covers (modes had to be reconstructed from REQ-EB-0001 and doc-ownership.yaml)."
+  },
+  {
+    "file": "packages/contracts/README.md",
+    "line": 69,
+    "kind": "unclear",
+    "text": "compares each declared interface with its *_FIELDS array for 21 hand-written pairings — names only, 20 compared for equality plus 2 additive-v1 subset checks",
+    "evidence": "20+2=22 comparisons against '21 pairings' reads as off-by-one; registry.yaml:146 instead says '20 of 34 compared' and dev/engineering/README.md:259 '20 equality pairs plus 2 subset checks'. The three texts do not present one consistent accounting."
+  }
+]

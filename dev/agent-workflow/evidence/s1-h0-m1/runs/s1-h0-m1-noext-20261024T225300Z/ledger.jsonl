@@ -1,0 +1,5 @@
+{"at":"2026-10-24T22:52:48.634Z","leg":"register","tool":"s1_m1_probe","ok":true}
+{"at":"2026-10-24T22:53:19.478Z","leg":"marker-ran","tool":"s1_m1_probe","tag":"A1","ok":true}
+{"at":"2026-10-24T22:53:19.479Z","leg":"read-ran","tool":"s1_m1_probe","tag":"A1","ok":true,"sentinelBytes":40}
+{"at":"2026-10-24T22:53:19.483Z","leg":"process-ran","tool":"s1_m1_probe","tag":"A1","ok":true,"echoOut":"s1m1-process-leg A1"}
+{"at":"2026-10-24T22:53:19.483Z","leg":"body-ran","tool":"s1_m1_probe","tag":"A1","ran":true,"failed":[]}

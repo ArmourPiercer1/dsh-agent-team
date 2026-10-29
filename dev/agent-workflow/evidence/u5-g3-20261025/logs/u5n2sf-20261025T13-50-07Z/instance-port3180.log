@@ -1,0 +1,24 @@
+file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3564
+		throw new Error(`${binName}: failed to parse ${label} ${file}: ${String(error)}`);
+		      ^
+
+Error: dsh: failed to parse overlay /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5n2sf-20261025T13-50-07Z/profiles/web/cordis.patch.yml: YAMLException: missed comma between flow collection entries (16:3)
+
+ 13 |     enabled: false
+ 14 | 
+ 15 | - insert: [[{unparseable
+ 16 |   :::
+--------^
+ 17 | →- "broken
+    at parsePatchList (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3564:9)
+    at loadOverlayPatches (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3534:9)
+    at loadProfileDirectory (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:947:73)
+    at loadProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:979:9)
+    at prepareProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:187:18)
+    at composeProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:206:46)
+    at runProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:241:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runCli (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:215:5)
+    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:252:23
+
+Node.js v24.21.0

@@ -1,0 +1,67 @@
+{
+  "artifact": "s2-schema-candidate-20261025/r2/manifest.json",
+  "kind": "r2 limited revision of the S2 step-2 candidate bundle (one bounded 10-minute fix round after merged-review NEEDS_TARGETED_FIX). CANDIDATE only: not frozen, not active, no real authority file or script created, no gate claimed.",
+  "revision_of": {
+    "r1_manifest_sha256": "5d095db32268e84ffe2b58305d9eb8e962a60d0ffe44f94c42a7062fe0cf956d",
+    "r1_files": "frozen, unmodified; superseded in effect by r2 files in this subdirectory"
+  },
+  "fix_round": {
+    "utc_start": "2026-10-25T02:36:02Z",
+    "utc_end": "2026-10-25T02:36:57Z",
+    "clock": "date -u real UTC",
+    "bounded_minutes": 10,
+    "session_model": "qiyuan-self/qwen3.8-flash-next default per request",
+    "mode": {
+      "host": 0,
+      "ci": 0,
+      "product_writes": 0,
+      "entry_switch": 0,
+      "install": 0,
+      "paid": 0,
+      "subagents": 0,
+      "overall_plan_rewrite": 0,
+      "package_b_or_old_router_writes": 0,
+      "authority_switch": 0,
+      "merge": 0,
+      "push": 0,
+      "new_s1_host": 0
+    }
+  },
+  "root_rulings_applied": [
+    "r2 schema x-status.r2_changes 1-4 + x-carriers",
+    "contract §r2 修订账目 1-7",
+    "sole write-entry = live pointer only; candidate coexistence allowed; identity/fork bans deleted",
+    "4/6 + 3/6 restated as observations per ERRATA E2; fixture-6/6 hard precondition deleted",
+    "rollback-rehearsal-before-switch self-added gate withdrawn; strict §7.4 original order; reversibility unclaimed until step-8 rehearsal passes"
+  ],
+  "budget_statement": {
+    "retraction": "r1 CANDIDATE-NOTES phrase folding all S2 work into the S1 cumulative 16 Owner-h ledger is WITHDRAWN — no measured master ledger exists to support it",
+    "rule": "16 Owner-h is the S1 feasibility-study ceiling; S2 does not reset or reopen S1 research under a new name, and no S1 budget extension is claimed",
+    "reported": "actual per-session wall time and role only (candidate packet 02:22:58Z-02:25:44Z author; r2 fix packet 02:36:02Z-2026-10-25T02:36:57Z revision author); no unmeasured cumulative total is reported",
+    "new_s1_host_this_round": 0
+  },
+  "validations": [
+    "ajv@8.20.0 (existing pnpm store, zero install) compiled r2 schema; example valid=true",
+    "negatives re-checked: missing matrix / 7th field rejected 2/2",
+    "content_digest recompute from on-disk example: match",
+    "r2 snapshot-example byte-identical to r1 (snapshot shape unchanged)"
+  ],
+  "files": [
+    {
+      "path": "r2/AUTHORITY-SNAPSHOT.schema.json",
+      "bytes": 10752,
+      "sha256": "d70fcec29b0bd719b388c51821c83eaffb4bd7a4ede4ceb39b8a50f85855ee89"
+    },
+    {
+      "path": "r2/PUBLISHER-CONTRACT.md",
+      "bytes": 10630,
+      "sha256": "e4c5a69bab22464ba0da8e6b09969ee682e631ceafbecf82665b84f7edac75bd"
+    },
+    {
+      "path": "r2/snapshot-example.json",
+      "bytes": 1056,
+      "sha256": "66bb37ae2bfc9f7cb13df8aabe1a8bec149de65ba5c582a2eb75d507f124e29d"
+    }
+  ],
+  "gate_statement": "No gate claimed. G2 remains unevaluated. Step-2 freezing awaits the root single re-review of this revision."
+}

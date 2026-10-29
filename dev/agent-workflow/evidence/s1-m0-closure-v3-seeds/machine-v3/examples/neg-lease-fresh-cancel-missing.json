@@ -1,0 +1,72 @@
+{
+ "kind": "lifecycle",
+ "branch": "ask",
+ "invocationCorrelation": "corr-A",
+ "hostCallId": "hc-1",
+ "hostToken": {
+  "fixtureRef": "trusted-test-fixture",
+  "serialized": false
+ },
+ "binding": {
+  "bindingId": "b1",
+  "bindingRevisionCurrent": true,
+  "status": "ACTIVE"
+ },
+ "member": {
+  "teamSessionId": "ts-1",
+  "instanceId": "i-1"
+ },
+ "realmId": "r-1",
+ "requestedEffects": {
+  "fingerprint": "fp-1"
+ },
+ "control": {
+  "request": {
+   "invocationCorrelation": "corr-A",
+   "requestId": "req-1"
+  },
+  "decision": {
+   "decisionSequence": 7,
+   "decision": "allow"
+  }
+ },
+ "grant": {
+  "grantId": "g-1",
+  "logicalQuestionId": "tadm:ts-1:i-1:fp-1:g3",
+  "effectsFingerprint": "fp-1",
+  "issuedTo": {
+   "invocationCorrelation": "corr-A"
+  },
+  "presenter": {
+   "trustedFromDecider": true
+  }
+ },
+ "consumptionProof": {
+  "requestId": "req-1",
+  "decisionSequence": 7
+ },
+ "freshValidation": {
+  "generationsRechecked": true,
+  "bindingRevisionCurrent": true
+ },
+ "paConsume": {
+  "grantId": "g-1",
+  "ledgerChanged": true
+ },
+ "bodyStarted": false,
+ "states": [
+  "RECEIVED",
+  "CLASSIFIED",
+  "ASK_WAIT",
+  "ASK_VERIFIED",
+  "ASK_RESERVED",
+  "PREPARING",
+  "PREPARED",
+  "LEASE_UNCONFIRMED"
+ ],
+ "terminal": "LEASE_UNCONFIRMED",
+ "expected": [
+  "E_STALE"
+ ],
+ "refundClaimed": false
+}

@@ -1,0 +1,15 @@
+{"at":"2026-10-25T13:25:40.141Z","runId":"u5-core-r0-2026-10-25T13-25-40-000Z","suite":"core","world":"u5r0-20261025T13-25-40Z","phase":"boot1"}
+{"at":"2026-10-25T13:26:16.006Z","runId":"u5-core-r0-2026-10-25T13-25-47-944Z","suite":"core","world":"u5r0-20261025T13-26-15Z","phase":"boot1"}
+{"at":"2026-10-25T13:35:42.116Z","runId":"u5-core-dbg-2026-10-25T13-35-41-977Z","suite":"core","world":"u5dbg-20261025T13-35-42Z","phase":"boot1"}
+{"at":"2026-10-25T13:42:32.316Z","runId":"u5-core-dbg2-2026-10-25T13-42-32-182Z","suite":"core","world":"u5dbg2-20261025T13-42-32Z","phase":"boot1"}
+{"at":"2026-10-25T13:46:31.249Z","runId":"u5-core-r1-2026-10-25T13-46-31-116Z","suite":"core","world":"u5r1-20261025T13-46-31Z","phase":"boot1"}
+{"at":"2026-10-25T13:47:04.356Z","runId":"u5-core-r2-2026-10-25T13-47-04-223Z","suite":"core","world":"u5r2-20261025T13-47-04Z","phase":"boot1"}
+{"at":"2026-10-25T13:47:10.984Z","runId":"u5-negatives-n1-2026-10-25T13-47-10-852Z","suite":"negatives","world":"u5n1sc-20261025T13-47-10Z","phase":"scope-boot"}
+{"at":"2026-10-25T13:47:13.297Z","runId":"u5-negatives-n1-2026-10-25T13-47-10-852Z","suite":"negatives","world":"u5n1sf-20261025T13-47-13Z","phase":"start-failure-attempt"}
+{"at":"2026-10-25T13:47:15.122Z","runId":"u5-negatives-n1-2026-10-25T13-47-10-852Z","suite":"negatives","world":"u5n1to-20261025T13-47-15Z","phase":"timeout-boot"}
+{"at":"2026-10-25T13:47:28.375Z","runId":"u5-negatives-n1-2026-10-25T13-47-10-852Z","suite":"negatives","world":"u5n1it-20261025T13-47-28Z","phase":"interrupt-boot"}
+{"at":"2026-10-25T13:50:07.283Z","runId":"u5-negatives-n2-2026-10-25T13-50-07-148Z","suite":"negatives","world":"u5n2sf-20261025T13-50-07Z","phase":"start-failure-attempt"}
+{"at":"2026-10-25T13:50:26.238Z","runId":"u5-core-r3-2026-10-25T13-50-26-103Z","suite":"core","world":"u5r3-20261025T13-50-26Z","phase":"boot1"}
+{"at":"2026-10-25T13:50:33.475Z","runId":"u5-core-restart-pa-2026-10-25T13-50-33-327Z","suite":"core-restart","world":"u5pa-20261025T13-50-33Z","phase":"boot1"}
+{"at":"2026-10-25T13:50:33.476Z","runId":"u5-core-pb-2026-10-25T13-50-33-325Z","suite":"core","world":"u5pb-20261025T13-50-33Z","phase":"boot1"}
+{"at":"2026-10-25T13:50:36.678Z","runId":"u5-core-restart-pa-2026-10-25T13-50-33-327Z","suite":"core-restart","world":"u5pa-20261025T13-50-33Z","phase":"boot2-restart"}

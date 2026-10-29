@@ -1,0 +1,213 @@
+{
+ "generated": "2026-10-25",
+ "authority": "origin/master @ 95fbe95cf",
+ "mentions": {
+  "tracked_md_yaml_files_outside_evidence_mentioning_evidence_path": 101,
+  "total_literal_mentions": 538,
+  "top_files": [
+   [
+    "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+    127
+   ],
+   [
+    "dev/agent-workflow/graph.yaml",
+    72
+   ],
+   [
+    "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md",
+    49
+   ],
+   [
+    "docs/STATUS.md",
+    28
+   ],
+   [
+    "docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md",
+    27
+   ],
+   [
+    "dev/engineering/registry.yaml",
+    17
+   ],
+   [
+    "docs/plans/finished/TEAM_D1-D6_REPAIR_PLAN.md",
+    13
+   ],
+   [
+    "README.md",
+    8
+   ],
+   [
+    "dev/agent-workflow/briefs/P7-T7-brief.md",
+    7
+   ],
+   [
+    "docs/plans/active/alpha4-permission-governance/ADR-alpha4-hard-governance.md",
+    7
+   ],
+   [
+    "docs/INSTALL.md",
+    6
+   ],
+   [
+    ".github/workflows/characterization.yml",
+    6
+   ],
+   [
+    "docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md",
+    5
+   ],
+   [
+    "docs/plans/memo/post-alpha4-debt-register.md",
+    5
+   ],
+   [
+    ".agents/skills/team-leader-operations/SKILL.md",
+    4
+   ]
+  ],
+  "note": "literal token dev/agent-workflow/evidence/ over tracked .md/.yaml/.yml outside evidence (incl. graph.yaml, registry.yaml, workflows)"
+ },
+ "doc_checks_scope": {
+  "link_checker": "scripts/doc-checks.mjs checkLinks:111-131 — markdown [text](target) only; fences + inline code stripped; HISTORICAL_PREFIXES (doc-checks.mjs:53-66, incl. dev/agent-workflow/evidence/ itself, SESSION_ROUTER_LOG, docs/plans/finished|paused|issue-fix|third-party, docs/repairs, docs/issues, references) are preserved text and skipped",
+  "full_scope": "scripts/docs-sync.mjs:63-64 = checkLinks over allDocsForFullCheck (doc-checks.mjs:307-310: docs/**, .agents/**, dev/engineering/**, AGENTS.md, README.md minus historical) = 53 markdown files; LINK_DANGLING is blocking (doc-checks.mjs:184)",
+  "diff_scope": "scripts/docs-probe.mjs:117-120 checks only changed docs",
+  "yaml": "NOT link-checked (markdown only); graph.yaml evidence citations matter only through ci-pr-gate Q5 on the matrix document",
+  "plan_citation": "checkPlanCitationBlocks (doc-checks.mjs:330-363) would existence-check eb-plan evidence_root under docs/plans/ — no eb-plan blocks exist on master, so not triggered"
+ },
+ "links_into_evidence_from_full_scope_docs": {
+  "total_links": 54,
+  "distinct_targets": 30,
+  "by_doc": {
+   "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md": 47,
+   "docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md": 3,
+   "docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md": 3,
+   "docs/contracts/engineering-baseline/plan-citation-interface.md": 1
+  },
+  "verdict_if_relocated_without_mitigation": "pnpm docs:sync --check => 54 LINK_DANGLING findings (blocking); docs:probe on the deletion diff stays green",
+  "targets": [
+   {
+    "target": "dev/agent-workflow/evidence/EB-E0-E1/baseline-inventory.md",
+    "bytes": 11098
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/01-routing/p01-result.json",
+    "bytes": 2409
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/notes.md",
+    "bytes": 10545
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/p02-result.json",
+    "bytes": 112417
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/spill-result.json",
+    "bytes": 4759
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/notes.md",
+    "bytes": 12344
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/p03-result.json",
+    "bytes": 64589
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/corrections-addendum.md",
+    "bytes": 2999
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/04-process/landlock-diagnosis.md",
+    "bytes": 5658
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/notes.md",
+    "bytes": 5823
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/p05-result.json",
+    "bytes": 8301
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/ptc-outer-result.json",
+    "bytes": 13924
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/notes.md",
+    "bytes": 7612
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/p05-result.json",
+    "bytes": 16812
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/h6-result.json",
+    "bytes": 10580
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/notes.md",
+    "bytes": 14365
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/run-2026-10-15T22-44-01",
+    "bytes": 48741
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R1.md",
+    "bytes": 12575
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-R2.md",
+    "bytes": 18281
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/08-review/p07-review-REG1.md",
+    "bytes": 9443
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/notes.md",
+    "bytes": 6975
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-jobs-result.json",
+    "bytes": 5165
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-mcp-result.json",
+    "bytes": 5815
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/09-web-jobs-mcp/p09-web-result.json",
+    "bytes": 6645
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/lanes-result.json",
+    "bytes": 24646
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md",
+    "bytes": 9350
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/EXECUTION-LOG.md",
+    "bytes": 8530
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/P0-SELECTION-REPORT.md",
+    "bytes": 11525
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/decision.md",
+    "bytes": 5205
+   },
+   {
+    "target": "dev/agent-workflow/evidence/alpha5-adapter-p0/negative-cases.md",
+    "bytes": 4496
+   }
+  ]
+ },
+ "claims_check": "0 newly unsupported CLAIM_WITHOUT_EVIDENCE after full relocation (simulated over the 16 current-state markdown docs with the doc-checks.mjs regexes)",
+ "note_docs_plans_memo": "docs/plans/memo is NOT a historical prefix — memo links ARE graded by the full-scope checker; only finished/paused/issue-fix/third-party are exempt"
+}

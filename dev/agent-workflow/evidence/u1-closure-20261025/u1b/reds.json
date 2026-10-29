@@ -1,0 +1,687 @@
+{
+  "runs": {
+    "run1": {
+      "files": 604,
+      "legs": 7753,
+      "passed": 7733,
+      "failed": 20,
+      "skipped": 0,
+      "todo": 0,
+      "reported": {
+        "numTotalTestSuites": 2375,
+        "numTotalTests": 7753,
+        "numPassedTests": 7733,
+        "numFailedTests": 20,
+        "numPendingTests": 0,
+        "numTodoTests": 0
+      }
+    },
+    "run2": {
+      "files": 604,
+      "legs": 7753,
+      "passed": 7733,
+      "failed": 20,
+      "skipped": 0,
+      "todo": 0,
+      "reported": {
+        "numTotalTestSuites": 2375,
+        "numTotalTests": 7753,
+        "numPassedTests": 7733,
+        "numFailedTests": 20,
+        "numPendingTests": 0,
+        "numTodoTests": 0
+      }
+    }
+  },
+  "summary": {
+    "redIdentitiesUnion": 20,
+    "byClass": {
+      "DETERMINISTIC": 9,
+      "ENV-NOT_RUN": 11
+    },
+    "byPackage": {
+      "domain": {
+        "DETERMINISTIC": 1,
+        "FLAKY": 0,
+        "ENV-NOT_RUN": 0
+      },
+      "runtime": {
+        "DETERMINISTIC": 7,
+        "FLAKY": 0,
+        "ENV-NOT_RUN": 4
+      },
+      "testkit": {
+        "DETERMINISTIC": 0,
+        "FLAKY": 0,
+        "ENV-NOT_RUN": 7
+      },
+      "tools": {
+        "DETERMINISTIC": 1,
+        "FLAKY": 0,
+        "ENV-NOT_RUN": 0
+      }
+    },
+    "historicalCensus9StillFailing": 9,
+    "historicalRoot22StillFailing": 9,
+    "newRedsTotal": 11,
+    "newRedsGraded": 0,
+    "newRedsEnv": 11
+  },
+  "skipped": {
+    "run1": 0,
+    "run2": 0,
+    "listRun1": [],
+    "listRun2": []
+  },
+  "histMap": {
+    "census9": [
+      {
+        "identity": "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      }
+    ],
+    "rootSuite22": [
+      {
+        "identity": "FILE packages/runtime/test/p8s3b-result-effects.test.ts::COLLECTION-OR-UNHANDLED",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "FILE packages/runtime/test/t12a-b2-child-identity.test.ts::COLLECTION-OR-UNHANDLED",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "FILE packages/runtime/test/t12a-glue-handoff-ports.test.ts::COLLECTION-OR-UNHANDLED",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 1. Legacy fixture parses without capabilities field",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 10. Static source returns legacy mode when capabilities absent",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11. Selective source maps to TemplatePolicy values correctly",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 11b. Selective source maps deny entries to values correctly",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 2. Leader with full capabilities parses and validates",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 3. Members can have different capabilities",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 7. Changing capability fields changes the hash",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 8. Static source returns selective mode for Leader with capabilities",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t1-capability-schema.test.ts::T1: Blueprint Capability Schema 9. Static source returns selective mode for MemberTemplate with capabilities",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/d3-member-identity-context.test.ts::D3 the member identity context block (Team D1-D6 repair v2, B2) D3-4 FAIL CLOSED: wrong/missing rootSessionId stays rejected at the closed tool layer; a foreign-root setup rejects without installing a block",
+        "stillFailsNow": false,
+        "class": "NOT_FAILING",
+        "run1": false,
+        "run2": false,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      },
+      {
+        "identity": "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+        "stillFailsNow": true,
+        "class": "DETERMINISTIC",
+        "run1": true,
+        "run2": true,
+        "envReason": null
+      }
+    ]
+  },
+  "newReds": [
+    {
+      "identity": "TEST packages/runtime/test/a3p3-governance-lane-hygiene.test.ts::the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CLOCK-DEFAULT",
+      "firstErrorLine": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP1 the probe follows the host persona interface, not an invented one the probe names the slots by the host constants, with no private literals",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-probe.mjs'"
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP3 the harness residue is gone and stays gone no harness re-inlines a persona lookup on the assembly",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(1) ] to deeply equal []"
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP3 the harness residue is gone and stays gone no plugin source imports the invented PERSONA_SECTION export",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected [ …(4) ] to deeply equal []"
+    },
+    {
+      "identity": "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-BUILD-NOT-RUN",
+      "firstErrorLine": "AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read \"refused\". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/cli"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected undefined to deeply equal { …(9) }"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected { '@deepseek-ai/dsh': '0.1.7-rc.1' } to deeply equal { …(9) }"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected undefined to be defined"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected { name: 'dsh-agent-team', …(4) } to be undefined"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) the root manifest declares exactly the audited nine host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "firstErrorLine": "AssertionError: expected [ '@deepseek-ai/dsh' ] to deeply equal [ '@deepseek-ai/dsh', …(8) ]"
+    },
+    {
+      "identity": "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions",
+      "class": "ENV-NOT_RUN",
+      "envCategory": "ENV-CLOCK-DEFAULT",
+      "firstErrorLine": "Error: STACK_TRACE_ERROR"
+    }
+  ],
+  "reds": [
+    {
+      "identity": "TEST packages/domain/test/t2-blueprint-hash.test.ts::t2 hash: hashable projection projects absent optional singles as explicit null",
+      "file": "packages/domain/test/t2-blueprint-hash.test.ts",
+      "name": "t2 hash: hashable projection projects absent optional singles as explicit null",
+      "firstErrorLine": "AssertionError: expected { templateId: 'leader', …(6) } to deeply equal { templateId: 'leader', …(5) }",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "domain",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/a3p3-governance-lane-hygiene.test.ts::the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name",
+      "file": "packages/runtime/test/a3p3-governance-lane-hygiene.test.ts",
+      "name": "the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-3) the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name",
+      "firstErrorLine": "Error: STACK_TRACE_ERROR",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": "ENV-CLOCK-DEFAULT",
+      "historical": null,
+      "envReason": "FAIL block attributed in vitest-run{1,2}.log: \"Error: Test timed out in 5000ms.\" (JSON reporter serialized it as STACK_TRACE_ERROR). This is the leg pr-gate.yml names (a3p3-governance-lane-hygiene.test.ts:767, 4.1-5.3 s measured) and CI runs under --census-test-timeout 20000/90000 for exactly this reason; this audit run kept the suite default clock."
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "name": "P6-T3 member→member mediation (the documented rule, end to end) 1. no grant → MEDIATED via the leader: input on the leader session, nothing on the peer session, the coordination fact keeps the intended recipient",
+      "firstErrorLine": "AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "name": "P6-T3 member→member mediation (the documented rule, end to end) 3. grants are PER-SENDER: worker2 holds no grant of its own (the grant on the other worker does not apply) → still mediated",
+      "firstErrorLine": "TypeError: Cannot read properties of undefined (reading 'sessionId')",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "name": "P6-T3 member→member mediation (the documented rule, end to end) 4. a newer overlay generation without the grant revokes it (latest generation wins, fail closed → mediated again)",
+      "firstErrorLine": "TypeError: Cannot read properties of undefined (reading 'sessionId')",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "name": "P6-T3 member→member mediation (the documented rule, end to end) 5. authority beats mediation: the scout envelope denies send-message, so the facade rejects it — zero writes, no coordination fact",
+      "firstErrorLine": "AssertionError: expected 4 to be 1 // Object.is equality",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-mediation.test.ts::P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+      "file": "packages/runtime/test/p6t3-mediation.test.ts",
+      "name": "P6-T3 member→member mediation (the documented rule, end to end) 7. the relay text + attribution carry the correlation and the intended-for identity (mediated and direct)",
+      "firstErrorLine": "TypeError: Cannot read properties of undefined (reading 'attribution')",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+      "file": "packages/runtime/test/p6t3-restart.test.ts",
+      "name": "P6-T3 restart durability + pending-delivery recovery 2. the pending MEDIATED intent is recovered onto the LEADER session (the plan is re-derived from the fresh state)",
+      "firstErrorLine": "TypeError: Cannot read properties of undefined (reading 'sessionId')",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/p6t3-restart.test.ts::P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+      "file": "packages/runtime/test/p6t3-restart.test.ts",
+      "name": "P6-T3 restart durability + pending-delivery recovery 5. recovery aborts on the first hard failure (R5): earlier confirmations stay durable; the clean retry recovers ONLY the remainder",
+      "firstErrorLine": "Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP1 the probe follows the host persona interface, not an invented one the probe names the slots by the host constants, with no private literals",
+      "file": "packages/runtime/test/rc2-persona-probe.test.ts",
+      "name": "PP1 the probe follows the host persona interface, not an invented one the probe names the slots by the host constants, with no private literals",
+      "firstErrorLine": "Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-probe.mjs'",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "repoRoot resolved to the MAIN checkout (same up-walk); PP1's ENOENT names /srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-probe.mjs — MAIN lacks that file, THIS worktree has it."
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP3 the harness residue is gone and stays gone no harness re-inlines a persona lookup on the assembly",
+      "file": "packages/runtime/test/rc2-persona-probe.test.ts",
+      "name": "PP3 the harness residue is gone and stays gone no harness re-inlines a persona lookup on the assembly",
+      "firstErrorLine": "AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(1) ] to deeply equal []",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "repoRoot resolved to the MAIN checkout (same up-walk); PP1's ENOENT names /srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-probe.mjs — MAIN lacks that file, THIS worktree has it."
+    },
+    {
+      "identity": "TEST packages/runtime/test/rc2-persona-probe.test.ts::PP3 the harness residue is gone and stays gone no plugin source imports the invented PERSONA_SECTION export",
+      "file": "packages/runtime/test/rc2-persona-probe.test.ts",
+      "name": "PP3 the harness residue is gone and stays gone no plugin source imports the invented PERSONA_SECTION export",
+      "firstErrorLine": "AssertionError: expected [ …(4) ] to deeply equal []",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "runtime",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "repoRoot resolved to the MAIN checkout (same up-walk); PP1's ENOENT names /srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-probe.mjs — MAIN lacks that file, THIS worktree has it."
+    },
+    {
+      "identity": "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "file": "packages/testkit/test/a4p7-merge-gate.test.ts",
+      "name": "A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+      "firstErrorLine": "AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read \"refused\". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/cli",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-BUILD-NOT-RUN",
+      "historical": null,
+      "envReason": "composition-smoke arm answered refused (\"this checkout was never built\"); the package run policy did not execute pnpm build/build:composition"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)",
+      "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+      "name": "F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)",
+      "firstErrorLine": "AssertionError: expected undefined to deeply equal { …(9) }",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "findTestRepoRoot() (tests/paths.mjs) walks UP for the tests/deepseek-harness-test-use marker; absent in this worktree, present in the MAIN checkout (HEAD 6259cf4b), so the test read the MAIN tree's manifests. Against THIS worktree's root package.json the audited nine peers ARE declared — the failing expectation is true of the tree under test."
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen",
+      "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+      "name": "F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen",
+      "firstErrorLine": "AssertionError: expected { '@deepseek-ai/dsh': '0.1.7-rc.1' } to deeply equal { …(9) }",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "findTestRepoRoot() walks UP for the tests/deepseek-harness-test-use marker; absent in this worktree, present in the MAIN checkout (HEAD 6259cf4b), so the test read the MAIN tree's manifests instead of this worktree (4aaaa7b2)"
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)",
+      "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+      "name": "F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)",
+      "firstErrorLine": "AssertionError: expected undefined to be defined",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "repoRoot resolved to the MAIN checkout (findTestRepoRoot up-walk for the test-use marker; MAIN @ 6259cf4b has tests/deepseek-harness-test-use, this worktree does not) — the test graded MAIN's manifests, not this worktree's."
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)",
+      "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+      "name": "F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)",
+      "firstErrorLine": "AssertionError: expected { name: 'dsh-agent-team', …(4) } to be undefined",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "repoRoot resolved to the MAIN checkout (findTestRepoRoot up-walk for the test-use marker; MAIN @ 6259cf4b has tests/deepseek-harness-test-use, this worktree does not) — the test graded MAIN's manifests, not this worktree's."
+    },
+    {
+      "identity": "TEST packages/testkit/test/plugin-dsh-compat.test.ts::F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) the root manifest declares exactly the audited nine host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency",
+      "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+      "name": "F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) the root manifest declares exactly the audited nine host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency",
+      "firstErrorLine": "AssertionError: expected [ '@deepseek-ai/dsh' ] to deeply equal [ '@deepseek-ai/dsh', …(8) ]",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CHECKOUT-RESOLUTION",
+      "historical": null,
+      "envReason": "findTestRepoRoot() walks UP for the tests/deepseek-harness-test-use marker; absent in this worktree, present in the MAIN checkout (HEAD 6259cf4b), so the test read the MAIN tree's manifests instead of this worktree (4aaaa7b2)"
+    },
+    {
+      "identity": "TEST packages/testkit/test/rc2-sanitize-evidence.test.ts::evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions",
+      "file": "packages/testkit/test/rc2-sanitize-evidence.test.ts",
+      "name": "evidence sanitizer — credential coverage and raw preservation S13 file aliases, quoted values, and capture formats pass the standalone regressions",
+      "firstErrorLine": "Error: STACK_TRACE_ERROR",
+      "class": "ENV-NOT_RUN",
+      "run1": true,
+      "run2": true,
+      "package": "testkit",
+      "envCategory": "ENV-CLOCK-DEFAULT",
+      "historical": null,
+      "envReason": "FAIL block attributed in vitest-run{1,2}.log: \"Error: Test timed out in 5000ms.\" S13 spawns a nested `node --test` (its own spawn timeout is 60_000 but the it-level clock is vitest's 5000 ms default); census-runtime.yml names S13 as a leg needing a raised clock (90000)."
+    },
+    {
+      "identity": "TEST packages/tools/test/p6t6-actions.test.ts::P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+      "file": "packages/tools/test/p6t6-actions.test.ts",
+      "name": "P6-T6 tool set — delegated actions (unit level) messaging: worker -> leader is delivered direct to the leader bound session",
+      "firstErrorLine": "AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t2-leader' // Object.is equality",
+      "class": "DETERMINISTIC",
+      "run1": true,
+      "run2": true,
+      "package": "tools",
+      "envCategory": null,
+      "historical": [
+        "CENSUS9",
+        "ROOT22"
+      ],
+      "envReason": null
+    }
+  ]
+}

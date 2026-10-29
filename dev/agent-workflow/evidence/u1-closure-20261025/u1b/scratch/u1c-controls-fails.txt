@@ -1,0 +1,8 @@
+FAIL  NEG-21 plan without a citation block is not a finding
+FAIL  POS-10 a current-state document citing an existing run log is clean
+FAIL  POS-11 schema and validator agree in a clean fixture
+FAIL  POS-1 clean fixture passes the complete check
+FAIL  POS-3 Idea and Proposed text needs no runtime evidence
+FAIL  POS-4 --write regenerates the view only
+FAIL  POS-6 plan declaring a valid citation block passes
+FAIL  POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted

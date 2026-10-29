@@ -1,0 +1,8 @@
+PASS P0 legal explicit candidate: binding recorded, dual-read compared=6, no DUAL_READ blocking
+PASS P1 old/new divergence: named DUAL_READ blocking, exit 1, candidate kept (no auto source switch)
+PASS P2 missing one of path/digest and empty values: structured refusal, no legacy fallback
+PASS P3 corrupt candidate: named DUAL_READ/CANDIDATE blocking, no fallback view from graph
+PASS P4 default mode CLI byte-identical to fixed parent 09fd39464 closure (same fixture, same flags)
+FAIL P5 candidate success feeds R8 mirror: plan phase_id != snapshot phase_id -> PLAN_CITATION_CONFLICT (blocking): PLAN_CITATION_CONFLICT missing despite contradicting plan: blocking=["REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","REGISTRY_SCHEMA","SCHEMA_MISSING"]
+PASS P6 candidate success, plan phase_id == snapshot phase_id: no PLAN_CITATION_CONFLICT (rule wired, not inverted)
+RED (1/7 failing)

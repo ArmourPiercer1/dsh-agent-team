@@ -1,0 +1,65 @@
+{
+  "package": "s1-f0-issued-20261025",
+  "purpose": "PR363 S1 F0 formal issuance integration: G1-I PASS (independent read-only reviewer READY_TO_SIGN, 2 substantive gaps closed, dot/Freeze Owner sign-off), G1-F NOT_PASSED, overall G1 PARTIAL. Integration of already-reviewed inputs; not a plan round, experiment, or new gate.",
+  "utc": {
+    "start": "2026-10-25T01:32:40.173Z",
+    "end": "2026-10-25T01:33:05.331Z",
+    "clock": "real UTC"
+  },
+  "issuer": "dot / Freeze Owner (technical sign-off, not human/crypto signature)",
+  "inputSnapshotDigest": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+  "files": [
+    {
+      "path": "dev/agent-workflow/evidence/s1-f0-issued-20261025/F0-ISSUED-20261025.json",
+      "sha256": "25e260a9670b33bf6b73fc1a2ca42af0d3656dc11d2daa0990852aa19a4cd0e2",
+      "bytes": 15804
+    },
+    {
+      "path": "dev/agent-workflow/evidence/s1-f0-issued-20261025/G1-GATE-DECISION.json",
+      "sha256": "1aa0c55ba5163da048ed13f2aea9e2352c177a014ffe85c7a341835e0fdbd372",
+      "bytes": 1821
+    },
+    {
+      "path": "dev/agent-workflow/evidence/s1-f0-issued-20261025/manifest.json",
+      "sha256": "SELF_NOT_EMBEDDED",
+      "bytes": null,
+      "note": "a file cannot carry its own final sha256; external value = sha256sum of this file after this write"
+    }
+  ],
+  "validation": {
+    "json_parse": "ok (both documents re-parsed after write)",
+    "local_input_hashes": "18/18 matched pre- and post-write",
+    "digests_consistent": "F0 == Gate == recomputed-from-written-inputs",
+    "originals_unchanged": "true (all inputs re-hashed identical after write)"
+  },
+  "mode": {
+    "host": 0,
+    "paid": 0,
+    "subagents": 0,
+    "cleanup": 0,
+    "overwrites": 1,
+    "escalation": 0,
+    "rescans": 0,
+    "new_gates": 0,
+    "overwrite_note": "1 self-correction rewrite of the file created by this round itself; zero pre-existing objects overwritten or removed"
+  },
+  "budget": "16 Owner-h and 2026-10-25T13:00:00Z caps unchanged",
+  "protected_untouched": [
+    "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+    "dev/agent-workflow/graph.yaml",
+    "docs/plans (all)",
+    "AGENTS.md",
+    "s1-stage-f0-draft/",
+    "s1-freeze-receipt-20261025/",
+    "s1-m0-closure-v3-seeds/",
+    "s1-asset-disposition-20261025/",
+    "s1-runtime-census/",
+    "tests/deepseek-harness-test-use/",
+    ".worktrees/"
+  ],
+  "correction": {
+    "event_utc": "2026-10-25T01:33:05.331Z",
+    "what": "single in-round self-correction of anchors.htu.head inside F0-ISSUED-20261025.json (tmp+rename); Gate file not rewritten; inputs/digest unaffected; manifest self-hash deliberately not embedded",
+    "inputs_digest_impact": "none"
+  }
+}

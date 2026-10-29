@@ -1,0 +1,162 @@
+path	class_u1a	action	bytes_u1a	exists_live	bytes_live	dst
+1f405968808141d8bd09aaedb1e3718a9b1faf2e	UNKNOWN	MOVE	9	yes	9	.artifacts/evidence/unknown/1f405968808141d8bd09aaedb1e3718a9b1faf2e
+a5m2-kiit.msg	UNKNOWN	MOVE	1134	yes	1134	.artifacts/evidence/unknown/a5m2-kiit.msg
+a5m2-kitfix.msg	UNKNOWN	MOVE	1725	yes	1725	.artifacts/evidence/unknown/a5m2-kitfix.msg
+b5c06f09984c4da8bbbe9fe2ec23898bb29d4374	UNKNOWN	MOVE	5	yes	5	.artifacts/evidence/unknown/b5c06f09984c4da8bbbe9fe2ec23898bb29d4374
+.bteam-005x-mirror-msg.txt	SCRATCH	DELETE	439	yes	439	
+.bteam-005x-msg.txt	SCRATCH	DELETE	2979	yes	2979	
+.bteam-010x-msg.txt	SCRATCH	DELETE	3257	yes	3257	
+.bteam-2235-msg.txt	SCRATCH	DELETE	3255	yes	3255	
+.bteam-2249-msg.txt	SCRATCH	DELETE	2480	yes	2480	
+.bteam-232x-mirrors-msg.txt	SCRATCH	DELETE	606	yes	606	
+.bteam-232x-msg.txt	SCRATCH	DELETE	3249	yes	3249	
+.bteam-240x-msg.txt	SCRATCH	DELETE	3179	yes	3179	
+.bteam-242x-msg.txt	SCRATCH	DELETE	3504	yes	3504	
+.bteam-accept-msg.txt	SCRATCH	DELETE	1879	yes	1879	
+.bteam-artifact-msg.txt	SCRATCH	DELETE	2621	yes	2621	
+.bteam-c2prep-msg.txt	SCRATCH	DELETE	3349	yes	3349	
+.bteam-commit-msg.txt	SCRATCH	DELETE	5416	yes	5416	
+.bteam-create-msg.txt	SCRATCH	DELETE	1706	yes	1706	
+.bteam-env-msg.txt	SCRATCH	DELETE	2003	yes	2003	
+.bteam-facts-msg.txt	SCRATCH	DELETE	3259	yes	3259	
+.bteam-fix1953-msg.txt	SCRATCH	DELETE	3064	yes	3064	
+.bteam-frame-msg.txt	SCRATCH	DELETE	2260	yes	2260	
+.bteam-gate-value-msg.txt	SCRATCH	DELETE	2382	yes	2382	
+.bteam-legs-msg.txt	SCRATCH	DELETE	2322	yes	2322	
+.bteam-live-msg.txt	SCRATCH	DELETE	2253	yes	2253	
+.bteam-members-msg.txt	SCRATCH	DELETE	2769	yes	2769	
+.bteam-mirror-msg.txt	SCRATCH	DELETE	433	yes	433	
+.bteam-outcome-msg.txt	SCRATCH	DELETE	2347	yes	2347	
+.bteam-pair-msg.txt	SCRATCH	DELETE	3334	yes	3334	
+.bteam-prod-msg.txt	SCRATCH	DELETE	2522	yes	2522	
+.bteam-query-msg.txt	SCRATCH	DELETE	1930	yes	1930	
+.bteam-resolve-msg.txt	SCRATCH	DELETE	3432	yes	3432	
+.bteam-reuse-msg.txt	SCRATCH	DELETE	1728	yes	1728	
+.bteam-revert-msg.txt	SCRATCH	DELETE	1629	yes	1629	
+.bteam-runner-msg.txt	SCRATCH	DELETE	3036	yes	3036	
+.bteam-single-msg.txt	SCRATCH	DELETE	1561	yes	1561	
+.bteam-supply-msg.txt	SCRATCH	DELETE	1484	yes	1484	
+.bteam-three-msg.txt	SCRATCH	DELETE	3638	yes	3638	
+c3780bb936161045622f2e0ba6fcab81370b29cb	UNKNOWN	MOVE	5	yes	5	.artifacts/evidence/unknown/c3780bb936161045622f2e0ba6fcab81370b29cb
+.candidate-efb5	UNKNOWN	MOVE	22394240	yes	22394240	.artifacts/evidence/unknown/.candidate-efb5
+.census-diag-tmp	UNKNOWN	MOVE	4631987	yes	4631987	.artifacts/evidence/unknown/.census-diag-tmp
+center-fs-subtool-entry-audit.md	UNKNOWN	MOVE	4975	yes	4975	.artifacts/evidence/unknown/center-fs-subtool-entry-audit.md
+.center-tmp	UNKNOWN	MOVE	1244171	yes	1244171	.artifacts/evidence/unknown/.center-tmp
+ci-00743fb85.log	UNKNOWN	MOVE	4165	yes	4165	.artifacts/evidence/unknown/ci-00743fb85.log
+ci-00743fb85-store.log	UNKNOWN	MOVE	3622	yes	3622	.artifacts/evidence/unknown/ci-00743fb85-store.log
+dev/agent-workflow/evidence/a5m2-contract-candidate	EVIDENCE	MOVE	274124	yes	274124	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-contract-candidate
+dev/agent-workflow/evidence/a5m2-family-rules	EVIDENCE	MOVE	73089	yes	73089	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-family-rules
+dev/agent-workflow/evidence/a5m2-g5-host-window-b	EVIDENCE	MOVE	15056	yes	15056	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-g5-host-window-b
+dev/agent-workflow/evidence/a5m2-g6host	EVIDENCE	MOVE	12439	yes	12439	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-g6host
+dev/agent-workflow/evidence/a5m2-image-wiring	EVIDENCE	MOVE	12445	yes	12445	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-image-wiring
+dev/agent-workflow/evidence/a5m2-img-r18	EVIDENCE	MOVE	276520	yes	276520	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-img-r18
+dev/agent-workflow/evidence/a5m2-int-incident-2026-10-23	EVIDENCE	MOVE	39702858	yes	39702858	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-int-incident-2026-10-23
+dev/agent-workflow/evidence/a5m2-schedule-c2	EVIDENCE	MOVE	201947	yes	201947	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-schedule-c2
+dev/agent-workflow/evidence/a5m2-todo-c2	EVIDENCE	MOVE	37992031	yes	37992031	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5m2-todo-c2
+dev/agent-workflow/evidence/a5-parallel-worlds	EVIDENCE	MOVE	1197996	yes	1197996	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5-parallel-worlds
+dev/agent-workflow/evidence/a5-world-safety	EVIDENCE	MOVE	511706	yes	511706	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/a5-world-safety
+dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle	EVIDENCE	MOVE	747437	yes	747437	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha3-pr4-permission-lifecycle
+dev/agent-workflow/evidence/alpha5	EVIDENCE	MOVE	275676452	yes	275676452	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha5
+dev/agent-workflow/evidence/alpha5-pr1r	EVIDENCE	MOVE	24414	yes	24414	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/alpha5-pr1r
+dev/agent-workflow/evidence/chromium-sandbox-probe-20261001	EVIDENCE	MOVE	4855	yes	4855	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/chromium-sandbox-probe-20261001
+dev/agent-workflow/evidence/COORDINATION.md	EVIDENCE	MOVE	6200	yes	6200	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/COORDINATION.md
+dev/agent-workflow/evidence/COORDINATION-tmp	EVIDENCE	MOVE	0	yes	0	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/COORDINATION-tmp
+dev/agent-workflow/evidence/dod20-browser-20261001	EVIDENCE	MOVE	1912294	yes	1912294	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/dod20-browser-20261001
+dev/agent-workflow/evidence/landlock-install-acceptance/browser-capability-inventory-20261001.md	EVIDENCE	MOVE	7150	yes	7150	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/browser-capability-inventory-20261001.md
+dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-install-aborted-20261001.md	EVIDENCE	MOVE	9117	yes	9117	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-install-aborted-20261001.md
+dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-new25-20261001.txt	EVIDENCE	MOVE	346	yes	346	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-new25-20261001.txt
+dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-sim-20261001.txt	EVIDENCE	MOVE	4756	yes	4756	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-deps-sim-20261001.txt
+dev/agent-workflow/evidence/landlock-install-acceptance/chromium-install-probe-20261001.md	EVIDENCE	MOVE	10805	yes	10805	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/chromium-install-probe-20261001.md
+dev/agent-workflow/evidence/landlock-install-acceptance/helper-placement-20261001.md	EVIDENCE	MOVE	3483	yes	3483	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/helper-placement-20261001.md
+dev/agent-workflow/evidence/landlock-install-acceptance/phase1-facts-20261001.md	EVIDENCE	MOVE	21731	yes	21731	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/landlock-install-acceptance/phase1-facts-20261001.md
+dev/agent-workflow/evidence/retired-4tree-evidence-leaf-20261025b	EVIDENCE	MOVE	1847671	yes	1847671	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-4tree-evidence-leaf-20261025b
+dev/agent-workflow/evidence/retired-iso-evidence-leaf-cleanup-20261125	EVIDENCE	MOVE	748566	yes	748566	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-iso-evidence-leaf-cleanup-20261125
+dev/agent-workflow/evidence/retired-trees-2026-10-23	EVIDENCE	MOVE	1679493247	yes	1679493247	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/retired-trees-2026-10-23
+dev/agent-workflow/evidence/s1-asset-disposition-20261025	EVIDENCE	MOVE	20829	yes	20829	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-asset-disposition-20261025
+dev/agent-workflow/evidence/s1-f0-issued-20261025	EVIDENCE	MOVE	20314	yes	20314	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-f0-issued-20261025
+dev/agent-workflow/evidence/s1-freeze-receipt-20261025	EVIDENCE	MOVE	11931	yes	11931	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-freeze-receipt-20261025
+dev/agent-workflow/evidence/s1-frozen-refs-index.md	EVIDENCE	MOVE	7035	yes	7035	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-frozen-refs-index.md
+dev/agent-workflow/evidence/s1-h0-m1	EVIDENCE	MOVE	221788	yes	221788	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-h0-m1
+dev/agent-workflow/evidence/s1-h0-m2	EVIDENCE	MOVE	76891	yes	76891	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-h0-m2
+dev/agent-workflow/evidence/s1-h0-m3	EVIDENCE	MOVE	131366	yes	131366	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-h0-m3
+dev/agent-workflow/evidence/s1-h0-m3-safety-determination	EVIDENCE	MOVE	9489	yes	9489	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-h0-m3-safety-determination
+dev/agent-workflow/evidence/s1-inventory-lane-a	EVIDENCE	MOVE	73242	yes	73242	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-inventory-lane-a
+dev/agent-workflow/evidence/s1-m0-closure-v3-seeds	EVIDENCE	MOVE	538561	yes	538561	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-m0-closure-v3-seeds
+dev/agent-workflow/evidence/s1-runtime-census	EVIDENCE	MOVE	177381	yes	177381	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-runtime-census
+dev/agent-workflow/evidence/s1-stage-f0-draft	EVIDENCE	MOVE	15813	yes	15813	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s1-stage-f0-draft
+dev/agent-workflow/evidence/s2-authority-fixtures-20261025	EVIDENCE	MOVE	64639	yes	64639	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s2-authority-fixtures-20261025
+dev/agent-workflow/evidence/s2-authority-map-20261025	EVIDENCE	MOVE	45000	yes	45000	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s2-authority-map-20261025
+dev/agent-workflow/evidence/s2-authority-snapshot-impl-20261025	EVIDENCE	MOVE	309273	yes	309273	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s2-authority-snapshot-impl-20261025
+dev/agent-workflow/evidence/s2-pr364-u0u1-20261025	EVIDENCE	MOVE	105115	yes	105115	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s2-pr364-u0u1-20261025
+dev/agent-workflow/evidence/s2-schema-candidate-20261025	EVIDENCE	MOVE	52021	yes	52021	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/s2-schema-candidate-20261025
+dev/agent-workflow/evidence/system-chrome-sandbox-20261001	EVIDENCE	MOVE	37555	yes	37555	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/system-chrome-sandbox-20261001
+dev/agent-workflow/evidence/u1-closure-20261025	EVIDENCE	MOVE	5473154563	yes	8862456	.artifacts/evidence/root-untracked/dev/agent-workflow/evidence/u1-closure-20261025
+dev/agent-workflow/tools/evidence.mjs	UNKNOWN	MOVE	26320	yes	26320	.artifacts/evidence/unknown/dev/agent-workflow/tools/evidence.mjs
+dev-verify-pack	UNKNOWN	MOVE	3648470	yes	3648470	.artifacts/evidence/unknown/dev-verify-pack
+.df0	UNKNOWN	MOVE	11	yes	11	.artifacts/evidence/unknown/.df0
+docs/memo	UNKNOWN	MOVE	13789	yes	13789	.artifacts/evidence/unknown/docs/memo
+FAIL	UNKNOWN	MOVE	104	yes	104	.artifacts/evidence/unknown/FAIL
+full-run-final.txt	UNKNOWN	MOVE	189708	yes	189708	.artifacts/evidence/unknown/full-run-final.txt
+.gate	UNKNOWN	MOVE	533070434	yes	533070434	.artifacts/evidence/unknown/.gate
+.glob-flake-diag	UNKNOWN	MOVE	1696479	yes	1696479	.artifacts/evidence/unknown/.glob-flake-diag
+h10.log	UNKNOWN	MOVE	84579	yes	84579	.artifacts/evidence/unknown/h10.log
+h11.log	UNKNOWN	MOVE	84470	yes	84470	.artifacts/evidence/unknown/h11.log
+h3.log	UNKNOWN	MOVE	86944	yes	86944	.artifacts/evidence/unknown/h3.log
+h4.log	UNKNOWN	MOVE	87791	yes	87791	.artifacts/evidence/unknown/h4.log
+h5.log	UNKNOWN	MOVE	84422	yes	84422	.artifacts/evidence/unknown/h5.log
+h6.log	UNKNOWN	MOVE	7441	yes	7441	.artifacts/evidence/unknown/h6.log
+h7.log	UNKNOWN	MOVE	90910	yes	90910	.artifacts/evidence/unknown/h7.log
+h8_1.log	UNKNOWN	MOVE	84412	yes	84412	.artifacts/evidence/unknown/h8_1.log
+h8_2.log	UNKNOWN	MOVE	84412	yes	84412	.artifacts/evidence/unknown/h8_2.log
+h9.log	UNKNOWN	MOVE	84610	yes	84610	.artifacts/evidence/unknown/h9.log
+handoff-tests2.log	UNKNOWN	MOVE	83687	yes	83687	.artifacts/evidence/unknown/handoff-tests2.log
+handoff-tests.log	UNKNOWN	MOVE	84839	yes	84839	.artifacts/evidence/unknown/handoff-tests.log
+kernel-full2.log	UNKNOWN	MOVE	275790	yes	275790	.artifacts/evidence/unknown/kernel-full2.log
+kernel-full2.summary	UNKNOWN	MOVE	781	yes	781	.artifacts/evidence/unknown/kernel-full2.summary
+kernel-full.log	UNKNOWN	MOVE	277145	yes	277145	.artifacts/evidence/unknown/kernel-full.log
+kit.diff	UNKNOWN	MOVE	1385	yes	1385	.artifacts/evidence/unknown/kit.diff
+.merge-scratch-g3a	UNKNOWN	MOVE	1905890	yes	1905890	.artifacts/evidence/unknown/.merge-scratch-g3a
+.npm-cache	SCRATCH	DELETE	124560	yes	124560	
+.npm-probe-cache	SCRATCH	DELETE	545447	yes	545447	
+p6t3-base.log	UNKNOWN	MOVE	8302	yes	8302	.artifacts/evidence/unknown/p6t3-base.log
+p6t3.log	UNKNOWN	MOVE	8302	yes	8302	.artifacts/evidence/unknown/p6t3.log
+pack2.log	UNKNOWN	MOVE	122143	yes	122143	.artifacts/evidence/unknown/pack2.log
+pack3.log	UNKNOWN	MOVE	122143	yes	122143	.artifacts/evidence/unknown/pack3.log
+pack4.log	UNKNOWN	MOVE	122143	yes	122143	.artifacts/evidence/unknown/pack4.log
+packages-pins	UNKNOWN	MOVE	3770473	yes	3770473	.artifacts/evidence/unknown/packages-pins
+pack.log	UNKNOWN	MOVE	122143	yes	122143	.artifacts/evidence/unknown/pack.log
+.plan-msg.txt	UNKNOWN	MOVE	4427	yes	4427	.artifacts/evidence/unknown/.plan-msg.txt
+.pnpm-store-a5ie-r2b	SCRATCH	DELETE	562025676	yes	562025676	
+.probe-plan	SCRATCH	DELETE	2188	yes	2188	
+.probe-plan-tmp	SCRATCH	DELETE	80438897	yes	80438897	
+rc11b.log	UNKNOWN	MOVE	3451	yes	3451	.artifacts/evidence/unknown/rc11b.log
+recovery	RECOVERY	MOVE	3237070160	yes	3237070160	.artifacts/evidence/root-untracked/recovery
+.rt-_0gbddsv	SCRATCH	DELETE	4060950	yes	4060950	
+.rt-lcor36qe	SCRATCH	DELETE	51	yes	51	
+.rt-vrme5k5c	SCRATCH	DELETE	1866271	yes	1866271	
+.scratch-logs	SCRATCH	DELETE	6489200	yes	6489200	
+.selftest.out	UNKNOWN	MOVE	161	yes	161	.artifacts/evidence/unknown/.selftest.out
+tests/checks	UNKNOWN	MOVE	15388	yes	15388	.artifacts/evidence/unknown/tests/checks
+tests/kits/a5m2-todo-c2	UNKNOWN	MOVE	124254	yes	124254	.artifacts/evidence/unknown/tests/kits/a5m2-todo-c2
+tests/kits/lib	UNKNOWN	MOVE	9634	yes	9634	.artifacts/evidence/unknown/tests/kits/lib
+tmp	UNKNOWN	MOVE	40827	yes	40827	.artifacts/evidence/unknown/tmp
+.tmp-a5g1-rev	SCRATCH	DELETE	1531768	yes	1531768	
+.tmp-a5g5-readme	SCRATCH	DELETE	68895	yes	68895	
+.tmp-a5g5-rev2	SCRATCH	DELETE	6663516	yes	6663516	
+.tmp-a5l1	SCRATCH	DELETE	1601	yes	1601	
+.tmp-a5live-ref	SCRATCH	DELETE	46927	yes	46927	
+.tmp-a5ptc4-preflight	SCRATCH	DELETE	20	yes	20	
+.tmp-a5w4-scratch	SCRATCH	DELETE	3908	yes	3908	
+tmp-all-hits.txt	SCRATCH	DELETE	101593	yes	101593	
+.tmp-ccr-body.json	SCRATCH	DELETE	2297	yes	2297	
+.tmp-center	SCRATCH	DELETE	4465	yes	4465	
+.tmp-commit-msgs	SCRATCH	DELETE	28052166	yes	28052166	
+tmp-evidence-tree.txt	SCRATCH	DELETE	27243	yes	27243	
+tmp-f739-grep.txt	SCRATCH	DELETE	101593	yes	101593	
+tmp-homes.txt	SCRATCH	DELETE	1477	yes	1477	
+tmp-pr-files.txt	SCRATCH	DELETE	27243	yes	27243	
+tmp-pr-hits.txt	SCRATCH	DELETE	3055	yes	3055	
+tmp-pr-tree.txt	SCRATCH	DELETE	27243	yes	27243	
+.tmp-publish	SCRATCH	DELETE	5904	yes	5904	
+tsc2.log	UNKNOWN	MOVE	218	yes	218	.artifacts/evidence/unknown/tsc2.log
+.vitest-revfix.json	UNKNOWN	MOVE	2401187	yes	2401187	.artifacts/evidence/unknown/.vitest-revfix.json

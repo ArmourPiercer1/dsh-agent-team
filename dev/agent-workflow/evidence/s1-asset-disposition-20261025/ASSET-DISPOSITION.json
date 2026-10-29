@@ -1,0 +1,147 @@
+{
+  "package": "S1-A2 asset-disposition-capacity (补项：资产责任容量；不判 Gate、不重审计划)",
+  "utc": { "start": "2026-10-25T00:51:16Z", "end": "2026-10-25T00:53:19Z", "wall_clock_bound": "≤15min", "note": "end 由本包末次 stat 落值，见 closing" },
+  "roles": {
+    "s1_asset_custodian_coordinator": "root（承担当前 S1 Asset Custodian/协调责任）",
+    "collection_execution_owner_this_package": "root（本包采集执行 Owner；模型 qiyuan-self/qwen3.8-flash-next；创造模式）",
+    "historical_development_owner": "UNKNOWN（逐对象未证成，一律记 UNKNOWN，不推断）",
+    "independent_acceptance_open_items": ["资产责任容量 = 本包补", "身份记录 = 本包不补（另一缺口）"]
+  },
+  "permissions_and_skills": {
+    "file_policy": "workspace-write",
+    "approval": "ask",
+    "escalation_used": false,
+    "blocked_hit": false,
+    "skills_checked": "catalog 7 项（browser-skill / cordis-composition-reference / cordis-plugin-development / editing-cordis-compositions / gpt / team-blueprint-authoring / team-leader-operations）逐项核对 = 全部不适用本采集任务；未加载任何 skill；本会话工具面无 team_* → 0 子代理天然成立；AGENTS.md 协议知悉",
+    "mode": { "host": 0, "cleanup": 0, "paid": 0, "subagents": 0, "full_disk_scan": 0, "g1_signed": false, "overwrites": 0, "privilege_escalation": 0 }
+  },
+  "owners_column_legend": "disposition_owner = 当前处置责任 Owner；dev_owner = 历史开发 Owner；本包对任何对象均不执行删除/移动/改写",
+  "measure_caveats": [
+    "硬链接：census-A 单次 du -sx 根遍历（35,751,716 KiB / .worktrees）与 census-H 逐目录 du（Σ=41,973,104 KiB，54 行）差 +6,221,388 KiB ≈ 5.93 GiB ⇒ H 行**不可相加**为总量（跨目录共享硬链接各自计数）；du 占用 ≠ 可释放字节（首批删除实测 3 目录 du 1,298,652 KiB → df 净差仅 242,442,240 B ≈ 231.2 MiB）",
+    "嵌套 pack-int：pack-int 组总量（1,297,316 KiB）已含其下 tree-*/install-*/out-*/logs-*，**不重复累加**；其 3 棵注册树无独立 du 行（见 gaps）",
+    "口径：本包新测仅一次 du -ksx（-x 同 FS、不 follow symlink、timeout 120 上限、未重试），du 为多参同一调用 ⇒ 跨参硬链接去重，与 lane-A 的单路径口径不同，两者不可直接互推",
+    "547/549 world：census-C2 实测 tests/homes world 数 = 547（2026-10-24T21:07Z），本包遵约束未逐 world 测、未复查现数"
+  ],
+  "sources_reused": {
+    "census_48_trees": { "path": ".worktrees/.s1-f0-census-20261025/gittrees-1.txt", "sha256_recheck": "469000d2e18a04ed744b756ad1a842b88e891cd92eb246f62962fe43d9ee6cb6", "match_f0_manifest": true, "rows": "47 行 /.worktrees/ + 1 行主仓 = 48 git 树" },
+    "capacity_text": { "du_census2": ".worktrees/.s1-f0-census-20261025/du-census2.txt (START2 2026-10-24T21:05:34Z / END2 21:08:18Z)", "du_census1": "…/du-census.txt (21:04:58Z→21:05:18Z)", "du_pass1": "…/du-pass1.txt（含 df 87%）", "du_err": "…/du.err（-sx 与 --max-depth=1 冲突告警 = 已知口径噪声）" },
+    "nine_objects_receipt": { "path": "dev/agent-workflow/evidence/s1-inventory-lane-a/RECOVERY-VALUE-INDEX.md", "sha256_anchor": "65cd575cfc73bdf8554e496ff800ba3eea80643693f0effad04bfa5c8bc16ff7", "du_sk_total_KiB": 7166992, "objects": 9, "zero_unique_value_proven": 0 },
+    "first_batch_deletion_receipts": ["…/first-batch-DELETED-receipt.md", "…/delete-a5m2-pinbuild-node_modules.txt", "…/delete-pack-int-install-0a3f11b2-d703affb.txt"],
+    "freeze_receipt_locator": { "path": "dev/agent-workflow/evidence/s1-freeze-receipt-20261025/manifest.json", "bytes": 10263, "utc": "2026-10-25T00:36:10.293Z→00:38:18.859Z", "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84", "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b", "htu_head": "639ed015397290b3745d163aafe02ffee4aa3f84 (dsh-v0.2.0-rc.2)" },
+    "external_47_tree_value_table": { "file": "dsh-worktree-value-inventory-20261025.md", "status": "NOT_LOCAL（定点 ls 实测本地不存在，未全库检索、未粘贴重建）", "library": "libfile_fb4f94abef0c819189d16a7166514de8", "bytes": 33439, "join": "审查者在云端 join；本包 47 树的逐树**价值**去向一律引用该表" }
+  },
+  "groups": [
+    {
+      "id": "G1-main-repo",
+      "scope": "主仓 /srv/workspace/dsh-plugins/dsh-agent-team（48 树之 1）",
+      "objects": "working tree + .git（25 packs，size-pack 322.76 MiB，count 21332，in-pack 91970，prune-packable 234，garbage 1 = .git/objects/pack/tmp_pack_YQWrCj 8.50 MiB）",
+      "capacity": "root maxdepth1 实测 50,768,824 KiB；.git 825,364 KiB（census 21:05Z）",
+      "time_basis": "本地 master HEAD 6259cf4bc4…（cI 2026-10-02T07:30:30+08:00）= 历史漂移，非权威锚；权威锚 = origin/master 4aaaa7b2 + PR363 计划 1310b9595 + 三计划 git 对象（封存件锚表）",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "KEEP / PROTECTED（唯一 authoritative repo 本体；三计划原件 = git 对象）",
+      "unknown_in_use_protection": "垃圾 pack tmp_pack_YQWrCj 属 .git 内部件，本包不判可删（git 完整性 = UNKNOWN，需具名 git 维护裁决）",
+      "facts_to_fill": ["本地 master 漂移与 origin 的收敛决定", "garbage pack 的具名处置授权"],
+      "latest_review_gate": "G1-I / G1-F 复审窗（均未过）；不早于 S1 冻结窗 2026-10-25T13:00:00Z"
+    },
+    {
+      "id": "G2-registered-worktrees-47",
+      "scope": ".worktrees/ 47 棵注册 git 树（gittrees-1.txt 469000d2e18a04ed，逐树 head/branch/dirty/uniq/last 已载）",
+      "capacity": "逐树 du 见 census-H（如 a5-m2-int 5,780,908 / a5m2-wire-g1 4,211,608 / a5m2-wire-g6 2,032,796 / 其余 15 棵 ≈0.36–1.36 GiB / 尾部 11 棵 ≤3,948 KiB）；组总量以 census-A 单次遍历 35,751,716 KiB 为准，H 行不可相加",
+      "time_basis": "gittrees 每树 last_commit + dirty_tracked + head_in_master（YES 仅 a5-mcp-binding、eb-e0-e1）；census 口径 2026-10-24T21:04–21:08Z",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN（逐树未证）",
+      "suggested_disposition": "逐树价值/去向 = 引用外部 47 树表（NOT_LOCAL，libfile_fb4f94abef0c819189d16a7166514de8，33439B）云端 join；本包不重编表、不判可删",
+      "unknown_in_use_protection": "dirty_tracked>0（含 11774/11775/11776/11777 群 = 工作区 D 状态）与 uniq_vs_master>0 且 head_in_master=NO 者一律 PROTECTED；stash@{0} 与未入 master 的本地分支清单在册；UNKNOWN 不删",
+      "facts_to_fill": ["逐树 dev_owner 身份记录（另一缺口，本包不补）", "a5-m2-int 与 a5m2-wire-g1 的 runtime checkout 已在 Q7/Q6 退役后 = 现量待后续具名重测（见 gaps）"],
+      "latest_review_gate": "PR360 / a5-m2-integration 废止候选（bef38934f）裁决窗；S1 冻结 2026-10-25T13:00:00Z"
+    },
+    {
+      "id": "G3-pack-int",
+      "scope": ".worktrees/pack-int/**（含 3 棵注册嵌套树 tree-37646ac2 / tree-4a26ac9a / tree-5c313418；注册件在 G2 计数，此处为组内上下文）",
+      "capacity": "组 du 1,297,316 KiB（census 21:08Z，**删前**）；同窗删除 install-0a3f11b2 531,712 + install-d703affb 78,820 KiB（删后未重测）；仍在：install-8e1eb730(最新)/0c71c8f9/0d166410/8077defc/c5a36a6a/e3e845f0/bf4e89e1 + out-5c313418/37646ac2/694b0c0e + logs-* + current.sha + 0.1.1-alpha.2.tgz",
+      "time_basis": "删除回执 2026-10-24T21:20:39Z→21:20:41Z；df 净差（3 目录合计）242,442,240 B",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "KEEP 原 tgz + logs-*/lock.before + current.sha（恢复输入）；7 个未纳入首批的 install-* = 待 root 按同款六条件逐员裁决",
+      "unknown_in_use_protection": "final lock 0a3=7685317f…c659 / d703=b76e1963…9c25 = 历史 before 原件 SHA 匹配；package.json 仍候选未定版；嵌套注册树不重复累加",
+      "facts_to_fill": ["3 棵嵌套树的独立容量（无 du 行）", "7 个 install-* 的独有修改核验"],
+      "latest_review_gate": "G1-I/G1-F；S1 冻结窗不变"
+    },
+    {
+      "id": "G4-preserve-and-census-receipts",
+      "scope": ".worktrees/.s1-asset-preserve-q6-20261024 / -q7-20261024 / .s1-f0-census-20261025 / .s1-recover-0a3-d703-2024(20261024)",
+      "capacity": "lane-A 单路径 du -sk 实测：q6 860,368 / q7 794,472 / census 1,396 / recover 4,856 KiB；归档件字节 q6 tar.zst 820,248,620 B = ac542a96…、q7 769,046,371 B = ff04f805…",
+      "time_basis": "PROVENANCE.md 75eb746e…（q6）/ 9a24ce9d…（q7）；tar --diff RC=0 且 0 差异行 ⇒ 恢复核验回执在",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "PROTECTED KEEP：q6 源（a5m2-wire-g1/tests/…-test-use）已 GONE ⇒ 已知唯一副本；q7 已满足退役前置但 PROVENANCE 自述不宣零独有价值（apps/web/dist 196/209、apps/cli/lib 40/45 为更早子集）",
+      "unknown_in_use_protection": "census 目录 = 已执行清理的唯一审计面本体（含未展开核的 m1-selfcheck-20261024/ = UNKNOWN）；recover 目录派生 lock/diff 无再生契约",
+      "facts_to_fill": ["Q6 退役条目在主账本的补登（router 事故件非权威）", "m1-selfcheck-20261024/ 内容核查"],
+      "latest_review_gate": "S1 冻结 2026-10-25T13:00:00Z；Q6/PR360 相关裁决窗"
+    },
+    {
+      "id": "G5-worktrees-hidden-uncovered（本包新测）",
+      "scope": ".worktrees/ 其余 12 个顶层隐藏目录（census 未逐目录载量者）",
+      "capacity": "本包唯一一次 du -ksx（timeout 120，实测 00:52:29Z→00:52:30Z rc=0）：.pnpm-store 870,300 / .pnpm-home 348,872 / .scratch-logs 75,636 / .a5g6-rev-faces 41,228 / .center-scratch 19,064 / .center-tmp 4,564 / .rev344-scratch 948 / .p52-pre-ff-backup 52 / .a5g6-expansion .a5g7-expansion .a5ie-expansion .worktrees 各 4 KiB ⇒ 同调用去重合计 1,360,680 KiB ≈ 1.30 GiB",
+      "time_basis": "目录 mtime 2026-10-01 → 2026-10-24；.worktrees/.worktrees 实测为空目录",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "全部 PROTECTED（UNKNOWN 不得删）；.pnpm-store / .pnpm-home 名义为缓存但**未证可再生**（网络禁用、无 pin/收据），须具名核验后再议；4 个 expansion/scratch 体积极小，非回收收益点",
+      "unknown_in_use_protection": "第二个 pnpm store 与仓根 .pnpm-store(3,877,044 KiB) / .pnpm-store-a5ie-r2b(622,276 KiB) 并存 ⇒ 三者是否同代可去重 = UNKNOWN；.p52-pre-ff-backup = 疑似 ff 前备份，语义 UNKNOWN",
+      "facts_to_fill": ["pnpm store 三者重叠度（硬链接共用比）", "各 scratch/expansion 的一次写入者与用途"],
+      "latest_review_gate": "S1 冻结 2026-10-25T13:00:00Z；容量再压窗（若 87% 未达标）"
+    },
+    {
+      "id": "G6-root-level-non-worktree",
+      "scope": "仓根其余大项（census-A/G）",
+      "capacity": "tests 7,662,488 / tests/homes 4,718,892 KiB（world=547，未逐 world）/ recovery 组：A 行 1,071,696 vs G 行 3,637,836 KiB（差 = 硬链接口径，见 caveats）/ .pnpm-store 3,877,044 / .pnpm-store-a5ie-r2b 622,276 / .gate 594,184 / .probe-plan-tmp 107,660 / 其余 ≤36,360 KiB",
+      "time_basis": "census 21:05–21:08Z；homes 世界名含 2026-10-23 stamp",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "tests/homes 三件（a5m2-todo-c2-r3 / a5m2-c2-r15 / .playwright-browsers）+ recovery/a5-m2-int-damaged = 已在 9 对象索引，价值待 root 逐件裁；.playwright-browsers **非纯缓存**（内含 2026-10-01 五件一手浏览器 gate 探针证据 + DoD#20(b) CLOSED 承载）⇒ 若清必先分离证据",
+      "unknown_in_use_protection": "recovery/a5-m2-int-damaged-20261023 = 3,599,048 KiB 占 9 对象合计 50.2%，F0 登记为 PR360 恢复来源（KEEP/PROTECTED），再生路径已失败留日志；a5m2-c2-r15 内含 durable team_domain.json + 3 sessions（含 session-team-child-…）",
+      "facts_to_fill": ["world 数 547→现数复查（遵约束未做）", "recovery 组 A/G 差异的逐对象硬链接解释"],
+      "latest_review_gate": "PR360 裁决（直接决定 3.6 GiB 去留）；G1-I/G1-F"
+    },
+    {
+      "id": "G7-h0-m1-evidence",
+      "scope": "dev/agent-workflow/evidence/s1-h0-m1（两个 run）",
+      "capacity": "292 KiB（lane-A du -sk；apparent 217）",
+      "time_basis": "run1 2026-10-24T22:24Z FAIL / run2 22:53Z no-ext PASS（封存件 h0.m1）",
+      "disposition_owner": "root", "dev_owner": "UNKNOWN",
+      "suggested_disposition": "KEEP（不可再生 = 已计数预算消耗；重跑违预算，PoC 4/20、Host 4/12 不增）",
+      "unknown_in_use_protection": "M1 首 run v5=7d4aa876…67d1 实体定点 find 未寻得 = 具名 UNKNOWN；去两贡献者可通，cause UNKNOWN",
+      "facts_to_fill": ["v5 脚本实体下落"],
+      "latest_review_gate": "完整 H0（身份绑定/生命周期）后续窗；本包不判"
+    }
+  ],
+  "space_named_exception": {
+    "df_now": "114,865,901,568 total / 94,763,012,096 used / 14,771,527,680 avail / 87%（本包实测）",
+    "df_census": "2026-10-24T21:05Z avail 14,495,703,040 → 首批删除后 21:20:41Z avail 14,424,330,240（同窗其它写入混入，不保证全归因本项目）",
+    "still_not_met": "87% 占用未变；已具名的潜在回收主体全部处于 PROTECTED/UNKNOWN，未获删除授权 ⇒ 本包不产生释放字节",
+    "named_blockers": [
+      "recovery/a5-m2-int-damaged-20261023（PR360 恢复来源，最大单项）",
+      ".worktrees/.s1-asset-preserve-q6/q7（已知唯一副本 / 不宣零独有价值）",
+      "tests/homes/.playwright-browsers（混一手证据，需先分离）",
+      ".worktrees/.pnpm-store + .pnpm-home（可再生性未证）",
+      "G2 中 dirty_tracked>0 ∧ head_in_master=NO 的 45 棵注册树"
+    ]
+  },
+  "named_gaps_not_expanded": [
+    "47 树的逐树价值/去向 = 外部表 NOT_LOCAL，本包只做云端 join 定位，不在本地重建",
+    "3 棵 pack-int 嵌套注册树无独立 du 行（组量已含，未拆）",
+    "删后（21:15/21:20Z）a5m2-pinbuild 与 pack-int 现量未重测（本包 du 配额已用于 G5）",
+    "逐对象 dev_owner 身份记录 = 独立验收的**另一**缺口，本包不补",
+    "tests/homes 547 world 未逐 world 测（约束禁止）",
+    "硬链接跨对象去重后的真实可释放上界 = UNKNOWN"
+  ],
+  "budget": {
+    "inherited_conservative_ledger": "~12h21 总账（保守继承值，非精确消耗；逐 Owner 重叠累加）",
+    "true_precise_consumption": "UNKNOWN（不编）",
+    "this_package_accumulates_into": "16 Owner-h 上限内",
+    "poc": "4/20 不增", "host_starts": "4/12 不增",
+    "deadline": "2026-10-25T13:00:00Z 不变"
+  },
+  "write_boundary": {
+    "created_dir": "dev/agent-workflow/evidence/s1-asset-disposition-20261025/（mkdir 原子建，建前实测不存在）",
+    "created_files": ["dev/agent-workflow/evidence/s1-asset-disposition-20261025/ASSET-DISPOSITION.json"],
+    "overwrites": 0,
+    "protected_untouched": ["dev/agent-workflow/SESSION_ROUTER_LOG.md", "dev/agent-workflow/evidence/s1-stage-f0-draft/", "dev/agent-workflow/evidence/s1-freeze-receipt-20261025/", ".worktrees/.s1-f0-census-20261025/ 全部原件", "dev/agent-workflow/evidence/s1-inventory-lane-a/", "三计划(git 对象)", "AGENTS.md", "dev/agent-workflow/graph.yaml", "产品/包源码"],
+    "no_delete_no_move": true, "broad_scans": 0, "du_invocations_this_package": 1
+  }
+}

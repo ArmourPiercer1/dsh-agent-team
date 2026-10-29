@@ -1,0 +1,96 @@
+{
+  "worldName": "u4-h0-2026-10-25T13-33-50Z",
+  "port": 3184,
+  "owned_pid": 54,
+  "run_error": "group G1 not settled within bound",
+  "pass": false,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 152572,
+  "budget": {
+    "poc_experiment": "this run = 1 experiment (≤8 remaining of package allocation; see README ledger)",
+    "host_starts": 1
+  },
+  "oracle": {
+    "pass": false,
+    "settled": false,
+    "final": true,
+    "outcome": "pending",
+    "counts": {
+      "bodyRows": 0,
+      "aStarts": 0,
+      "bStarts": 0,
+      "markers": 0,
+      "vetoes": 0,
+      "mockRequests": 9
+    },
+    "cells": {
+      "a_stable": {
+        "pass": false,
+        "detail": "body=false"
+      },
+      "b_regen_at_rest": {
+        "pass": false,
+        "detail": "b1 ran=false"
+      },
+      "b_regen_inflight": {
+        "pass": false,
+        "detail": "A-only=false; aborted=false"
+      },
+      "c_foreign_midbody": {
+        "pass": false,
+        "detail": "A-only; watch-abort=false"
+      },
+      "c_preguard_veto": {
+        "pass": false,
+        "detail": "veto=none; B-runs=0"
+      },
+      "c_restore_control": {
+        "pass": false,
+        "detail": "c3 ran=false"
+      },
+      "d_restrict_veto": {
+        "pass": false,
+        "detail": "veto=none; ctl-ok=undefined"
+      },
+      "d_lift_control": {
+        "pass": false,
+        "detail": "d2 ran=false"
+      },
+      "e_races": {
+        "pass": false,
+        "detail": "e1:MISSING,e2:MISSING,e3:MISSING"
+      },
+      "f_plant_executes": {
+        "pass": false,
+        "detail": "B-ran=false; marker+process-leg observed"
+      },
+      "f_after_restore": {
+        "pass": false,
+        "detail": "f2 ran=false"
+      },
+      "global_b_exactly_plant": {
+        "pass": false,
+        "detail": "B starts=0 (); B markers="
+      },
+      "global_never_zero": {
+        "pass": true,
+        "detail": "never-called name untouched"
+      },
+      "global_guard_vetoes_seen": {
+        "pass": false,
+        "detail": "vetoes="
+      },
+      "protocol": {
+        "pass": false,
+        "detail": "401=401; prompts=200"
+      },
+      "wire_secondary": {
+        "pass": true,
+        "gating": false,
+        "detail": "targets-delivered=0/14"
+      }
+    },
+    "scope_note": "PASS proves: (i) with the guard active, a same-name replacement (scoped shadow, global swap, restriction, regen, microtask/timer races) NEVER executed the unverified Body (marker/read/process side effects absent); (ii) the sensitivity plant DID execute it when the guard was deliberately disabled (oracle sensitivity); all on the pristine pinned Host via public registration/dispatch. It does NOT authorize claims beyond Definition-identity binding (see README conditions)."
+  }
+}

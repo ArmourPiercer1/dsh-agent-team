@@ -1,0 +1,249 @@
+{
+ "definition": "local branches with commits not on any remote ref (git rev-list branch --not --remotes --count > 0)",
+ "count": 24,
+ "branches": {
+  "a5-bg-shell": {
+   "branch": "a5-bg-shell",
+   "tip_sha": "f48484f20d2eb28239bb357f49a8349b8135ec44",
+   "commits_not_on_remote": 14,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-22T06:27:03+00:00",
+   "tip_subject": "checkpoint (PAUSE): e2e first-leg WIP frozen at parent's stop order\n",
+   "prs_all": []
+  },
+  "a5-cancel-leg": {
+   "branch": "a5-cancel-leg",
+   "tip_sha": "d123760911d0076617083a6ad9c3ecd2c947ba79",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": ".worktrees/a5-cancel-leg",
+   "tip_date": "2026-10-22T03:41:27+00:00",
+   "tip_subject": "test(runtime): scope the cancel-leg FD meter to the governed root\n",
+   "prs_all": [
+    {
+     "number": 354,
+     "state": "MERGED"
+    }
+   ]
+  },
+  "a5-jobs-guard-fix": {
+   "branch": "a5-jobs-guard-fix",
+   "tip_sha": "933ac771fddce2bf870f73c6c35f7c3288d7d1e7",
+   "commits_not_on_remote": 65,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-20T12:27:14+00:00",
+   "tip_subject": "docs(alpha5-b-jobs) 8ae-accounted resolver-wording fix: the pin is a SUFFIX match (endsWith packages/tools/src/governed-fs/errors.js), NOT \"only the artifacts exact specifier\" as previously claimed (8ae: test file relocated to an unrelated six-levels-up dir was still intercepted) - honest account now reads: any specifier ending in that tail is redirected to ONE fixed target which must pass the resolve-time git-blob identity gate (8ae independently red-proved with a one-char copy and derived pin 83ccd7ef itself); direction-harmless breadth documented in config header + LEDGER; mechanism untouched, rerun 3/3 green\n",
+   "prs_all": []
+  },
+  "a5-jobs-iso-int": {
+   "branch": "a5-jobs-iso-int",
+   "tip_sha": "59cfa579b6f63e3e2a2aeb6c08b4740e868dcc7b",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": ".worktrees/a5-jobs-iso-int",
+   "tip_date": "2026-10-20T08:17:46+00:00",
+   "tip_subject": "merge(alpha5-jobs): LOCAL REHEARSAL integration of master 7e9ee91e x 73b2300b (p4t6 UNION re-anchored at the measured 1210; push-banned rehearsal)\n",
+   "prs_all": []
+  },
+  "a5-jobs-isolation": {
+   "branch": "a5-jobs-isolation",
+   "tip_sha": "be25519c5f82d6b4ea5b04e9f87548f6748222b0",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": ".worktrees/a5-jobs-isolation",
+   "tip_date": "2026-10-20T07:28:33+00:00",
+   "tip_subject": "security(alpha5-b-jobs): the four 2026-10-20 instance.tail.log legs redacted (root rescan catch) - lane subtree now ZERO lines under the root line-level scan\n",
+   "prs_all": [
+    {
+     "number": 349,
+     "state": "MERGED"
+    }
+   ]
+  },
+  "a5-lsp-keyfix": {
+   "branch": "a5-lsp-keyfix",
+   "tip_sha": "7242a1f4526ccf07b6c9a239efb1a73557738964",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": ".worktrees/a5-lsp-keyfix",
+   "tip_date": "2026-10-20T07:38:19+00:00",
+   "tip_subject": "alpha5(lsp-fleg): five-leg LIVE closeout @9d12ac57 \u2014 mount fix PROVEN (real clangd answer), grading run7 15/2-honest\n",
+   "prs_all": [
+    {
+     "number": 350,
+     "state": "OPEN"
+    }
+   ]
+  },
+  "a5-read-pilot": {
+   "branch": "a5-read-pilot",
+   "tip_sha": "4f08204c97fb6073f5142bf0b33bea2cb2e8228d",
+   "commits_not_on_remote": 161,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-20T15:18:03+00:00",
+   "tip_subject": "a5-read-pilot ROOT-correction round: release-status correction, post-spawn shape-refusal hard-point, vocabulary reclassification\n",
+   "prs_all": []
+  },
+  "a5-tools-gov": {
+   "branch": "a5-tools-gov",
+   "tip_sha": "8ae606fabab9b463f1afb3fd4945413e9dbeccf0",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-20T07:38:41+00:00",
+   "tip_subject": "alpha5(tools-gov): F-legs closeout cross-lane entry (+ async/v2 regression note); push stays frozen\n",
+   "prs_all": []
+  },
+  "a5ie-r2b": {
+   "branch": "a5ie-r2b",
+   "tip_sha": "b071b4f5f49005023d41a65820cd8725c55bda0d",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T14:07:11+00:00",
+   "tip_subject": "evidence(a5ie-r4-b2): B2 exit-code fidelity VERIFIED on the real installed face (GREEN 35/35 + 3 booked) \u2014 the shape r3 booked verbatim (kernel refusal rendered as bash \u00b7 exit=0) inverts on the #336 install to bash \u00b7 exit=1 over the same 'cat: \u2026 Permission denied' stderr, with the zero-disclosure law intact (markerOnWire=0). Real network install of fee982d2 (three zeros 1772/1772; face rootSha 18f35295bb8c recorded beside the git id, never conflated); I10 reads exitPassthrough: true / --exit-passthrough from the INSTALLED bytes and the r3-vs-r4 face diff is exactly #336's five published files (changed=5 added=0 removed=0); positives true\u2192exit=0 and exit 7\u2192exit=7 on the wire; glob/search completion laws re-pinned unchanged (no exit= on either row); provider's own confined-shell ran exit=0/7/0/1 witnesses match the wire leg-for-leg; Z2 non-team \u0394=[]. Signal leg NOT re-driven per the order (pinned at the composition layer, a5b2 spec). r3 history quoted byte-for-byte in b2-exit0-historical-a5ie-r3.txt, nothing rewritten. KIT_EXIT=0; homes/ports swept; :3080 401\u2192401 untouched; test-use porcelain 0; NOT pushed.\n",
+   "prs_all": []
+  },
+  "a5ie-r4-b2-evidence": {
+   "branch": "a5ie-r4-b2-evidence",
+   "tip_sha": "b071b4f5f49005023d41a65820cd8725c55bda0d",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T14:07:11+00:00",
+   "tip_subject": "evidence(a5ie-r4-b2): B2 exit-code fidelity VERIFIED on the real installed face (GREEN 35/35 + 3 booked) \u2014 the shape r3 booked verbatim (kernel refusal rendered as bash \u00b7 exit=0) inverts on the #336 install to bash \u00b7 exit=1 over the same 'cat: \u2026 Permission denied' stderr, with the zero-disclosure law intact (markerOnWire=0). Real network install of fee982d2 (three zeros 1772/1772; face rootSha 18f35295bb8c recorded beside the git id, never conflated); I10 reads exitPassthrough: true / --exit-passthrough from the INSTALLED bytes and the r3-vs-r4 face diff is exactly #336's five published files (changed=5 added=0 removed=0); positives true\u2192exit=0 and exit 7\u2192exit=7 on the wire; glob/search completion laws re-pinned unchanged (no exit= on either row); provider's own confined-shell ran exit=0/7/0/1 witnesses match the wire leg-for-leg; Z2 non-team \u0394=[]. Signal leg NOT re-driven per the order (pinned at the composition layer, a5b2 spec). r3 history quoted byte-for-byte in b2-exit0-historical-a5ie-r3.txt, nothing rewritten. KIT_EXIT=0; homes/ports swept; :3080 401\u2192401 untouched; test-use porcelain 0; NOT pushed.\n",
+   "prs_all": []
+  },
+  "a5ie-r5": {
+   "branch": "a5ie-r5",
+   "tip_sha": "c44f51e447cb1c1b6951cbf21bdeb3c5e3386f5a",
+   "commits_not_on_remote": 3,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T20:43:20+00:00",
+   "tip_subject": "alpha5(a5ie-r5): real-install acceptance RUN \u2014 KIT_EXIT=2 RED(C1) 40/41+3 booked @ runs/2026-10-18T20-36-13Z\n",
+   "prs_all": []
+  },
+  "a5m2-local-candidate": {
+   "branch": "a5m2-local-candidate",
+   "tip_sha": "5b9a7262df583761c7ad6030ab9152a4429e0f16",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-23T04:27:30+00:00",
+   "tip_subject": "feat(a5-m2): PA owns the governed-read Ask \u2014 pre-execute hand-off, one PA walk split at the approval\n",
+   "prs_all": []
+  },
+  "a5poc7-gbj5-distfix": {
+   "branch": "a5poc7-gbj5-distfix",
+   "tip_sha": "18e707baecadf9a4cfc4111017e8d7f64696718c",
+   "commits_not_on_remote": 73,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-20T10:56:26+00:00",
+   "tip_subject": "alpha5(jobs-poc7b): red-1 FINAL per root exact pin \u2014 strict contract parser (session-create-parse.mjs: envelope type/rpcId/result.ok explicit, single required sessionId per session-controller/types.ts:293-296 + commands.ts:105-143 + rpc-host.ts:295-302 serialized form; unknown=fail-fast with booked raw) + REAL bug named: kit post returned the envelope under .body and the old code read .result skipping .body (always undefined); candidate table DELETED; post now books its rpcId for envelope matching; GH leg same parser; offline ACTUAL-shape +/- fixtures 6/6 (success/typed-error/missing-sessionId/ok-not-true/wrong-envelope/no-body) \u2014 zero worlds\n",
+   "prs_all": []
+  },
+  "alpha5-int-mnt": {
+   "branch": "alpha5-int-mnt",
+   "tip_sha": "342b266cd157986f6466e32d879dc7a8d843ba5a",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T04:45:40+00:00",
+   "tip_subject": "docs(int-mnt): r2 receipts \u2014 double-capture RUN1\u2261RUN2 red-9 \u2261 published 9 on the merged tree (identity=true, 574 files/7272 legs), drift 0 at 1746 compared, real typecheck EXIT=0, kits 20/20+15/15+24/24, delta-tie law verified tree-independent on the union merge; flaky round + merge-hygiene disclosures\n",
+   "prs_all": []
+  },
+  "alpha5-ptc-stack": {
+   "branch": "alpha5-ptc-stack",
+   "tip_sha": "0b89e688ff0838b7deb578632585f65ceadd7767",
+   "commits_not_on_remote": 9,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T15:07:57+00:00",
+   "tip_subject": "evidence(a5ptc): live-kit FINAL 19/19 GREEN on durable-oracle head 5a4a25e7 (merged 83ab021e) \u2014 KIT_EXIT=0; U-1b archive face measured by TOOL RESULT on legal public-entry args (rootSessionId+requestToken+targetInstanceId) + new FACE2 (cold re-mount of an ARCHIVED member still never routes \u2014 durable law outranks residency; rmSeenByRow=false, zero durable request, zero write); MEASUREMENT DEFECT DISCLOSED (old receipts verbatim, untouched): run4/8/9/10 U-1b 'archived=true' was marker-level \u2014 the {instanceId}-only tool call was typed-rejected at the entry, the member was never archived and routing it was LEGAL, so the 'archive-face real red' characterization is corrected (the durable-law gap the fix closes was independently proven by the fix lane RED-first and my FACE2 now re-verifies it on the production face); kit fixes: legal archive args + tool-result verdict capture (run11 rejected, run12 verbatim TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS -> leader teamEnvelope gained archive-member \u2014 envelope fail-closed was correct, blueprint under-granted); battery 7/7 EXIT=0 (10/5/10/12/42/12/6); stable :3080 probe-only 401->401; homes swept; baseline extract left local\n",
+   "prs_all": []
+  },
+  "alpha5-srgp-pr": {
+   "branch": "alpha5-srgp-pr",
+   "tip_sha": "5143867650685cb4f2f5751d4129a9d0278292f4",
+   "commits_not_on_remote": 3,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-18T06:09:28+00:00",
+   "tip_subject": "alpha5(srgp): re-anchor the PR bookings on the #322 baseline (measured, not copied)\n",
+   "prs_all": []
+  },
+  "backup/pre-rebase-55bd5e78": {
+   "branch": "backup/pre-rebase-55bd5e78",
+   "tip_sha": "55bd5e788ea4304f07331437e80a92a2a41cc775",
+   "commits_not_on_remote": 12,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-17T10:40:19+00:00",
+   "tip_subject": "review(alpha5/prod-lsp): delta2 review 1e76cd2c..7962022e = PASS \u2014 per-API horizon-outside closed-world law verified, retire-only-terminal proven under cap pressure, fd-3 PRE/POST reproduced with base modules; kit included\n",
+   "prs_all": []
+  },
+  "coord/routerlog-20261020": {
+   "branch": "coord/routerlog-20261020",
+   "tip_sha": "03cd0e697f6059ae1a2bb3a99730e8e09780c9e2",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-20T07:10:47+00:00",
+   "tip_subject": "docs(router-log): append 2026-10-02 PR#60/#61 merge records (previously uncommitted) + 2026-10-20 alpha.5 field round digest; log-only, no push (root gate)\n",
+   "prs_all": []
+  },
+  "feat/a5-m2-census-booking": {
+   "branch": "feat/a5-m2-census-booking",
+   "tip_sha": "421d5add6e9d7c670c11ec31a4c5ebfd99488a40",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-23T08:47:31+00:00",
+   "tip_subject": "test(testkit): book the four controlled-fs paths, anchored on a scanner run of THIS tree\n",
+   "prs_all": []
+  },
+  "feat/a5-m2-pa-read-handoff": {
+   "branch": "feat/a5-m2-pa-read-handoff",
+   "tip_sha": "5b9a7262df583761c7ad6030ab9152a4429e0f16",
+   "commits_not_on_remote": 1,
+   "checked_out_in_worktree": null,
+   "tip_date": "2026-10-23T04:27:30+00:00",
+   "tip_subject": "feat(a5-m2): PA owns the governed-read Ask \u2014 pre-execute hand-off, one PA walk split at the approval\n",
+   "prs_all": []
+  },
+  "feat/a5m2-g6-eventread-driver": {
+   "branch": "feat/a5m2-g6-eventread-driver",
+   "tip_sha": "cd359c367dbc598185298a8ae818305ae921f76e",
+   "commits_not_on_remote": 2,
+   "checked_out_in_worktree": ".worktrees/a5m2-wire-g6",
+   "tip_date": "2026-10-24T17:25:50+00:00",
+   "tip_subject": "fix(a5m2-g6): diag receipt whitelist tightening per independent review 529161e1 \u2014 remove free-text error.name/message from fatalFromTeamRootReady (presence booleans hasName/hasMessage instead; code + details.{rootSessionId,source,outcome,blockedScopes,fatalRequirementIds,pendingRequirementIds} unchanged) and replace errors[] free text with fixed codes ready-missing / loader-await-failed / preset-reads-failed; no other file touched; old candidate pinned at tag g6-pre-whitelist-fix = 578686d72ea5d7414edbae2be63cb8e3b97529d4. No boot, no Host.\n",
+   "prs_all": []
+  },
+  "feat/a5m2-wire-g5": {
+   "branch": "feat/a5m2-wire-g5",
+   "tip_sha": "ff421cf2502bb512ba94126ac27e47bb765255b3",
+   "commits_not_on_remote": 4,
+   "checked_out_in_worktree": ".worktrees/a5m2-wire-g5",
+   "tip_date": "2026-10-24T17:47:17+00:00",
+   "tip_subject": "A5M2 G5 family: L7 drift law against the real Cordis shadow-proxy face (root source-review card)\n",
+   "prs_all": []
+  },
+  "feat/s2-authority-snapshot-iso-20261025": {
+   "branch": "feat/s2-authority-snapshot-iso-20261025",
+   "tip_sha": "2e10100a59321b563430ef3a3294d3ffcbd18581",
+   "commits_not_on_remote": 8,
+   "checked_out_in_worktree": ".worktrees/s2-authority-iso-20261025",
+   "tip_date": "2026-10-25T09:47:43+00:00",
+   "tip_subject": "U1 independent-cold-read factual corrections (merge facts only; no verified/adopted upgrades)\n",
+   "prs_all": []
+  },
+  "task/int-alpha3-stage2": {
+   "branch": "task/int-alpha3-stage2",
+   "tip_sha": "e63da1256f7313822a2205b34696d330bba79e65",
+   "commits_not_on_remote": 12,
+   "checked_out_in_worktree": ".worktrees/int-alpha3-stage2",
+   "tip_date": "2026-10-01T22:40:58+00:00",
+   "tip_subject": "int: PR54 stability-gate 034b7418 (offline carrier combine, no merge rights)\n",
+   "prs_all": []
+  }
+ },
+ "stash": [
+  {
+   "ref": "stash@{0}",
+   "desc": "wrong-grammar-8788-attempt",
+   "base_commit_info": "85db7fb6f6a9432caa803bfc696f76b33bc676d9|2026-10-24T14:11:26+00:00|On feat/a5m2-wire-g1: wrong-grammar-8788-attempt",
+   "stat_summary_tail": " .../scripts/05-control-window-runner.mjs           | 82 ++++++++++++++++++++--\n 1 file changed, 78 insertions(+), 4 deletions(-)",
+   "stat_files_changed": 1,
+   "full_stat_saved_to": "raw/stash_0_stat.txt"
+  }
+ ],
+ "stash_full_stat_file": "raw/stash_0_stat.txt",
+ "root_master_note": "master @6259cf4b is 796 behind origin/master, 0 ahead (git rev-list --count HEAD..origin/master); no local-only commits on master"
+}

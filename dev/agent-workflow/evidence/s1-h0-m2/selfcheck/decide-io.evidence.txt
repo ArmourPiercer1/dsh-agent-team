@@ -1,0 +1,4 @@
+{"seq":1,"req_kind":"text","reply":{"kind":"text","content":"s1-m2-idle"}}
+{"seq":2,"req_kind":"text","reply":{"kind":"tool-call","toolCalls":[{"id":"s1m2-tc-1","name":"s1_m1_probe","arguments":{"tag":"call1"}}]}}
+{"seq":3,"req_kind":"tool_result","reply":{"kind":"tool-call","toolCalls":[{"id":"s1m2-tc-2","name":"s1_m1_probe","arguments":{"tag":"call2"}}]}}
+{"seq":5,"req_kind":"tool_result","reply":{"kind":"text","content":"s1-m2-complete"}}

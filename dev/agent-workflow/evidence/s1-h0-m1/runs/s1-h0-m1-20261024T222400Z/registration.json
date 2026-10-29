@@ -1,0 +1,26 @@
+{
+  "gate": "M1-first-run GO (root, 2026-10-24T22:2xZ; not G1, not product GO)",
+  "counters": { "poc_attempt": "1/20", "host_start_attempt": "1/12", "retries": 0, " worlds_created_before": 0 },
+  "command": "node dev/agent-workflow/evidence/s1-h0-m1/m1-run.mjs --go --port 3180 --world s1-h0-m1-20261024T222400Z",
+  "budget": { "run_ms": 1800000, "boot_ms": 90000, "prompt_wait_ms": 180000, "teardown_step_ms": 15000, "bounded_owned_teardown": true },
+  "sealed_inputs_sha256": {
+    "m1-run.mjs": "7d4aa8769ee85b6b04ea071054b052d8d7725b1718f6f3a9f25ff792324a67d1",
+    "probe-plugin.mjs": "c883ac3f80efcfe4a4fe462b137f32cbfc1724fafb0662d19c92848a8618f195",
+    "s1m1-session-client.mjs": "a0b20cedb1e6b8e7f3b10afd1544e9617a22697b3f8da83392904a3db693dbe8",
+    "instance.mjs": "77880a8eec88b874d662efdb4c9fb38caef129b2eb9fea006c9b7da9120bf351",
+    "util.mjs": "7dd44280c8b03d7ea59e24d581c0d2430b407ca8a4e031c3feca30034c3fff71",
+    "mock-deepseek.mjs": "8beade69588c105efb66df6a7a99dd915cb41b7aba91635ec0ebf73e6278fb06",
+    "README.md": "d67fe24b447961f1bba2957a14764c250673cd1363cee70c5df27f1a939afc9a",
+    "inputs.json_NOT_A_RUN_INPUT_comment_only": "6204caf376876d726ab8de7421594acc9984d6bdbbd49d7c86a71ba3d18da06c"
+  },
+  "host_runtime": {
+    "htu_tree": "tests/deepseek-harness-test-use",
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "describe": "dsh-v0.2.0-rc.2", "porcelain": 0, "tags": 25,
+    "content_digests_relative": { "apps/cli/lib": "e72d7d0c212b8e41", "packages/core/tools/lib": "a3353facc7e98f0b", "apps/web/dist": "e80728be886b0e7e" },
+    "build_provenance": "NOT_VERIFIED", "f0_census": "unsigned"
+  },
+  "inputs_public_seam": { "profile_patch_row": "probe-plugin.mjs single plain row via DshInstance.mountRows (instance.mjs:194)", "no_preset": true, "no_team_row": true, "no_pr360_assembly": true, "mock": "loopback only, DEEPSEEK_BASE_URL=http://127.0.0.1:<ephemeral>" },
+  "preconditions_measured_utc": { "world_absent": true, "lock_absent": true, "prior_s1h0m1_worlds": 0, "port_3180_listener_rows_proc_net": 0, "port_3080_probed": false },
+  "prohibitions": ["no 3080", "no other world", "no Team/PR360 assembly", "no install", "no build", "no real provider", "no second attempt regardless of failure", "raw redacted before any cloud output; originals stay in local world, no deletion"]
+}

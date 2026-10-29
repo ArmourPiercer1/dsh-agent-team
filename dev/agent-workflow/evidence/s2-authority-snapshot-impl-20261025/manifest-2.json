@@ -1,0 +1,48 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-2.json",
+  "kind": "Single targeted correction round for the one code review NEEDS_TARGETED_FIX. Supersedes the affected statements in manifest.json wherever they conflict; manifest.json is NOT edited. No third round is self-initiated. Isolated tree/branch, single writer; 291165d79a preserved unamended; delivered as new commit b0f4a371.",
+  "utc": { "round_start": "2026-10-25T02:55:46Z", "delivered": "2026-10-25T02:57:57Z", "clock": "date -u", "budget": "15-minute bound from request; honored" },
+  "head": { "branch": "feat/s2-authority-snapshot-iso-20261025", "new_commit": "b0f4a37135ab641cb8c1b1ba0d96e84db018a2a2", "parent": "291165d79a3fd35f7162d3db5b1ff8bc640814b5", "base": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84", "diff": "3 files +103/-11", "worktree_bytes": 10790210, "cap_mib": 300, "install": 0 },
+  "read_only_opening_verification": {
+    "isolated_git_status": "clean (rc=0) at round start",
+    "refs_stash": "85db7fb6f6a9432caa803bfc696f76b33bc676d9 — locatable commit, message 'On feat/a5m2-wire-g1: wrong-grammar-8788-attempt'; a PRE-EXISTING foreign-task entry, never created/touched by this package (its own earlier stashes were popped, restoring this OID); zero stash/pop/reset used in this round",
+    "tmp_s2_red2_log": "absent (cross-turn tmp cleared); original red run irrecoverable — red evidence for all three bugs was regenerated fresh at 291165d79a (fix-red-291165d7.log); original receipt text not rewritten, corrected here"
+  },
+  "corrections_to_manifest_json": [
+    "case count: the suite had 24 labels, not 22 (previous reply miscounted); now 30 labels, suite prints its actual count",
+    "regression exit claims via tail pipes are WITHDRAWN: real direct exits are controls=1, docs-sync --check=1",
+    "'baseline parity proves non-attribution via git stash' is WITHDRAWN as method (stash is forbidden): attribution now rests on (a) git-show old-vs-new generated-write parity 28/28 identical check+write verdict pairs across 6 planted scenarios x 4 relative paths (zero-para: symlink target/ancestor, hardlink, escape, not-generated-file, not-generated-area, clean), and (b) failure-reason inspection below"
+  ],
+  "fix_1_check_before_create": {
+    "change": "publisher safeMkdirParentsNoSymlink: per-component lstat -> refuse SYMLINK_ANCESTOR/NOT_DIRECTORY_ANCESTOR on any existing link -> single-level mkdir -> post-create lstat recheck; no recursive mkdir may run before verification; final component still governed by checkLocationBoundary(mustBeAbsent) + O_EXCL|O_NOFOLLOW",
+    "red_before": "FAIL P8: external dir gained entries: \"\" -> \"authority-snapshots\"",
+    "green_after": "PASS P8: SYMLINK_ANCESTOR refused, external dir readdir identical before/after"
+  },
+  "fix_2_hasown_and_proto": {
+    "change": "validateNode uses Object.hasOwn for schema membership, required and presence (never `in`); canonicalValue builds objects with Object.create(null) so a data key '__proto__' stays an own enumerable property and can never be swallowed into the prototype chain or alter emitted bytes silently",
+    "red_before": "FAIL N10/N11/N12: ACCEPTED (constructor / __proto__ / toString own keys slipped past additionalProperties:false)",
+    "green_after": "PASS N10/N11/N12: all three rejected as UNEXPECTED_KEY; canonicalBytes({\"__proto__\":1}) === '{\"__proto__\":1}'; polluted digest != clean digest; V2 legal-example digest unchanged (sha256:67ac0074...)",
+    "note": "JSON.parse creates __proto__ as an own data property; the null-prototype canonical build preserves it, the old {} build would have dropped the key and silently changed the digest basis"
+  },
+  "fix_3_q1_digit_agreement": {
+    "change": "checkSnapshotObject, only when the OPTIONAL current_phase_statement is present: pm=/^alpha(\\d+)/i on phase_id, statement must match ALPHA\\.?<N> (frozen legacy Q1, ci-pr-gate.mjs:343-345); presence is NOT made required; three machine bans unchanged",
+    "red_before": "FAIL V7: ACCEPTED (ALPHA.6 statement against phase_id alpha5-tool-io-governance)",
+    "green_after": "PASS V7 PHASE_STATEMENT_DIGIT_MISMATCH refused; PASS V8 consistent ALPHA.5 positive still ok"
+  },
+  "fix_4_p2_and_count": "P2 captures the pre-attempt Buffer, asserts refusal exit 2 OVERWRITE_REFUSED, then Buffer.compare(before, after) === 0 verbatim (old after.length === after.length tautology deleted); summary prints actual ran counter (30/30 ALL GREEN at b0f4a371, exit=0; fix-green.log)",
+  "fix_5_real_evidence": {
+    "commands_direct_exit": [
+      "node scripts/doc-consistency-controls.mjs > reg-controls.log 2>&1 -> exit=1",
+      "node scripts/docs-sync.mjs --check > reg-sync.log 2>&1 -> exit=1",
+      "parity fixture (git-show 4aaaa snapshot of generated-write vs current): 28/28 verdict pairs identical -> exit=0",
+      "isolation suite at b0f4a371: exit=0, 30/30"
+    ],
+    "failure_ids_9": "POS-1 POS-3 POS-4 POS-6 POS-8 POS-10 POS-11 NEG-21 NEG-79 — all are fixture-internal sync outputs lacking findings=0; concrete cause demonstrated: docs/ cone files link into dev/agent-workflow/evidence/**, which is ABSENT from the sparse cone (test: dev/agent-workflow ABSENT-from-sparse), yielding LINK_DANGLING/STALE_GENERATED_VIEW/CATALOG. Classification: ENV/sparse-baseline red, NOT whole-docs pass, NOT fixed (old reds untouched), NOT attributable to this package (docs-sync/doc-checks imports unchanged; generated-write parity identical)",
+    "whitelist": "git diff 4aaaa -- scripts/generated-write.mjs grep of GENERATED_(AREAS|FILES) definition lines and both file entries: no +/- lines (rc=1, i.e. zero whitelist change); W1 pins both lists verbatim at runtime",
+    "no_stash_this_round": true,
+    "no_parent_reset": true
+  },
+  "mode_zero_claims": { "host": 0, "ci": 0, "live_pointer": 0, "registry": 0, "consumers": 0, "product": 0, "entry_switch": 0, "push": 0, "merge": 0, "paid": 0, "subagents": 0, "stash_pop_reset": 0, "install": 0 },
+  "logs_committed_with_evidence_dir": ["fix-red-291165d7.log", "fix-green.log", "reg-controls.log", "reg-sync.log", "gen-write-baseline-4aaaa.mjs (read-only baseline snapshot for parity, never executed against the repo)"],
+  "gate_statement": "No gate claimed or changed; G2 remains not passed. Idle now, awaiting exactly one re-review; if still blocked this package stops and reports — no third self-initiated round, no extra documentation rounds."
+}

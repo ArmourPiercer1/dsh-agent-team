@@ -1,0 +1,21 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-11.json",
+  "kind": "Sole bounded fix for the reader-candidate root review, plus the definitive correction of the earlier false-green wording (manifest-9 S1 claim, manifest-10 chain). No older originals edited.",
+  "utc": { "round_start": "2026-10-25T04:17:51Z", "delivered": "2026-10-25T04:18:49Z (date -u)" },
+  "fix_1_statement_semantics": {
+    "defect": "checkSnapshotCurrentContract leaned on loader shape/digest only; the shared core checks Alpha digits alone, so correct-digest statements ALPHA.5 master=abcdef1 (embedded revision) and ALPHA.5 ... PR #353 (PR census) passed the existing publisher-side bans",
+    "fix": "loadCandidateAuthority now, AFTER its existing shape/expected/recorded/recomputed checks, reuses the EXISTING checkSnapshotObject; remaining errors (bans/digit-mismatch) -> CANDIDATE_STATEMENT_SEMANTICS with detail. Existing reject codes unchanged; no third regex set; schema optionality and the CI entry's statement-MISSING refusal unchanged; gen-current-state/probe consumers inherit the stricter loader coherently",
+    "red_at_aa408af5": "step6f-red.log exit=1 2/10: S9 and S10 both [] (banned statements graded clean — the exact放行 root described)",
+    "green": "step6f-green.log exit=0 10/10; each case also asserts info.contract undefined (graded nothing)"
+  },
+  "fix_2_s1_fixture_honesty": {
+    "defect": "suite case S1 (NOT the historical S1 phase assets) was unfaithful: the template graph() named docs/plans/active/p.md + docs/backlog.md + docs/matrix.md while providers only knew the EXAMPLE/CC paths — the 'clean' parity state therefore actually carried Q2 target misses, never zero findings; and graph().replace('LIVE-CONFIRMED','ALMOST-DONE') matched no string in the graph, so bad-enum silently duplicated state 1",
+    "fix": "graph() contract paths aligned to CC; bad-enum now mutates the MATRIX provider file; the case FIRST asserts clean findings == [] and bad-enum carries the Q5 closed-enum finding, THEN byte-compares findings+info parent(3d6f6aad)-vs-current on all three states; await-runner retained",
+    "wording_correction_final": "manifest-9's 'S1 byte-equal ... proves behavioral equality' was based on a harness race (never executed); manifest-10 recorded that. After THIS fixture fix, the three-state parity genuinely executes and passes — the only valid parent-equality claim is at/after 61df0b424"
+  },
+  "head": { "new_commit": "61df0b424df27d2a1d5cffaa7038da309dee7307", "parent": "aa408af5deeb558a729caa1ce2c4ab9f6d445a06", "diff": "2 files +42/-10 (loader semantics + suite S1/S9/S10)", "porcelain": "empty", "disk_free_B_end": 2197835776 },
+  "exits_direct_captured": "suite 10/10 exit=0; reg30 exit=0; reg9 exit=0; reg10 exit=0; reg7 exit=0 (each its own node process, rc from $?); controls exit=1 nine historical reds comm-diff 0 kept",
+  "evidence_sha256": { "step6f-red.log": "1d5f64fe3e4c7753e85dd30026431789886082bce2d4db10b7cddb36f216f014", "step6f-green.log": "2e231831b492fd564465efd3ef8f5b3a2cee6eaf6e590e80bdfe40960b113676" },
+  "scope_zero": "schema/publisher/CI-entry/leg wiring/probe/gen-current-state/plan docs/workflow/entry/Host/install/push: 0 changes; no third fix round will be self-initiated",
+  "gate_statement": "Not G2, not plan step-5. Idle awaiting the single re-review; if still blocking, stop and report."
+}

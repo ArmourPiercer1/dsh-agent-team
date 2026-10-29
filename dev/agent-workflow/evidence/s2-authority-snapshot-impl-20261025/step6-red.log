@@ -1,0 +1,10 @@
+PASS S1 legacy default behavior byte-equal to fixed parent on clean / Q8-absent / bad-enum inputs
+FAIL S2 bad candidate inputs refuse with named codes and grade nothing (no skip, no fallback): checkSnapshotCurrentContract not exported yet
+FAIL S3 snapshot without current_phase_statement: new entry refuses; nothing borrowed from graph: not implemented
+FAIL S4 legal snapshot + real graph: clean; missing target and non-ancestor baseline still graded: not implemented
+FAIL S5 real graph feeds the core: phantom BL-999 in ready[] is graded, never swallowed: not implemented
+FAIL S6 matrix enum red and Q6 single expected ref: snapshot mode fixes current-authority.json: not implemented
+FAIL S7 drift=null is Q7 fail; NEEDS_REVALIDATION with V@B=yes is contradiction (via snapshot path): not implemented
+FAIL S8 half-given CLI pair: named refusal exit 2 before any leg runs: exit=1 out=file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/s2-authority-iso-20261025/scripts/ci-pr-gate.mjs:1528
+    else throw new Error(`unknown argument: ${
+RED (7/8 failing)

@@ -1,0 +1,166 @@
+{
+ "task": "U6 PR1 \u2014 governance-center skeleton (shadow, inert)",
+ "branch": "task/u6-pr1-center-skeleton-20261025",
+ "base": "origin/master @ f7fbc0f677736cc0cdf8025cd6c24ab555fdcad8",
+ "head_at_c2": "0178adb689b7033138b3b1d0fbc6550524b05e39",
+ "host": "tests/deepseek-harness-test-use detached @ 639ed015397290b3745d163aafe02ffee4aa3f84 (TEST_USE_BASELINE_SHA, porcelain empty; assertHostBase verified pre/post)",
+ "c2": "RUN-u6-shadow-x FAIL 15/16 (normalization gap, disclosed) -> RUN-u6-shadow-y PASS 16/16; host starts 4/4 budget; ports leased 3180; homes tests/homes/u5{y,x}{off,shd}-* (torn down, leak-check PASS x4)",
+ "files": [
+  {
+   "path": "gate-transcripts/artifacts-at-head.txt",
+   "sha256": "0f460cafa17a4718547c35983ff43a5a95254412aaa966b2dc287d7dd3620013",
+   "bytes": 1133
+  },
+  {
+   "path": "gate-transcripts/blueprint-fence.txt",
+   "sha256": "61d3f6085506b1cd57d9cce09ae215e6b6ab1b74fb01ed8d9a416b6c14ebd570",
+   "bytes": 24770
+  },
+  {
+   "path": "gate-transcripts/lint-identities.txt",
+   "sha256": "88292192f1b75df693960e57cfa27502283489ed509895f509036bfdf01f7ce8",
+   "bytes": 583
+  },
+  {
+   "path": "gate-transcripts/typecheck.txt",
+   "sha256": "d35ab1fb5b1d891481f3cb735d31b46cb94aaa9889470d84938aec55cf28f300",
+   "bytes": 800
+  },
+  {
+   "path": "logs/census-comparison-cap1.json",
+   "sha256": "88d1e5ba0cefa8e78b83c66325897fd2300f78cd8305398d44277e71e5619d12",
+   "bytes": 6543
+  },
+  {
+   "path": "logs/census-comparison-cap2.json",
+   "sha256": "2d2d104cf49759e42c9d8b45d38afc383823164c28f164e97ddc0fae1ae09a71",
+   "bytes": 5005
+  },
+  {
+   "path": "logs/ci-pr-gate-census-stored.log",
+   "sha256": "066d01e6201469503b83abf2dbf6d20ca6fc3b525af3c93a351eecfa75d00e16",
+   "bytes": 2197
+  },
+  {
+   "path": "logs/ci-pr-gate-census-stored2.log",
+   "sha256": "083f47316f7f2db1bdd9e25dd54d70ea9968ece21e403f06da1369e268becd95",
+   "bytes": 1711
+  },
+  {
+   "path": "logs/ci-pr-gate.log",
+   "sha256": "353e252d388323758059827e028574f0807312db3531c84c9694a2e239ee02c5",
+   "bytes": 3652
+  },
+  {
+   "path": "logs/docs-probe.log",
+   "sha256": "4dcf70575ff03441d4bf61dececcb8a2a12bf253411b0c139de564f4f92831a0",
+   "bytes": 1236
+  },
+  {
+   "path": "logs/lint-identities-diff.log",
+   "sha256": "c6171d2f81bcecaaba5c1488df4e5c10c6676122522a5e70225495df729174ef",
+   "bytes": 347
+  },
+  {
+   "path": "logs/p4t6-GREEN-booked.log",
+   "sha256": "d7bf78bae09e04a62f3b76b84b7c0851ffbd4c9fa20380a5bc965ce31808963d",
+   "bytes": 527
+  },
+  {
+   "path": "logs/p4t6-RED-unbooked.log",
+   "sha256": "c7e74deed4c71ce50b49d3bdb0e51a76d4b469a6f6773ffca9f391a0f18deb46",
+   "bytes": 71746
+  },
+  {
+   "path": "logs/r-build.log",
+   "sha256": "a5bd507eeeb67fe8d3ee3ee4e2422121343c67dd2f458c136cee09847b641c03",
+   "bytes": 746
+  },
+  {
+   "path": "logs/root-vitest-2.json",
+   "sha256": "a842c1ca6a8fb7a9e23377bdf3a203030d161160bfa5a1155a2d2d1107e199d5",
+   "bytes": 3633545
+  },
+  {
+   "path": "logs/root-vitest-2.log",
+   "sha256": "71185e506f518321680340acc858487e43fccef4cc58dee93f923a0651b9478a",
+   "bytes": 4504
+  },
+  {
+   "path": "logs/root-vitest.json",
+   "sha256": "8ea07b43282d8ff4624bddc75302ce0677b1333c3053f2e6ad55ee0ba0f7dcc9",
+   "bytes": 3638640
+  },
+  {
+   "path": "logs/root-vitest.log",
+   "sha256": "e3e2697d2fee410d7f7a31ea310b105695588eb724da131adc2fcd8be53601a3",
+   "bytes": 5564
+  },
+  {
+   "path": "logs/runtime-vitest.log",
+   "sha256": "b3c67485729f2082740b693670e4a908c6034d7271eea8030bfe5e4f97741eff",
+   "bytes": 277034
+  },
+  {
+   "path": "c2/RUN-u6-shadow-x.json",
+   "sha256": "2844f44fcc4b6e2ada67c75e84d9aad3492bd62d90c53ce536d5bc1865d55359",
+   "bytes": 19506
+  },
+  {
+   "path": "c2/RUN-u6-shadow-y.json",
+   "sha256": "8c1c9e9b68f305c5eddb991c128feb8e81cfb976c771bd7421fff2cf9847f7b6",
+   "bytes": 19324
+  },
+  {
+   "path": "c2/budget.jsonl",
+   "sha256": "c113982c7ff10143b041e13b27aeaadded9bd9d6443facc38e6302e8e219238c",
+   "bytes": 640
+  },
+  {
+   "path": "c2/runner-console-y.log",
+   "sha256": "7385e6eff5b2bf03b3572b0d4b8b000acfe278d174bb6728461b78837dae39cb",
+   "bytes": 539
+  },
+  {
+   "path": "c2/runner-console.log",
+   "sha256": "288f9d36cf18e2a190cb88248704c33ac620d39600e6f7e3620f37de99e88b99",
+   "bytes": 546
+  },
+  {
+   "path": "c2/u6-shadow-parity.json",
+   "sha256": "8533e489b7e9c81e0ee68c833fd6036b25d9822c132ee5c1ff0a5f18c23eddd3",
+   "bytes": 4367
+  },
+  {
+   "path": "c2/logs/u5xshd-20261025T15-44-29Z/instance-port3180.log",
+   "sha256": "d45deef5a5e2978fa19717b5b671daf92d14d52d6bc9c5ded66818ed14de691a",
+   "bytes": 82
+  },
+  {
+   "path": "c2/logs/u5xoff-20261025T15-44-26Z/instance-port3180.log",
+   "sha256": "005c23adb4cc4bba1d7a22a5b09071b73df375b1f2fa6af74c8f180383c81ecc",
+   "bytes": 82
+  },
+  {
+   "path": "c2/logs/u5yshd-20261025T15-45-11Z/instance-port3180.log",
+   "sha256": "ec370c9a844bf87cbe79c1a8d864c0ef09cf1b2afc0e900b3cf80d2e27ea62b7",
+   "bytes": 82
+  },
+  {
+   "path": "c2/logs/u5yoff-20261025T15-45-08Z/instance-port3180.log",
+   "sha256": "1ebc026a373797d46ad4edbb11c251070340e7240560e0de799fb9d64b9b5883",
+   "bytes": 82
+  },
+  {
+   "path": "PR-BODY.md",
+   "sha256": "3d2ac0106941894a4a59d5283c72864232fb4e323cb576f79ff943844fcd2020",
+   "bytes": 7500
+  }
+ ],
+ "pr": {
+  "number": 369,
+  "state": "OPEN (NOT merged, per instruction)",
+  "head": "0178adb689b7033138b3b1d0fbc6550524b05e39",
+  "checks": "candidate-protection pass; pr-gate pass; census-runtime pass (round 1 of <=2 fix rounds used: 0)"
+ }
+}

@@ -1,0 +1,242 @@
+{
+  "artifact": "s2-authority-map-20261025/AUTHORITY-MIGRATION-MAP.json",
+  "kind": "PR363 S2 first deliverable: Authority Migration Map (§7.4). Inventory-only. It does NOT switch authority.",
+  "round": {
+    "utc_start": "2026-10-25T01:44:55.962Z",
+    "clock": "real UTC from date -u, not estimated",
+    "session_model": "qwen3.8-flash-next (runtime self-report; route default per request)",
+    "mode": {
+      "host": 0,
+      "paid": 0,
+      "subagents": 0,
+      "cleanup": 0,
+      "new_worktree_or_clone": 0,
+      "new_install": 0,
+      "merge": 0,
+      "push": 0,
+      "ci_or_host_runs": 0,
+      "permission_escalation": 0,
+      "plan_or_graph_edits": 0,
+      "authority_switch": 0
+    }
+  },
+  "upstream_gate_check": {
+    "read_from": "dev/agent-workflow/evidence/s1-f0-issued-20261025/ (F0-ISSUED-20261025.json, G1-GATE-DECISION.json, manifest.json)",
+    "inputSnapshotDigest_claimed": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "recomputed_this_round": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "match": true,
+    "canonical_rule_applied": "F0.canonical_digest_algorithm: UTF-8 no BOM; object keys sorted by code point recursively; arrays order-preserved; compact separators; minimal escapes with raw non-ASCII; zero 0x0A; SHA-256 lowercase hex prefixed sha256:. digest_scope = pure inputs object {git_objects, external_references, local_files} only (digest_scope key itself excluded, per F0.inputs.digest_scope).",
+    "canonical_string_bytes": 4285,
+    "local_files_rehashed": "18/18 matched (sha256 and byte length)",
+    "git_objects_reverified": "2/2 commits resolve; 3/3 blobs resolve with matching byte length; each blob id equals git rev-parse <pr363>:<path>",
+    "external_reference": "dsh-worktree-value-inventory-20261025.md remains NOT_LOCAL; no local-existence claim made",
+    "gate_guard_result": "no referenced input diverged",
+    "gate_verdicts_read": {
+      "G1_I": "PASS",
+      "G1_F": "NOT_PASSED",
+      "overall_G1": "PARTIAL"
+    },
+    "unlocked_scope_used": "S2 document and engineering-governance work only, no unproven safety-critical dependency"
+  },
+  "fixed_sources": {
+    "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+    "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+    "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+    "access": "git show / git grep / git cat-file against these fixed refs only; the 6259cf4b working tree was not used as current authority",
+    "pr361_two_files": [
+      "docs/plans/memo/engineering-baseline/architecture.md",
+      "docs/plans/memo/engineering-baseline/execution-plan.md"
+    ],
+    "old_base_929fc": "historical, not used",
+    "three_plans_note": "the three alpha5-reset blobs exist at PR363 and are ABSENT at origin/master (verified: git rev-parse returned nothing for all three paths at 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84)"
+  },
+  "plan_says_vs_reality": {
+    "plan_claim": "five-stage-implementation-plan.md §7.4 (blob 66a540b9066d8f937696e99450b850398b0ccc5a, line 143): \"Map 至少列出旧 current_contract 的全部六个字段\"",
+    "reality": "confirmed SIX fields inside the current_contract block, no more and no fewer",
+    "discrepancy": "NONE for the block itself. One adjacent fact is recorded rather than absorbed: current_phase is a seventh live statement that is NOT a field of current_contract but is graded against it (Q1/Q3 in checkCurrentContract) and shares the pointer grammar. It must move in the same transaction or the block it checks will contradict it.",
+    "nested_baseline_confusion": "graph.yaml also carries unrelated nested `baseline:` keys inside Alpha.4 history at L120 and L262; checkCurrentContract deliberately scopes its lookups to the block so history is not graded as a live duplicate. Any new reader must scope the same way."
+  },
+  "old_current_contract_fields": [
+    {
+      "field": "phase_id",
+      "file_ref": "dev/agent-workflow/graph.yaml:92",
+      "value_at_fixed_master": "alpha5-tool-io-governance",
+      "grammar": "alpha<N>-<kebab-name> (Q2)",
+      "authority_source": "hand-maintained prose value in the graph block; no derivation",
+      "direction": "read by machine, written only by human commit"
+    },
+    {
+      "field": "active_plan",
+      "file_ref": "dev/agent-workflow/graph.yaml:93",
+      "value_at_fixed_master": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
+      "grammar": "must exist and start with docs/plans/active/ (Q2)",
+      "authority_source": "hand-maintained path",
+      "direction": "read"
+    },
+    {
+      "field": "backlog",
+      "file_ref": "dev/agent-workflow/graph.yaml:94",
+      "value_at_fixed_master": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+      "grammar": "must exist (Q2); its CONTENT is then graded — BL-/BR- ids found in the backlog become the only accepted values of graph ready:/blocked: (ci-pr-gate.mjs:351-356)",
+      "authority_source": "hand-maintained path; the backlog file is the source for the BL/BR id population",
+      "direction": "read (value dereferenced and its content graded); the path value itself is NOT exported into info.contract"
+    },
+    {
+      "field": "matrix",
+      "file_ref": "dev/agent-workflow/graph.yaml:95",
+      "value_at_fixed_master": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+      "grammar": "must exist (Q2); its CONTENT is then graded by Q5 — boundary markers, region order, the 9-cell row contract and the positive-claim set (ci-pr-gate.mjs:372-406)",
+      "authority_source": "hand-maintained path; the matrix file is the source for tool-row claims and tested-SHA cells",
+      "direction": "read (value dereferenced and its content graded); the path value itself is NOT exported into info.contract. Both this and backlog are also re-read by Q6 (ci-pr-gate.mjs:485-492) to check the phase-baseline-ref and phase-identity lines, so a migration must move the comment in these files in the same commit or Q6 goes red."
+    },
+    {
+      "field": "baseline",
+      "file_ref": "dev/agent-workflow/graph.yaml:96",
+      "value_at_fixed_master": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+      "grammar": "exactly 40 hex; must resolve and be HEAD or an ancestor of HEAD; equality with HEAD legal (Q4)",
+      "authority_source": "git object reality outside this file (commit existence + ancestry)",
+      "direction": "read by ci-pr-gate AND independently by hosted CI awk"
+    },
+    {
+      "field": "baseline_collected",
+      "file_ref": "dev/agent-workflow/graph.yaml:97",
+      "value_at_fixed_master": "2026-10-22T07:20:56Z",
+      "grammar": "ISO8601Z (Q2)",
+      "authority_source": "hand-maintained timestamp",
+      "direction": "read"
+    }
+  ],
+  "adjacent_live_statement": {
+    "field": "current_phase (top level, not a current_contract field)",
+    "file_ref": "dev/agent-workflow/graph.yaml:64",
+    "why_it_matters": "Q1 fails it for naming the Alpha.4 phase and requires its wording to agree with phase_id; Q3 requires exactly one top-level current_phase. A migration that moves the six fields and leaves current_phase untouched produces a self-contradicting authority in one commit."
+  },
+  "machine_consumers": "see MACHINE-CONSUMERS.json (authoritative per-item list with read/write direction, authority source and file:line)",
+  "migration_targets": {
+    "rule": "reuse the already-merged #362 tooling base; do not build a second general system",
+    "reuse": [
+      "dev/engineering/registry.yaml (hand-maintained decisions; already declares legacy_execution_authority and migration_of_legacy_consumers)",
+      "dev/engineering/current-state.json (generated read-only derived view)",
+      "scripts/generated-write.mjs GENERATED_AREAS + GENERATED_FILES (the only real write boundary)",
+      "scripts/docs-probe.mjs (pnpm docs:probe) and scripts/docs-sync.mjs (pnpm docs:sync --check/--write) as the existing probe/sync pair",
+      "scripts/gen-current-state.mjs LEGACY_MIRROR_KEYS + checkLegacyMirror as the existing double-reader"
+    ],
+    "candidate_target_per_field": [
+      {
+        "field": "phase_id",
+        "candidate": "registry.yaml entry + derived view; current authority stays graph until the switch transaction",
+        "note": "doc-checks checkPlanCitationBlocks reads only phase_id, via the derived-view mirror"
+      },
+      {
+        "field": "active_plan",
+        "candidate": "registry.yaml entry + derived view",
+        "note": "Q2 target-existence and docs/plans/active/ prefix check must move with it"
+      },
+      {
+        "field": "backlog",
+        "candidate": "registry.yaml entry + derived view",
+        "note": "correction installed during self-review: the backlog is not a leaf pointer. graph ready:/blocked: ids are only accepted if they resolve inside it (ci-pr-gate.mjs:351-356) and Q6 re-reads its phase-baseline-ref line, so the migration must carry the BL/BR population and the reference comment, not just the path."
+      },
+      {
+        "field": "matrix",
+        "candidate": "registry.yaml entry + derived view",
+        "note": "not a leaf pointer either: Q5 grades the matrix file itself (boundary markers, region order, 9-cell rows, the DONE/LIVE-CONFIRMED/ENFORCE-PARTIAL positive-claim set) and Q6 re-reads its reference lines, so the migration carries its content contract, not just the path"
+      },
+      {
+        "field": "baseline",
+        "candidate": "MUST keep resolving to git object reality, not to a copy; the census-runtime.yml awk reader must be repointed in the same transaction",
+        "note": "this is the only field with an independent non-ci-pr-gate machine reader"
+      },
+      {
+        "field": "baseline_collected",
+        "candidate": "registry.yaml entry + derived view",
+        "note": "timestamp only, no external corroboration exists"
+      },
+      {
+        "field": "current_phase (adjacent)",
+        "candidate": "must be adjudicated in the same transaction: retire, or restate without naming a revision",
+        "note": "a prose pointer that asserted a revision is exactly the failure the state-freshness leg was built for"
+      }
+    ],
+    "single_write_point": "exactly one: dev/agent-workflow/graph.yaml#current_contract until the switch transaction completes; after it, exactly one of {registry.yaml, graph.yaml} holds the live pointer and the other becomes a read-only historical mirror. current-state.json is never a write target for authority (generated-write.mjs GENERATED_FILES does not and must not name graph.yaml)."
+  },
+  "execution_order": "fixed by §7.4, restated with what each step means against the consumers actually found",
+  "steps": [
+    "1 inventory every consumer — done by this Map and MACHINE-CONSUMERS.json; no entry may be rewritten before its consumers are listed",
+    "2 freeze the new authority schema and the single write point — registry.yaml subset plus generated-write.mjs GENERATED_FILES are the existing surfaces; extending GENERATED_FILES is the only sanctioned widening",
+    "3 deploy double-READ diagnostics, no double-write — the existing double-reader is checkLegacyMirror (LEGACY_MIRROR_INCOMPLETE / LEGACY_MIRROR_VALUE / LEGACY_MIRROR_SCHEMA_MISMATCH); it reads graph and the derived mirror and never writes graph",
+    "4 switch consumers one by one to a versioned authority snapshot, machine readers first (census-runtime.yml awk, then ci-pr-gate checkCurrentContract, then gen-current-state, then doc-checks, then docs-probe)",
+    "5 real CI negative controls for old/new conflict, missing field, unknown id and forged C1/C2 — the existing control set is packages/testkit/test/a5-current-contract.test.ts (P1-P3, N1-N5) and scripts/doc-consistency-controls.mjs; its inline fixture currently carries only 3 of the 6 fields and must be widened first, otherwise the negatives it cannot express will silently pass",
+    "6 switch the current pointer in a single transaction (six fields + current_phase + every repointed reader in one commit)",
+    "7 verify the derived mirror is read-only and cannot reverse-decide authority (LEGACY_MIRROR_VALUE proves mismatch only while the graph block exists; after the switch a dedicated refusal is required, since checkLegacyMirror reads the graph block it no longer holds)",
+    "8 rehearse the inverse migration before claiming reversibility"
+  ],
+  "no_double_read_note": "double-read is allowed only through the existing mirror check; no second reader may become a decision maker. docs:probe declares its own limits (T0 only, no C1/C2/C3 substitution, cannot replace a ci-pr-gate leg) and those limits stay true after migration.",
+  "rollback": {
+    "anchor": "pre-migration recorded SHA and pointer snapshot, taken from git (the commit that precedes the switch) plus the verbatim six-field block, not from dev/engineering/current-state.json",
+    "prohibition": "§7.4 forbids recovering authority from a derived mirror such as current-state.json; current-state.json can be deleted and regenerated, it can never be a source",
+    "required_proof": "rollback itself must pass the CI negative controls and an independent review, and must be rehearsed in step 8 before the switch is claimed reversible",
+    "note": "graph.yaml is git-tracked so the textual revert is trivial; the non-trivial half is that a reader left repointed at the new authority would keep reading the new location after a text revert, which is why readers move in the same commit in both directions"
+  },
+  "negative_controls_planned": [
+    {
+      "case": "old and new authority disagree in the same tree",
+      "existing_control": "checkLegacyMirror LEGACY_MIRROR_VALUE (value level) + LEGACY_MIRROR_INCOMPLETE + LEGACY_MIRROR_SCHEMA_MISMATCH",
+      "status": "exists, needs widening to the post-switch shape"
+    },
+    {
+      "case": "current_contract block absent",
+      "existing_control": "a5-current-contract.test.ts N5 (no fallback) and Q8",
+      "status": "exists"
+    },
+    {
+      "case": "duplicate field inside the block",
+      "existing_control": "Q3 per-field count over all six fields",
+      "status": "exists"
+    },
+    {
+      "case": "missing individual field",
+      "existing_control": "Q2 per-field presence",
+      "status": "exists for all six at the block level (Q2 presence + Q3 single declaration). The narrower real gap: backlog and matrix values are dereferenced and their content graded (Q5, GROUP C) but the path values are never exported into info.contract, so a double-read diagnostic built on info.contract would cover 4 of 6 field VALUES while still looking green."
+    },
+    {
+      "case": "unknown / unresolvable baseline",
+      "existing_control": "Q4 (must resolve, must be HEAD-ancestor)",
+      "status": "exists in ci-pr-gate; the hosted awk reader only checks it is non-empty and passes the same loop as master_sha"
+    },
+    {
+      "case": "forged C1 standing in for C2 (only C1 claimed as if it were C2)",
+      "existing_control": "registry validateRegistry CLAIM_TIER_MISMATCH / CLAIM_TIER_MISSING / CLAIM_UNBOUND / FAKE_VERIFICATION",
+      "status": "exists at registry level; NOT wired to current_contract fields — the six fields carry no tier concept today"
+    },
+    {
+      "case": "legal historical proposal misread as undelivered product",
+      "existing_control": "doc-checks plan-citation rules plus INV-EB-0009 four-axis separation",
+      "status": "exists as document rules; must be re-run after migration to prove no false red"
+    },
+    {
+      "case": "fixture expressiveness gap",
+      "existing_control": "doc-consistency-controls.mjs inline graph fixture",
+      "status": "GAP: fixture carries phase_id, active_plan, baseline only (3 of 6) — negatives for backlog, matrix and baseline_collected cannot be expressed until it is widened"
+    }
+  ],
+  "gaps_found_this_round": [
+    "G1 census-runtime.yml:129 parses current_contract.baseline with its own awk expression: a second independent definition of the pointer grammar outside ci-pr-gate, not covered by a5-current-contract fixtures. A migration that changes block shape breaks the hosted job, not the local leg.",
+    "G2 checkCurrentContract reads and grades all six fields, but info.contract carries only phase_id, active_plan, baseline and baseline_collected (scripts/ci-pr-gate.mjs:313): the backlog and matrix PATHS are consumed internally (Q2 existence, GROUP C id population, Q5 row contract, Q6 reference lines) and then not surfaced. Any step-3 double-read built on info.contract therefore sees 4 of 6 values and needs the two paths added, or it will report coverage it does not have.",
+    "G3 doc-consistency-controls.mjs:63-68 fixture graph carries 3 of 6 fields, so part of the required negative space is currently unprovable.",
+    "G4 registry.yaml:9 migration_of_legacy_consumers is already recorded as not_started_requires_coordination and is mirrored into the derived view, but no machine reader gates on that value; it is documentation-shaped state today.",
+    "G5 the sentence that makes the legacy block the authority until an approved migration is REQ-EB-0003 (docs/contracts/engineering-baseline/ids.yaml:105-108, mirrored into INDEX.md:150-155) and its normative_status is proposed-not-ratified; the contract that authorises the switch is itself unratified. Ratifying the 18 IDs is outside this round.",
+    "G6 docs-probe reads authority only through the derived-view mirror (scripts/docs-probe.mjs:128 viewMirror) and uses only phase_id; a new authority without a mirror would leave the probe blind rather than red.",
+    "G7 no writer of graph.yaml exists in scripts/ (verified: no fs write call names graph.yaml in scripts/); the write point is a human commit guarded by dev/agent-workflow/hooks/pre-commit YAML-parse check. Any \"single write point\" claim must describe a human-commit discipline, not a tool.",
+    "G8 docs/contracts/engineering-baseline/plan-citation-interface.md:40 cites INV-EB-0012 as the basis of PLAN_CITATION_CONFLICT, but ids.yaml declares only INV-EB-0001..INV-EB-0010 — INV-EB-0012 is declared nowhere in the tree (verified by git grep at the fixed ref, single hit: that citation itself). The concept C-EB-0012 does exist (docs/glossary.md:22) and carries the same substance, so this reads as a mis-keyed id rather than a missing rule. No existing checker catches it: the id-resolution checks (verify-agent-notes note-reference rules, registry REGISTRY_REF_UNRESOLVED) cover note frontmatter and registry refs, not prose inside contract documents. Migration step 5 should add that coverage, because a rule whose cited id does not resolve is exactly a rule that can quietly stop being true."
+  ],
+  "not_done": {
+    "explicit": "This Map performs no switch, no merge, no push, no CI or Host run, no install, no cleanup, no worktree or clone creation, no permission change. It does not claim the S2 gate passes. G2 remains unevaluated; the S2 PASS criteria (E0 measured ranges, E1 source relations, controlled single switch) are untouched.",
+    "carried": "18 proposed IDs not ratified (0 ratified); 93 seeds remain PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED; PR360 history is not restored into an execution task; PR361 plan files are not moved or rewritten; central architecture, security law and the five-stage order are unchanged."
+  },
+  "budget": {
+    "caps": "16 Owner-h cumulative and 2026-10-25T13:00:00Z absolute cap, unchanged and not reset",
+    "this_round_wall_clock_minutes": "bounded at 30 minutes from 01:44:55Z",
+    "scope": "counted into the existing cumulative total"
+  }
+}

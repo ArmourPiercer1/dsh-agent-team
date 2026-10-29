@@ -1,0 +1,44 @@
+{
+  "package": "u6-prep-20261025",
+  "purpose": "Read-only preparation for work package U6 (center assembly rewrite): center map, existing governed-call flow, PR #360 extraction candidates, U6 slicing proposal",
+  "date": "2026-10-25",
+  "mode": "READ-ONLY (no product writes, no host boot, no commits; writes confined to this evidence directory)",
+  "baseline": {
+    "repo": "/srv/workspace/dsh-plugins/dsh-agent-team",
+    "root": "origin/master @ f7fbc0f677736cc0cdf8025cd6c24ab555fdcad8",
+    "host_pin_source": "tests/paths.mjs (0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84)",
+    "architecture_source": "origin/task/alpha5-reset-architecture-five-stage-20261025:docs/plans/memo/alpha5-reset-20261025/center-assembly-architecture.md",
+    "pr360_head": "origin/feat/a5-m2-integration @ bef38934fc1cf40407bdae435af5bf6e84dedaf4"
+  },
+  "inputs_read": [
+    "AGENTS.md",
+    "docs/ROUTER_RULES.md (S0 first)",
+    "docs/TEST_METHODS.md",
+    "docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md (U6 section + DAG)",
+    "center-assembly-architecture.md (all; S3/S4/S5/S7/S8 ARC-A..D/S10)",
+    "dev/agent-workflow/evidence/u4-g1f-sup-a-20261025/README.md (S5 ten conditions)",
+    "dev/agent-workflow/evidence/u4-g1f-sup-b-20261025/README.md (PoC designs)"
+  ],
+  "files": [
+    {
+      "path": "CENTER-MAP.md",
+      "sha256": "5072ea35aeabf4e62d32c0ccca73c8b88c72ff88148f4f5e4b95c3a62399e49b",
+      "summary": "Section/function map of center files classified ADAPTER/REGISTRY/KERNEL/FAMILY/BRIDGE/LIFECYCLE/UNRELATED; exhaustive tool-name-branch enumeration: 38 sites in center product files (~80 distinct names; PLANE_RESERVED_NATIVE alone ~60); LOC: host.ts 3304, root.ts 4356, agent-bindings.mjs 5887, team-tool-plane.mjs 1916, pa-mount-registry.mjs 477, plane-effect-backends.mjs 1850; tool-dispatch 2868 (name-free), operation-permission 6759; dist-mirror + PLACEMENTS rule"
+    },
+    {
+      "path": "EXISTING-GOVERNANCE.md",
+      "sha256": "1d994185d23a95795d3f11db1e29220a77f13d2ab941b64e6e256fb0321ce091",
+      "summary": "End-to-end governed call flow with file:line; PA admit at team-tool-plane.mjs:1158 (in-body, pre-effect), Control ask/consume at control/service.ts:2141/3240, grant mint grant-mint.ts:74 / consume team-tool-plane.mjs:1406, native-fallback prevention via closed-world guard; H0 identity check = PARTIAL (dispatch-gate re-verify install.ts:957 + tools/change signal raise :1030-1054 exist; single approval table + post-success drift fail-closed absent); next()-guard hooks = existing seam set in tool-dispatch/install.ts"
+    },
+    {
+      "path": "PR360-EXTRACT.md",
+      "sha256": "3c3394bda7ff77eeaf1fb38d8e58e7795648369b97aacb8e5be21506689eb977",
+      "summary": "governed-families/* 50 modules 28,915 LOC + controlled-fs post-consume ~2.0k + write-slice 678 + 91 C1 tests + 1 C2 kit; per-module LOC/deps/tests; arm contract (classify pure -> kernel consume -> zero-arg post-consume closure); WIP-only flags: agent-bindings +6.3k / team-tool-plane +6.0k wiring swell, A5_GOVERNED_FAMILIES table shape, kernel grammar edits, g3-fsproc 2970-LOC mixed file"
+    },
+    {
+      "path": "U6-SLICE-PLAN.md",
+      "sha256": "b2550c89c0a03c73bdff60f2cf8ea1eaf62e7ec4d63e2d2f028da05000836dfb",
+      "summary": "6 PRs: (1) inert Kernel/Registry/Adapter skeleton + closed contribution schema + shadow next()-guard; (2) FS/read family (ARC-B1); (3) bash/process (ARC-B2); (4) Jobs bridge (ARC-C); (5) ARC-A new probe + search family zero-center-diff + fitness gate; (6) ARC-D adversarial + old-path removal (no dual ledger); per-PR files/tests (C1 + C2 via tests/world-factory)/risks/condition matrix; respects dist mirror co-commit, p4t6 pin (measured 1228), lint-identity baseline, nine-root census 9 titled reds"
+    }
+  ]
+}

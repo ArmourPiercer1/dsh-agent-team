@@ -1,0 +1,90 @@
+{
+  "artifact": "s2-authority-fixtures-20261025/manifest.json",
+  "kind": "Delivery manifest for the S2 authority-migration isolation fixture package (bounded 20-minute prep, step-2 input only). All cases UNEXECUTED; no validator, test, CI or Host process invoked; no schema frozen.",
+  "utc": {
+    "round_start": "2026-10-25T02:23:31Z",
+    "manifest_frozen": "2026-10-25T02:26:14Z",
+    "deadline": "2026-10-25T02:43:31Z",
+    "clock": "date -u real UTC"
+  },
+  "execution_identity": {
+    "session_model": "qwen3.8-flash-next (runtime self-report; route default per request, qiyuan-self/qwen3.8-flash-next)",
+    "file_policy": "workspace-write",
+    "approval_policy": "ask",
+    "subagents": 0,
+    "paid_models": 0,
+    "escalation_used": false
+  },
+  "permission_basis": "user-relayed review disposition READY_FOR_BOUNDED_PREP on the corrected Map — explicitly NOT G2; G2 remains not passed per s2-authority-map-20261025/ERRATA-20261025.json gate_statement; the string READY_FOR_BOUNDED_PREP exists nowhere in the evidence tree (grep 0 hits), recorded as user-relayed",
+  "inputs_reverified": {
+    "fixed_refs_resolved": ["4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84 (commit)", "1310b959595b211e5da7a5f727dadf522f79d60b (commit)", "b97ffdafdceeb73d58a06fe5fb6563820d063d28 (commit)"],
+    "f0_inputSnapshotDigest_recomputed": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4 (4285 canonical bytes, zero LF) — MATCHES the fixed claimed digest",
+    "physical_tree": "HEAD 6259cf4bc is the old tree; used for nothing authoritative (ERRATA E3)",
+    "map_trio_hashes_matched": "AUTHORITY-MIGRATION-MAP.json df3eb5e5.../19695B and MACHINE-CONSUMERS.json b54b7dba.../12268B match the ERRATA-recorded values; ERRATA itself ef47cbf88fd0cf5f58fd8eefde30c0b31c7a6709713e0c014f53d177d21d7e33/8038B"
+  },
+  "files": [
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/FIXTURES.json",
+      "sha256": "e1ed04c1ac3938910b4465f0e04b36f1e72d9ea3b60eb610b2d53109b39348c8",
+      "bytes": 22820,
+      "role": "16-case data fixture set (POS/MIS x6/CONF x3/UID x2/TIER/HIST/DERIV x2), each with inputs, expected diagnosis (static derivation, file:line pinned) and existing-control or to_be_implemented mapping; all UNEXECUTED"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/SOURCE-VERIFICATION.json",
+      "sha256": "c88d52963f492cbed4e9d9d0f054f7cf96852751f0bdfe2bcf308ea9af7edcec",
+      "bytes": 7126,
+      "role": "read-only input reverification: ref resolution, digest recomputation, semantic pins, current_phase-vs-phase_id ruling, mode counts"
+    }
+  ],
+  "total_new_bytes": 29946,
+  "cap": "1 MiB on new text; 29946 bytes used (~2.9%); manifest adds its own bytes below the cap",
+  "validation": {
+    "json_parse": "every file re-parsed after every edit (two parse passes on FIXTURES.json: pre- and post-correction)",
+    "self_iteration": "one in-draft correction before final hashing: kind string said 15 cases, actual is 16 — corrected and re-hashed before freeze; the final hashes above are the frozen delivery hashes; any later change requires a new version, no old-F0-precedent invocation"
+  },
+  "mode": {
+    "host": 0,
+    "paid": 0,
+    "subagents": 0,
+    "ci_or_host_runs": 0,
+    "validators_invoked": 0,
+    "new_tests_executed": 0,
+    "clone": 0,
+    "new_install": 0,
+    "new_worktree": 0,
+    "merge": 0,
+    "push": 0,
+    "checkout_or_reset": 0,
+    "cleanup": 0,
+    "permission_escalation": 0,
+    "plan_or_graph_edits": 0,
+    "authority_switch": 0,
+    "schema_a_changes": 0,
+    "a_package_writes": 0,
+    "pre_existing_objects_overwritten": 0
+  },
+  "write_boundary": {
+    "created_only": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/ (absence verified before mkdir; plain mkdir, would fail if it existed)",
+    "pre_existing_dirtiness_not_touched": "dev/agent-workflow/SESSION_ROUTER_LOG.md was already dirty in the physical tree (mtime 2026-10-25T00:21:05Z, ~2h before this round's start; sole dirty tracked file at round check); this round neither wrote nor reverted it",
+    "protected_untouched": [
+      "router (ROUTER_RULES, SESSION_ROUTER_LOG, graph.yaml, current)",
+      "three plans + AGENTS.md + docs/plans (all)",
+      "old Map/F0 evidence dirs (read-only)",
+      "scripts/, packages/, tests/, dev/engineering/, .github/, CI config",
+      "any A-package s2-schema-candidate object",
+      ".worktrees/, tests/deepseek-harness-test-use/"
+    ]
+  },
+  "not_claimed": [
+    "A-package s2-schema-candidate conformance or freeze (A candidate not frozen)",
+    "new-schema conformance or test pass (B-level semantics cases only)",
+    "G2 or any gate result",
+    "that the expected findings were observed (all UNEXECUTED; derivations from checker source at fixed refs)",
+    "implementation: no generic fixture framework built, no current validator called, no Schema A change",
+    "step-2 freeze: this package is INPUT to the one merged root review that freezes step 2"
+  ],
+  "budget": {
+    "wall_clock": "bounded 2026-10-25T02:23:31Z -> 02:43:31Z; delivered inside the window",
+    "cumulative": "counted into the existing cumulative 16 Owner-h total and the 2026-10-25T13:00:00Z absolute cap; not a reset"
+  }
+}

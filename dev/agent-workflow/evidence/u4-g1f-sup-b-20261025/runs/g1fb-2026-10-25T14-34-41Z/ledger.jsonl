@@ -1,0 +1,189 @@
+{"at":"2026-10-25T14:34:43.695Z","leg":"master-reuse","module":"pa-mount-registry.mjs","phase":"imported-unmodified","path":"/srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/src/plugin/live/pa-mount-registry.mjs","sha256":"fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d"}
+{"at":"2026-10-25T14:34:43.938Z","leg":"center-ready","centerId":"g1fb-center-1","ledger":"g1fb-center-1#ledger-1","families":["write","edit","read","grep","bash","job_list","job_output","job_kill"]}
+{"at":"2026-10-25T14:34:44.328Z","leg":"mcp-watch","phase":"discovered","name":"mcp__beta__ping","afterSessionCreated":false}
+{"at":"2026-10-25T14:35:45.480Z","leg":"ctl","action":"status","ok":true,"detail":"{\"enrolled\":[],\"approved\":[],\"flags\":{\"guardEnabled\":true,\"pathGuardEnabled\":true,\"ledgerEnabled\":true,\"identityLawEnabled\":true,\"dynamicAdmissionEnabled\":true},\"mounts\":[],\"dynamic\":{\"seen\":[\"mcp__beta__ping\"],\"admitted\":[]}}","tag":"pre-enroll","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.608Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:A0-pre-enroll","tag":"A0-pre-enroll","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.637Z","leg":"ctl","action":"session-created","ok":true,"detail":"stamped:1792938945637","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.665Z","leg":"family-register","phase":"registered","family":"P1-B-WRITE","name":"write","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.665Z","leg":"family-register","phase":"registered","family":"P1-B-EDIT","name":"edit","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.666Z","leg":"family-register","phase":"registered","family":"P2-B-READ","name":"read","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.666Z","leg":"family-register","phase":"registered","family":"P2-B-SEARCH","name":"grep","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.666Z","leg":"family-register","phase":"registered","family":"P2-B-PROCESS","name":"bash","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.667Z","leg":"family-register","phase":"registered","family":"P3-BRIDGE-JOBS","name":"job_list","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.667Z","leg":"family-register","phase":"registered","family":"P3-BRIDGE-JOBS","name":"job_output","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.667Z","leg":"family-register","phase":"registered","family":"P3-BRIDGE-JOBS","name":"job_kill","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:45.667Z","leg":"enroll","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13","label":"S1","results":[{"name":"write","ok":true,"detail":"gen1"},{"name":"edit","ok":true,"detail":"gen1"},{"name":"read","ok":true,"detail":"gen1"},{"name":"grep","ok":true,"detail":"gen1"},{"name":"bash","ok":true,"detail":"gen1"},{"name":"job_list","ok":true,"detail":"gen1"},{"name":"job_output","ok":true,"detail":"gen1"},{"name":"job_kill","ok":true,"detail":"gen1"}]}
+{"at":"2026-10-25T14:35:45.667Z","leg":"ctl","action":"enroll","ok":true,"detail":"[{\"name\":\"write\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"edit\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"read\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"grep\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"bash\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"job_list\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"job_output\",\"ok\":true,\"detail\":\"gen1\"},{\"name\":\"job_kill\",\"ok\":true,\"detail\":\"gen1\"}]","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.693Z","leg":"guard","phase":"approve","name":"write","callId":"gf-t01","tag":"p1a"}
+{"at":"2026-10-25T14:35:45.694Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"write","decision":"execute","lane":"allow","callId":"gf-t01"}
+{"at":"2026-10-25T14:35:45.694Z","leg":"body-start","name":"write","tag":"p1a","callId":"gf-t01"}
+{"at":"2026-10-25T14:35:45.694Z","leg":"body-end","name":"write","tag":"p1a","ok":true,"path":"w/ok.txt","bytes":6}
+{"at":"2026-10-25T14:35:45.694Z","leg":"guard","phase":"settled","name":"write","callId":"gf-t01","tag":"p1a"}
+{"at":"2026-10-25T14:35:45.731Z","leg":"guard","phase":"approve","name":"write","callId":"gf-t02","tag":"p1d"}
+{"at":"2026-10-25T14:35:45.731Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"write","decision":"refused","reason":"deny-lane","lane":"deny","callId":"gf-t02"}
+{"at":"2026-10-25T14:35:45.731Z","leg":"refused-before-body","name":"write","decision":"refused","tag":"p1d"}
+{"at":"2026-10-25T14:35:45.757Z","leg":"guard","phase":"approve","name":"edit","callId":"gf-t03","tag":"p1e"}
+{"at":"2026-10-25T14:35:45.758Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"edit","decision":"execute","lane":"allow","callId":"gf-t03"}
+{"at":"2026-10-25T14:35:45.758Z","leg":"body-start","name":"edit","tag":"p1e","callId":"gf-t03"}
+{"at":"2026-10-25T14:35:45.758Z","leg":"body-end","name":"edit","tag":"p1e","ok":true,"replacements":1}
+{"at":"2026-10-25T14:35:45.758Z","leg":"guard","phase":"settled","name":"edit","callId":"gf-t03","tag":"p1e"}
+{"at":"2026-10-25T14:35:45.795Z","leg":"family-register","phase":"refused","reason":"name-collision","name":"write","by":"P1-DUPE-WRITE2","owner":"P1-B-WRITE"}
+{"at":"2026-10-25T14:35:45.795Z","leg":"ctl","action":"dupe-attempt","ok":true,"detail":"refused:name-collision:write:owner=P1-B-WRITE,claimant=P1-DUPE-WRITE2","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.823Z","leg":"ctl","action":"status","ok":true,"detail":"{\"enrolled\":[\"session-07a05c14-348d-487b-96a1-77a87cdb0b13:S1\"],\"approved\":[\"write\",\"edit\",\"read\",\"grep\",\"bash\",\"job_list\",\"job_output\",\"job_kill\"],\"flags\":{\"guardEnabled\":true,\"pathGuardEnabled\":true,\"ledgerEnabled\":true,\"identityLawEnabled\":true,\"dynamicAdmissionEnabled\":true},\"mounts\":[{\"name\":\"write\",\"generation\":1,\"familyId\":\"P1-B-WRITE\"},{\"name\":\"edit\",\"generation\":1,\"familyId\":\"P1-B-EDIT\"},{\"name\":\"read\",\"generation\":1,\"familyId\":\"P2-B-READ\"},{\"name\":\"grep\",\"generation\":1,\"familyId\":\"P2-B-SEARCH\"},{\"name\":\"bash\",\"generation\":1,\"familyId\":\"P2-B-PROCESS\"},{\"name\":\"job_list\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"},{\"name\":\"job_output\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"},{\"name\":\"job_kill\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"}],\"dynamic\":{\"seen\":[\"mcp__beta__ping\"],\"admitted\":[]}}","tag":"after-p1","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.853Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:A1-poc1","tag":"A1-poc1","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.878Z","leg":"guard","phase":"approve","name":"read","callId":"gf-t10","tag":"p2a"}
+{"at":"2026-10-25T14:35:45.878Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"read","decision":"execute","lane":"allow","callId":"gf-t10"}
+{"at":"2026-10-25T14:35:45.879Z","leg":"body-start","name":"read","tag":"p2a","callId":"gf-t10"}
+{"at":"2026-10-25T14:35:45.879Z","leg":"body-end","name":"read","tag":"p2a","ok":true,"chars":27}
+{"at":"2026-10-25T14:35:45.879Z","leg":"guard","phase":"settled","name":"read","callId":"gf-t10","tag":"p2a"}
+{"at":"2026-10-25T14:35:45.914Z","leg":"guard","phase":"approve","name":"read","callId":"gf-t11","tag":"p2d"}
+{"at":"2026-10-25T14:35:45.914Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"read","decision":"refused","reason":"deny-lane","lane":"deny","callId":"gf-t11"}
+{"at":"2026-10-25T14:35:45.914Z","leg":"refused-before-body","name":"read","decision":"refused","tag":"p2d"}
+{"at":"2026-10-25T14:35:45.942Z","leg":"guard","phase":"approve","name":"grep","callId":"gf-t12","tag":"p2g1"}
+{"at":"2026-10-25T14:35:45.942Z","leg":"grant","phase":"requested","ledger":"g1fb-center-1#ledger-1","name":"grep","requestId":"g1fb-req-001","grantKey":"grep::grep:needle@search/","callId":"gf-t12"}
+{"at":"2026-10-25T14:35:45.942Z","leg":"refused-before-body","name":"grep","decision":"pending","requestId":"g1fb-req-001","tag":"p2g1"}
+{"at":"2026-10-25T14:35:45.971Z","leg":"grant","phase":"approved","ledger":"g1fb-center-1#ledger-1","name":"grep","requestId":"g1fb-req-001"}
+{"at":"2026-10-25T14:35:45.971Z","leg":"ctl","action":"approve","ok":true,"detail":"issued:g1fb-req-001","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:45.995Z","leg":"guard","phase":"approve","name":"grep","callId":"gf-t13","tag":"p2g2"}
+{"at":"2026-10-25T14:35:45.995Z","leg":"grant","phase":"consumed","ledger":"g1fb-center-1#ledger-1","name":"grep","requestId":"g1fb-req-001","grantKey":"grep::grep:needle@search/","callId":"gf-t13"}
+{"at":"2026-10-25T14:35:45.995Z","leg":"body-start","name":"grep","tag":"p2g2","callId":"gf-t13"}
+{"at":"2026-10-25T14:35:46.001Z","leg":"body-end","name":"grep","tag":"p2g2","ok":true,"matches":2,"exit":0}
+{"at":"2026-10-25T14:35:46.001Z","leg":"guard","phase":"settled","name":"grep","callId":"gf-t13","tag":"p2g2"}
+{"at":"2026-10-25T14:35:46.028Z","leg":"guard","phase":"approve","name":"grep","callId":"gf-t14","tag":"p2g3"}
+{"at":"2026-10-25T14:35:46.028Z","leg":"grant","phase":"replay-refused","ledger":"g1fb-center-1#ledger-1","name":"grep","requestId":"g1fb-req-001","callId":"gf-t14"}
+{"at":"2026-10-25T14:35:46.028Z","leg":"refused-before-body","name":"grep","decision":"replay-refused","requestId":"g1fb-req-001","tag":"p2g3"}
+{"at":"2026-10-25T14:35:46.054Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t15","tag":"p2bd"}
+{"at":"2026-10-25T14:35:46.054Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"bash","decision":"refused","reason":"deny-lane","lane":"deny","callId":"gf-t15"}
+{"at":"2026-10-25T14:35:46.054Z","leg":"refused-before-body","name":"bash","decision":"refused","tag":"p2bd"}
+{"at":"2026-10-25T14:35:46.077Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t16","tag":"p2q"}
+{"at":"2026-10-25T14:35:46.077Z","leg":"grant","phase":"requested","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-002","grantKey":"bash::bash:echo askok > askdir/y.txt","callId":"gf-t16"}
+{"at":"2026-10-25T14:35:46.077Z","leg":"refused-before-body","name":"bash","decision":"pending","requestId":"g1fb-req-002","tag":"p2q"}
+{"at":"2026-10-25T14:35:46.104Z","leg":"grant","phase":"approved","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-002"}
+{"at":"2026-10-25T14:35:46.104Z","leg":"ctl","action":"approve","ok":true,"detail":"issued:g1fb-req-002","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.128Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t17","tag":"p2q2"}
+{"at":"2026-10-25T14:35:46.128Z","leg":"grant","phase":"consumed","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-002","grantKey":"bash::bash:echo askok > askdir/y.txt","callId":"gf-t17"}
+{"at":"2026-10-25T14:35:46.128Z","leg":"body-start","name":"bash","tag":"p2q2","background":false,"callId":"gf-t17"}
+{"at":"2026-10-25T14:35:46.133Z","leg":"body-end","name":"bash","tag":"p2q2","ok":true,"exit":0}
+{"at":"2026-10-25T14:35:46.133Z","leg":"guard","phase":"settled","name":"bash","callId":"gf-t17","tag":"p2q2"}
+{"at":"2026-10-25T14:35:46.161Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t18","tag":"p2r"}
+{"at":"2026-10-25T14:35:46.161Z","leg":"grant","phase":"requested","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-003","grantKey":"bash::bash:echo revoked > askdir/z.txt","callId":"gf-t18"}
+{"at":"2026-10-25T14:35:46.161Z","leg":"refused-before-body","name":"bash","decision":"pending","requestId":"g1fb-req-003","tag":"p2r"}
+{"at":"2026-10-25T14:35:46.198Z","leg":"grant","phase":"revoked","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-003"}
+{"at":"2026-10-25T14:35:46.198Z","leg":"ctl","action":"revoke","ok":true,"detail":"revoked:g1fb-req-003","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.221Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t19","tag":"p2r2"}
+{"at":"2026-10-25T14:35:46.221Z","leg":"grant","phase":"revoked-refused","ledger":"g1fb-center-1#ledger-1","name":"bash","requestId":"g1fb-req-003","callId":"gf-t19"}
+{"at":"2026-10-25T14:35:46.221Z","leg":"refused-before-body","name":"bash","decision":"revoked-refused","requestId":"g1fb-req-003","tag":"p2r2"}
+{"at":"2026-10-25T14:35:46.244Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t20","tag":"p2w"}
+{"at":"2026-10-25T14:35:46.245Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"bash","decision":"execute","lane":"allow","callId":"gf-t20"}
+{"at":"2026-10-25T14:35:46.245Z","leg":"body-start","name":"bash","tag":"p2w","background":false,"callId":"gf-t20"}
+{"at":"2026-10-25T14:35:46.250Z","leg":"body-end","name":"bash","tag":"p2w","ok":true,"exit":0}
+{"at":"2026-10-25T14:35:46.250Z","leg":"guard","phase":"settled","name":"bash","callId":"gf-t20","tag":"p2w"}
+{"at":"2026-10-25T14:35:46.280Z","leg":"ctl","action":"grants","ok":true,"detail":"[{\"requestId\":\"g1fb-req-001\",\"state\":\"consumed\",\"name\":\"grep\"},{\"requestId\":\"g1fb-req-002\",\"state\":\"consumed\",\"name\":\"bash\"},{\"requestId\":\"g1fb-req-003\",\"state\":\"revoked\",\"name\":\"bash\"}]","tag":"after-p2","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.306Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:A2-poc2","tag":"A2-poc2","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.330Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t30","tag":"p3s"}
+{"at":"2026-10-25T14:35:46.330Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"bash","decision":"execute","lane":"allow","callId":"gf-t30"}
+{"at":"2026-10-25T14:35:46.331Z","leg":"body-start","name":"bash","tag":"p3s","background":true,"callId":"gf-t30"}
+{"at":"2026-10-25T14:35:46.336Z","leg":"bridge","phase":"attributed","jobId":"bash-1","viewer":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13","name":"bash"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=bash scope=g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13","name":"job_output"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_output scope=g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13","name":"job_list"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_list scope=g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13","name":"job_kill"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_kill scope=g1fb-jobs-session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"body-end","name":"bash","tag":"p3s","ok":true,"job_id":"bash-1"}
+{"at":"2026-10-25T14:35:46.337Z","leg":"guard","phase":"settled","name":"bash","callId":"gf-t30","tag":"p3s"}
+{"at":"2026-10-25T14:35:46.373Z","leg":"guard","phase":"approve","name":"job_list","callId":"gf-t31","tag":"p3l"}
+{"at":"2026-10-25T14:35:46.373Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"job_list","decision":"execute","lane":"allow","callId":"gf-t31"}
+{"at":"2026-10-25T14:35:46.374Z","leg":"body-start","name":"job_list","tag":"p3l","callId":"gf-t31"}
+{"at":"2026-10-25T14:35:46.374Z","leg":"body-end","name":"job_list","tag":"p3l","text":"bash-1 [bash] completed — echo JOBOUT-p3s && echo JOBOUT-p3s > w/jobfile.txt"}
+{"at":"2026-10-25T14:35:46.375Z","leg":"guard","phase":"settled","name":"job_list","callId":"gf-t31","tag":"p3l"}
+{"at":"2026-10-25T14:35:46.411Z","leg":"guard","phase":"approve","name":"job_output","callId":"gf-t32","tag":"p3o"}
+{"at":"2026-10-25T14:35:46.411Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"job_output","decision":"execute","lane":"allow","callId":"gf-t32"}
+{"at":"2026-10-25T14:35:46.411Z","leg":"body-start","name":"job_output","tag":"p3o","callId":"gf-t32"}
+{"at":"2026-10-25T14:35:46.412Z","leg":"body-end","name":"job_output","tag":"p3o","text":"JOBOUT-p3s\n\n[status: completed, exit=0]"}
+{"at":"2026-10-25T14:35:46.412Z","leg":"guard","phase":"settled","name":"job_output","callId":"gf-t32","tag":"p3o"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-S3-synthetic","name":"bash"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=bash scope=g1fb-jobs-S3-synthetic"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-S3-synthetic","name":"job_output"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_output scope=g1fb-jobs-S3-synthetic"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-S3-synthetic","name":"job_list"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_list scope=g1fb-jobs-S3-synthetic"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"definition-register","scopeKey":"g1fb-jobs-S3-synthetic","name":"job_kill"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"observe","msg":"a5jobs: definition-registered name=job_kill scope=g1fb-jobs-S3-synthetic"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"observe","msg":"a5jobs: refused foreign-attribution"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"bridge","phase":"fence-refused","jobId":"bash-1","viewer":"S3-synthetic","answer":"refused: foreign-attribution — job bash-1 attributed to another viewer"}
+{"at":"2026-10-25T14:35:46.439Z","leg":"ctl","action":"bridge-fence","ok":true,"detail":"refused: foreign-attribution — job bash-1 attributed to another viewer","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.464Z","leg":"ctl","action":"svc-calls","ok":true,"detail":"[{\"method\":\"list\",\"jobId\":\"session-07a05c14-348d-487b-96a1-77a87cdb0b13\",\"at\":1792938946374},{\"method\":\"read\",\"jobId\":\"bash-1\",\"at\":1792938946412}]","tag":"after-fence","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.490Z","leg":"mount-dispose","phase":"disposed","name":"job_list","generation":1}
+{"at":"2026-10-25T14:35:46.490Z","leg":"policy","phase":"replaced-regeneration","ledger":"g1fb-center-1#ledger-1","name":"job_list","family":"P3-BRIDGE-JOBS"}
+{"at":"2026-10-25T14:35:46.490Z","leg":"family-register","phase":"registered","family":"P3-BRIDGE-JOBS","name":"job_list","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:46.490Z","leg":"regen","phase":"retired-previous","name":"job_list","result":"disposed:gen1"}
+{"at":"2026-10-25T14:35:46.490Z","leg":"ctl","action":"regen","ok":true,"detail":"regen-ok:gen1","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.514Z","leg":"guard","phase":"approve","name":"job_list","callId":"gf-t33","tag":"p3r2"}
+{"at":"2026-10-25T14:35:46.514Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"job_list","decision":"execute","lane":"allow","callId":"gf-t33"}
+{"at":"2026-10-25T14:35:46.514Z","leg":"body-start","name":"job_list","tag":"p3r2","callId":"gf-t33"}
+{"at":"2026-10-25T14:35:46.514Z","leg":"body-end","name":"job_list","tag":"p3r2","text":"bash-1 [bash] completed — echo JOBOUT-p3s && echo JOBOUT-p3s > w/jobfile.txt"}
+{"at":"2026-10-25T14:35:46.514Z","leg":"guard","phase":"settled","name":"job_list","callId":"gf-t33","tag":"p3r2"}
+{"at":"2026-10-25T14:35:46.542Z","leg":"mount-dispose","phase":"refused-stale","name":"job_list","generation":1}
+{"at":"2026-10-25T14:35:46.542Z","leg":"ctl","action":"dispose-old","ok":true,"detail":"old-disposer:stale-identity-refused (mount kept)","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.566Z","leg":"guard","phase":"approve","name":"job_list","callId":"gf-t34","tag":"p3r3"}
+{"at":"2026-10-25T14:35:46.566Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"job_list","decision":"execute","lane":"allow","callId":"gf-t34"}
+{"at":"2026-10-25T14:35:46.566Z","leg":"body-start","name":"job_list","tag":"p3r3","callId":"gf-t34"}
+{"at":"2026-10-25T14:35:46.566Z","leg":"body-end","name":"job_list","tag":"p3r3","text":"bash-1 [bash] completed — echo JOBOUT-p3s && echo JOBOUT-p3s > w/jobfile.txt"}
+{"at":"2026-10-25T14:35:46.566Z","leg":"guard","phase":"settled","name":"job_list","callId":"gf-t34","tag":"p3r3"}
+{"at":"2026-10-25T14:35:46.594Z","leg":"ctl","action":"bridge-dump","ok":true,"detail":"[{\"jobId\":\"bash-1\",\"viewer\":\"session-07a05c14-348d-487b-96a1-77a87cdb0b13|g1fb-inst\"}]","tag":"attr","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.625Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:A4-poc3","tag":"A4-poc3","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.652Z","leg":"plant","phase":"set","flag":"pathGuardEnabled","on":false}
+{"at":"2026-10-25T14:35:46.652Z","leg":"ctl","action":"plant","ok":true,"detail":"pathGuardEnabled=false","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.680Z","leg":"guard","phase":"approve","name":"write","callId":"gf-t40","tag":"p1pl"}
+{"at":"2026-10-25T14:35:46.680Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"write","decision":"execute","lane":"allow","callId":"gf-t40"}
+{"at":"2026-10-25T14:35:46.680Z","leg":"body-start","name":"write","tag":"p1pl","callId":"gf-t40"}
+{"at":"2026-10-25T14:35:46.680Z","leg":"body-end","name":"write","tag":"p1pl","ok":true,"path":"out/plant.txt","bytes":8}
+{"at":"2026-10-25T14:35:46.680Z","leg":"guard","phase":"settled","name":"write","callId":"gf-t40","tag":"p1pl"}
+{"at":"2026-10-25T14:35:46.720Z","leg":"plant","phase":"set","flag":"pathGuardEnabled","on":true}
+{"at":"2026-10-25T14:35:46.720Z","leg":"ctl","action":"plant","ok":true,"detail":"pathGuardEnabled=true","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.747Z","leg":"plant","phase":"set","flag":"ledgerEnabled","on":false}
+{"at":"2026-10-25T14:35:46.748Z","leg":"ctl","action":"plant","ok":true,"detail":"ledgerEnabled=false","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.774Z","leg":"guard","phase":"approve","name":"bash","callId":"gf-t41","tag":"p2pl"}
+{"at":"2026-10-25T14:35:46.774Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"bash","decision":"execute","reason":"PLANT-ledger-disabled","lane":"deny","callId":"gf-t41"}
+{"at":"2026-10-25T14:35:46.774Z","leg":"body-start","name":"bash","tag":"p2pl","background":false,"callId":"gf-t41"}
+{"at":"2026-10-25T14:35:46.780Z","leg":"body-end","name":"bash","tag":"p2pl","ok":true,"exit":0}
+{"at":"2026-10-25T14:35:46.780Z","leg":"guard","phase":"settled","name":"bash","callId":"gf-t41","tag":"p2pl"}
+{"at":"2026-10-25T14:35:46.814Z","leg":"plant","phase":"set","flag":"ledgerEnabled","on":true}
+{"at":"2026-10-25T14:35:46.814Z","leg":"ctl","action":"plant","ok":true,"detail":"ledgerEnabled=true","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.847Z","leg":"plant","phase":"set","flag":"identityLawEnabled","on":false}
+{"at":"2026-10-25T14:35:46.847Z","leg":"ctl","action":"plant","ok":true,"detail":"identityLawEnabled=false","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.877Z","leg":"mount-dispose","phase":"PLANT-naive","name":"job_list","generation":1}
+{"at":"2026-10-25T14:35:46.878Z","leg":"policy","phase":"replaced-regeneration","ledger":"g1fb-center-1#ledger-1","name":"job_list","family":"P3-BRIDGE-JOBS"}
+{"at":"2026-10-25T14:35:46.878Z","leg":"family-register","phase":"registered","family":"P3-BRIDGE-JOBS","name":"job_list","generation":1,"takeover":false,"registrySelfSha":"8959382fa9ca119645667796fe2fb9679d65575d4f7ed2a0a0a7c834faf540ed","ledger":"g1fb-center-1#ledger-1"}
+{"at":"2026-10-25T14:35:46.878Z","leg":"regen","phase":"retired-previous","name":"job_list","result":"PLANT-naive-dispose"}
+{"at":"2026-10-25T14:35:46.878Z","leg":"ctl","action":"regen","ok":true,"detail":"regen-ok:gen1","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.904Z","leg":"mount-dispose","phase":"PLANT-naive","name":"job_list","generation":1}
+{"at":"2026-10-25T14:35:46.904Z","leg":"ctl","action":"dispose-old","ok":true,"detail":"old-disposer:PLANT-naive-dispose","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.956Z","leg":"ctl","action":"heal","ok":true,"detail":"flags-restored","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:46.982Z","leg":"ctl","action":"status","ok":true,"detail":"{\"enrolled\":[\"session-07a05c14-348d-487b-96a1-77a87cdb0b13:S1\"],\"approved\":[\"write\",\"edit\",\"read\",\"grep\",\"bash\",\"job_output\",\"job_kill\"],\"flags\":{\"guardEnabled\":true,\"pathGuardEnabled\":true,\"ledgerEnabled\":true,\"identityLawEnabled\":true,\"dynamicAdmissionEnabled\":true},\"mounts\":[{\"name\":\"write\",\"generation\":1,\"familyId\":\"P1-B-WRITE\"},{\"name\":\"edit\",\"generation\":1,\"familyId\":\"P1-B-EDIT\"},{\"name\":\"read\",\"generation\":1,\"familyId\":\"P2-B-READ\"},{\"name\":\"grep\",\"generation\":1,\"familyId\":\"P2-B-SEARCH\"},{\"name\":\"bash\",\"generation\":1,\"familyId\":\"P2-B-PROCESS\"},{\"name\":\"job_output\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"},{\"name\":\"job_kill\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"}],\"dynamic\":{\"seen\":[\"mcp__beta__ping\"],\"admitted\":[]}}","tag":"final","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.011Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:A5-plants","tag":"A5-plants","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.043Z","leg":"ctl","action":"session-created","ok":true,"detail":"stamped:1792938947043","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.067Z","leg":"ctl","action":"enroll","ok":true,"detail":"already-enrolled","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.093Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:B0-stamp","tag":"B0-stamp","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.118Z","leg":"ctl","action":"status","ok":true,"detail":"{\"enrolled\":[\"session-07a05c14-348d-487b-96a1-77a87cdb0b13:S1\"],\"approved\":[\"write\",\"edit\",\"read\",\"grep\",\"bash\",\"job_output\",\"job_kill\"],\"flags\":{\"guardEnabled\":true,\"pathGuardEnabled\":true,\"ledgerEnabled\":true,\"identityLawEnabled\":true,\"dynamicAdmissionEnabled\":true},\"mounts\":[{\"name\":\"write\",\"generation\":1,\"familyId\":\"P1-B-WRITE\"},{\"name\":\"edit\",\"generation\":1,\"familyId\":\"P1-B-EDIT\"},{\"name\":\"read\",\"generation\":1,\"familyId\":\"P2-B-READ\"},{\"name\":\"grep\",\"generation\":1,\"familyId\":\"P2-B-SEARCH\"},{\"name\":\"bash\",\"generation\":1,\"familyId\":\"P2-B-PROCESS\"},{\"name\":\"job_output\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"},{\"name\":\"job_kill\",\"generation\":1,\"familyId\":\"P3-BRIDGE-JOBS\"}],\"dynamic\":{\"seen\":[\"mcp__beta__ping\"],\"admitted\":[]}}","tag":"watched","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.142Z","leg":"mcp-watch","phase":"discovered","name":"mcp__alpha__ping","afterSessionCreated":true}
+{"at":"2026-10-25T14:35:47.142Z","leg":"refused-before-body","decision":"refused","reason":"unknown-dynamic-source","name":"mcp__alpha__ping","callId":"gf-e01","tag":"b1"}
+{"at":"2026-10-25T14:35:47.168Z","leg":"ctl","action":"admit-mcp","ok":false,"detail":"not visible: mcp__alpha__ping","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.192Z","leg":"refused-before-body","decision":"refused","reason":"unknown-dynamic-source","name":"mcp__alpha__ping","callId":"gf-e02","tag":"b2"}
+{"at":"2026-10-25T14:35:47.215Z","leg":"refused-before-body","decision":"refused","reason":"unknown-dynamic-source","name":"mcp__beta__ping","callId":"gf-e03","tag":"b3"}
+{"at":"2026-10-25T14:35:47.240Z","leg":"mcp-admit","phase":"admitted","name":"mcp__beta__ping","identitySeenAtDiscover":true}
+{"at":"2026-10-25T14:35:47.240Z","leg":"ctl","action":"admit-mcp","ok":true,"detail":"admitted:mcp__beta__ping","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.264Z","leg":"admit","ledger":"g1fb-center-1#ledger-1","name":"mcp__beta__ping","decision":"execute","lane":"allow","callId":"gf-e04"}
+{"at":"2026-10-25T14:35:47.264Z","leg":"mcp-guard","phase":"approve","name":"mcp__beta__ping","callId":"gf-e04","tag":"b4"}
+{"at":"2026-10-25T14:35:47.267Z","leg":"mcp-guard","phase":"settled","name":"mcp__beta__ping","callId":"gf-e04","tag":"b4"}
+{"at":"2026-10-25T14:35:47.293Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:B1-late-bind","tag":"B1-late-bind","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.320Z","leg":"plant","phase":"set","flag":"dynamicAdmissionEnabled","on":false}
+{"at":"2026-10-25T14:35:47.320Z","leg":"ctl","action":"plant","ok":true,"detail":"dynamicAdmissionEnabled=false","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.346Z","leg":"ctl","action":"forget-mcp","ok":true,"detail":"forgotten:mcp__beta__ping","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.369Z","leg":"mcp-guard","phase":"PLANT-admission-disabled","name":"mcp__beta__ping","callId":"gf-e05","tag":"b5"}
+{"at":"2026-10-25T14:35:47.396Z","leg":"ctl","action":"heal","ok":true,"detail":"flags-restored","tag":"","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}
+{"at":"2026-10-25T14:35:47.431Z","leg":"refused-before-body","decision":"refused","reason":"unknown-dynamic-source","name":"mcp__beta__ping","callId":"gf-e06","tag":"b6"}
+{"at":"2026-10-25T14:35:47.456Z","leg":"ctl","action":"settle","ok":true,"detail":"settle:B2-plants","tag":"B2-plants","agentId":"session-07a05c14-348d-487b-96a1-77a87cdb0b13"}

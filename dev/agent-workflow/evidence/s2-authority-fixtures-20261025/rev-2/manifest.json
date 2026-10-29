@@ -1,0 +1,61 @@
+{
+  "artifact": "s2-authority-fixtures-20261025/rev-2/manifest.json",
+  "kind": "Hash manifest for revision 2 of the S2 fixture package, produced under the merged root review NEEDS_TARGETED_FIX as the single allowed 10-minute bounded correction. Deliverables are exactly two files (this manifest + revised FIXTURES.json); no additional report was written. Revision 2 is NOT frozen pending the one root re-review; root re-review is single-pass, no self-increment of rounds.",
+  "utc": {
+    "round_start": "2026-10-25T02:36:23Z",
+    "round_stop": "2026-10-25T02:37:22Z",
+    "deadline": "2026-10-25T02:46:23Z (10-minute bound honored; stopped immediately after hashes)",
+    "clock": "date -u real UTC"
+  },
+  "role": "same-session Qwen (qiyuan-self/qwen3.8-flash-next default route) bounded fix round on the same package; r1 author identity unchanged",
+  "files": [
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/rev-2/FIXTURES.json",
+      "sha256": "7ea5239c4cb9f87f53613ab0bbe1a2859faa510614fa0fa5b06e14c143584528",
+      "bytes": 25651,
+      "role": "16-case revision (all still UNEXECUTED): TIER-01 negative control kept at registry/artifact layer with the snapshot-tier-field demand removed; CONF-03 re-framed as dev/engineering/current-authority.json {snapshot_version, content_digest} -> immutable dev/engineering/authority-snapshots/<version>.json::current_contract divergence; POS-01 demoted to isolated six-field grammar positive with explicit scope_limit (matrix stub carries no Q5 row content, no all-Q1-Q8-green claim); DERIV family states digest-consistent digest-bound derived display/diagnostic reads are permitted while reverse-decision/recovery of authority is refused"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/rev-2/manifest.json",
+      "role": "this file; own hash reported in the delivery reply only"
+    }
+  ],
+  "originals_frozen_preserved": {
+    "check": "r1 trio re-hashed at round start (02:36:23Z), byte-identical to the r1 frozen values",
+    "FIXTURES.json": "e1ed04c1ac3938910b4465f0e04b36f1e72d9ea3b60eb610b2d53109b39348c8 (22820B)",
+    "SOURCE-VERIFICATION.json": "c88d52963f492cbed4e9d9d0f054f7cf96852751f0bdfe2bcf308ea9af7edcec (7126B)",
+    "manifest.json": "3c0746e559f7c1025dd31faa099f9b5dacfa602b165b83c4bb9d68cc2812d5c0 (5272B)"
+  },
+  "write_boundary": {
+    "created_only": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/rev-2/ (plain mkdir, failed-if-exists)",
+    "overwrites": 0,
+    "a_package_files_changed": 0,
+    "old_files_overwritten": 0
+  },
+  "mode": {
+    "host": 0,
+    "ci": 0,
+    "validators_invoked": 0,
+    "product_writes": 0,
+    "entry_point_changes": 0,
+    "install": 0,
+    "paid": 0,
+    "subagents": 0,
+    "overall_plan_rewrites": 0,
+    "merge_or_push_or_checkout": 0
+  },
+  "validation": {
+    "json_parse": "rev-2 FIXTURES parsed before manifest write; programmatic confirm: 16 cases, 16 UNEXECUTED, TIER-01 maps_to.kind == existing (tier-field demand removal machine-checked)"
+  },
+  "budget_record": {
+    "scope": "this package only: actual start 02:36:23Z, stop 02:37:40Z (wall clock inside the 10-minute bound), role recorded above",
+    "explicitly_not_reported": "no precise cumulative-consumption figure is claimed — unmeasured totals are not estimated here",
+    "caps": "no S2-nominal budget reset; the S1-feasibility 16 Owner-h cap is neither restated as extended nor treated as expanded by this round"
+  },
+  "not_claimed": [
+    "revision 2 freeze (pending the single root re-review)",
+    "A-schema conformance or any test pass; all 16 cases UNEXECUTED",
+    "any gate result; G2 not passed",
+    "mechanism or finding-code selection for CONF-03/DERIV-02 — step-2 owns those"
+  ]
+}

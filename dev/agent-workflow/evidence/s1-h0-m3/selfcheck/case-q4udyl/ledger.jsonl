@@ -1,0 +1,18 @@
+{"leg":"register","body":"A","ok":true}
+{"leg":"fence-enter","callId":"cid-1111","tag":"call1","fence_call":1,"body_visible_before":"A"}
+{"leg":"guard-armed","callId":"cid-1111","tag":"call1","approvedFp":"0123abcdeffedcba","approvedPresent":true}
+{"leg":"guard-watch-installed","callId":"cid-1111","tag":"call1","disposerKind":"api-disposer","incomingAlreadyAborted":false}
+{"leg":"guard-change-delivered","callId":"cid-1111","tag":"call1","delivery":1}
+{"leg":"guard-abort-fired","callId":"cid-1111","tag":"call1","callerReasonPreserved":false}
+{"leg":"guard-signal-replaced","callId":"cid-1111","tag":"call1","retained":true}
+{"leg":"guard-exit","callId":"cid-1111","tag":"call1","phase":"settled","abortedBeforeDispatch":true,"resultCode":"ABORTED_BEFORE_DISPATCH","isError":true}
+{"leg":"guard-finally","callId":"cid-1111","tag":"call1","disposerKind":"api-disposer","watchDisposed":"called","signalRestored":true,"changeSeen":1,"abortFired":1}
+{"leg":"fence-swapped","callId":"cid-1111","tag":"call1","from":"A","to":"B"}
+{"leg":"fence-restored","callId":"cid-1111","tag":"call1","to":"A"}
+{"leg":"fence-enter","callId":"cid-2222","tag":"call2","fence_call":2,"body_visible_before":"A"}
+{"leg":"fence-control","callId":"cid-2222","tag":"call2","body_visible_before":"A"}
+{"leg":"guard-bypass","callId":"cid-2222","tag":"call2","guard_call":2}
+{"leg":"marker-ran","body":"A","callId":"cid-2222","tag":"call2","ok":true,"sentinelBytes":12,"echoOut":"s1m3-echo A call2"}
+{"leg":"read-ran","body":"A","callId":"cid-2222","tag":"call2","ok":true,"sentinelBytes":12,"echoOut":"s1m3-echo A call2"}
+{"leg":"process-ran","body":"A","callId":"cid-2222","tag":"call2","ok":true,"sentinelBytes":12,"echoOut":"s1m3-echo A call2"}
+{"leg":"body-ran","body":"A","callId":"cid-2222","tag":"call2","ran":true,"failed":[]}

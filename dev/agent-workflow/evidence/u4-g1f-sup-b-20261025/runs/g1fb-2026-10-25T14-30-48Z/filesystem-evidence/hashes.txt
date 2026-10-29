@@ -1,0 +1,4 @@
+be193fa2f4d68f0d456d349b8c43b2a9af14d483fe5192e295ff0adc50164723  tests/homes/g1fb-2026-10-25T14-30-48Z/work/w/ok.txt
+ccb995f23b31ce60de3481224c3aa118a0a761a0f9caa3ea093fbee7be312ca2  tests/homes/g1fb-2026-10-25T14-30-48Z/work/w/native-write.txt
+1df9672d1bbfe67ed3f229dc4a681a250207dff04201722714f582c4f1df8c98  tests/homes/g1fb-2026-10-25T14-30-48Z/work/search/a.txt
+29b82ca890c9237ba1e3c2b0cc374254b72b53dc66155a8fcfed42a27861b558  tests/homes/g1fb-2026-10-25T14-30-48Z/work/data/note.txt

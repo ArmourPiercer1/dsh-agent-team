@@ -1,0 +1,419 @@
+{
+ "fixtureSuitePass": true,
+ "candidateShapePass": false,
+ "freezeEligible": false,
+ "freezeReasons": [
+  "P1/P4-closure-root-pending",
+  "center-contract-v1.1-PROPOSED-not-frozen",
+  "v2-freeze-line-preserved",
+  "root-declares-M0-not-frozen"
+ ],
+ "fixtureResults": [
+  {
+   "file": "neg-allallow-consumption-proof.json",
+   "pass": true,
+   "expected": [
+    "E_FORGED_APPROVAL"
+   ],
+   "actual": [
+    "E_FORGED_APPROVAL"
+   ]
+  },
+  {
+   "file": "neg-allallow-fake-durable.json",
+   "pass": true,
+   "expected": [
+    "E_FORGED_APPROVAL"
+   ],
+   "actual": [
+    "E_FORGED_APPROVAL"
+   ]
+  },
+  {
+   "file": "neg-allallow-fresh-rev-false.json",
+   "pass": true,
+   "expected": [
+    "E_STALE"
+   ],
+   "actual": [
+    "E_STALE"
+   ]
+  },
+  {
+   "file": "neg-ask-contains-alladmitted.json",
+   "pass": true,
+   "expected": [
+    "E_WRONG_BRANCH"
+   ],
+   "actual": [
+    "E_WRONG_BRANCH"
+   ]
+  },
+  {
+   "file": "neg-ask-decision-deny-verified.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM"
+   ]
+  },
+  {
+   "file": "neg-ask-decision-missing-verified.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING",
+    "E_IDENTITY"
+   ],
+   "actual": [
+    "E_MISSING",
+    "E_IDENTITY"
+   ]
+  },
+  {
+   "file": "neg-ask-prepare-without-reserved.json",
+   "pass": true,
+   "expected": [
+    "E_TRANSITION"
+   ],
+   "actual": [
+    "E_TRANSITION"
+   ]
+  },
+  {
+   "file": "neg-bad-acc-enum.json",
+   "pass": true,
+   "expected": [
+    "E_ENUM"
+   ],
+   "actual": [
+    "E_ENUM"
+   ]
+  },
+  {
+   "file": "neg-body-jump-skip-admission.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING",
+    "E_MISSING",
+    "E_MISSING",
+    "E_TRANSITION"
+   ],
+   "actual": [
+    "E_MISSING",
+    "E_MISSING",
+    "E_MISSING",
+    "E_TRANSITION"
+   ]
+  },
+  {
+   "file": "neg-cancel-after-consume-unchanged-claim.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM"
+   ]
+  },
+  {
+   "file": "neg-cancel-terminal-body-started.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM"
+   ]
+  },
+  {
+   "file": "neg-ceiling-missing.json",
+   "pass": true,
+   "expected": [
+    "E_CEILING_MISSING"
+   ],
+   "actual": [
+    "E_CEILING_MISSING"
+   ]
+  },
+  {
+   "file": "neg-cold-recovery-grant-reuse.json",
+   "pass": true,
+   "expected": [
+    "E_COLD_RECOVERY"
+   ],
+   "actual": [
+    "E_COLD_RECOVERY"
+   ]
+  },
+  {
+   "file": "neg-consumption-decision-mismatch.json",
+   "pass": true,
+   "expected": [
+    "E_IDENTITY"
+   ],
+   "actual": [
+    "E_IDENTITY"
+   ]
+  },
+  {
+   "file": "neg-cross-call-request-carry.json",
+   "pass": true,
+   "expected": [
+    "E_OWNERSHIP"
+   ],
+   "actual": [
+    "E_OWNERSHIP"
+   ]
+  },
+  {
+   "file": "neg-eff-unknown-token.json",
+   "pass": true,
+   "expected": [
+    "E_EFF_UNKNOWN"
+   ],
+   "actual": [
+    "E_EFF_UNKNOWN"
+   ]
+  },
+  {
+   "file": "neg-gen-drift-at-dispatch.json",
+   "pass": true,
+   "expected": [
+    "E_STALE"
+   ],
+   "actual": [
+    "E_STALE"
+   ]
+  },
+  {
+   "file": "neg-grant-fingerprint-absent.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING"
+   ],
+   "actual": [
+    "E_MISSING"
+   ]
+  },
+  {
+   "file": "neg-grant-fingerprint-mismatch.json",
+   "pass": true,
+   "expected": [
+    "E_IDENTITY"
+   ],
+   "actual": [
+    "E_IDENTITY"
+   ]
+  },
+  {
+   "file": "neg-grant-issuedto-missing.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING"
+   ],
+   "actual": [
+    "E_MISSING"
+   ]
+  },
+  {
+   "file": "neg-hosttoken-null.json",
+   "pass": true,
+   "expected": [
+    "E_TYPE"
+   ],
+   "actual": [
+    "E_TYPE"
+   ]
+  },
+  {
+   "file": "neg-lease-consume-grantid-swap.json",
+   "pass": true,
+   "expected": [
+    "E_IDENTITY"
+   ],
+   "actual": [
+    "E_IDENTITY"
+   ]
+  },
+  {
+   "file": "neg-member-empty.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING",
+    "E_MISSING"
+   ],
+   "actual": [
+    "E_MISSING",
+    "E_MISSING"
+   ]
+  },
+  {
+   "file": "neg-missing-scope.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING"
+   ],
+   "actual": [
+    "E_MISSING"
+   ]
+  },
+  {
+   "file": "neg-na-on-tool-name.json",
+   "pass": true,
+   "expected": [
+    "E_NA_SCOPE"
+   ],
+   "actual": [
+    "E_NA_SCOPE"
+   ]
+  },
+  {
+   "file": "neg-nonstring-route.json",
+   "pass": true,
+   "expected": [
+    "E_ROUTE"
+   ],
+   "actual": [
+    "E_ROUTE"
+   ]
+  },
+  {
+   "file": "neg-ownlayer-bidirectional.json",
+   "pass": true,
+   "expected": [
+    "E_OWN_LAYER",
+    "E_OWN_LAYER"
+   ],
+   "actual": [
+    "E_OWN_LAYER",
+    "E_OWN_LAYER"
+   ]
+  },
+  {
+   "file": "neg-prepare-failed-pa-consumed-claim.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM"
+   ]
+  },
+  {
+   "file": "neg-prepare-failed-pa-ledger-claim.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM"
+   ]
+  },
+  {
+   "file": "neg-realmid-empty.json",
+   "pass": true,
+   "expected": [
+    "E_MISSING"
+   ],
+   "actual": [
+    "E_MISSING"
+   ]
+  },
+  {
+   "file": "neg-replay-durable-reserved.json",
+   "pass": true,
+   "expected": [
+    "E_TRANSITION",
+    "E_REPLAY",
+    "E_REPLAY"
+   ],
+   "actual": [
+    "E_TRANSITION",
+    "E_REPLAY",
+    "E_REPLAY"
+   ]
+  },
+  {
+   "file": "neg-replay-pa-consume.json",
+   "pass": true,
+   "expected": [
+    "E_REPLAY"
+   ],
+   "actual": [
+    "E_REPLAY"
+   ]
+  },
+  {
+   "file": "neg-single-state-only-settled.json",
+   "pass": true,
+   "expected": [
+    "E_TRANSITION"
+   ],
+   "actual": [
+    "E_TRANSITION"
+   ]
+  },
+  {
+   "file": "neg-terminal-mismatch.json",
+   "pass": true,
+   "expected": [
+    "E_LEDGER_CLAIM",
+    "E_TERMINAL"
+   ],
+   "actual": [
+    "E_LEDGER_CLAIM",
+    "E_TERMINAL"
+   ]
+  },
+  {
+   "file": "neg-unknown-state.json",
+   "pass": true,
+   "expected": [
+    "E_ENUM",
+    "E_TRANSITION",
+    "E_TRANSITION"
+   ],
+   "actual": [
+    "E_ENUM",
+    "E_TRANSITION",
+    "E_TRANSITION"
+   ]
+  },
+  {
+   "file": "pos-allallow-settled.json",
+   "pass": true,
+   "expected": [],
+   "actual": []
+  },
+  {
+   "file": "pos-ask-settled.json",
+   "pass": true,
+   "expected": [],
+   "actual": []
+  },
+  {
+   "file": "pos-cancel-at-ask-wait-no-decision.json",
+   "pass": true,
+   "expected": [],
+   "actual": []
+  },
+  {
+   "file": "pos-cancel-before-pa-consume.json",
+   "pass": true,
+   "expected": [],
+   "actual": []
+  },
+  {
+   "file": "pos-lease-unconfirmed-pa-consumed.json",
+   "pass": true,
+   "expected": [],
+   "actual": []
+  }
+ ],
+ "candidateErrors": [
+  "E_COVERAGE",
+  "E_COVERAGE"
+ ]
+}

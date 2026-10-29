@@ -1,0 +1,114 @@
+{
+ "generated": "2026-10-25",
+ "work_package": "U3-C evidence relocation",
+ "branch": "task/u3-evidence-relocation-20261025",
+ "head": "53c2f8414 (relocation commit) / 4ce4b9e1a (tool commit)",
+ "authority": "origin/master @ 95fbe95cf094d8368faf1e356ba6b56fc5a70f15",
+ "manifest_sha256": "4f49b36bbaefb9d4ca37342920aac78246678fa77554f48efc550a3f72ec7ecd",
+ "files": {
+  "SUMMARY.md": {
+   "sha256": "65f4c44689ae5c63a0078d82df635c03415e9a60b9d510402a13c66747fee0ca",
+   "bytes": 3252
+  },
+  "ci-pr-gate.log": {
+   "sha256": "d5d2321a8c6f759f643a48197716375722d41beaf96648d6eb56182d6d65a306",
+   "bytes": 3684
+  },
+  "docs-probe.log": {
+   "sha256": "7e771028c9ec298ffbbb850ae1c59ea8dd850c4d090ad8e050c801caf13eac5d",
+   "bytes": 768
+  },
+  "docs-sync-green.log": {
+   "sha256": "b56c8d2d3b53b2fd5263a5bc6d2bfd55f7ea50ce1debad262e286f987e729643",
+   "bytes": 215
+  },
+  "docs-sync.log": {
+   "sha256": "8b77abc04dd98994ecc065b64db0c2531fa866c5755766a5ff029ff3541524ce",
+   "bytes": 383
+  },
+  "evidence-store-test.log": {
+   "sha256": "92c187711f26f51702ded943a15a52ee08effe203439cd127118809ba5a0d5b2",
+   "bytes": 907
+  },
+  "ingest-run.log": {
+   "sha256": "8a58951d6b5ef5a9aca3e669919a7076256edb261b3c92042d5e85d2c157d026",
+   "bytes": 354
+  },
+  "keepset-back-move-paths.txt": {
+   "sha256": "328311bb49414af69e9788abcc49110e1552fa497af274bc4ca193e89663b928",
+   "bytes": 57204
+  },
+  "keepset-back-move.md": {
+   "sha256": "a6fabd62ecd67aa9aa63a23af54e1cdf75d105f04b5dd19451234bedc2356f51",
+   "bytes": 690
+  },
+  "nc4-a-verify-corrupt.log": {
+   "sha256": "d7649d9c17ed5434b7864b9f8d474ca31169ee44a34e888a87717a829bb48336",
+   "bytes": 476
+  },
+  "nc4-b-ingest-conflict.log": {
+   "sha256": "a65c16d0a3986c64ba545670fd1c23ba510384f53034daf26160f702460c85a8",
+   "bytes": 214
+  },
+  "nc4-c-ingest-recover.log": {
+   "sha256": "5b1a5d0e421e41f2512010b38f4ea78042c8d87b3cd8b09333585e7e5b7623d8",
+   "bytes": 374
+  },
+  "nc4-d-verify-green.log": {
+   "sha256": "b2113497a155120e99525fcf8c94ed8d2a89fa519a60252777ae212c7eb2ba6d",
+   "bytes": 177
+  },
+  "negctl-1-delete.log": {
+   "sha256": "043c66f6f3e3e5383b02e025c409d275c440a85a28f917c169772228f050b030",
+   "bytes": 436
+  },
+  "negctl-2-corrupt.log": {
+   "sha256": "fc7715451e0722087eb2085c75c5058f88201e3ad97c4b3b43947ea658dbd2fd",
+   "bytes": 1080
+  },
+  "negctl-3-recover.log": {
+   "sha256": "24da0e221f65a00fa55e2bea95e833c85ad4a35999429dac3566f7c5cff1f32f",
+   "bytes": 741
+  },
+  "pnpm-install.log": {
+   "sha256": "05fd4ef5567cdbc82e903c9b906b3048057a285142f6fdc9947c64eca120fc4a",
+   "bytes": 1050
+  },
+  "transcripts/artifacts-at-head.txt": {
+   "sha256": "27ca81129922eecfd2d6264aa5c06398f39bc72f0f35409d074e727f66ea3282",
+   "bytes": 1145
+  },
+  "transcripts/blueprint-fence.txt": {
+   "sha256": "4cb8d8486ff7b57d9983e40be28c6bfa88523efee8151087da725372fc6ab097",
+   "bytes": 24781
+  },
+  "transcripts/lint-identities.txt": {
+   "sha256": "802c4f273fb30533baa286deef63a3b529f3ecf221e4e9dd6200ce283e36df15",
+   "bytes": 583
+  },
+  "transcripts/typecheck.txt": {
+   "sha256": "defe9f5de7b623ee3cf6268c767fd76bb59088d7a1b14f4c1997c17efc7ba452",
+   "bytes": 802
+  },
+  "verify-conflict.log": {
+   "sha256": "11399b9e051720767718fe1dd775835ae18d934ef1239fcb52b3e0537cfd5dbb",
+   "bytes": 6169395
+  },
+  "vitest-reds-classification.txt": {
+   "sha256": "c5be2d3fe5b8f427de1fed9e4539173751e57018dba2cd382b303716ca2ed123",
+   "bytes": 4991
+  },
+  "vitest-run1-pre-keepfix.log": {
+   "sha256": "bcfa23d176b20a957cb64c867239d34fa256120d0919a10526b926ac348f96af",
+   "bytes": 343424
+  },
+  "vitest-run2.log": {
+   "sha256": "8e238e417e32dedd1a5caddff9019c9a4792ad0a27214795410e61b4e17401cd",
+   "bytes": 340893
+  },
+  "worktree-du.txt": {
+   "sha256": "9249aedaacafe392b252240e756c83aa00260a8ca54b8d63de037cdb2dc400d2",
+   "bytes": 1203
+  }
+ }
+}

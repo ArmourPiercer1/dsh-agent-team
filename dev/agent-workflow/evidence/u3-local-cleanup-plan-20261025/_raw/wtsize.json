@@ -1,0 +1,252 @@
+{
+"/srv/workspace/dsh-plugins/dsh-agent-team": {
+"dir_mtime": 1792923671.7044344,
+"du_sb": null,
+"du_err": "du: warning: summarizing is the same as using --max-depth=0\ndu: cannot read directory '/srv/workspace/dsh-plugins/dsh-ag"
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-cancel-leg": {
+"dir_mtime": 1792629626.4099748,
+"du_sb": 328986932,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-docs-realign": {
+"dir_mtime": 1792656593.9647737,
+"du_sb": 246724090,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-inventory": {
+"dir_mtime": 1792394125.79059,
+"du_sb": 327118100,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-96e-pinned": {
+"dir_mtime": 1792480543.2697449,
+"du_sb": 580289178,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-f739-scan": {
+"dir_mtime": 1792481055.5771735,
+"du_sb": 328260693,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-int": {
+"dir_mtime": 1792770293.5823777,
+"du_sb": 246186898,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-int2": {
+"dir_mtime": 1792770295.7693777,
+"du_sb": 246222264,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation": {
+"dir_mtime": 1792770300.1493776,
+"du_sb": 329590255,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner": {
+"dir_mtime": 1792399792.5614512,
+"du_sb": 328079910,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-lsp-keyfix": {
+"dir_mtime": 1792770302.3933775,
+"du_sb": 879799886,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m0-contract": {
+"dir_mtime": 1792684005.355201,
+"du_sb": 247992680,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m0-docs-pr": {
+"dir_mtime": 1792695554.1790311,
+"du_sb": 247252740,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-auth-bridge": {
+"dir_mtime": 1792770291.3433778,
+"du_sb": 329920702,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-facts-seam": {
+"dir_mtime": 1792770284.2813778,
+"du_sb": 345251525,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-fixture": {
+"dir_mtime": 1792770286.5963778,
+"du_sb": 331714211,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-flaky": {
+"dir_mtime": 1792770289.0513778,
+"du_sb": 331742298,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-auth-vocab": {
+"dir_mtime": 1792795033.9238963,
+"du_sb": 584450599,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int": {
+"dir_mtime": 1792862007.572684,
+"du_sb": 2644507199,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding": {
+"dir_mtime": 1792770304.6763775,
+"du_sb": 327660644,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-slice": {
+"dir_mtime": 1792612577.4993181,
+"du_sb": 847497246,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-bmcp": {
+"dir_mtime": 1792831693.3841662,
+"du_sb": 601212233,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-bsearch-team": {
+"dir_mtime": 1792831076.973796,
+"du_sb": 601197924,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-checkinstall": {
+"dir_mtime": 1792788967.5449326,
+"du_sb": 592223627,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-g1asm": {
+"dir_mtime": 1792830361.0602148,
+"du_sb": 1179319897,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify": {
+"dir_mtime": 1792776078.604248,
+"du_sb": 371141105,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-job-family": {
+"dir_mtime": 1792835232.6383064,
+"du_sb": 604844108,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-joint-cand-probe": {
+"dir_mtime": 1792793500.317035,
+"du_sb": 592108737,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-newfam": {
+"dir_mtime": 1792791054.2347898,
+"du_sb": 1169108115,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-pinbuild": {
+"dir_mtime": 1792876518.4200368,
+"du_sb": 595320025,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-provider-id": {
+"dir_mtime": 1792797128.860581,
+"du_sb": 1169394055,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-subagent-fix": {
+"dir_mtime": 1792793887.3656237,
+"du_sb": 977440737,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1": {
+"dir_mtime": 1792834047.4847736,
+"du_sb": 1141909042,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2": {
+"dir_mtime": 1792815196.4504864,
+"du_sb": 1176512872,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3": {
+"dir_mtime": 1792826969.0183408,
+"du_sb": 610204777,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3a": {
+"dir_mtime": 1792826642.6264787,
+"du_sb": 1179228999,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5": {
+"dir_mtime": 1792813476.8062403,
+"du_sb": 601236632,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6": {
+"dir_mtime": 1792851304.231556,
+"du_sb": 1726796302,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-schedule": {
+"dir_mtime": 1792835258.4378154,
+"du_sb": 1183775379,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team": {
+"dir_mtime": 1792804848.5748608,
+"du_sb": 1180407184,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405": {
+"dir_mtime": 1792214130.7366118,
+"du_sb": 473084295,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/eb-e0-e1": {
+"dir_mtime": 1792786452.7491593,
+"du_sb": 585941639,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2": {
+"dir_mtime": 1790882968.8035395,
+"du_sb": 851470276,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-37646ac2-20261024T085726Z": {
+"dir_mtime": 1792832246.8101892,
+"du_sb": 17091801,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-4a26ac9a-20261024T120122Z": {
+"dir_mtime": 1792843282.425569,
+"du_sb": 17460999,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-5c313418-20261024T082308Z": {
+"dir_mtime": 1792830222.3680956,
+"du_sb": 17010798,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr352-lintfix": {
+"dir_mtime": 1792604999.6499946,
+"du_sb": 328636113,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr363-docs-review": {
+"dir_mtime": 1792874629.429733,
+"du_sb": 129965,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/s2-authority-iso-20261025": {
+"dir_mtime": 1792924202.7212102,
+"du_sb": 1162039975,
+"du_err": null
+},
+"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u1-audit-master": {
+"dir_mtime": 1792923614.8235717,
+"du_sb": 1163274066,
+"du_err": null
+}
+}

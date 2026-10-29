@@ -1,0 +1,37 @@
+## What this is
+
+U6 slice **1/6** (U6-SLICE-PLAN PR1, `dev/agent-workflow/evidence/u6-prep-20261025/U6-SLICE-PLAN.md`): the center-assembly lane as an **INERT skeleton** — new lane `packages/runtime/governance-center/` + one config-gated SHADOW mount in the live glue. **Zero behavior change at default config** (`teamToolPlane.centerAssembly` absent = the mount line never runs). CORE PATCH BUDGET honored: **0** — public Host seams only (pinned Host 0.2.0-rc.2 @ `639ed01539…`).
+
+## Design
+
+The three §3 target components of `center-assembly-architecture.md`, over injected ports, importing **nothing** from the protected center set (`tool-dispatch/`, `tool-admission/`, `operation-permission/`, `control/`, `pa-mount-registry.mjs`) or Host internals:
+
+- **`contribution-schema.ts`** — the Family Contribution as a CLOSED world over the six §4 boundaries (source+visibility / definition+args / effects / execution / lifecycle+cancel / result) plus `schemaVersion` and a closed `obligations` block. Fail-closed matrix (§10.3): unknown field at every level, missing/duplicate/bad-shape ids, bad digest, unsupported major, alias==native name, capability absent from the Kernel-published manifest, capability not backed by the declared execution path, and — typed separately — `FAMILY_SELF_APPROVAL_FORBIDDEN`, `EFFECTS_WITHOUT_EXECUTION`, `NAMED_BRIDGE_REQUIRED`, `LIFECYCLE_OWNER_REQUIRED`. On accept the descriptor is deep-frozen.
+- **`registry.ts`** — `GovernedFamilyRegistry`: a READ-ONLY candidate view, NON-AUTHORIZING (surface exactly `register/revoke/view/candidateFor/generation`). sup-b `g1fb-registry.mjs` law: closed schema + collision (foreign claim of a held name refused, **owner kept**; aliases are claims too) + generation checks (refusals change nothing, incl. generation); `revoke` tombstones (never splices) — CI-08 first-class; dynamic-source additions land `not_verified` until revalidated (condition 9 / CI-11).
+- **`kernel.ts`** — `GovernanceKernel`: §5 state machine `PREPARING→ACTIVE→DRAINING→TOMBSTONED→RELEASED/FAILED` (illegal transitions typed refusals; FAILED terminal; release refuses `LEASE_OPEN` while the injected lifecycle port counts in-flight work). The approval table is **center-owned**: `addApprovalEntry`/`replaceApprovalEntry(expectedGeneration)` live on the kernel-owner face; `familyFace()` carries NO authority surface. `decide()` order is state-first; a `not_verified` candidate refuses even with an entry (condition 9); no entry ⇒ `defer NO_APPROVAL_ENTRY` (the PR1 truth). `consumeOnce` is replay-guarded **before** the port and delegates to the INJECTED `consumeForExecution` port — the existing tool-admission one-shot face is composed, never re-implemented (PR2 does the reviewed port binding; PR1 registers zero new layer-audit edges by design).
+- **`host-adapter.ts`** — `HostSurfaceAdapter`: public seams only (scoped `tools.get`, `tools.schemas`, event `on`); observations, never verdicts; identity mint injected (opaque, WeakMap algebra).
+- **`src/plugin/live/center-shadow-row.mjs`** — the shadow row (dist-mirrored via `place-dist-glue.mjs`). THE INERT LAW: computes the verdict, appends it to an audit-only ledger (caller-supplied path) + the glue's observations channel, and **ALWAYS takes `next()`, returning its value untouched**; every internal failure is a `shadow-error` row and then `next()`. The row reads no env (live-row law — the trusted caller supplies everything).
+
+## Conditions implemented (sup-a §5, shadow form)
+
+- **1** — center-owned approval table; a Family face cannot approve anything (C1 pins `familyFace()` as authority-free).
+- **3** — approval delegates via `next()`; in shadow `next()` is ALWAYS taken.
+- **7** — identity is never taken from the caller: it is minted from the resolved Definition via the injected minter.
+- **10** — the identity check preserves the success shape: C1 + C2 prove the native result passes through byte-identical.
+
+## Files
+
+New: `packages/runtime/governance-center/{contribution-schema,registry,kernel,host-adapter,index}.ts` + `README.md`; `packages/runtime/src/plugin/live/center-shadow-row.mjs`; 4 C1 suites `packages/runtime/test/u6-pr1-*.test.ts`; `tests/world-factory/canary/u6-shadow-host.mjs`; dist mirror co-committed (tsc emit + byte placement). Edited: `agent-bindings.mjs` (config-gated shadow block, +37), `scripts/place-dist-glue.mjs` (+placement), runtime `tsconfig{,.build}.json` (lane include), `p4t6-session-event-scan.test.ts` (booking), `tests/world-factory/{lib/world-factory,u5-canary-runner}.mjs` (C2 suite). Protected set untouched: `control/`, `tool-admission/`, `tool-dispatch/`, `pa-mount-registry.mjs`, layer-audit script/test.
+
+## Tests + receipts
+
+- **C1**: 4 files, **40 legs** — schema negative matrix (each plant RED-first with a heal/sensitivity leg), registry collision/generation/non-authorizing, kernel state machine + table ownership + one-shot consume (port called exactly once; replay never re-presents), shadow inertness with a planted-non-next control proving the checker load-bearing. Full runtime package suite: 5051 pass, 7 reds = exactly the baseline identities at root cwd.
+- **C2** (`tests/world-factory/u5-canary-runner.mjs --suite u6-shadow`, only addition — factory reused): two Worlds, only delta = the shadow mount; `RUN-u6-shadow-y` **overall=PASS 16/16** — native canary ledger digests **identical** (documented normalization: `at`/`world` stripped, fixed nonce, per-world `<HOME>`), oracle effects identical, marker names identical; ON world shows 3 verdict rows all `defer NO_APPROVAL_ENTRY`, `anyAllow=false`, `shadowErrors=0`; OFF-world row proves mounted-but-installed-nothing. Team SHA binding `0178adb68…` (= PR head), Host `639ed015…` verified pre/post. Host starts 4/4 budget (first run `x` FAILed the parity leg on the un-normalized `<HOME>` gap — disclosed, fixed by the named commit); ports leased 3180, homes under `tests/homes/` torn down (leak-check PASS ×4). :3080 untouched.
+- **Bookkeeping**: p4t6 `SCANNED_PATHS_U6PR1` booked at measured `1228→1238` (RED log + GREEN); lint identities vs baseline: **new 0 / resolved 0**; `docs:sync --check` blocking=0; `docs:probe --base origin/master` blocking=0; `ci-pr-gate` required legs **7/7 pass** at head (artifacts-at-head compared=1776 drift=0); census leg graded from the stored root-vitest cap2: **pass, red set = the 9 published tolerated identities exactly**; root full vitest ×2 (7797 legs): **0 new reds** vs the U1b tolerance union (cap1 11 = 9 + 2 load/ENV identities that went green under the 90 s clock in cap2). Evidence: `dev/agent-workflow/evidence/u6-pr1-20261025/` (manifest.json + 29 captures).
+
+## Risks / disclosures
+
+- **Schema-too-loose risk**: mitigated by deriving every field from the sup-a/sup-b tested shapes (no invented fields); the closed key-sets mean later tightening is additive-FAIL-safe, widening is the reviewed path.
+- **Deferred wiring (by design, PR2)**: kernel ports are injected stubs — the binding to the concrete `tool-admission`/`tool-dispatch` faces is a reviewed consumer registration; PR1 keeps the layer-audit consumer list untouched (zero new edges).
+- **Shadow identity**: the row mints its OWN identities (not the tool-dispatch minter's); verdicts are audit-only so identity namespaces never interact in PR1.
+- **First C2 run FAIL** (15/16) disclosed above — the parity leg was load-bearing: it caught the world-path leak before anything shipped.

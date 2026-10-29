@@ -1,0 +1,63 @@
+{
+ "package": "U4-B (G1-F ExpectedToolObligations export + per-tool static feasibility classification)",
+ "generated_utc": "2026-10-25",
+ "authoritative_pins": {
+  "team": "master@3288567d36794394ce2af0401cee4fe218b11d03",
+  "host": "tests/deepseek-harness-test-use@639ed015397290b3745d163aafe02ffee4aa3f84 (0.2.0-rc.2, read-only, no boot)",
+  "wip_asset": "origin/feat/a5-m2-integration@bef38934f (PR #360 OPEN/DRAFT, unmerged, source-only evaluation)",
+  "census": "dev/agent-workflow/evidence/u1-closure-20261025/u1c/",
+  "seed": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/",
+  "branch_refs_via": "git show origin/task/alpha5-reset-architecture-five-stage-20261025:docs/plans/memo/alpha5-reset-20261025/<file>"
+ },
+ "scope_law": "READ-ONLY outside this directory; static classification only; no real-Host PASS claims; H0 owned by a separate agent",
+ "files": {
+  "expected-tool-obligations.json": {
+   "sha256": "0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d",
+   "bytes": 93092
+  },
+  "mechanism-groups.json": {
+   "sha256": "d72251ba3e40736f2308d2a535356623151e7bd3f185f4008886bcf03f9ef6b8",
+   "bytes": 20807
+  },
+  "feasibility.json": {
+   "sha256": "99a2834ae8e9b5707c5c0c956630c56b40855b7e983da2d1ea5ff376bf36c48f",
+   "bytes": 16303
+  },
+  "SUMMARY.md": {
+   "sha256": "b7955d36f41651d90ebef4bc3f1f3aea2dd0dfe8354d56270f306e429306733b",
+   "bytes": 6070
+  },
+  "build-outputs.py": {
+   "sha256": "4c8ca679237eca6736aca712a42ec982fb91cdc408451edf63ce608254cc5f0b",
+   "bytes": 60078
+  },
+  "refs/center-assembly-architecture.md": {
+   "sha256": "063f0fb26cb66ca96e237e6636824d83c72bcb50150b58d2e9d0c1618d8c7766",
+   "bytes": 26686
+  },
+  "refs/phase-1-freeze-inventory-feasibility.md": {
+   "sha256": "556cb89d03b283e1ae1d5227f16fe5861ebbecae5983af52a3c0b9f98adf7ccb",
+   "bytes": 29682
+  }
+ },
+ "verification": {
+  "generator_rerun_reproducible": true,
+  "counts_cross_check": {
+   "obligations": 91,
+   "required": 58,
+   "out_of_scope": 33,
+   "feasibility_required_tools": 58,
+   "mechanism_groups": 12,
+   "h0_blocked_groups": 12,
+   "feasibility_status": {
+    "CONDITIONAL": 33,
+    "ENV-BLOCKED": 3,
+    "UNKNOWN": 22,
+    "READY-PUBLIC": 0,
+    "CORE_SEAM_BLOCKER": 0
+   }
+  },
+  "no_absolute_paths_in_outputs": true,
+  "read_only_respected": "only this directory was written; host/team trees untouched; no commits, no Host boot"
+ }
+}

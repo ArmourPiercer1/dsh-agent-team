@@ -1,0 +1,68 @@
+{
+  "receipt": "s1-freeze-receipt-20261025",
+  "purpose": "PR363 S1 结果封存：不依赖损坏 SESSION_ROUTER_LOG 也能定位存活原件（路径+实测sha+bytes）。非签发件，未签发 G1。",
+  "authority": "NONE（只读定点核+两新文件；不接替产品writer；graph.yaml/三计划/AGENTS/F0草稿/SESSION_ROUTER_LOG 均未触碰）",
+  "utc": { "start": "2026-10-25T00:36:10.293Z", "end": "2026-10-25T00:38:18.859Z", "bound": "≤10min" },
+  "permissions": { "file_policy": "workspace-write", "approval": "ask", "escalation_used": false, "blocked_hit": false },
+  "skills_checked": "catalog 内 browser/cordis×3/gpt/team×2 均不适用本封存任务；未加载任何 skill；AGENTS.md 协议知悉",
+  "mode": { "host": 0, "cleanup": 0, "paid": 0, "subagents": 0, "broad_scans": 0, "g1_signed": false, "overwrites": 0 },
+  "anchors_three": {
+    "origin_master": { "commit": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84", "cI": "2026-10-24T17:33:22+08:00", "subject": "Merge pull request #362 from ArmourPiercer1/task/eb-e0-e1-doc-baseline-20261029", "verified_by": "git rev-parse origin/master" },
+    "pr363_plan": { "commit": "1310b959595b211e5da7a5f727dadf522f79d60b", "cI": "2026-10-24T20:59:37+00:00", "subject": "docs(alpha5-reset): disambiguate gate unlock scope and S1 measurement rules", "contained_in": ["docs/alpha5-reset-pr363-review-20261025", "remotes/origin/task/alpha5-reset-architecture-five-stage-20261025"], "note": "只 git show；工作树无 docs/plans/memo/alpha5-reset-20261025/（ls 实测）——原件定位=git 对象" },
+    "three_plans_blobs": [
+      { "path": "docs/plans/memo/alpha5-reset-20261025/center-assembly-architecture.md", "blob": "3283426d3e110075ea093095b0c2e6b6ec4c62a9", "bytes": 26686 },
+      { "path": "docs/plans/memo/alpha5-reset-20261025/five-stage-implementation-plan.md", "blob": "66a540b9066d8f937696e99450b850398b0ccc5a", "bytes": 25220 },
+      { "path": "docs/plans/memo/alpha5-reset-20261025/phase-1-freeze-inventory-feasibility.md", "blob": "2ff2cd36739d9077489b4daa4a283cd5550b4f9a", "bytes": 29682 }
+    ],
+    "htu": { "path": "tests/deepseek-harness-test-use", "head": "639ed015397290b3745d163aafe02ffee4aa3f84", "tag_at_head": "dsh-v0.2.0-rc.2" },
+    "local_master_drift": { "commit": "6259cf4bc4d61af74d84bbd9d265184f95493172", "status": "历史漂移（沿 F0 MANIFEST 定性），非权威锚" }
+  },
+  "originals_readonly": [
+    { "path": "dev/agent-workflow/SESSION_ROUTER_LOG.md", "sha256": "e3e49b1346c11e3e4c2e5f5f1e58d370d65cac2a44812fd87e983c92e1f22fe9", "bytes": 1623412, "lines": 5135, "mtime_utc": "2026-10-25T00:21:05.307Z", "status": "事故后重建态，只读记录，非权威，不恢复不fsck" },
+    { "path": "dev/agent-workflow/evidence/s1-stage-f0-draft/F0-DRAFT.md", "sha256": "dcaaff9728dbbebddd722677fe543d7f434e59357cbc3e47660a819db8fafbe8", "bytes": 11103, "crosscheck": "匹配 F0 MANIFEST 自载 sha" },
+    { "path": "dev/agent-workflow/evidence/s1-stage-f0-draft/MANIFEST.md", "sha256": "22cfd8cceac7b9105b22d3ee38d604f0d611ec22e0fab0d40fe8a82db98c375e", "bytes": 4710, "note": "该清单不自载自身最终 sha；本条为现存活值" },
+    { "path": "dev/agent-workflow/evidence/s1-m0-closure-v3-seeds/MANIFEST.md", "sha256": "ec05902e6e9b9ba4575382280daae0f2675f8bd5f6c346eed39222fd38f328f0", "crosscheck": "匹配 F0 MANIFEST 锚表" },
+    { "path": ".worktrees/.s1-f0-census-20261025/gittrees-1.txt", "sha256": "469000d2e18a04ed744b756ad1a842b88e891cd92eb246f62962fe43d9ee6cb6", "bytes": 17226, "lines": 133, "tree_rows": "47 行 /.worktrees/ + 1 行主仓 = 48 git树行", "crosscheck": "匹配 F0 MANIFEST 锚表" },
+    { "path": ".worktrees/.s1-asset-preserve-q6-20261024/PROVENANCE.md", "sha256": "75eb746ec36ffb0689048a51042cd4cbc00be5e125528838c7e32603ee49b16c", "archive_sha256_of": "a5m2-wire-g1-host-copy-639ed015.tar.zst(820248620B)=ac542a96103249b02b88b2a519bab78925bca06643c5a8ad3a11fb3e7887ab27", "receipt": "tar-diff.out=0B, tar-diff-at-destroy.out=0B ⇒ 恢复核验回执在" },
+    { "path": ".worktrees/.s1-asset-preserve-q7-20261024/PROVENANCE.md", "sha256": "9a24ce9d9da27890ab7623a20d64ab4c828751a62036b8853b990173c99fd070", "archive_sha256_of": "a5-m2-int-host-copy-639ed015.tar.zst(769046371B)=ff04f805fd019fcb53688af4840cd4a018fb3e8b11e1632a931c5dd1795677fe", "receipt": "tar-diff.out=0B, tar-diff-before-destroy.out=0B ⇒ 全内容流式compare0，退役前置满足" },
+    { "path": "dev/agent-workflow/evidence/s1-inventory-lane-a/RECOVERY-VALUE-INDEX.md", "sha256": "65cd575cfc73bdf8554e496ff800ba3eea80643693f0effad04bfa5c8bc16ff7", "crosscheck": "匹配 F0 MANIFEST 锚表" },
+    { "path": "dev/agent-workflow/evidence/s1-frozen-refs-index.md", "sha256": "c908e390cc773c044f034c62030e7dce8941918663cbed6c22e5388673733e58", "crosscheck": "匹配 F0 MANIFEST 锚表" }
+  ],
+  "preservation_m0_v3_seeds": { "files_excl_manifest": 63, "aggregate_excl_manifest": "81102fae614b16521c30717c3122fce6791c66f3c04b901e7e9bb61ab207c657", "records": 93, "match_manifest_claim": true, "proposed_status_unchanged": true },
+  "recover_0a3_d703": {
+    "final_0a3f11b2_lock_sha256": "7685317ff1ba675f6d3f6b012907360579c3c85bd1bc3319d0248483bde3c659",
+    "final_d703affb_lock_sha256": "b76e19639f3f9d39a031502c14e80dc47240dd6db95445a9c84427e1f5529c25",
+    "match_historical_before_originals": "两 final lock 与历史 before 原件(10-lock.before.yaml, pack-int logs-4a26ac9a/logs-e58349dd) SHA 一致；derived==final",
+    "package_json": "install-0a3f11b2.candidate=f17e6a0f5d6e60687c1f9038ae60acd5f94011ce597128dcd08d0b353bbfa5fa; install-d703affb.candidate=38a5d47d01a7b67f53273286f503f12ae987530b3089d7185debcbdd20a989bd; 仍为候选，未定版"
+  },
+  "h0": {
+    "m1": {
+      "runs": [
+        { "dir": "dev/agent-workflow/evidence/s1-h0-m1/runs/s1-h0-m1-20261024T222400Z", "summary_sha256": "a15226f04913740b726b0baa7b96183197031d36d10882f86439fb17d1ac0100", "summary_bytes": 183, "pass": false, "oracle": null },
+        { "dir": "dev/agent-workflow/evidence/s1-h0-m1/runs/s1-h0-m1-noext-20261024T225300Z", "summary_sha256": "0a965136672cb9a4b9556ca2fb41a4a4b43f2854c7a0043cca78ed2e3d3516e1", "summary_bytes": 885, "pass": true, "variant": "no-ext-contributors" }
+      ],
+      "fixtures": { "m1-run.mjs": "4542782e71d2b73b2f54e67c812b4ce945cd9d93fc0312f9dfcd5c882bfb07f0", "probe-plugin.mjs": "c883ac3f80efcfe4a4fe462b137f32cbfc1724fafb0662d19c92848a8618f195", "v5_script": "7d4aa8769ee85b6b04ea071054b052d8d7725b1718f6f3a9f25ff792324a67d1 = 账本历史值；实体在 s1-h0-m1 子树定点 find 未寻得（具名 UNKNOWN）" }
+    },
+    "m2": { "run": "dev/agent-workflow/evidence/s1-h0-m2/runs/s1-h0-m2-2026-10-24T23-26-02Z", "summary_sha256": "115568bf9e64dfcc19a2b71e57ef266e7d3c9b9cc0ec9d4fdcc213196f1e9a9b", "summary_bytes": 1901, "pass": false, "outcome": "not-delivered-call1-result", "fixtures": { "m2-run.mjs": "ef2bf20f30c1463862fa19500908d1d76500dd48a2b17f1edbeec7cbdc5a766b", "probe-m2-plugin.mjs": "03d36a895cea8336a75dee4e4f67bdf1f4d252af29c1a35bbb1cab1169a0ea1b" }, "status": "FAIL 不变，未重跑" },
+    "m3": { "run": "dev/agent-workflow/evidence/s1-h0-m3/runs/s1-h0-m3-2026-10-25T00-18-09Z", "summary_sha256": "305dfea6f91670d2659f1e51bbb8ed7f68a8deb401ddfc353c381528e98da07f", "summary_bytes": 1581, "pass": true, "outcome": "delivered-change-abort", "fixtures": { "m3-run.mjs": "d581e559656be4729a81f91888a63be727af6d0d405ab0fc7f80c127b05ed677", "probe-m3-plugin.mjs": "181fc9a73fc77151f8bb3c232dc3778c9109366869e62403a834cb10c5cf57a3", "oracle-selfcheck.mjs": "c2a1e33a993fd84b7d957bf9519d8d36afa80f52968ff141aa88790d9e978c85" }, "status": "机制 PASS；身份绑定/生命周期/完整 H0 未证；真实 turn/end 已只读核 seq29 time1792887522213 data{turn:1,reason:{kind:completed}}，不再重跑" }
+  },
+  "incident_log": {
+    "fact": "旧主 00:19:51.690Z 先 open(w) 后 read，替换截断 router；随后未经审查 checkout HEAD 5118 行 +17 重建",
+    "current_state_measured": { "bytes": 1623412, "lines": 5135, "mtime_utc": "2026-10-25T00:21:05.307Z", "sha256": "e3e49b1346c11e3e4c2e5f5f1e58d370d65cac2a44812fd87e983c92e1f22fe9" },
+    "handling": "仅只读记录；非权威；不恢复、不 fsck；其尾部自述（PoC 4/20、Host 4/12、预算包络公式）仅作引证不作权威"
+  },
+  "errata": [
+    "九对象 = s1-inventory-lane-a/RECOVERY-VALUE-INDEX.md，不是 47 树表",
+    "完整 47 树表 = dsh-worktree-value-inventory-20261025.md（33439B），外部 Library libfile_fb4f94abef0c819189d16a7166514de8；NOT_LOCAL 外部引用，本轮定点 ls 实测本地不存在，不重新编表、不假称本地有",
+    "Q6 有恢复核验回执；Q7 全内容流式 compare0 已满足退役前置，不新解包门",
+    "两 final lock 为历史 before 原件 SHA 匹配（0a3=7685317f…c659 / d703=b76e1963…9c25）；package.json 仍候选",
+    "M1 首 run v5=7d4aa876…67d1，noext=4542782e，非仅参数差异；去两贡献者可通，cause UNKNOWN",
+    "多 source/profile/mode/platform 条件并集保留 93 records，含 4 surface 义务已裁，勿再请裁 T1",
+    "build 来源 NOT_VERIFIED，只冻结实际 artifact，不称官方构建/永久豁免",
+    "不加 549 world 普查/旧 checker 门；UNKNOWN 保持具名 owner/保护/下游点",
+    "CI04/05 不降 conditional；中心架构/五阶段不变；G1-I/G1-F 仍未过",
+    "M1/M2/M3 原件仍存；M3 机制 PASS 但身份绑定/生命周期/完整 H0 未证；原 M2 FAIL 不变"
+  ],
+  "budget": { "inherited_conservative": "~11h40 + 随后只读包/本包墙钟，逐 Owner 重叠累加", "true_precise_consumption": "UNKNOWN（勿编）", "poc": "4/20 不增", "host_starts": "4/12 不增", "caps_unchanged": ["16 Owner-h", "2026-10-25T13:00:00Z 截止"] },
+  "write_boundary": { "created": ["dev/agent-workflow/evidence/s1-freeze-receipt-20261025/manifest.json", "dev/agent-workflow/evidence/s1-freeze-receipt-20261025/README.md"], "method": "mkdir 原子建目录（存在即停）+ tmp 写毕校验后 mv -n 原子落至不存在目标", "protected_untouched": ["dev/agent-workflow/SESSION_ROUTER_LOG.md", "dev/agent-workflow/evidence/s1-stage-f0-draft/", "三计划(git对象)", "AGENTS.md", "dev/agent-workflow/graph.yaml"] }
+}

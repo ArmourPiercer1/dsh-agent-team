@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "snapshot_version": "as20261025r1",
+  "supersedes": null,
+  "authored_from": "dev/agent-workflow/graph.yaml#current_contract@4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+  "published_by": "candidate:root-review-pending (NO publisher activated)",
+  "published_utc": "2026-10-25T02:24:54Z",
+  "current_phase_statement": "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — PRODUCTION INTEGRATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval; authority = current_contract)",
+  "current_contract": {
+    "phase_id": "alpha5-tool-io-governance",
+    "active_plan": "docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md",
+    "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
+    "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
+    "baseline": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+    "baseline_collected": "2026-10-22T07:20:56Z"
+  },
+  "content_digest": "sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64"
+}

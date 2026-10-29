@@ -1,0 +1,209 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-core-r1-2026-10-25T13-46-31-116Z",
+  "suite": "core",
+  "startedAt": "2026-10-25T13:46:31.221Z",
+  "selectedCases": [
+    "token-gate",
+    "positive-control",
+    "error-return-with-effect",
+    "planted-defect-detected",
+    "oracle-blinding-divergence",
+    "leak-check"
+  ],
+  "bindings": {
+    "teamSha": "3288567d36794394ce2af0401cee4fe218b11d03",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:220427218281602d572e8749858d08e17c388b9cbb437d68e3f3987869195062",
+        "snapshot_version": "as20261025r1"
+      },
+      "pointerSha256": "5356e8deabdcad5e6686208a8f3debe1113b56393d4a5c1c787e575c897725ee",
+      "snapshotDigest": "19b644b09af6026206137c10c86557562d5d62b871e7be5675af8d150df72391"
+    },
+    "canaryPluginSha256": "ffc17e7f2b435ade204de628d28b06ff45191684a56fb523eb76c8da992c696d",
+    "worldIds": [
+      "u5r1-20261025T13-46-31Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched."
+  },
+  "cases": [
+    {
+      "id": "token-gate",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:46:33.015Z",
+      "status": 401
+    },
+    {
+      "id": "positive-control",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:46:33.475Z",
+      "tag": "pos-13b40i",
+      "promptStatus": 200,
+      "promptBodyHead": "{\"type\":\"server-response\",\"rpcId\":\"u513b40i-i8skgfmikf\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+      "toolCallIssued": true,
+      "resultRoundTripped": true,
+      "resultErrored": false,
+      "effect": {
+        "effect": true,
+        "basis": [
+          "marker",
+          "ledger:body-ran",
+          "processes:host-alive"
+        ],
+        "marker": true,
+        "bodyRan": true
+      },
+      "observation": {
+        "markerFiles": [
+          "pos-13b40i.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "waitedMs": 0
+    },
+    {
+      "id": "error-return-with-effect",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:46:33.899Z",
+      "tag": "err-13b40i",
+      "oracleReportedEffectDespiteError": true,
+      "resultErrored": true,
+      "resultTextHead": "[{\"type\":\"text\",\"text\":\"Error: U5_CANARY_FORCED_ERROR tag=err-13b40i\"}]",
+      "observation": {
+        "markerFiles": [
+          "err-13b40i.marker",
+          "pos-13b40i.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "marker-ran"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      }
+    },
+    {
+      "id": "planted-defect-detected",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:46:34.322Z",
+      "tag": "def-13b40i",
+      "toolClaimedRan": false,
+      "soundOracleEffect": false,
+      "note": "defect mode lies (ran:true, writes nothing); a sound Oracle must report NO effect — a PASS here IS the fault-planting RED",
+      "observation": {
+        "markerFiles": [
+          "err-13b40i.marker",
+          "pos-13b40i.marker"
+        ],
+        "ledgerLegsForTag": [
+          "body-ran",
+          "return-only"
+        ],
+        "hostAlive": true,
+        "hostLogTagHits": 0
+      },
+      "resultWaitedMs": 0
+    },
+    {
+      "id": "oracle-blinding-divergence",
+      "verdict": "FAIL",
+      "at": "2026-10-25T13:46:34.322Z",
+      "soundEffect": false,
+      "blindedEffect": false,
+      "note": "the ignore-marker Oracle variant turns the planted defect GREEN — proving the sound Oracle is what catches it (fault-planting sensitivity)"
+    },
+    {
+      "id": "leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:46:34.428Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": null,
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-25T13:46:34.532Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/host-start-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-25T13:46:31.249Z",
+        "runId": "u5-core-r1-2026-10-25T13-46-31-116Z",
+        "suite": "core",
+        "world": "u5r1-20261025T13-46-31Z",
+        "phase": "boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "boot1",
+      "world": "u5r1-20261025T13-46-31Z",
+      "port": 3180,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u5-g3-20261025/logs/u5r1-20261025T13-46-31Z/instance-port3180.log"
+    }
+  ],
+  "boot1Evidence": {
+    "ledgerRowsAfterBoot": [
+      {
+        "at": "2026-10-25T13:46:32.319Z",
+        "world": "u5r1-20261025T13-46-31Z",
+        "leg": "register",
+        "tool": "u5_canary",
+        "ok": true
+      }
+    ],
+    "patchFile": "# U5 canary World — one test-only plugin row via the public profile-patch seam.\n- insert:\n    - id: u5-canary\n      name: \"./u5-canary-plugin.mjs\"\n# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata\n# contributors through their own public config flag (s1-h0-m1 noext\n# precedent; schemas session-log-deepseek/src/index.ts:51-52).\n- id: session-log-deepseek\n  config:\n    enabled: false\n- id: plugin-package-inventory-deepseek\n  config:\n    enabled: false\n"
+  },
+  "session": {
+    "sessionId": "session-53c0bca4-6bb4-4fec-983d-530cfe4d27de",
+    "workspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u5-testworld/tests/homes/u5r1-20261025T13-46-31Z/workspace"
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-25T13:46:34.532Z"
+}

@@ -1,0 +1,42 @@
+# s1-h0-m2 launcher — mode=--dry-run (default, read-only) port=3180 world=s1-h0-m2-2026-10-24T23-22-48Z
+  [OK] input validation
+  [OK] port-sanctioned — 3180
+  [OK] htu-rev-parse-equals-pin — 639ed0153972
+  [OK] htu-status-porcelain-empty — 0
+  [OK] htu-entry-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] htu-tools-lib-exists — /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-har
+  [OK] bin-echo-exists — /bin/echo
+  [OK] host-port-free-per-proc-net — 3180
+  [OK] m2-probe-exists — probe-m2-plugin.mjs
+  [OK] m1-sealed-runner-bytes-unchanged — 4542782e71d2b73b
+  [OK] m1-sealed-probe-unchanged — c883ac3f80efcfe4
+  [OK] mock-copy-matches-4aaaa-blob — 8beade69588c105e
+  [OK] world-absent — s1-h0-m2-2026-10-24T23-22-48Z
+
+## profiles/web/cordis.patch.yml (sha256 bb5898a39d50f2c05a6289f854e4a4f475eddf4efb0dac8e1daa364de1e0f0f2):
+# S1 H0-M2: ONE plain plugin row via the public profile-patch seam (written by DshInstance.mountRows).
+# Relative name resolves beside this patch file (app-boot/src/index.ts:532,:994 @639ed015).
+# No preset, no Team row, no PR360 assembly.
+- insert:
+    - id: s1m2-probe
+      name: "./s1m2-probe-plugin.mjs"
+# Variant layer (public profile-patch composition, root-authorized differential probe):
+# disables ONLY the two deepseekLlmApiExtensions metadata contributors through their own
+# public config flag — syntax precedent at apps/cli/tests/profiles/headless/goal-snapshot.patch.yml:28-30
+# (id + config.enabled:false); schemas: session-log-deepseek/src/index.ts:51-52,
+# plugin-package-inventory-deepseek/src/index.ts:38-39. NOT a private map, NOT a monkeypatch,
+# NOT disabling the registry row (deepseek-llm-api-extensions stays mounted; base/cordis.patch.yml:37-38),
+# so registry + request.signal abort (deepseek-llm-api-extensions/src/index.ts:109-114) and every
+# tool / Guard / dispatch path remain in effect.
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false
+
+## decide script: stage0 → tool-call {id:s1m2-tc-1,tag:call1} on the prompt-marked request; result(call1) → tool-call {id:s1m2-tc-2,tag:call2}; else text.
+## expected markers on PASS: B-call1.marker (swap arm) + A-call2.marker (control arm)
+## scope: PASS ⇒ late resolution only; not a safety PASS, not an authorization bypass.
+
+DRY-RUN: nothing written, no Host started.

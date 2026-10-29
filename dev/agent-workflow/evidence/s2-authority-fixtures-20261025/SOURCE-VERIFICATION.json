@@ -1,0 +1,84 @@
+{
+  "artifact": "s2-authority-fixtures-20261025/SOURCE-VERIFICATION.json",
+  "kind": "Read-only input verification for the s2-authority-fixtures bounded prep round. Records what was re-verified before FIXTURES.json was written. Nothing here was inferred from the physical working tree.",
+  "utc": {
+    "round_start": "2026-10-25T02:23:31Z",
+    "clock": "date -u real UTC",
+    "deadline": "2026-10-25T02:43:31Z (20-minute bounded prep, not reset)"
+  },
+  "review_basis": {
+    "permission_for_this_round": "user-stated review disposition READY_FOR_BOUNDED_PREP on the corrected Map; NOT a G2 pass — no file in the evidence tree carries the string READY_FOR_BOUNDED_PREP (grep 0 hits), so it is recorded as user-relayed, and the sole in-tree record (ERRATA-20261025.json gate_statement) says: Map remains a candidate deliverable, NOT a gate result, G2 has not passed. This round does not contradict that.",
+    "map_round_inputs_read": [
+      "AUTHORITY-MIGRATION-MAP.json (sha256 df3eb5e53832a260c1818a01854bedc2228bee6a5cbf3d6a261856bf787d3b26, 19695B — matches the ERRATA-recorded pre-erratum hash)",
+      "MACHINE-CONSUMERS.json (sha256 b54b7dba96187b8828dd18214ef40af5d5fa023e53699c74d937f698b5dabbdf, 12268B — matches)",
+      "ERRATA-20261025.json (sha256 ef47cbf88fd0cf5f58fd8eefde30c0b31c7a6709713e0c014f53d177d21d7e33, 8038B — the sole ERRATA; applied: E1 GENERATED_FILES sentence carries no migration meaning, E2 G5 withdrawn and G2/G3 are observations not bugs, E3 physical tree != fixed target)"
+    ]
+  },
+  "fixed_ref_verification": {
+    "method": "git cat-file -t / git show / git grep against the three fixed ids only",
+    "origin_master_4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84": "commit — resolves; all checker/graph citations in FIXTURES.json read from this object",
+    "pr363_1310b959595b211e5da7a5f727dadf522f79d60b": "commit — resolves",
+    "pr361_b97ffdafdceeb73d58a06fe5fb6563820d063d28": "commit — resolves",
+    "physical_tree_disclaimer": "physical working-tree HEAD is 6259cf4bc (old tree). It was used for NOTHING authoritative; ERRATA E3 measured physical AGENTS.md blob 47659f458709f1b9faa3dfc1d091a3a84986d679/12755B/sha256 2248b657... != fixed-target blob 97b74d4fb50fc2de6746ab02c24505ee370a1f42/11644B/sha256 62c66854...; the 6259 tree never stands in for a fixed target."
+  },
+  "f0_gate_digest_reverification": {
+    "source": "dev/agent-workflow/evidence/s1-f0-issued-20261025/{F0-ISSUED-20261025.json,G1-GATE-DECISION.json}",
+    "claimed": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "recomputed_this_round": "sha256:ed3c2cfb50e444622c36a0bc6f508aeb9e8e6202ce65cb569b16f838b92319a4",
+    "match": true,
+    "rule_applied": "F0.canonical_digest_algorithm verbatim: over the pure inputs object {git_objects, external_references, local_files} only (digest_scope key excluded); keys sorted by code point recursively; arrays order-preserved; compact separators; minimal escapes with raw non-ASCII; zero 0x0A; SHA-256 lowercase hex prefixed sha256:",
+    "canonical_string_bytes": 4285,
+    "newline_count": 0,
+    "gate_verdicts_as_recorded": { "G1_I": "PASS", "G1_F": "NOT_PASSED", "overall_G1": "PARTIAL" },
+    "note": "the three fixed commits above appear inside the F0 inputs git_objects; re-verifying them is part of the gate guard (no referenced input diverged)"
+  },
+  "semantic_pins_read_this_round": {
+    "graph.yaml@4aaaa7b2": "current_phase:64 (top-level prose, authority delegates to current_contract); current_contract:91; phase_id:92; baseline:96 (40hex + HEAD/ancestor comment); baseline_collected:97; nested historical baseline keys :120/:262 out of block scope",
+    "ci-pr-gate.mjs@4aaaa7b2": "field() :300-305; Q8 :288-290; Q3 counts :316-323 (count!=1 admits 0 — missing fields fire Q3 AND the Q2/Q4 message); Q2 :325-332; Q4 :334-337; Q1 wording/backlog-ids :339-359; Q6 carriers + no-40hex-copy :480-496; info.contract surfaces 4 of 6 :313 (observation per ERRATA E2, not asserted as a bug)",
+    "a5-current-contract.test.ts@4aaaa7b2": "P1 :154, P1b :160, P3 :165, N1 :170, N2 :175, N3 :180, P4 :185, N4 :192, N5b :198, N6 :203, Q6-copy :207, batch-3 ①-⑥ :245-292, GROUP A :322, legacy-shape describe :44-69",
+    "doc-consistency-controls.mjs@4aaaa7b2": "inline fixture graph :63-68 (3 of 6 fields — expressiveness limit recorded in MAP gap G3, restated as observation by E2); CLAIM_UNBOUND :542; CLAIM_TIER_MISMATCH :549; FAKE_VERIFICATION :335",
+    "gen-current-state.mjs@4aaaa7b2": "FAKE_VERIFICATION :217 (INV-EB-0009); checkLegacyMirror :321-350 with docstring :313-317",
+    "census-runtime.yml@4aaaa7b2": "awk baseline parse :129 (second independent grammar definition; MC-08/G1 gap)"
+  },
+  "terminology_ruling": {
+    "statement": "current_phase and phase_id were NOT treated as synonyms; the distinction was read from source before use",
+    "evidence": "graph.yaml:64 vs :92 at the fixed ref (different objects: top-level prose statement vs block field); ci-pr-gate.mjs:343-345 grades their AGREEMENT as a comparison of two distinct things; :318 and :319 count them with separate regular expressions; Map adjacent_live_statement records the same with the transaction-coupling requirement",
+    "applied_in": "FIXTURES.json current_phase_vs_phase_id + every MIS/CONF case keeps the two fields independent (e.g. MIS-01 deletes phase_id and leaves current_phase in place; the expected findings show Q1 wording stays green while Q2/Q3 fire)"
+  },
+  "mode_counts": {
+    "paid_models": 0,
+    "subagents": 0,
+    "host_runs": 0,
+    "clone": 0,
+    "install": 0,
+    "ci_runs": 0,
+    "validators_invoked": 0,
+    "new_worktree": 0,
+    "merge_or_push": 0,
+    "checkout_or_reset": 0,
+    "permission_escalation": 0,
+    "writes_outside_new_dir": 0,
+    "a_package_s2_schema_candidate_touched": 0,
+    "old_files_modified": 0,
+    "router_plans_agents_graph_current_edits": 0,
+    "schema_a_changes": 0
+  },
+  "write_boundary": {
+    "created_only": "dev/agent-workflow/evidence/s2-authority-fixtures-20261025/ (dir did not exist; created with plain mkdir, which fails if it had)",
+    "method": "mkdir without -p + per-file exclusive writes; drafts iterated only inside this directory before final hashing (self-iteration rule), final hashes frozen in manifest.json at delivery",
+    "cap": "total new bytes <= 1 MiB",
+    "protected_untouched": [
+      "dev/agent-workflow/graph.yaml",
+      "dev/agent-workflow/SESSION_ROUTER_LOG.md",
+      "AGENTS.md, docs/plans (three plans incl. PR361 memo), docs/ROUTER_RULES.md, docs/TEST_METHODS.md, docs/STATUS.md",
+      "scripts/, packages/, tests/, dev/engineering/, .github/",
+      "s1-f0-issued-20261025/, s2-authority-map-20261025/ (old Map/F0 read-only)",
+      "any A-package s2-schema-candidate object (not written, not modified)",
+      ".worktrees/"
+    ]
+  },
+  "budget": {
+    "wall_clock": "2026-10-25T02:23:31Z start; hard stop 02:43:31Z; deliver whatever exists at the stop with sha/bytes/gaps",
+    "cumulative": "counted into the existing cumulative 16 Owner-h budget and the 2026-10-25T13:00:00Z absolute cap; NOT a reset"
+  }
+}

@@ -1,0 +1,12 @@
+mcpmarks/mcp-beta-b4.served
+mcpmarks/mcp-beta-b5.served
+work/askdir/y.txt
+work/data/note.txt
+work/denydir/p.txt
+work/out/plant.txt
+work/search/a.txt
+work/w/jobfile.txt
+work/w/native-write2.txt
+work/w/native-write.txt
+work/w/ok.txt
+work/w/shell.txt

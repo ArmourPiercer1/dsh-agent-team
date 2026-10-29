@@ -1,0 +1,319 @@
+{
+ "meta": {
+  "legend": {
+   "READY-PUBLIC": "fixed public seam + guarantees — NONE statically assignable in this package (that label is reserved for H0+PoC evidence)",
+   "CONDITIONAL": "route exists / public seams present, named conditions (H0, baseline re-run, open blocker, WIP extraction) apply",
+   "ENV-BLOCKED": "environment/credential/platform unavailable",
+   "CORE_SEAM_BLOCKER": "public Host behavior proven missing — none asserted statically; see core_seam_blocker_candidates",
+   "UNKNOWN": "not classifiable from frozen sources without a PoC"
+  },
+  "counts": {
+   "CONDITIONAL": 33,
+   "ENV-BLOCKED": 3,
+   "UNKNOWN": 22
+  },
+  "only_required_tools_classified": true
+ },
+ "tools": [
+  {
+   "name": "read",
+   "status": "CONDITIONAL",
+   "reason": "master governed read row + PA/admission chain; governed row exists on master, but dispatch-identity (pre-Body) property is H0-pending; no static classification may claim real-Host PASS; baseline re-run missing (matrix L21 V@B=no)"
+  },
+  {
+   "name": "write",
+   "status": "CONDITIONAL",
+   "reason": "no governed write arm on master (native-name claim refused, team-tool-plane.mjs:492-494); #360 write.mjs/write-slice.ts WIP extractable; same public register seam as read — no missing-seam evidence"
+  },
+  {
+   "name": "edit",
+   "status": "CONDITIONAL",
+   "reason": "same as write; #360 edit.mjs WIP; read-before-edit untested (matrix L23)"
+  },
+  {
+   "name": "str_replace_editor",
+   "status": "CONDITIONAL",
+   "reason": "required by matrix L24 but not shipped (census: NOT mounted in any shipped bundle/preset); obligation governs only the if-mounted case"
+  },
+  {
+   "name": "read_image",
+   "status": "CONDITIONAL",
+   "reason": "read arm + attachment-store write face; #360 image.mjs/image-attachment.mjs WIP; whole chain untested (matrix L25)"
+  },
+  {
+   "name": "grep",
+   "status": "CONDITIONAL",
+   "reason": "native name NOT taken over (takeover []); governed alias exists; native row effect proof missing (matrix L26); H0-pending"
+  },
+  {
+   "name": "glob",
+   "status": "CONDITIONAL",
+   "reason": "same as grep + shut key in code (matrix L28; BL-19 runtime re-verify pending)"
+  },
+  {
+   "name": "team_grep",
+   "status": "CONDITIONAL",
+   "reason": "alias row wired (matrix L27); row-level approval closed-loop unverified; H0-pending"
+  },
+  {
+   "name": "team_glob",
+   "status": "CONDITIONAL",
+   "reason": "same as team_grep (matrix L29)"
+  },
+  {
+   "name": "bash",
+   "status": "CONDITIONAL",
+   "reason": "native takeover assembled + sandbox provider on master (matrix L30 historical LIVE-CONFIRMED); baseline re-run missing; H0-pending"
+  },
+  {
+   "name": "team_bash",
+   "status": "CONDITIONAL",
+   "reason": "route exists but OPEN R2 approval-penetration blocker must close first (docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md L13 BL-01, RELEASE BLOCKER)"
+  },
+  {
+   "name": "pwsh",
+   "status": "ENV-BLOCKED",
+   "reason": "win32 provider/platform unavailable on this Linux test host; presets platform-gated; bash acceptance not transferable (M0-B B-PROCESS)"
+  },
+  {
+   "name": "job_list",
+   "status": "CONDITIONAL",
+   "reason": "master Jobs bridge over public JobRegistry face + historical C3 @efb5bb55 (matrix L33); baseline re-run missing; default-off"
+  },
+  {
+   "name": "job_output",
+   "status": "CONDITIONAL",
+   "reason": "same trio (matrix L34)"
+  },
+  {
+   "name": "job_kill",
+   "status": "CONDITIONAL",
+   "reason": "same trio; terminated-confirmation uncertainty on record (matrix L35)"
+  },
+  {
+   "name": "lsp",
+   "status": "CONDITIONAL",
+   "reason": "master assembly face (lsp-assembly.ts:174-191) + historical real-server evidence (matrix L40); host package opt-in/unmounted in default presets; applicability-to-baseline NOT_VERIFIED"
+  },
+  {
+   "name": "web_fetch",
+   "status": "ENV-BLOCKED",
+   "reason": "no authorized outbound + no production provider assembly on master (matrix L37); deny-side lane still PoC-able (PoC-4a)"
+  },
+  {
+   "name": "web_search",
+   "status": "ENV-BLOCKED",
+   "reason": "same (matrix L36); search-target vs result-URL object split unresolved"
+  },
+  {
+   "name": "run_code",
+   "status": "CONDITIONAL",
+   "reason": "PTC escalation row merged (fs half-arm); net/process-visibility partial gap registered (#332/BL-16); whole-row guarantee unverified (matrix L38/L39)"
+  },
+  {
+   "name": "todo_write",
+   "status": "CONDITIONAL",
+   "reason": "static registration proven + reserved-name in-table (matrix L45); no acceptance; #360 todo.mjs WIP; row is a session-state write face"
+  },
+  {
+   "name": "team_list_members",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_list_templates",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_inspect_config",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_create_member",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_delegate",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_follow_up",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_collect",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_send_message",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_report_progress",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_request_control",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_resolve_control",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_list_pending_control",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_archive_member",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_grant_permission",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "team_revoke_permission",
+   "status": "CONDITIONAL",
+   "reason": "own-layer registration on master + historical ENFORCE-PARTIAL approval chain (matrix L44); per-name verification NOT_VERIFIED; ControlService guard fail-closed (packages/tools/src/guard.ts:72-91)"
+  },
+  {
+   "name": "mcp__<server>__<tool> (dynamic class)",
+   "status": "CONDITIONAL",
+   "reason": "mount/reconcile + trust-exclusion on master (matrix L41/L42); guard binding-completeness UNVERIFIED; dynamic re-validation unproven; no runtime inventory snapshot"
+  },
+  {
+   "name": "client-plugin dynamic tools (any name via harness.defineTool; dynamic class)",
+   "status": "UNKNOWN",
+   "reason": "NEG-4 lane WIRED-NOT-ACCEPTED; ABSTAIN-layer inheritance never VERIFIED (matrix L46); admission route undefined"
+  },
+  {
+   "name": "surface:domain_family (family obligation — no registered names)",
+   "status": "UNKNOWN",
+   "reason": "family has no enumerable names on any side (U1-C ABSENT; matrix L43 尚未枚举缺口); cannot be satisfied per-name in G1-F — named gap, not covered"
+  },
+  {
+   "name": "subagent",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "subagent_fork",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "list_subagent_models",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "send_message",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "interrupt_agent",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "list_agents",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "workflow",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "create_goal",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "get_goal",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "update_goal",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "skill",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "present",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "ask_user_question",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "exit_plan_mode",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "plugin_manager",
+   "status": "UNKNOWN",
+   "reason": "overridden above, refined here: mounted + can execute build scripts (host tools.ts:21 description re-read); un-governed today; highest-risk gap of MG-AGENT-CONTROL — mask/restrict seam exists so not yet a CORE_SEAM_BLOCKER"
+  },
+  {
+   "name": "cordis_inspect_list",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "cordis_inspect_query",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "list_mcp_resources",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "list_mcp_resource_templates",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  },
+  {
+   "name": "read_mcp_resource",
+   "status": "UNKNOWN",
+   "reason": "matrix lists the name (Appendix A) with per-name UNKNOWN and no acceptance row; no governance mount on master; route presumed ordinary-family via the same public register/restrict seams but unverified"
+  }
+ ],
+ "core_seam_blocker_candidates": [
+  {
+   "candidate": "H0: pre-Body definition-identity pin at Host dispatch",
+   "precise_missing_public_behavior": "after the ordered pre-execute/guard gate (host core/tools/src/index.ts:768-770 via public tools.guard :1136), dispatch RE-RESOLVES the body by name+scope (resolveExecution :1247-1252 invoked at :1578/:1807/:1876) instead of executing the Definition the Guard validated; no public seam observed that pins a validated Definition identity for the body invocation. If H0 shows a window where an unverified Body executes, every name-based group becomes CORE_SEAM_BLOCKER. Status: PENDING (separate agent owns H0) — this is the single CSB candidate, asserted as a candidate, not as a proven blocker."
+  },
+  {
+   "candidate": "mcp__ guard binding-completeness",
+   "precise_missing_public_behavior": "not proven missing — UNVERIFIED: whether the Team Guard's native-trust exclusion + bindMcpTools binding covers every globally-registered mcp__ name across late binding (matrix L41/L42). PoC-4b decides; if unbindability is proven, becomes CSB for the MCP class only."
+  }
+ ]
+}

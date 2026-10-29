@@ -1,0 +1,8 @@
+=== CONTROL 3: corrupt blob must NOT be silently overwritten by ingest (STORE_CONFLICT)
+ERROR STORE_CONFLICT /srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence/blobs/51/51d586abc37afdf33082d2641a09723c52ca01d0e9128f07bc5ee3a2caec6a60 exists with foreign content
+ingest exit=0
+=== CONTROL 3b: remove corrupt blob, ingest restores it from git objects, verify GREEN
+blobs_written=1 blobs_skipped_existing=20147 manifest=dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv manifest_sha256=4f49b36bbaefb9d4ca37342920aac78246678fa77554f48efc550a3f72ec7ecd
+verify verdict=pass entries=20148 bytes_ok=521862486 findings=0 store=/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/evidence
+verify exit=0
+BLOB IDENTICAL TO PRE-CONTROL COPY

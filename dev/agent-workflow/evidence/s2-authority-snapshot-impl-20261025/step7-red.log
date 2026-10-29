@@ -1,0 +1,20 @@
+FAIL T2 candidate --check on candidate-rendered mirror: binding recorded, no STALE/DUAL_READ/PLAN conflict: exit=1
+WARN CATALOG_NOT_GENERATED: docs/contracts/engineering-baseline/INDEX.md has not been generated; the generator is ready and waits on adding that path to the write allow-list
+FAIL STALE_GENERATED_VIEW: out of date; run --write
+docs:sync --check: docs=5 notes=0 plans=3(1 declaring) findings=2 blocking=1 contracts=not applicable
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+
+PASS T3 candidate mirror feeds the existing plan-citation rule: divergent phase_id gets PLAN_CITATION_CONFLICT
+FAIL T4 missing digest flag and empty values: named refusal, never a silent legacy --check: one-sided: exit=1 WARN CATALOG_NOT_GENERATED: docs/contracts/engineering-baseline/INDEX.md has not been generated; the generator is ready and waits on adding 
+FAIL T5 candidate + --write: refused exit 2 with zero filesystem side effects: exit=0 docs:sync --write: regenerated dev/engineering/current-state.json (absent -> 71 lines); regenerated docs/contracts/engineering-baseline/INDEX.md (absent -> 21 l
+FAIL T6 dual-read divergence blocks candidate --check (graph vs snapshot, named, no auto-pick): exit=1 WARN CATALOG_NOT_GENERATED: docs/contracts/engineering-baseline/INDEX.md has not been generated; the generator is ready and waits on adding that path to the write allow-list
+FAIL STALE_GENERATED_VIEW: out of date; run --write
+FAIL PLAN_CITATION_CONFLICT: docs/plans/active/alpha5-tool-io-governance/c
+PASS T7 plain --write unchanged: creates then byte no-ops on the same fixture (legacy chain)
+FAIL T8 baseline resolver: exact one-line stdout on success; named stderr + empty stdout on every failure; no fallback: exit=1 err=node:internal/modules/cjs/loader:1568
+  throw err;
+  ^
+
+Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/s2-a
+PASS T1 default --check byte-identical to fixed parent 61df closure on same fixture
+RED (5/8 failing)

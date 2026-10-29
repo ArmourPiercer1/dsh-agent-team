@@ -1,0 +1,222 @@
+diff --git a/../s1-h0-m3/probe-m3-plugin.mjs b/census-probe-plugin.mjs
+index 5c49588f5..2ed241d7d 100644
+--- a/../s1-h0-m3/probe-m3-plugin.mjs
++++ b/census-probe-plugin.mjs
+@@ -1,30 +1,28 @@
+ /**
+- * S1 H0-M2 fence probe (public API only, fixed Host @639ed015).
++ * S1 RUNTIME CENSUS observer (public API only, fixed Host @639ed015). DERIVED with a small diff
++ * from the sealed M3 probe (sha256 181fc9a73fc77151f8bb3c232dc3778c9109366869e62403a834cb10c5cf57a3,
++ * sealed file byte-untouched above in s1-h0-m3/). Mechanism inherited verbatim: register A,
++ * call-#1 swap arm, guard wrapper, call-#2 restored-A control arm.
+  *
+- * QUESTION: inside the real `tools/execute` around-dispatch fence, does a public
+- * unregister→register of a SAME-NAME Definition change which body runs?
++ * CENSUS QUESTION (root-authorized): inside the RESTORED-A CONTROL call context, one REAL
++ * exec.agent reference is passed to the two PUBLIC queries
++ *   - ctx.tools.schemas(scope)         (public, packages/core/tools/src/index.ts:1260 @639ed015)
++ *   - ctx.tools.get(name, scope)       (public, packages/core/tools/src/index.ts:1230 @639ed015)
++ * and the ledger records, via a plugin-owned WeakMap identity tracker (the sealed M3 identityOf,
++ * kept verbatim): Definition-object identity, its execute-reference identity, the Scope reference
++ * identity used by both calls, rootCallId, and the registered-visible name set.
+  *
+- * Public seam references (@639ed015397290b3745d163aafe02ffee4aa3f84):
+- *   - listener form: `ctx.on('tools/execute', async (exec, next) => …)` — exactly the host's
+- *     own wrappers: packages/guard/timeout-policy/src/index.ts:56,
+- *     packages/session/session-checkpoint-policy/src/index.ts:70. (`ctx.waterfall` is the
+- *     EMITTER side, packages/core/tools/src/index.ts:1605-1607 — a plugin never calls it.)
+- *   - unregister: the closure returned by `ctx.tools.register(definition)`
+- *     (packages/core/tools/src/index.ts:1063 `register(definition): () => void`).
+- *   - live name→Definition lookup happens AFTER the fence, right before the body:
+- *     packages/core/tools/src/index.ts:1578 `resolveExecution(...)` → :1581 `tool.execute(...)`.
+- *   - call identity: `ToolExecution.rootCallId` (packages/core/tools/src/index.ts:393), visible
+- *     to the body through ToolRunContext (:418) → every ledger row is bound to a callID.
++ * FORBIDDEN and ABSENT from this file (asserted by the launcher preflight byte-scan): the four
++ * private tools-registry seams (presentation-mode at :922, private view at :1178, wire projection
++ * at :1008, execution-resolution at :1247 — names deliberately not spelled out here so the byte
++ * scan over THIS file stays strict), stringification-as-identity, eval/Function, and any
++ * monkeypatching of host objects. No other tool body is executed: only the fixture body runs.
++ * Identity uses === and the WeakMap tracker only. schemas() rows are DEEP CLONES by contract
++ * (:1259 "@returns one deep-cloned schema per visible tool") — their identities are recorded
++ * ONLY as row counts/names, never as registration identity; get() returns the live Definition.
+  *
+- * A and B differ ONLY in body identity (marker/echo prefix and a `body` field).
+- * Same name, same `parameters`, same VALID `output` schema: no intentional output-schema error,
+- * no extra dimension. NO authorization claim: the pre-dispatch gate and guard restrictions are
+- * name/argument based (packages/core/tools/src/index.ts:1493-1519, :700-711), so a same-name
+- * swap is not distinguishable by any A-bound authorization check — this probe measures
+- * resolution timing only.
+- *
+- * Kit env: S1M3_LEDGER, S1M3_MARKER_DIR, S1M3_SENTINEL, S1M3_SENTINEL_EXPECT, S1M3_FENCE_SLEEP_MS.
+- * @module dev/agent-workflow/evidence/s1-h0-m2/probe-m3-plugin
++ * Kit env: S1C_LEDGER, S1C_MARKER_DIR, S1C_SENTINEL, S1C_SENTINEL_EXPECT, S1C_FENCE_SLEEP_MS.
++ * @module dev/agent-workflow/evidence/s1-runtime-census/census-probe-plugin
+  */
+ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { spawnSync } from 'node:child_process'
+@@ -41,14 +39,14 @@ export function identityOf(definition) {
+ }
+ export const fingerprintOf = identityOf
+ 
+-export const name = 's1m3-fence-probe'
++export const name = 's1c-census-probe'
+ export const inject = ['tools']
+ 
+-const LEDGER = process.env['S1M3_LEDGER'] ?? ''
+-const MARKER_DIR = process.env['S1M3_MARKER_DIR'] ?? ''
+-const SENTINEL = process.env['S1M3_SENTINEL'] ?? ''
+-const SENTINEL_EXPECT = process.env['S1M3_SENTINEL_EXPECT'] ?? ''
+-const FENCE_SLEEP_MS = Number(process.env['S1M3_FENCE_SLEEP_MS'] ?? '150')
++const LEDGER = process.env['S1C_LEDGER'] ?? ''
++const MARKER_DIR = process.env['S1C_MARKER_DIR'] ?? ''
++const SENTINEL = process.env['S1C_SENTINEL'] ?? ''
++const SENTINEL_EXPECT = process.env['S1C_SENTINEL_EXPECT'] ?? ''
++const FENCE_SLEEP_MS = Number(process.env['S1C_FENCE_SLEEP_MS'] ?? '150')
+ 
+ const TOOL_NAME = 's1_m1_probe'
+ const slug = (value) => String(value ?? 'untagged').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 80)
+@@ -81,7 +79,7 @@ const OUTPUT_SCHEMA = {
+ function makeDefinition(bodyId) {
+   return {
+     name: TOOL_NAME,
+-    description: `S1 H0-M2 fence probe body ${bodyId}. Arguments: { tag: string }. Writes <body>-<tag>.marker, reads the sentinel once, runs /bin/echo, appends callID-bound ledger rows.`,
++    description: `S1 census fixture body ${bodyId}. Arguments: { tag: string }. Writes <body>-<tag>.marker, reads the sentinel once, runs /bin/echo, appends callID-bound ledger rows.`,
+     parameters: {
+       type: 'object',
+       properties: { tag: { type: 'string', description: 'marker/ledger tag for this call' } },
+@@ -107,7 +105,7 @@ function makeDefinition(bodyId) {
+       }
+       // Leg read — one read, content must equal the sealed expectation.
+       try {
+-        if (SENTINEL === '' || SENTINEL_EXPECT === '') throw new Error('S1M3_SENTINEL / S1M3_SENTINEL_EXPECT unset')
++        if (SENTINEL === '' || SENTINEL_EXPECT === '') throw new Error('S1C_SENTINEL / S1C_SENTINEL_EXPECT unset')
+         const buf = readFileSync(SENTINEL)
+         const got = buf.toString('utf8').trim()
+         if (got !== SENTINEL_EXPECT) throw new Error(`sentinel content mismatch (got ${JSON.stringify(got.slice(0, 80))})`)
+@@ -118,10 +116,10 @@ function makeDefinition(bodyId) {
+       }
+       // Leg process — controlled /bin/echo, exact expected stdout.
+       try {
+-        const r = spawnSync('/bin/echo', ['s1m3-echo', bodyId, s], { encoding: 'utf8' })
++        const r = spawnSync('/bin/echo', ['s1c-echo', bodyId, s], { encoding: 'utf8' })
+         const out = String(r.stdout ?? '').trim()
+         if (r.status !== 0) throw new Error(`echo exit ${String(r.status)} signal=${String(r.signal ?? '')}`)
+-        if (out !== `s1m3-echo ${bodyId} ${s}`) throw new Error(`echo stdout mismatch: ${JSON.stringify(out.slice(0, 80))}`)
++        if (out !== `s1c-echo ${bodyId} ${s}`) throw new Error(`echo stdout mismatch: ${JSON.stringify(out.slice(0, 80))}`)
+         record({ leg: 'process-ran', body: bodyId, callId, tag, ok: true, echoOut: out })
+       } catch (error) {
+         failed.push('process')
+@@ -154,22 +152,9 @@ export function apply(ctx) {
+     return () => {
+       try { disposeCurrent?.() } finally { disposeCurrent = undefined }
+     }
+-  }, 's1m3-probe-register-A')
++  }, 's1c-probe-register-A')
+ 
+-  // ── M3 governance wrapper (candidate under test; public API only) ──────────────────
+-  // Registered FIRST so it is the OUTERMOST wrapper of the two listeners in this plugin:
+-  // its pre-`next()` work therefore runs before the inner swap arm below. It does three
+-  // things, all inside the pinned public contract:
+-  //   (a) snapshots the currently resolved Definition through the PUBLIC `ctx.tools.get(name, scope)`
+-  //       (packages/core/tools/src/index.ts:1221-1232) as a public-fields fingerprint;
+-  //   (b) replaces `exec.signal` with its own controller signal — exactly the replacement the
+-  //       event contract allows (ToolDispatchExecution :401-407, "wrappers may change only
+-  //       `exec.signal`" :156), verifying retention the way master install.ts:923-931 does;
+-  //   (c) aborts that controller from a SYNCHRONOUS `tools/change` listener, so the host's OWN
+-  //       pre-dispatch check (:1572 → :1574 toolAbortedBeforeDispatchResult, code
+-  //       ABORTED_BEFORE_DISPATCH :486/:1979) refuses before the live resolve at :1578.
+-  // It never calls a body, never reads a private field, never patches the host, and it
+-  // preserves the caller's own abort reason when forwarding, and the `next()` chain.
++  // ── Census wrapper 1 (public listener): the M3 guard wrapper VERBATIM (limits inherited). ──
+   let guardCalls = 0
+   ctx.on('tools/execute', async (exec, next) => {
+     if (exec.name !== TOOL_NAME) return next()
+@@ -191,7 +176,7 @@ export function apply(ctx) {
+       try { if (typeof maybeOff === 'function') maybeOff() } catch { /* reclaim best effort */ }
+       try { if (typeof incomingAbortOff === 'function') incomingAbortOff() } catch { /* reclaim best effort */ }
+       try { exec.signal = incoming } catch { /* refusal is fail-closed */ }
+-      return { isError: true, content: [{ type: 'text', text: `Error: S1M3 guard refused: ${reason}` }], error: { message: `S1M3 guard refused: ${reason}`, info: { code: 'S1M3_GUARD_REFUSED', reason } } }
++      return { isError: true, content: [{ type: 'text', text: `Error: S1C guard refused: ${reason}` }], error: { message: `S1C guard refused: ${reason}`, info: { code: 'S1C_GUARD_REFUSED', reason } } }
+     }
+     try {
+       approved = ctx.tools.get(TOOL_NAME, exec.agent)
+@@ -204,7 +189,7 @@ export function apply(ctx) {
+         changeSeen += 1
+         record({ leg: 'guard-change-delivered', callId, tag, delivery: changeSeen })
+         try {
+-          controller.abort(incoming?.reason ?? new DOMException('s1m3-guard-change-abort', 'AbortError'))
++          controller.abort(incoming?.reason ?? new DOMException('s1c-guard-change-abort', 'AbortError'))
+           abortFired += 1
+           record({ leg: 'guard-abort-fired', callId, tag, callerReasonPreserved: incoming?.reason !== undefined && incoming?.reason !== null, reasonName: controller.signal.reason?.name, reasonMessage: controller.signal.reason?.message })
+         } catch (error) { record({ leg: 'guard-abort-threw', callId, tag, error: String(error?.message ?? error) }) }
+@@ -212,7 +197,7 @@ export function apply(ctx) {
+       maybeOff = ctx.on('tools/change', onChange)
+       if (typeof maybeOff !== 'function') return refuse('tools/change disposer missing')
+       record({ leg: 'guard-watch-installed', callId, tag, disposerKind: 'api-disposer', incomingAlreadyAborted: incoming?.aborted === true })
+-      const forward = () => controller.abort(incoming?.reason ?? new DOMException('s1m3-guard-change-abort', 'AbortError'))
++      const forward = () => controller.abort(incoming?.reason ?? new DOMException('s1c-guard-change-abort', 'AbortError'))
+       if (incoming?.addEventListener) { incomingAbortOff = () => incoming.removeEventListener('abort', forward); incoming.addEventListener('abort', forward, { once: true }) }
+       if (incoming?.aborted === true) forward()
+       exec.signal = controller.signal
+@@ -250,8 +235,7 @@ export function apply(ctx) {
+     }
+   })
+ 
+-  // The real around-dispatch fence (public scoped waterfall listener; host-side emitter is
+-  // packages/core/tools/src/index.ts:1605-1607, which resolves the body only at :1578).
++  // ── Census wrapper 2 (public listener): the M3 fence, VERBATIM except the control arm. ──
+   ctx.on('tools/execute', async (exec, next) => {
+     if (exec.name !== TOOL_NAME) return next()
+     fenceCalls += 1
+@@ -262,6 +246,51 @@ export function apply(ctx) {
+     if (fenceCalls !== 1) {
+       // Control arm: no swap. A must be the live definition again (restored in the swap's finally).
+       record({ leg: 'fence-control', callId, tag, body_visible_before: currentBody })
++      // === CENSUS: ONE real exec.agent reference; schemas(scope), then EVERY actually visible
++      // name gets per-item public get(name, same scope ref) + one repeat get for reference
++      // consistency. Bodies are NEVER invoked. Fixture-A === calibration is kept but is just
++      // one row; it stands in for nothing else. Missing fields/rows must fail the oracle. ===
++      if (tag === 'call2' && currentBody === 'A') {
++        try {
++          const scope = exec.agent                       // the SAME real reference for every call
++          const rows = ctx.tools.schemas(scope)          // public :1260 (scope view of visible defs)
++          const names = Array.isArray(rows) ? rows.map((r) => (typeof r?.name === 'string' ? r.name : '<noname>')).sort() : null
++          const identityRows = []
++          if (names !== null) {
++            for (const nm of names) {
++              const g1 = ctx.tools.get(nm, scope)        // public :1230, same scope reference
++              const g2 = ctx.tools.get(nm, scope)        // same-pass repeat: reference consistency
++              const present = g1 !== undefined && g1 !== null
++              identityRows.push({
++                name: nm,
++                present,
++                defType: present ? typeof g1 : 'absent',
++                execType: present ? typeof g1.execute : 'absent',
++                defRefId: identityOf(g1),
++                execRefId: present && typeof g1.execute === 'function' ? identityOf(g1.execute) : null,
++                scopeRefId: identityOf(scope),
++                repeatGetSameRef: g1 === g2,
++                ...(nm === TOOL_NAME ? { fixtureCalib: { defIsDefinitionA_by_eq: present && g1 === DEFINITION_A, execIsDefinitionAExec_by_eq: present && g1.execute === DEFINITION_A.execute } } : {}),
++              })
++            }
++          }
++          record({
++            leg: 'census', callId, tag,
++            rootCallId: callId,
++            scopeRefId: identityOf(scope),
++            schemasScopeRefId: identityOf(scope),
++            getScopeRefId: identityOf(scope),
++            schemasRowsCount: Array.isArray(rows) ? rows.length : -1,
++            registeredVisibleNames: names,
++            registeredVisibleCount: names === null ? -1 : names.length,
++            visibleIncludesFixture: names !== null && names.includes(TOOL_NAME),
++            identity_rows: identityRows,
++            census_public_calls: ['tools.schemas(scope)', 'tools.get(name,scope) per visible name + one repeat each'],
++          })
++        } catch (error) {
++          record({ leg: 'census-failed', callId, tag, error: String(error?.message ?? error) })
++        }
++      }
+       try {
+         const result = await next()
+         record({ leg: 'fence-exit', callId, tag, phase: 'control', result: 'settled' })

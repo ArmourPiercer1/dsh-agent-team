@@ -1,0 +1,21 @@
+{
+  "gate": "M1 differential retry GO (root, 2026-10-24T22:52Z; single attempt, same hypothesis, cap reached)",
+  "counters": { "poc_attempt": "2/20", "host_start_attempt": "2/12", "differential_attempt_same_hypothesis": "1 (cap reached, no third run)", "retries": 0 },
+  "command": "node dev/agent-workflow/evidence/s1-h0-m1/m1-run.mjs --go --variant-no-ext-contributors --port 3180 --world s1-h0-m1-noext-20261024T225300Z",
+  "differential_hypothesis": "turn-1 failure came from a pre-HTTP deepseekLlmApiExtensions contributor (dsh_session_log and/or dsh_plugin_packages). Variant disables ONLY those two via public config.enabled:false. Cause remains UNKNOWN; this is a differential probe, not a proven fix.",
+  "sealed_inputs_sha256": {
+    "m1-run.mjs": "4542782e71d2b73b2f54e67c812b4ce945cd9d93fc0312f9dfcd5c882bfb07f0",
+    "probe-plugin.mjs": "c883ac3f80efcfe4a4fe462b137f32cbfc1724fafb0662d19c92848a8618f195",
+    "s1m1-session-client.mjs": "a0b20cedb1e6b8e7f3b10afd1544e9617a22697b3f8da83392904a3db693dbe8",
+    "instance.mjs": "77880a8eec88b874d662efdb4c9fb38caef129b2eb9fea006c9b7da9120bf351",
+    "util.mjs": "7dd44280c8b03d7ea59e24d581c0d2430b407ca8a4e031c3feca30034c3fff71",
+    "mock-deepseek.mjs": "8beade69588c105efb66df6a7a99dd915cb41b7aba91635ec0ebf73e6278fb06",
+    "expected_patch_file_sha256": "dec9e0aef778e63f605825fe85399d9b2a095f99a172a9227dfdab02379c33a5"
+  },
+  "host_artifact": { "head": "639ed015397290b3745d163aafe02ffee4aa3f84", "porcelain": 0, "tags": 25,
+    "content_digests_relative": { "apps/cli/lib": "e72d7d0c212b8e41", "packages/core/tools/lib": "a3353facc7e98f0b", "apps/web/dist": "e80728be886b0e7e" },
+    "build_provenance": "NOT_VERIFIED", "f0_census": "unsigned" },
+  "untouched": ["main HTU", "core/tools", "Guard", "deepseekLlmApiExtensions registry row", "request.signal abort path", "oracle criteria", "watchdog/teardown", "credential scrubbing", "probe plugin", "mock"],
+  "preconditions_measured_utc": { "world_absent": true, "lock_absent": true, "port_3180_listener_rows": 0, "port_3080_probed": false, "real_provider_calls": "zero by construction (env keys absent, fake key, mock loopback only)" },
+  "scope_limit": "PASS would prove only: the no-ext mock variant reaches the positive control on this actual artifact. It does not resolve the default-profile REQUEST_EXTENSION (ENV/config still open), does not verify build provenance or F0, and grants no G1-F/product GO."
+}

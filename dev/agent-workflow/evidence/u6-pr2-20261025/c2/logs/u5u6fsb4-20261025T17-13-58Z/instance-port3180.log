@@ -1,0 +1,11 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u6-pr2/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3180/?token=YkSXKQxhqqb8-0Fu_Vp_RMEuZdv5UVjVxfdaZ0vx0ko
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsb4-20261025t17-13-58z
+[dsh-agent-team] a5ptc: census-boot root=session-u6fs-team-u5u6fsb4-20261025t17-13-58z selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=u6fs-realm-u5u6fsb4-20261025t17-13-58z
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=APPROVAL_DENIED
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=APPROVAL_DENIED
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=APPROVAL_DENIED
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=APPROVAL_DENIED
+[dsh-agent-team] a5g7-read: governed-read pa-handoff refused code=APPROVAL_DENIED

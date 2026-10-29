@@ -1,0 +1,200 @@
+worktree /srv/workspace/dsh-plugins/dsh-agent-team
+HEAD 6259cf4bc4d61af74d84bbd9d265184f95493172
+branch refs/heads/master
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-cancel-leg
+HEAD d123760911d0076617083a6ad9c3ecd2c947ba79
+branch refs/heads/a5-cancel-leg
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-docs-realign
+HEAD 4fc25116a6420c8b5b5f3e860bcba75cc798d1fc
+branch refs/heads/a5-docs-realign
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-inventory
+HEAD 5bb460e3cd2e242c81092385f2e8c75e0f4f5d13
+branch refs/heads/a5-inventory
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-96e-pinned
+HEAD 96e199b9e61089f495b23b5a371555c0a8766770
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-f739-scan
+HEAD febb4990ea5b9115eb60029df063a834a6580117
+branch refs/heads/sec/a5-jobs-sanitize-2026-10-20
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-int
+HEAD 59cfa579b6f63e3e2a2aeb6c08b4740e868dcc7b
+branch refs/heads/a5-jobs-iso-int
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-int2
+HEAD 582812908172429373992eb8b738642b5e5ff13b
+branch refs/heads/a5-jobs-int2
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation
+HEAD be25519c5f82d6b4ea5b04e9f87548f6748222b0
+branch refs/heads/a5-jobs-isolation
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner
+HEAD fbcee244e073b98f44736092fb5757281c03fedb
+branch refs/heads/a5-legs-runner
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-lsp-keyfix
+HEAD 7242a1f4526ccf07b6c9a239efb1a73557738964
+branch refs/heads/a5-lsp-keyfix
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m0-contract
+HEAD c09f94bfae5e80ca774ab09ac7296679f2fff5bb
+branch refs/heads/a5-m0-contract-docs
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m0-docs-pr
+HEAD 3e7afeba6ae6e1bda16afa636ff3c1c0878e8149
+branch refs/heads/docs/a5-m0-contract-package
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-auth-bridge
+HEAD b1eda9ebe0a4b40b36eeafc1249ff8f1fe3811aa
+branch refs/heads/feat/a5-m1-auth-bridge
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-facts-seam
+HEAD ba15846c19703f60efb45b64a7cd1fd041bbd21e
+branch refs/heads/a5m2-review
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-fixture
+HEAD d88248390621e437168f8b0f3d60ff052956e869
+branch refs/heads/feat/a5-m1-fixtures
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-flaky
+HEAD 086aaf230610617aa18cabde42aa7537179d243d
+branch refs/heads/feat/a5-m1-flaky-diag
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-auth-vocab
+HEAD 267c98d3a511ba389549cdb6b757261606b6ec14
+branch refs/heads/feat/a5m2-auth-schedule-vocab
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int
+HEAD bef38934fc1cf40407bdae435af5bf6e84dedaf4
+branch refs/heads/feat/a5-m2-integration
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+HEAD 62b529a19245e8fc59b782777db7c8e352418e86
+branch refs/heads/a5-mcp-binding
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-slice
+HEAD dad3d42073dea45d3c3eb35b7ae54da39284f8de
+branch refs/heads/a5-read-slice
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-bmcp
+HEAD 3954d6368cd6fb533c03f20e0017126f1b5880ba
+branch refs/heads/feat/a5m2-b-mcp
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-bsearch-team
+HEAD 4ea593fca0f070a954f755baad71b4e72a499641
+branch refs/heads/feat/a5m2-bsearch-team
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-checkinstall
+HEAD 833e261dab41858407d609db614d3c435b344c5f
+branch refs/heads/feat/a5m2-checkinstall-handlers
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-g1asm
+HEAD 9293c7890a68b430d7f65126d98db2ebf0ebd672
+branch refs/heads/feat/a5m2-g1asm
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify
+HEAD b811fac7ca2db45d62e15fa8c38ca901ffd9c3a8
+branch refs/heads/feat/a5m2-imgverify
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-job-family
+HEAD e97d38f8ccba2ecf2805b1464bf4570031415f5f
+branch refs/heads/feat/a5m2-job-family
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-joint-cand-probe
+HEAD 6e2279286a30502f711f4b255d22e77f597e0e56
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-newfam
+HEAD 9f95a81157bf6e368fa5389c7162bfddd91bc470
+branch refs/heads/feat/a5m2-new-family
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-pinbuild
+HEAD 2188f15ce953977c681dedeb079a36ca27ddbbd7
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-provider-id
+HEAD 477f16fae12a10000fe6b71e02d737993179b11e
+branch refs/heads/feat/a5m2-provider-id
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-subagent-fix
+HEAD 7c686987934c2785c8de8030b933ad38f01e518f
+branch refs/heads/feat/a5m2-subagent-fix
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g1
+HEAD 04c38b735ffa31cde9bd25a5efeb51a2243c02fc
+branch refs/heads/feat/a5m2-wire-g1
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g2
+HEAD 88636fcd178ae89420659ede6af5a12f4679fb85
+branch refs/heads/feat/a5m2-wire-g2
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3
+HEAD a2d9839cc3130ca0e58f27d297111557676dee23
+branch refs/heads/feat/a5m2-wire-g3
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g3a
+HEAD c6cd05a8c13fd9f2a9970bca1f74d496c10bc83d
+branch refs/heads/feat/a5m2-wire-g3a
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g5
+HEAD ff421cf2502bb512ba94126ac27e47bb765255b3
+branch refs/heads/feat/a5m2-wire-g5
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6
+HEAD cd359c367dbc598185298a8ae818305ae921f76e
+branch refs/heads/feat/a5m2-g6-eventread-driver
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-schedule
+HEAD b2099e7db82320aff82247fe78a183d19766d784
+branch refs/heads/feat/a5m2-wire-schedule
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-team
+HEAD d7e0616d79ee0dff2c0d566b883c1c487fe08814
+branch refs/heads/feat/a5m2-wire-team
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405
+HEAD 62903638b9bedb443e71f4f6a3fcd366ced4e761
+branch refs/heads/alpha5-gap-c0405
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/eb-e0-e1
+HEAD 346064b3a21573c31cf3bb5fd6fd30a45be922e7
+branch refs/heads/task/eb-e0-e1-doc-baseline-20261029
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/int-alpha3-stage2
+HEAD e63da1256f7313822a2205b34696d330bba79e65
+branch refs/heads/task/int-alpha3-stage2
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-37646ac2-20261024T085726Z
+HEAD 37646ac288dbd0ee3c998343dc91fd1a8da7a2d5
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-4a26ac9a-20261024T120122Z
+HEAD 7feb6a5e22bf7c531c1d679c786618b826b6ccdd
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/tree-5c313418-20261024T082308Z
+HEAD 5c31341803318ab35465908bf93b1f77f5cad16a
+detached
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr352-lintfix
+HEAD c747d75b457096672c6b1a950f3065a51e135a7f
+branch refs/heads/a5pkg-rootdeps-efb5
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pr363-docs-review
+HEAD 1310b959595b211e5da7a5f727dadf522f79d60b
+branch refs/heads/docs/alpha5-reset-pr363-review-20261025
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/s2-authority-iso-20261025
+HEAD 2c137d6c137b80de3be4b428544a5d27d24a72b1
+branch refs/heads/feat/s2-authority-snapshot-iso-20261025
+
+worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u1-audit-master
+HEAD 4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84
+detached
+

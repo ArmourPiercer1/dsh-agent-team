@@ -1,0 +1,59 @@
+{
+ "kind": "lifecycle",
+ "branch": "all-allow",
+ "invocationCorrelation": "corr-B",
+ "hostCallId": "hc-2",
+ "hostToken": {
+  "fixtureRef": "trusted-test-fixture",
+  "serialized": false
+ },
+ "binding": {
+  "bindingId": "b2",
+  "bindingRevisionCurrent": true,
+  "status": "ACTIVE"
+ },
+ "member": {
+  "teamSessionId": "ts-2",
+  "instanceId": "i-2"
+ },
+ "realmId": "r-2",
+ "requestedEffects": {
+  "fingerprint": "fp-2"
+ },
+ "grant": {
+  "grantId": "g-2",
+  "paCallIdEqCorrelation": true,
+  "effectsFingerprint": "fp-2",
+  "issuedTo": {
+   "invocationCorrelation": "corr-B"
+  },
+  "grantFromPriorProcess": true
+ },
+ "freshValidation": {
+  "generationsRechecked": true,
+  "bindingRevisionCurrent": true,
+  "cancelRequested": false
+ },
+ "paConsume": {
+  "grantId": "g-2",
+  "ledgerChanged": true
+ },
+ "bodyStarted": true,
+ "leaseSettleEvidence": {
+  "method": "settleTermination",
+  "ok": true
+ },
+ "states": [
+  "RECEIVED",
+  "CLASSIFIED",
+  "ALL_ADMITTED",
+  "PREPARING",
+  "PREPARED",
+  "DISPATCHED",
+  "SETTLED"
+ ],
+ "terminal": "SETTLED",
+ "expected": [
+  "E_COLD_RECOVERY"
+ ]
+}

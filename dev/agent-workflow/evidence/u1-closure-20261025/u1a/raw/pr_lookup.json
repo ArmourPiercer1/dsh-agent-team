@@ -1,0 +1,197 @@
+{
+ "a5-cancel-leg": {
+  "prs": [
+   {
+    "number": 354,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/354"
+   }
+  ]
+ },
+ "a5-docs-realign": {
+  "prs": [
+   {
+    "number": 356,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/356"
+   }
+  ]
+ },
+ "a5-inventory": {
+  "prs": []
+ },
+ "a5-jobs-int2": {
+  "prs": []
+ },
+ "a5-jobs-iso-int": {
+  "prs": []
+ },
+ "a5-jobs-isolation": {
+  "prs": [
+   {
+    "number": 349,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/349"
+   }
+  ]
+ },
+ "a5-legs-runner": {
+  "prs": []
+ },
+ "a5-lsp-keyfix": {
+  "prs": [
+   {
+    "number": 350,
+    "state": "OPEN",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/350"
+   }
+  ]
+ },
+ "a5-m0-contract-docs": {
+  "prs": []
+ },
+ "a5-mcp-binding": {
+  "prs": [
+   {
+    "number": 351,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/351"
+   }
+  ]
+ },
+ "a5-read-slice": {
+  "prs": [
+   {
+    "number": 353,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/353"
+   }
+  ]
+ },
+ "a5m2-review": {
+  "prs": []
+ },
+ "a5pkg-rootdeps-efb5": {
+  "prs": [
+   {
+    "number": 352,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/352"
+   }
+  ]
+ },
+ "alpha5-gap-c0405": {
+  "prs": [
+   {
+    "number": 288,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/288"
+   }
+  ]
+ },
+ "docs/a5-m0-contract-package": {
+  "prs": [
+   {
+    "number": 357,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/357"
+   }
+  ]
+ },
+ "docs/alpha5-reset-pr363-review-20261025": {
+  "prs": []
+ },
+ "feat/a5-m1-auth-bridge": {
+  "prs": []
+ },
+ "feat/a5-m1-fixtures": {
+  "prs": []
+ },
+ "feat/a5-m1-flaky-diag": {
+  "prs": []
+ },
+ "feat/a5-m2-integration": {
+  "prs": [
+   {
+    "number": 360,
+    "state": "OPEN",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/360"
+   }
+  ]
+ },
+ "feat/a5m2-auth-schedule-vocab": {
+  "prs": []
+ },
+ "feat/a5m2-b-mcp": {
+  "prs": []
+ },
+ "feat/a5m2-bsearch-team": {
+  "prs": []
+ },
+ "feat/a5m2-checkinstall-handlers": {
+  "prs": []
+ },
+ "feat/a5m2-g1asm": {
+  "prs": []
+ },
+ "feat/a5m2-g6-eventread-driver": {
+  "prs": []
+ },
+ "feat/a5m2-imgverify": {
+  "prs": []
+ },
+ "feat/a5m2-job-family": {
+  "prs": []
+ },
+ "feat/a5m2-new-family": {
+  "prs": []
+ },
+ "feat/a5m2-provider-id": {
+  "prs": []
+ },
+ "feat/a5m2-subagent-fix": {
+  "prs": []
+ },
+ "feat/a5m2-wire-g1": {
+  "prs": []
+ },
+ "feat/a5m2-wire-g2": {
+  "prs": []
+ },
+ "feat/a5m2-wire-g3": {
+  "prs": []
+ },
+ "feat/a5m2-wire-g3a": {
+  "prs": []
+ },
+ "feat/a5m2-wire-g5": {
+  "prs": []
+ },
+ "feat/a5m2-wire-schedule": {
+  "prs": []
+ },
+ "feat/a5m2-wire-team": {
+  "prs": []
+ },
+ "feat/s2-authority-snapshot-iso-20261025": {
+  "prs": []
+ },
+ "master": {
+  "prs": []
+ },
+ "sec/a5-jobs-sanitize-2026-10-20": {
+  "prs": []
+ },
+ "task/eb-e0-e1-doc-baseline-20261029": {
+  "prs": [
+   {
+    "number": 362,
+    "state": "MERGED",
+    "url": "https://github.com/ArmourPiercer1/dsh-agent-team/pull/362"
+   }
+  ]
+ },
+ "task/int-alpha3-stage2": {
+  "prs": []
+ }
+}

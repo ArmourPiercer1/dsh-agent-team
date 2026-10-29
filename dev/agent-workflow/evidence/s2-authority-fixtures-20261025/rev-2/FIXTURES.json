@@ -1,0 +1,277 @@
+{
+  "artifact": "s2-authority-fixtures-20261025/rev-2/FIXTURES.json",
+  "kind": "REVISION 2 of the S2 bounded-prep data fixture set, issued under the merged root review NEEDS_TARGETED_FIX (single 10-minute bounded correction, this round). Pure data: 16 cases, each with inputs, expected diagnosis, and the existing control or to-be_implemented assertion it maps to. NOT a checker, NOT a test suite, NOT executable in this round. Revision 2 is itself NOT frozen pending the one root re-review; r1 originals are frozen-preserved untouched alongside.",
+  "revision": {
+    "supersedes": "s2-authority-fixtures-20261025/FIXTURES.json (r1, sha256 e1ed04c1ac3938910b4465f0e04b36f1e72d9ea3b60eb610b2d53109b39348c8 — left byte-intact)",
+    "review_driven_changes": [
+      "TIER-01: the r1 expectation that the authority snapshot must add a tier field is REMOVED; the C1-as-C2 negative control stays at the registry/artifact layer, where the existing checks already live",
+      "CONF-03: post-switch shape re-specified as the standalone pointer dev/engineering/current-authority.json {snapshot_version, content_digest} into the immutable dev/engineering/authority-snapshots/<snapshot_version>.json::current_contract; the case now tests pointer-vs-snapshot divergence",
+      "POS-01: demoted to an isolated six-field grammar/scope positive; no all-Q1-Q8-green claim — the minimal matrix content in inputs cannot carry the Q5 row contract and this package does not grade Q5/Q6 full space",
+      "DERIV family: a digest-consistent derived display/diagnostic read is explicitly PERMITTED; what must be refused is the reverse direction — a derived artefact deciding authority or serving as its recovery source"
+    ]
+  },
+  "status": {
+    "execution": "UNEXECUTED for every one of the 16 cases (unchanged from r1). No validator (ci-pr-gate, doc-consistency-controls, docs-sync, docs-probe, registry validate) was invoked; nothing ran in CI or on Host.",
+    "expected_diagnosis_basis": "STATIC READING of checker source at the fixed refs (file:line given per finding). Expectations are derivations, not observations.",
+    "not_claimed": [
+      "A-package s2-schema-candidate conformance or freeze — this revision is an A-side-adjacent B-level semantics artifact and touches no A file",
+      "any gate result (G2 not passed; permission basis remains the user-relayed READY_FOR_BOUNDED_PREP / root fix instruction)",
+      "no test-pass claim; no schema frozen by this package",
+      "CONF-03/DERIV-02 name the RELATIONS a frozen step-2 schema must make checkable; they do not choose the mechanism or finding codes"
+    ]
+  },
+  "derivation_basis": {
+    "fixed_refs": {
+      "origin_master": "4aaaa7b2af87f80a0fae62d9c8d9cf03d5a6fd84",
+      "pr363_plan": "1310b959595b211e5da7a5f727dadf522f79d60b",
+      "pr361_draft_head": "b97ffdafdceeb73d58a06fe5fb6563820d063d28",
+      "access": "git show / git grep / git cat-file on these refs only; the physical 6259cf4b working tree was used for nothing authoritative (ERRATA E3)"
+    },
+    "semantics_reused_from": [
+      "scripts/ci-pr-gate.mjs checkCurrentContract at 4aaaa7b2:283-517 (Q8:288-290, Q3:316-323, Q2:325-332, Q4:334-337, Q1:339-359, Q6:480-496)",
+      "packages/testkit/test/a5-current-contract.test.ts (MC-10), scripts/doc-consistency-controls.mjs (MC-11; fixture graph :63-68 carries 3 of 6 fields; CLAIM_UNBOUND :542, CLAIM_TIER_MISMATCH :549, FAKE_VERIFICATION :335)",
+      "scripts/gen-current-state.mjs checkLegacyMirror :321-350, FAKE_VERIFICATION :217 (INV-EB-0009)",
+      "s2-authority-map-20261025/{AUTHORITY-MIGRATION-MAP,MACHINE-CONSUMERS,ERRATA-20261025}.json (ERRATA wins on conflict)"
+    ],
+    "graph_pin": "dev/agent-workflow/graph.yaml at 4aaaa7b2: current_phase:64 (top-level prose), current_contract:91, phase_id:92, baseline:96, baseline_collected:97; nested historical baseline keys :120/:262 deliberately out of block scope"
+  },
+  "current_phase_vs_phase_id": {
+    "ruling": "NOT synonyms; never treated as interchangeable in any case below.",
+    "phase_id": "a current_contract block field with a grammar (alpha<N>-<kebab-name>), graded by Q2 (:326) and counted by Q3 (:320-323)",
+    "current_phase": "a top-level adjacent live statement (graph.yaml:64), NOT a member of current_contract; Q1 requires its wording to agree with phase_id (:343-345) and Q3 requires exactly one (:318); a migration must move both in one transaction (Map adjacent_live_statement)"
+  },
+  "conventions": {
+    "graph_yaml": "each case gives the full minimal graph.yaml text the checker would see (block-scoped lookups make a minimal graph faithful to grammar checks)",
+    "extra_files": "declares the non-graph inputs a grader dereferences: {EXISTS} = present, content irrelevant to this case; a string = verbatim content; {ABSENT} = must not exist",
+    "carrier_stubs": "AGENTS.md/plan/backlog/matrix carriers carry only the two Q6 lines (phase-baseline-ref + phase-identity). They are STUBS: the full Q5 row contract and Q6 body-discipline space are OUT OF SCOPE of this package (see POS-01 scope_limit); Q6 line-level findings are only asserted where a case targets Q6.",
+    "git_state": "assumed checkout state for baseline resolution; baseline==HEAD equality is legal (P1b)",
+    "scoping": "expected lists the findings THIS case provokes within its graded leg; unrelated legs are neither claimed green nor red",
+    "framework_note": "no fixture-runner framework built here; wiring these semantics into existing control sets is implementation, out of this round"
+  },
+  "base_inputs": {
+    "note": "POS-01 is the base; every other case is POS-01 with exactly the stated delta",
+    "graph_yaml": "current_phase: \"ALPHA.5 FIXTURE-PREP PHASE (authority = current_contract)\"\ncurrent_contract:\n  phase_id: alpha5-fixture-prep\n  active_plan: docs/plans/active/alpha5-fixture-prep/current-execution-plan.md\n  backlog: docs/plans/active/alpha5-fixture-prep/EFFECTIVE-BACKLOG.md\n  matrix: docs/plans/active/alpha5-fixture-prep/CAPABILITY-MATRIX.md\n  baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912\n  baseline_collected: \"2026-10-22T07:20:56Z\"\n",
+    "extra_files": {
+      "docs/plans/active/alpha5-fixture-prep/current-execution-plan.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n",
+      "docs/plans/active/alpha5-fixture-prep/EFFECTIVE-BACKLOG.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\nBL-01 fixture item\nBR-01 fixture blocker\n",
+      "docs/plans/active/alpha5-fixture-prep/CAPABILITY-MATRIX.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n",
+      "AGENTS.md": "phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract\nphase-identity: alpha5-fixture-prep\n"
+    },
+    "git_state": "baseline 9b2ee57bc5afd30e89855e09d1769d2e5ec83912 resolves and is HEAD or a HEAD-ancestor"
+  },
+  "cases": [
+    {
+      "id": "POS-01",
+      "family": "positive",
+      "intent": "ISOLATED six-field grammar/scope positive: a complete contract block passes the block-level legs — Q8 presence, Q3 counts, Q2 grammar/prefix/target-existence, Q4 resolve+ancestry — on the given minimal inputs",
+      "scope_limit": "NOT an all-Q1-Q8-green claim: the minimal matrix file in inputs carries no boundary markers, region order, or 9-cell rows, so the Q5 row contract would not stand on these inputs and is deliberately NOT graded here; the same stub caveat bounds the Q6 body-discipline space. The green claim is confined to the six-field block legs and the git-reality leg.",
+      "inputs": "base_inputs verbatim",
+      "expected_diagnosis": [],
+      "maps_to": { "kind": "existing", "control": "Q8/Q3/Q2/Q4 legs (ci-pr-gate.mjs:288-337); whole-tree claims borrowed are only P1b baseline==HEAD legality (:160) and P4 historical-key legality (:185); P1 full-path green is NOT claimed by this case" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-01-phase_id",
+      "family": "missing-field",
+      "intent": "phase_id line removed from the block",
+      "inputs": { "delta": "delete block line 'phase_id: ...' from base graph_yaml" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.phase_id must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323 (count!=1 admits 0)" },
+        { "finding": "Q2: current_contract.phase_id must be a canonical id (alpha<N>-<kebab-name>); got undefined", "source": "ci-pr-gate.mjs:326" }
+      ],
+      "maps_to": { "kind": "existing", "control": "Q2+Q3 block-level presence; no existing case pins phase_id absence specifically → widening assertion for step 5" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-02-active_plan",
+      "family": "missing-field",
+      "intent": "active_plan line removed",
+      "inputs": { "delta": "delete block line 'active_plan: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.active_plan must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.active_plan missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing", "control": "Q2 presence :328; nearest existing test is N2 target-missing (:175), not field-missing — field-missing expressiveness is the step-5 widening" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-03-backlog",
+      "family": "missing-field",
+      "intent": "backlog line removed (backlog is NOT a leaf pointer: it feeds the BL/BR accepted-id set)",
+      "inputs": { "delta": "delete block line 'backlog: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.backlog must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.backlog missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "Q2 presence exists; GAP (Map G3/E2-observation): the 3-of-6 DCC fixture cannot express this negative until widened" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-04-matrix",
+      "family": "missing-field",
+      "intent": "matrix line removed",
+      "inputs": { "delta": "delete block line 'matrix: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.matrix must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: current_contract.matrix missing", "source": "ci-pr-gate.mjs:327-328" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "same gap family as MIS-03; matrix content (Q5 :372-406) is graded only when the path exists and is out of scope of this package otherwise" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-05-baseline",
+      "family": "missing-field",
+      "intent": "baseline line removed",
+      "inputs": { "delta": "delete block line 'baseline: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.baseline must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q4: current_contract.baseline must be exactly 40 hex chars", "source": "ci-pr-gate.mjs:335 (empty/absent takes this branch)" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "Q3 GROUP-A counting family + Q4; census-runtime.yml awk reader (:129, MC-08) missing-value behavior is not covered by any in-tree fixture — grammar pin co-grading is a step-4 machine-readers-first duty" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "MIS-06-baseline_collected",
+      "family": "missing-field",
+      "intent": "baseline_collected line removed",
+      "inputs": { "delta": "delete block line 'baseline_collected: ...'" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.baseline_collected must appear exactly once inside the block (found 0; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" },
+        { "finding": "Q2: baseline_collected must be an ISO8601Z timestamp", "source": "ci-pr-gate.mjs:332" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "Q2 grammar exists; not expressible in the 3-of-6 DCC fixture (MC-11); no external corroboration for this field — semantics stay presence+grammar" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-01-duplicate-in-block",
+      "family": "old-new-conflict",
+      "intent": "old/new conflict inside the authority itself: a second active_plan aimed at a retired phase inside the same block",
+      "inputs": { "delta": "add a second block line '  active_plan: docs/plans/active/alpha4-old/plan.md' after the first" },
+      "expected_diagnosis": [
+        { "finding": "Q3: current_contract.active_plan must appear exactly once inside the block (found 2; two active claims for one pointer)", "source": "ci-pr-gate.mjs:320-323" }
+      ],
+      "maps_to": { "kind": "existing", "control": "a5-current-contract.test.ts N3 (:180), GROUP A (:322), batch-3 ③ duplicated active_plan aimed at Alpha.4 (:259)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-02-mirror-vs-graph",
+      "family": "old-new-conflict",
+      "intent": "pre-switch double-read shape: derived mirror legacy_authority carries a phase_id the graph block does not record",
+      "inputs": { "graph_yaml": "base graph_yaml", "dev/engineering/current-state.json": "legacy_authority.phase_id = 'alpha5-renamed-late' while graph says alpha5-fixture-prep", "dev/engineering/registry.schema.json": "mirror annotation names the same six keys in order" },
+      "expected_diagnosis": [
+        { "finding": "LEGACY_MIRROR_VALUE (the mirror records a value the graph does not)", "source": "gen-current-state.mjs checkLegacyMirror :321-350, docstring :313-317" }
+      ],
+      "maps_to": { "kind": "existing", "control": "checkLegacyMirror triple cross-check; Map negative_controls row 'old and new authority disagree in the same tree' — exists, needs widening to the post-switch shape (which CONF-03 now frames on the pointer/snapshot pair)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "CONF-03-post-switch-divergence",
+      "family": "old-new-conflict",
+      "intent": "post-switch shape (per root review): live authority is located ONLY by the standalone pointer dev/engineering/current-authority.json {snapshot_version, content_digest}, which binds byte-for-byte to the immutable snapshot dev/engineering/authority-snapshots/<snapshot_version>.json::current_contract; the case makes pointer and snapshot disagree",
+      "inputs": {
+        "dev/engineering/current-authority.json": "{\"snapshot_version\":\"v3\",\"content_digest\":\"sha256:<digest-of-v3-bytes>\"} where the named digest is NOT the on-disk hash of authority-snapshots/v3.json (or the pointer still names retired v2 while tooling reads v3)",
+        "dev/engineering/authority-snapshots/v3.json": "immutable snapshot object current_contract{phase_id: alpha6-next, active_plan, backlog, matrix, baseline, baseline_collected}; write-once, content-addressed by its own digest",
+        "dev/agent-workflow/graph.yaml": "historical mirror only; no live current_contract block; may show an older phase"
+      },
+      "expected_diagnosis": [
+        { "finding": "pointer-vs-snapshot divergence: the content_digest in current-authority.json must equal the byte hash of the snapshot it names, and the snapshot must be the object the pointer's snapshot_version selects; a mismatch is RED. Finding code TBD by the frozen step-2 schema — this case names the RELATION, not the mechanism.", "source": "Map steps 2/7; MC-03: today checkLegacyMirror re-reads the graph block the post-switch tree no longer holds, so no existing check raises this" },
+        { "finding": "immutability relation under test: authority-snapshots/<version> is write-once; the pointer is the sole live locator; the graph historical mirror decides nothing", "source": "frozen-schema requirement this case exists to express" }
+      ],
+      "maps_to": { "kind": "to_be_implemented", "control": "assertion pending the frozen step-2 schema; replaces r1's registry-vs-graph divergence framing per the review" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "UID-01-phantom-backlog-id",
+      "family": "unknown-id",
+      "intent": "graph blocked: references a BL id that does not exist in the graded backlog content",
+      "inputs": { "delta": "graph adds top-level 'blocked: [BL-999]'; backlog extra file still contains only BL-01/BR-01" },
+      "expected_diagnosis": [
+        { "finding": "Q1: blocked references BL-999, which does not exist in the backlog — a phantom ID is an instruction to nothing", "source": "ci-pr-gate.mjs:359 (what='blocked'); id-shape gate :357" }
+      ],
+      "maps_to": { "kind": "existing", "control": "batch-3 ⑥ phantom BL-999 graded, existing BL-01 not (:292); GROUP C id population ci-pr-gate.mjs:351-356" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "UID-02-unresolvable-baseline",
+      "family": "unknown-id",
+      "intent": "baseline is 40 hex but resolves to no commit object",
+      "inputs": { "delta": "baseline: 0000000000000000000000000000000000000000", "git_state": "that id does not resolve" },
+      "expected_diagnosis": [
+        { "finding": "Q4: baseline 0000000000000000000000000000000000000000 does not resolve to a commit object — FAIL, an unresolvable anchor is never green", "source": "ci-pr-gate.mjs:336" }
+      ],
+      "maps_to": { "kind": "existing-plus-gap", "control": "N5b (:198) pins the hard fail; GAP: the hosted census awk leg (:129) only checks non-empty + ancestry — migration must co-grade or repoint both readers in one transaction (step 4)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "TIER-01-C1-as-C2",
+      "family": "tier-forgery",
+      "intent": "forged C1 evidence standing in for C2: an entry claims a verification tier its bound artifacts do not support (verification_status: verified while verification_artifacts are absent or C1-only)",
+      "inputs": {
+        "registry_entry": "verification_status: verified with verification_artifacts: [] (or artifacts proving only C1)",
+        "current_contract": "base graph_yaml present only to document the layer boundary: the contract leg neither helps nor hinders here — the negative control lives at the registry/artifact layer, and this package keeps it there"
+      },
+      "expected_diagnosis": [
+        { "finding": "FAKE_VERIFICATION: verification_status=verified with no existing artifact (refused; INV-EB-0009)", "source": "gen-current-state.mjs:217" },
+        { "finding": "CLAIM_TIER_MISMATCH / CLAIM_UNBOUND on tier-vs-artifact binding", "source": "control rows doc-consistency-controls.mjs:542 / :549; FAKE_VERIFICATION control row :335" },
+        { "finding": "layer fact, recorded not demanded: the six contract fields carry no tier concept today, so checkCurrentContract is silent on tier claims; closing that is NOT an expectation of this package", "source": "Map negative_controls row: exists at registry level, not wired to current_contract fields" }
+      ],
+      "maps_to": { "kind": "existing", "control": "registry/artifact-layer controls as listed. Revision 2 REMOVES r1's to_be_implemented demand that the authority snapshot add a tier field — no case in this package requires any new snapshot field" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "HIST-01-legal-history-not-red",
+      "family": "history-false-red",
+      "intent": "a legal historical proposal / Alpha.4 historical state must NOT be graded as live duplicates or stale current pointers",
+      "inputs": { "delta": "base graph_yaml PLUS: top-level 'state_pointers:' Alpha.4 block (round/master_sha), two nested 'baseline:' keys inside history nodes, and a proposed note/proposal doc citing an old phase as history" },
+      "expected_diagnosis": [],
+      "expected_direction": "must stay green; a red here is a checker bug, not a fixture failure",
+      "maps_to": { "kind": "existing", "control": "P4 nested historical baselines legal (:185, block-scoped field() :293-297); checkStatePointers grades the Alpha.4 shape on its own terms (integrity, not currency — test :44-58); doc-checks plan-citation rules + INV-EB-0009 four-axis separation; docs-probe LIMITS (MC-05, docs-probe.mjs:41-45)" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "DERIV-01-no-block-no-fallback",
+      "family": "derived-readonly",
+      "intent": "pre-switch tree: a derived mirror holds a full-looking authority while the graph block is ABSENT — the mirror must not backfill; reading it for display remains legal, using it as a fallback source is not",
+      "inputs": { "graph_yaml": "current_phase + state_pointers (Alpha.4 shape) only, no current_contract block", "dev/engineering/current-state.json": "legacy_authority carries all six fields verbatim, all valid" },
+      "expected_diagnosis": [
+        { "finding": "Q8: current_contract block is absent — the production path fails; it never falls back to the Alpha.4 legacy state_pointers shape", "source": "ci-pr-gate.mjs:288-290 (checked first)" }
+      ],
+      "direction_rule": "digest-consistent derived display/diagnostic reads are permitted; what fails is the production path deciding (or recovering) live authority from the derived artefact",
+      "maps_to": { "kind": "existing", "control": "N5 no-fallback (:69) + Q8; §7.4 prohibition: current-state.json can be deleted and regenerated, it can never be a source" },
+      "execution_status": "UNEXECUTED"
+    },
+    {
+      "id": "DERIV-02-post-switch-read-back-refusal",
+      "family": "derived-readonly",
+      "intent": "post-switch direction rule: reading a derived view (current-state.json / display & diagnostic surfaces) is PERMITTED and expected while it is consistent and digest-bound to the live pointer→snapshot pair; what must be refused is the reverse direction — a derived artefact deciding authority or serving as its recovery source",
+      "inputs": {
+        "state": "current-authority.json → authority-snapshots/v3.json consistent and digest-bound; current-state.json regenerated from the snapshot and matching it",
+        "positive_half": "a display/diagnostic read of the digest-consistent derived view → no finding",
+        "negative_half": "a read path that resolves live authority from current-state.json bytes alone (no pointer, no digest binding) while the pointer is absent or stale → refusal required, not silent blindness"
+      },
+      "expected_diagnosis": [
+        { "finding": "positive half: none — a consistent, digest-bound derived read decides nothing and is legal", "source": "root-review direction ruling, incorporated here" },
+        { "finding": "negative half: a refusal finding (code TBD by frozen schema) — today MC-04/MC-05 read the mirror only and would go blind, not red; blindness of a display surface is a quality issue, DECIDING or RECOVERING authority from derived bytes is the prohibited act", "source": "Map step 7 'a dedicated refusal is required'; rollback.prohibition; MC-15" },
+        { "finding": "write-direction invariant (unchanged from r1): generated writers touch derivatives only; docs:sync --write cannot reverse-decide authority", "source": "ERRATA E1" }
+      ],
+      "maps_to": { "kind": "to_be_implemented", "control": "assertion pending on the frozen step-2 schema; r1's blanket framing narrowed per review to the reverse-decision/recovery prohibition" },
+      "execution_status": "UNEXECUTED"
+    }
+  ],
+  "coverage_against_required_list": {
+    "完整六字段正例": "POS-01 (isolated field-grammar positive; no full-path green claim)",
+    "逐字段缺失": "MIS-01..MIS-06 (all six, including the two content-bearing pointers backlog/matrix)",
+    "旧新冲突": "CONF-01 (in-block), CONF-02 (pre-switch mirror), CONF-03 (post-switch pointer current-authority.json vs immutable snapshot, per review)",
+    "未知ID": "UID-01 (phantom backlog id), UID-02 (unresolvable baseline)",
+    "C1证据冒C2": "TIER-01 (negative control at registry/artifact layer only; no snapshot-field demand)",
+    "合法历史proposal不误拒": "HIST-01 (green-forbidden-to-turn-red direction pinned)",
+    "读派生物不能反向成为权威或回退来源": "DERIV-01 (no-fallback, existing), DERIV-02 (consistent digest-bound derived reads legal; reverse decision/recovery refused — pending schema)"
+  },
+  "known_limits": [
+    "expected findings are static derivations from source at the fixed refs; checker changes after 4aaaa7b2 could shift strings — re-derivation is a step-5 duty",
+    "carrier stubs bound Q5/Q6 full space out of this package; POS-01's green claim is confined accordingly (scope_limit)",
+    "MIS-* cases expect TWO findings (Q3 count!=1 plus the Q2/Q4 message); the pair is recorded, not idealized",
+    "CONF-03/DERIV-02 name relations a frozen schema must make checkable; finding codes, mechanism, and where checks live are step-2/5 decisions",
+    "no fixture-runner was written; this revision is data + mapping only"
+  ]
+}

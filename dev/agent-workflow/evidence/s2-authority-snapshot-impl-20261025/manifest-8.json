@@ -1,0 +1,28 @@
+{
+  "artifact": "s2-authority-snapshot-impl-20261025/manifest-8.json",
+  "kind": "Sole bounded targeted fix for the docs:probe-candidate limited review (R8 mirror parameter; package historically labeled step-5 — see progress_nomenclature_correction). 4a21fb91 preserved unamended; delivered as new commit. Not G2. No older evidence edited.",
+  "progress_nomenclature_correction": {
+    "added_by_root_ruling_utc": "2026-10-25 (this round; appended to THIS round's manifest per instruction — no separate documentation round, no old originals edited)",
+    "error": "manifest-7 labeled the docs:probe second-consumer work package as '§7.4 step-5', conflating work-package sequence with plan step numbers",
+    "correct_position": "the current state is still §7.4 step-4 partial-consumer candidate wiring (gen-current-state + docs:probe candidate mode); no formal switch has happened; the plan's step-5 = the full real-CI negative-control suite, NOT yet executed",
+    "file_labels": "existing step5-* evidence file names are historical work-package tags only; they are retained and NOT renamed",
+    "going_forward": "use descriptive task names for packages/evidence; never self-increment Gate or stage numbers"
+  },
+  "utc": { "round_start": "2026-10-25T03:42:22Z", "delivered": "2026-10-25T03:43:24Z (date -u)", "budget": "10-minute bound honored (host clock noted slow; wall clock 2026-10-24 22:40 -> 23:43 local during this session window)" },
+  "defect_and_fix": {
+    "defect": "candidate-success branch set sourceBinding but never viewMirror -> checkPlanCitationBlocks(..., {mirror:null}) silently skipped the existing PLAN_CITATION_CONFLICT for legal candidates (rule requires mirror.phase_id, doc-checks.mjs:355)",
+    "fix": "one wiring line + comment in docs-probe only: viewMirror = built.view.legacy_authority inside the candidate-success branch — verified snapshot values feed the EXISTING mirror parameter of the EXISTING rule; refusal branch untouched (no source, no mirror); no rule added or inverted; classification and all other rules unchanged"
+  },
+  "tests": {
+    "new_controls": "P5: fixture is its OWN git repo (git init + commit), R8 triggered by a REAL changed docs/glossary.md (worktree scope, not simulated); plan eb-plan block phase_id=alpha6-other-phase vs snapshot alpha5-tool-io-governance -> exactly one PLAN_CITATION_CONFLICT naming both values, in blocking (PLAN_CITATION prefix already shared). P6: same phase_id -> zero conflicts (guards against wiring-equals-inversion)",
+    "red_at_4a21fb91": "step5f-red.log exit=1: 1/7 FAIL — P5 'PLAN_CITATION_CONFLICT missing despite contradicting plan' (candidate chain itself succeeded: binding assertion passed pre-fix), P6 pre-green guard recorded as such",
+    "green": "step5f-green.log exit=0 7/7 actual count (P0-P6 incl. P4 default-vs-fixed-parent byte parity still green after the line)",
+    "regressions": "dual-read 9/9 exit=0 (log hash 4d70c2c0... identical to prior rounds); consumer 10/10 exit=0; snapshot 30/30 exit=0 (2c781e08... unchanged); controls exit=1 with nine historical reds comm-diff 0 — none forced green"
+  },
+  "head": { "new_commit": "3d6f6aad8b3042d4ce6ff2a844ff2778e200a5db", "parent": "4a21fb91d8cee0df8994964deebce578e57db8e3", "diff": "2 files +47/-0 (one-line wiring + comment in scripts/docs-probe.mjs; P5/P6 in probe-candidate.test.mjs)", "tree_bytes_total": 10837877, "commit_flags": "git -c gc.auto=0" },
+  "evidence_sha256": { "step5f-red.log": "5dab9dc53d19ca97397ad25cc2d692ecd3e2cf7be4599163180a8ceded5f7589", "step5f-green.log": "2c0857ecd7114cbc9c5270d001b32977d65a61091dc1414f496cbb55bcee8b3f", "step5f-reg9.log": "4d70c2c0197c006a630cf49d4baf178d0fa41f98515e512de2037aefbdf076b2", "step5f-reg10.log": "c2414da67eb478cc001c36b2be37fd5056c4d86fc7e231029fd02681cc87065a", "step5f-reg30.log": "2c781e08eb24e3a1e471563195f7ad2123148eda62b11abe36aab4aab4043c28", "step5f-reg-controls.log": "7c39554f5dab4f05572099996df3b8312f79a8f251680ec70d79a823ca939e0c" },
+  "disk_note": "host volume 98% used (2.1G free) re-checked at receipt; this package wrote only small text (diff/logs/manifest); no clone/install/big copy/gc; if a future receipt write fails or space nears exhaustion, writing stops and reports immediately; unknown processes and other projects untouched",
+  "mode_zero_claims": { "new_environment": 0, "host": 0, "install": 0, "big_copy": 0, "ci": 0, "entry_switch": 0, "paid": 0, "subagents": 0, "stash": 0, "push": 0, "merge": 0, "gc": 0, "classification_style_expansion": 0, "other_consumers": 0 },
+  "raw_receipt_after_commit": { "git_status_porcelain": "(empty)", "status_exit": 0, "HEAD": "3d6f6aad8b3042d4ce6ff2a844ff2778e200a5db", "tmp_residue": 0, "utc": "2026-10-25T03:43:24Z (date -u; host clock slow as disclosed)" },
+  "gate_statement": "No gate claimed; G2 remains not passed. Idle awaiting bounded re-review; no self-initiated expansion."
+}

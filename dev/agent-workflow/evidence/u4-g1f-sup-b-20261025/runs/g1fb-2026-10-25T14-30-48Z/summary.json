@@ -1,0 +1,14 @@
+{
+  "worldName": "g1fb-2026-10-25T14-30-48Z",
+  "suite": "a",
+  "port": 3186,
+  "owned_pid": 151,
+  "run_error": "group A4-poc3 not settled within bound",
+  "pass": false,
+  "timed_out": false,
+  "budget_ms": 1800000,
+  "used_ms": 155383,
+  "budget": {
+    "host_starts": 1
+  }
+}

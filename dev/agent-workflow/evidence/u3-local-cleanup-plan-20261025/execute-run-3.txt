@@ -1,0 +1,57 @@
+2026-10-25T10:51:10Z	BEGIN	mode=execute	plan=/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/u3-local-cleanup-plan-20261025
+2026-10-25T10:51:10Z	DF-BEFORE	-	/dev/mapper/ubuntu--vg-ubuntu--lv 114865901568 65895415808 43639123968
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-cancel-leg	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-docs-realign	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-inventory	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-jobs-iso-96e-pinned	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-jobs-iso-f739-scan	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-jobs-iso-int	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-jobs-iso-int2	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-jobs-isolation	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-legs-runner	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-lsp-keyfix	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m0-contract	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m0-docs-pr	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m1-auth-bridge	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m1-facts-seam	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m1-fixture	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m1-flaky	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-m2-auth-vocab	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-mcp-binding	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5-read-slice	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5m2-bmcp	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5m2-bsearch-team	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5m2-checkinstall	directory already absent
+2026-10-25T10:51:10Z	SKIP-WT	.worktrees/a5m2-g1asm	directory already absent
+2026-10-25T10:51:10Z	SKIP-SALVAGED	.worktrees/a5m2-imgverify/.pinbuild-verify/	destination exists (verified in an earlier run)
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-20261023T17-57-12Z.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-20261023T18-07-26Z-run2.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-20261023T18-07-26Z.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-20261023T21-28-26Z.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-21-28-26Z-run2.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-21-53-32Z.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18-console-22-35-13Z.log	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T17-51-02/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T17-57-13/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T17-57-19/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T18-10-12/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T18-17-00/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T18-36-27/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T18-42-44/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T19-01-05/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-22-28/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-23-08/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-28-51/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-31-31/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-34-43/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-47-57/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-48-12/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-48-28/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-48-29/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T21-53-39/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-10-10/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-12-19/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-26-51/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-35-22/	planned item absent
+2026-10-25T10:51:10Z	SKIP-MISSING	.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-51-36/	planned item absent
+fatal: '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify' is not a working tree
