@@ -1,4 +1,4 @@
-# U7-R3 逐工具缺口矩阵 v2（2026-10-29；待用户确认后才动）
+# U7-R3 逐工具缺口矩阵 v3（2026-10-29；USER-RULING-20261029B：主 Agent 自主修订、独立审查+机器门禁后自合；先两工具试点）
 
 数据源 = master 台账 dev/agent-workflow/ledgers/u7-tool-acceptance.json 实测：
 L1 31/31 · L2 31/31 PROVEN；L3 14/31 PROVEN → **缺口 17**；L4 19/31 PROVEN → **缺口 12**（11 DISCLOSED + 1 NOT_VERIFIED）。总缺口 29 格，下方分派逐格对账 17+12=29，无重复无遗漏。
@@ -14,7 +14,7 @@ L3 ×10：team_glob, team_skill, team_cordis_inspect_list（复用 ac:refusal �
 ## 类别①/③ 双臂拆分 → mock/C1 臂=整改车道；原生臂=G5 真实主机 C3
 edit, bash（L3 ×2）：C1 可证 = 治理层拒绝语义（不提升 L3）；**不可** mock 的 = 原生 confinement 真实拒绝（Landlock 部分支持是已知缺口），后者并入 G5 候选 C3 清单（用户"有条件放行"范围内）。
 
-## 类别② candidate-bound live C2 复证（boot 预算=用户保留事项）→ Owner=G5 候选 C2 腿
+## 类别② candidate-bound live C2 复证（**Agent Control 家族**——5×L3+6×L4，此前口头汇报误称 agent-state，以本矩阵为准；boot 预算=USER-RULING-20261029B 专项 12 starts，先证接口可行）→ Owner=G5 候选 C2 腿
 **前置（v2 新增）**：下表每格进 C2 前先过"生产接口可用性"核查；缺接口者先接线/PoC，不得仅凭重跑宣布完成。
 L3 ×5：subagent, subagent_fork, send_message, list_agents, list_subagent_models。
 L4 ×6：同上 5 工具 + interrupt_agent。
@@ -24,15 +24,14 @@ L4 ×6：同上 5 工具 + interrupt_agent。
 ## 类别③ 真实主机 → G5 C3 清单（上列 edit/bash 原生臂）或裁决
 pwsh（L4 正臂）：本机无 pwsh。二选一：装 pwsh 的真实主机腿，或产品裁决"pwsh 不入 alpha.5 支持面"（矩阵 M-07 现状 NOT_VERIFIED 即诚实态）。
 
-## 类别④ 产品范围裁决项（非工程缺口；按铁律 (b)，每项只有两种合法终态，无第三种"改语义"）
-统一模板：**(i) 纳入 Alpha.5 承诺支持集** → 补齐该工具功能定义的 L4（先生产接口 PoC/接线，涉中心走具名 Center Interface PR）；或 **(ii) 裁决不入当前版本必交范围** → 台账保持 DISCLOSED/NOT_VERIFIED，并把该决定写进版本范围/安装说明/发布门禁。
-read_image（L4）：closed admission grammar 无 grantable rung（受保护中心）→ 纳入=(i) 需中心准入语法裁决；否则 (ii)。~~候选裁决"类型化拒绝即 L4 终态法律"~~ 撤销（违铁律 (b)）。
-workflow（L4）："no recognized public host face at the pin" → (i) runWorkflow 生产接线（先 PoC）或 (ii)。
-ask_user_question（L4）：生产 mount 无 UI 端口 → 交互式问答是否属团队面：(i)/(ii)。
-present（L4）：host ctx 无 publication 面 → (i)/(ii)。
-web_search（L4）："we never invent a provider" → 维持 (ii) 现状法律或另立 provider 集成工作包=(i)。
+## 类别④ 产品范围裁决项 —— 已由 USER-RULING-20261029B 裁决（2026-10-29），台账终态按裁决更新
+read_image（L4）：**纳入 Alpha.5 必交**。真图输入+读取效果端到端 L4；类型化拒绝不可替代。现有 closed admission grammar 无 grantable rung → 先具名接口设计+PoC（不绕治理内核），实现腿入 U7-R3 批量。
+pwsh（L4）：**不属 Alpha.5 必交**。保持 NOT_VERIFIED 诚实态并写入版本范围说明；部分实现保持安全隔离、不得影响原生工具。
+workflow（L4）：**暂不纳入亦不排除**——先有界 Host Public API PoC（编排/权限继承/取消/生命周期/结果接口），PoC 后纳入/排除建议提交用户裁决；此前其 L4 保持 DISCLOSED，拒绝≠完成。
+ask_user_question / present（L4）：**纳入承诺范围**。需真实生产 mount（UI 端口/publication 面）；缺接口先 PoC/接线（涉中心=具名 Center Interface PR）。
+web_search（L4）：**纳入承诺范围**。需 Provider 集成工作包（"we never invent a provider" 法律保持——集成走正式配置，不虚构）。
 
 ## 对账
 L3: ①10 + ①/③2 + ②5 = 17 ✓   L4: ②6 + ③1 + ④5 = 12 ✓   合计 29 ✓
-## 建议执行序（供用户确认/修改；外部审查分级放行的对应）
+## 执行序（USER-RULING-20261029B 已批准）
 ①C1 包（无 boot）可先行，**但不产生任何 L3 提升**。提升全在 boot 包（类别②+①/③原生臂，一次预算裁决）。试点建议（外部审查门禁 3）：先取 team_glob（①+C2）与 job_list（①+C2）两格走通"C1→分支 C2→合并后跨 Family C2→台账升级"全链，再批量。④逐项产品裁决，未裁决前台账不动。
