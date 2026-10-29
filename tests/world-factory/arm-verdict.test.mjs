@@ -97,8 +97,10 @@ test('T10 gateEnvBlock: the suite-level door demotes a signal-less ENV_BLOCK to 
   const bad = gateEnvBlock('ENV_BLOCK', { reason: 'upstream wall' })
   assert.equal(bad.verdict, NOT_REACHED)
   assert.match(bad.detail.reason, /demoted/)
-  const good = gateEnvBlock('ENV_BLOCK', { reason: 'r', envSignal: { channel: 'host-log', text: MOUNT_REFUSED } })
+  const genuine = envSignal({ channel: 'host-log', text: MOUNT_REFUSED, observed: [MOUNT_REFUSED] })
+  const good = gateEnvBlock('ENV_BLOCK', { reason: 'r', envSignal: genuine })
   assert.equal(good.verdict, 'ENV_BLOCK')
+  assert.equal(good.detail.envSignalRecheck.ok, true)
   assert.equal(gateEnvBlock('FAIL', { reason: 'x' }).verdict, 'FAIL')
   assert.equal(gateEnvBlock('PASS', {}).verdict, 'PASS')
 })
@@ -107,4 +109,62 @@ test('T11 an empty / whitespace-only observed corpus can never produce a signal'
   assert.equal(envSignal({ channel: 'host-log', text: MOUNT_REFUSED, observed: [] }), null)
   assert.equal(envSignal({ channel: 'host-log', text: '', observed: [MOUNT_REFUSED] }), null)
   assert.equal(envSignal({ channel: 'host-log', observed: [MOUNT_REFUSED] }), null)
+})
+
+// ── R-ENVBLOCK-2 (finding R446-27b): identity, not shape ───────────────────
+
+test('T12 a shape-identical FORGED signal buys nothing at either door', () => {
+  const forged = {
+    channel: 'host-log',
+    text: MOUNT_REFUSED,
+    proof: 'verbatim line 0 of 1 captured on the "host-log" channel',
+    observedCount: 1,
+  }
+  const g = gateEnvBlock('ENV_BLOCK', { reason: 'the host refused the pair', envSignal: forged })
+  assert.equal(g.verdict, NOT_REACHED, 'a hand-written lookalike must never be honored as ENV_BLOCK')
+  assert.match(g.detail.signalRejected, /unbranded/)
+  const c = classifyUnwitnessedArm({ step: 'the governed fetch', reachedStep: false, signal: forged })
+  assert.equal(c.verdict, NOT_REACHED)
+  assert.match(c.detail.signalRejected, /unbranded/)
+  // and it cannot launder a product FAIL into an environment excuse either
+  assert.equal(classifyUnwitnessedArm({ step: 'the governed fetch', reachedStep: true, signal: forged }).verdict, 'FAIL')
+})
+
+test('T13 a JSON round-trip copy of a GENUINE signal is not a signal', () => {
+  const sig = envSignal({ channel: 'host-log', text: MOUNT_REFUSED, observed: [MOUNT_REFUSED] })
+  const copy = JSON.parse(JSON.stringify(sig))
+  assert.deepEqual(Object.keys(copy).sort(), Object.keys(sig).sort(), 'the copy is shape-identical')
+  assert.equal(gateEnvBlock('ENV_BLOCK', { reason: 'r', envSignal: copy }).verdict, NOT_REACHED)
+  const c = classifyUnwitnessedArm({ step: 'x', reachedStep: false, signal: copy })
+  assert.equal(c.verdict, NOT_REACHED)
+  assert.match(c.detail.signalRejected, /unbranded/)
+})
+
+test('T14 the gate re-derives CAUSALLY: a quote its corpus no longer contains loses ENV_BLOCK', () => {
+  const corpus = [MOUNT_REFUSED, 'governed-web-fetch RAN dest=http://127.0.0.1:3199/claim status=200']
+  const sig = envSignal({ channel: 'host-log', text: MOUNT_REFUSED, observed: corpus })
+  assert.equal(gateEnvBlock('ENV_BLOCK', { reason: 'r', envSignal: sig }).verdict, 'ENV_BLOCK')
+  corpus.splice(0, 1, 'the captured window rotated and the line is gone')
+  const after = gateEnvBlock('ENV_BLOCK', { reason: 'r', envSignal: sig })
+  assert.equal(after.verdict, NOT_REACHED)
+  assert.match(after.detail.signalRejected, /no longer a verbatim member/)
+})
+
+test('T15 the suite wire (envSignal → classify → add()/gate) honors a genuine wall, nothing else', () => {
+  const logLines = ['governed-web-fetch RAN dest=http://127.0.0.1:3199/claim status=200', MOUNT_REFUSED]
+  const envWallSignal = envSignal({
+    channel: 'host-log',
+    text: logLines.find((l) => /a5-plane: (?:mount|placement)-REFUSED|EADDRINUSE|EACCES|EPERM/.test(l)) ?? null,
+    observed: logLines,
+  })
+  const blocked = classifyUnwitnessedArm({ step: 'the governed web_fetch PA step', reachedStep: false, signal: envWallSignal })
+  assert.equal(gateEnvBlock(blocked.verdict, blocked.detail).verdict, 'ENV_BLOCK')
+  const noWall = envSignal({
+    channel: 'host-log',
+    text: logLines.find((l) => /EADDRINUSE|EACCES|EPERM/.test(l)) ?? null,
+    observed: logLines,
+  })
+  assert.equal(noWall, null, 'this log carries no environment wall')
+  const arm = classifyUnwitnessedArm({ step: 'the governed web_fetch PA step', reachedStep: false, signal: noWall })
+  assert.equal(gateEnvBlock(arm.verdict, arm.detail).verdict, NOT_REACHED)
 })
