@@ -50,7 +50,9 @@ Reviewer A's conditions, executed in this commit:
    named residual), R-G4R-2 re-scoped and closed (#429 provisioning + per-record branded sandboxPreflight;
    partial-Landlock disclosure carried), and the crash pair as LIVE closure of R-G3-1/R-REM-1 with the
    PASS-by-knob caveat — each with its record citation.
-2. **Residuals filed by name in the effective backlog** (BL-20..BL-23 in ALPHA5-EFFECTIVE-BACKLOG.md §B):
+2. **Residuals filed by name** — in the tracked remediation ledger
+   `dev/agent-workflow/evidence/review-routing-20261028/REVIEW-REMEDIATION-20261028.md` (rows added in
+   this commit):
    R-CRASH-1 (supervisor hold/probe handshake + split aliased sequencing cells, post-freeze); trustedSources
    plane-digest exposure (closes R-G4R-1 fully when persisted + rebound); world-oracle dynamic-import edge
    (`host-sandbox-assets.mjs:223`, `complete=false` on ARC-D/Jobs — now disclosed in the lane README);
@@ -65,8 +67,8 @@ Reviewer A's F6: the lane README now quotes the final receipt values (dated adde
 
 ## Post-promotion state
 
-- Gate: **G4-PASS (投机通过, conditional; carried residuals BL-20..BL-23 + standing
-  partial-Landlock disclosure)** on candidate `5d0c8ff5830271b7e2ab3e7c855bb85fb2090bf3`.
+- Gate: **G4-PASS (投机通过, conditional; carried residuals R-CRASH-1 / R-G4R-1a / R-ORACLE-1 +
+  standing partial-Landlock disclosure)** on candidate `5d0c8ff5830271b7e2ab3e7c855bb85fb2090bf3`.
 - Boot lane closed at 12/25; B-G4R-5 pre-authorization EXPIRED by its own §5(a) upon this application.
 - Next gate in plan order: G5 opens only under the user's PRODUCT-GATE ruling (§4 reserved — queued).
 - R-G4R-3 (CI tightening) and R-CRASH-1 open post-freeze; family-class lanes now unblocked (candidate-
@@ -79,7 +81,23 @@ The promotion package itself was independently reviewed (`deepseek-v4.1-flash`, 
 6/6 (closure rows cited and spot-checked from record bytes; no laundering; append-only holds; receipts
 green), two MEDIUM wording defects, both fixed in this branch: **M1** the digest/preflight persistence
 claim is now scoped to the four canary-runner records (the arc-b c-suite schema emits no digest cells —
-folded into BL-21, matching R2-B's own MEDIUM-1); **M2** BL-23's closed-by claim now states the merge-order
+folded into R-G4R-1a, matching R2-B's own MEDIUM-1); **M2** BL-23's closed-by claim now states the merge-order
 dependency and the missing-file downgrade instead of presenting an unlanded artifact as settled. **L1**
 (mixed citation styles across historical ledger rows): accepted LOW — historical rows are immutable;
 the rows added here use repo-relative paths.
+
+## Dated addendum 2 — the u7-0 machine gate caught what review did not (2026-10-29)
+
+The first pushed version of this PR added BL-20..BL-23 rows to `ALPHA5-EFFECTIVE-BACKLOG.md`. The
+**census-runtime CI leg went red**: the backlog is a hash-pinned input to the u7-0 expected-tool-obligations
+generator (`build-expected-tool-obligations.mjs` records `backlog_sha256`; `packages/testkit/test/
+u7-0-census-reconcile.test.ts` pins the artifact digests as literals). Editing the backlog therefore
+requires regenerating the gated artifacts AND bumping frozen digest constants in product test code — a
+freeze-adjacent product change that a docs promotion PR must never smuggle. This PR now carries the
+residuals in the remediation ledger instead (named IDs above); the literal backlog rows (keeping the
+reserved numbers BL-20..BL-23) are queued for a gated regeneration PR post-freeze, generated + `--check`
+verified + reviewed as one package. `node dev/engineering/tool-obligations/build-expected-tool-obligations.mjs
+--check` passes again on this branch (CHECK OK), and the census failure root cause is recorded here rather
+than buried: **the reviewers' condition 2 said "effective backlog"; the machine gate defined the correct
+scope — named-filed in a tracked ledger now, backlog edit later, with the pin update explicit.** No residual
+lost its name in the move.

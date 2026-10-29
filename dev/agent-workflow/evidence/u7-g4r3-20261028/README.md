@@ -199,4 +199,4 @@ runner case is the authoritative guard verdict.
   (`unresolvedDynamicImports=["tests/world-factory/lib/host-sandbox-assets.mjs:223"]`; Jobs also
   `literalReadsComplete=false`). Disclosed, not hidden: the digest that IS persisted covers the vouched
   closure; the uncovered edge is covered today by the byte-identical candidate→tip judge/package diff, and
-  is filed as **BL-22** (re-derive those legs' immutability if any future commit touches that file).
+  is filed as **R-ORACLE-1** in the review-routing remediation ledger (re-derive those legs' immutability if any future commit touches that file).
