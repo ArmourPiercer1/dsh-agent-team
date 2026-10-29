@@ -1,0 +1,35 @@
+# R444-D — Independent Read Review (branch diff: scripts/eb3-tool-acceptance.mjs proof grading)
+
+Provenance: emergency quota-substitution seat; model qiyuan-self/qwen3.8-flash-next; fresh session; read-only git; patch read in full via .artifacts/ops/d444.patch (465 lines); branch file control-flow confirmed via `git show` at origin/task/u7r1-acceptance-levels-20261029. Mechanical results (0 findings plain / 8 CASE / 56 on candidate-mismatch / 9+9 mutation) taken as given; cited C2 record independently spot-checked (see Check 2/5).
+
+## Check 1 — PROVEN reachability (if-chain walk)
+
+Grading order for a PROVEN L2-L4 (new file, `checkToolAcceptance`, l.367–422): status→counts → evidence {record,case} strings → `loadRecord` (committed, schema u5-run-record/1, finalised `overall`+`finishedAt`, l.345) → **case exists + verdict==='PASS' before any proof grading** (l.386–387, both `continue` on failure) → `proof` dispatch.
+
+- **overall!=='PASS' reaching PROVEN**: only via `proof:'CASE'` on L2/L3 (l.391–400, by design, ledger note documents it). On the RUN/default path `if (rec.overall !== 'PASS') → ACCEPT_PROVEN_NOT_PASS_OVERALL; continue` (l.405–408). No bypass: `proof` values other than undefined/'RUN'/'CASE' → ACCEPT_SCHEMA (l.402). L1 `continue`s before this (l.376) — a stray `proof` on L1 is ignored, but L1 has its own suite gates.
+- **hostSha empty reaching PROVEN**: impossible on RUN — `typeof b.hostSha !== 'string' || b.hostSha === ''` → finding+continue (l.414–417); `rec.bindings ?? {}` means missing bindings yields `undefined` → caught. On CASE, bindings/hostSha are **not checked at all** — by design (header: CASE "may cite a non-PASS / old-binding / mock record") but means a CASE PROVEN needs no host provenance, only coherent disclosure + a PASS case. Nit: hostSha check does not trim — `" "` counts as non-empty.
+- **candidate flag set + mismatch reaching RUN-PROVEN**: `if (candidateSha !== undefined && b.teamSha !== candidateSha)` → finding+continue (l.410–413); missing bindings → `undefined !== sha` → caught. Mismatched rows can still count PROVEN only via CASE (allowed by design — the 8 relabeled units disclose "old teamSha 0ea0848acd" in failedScope, consistent with the 56-finding candidate-sha run coming from the RUN rows). **Real nit (fail-open parse)**: `candidateShaFrom` (l.444–450) silently returns `undefined` when `--candidate-sha` is followed by another flag or nothing (`v.startsWith('--')` guard) — a malformed invocation silently disables candidate enforcement and still exits 0. Not a PROVEN-with-mismatch path, but an enforcement knob that drops silently; should refuse instead.
+
+No input found that yields **RUN**-proven with overall!=='PASS', empty hostSha, or candidate mismatch.
+
+## Check 2 — mock/offline detection & exemption scope
+
+`mockOfflineMarkers` (mjs ~l.279–287) marks exactly: non-empty top-level `mode` string, `bootStarted === false`, `offlineJudge !== undefined` (presence), `mock === true`, `offline === true`. Any marker → ACCEPT_PROVEN_MOCK_OR_OFFLINE + continue (l.418–422).
+
+The sanctioned exemption is **not an exemption at all in code**: `bindings.provider.kind` is referenced nowhere except the doc comment (grep confirmed: one hit, the comment). So the exemption is broader, not narrower, than "any provider contains mock" — provider kind is irrelevant; ALL weight sits on the five top-level markers. Ground truth: the cited C2 record (run-u7fa5.json) carries `"kind": "mock-deepseek"` (l.33), has **none** of the five markers, and `hostSha=639ed01539…` = pristine baseline — so the comment's claim "every live C2 record carries mock-deepseek / is a real Host boot" is factually consistent with the checked record. Residual honesty risk (documented limitation, not a comment lie): detection is marker-presence — a mock/offline record that omits `bootStarted` entirely (absence ≠ `false`) and sets no markers reads as live; RUN-proven certifies host liveness, not model liveness. `mode` is any non-empty string → would false-refuse a hypothetical `mode:"live"` (fail-closed direction, acceptable).
+
+## Check 3 — CASE path undefined handling
+
+No permissive defaults; every field is a hard `typeof`/emptiness check appending to `problems` → ACCEPT_CASE_PROVEN_UNDISCLOSED (l.393–399). No `??` fallbacks anywhere in the CASE branch.
+- `runOverall`: missing/non-string/'' → problem; else must `!== rec.overall` verbatim-equal — a mismatched or absent runOverall cannot launder a non-PASS record silently (test (h) confirms matching is enforced). Edge: `'  '` passes the `=== ''` emptiness test but then fails verbatim unless the record's overall is itself `'  '` — inert.
+- `failedScope`: `!Array.isArray || length===0 || some(x => typeof x!=='string' || x.trim()==='')` → whitespace-only entries rejected.
+- `caseIndependence`: `typeof !== 'string' || .trim()===''` → **whitespace-only rejected**. Confirmed by reading, not inferred.
+- CASE on L4-positive → ACCEPT_CASE_PROVEN_ON_L4 + continue (l.392) — checked before disclosure, and the case-PASS gate already ran. Ledger contains no CASE on L4 (all 8 are 7×L2 + 1×L3).
+
+## Check 4 — mutation fixtures (9 tests, a–i)
+
+All five refusal fixtures (a–g) assert **specific finding codes** via `has(out, 'ACCEPT_…')`, not just `findings.length>0`; (h)/(i) assert `findings.length===0` plus `caseProofs===1`. Weakest: **(b)** exercises only the `mode:'mock'` marker — `bootStarted:false`, `offlineJudge` presence, `mock:true`, `offline:true` marker branches are never mutated, so 4/5 of the detector is untested. Also untested: partial disclosure (e.g. caseIndependence missing alone or whitespace-only), runOverall verbatim-mismatch (only all-fields-missing is exercised in (f)), and the invalid-`proof`-value ACCEPT_SCHEMA branch. None weak enough to let a broken axis pass; recommend 2–3 follow-up fixtures.
+
+## Check 5 — Verdict
+
+**通过（附非阻塞备注）.** The patch is strictly more honest than the pre-patch code (which graded only case-PASS and let a REFUSED-overall record silently back PROVEN): the default now hard-requires overall=PASS + hostSha + candidate equality + no mock marker, and the only relaxation (CASE) is opt-in, banned on L4, and forces verbatim runOverall + named failedScope + a case-independence statement. Spot-checked the cited record: overall=REFUSED, ac:mounted/ac:interrupt-foreign-zero PASS, failing arms exactly the disclosed ac:enumerate-governed + ac:spawn-failclosed, teamSha=0ea0848acd… — all 8 ledger disclosures are truthful against the record. Non-blocking: (1) `--candidate-sha` malformed-value silently drops enforcement (should refuse); (2) mock detection is marker-presence, provider.kind unchecked — RUN proves host-not-model liveness (disclosed in comment); (3) hostSha not trimmed; (4) mutation tests cover 1/5 mock markers and only all-missing CASE disclosure; (5) CASE proves nothing about host bindings — its strength is disclosure-bound, human review of caseIndependence remains the real gate. Mechanical results internally consistent with the diff (8 CASE units, L4 untouched).

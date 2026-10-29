@@ -25,6 +25,19 @@
  *                               (overall + finishedAt), or whose case is absent or
  *                               not PASS; a PROVEN L1 whose suite is absent or does
  *                               not name the tool
+ *   ACCEPT_PROVEN_NOT_PASS_OVERALL  a PROVEN L2-L4 (RUN proof) whose record.overall
+ *                               is not PASS — the honest axis (unconditional)
+ *   ACCEPT_PROVEN_CANDIDATE_MISMATCH  a RUN proof whose bindings.teamSha != the
+ *                               --candidate-sha / EB3_CANDIDATE_SHA requested
+ *   ACCEPT_PROVEN_NO_HOST_PROVENANCE  a RUN proof whose bindings.hostSha is
+ *                               empty/absent (no real-host provenance)
+ *   ACCEPT_PROVEN_MOCK_OR_OFFLINE  a RUN proof whose record is mock/offline-marked
+ *                               (a non-live re-grade, not a live Host boot)
+ *   ACCEPT_CASE_PROVEN_UNDISCLOSED  a proof:'CASE' level whose runOverall /
+ *                               failedScope / caseIndependence disclosure is
+ *                               missing or incoherent
+ *   ACCEPT_CASE_PROVEN_ON_L4     proof:'CASE' on L4-positive — a positive-effect
+ *                               claim must be RUN_PROVEN
  *   ACCEPT_DISCLOSED_UNREASONED a DISCLOSED level with an empty reason or no `#N` pr
  *   ACCEPT_DISCLOSED_UNSOURCED  a DISCLOSED level whose `source` does not contain the
  *                               reason verbatim (whitespace-normalised: a prose file
@@ -34,6 +47,19 @@
  *
  * WHAT IS NOT REFUSED: DISCLOSED and NOT_VERIFIED. Honesty is enforced at merge;
  * completeness (every L4 PROVEN) is the G5 release gate, not a CI colour.
+ *
+ * TWO PROOF LEVELS (remediation R-ACCEPT-RUN-1). A PROVEN L2-L4 has two possible
+ * proof strengths, chosen by the level's `proof` field (default `RUN`):
+ *   - RUN_PROVEN (proof absent or `proof:'RUN'`, the default): record.overall must
+ *     be PASS, the case must be PASS, and — when --candidate-sha / EB3_CANDIDATE_SHA
+ *     names a tree — bindings.teamSha must equal it; bindings.hostSha (host
+ *     identity) must be non-empty; the record must not be mock/offline-marked.
+ *   - CASE_PROVEN (`proof:'CASE'`): may cite a non-PASS / old-binding / mock record,
+ *     but ONLY for L2-mounted / L3-refusal (never L4-positive) and ONLY with a
+ *     coherent disclosure: runOverall (the record's overall, verbatim), failedScope
+ *     (a non-empty list naming what failed / the stale binding), and
+ *     caseIndependence (a non-empty statement of the case's own assertion). The case
+ *     itself must still be PASS.
  *
  * THE CLAIM SET IS READ STATICALLY. The descriptors import family lanes that
  * import the BUILT controlled-fs (`packages/runtime/controlled-fs/src/index.js`),
@@ -62,10 +88,12 @@
  * readable refuses (exit 2) instead of shrinking the set.
  *
  * Exported for scripts/eb3-ci-negative-controls.mjs:
- *   checkToolAcceptance({ ledger, claims, readFile, isTracked }) → { findings, counts }
+ *   checkToolAcceptance({ ledger, claims, readFile, isTracked, candidateSha })
+ *     → { findings, counts, tools, caseProofs }
  *   readClaims(root), loadLedger(root), LEDGER_REL, LEVELS
  *
- *   node scripts/eb3-tool-acceptance.mjs [--json]
+ *   node scripts/eb3-tool-acceptance.mjs [--json] [--candidate-sha <sha>]
+ *   (candidate sha also accepted via env EB3_CANDIDATE_SHA)
  *
  * Exit: 0 honest | 1 findings | 2 could not grade.
  *
@@ -235,6 +263,30 @@ export function containsVerbatim(haystack, needle) {
 }
 const normalizeSpace = (t) => String(t).replace(/\s+/g, ' ').trim()
 
+/**
+ * Real field names for mock/offline-marked run records. A "mock/offline" record is
+ * one NOT produced by a live Host boot — it re-grades prior data. In the
+ * u5-run-record/1 vocabulary those are:
+ *   mode          a non-empty top-level mode marker ("offline-rejudge", "mock", …)
+ *   bootStarted   explicit false (an offline re-judge never boots a Host)
+ *   offlineJudge  the offline re-judge narration field
+ *   mock/offline  explicit boolean `true` markers
+ * NOTE: `bindings.provider.kind === 'mock-deepseek'` is the SANCTIONED C2 live-host
+ * harness — a real Host boot driven by the deterministic mock LLM — and is NOT a
+ * mock record. Every live C2 record carries it; refusing it would de-PROVEN the
+ * whole ledger.
+ * @returns {string[]} the markers present (empty = a live record)
+ */
+function mockOfflineMarkers(record) {
+  const out = []
+  if (typeof record.mode === 'string' && record.mode !== '') out.push(`mode=${JSON.stringify(record.mode)}`)
+  if (record.bootStarted === false) out.push('bootStarted=false')
+  if (record.offlineJudge !== undefined) out.push('offlineJudge present')
+  if (record.mock === true) out.push('mock=true')
+  if (record.offline === true) out.push('offline=true')
+  return out
+}
+
 const diskReader = (root) => (rel) => {
   const abs = join(root, rel)
   return existsSync(abs) ? readFileSync(abs, 'utf8') : null
@@ -256,13 +308,14 @@ export function trackedSet(root = ROOT) {
  * @param {(rel:string)=>string|null} p.readFile    repo-relative read
  * @param {(rel:string)=>boolean} p.isTracked        committed-file predicate
  */
-export function checkToolAcceptance({ ledger, claims, readFile, isTracked }) {
+export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candidateSha }) {
   const findings = []
   const add = (code, detail) => findings.push({ code, detail })
   const counts = Object.fromEntries(LEVELS.map((l) => [l, { PROVEN: 0, DISCLOSED: 0, NOT_VERIFIED: 0 }]))
+  let caseProofs = 0
   if (ledger?.schema !== LEDGER_SCHEMA || !Array.isArray(ledger.rows)) {
     add('ACCEPT_SCHEMA', `${LEDGER_REL}: schema=${JSON.stringify(ledger?.schema)} / rows not an array — this checker grades ${LEDGER_SCHEMA}`)
-    return { findings, counts, tools: 0 }
+    return { findings, counts, tools: 0, caseProofs: 0 }
   }
   const byTool = new Map()
   for (const r of ledger.rows) {
@@ -328,9 +381,45 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked }) {
         }
         const lr = loadRecord(ev.record)
         if (lr.record === undefined) { add('ACCEPT_PROVEN_UNBACKED', `${at}: ${ev.record}: ${lr.why}`); continue }
-        const hit = lr.record.cases.find((k) => k?.id === ev.case)
-        if (hit === undefined) add('ACCEPT_PROVEN_UNBACKED', `${at}: ${ev.record} has no case ${ev.case}`)
-        else if (hit.verdict !== 'PASS') add('ACCEPT_PROVEN_UNBACKED', `${at}: ${ev.record} case ${ev.case} verdict=${hit.verdict} — only PASS backs PROVEN`)
+        const rec = lr.record
+        const hit = rec.cases.find((k) => k?.id === ev.case)
+        if (hit === undefined) { add('ACCEPT_PROVEN_UNBACKED', `${at}: ${ev.record} has no case ${ev.case}`); continue }
+        if (hit.verdict !== 'PASS') { add('ACCEPT_PROVEN_UNBACKED', `${at}: ${ev.record} case ${ev.case} verdict=${hit.verdict} — only PASS backs PROVEN`); continue }
+
+        // ── proof level: RUN_PROVEN (default) vs CASE_PROVEN (opt-in) ─────────
+        const proof = L.proof
+        if (proof === 'CASE') {
+          caseProofs += 1
+          if (lvl === 'L4-positive') { add('ACCEPT_CASE_PROVEN_ON_L4', `${at}: proof=CASE on L4-positive — a positive-effect claim must be RUN_PROVEN; rebind with a fresh RUN whose overall is PASS`); continue }
+          const problems = []
+          if (typeof L.runOverall !== 'string' || L.runOverall === '') problems.push('runOverall is missing')
+          else if (L.runOverall !== rec.overall) problems.push(`runOverall=${JSON.stringify(L.runOverall)} does not match the record's overall=${JSON.stringify(rec.overall)} verbatim`)
+          if (!Array.isArray(L.failedScope) || L.failedScope.length === 0 || L.failedScope.some((x) => typeof x !== 'string' || x.trim() === '')) problems.push('failedScope is not a non-empty list of non-empty strings')
+          if (typeof L.caseIndependence !== 'string' || L.caseIndependence.trim() === '') problems.push('caseIndependence is missing or empty')
+          if (problems.length > 0) add('ACCEPT_CASE_PROVEN_UNDISCLOSED', `${at}: proof=CASE but ${problems.join('; ')} — a CASE proof must disclose runOverall (verbatim), failedScope (list) and caseIndependence (non-empty)`)
+          continue
+        }
+        if (proof !== undefined && proof !== 'RUN') { add('ACCEPT_SCHEMA', `${at}: proof=${JSON.stringify(proof)} is not one of RUN|CASE`); continue }
+
+        // RUN proof: the default meaning of PROVEN.
+        if (rec.overall !== 'PASS') {
+          add('ACCEPT_PROVEN_NOT_PASS_OVERALL', `${at}: ${ev.record} overall=${JSON.stringify(rec.overall)} is not PASS — a RUN proof must bind a record whose overall is PASS; opt into CASE (proof:'CASE' + runOverall/failedScope/caseIndependence) or rebind with a fresh RUN`)
+          continue
+        }
+        const b = rec.bindings ?? {}
+        if (candidateSha !== undefined && b.teamSha !== candidateSha) {
+          add('ACCEPT_PROVEN_CANDIDATE_MISMATCH', `${at}: bindings.teamSha=${JSON.stringify(b.teamSha)} != --candidate-sha ${candidateSha} — rebind with a fresh RUN on the candidate tree`)
+          continue
+        }
+        if (String(b.hostSha ?? '').trim() === '') {
+          add('ACCEPT_PROVEN_NO_HOST_PROVENANCE', `${at}: bindings.hostSha is empty/absent/blank — a RUN proof needs real-host provenance (a live Host boot)`)
+          continue
+        }
+        const markers = mockOfflineMarkers(rec)
+        if (markers.length > 0) {
+          add('ACCEPT_PROVEN_MOCK_OR_OFFLINE', `${at}: ${ev.record} is mock/offline-marked (${markers.join(', ')}) — a RUN proof must bind a real live Host run; opt into CASE with disclosure or rebind with a fresh RUN`)
+          continue
+        }
       } else if (L.status === 'DISCLOSED') {
         const reason = typeof L.reason === 'string' ? L.reason.trim() : ''
         if (reason === '' || typeof L.pr !== 'string' || !/^#\d+$/.test(L.pr)) {
@@ -348,26 +437,58 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked }) {
       }
     }
   }
-  return { findings, counts, tools: claims.size }
+  return { findings, counts, tools: claims.size, caseProofs }
+}
+
+/**
+ * `--candidate-sha <sha>` flag, falling back to `EB3_CANDIDATE_SHA`.
+ * FAIL-CLOSE (R444-D): a present-but-malformed value — the flag with a
+ * missing/empty/dash-leading next token, or a present-but-blank env var —
+ * throws a usage error instead of silently running unenforced.
+ */
+function candidateShaFrom(argv, env) {
+  const i = argv.indexOf('--candidate-sha')
+  if (i !== -1) {
+    const v = argv[i + 1]
+    if (typeof v !== 'string' || v.trim() === '' || v.startsWith('-')) {
+      throw new Error(`--candidate-sha requires a non-empty SHA value (got ${JSON.stringify(v ?? null)}) — refusing to run unenforced`)
+    }
+    return v
+  }
+  const e = env.EB3_CANDIDATE_SHA
+  if (typeof e === 'string' && e.trim() === '') {
+    throw new Error('EB3_CANDIDATE_SHA is present but blank — refusing to run unenforced (unset it or give a real SHA)')
+  }
+  return typeof e === 'string' ? e : undefined
 }
 
 const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
 if (invokedDirectly) {
   const json = process.argv.includes('--json')
+  let candidateSha
+  try {
+    candidateSha = candidateShaFrom(process.argv, process.env)
+  } catch (e) {
+    console.error(`EB3-TOOL-ACCEPTANCE usage error: ${String(e?.message ?? e)}`)
+    console.error('usage: node scripts/eb3-tool-acceptance.mjs [--json] [--candidate-sha <sha>]  (env fallback: EB3_CANDIDATE_SHA)')
+    process.exit(2)
+  }
   let out
   try {
     const tracked = trackedSet(ROOT)
     const read = diskReader(ROOT)
-    out = checkToolAcceptance({ ledger: loadLedger(ROOT), claims: readClaims(ROOT), readFile: read, isTracked: (rel) => tracked.has(rel) })
+    out = checkToolAcceptance({ ledger: loadLedger(ROOT), claims: readClaims(ROOT), readFile: read, isTracked: (rel) => tracked.has(rel), candidateSha })
   } catch (e) {
     console.error(`EB3-TOOL-ACCEPTANCE refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)
   }
   const l4 = out.counts['L4-positive']
-  if (json) console.log(JSON.stringify(out, null, 2))
+  if (json) console.log(JSON.stringify(candidateSha === undefined ? out : { ...out, candidateSha }, null, 2))
   else {
     for (const f of out.findings) console.log(`  ${f.code} ${f.detail}`)
     for (const l of LEVELS) console.log(`  ${l}: PROVEN=${String(out.counts[l].PROVEN)} DISCLOSED=${String(out.counts[l].DISCLOSED)} NOT_VERIFIED=${String(out.counts[l].NOT_VERIFIED)}`)
+    if (candidateSha !== undefined) console.log(`  candidate-sha: ${candidateSha}`)
+    if (out.caseProofs > 0) console.log(`  CASE-proof levels: ${String(out.caseProofs)}`)
     console.log(`EB3-TOOL-ACCEPTANCE ${out.findings.length === 0 ? 'pass' : 'fail'} tools=${String(out.tools)} L4-proven=${String(l4.PROVEN)} L4-disclosed=${String(l4.DISCLOSED)} L4-unverified=${String(l4.NOT_VERIFIED)}${out.findings.length === 0 ? '' : ` findings=${String(out.findings.length)}`}`)
     console.log('LIMIT honesty, not completeness: DISCLOSED and NOT_VERIFIED never fail this leg; every L4 PROVEN is the G5 release gate')
   }
