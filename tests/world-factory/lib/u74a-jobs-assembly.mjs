@@ -86,6 +86,7 @@ export const U74A_MAIN_CASES = Object.freeze([
   'u74a:kill-live-requested',
   'u74a:kill-finished-honest',
   'u74a:foreign-cross-scope-refusal',
+  'u74a:list-deny-leg-honest-zero',
   'u74a:planted-unattributed',
   'u74a:native-ctl-unaffected',
   'u74a:exactly-once-approvals',
@@ -146,6 +147,9 @@ export function createU74aAssembly({ repoRoot, home, runStamp, reportDir, plant 
     liveFinal: `U74A_LIVE_FINAL_${rs}`,
     done: `U74A_DONE_CLAIM_${rs}`,
     ctl: `U74A_CTL_CLAIM_${rs}`,
+    // pilot C2 re-home (2026-10-29 float): the FOREIGN lane's own deny-leg
+    // birth claim — a denied call must NEVER let these bytes exist anywhere.
+    fdeny: `U74A_FDENY_CLAIM_${rs}`,
   }
   const markers = {
     MK_DISC: `U74A_DISC_${rs}`,
@@ -157,6 +161,7 @@ export function createU74aAssembly({ repoRoot, home, runStamp, reportDir, plant 
     MK_KLDONE: `U74A_MK_KLDONE_${rs}`,
     MK_FOUT: `U74A_MK_FOUT_${rs}`,
     MK_FPLANT: `U74A_MK_FPLANT_${rs}`,
+    MK_FDENY: `U74A_MK_FDENY_${rs}`,
     T_KLFOLLOW: `U74A_KLFOLLOW_${rs}`,
     T_CTL: `U74A_TRIGGER_CTL_${rs}`,
   }
@@ -171,6 +176,7 @@ export function createU74aAssembly({ repoRoot, home, runStamp, reportDir, plant 
       list: `printf '%s\\n' ${md(claims.list)} && sleep 25`,
       killLive: `printf '%s\\n' ${md(claims.liveWarm)} && sleep 30 && printf '%s\\n' ${md(claims.liveFinal)}`,
       killDone: `printf '%s\\n' ${md(claims.done)}`,
+      fdeny: `printf '%s\\n' ${md(claims.fdeny)} && sleep 30`,
       ctl: `printf '%s\\n' ${md(claims.ctl)}`,
     }
   }
@@ -281,7 +287,12 @@ export function createU74aAssembly({ repoRoot, home, runStamp, reportDir, plant 
       'memberEnvelopes:',
       '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
-      '  - templateId: foreign', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      // pilot C2 re-home (2026-10-29): the deny-leg lane is a FOREIGN member
+      // whose OWN background birth must open its durable ask row so the
+      // runner can answer DENY on the Control lane (ask-lane creation is a
+      // request-control mutation - the u6prc8 law; the entry stays otherwise
+      // NARROWER than the worker's).
+      '  - templateId: foreign', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
     ].join('\n')
@@ -409,6 +420,12 @@ export function makeU74aDecide({ assembly, plant = assembly.plant === true }) {
         { tok: 'd-list', which: 'list', template: 'worker', label: 'u74a-list', marker: markers.MK_LIST, fence: 'U74A_LIST_DONE' },
         { tok: 'd-kl', which: 'killlive', template: 'worker', label: 'u74a-killlive', marker: markers.MK_KLLIVE, fence: 'U74A_KILLLIVE_DONE' },
         { tok: 'd-kd', which: 'killdone', template: 'worker', label: 'u74a-killdone', marker: markers.MK_KLDONE, fence: 'U74A_KILLDONE_DONE' },
+        // pilot C2 re-home: the deny-leg lane (J4 live shape) runs after the
+        // killdone lane (every worker birth ask has settled by then) and
+        // before the trio-foreign lanes; the runner's DENIER window opens
+        // with KILLDONE_DONE, so this lane's OWN bash ask is DENIED on the
+        // durable Control lane (see the suite approver).
+        { tok: 'd-fdeny', which: 'fdeny', template: 'foreign', label: 'u74a-fdeny', marker: markers.MK_FDENY, fence: 'U74A_FDENY_DONE' },
         { tok: 'd-fout', which: 'fout', template: 'foreign', label: 'u74a-fout', marker: markers.MK_FOUT, fence: 'U74A_FOUT_DONE', needsId: true },
         { tok: 'd-fplant', which: 'fplant', template: 'foreign', label: 'u74a-fplant', marker: markers.MK_FPLANT, fence: 'U74A_FPLANT_DONE' },
       ]
@@ -490,6 +507,15 @@ export function makeU74aDecide({ assembly, plant = assembly.plant === true }) {
         if (exchanges.length === 1) return toolCall('job_output', { job_id: jid ?? 'job-unknown', wait: true, timeout_ms: 15000 })
         if (exchanges.length === 2) return toolCall('job_kill', { job_id: jid ?? 'job-unknown', reason: 'u74a-kill-finished' })
         return { kind: 'text', content: jid === null ? 'U74A_KILLDONE_DONE id=none' : `U74A_KILLDONE_DONE id=${jid}` }
+      }
+      case 'fdeny': {
+        // The DENY-leg machine: own background birth (the runner DENIES its
+        // ask) -> the honest-zero list -> DONE. A spawned birth would answer
+        // `started background job …` and the judge FAILs on the witnesses;
+        // the machine never retries and never interprets the refusal.
+        if (exchanges.length === 0) return toolCall('bash', { command: cmds.fdeny, background: true })
+        if (exchanges.length === 1) return toolCall('job_list', {})
+        return { kind: 'text', content: 'U74A_FDENY_DONE' }
       }
       case 'fout': {
         const jobId = jobIdFromPrompt(ut)
@@ -662,6 +688,7 @@ export { laneToolExchanges as u74aToolExchanges }
  *   killLiveJobId killLiveKill killLiveOutEarly killLiveOutLate
  *   killDoneJobId killDoneOutput killDoneKill
  *   foreignOut foreignPlanted
+ *   denyRow foreignDenyBash foreignList foreignDenyJobIds (pilot C2 deny-leg)
  *   ctlResult rootKernelMentions
  *   kernelHits {pattern:{count}} (boot-log scans, redacted)
  *   attributedLog []     'a5bg: attributed hostJobId=…' lines (redacted)
@@ -819,6 +846,35 @@ export function judgeU74a(d, hostAlive, opts = {}) {
     && !fo.includes('requested cancellation'), {
     foreignOut: fo.slice(0, 200),
     note: 'MEASURED LAW at this pin: the attribution ledger is MOUNT-SCOPED (boot 2: a foreign member reading the owner\'s REAL attributed id meets the typed unattributed-job refusal before any host reach — the owner-mismatch word does not exist in this bridge build); the zero-reach law holds: zero ring bytes, zero host status words, zero kill vocabulary',
+  })
+  // 7b) DENY-LANE honest zero (pilot C2 re-home, the J4 live shape): the
+  //     foreign lane's OWN background birth arms its durable ask row, the
+  //     RUNNER answers DENY through the public seam (window = lane ordering:
+  //     it opens at KILLDONE_DONE and this lane is the only lane birthing
+  //     after it; the witnesses below bind the answer to THIS leg). The
+  //     call must answer the typed APPROVAL_DENIED (run8 landing
+  //     discrimination: a shut-face code like IO_POLICY_UNSUPPORTED is never
+  //     refusal evidence), spawn NOTHING (no receipt wording, no id minted
+  //     anywhere in the lane), keep the foreign job_list an honest zero,
+  //     never leak the owner's attributed row cross-scope, and never echo
+  //     the birth claim.
+  const fd = String(d.foreignDenyBash ?? '')
+  const fl = String(d.foreignList ?? '')
+  add('u74a:list-deny-leg-honest-zero', d.denyRow?.seen === true
+    && d.denyRow?.denied === true
+    && fd.includes('APPROVAL_DENIED')
+    && !fd.includes('started background job')
+    && !fd.includes(d.claims?.fdeny ?? '\u0000')
+    && !fl.includes(d.claims?.fdeny ?? '\u0000')
+    && fl.includes('(no background jobs)')
+    && !fl.includes('started background job')
+    && (d.jobIds ?? []).every((id) => !fl.includes(String(id)))
+    && (d.foreignDenyJobIds ?? []).length === 0, {
+    denyRow: d.denyRow ?? { seen: false },
+    foreignDenyBash: fd.slice(0, 220),
+    foreignList: fl.slice(0, 200),
+    foreignDenyJobIds: (d.foreignDenyJobIds ?? []).slice(0, 4),
+    note: 'the DENIER answered the foreign lane\'s OWN birth ask on the durable Control lane; typed APPROVAL_DENIED, zero spawn vocabulary, honest-zero list, no cross-scope leak, no id minted, claim bytes unechoed',
   })
   // 8) (e) CI-05 regression: the planted id is the typed unattributed-job
   //    refusal with ZERO host reach (no ring, no status word, no settle
