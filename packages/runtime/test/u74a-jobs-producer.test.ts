@@ -3,7 +3,7 @@
  * ATTRIBUTION PRODUCER, its arm on the SAME confined provider, and the
  * kernel-ordering law the whole lane stands on.
  *
- * Four groups, one claim each:
+ * Five groups, one claim each:
  *  G1 THE PRODUCER (standalone, real gateway assembly + real bridge):
  *     attribution follows the host receipt (never precedes it), the
  *     fail-closed refusals leave NOTHING spawned or NOTHING exposed, the
@@ -26,6 +26,13 @@
  *     foreign viewer measures ZERO host reach, trio calls cost ZERO
  *     approvals, and a DENIED ask never reaches producer/spawn/registry at
  *     all (attribution never precedes authorization).
+ *  G5 THE job_list REFUSAL ARMS (U7-R3 two-tool pilot, lane B — the C1 twin
+ *     of the ledger's L3-refusal cell): every refusal around job_list
+ *     answers TYPED in the tool result while the counted job store records
+ *     ZERO reads AND zero writes — and the approval-DENY lane's birth is
+ *     observably UNBORN through the list face. C1-only honesty: offline/
+ *     mocked, proves the refusal LOGIC only (USER-RULING-20261029B item 2);
+ *     the L3 grade itself rides the live C2 lane after merge.
  */
 import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
@@ -933,3 +940,148 @@ async function g4ProducerMountDeny() {
   }
   return { asm, wrapped, svc, producer, owner: built.value, row, legs: () => legs }
 }
+
+// ── G5: the job_list L3-REFUSAL analogue (U7-R3 pilot lane B, 2026-10-29) ──
+/**
+ * G5 — what a refused job_list costs the job store: NOTHING, measured.
+ *
+ * THE CELL (u7-tool-acceptance, row job_list, L3-refusal, NOT_VERIFIED):
+ * "no job_list refusal case in the u7-4a suite". The trio rows are
+ * APPROVAL-FREE by the PR4 measured law (`u74a:exactly-once-approvals`
+ * grades it live: trio calls never arm a Control row), so a job_list
+ * refusal cannot ride the durable ask lane — the FAMILY's own refusal
+ * lanes for the trio are the governance-fence gates inside the bridge
+ * (`resolve()`/`checked()`: `caller-unresolved`, `gateway-not-active`,
+ * `unattributed-job` — zero svc reach BY ORDER OF THE CODE PATH) and the
+ * closed-configuration shut face. This group builds the job_list analogue
+ * of the zero-effect witnesses the other families stand on
+ * (`fs:refusal-zero-effect`, `fsm:refusal-zero-effect`,
+ * `web:deny-leg-zero-wire`, `ast:cross-scope-zero-effect`, K3/K5 here):
+ * EVERY refusal answers in the model-visible tool result, and the SAME
+ * counted JobRegistry double measures that the job store saw ZERO reads
+ * AND zero writes.
+ *
+ * C1-ONLY HONESTY (USER-RULING-20261029B item 2: "mock/C1 只证拒绝逻辑"):
+ * this is an OFFLINE proof of the refusal LOGIC over doubles — it is NOT
+ * the L3 grade. L3 = a real-Host typed refusal with zero effect, graded by
+ * the live C2 lane after merge. Nothing here touches the ledger or claims
+ * the level.
+ */
+async function g5ListWorld(over: { governanceOff?: boolean; noBridge?: boolean } = {}) {
+  const gw = await gatewayModule()
+  const mod = await bridgeModule()
+  const pmod = await planeModule()
+  const asm = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
+  const wrapped = mod.ci05GovernedGatewayRow(asm)
+  const svc = fakeRegistry()
+  // the governance fence is a FLIP, not a second world: the same mount
+  // answers refused while the fence row is down and answers the scoped
+  // list once it is up (non-vacuity inside ONE world — the K6 idiom).
+  let governanceOn = over.governanceOff !== true
+  const scopeKey = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+  let planeValue: PlaneValue | null = null
+  let legs = 0
+  const bridge = mod.createGovernedJobsBridge({
+    scopeKey, viewer: OWNER_A,
+    gatewayRow: () => (governanceOn ? wrapped : null),
+    planeRow: () => planeValue, jobsService: () => svc, observe: () => {},
+  })
+  const built = pmod.createTeamToolPlaneAssembly({
+    dispatcherLifecycle: { inflight: () => 0 },
+    teamSessionId: ROOT,
+    // the approval lane is COUNTED to prove what G5 never rides: a trio
+    // refusal must consume ZERO ask legs (the K1 law, watched on the deny
+    // face by K5).
+    controlLeg: async (input: unknown) => { legs += 1; return approvingControlLeg()(input as never) },
+    permissionPolicy: POLICY_ASK,
+    realmId: REALM, templateId: 'u74a-tpl', role: 'member', instanceId: 'inst-1',
+    onObserve: () => {},
+    plane: {
+      fsInstance: { fs: 'u74a-ctl', rootDir: join(G4_WORLD, 'root'), realmId: REALM, kind: 'absolute-path' },
+      cwdRoot: join(G4_WORLD, 'root'),
+      jobsEnabled: true,
+    },
+    backends: over.noBridge === true ? {} : { jobs: bridge },
+  })
+  if (!built.ok) throw new Error(`mount refused: ${built.code} ${built.message ?? ''}`)
+  planeValue = built.value
+  const row = (name: string): PlaneDef => {
+    const d = built.value.definitions.find((x: PlaneDef) => x.name === name)
+    if (d === undefined || d === null) throw new Error(`row ${name} not mounted`)
+    return d
+  }
+  return {
+    asm, wrapped, svc, row, legs: () => legs,
+    setGovernance: (on: boolean) => { governanceOn = on },
+  }
+}
+
+describe('u74a G5 — job_list refusal arms: typed refusal, ZERO job-store read AND write (C1 logic only — L3 is graded live)', () => {
+  it('J1 caller-unresolved: job_list refuses BEFORE any registry query — zero reads, zero writes, zero ask legs', async () => {
+    const w = await g5ListWorld()
+    const before = w.svc.reach()
+    const out = await w.row('job_list').execute({}, {})
+    expect(out.text).toContain('refused: caller-unresolved')
+    // the D5 law (u6-pr4) graded on THIS suite's counted witness: the
+    // refusal never queried unfiltered — ZERO list/read/start/kill reaches.
+    expect(w.svc.reach()).toBe(before)
+    expect(w.svc.calls).toEqual([])
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0) // the trio rides no approval lane, even when refused
+    // NON-VACUITY in the SAME world: the named caller's list DOES read —
+    // the zero above is a refusal, not a dead witness.
+    await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+  }, 60_000)
+
+  it('J2 gateway-not-active: with the governance fence row down, job_list refuses before even the caller-scoped read — then answers once the row is up (one world, flip-proven)', async () => {
+    const w = await g5ListWorld({ governanceOff: true })
+    const out = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(out.text).toContain('refused: gateway-not-active')
+    // order of the code path measured as effect: resolve() refuses on the
+    // absent fence row BEFORE jobsService is consulted — the job store saw
+    // not even the host's own caller-scoped list. Zero reads AND writes.
+    expect(w.svc.calls).toEqual([])
+    expect(w.svc.reach()).toBe(0)
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0)
+    // flip: the SAME mount, fence row up — the refusal was the gate, not
+    // the mount (non-vacuity of the zero above).
+    w.setGovernance(true)
+    const ok = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(ok.text).toBe('(no background jobs)')
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+  }, 60_000)
+
+  it('J3 shut face: jobsEnabled WITHOUT the named bridge answers the typed shut refusal and no jobs candidate registers — the host store is unreachable by construction', async () => {
+    const w = await g5ListWorld({ noBridge: true })
+    const out = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(out.text).toContain('IO_POLICY_UNSUPPORTED')
+    // the shut trio registers NO jobs candidate (u6-pr4 C2 law) — there is
+    // no bridge, therefore no path to the counted store: zero reaches.
+    expect(w.svc.reach()).toBe(0)
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0)
+  }, 60_000)
+
+  it('J4 approval-DENY lane, read through job_list: the refused background birth is UNBORN — the store shows zero writes, and the only read anywhere is job_list\'s own caller-scoped list (the K3 +1 law)', async () => {
+    // THE approval-deny lane arm: g4ProducerMountDeny is K5's world (the
+    // durable Control leg answers DENY). K5 proved the denial itself
+    // reaches producer/spawn/registry ZERO times; THIS arm closes the
+    // model-visible half of the same claim: what job_list can OBSERVE of
+    // the denied call is nothing — no row, no receipt, no attribution.
+    const w = await g4ProducerMountDeny()
+    const out = await w.row(w.owner, 'bash').execute({ command: 'sleep 30', background: true }, { agent: { id: OWNER_SESSION } })
+    expect(out.text).not.toContain('started background job')
+    expect(w.svc.reach()).toBe(0) // the K5 measurement, re-witnessed here
+    expect(w.producer.stats.producerCalls).toBe(0)
+    expect(w.legs()).toBe(1) // the ask ran and was DENIED
+    const listed = await w.row(w.owner, 'job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(listed.text).toBe('(no background jobs)')
+    // zero writes: nothing was ever born; the ONLY host touch anywhere is
+    // job_list's own caller-scoped list (K3's honest +1 accounting).
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+    expect(w.producer.stats).toMatchObject({ hostJobsCreated: 0, attributions: 0 })
+  }, 60_000)
+})

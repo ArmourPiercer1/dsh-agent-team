@@ -7193,3 +7193,10 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 解析闭死 exit=2、hostSha trim、fixture 9→12），A1..A5 五条附注并入 R-ACCEPT-RUN-2 排队（含 mode
 标志过宽/字符串 true 不识别/CASE 不锚定记录——今日发货披露本身全诚实）。机器收据两份入库；
 两包合并均另受 CI + 线程门约束。中心 kernel 零触碰；G4 历史零改写；boot 预算零花费。
+
+## 2026-10-29 (17:0xZ) — U7-R2 收口 + 外部审查小修复波次（主 Agent，USER-RULING-20261029B 执行段）
+- **合并**：#453 R-413-1 尾项（census 确定性根除，456b90f67）→ #451 R-MODEBITS 全位掩码+T27 静默接受直接负控（3c94900fa）→ #452 R-DYNIMPORT AST-first+字符串掩码双路闭合、2 既有计算导入闭集入账（e7108b125）→ #455 R-DM-1 协议法文化 ROUTER_RULES §8.5（27bdbd443）→ #454 R-AUDIT-DEPTH b1/b2/b3（38a5f64f4，双审：R454-27b 自曝席位同族 → v4-pro 升级席补跨族实质）。全部：TDD RED 在案、dated 四要素清偿、严格模式机器门（ci-required+pr-gate+线程+R-DM-1 纸面）。
+- **boot 总账 4/24**：#446 C2 车道闭账（(a)(c)(d)✓；(b) 实机 NOT_REACHED 结构性不可达——旋钮提案=用户决策项；证据 4eff9811a；gates/BOOT-BUDGET-20261029B.md）。#448/#449 复验 4 starts 预留未动，待波后覆盖最终态执行。
+- **§8.5 三门实战教训**（均按「更正=新评论」留痕）：旧断言行需 SUPERSEDED 指针；描述文本含词元自触 grep；词元匹配应限首行/围栏行。协议后续 PR 排队。
+- **矩阵 v3**：类别② 术语纠正（Agent Control 家族）、类别④ 裁决落地、试点（team_glob+job_list）授权在案。USER-RULING-20261029B 全文入 gates/。
+- **运维披露**：双合并链同 worktree 竞态一次（我方操作错误，僵尸猎杀+单写者恢复，零内容影响）；nohup 子进程随沙箱死亡三次教训后全部改 harness 作业；主检出 962 文件未提交 index 状态已备份 backup/main-index-20261029 并报告；worktree 清理 20 位（2 疑点位保留报告）。
