@@ -42,3 +42,7 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+| BL-20 | R-CRASH-1：u5-parallel-supervisor `survivorHealthyAt<killAt` hold/probe 握手 + 拆分混指 sequencing 单元 | carried-forward **post-freeze**（G4-R2 F4/B-MED） | crash 腿 PASS-by-knob（`--kill-after 6000` 经验缓解，RULING-B-G4R-6），断言结构非确定；修复=tests/world-factory harness 代码，禁在车道中途动；R-CRASH-1 行见 `dev/agent-workflow/evidence/review-routing-20261028/REVIEW-REMEDIATION-20261028.md`。 |
+| BL-21 | trustedSources 平面摘要暴露（R-G4R-1 全闭合前置） | carried-forward（G4-R2 F1/B-MED） | 各候选记录 `trustedSourcesDigest=null`+机读理由（与 phase-2 同，非 null-as-satisfied）；闭合=在 runner 公开 World/HTTP 面暴露 plane TrustSources 摘要并持久+重绑，或显式裁决 census inventory 替代；R1 关闭项 4 现 2/3。 |
+| BL-22 | world-oracle 动态导入边 `host-sandbox-assets.mjs:223`（ARC-D/Jobs `complete=false`） | carried-forward（G4-R2 F2/B-MED） | oracle vouched 闭包外一边；今日由 candidate..HEAD judge diff 空覆盖，任何后续 commit 触该文件则两腿不可变性论证须重推；lane README dated addendum 已披露该格。 |
+| BL-23 | crash RCA 原件入册（tracked 副本） | **closed-by #439**（`dev/agent-workflow/evidence/u7-g4r3-20261028/analysis/crash-sequencing-rca-20261028.md`，G4-R2 F5/LOW） | 原稿在会话 scratch `.artifacts/findings/`；#439 逐字入册 + README addendum；RULING-B-G4R-6 正文独立成立（两 reviewer 均判可独立审计）。 |

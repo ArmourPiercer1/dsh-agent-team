@@ -179,3 +179,17 @@ runner case is the authoritative guard verdict.
 - **PASS-by-knob, disclosed:** this PASS was obtained with `--kill-after 6000`; the underlying assertion
   (`u5-parallel-supervisor.mjs:92`) remains structurally non-deterministic — durable fix **R-CRASH-1**
   (hold/probe handshake + split aliased cells) scheduled post-freeze. Attempt-1 FAIL stands unedited.
+
+## Dated addendum (2026-10-28, with the G4-R2 promotion review) — receipt values + oracle-completeness cell
+
+- **Receipt values (reviewer A F6):** final scope at the PR #432 merge's first parent `4fd9c51ab`:
+  `eb3-run-manifest --new-since` → **records=110 findings=0**; `eb3-evidence-guard --new-since` →
+  **added=56 findings=0** (both reviewers reproduced these independently at tip they read 60 added — the 4
+  later files are review reports landed by #436–#438, still findings=0); `git diff --check` clean; no file
+  >1 MiB; `packages/**` untouched by the lane.
+- **World-oracle completeness (reviewer A F2, disclosed here as required):** the ARC-D and Jobs candidate
+  records carry `bindings.worldOracle.complete=false`
+  (`unresolvedDynamicImports=["tests/world-factory/lib/host-sandbox-assets.mjs:223"]`; Jobs also
+  `literalReadsComplete=false`). Disclosed, not hidden: the digest that IS persisted covers the vouched
+  closure; the uncovered edge is covered today by the byte-identical candidate→tip judge/package diff, and
+  is filed as **BL-22** (re-derive those legs' immutability if any future commit touches that file).

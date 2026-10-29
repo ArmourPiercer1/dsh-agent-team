@@ -7132,3 +7132,33 @@ master 跑 production-run-recipe 全链）。
 - 并行车道裁决：外部审查建议的 R-G4R-3 CI 加严与 G5-L3 补证**维持延后**（各自既有门：判据文件改动=phase-3 冻结解除后；G5 PRODUCT-GATE=§4 保留事项入账不代答，且 L3 输入=G4 完整候选证据，本方才齐）——决定记录 `.artifacts/findings/parallel-lanes-decision-20261028.md`。
 - 收据链：EB3-RUN-MANIFEST pass(110/0)、EB3-EVIDENCE-GUARD pass(added=56/0)、git diff --check 清零（原始构建日志按 phase-2 先例不入库，sha256 锚点存 setup/SETUP-NOTES.md）、ci-pr-gate pass(7/0/skip=census 具名)。磁盘回收 ~18G；worktree 审计 `.artifacts/findings/worktree-audit-20261028.md`。
 - 未闭合（入账排队）：#432 合并与 G4 promotion R2 阶段复审（glm-5.3，审查者亲量 diff）在本日志后续条目；R-G4R-3/R-CRASH-1/R-413-1/F-1..F-3/OG-1 整改=冻结解除后；§4 保留事项等用户。G4 状态不变：G4-CORE-PASS / BRIDGE-BLOCKED。
+
+## 2026-10-28 — takeover session 2: G4 promotion re-review R2 — packet, two independent reviewers, 投机通过, promotion rows (this PR)
+
+**What ran.** The R2 promotion packet = master after #432 (five candidate-bound live legs + ledgers) +
+#436/#437/#438 (rulings B-G4R-5/6 + routing sync + tracked review reports). Two INDEPENDENT reviewers,
+one model family each, detached worktrees at `7a789a91d`, forbidden from reading the orchestration log,
+graph.yaml, each other's output, or prior review verdicts; both recomputed all equivalence diffs
+personally (the R1 laundering lesson). Seats per user routing: R3 stage-reviewer = OpenCode Go
+`glm-5.3`; cross-check escalation seat = `deepseek-v4-pro`. Reports verbatim:
+`gates/G4-PROMOTION-REVIEW-R2-A-glm.md`, `-B-v4pro.md`.
+
+**Verdicts.** Both **投机通过**: A — 0 CRIT/0 HIGH/3 MED/3 LOW, promotion allowed with
+documentation-only conditions executed in this commit; B — 0 CRIT/0 HIGH/2 MED/1 LOW, gate may open with
+the risk ledger. Core claim verified from bytes by each independently (five legs PASS bound to
+`5d0c8ff583…`, judge/package bytes empty diff candidate→tip, vocabulary unsoftened, boot 12/25
+pre-declared, receipts reproduce at `4fd9c51ab`).
+
+**This PR executes the reviewers' conditions and nothing else:** GATE-LEDGER dated closure rows
+(R-U6P3-1, R-U6P4-1..3, R-G4R-1 partial, R-G4R-2 re-scoped, R-G3-1/R-REM-1 live with PASS-by-knob
+caveat) + the G4 gate row (**G4-PASS, 投机通过 conditional**); backlog BL-20..BL-23 naming every carried
+residual (R-CRASH-1 handshake; trustedSources digest exposure; oracle dynamic-import edge; RCA tracked
+copy closed by #439); lane README addendum (final receipt values; `worldOracle.complete=false` cell now
+disclosed in README, not only in records). No boots, no code, no verdict language beyond what the two
+reviewers ruled. The release-path unlock (G5/S5) stays queued for the user — G5 PRODUCT-GATE is §4
+reserved; pre-authorization B-G4R-5 expired per its §5(a) when this application landed the review.
+
+**Machine-verified this round:** `git diff --check` clean on this branch; eb3 receipts re-run locally at
+`--new-since origin/master` before push (values in PR body). **Human-queued (not answered on user's
+behalf):** ratify 投机通过→release unlock; §4 items list; post-freeze remediation window (R-G4R-3,
+R-CRASH-1, R-G4R-1a/BL-21, BL-22, R-413-1, F-1/F-2/F-3/OG-1).
