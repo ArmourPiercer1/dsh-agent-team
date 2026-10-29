@@ -83,7 +83,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only"
+        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only. C1 lineage 2026-10-30 (PR #467, OPEN): offline ER arms shipped in packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (real chain: plane mount -> lane -> governed edit executor on the REAL fs) — ER-1: a lane-denied edit answers TYPED (refused-admission template-deny-lane) across an existing-target AND a fresh-path attempt; ER-2: the ask lane settled DENY by the control leg answers TYPED (APPROVAL_DENIED, the durable request measured settled-deny). Both grade the whole zero-effect face the old E-9 boolean never did: the WHOLE-directory digest (entry names + every byte) measured IDENTICAL (no partial apply, no stray entry, fresh path never born, neighbours untouched), the row ledger carrying ONLY the typed denial line with ZERO governed-edit/governed-write RAN lines (zero-write ledger), each arm non-vacuous by a same-call allow/approve flip moving every witness. C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -141,7 +141,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash"
+        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash. C1 lineage 2026-10-30 (PR #467, OPEN): offline NAT arms shipped in packages/runtime/test/a5-m1-bash-c1.test.ts on the native takeover mount (plane.names.bash='bash'; NAT-0 mount identity: ownNames carries `bash`, NOT `team_bash`) — the native-spelling row answers TYPED under BOTH refusal gates: NAT-1 deny-lane (template-deny-lane) and NAT-2 PA-deny (APPROVAL_DENIED, the ask leg measured real), each with backend ZERO reach measured both ways (execCount 0 + empty stage trace), the refused command's own disk witness (touch) never landing, the root entry set unchanged and the spawn capability never armed; non-vacuous by the approving flip landing ONE real landlock confined spawn (execCount 1, the touch lands, the entry set moves). C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
