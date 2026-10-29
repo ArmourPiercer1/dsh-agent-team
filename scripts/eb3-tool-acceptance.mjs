@@ -411,8 +411,8 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candi
           add('ACCEPT_PROVEN_CANDIDATE_MISMATCH', `${at}: bindings.teamSha=${JSON.stringify(b.teamSha)} != --candidate-sha ${candidateSha} — rebind with a fresh RUN on the candidate tree`)
           continue
         }
-        if (typeof b.hostSha !== 'string' || b.hostSha === '') {
-          add('ACCEPT_PROVEN_NO_HOST_PROVENANCE', `${at}: bindings.hostSha is empty/absent — a RUN proof needs real-host provenance (a live Host boot)`)
+        if (String(b.hostSha ?? '').trim() === '') {
+          add('ACCEPT_PROVEN_NO_HOST_PROVENANCE', `${at}: bindings.hostSha is empty/absent/blank — a RUN proof needs real-host provenance (a live Host boot)`)
           continue
         }
         const markers = mockOfflineMarkers(rec)
@@ -440,20 +440,39 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candi
   return { findings, counts, tools: claims.size, caseProofs }
 }
 
-/** `--candidate-sha <sha>` flag, falling back to `EB3_CANDIDATE_SHA`. */
+/**
+ * `--candidate-sha <sha>` flag, falling back to `EB3_CANDIDATE_SHA`.
+ * FAIL-CLOSE (R444-D): a present-but-malformed value — the flag with a
+ * missing/empty/dash-leading next token, or a present-but-blank env var —
+ * throws a usage error instead of silently running unenforced.
+ */
 function candidateShaFrom(argv, env) {
   const i = argv.indexOf('--candidate-sha')
   if (i !== -1) {
     const v = argv[i + 1]
-    if (typeof v === 'string' && v !== '' && !v.startsWith('--')) return v
+    if (typeof v !== 'string' || v.trim() === '' || v.startsWith('-')) {
+      throw new Error(`--candidate-sha requires a non-empty SHA value (got ${JSON.stringify(v ?? null)}) — refusing to run unenforced`)
+    }
+    return v
   }
-  return typeof env.EB3_CANDIDATE_SHA === 'string' && env.EB3_CANDIDATE_SHA !== '' ? env.EB3_CANDIDATE_SHA : undefined
+  const e = env.EB3_CANDIDATE_SHA
+  if (typeof e === 'string' && e.trim() === '') {
+    throw new Error('EB3_CANDIDATE_SHA is present but blank — refusing to run unenforced (unset it or give a real SHA)')
+  }
+  return typeof e === 'string' ? e : undefined
 }
 
 const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
 if (invokedDirectly) {
   const json = process.argv.includes('--json')
-  const candidateSha = candidateShaFrom(process.argv, process.env)
+  let candidateSha
+  try {
+    candidateSha = candidateShaFrom(process.argv, process.env)
+  } catch (e) {
+    console.error(`EB3-TOOL-ACCEPTANCE usage error: ${String(e?.message ?? e)}`)
+    console.error('usage: node scripts/eb3-tool-acceptance.mjs [--json] [--candidate-sha <sha>]  (env fallback: EB3_CANDIDATE_SHA)')
+    process.exit(2)
+  }
   let out
   try {
     const tracked = trackedSet(ROOT)

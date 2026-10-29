@@ -15,6 +15,9 @@
  *   (g) CASE_PROVEN on L4-positive                     → ACCEPT_CASE_PROVEN_ON_L4
  *   (h) compliant RUN_PROVEN + compliant CASE_PROVEN   → no findings
  *   (i) RUN_PROVEN with a matching --candidate-sha     → no findings
+ *   (j) CASE_PROVEN with missing failedScope           → ACCEPT_CASE_PROVEN_UNDISCLOSED
+ *   (k) CASE_PROVEN with a non-verbatim runOverall     → ACCEPT_CASE_PROVEN_UNDISCLOSED
+ *   (l) unknown proof value (proof:'CASEE')            → ACCEPT_SCHEMA
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -73,9 +76,18 @@ test('(a) RUN_PROVEN refuses a record whose overall is not PASS', () => {
   assert.ok(has(out, 'ACCEPT_PROVEN_NOT_PASS_OVERALL'), JSON.stringify(out.findings))
 })
 
-test('(b) RUN_PROVEN refuses a mock-marked record', () => {
-  const out = grade({ 'r.json': runRecord({ mode: 'mock' }) }, [row({ 'L2-mounted': PROVEN('r.json', CASE) })])
-  assert.ok(has(out, 'ACCEPT_PROVEN_MOCK_OR_OFFLINE'), JSON.stringify(out.findings))
+test('(b) RUN_PROVEN refuses every implemented mock/offline marker (5 axes)', () => {
+  const markers = [
+    { mode: 'mock' },
+    { bootStarted: false },
+    { offlineJudge: 'offline re-grade narration' },
+    { mock: true },
+    { offline: true },
+  ]
+  for (const m of markers) {
+    const out = grade({ 'r.json': runRecord(m) }, [row({ 'L2-mounted': PROVEN('r.json', CASE) })])
+    assert.ok(has(out, 'ACCEPT_PROVEN_MOCK_OR_OFFLINE'), `marker ${JSON.stringify(m)}: ${JSON.stringify(out.findings)}`)
+  }
 })
 
 test('(c) RUN_PROVEN refuses a wrong --candidate-sha binding', () => {
@@ -83,9 +95,11 @@ test('(c) RUN_PROVEN refuses a wrong --candidate-sha binding', () => {
   assert.ok(has(out, 'ACCEPT_PROVEN_CANDIDATE_MISMATCH'), JSON.stringify(out.findings))
 })
 
-test('(d) RUN_PROVEN refuses a record with no host provenance', () => {
-  const out = grade({ 'r.json': runRecord({ bindings: { teamSha: 'team-1', hostSha: '' } }) }, [row({ 'L2-mounted': PROVEN('r.json', CASE) })])
-  assert.ok(has(out, 'ACCEPT_PROVEN_NO_HOST_PROVENANCE'), JSON.stringify(out.findings))
+test('(d) RUN_PROVEN refuses a record with no host provenance (empty or blank)', () => {
+  for (const hostSha of ['', '   ']) {
+    const out = grade({ 'r.json': runRecord({ bindings: { teamSha: 'team-1', hostSha } }) }, [row({ 'L2-mounted': PROVEN('r.json', CASE) })])
+    assert.ok(has(out, 'ACCEPT_PROVEN_NO_HOST_PROVENANCE'), `hostSha=${JSON.stringify(hostSha)}: ${JSON.stringify(out.findings)}`)
+  }
 })
 
 test('(e) RUN_PROVEN refuses a FAIL case', () => {
@@ -125,4 +139,22 @@ test('(h) compliant RUN_PROVEN and compliant CASE_PROVEN are green', () => {
 test('(i) RUN_PROVEN with a matching --candidate-sha is green', () => {
   const out = grade({ 'r.json': runRecord() }, [row({ 'L2-mounted': PROVEN('r.json', CASE) })], 'team-1')
   assert.equal(out.findings.length, 0, JSON.stringify(out.findings))
+})
+
+test('(j) CASE_PROVEN with missing failedScope is refused', () => {
+  const level = { status: 'PROVEN', proof: 'CASE', runOverall: 'REFUSED', caseIndependence: 'y', evidence: { record: 'r.json', case: CASE } }
+  const out = grade({ 'r.json': runRecord({ overall: 'REFUSED' }) }, [row({ 'L2-mounted': level })])
+  assert.ok(has(out, 'ACCEPT_CASE_PROVEN_UNDISCLOSED'), JSON.stringify(out.findings))
+})
+
+test('(k) CASE_PROVEN with a non-verbatim runOverall is refused', () => {
+  const level = { status: 'PROVEN', proof: 'CASE', runOverall: 'pass', failedScope: ['x'], caseIndependence: 'y', evidence: { record: 'r.json', case: CASE } }
+  const out = grade({ 'r.json': runRecord({ overall: 'PASS' }) }, [row({ 'L2-mounted': level })])
+  assert.ok(has(out, 'ACCEPT_CASE_PROVEN_UNDISCLOSED'), JSON.stringify(out.findings))
+})
+
+test('(l) unknown proof value (proof:\'CASEE\') is refused', () => {
+  const level = { status: 'PROVEN', proof: 'CASEE', evidence: { record: 'r.json', case: CASE } }
+  const out = grade({ 'r.json': runRecord() }, [row({ 'L2-mounted': level })])
+  assert.ok(has(out, 'ACCEPT_SCHEMA'), JSON.stringify(out.findings))
 })
