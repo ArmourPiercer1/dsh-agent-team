@@ -390,7 +390,16 @@ async function atomicWriteIn(dir, filename, text, writeBytes = writeAll) {
   try { await dir.handle.sync() } catch { /* directory fsync unsupported here; the rename is still atomic */ }
 }
 
-/** Append one bounded line to a durable JSONL ledger inside a pinned dir. */
+/** Append one bounded line to a durable JSONL ledger inside a pinned dir.
+ *  R-AUDIT-HL-1: the WRITE leg of the hard-link law. The read path
+ *  (`safeReadRecord`) already refuses `nlink !== 1`; this append fstats the
+ *  SAME descriptor it opened and refuses `AGENT_STATE_STORE_ALIAS_REFUSED`
+ *  BEFORE any byte when `nlink !== 1`, so a ledger name aliased OUTSIDE the
+ *  root can never receive the appended line. An FD-pinned append cannot be
+ *  redirected by a POST-open hardlink (the descriptor is fixed), which closes
+ *  the escape axis for this operation; the sharing/integrity axis — a
+ *  per-event `O_EXCL` file so a second writer cannot reuse a name — is a
+ *  named follow-up and is deliberately NOT implemented here. */
 async function appendLineIn(dir, filename, entry) {
   const line = `${JSON.stringify(entry)}\n`
   if (Buffer.byteLength(line, 'utf8') > MAX_LEDGER_LINE_BYTES) {
@@ -399,6 +408,10 @@ async function appendLineIn(dir, filename, entry) {
   let handle
   try {
     handle = await fsp.open(`${dir.path}/${filename}`, APPEND_NOFOLLOW, 0o600)
+    const stat = await handle.stat() // fstat on the SAME fd: check the identity we append to
+    if (stat.nlink !== 1) {
+      throw typedError('AGENT_STATE_STORE_ALIAS_REFUSED', `hardlink-alias: the audit ledger ${filename} has ${String(stat.nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`)
+    }
     await handle.writeFile(line, 'utf8')
     await handle.sync()
   } finally {
@@ -407,13 +420,22 @@ async function appendLineIn(dir, filename, entry) {
 }
 
 /** The durable size of a ledger, in bytes — the zero-write assertion reads
- *  THIS, so "no new write entry" is a disk measurement. */
+ *  THIS, so "no new write entry" is a disk measurement.
+ *
+ *  R-AUDIT-FAIL-1: 0 is answered ONLY for a CONFIRMED-absent ledger (ENOENT)
+ *  or a ledger that really is zero bytes. Any OTHER failure (permissions,
+ *  I/O, a swapped component) throws `AGENT_STATE_STORE_LEDGER_UNREADABLE`, so
+ *  a verifier can never misread "unreadable" as "zero writes". A
+ *  zero-side-effect assertion MUST distinguish the two: expect 0 for an
+ *  honest no-op, and treat a THROW as an unverifiable disk state — never as
+ *  proof of zero writes. */
 export async function ledgerBytes(dir, filename = 'writes.jsonl') {
   try {
     const stat = await fsp.stat(join(dir, filename))
     return stat.size
-  } catch {
-    return 0
+  } catch (error) {
+    if (error?.code === 'ENOENT') return 0
+    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — a zero-side-effect assertion must treat an unreadable ledger as UNKNOWN, never as a clean write-free outcome`)
   }
 }
 
@@ -515,19 +537,19 @@ async function mayBreak(dir, name, holder, staleMs, bootId = DEFAULT_BOOT_ID) {
  * owner policy — and the correctness-over-liveness trade — is in the module
  * header.
  */
-async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {}, bootId = DEFAULT_BOOT_ID }) {
+async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {}, bootId = DEFAULT_BOOT_ID, nowMs = () => Date.now() }) {
   const path = `${dir.path}/${name}`
   const nonce = randomUUID()
-  const started = Date.now()
+  const started = nowMs()
   let delay = 2
   for (;;) {
     try {
-      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
+      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
       let stopped = false
       let inFlight = null
       const beat = setInterval(() => {
         if (stopped || inFlight !== null) return
-        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
+        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
           .catch(() => {})
           .finally(() => { inFlight = null })
       }, heartbeatMs)
@@ -557,7 +579,7 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
       } catch { /* another breaker won */ }
       continue
     }
-    if (Date.now() - started > timeoutMs) {
+    if (nowMs() - started > timeoutMs) {
       throw typedError('AGENT_STATE_STORE_LOCK_TIMEOUT', `the ${name} lock is held by another applier (pid ${String(holder?.pid)} on host ${String(holder?.host ?? '?')}) and cannot be proven abandoned — refused, nothing written (a live or unprovable holder is never broken; see the module header for the operator clear)`)
     }
     await sleep(delay)
@@ -652,6 +674,12 @@ const REALM_LOCK = '_realm.lock'
  * @param {number} [input.lockHeartbeatMs] the holder's beat period.
  * @param {string} [input.bootId] test-only boot identity seam; production defaults to the local boot id.
  * @param {() => string} [input.nowIso] persistence clock (the store owns it).
+ * @param {() => number} [input.nowMs] lock liveness/timeout clock (the store
+ *        owns it); default Date.now. Tests may supply a controllable clock so
+ *        the lock's elapsed-time semantics are deterministic under any runner
+ *        context (R-413-1 v3: a module mock cannot follow the store's
+ *        node:timers import across vitest roots, so the clock enters through
+ *        this public seam instead).
  * @param {(handle: import('node:fs').promises.FileHandle, text: string) => Promise<void>} [input.recordWriter]
  *        C1 crash-simulation seam ONLY. The descriptor never passes it.
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
@@ -666,6 +694,7 @@ export function createFsStateStore({
   lockTimeoutMs = LOCK_TIMEOUT_MS, lockStaleMs = LOCK_STALE_MS, lockHeartbeatMs = LOCK_HEARTBEAT_MS,
   bootId = DEFAULT_BOOT_ID,
   nowIso = () => new Date().toISOString(),
+  nowMs = () => Date.now(),
   recordWriter = writeAll, faultAt = () => {},
 }) {
   if (typeof rootDir !== 'string' || !isAbsolute(rootDir) || typeof anchorDir !== 'string' || !isAbsolute(anchorDir)) {
@@ -715,7 +744,7 @@ export function createFsStateStore({
   }
   /** Hold the scope lock for `fn` (every apply/seed). */
   const underScopeLock = async (scope, fn) => withDir('locks', true, async (locks) => {
-    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
+    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId, nowMs })
     try { return await fn(locks) } finally { await release() }
   })
   /** Commit `patch` onto the CURRENT record (caller holds the scope lock). */
@@ -743,7 +772,7 @@ export function createFsStateStore({
     })
     if (current !== null) return await write()
     // A NEW scope: the realm lock serialises the count against concurrent creators.
-    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
+    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId, nowMs })
     try {
       const count = await withDir('scopes', true, async (scopes) => (await fsp.readdir(scopes.path)).filter((n) => n.endsWith('.json')).length)
       if (count >= maxScopes) {
@@ -777,12 +806,33 @@ export function createFsStateStore({
     log.attempts.push(entry)
     return entry
   }
+  // R-AUDIT-FAIL-1: the audit-append outcome is REPORTED, not swallowed. The
+  // in-memory entry carries `audit`; the ANSWER/commit control flow is
+  // untouched (a refused audit line never re-runs or replays the state write).
+  // NOTE: a symlinked ledger NAME surfaces the raw ELOOP errno here (the
+  // O_NOFOLLOW open throws before fstat), not the read path's typed
+  // AGENT_STATE_STORE_ALIAS_REFUSED — that consistency fix is a named
+  // follow-up, deliberately not made in this change.
+  const shortErrorCode = (error) => {
+    const code = error?.code
+    return typeof code === 'string' && code.length > 0 ? code : 'AGENT_STATE_STORE_LEDGER_APPEND_FAILED'
+  }
   const finishAttempt = async (entry) => {
-    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'attempts.jsonl', entry)) } catch { /* best-effort on the refusal path; the ANSWER is not */ }
+    try {
+      await withDir('ledger', true, (dir) => appendLineIn(dir, 'attempts.jsonl', entry))
+      entry.audit = 'CONFIRMED'
+    } catch (error) {
+      entry.audit = { status: 'UNCONFIRMED', error: shortErrorCode(error) }
+    }
   }
   const commitWrite = async (entry) => {
     log.writes.push(entry)
-    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'writes.jsonl', entry)) } catch { /* the commit already happened; the audit line is lost, never the state */ }
+    try {
+      await withDir('ledger', true, (dir) => appendLineIn(dir, 'writes.jsonl', entry))
+      entry.audit = 'CONFIRMED'
+    } catch (error) {
+      entry.audit = { status: 'UNCONFIRMED', error: shortErrorCode(error) }
+    }
   }
 
   /**
@@ -798,27 +848,28 @@ export function createFsStateStore({
         if ((current?.appliedIds ?? []).includes(String(applyId)) || await markerPresent(applyId)) {
           attempt.code = 'STATE_APPLY_REPLAY'
           await finishAttempt(attempt)
-          return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
+          return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
         }
         await faultAt('after-read')
         const decision = decide(current)
         if (decision.ok !== true) {
           attempt.code = decision.code
           await finishAttempt(attempt)
-          return decision
+          return { ...decision, audit: attempt.audit }
         }
         await commitState(scope, locks, current, decision.patch, applyId)
         await faultAt('after-commit')
         await writeMarker(applyId)
         attempt.outcome = 'applied'
         await finishAttempt(attempt)
-        await commitWrite({ op, scope, key: `${scope}/${resource}`, applyId })
-        return decision.answer
+        const write = { op, scope, key: `${scope}/${resource}`, applyId }
+        await commitWrite(write)
+        return { ...decision.answer, audit: write.audit }
       })
     } catch (error) {
       attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_FAULT')
       await finishAttempt(attempt)
-      return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
+      return { ...refusal(attempt.code, String(error?.detail ?? error?.message ?? error)), audit: attempt.audit }
     }
   }
 

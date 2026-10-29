@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7R1A",
+  "paths": [
+    "packages/runtime/test/u7-agentstate-fs-store-audit.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1389,
+    "to": 1390
+  },
+  "reason": "U7R1A (this round, PR #443, branch task/u7r1-audit-hardening-20261029) adds its ONE scannable spec (packages/runtime/test/u7-agentstate-fs-store-audit.test.ts - the hardlink-append fstat guard + audit CONFIRMED/UNCONFIRMED + ledgerBytes three-way spec; zero denylist vocabulary; dist rides outside the scan). The src edit (packages/runtime/agent-state-family/src/fs-state-store.mjs) is an in-place edit on an ALREADY-COUNTED file - an edit is not an increment.",
+  "tieNote": "MEASURED on THIS tree at booking time (head 6c37f76e7, scanner run in-place with the file present and this clause unbooked): the coverage leg read `scanner counts 1390, ledger derives 983 + 406 = 1389` and the plant control read `expected 1389 to be 1390` (vitest run of test/p4t6-session-event-scan.test.ts in the worktree, 2026-10-29). Exactly this one path; the title/measured value equals 1390; no chain value copied. The same run measured zero new denylist vocabulary with the quarantine hits unchanged (the denylist legs pass with the file on disk)."
+}
