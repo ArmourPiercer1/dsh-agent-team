@@ -793,7 +793,7 @@ export async function runCrashReclaimSupervisor(opts) {
   if (aInRun === null) {
     record.record.handshake.ready = { observed: false, reason: 'SURVIVOR_NEVER_REACHED_IN_RUN' }
     record.record.handshake.kill = { fired: false, leg: 'NOT_REACHED', reason: 'SURVIVOR_NEVER_REACHED_IN_RUN' }
-    record.addCase('abnormal-kill-reclaim', 'FAIL', { reason: 'survivor runner never reached U5-IN-RUN inside its budget — the kill was withheld rather than landed against a half-booted World; the crash path was NOT exercised against a live survivor', killLeg: 'NOT_REACHED', aTail: tailFile(join(runnerLogDir, 'runner-A.log')) })
+    record.addCase('abnormal-kill-reclaim', 'FAIL', { reason: 'survivor runner never reached U5-IN-RUN inside its budget — the graded kill was withheld rather than landed against a half-booted World (cleanup SIGKILL of owned pids is separate reclaim, not the graded kill); the crash path was NOT exercised against a live survivor', killLeg: 'NOT_REACHED', aTail: tailFile(join(runnerLogDir, 'runner-A.log')) })
     await killOwnChild(B.child)
     await killOwnChild(A.child)
     record.addCase('crash-simulation-reclaim', 'FAIL', { reason: 'fail-closed: live crash case failed; the offline control cannot recolour it' })
@@ -1065,6 +1065,12 @@ export async function runCrashReclaimSupervisor(opts) {
     survivorSuitePass,
     noRestart,
     stateConsistent,
+    // R448 LOW-2: when no graded kill fired, this cell must say so on its own.
+    killFiredOnReceipt: decision.killFired,
+    killLeg: decision.killLeg,
+    ...(decision.killFired === false ? {
+      killWithheldNote: `no graded kill was fired for this window (leg=${decision.killLeg}, reason=${decision.reason}) — this cell grades the survivor's own facts over the reclaim state that actually occurred, not a kill that never happened`,
+    } : {}),
     sequencing,
   })
 
