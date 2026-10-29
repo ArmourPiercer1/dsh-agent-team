@@ -390,7 +390,16 @@ async function atomicWriteIn(dir, filename, text, writeBytes = writeAll) {
   try { await dir.handle.sync() } catch { /* directory fsync unsupported here; the rename is still atomic */ }
 }
 
-/** Append one bounded line to a durable JSONL ledger inside a pinned dir. */
+/** Append one bounded line to a durable JSONL ledger inside a pinned dir.
+ *  R-AUDIT-HL-1: the WRITE leg of the hard-link law. The read path
+ *  (`safeReadRecord`) already refuses `nlink !== 1`; this append fstats the
+ *  SAME descriptor it opened and refuses `AGENT_STATE_STORE_ALIAS_REFUSED`
+ *  BEFORE any byte when `nlink !== 1`, so a ledger name aliased OUTSIDE the
+ *  root can never receive the appended line. An FD-pinned append cannot be
+ *  redirected by a POST-open hardlink (the descriptor is fixed), which closes
+ *  the escape axis for this operation; the sharing/integrity axis — a
+ *  per-event `O_EXCL` file so a second writer cannot reuse a name — is a
+ *  named follow-up and is deliberately NOT implemented here. */
 async function appendLineIn(dir, filename, entry) {
   const line = `${JSON.stringify(entry)}\n`
   if (Buffer.byteLength(line, 'utf8') > MAX_LEDGER_LINE_BYTES) {
@@ -399,6 +408,10 @@ async function appendLineIn(dir, filename, entry) {
   let handle
   try {
     handle = await fsp.open(`${dir.path}/${filename}`, APPEND_NOFOLLOW, 0o600)
+    const stat = await handle.stat() // fstat on the SAME fd: check the identity we append to
+    if (stat.nlink !== 1) {
+      throw typedError('AGENT_STATE_STORE_ALIAS_REFUSED', `hardlink-alias: the audit ledger ${filename} has ${String(stat.nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`)
+    }
     await handle.writeFile(line, 'utf8')
     await handle.sync()
   } finally {
@@ -407,13 +420,22 @@ async function appendLineIn(dir, filename, entry) {
 }
 
 /** The durable size of a ledger, in bytes — the zero-write assertion reads
- *  THIS, so "no new write entry" is a disk measurement. */
+ *  THIS, so "no new write entry" is a disk measurement.
+ *
+ *  R-AUDIT-FAIL-1: 0 is answered ONLY for a CONFIRMED-absent ledger (ENOENT)
+ *  or a ledger that really is zero bytes. Any OTHER failure (permissions,
+ *  I/O, a swapped component) throws `AGENT_STATE_STORE_LEDGER_UNREADABLE`, so
+ *  a verifier can never misread "unreadable" as "zero writes". A
+ *  zero-side-effect assertion MUST distinguish the two: expect 0 for an
+ *  honest no-op, and treat a THROW as an unverifiable disk state — never as
+ *  proof of zero writes. */
 export async function ledgerBytes(dir, filename = 'writes.jsonl') {
   try {
     const stat = await fsp.stat(join(dir, filename))
     return stat.size
-  } catch {
-    return 0
+  } catch (error) {
+    if (error?.code === 'ENOENT') return 0
+    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — zero-side-effect assertions must distinguish 'unreadable' from 'zero writes'`)
   }
 }
 
@@ -777,12 +799,29 @@ export function createFsStateStore({
     log.attempts.push(entry)
     return entry
   }
+  // R-AUDIT-FAIL-1: the audit-append outcome is REPORTED, not swallowed. The
+  // in-memory entry carries `audit`; the ANSWER/commit control flow is
+  // untouched (a refused audit line never re-runs or replays the state write).
+  const shortErrorCode = (error) => {
+    const code = error?.code
+    return typeof code === 'string' && code.length > 0 ? code : 'AGENT_STATE_STORE_LEDGER_APPEND_FAILED'
+  }
   const finishAttempt = async (entry) => {
-    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'attempts.jsonl', entry)) } catch { /* best-effort on the refusal path; the ANSWER is not */ }
+    try {
+      await withDir('ledger', true, (dir) => appendLineIn(dir, 'attempts.jsonl', entry))
+      entry.audit = 'CONFIRMED'
+    } catch (error) {
+      entry.audit = { status: 'UNCONFIRMED', error: shortErrorCode(error) }
+    }
   }
   const commitWrite = async (entry) => {
     log.writes.push(entry)
-    try { await withDir('ledger', true, (dir) => appendLineIn(dir, 'writes.jsonl', entry)) } catch { /* the commit already happened; the audit line is lost, never the state */ }
+    try {
+      await withDir('ledger', true, (dir) => appendLineIn(dir, 'writes.jsonl', entry))
+      entry.audit = 'CONFIRMED'
+    } catch (error) {
+      entry.audit = { status: 'UNCONFIRMED', error: shortErrorCode(error) }
+    }
   }
 
   /**
@@ -798,27 +837,28 @@ export function createFsStateStore({
         if ((current?.appliedIds ?? []).includes(String(applyId)) || await markerPresent(applyId)) {
           attempt.code = 'STATE_APPLY_REPLAY'
           await finishAttempt(attempt)
-          return refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`)
+          return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
         }
         await faultAt('after-read')
         const decision = decide(current)
         if (decision.ok !== true) {
           attempt.code = decision.code
           await finishAttempt(attempt)
-          return decision
+          return { ...decision, audit: attempt.audit }
         }
         await commitState(scope, locks, current, decision.patch, applyId)
         await faultAt('after-commit')
         await writeMarker(applyId)
         attempt.outcome = 'applied'
         await finishAttempt(attempt)
-        await commitWrite({ op, scope, key: `${scope}/${resource}`, applyId })
-        return decision.answer
+        const write = { op, scope, key: `${scope}/${resource}`, applyId }
+        await commitWrite(write)
+        return { ...decision.answer, audit: write.audit }
       })
     } catch (error) {
       attempt.code = String(error?.code ?? 'AGENT_STATE_STORE_FAULT')
       await finishAttempt(attempt)
-      return refusal(attempt.code, String(error?.detail ?? error?.message ?? error))
+      return { ...refusal(attempt.code, String(error?.detail ?? error?.message ?? error)), audit: attempt.audit }
     }
   }
 
