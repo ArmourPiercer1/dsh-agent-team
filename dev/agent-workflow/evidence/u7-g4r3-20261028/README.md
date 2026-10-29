@@ -187,6 +187,7 @@ runner case is the authoritative guard verdict.
   `analysis/crash-sequencing-rca-20261028.md` so any fresh checkout can audit the harness-class verdict.
 - The parallel-lanes deferral decision (R-G4R-3 CI tightening; G5-L3 batch evidence) is committed at
   `analysis/parallel-lanes-decision-20261028.md`. No lane content changed; append-only.
+
 ## Dated addendum (2026-10-28, with the G4-R2 promotion review) — receipt values + oracle-completeness cell
 
 - **Receipt values (reviewer A F6):** final scope at the PR #432 merge's first parent `4fd9c51ab`:
