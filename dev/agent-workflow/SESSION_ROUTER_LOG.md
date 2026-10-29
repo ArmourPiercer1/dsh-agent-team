@@ -7162,3 +7162,19 @@ reserved; pre-authorization B-G4R-5 expired per its §5(a) when this application
 `--new-since origin/master` before push (values in PR body). **Human-queued (not answered on user's
 behalf):** ratify 投机通过→release unlock; §4 items list; post-freeze remediation window (R-G4R-3,
 R-CRASH-1, R-G4R-1a/BL-21, BL-22, R-413-1, F-1/F-2/F-3/OG-1).
+
+## 2026-10-29 — user returns: independent architecture & code review; release-path unlock for U7/G5-prep; U7-R1 starts (this PR)
+
+用户返岗并交付独立架构与代码审查（基线 master `880de10ca` / 候选 `5d0c8ff583`）。裁决：保留
+G4-PASS(投机通过)；U7 剩余工程与 G5 候选准备**放行**；G5 正式 PRODUCT-GATE 与发布**不放行**。
+#440 排队的「投机通过是否解锁发布路径」获 scoped 答复：解锁 U7/G5-prep，不解锁 G5 验收与发布。
+主 Agent 对全部七项发现做了字节级核实（`gates/USER-RULING-20261029.md` 附录）：硬链接追加、
+验收门不查 overall、审计吞失败、生产 Home 可用性、ENV_BLOCK 过宽、runner 清理/mode 校验——
+全部属实；其中 REFUSED 记录 `run-u7fa5.json` 实际支撑 **8** 个 PROVEN 单元（7×L2+1×L3；更正审查文的 3；R442 复审把我初记的 7 再更正为 8），
+且其 teamSha 为旧树。新增具名整改 R-AUDIT-HL-1 / R-AUDIT-FAIL-1 / R-ACCEPT-RUN-1 / R-STATE-HOME-1 /
+R-ENVBLOCK-1 / R-RUNC2-1 / R-ASSET-MODE-1；R-CRASH-1 等五项由 post-freeze 升为 **G5-blocking**。
+执行顺序（用户指定）：U7-R1（安全+证据可信）→ U7-R2（测试基础设施）→ U7-R3（逐工具缺口
+12×L4/17×L3，逐项 Owner+真 Host 或明示产品范围裁决）→ G5 冻结**新**候选（不复用
+PASS-by-knob/partial-Landlock/不完整 oracle 记录）。中心架构经用户范围性静态审查判定基本健康
+（consumeOnce 先占后异步方向正确），但明确不构成 Family 全体安全宣称。本节 = 治理入账 PR；
+实现 PR（U7-R1 两包）并行开出，均按 1 task=1 branch=1 worktree + 独立跨模型复审 + 收据链。
