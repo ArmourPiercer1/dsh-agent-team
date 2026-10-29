@@ -401,3 +401,60 @@ review_route:
   budget_status: unknown
   result: "444: usage-error exit=2 both axes (dash-token + blank env), fixtures 12/12, plain 0, candidate 56; 443: tsc audit-file errors 6->0, vitest 56/56, artifacts ok; both then CI-green-gated merges with thread guard"
 ```
+
+## U7-R2 seats + strict-mode merge round (2026-10-29, quota window, qiyuan-self seats)
+
+```yaml
+review_route:
+  at: "2026-10-29T16:30:00Z"
+  session: "post-return main agent"
+  target: "U7-R2 package reviews, seats cross-family to implementers throughout: R446-27b (envblock three-way law, impl flash) 通过 with disclosed residuals (gate shape-only v1, shared signal, R-ENVBLOCK-2 follow-up; merge ALSO gated on self-disclosed live-C2 obligation -> boot budget QUEUED as needs_human, not answered, not spent; R-413-1 stop judged concur with dispute on its overclaim); R447-fl (asset-mode guard, impl 27b) APPROVE 0-blocking incl. line-verified live-runner compliance for the R-RUNC2-1 closure-by-verification; R448-fl (crash handshake, impl 27b) PASS-WITH-FINDINGS 4 LOW (incl. implementer's FALSE lane-existence disclosure -> retracted in-PR with canonical RCA citation after main agent byte-checked the dir exists), design judged matching AND exceeding the canonical RCA; R449-fl (clock determinism, impl 27b) PASS 1 MED (contention coverage narrowing -> fixed per reviewer's own prescription: concurrent-start/await-all-settle + lock-nonce permutation assertion); R443-booking-27b (p4t6 booking tail commit) PASS zero findings incl. independent scanner rerun 20/20"
+  risk: R2-code
+  tier: "qiyuan-self seats (quota window, disclosed per seat); independence did real work both directions: reviewer caught worker falsehood; reviewer disputed worker's no-alternative overclaim; MED closure used reviewer's own prescription so machine receipts suffice"
+  model: "qiyuan-self/qwen3.8-27b + qwen3.8-flash-next"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: "opencode-go still exhausted at merge time; normal routing resumes on quota recovery"
+  result: "447 + 448 MERGED (master a89614d90); 443/449 CI-forensics fixes in flight; 446 merge-queued on boot budget"
+```
+
+```yaml
+incident_note:
+  at: "2026-10-29T17:00:00Z"
+  session: "post-return main agent"
+  what: "three CI forensics lessons, all root-caused from logs, zero propagation assumptions: (1) merge-waiter scripts matched uppercase SUCCESS while check-runs API returns lowercase -> three chains silently never merged; fix = normalize conclusion case; lesson: test matcher against one known-green payload first. (2) #443 added a packages/** test file without the p4t6 increment booking -> 6 census tripwire reds; booking done per the file's CURRENT u7-w0 JSON-registry ritual (fix worker correctly overrode the main agent's stale title-literal instruction). (3) #443 new error string contained another family's protected outward-edge phrase 'zero writes' -> eb3-family-boundaries FAMILY_CROSS_INFLUENCE on ci-integration; honest fix = re-word message, never declare a fake edge. (4) #449 tests-only fake-timers premise falsified by the ROOT-POOL context (vi.mock not applied in census/ci-full pool run): 3 legs failed there while green in single-file runs; fix = explicit clock seam (minimal, behavior-identical default, dist mirrored) + re-certify at root pool x2, disclosed as design premise failure in the PR."
+  action: "all fixes on-branch with receipts; ledger rows closed only by landed merges"
+  no_boot_spent: true
+```
+
+```yaml
+routing_amendment:
+  at: "2026-10-29T18:00:00Z"
+  session: "post-return main agent"
+  what: "implementation-seat default corrected after user's direct question: U7-R1 W-A/W-B had used dsh-opencode-go/deepseek-v4-pro PREEMPTIVELY (risk-tier escalation, no prior ordinary-worker failure). Retrospective: the escalation did not remove the rework loop (#443 needed four follow-up fixes — dist mirror, typecheck await, p4t6 booking, boundary-vocabulary re-word — all completed on qwen seats under independent review), costs are unverifiable (null everywhere), and the user's routing table defines v4-pro as the REVIEW R2 escalation path, not an implementation tier."
+  new_default: "implementation seats default qwen3.8-27b (quota window; qwen3.8-flash-next for small mechanical packages); deepseek-v4-pro reserved for its defined role (review R2 escalation, e.g. G5-boundary packages); review independence rules unchanged"
+  disclosed_as: "self-correction of a routing-table drift, not a rule violation (rules constrain reviewer independence, not implementer choice)"
+```
+
+```yaml
+external_review_intake:
+  at: "2026-10-29T13:10:00Z"
+  session: "post-return main agent"
+  source: "EXTERNAL review (user-relayed) — first outside reviewer to hit a real seam this round; credited"
+  finding: "#447 merged at 11:25Z with DO-NOT-MERGE on title+body and zero PR comments; promotion decision lived only in session receipts"
+  verification: "TRUE, and broader: #448/#449 same class; #449 aggravated (main agent itself rewrote the body at 12:36Z retaining the label line, merged 12:58Z). Content integrity NOT in question: every affected PR has real out-of-lane seats + tracked reports + (where applicable) pre-declared machine criteria; #412 remains untouched as the open-vs-closed negative control."
+  law: "R-DM-1 (row in REVIEW-REMEDIATION-20261028.md): settle-before-merge. Waiter gate added (grep title+body; label present => refuse). Five dated settlement comments posted retroactively; #450 settled pre-merge as first compliant case."
+  discipline_note: "the reviewer's framing is exact: paper-vs-fact drift is the failure mode this program declares hatred for; caught externally, fixed internally, credited on record."
+```
+
+```yaml
+external_review_intake_2:
+  at: "2026-10-29T14:50:00Z"
+  session: "post-return main agent"
+  source: "EXTERNAL architecture review (user-relayed, 2026-10-29 21:10 CST, against master e0c60bc43) — second external pass; verdict: no re-architecture needed, risks now concentrate in tool-level capability gaps + evidence semantics + production capability"
+  verified_true: "P1-1 matrix classified mock-provable as L3-PROVEN-able (contract: L3=live typed refusal) — matrix rewritten v2 with two iron laws (no mock promotion of L3; no typed-refusal-as-L4) + production-interface precondition column; workflow's borrowed state-family mock arm voided. P1-2 six AC cells cannot be C2-rerun-only (workflow runWorkflow unwired; send/interrupt need agentTeams; list_subagent_models Tier-A empty) — precondition added before C2 batch. Code rows: R-MODEBITS / R-AUDIT-DEPTH(3 items) / R-DYNIMPORT / R-ENVBLOCK-2(P3→P2, causal re-derivation added) — all dispatched as own branches; R-FAMILY-SCOPE-1 QUEUED (center-kernel stop-line: named Center Interface PR + user ruling only); R-GROWTH-1 registered."
+  not_answered_for_user: "the review's grading-gate suggestions (pilot-before-batch, boot for #446+#448 post-merge C2s, G5 pre-work) remain USER decisions — the review endorses direction, it does not grant budget or scope."
+  matrix: "v2 at dev/agent-workflow/gates/U7-R3-GAP-MATRIX-20261029.md — still PENDING USER CONFIRMATION; pilot proposal (team_glob + job_list full-chain) added per review gate-3."
+```
