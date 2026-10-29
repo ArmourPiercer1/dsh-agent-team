@@ -349,8 +349,28 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
     rowDeniedOk: globDenyRow.deniedOk === true,
     refusalSeen: globRefusalText !== null,
     approvalDeniedCodeSeen: globRefusalText !== null && /APPROVAL_DENIED/.test(globRefusalText),
+    // LAW FIX (dated 2026-10-29, boot u5-u6-arc-a-u7r3c2a2 measured): the
+    // a5p5 pipeline answers EVERY pre-backend deny with the ZERO-BODY kind
+    // 'refused-admission' - both the admission-kernel shut faces AND the
+    // durable Control ask DENIAL (packages/tools/a5p5-tools/src/pipeline.ts
+    // :110-112/:155-159: "the code distinguishes them, never the wire
+    // shape"). The shut-face discrimination therefore lives in the CODE:
+    // IO_POLICY_UNSUPPORTED / template-* / APPROVAL_NOT_RESOLVED / no
+    // durable row are shut faces; refused-admission CARRIED BY
+    // code=APPROVAL_DENIED on a row this DENIER settled is the ask-lane
+    // refusal landing (the run8 law against shut faces stands unchanged).
     admissionRefused: globRefusalText !== null
-      && /IO_POLICY_UNSUPPORTED|template-default-deny|template-deny-lane|refused-admission|no durable ControlService/i.test(globRefusalText),
+      && (/IO_POLICY_UNSUPPORTED|template-default-deny|template-deny-lane|no durable ControlService|APPROVAL_NOT_RESOLVED/i.test(globRefusalText)
+        || (!/APPROVAL_DENIED/.test(globRefusalText) && /refused-admission/i.test(globRefusalText))),
+    // zero-confusion binding witness (detail only, never a gate): the
+    // refusal's fingerprint must be the SAME sha256 that ends the durable
+    // ask row's summary - the refusal IS this row's answer.
+    fingerprintBound: (() => {
+      if (globRefusalText === null || !globDenyRow?.seen) return false
+      const m = /sha256:[0-9a-f]{16,}/.exec(globRefusalText)
+      const t = /sha256:[0-9a-f]{16,}/.exec(String(globDenyRow.summary ?? ''))
+      return m !== null && t !== null && m[0] === t[0]
+    })(),
     censusUnchanged: globDenyCensusArmed !== null && globDenyCensusArmed === globDenyCensusPost,
     claimsEchoed: globRefusalText !== null
       && Object.values(assembly.files).some((f) => globRefusalText.includes(f.claim)),
