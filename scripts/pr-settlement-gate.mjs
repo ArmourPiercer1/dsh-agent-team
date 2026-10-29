@@ -167,12 +167,17 @@ export function evaluate({ title, body, comments, headSha } = {}) {
   return { verdict: 'FAIL', exit: 1, marker, settlement, reasons, notes }
 }
 
-/** The one machine-readable line. Printed last, always. */
+/** The one machine-readable line. Printed last, always. Fixed field order;
+ * human notes stay in the rendered verdict / --json, never in the token. */
 export function verdictToken(v) {
-  const notes = [...v.notes]
-  if (v.verdict === 'FAIL' || v.verdict === 'ERROR') notes.push(`reasons=${[...new Set(v.reasons)].join(',')}`)
-  notes.push(`candidates=${v.settlement.candidates}`)
-  return `DSH-SETTLEMENT-VERDICT ${v.verdict} marker=${v.marker.present ? (v.marker.onBodyFirstLine ? 'body-first-line' : 'title-prefix') : 'none'} matches=${v.settlement.matches.length} ${notes.join(' ')}`.trim()
+  const fields = [
+    `DSH-SETTLEMENT-VERDICT ${v.verdict}`,
+    `marker=${v.marker.present ? (v.marker.onBodyFirstLine ? 'body-first-line' : 'title-prefix') : 'none'}`,
+    `matches=${v.settlement.matches.length}`,
+    `candidates=${v.settlement.candidates}`,
+  ]
+  if (v.verdict === 'FAIL' || v.verdict === 'ERROR') fields.push(`reasons=${[...new Set(v.reasons)].join(',')}`)
+  return fields.join(' ')
 }
 
 function renderVerdict(v, headSha) {
