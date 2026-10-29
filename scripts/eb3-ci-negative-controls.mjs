@@ -302,7 +302,10 @@ control('C3 execution-definition-replaced', () => {
  */
 control('C4 cross-family-influence', () => {
   const { checkFamilyBoundaries, LANE_EDGES } = requireModule('scripts/eb3-family-boundaries.mjs')
-  const paths = gitLsFiles('packages/tools').filter((p) => /^packages\/tools\/[a-z0-9-]+-family\/src\/.*\.(mjs|ts)$/.test(p) && !p.includes('/dist/'))
+  // The honest set mirrors trackedLanePaths EXACTLY (packages/tools + tests lanes):
+  // the booked computed-import rows live under tests/, so the positive half of 4g —
+  // a booked occurrence passes — is graded here on the real tree.
+  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => /^((?:packages\/tools|tests)\/[a-z0-9-]+-family)\/src\/.*\.(mjs|ts|mts)$/.test(p) && !p.includes('/dist/'))
   const honest = checkFamilyBoundaries({ files: readMap(ROOT, paths) })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already carries ${honest.findings.length} undeclared cross-lane edge(s): ${honest.findings.slice(0, 3).map((f) => f.detail).join(' ;; ')}` }
@@ -331,9 +334,63 @@ control('C4 cross-family-influence', () => {
   c.set(seedPath, `import { x } from '../../../runtime/src/plugin/live/team-tool-plane.mjs'\n${c.get(seedPath)}`)
   const cHit = checkFamilyBoundaries({ files: c }).findings.find((f) => f.code === 'FAMILY_CROSS_INFLUENCE' && f.path === seedPath)
 
-  const parts = [`4a ${aHit !== undefined ? 'detected' : 'MISSED'}`, `4b ${bHit !== undefined ? 'detected' : 'MISSED'}`, `4c ${cHit !== undefined ? 'detected' : 'MISSED'}`]
-  const all = aHit !== undefined && bHit !== undefined && cHit !== undefined
-  return { ok: all, detail: `honest tree passes (${Object.keys(LANE_EDGES).length} lanes declare edges); ${parts.join(', ')} (mutations staged on ${seedPath})` }
+  // ── 4d–4g (R-DYNIMPORT, external architecture review 2026-10-29): the extractor's
+  // own blind spot. The first draft saw ONLY literal specifiers: a COMPUTED dynamic
+  // import (`const p = '…'; import(p)`, `import(prefix + suffix)`) carries no literal
+  // for a regex, so a lane could reach ANY target invisibly; and because the comment
+  // strip did not mask STRING literals, prose containing `from 'x'` / `import(`
+  // inside a string was once graded as an import edge (the prose-from-literal
+  // incident). The fix is an acorn AST with a regex + string-literal-masking
+  // fallback, and a fail-closed COMPUTED_DYNAMIC_IMPORT finding bookable only by an
+  // exact (file, expression) row in COMPUTED_IMPORT_ALLOW. Every fixture below is
+  // graded by EVERY engine that can run here, and the honest tree must grade
+  // IDENTICALLY under both — one law, two extractors, neither path decoration.
+  const FIX = 'packages/tools/search-family/src/r-dynimport-negctl.mjs'
+  const { acornAvailable } = requireModule('scripts/eb3-family-boundaries.mjs')
+  const engines = acornAvailable === true ? ['auto', 'ast', 'regex'] : ['auto', 'regex']
+  const sigOf = (findings) => JSON.stringify(findings.map((f) => `${f.code}@${f.path}`))
+  const grade = (files) => engines.map((engine) => checkFamilyBoundaries({ files, engine }).findings)
+  const staged = (src) => new Map([...readMap(ROOT, paths), [FIX, src]])
+
+  // 4d: computed dynamic import → fail-closed COMPUTED_DYNAMIC_IMPORT, file+line,
+  // exactly one finding (the string holding the path is NOT an edge either).
+  const dPer = grade(staged(`const p = '../../fs-family/src/fs-mechanics.mjs'\nconst dynMod = await import(p)\n`))
+  const dOk = dPer.every((f) => f.length === 1 && f[0].code === 'COMPUTED_DYNAMIC_IMPORT' && f[0].path === FIX && Number.isInteger(f[0].line) && f[0].line > 0)
+    && sigOf(dPer[0]) === sigOf(dPer[dPer.length - 1])
+
+  // 4e: the prose-from-literal class — a string literal containing `import('…')` or
+  // `from 'x'` is PROSE; it must produce ZERO findings.
+  const ePer = grade(staged(`export const LAW_TEXT = "a zero-side-effect assertion must treat import('../../fs-family/src/fs-mechanics.mjs') and from 'x' as prose — the words import( inside a string mean nothing"\n`))
+  const eOk = ePer.every((f) => f.length === 0)
+
+  // 4f: an ordinary STATIC edge must still be detected — closing the computed blind
+  // spot may not reopen the literal one. (agent-control-family: a lane
+  // search-family declares no edge to.)
+  const fPer = grade(staged(`import { assertClosedFace } from '../../agent-control-family/src/index.mjs'\n`))
+  const fOk = fPer.every((f) => f.length === 1 && f[0].code === 'FAMILY_CROSS_INFLUENCE' && f[0].detail.includes('agent-control-family'))
+
+  // 4g: the booked allowlist is CLOSED, not a blanket exemption — the probe lane's
+  // booked `CENTER_URL` passes (the honest-tree half above already asserts that),
+  // the same load RENAMED must fail again.
+  const probePath = 'tests/u6-arc-a-probe-family/src/probe-assembly.mjs'
+  const probeText = readMap(ROOT, [probePath]).get(probePath)
+  if (probeText === undefined || !probeText.includes('await import(CENTER_URL)')) {
+    return { ok: false, detail: `${probePath} no longer stages await import(CENTER_URL) — the booked-allowlist control cannot stage its own mutation` }
+  }
+  const gMap = new Map(readMap(ROOT, paths))
+  gMap.set(probePath, probeText.replace('await import(CENTER_URL)', 'await import(CENTER_URL_RENAMED)'))
+  const gOk = grade(gMap).every((f) => f.length === 1 && f[0].code === 'COMPUTED_DYNAMIC_IMPORT' && f[0].path === probePath)
+
+  // engines-agree: the honest tree must grade identically (here: empty) under every
+  // engine — an extractor that quietly diverges is a second, unwritten law.
+  const honestPer = grade(readMap(ROOT, paths))
+  const enginesAgree = honestPer.every((f) => sigOf(f) === sigOf(honestPer[0]) && f.length === 0)
+
+  const parts = [`4a ${aHit !== undefined ? 'detected' : 'MISSED'}`, `4b ${bHit !== undefined ? 'detected' : 'MISSED'}`, `4c ${cHit !== undefined ? 'detected' : 'MISSED'}`,
+    `4d computed-dynamic ${dOk ? 'detected' : 'MISSED'}`, `4e prose-in-string ${eOk ? 'masked' : 'LEAKED'}`, `4f static-edge ${fOk ? 'detected' : 'MISSED'}`,
+    `4g booked-allowlist ${gOk ? 'closed' : 'LEAKY'}`, `engines ${enginesAgree ? 'agree' : 'DIVERGE'} (${engines.join('+')})`]
+  const all = aHit !== undefined && bHit !== undefined && cHit !== undefined && dOk && eOk && fOk && gOk && enginesAgree
+  return { ok: all, detail: `honest tree passes (${Object.keys(LANE_EDGES).length} lanes declare edges); ${parts.join(', ')} (mutations staged on ${seedPath} + ${FIX})` }
 })
 
 // ────────────────────────────── control 5: the Required context may not go green
