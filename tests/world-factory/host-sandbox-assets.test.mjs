@@ -31,6 +31,10 @@
  *                   imported (F5) · T20 manifest paths are contained before any
  *                   write (F6) · T21 the pinned mode is applied+verified (F7) ·
  *                   T22 a pre-flight record is identified, not shaped (F1)
+ *   E remediation u7r2 (2026-10-29) T23 a present asset whose MODE drifted from
+ *                   the pin is refused (ASSET_MODE_DRIFT, fatal — never an
+ *                   environment claim) · T24 a present asset at the pinned mode
+ *                   still reports present (the present path re-verifies mode)
  *
  * Scratch lives in the repo (`.artifacts/tmp/`, gitignored) per the workspace
  * rule; no /tmp. The pinned bytes for the fixture source tree are read from
@@ -49,6 +53,7 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, testUseTree } from '../paths.mjs'
 import {
+  FATAL_PROVISION_CODES,
   HostSandboxAssetError,
   MANIFEST_REL,
   SANDBOX_PREFLIGHT_SCHEMA,
@@ -944,4 +949,48 @@ test('T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight re
   assert.equal(errored.probed, false)
   assert.equal(isSandboxPreflightRecord(errored), false, 'probed:false is never enough, branded or not')
   assert.equal(nativeConfinementEnvBlock({ observedText: SANDBOX_REFUSAL, preflight: errored }), null)
+})
+
+test('T23 (R-ASSET-MODE-1) a present asset whose MODE drifted from the pin is refused, never reported present', async () => {
+  const tree = pinnedSourceFixture('mode-drift')
+  const source = pinnedSourceFixture('mode-drift-src')
+  const launcher = join(tree, 'native/system/packages/linux-x64/bin/landlock-run')
+  const digestBefore = sha256File(launcher)
+  // The bytes are untouched and still hash to the pin; only the mode drifts:
+  // 0o755 -> 0o754 (one +x lost) — exactly the case the present path used to
+  // trust the digest and return without checking.
+  chmodSync(launcher, 0o754)
+  await assert.rejects(
+    provisionHostSandboxAssets({ runtimeTree: tree, sourceTree: source, repoRoot: REPO_ROOT }),
+    (e) => {
+      assert.ok(e instanceof HostSandboxAssetError, `typed error expected, got ${String(e)}`)
+      assert.equal(e.code, 'ASSET_MODE_DRIFT', `expected ASSET_MODE_DRIFT, got ${String(e.code)}`)
+      assert.match(e.message, /0o755/, 'the message names the PINNED mode')
+      assert.match(e.message, /0o754/, 'the message names the ACTUAL mode')
+      return true
+    },
+    'a present file at a drifted mode must be refused, not reported present',
+  )
+  // Law 4: bytes we did not create are never destroyed — the drifted file is
+  // left in place for a human, unmodified.
+  assert.equal(sha256File(launcher), digestBefore, 'the drifted file is left in place (digest untouched)')
+  assert.equal(statSync(launcher).mode & 0o755, 0o754, 'the drift is not silently re-published')
+  // A mode drift is a provisioning-STATE finding, not an environment gap: it
+  // must ABORT the pre-flight (fatal), never be recorded as provisionError and
+  // re-served as an ENV_BLOCK claim by nativeConfinementEnvBlock.
+  assert.ok(FATAL_PROVISION_CODES.includes('ASSET_MODE_DRIFT'), 'ASSET_MODE_DRIFT must be fatal (never an ENV_BLOCK path)')
+})
+
+test('T24 (R-ASSET-MODE-1) a present asset at the pinned mode still reports present (mode re-verified)', async () => {
+  const tree = pinnedSourceFixture('mode-present-ok')
+  const source = pinnedSourceFixture('mode-present-ok-src')
+  const r = await provisionHostSandboxAssets({ runtimeTree: tree, sourceTree: source, repoRoot: REPO_ROOT })
+  assert.equal(r.action, 'present', 'present + pin-conform mode stays present, nothing written')
+  assert.equal(r.bytesWritten, 0)
+  for (const f of r.files) {
+    const path = join(tree, 'native/system/packages/linux-x64', f.relPath)
+    assert.equal(f.state, 'present', `${f.relPath}: must report present`)
+    assert.equal(statSync(path).mode & 0o755, 0o755, `${f.relPath}: on-disk mode is the pinned mode`)
+    assert.equal(f.mode, '0o755', `${f.relPath}: the record carries the re-verified mode`)
+  }
 })
