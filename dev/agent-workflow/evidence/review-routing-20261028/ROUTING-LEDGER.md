@@ -282,3 +282,20 @@ review_route:
   budget_status: unknown
   result: "补充内容 — M1 (digest/preflight overclaim vs arc-b c-suite schema) + M2 (BL-23 merge-order forward reference) both fixed in da6b913b with adoption addendum; L1 (historical mixed citation styles) accepted LOW, historical rows immutable; report tracked in #440 itself (review-routing-20261028/R440-og.md)"
 ```
+
+```yaml
+review_route:
+  at: "2026-10-29T01:40:00Z"
+  session: "takeover-2 main agent"
+  target: "correction to the two entries above (R2 round + R440 round): carried residuals are filed as remediation-ledger rows R-G4R-1a / R-ORACLE-1 / R-BL-QUEUE, not as ALPHA5-EFFECTIVE-BACKLOG BL-20..23 rows — the backlog is a hash-pinned input to the u7-0 expected-tool-obligations generator, its edit requires gated artifact+testkit-pin regeneration (census-runtime caught the first attempt; R2 doc addendum 2). BL-20..23 stay RESERVED numbers landing post-freeze with the regeneration package."
+  risk: R1
+  tier: R1
+  model: "n/a (machine-gate-caught bookkeeping correction; census-runtime run 40795312416 root-caused to backlog_sha256 pin)"
+  independence: "root cause reproduced locally via generator --check before and after the revert"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "#440 restructured at 90cd044ca; --check CHECK OK; no residual unnamed"
+```
