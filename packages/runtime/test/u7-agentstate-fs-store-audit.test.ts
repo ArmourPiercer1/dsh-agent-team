@@ -51,7 +51,7 @@ type LaneModule = {
   safeReadRecord: (path: string, limit?: number) => Promise<{ ok: true, text: string } | (Refusal & { absent?: boolean })>
 }
 
-const lane = (await import(new URL('../../tools/agent-state-family/src/index.mjs', import.meta.url).href) as unknown as Promise<LaneModule>)
+const lane = await (import(new URL('../../tools/agent-state-family/src/index.mjs', import.meta.url).href) as unknown as Promise<LaneModule>)
 
 const REALM = 'u7as-audit-realm'
 let scratch = ''
