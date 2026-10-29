@@ -260,3 +260,74 @@ jobs:
             ${{ runner.temp }}/gate-run.txt
             ${{ runner.temp }}/gate-transcripts/
           if-no-files-found: warn
+
+  # AUDIT P1-1 (2026-10-30) — settle-before-merge becomes machine-enforced
+  # (ROUTER_RULES §8.5, R-DM-1; the §8.5.6 amendment landing in this same
+  # change records the machine law this job enforces). A SEPARATE job on
+  # purpose, for two reasons:
+  #   - it needs `pull-requests: read` on the token to see PR title/body/
+  #     head-sha/issue-comments, and that scope must NOT be granted to the
+  #     heavy `gate` job, which installs dependencies and runs in-tree build
+  #     code before it ever reads a comment;
+  #   - it has no build dependency at all (plain node script), so the
+  #     settlement verdict arrives in seconds, independently of the ~90-min
+  #     gate job.
+  # WHAT THE VERDICT MEANS: while a PR carries the canonical DO-NOT-MERGE
+  # first body line (or title prefix), this check is RED with verdict
+  # BLOCKED-BY-MARKER — the red IS the statement "not mergeable yet"
+  # (§8.5.1), not a malfunction; this repository's own workflow PRs run under
+  # that marker until a dated settlement comment covering the CURRENT head
+  # sha lands (§8.5.2, enforced by 40-hex equality at check time). The
+  # unresolved-review-thread check stays in the merge agent (§8.5.3) — this
+  # job deliberately does NOT duplicate it, and §8.5.6 records that split.
+  # No admin bypass, no branch-protection change (out of reach from this
+  # lane, and §8.5.6 does not depend on either: the merge-executing subject
+  # reads the verdict token before merging).
+  # Skipped on push/dispatch by `if:` — there is no PR object to grade; unlike
+  # the census refusal on hosted runs, this abstention is visible as a skipped
+  # job, never as a token inside a green run.
+  settlement:
+    name: pr-settlement-gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # TEST SURFACE, disclosed in §8.5.6 and the introducing PR body: the
+      # verdict algebra runs as fixture self-test INSIDE the script (the
+      # ci-pr-gate.mjs `--self-test` convention — no new scannable runtime
+      # test file is created), and the exported pure detectors additionally
+      # run under `node --test` per the scripts/<name>.test.mjs convention
+      # (precedent: eb3-tool-acceptance.test.mjs). Both legs grade the SAME
+      # evaluate() the last step runs live.
+      - name: Self-test (fixture verdict algebra, no network)
+        run: node scripts/pr-settlement-gate.mjs --self-test
+
+      - name: Unit tests (node --test, scripts convention)
+        run: node --test scripts/pr-settlement-gate.test.mjs
+
+      - name: Grade THIS PR — marker + dated settlement + covered head sha
+        # --expected-head cross-checks the API-fetched head sha against the
+        # event payload: a head that moved between trigger and grade is
+        # refused as HEAD_DRIFT (exit 2) rather than grading a stale fiction.
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node scripts/pr-settlement-gate.mjs --pr "$PR_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" \
+            --expected-head "$PR_HEAD_SHA"
