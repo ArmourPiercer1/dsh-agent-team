@@ -1,0 +1,6 @@
+v2 start; prior worlds excluded: ['u5u7r3eb-20261029T15-32-10Z', 'u5u7r3eb-20261029T15-45-02Z']
+world=u5u7r3eb-20261029T15-47-53Z createRoot=session-u7fweb-team-u5u7r3eb-20261029t15-47-53z
+host port=3188
+KILL TARGET (lane-owned): pid=74 port=3188 world=u5u7r3eb-20261029T15-47-53Z
+placement-feed #2 seen; settling 1500 ms so team.create response lands
+GUARD: 2 ask row(s) already recorded -> window passed, NO kill (disclosure only)
