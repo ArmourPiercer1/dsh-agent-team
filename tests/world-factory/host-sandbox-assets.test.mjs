@@ -40,7 +40,10 @@
  *                   refused (ASSET_MODE_DRIFT thrown by preflightHostSandbox) ·
  *                   T26 same for SETGID: the present-path re-check compares the
  *                   FULL mode (special bits included), not just 0o777 — a pin
- *                   never carries special bits, so ANY special bit is drift
+ *                   never carries special bits, so ANY special bit is drift ·
+ *                   T27 (R451 O-1) the TRUE silent-accept class: setuid on low
+ *                   bits that MATCH the pin (0o4755 vs 0o755) — the old mask
+ *                   reported present, full-mode compare refuses it
  *
  * Scratch lives in the repo (`.artifacts/tmp/`, gitignored) per the workspace
  * rule; no /tmp. The pinned bytes for the fixture source tree are read from
@@ -1045,4 +1048,36 @@ test('T25 (R-MODEBITS) a present asset at 0o4600 (SETUID on top of the pin) abor
 
 test('T26 (R-MODEBITS) a present asset at 0o2644 (SETGID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT', async () => {
   await assertSpecialBitDrift('mode-drift-setgid', 0o2644, 'setgid')
+})
+
+test('T27 (R451 O-1) setuid on LOW BITS THAT MATCH THE PIN (0o4755 vs 0o755) is drift, not a silent present — the true bug class', async () => {
+  // T25/T26 plant special bits on low bits that already mismatch the pin, so
+  // even the old 0o777 mask caught them by accident. THE bug class is the
+  // silent accept: 0o4755 and the pinned 0o755 agree on every 0o777 bit —
+  // under `mode & 0o777` the file re-checked conforming and the present path
+  // REPORTED PRESENT, setuid bit and all. This leg calls provisioning
+  // directly (like T23): the point of the check is the destination re-check,
+  // and an executable setuid launcher would also let the pre-flight's own
+  // probe exec it before any check runs.
+  const tree = pinnedSourceFixture('mode-drift-setuid-match')
+  const source = pinnedSourceFixture('mode-drift-setuid-match-src')
+  const launcher = join(tree, 'native/system/packages/linux-x64/bin/landlock-run')
+  const digestBefore = sha256File(launcher)
+  chmodSync(launcher, 0o4755)
+  assert.equal(statSync(launcher).mode & 0o777, 0o755, 'fixture guard: the low bits match the pin exactly — only the setuid bit differs')
+  assert.equal(statSync(launcher).mode & 0o7777, 0o4755, 'fixture guard: the setuid bit is on disk')
+  await assert.rejects(
+    provisionHostSandboxAssets({ runtimeTree: tree, sourceTree: source, repoRoot: REPO_ROOT }),
+    (e) => {
+      assert.ok(e instanceof HostSandboxAssetError, `typed error expected, got ${String(e)}`)
+      assert.equal(e.code, 'ASSET_MODE_DRIFT', `expected ASSET_MODE_DRIFT, got ${String(e.code)}`)
+      assert.match(e.message, /0o4755/, 'the message names the FULL observed mode 0o4755 (special bit included)')
+      assert.match(e.message, /0o755/, 'the message names the PINNED mode')
+      return true
+    },
+    'a present file at 0o4755 whose low bits match the pin must be refused, never reported present',
+  )
+  // Law 4 (same as T23/T25/T26): bytes and mode left in place, unmodified.
+  assert.equal(sha256File(launcher), digestBefore, 'the drifted file is left in place (digest untouched)')
+  assert.equal(statSync(launcher).mode & 0o7777, 0o4755, 'the setuid mode is not silently re-published')
 })
