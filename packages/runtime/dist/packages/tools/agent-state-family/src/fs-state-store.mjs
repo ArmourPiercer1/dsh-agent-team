@@ -273,6 +273,10 @@ export async function safeReadRecord(path, limit = MAX_SCOPE_BYTES) {
     if (stat.nlink !== 1) {
       // The shared #409 rule and sentence (controlled-fs open-at-exec.ts:82),
       // applied in-lane — see the header for why the symbol is not imported.
+      // R-AUDIT-DEPTH b3: this proof is an AT-OPEN statement; the residual
+      // post-open hardlink window and its one-directional exposure are
+      // documented at {appendLineIn} (the append leg, where our inode stays
+      // live across the write).
       return refusal('AGENT_STATE_STORE_ALIAS_REFUSED', `hardlink-alias: the file has ${String(stat.nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`)
     }
     if (stat.size > limit) {
@@ -399,7 +403,25 @@ async function atomicWriteIn(dir, filename, text, writeBytes = writeAll) {
  *  redirected by a POST-open hardlink (the descriptor is fixed), which closes
  *  the escape axis for this operation; the sharing/integrity axis — a
  *  per-event `O_EXCL` file so a second writer cannot reuse a name — is a
- *  named follow-up and is deliberately NOT implemented here. */
+ *  named follow-up and is deliberately NOT implemented here.
+ *
+ *  RESIDUAL TOCTOU BOUNDARY (R-AUDIT-DEPTH b3; directory-trust assumption,
+ *  characterised by the C1 audit leg `post-open hardlink exposes OUR appended
+ *  bytes`): `nlink === 1` on the fstat below proves NO ALIAS EXISTED AT OPEN
+ *  TIME. It cannot speak for the window after the check: a writer INSIDE the
+ *  hostile directory may `link()` OUR inode out at any moment, and appends
+ *  already on the way land on that inode — so the new name EXPOSES OUR OWN
+ *  appended ledger bytes. The exposure is one-directional and content-less
+ *  against us: a hardlink creates an additional name for OUR inode, link(2)
+ *  refuses an existing target (EEXIST), so a pre-existing external file is
+ *  never aliased onto the inode we append to and no external bytes can be
+ *  smuggled in or rewritten; an aliased-IN name is refused at open
+ *  (O_NOFOLLOW ELOOP, or the nlink check on the next append). Records are
+ *  additionally immune in kind: their writes are replace-by-rename onto a
+ *  fresh inode, so a post-open link of a record name only ever exposes the
+ *  OLD bytes. Closing this disclosure window needs ownership/immutable-file
+ *  hardening (chown/`FS_IOC_SETFLAGS`, out of any `node:*` lane's reach) —
+ *  registered elsewhere as long-term hardening, deliberately NOT done here. */
 async function appendLineIn(dir, filename, entry) {
   const line = `${JSON.stringify(entry)}\n`
   if (Buffer.byteLength(line, 'utf8') > MAX_LEDGER_LINE_BYTES) {
@@ -428,15 +450,32 @@ async function appendLineIn(dir, filename, entry) {
  *  a verifier can never misread "unreadable" as "zero writes". A
  *  zero-side-effect assertion MUST distinguish the two: expect 0 for an
  *  honest no-op, and treat a THROW as an unverifiable disk state — never as
- *  proof of zero writes. */
+ *  proof of zero writes.
+ *
+ *  R-AUDIT-DEPTH (b1): the measure is `lstat`, NEVER the path-following
+ *  `stat` — a hostile directory that swapped the ledger NAME for a symlink
+ *  would otherwise have the TARGET's size answer for the ledger (another
+ *  file's bytes, and a number where only UNKNOWN belongs). Any non-regular
+ *  name — symlink, DIRECTORY, special file — takes exactly the FAIL-1 leg:
+ *  `AGENT_STATE_STORE_LEDGER_UNREADABLE`, the same typed UNKNOWN a permission
+ *  or I/O failure earns. Never silently followed, never answered as a size,
+ *  and an aliased name is never treated as absent either: only ENOENT
+ *  (no name at all) and a REGULAR file's real size are honest answers.
+ *  (A DIRECTORY at the name is also the root-proof test injection for this
+ *  leg: `lstat` answers it for every uid, where chmod-000 binds nobody.) */
 export async function ledgerBytes(dir, filename = 'writes.jsonl') {
+  let stat
   try {
-    const stat = await fsp.stat(join(dir, filename))
-    return stat.size
+    stat = await fsp.lstat(join(dir, filename))
   } catch (error) {
     if (error?.code === 'ENOENT') return 0
     throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — a zero-side-effect assertion must treat an unreadable ledger as UNKNOWN, never as a clean write-free outcome`)
   }
+  if (!stat.isFile()) {
+    const shape = stat.isSymbolicLink() ? 'a symlink (never followed)' : stat.isDirectory() ? 'a directory where the file belongs' : 'not a regular file'
+    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} is ${shape} — a swapped-in name is UNKNOWN, never a clean write-free outcome (the target's size or a directory's bytes never stand in for the ledger)`)
+  }
+  return stat.size
 }
 
 /** This host's identity: a reboot gives a NEW boot id (Linux), so a lock from
