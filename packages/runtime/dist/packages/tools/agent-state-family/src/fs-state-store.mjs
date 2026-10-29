@@ -537,19 +537,19 @@ async function mayBreak(dir, name, holder, staleMs, bootId = DEFAULT_BOOT_ID) {
  * owner policy — and the correctness-over-liveness trade — is in the module
  * header.
  */
-async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {}, bootId = DEFAULT_BOOT_ID }) {
+async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt = async () => {}, bootId = DEFAULT_BOOT_ID, nowMs = () => Date.now() }) {
   const path = `${dir.path}/${name}`
   const nonce = randomUUID()
-  const started = Date.now()
+  const started = nowMs()
   let delay = 2
   for (;;) {
     try {
-      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
+      await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
       let stopped = false
       let inFlight = null
       const beat = setInterval(() => {
         if (stopped || inFlight !== null) return
-        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), Date.now(), bootId), faultAt)
+        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
           .catch(() => {})
           .finally(() => { inFlight = null })
       }, heartbeatMs)
@@ -579,7 +579,7 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
       } catch { /* another breaker won */ }
       continue
     }
-    if (Date.now() - started > timeoutMs) {
+    if (nowMs() - started > timeoutMs) {
       throw typedError('AGENT_STATE_STORE_LOCK_TIMEOUT', `the ${name} lock is held by another applier (pid ${String(holder?.pid)} on host ${String(holder?.host ?? '?')}) and cannot be proven abandoned — refused, nothing written (a live or unprovable holder is never broken; see the module header for the operator clear)`)
     }
     await sleep(delay)
@@ -674,6 +674,12 @@ const REALM_LOCK = '_realm.lock'
  * @param {number} [input.lockHeartbeatMs] the holder's beat period.
  * @param {string} [input.bootId] test-only boot identity seam; production defaults to the local boot id.
  * @param {() => string} [input.nowIso] persistence clock (the store owns it).
+ * @param {() => number} [input.nowMs] lock liveness/timeout clock (the store
+ *        owns it); default Date.now. Tests may supply a controllable clock so
+ *        the lock's elapsed-time semantics are deterministic under any runner
+ *        context (R-413-1 v3: a module mock cannot follow the store's
+ *        node:timers import across vitest roots, so the clock enters through
+ *        this public seam instead).
  * @param {(handle: import('node:fs').promises.FileHandle, text: string) => Promise<void>} [input.recordWriter]
  *        C1 crash-simulation seam ONLY. The descriptor never passes it.
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
@@ -688,6 +694,7 @@ export function createFsStateStore({
   lockTimeoutMs = LOCK_TIMEOUT_MS, lockStaleMs = LOCK_STALE_MS, lockHeartbeatMs = LOCK_HEARTBEAT_MS,
   bootId = DEFAULT_BOOT_ID,
   nowIso = () => new Date().toISOString(),
+  nowMs = () => Date.now(),
   recordWriter = writeAll, faultAt = () => {},
 }) {
   if (typeof rootDir !== 'string' || !isAbsolute(rootDir) || typeof anchorDir !== 'string' || !isAbsolute(anchorDir)) {
@@ -737,7 +744,7 @@ export function createFsStateStore({
   }
   /** Hold the scope lock for `fn` (every apply/seed). */
   const underScopeLock = async (scope, fn) => withDir('locks', true, async (locks) => {
-    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
+    const release = await acquireLock(locks, lockName(scope), { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId, nowMs })
     try { return await fn(locks) } finally { await release() }
   })
   /** Commit `patch` onto the CURRENT record (caller holds the scope lock). */
@@ -765,7 +772,7 @@ export function createFsStateStore({
     })
     if (current !== null) return await write()
     // A NEW scope: the realm lock serialises the count against concurrent creators.
-    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId })
+    const release = await acquireLock(locks, REALM_LOCK, { timeoutMs: lockTimeoutMs, staleMs: lockStaleMs, heartbeatMs: lockHeartbeatMs, faultAt, bootId, nowMs })
     try {
       const count = await withDir('scopes', true, async (scopes) => (await fsp.readdir(scopes.path)).filter((n) => n.endsWith('.json')).length)
       if (count >= maxScopes) {
