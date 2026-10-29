@@ -46,9 +46,10 @@ never back-edited.
   review's table); **11 distinct backing records**; the REFUSED record
   `dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json` (`overall=REFUSED`; cases
   `ac:enumerate-governed`/`ac:spawn-failclosed` REFUSED; **teamSha `0ea0848acd` — an older tree**)
-  backs **7 PROVEN units — 6× `L2-mounted` (case `ac:mounted`) + 1× `L3-refusal`
-  (`ac:interrupt-foreign-zero`)** — i.e. *more* than the 3 stated in the review; corrected number is
-  recorded. Registered **R-ACCEPT-RUN-1** (the concrete build-out of R-G4R-3): `CASE_PROVEN` vs
+  backs **8 PROVEN units — 7× `L2-mounted` (case `ac:mounted`) + 1× `L3-refusal`
+  (`ac:interrupt-foreign-zero`)** — i.e. *more* than the 3 stated in the review. (Provenance of this number: the review
+  said 3; my first census said 7; the R442 independent re-review recounted the bytes to 8 —
+  `interrupt_agent` carries both an L2 and an L3 citation of the record. 8 is the recorded truth.) Registered **R-ACCEPT-RUN-1** (the concrete build-out of R-G4R-3): `CASE_PROVEN` vs
   `RUN_PROVEN` + mutation negative controls.
 - **P2 audit swallow (`:778-784`, `ledgerBytes :411-418`): CONFIRMED.** `finishAttempt`/`commitWrite`
   `catch {}`; `ledgerBytes` returns 0 on unreadable. Registered **R-AUDIT-FAIL-1** (CONFIRMED /

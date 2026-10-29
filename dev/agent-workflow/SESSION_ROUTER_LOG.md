@@ -7170,7 +7170,7 @@ G4-PASS(投机通过)；U7 剩余工程与 G5 候选准备**放行**；G5 正式
 #440 排队的「投机通过是否解锁发布路径」获 scoped 答复：解锁 U7/G5-prep，不解锁 G5 验收与发布。
 主 Agent 对全部七项发现做了字节级核实（`gates/USER-RULING-20261029.md` 附录）：硬链接追加、
 验收门不查 overall、审计吞失败、生产 Home 可用性、ENV_BLOCK 过宽、runner 清理/mode 校验——
-全部属实；其中 REFUSED 记录 `run-u7fa5.json` 实际支撑 **7** 个 PROVEN 单元（更正审查文的 3），
+全部属实；其中 REFUSED 记录 `run-u7fa5.json` 实际支撑 **8** 个 PROVEN 单元（7×L2+1×L3；更正审查文的 3；R442 复审把我初记的 7 再更正为 8），
 且其 teamSha 为旧树。新增具名整改 R-AUDIT-HL-1 / R-AUDIT-FAIL-1 / R-ACCEPT-RUN-1 / R-STATE-HOME-1 /
 R-ENVBLOCK-1 / R-RUNC2-1 / R-ASSET-MODE-1；R-CRASH-1 等五项由 post-freeze 升为 **G5-blocking**。
 执行顺序（用户指定）：U7-R1（安全+证据可信）→ U7-R2（测试基础设施）→ U7-R3（逐工具缺口
