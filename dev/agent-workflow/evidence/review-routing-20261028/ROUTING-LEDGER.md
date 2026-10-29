@@ -195,3 +195,89 @@ review_route:
 ```
 
 > Dated note (2026-10-28): the two entries above (R433/R434/LEG1-ENV round, R435 round) are session-scratch entries folded verbatim from `.artifacts/review-routing/LOG.md` into this live ledger (append-only; null costs + `budget_status: unknown` preserved).
+
+## Boot-lane close, thread-round, R2 promotion round, R440 package round (2026-10-28 late → 2026-10-29, takeover session 2)
+
+review_route:
+  at: "2026-10-28T20:05:00Z"
+  session: "takeover-2 main agent"
+  target: "PR #436 B-G4R-5 + PR #437 ledger-sync + crash-sequencing RCA (read-only) + PR #438 B-G4R-6"
+  risk: "R2 (boot-budget authorizations); RCA = analysis artifact, no authority"
+  tier: "R1+R2 (named rulings re-checked by independent reviewer)"
+  model: "dsh-opencode-go/deepseek-v4.1-flash"
+  independence: "separate session, reviewed detached worktree rr-438 @ f4fba8d35; RCA by separate read-only session (be82626b)"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "PASS-WITH-FINDINGS (R438-og.md: F1 B-G4R-5 not yet in gated tree — handled by merge order 436-before-438; F2 7/7 wording — adopted b273d4fd4; F3 INFO)"
+```
+
+```yaml
+review_route:
+  at: "2026-10-28T23:55:00Z"
+  session: "takeover-2 main agent"
+  target: "G4 promotion re-review R2 (full packet @ master 7a789a91d): reviewer-A dsh-opencode-go/glm-5.3 (R3 stage-reviewer per user routing), reviewer-B dsh-opencode-go/deepseek-v4-pro (independent model family); blind pair, no cross-read, brief + packet pointer in .artifacts/briefs/"
+  risk: R3
+  tier: R3
+  model: "dsh-opencode-go/glm-5.3 + dsh-opencode-go/deepseek-v4-pro"
+  independence: "two fresh sessions, detached worktrees rr-g4-a/rr-g4-b, prior review outputs + SESSION_ROUTER_LOG + graph.yaml forbidden as evidence; reviewers recompute equivalence diffs personally"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: in-flight
+```
+
+```yaml
+review_route:
+  at: "2026-10-28T23:20:00Z"
+  session: "takeover-2 main agent"
+  target: "Copilot review threads on PRs #436/#437/#438 (7 threads total, branch protection require-conversation-resolution)"
+  risk: "R1 (docs records)"
+  tier: R1
+  model: "github-copilot (machine reviewer) + main agent adoption"
+  independence: "machine findings adjudicated by main agent; two were factual (audit ref #434->#436; boot-label), two semantic-hardening (stop-law correction must be post-stop dated doc; knob=empirical not structural), one evidence-durability (tracked copies)"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "all adopted verbatim in f04ec943/86107fcc/fa265309, threads replied+resolved; root cause of long BLOCKED mystery was this protection rule, not CI"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T00:40:00Z"
+  session: "takeover-2 main agent"
+  target: "G4 promotion re-review R2 — RESULT: reviewer A glm-5.3 投机通过有条件 (3MED/3LOW, conditions=bookkeeping only, executed in PR #440); reviewer B deepseek-v4-pro 投机通过 (2MED/1LOW, gate-may-open-with-risk-ledger); core claim verified-from-bytes by both; promotion package #440 filed (ledger closure rows + BL-20..BL-23 + README addendum); release unlock (G5/S5) explicitly QUEUED for user, not assumed"
+  risk: R3
+  tier: R3
+  model: "dsh-opencode-go/glm-5.3 + dsh-opencode-go/deepseek-v4-pro (families distinct; reports tracked at gates/G4-PROMOTION-REVIEW-R2-{A-glm,B-v4pro}.md via #440)"
+  independence: "blind pair confirmed in reports' self-checks (HEAD 7a789a91d, porcelain 0, no cross-read)"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "投机通过 x2; B-G4R-5 pre-authorization expired at application per its §5(a)"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T01:10:00Z"
+  session: "takeover-2 main agent"
+  target: "PR #440 (G4 promotion package: ledger closure rows + BL-20..23 + README addendum) package review"
+  risk: R2
+  tier: R2
+  model: "dsh-opencode-go/deepseek-v4.1-flash"
+  independence: "fresh session, detached worktree rr-g4-c @ PR head de49f503, verified closure rows against record JSON bytes"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "补充内容 — M1 (digest/preflight overclaim vs arc-b c-suite schema) + M2 (BL-23 merge-order forward reference) both fixed in da6b913b with adoption addendum; L1 (historical mixed citation styles) accepted LOW, historical rows immutable; report tracked in #440 itself (review-routing-20261028/R440-og.md)"
+```
