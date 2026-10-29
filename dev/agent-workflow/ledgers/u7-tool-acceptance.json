@@ -768,7 +768,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output read"
+        "note": "no foreign job_kill refusal is graded LIVE: u74a:foreign-cross-scope-refusal grades the foreign job_output read. C1 lineage 2026-10-30 (PR #464, OPEN): offline G6 arms F1-F4 shipped in packages/runtime/test/u74a-jobs-producer.test.ts — a foreign kill of the owner's attributed job answers TYPED (refused: owner-mismatch) with BOTH victim records measured UNCHANGED (counted JobRegistry double: zero reaches, no kill entry, status running, settlement unsettled, handler terminateCalls 0; Team gateway record: cancelRequested unset, zero gateway-cancel-requested observations, attribution still corded), plus the caller-unresolved / unattributed-job / shut-face lanes and the post-DENY nothing-killable census, each non-vacuous by a same-world authorized-kill flip. C1-only per the PR #456 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
