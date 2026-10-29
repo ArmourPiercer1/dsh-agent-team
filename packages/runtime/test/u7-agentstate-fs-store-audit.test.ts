@@ -127,7 +127,7 @@ describe('u7as-audit HL1 — the write leg of the hard-link law', () => {
 })
 
 describe('u7as-audit FAIL — ledgerBytes distinguishes absent/empty from unreadable', () => {
-  it('absent → 0, empty → 0, sized → bytes; unreadable → throws AGENT_STATE_STORE_LEDGER_UNREADABLE', async () => {
+  it('absent → 0, empty → 0, sized → bytes', async () => {
     // Absent ledger: honest 0.
     expect(await lane.ledgerBytes(ledgerDir(), 'writes.jsonl')).toBe(0)
     // Empty ledger: honest 0.
@@ -137,10 +137,14 @@ describe('u7as-audit FAIL — ledgerBytes distinguishes absent/empty from unread
     // Sized ledger: the real byte count.
     writeFileSync(writesPath(), 'one line\n')
     expect(await lane.ledgerBytes(ledgerDir(), 'writes.jsonl')).toBe('one line\n'.length)
-    // Unreadable: a non-ENOENT failure must THROW, never masquerade as zero
-    // writes. chmod 000 the LEDGER DIRECTORY so stat(2) fails EACCES; root
-    // bypasses permission bits, so skip that leg gracefully there.
-    if (isRoot()) return
+  })
+
+  // Unreadable: a non-ENOENT failure must THROW, never masquerade as zero
+  // writes. chmod 000 the LEDGER DIRECTORY so stat(2) fails EACCES; root
+  // bypasses permission bits, so this leg SKIPs (not passes) there.
+  it.skipIf(isRoot())('unreadable → throws AGENT_STATE_STORE_LEDGER_UNREADABLE', async () => {
+    mkdirSync(ledgerDir(), { recursive: true })
+    writeFileSync(writesPath(), 'x')
     chmodSync(ledgerDir(), 0o000)
     try {
       await expect(lane.ledgerBytes(ledgerDir(), 'writes.jsonl')).rejects.toMatchObject({ code: 'AGENT_STATE_STORE_LEDGER_UNREADABLE' })
@@ -149,8 +153,7 @@ describe('u7as-audit FAIL — ledgerBytes distinguishes absent/empty from unread
     }
   })
 
-  it('audit UNCONFIRMED: an unwritable ledger surfaces UNCONFIRMED while the committed state stands (never re-run)', async () => {
-    if (isRoot()) return // permission-bit fault cannot be produced as root
+  it.skipIf(isRoot())('audit UNCONFIRMED: an unwritable ledger surfaces UNCONFIRMED while the committed state stands (never re-run)', async () => {
     const s = store()
     await s.applyTodos('agent:seed', { todos: [{ content: 'seed', status: 'pending' }], applyId: 'un-seed' })
     chmodSync(ledgerDir(), 0o000) // the ledger is only touched AFTER the state commit

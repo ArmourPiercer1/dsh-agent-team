@@ -802,6 +802,10 @@ export function createFsStateStore({
   // R-AUDIT-FAIL-1: the audit-append outcome is REPORTED, not swallowed. The
   // in-memory entry carries `audit`; the ANSWER/commit control flow is
   // untouched (a refused audit line never re-runs or replays the state write).
+  // NOTE: a symlinked ledger NAME surfaces the raw ELOOP errno here (the
+  // O_NOFOLLOW open throws before fstat), not the read path's typed
+  // AGENT_STATE_STORE_ALIAS_REFUSED — that consistency fix is a named
+  // follow-up, deliberately not made in this change.
   const shortErrorCode = (error) => {
     const code = error?.code
     return typeof code === 'string' && code.length > 0 ? code : 'AGENT_STATE_STORE_LEDGER_APPEND_FAILED'
