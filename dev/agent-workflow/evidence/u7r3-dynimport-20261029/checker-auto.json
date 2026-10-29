@@ -1,0 +1,6 @@
+{
+  "files": 82,
+  "engine": "auto",
+  "extractor": "acorn 8.18.0 (masked-regex fallback for non-JS surfaces)",
+  "findings": []
+}

@@ -1,0 +1,26 @@
+PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
+PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
+PASS C3 execution-definition-replaced :: honest tree passes; 3a detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3b detected on packages/tools/agent-control-family/src/fork-row.mjs, 3c detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3d detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs
+PASS C4 cross-family-influence :: honest tree passes (9 lanes declare edges); 4a detected, 4b detected, 4c detected, 4d computed-dynamic detected, 4e prose-in-string masked, 4f static-edge detected, 4g booked-allowlist closed, engines agree (auto+ast+regex) (mutations staged on packages/tools/search-family/src/search-mechanics.mjs + packages/tools/search-family/src/r-dynimport-negctl.mjs)
+PASS C5 required-context-nongreen-states :: all-green => pass; each of absent, skip, cancel, failure, ENV_BLOCK, refused, SKIP-token, verdict-missing, unrecognised-result, empty-needs on layer ci-integration => fail
+PASS C6 summary-wiring-loosened :: honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected
+PASS C7 impact-unknown-nonzero :: unknown path => all 4 layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law
+PASS C8 run-manifest-refuses-rewrites :: honest live/crash-reclaim-2/run-u5-crash-2026-10-25T17-25-10-141Z.json passes; rewritten-overall, env-block-case-graded-pass, unknown-verdict-token, dropped-selected-case, host-generation-mixed, team-sha-unresolvable, invented-authority-generation, superseded-generation-on-new-record, wrong-evidence-digest, missing-evidence each refused
+PASS C9 mandatory-leg-invoked-not-mentioned :: honest workflows pass; a-echo, b-name-only, c1-allow-refused, c2-no-full, c3-skip-census, d1-shell-comment, d2-yaml-commented-step, e-quoted-string, f-or-true each detected
+PASS C10 host-free-layer-refuses-host-dependent-suite :: honest lists pass; re-listing a5-pindir-reserved-native.test.ts in host-free ci-security => CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER
+PASS C11 remaining-text-rules-not-textually-satisfiable :: honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected
+PASS C12 reusable-workflow-output-boundary :: honest workflows pass; removing on.workflow_call.outputs from each of the four layers => CI_WORKFLOW_CALL_OUTPUT_MISSING
+PASS C13 merge-tree-job-is-graded :: layers all green + synthesize failure/cancelled/skipped/absent => fail each
+PASS C14 leg-allowlist-not-denylist :: 52 negatives all UNSATISFIED; 9 allowed shapes satisfied; every real layer satisfies every leg
+PASS C15 evidence-guard-refuses-raw-capture :: 3 planted raw captures/resamples (tiny, so the NAME rule alone refuses them) => EVIDENCE_RAW_CAPTURE each
+PASS C16 evidence-guard-refuses-oversized :: a planted 2 MiB huge-log.txt => EVIDENCE_OVERSIZED (bound 1048576 B)
+PASS C17 evidence-guard-allowlist-accepts-reviewed-large :: the same 2 MiB file listed WITH a reason => accepted; a listed raw capture => still EVIDENCE_RAW_CAPTURE; an entry with no reason => EVIDENCE_ALLOWLIST_INVALID
+PASS C18 evidence-guard-accepts-sidecar :: 3 sidecar-shaped additions (census-comparison-*, a named census note) => accepted, and all 3 were graded
+PASS C19 census-leg-writes-captures-outside-tracked-evidence :: captures -> .artifacts/census/ and resamples -> .artifacts/census/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/
+PASS C20 acceptance-ledger-refuses-unproven-proven :: honest dev/agent-workflow/ledgers/u7-tool-acceptance.json passes (31 rows); (a) PROVEN on a FAIL case, (b) PROVEN on a missing record, (c) claimed read with no row, (d) DISCLOSED with an empty reason — each refused
+PASS C21 deferred-run-cannot-produce-ci-required-success :: deferred run (ci-full skipped) grades fail on the Required path and the ci-required CLI exits non-zero, ci-full:skipped named; deferred job is not the Required context; CI_DEFERRAL_CONFLICT fires on label+success and is a no-op without PR inputs
+PASS C22 no-deferral-ci-full-missing-is-a-failure :: without the deferral flag a missing or skipped ci-full is a failure (today's rule); all green still passes
+PASS P1 non-Team-native-positive-preserved :: both non-Team native positive controls present and still asserting the native ride (u6-pr3-bl01-ask-door.test.ts, u6-pr2-review-r1.test.ts); pinned BY ASSERTION, not by title
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md is zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass (correct), one planted new red => fail (correct)
+
+24/24 control(s) behaved as required
