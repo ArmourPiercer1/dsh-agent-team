@@ -1106,8 +1106,13 @@ describe('u74a G5 — job_list refusal arms: typed refusal, ZERO job-store read 
  * THE CELL (u7-tool-acceptance, row job_kill, L3-refusal, NOT_VERIFIED):
  * "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal
  * grades the foreign job_output read". K3's foreign-kill leg only measures
- * the answer is NOT 'requested' — the refusal's typed FORM and, above all,
- * the victim's UNCHANGED records are graded by nothing. G5 (lane B, the
+ * the answer is NOT 'requested' — in THIS suite the refusal's typed FORM and,
+ * above all, the victim's UNCHANGED records are graded by nothing. (Scoped
+ * disclosure per R464-fl F-a: the sibling u6-pr4 suite's D2 leg already
+ * asserts the foreign job_kill 'owner-mismatch' text and zero svc reach —
+ * but with NO victim-record/handler/settlement witnesses; G6's increment is
+ * exactly those victim-side witnesses + handler/settlement non-termination.)
+ * G5 (lane B, the
  * job_list arms) is this group's precedent; the trio rows are
  * APPROVAL-FREE by the PR4 measured law, so the family's kill-face refusal
  * lanes are the bridge's gates (`caller-unresolved`, the owner fence's
