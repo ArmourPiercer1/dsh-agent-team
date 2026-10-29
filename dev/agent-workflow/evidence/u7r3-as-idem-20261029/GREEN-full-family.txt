@@ -1,0 +1,308 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-ai
+
+ ✓ packages/domain/test/a5p0-layer-audit.test.ts (4 tests) 6ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 13ms
+ ✓ packages/runtime/test/u7-agentstate-fs-store-audit.test.ts (9 tests) 268ms
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P1 get_goal on an empty scope: honest {goal:null}, exactly ONE bounded read, zero writes
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P2 create_goal on the direct-human arm: revision 1, phase active, armed — the durable fact is in the store
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.055Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P3 get_goal reads the created goal BACK through the same governed row (durable fact read back)
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.065Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P3 get_goal reads the created goal BACK through the same governed row (durable fact read back)
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P4 todo_write: whole-list replacement lands; the receipt counts; a second call REPLACES (final list = the last call)
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=2
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P4 todo_write: whole-list replacement lands; the receipt counts; a second call REPLACES (final list = the last call)
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.051Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P5 exit_plan_mode in active plan mode: the approved plan commits post-consume (plan mode off, plan recorded)
+[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P6 the positive transition legs: pause (direct human), edit, complete (direct human), blocked (exact goal round at/over the minimum), resume from blocked
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=2 phase=paused
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P6 the positive transition legs: pause (direct human), edit, complete (direct human), blocked (exact goal round at/over the minimum), resume from blocked
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=4 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P6 the positive transition legs: pause (direct human), edit, complete (direct human), blocked (exact goal round at/over the minimum), resume from blocked
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=6 phase=complete
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P6 the positive transition legs: pause (direct human), edit, complete (direct human), blocked (exact goal round at/over the minimum), resume from blocked
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=3 phase=blocked
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb P — authorized positives (ask-default template, real grant, durable fact in the store) > P6 the positive transition legs: pause (direct human), edit, complete (direct human), blocked (exact goal round at/over the minimum), resume from blocked
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=5 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.096Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E1 every call requests EXACTLY the declared arms: every row = own tool-invoke + meta; get_goal carries NO mutation kind
+[dsh-agent-team] a5-agent-state: exit_plan_mode state-refusal code=PLAN_MODE_NOT_ACTIVE scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P1 create_goal → get_goal → update_goal(pause) persist; a NEW store instance on the same home reads the same facts
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.051Z-1 revision=2 phase=paused
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.118Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb E — the read/mutation split is REAL in the per-call PA request > E2 per-row declared-vs-requested exactness (review R1 F-3): the contribution union is DERIVED from the per-row table, and each row requests EXACTLY its declared arms
+[dsh-agent-team] a5-agent-state: exit_plan_mode state-refusal code=PLAN_MODE_NOT_ACTIVE scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S1a get_goal reads the CALLER only: bob's planted goal is never touched
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S1b planted cross-scope WRITE — update_goal NAMING bob's exact goal_id+revision still answers the typed CAS refusal with ZERO reach into bob's scope
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S1c planted cross-scope WRITE with the caller holding her OWN goal: the stale-ref sentence names only the CALLER's current; bob stays byte-identical
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:a goalId=goal-2026-10-29T19:33:28.141Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:a 
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent: a
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb S — the scope law (planted cross-scope) > S2 whitespace-distinct identities are DISTINCT scopes (review R1 F-2): "a", "a ", " a" never alias; cross-access refuses with zero reach
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:a 
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · create over an ACTIVE current → GOAL_ALREADY_EXISTS with ZERO durable writes
+[dsh-agent-team] a5-agent-state: create_goal state-refusal code=GOAL_ALREADY_EXISTS scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=2
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · pause from paused → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · block from paused → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · complete from complete → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P2 todo_write replaces the whole list durably; restart reads the last list
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · resume from complete (host resumable set, index.ts:368) → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · resume from paused (the USER's act) → GOAL_TOOL_RESUME_PAUSED with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_TOOL_RESUME_PAUSED scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · resume of an already active+armed goal → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · resume on an exhausted round budget → GOAL_INVALID_TRANSITION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · edit from the MODEL arm → GOAL_TOOL_NOT_DIRECT_HUMAN with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NOT_DIRECT_HUMAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · pause from the MODEL arm → GOAL_TOOL_NOT_DIRECT_HUMAN with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NOT_DIRECT_HUMAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · create from the MODEL arm → GOAL_TOOL_NOT_DIRECT_HUMAN with ZERO durable writes
+[dsh-agent-team] a5-agent-state: create_goal authority-refusal code=GOAL_TOOL_NOT_DIRECT_HUMAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · complete from the MODEL arm → GOAL_TOOL_NO_COMPLETION_AUTHORITY with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NO_COMPLETION_AUTHORITY scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · blocked from the MODEL arm → GOAL_TOOL_NO_COMPLETION_AUTHORITY with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NO_COMPLETION_AUTHORITY scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P3 exit_plan_mode in an active (seeded) plan mode commits durably; restart sees plan mode OFF with the plan recorded
+[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · complete via a WRONG goal-round (round mismatch) → GOAL_TOOL_NO_COMPLETION_AUTHORITY with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NO_COMPLETION_AUTHORITY scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · complete via a WRONG goal-round (revision mismatch) → GOAL_TOOL_NO_COMPLETION_AUTHORITY with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NO_COMPLETION_AUTHORITY scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · blocked below the round threshold (exact round 2, below min 3) → GOAL_TOOL_BLOCK_THRESHOLD with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_BLOCK_THRESHOLD scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · wrong revision (stale) → GOAL_STALE_REVISION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · wrong id (stale) → GOAL_STALE_REVISION with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T1 · update with NO current goal → GOAL_NOT_FOUND with ZERO durable writes
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.246Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.246Z-1 revision=2 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as P — positives through the REAL store, re-read after a simulated restart > P4 update_goal edit/complete fold the revision exactly one each, durably
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.246Z-1 revision=3 phase=complete
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb T — the FULL pinned transition table: typed refusals, zero durable writes > T2 · complete from BLOCKED SUCCEEDS with EXACTLY ONE durable write (host law index.ts:390-399 — do-not-narrow pin)
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=2 phase=complete
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1a an in-flight execution token cannot own a second call
+[dsh-agent-team] a5-agent-state: todo_write exec-token-replay refusal scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1a an in-flight execution token cannot own a second call
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.311Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: create_goal state-refusal code=GOAL_ALREADY_EXISTS scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1b a SETTLED token re-used settles CANCELLED through the PA edge — the durable fact never applies twice
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1b a SETTLED token re-used settles CANCELLED through the PA edge — the durable fact never applies twice
+[dsh-agent-team] a5-agent-state: todo_write cancelled-at-pa-edge scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal authority-refusal code=GOAL_TOOL_NOT_DIRECT_HUMAN scope=agent:bob
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R1 GOAL_ALREADY_EXISTS / GOAL_STALE_REVISION / GOAL_TOOL_NOT_DIRECT_HUMAN / GOAL_INVALID_TRANSITION through the real rows — zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_INVALID_TRANSITION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1d a re-driven mutation under a FRESH call meets the advanced revision (single fold), never a double transition
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=g1 revision=2 phase=paused
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb R — durable writes are idempotent under replay > R1d a re-driven mutation under a FRESH call meets the advanced revision (single fold), never a double transition
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D1 default-DENY template: every agent-state call answers the kernel's own grammar (IO_POLICY_UNSUPPORTED / template-default-deny) with zero PA and zero store access
+[dsh-agent-team] a5-agent-state: get_goal default-deny refusal scope=agent:alice (zero state access)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D1 default-DENY template: every agent-state call answers the kernel's own grammar (IO_POLICY_UNSUPPORTED / template-default-deny) with zero PA and zero store access
+[dsh-agent-team] a5-agent-state: create_goal default-deny refusal scope=agent:alice (zero state access)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D1 default-DENY template: every agent-state call answers the kernel's own grammar (IO_POLICY_UNSUPPORTED / template-default-deny) with zero PA and zero store access
+[dsh-agent-team] a5-agent-state: update_goal default-deny refusal scope=agent:alice (zero state access)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D1 default-DENY template: every agent-state call answers the kernel's own grammar (IO_POLICY_UNSUPPORTED / template-default-deny) with zero PA and zero store access
+[dsh-agent-team] a5-agent-state: todo_write default-deny refusal scope=agent:alice (zero state access)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D1 default-DENY template: every agent-state call answers the kernel's own grammar (IO_POLICY_UNSUPPORTED / template-default-deny) with zero PA and zero store access
+[dsh-agent-team] a5-agent-state: exit_plan_mode default-deny refusal scope=agent:alice (zero state access)
+
+stdout | packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts > u7fb U/D — fail-closed refusals with ZERO reach > D2 the DENYING leg: the request settles deny, the body never runs, nothing persists
+[dsh-agent-team] a5-agent-state: create_goal pa-refused code=APPROVAL_DENIED scope=agent:alice (zero state access)
+
+ ✓ packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts (54 tests) 389ms
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.455Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as R — every refusal arm keeps ZERO durable write (byte-measured) and one attempts line > R4 CROSS-SCOPE: bob naming alice's goal meets bob's own (empty) scope — alice's record bytes untouched, zero write
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:bob
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as B — bounds, corruption and absence fail CLOSED (typed), never "empty state" > B1 an oversized record refuses typed on read (AGENT_STATE_STORE_OVERSIZED) — the row answers a typed fault, not null
+[dsh-agent-team] a5-agent-state: get_goal store-fault code=AGENT_STATE_STORE_FAULT scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.704Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: create_goal state-refusal code=GOAL_ALREADY_EXISTS scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_STALE_REVISION scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as O — every row outcome fits the plane presentation face (closed {text}) > O1 positives AND refusals carry exactly {text}: the live host validates output against additionalProperties:false (C2 boot-1 finding: an extra `refusal` field masked every typed code as "invalid output")
+[dsh-agent-team] a5-agent-state: exit_plan_mode state-refusal code=PLAN_MODE_NOT_ACTIVE scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm (durable root under DSH_HOME/team-state/agent-state)
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.746Z-1 revision=1 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:alice
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:alice goalId=goal-2026-10-29T19:33:28.746Z-1 revision=2 phase=active
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:alice count=1
+
+stdout | packages/runtime/test/u7-agentstate-fs-store-c1.test.ts > u7as G — every row meets the production bridge shape (tool-invoke names the row) > G1 all five rows pass the bridge-shape leg, each naming ITSELF; get_goal reads the durable goal back
+[dsh-agent-team] a5-agent-state: exit_plan_mode RAN scope=agent:alice
+
+ ✓ packages/runtime/test/u7-agentstate-fs-store-c1.test.ts (51 tests) 6062ms
+     ✓ L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one  2358ms
+     ✓ F-a the reviewer repro: lockStaleMs=50, writer A paused 1000 ms INSIDE the critical section, writer B at the same expectedRevision → exactly ONE commit, B refused typed (LOCK_TIMEOUT or STALE), ONE writes.jsonl entry  1029ms
+     ✓ R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record  953ms
+
+ Test Files  5 passed (5)
+      Tests  138 passed (138)
+   Start at  19:33:26
+   Duration  7.75s (transform 3.07s, setup 0ms, import 4.36s, tests 6.74s, environment 1ms)
+

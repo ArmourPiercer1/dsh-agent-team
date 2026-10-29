@@ -28,6 +28,10 @@
  * a repeated applyId with `STATE_APPLY_REPLAY` and zero persistence, and a
  * re-driven mutation with a fresh call answers the CAS refusal
  * (`GOAL_STALE_REVISION` / revision-advanced), never a double fold.
+ * Consumption is GLOBAL ACROSS SCOPES and ATOMIC — one winner per applyId
+ * whichever scope carries the apply (the fake's single `applied` set; the
+ * durable store's O_EXCL marker create, audit P0-2a); a refused apply never
+ * burns its applyId.
  *
  * @module tools/agent-state-family/state-store
  */
