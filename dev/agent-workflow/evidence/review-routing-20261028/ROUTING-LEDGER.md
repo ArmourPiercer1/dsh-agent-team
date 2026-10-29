@@ -198,6 +198,7 @@ review_route:
 
 ## Boot-lane close, thread-round, R2 promotion round, R440 package round (2026-10-28 late → 2026-10-29, takeover session 2)
 
+```yaml
 review_route:
   at: "2026-10-28T20:05:00Z"
   session: "takeover-2 main agent"
