@@ -180,6 +180,13 @@ runner case is the authoritative guard verdict.
   (`u5-parallel-supervisor.mjs:92`) remains structurally non-deterministic — durable fix **R-CRASH-1**
   (hold/probe handshake + split aliased cells) scheduled post-freeze. Attempt-1 FAIL stands unedited.
 
+## Dated addendum (2026-10-28 late) — analysis files folded into tracked evidence
+
+- The crash-sequencing RCA cited by the Leg-5 section and by RULING-B-G4R-6 was produced in the main
+  checkout scratch (`.artifacts/findings/…`); its content is now committed verbatim at
+  `analysis/crash-sequencing-rca-20261028.md` so any fresh checkout can audit the harness-class verdict.
+- The parallel-lanes deferral decision (R-G4R-3 CI tightening; G5-L3 batch evidence) is committed at
+  `analysis/parallel-lanes-decision-20261028.md`. No lane content changed; append-only.
 ## Dated addendum (2026-10-28, with the G4-R2 promotion review) — receipt values + oracle-completeness cell
 
 - **Receipt values (reviewer A F6):** final scope at the PR #432 merge's first parent `4fd9c51ab`:
