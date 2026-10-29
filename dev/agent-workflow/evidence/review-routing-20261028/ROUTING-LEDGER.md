@@ -316,3 +316,88 @@ review_route:
   budget_status: unknown
   result: "通过 (delta); report tracked as review-routing-20261028/R440delta-og.md inside #440"
 ```
+
+```yaml
+review_route:
+  at: "2026-10-29T05:00:00Z"
+  session: "post-return main agent"
+  target: "PR #442 USER-RULING registration (ruling record + byte-verification appendix + 7 remediation rows)"
+  risk: R2
+  tier: R2
+  model: "dsh-opencode-go/deepseek-v4.1-flash"
+  independence: "fresh session; independently recounted the REFUSED-record census and code-bytes checks; caught the main agent's first-count 7 (truth: 8 = 7x L2-mounted + 1x L3, interrupt_agent holds both); correction commit + provenance chain (review-said-3 -> main-7 -> verified-8) kept in the record"
+  rounds_used: 2
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "补充内容 (7->8 correction) adopted in-PR; MERGED"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T05:05:00Z"
+  session: "post-return main agent"
+  target: "U7-R1 implementations W-A (R-AUDIT-HL-1/R-AUDIT-FAIL-1, PR #443) and W-B (R-ACCEPT-RUN-1, PR #444)"
+  risk: "P1-code (security + evidence trust)"
+  tier: "implementation on dsh-opencode-go/deepseek-v4-pro; review at R3/second seats per user routing (below)"
+  model: "dsh-opencode-go/deepseek-v4-pro"
+  independence: "implement-only; stop-conditions wired into prompts (relabel>8 => inventory+stop; contract churn => stop); W-B received mid-flight count correction 7->8 and relabeled all 8"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "PRs #443/#444 opened, DO-NOT-MERGE honored"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T06:00:00Z"
+  session: "post-return main agent"
+  target: "PR #443 R3 seat — store hardening (hard-link guard + audit CONFIRMED/UNCONFIRMED + ledgerBytes tri-state)"
+  risk: "R3 (security-adjacent family code)"
+  tier: R3
+  model: "dsh-opencode-go/glm-5.3"
+  independence: "fresh session; re-ran vitest (55/55), re-derived the FD-pinning argument, grepped all ledgerBytes callers, probed on-disk JSONL (no audit key); caught HIGH-1: PR did not carry its own build (install surface = dist still unguarded; RECOVERY same-commit-rebuild law)"
+  rounds_used: 2
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "补充内容 -> supplement delivered (dist commit 12f49967b, LOW-1 skipIf, LOW-2 comment); reviewer's PRE-DECLARED machine closure criterion (check-artifacts verdict=ok) satisfied; two delegated delta reviewers died (quota, zero output) — disclosed; second independent seat R443-C below re-derived everything and concurred"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T09:30:00Z"
+  session: "post-return main agent"
+  target: "QUOTA EVENT + user-ordered emergency substitution for all remaining review seats (dsh-opencode-go 5h limit exhausted ~07:20Z; six sessions died zero-output incl. 4x glm on #444 and 1x flash + 2 workers)"
+  risk: governance
+  tier: "emergency seats per direct user instruction: qiyuan-self qwen3.8-27b x2 + qwen3.8-flash-next x2, rules unchanged (fresh sessions, re-derive from bytes, disclosure per seat, main agent still cannot self-declare PASS)"
+  model: "qiyuan-self/qwen3.8-27b + qiyuan-self/qwen3.8-flash-next"
+  independence: "isolated sessions; every seat told prior verdicts are not evidence; merges held for qwen verdicts — substitution tightens, not loosens; worker-fix rounds also moved to qwen seats under the same disclosure"
+  rounds_used: 1
+  max_rounds: 3
+  estimated_cost: null
+  actual_cost: null
+  budget_status: "opencode-go quota exhausted; qiyuan-self used under user authorization for the window"
+  result: "R443-C-27b PASS (re-derivation incl. closure-chain concurrence); R444-C-27b PASS; R444-D-fl PASS (3 nits, adopted); R444-E-fl PASS (data plane, programmatic 31x4 diff)"
+```
+
+```yaml
+review_route:
+  at: "2026-10-29T11:00:00Z"
+  session: "post-return main agent"
+  target: "PR #444 adoption delta (fail-open candidate-sha parse closed, hostSha trim, fixtures 9->12) and PR #443 CI-typecheck fix (awaited dynamic import, d2415f893)"
+  risk: "adoption-delta machine closure"
+  tier: "criteria pre-declared by the reviewing seats (R444-D; R3-glm for 443); main agent executed machine runs, recorded as runs not reviews"
+  model: "none (deterministic gates)"
+  independence: "receipts are re-runnable by any later reviewer; worktrees detached at the exact heads, outputs verbatim in receipts"
+  rounds_used: 1
+  max_rounds: 1
+  estimated_cost: null
+  actual_cost: null
+  budget_status: unknown
+  result: "444: usage-error exit=2 both axes (dash-token + blank env), fixtures 12/12, plain 0, candidate 56; 443: tsc audit-file errors 6->0, vitest 56/56, artifacts ok; both then CI-green-gated merges with thread guard"
+```
