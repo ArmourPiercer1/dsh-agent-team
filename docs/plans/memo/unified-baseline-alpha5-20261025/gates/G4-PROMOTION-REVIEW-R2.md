@@ -100,4 +100,4 @@ verified + reviewed as one package. `node dev/engineering/tool-obligations/build
 --check` passes again on this branch (CHECK OK), and the census failure root cause is recorded here rather
 than buried: **the reviewers' condition 2 said "effective backlog"; the machine gate defined the correct
 scope — named-filed in a tracked ledger now, backlog edit later, with the pin update explicit.** No residual
-lost its name in the move.
+lost its name in the move. (Provenance: addendum 1’s M2 fix — rewording the BL-23 row — is superseded by this addendum; the row itself no longer exists in this PR, its concern lives only here and in remediation row R-BL-QUEUE.)
