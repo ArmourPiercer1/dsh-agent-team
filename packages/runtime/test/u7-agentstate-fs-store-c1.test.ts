@@ -29,15 +29,45 @@
  *  C  crash atomicity — a writer that dies mid-record leaves the PREVIOUS
  *     record intact. MUTATION CONTROL: a store whose writer skips the
  *     temp+rename (writes the target in place) goes RED on the same check.
+ *  T  R-413-1 — the lock/stale/timeout/race legs (describes L and F) run
+ *     on the FAKE clock (vi.useFakeTimers; the store's node:timers imports
+ *     are routed through the globals by the vi.mock block below). Asserted
+ *     semantics are unchanged (stale-after-window, timeout-after-window);
+ *     only wall time is removed, so machine load cannot reorder events.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync, promises as fsp } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { hostname, tmpdir } from 'node:os'
 const hostId = hostname()
 const bootId = (() => { try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' } })()
 import { join } from 'node:path'
 import { approvingControlLeg } from './a5-m1-control-legs.mjs'
+
+/**
+ * R-413-1 determinism seam (TESTS ONLY — zero production change): the store
+ * grabs its timer primitives from the `node:timers` modules, and a direct
+ * module import cannot see the faked globals — so those two modules are
+ * routed through the CURRENT globals. With real timers this is a
+ * byte-identical pass-through (the globals ARE the node:timers functions;
+ * every other export stays untouched via importOriginal), so every leg that
+ * does NOT enable the fake clock keeps its exact production behaviour.
+ */
+vi.mock('node:timers', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    setInterval: (cb: (...a: unknown[]) => void, ms: number, ...rest: unknown[]) => globalThis.setInterval(cb, ms, ...rest),
+    clearInterval: (id: ReturnType<typeof globalThis.setInterval>) => globalThis.clearInterval(id),
+  }
+})
+vi.mock('node:timers/promises', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    setTimeout: (ms: number, value?: unknown) => new Promise<unknown>((resolve) => { globalThis.setTimeout(() => resolve(value), ms) }),
+  }
+})
 
 type RowName = 'todo_write' | 'create_goal' | 'get_goal' | 'update_goal' | 'exit_plan_mode'
 type RowOutcome = { text: string }
@@ -586,6 +616,38 @@ const filesUnder = (dir: string): string[] => {
 const storeWith = (opts: StoreOpts = {}): FsStore => lane.createFsStateStore({ rootDir: storeRoot(), anchorDir: home, realmId: REALM, ...opts })
 const storeWithBoot = (boot: string, opts: StoreOpts = {}): FsStore => storeWith({ ...opts, bootId: boot })
 
+/**
+ * R-413-1: advance the FAKE clock in small steps until `p` settles.
+ * `advanceTimersByTimeAsync` flushes microtasks and yields between steps, so
+ * the store's REAL fs I/O keeps flowing; the elapsed fake time is exactly
+ * the time the store's own (faked) sleep/heartbeat and Date.now() observe —
+ * the asserted outcome no longer depends on machine load. One caveat probed
+ * on vitest 4.1: real fs I/O started INSIDE a fake-timer callback (the lock
+ * beat's putLockRecord) only reliably completes on a true event-loop poll,
+ * so a hard fs round trip is pumped every 1250 ms of fake time. The promise
+ * is handled from the start, so an early typed refusal can never surface as
+ * an unhandled rejection while the clock runs on; the budget makes every leg
+ * self-bounding even if the fake test timeout cannot fire while Date is
+ * faked.
+ */
+const underClock = async <T>(p: Promise<T>, budgetMs = 60_000): Promise<T> => {
+  let settled = false
+  void p.then(
+    () => { settled = true },
+    () => { settled = true },
+  )
+  let left = budgetMs
+  let step = 0
+  while (!settled && left > 0) {
+    await vi.advanceTimersByTimeAsync(25)
+    left -= 25
+    step += 1
+    if (step % 50 === 0) await fsp.realpath(tmpdir())
+  }
+  if (!settled) throw new Error(`the store operation did not settle within ${String(budgetMs)} ms of fake time`)
+  return await p
+}
+
 describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
   // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
   const targets: Array<[string, () => string]> = [
@@ -637,16 +699,29 @@ describe('u7as X — containment is re-proven on EVERY operation (review round-1
 })
 
 describe('u7as L — concurrent appliers are serialised per scope (review round-1 B-2)', () => {
+  // R-413-1: the lock/stale/timeout legs below are driven by the fake clock;
+  // real fs I/O still flows between the faked timers (see the vi.mock block
+  // at the top for why the store's node:timers imports join the clock).
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] }) })
+  afterEach(() => { vi.useRealTimers() })
+
   it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
+    // R-413-1: the per-scope lock serialises the four appliers completely,
+    // so the scheduling race between them adds nothing to the asserted
+    // outcome (exactly one CAS winner, three stale refusals, one write
+    // line): a fixed sequence over the same four applyIds is the same
+    // interleaving minus the wall-clock non-determinism.
     for (let round = 1; round <= 25; round += 1) {
       await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const w0 = bytesOf(writesPath())
       const linesBefore = linesOf(writesPath()).length
-      const racers = [0, 1, 2, 3].map(() => storeWith())
-      const results = await Promise.all(racers.map((st, i) => st.applyGoal('agent:race', {
-        expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
-        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })))
+      const results: Array<{ ok: boolean, code?: string }> = []
+      for (let i = 0; i < 4; i += 1) {
+        results.push(await storeWith().applyGoal('agent:race', {
+          expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
+          next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+        }))
+      }
       expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
       expect(linesOf(writesPath()).length - linesBefore).toBe(1)
@@ -662,10 +737,16 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
       return join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
     }
     writeFileSync(scopeLock('agent:s'), JSON.stringify({ pid: 2 ** 22 + 12345, host: hostId, boot: bootId || 'test-boot', nonce: 'dead-holder', token: 'dead-token', at: Date.now() }))
-    expect((await storeWith().applyTodos('agent:s', { todos: [{ content: 'after-stale', status: 'pending' }], applyId: 'stale-1' })).ok).toBe(true)
+    // the death-observation window is min(staleMs, 1000) of FAKE time here
+    const stale = storeWith().applyTodos('agent:s', { todos: [{ content: 'after-stale', status: 'pending' }], applyId: 'stale-1' })
+    expect((await underClock(stale)).ok).toBe(true)
     writeFileSync(scopeLock('agent:t'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, host: hostId, boot: bootId || 'test-boot', nonce: 'live-holder', token: 'live-token', at: Date.now() }))
     const w0 = bytesOf(writesPath())
-    const r = await storeWith({ lockTimeoutMs: 150 }).applyTodos('agent:t', { todos: [{ content: 'blocked', status: 'pending' }], applyId: 'live-1' })
+    // the holder is this pid: the would-be breaker refuses immediately, so
+    // the apply spins its (faked) retry sleep until its own Date.now() sees
+    // more than 150 ms elapsed — the timeout is a pure clock event now
+    const live = storeWith({ lockTimeoutMs: 150 }).applyTodos('agent:t', { todos: [{ content: 'blocked', status: 'pending' }], applyId: 'live-1' })
+    const r = await underClock(live)
     expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
     expect(bytesOf(writesPath())).toBe(w0)
     expect(await storeWith().readTodos('agent:t')).toBe(null)
@@ -722,6 +803,12 @@ describe('u7as N — the per-realm scope count is bounded', () => {
 })
 
 describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F-4)', () => {
+  // R-413-1: every stale/timeout/heartbeat window in this describe is a
+  // FAKE-clock event, driven by vi.advanceTimersByTimeAsync (or the
+  // underClock helper); the asserted semantics are byte-for-byte the same.
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] }) })
+  afterEach(() => { vi.useRealTimers() })
+
   const scopeLockPath = (scope: string): string => join(storeRoot(), 'locks', `${createHash('sha256').update(scope).digest('hex')}.lock`)
   const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
   const bootId = (): string => { try { return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim() } catch { return '' } }
@@ -738,12 +825,19 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     const b = storeWith({ lockStaleMs: 50, lockHeartbeatMs: 20, lockTimeoutMs: 400 })
     const pa = a.applyGoal('agent:f', { expectedRevision: 1, next: goalV(2), applyId: 'f-a' })
     await inside // A now HOLDS the lock and is paused mid read→CAS→commit
-    const rb = await b.applyGoal('agent:f', { expectedRevision: 1, next: { ...goalV(2), objective: 'B wins?' }, applyId: 'f-b' })
+    const rb = b.applyGoal('agent:f', { expectedRevision: 1, next: { ...goalV(2), objective: 'B wins?' }, applyId: 'f-b' })
+    void rb.catch(() => {}) // keep the early refusal handled while the clock runs
+    // R-413-1: the 1000 ms pause and B's 400 ms timeout are FAKE-time
+    // events; advancing the clock drives them in exact order (B refuses at
+    // ~t+412, A resumes at t+1000 and commits) — no wall-clock window in
+    // which machine load could reorder the two.
+    await underClock(pa)
     const ra = await pa
-    const oks = [ra, rb].filter((r) => r.ok === true)
+    const r = await rb
+    const oks = [ra, r].filter((x) => x.ok === true)
     expect(oks, 'exactly one commit').toHaveLength(1)
     expect(ra.ok).toBe(true)
-    expect(['AGENT_STATE_STORE_LOCK_TIMEOUT', 'GOAL_STALE_REVISION']).toContain(rb.code)
+    expect(['AGENT_STATE_STORE_LOCK_TIMEOUT', 'GOAL_STALE_REVISION']).toContain(r.code)
     expect(linesOf(writesPath()).length - linesBefore).toBe(1)
     expect(await storeWith().readGoal('agent:f')).toMatchObject({ revision: 2, objective: 'rev 2' })
   })
@@ -751,14 +845,16 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   it('F-b a DEAD-pid holder (same host, same boot, no heartbeat) is still broken and the apply proceeds', async () => {
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:d'), JSON.stringify({ pid: 2 ** 22 + 4242, host: host(), boot: bootId(), nonce: 'dead', token: 't0', at: Date.now() }))
-    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:d', { todos: [{ content: 'after-dead', status: 'pending' }], applyId: 'f-dead' })
+    const dead = storeWith({ lockStaleMs: 50 }).applyTodos('agent:d', { todos: [{ content: 'after-dead', status: 'pending' }], applyId: 'f-dead' })
+    const r = await underClock(dead)
     expect(r.ok).toBe(true)
   })
 
   it('F-b2 a holder from a PREVIOUS BOOT of this host is broken (boot id differs)', async () => {
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:boot'), JSON.stringify({ pid: (process as unknown as { pid: number }).pid, host: host(), boot: 'a-previous-boot', nonce: 'old-boot', token: 't0', at: Date.now() }))
-    const r = await storeWith({ lockStaleMs: 50 }).applyTodos('agent:boot', { todos: [{ content: 'after-reboot', status: 'pending' }], applyId: 'f-boot' })
+    const boot = storeWith({ lockStaleMs: 50 }).applyTodos('agent:boot', { todos: [{ content: 'after-reboot', status: 'pending' }], applyId: 'f-boot' })
+    const r = await underClock(boot)
     expect(bootId() === '' ? r.ok === false : r.ok === true).toBe(true)
   })
 
@@ -767,7 +863,10 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     // pid 1 is always alive; the lock is an hour old — under the old policy age alone broke it.
     writeFileSync(scopeLockPath('agent:live'), JSON.stringify({ pid: 1, host: host(), boot: bootId(), nonce: 'live', token: 't0', at: Date.now() - 3_600_000 }))
     const w0 = bytesOf(writesPath())
-    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:live', { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: 'f-live' })
+    // pid 1 is alive: mayBreak refuses instantly, so the apply spins its
+    // (faked) retry sleep until its own Date.now() sees 300 ms elapsed
+    const live = storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:live', { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: 'f-live' })
+    const r = await underClock(live)
     expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
     expect(bytesOf(writesPath())).toBe(w0)
     expect(existsSync(scopeLockPath('agent:live'))).toBe(true)
@@ -777,7 +876,8 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   it('F-c2 a holder on ANOTHER HOST is never broken (unprovable from here) → typed LOCK_TIMEOUT', async () => {
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:remote'), JSON.stringify({ pid: 2 ** 22 + 1, host: 'some-other-host.invalid', boot: 'x', nonce: 'remote', token: 't0', at: Date.now() - 3_600_000 }))
-    const r = await storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:remote', { todos: [{ content: 'x', status: 'pending' }], applyId: 'f-remote' })
+    const remote = storeWith({ lockStaleMs: 50, lockTimeoutMs: 300 }).applyTodos('agent:remote', { todos: [{ content: 'x', status: 'pending' }], applyId: 'f-remote' })
+    const r = await underClock(remote)
     expect(r).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
   })
 
@@ -789,7 +889,8 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
       writeFileSync(path, body)
       const before = readFileSync(path)
       const writes = bytesOf(writesPath())
-      const result = await storeWith({ lockStaleMs: 10, lockTimeoutMs: 80 }).applyTodos(`agent:bad-${i}`, { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: `bad-${i}` })
+      const rp = storeWith({ lockStaleMs: 10, lockTimeoutMs: 80 }).applyTodos(`agent:bad-${i}`, { todos: [{ content: 'must-not-land', status: 'pending' }], applyId: `bad-${i}` })
+      const result = await underClock(rp)
       expect(result).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
       expect(readFileSync(path)).toEqual(before)
       expect(bytesOf(writesPath())).toBe(writes)
@@ -808,37 +909,49 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
       if (point === 'beat-before-rename') { started(); await beatGate }
     } })
     const pending = owner.applyTodos('agent:race-release', { todos: [{ content: 'x', status: 'pending' }], applyId: 'race-release' })
-    await new Promise((resolve) => setTimeout(resolve, 30))
-    await beatStarted
+    // R-413-1: the "the beat must have started" wait is FAKE-clock driven —
+    // the first beat's lock rewrite is real fs I/O started inside a fake
+    // timer callback, so it only reliably completes while the clock runs
+    await underClock(beatStarted, 20_000)
     allowCommit()
-    const settledWhileBeatGated = await Promise.race([
+    const race = Promise.race([
       pending.then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 40)),
     ])
+    await vi.advanceTimersByTimeAsync(40)
+    const settledWhileBeatGated = await race
     expect(settledWhileBeatGated, 'release must await the gated in-flight beat').toBe(false)
     openBeat()
-    expect((await pending).ok).toBe(true)
+    // the gated beat resumes its rename on the running clock
+    expect((await underClock(pending, 20_000)).ok).toBe(true)
     expect(existsSync(scopeLockPath('agent:race-release'))).toBe(false)
     expect((await storeWith({ lockTimeoutMs: 100 }).applyTodos('agent:race-release', { todos: [{ content: 'y', status: 'pending' }], applyId: 'race-release-2' })).ok).toBe(true)
   })
 
   it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
+    // R-413-1: the realm lock serialises the four appliers completely, so a
+    // fixed sequence over the same four applyIds is the same interleaving
+    // minus the wall-clock non-determinism (one CAS winner, three stale).
     for (let round = 1; round <= 10; round += 1) {
       const seeded = storeWithBoot('')
       await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
-      const results = await Promise.all([0, 1, 2, 3].map((i) => storeWithBoot('').applyGoal('agent:empty-race', {
-        expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
-        next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })))
+      const results: Array<{ ok: boolean, code?: string }> = []
+      for (let i = 0; i < 4; i += 1) {
+        results.push(await storeWithBoot('').applyGoal('agent:empty-race', {
+          expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
+          next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
+        }))
+      }
       expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
     }
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
-    expect((await storeWithBoot('', { lockStaleMs: 10 }).applyTodos('agent:empty-dead', { todos: [{ content: 'ok', status: 'pending' }], applyId: 'empty-dead' })).ok).toBe(true)
+    const dead = storeWithBoot('', { lockStaleMs: 10 }).applyTodos('agent:empty-dead', { todos: [{ content: 'ok', status: 'pending' }], applyId: 'empty-dead' })
+    expect((await underClock(dead)).ok).toBe(true)
     writeFileSync(scopeLockPath('agent:empty-invalid'), JSON.stringify({ pid: 2 ** 22 + 7778, host: host(), boot: '', nonce: 'invalid-empty', token: 't0', at: Date.now() }))
     const before = bytesOf(writesPath())
-    const refused = await storeWithBoot('local-boot', { lockTimeoutMs: 80 }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' })
+    const refused = await underClock(storeWithBoot('local-boot', { lockTimeoutMs: 80 }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' }))
     expect(refused).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
     expect(bytesOf(writesPath())).toBe(before)
   })
@@ -861,10 +974,22 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     const pa = a.applyTodos('agent:beat', { todos: [{ content: 'b', status: 'pending' }], applyId: 'f-beat' })
     await inside
     const t1 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
-    await new Promise((r) => { setTimeout(r, 120) })
-    const t2 = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+    // R-413-1: the observation window is FAKE time — the faked 20 ms beat
+    // keeps rewriting the lock record; drive the clock (with the same hard
+    // fs pump as underClock) until one beat's rewrite has landed, so t2
+    // differs from t1 on every run (under real timers the beat count was
+    // load-dependent)
+    let t2 = t1
+    for (let i = 0; i < 1000 && t2 === t1; i += 1) {
+      await vi.advanceTimersByTimeAsync(25)
+      if (i % 50 === 49) await fsp.realpath(tmpdir())
+      if (existsSync(scopeLockPath('agent:beat'))) {
+        const token = JSON.parse(readFileSync(scopeLockPath('agent:beat'), 'utf8')).token
+        if (token !== t1) t2 = token
+      }
+    }
     release()
-    expect((await pa).ok).toBe(true)
+    expect((await underClock(pa, 20_000)).ok).toBe(true)
     expect(t2).not.toBe(t1)
     expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
   })
