@@ -1,0 +1,325 @@
+{
+  "runId": "u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z",
+  "worldId": "u5u7r3c2j-20261029T18-30-55Z",
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u6jobs-realm-u5u7r3c2j-20261029t18-30-55z"
+    },
+    "job_output": {
+      "count": 3,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u6jobs-realm-u5u7r3c2j-20261029t18-30-55z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_READ_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "cannot be verified at dispatch": {
+      "count": 0,
+      "sample": null
+    }
+  },
+  "claims": {
+    "claim1": "U6JOBS_CLAIM_u5u7r3c2j-20261029t18-30-55z",
+    "killWarm": "U6JOBS_KILLWARM_u5u7r3c2j-20261029t18-30-55z",
+    "killFinal": "U6JOBS_KILLFINAL_u5u7r3c2j-20261029t18-30-55z",
+    "ctl": "U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z",
+    "denyLeg": "U6JOBS-DENY-LEG-MARKER-u5u7r3c2j-20261029t18-30-55z"
+  },
+  "claim1Text": null,
+  "jobIds": [],
+  "list1": "(no background jobs)",
+  "output1": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "output2": null,
+  "output2Post": null,
+  "kill2": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "list2": "(no background jobs)",
+  "foreignOutput": null,
+  "foreignKill": null,
+  "foreignDenyBash": null,
+  "foreignList": null,
+  "foreignJobIds": [],
+  "denyLegIssued": false,
+  "denyRow": {
+    "seen": false,
+    "denied": false,
+    "resolutions": []
+  },
+  "ctlOutput": "U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z\n[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n[status: running]",
+  "trioUses": 7,
+  "controlRows": [
+    {
+      "toolName": "bash",
+      "summary": "bash [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use] [background] { ",
+      "status": "settled"
+    },
+    {
+      "toolName": "bash",
+      "summary": "bash [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use] [background] pr",
+      "status": "settled"
+    },
+    {
+      "toolName": "bash",
+      "summary": "bash [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use] sleep 40",
+      "status": "settled"
+    }
+  ],
+  "birthRow": {
+    "seen": true,
+    "resolved": true,
+    "resolutions": [
+      {
+        "requestId": "ctrl-117wf420z84urn051ypgs1sa",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-1ltusnu1qhgnez0gtv2os01a",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-01sqcsp1wngpmc1oi6znb1dl",
+        "status": 200,
+        "ok": true
+      }
+    ]
+  },
+  "controlRead": {
+    "channel": "remote:team.getLedgerPage",
+    "teamSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+    "anchoredToBootRoot": false,
+    "positiveReadProven": true,
+    "approverErrors": [
+      "team.getLedgerPage failed (page 1, afterSequence=0): status=401 null"
+    ]
+  },
+  "leaderLane": {
+    "requests": 46,
+    "exchanges": 11,
+    "lastText": "U6JOBS_PHASE_wait_ids",
+    "wakes": 29,
+    "wakeRejected": 0,
+    "tail": [
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-1-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-2-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-3-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-4-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-5-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-6-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-7-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      },
+      {
+        "name": "team_collect",
+        "args": {
+          "rootSessionId": "session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z",
+          "requestToken": "[U6JOBS-TOK-fd1-8-u5u7r3c2j-20261029t18-30-55z]",
+          "requestTokens": [
+            "[U6JOBS-TOK-d1-u5u7r3c2j-20261029t18-30-55z]"
+          ]
+        },
+        "result": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-u6jobs-team-u5u7r3c2j-20261029t18-30-55z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"[U6JOBS-TOK-d1-u5u7r3c2j-202"
+      }
+    ]
+  },
+  "settle": {
+    "killLines": 0,
+    "foreignKillLines": 0
+  },
+  "rootKernelMentions": 0,
+  "lanes": {
+    "work": true,
+    "foreign": false,
+    "leader": false,
+    "ctl": true
+  },
+  "debug": {
+    "worker": [
+      {
+        "name": "job_list",
+        "args": {},
+        "result": "(no background jobs)"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+      },
+      {
+        "name": "bash",
+        "args": {
+          "command": "printf '%s\\n' \"U6JOBS_KILLWARM_u5u7r3c2j-20261029t18-30-55z\" && sleep 35 && printf '%s\\n' \"U6JOBS_KILLFINAL_u5u7r3c2j-20261029t18-30-55z\"",
+          "description": "u6jobs cancel-subject birth",
+          "run_in_background": true
+        },
+        "result": "Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to the native body)"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+      },
+      {
+        "name": "job_kill",
+        "args": {
+          "job_id": "job-unknown",
+          "reason": "u6jobs-kill-refusal"
+        },
+        "result": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+      },
+      {
+        "name": "bash",
+        "args": {
+          "command": "sleep 40",
+          "description": "u6jobs settle spacer"
+        },
+        "result": "Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to the native body)"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "job-unknown"
+        },
+        "result": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)"
+      },
+      {
+        "name": "job_list",
+        "args": {},
+        "result": "(no background jobs)"
+      }
+    ],
+    "foreign": [],
+    "root": [
+      {
+        "name": "bash",
+        "args": {
+          "command": "printf '%s\\n' \"U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z\" && sleep 45",
+          "description": "u6jobs native control birth",
+          "run_in_background": true
+        },
+        "result": "started background job bash-1"
+      },
+      {
+        "name": "bash",
+        "args": {
+          "command": "sleep 3",
+          "description": "u6jobs ctl ring-read spacer"
+        },
+        "result": "[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n"
+      },
+      {
+        "name": "job_output",
+        "args": {
+          "job_id": "bash-1"
+        },
+        "result": "U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z\n[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n[status: running]"
+      }
+    ],
+    "bashResults": [
+      "{\"args\":{\"command\":\"{ printf '%s\\\\n' \\\"U6JOBS_CLAIM_u5u7r3c2j-20261029t18-30-55z\\\" >> \\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/homes/u5u7r3c2j-20261029T18-30-55Z/workspace/u6jobs-claim.txt\\\" || true; printf '%s\\\\n' \\\"U6JOBS_CLAIM_u5u7r3c2j-20261029t18-30-55z\\\"; } && sleep 90\",\"description\":\"u6jobs owner birth\",\"run_in_background\":true},\"result\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to the native body)\"}",
+      "{\"args\":{\"command\":\"printf '%s\\\\n' \\\"U6JOBS_KILLWARM_u5u7r3c2j-20261029t18-30-55z\\\" && sleep 35 && printf '%s\\\\n' \\\"U6JOBS_KILLFINAL_u5u7r3c2j-20261029t18-30-55z\\\"\",\"description\":\"u6jobs cancel-subject birth\",\"run_in_background\":true},\"result\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to the native body)\"}",
+      "{\"args\":{\"command\":\"sleep 40\",\"description\":\"u6jobs settle spacer\"},\"result\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to the native body)\"}",
+      "{\"args\":{\"command\":\"printf '%s\\\\n' \\\"U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z\\\" && sleep 45\",\"description\":\"u6jobs native control birth\",\"run_in_background\":true},\"result\":\"started background job bash-1\"}",
+      "{\"args\":{\"command\":\"sleep 3\",\"description\":\"u6jobs ctl ring-read spacer\"},\"result\":\"[stderr]\\nlandlock-run: partial enforcement (older Landlock ABI)\\n\"}"
+    ],
+    "trioResults": [
+      "{\"name\":\"job_list\",\"args\":{},\"result\":\"(no background jobs)\"}",
+      "{\"name\":\"job_output\",\"args\":{\"job_id\":\"job-unknown\"},\"result\":\"refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)\"}",
+      "{\"name\":\"job_kill\",\"args\":{\"job_id\":\"job-unknown\",\"reason\":\"u6jobs-kill-refusal\"},\"result\":\"refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)\"}",
+      "{\"name\":\"job_output\",\"args\":{\"job_id\":\"bash-1\"},\"result\":\"U6JOBS_CTLCLAIM_u5u7r3c2j-20261029t18-30-55z\\n[stderr]\\nlandlock-run: partial enforcement (older Landlock ABI)\\n[status: running]\"}"
+    ]
+  }
+}

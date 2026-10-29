@@ -1,0 +1,29 @@
+{
+  "schema": "u7r3-pilot-c2/boot-pre-registration/1",
+  "ruling": "USER-RULING-20261029B item 1 (每启动事前登记) via the pilot brief: budget 2 starts MAX (机动 pool), pre-register BEFORE start",
+  "task": "u7r3-pilot-c2-20261029 — live C2 arms: team_glob (arc-a glob ask-DENY) + job_list (jobs deny-leg)",
+  "branch": "task/u7r3-pilot-c2-20261029",
+  "base": "origin/master 53e26e2412f4a8a3c7f1b0bdebee77eb29d606e5 (PRs #457/#456 OPEN/unmerged — base = master per the pilot ruling; the live legs grade the PRODUCTION plane, which master carries; the two PRs add only offline C1 test files)",
+  "budgetLedger": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl",
+  "maxHostStarts": 2,
+  "ledgerAtRegistration": "absent => zero prior starts; the runner appends one line per start BEFORE the spawn (the machine-side pre-registration), and refuses to begin once the ledger holds >= maxHostStarts entries",
+  "plannedStarts": [
+    {
+      "n": 1,
+      "suite": "u6-arc-a",
+      "command": "node tests/world-factory/u5-canary-runner.mjs --suite u6-arc-a --line u7r3c2a --evidence dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a --run-record dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/run-record.json --budget-ledger dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl --max-host-starts 2",
+      "armsGraded": ["arca:glob-ask-deny-refusal-zero-effect (team_glob L3)", "regression: the 9 pre-existing arca cases"]
+    },
+    {
+      "n": 2,
+      "suite": "u6-jobs",
+      "command": "node tests/world-factory/u5-canary-runner.mjs --suite u6-jobs --line u7r3c2j --evidence dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs --run-record dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/run-record.json --budget-ledger dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl --max-host-starts 2",
+      "armsGraded": ["jobs:list-deny-leg-honest-zero (job_list L3)", "regression: the 8 pre-existing jobs cases"]
+    }
+  ],
+  "whyTwoBoots": "one runner process = one RUN record = one World = one boot; the two suites materialize DIFFERENT worlds (probe-plane vs jobs-plane), so the batched pilot spends exactly the 2 registered starts; the shared budget ledger is the machine gate across both",
+  "host": "pristine tests/deepseek-harness-test-use @ 639ed01539 (porcelain empty; native sandbox assets provisioned-local, probe=partial usable)",
+  "ports": "3180 family via the #397 bands leased by the factory (host 3181-3199 then 13000-13049; mocks 3491-3500 then 13050-13099); :3080 and ~/.dsh off-limits (read-only 401 probe recorded before boot); kill only self-started children (runner run-control ownership)",
+  "worlds": "tests/homes/<world> in-workspace, ephemeral (teardown deletes unless --keep-home)",
+  "honesty": "NOT_REACHED (no live refusal) blocks that tool's ledger upgrade; an honestly minted ENV_BLOCK is recorded, never forced"
+}

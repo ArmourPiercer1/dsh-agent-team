@@ -373,6 +373,14 @@ async function main() {
     const armingRows = []
     const armingSeen = new Set()
     const resolvedOrder = []
+    // U7-R3 pilot C2 re-home (deny-leg): with every WORKER birth ask settled
+    // by the KILLDONE_DONE fence, the runner becomes the DENIER of every
+    // later bash ask row — by lane construction that is exactly the foreign
+    // fdeny lane's OWN birth. The row identity is ORDER + lane sequencing
+    // (the PA summary carries no command text); the judge's witnesses (typed
+    // APPROVAL_DENIED, zero birth, honest-zero list) bind the answer.
+    const denyWindow = { active: false }
+    const denyLedger = new Map()
     let approverStop = false
     let pollTick = 0
     const approver = (async () => {
@@ -409,7 +417,17 @@ async function main() {
               }
               continue // never touch what this suite did not authorize
             }
-            if (askLedger.has(id)) continue // EXACTLY ONCE — a seen row is never re-settled
+            if (askLedger.has(id) || denyLedger.has(id)) continue // EXACTLY ONCE — a seen row is never re-settled
+            if (denyWindow.active) {
+              denyLedger.set(id, { requestId: id.slice(0, 60), resolutions: 0, ok: false, resolveStatus: null })
+              const resD = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
+                { teamSessionId, requestId: id, decision: 'deny', note: 'u7r3-c2-deny-leg' }, 'u74a-denyleg', 4)
+              const rowD = denyLedger.get(id)
+              rowD.resolutions += 1
+              rowD.resolveStatus = resD?.status ?? null
+              rowD.ok = resD?.status === 200 && resD?.body?.result?.ok === true
+              continue
+            }
             askLedger.set(id, { requestId: id.slice(0, 60), targetInstanceId: r.targetInstanceId == null ? null : String(r.targetInstanceId), resolutions: 0, ok: false, resolveStatus: null })
             resolvedOrder.push(id)
             const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
@@ -450,6 +468,8 @@ async function main() {
       digest.laneDone.list = await wakeCadence('U74A_LIST_DONE', 90_000, 'l')
       digest.laneDone.killLive = await wakeCadence('U74A_KILLLIVE_DONE', 90_000, 'k')
       digest.laneDone.killDone = await wakeCadence('U74A_KILLDONE_DONE', 150_000, 'n')
+      denyWindow.active = true // the DENIER window opens: every later bash ask is the fdeny lane's own birth
+      digest.laneDone.fdeny = await wakeCadence('U74A_FDENY_DONE', 150_000, 'y')
       digest.laneDone.fout = await wakeCadence('U74A_FOUT_DONE', 150_000, 'f')
       digest.laneDone.fplant = await wakeCadence('U74A_FPLANT_DONE', 90_000, 'p')
       // CI-03 native control on the UNGOVERNED boot-root session.
@@ -498,6 +518,15 @@ async function main() {
       digest.killDoneJobId = firstJobId(kdEx.map((e) => e.result).join('\n'))
       digest.killDoneOutput = firstNamed(kdEx, 'job_output')
       digest.killDoneKill = firstNamed(kdEx, 'job_kill')
+      const fdEx = laneEx('d-fdeny')
+      digest.foreignDenyBash = firstNamed(fdEx, 'bash')
+      digest.foreignList = firstNamed(fdEx, 'job_list')
+      digest.foreignDenyJobIds = [...String(fdEx.map((e) => e.result).join('\n')).matchAll(/started background job ([A-Za-z0-9][A-Za-z0-9_.-]{2,})/g)].map((m) => m[1])
+      digest.denyRow = {
+        seen: denyLedger.size > 0,
+        denied: [...denyLedger.values()].some((r) => r.ok === true),
+        resolutions: [...denyLedger.values()].map((r) => ({ requestId: r.requestId, status: r.resolveStatus, ok: r.ok })),
+      }
       digest.foreignOut = firstNamed(laneEx('d-fout'), 'job_output')
       digest.foreignPlanted = firstNamed(laneEx('d-fplant'), 'job_output')
       const cReq = laneTranscript(requests, assembly.markers.T_CTL)
@@ -542,7 +571,26 @@ async function main() {
 
     const alive = hostAlive()
     const verdicts = judgeU74a(digest, alive, { sandboxPreflight: factory.sandboxPreflight })
-    for (const [id, verdict, detail] of verdicts) add(id, verdict, { laneDone: digest.laneDone, ...(detail ?? {}) })
+    for (const [id, verdict, detail] of verdicts) {
+      // Three-way law (pilot C2, no ENV_BLOCK forging): the deny-leg arm is
+      // ENV_BLOCK exactly when (a) its birth attempt ISSUED but no ask row
+      // reached the ledger face and nothing was born, or (b) the lane never
+      // got to live (zero exchanges, DONE never seen) — an environment wall
+      // upstream of the arm. A seen-but-undenied row, a born job, or a
+      // leaking list stays FAIL.
+      if (id === 'u74a:list-deny-leg-honest-zero' && verdict === 'FAIL' && !plant) {
+        const noRow = digest.denyRow?.seen !== true
+        if (noRow && digest.foreignDenyBash != null && (digest.foreignDenyJobIds ?? []).length === 0) {
+          add(id, 'ENV_BLOCK', { laneDone: digest.laneDone, ...(detail ?? {}), reason: 'the deny-leg birth attempt issued but no ask row reached the durable ledger face (the observer saw zero rows, nothing was born) — the leg died upstream of the approval lane, no refusal witness exists' })
+          continue
+        }
+        if (noRow && digest.foreignDenyBash == null && digest.laneDone?.fdeny !== true) {
+          add(id, 'ENV_BLOCK', { laneDone: digest.laneDone, ...(detail ?? {}), reason: 'the deny-leg never got to live: the fdeny lane produced zero exchanges and its DONE never arrived (an upstream wall, recorded honestly — not a product refusal verdict, never a pass)' })
+          continue
+        }
+      }
+      add(id, verdict, { laneDone: digest.laneDone, ...(detail ?? {}) })
+    }
     if (!alive) failRest('host died during the run')
     log(`attributed host lines: ${String(digest.attributedLog.length)}; ask rows: ${String(digest.askRows.length)}; kernelHits job_output: ${String(digest.kernelHits['job_output']?.count ?? 0)}`)
     for (const l of digest.attributedLog.slice(0, 4)) log(`hostlog: ${redact(l)}`)

@@ -657,7 +657,7 @@ test('u6-arc-a: SUITE_CASES entry and parseArgs wiring', async () => {
     'arca:mounted', 'arca:probe-positive', 'arca:probe-unbound-refused-zero-effect',
     'arca:probe-replay-refused-zero-effect', 'arca:probe-unload-settles',
     'arca:search-grep-live', 'arca:search-glob-live', 'arca:search-refusal-zero-effect',
-    'arca:native-grep-control',
+    'arca:glob-ask-deny-refusal-zero-effect', 'arca:native-grep-control',
   ])
   const opts = parseArgs(['--suite', 'u6-arc-a', '--line', 'u6arcx', '--evidence', '/tmp/ev'])
   assert.equal(opts.suite, 'u6-arc-a')
@@ -697,6 +697,18 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(doc.schemaVersion, 3)
   assert.ok(doc.members.some((m) => m.templateId === 'greper'))
   assert.ok(doc.members.some((m) => m.templateId === 'ctl' && m.capabilities === undefined))
+  // U7-R3 pilot C2: the globask member — the ask-lane twin of the greper's
+  // allow rule (ONE root, two lanes: allow answers, ask+DENY refuses).
+  const globask = doc.members.find((m) => m.templateId === 'globask')
+  assert.ok(globask, 'the globask member exists (the ask-lane glob refusal lane)')
+  assert.equal(globask.capabilities.permissions.default, 'deny')
+  assert.deepEqual(globask.capabilities.permissions.allow, [])
+  assert.deepEqual(globask.capabilities.permissions.ask, [{ tool: 'read', resource: { kind: 'exact', path: assembly.workspaceDir } }])
+  assert.ok((doc.teamEnvelope.allow ?? []).includes('request-control'), 'the ask lane needs the request-control envelope arm (u6-jobs-proven)')
+  const globaskEnv = (doc.memberEnvelopes ?? []).find((e) => e.templateId === 'globask')
+  assert.ok((globaskEnv?.envelope?.allow ?? []).includes('request-control'), 'the globask member carries request-control')
+  const leaderEnv = (doc.memberEnvelopes ?? []).find((e) => e.templateId === 'leader')
+  assert.deepEqual(leaderEnv?.envelope?.allow ?? [], ['create-member', 'assign-task', 'send-message', 'report-progress'], 'the leader entry pins its OLD bounds (u6-jobs widening law)')
   const cfg = assembly.teamRowConfig()
   assert.equal(cfg.teamToolPlane.centerAssembly, 'enforcing')
   const rows = assembly.teamRows()
@@ -716,6 +728,13 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(seq[0].toolCalls[0].arguments.output_mode, 'content')
   assert.equal(seq[0].toolCalls[0].arguments.path, assembly.workspaceDir)
   assert.equal(seq[2].toolCalls[0].arguments.output_mode, 'content')
+  // decide: the globask lane (U7-R3 pilot C2) issues EXACTLY ONE governed
+  // team_glob at the plane root, then closes — one call per leg, the
+  // refusal law is the runner's to grade (stateless: tool_result count).
+  const globReq = (n) => ({ body: { messages: [{ role: 'user', content: `[team-work requestToken=${assembly.tokens('d3')} x] ${assembly.markers.MK_GLOBDENY}` }, ...Array.from({ length: n }, () => ({ role: 'assistant', content: [{ type: 'tool_use', name: 'team_glob' }] }, { role: 'user', content: [{ type: 'tool_result', content: [{ type: 'text', text: 'a5p5-refused code=APPROVAL_DENIED' }] }] })) ] } })
+  assert.equal(decide({ req: globReq(0) }).toolCalls[0].name, 'team_glob')
+  assert.equal(decide({ req: globReq(0) }).toolCalls[0].arguments.path, assembly.workspaceDir)
+  assert.equal(nameOf(decide({ req: globReq(1) })), 'U6ARCA_GLOBDENY_DONE')
   // LEAST-PRIVILEGE pin (U7-6 law): default deny; ask/deny lanes empty; the
   // allow lane carries EXACTLY ONE rule — a `read` EXACT at the governed
   // root — and nothing else. Pre-U7-6 this pin read "all three lanes empty"
@@ -748,6 +767,10 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
     globResults: [{ ok: true, enumHasG3: true, gitDecoyExcluded: true }],
     ctlResult: { ok: true, claimFound: true },
     refusalResult: { refused: true, outsideRootCodeSeen: true, censusUnchanged: true, admissionRefused: false },
+    globDenyResult: {
+      rowSeen: true, rowDeniedOk: true, refusalSeen: true, approvalDeniedCodeSeen: true,
+      admissionRefused: false, censusUnchanged: true, claimsEchoed: false,
+    },
     hostKernelHits: { 'a5-plane: mount-REFUSED': { count: 0 } },
     hostAlive: true,
   }
@@ -778,6 +801,15 @@ test('u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; d
   assert.equal(judgeU6ArcA({ ...goodDigest, refusalResult: { ...goodDigest.refusalResult, admissionRefused: true } })['arca:search-refusal-zero-effect'], false,
     'refused-admission masquerading as containment = false green, refused')
   assert.equal(judgeU6ArcA({ ...goodDigest, refusalResult: { ...goodDigest.refusalResult, outsideRootCodeSeen: false } })['arca:search-refusal-zero-effect'], false)
+  // U7-R3 pilot C2 — the glob ask-DENY arm: every witness is load-bearing.
+  assert.equal(judgeU6ArcA(goodDigest)['arca:glob-ask-deny-refusal-zero-effect'], true)
+  const globFlip = (over) => judgeU6ArcA({ ...goodDigest, globDenyResult: { ...goodDigest.globDenyResult, ...over } })['arca:glob-ask-deny-refusal-zero-effect']
+  assert.equal(globFlip({ rowSeen: false }), false, 'a refusal claim without an OBSERVED durable ask row is unproven (the positive-read law)')
+  assert.equal(globFlip({ rowDeniedOk: false }), false, 'an unsettled ask row is not a DENY')
+  assert.equal(globFlip({ approvalDeniedCodeSeen: false }), false, 'the refusal must carry the approval-deny lane code — any other landing is another lane\'s answer')
+  assert.equal(globFlip({ admissionRefused: true }), false, 'a shut-face/admission landing is NEVER refusal evidence (the run8 law, carried to this arm)')
+  assert.equal(globFlip({ censusUnchanged: false }), false, 'the governed root must show ZERO change across the refused call')
+  assert.equal(globFlip({ claimsEchoed: true }), false, 'a refusal that echoes the targeted tree\'s claims leaks exactly what it promised to prevent')
   rmSync(dir, { recursive: true, force: true })
 })
 
@@ -790,6 +822,7 @@ test('u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import', async () =>
   const { SUITE_CASES, parseArgs } = await import('./u5-canary-runner.mjs')
   assert.deepEqual(SUITE_CASES['u6-jobs'], [
     'jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence',
+    'jobs:list-deny-leg-honest-zero',
     'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check',
   ])
   const opts = parseArgs(['--suite', 'u6-jobs', '--line', 'u6jobsx', '--evidence', '/tmp/ev'])
@@ -1110,6 +1143,21 @@ test('u6-jobs: the decide script answers real transcript shapes with the scripte
   const c2ctl = decide({ req: ctl2 })
   assert.equal(c2ctl.toolCalls[0].name, 'job_output')
   assert.equal(c2ctl.toolCalls[0].arguments.job_id, 'jb-ctl01', 'the spaced ring read names the birth id from the transcript')
+  // U7-R3 pilot C2 — the fence lane grows the deny-leg tail: after the
+  // refused output/kill attempts it attempts its OWN background birth (the
+  // runner DENIES that ask row) and reads job_list: the J4 live mirror.
+  const f2 = { body: { messages: [user(`[team-work requestToken=${a.tokens('d2')} x] fence job_id=jb-alpha01`),
+    use('f1', 'job_output', { job_id: 'jb-alpha01' }), result('f1', 'refused: unattributed-job'),
+    use('f2', 'job_kill', { job_id: 'jb-alpha01' }), result('f2', 'refused: unattributed-job')] } }
+  const cf2 = decide({ req: f2 })
+  assert.equal(cf2.toolCalls[0].name, 'bash', 'the deny-leg birth attempt is the foreign lane step after the kill attempt')
+  assert.equal(cf2.toolCalls[0].arguments.run_in_background, true, 'the deny-leg subject is a background birth (J4 shape)')
+  assert.ok(String(cf2.toolCalls[0].arguments.command).includes('U6JOBS-DENY-LEG'), 'the deny-leg command carries its own disclosure token')
+  const f3 = { body: { messages: [...f2.body.messages, use('f3', 'bash', {}), result('f3', 'a5p5-refused code=APPROVAL_DENIED')] } }
+  const cf3 = decide({ req: f3 })
+  assert.equal(cf3.toolCalls[0].name, 'job_list', 'the denied birth is READ BACK through job_list (J4: the store face witnesses the zero)')
+  const f4 = { body: { messages: [...f3.body.messages, use('f4', 'job_list', {}), result('f4', '(no background jobs)')] } }
+  assert.equal(decide({ req: f4 }).content ?? '', 'U6JOBS_FENCE_DONE')
 })
 
 test('u6-jobs: the judge passes the honest digest and catches each named mutation', async () => {
@@ -1141,6 +1189,14 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
     list2: '(no background jobs)',
     foreignOutput: CI05_REFUSED,
     foreignKill: CI05_REFUSED,
+    // U7-R3 pilot C2 (J4 live mirror): the deny-lane leg — the durable ask
+    // row is OBSERVED and DENIED, the birth answers the typed approval-deny
+    // refusal UNBORN, and the foreign job_list answers the honest zero with
+    // no owner row in it and no new id in its own transcript.
+    foreignDenyBash: 'a5p5-refused: durable Control request req-deny-1 answered deny — code=APPROVAL_DENIED',
+    foreignList: '(no background jobs)',
+    foreignJobIds: [],
+    denyRow: { seen: true, denied: true, resolutions: [{ requestId: 'req-deny-1', status: 200, ok: true }] },
     ctlOutput: `${claims.ctl}\n[status: running]`,
     trioUses: 8,
     controlRows: [],
@@ -1149,7 +1205,7 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
     rootKernelMentions: 0,
   }
   const rows = judgeU6Jobs(good, true)
-  assert.equal(rows.length, 7, 'the judge answers the 7 non-leak cases (leak-check is the factory\'s audit leg)')
+  assert.equal(rows.length, 8, 'the judge answers the 8 non-leak cases (leak-check is the factory\'s audit leg)')
   for (const [id, verdict] of rows) assert.equal(verdict, 'PASS', `honest digest must PASS every case, ${id} failed`)
   const verdictOf = (d, caseId) => judgeU6Jobs(d, true).find(([id]) => id === caseId)[1]
   assert.equal(verdictOf({ ...good, jobIds: [] }, 'jobs:birth-positive'), 'FAIL', 'no host-vocabulary job id = nothing was born (the id parse rides the HOST spawn/row words, never a claim string)')
@@ -1168,6 +1224,16 @@ test('u6-jobs: the judge passes the honest digest and catches each named mutatio
   assert.equal(verdictOf({ ...good, rootKernelMentions: 2 }, 'jobs:ctl-native-untouched'), 'FAIL', 'kernel words on the root lane break the CI-03 control')
   assert.equal(verdictOf({ ...good, controlRows: [{ toolName: 'job_kill', summary: 'ask', status: 'pending' }] }, 'jobs:no-second-ledger'), 'FAIL', 'one approval row naming job_kill is the second ledger — it must be caught')
   assert.equal(verdictOf({ ...good, birthRow: { seen: false, resolved: false, resolutions: [] } }, 'jobs:no-second-ledger'), 'FAIL', 'R-U6P3-1: zeros from a channel that never saw the row it CREATED are vacuous — the zero-row law needs the positive read of the run\'s own birth ask on the SAME governed-session channel')
+  // U7-R3 pilot C2 — the job_list deny-leg arm (J4's live mirror): the
+  // DENIED birth must be typed, UNBORN, and the list face must answer the
+  // honest zero with the foreign scope clean.
+  assert.equal(verdictOf({ ...good, denyRow: { seen: false, denied: false, resolutions: [] } }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'a deny-leg claim without an OBSERVED durable ask row is unproven (the positive-read law)')
+  assert.equal(verdictOf({ ...good, denyRow: { seen: true, denied: false, resolutions: [] } }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'an unsettled ask row is not a DENY')
+  assert.equal(verdictOf({ ...good, foreignDenyBash: 'started background job jb-evil01' }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'a birth that STARTED despite the DENY lane is the exact inversion this arm grades')
+  assert.equal(verdictOf({ ...good, foreignDenyBash: 'Error: unknown lane' }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'an untyped refusal is not the approval-deny lane answer — discrimination, not vibes')
+  assert.equal(verdictOf({ ...good, foreignList: 'jb-evil01 [stream] running — sh' }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'a row in the foreign list after the denial means the denied call BORN something — no honest zero')
+  assert.equal(verdictOf({ ...good, foreignList: 'jb-alpha01 [stream] running — sh' }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'the owner row surfacing in the foreign-scope list is the cross-scope leak')
+  assert.equal(verdictOf({ ...good, foreignJobIds: ['jb-evil01'] }, 'jobs:list-deny-leg-honest-zero'), 'FAIL', 'host spawn vocabulary in the foreign transcript means a write the DENY lane must have zero of')
   assert.equal(verdictOf(good, 'jobs:mounted') === 'PASS' && verdictOf({ ...good, kernelHits: { ...good.kernelHits, PLANE_JOBS_REGISTRATION_REFUSED: { count: 1 } } }, 'jobs:mounted'), 'FAIL', 'a registration refusal names itself')
   assert.equal(judgeU6Jobs(good, false).find(([id]) => id === 'jobs:mounted')[1], 'FAIL', 'a dead host is never a mounted verdict')
 })
