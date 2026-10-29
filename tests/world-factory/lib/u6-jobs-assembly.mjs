@@ -696,6 +696,13 @@ export function judgeU6Jobs(d, hostAlive) {
   //     and the ZERO settlement events.
   add('jobs:list-deny-leg-honest-zero', d.denyRow?.seen === true && d.denyRow?.denied === true
     && String(d.foreignDenyBash ?? '').includes('APPROVAL_DENIED')
+    // R458d N3 (2026-10-30) defense-in-depth, mirroring the 040 veto list: a
+    // genuine approval-deny refusal is a single-line APPROVAL_DENIED with no
+    // shut-face vocabulary. If a shut-face code ever CO-OCCURS with the deny
+    // code in one refusal text, the refusal is ambiguous (which lane answered?)
+    // — veto PASS rather than grade an unclear refusal as the deny-lane proof.
+    && !/IO_POLICY_UNSUPPORTED|template-default-deny|template-deny-lane|no durable ControlService|APPROVAL_NOT_RESOLVED|refused-admission/i
+      .test(String(d.foreignDenyBash ?? ''))
     && !String(d.foreignDenyBash ?? '').includes('started background job')
     && String(d.foreignList ?? '').includes('(no background jobs)')
     && lineFor(d.foreignList, d.jobIds?.[0]) === null

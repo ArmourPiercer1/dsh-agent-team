@@ -369,7 +369,16 @@ async function runU6ArcA({ factory, record, rc, log, line, worlds, keepHome, evi
       if (globRefusalText === null || !globDenyRow?.seen) return false
       const m = /sha256:[0-9a-f]{16,}/.exec(globRefusalText)
       const t = /sha256:[0-9a-f]{16,}/.exec(String(globDenyRow.summary ?? ''))
-      return m !== null && t !== null && m[0] === t[0]
+      // R458d N2 (2026-10-30): the durable row summary is stored .slice(0,140),
+      // which can cut a 64-hex fingerprint to exactly 48 hex (measured in
+      // boot#3's own record) — full-string equality would then record a genuine
+      // PASS as fingerprintBound=false. Compare by common prefix instead
+      // (>=16 hex on both sides); detail-only witness, never a gate.
+      if (m === null || t === null) return false
+      const mh = m[0].slice('sha256:'.length)
+      const th = t[0].slice('sha256:'.length)
+      const n = Math.min(mh.length, th.length)
+      return n >= 16 && mh.slice(0, n) === th.slice(0, n)
     })(),
     censusUnchanged: globDenyCensusArmed !== null && globDenyCensusArmed === globDenyCensusPost,
     claimsEchoed: globRefusalText !== null
