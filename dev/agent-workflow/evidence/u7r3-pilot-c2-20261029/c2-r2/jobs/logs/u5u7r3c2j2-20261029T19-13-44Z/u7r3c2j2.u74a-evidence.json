@@ -1,0 +1,423 @@
+{
+  "plant": false,
+  "runId": "u7r3c2j2",
+  "laneDone": {
+    "bg": true,
+    "out": true,
+    "list": true,
+    "killLive": true,
+    "killDone": true,
+    "fdeny": true,
+    "fout": true,
+    "fplant": true,
+    "ctl": true,
+    "leader": true
+  },
+  "worldId": "u5u7r3c2j2-20261029T19-13-44Z",
+  "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/instance-port3189.log",
+  "teamSessionId": "session-u74a-team-u5u7r3c2j2-20261029t19-13-44z",
+  "canaryMount": {
+    "status": 200,
+    "requests": 0
+  },
+  "surface": {
+    "surfaceCount": 26,
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary"
+    ]
+  },
+  "claims": {
+    "bg": "U74A_BG_CLAIM_u5u7r3c2j2-20261029t19-13-44z",
+    "list": "U74A_LIST_CLAIM_u5u7r3c2j2-20261029t19-13-44z",
+    "liveWarm": "U74A_LIVE_WARM_u5u7r3c2j2-20261029t19-13-44z",
+    "liveFinal": "U74A_LIVE_FINAL_u5u7r3c2j2-20261029t19-13-44z",
+    "done": "U74A_DONE_CLAIM_u5u7r3c2j2-20261029t19-13-44z",
+    "ctl": "U74A_CTL_CLAIM_u5u7r3c2j2-20261029t19-13-44z",
+    "fdeny": "U74A_FDENY_CLAIM_u5u7r3c2j2-20261029t19-13-44z"
+  },
+  "jobIds": [
+    "bash-1"
+  ],
+  "bgReceipt": "bash · exit=not-observed\n> started background job bash-1 (governed: manage it with the job_list / job_output / job_kill trio)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":null,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}",
+  "outResult": "U74A_BG_CLAIM_u5u7r3c2j2-20261029t19-13-44z\n\n[status: completed, exit code: 0]",
+  "listResult": "bash-3 [bash] running — governed background bash",
+  "listJobId": "bash-3",
+  "killLiveJobId": "bash-4",
+  "killLiveKill": "requested cancellation of job bash-4",
+  "killLiveOutEarly": "(no new output)\n[status: stopping]",
+  "killLiveOutLate": "U74A_LIVE_WARM_u5u7r3c2j2-20261029t19-13-44z\n\n[status: killed, u74a-kill-live; signal: ; u74a-kill-live]",
+  "killDoneJobId": "bash-5",
+  "killDoneOutput": "U74A_DONE_CLAIM_u5u7r3c2j2-20261029t19-13-44z\n\n[status: completed, exit code: 0]",
+  "killDoneKill": "job bash-5 had already finished",
+  "foreignDenyBash": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+  "foreignList": "(no background jobs)",
+  "foreignDenyJobIds": [],
+  "denyRow": {
+    "seen": true,
+    "denied": true,
+    "resolutions": [
+      {
+        "requestId": "ctrl-0f6rljb0j6dexw17uzeql0xw",
+        "status": 200,
+        "ok": true
+      }
+    ]
+  },
+  "foreignOut": "refused: owner-mismatch — this viewer is not the owning member scope of the job",
+  "foreignPlanted": "refused: unattributed-job — the Team lane never attributed this job id; a governed mount refuses it before any host reach (CI-05)",
+  "ctlResult": "U74A_CTL_CLAIM_u5u7r3c2j2-20261029t19-13-44z\n[stderr]\nlandlock-run: partial enforcement (older Landlock ABI)\n",
+  "rootKernelMentions": 0,
+  "memberIds": [
+    "inst-1ha87ws1bi26",
+    "inst-1e0g2bx075sx",
+    "inst-0nzheln025yl",
+    "inst-0b55fsp18zby",
+    "inst-177um9b0g9pw",
+    "inst-004zgip1ulf8",
+    "inst-1od669t0lbdw",
+    "inst-14b6ezg1bek6"
+  ],
+  "kernelHits": {
+    "a5g7: placement-feed rows=": {
+      "count": 9,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5u7r3c2j2-20261029t19-13-44z"
+    },
+    "job_output": {
+      "count": 9,
+      "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh,read,write,edit,read_image,job_output,job_list,job_kill] realm=u74a-realm-u5u7r3c2j2-20261029t19-13-44z"
+    },
+    "a5-plane: mount-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5-plane: placement-REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_KERNEL_UNAVAILABLE": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_JOBS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "PLANE_PROCESS_REGISTRATION_REFUSED": {
+      "count": 0,
+      "sample": null
+    },
+    "a5bg: producer-mounted": {
+      "count": 9,
+      "sample": "[dsh-agent-team] a5bg: producer-mounted instance=inst-14b6ezg1bek6 session=session-team-child-ec22834aa8b2d9aac1c4b7330a3371ea"
+    },
+    "a5bg: attributed hostJobId=": {
+      "count": 5,
+      "sample": "[dsh-agent-team] a5bg: attributed hostJobId=bash-5 instance=inst-177um9b0g9pw tool=bash"
+    },
+    "a5bg:": {
+      "count": 14,
+      "sample": "[dsh-agent-team] a5bg: attributed hostJobId=bash-5 instance=inst-177um9b0g9pw tool=bash"
+    }
+  },
+  "attributedLog": [
+    "[dsh-agent-team] a5bg: attributed hostJobId=bash-1 instance=inst-1ha87ws1bi26 tool=bash",
+    "[dsh-agent-team] a5bg: attributed hostJobId=bash-2 instance=inst-1e0g2bx075sx tool=bash",
+    "[dsh-agent-team] a5bg: attributed hostJobId=bash-3 instance=inst-0nzheln025yl tool=bash",
+    "[dsh-agent-team] a5bg: attributed hostJobId=bash-4 instance=inst-0b55fsp18zby tool=bash",
+    "[dsh-agent-team] a5bg: attributed hostJobId=bash-5 instance=inst-177um9b0g9pw tool=bash"
+  ],
+  "settle": {
+    "killLiveLines": 0,
+    "plantedLines": 0
+  },
+  "startedJobReceipts": 16,
+  "askRows": [
+    {
+      "requestId": "ctrl-0ukogc10sd9sre0g6mwhn04s",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0ukogc10sd9sre0g6mwhn04s\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-1bvxc9m0x6ar6l0x2cmqk09j",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1bvxc9m0x6ar6l0x2cmqk09j\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-1cr29dn0zd0cfg162ryot0h7",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1cr29dn0zd0cfg162ryot0h7\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-027oewo0s6azs30g8ogfi0di",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-027oewo0s6azs30g8ogfi0di\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-03ave9e0c5n7nd0ual92410c",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-03ave9e0c5n7nd0ual92410c\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-0il2era1at7ith157v7wo17n",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0il2era1at7ith157v7wo17n\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-0kjwacx1jxislm1xrmzvb1xn",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0kjwacx1jxislm1xrmzvb1xn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-0yyqevc1xs69yv0puy8fe1fv",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0yyqevc1xs69yv0puy8fe1fv\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-1dggrzc10ql2er138f98m19r",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1dggrzc10ql2er138f98m19r\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-0aiodrj1v913qw1cbrs1x1ds",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0aiodrj1v913qw1cbrs1x1ds\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    },
+    {
+      "requestId": "ctrl-0wh55o5090wasm108gdxf1o0",
+      "targetInstanceId": null,
+      "resolutions": 1,
+      "ok": true,
+      "resolveStatus": 200,
+      "bodyHead": "{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0wh55o5090wasm108gdxf1o0\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-u74a-team-u5u7r3c2j2-20261029t19-13-44z\"},\"scope\":{\"rootSessionId\":\"sess"
+    }
+  ],
+  "askResolutionsTotal": 11,
+  "armingRows": [],
+  "controlRowsTotal": 0,
+  "trioControlRows": [],
+  "hostAlive": true,
+  "record": {
+    "schema": "u5-run-record/1",
+    "runId": "u7r3c2j2",
+    "suite": "u7-4a-jobs",
+    "startedAt": "2026-10-29T19:13:44.476Z",
+    "selectedCases": [
+      "u74a:mounted",
+      "u74a:bg-receipt-carries-host-job-id",
+      "u74a:attributed-server-side",
+      "u74a:ring-bytes-via-job-output-wait",
+      "u74a:list-shows-owner",
+      "u74a:kill-live-requested",
+      "u74a:kill-finished-honest",
+      "u74a:foreign-cross-scope-refusal",
+      "u74a:list-deny-leg-honest-zero",
+      "u74a:planted-unattributed",
+      "u74a:native-ctl-unaffected",
+      "u74a:exactly-once-approvals",
+      "stable-instance-unchanged"
+    ],
+    "bindings": {
+      "teamSha": "b7aac2980cd8fbf878c0e03774b3570cb47d4ad5",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "composedProfileDigest": {
+        "u5u7r3c2j2-20261029T19-13-44Z": [
+          "0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d"
+        ]
+      },
+      "trustedSourcesDigest": null,
+      "trustedSourcesUnavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.",
+      "trustedSources": {
+        "digest": null,
+        "unavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+      },
+      "worldOracleDigest": "c1b6ce9972854a181b6a12c9e703769ba964bb87e71e5834294d071a75549a13",
+      "worldOracle": {
+        "suite": "u7-4a-jobs",
+        "digest": "c1b6ce9972854a181b6a12c9e703769ba964bb87e71e5834294d071a75549a13",
+        "complete": false,
+        "entry": "tests/world-factory/u7-4a-jobs-suite.mjs",
+        "sources": [
+          "tests/kits/_shared/preset-seam.mjs",
+          "tests/kits/rc2-real-host-smoke/run-budget.mjs",
+          "tests/kits/rc2-real-host-smoke/run-control.mjs",
+          "tests/paths.mjs",
+          "tests/world-factory/canary/ledger-cap.mjs",
+          "tests/world-factory/lib/host-sandbox-assets.mjs",
+          "tests/world-factory/lib/run-record.mjs",
+          "tests/world-factory/lib/u6-fs-assembly.mjs",
+          "tests/world-factory/lib/u6-jobs-assembly.mjs",
+          "tests/world-factory/lib/u74a-jobs-assembly.mjs",
+          "tests/world-factory/u7-4a-jobs-suite.mjs"
+        ],
+        "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+        "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+        "excludedHelpers": [
+          "tests/world-factory/lib/binding-digests.mjs",
+          "tests/world-factory/lib/world-factory.mjs"
+        ],
+        "externalSpecifiers": [
+          "node:child_process",
+          "node:crypto",
+          "node:fs",
+          "node:path",
+          "node:url"
+        ],
+        "unfollowedPaths": [],
+        "unresolvedDynamicImports": [
+          "tests/world-factory/lib/host-sandbox-assets.mjs:231"
+        ],
+        "unresolvedLiteralReads": [
+          "tests/world-factory/lib/run-record.mjs:196"
+        ],
+        "literalReadsComplete": false,
+        "missingSources": [],
+        "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.oracle.json",
+        "artifactSha256": "48809594ac8caf97337f4d0cb240000c4548c073b91862cf814b26847b4cb605",
+        "evidence": [
+          {
+            "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.oracle.json",
+            "sha256": "48809594ac8caf97337f4d0cb240000c4548c073b91862cf814b26847b4cb605",
+            "kind": "world-oracle-source-artifact"
+          }
+        ]
+      },
+      "oracleArtifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.oracle.json",
+      "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+      "authority": {
+        "pointerPath": "dev/engineering/current-authority.json",
+        "pointer": {
+          "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+          "snapshot_version": "as20261026r1"
+        },
+        "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+        "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+      },
+      "plant": false,
+      "worldIds": [
+        "u5u7r3c2j2-20261029T19-13-44Z"
+      ],
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use",
+      "provider": {
+        "kind": "mock-deepseek",
+        "base": "injected http://127.0.0.1:<leased-port>"
+      },
+      "askLaneDisclosure": "member bash asks settle EXACTLY ONCE through the PUBLIC team.resolveControl v4 remote seam (the GUI human-lane endpoint); discovery of pending rows rides this suite's read-only /__u74a/controls probe row with the p6t6 observer as disclosed fallback; no token invented, no private seam.",
+      "sandboxPreflight": {
+        "schema": "u7-sbx-sandbox-preflight/1",
+        "at": "2026-10-29T19:14:33.569Z",
+        "probed": true,
+        "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use",
+        "baseline": {
+          "version": "0.2.0-rc.2",
+          "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+        },
+        "platform": "linux-x64",
+        "libc": "glibc",
+        "backend": "partial",
+        "usable": true,
+        "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+        "launcherPresent": true,
+        "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+        "verdicts": [
+          {
+            "phase": "before-provision",
+            "backend": "partial",
+            "launcherPresent": true
+          },
+          {
+            "phase": "after-provision",
+            "backend": "partial",
+            "launcherPresent": true
+          }
+        ],
+        "asset": null,
+        "provisionError": null,
+        "probeError": null,
+        "porcelainEmpty": true,
+        "porcelain": {
+          "available": true,
+          "empty": true,
+          "lines": []
+        }
+      },
+      "nativeConfinementBackend": "partial",
+      "nativeConfinementDisclosure": "native (non-governed) confinement legs ran on a host whose sandbox probe answered \"partial\" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)",
+      "profileArtifacts": [
+        {
+          "worldId": "u5u7r3c2j2-20261029T19-13-44Z",
+          "composedProfileDigest": "0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d",
+          "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/composed-profile-0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d.patch.yml",
+          "artifactDigest": "0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d",
+          "launchPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/homes/u5u7r3c2j2-20261029T19-13-44Z/profiles/web/cordis.patch.yml",
+          "launchedBytes": 4840,
+          "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+          "launchedDigest": "0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d",
+          "composedProfileDigestMismatch": false
+        }
+      ]
+    },
+    "cases": [],
+    "hostStarts": {
+      "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl",
+      "thisRunCount": 1,
+      "thisRunEntries": [
+        {
+          "at": "2026-10-29T19:14:33.569Z",
+          "runId": "u7r3c2j2",
+          "suite": "u7-4a-jobs",
+          "world": "u5u7r3c2j2-20261029T19-13-44Z",
+          "phase": "u74a-boot1"
+        }
+      ]
+    },
+    "evidence": [
+      {
+        "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.oracle.json",
+        "sha256": "48809594ac8caf97337f4d0cb240000c4548c073b91862cf814b26847b4cb605",
+        "kind": "world-oracle-source-artifact"
+      }
+    ],
+    "boots": [
+      {
+        "phase": "u74a-boot1",
+        "world": "u5u7r3c2j2-20261029T19-13-44Z",
+        "port": 3189,
+        "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/instance-port3189.log"
+      }
+    ]
+  }
+}

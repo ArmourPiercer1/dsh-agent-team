@@ -1,0 +1,17 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3188/?token=Z5mIlz2VXOGSxgsrD3ARzlLRfomfNruOKiKZFXdoLcY
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z
+[dsh-agent-team] a5ptc: census-boot root=session-u6arca-team-u5u7r3c2a2-20261029t18-52-25z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=unspecified legs=6
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=pre-spawn-check realm=unspecified call=unspecified
+[dsh-agent-team] a5g7-search: anchored-search cancel-leg stage=child-live realm=unspecified call=unspecified
+[dsh-agent-team] a5g7-search: anchored-search OK realm=unspecified call=unspecified records=1 total=1 truncated=false
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z legs=6
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=pre-spawn-check realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=unspecified
+[dsh-agent-team] a5glb-glob: anchored-glob cancel-leg stage=child-live realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=unspecified
+[dsh-agent-team] a5glb-glob: anchored-glob DRAIN-INCOMPLETE realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 exit=0
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false
+[dsh-agent-team] a5g7-search: anchored-search refused code=target-outside-governed-root call=unspecified realm=unspecified

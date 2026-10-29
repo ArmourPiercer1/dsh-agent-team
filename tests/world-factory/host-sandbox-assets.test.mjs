@@ -429,7 +429,7 @@ test('T14 only the host typed unavailable signal matches', () => {
 /** A saturated MAIN digest (the shape the u7-4a runner records; proven
  *  all-PASS by the u7-4a lane's own offline smoke). */
 function u74aSaturated() {
-  const claims = { bg: 'U74A_BG_CLAIM', liveWarm: 'U74A_LIVE_WARM', liveFinal: 'U74A_LIVE_FINAL', done: 'U74A_DONE_CLAIM', ctl: 'U74A_CTL_CLAIM' }
+  const claims = { bg: 'U74A_BG_CLAIM', liveWarm: 'U74A_LIVE_WARM', liveFinal: 'U74A_LIVE_FINAL', done: 'U74A_DONE_CLAIM', ctl: 'U74A_CTL_CLAIM', fdeny: 'U74A_FDENY_CLAIM' }
   return {
     claims,
     kernelHits: {
@@ -439,7 +439,7 @@ function u74aSaturated() {
     },
     attributedLog: ['a5bg: attributed hostJobId=bash-77 instance=inst-1 tool=bash'],
     startedJobReceipts: 2,
-    laneDone: { bg: true, out: true, list: true, killLive: true, killDone: true, foreignOut: true, foreignPlanted: true, leader: true, ctl: true },
+    laneDone: { bg: true, out: true, list: true, killLive: true, killDone: true, fdeny: true, foreignOut: true, foreignPlanted: true, leader: true, ctl: true },
     jobIds: ['bash-77'],
     bgReceipt: 'started background job bash-77 (governed: …)',
     outResult: `${claims.bg}\n[status: exited(0)]`,
@@ -454,6 +454,13 @@ function u74aSaturated() {
     killDoneKill: 'job bash-79 had already finished',
     foreignOut: 'job bash-77: refused: owner-mismatch — this viewer is not the job owner',
     foreignPlanted: `job ${U74A_PLANTED_JOB_ID}: refused: unattributed-job — this mount manages only jobs it created`,
+    // U7-R3 pilot C2 re-home (J4 live shape on the u74a WORLD): the foreign
+    // lane's OWN background birth DENIED on the durable Control lane, and
+    // the foreign job_list kept the honest zero.
+    denyRow: { seen: true, denied: true, resolutions: [{ requestId: 'r-deny-1', status: 200, ok: true }] },
+    foreignDenyBash: 'a5p5-refused: durable Control request r-deny-1 answered deny — code=APPROVAL_DENIED',
+    foreignList: '(no background jobs)',
+    foreignDenyJobIds: [],
     ctlResult: `${claims.ctl}\nu74a-ctl-ran`,
     rootKernelMentions: 0,
     askRows: [{ requestId: 'r1', targetInstanceId: 'inst-1', resolutions: 1, ok: true }],
@@ -466,6 +473,33 @@ function u74aSaturated() {
 }
 const rowOf = (rows, id) => rows.find(([i]) => i === id)
 const verdictOf = (rows, id) => rowOf(rows, id)[1]
+
+// U7-R3 pilot C2 re-home: the deny-leg honest-zero law on the u74a world
+// (the shape the committed u6-jobs baseline could never witness — no owned
+// job ever minted there). Witness chain: the foreign lane's OWN background
+// birth arms a durable ask row -> the RUNNER answers DENY through the
+// public seam -> the call answers the typed APPROVAL_DENIED and NOTHING
+// spawns -> the foreign job_list is the honest zero, cross-scope clean.
+// Every flip is a named mutation; the leg never passes vacuously.
+test('u74a deny-leg: typed APPROVAL_DENIED + honest zero, each flip FAIL', () => {
+  const sat = u74aSaturated()
+  const ID = 'u74a:list-deny-leg-honest-zero'
+  assert.ok(U74A_MAIN_CASES.includes(ID), 'the case is selected on the MAIN run')
+  assert.equal(verdictOf(judgeU74a(sat, true), ID), 'PASS', 'the saturated witness chain passes')
+  const flips = [
+    [{ denyRow: { seen: false, denied: false, resolutions: [] } }, 'the ask row was never observed'],
+    [{ denyRow: { seen: true, denied: false, resolutions: [{ requestId: 'r-deny-1', status: 500, ok: false }] } }, 'the deny resolution failed'],
+    [{ foreignDenyBash: 'started background job bash-99 (governed: …)' }, 'a birth that DID spawn is not a refusal'],
+    [{ foreignDenyBash: 'a5p5-refused: code=IO_POLICY_UNSUPPORTED' }, 'a shut-face code is not the ask-lane refusal (the run8 law)'],
+    [{ foreignDenyBash: 'a5p5-refused: answered deny — code=APPROVAL_DENIED\nU74A_FDENY_CLAIM' }, 'the refusal must not echo the claim bytes'],
+    [{ foreignList: 'bash-77 [bash] running' }, 'a foreign list surfacing the owner row is a cross-scope leak'],
+    [{ foreignList: 'started background job bash-99' }, 'spawned vocabulary in the foreign list'],
+    [{ foreignDenyJobIds: ['bash-99'] }, 'a job id minted by the DENIED birth breaches zero-effect'],
+  ]
+  for (const [patch, why] of flips) {
+    assert.equal(verdictOf(judgeU74a({ ...sat, ...patch }, true), ID), 'FAIL', `must FAIL: ${why}`)
+  }
+})
 
 test('T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction', async () => {
   const sat = u74aSaturated()
