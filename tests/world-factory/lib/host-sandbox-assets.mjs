@@ -118,6 +118,7 @@ export const FATAL_PROVISION_CODES = Object.freeze([
   'MANIFEST_PATH_UNSAFE',
   'MANIFEST_MODE_INVALID',
   'PUBLISHED_MODE_MISMATCH',
+  'ASSET_MODE_DRIFT',
 ])
 
 /** The host's own typed "no backend" signals, as they reach a tool result. */
@@ -393,8 +394,19 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
   })
   const missing = destination.filter((f) => !f.present)
   for (const f of destination) {
-    if (f.present && f.sha256 !== f.expectedSha256) {
+    if (!f.present) continue
+    if (f.sha256 !== f.expectedSha256) {
       throw new HostSandboxAssetError('DESTINATION_DIGEST_MISMATCH', `${f.relPath} in ${layout.runtimeTree} hashes ${f.sha256}, the pinned manifest says ${f.expectedSha256} — the runner never overwrites bytes it did not create`)
+    }
+    // R-ASSET-MODE-1 (2026-10-29): the present path used to verify the digest
+    // and RETURN without re-verifying the pinned mode bits, so a drifted mode
+    // (e.g. a lost +x) was later misattributed to the host environment. The
+    // pin covers the mode as well as the bytes (F7): re-check it on EVERY
+    // present file — the fully-present return path and the mixed
+    // present+missing provisioned path alike.
+    const actualMode = modeOf(f.path)
+    if (actualMode !== f.modeBits) {
+      throw new HostSandboxAssetError('ASSET_MODE_DRIFT', `${f.relPath} in ${layout.runtimeTree} is mode 0o${actualMode.toString(8)}, the manifest pins ${f.mode} — the bytes match the pin but the mode drifted; this is a provisioning-state finding, refused instead of reported present, and the file is left in place for a human`)
     }
   }
   const porcelainBefore = porcelainState(layout.runtimeTree)
