@@ -1,6 +1,6 @@
 {
   "schema": "u7-tool-acceptance/1",
-  "note": "Per-tool four-level acceptance ledger. One row per model-visible tool name claimed by a family in packages/tools/families/manifest.json (claims read with the plane DEFAULT names: readName=read, names={grep:team_grep,glob:team_glob,bash:team_bash}) plus the named-bridge jobs trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs JOBS_MANAGEMENT_NAMES). Levels: L1-definition (the family C1 suite exists, is in the root vitest population the ci-full census grades, and names the tool), L2-mounted (live Host mount, tool on the placement feed), L3-refusal (live typed refusal with zero effect), L4-positive (live authorized call whose real effect was read back). Status PROVEN | DISCLOSED | NOT_VERIFIED. PROVEN L1 carries evidence {suite}; PROVEN L2-L4 carry evidence {record, case} naming a committed u5-run-record/1 RUN record whose case verdict is PASS. DISCLOSED carries reason (verbatim from source) + pr (+ source, checked to contain the reason). Checked by scripts/eb3-tool-acceptance.mjs (ci-integration). Honesty is the merge gate; completeness (every L4 PROVEN) is the G5 release gate, not a CI colour.",
+  "note": "Per-tool four-level acceptance ledger. One row per model-visible tool name claimed by a family in packages/tools/families/manifest.json (claims read with the plane DEFAULT names: readName=read, names={grep:team_grep,glob:team_glob,bash:team_bash}) plus the named-bridge jobs trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs JOBS_MANAGEMENT_NAMES). Levels: L1-definition (the family C1 suite exists, is in the root vitest population the ci-full census grades, and names the tool), L2-mounted (live Host mount, tool on the placement feed), L3-refusal (live typed refusal with zero effect), L4-positive (live authorized call whose real effect was read back). Status PROVEN | DISCLOSED | NOT_VERIFIED. PROVEN L1 carries evidence {suite}; PROVEN L2-L4 carry evidence {record, case} naming a committed u5-run-record/1 RUN record whose case verdict is PASS. A PROVEN L2-L4 may opt into proof:'CASE' (with runOverall/failedScope/caseIndependence disclosure) to cite a record whose overall is not PASS; otherwise the default RUN proof requires record.overall==='PASS', a real-host binding (bindings.hostSha), and no mock/offline marker (and, under --candidate-sha, bindings.teamSha equal to it). DISCLOSED carries reason (verbatim from source) + pr (+ source, checked to contain the reason). Checked by scripts/eb3-tool-acceptance.mjs (ci-integration). Honesty is the merge gate; completeness (every L4 PROVEN) is the G5 release gate, not a CI colour.",
   "rows": [
     {
       "tool": "read",
@@ -374,6 +374,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -401,6 +409,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -429,6 +445,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -456,6 +480,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -463,6 +495,14 @@
       },
       "L3-refusal": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:interrupt-foreign-zero PASS asserts its own typed structural refusal with zero reach (controlRowsForInterrupt=0, ranWitnesses=0, fence BEFORE PA) — independent of the run-level REFUSED, which is driven by the ac:enumerate-governed and ac:spawn-failclosed arms, not by this refusal",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:interrupt-foreign-zero"
@@ -484,6 +524,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -511,6 +559,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"
@@ -538,6 +594,14 @@
       },
       "L2-mounted": {
         "status": "PROVEN",
+        "proof": "CASE",
+        "runOverall": "REFUSED",
+        "failedScope": [
+          "ac:enumerate-governed",
+          "ac:spawn-failclosed",
+          "old teamSha 0ea0848acd"
+        ],
+        "caseIndependence": "ac:mounted PASS asserts the tool's own row on the live placement feed (placementFeed names it, placementHas7=true, pilotCarriedFamilyRow=true) — a mount-level fact independent of the run-level REFUSED, which is driven by the foreign-scope refusal arms ac:enumerate-governed and ac:spawn-failclosed, not by this mount",
         "evidence": {
           "record": "dev/agent-workflow/evidence/u7-f-agentA-20261026/c2/run-u7fa5.json",
           "case": "ac:mounted"

@@ -7178,3 +7178,18 @@ R-ENVBLOCK-1 / R-RUNC2-1 / R-ASSET-MODE-1；R-CRASH-1 等五项由 post-freeze �
 PASS-by-knob/partial-Landlock/不完整 oracle 记录）。中心架构经用户范围性静态审查判定基本健康
 （consumeOnce 先占后异步方向正确），但明确不构成 Family 全体安全宣称。本节 = 治理入账 PR；
 实现 PR（U7-R1 两包）并行开出，均按 1 task=1 branch=1 worktree + 独立跨模型复审 + 收据链。
+
+## 2026-10-29 (round 2) — USER-RULING landed; U7-R1 code packages reviewed under emergency seats; quota event disclosed
+
+USER-RULING-20261029 经 #442 入册（R2 复审抓到主 Agent 初数 7 的计数错，实测 8=7×L2+1×L3，
+更正+谱系入库）。U7-R1 两包：#443（fs-state-store 硬链接同-FD 拒绝 + 审计 CONFIRMED/UNCONFIRMED +
+ledgerBytes 三分）与 #444（eb3 验收门 RUN/CASE 两级 + 变异负控 + 8 单元诚实重标）。
+**额度事件**：dsh-opencode-go 五小时额度 ~07:20Z 耗尽，六个评审/工人会话零产出死亡（4×glm、2×flash、
+2×worker）；用户指令应急改用 qiyuan-self qwen3.8-27b×2 + qwen3.8-flash-next×2，规则不变。
+评审终局：#443 = glm R3 席位「补充内容」（HIGH-1 未随包重建 dist——安装面仍跑旧码；同 commit 重建律）
+→ 补包 + 其预设机器判据闭合（verdict=ok drift=0）+ 27b 席位独立重演「通过」并认可闭合链；
+CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI 查），d2415f893 修复。
+#444 = 四席全「通过」（v4pro+27b+flash×2，各含附注），采纳 D 席三微瑕（--candidate-sha 失败即开的
+解析闭死 exit=2、hostSha trim、fixture 9→12），A1..A5 五条附注并入 R-ACCEPT-RUN-2 排队（含 mode
+标志过宽/字符串 true 不识别/CASE 不锚定记录——今日发货披露本身全诚实）。机器收据两份入库；
+两包合并均另受 CI + 线程门约束。中心 kernel 零触碰；G4 历史零改写；boot 预算零花费。
