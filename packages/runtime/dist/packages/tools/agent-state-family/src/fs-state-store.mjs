@@ -435,7 +435,7 @@ export async function ledgerBytes(dir, filename = 'writes.jsonl') {
     return stat.size
   } catch (error) {
     if (error?.code === 'ENOENT') return 0
-    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — zero-side-effect assertions must distinguish 'unreadable' from 'zero writes'`)
+    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — a zero-side-effect assertion must treat an unreadable ledger as UNKNOWN, never as a clean write-free outcome`)
   }
 }
 
