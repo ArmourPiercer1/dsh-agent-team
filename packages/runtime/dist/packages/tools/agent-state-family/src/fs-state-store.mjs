@@ -74,6 +74,38 @@
  * delete `<home>/team-state/agent-state/<realm>/locks/<scope-digest>.lock`
  * (a dead owner is broken automatically on the next apply; deleting a LIVE
  * owner's lock can corrupt that scope and is never done automatically).
+ * LOCK BREAK/CLEANUP IS GENERATION-CHECKED (P0-2b, audit intake #3). The
+ * POSIX substrate offers NO compare-and-swap on file CONTENT: `rename` moves
+ * whatever a NAME holds (unconditionally), `unlink` removes by NAME, and the
+ * only atomic conditional primitive here is `link` — create-if-absent, the
+ * same link-atomics law createLockRecord publishes under. "Delete the
+ * record I judged stale" cannot therefore be atomic; it is built, honestly,
+ * as read-check → act → verify-after → reclaim:
+ *   1. the staleness DECISION is revalidated against the current name bytes
+ *      immediately before any holder-affecting move (a re-locked or re-beaten
+ *      name is not provably dead — this breaker touches nothing);
+ *   2. after the rename-aside, the MOVED object is identified by inode
+ *      (rename preserves it) and generation CONTENT (nonce = the per-acquire
+ *      generation identity; host/boot/pid are constant across a generation's
+ *      beats, so the death proof covers the whole generation): only the
+ *      judged generation is ever unlinked;
+ *   3. a foreign generation (the rename raced a fresh create) is reclaimed
+ *      with link — create-if-absent, never overwrite; if the reclaim loses,
+ *      the foreign bytes are RETAINED as the aside file rather than
+ *      destroyed (operator-addressable litter is acceptable, voiding a live
+ *      holder's lock is not). The same law holds on the holder side: a beat
+ *      re-reads the generation right before its rename and never overwrites
+ *      a foreign record (a robbed holder stops beating and hands nothing
+ *      back), a beat against a free name republishes with link semantics,
+ *      and release pins the name's inode around its nonce check.
+ * DISCLOSED RESIDUAL: the gap between the last check and each rename/unlink
+ * (thread/fd scheduling, no FS primitive closes it) remains — a creator that
+ * wins a name momentarily emptied by a breaker, or a holder robbed AFTER its
+ * own post-publish check, can both enter until a generation check fires at
+ * the next heartbeat. The deterministic audit legs pin exactly these windows
+ * and prove the reclaim never destroys and the name never empties under a
+ * revalidated decision; full mid-apply abort on detected lock loss is a
+ * named follow-up outside this lane.
  *
  * REPLAY. `applyId` (the PA call correlation) is the durable idempotence
  * anchor, and its consumption is COUPLED TO THE COMMIT: the committed record
@@ -527,13 +559,6 @@ async function writeLockTemp(dir, name, text, faultAt = async () => {}, point = 
   }
   return temp
 }
-async function putLockRecord(dir, name, text, faultAt = async () => {}) {
-  const temp = await writeLockTemp(dir, name, text, faultAt)
-  try { await fsp.rename(temp, `${dir.path}/${name}`) } catch (error) {
-    try { await fsp.unlink(temp) } catch { /* best effort */ }
-    throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock record could not be committed: ${String(error?.code ?? error)}`)
-  }
-}
 async function createLockRecord(dir, name, text, faultAt = async () => {}) {
   const temp = await writeLockTemp(dir, name, text, faultAt, 'lock-before-publish')
   try {
@@ -584,38 +609,131 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
   for (;;) {
     try {
       await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
+      // P0-2b double-check before any holder-affecting effect: a successful
+      // create is only HALF a hold — the name must STILL be publishing OUR
+      // generation before we may act exclusive. A concurrent breaker that
+      // moved our record between publish and this read-back means we hold
+      // NOTHING: back off and retry, never proceed under a stolen belief.
+      const published = await readLockFile(path, bootId)
+      if (published === null || published.invalid === true || published.nonce !== nonce) continue
       let stopped = false
+      let lost = false
       let inFlight = null
       const beat = setInterval(() => {
         if (stopped || inFlight !== null) return
-        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
-          .catch(() => {})
-          .finally(() => { inFlight = null })
+        inFlight = (async () => {
+          // P0-2b generation-checked beat: a foreign generation at the name
+          // means the lock was broken or stolen from under this holder — the
+          // beat stops for good (renaming over a foreign record would
+          // silently hand the scope to two writers at once) and release
+          // keeps its hands off. The temp is written first, so the CURRENT
+          // generation is read AGAIN immediately before the name-affecting
+          // rename (read-check → act, mirroring the breaker's revalidation);
+          // a free name is republished with CREATE semantics (a link can
+          // never overwrite whoever won it), never by rename-over.
+          let current = await readLockFile(path, bootId)
+          if (current !== null && current.invalid !== true && current.nonce !== nonce) { stopped = true; lost = true; clearInterval(beat); return }
+          const temp = await writeLockTemp(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
+          try {
+            current = await readLockFile(path, bootId)
+            if (current !== null && current.invalid !== true && current.nonce !== nonce) { stopped = true; lost = true; clearInterval(beat); throw Object.assign(new Error('lock lost'), { code: 'AGENT_STATE_LOCK_LOST' }) }
+            if (current === null) await fsp.link(temp, path)
+            else await fsp.rename(temp, path)
+          } catch (error) {
+            try { await fsp.unlink(temp) } catch { /* best effort */ }
+            throw error
+          }
+        })().catch(() => {}).finally(() => { inFlight = null })
       }, heartbeatMs)
       beat.unref?.()
       return async () => {
         stopped = true
         clearInterval(beat)
         if (inFlight !== null) await inFlight
+        if (lost) return // our generation is gone; whatever the name holds now is not ours to touch
+        // P0-2b: pin the name's identity around the check so the unlink can
+        // only ever remove OUR generation; a swap around the check is answered
+        // by backing off, never by a blind unlink. The residual microsecond
+        // window between the last check and the unlink is disclosed in the
+        // module header (POSIX gives no unlink-if-content primitive).
+        let pin = ''
+        try { const st = await fsp.lstat(path); pin = `${String(st.dev)}:${String(st.ino)}` } catch { return /* already gone */ }
         const held = await readLockFile(path, bootId)
-        if (held?.nonce === nonce) { try { await fsp.unlink(path) } catch { /* already gone */ } }
+        if (held?.nonce !== nonce) return // never unlink a generation we cannot pin to ours
+        try { const st2 = await fsp.lstat(path); if (`${String(st2.dev)}:${String(st2.ino)}` !== pin) return } catch { return }
+        try { await fsp.unlink(path) } catch { /* already gone */ }
       }
     } catch (error) {
       if (error?.code !== 'EEXIST') throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock ${name} could not be created: ${String(error?.code ?? error)}`)
     }
     const holder = await readLockFile(path, bootId)
     if (await mayBreak(dir, name, holder, staleMs, bootId)) {
-      // Break by rename-aside: exactly one breaker wins the rename; the winner
-      // verifies it took the SAME lock it judged, else restores it.
+      await faultAt('lock-before-break-rename')
+      // P0-2b read-check (revalidate the DECISION against the NAME) before a
+      // holder-affecting move: a stale judgement over a record authorises
+      // moving THAT record and NOTHING else. A different generation at the
+      // name — re-locked or re-beaten since the judgement — is not provably
+      // dead here, so this breaker touches nothing and retries.
+      const fresh = await readLockFile(path, bootId)
+      if (fresh === null || fresh.invalid === true || fresh.nonce !== holder?.nonce || fresh.token !== holder?.token) continue
+      let judgedInode = ''
+      try { const st = await fsp.lstat(path); judgedInode = `${String(st.dev)}:${String(st.ino)}` } catch { continue }
+      // Break by rename-aside: exactly one breaker wins the rename. Rename
+      // PRESERVES the inode, so the moved object's identity is verifiable
+      // AFTER the fact (verify-after); anything that is not the judged
+      // generation is reclaimed with link (create-if-absent — the substrate's
+      // only compare-and-swap, the same law createLockRecord rides), which
+      // can never overwrite a current holder.
       const aside = `${dir.path}/.${name}.broken.${randomUUID()}`
       try {
         await fsp.rename(path, aside)
-        const taken = await readLockFile(aside, bootId)
-        if (taken !== null && taken.nonce !== holder?.nonce) {
-          try { await fsp.link(aside, path) } catch { /* someone already re-locked */ }
+        await faultAt('lock-after-break-rename')
+        let moved = null
+        let movedIsJudged = false
+        try {
+          const st = await fsp.lstat(aside)
+          moved = await readLockFile(aside, bootId)
+          movedIsJudged = `${String(st.dev)}:${String(st.ino)}` === judgedInode
+            && moved !== null && moved.invalid !== true && moved.nonce === holder?.nonce
+        } catch { movedIsJudged = false }
+        if (movedIsJudged) {
+          // The proven-dead generation this breaker judged: removing it is
+          // exactly what the owner policy permits (host/boot/pid fields are
+          // constant across a generation's beats, so the death proof covers
+          // the whole generation identified by this nonce).
+          try { await fsp.unlink(aside) } catch { /* best effort */ }
+        } else {
+          // The moved object is NOT what was judged — it is somebody else's
+          // (presumptively LIVE) generation. Reclaim it onto the name with
+          // create-if-absent semantics; a lost race is retried briefly.
+          let restored = false
+          for (let attempt = 0; attempt < 8 && !restored; attempt += 1) {
+            try { await fsp.link(aside, path); restored = true } catch (error) {
+              if (error?.code !== 'EEXIST') break
+              const now = await readLockFile(path, bootId)
+              if (now === null) { await sleep(1); continue } // the name freed again — retry the reclaim
+              if (moved !== null && moved.invalid !== true && now.nonce === moved.nonce) break // its owner already re-published: aside holds a superseded generation
+              await sleep(1)
+            }
+          }
+          if (restored) { try { await fsp.unlink(aside) } catch { /* the name keeps the same inode */ } }
+          else {
+            // The reclaim lost. Unlink the aside ONLY when its bytes are
+            // provably dead: the judged generation itself, or a generation
+            // whose owner demonstrably re-published (same nonce, newer beat
+            // at the name). An unprovable foreign generation is RETAINED as
+            // the aside file — operator-addressable litter is acceptable,
+            // destroying a live holder's lock is not (never-steal, the
+            // accepted correctness-over-liveness trade).
+            const now = await readLockFile(path, bootId)
+            const superseded = now !== null && moved !== null && moved.invalid !== true
+              && now.nonce === moved.nonce && now.token !== moved.token
+            if ((moved !== null && moved.nonce === holder?.nonce) || superseded) {
+              try { await fsp.unlink(aside) } catch { /* best effort */ }
+            }
+          }
         }
-        try { await fsp.unlink(aside) } catch { /* best effort */ }
-      } catch { /* another breaker won */ }
+      } catch { /* another breaker won the rename */ }
       continue
     }
     if (nowMs() - started > timeoutMs) {
@@ -724,8 +842,13 @@ const REALM_LOCK = '_realm.lock'
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
  *        C1 crash/latency-simulation seam ONLY ('after-read' fires inside the
  *        critical section, between the read and the commit; 'after-commit'
- *        between the record rename and the marker). The descriptor never
- *        passes it.
+ *        between the record rename and the marker; 'lock-before-publish'
+ *        before the lock temp is linked to the name; 'beat-before-rename'
+ *        inside a beat, before its rename; 'lock-before-break-rename' after
+ *        the break DECISION and before any holder-affecting move, and
+ *        'lock-after-break-rename' after the move and before its
+ *        verification/reclaim — the P0-2b decision→action window). The
+ *        descriptor never passes it.
  */
 export function createFsStateStore({
   rootDir, realmId, anchorDir = rootDir, armProvider = () => Object.freeze({ kind: 'model' }),

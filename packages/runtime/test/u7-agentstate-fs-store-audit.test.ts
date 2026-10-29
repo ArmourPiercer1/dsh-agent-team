@@ -100,6 +100,8 @@ const bytesOf = (p: string): number => (existsSync(p) ? (statSync(p) as unknown 
 // The package's minimal node shim types neither `process.env` nor `Stats.size`
 // (same narrow local view as u7-agentstate-fs-store-c1.test.ts, not a shim edit).
 const sizeOf = (p: string): number => (statSync(p) as unknown as { size: number }).size
+// The shim likewise types neither `process.pid` (same narrow local view).
+const pidOf = (process as unknown as { pid: number }).pid
 
 describe('u7as-audit HL1 — the write leg of the hard-link law', () => {
   it('writes.jsonl hard-linked to a file OUTSIDE the root: the apply commits the STATE but refuses the aliased ledger typed, leaving the external file byte-unchanged', async () => {
@@ -527,7 +529,7 @@ describe('u7as-lockbreak P0-2b — break/cleanup decision→action races', () =>
       // Someone re-locks the momentarily-empty name with CREATE semantics
       // (link — never overwrites), so A's reclaim link must lose with EEXIST.
       const dTemp = join(storeRoot(), 'locks', '.d-generation.tmp')
-      writeFileSync(dTemp, JSON.stringify({ pid: process.pid, host: hostname(), boot: 'breaker-boot', nonce: 'd-gen-ii', token: 'd-tok-ii', at: Date.now() }))
+      writeFileSync(dTemp, JSON.stringify({ pid: pidOf, host: hostname(), boot: 'breaker-boot', nonce: 'd-gen-ii', token: 'd-tok-ii', at: Date.now() }))
       try { linkSync(dTemp, lockPathOf('agent:ii')) } catch { /* name taken */ }
       unlinkSync(dTemp)
       afterRename.open() // pre-fix: EEXIST swallowed, then the unconditional unlink DESTROYS C's bytes
