@@ -80,12 +80,18 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
     g3: { path: join(workspaceDir, 'notes', 'u6arca-uni-\u00fcnicode-\u65e5\u672c.txt'), claim: `U6ARCA_G3_CLAIM_${rs}` },
     g4: { path: join(workspaceDir, 'deep', 'nested', 'dir', 'u6arca-g4.txt'), claim: `U6ARCA_G4_CLAIM_${rs}` },
     git: { path: join(workspaceDir, '.git', 'notes', 'u6arca-git.txt'), claim: `U6ARCA_GIT_CLAIM_${rs}` },
+    // U7-R3 pilot C2 (glob ask-DENY arm): the targeted sentinel of the
+    // refused leg. Its claim must NEVER ride the refusal text (zero
+    // information effect) and its stamp must never move (census armed at
+    // the observed ask row, read back after the refusal).
+    denySentinel: { path: join(workspaceDir, 'notes', 'u6arca-denylane-sentinel.txt'), claim: `U6ARCA_DENYLANE_SENTINEL_${rs}` },
   }
   const markers = {
     MK_DISC: `U6ARCA_DISC_${rs}`,
     MK_L1: `U6ARCA_L1_${rs}`,
     MK_GREP: `U6ARCA_GREP_${rs}`,
     MK_CTL: `U6ARCA_CTL_${rs}`,
+    MK_GLOBDENY: `U6ARCA_GLOBDENY_${rs}`,
     T_PROBE: `U6ARCA_TRIGGER_PROBE_${rs}`,
     T_UNBOUND: `U6ARCA_TRIGGER_UNBOUND_${rs}`,
     T_REPLAY: `U6ARCA_TRIGGER_REPLAY_${rs}`,
@@ -168,7 +174,13 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       '    skills:', '      kind: allow', '      items: []',
       '    mcp:', '      kind: allow', '      items: []',
       '    permissions:', '      default: deny', '      allow: []', '      ask: []', '      deny: []',
-      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '  deny: []',
+      // U7-R3 pilot C2: request-control joins the team envelope because the
+      // globask ask row is a durable-row creation (u6-jobs-proven law). The
+      // leader's template entry below pins its OLD bounds — an entry-less
+      // leader would widen with the team envelope (PR3 discipline); the
+      // greper/ctl entries already narrow, so their effective envelopes are
+      // byte-identical to the pre-C2 world.
+      'teamEnvelope:', '  allow:', '    - create-member', '    - assign-task', '    - send-message', '    - report-progress', '    - request-control', '  deny: []',
       'members:',
       '  - templateId: greper', '    displayName: "u6arca governed search worker"',
       `    persona: ${JSON.stringify('You are a worker of the u6arca assembly team (governed search lane). Follow the delegated script exactly, one tool call at a time.')}`,
@@ -203,9 +215,29 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
       // surface whose grep must behave exactly as before PR5 (§10.5-5).
       '  - templateId: ctl', '    displayName: "u6arca legacy control worker"',
       `    persona: ${JSON.stringify('You are a worker of the u6arca assembly team (legacy control lane). Follow the delegated script exactly, one tool call at a time.')}`,
+      // U7-R3 pilot C2 (team_glob L3 arm): the ASK-lane twin of the greper.
+      // ONE root, TWO lanes — the greper's ALLOW rule at this root answers
+      // the enumeration (search-glob-live), this member's ASK rule at the
+      // SAME root must arm a durable Control row whose DENIAL answers the
+      // typed APPROVAL_DENIED before the rg backend runs. The search class
+      // rides the `read` rule exactly as the allow arm does (U7-6 class law,
+      // PERMISSION_TOOL_NAMES untouched); ask vs allow is the ONLY delta,
+      // so the discrimination is lane, not fixture.
+      '  - templateId: globask', '    displayName: "u6arca governed ask-lane glob worker"',
+      `    persona: ${JSON.stringify('You are a worker of the u6arca assembly team (governed ask-lane glob). Follow the delegated script exactly, one tool call at a time.')}`,
+      '    capabilities:', '      teamTools:', '        kind: deny',
+      ...denyLines.map((l) => `  ${l}`),
+      '      skills:', '        kind: allow', '        items: []',
+      '      mcp:', '        kind: allow', '        items: []',
+      '      permissions:', '        default: deny', '        allow: []',
+      '        ask:', '          - tool: read', '            resource:', '              kind: exact',
+      `              path: ${JSON.stringify(planeRootDir())}`,
+      '        deny: []',
       'memberEnvelopes:',
+      '  - templateId: leader', '    envelope:', '      allow:', '        - create-member', '        - assign-task', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: greper', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
       '  - templateId: ctl', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+      '  - templateId: globask', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
       'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
       'policyStates: []', 'metadata: {}', '---', '',
     ].join('\n')
@@ -256,7 +288,7 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
     }
     const doc = parsed.blueprint ?? parsed
     if (doc.blueprintId !== BP_MAIN_ID) throw new Error(`U6ARCA_INGEST: main.yaml resolves as ${String(doc.blueprintId)}`)
-    if (!Array.isArray(doc.members) || doc.members.length !== 2) throw new Error(`U6ARCA_INGEST: main.yaml members=${String(doc.members?.length)} want 2`)
+    if (!Array.isArray(doc.members) || doc.members.length !== 3) throw new Error(`U6ARCA_INGEST: main.yaml members=${String(doc.members?.length)} want 3`)
     return { ok: true, via: 'parseBlueprint(dist domain facade = the host own import)' }
   }
   function requireBlueprintFacade() {
@@ -298,7 +330,7 @@ export function createArcAssembly({ repoRoot, home, runStamp, reportDir }) {
     // Pre-boot (only the anchor exists) the main face is validated from the
     // SAME emitter the write path uses with an empty deny list — deny rows
     // never ride the member-template region where run7's comma lived.
-    for (const [file, wantId, wantMembers] of [['main.yaml', BP_MAIN_ID, 2], ['anchor.yaml', BP_ANCHOR_ID, 1]]) {
+    for (const [file, wantId, wantMembers] of [['main.yaml', BP_MAIN_ID, 3], ['anchor.yaml', BP_ANCHOR_ID, 1]]) {
       const text = file === 'main.yaml' && !existsSync(join(blueprintDir, 'main.yaml'))
         ? mainBlueprintYaml([])
         : readFileSync(join(blueprintDir, file), 'utf8')
@@ -344,8 +376,14 @@ export function makeArcDecide({ assembly }) {
   const PHASES = [
     { kind: 'create', template: 'greper', tok: 'c1', label: 'arca-greper' },
     { kind: 'create', template: 'ctl', tok: 'c2', label: 'arca-ctl' },
+    { kind: 'create', template: 'globask', tok: 'c3', label: 'arca-globask' },
     { kind: 'delegate', tok: 'd1', prompt: markers.MK_GREP, which: 'greper', fence: 'U6ARCA_GREP_DONE' },
     { kind: 'delegate', tok: 'd2', prompt: markers.MK_CTL, which: 'ctl', fence: 'U6ARCA_CTL_DONE' },
+    // U7-R3 pilot C2: the ask-lane glob leg — ONE team_glob whose durable
+    // ask row the RUNNER denies (the DENIER loop in the suite); the fence
+    // is the lane's close, the WITNESSES are the ledger row + the refusal
+    // text + the armed-window census the runner collects.
+    { kind: 'delegate', tok: 'd3', prompt: markers.MK_GLOBDENY, which: 'globask', fence: 'U6ARCA_GLOBDENY_DONE' },
   ]
   let phase = 0
   let fenceRounds = 0
@@ -376,6 +414,7 @@ export function makeArcDecide({ assembly }) {
     const ut = userTextOf(req)
     if (ut.includes(`[team-work requestToken=${tokens('d1')}`)) return 'greper'
     if (ut.includes(`[team-work requestToken=${tokens('d2')}`)) return 'ctl'
+    if (ut.includes(`[team-work requestToken=${tokens('d3')}`)) return 'globask'
     if (lu.includes('"type":"tool_result"')) {
       const tool = lastToolNameOf(req)
       if (tool === 'u6arc_probe') return 'trigger-close'
@@ -429,6 +468,16 @@ export function makeArcDecide({ assembly }) {
       if (key === 'T_POSTTEARDOWN') return toolCall('u6arc_probe', { action: 'walk', callId: probe.afterCall, grantId: probe.afterGrant, nonce: probe.afterNonce })
       return { kind: 'text', content: 'U6ARCA_TRIGGER_DONE' }
     }
+    if (lane === 'globask') {
+      // ONE governed team_glob at the plane root, stateless like the other
+      // lanes (tool_result count, never a turn count): the answer is the
+      // runner-denied typed refusal; the close fence carries the leg home.
+      const trCount = messagesOf(req)
+        .flatMap((m) => (Array.isArray(m?.content) ? m.content : []))
+        .filter((b) => b?.type === 'tool_result').length
+      if (trCount === 0) return toolCall('team_glob', { pattern: '**/*.txt', path: assembly.workspaceDir })
+      return { kind: 'text', content: 'U6ARCA_GLOBDENY_DONE' }
+    }
     if (lane === 'greper') {
       if (steps.greper === 0) { steps.greper = 1; return toolCall('team_grep', { pattern: assembly.files.g1.claim, path: assembly.workspaceDir, 'output_mode': 'content' }) }
       if (steps.greper === 1) { steps.greper = 2; return toolCall('team_glob', { pattern: '**/*.txt', path: assembly.workspaceDir }) }
@@ -444,6 +493,7 @@ export function makeArcDecide({ assembly }) {
       .filter((x) => x !== null))]
     if (ids.greper === undefined && seen.length >= 1) ids.greper = seen[0]
     if (ids.ctl === undefined && seen.length >= 2) ids.ctl = seen[1]
+    if (ids.globask === undefined && seen.length >= 3) ids.globask = seen[2]
     const settledPending = (r) => messagesOf(r)
       .map((m) => textOf(m))
       .filter((t2) => t2.includes('[team-work-settled requestToken='))
@@ -480,7 +530,7 @@ export function makeArcDecide({ assembly }) {
 
 /** The judge: every verdict from disk/ledger/host-log facts the runner
  *  passes in — never from the transcript. */
-export function judgeU6ArcA({ ledgerRows, markerFiles, grepResults, globResults, ctlResult, refusalResult, hostKernelHits, hostAlive }) {
+export function judgeU6ArcA({ ledgerRows, markerFiles, grepResults, globResults, ctlResult, refusalResult, globDenyResult, hostKernelHits, hostAlive }) {
   const walkRows = ledgerRows.filter((r) => r.leg === 'walk')
   const v = {}
   v['arca:mounted'] = ledgerRows.some((r) => r.leg === 'family-mount' && r.ok === true)
@@ -504,6 +554,23 @@ export function judgeU6ArcA({ ledgerRows, markerFiles, grepResults, globResults,
   // admission (run8), and a PASS built on that would be a false green.
   v['arca:search-refusal-zero-effect'] = refusalResult?.refused === true && refusalResult?.outsideRootCodeSeen === true
     && refusalResult?.censusUnchanged === true && refusalResult?.admissionRefused !== true
+  // U7-R3 pilot C2 (team_glob L3 arm): the ask-lane DENIAL of a governed
+  // team_glob at the plane root. Every witness is load-bearing and none of
+  // them is the transcript's say-so: the durable ask row OBSERVED on the
+  // governed Control lane and DENIED through the public team.resolveControl
+  // seam (positive read — a channel that never saw a row makes this arm
+  // unproven, the R-U6P3-1 law); the typed approval-deny code on the
+  // refusal face; the run8 discrimination (an admission/shut-face landing
+  // is another lane's answer, never refusal evidence); the census armed at
+  // the observed row and re-read after the refusal (the refused call had no
+  // window to touch the root — the rg backend runs only AFTER the approval
+  // lane settles allow); and the zero-information law (a refusal echoing
+  // the targeted tree's claims leaks what it promised to prevent).
+  v['arca:glob-ask-deny-refusal-zero-effect'] = globDenyResult?.rowSeen === true
+    && globDenyResult?.rowDeniedOk === true && globDenyResult?.refusalSeen === true
+    && globDenyResult?.approvalDeniedCodeSeen === true && globDenyResult?.admissionRefused !== true
+    && globDenyResult?.censusUnchanged === true && globDenyResult?.claimsEchoed !== true
+    && hostAlive === true
   v['arca:native-grep-control'] = ctlResult?.ok === true && ctlResult?.claimFound === true
     && hostKernelHits['a5-plane: mount-REFUSED']?.count === 0 && hostAlive === true
   return v

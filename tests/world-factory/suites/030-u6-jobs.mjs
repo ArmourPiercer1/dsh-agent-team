@@ -22,8 +22,11 @@ import { join } from 'node:path'
 // kill), foreign viewer refused with measured zero settlement, kill
 // answered as REQUEST only with the HOST settling, the boot-root native
 // control untouched, and the no-second-ledger law measured over the
-// durable Control lane.
-const CASES = Object.freeze(['jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence', 'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check'])
+// durable Control lane. U7-R3 pilot C2 adds the job_list DENY-LEG arm
+// (J4's live mirror): the foreign lane's own background birth is DENIED
+// on the durable Control lane by the RUNNER, and job_list witnesses the
+// denied call as UNBORN — typed refusal, honest zero, foreign scope clean.
+const CASES = Object.freeze(['jobs:mounted', 'jobs:birth-positive', 'jobs:ci05-governed-fail-closed', 'jobs:owner-fence', 'jobs:list-deny-leg-honest-zero', 'jobs:kill-refusal-zero-reach', 'jobs:ctl-native-untouched', 'jobs:no-second-ledger', 'jobs:leak-check'])
 
 /**
  * U6 PR4 C2 (ARC-C at the Host). ONE boot. The leader chain creates a
@@ -247,6 +250,17 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
   }
   let approverStop = false
   const approverErrors = []
+  // U7-R3 pilot C2 (job_list deny-leg): the runner becomes the DENIER for
+  // the foreign lane's OWN background birth. Time-window law: the WORK
+  // lane must settle first (its bash asks are births the suite needs), the
+  // foreign lane runs only afterwards — by construction every bash ask row
+  // armed after laneDone.work is the deny-leg subject. The row's identity
+  // is NOT inferred from the PA summary (it carries only case/rung/tool/
+  // effects counts, never the command) — it is ORDER + lane sequencing, and
+  // the judge's witnesses (typed APPROVAL_DENIED, zero birth, honest-zero
+  // list) bind the answer to the leg.
+  const denyWindow = { active: false }
+  const denyRow = { seen: false, denied: false, resolutions: [] }
   const approver = (async () => {
     while (!approverStop) {
       try {
@@ -254,6 +268,16 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
           controlRows.set(String(r.requestId), { toolName: r.toolName, summary: r.summary, status: r.status })
           const tag = `${String(r.toolName ?? '')} ${String(r.summary ?? '')}`
           if (r.status === 'pending' && /\bbash\b/.test(tag) && !trioNameRe.test(tag)) {
+            if (denyWindow.active && !denyRow.seen) {
+              denyRow.seen = true
+              const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
+                { teamSessionId, requestId: r.requestId, decision: 'deny', note: 'u7r3-c2-deny-leg' }, 'u6jobs-denyleg', 4)
+              const ok = res?.status === 200 && res?.body?.result?.ok === true
+              denyRow.denied = denyRow.denied || ok
+              denyRow.resolutions.push({ requestId: r.requestId, status: res?.status ?? null, ok })
+              continue
+            }
+            if (denyWindow.active) continue // a bash ask armed after the deny leg is NOT this leg's witness — never auto-allow it
             birthRow.seen = true
             const res = await remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
               { teamSessionId, requestId: r.requestId, decision: 'allow', note: 'u6jobs-c2-birth-approval' }, 'u6jobs-birth', 4)
@@ -269,7 +293,11 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
   const laneDone = {}
   record.record.u6jobsLanes = laneDone
   laneDone.work = await wakeCadence('U6JOBS_WORK_DONE', 180_000, 'w')
-  laneDone.foreign = await wakeCadence('U6JOBS_FENCE_DONE', 120_000, 'f')
+  // U7-R3 pilot C2: with the work lane settled (its birth asks resolved),
+  // every later bash ask row is the foreign deny-leg subject — the DENIER
+  // window opens (see the approver block).
+  denyWindow.active = true
+  laneDone.foreign = await wakeCadence('U6JOBS_FENCE_DONE', 180_000, 'f')
   laneDone.leader = await wakeCadence('U6JOBS_L1_DONE', 90_000, 'z')
   // CI-03 native control on the UNGOVERNED boot-root session.
   laneDone.ctl = await (async () => {
@@ -358,6 +386,14 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
     list2: lastNamed(wEx, 'job_list'),
     foreignOutput: firstNamed(fEx, 'job_output'),
     foreignKill: firstNamed(fEx, 'job_kill'),
+    // U7-R3 pilot C2 deny-leg witnesses (J4 live mirror): the DENIED
+    // foreign birth answer, the honest-zero foreign list, the ZERO spawn
+    // vocabulary in the foreign lane, and the observed+DENIED ask row.
+    foreignDenyBash: firstNamed(fEx, 'bash'),
+    foreignList: firstNamed(fEx, 'job_list'),
+    foreignJobIds: extractJobIds(fEx.map((e) => String(e.result ?? '')).join('\n')),
+    denyLegIssued: fEx.some((e) => e.name === 'bash'),
+    denyRow,
     ctlOutput: lastNamed(cEx, 'job_output'),
     trioUses: [...wEx, ...fEx, ...cEx].filter((e) => e.name !== null && trioNameRe.test(String(e.name))).length,
     controlRows: [...controlRows.values()],
@@ -416,7 +452,20 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
   } catch { /* evidence best-effort; the RUN record carries the digest */ }
 
   // ── verdicts (shared judge; the digest is its entire input) ─────────────
-  for (const [id, verdict, detail] of judgeU6Jobs(digest, hostAlive())) add(id, verdict, detail)
+  // Three-way law for the deny-leg arm (no ENV_BLOCK forging): ENV_BLOCK is
+  // minted ONLY when the leg genuinely issued its birth attempt, NO ask
+  // row ever reached the ledger face, and nothing was born either (the
+  // approval lane died upstream — the 070-web precedent's honest shape). A
+  // row that WAS seen, or a birth that DID happen, is graded: FAIL.
+  for (const [id, verdict, detail] of judgeU6Jobs(digest, hostAlive())) {
+    if (id === 'jobs:list-deny-leg-honest-zero' && verdict === 'FAIL'
+      && digest.denyRow?.seen !== true && digest.denyLegIssued === true
+      && (digest.foreignJobIds ?? []).length === 0) {
+      add(id, 'ENV_BLOCK', { ...detail, reason: 'the foreign deny-leg birth attempt was issued but no ask row reached the durable ledger face (the observer saw zero rows, and nothing was born either — the leg died upstream of the approval lane, no refusal witness exists)' })
+      continue
+    }
+    add(id, verdict, detail)
+  }
 
   // ── leak-check: teardown, then the factory's owned-resources audit ──────
   try {
@@ -432,6 +481,6 @@ async function runU6Jobs({ factory, record, rc, log, line, worlds, keepHome, evi
 export default {
   suite: 'u6-jobs',
   cases: CASES,
-  totalRequests: 100,
+  totalRequests: 130,
   run: (opts, ctx) => runU6Jobs(opts, ctx),
 }
