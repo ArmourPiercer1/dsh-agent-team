@@ -75,15 +75,27 @@
  * (a dead owner is broken automatically on the next apply; deleting a LIVE
  * owner's lock can corrupt that scope and is never done automatically).
  *
- * REPLAY. `applyId` (the PA call correlation) is the durable idempotence
- * anchor, and its consumption is COUPLED TO THE COMMIT: the committed record
- * itself carries the applied id (`appliedIds`, the last 256 in that scope)
- * in the same atomic rename, and the global `applied/` marker is written only
- * AFTER the commit. Under the scope lock a replay is refused
- * (`STATE_APPLY_REPLAY`, zero persistence) if EITHER witness holds the id.
- * Consequences of the order: a crash BEFORE the rename leaves no witness, so
- * the grant is NOT consumed and the same call may apply later; a crash AFTER
- * the rename leaves the id in the record, so the replay is still refused.
+ * REPLAY (audit P0-2a). `applyId` (the PA call correlation) is the durable
+ * idempotence anchor, and its consumption is CROSS-SCOPE GLOBAL while the
+ * persistence lock is PER-SCOPE — so the consumption must not depend on the
+ * scope lock. It is an O_EXCL CREATE of the `applied/` marker: one atomic
+ * create is the check AND the consume, at most one applier of a given applyId
+ * can win it whichever scope carries the apply. The marker is therefore
+ * written BEFORE the commit (consumption point); the committed record then
+ * also carries the id (`appliedIds`, the last 256 in that scope) in the same
+ * atomic rename, so after the commit BOTH witnesses hold the id and a replay
+ * is refused (`STATE_APPLY_REPLAY`, zero persistence) on either. A CLEAN
+ * failure BEFORE the commit (a refused precondition, or a typed write
+ * failure the process survives) REFUNDS the marker — a refused apply never
+ * burns its applyId, and a failed one stays re-drivable. The accepted crash
+ * window (P0-2a's conservative direction): a process that dies between
+ * consuming the marker and landing the rename leaves the grant CONSUMED with
+ * no state change — the re-drive answers `STATE_APPLY_REPLAY` and loses the
+ * write, because re-applying a possibly-consumed grant is exactly what this
+ * store must never do. (This replaces the pre-fix order — marker written
+ * only after the commit — which let two same-applyId applies at DIFFERENT
+ * scopes both pass the check under their own scope locks and DOUBLE-COMMIT;
+ * the second marker write died as a swallowed EEXIST.)
  * `expectedRevision` CAS and the create/already-exists leg mirror
  * `createRecordingStateStore` exactly — the fake is the specification.
  *
@@ -723,8 +735,10 @@ const REALM_LOCK = '_realm.lock'
  *        C1 crash-simulation seam ONLY. The descriptor never passes it.
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
  *        C1 crash/latency-simulation seam ONLY ('after-read' fires inside the
- *        critical section, between the read and the commit; 'after-commit'
- *        between the record rename and the marker). The descriptor never
+ *        critical section, after the applyId has been CONSUMED, between the
+ *        read and the op's precondition check; 'after-commit' between the
+ *        record rename and the ledgers — the commit has landed there, the
+ *        marker was consumed before the commit). The descriptor never
  *        passes it.
  */
 export function createFsStateStore({
@@ -820,25 +834,35 @@ export function createFsStateStore({
       return await write()
     } finally { await release() }
   }
-  const markerPresent = async (applyId) => {
-    const dir = await dirOf('applied', false)
+  /** THE consumption point for the cross-scope-GLOBAL applyId (audit P0-2a):
+   *  an O_EXCL create of the `applied/` marker is the check AND the consume,
+   *  one atomic create, outside the reach of any single scope lock. True =
+   *  this apply consumed the id; false = already consumed (replay, zero
+   *  persistence). A create failure other than EEXIST fails CLOSED — without
+   *  its global witness an apply must not commit. */
+  const markerConsume = async (applyId, scope, op) => {
+    const dir = await dirOf('applied', true)
     try {
-      if (dir.absent === true) return false
-      try { await fsp.lstat(`${dir.path}/${markerName(applyId)}`); return true } catch (error) {
-        if (error?.code === 'ENOENT') return false
-        throw error
+      try {
+        const handle = await fsp.open(`${dir.path}/${markerName(applyId)}`, CREATE_EXCLUSIVE, 0o600)
+        try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), scope: String(scope), op, at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
+        return true
+      } catch (error) {
+        if (error?.code === 'EEXIST') return false
+        throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the applyId marker ${String(applyId)} could not be consumed: ${String(error?.code ?? error)} (refused, nothing committed — without the global witness the grant stays unconsumed)`)
       }
     } finally { await dir.close() }
   }
-  /** The global marker, written AFTER the commit (the record already holds
-   *  the id, so a failure here can only lose a redundant witness). */
-  const writeMarker = async (applyId) => {
+  /** Refund a consumption ONLY when the commit demonstrably did not land (a
+   *  refused precondition, or a typed write failure the process survives): a
+   *  refused apply never burns its applyId, a failed one stays re-drivable.
+   *  A hard crash inside [consume, commit) leaves the marker — CONSUMED with
+   *  no state change is the conservative direction (module header, REPLAY). */
+  const markerRefund = async (applyId) => {
+    const dir = await dirOf('applied', false)
     try {
-      await withDir('applied', true, async (dir) => {
-        const handle = await fsp.open(`${dir.path}/${markerName(applyId)}`, CREATE_EXCLUSIVE, 0o600)
-        try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
-      })
-    } catch { /* redundant witness; the committed record carries the id */ }
+      if (dir.absent !== true) { try { await fsp.unlink(`${dir.path}/${markerName(applyId)}`) } catch { /* absent or never ours */ } }
+    } finally { await dir.close() }
   }
   const attemptEntry = (op, scope, resource, applyId) => {
     const entry = { op, scope, key: `${scope}/${resource}`, applyId, outcome: 'refused' }
@@ -875,16 +899,23 @@ export function createFsStateStore({
   }
 
   /**
-   * The ONE apply walk for all three mutations: scope lock → replay witnesses
-   * → fresh read → the op's own precondition legs → commit (record carries
-   * the applyId) → fault seam → marker → ledgers.
+   * The ONE apply walk for all three mutations: scope lock → record replay
+   * witness → GLOBAL applyId consumption (O_EXCL marker — the atomic
+   * check-and-consume, P0-2a) → fresh decision input → the op's own
+   * precondition legs (refund on refusal) → commit (record carries the id;
+   * refund on a typed write failure) → fault seam → ledgers.
    */
   const applyUnder = async ({ scope, op, resource, applyId, decide }) => {
     const attempt = attemptEntry(op, scope, resource, applyId)
     try {
       return await underScopeLock(scope, async (locks) => {
         const current = await readState(scope)
-        if ((current?.appliedIds ?? []).includes(String(applyId)) || await markerPresent(applyId)) {
+        if ((current?.appliedIds ?? []).includes(String(applyId))) {
+          attempt.code = 'STATE_APPLY_REPLAY'
+          await finishAttempt(attempt)
+          return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
+        }
+        if (!(await markerConsume(applyId, scope, op))) {
           attempt.code = 'STATE_APPLY_REPLAY'
           await finishAttempt(attempt)
           return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
@@ -892,13 +923,18 @@ export function createFsStateStore({
         await faultAt('after-read')
         const decision = decide(current)
         if (decision.ok !== true) {
+          await markerRefund(applyId) // a refused apply never burns its applyId
           attempt.code = decision.code
           await finishAttempt(attempt)
           return { ...decision, audit: attempt.audit }
         }
-        await commitState(scope, locks, current, decision.patch, applyId)
-        await faultAt('after-commit')
-        await writeMarker(applyId)
+        try {
+          await commitState(scope, locks, current, decision.patch, applyId)
+        } catch (error) {
+          await markerRefund(applyId) // the commit did not land: the grant stays re-drivable
+          throw error
+        }
+        await faultAt('after-commit') // the commit landed: the marker STAYS (pre-commit consumption)
         attempt.outcome = 'applied'
         await finishAttempt(attempt)
         const write = { op, scope, key: `${scope}/${resource}`, applyId }
