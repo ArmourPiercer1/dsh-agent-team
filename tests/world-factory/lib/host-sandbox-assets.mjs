@@ -149,7 +149,14 @@ export class HostSandboxAssetError extends Error {
 }
 
 const sha256File = (p) => createHash('sha256').update(readFileSync(p)).digest('hex')
-const modeOf = (p) => statSync(p).mode & 0o777
+// R-MODEBITS (2026-10-29, external review): the mask the mode re-checks use
+// covers the FULL relevant mode — setuid/setgid/sticky included, not just
+// 0o777. Manifest pins are 3 octal digits (MANIFEST_MODE_RE) and chmod only
+// ever applies those 3 bits, so a conforming file NEVER carries a special
+// bit: comparing 0o7777 makes ANY special bit read as drift (e.g. a 0o4600
+// asset whose low bits match the pin), while modeString keeps reporting the
+// classic 3-digit permission string.
+const modeOf = (p) => statSync(p).mode & 0o7777
 const modeString = (p) => `0o${(modeOf(p) & 0o777).toString(8)}`
 const gitText = (args, cwd) => spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8' })
 const realpathOrNull = (p) => { try { return realpathSync(p) } catch { return null } }
@@ -403,7 +410,9 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
     // (e.g. a lost +x) was later misattributed to the host environment. The
     // pin covers the mode as well as the bytes (F7): re-check it on EVERY
     // present file — the fully-present return path and the mixed
-    // present+missing provisioned path alike.
+    // present+missing provisioned path alike. R-MODEBITS (2026-10-29): the
+    // comparison runs on the FULL mode (0o7777), so setuid/setgid/sticky are
+    // drift too — a pin (3 octal digits) can never carry them.
     const actualMode = modeOf(f.path)
     if (actualMode !== f.modeBits) {
       throw new HostSandboxAssetError('ASSET_MODE_DRIFT', `${f.relPath} in ${layout.runtimeTree} is mode 0o${actualMode.toString(8)}, the manifest pins ${f.mode} — the bytes match the pin but the mode drifted; this is a provisioning-state finding, refused instead of reported present, and the file is left in place for a human`)
