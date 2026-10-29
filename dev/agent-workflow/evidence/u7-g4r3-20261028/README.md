@@ -187,3 +187,17 @@ runner case is the authoritative guard verdict.
   `analysis/crash-sequencing-rca-20261028.md` so any fresh checkout can audit the harness-class verdict.
 - The parallel-lanes deferral decision (R-G4R-3 CI tightening; G5-L3 batch evidence) is committed at
   `analysis/parallel-lanes-decision-20261028.md`. No lane content changed; append-only.
+
+## Dated addendum (2026-10-28, with the G4-R2 promotion review) — receipt values + oracle-completeness cell
+
+- **Receipt values (reviewer A F6):** final scope at the PR #432 merge's first parent `4fd9c51ab`:
+  `eb3-run-manifest --new-since` → **records=110 findings=0**; `eb3-evidence-guard --new-since` →
+  **added=56 findings=0** (both reviewers reproduced these independently at tip they read 60 added — the 4
+  later files are review reports landed by #436–#438, still findings=0); `git diff --check` clean; no file
+  >1 MiB; `packages/**` untouched by the lane.
+- **World-oracle completeness (reviewer A F2, disclosed here as required):** the ARC-D and Jobs candidate
+  records carry `bindings.worldOracle.complete=false`
+  (`unresolvedDynamicImports=["tests/world-factory/lib/host-sandbox-assets.mjs:223"]`; Jobs also
+  `literalReadsComplete=false`). Disclosed, not hidden: the digest that IS persisted covers the vouched
+  closure; the uncovered edge is covered today by the byte-identical candidate→tip judge/package diff, and
+  is filed as **R-ORACLE-1** in the review-routing remediation ledger (re-derive those legs' immutability if any future commit touches that file).
