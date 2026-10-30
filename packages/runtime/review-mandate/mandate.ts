@@ -211,11 +211,25 @@ function grantAgrees(mandate: ReviewMandate | undefined, plan: ReviewPlan, input
  * step sits where it does.
  */
 export function evaluateReviewAdmission(input: ReviewAdmissionInput): ReviewAdmission {
+  // 0a. Container presence, BEFORE destructuring: `const { caller } = input` is
+  //     itself a field read, so the presence guards cannot live below it. What
+  //     this lane promises, stated at the precision the code actually holds:
+  //     for any input whose containers EXIST, every value-level malformation
+  //     answers a closed code. It cannot promise that against a hostile
+  //     container — a getter that throws, or a Proxy trap that rethrows, makes
+  //     every read in every module on earth an exception. Those are caller
+  //     obligations, and the caller here is a fold projection read inside the
+  //     team lock, which produces plain data by construction. Naming the limit
+  //     is the honest version of "no exception path"; a claim an adversary could
+  //     disprove in one line is worth less than the narrower one that stands.
+  if (input === null || typeof input !== 'object') return refuse('REVIEW_INPUT_MALFORMED')
   const { caller, caseView } = input
+  if (caseView === null || typeof caseView !== 'object') return refuse('REVIEW_CASE_MALFORMED')
+  if (caller === null || typeof caller !== 'object') return refuse('REVIEW_CALLER_MALFORMED')
 
-  // 0. Malformed input is a closed-code refusal, never a TypeError inside the
-  //    caller's write path (M-3), and it is checked FIRST because step 1's
-  //    mirror lookup is indexed by a vocabulary field.
+  // 0b. Malformed VALUES are closed-code refusals, never a TypeError inside the
+  //     caller's write path (M-3), checked before step 1 because that step's
+  //     mirror lookup is itself indexed by a vocabulary field.
   const callerFailure = malformedCaller(caller)
   if (callerFailure !== null) return callerFailure
   const caseFailure = malformedCaseView(caseView)

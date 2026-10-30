@@ -82,6 +82,7 @@ export const REVIEW_MANDATE_DECISIONS = ['allow', 'deny'];
 // --- the admission question and its typed answer ------------------------------------------
 /** Every refusal this lane can answer with. Closed: no free-form reason. */
 export const REVIEW_ADMISSION_REFUSALS = [
+    'REVIEW_INPUT_MALFORMED',
     'REVIEW_ROLE_ADMITS_ALREADY',
     'REVIEW_NOT_A_MEMBER_CALLER',
     'REVIEW_PLAN_ABSENT',
