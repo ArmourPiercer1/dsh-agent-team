@@ -1,0 +1,296 @@
+{
+  "version": 7,
+  "record": {
+    "identity": {
+      "formatVersion": 4,
+      "createdAt": 1793363173611,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
+      "isSeeded": false,
+      "inheritedEventCount": 0
+    },
+    "rows": {
+      "title": {
+        "ver": 1,
+        "seq": 35,
+        "val": "u7r3v2 b2 session"
+      },
+      "titleInput": {
+        "ver": 3,
+        "seq": 35,
+        "val": {
+          "first": {
+            "seq": 8,
+            "text": "[team-root-work requestToken=team-create:initial-work:sha256:29f8d83c1a4fc43a4d7801e870366c4d93d26023c818155b63388610a1614235] U7R3V2_L1B2_20261030T12-22-33Z"
+          },
+          "count": 2,
+          "lastSeq": 22
+        }
+      },
+      "llmRetry": {
+        "ver": 1,
+        "seq": 35,
+        "val": {}
+      },
+      "sandboxMode": {
+        "ver": 1,
+        "seq": 35,
+        "val": "workspace-write"
+      },
+      "goal": {
+        "ver": 6,
+        "seq": 35,
+        "val": {
+          "current": null,
+          "seenGoalIds": [],
+          "failure": null
+        }
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 1164,
+            "outputTokens": 114,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": {
+            "turn": 2,
+            "step": 3,
+            "buckets": {
+              "uncachedInputTokens": 430,
+              "outputTokens": 14,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0
+            }
+          }
+        }
+      },
+      "contextPressure": {
+        "ver": 5,
+        "seq": 35,
+        "val": {
+          "surfaceTokens": 1233,
+          "contextWindow": 1000000,
+          "pressureTokens": 430,
+          "sampledSurfaceTokens": 1221
+        }
+      },
+      "contextBreakdown": {
+        "ver": 5,
+        "seq": 35,
+        "val": {
+          "nodes": [
+            {
+              "seq": 7,
+              "heuristicTokens": 856,
+              "system": true
+            },
+            {
+              "seq": 8,
+              "heuristicTokens": 48,
+              "system": false
+            },
+            {
+              "seq": 9,
+              "heuristicTokens": 143,
+              "system": false
+            },
+            {
+              "seq": 14,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 22,
+              "heuristicTokens": 16,
+              "system": false
+            },
+            {
+              "seq": 23,
+              "heuristicTokens": 28,
+              "system": false
+            },
+            {
+              "seq": 25,
+              "heuristicTokens": 54,
+              "system": false
+            },
+            {
+              "seq": 28,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 30,
+              "heuristicTokens": 54,
+              "system": false
+            },
+            {
+              "seq": 33,
+              "heuristicTokens": 12,
+              "system": false
+            }
+          ],
+          "breakdown": {
+            "systemTokens": 856,
+            "toolsTokens": 2837,
+            "messageTokens": 377
+          }
+        }
+      },
+      "turnBoundary": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "openTurnStartSeq": null,
+          "lastStepStartSeq": 32,
+          "lastStepBoundary": {
+            "kind": "end",
+            "seq": 34
+          },
+          "lastTurn": 2
+        }
+      },
+      "inbox": {
+        "ver": 1,
+        "seq": 35,
+        "val": {
+          "next-turn": [],
+          "next-step": []
+        }
+      },
+      "sessionStats": {
+        "ver": 1,
+        "seq": 35,
+        "val": {
+          "turns": 2,
+          "steps": 4,
+          "llmMs": 128,
+          "toolMs": 2034,
+          "ttftMs": 121,
+          "ttftSteps": 4,
+          "decodeMs": 7,
+          "decodeTokens": 114,
+          "lastTurn": 2,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "turnOutline": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "turns": [
+            {
+              "turn": 1,
+              "seq": 4,
+              "prompt": "[team-root-work requestToken=team-create:initial-…",
+              "response": "U7R3V2_NOOP"
+            },
+            {
+              "turn": 2,
+              "seq": 19,
+              "prompt": "U7R3V2_GOAL2_20261030T12-22-33Z",
+              "response": "U7R3V2_B2_DONE"
+            }
+          ],
+          "draft": ""
+        }
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 35,
+        "val": null
+      },
+      "userQuestions": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "inheritedEventCount": 0,
+          "timed": false,
+          "questions": {
+            "active": [],
+            "settled": []
+          }
+        }
+      },
+      "subagentCatalog": {
+        "ver": 3,
+        "seq": 35,
+        "val": {
+          "inheritedEventCount": 0
+        }
+      },
+      "subagentTiming": {
+        "ver": 3,
+        "seq": 35,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 35,
+        "val": {}
+      },
+      "permissions": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask",
+          "seeded": false
+        }
+      },
+      "todos": {
+        "ver": 2,
+        "seq": 35,
+        "val": null
+      },
+      "plan": {
+        "ver": 3,
+        "seq": 35,
+        "val": {
+          "active": false,
+          "wanted": null,
+          "running": null,
+          "activeAtLastHeader": false
+        }
+      },
+      "subagentModelSelectionPolicy": {
+        "ver": 1,
+        "seq": 35,
+        "val": null
+      },
+      "modelSelection": {
+        "ver": 2,
+        "seq": 35,
+        "val": {
+          "lastUsed": {
+            "provider": "deepseek-official",
+            "model": "u7as-model",
+            "reasoningEffort": "high"
+          },
+          "pending": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 35,
+        "val": {
+          "blank": false,
+          "lastPromptAt": 1793363173914
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 35,
+        "val": null
+      }
+    }
+  }
+}
