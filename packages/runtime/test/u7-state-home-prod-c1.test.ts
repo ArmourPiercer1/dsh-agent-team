@@ -55,8 +55,8 @@ import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readdirSync, r
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { isAbsolute, join, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import { defaultDshHome, resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+import { pathToFileURL } from 'node:url'
+import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 
 type Refusal = { ok: false, code: string, detail: string }
 type HomeOk = { ok: true, home: string }
