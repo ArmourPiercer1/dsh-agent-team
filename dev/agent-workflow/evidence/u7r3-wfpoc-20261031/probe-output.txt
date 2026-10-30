@@ -1,0 +1,74 @@
+# u7r3-wfpoc citation probe
+checkout: /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+HEAD: 639ed015397290b3745d163aafe02ffee4aa3f84 (= pinned 639ed015397290b3745d163aafe02ffee4aa3f84) porcelain: clean
+
+## positive claims (file:line must say what the report says)
+OK      packages/workflow/workflow/src/index.ts:31  Q1 workflowEngine is a declared Cordis service
+OK      packages/workflow/workflow/src/index.ts:168  Q1 the one public engine method
+OK      packages/workflow/workflow/src/runtime-types.ts:19  Q1 the public start contract
+OK      packages/workflow/workflow/src/runtime-types.ts:27  Q1 consumer-selected child provider for a run
+OK      packages/workflow/workflow/src/runtime-types.ts:33  Q1/Q3 cancellation enters through the request
+OK      packages/preset/agent-preset-registry/src/index.ts:297  Q1 the PUBLIC read path into an isolated preset realm
+OK      docs/subsystems/core.md:545  Q1 serviceFor is in the generated public catalog
+OK      packages/preset/agent-preset-registry/src/mount.ts:267  Q1 preset services may NOT leak to the root realm
+OK      vendor/cordis/src/reflect.ts:238  Q1 ctx.get is realm-keyed: a host-plane get cannot see it
+OK      packages/bundle/web-app/cordis.patch.yml:538  Q1 web-app disables the host-plane engine row
+OK      packages/bundle/web-app/presets/standard.patch.yml:84  Q1 shipped preset mounts the engine ISOLATED
+OK      packages/bundle/web-app/presets/standard.patch.yml:120  Q1 the standard preset does mount the engine
+OK      packages/bundle/base/cordis.patch.yml:394  Q1 the base bundle mounts it host-plane instead
+OK      packages/workflow/workflow-ptc/src/host.ts:200  Q2 the engine starts children ITSELF
+OK      packages/workflow/workflow-ptc/src/host.ts:203  Q2 the request it builds (signal, and nothing narrowing)
+OK      packages/workflow/workflow-ptc/src/runtime.ts:33  Q2 the SCRIPT chooses provider/model
+OK      packages/subagent/subagent/src/child-agent.ts:218  Q2 a filter narrows only if one was sent — and none is
+OK      packages/subagent/subagent/src/index.ts:649  Q2 a provider may DECLINE the toolFilter capability
+OK      packages/subagent/subagent/src/index.ts:512  Q2 the public (unproven) route-A alternative
+OK      packages/workflow/workflow-ptc/src/index.ts:166  Q2 what DOES inherit: the parent session file policy
+OK      packages/workflow/workflow-ptc/src/index.ts:76  Q2 the override must name a REGISTERED provider
+OK      packages/workflow/workflow-ptc/src/host.ts:281  Q3/Q4 the PTC process runs with no elapsed budget
+OK      packages/workflow/workflow-ptc/src/host.ts:148  Q3 public cancel
+OK      packages/workflow/workflow/src/runtime-types.ts:46  Q3 cancel on the public run handle
+OK      packages/workflow/tool-workflow/src/index.ts:307  Q3 background stop is a public job kill
+OK      packages/subagent/subagent/src/index.ts:328  Q3 the public interrupt is NOT the workflow path
+OK      packages/subagent/subagent/src/index.ts:320  Q3 one-shot workflow children are an accepted no-op for interrupt
+OK      docs/subsystems/workflow.md:95  Q4 documented: no overall deadline, no cleanup deadline
+OK      packages/workflow/workflow/README.md:131  Q4 no service-side reaper exists
+OK      packages/workflow/workflow-ptc/src/runtime.ts:107  Q4 the only timeout bounds the initial sync slice
+OK      packages/jobs/jobs-local/src/index.ts:662  Q4 upstream admits teardown can stall
+OK      packages/guard/timeout-policy/src/index.ts:2  Q4 the timeout guard is cooperative and opt-in
+OK      packages/workflow/tool-workflow/src/index.ts:440  Q5 durable records exist only for a top-level run
+OK      packages/workflow/tool-workflow/src/index.ts:423  Q5 the same gate on the background path
+OK      packages/session-query/session-query/src/index.ts:184  Q5 the public read-back path
+OK      packages/workflow/workflow/src/types.ts:124  Q5 the result info carries no value
+OK      packages/jobs/jobs-local/src/index.ts:592  Q5 the background value lives in a memory outcome
+
+## negative claims (the absence IS the finding)
+ABSENT  packages/workflow/workflow/src/runtime-types.ts  Q2 WorkflowStartRequest must have NO tool-filter field
+ABSENT  packages/workflow/workflow-ptc/src/host.ts  Q2 the engine must send NO tool filter when starting a child
+ABSENT  packages/workflow/workflow-ptc/src/index.ts  Q4 the engine must register no deadline/reaper
+ABSENT  packages/workflow/tool-workflow/src/types.ts  Q5 the durable run-end payload must carry no result value
+ABSENT  packages/workflow/workflow/src/types.ts  Q5 the live result info must carry no value either
+ABSENT  packages/workflow/tool-workflow/src/index.ts  Q4 the native workflow row declares NO timeoutMs, so the timeout guard never applies
+
+## product claims (our own tree, at this worktree head)
+OK      packages/tools/agent-control-family/src/agent-runtime-port.mjs:324  Q-current runWorkflow has no resolver branch
+OK      packages/tools/agent-control-family/src/agent-runtime-port.mjs:325  Q-current AC-81 unwired finding stands
+OK      packages/tools/agent-control-family/src/agent-runtime-port.mjs:82  Q2 Tier A forces a zero-tool child
+OK      packages/tools/agent-control-family/src/agent-runtime-port.mjs:83  Q2 Tier A forbids script-chosen routes
+OK      packages/tools/agent-control-family/src/agent-runtime-port.mjs:204  Q2 the filter the port sends — the engine sends none
+OK      packages/tools/agent-control-family/src/agent-control-executor.mjs:183  Q-current per-leg typed refusal
+OK      packages/tools/agent-control-family/src/agent-control-executor.mjs:249  Q-current the workflow row refuses today
+OK      packages/tools/agent-control-family/src/agent-control-executor.mjs:205  Q2 law (c) as our product defines it
+OK      packages/tools/agent-control-family/src/agent-control-executor.mjs:237  Q2 our leg shape (caller-bound delegates)
+OK      packages/tools/agent-control-family/src/workflow-row.mjs:4  Q2 law (c) text
+OK      packages/tools/agent-control-family/src/workflow-row.mjs:23  Q-scope the row takes a request, not a JS script
+OK      packages/tools/agent-control-family/src/workflow-row.mjs:34  Q1 the DISPATCH-provided caller agent the read path needs
+OK      packages/runtime/src/plugin/live/team-tool-plane.mjs:1602  Q1 our host-service face
+OK      packages/runtime/src/plugin/live/team-tool-plane.mjs:1629  Q1 what cap exposes to the port (name lookup only)
+OK      packages/runtime/src/plugin/live/agent-bindings.mjs:2295  Q1 we already read the preset plane publicly
+OK      packages/runtime/src/plugin/live/agent-bindings.mjs:2306  Q1 our agents ARE joined to a preset
+OK      packages/runtime/test/u7-f-agent-control-c1.test.ts:74  Q-truth C1 proves the port contract against a FAKE port
+OK      packages/runtime/test/u7-f-agent-control-c1.test.ts:307  Q2 the AC-16 shape the Host engine cannot produce
+OK      packages/runtime/test/u7-f-agent-control-c1.test.ts:774  Q-scope the declared-effect assertion a route-A would re-wire
+
+## result
+claims=62 failures=0

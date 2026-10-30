@@ -1,0 +1,201 @@
+{
+ "ranAt": "2026-10-29T22:15:46.043Z",
+ "node": "v24.21.0",
+ "verdict": "PASS",
+ "facts": {
+  "census": [
+   {
+    "home": "home-alpha",
+    "stateHome": "RESOLVED",
+    "realms": [
+     {
+      "realmId": "poc-realm-1",
+      "scopeRecords": 1,
+      "appliedMarkers": 2,
+      "locks": 0,
+      "writesLedgerBytes": 208,
+      "attemptsLedgerBytes": 399
+     },
+     {
+      "realmId": "poc-realm-2",
+      "scopeRecords": 1,
+      "appliedMarkers": 1,
+      "locks": 0,
+      "writesLedgerBytes": 106,
+      "attemptsLedgerBytes": 126
+     }
+    ],
+    "subtree": {
+     "digest": "0d85c81f140a62411f31ef954db0dd3c403fb8aae984eaeca369e40c08a36290",
+     "files": 9,
+     "absent": false
+    }
+   },
+   {
+    "home": "home-beta",
+    "stateHome": "RESOLVED",
+    "realms": [
+     {
+      "realmId": "poc-realm-1",
+      "scopeRecords": 1,
+      "appliedMarkers": 1,
+      "locks": 0,
+      "writesLedgerBytes": 103,
+      "attemptsLedgerBytes": 123
+     }
+    ],
+    "subtree": {
+     "digest": "9e860632b8adaa73e5781d83574a3ab83e45caaa105d868d5fad6da91c66c949",
+     "files": 4,
+     "absent": false
+    }
+   },
+   {
+    "home": "home-gamma",
+    "stateHome": "RESOLVED",
+    "realms": [
+     {
+      "realmId": "poc-realm-1",
+      "scopeRecords": 1,
+      "appliedMarkers": 2,
+      "locks": 0,
+      "writesLedgerBytes": 208,
+      "attemptsLedgerBytes": 550
+     },
+     {
+      "realmId": "poc-realm-2",
+      "scopeRecords": 1,
+      "appliedMarkers": 1,
+      "locks": 0,
+      "writesLedgerBytes": 106,
+      "attemptsLedgerBytes": 126
+     }
+    ],
+    "subtree": {
+     "digest": "42a3ea6e7dab8364780334deeeed9d111bd152e5b0eccf799e0251991b25974d",
+     "files": 9,
+     "absent": false
+    }
+   }
+  ],
+  "checks": [
+   {
+    "id": "A1",
+    "name": "declared absolute home resolves",
+    "pass": true,
+    "detail": "home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-statehome-poc/dev/agent-workflow/evidence/u7r3-statehome-poc/worlds/home-alpha"
+   },
+   {
+    "id": "A2",
+    "name": "unset DSH_HOME refuses (never invents a default)",
+    "pass": true,
+    "detail": "AGENT_STATE_STORE_HOME_MISSING"
+   },
+   {
+    "id": "A3",
+    "name": "relative home refuses (never resolved against cwd)",
+    "pass": true,
+    "detail": "AGENT_STATE_STORE_HOME_INVALID"
+   },
+   {
+    "id": "A4",
+    "name": "operator live harness home refuses",
+    "pass": true,
+    "detail": "AGENT_STATE_STORE_HOME_INVALID"
+   },
+   {
+    "id": "B1",
+    "name": "realm derives its directory under the declared home",
+    "pass": true,
+    "detail": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-statehome-poc/dev/agent-workflow/evidence/u7r3-statehome-poc/worlds/home-alpha/team-state/agent-state/poc-realm-1"
+   },
+   {
+    "id": "B2",
+    "name": "realm id cannot name another directory",
+    "pass": true,
+    "detail": "AGENT_STATE_STORE_REALM_INVALID"
+   },
+   {
+    "id": "C1",
+    "name": "home A records the goal (apply ok + read back)",
+    "pass": true,
+    "detail": "audit=CONFIRMED"
+   },
+   {
+    "id": "C2",
+    "name": "home A todos applied",
+    "pass": true,
+    "detail": "audit=CONFIRMED"
+   },
+   {
+    "id": "C3",
+    "name": "realm isolation INSIDE one home (same scope → goals absent; two REALM directories materialise)",
+    "pass": true
+   },
+   {
+    "id": "C4",
+    "name": "HOME isolation (same realmId + same scope in home B → absent)",
+    "pass": true
+   },
+   {
+    "id": "C5",
+    "name": "home B stayed at zero durable writes",
+    "pass": true,
+    "detail": "writesBytes=0"
+   },
+   {
+    "id": "C6",
+    "name": "replay domain is PER-HOME: home A refuses the consumed applyId",
+    "pass": true,
+    "detail": "STATE_APPLY_REPLAY"
+   },
+   {
+    "id": "C7",
+    "name": "the same applyId is a DIFFERENT fact in home B (per-home replay domain, applies fresh)",
+    "pass": true,
+    "detail": "ok"
+   },
+   {
+    "id": "D1",
+    "name": "cross-home rooting refuses (root under A, anchor B)",
+    "pass": true,
+    "detail": "AGENT_STATE_STORE_PATH_REFUSED"
+   },
+   {
+    "id": "E1",
+    "name": "home A and home B digests differ (different state, different digest)",
+    "pass": true,
+    "detail": "A=0d85c81f140a6241… (9 files)  B=9e860632b8adaa73… (4 files)"
+   },
+   {
+    "id": "E2",
+    "name": "digest is RELOCATABLE: byte-copied subtree under a new home digests identical",
+    "pass": true,
+    "detail": "C=0d85c81f140a6241… vs A=0d85c81f140a6241…  equal=true"
+   },
+   {
+    "id": "E3",
+    "name": "relocated home reads the record back through a fresh public store instance",
+    "pass": true,
+    "detail": "objective=R-STATE-HOME-1 PoC claim"
+   },
+   {
+    "id": "E4",
+    "name": "the relocated home keeps the consumed-grant refusal (applied/ markers travelled with the bytes)",
+    "pass": true,
+    "detail": "STATE_APPLY_REPLAY"
+   },
+   {
+    "id": "F1",
+    "name": "census enumerates both homes with per-realm scope counts and digests",
+    "pass": true,
+    "detail": "alpha realms=2 (r1 scopes=1) beta realms=1"
+   },
+   {
+    "id": "F2",
+    "name": "census ledger bytes witness the durable writes (A>0, B>0 after C7)",
+    "pass": true
+   }
+  ]
+ }
+}
