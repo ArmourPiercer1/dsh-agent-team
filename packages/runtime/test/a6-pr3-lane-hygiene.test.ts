@@ -22,7 +22,8 @@
  * rather than in a reviewer's reading.
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -54,11 +55,48 @@ const PROTECTED_PREFIXES = [
 const SOURCE_EXTENSIONS = ['.ts', '.mjs', '.cjs', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
+/**
+ * Did this error mean "the path is gone / its parent is gone", as opposed to "the filesystem is broken"?
+ * Three sibling suites (f3a/f3b/f3c) and the po-notify suite create and destroy scratch under
+ * `packages/testkit/test/.tmp-fault`, which every tree walk in this file crosses. A full-repo run measured
+ * the collision rather than predicting it: the first version of this walker aborted the whole spec with
+ * `ENOENT: no such file or directory, stat '.../.tmp-fault/po-notify-determinism'` — a spec whose claim is
+ * about who imports a dormant lane, defeated because another suite happened to be mid-cleanup. Treating
+ * "gone" as "gone" is not a weakened assertion: a file that no longer exists cannot import anything, and
+ * anything OTHER than gone still throws, because a real filesystem problem must not look like success.
+ */
+const VANISHED = { count: 0 }
+
+function isGoneError(error: unknown): boolean {
+  const code = (error as NodeJS.ErrnoException | null)?.code
+  return code === 'ENOENT' || code === 'ENOTDIR' || code === 'ELOOP'
+}
+
 function sourceFiles(root: string): string[] {
   const out: string[] = []
-  for (const entry of readdirSync(root)) {
+  let entries: string[]
+  try {
+    entries = readdirSync(root)
+  } catch (error) {
+    if (isGoneError(error)) {
+      VANISHED.count += 1
+      return out
+    }
+    throw error
+  }
+  for (const entry of entries) {
     const full = join(root, entry)
-    if (statSync(full).isDirectory()) {
+    let isDirectory = false
+    try {
+      isDirectory = statSync(full).isDirectory()
+    } catch (error) {
+      if (isGoneError(error)) {
+        VANISHED.count += 1
+        continue
+      }
+      throw error
+    }
+    if (isDirectory) {
       if (SKIPPED_DIRECTORIES.has(entry)) continue
       out.push(...sourceFiles(full))
       continue
@@ -67,6 +105,22 @@ function sourceFiles(root: string): string[] {
     if (SOURCE_EXTENSIONS.some((extension) => entry.endsWith(extension))) out.push(full)
   }
   return out
+}
+
+/** Read a file that a concurrent suite may delete between listing and open. `null` means "it is gone",
+ * which the dormancy scan reads as "nothing here imports the lane" — the truth for a deleted file. Used
+ * ONLY for foreign trees; the lane's own files are read strictly, because a missing founding module must
+ * fail loudly rather than vanish into an empty string. */
+function readIfPresent(file: string): string | null {
+  try {
+    return readFileSync(file, 'utf8')
+  } catch (error) {
+    if (isGoneError(error)) {
+      VANISHED.count += 1
+      return null
+    }
+    throw error
+  }
 }
 
 /** Any mention of a wake-lane module in a quoted specifier, extensionless, bare-directory or dynamic. */
@@ -93,7 +147,7 @@ describe('a6-pr3 lane hygiene', () => {
         const rel = relative(PACKAGES_ROOT, file)
         if (rel.startsWith(join('runtime', 'review-wake') + sep)) continue
         if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`) || rel.includes('.spec.')) continue
-        if (LANE_IMPORT_PATTERN.test(readFileSync(file, 'utf8'))) offenders.push(rel)
+        if (LANE_IMPORT_PATTERN.test(readIfPresent(file) ?? '')) offenders.push(rel)
       }
     }
     expect(offenders).toEqual([...ALLOWED_CONSUMERS])
@@ -169,5 +223,31 @@ describe('a6-pr3 lane hygiene', () => {
     expect(barrel).toMatch(/cannot authenticate|cannot\s+authenticate/is)
     const slot = readFileSync(join(LANE_DIR, 'slot.ts'), 'utf8')
     expect(slot).toMatch(/hostile containers are a caller obligation/)
+  })
+})
+
+describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
+  it('skips an entry that vanished, counts it, and still sees what exists', () => {
+    // Deterministic model of the race: a symlink whose target does not exist makes `statSync` throw
+    // ENOENT on every OS, which is exactly what a sibling suite mid-`rm -rf` produces on one entry.
+    // The leg is not only "did not throw" — it pins that the resilient walk still SEES the real file
+    // and still matches the lane pattern in it, so resilience cannot quietly become blindness.
+    const dir = mkdtempSync(join(tmpdir(), 'a6-hygiene-walk-'))
+    try {
+      mkdirSync(join(dir, 'pkg', 'src'), { recursive: true })
+      const keeper = join(dir, 'pkg', 'src', 'keeper.ts')
+      writeFileSync(keeper, "import { wake } from '../review-wake/index.js'\n")
+      symlinkSync(join(dir, 'already-deleted'), join(dir, 'pkg', 'src', 'dangling.ts'))
+      const before = VANISHED.count
+      const files = sourceFiles(join(dir, 'pkg'))
+      expect(files).toContain(keeper)
+      expect(files).not.toContain(join(dir, 'pkg', 'src', 'dangling.ts'))
+      expect(VANISHED.count, 'the vanished entry must be counted, not swallowed').toBeGreaterThan(before)
+      expect(LANE_IMPORT_PATTERN.test(readFileSync(keeper, 'utf8'))).toBe(true)
+      // And a read that races the same way yields null, not a throw, for a foreign tree.
+      expect(readIfPresent(join(dir, 'already-deleted'))).toBeNull()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
