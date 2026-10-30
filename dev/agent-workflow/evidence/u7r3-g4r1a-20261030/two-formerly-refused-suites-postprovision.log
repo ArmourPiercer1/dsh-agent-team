@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-g4r1a
+
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts (13 tests) 297ms
+ ✓ packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts (4 tests) 81ms
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  12:53:46
+   Duration  563ms (transform 311ms, setup 0ms, import 403ms, tests 379ms, environment 0ms)
+

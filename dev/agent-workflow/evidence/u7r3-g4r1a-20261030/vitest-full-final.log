@@ -1,0 +1,8 @@
+# root 'pnpm test' (vitest) FULL — final gate transcript, R-G4R-1a lane, 2026-10-30 real UTC
+# worktree .worktrees/u7r3-g4r1a @ task/u7r3-g4r1a-20261030 (base origin/master 1d884efdb) after pnpm build + build:composition + test-use provisioning (see README)
+# full noisy transcript retained locally: .artifacts/tmp/g4r1a-gates/vitest-full-final.log (gitignored); the log is machine output; this file is the summary block only (index economics, EVIDENCE-OFFLOAD bulk rule)
+ Test Files  650 passed (650)
+      Tests  8563 passed (8563)
+   Start at  12:53:51
+   Duration  312.21s (transform 37.64s, setup 0ms, import 278.88s, tests 742.28s, environment 151ms)
+EXIT=0

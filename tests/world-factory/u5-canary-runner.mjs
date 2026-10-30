@@ -56,7 +56,7 @@ import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
 import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
 import { loadSuites } from './lib/suites.mjs'
-import { bindWorldProfile, captureOracleBinding, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
+import { bindWorldProfile, captureOracleBinding, captureTrustedSourcesBinding } from './lib/binding-digests.mjs'
 import { findIssuedResult, makeCanaryDecide, resultClaimsRan } from './lib/mock-script.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -915,6 +915,13 @@ export async function runSuite(opts) {
     repoRoot: REPO_ROOT,
     suite,
   })
+  // R-G4R-1a: the plane trusted-sources digest (obligations family + this suite's oracle
+  // closure; per-world profile entries join via bindWorldProfile). Null-with-reason is
+  // emitted by the surface itself when the set is not computable — never backfilled.
+  const trustedSourcesBinding = captureTrustedSourcesBinding({
+    repoRoot: REPO_ROOT,
+    extraEntries: [{ role: 'world-oracle', path: oracleBinding.worldOracle.evidence[0]?.path ?? '', sha256: oracleBinding.worldOracleDigest }],
+  })
   const record = createRunRecord({
     runId,
     suite,
@@ -926,7 +933,7 @@ export async function runSuite(opts) {
       hostSha: hostBaseStartup.head,
       hostTreeSha: hostBaseStartup.head, // alias: pristine runtime tree, not Team SHA
       composedProfileDigest: {},
-      ...trustedSourcesUnavailable(),
+      ...trustedSourcesBinding,
       ...oracleBinding,
       hostPorcelainEmptyAtStartup: true,
       authority: readAuthorityBinding(REPO_ROOT),
