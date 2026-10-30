@@ -71,6 +71,10 @@ leg 前置条件未修时的 `44/45`，失败 leg 正是 `port … 13030 answers
 
 ## 5. 如实披露（协调者需要裁决/知悉的三条）
 
+> 协调者裁定（22:36Z，收到于本 lane 报告之后）：(a) **保留** band-saturation 前提改写，不回转；
+> (b) NC 落 `tests/world-factory/` + README C1 登记 = 正确落位；(c) 端口预热/黑洞记为机器事实入 RCA 素材；
+> (d) 批准修 `EXTERNAL_BIND` 文案（本分支第二笔 commit，见 §6）。禁其他扩面。
+
 1. **改了一条在册 leg 的前置条件**：`world-factory.test.mjs` 的 band-saturation leg 原假设"带内每个端口都归我"，
    本盒被 Windows 侧监听者（13030-13032）证伪。处置=把 `EXTERNAL_BIND` 记为 foreign 并计入
    `mine+foreign===段长` 断言 + diagnostic 打印；leg 的两条律一字未动；干净机器上行为与原来逐字节相同。
@@ -80,6 +84,28 @@ leg 前置条件未修时的 `44/45`，失败 leg 正是 `port … 13030 answers
    `node tests/characterization/run.mjs`（真 boot harness，禁跑）。`node --test` 的在册落点是
    `tests/world-factory/`（port-lease 的在册测试都在那里），故新档为 `tests/world-factory/port-probe.test.mjs`，
    并已登记进该目录 README 的 C1 表。
-3. **`EXTERNAL_BIND` 文案仍不准确**：`tests/world-factory/lib/port-lease.mjs` 抛错文案写
-   "answers TCP with no live lease holder"，而真实情形包含"无人应答、由 bind 证明占用"。修复后该文案
-   比以前更常被人读到，但仍**未改**（属 leg 断言文案域，留给协调者指派 follow-up）。
+3. **`EXTERNAL_BIND` 文案**：原句断言了一个探针并不总知道的形态（见 §6，已按协调者裁定在本分支第二笔
+   commit 修掉）。
+
+## 6. follow-up（协调者裁定 (d)，dated 2026-10-30T22:43Z）
+
+`tests/world-factory/lib/port-lease.mjs` 的 `EXTERNAL_BIND` 原文案
+`port N answers TCP with no live lease holder — refusing (foreign listener)`
+断言了"有人应答"，而真实情形包含"无人应答（connect 不确定）+ bind 决胜腿证明占不到"——RCA-1 本身就是这一类。
+改为不预判形态的诚实句，**代码名 `EXTERNAL_BIND` 不动**：
+
+```
+port N is not cleanly acquirable: no live lease holder and the probe cannot prove it free
+(a listener answered the connect probe, or that probe was inconclusive and the bind tie-breaker could not bind it) — refusing
+```
+
+改前全仓 grep `answers TCP`：代码侧唯一命中就是这一行；其余命中全部在历史证据日志
+（`evidence/u5-fixt-20261026/red/scratch/**`、本目录的 pre/post 日志）里，历史证据不追改。
+消费方一律按 `error.code` 断言 —— `lease-race.mjs:152`、`world-factory.test.mjs:283/311`、
+`port-probe.test.mjs` NC-4 —— **没有任何测试按措辞断言**，因此无测试需同步修改（commit 正文照实点名"零测试改动"）。
+`acquirePortLease` 的 JSDoc 拒绝码清单同步改为两形态并注记"代码名先于 bind 决胜腿，保留"。
+
+复跑实录（`post-wording-fix-verification.log`，22:41:02Z→22:43:02Z）：
+`world-factory.test.mjs` **45/45 pass EXIT=0**（113.8 s）、`port-probe.test.mjs` **5/5 pass EXIT=0**；
+NC-2 本轮仍是黑洞形态（`port=3492 shape=black-holed elapsed=1505ms`，verdict from the bind tie-breaker），
+NC-4 仍按 code 拒绝。渲染后的实际文案以真实无租约监听者（13085）现场取证，见同一日志末尾。
