@@ -7254,3 +7254,8 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **PR #472 合并**（mergeCommit 见 gh）：boot#1 FAIL 原文入账（7/9 跨进程腿 PASS：拒绝-持锁 3019ms、真死-断锁 1043ms 零残、#461 竞态重验、#460 跨 scope 恰好一次、退款；host-lane 2 腿 NOT_REACHED=lane pnpm-install 供给缺口，机器收据在案）；boot#2（条件预留，登记先行 10.9s）overall **PASS 10/10** 于**生产默认时钟零缝**（L 序列实测：批准 +989ms 在窗内、提交=持有者 RELEASE +41ms、真实等待 8054ms、锁 never-broken present/mine、单写零残；F/R3/M/I/R/漏全绿）。boot 总账 **12/24**，#448/#449 两预留池 2/2 用尽。R472-fl 六族 APPROVE（含 base 上 RED-on-master 名册漂移独立复现）。u7-tool-acceptance.json 零改动（判的是 store 基底非工具臂）。
 - **P2 更正表落档**：boot#2 预登记 `registeredAt` 伪值——git 绑定证据独立成立、判级零引用；不回改原件，更正表见 evidence/u7r3-b49-20261031/ERRATUM-BOOT2-REGISTEREDAT-20261031.md。boot#2 消耗采用 lane 自登记的 NOT_REACHED-类读法，协调者已在 #472 清偿中 dated 批注（池 #449≤2 为用户裁决原文，未扩池；批注非裁决变更）。
 - **机动池现状**：R2 收口池 4/8（+crash 复验 2 +生产路径 2 计入各自预留行）；AC 候选绑定 12 全预留；机动 4 已尽。后续任何 boot 需用户再分配。
+
+## 2026-10-31 (05:0xZ) — C1 波次三收口：agent-control 家族 16 臂全入账（主 Agent）
+- **PR #474 合并**（merge sha 见 gh）：subagent_fork AC-66-69、send_message AC-70-72、list_subagent_models AC-73-75、workflow AC-76-81 全为 PASS-by-assertions 离线判级（四元组+同世界翻转；全量套件 648 文件/8512 测试 ×2 绿，协调者复跑 63/63；变异 5/5 杀，M3 复审席字节级复现）。AC-81 以源码物证姿态入账：runWorkflow 腿于本 pin 未接线（agent-runtime-port.mjs:325，workflowEngine 归 AC-4），live workflow 运行半面**分析披露而非假冒**。R474-fl PASS（flash 席，六项独立核验）。两非阻塞发现合并前披露式闭合（R464 F-a 先例）：F-2 四行账本补 C1 脉络注（状态逐字节不动 NOT_VERIFIED）、F-1 收据措辞精度（差距=判级形式缺失而非检测缺失；原文照留+dated 更正）。
+- **账本同步**：五条 "(PR #46N, OPEN)" 陈旧注 → "MERGED @真sha"（复审席经 gh 逐条验真）。账本现 NOT_VERIFIED 计数 24 叶（L1/L2 全绿，缺口集中于 L3/L4——两者余下全为 boot 依赖，池 12/24 且机动尽，再分配=用户队列）。
+- **过程记录**：首个复审席曾失联无报告，协调者并行自验全部关键初级（范围/叶差/63-63/AC-81 源证/sha 验真）后该席恢复交付且结论一致；二号席及时召回零浪费。C1 自主面至此穷尽：余下全部 L3/L4 缺口需实机 C2 或 AC-4 产品半面，均已入用户决策队列。
