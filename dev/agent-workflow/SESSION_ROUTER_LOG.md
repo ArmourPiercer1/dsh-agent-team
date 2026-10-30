@@ -7193,3 +7193,78 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 解析闭死 exit=2、hostSha trim、fixture 9→12），A1..A5 五条附注并入 R-ACCEPT-RUN-2 排队（含 mode
 标志过宽/字符串 true 不识别/CASE 不锚定记录——今日发货披露本身全诚实）。机器收据两份入库；
 两包合并均另受 CI + 线程门约束。中心 kernel 零触碰；G4 历史零改写；boot 预算零花费。
+
+## 2026-10-29 (17:0xZ) — U7-R2 收口 + 外部审查小修复波次（主 Agent，USER-RULING-20261029B 执行段）
+- **合并**：#453 R-413-1 尾项（census 确定性根除，456b90f67）→ #451 R-MODEBITS 全位掩码+T27 静默接受直接负控（3c94900fa）→ #452 R-DYNIMPORT AST-first+字符串掩码双路闭合、2 既有计算导入闭集入账（e7108b125）→ #455 R-DM-1 协议法文化 ROUTER_RULES §8.5（27bdbd443）→ #454 R-AUDIT-DEPTH b1/b2/b3（38a5f64f4，双审：R454-27b 自曝席位同族 → v4-pro 升级席补跨族实质）。全部：TDD RED 在案、dated 四要素清偿、严格模式机器门（ci-required+pr-gate+线程+R-DM-1 纸面）。
+- **boot 总账 4/24**：#446 C2 车道闭账（(a)(c)(d)✓；(b) 实机 NOT_REACHED 结构性不可达——旋钮提案=用户决策项；证据 4eff9811a；gates/BOOT-BUDGET-20261029B.md）。#448/#449 复验 4 starts 预留未动，待波后覆盖最终态执行。
+- **§8.5 三门实战教训**（均按「更正=新评论」留痕）：旧断言行需 SUPERSEDED 指针；描述文本含词元自触 grep；词元匹配应限首行/围栏行。协议后续 PR 排队。
+- **矩阵 v3**：类别② 术语纠正（Agent Control 家族）、类别④ 裁决落地、试点（team_glob+job_list）授权在案。USER-RULING-20261029B 全文入 gates/。
+- **运维披露**：双合并链同 worktree 竞态一次（我方操作错误，僵尸猎杀+单写者恢复，零内容影响）；nohup 子进程随沙箱死亡三次教训后全部改 harness 作业；主检出 962 文件未提交 index 状态已备份 backup/main-index-20261029 并报告；worktree 清理 20 位（2 疑点位保留报告）。
+
+
+## 2026-10-29 (~20:1xZ, BACKFILL 补记) — U7-R3 pilot lane-C2 float 授权入总账 + boot#3 记账 + 程序违规在案（主 Agent #458 审查 F-1 指令）
+- [BACKFILL 性质：本条为主 Agent 2026-10-29 PR #458 审查后指示的事后补记；以下时间均为原始文件/账本时间戳（stat + host-starts.jsonl），无任何伪造时间]
+- **授权**：父会话（PILOT lane-C2 worker）于 18:4xZ 收到主 Agent float 授权消息（大意："Two follow-ups, remaining float budget 2/4 (pre-register both lines before any start): (1) GLOB RE-BOOT (1 start) … (2) JOBS RE-HOME (code + 1 start) …"），属 USER-RULING-20261029B 机动（4）包络内的当期授权。
+- **boot 总账**：boot#3（run u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z，账本行 18:53:39Z）计入总账 → **7/24**（4 = #446 收口；2 = pilot lane-C2 第一轮 boot#1/#2（18:2xZ/18:31Z，此前漏记）；1 = 本次 float boot#3）。BOOT-BUDGET-20261029B.md 已同步。
+- **violation-on-record（F-1 成立，pilot 自验同意）**：boot#3 的登记文件 host-starts-PRE-REGISTRATION-float.json 创建于 18:56:57Z，晚于该 boot spawn（18:53:39Z）——违反 RULING-B 硬律「事前登记后才准启动」；授权真实且在前，程序仍属违规。纠正：boot#4（u7-4a-jobs）登记先于 spawn 且额外等待主 Agent push 确认后启动；pilot 侧完整披露见 dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts-PRE-REGISTRATION-float.json 的 VIOLATION-DISCLOSURE-20261029 段。boot#3 记录保持其测得的 FAIL（10/11），判法修正另提交，不追溯改判。
+
+
+## 2026-10-29 (19:2xZ) — U7-R3 pilot lane-C2：boot#4 落地（float 4/4，总账 8/24），job_list L3-refusal 升级 PROVEN(CASE)
+- **boot#4**（u7-4a-jobs，run u7r3c2j2，账本行 19:14:33Z；登记先行 + 主 Agent PUSH-CONFIRMATION 后启动——F-1 纠正生效）：overall FAIL 12/13。**u74a:list-deny-leg-honest-zero 实机 PASS**：foreign 泳道自身 birth 的 durable ask 行被 DENIER 经公开 seam 恰好一次 DENY（200 ok），调用面回 `code=APPROVAL_DENIED` 且按指纹绑定该行，foreign `job_list` 保持诚实零 `(no background jobs)`，零 id 诞生、claim 零回显。ledger job_list L3-refusal → **PROVEN（proof:CASE**，runOverall/failedScope/caseIndependence 三项披露齐备，eb3 绿）。
+- 唯一 FAIL 为既有独立案例 u74a:kill-live-requested（committed 早读 delta 竞态：早读先于子进程首次 flush 返回 '(no new output)'；决定性晚读仍证 settle：status killed、liveFinal 缺席）——按测得记录，不改判。team_glob cell 保持 NOT_VERIFIED（本 boot 未测该腿；其 boot#3 见证与判法修正已在案）。
+- 证据：dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/（u7r3c2j2.u74a-run-record.json + oracle + logs）；PR #458 dated 评论汇报。
+
+## 2026-10-30 (04:0xZ) — 外部审计 #3 intake、两持久化并发缺陷修复、清偿机器门上线（主 Agent）
+- **审计 #3（2026-10-30 北京时间）全量处置**：P0 证据绑定断裂（#458 RUN_SOURCE_UNRESOLVED，根因=我方 mid-flight rebase 指令孤儿化 boot 绑定 commit）→ 追加式 archive ref ×3 恢复可达 + dated 披露 + **§8.5.7 新律**；P0-2a applyId 跨 scope 双提交（**CONFIRMED**，#460 O_EXCL consume-before-commit 原子消费，6a369f904）；P0-2b 锁回收三交错（**全部 CONFIRMED**，#461 link-based 代际条件回收，3a850d3e3；与 #460 的 faultAt JSDoc 冲突按 R461-fl 预案 docstring-union 解决）；P1-1 清偿机器门（#459：pr-gate 新 job pr-settlement-gate，首行词元+闭合集 dated 清偿+40-hex head-sha 相等，6827b6112；EB3-C 当场抓住该 PR 自身未登记 job——治理规则抓住自己的 PR，注册即修复）；P1 Host-PoC/P2 项入队列（见下）。三 PR 均 27b 实现→flash 跨族复审 APPROVE（R459/460/461-fl：审查席各自还原 src-only revert 证明三案/回归非永真）。
+- **试点收官（USER-RULING-20261029B item-2）**：team_glob+job_list 全流水线走通——C1（#456/#457 已合）→ 实机 C2 boot#1–#4（机动 4/4，违规一条已定罪并纠正：boot#3 先启后登）→ **job_list L3-refusal PROVEN 于 master（新律下首个实机判级）**；team_glob 诚实保持 NOT_VERIFIED（boot#3 见证在案、判据 forward-only 修正已合，待 G5 候选 C2 随行）。矩阵批量扩张按试点形状推进。
+- **boot 总账 8/24**（R2 池 4；机动池 4/4 用尽含违规定罪条目；#448/#449 预留 4 未动；AC 12 未动）。
+- **运维披露**：双合并链同 worktree 竞态二次发生（我方 pkill 波及+`(… &)` 重复启动各一）——合并链今后一律单链串行+杀前核对 argv；短 sha 手工补全曾造出假 hex（由 linkage-settle.sh 机器审计杜绝：祖先校验+PR-owned 路径零差异审计，替代手写 sha）。
+- **用户决策队列（勿代答）**：#446 (b) 旋钮处置；主检出 962-file 备份后的 reset 批准；证据外仓（审计 P2，涉保留规则）；workflow Host Public API PoC 授权；AC 生产接口 PoC；R-STATE-HOME-1 PoC（方向已批，待派）。
+- （同日续）C1 矩阵扩张首波（audit P1-2「按试点形状、World/Oracle 有界复用」）：#464 job_kill L3 C1 臂 G6 F1–F4（28/28×3；变异负控=bridge checked() 删除→F1 红于 owner-mismatch，审查席独立复制成功；R464-fl PASS，F-a 措辞越称当场修=承认 u6-pr4:D2 已有 typed 文本判据、G6 增量=victim 侧见证，63c6ee946）与 #465 goal 家族四格 A1–A4（55/55×3，M1–M4 全 kill；R465-fl APPROVE，四判据码逐行对源核实非虚构；A3 ROW/store 腿判别法可靠）。五格 L3 依 #456 C1 语义**保持 NOT_VERIFIED**（升级须实机 C2 随格，boot 未动）。#462 合并 @ 3904f8111 后，两 PR 经**升级后的合并链**合并：链内 §8.5.3 字面执法（合并主体实时跑 pr-settlement-gate 判 PASS 才调 merge API）+ 刷新后自动关联清偿（linkage-settle v2：merge-tree 树等值审计，取代共享路径下的路径零差异法——ledger JSON 为 #464/#465 共享文件的正确审计形态）。
+- （同日追加，sync6 素材）#462 合并 @ 3904f8111（新机器门自家首周期：BLOCKED-BY-MARKER→撤标+首行闭合集清偿→托管重跑 PASS→按 sha 合并）；#463 PoC（R-STATE-HOME-1）R463-fl APPROVE：20/20 独立复跑语义等值、per-home 重放域/可迁移摘要非永真、公开面 only、`homePath` Center Interface 引文属实（L242-249）——保持 DO-NOT-MERGE 待用户裁决（STATE_HOME≠DSH_HOME 变体是唯一中心依赖）；R462-fl/R462v-fl/R463-fl 报告入本证据目录。
+
+## 2026-10-31 (00:5xZ) — C1 扩张波次二收口 + 合并链缺陷自曝修复（主 Agent）
+- **C1 波次二**（audit P1-2 有界复用延续）：#468（subagent 放大拒绝四元组 AC-60–63 + list_agents 诚实零 AC-64/65；R468-fl PASS，M2 字节级复现）与 #467（edit 拒绝 ER-1/2 全目录摘要零效应 + 原生 bash 拼写 NAT-0/1/2 真 landlock 翻转；R467-fl PASS，纵深防御披露经行序源码+探针双验）合并，master=`0be20e0f5`。九格（job_kill/create_goal/get_goal/exit_plan_mode/todo_write/subagent/list_agents/edit/bash）L3 皆新增 C1 判级脉络，**状态全部保持 NOT_VERIFIED**（C1≠L3；PROVEN 需实机 C2 PASS 级记录；boot 分文未动，仍 8/24）。
+- **自曝与修复（§8.5.5 文化对齐工具层）**：合并链 live-gate 曾有 `$( … | tail -1)` 取码缺陷——node 崩溃时管道返回 tail 的 0 造成假通过路径；#468 恰在其上运行（幸而合并仍被必需检查+托管 pr-settlement-gate（对合并头 completed/success 复核在案）+标记+线程四门独立守住，**合并实质合法**），发现后立即杀链、改为无管道取 exit code + 只认 `DSH-SETTLEMENT-VERDICT PASS` 行，#467 经修复后的门判 PASS 后合并。教训入本日志：机器门的任何"读数"路径不得经管道吞码。
+- **用户决策队列（勿代答，累列）**：#446 (b) 旋钮；主检出 reset（backup/main-index-20261029 已推）；证据外仓（审计 P2）；workflow 工具 Host Public API PoC 授权；AC 生产接口 PoC；#463 STATE_HOME 合并与 C2 格放置（PoC+R463-fl APPROVE 在案，`STATE_HOME≠DSH_HOME` 变体唯一中心依赖=homePath Center Interface）；team_glob L3 需未来 boot（float 池已尽→池再分配）；#459 F1 小写标记 accepted-risk；§8.5.6 W1 措辞 nit。
+## 2026-10-30 (01:1xZ) — U7-R3 boot lane u7r3-bcr：R-CRASH-1 durable revalidation（#448 池 2/2 用尽，总账 10/24），无旋钮 crash 对 **PASS 5/5 + 7/7**
+- **登记先行（#458 F-1 律）**：PRE-REGISTRATION.json + SETUP-NOTES.md 随登记 commit **33e55cb23** push 并经 ls-remote 确认后，01:07Z 才 spawn supervisor（登记→push→确认→启动全链在案）。bootBase=origin/master 0be20e0f56cf（含 #448/#460/#461）。
+- **boot#1（唯一动用；=2 host starts：victim-boot 01:08:37Z + survivor boot1 01:09:55Z）**：`--mode crash-reclaim --survivor-suite core --max-host-starts 2`，**未传 --kill-after**（复验对象）。supervisor **overall PASS 5/5**（abnormal-kill-reclaim / crash-simulation-reclaim / other-world-unaffected / pristine-host-and-stable-untouched / sibling-homes-untouched），survivor core **7/7**，probes 8/8 ok(real-io, simulated=false)。
+- **握手实证（durable path 生效）**：HELD 01:09:28.743Z（U5-IN-FLIGHT）→ 认证 READY receipt 01:10:46.531Z（receiptWorldId=survivor World，health-effect）→ kill **+1ms** 落点，leg=**fired-after-ready-receipt**，mid-tool 三证齐（pre 在/post 无/无 victim RUN record），lease 全带 reclaimedFrom 回收，零拒绝。`killAfterKnobMs=1500` 仅为 parseArgs 默认值进披露字段，**旋钮零授权**（handshake.kill.rule 原文 + 启动前离线 45/45 C1 锁）。
+- **定性**：durable-path PASS；历史 PASS-by-knob 记录（u7-g4r3 retry）**原样保留不改色**；R-CRASH-1 行（G5-blocking）关闭与否=本 lane PR 独立审查与合并决策项，本 lane 不清标记、不 settle、不合并。
+- **boot 总账 10/24**（#448 池 0/2→**2/2 用尽**；条件性 boot#2 预留**未动用**=非 ENV_BLOCK；#449 预留 2 未动；AC 12 未动）。:3080 401==401 只读探针在案、~/.dsh 未触、世界全拆除、lease 0 active/0 stale、runtime 树 porcelain 前后皆空。
+- **披露**：lane brief 名 27b seat，本会话 harness 报告模型 = qwen3.8-flash-next（§0.2：独立性=独立会话非模型标识，差异如实登记不粉饰）；probes jsonl 以字面 `\n` 分隔（与既往 lane 记录字节同形的既有 kit 行为）。
+- 证据：`dev/agent-workflow/evidence/u7r3-bcr-20261031/`（PRE-REGISTRATION / SETUP-NOTES / RUN-RECORD / crash/ 全记录绑 teamSha=33e55cb231be…）；账本行 `dev/agent-workflow/gates/BOOT-BUDGET-20261029B.md`；判据行 `GATE-LEDGER.md` 2026-10-30 追加行。
+- （更正，2026-10-31T02:0xZ，§8.5.5 式条目更正，不改原文）上一条 boot-lane 条目头标注 "2026-10-30 (01:1xZ)" 系日期笔误：按其自证时间线（PRE-REG commit 01:07:00Z → 工件 01:07:13Z → kill 01:10:48Z，均 UTC）实际发生于 **2026-10-31** 凌晨；条目其余内容不受影响，原文照留。
+
+## 2026-10-31 (02:3xZ) — 崩溃持久闭合、陈旧草案清场、链法加固（主 Agent）
+- **R-CRASH-1 持久路径实机闭合**：#470（boot lane，预登记先行 33e55cb23→工件 01:1xZ 全时序在案；supervisor 5/5、survivor core 7/7、probes 8/8、kill=READY 收据后 +1ms，`killAfterMs=1500` 为 parseArgs 默认且物证非定时触发=“knob 未授权任何事”实质为真；R470-fl 八项 APPROVE）合并 @ d8aed1f74。boot 总账 **10/24**（#448 2/2 用尽、boot#2 预留未动）。协调者前向合并解 SESSION_ROUTER_LOG EOF 双追加（union 双保真），并对 boot 条目日期笔误按 §8.5.5 追加更正（原文照留）；机器关联在 merge-tree 冲突处**正确拒发**，改以人工祖先+证据零漂移审计补发。
+- **审计 P2 陈旧草案清场**：#360/#361/#363/#355/#350/#346/#347/#337/#319 九条 pre-#364 设计/试验草案 PR 逐条贴 dated 说明后关闭（可逆、零历史改写；含"如仍有效请回复重开"通道）。开放 PR 面收敛至 #463（待用户 STATE_HOME）与 #446（待用户 (b) 旋钮）。
+- **合并链法加固**：live-gate 取码去管道化+只认 DSH-SETTLEMENT-VERDICT PASS 行（波次二已自曝并生效）；linkage-settle v2 merge-tree 树等值审计在 #470 冲突场景验证"拒绝→人工重审"分工正确。R469-fl/R470-fl 报告入证据目录。
+
+## 2026-10-30 (02:4–03:0xZ) — U7-R3 boot lane u7r3-b49：#449 生产路径实机 boot（clock seam + applyId + lock-break live），**PASS 10/10**（#449 池 2/2 用尽，总账 12/24）
+- **登记先行（#458 F-1 律）**：boot#1 登记 commit **80eef96e5**（PRE-REGISTRATION.json + 套件 130-u7r3-b49-lockseam，9 案 u7as:* 血统复用 C1 命名）push 并 ls-remote 确认后 02:38Z 启动；boot#2 登记 commit **604f9d585**（boot#1 回执 + PRE-REGISTRATION-BOOT2.json）同样先登先确认后 02:49Z 启动。SOURCE_SHA 门：两 boot 的 bindings.teamSha 各等于其登记头（套件对 B49_PRE_REG_SHA≠teamSha 直接全案 FAIL 拒跑）。
+- **boot#1（FAIL 原判保留）**：7/9 例真序 PASS（他进程持锁→公开配置 lockTimeoutMs 拒绝 3019ms 且仍在持锁窗内、他进程真实死亡(ESRCH)+满 45s 记录→生产破锁复核 1043ms 零残骸、双进程竞态仅判别一次+输者活锁前再等（#461 R3）、O_EXCL applyId 同/跨 scope 恰一次（#460 三轮）、refusal→标记退款→重驱恰一次、leak 零）；host-lane 2 例 NOT_REACHED：Team row bootstrap `ERR_MODULE_NOT_FOUND @deepseek-ai/dsh-storage-domain` ——lane worktree 未跑 pnpm install 的 provisioning 缺口（同 #458 pilot boot#1 farm 缺口/g4r3-attempt-1 类，机器收据 token-free 提交在案）。披露：boot#1 命令漏传 --run-record，RUN-RECORD-BOOT1.json 为同会话自 runner stdout 逐字重建（旗标缺失写明、不改色）；logs/.gitignore 预登记 commit 误写成散文、本 commit 修为真模式（原始 boot 日志含 token，永不提交，TEST_METHODS 3.6）。修复=lane 根 pnpm install（workspace 内 store 副本——本机全局 store 挂载只读；仅补拉 @deepseek-ai/dsh@0.2.0-rc.2 tarball；lockfile 零改动；解析验证：row 依赖=lockfile 钉定的 0.2.0-rc.2 注册表包，被测 fs-state-store.mjs 从 LANE 路径加载 sha 4428c2297b65…）。
+- **boot#2（唯一复验，池顶格 2/2）= overall PASS 10/10**：u7as:P 主机正例——生产 fs store（无注入端口、无 seamsUsed 非默认项：faultAt none / nowMs=生产默认 Date.now / bootId 默认）、治理 create_goal 双 Control ask 经公开 team.resolveControl 放行、goal 落盘（nlink=1）且全新 store 实例复读等值、mock 见证 B49_L_DONE；u7as:L 串行化——他进程 PLANTED+beat 持 leader 锁 9002ms，Control 批准落在持锁窗内（+989ms），store 自记 commit 时刻 = 持有者自身 RELEASE 事件后 **41ms**（真实等待 8054ms ≥3s；RELEASE_CHECK present/mine 双真=锁从未被破；恰一写；零残骸）；F/R3/M/I/R/leak 全绿。判级全部来自 runner 亲读（盘上 JSON/ledger/标记文件内容/Control ledger/转录）+ 时间戳合取反空转判据。
+- **账本与边界**：boot 总账 **12/24**（#449 池 0/2→**2/2 用尽**）；u7-tool-acceptance.json 五格 L1–L4 **状态零改动**（本 boot 判级的是 store 持久化底座，非工具拒绝/正例臂——按 mission 规则以证据注记挂 BOOT-BUDGET 行与本日志）；R-413-1/#460/#461 行不翻色不改写，本 boot 为三者合并后生产代码的实机行为证据（离线 C1 确定性交错证明与本机时证明互补）。:3080 前后 401==401 只读探针、~/.dsh 未触、世界全拆除（homes 空）、host 树 porcelain 前后皆空（READ-ONLY 使用守住）、lease 释放。**§8.5.7：RUN 记录已落，此后仅 forward-merge，禁 rebase。**
+- **附带修复披露**：registries.test.mjs 钉桩行在 origin/master ee3bd279e 上即为**陈旧红**（u6-jobs/u6-arc-a 预算自 69d514a62 漂移未同步，移除本 lane 套件复测复现）；本 lane 随新套件注册同步重钉为实测值并加注释（12/12 绿）。零产品代码改动。
+- 证据：`dev/agent-workflow/evidence/u7r3-b49-20261031/`（PRE-REGISTRATION / PRE-REGISTRATION-BOOT2 / SETUP-NOTES / c2/RUN-RECORD.json / c2/RUN-RECORD-BOOT1.json / c2/boot1/ boot2/ stdout 与机器收据 / host-starts.jsonl 2 行）；PR 标题 `test(u7-r3): #449 production-path boot … — PASS`，DO-NOT-MERGE 待独立审查（R-DM-1），本 lane 不清标记、不 settle、不合并。
+
+## 2026-10-31 (03:4xZ) — #449 生产路径 boot 双登记双判级收口（主 Agent）
+- **PR #472 合并**（mergeCommit 见 gh）：boot#1 FAIL 原文入账（7/9 跨进程腿 PASS：拒绝-持锁 3019ms、真死-断锁 1043ms 零残、#461 竞态重验、#460 跨 scope 恰好一次、退款；host-lane 2 腿 NOT_REACHED=lane pnpm-install 供给缺口，机器收据在案）；boot#2（条件预留，登记先行 10.9s）overall **PASS 10/10** 于**生产默认时钟零缝**（L 序列实测：批准 +989ms 在窗内、提交=持有者 RELEASE +41ms、真实等待 8054ms、锁 never-broken present/mine、单写零残；F/R3/M/I/R/漏全绿）。boot 总账 **12/24**，#448/#449 两预留池 2/2 用尽。R472-fl 六族 APPROVE（含 base 上 RED-on-master 名册漂移独立复现）。u7-tool-acceptance.json 零改动（判的是 store 基底非工具臂）。
+- **P2 更正表落档**：boot#2 预登记 `registeredAt` 伪值——git 绑定证据独立成立、判级零引用；不回改原件，更正表见 evidence/u7r3-b49-20261031/ERRATUM-BOOT2-REGISTEREDAT-20261031.md。boot#2 消耗采用 lane 自登记的 NOT_REACHED-类读法，协调者已在 #472 清偿中 dated 批注（池 #449≤2 为用户裁决原文，未扩池；批注非裁决变更）。
+- **机动池现状**：R2 收口池 4/8（+crash 复验 2 +生产路径 2 计入各自预留行）；AC 候选绑定 12 全预留；机动 4 已尽。后续任何 boot 需用户再分配。
+
+## 2026-10-31 (05:0xZ) — C1 波次三收口：agent-control 家族 16 臂全入账（主 Agent）
+- **PR #474 合并**（merge sha 见 gh）：subagent_fork AC-66-69、send_message AC-70-72、list_subagent_models AC-73-75、workflow AC-76-81 全为 PASS-by-assertions 离线判级（四元组+同世界翻转；全量套件 648 文件/8512 测试 ×2 绿，协调者复跑 63/63；变异 5/5 杀，M3 复审席字节级复现）。AC-81 以源码物证姿态入账：runWorkflow 腿于本 pin 未接线（agent-runtime-port.mjs:325，workflowEngine 归 AC-4），live workflow 运行半面**分析披露而非假冒**。R474-fl PASS（flash 席，六项独立核验）。两非阻塞发现合并前披露式闭合（R464 F-a 先例）：F-2 四行账本补 C1 脉络注（状态逐字节不动 NOT_VERIFIED）、F-1 收据措辞精度（差距=判级形式缺失而非检测缺失；原文照留+dated 更正）。
+- **账本同步**：五条 "(PR #46N, OPEN)" 陈旧注 → "MERGED @真sha"（复审席经 gh 逐条验真）。账本现 NOT_VERIFIED 计数 24 叶（L1/L2 全绿，缺口集中于 L3/L4——两者余下全为 boot 依赖，池 12/24 且机动尽，再分配=用户队列）。（更正，同条随附：精确普查为 L1 31/31 PROVEN、L2 31/31 PROVEN、L3 PROVEN 15 / NOT_VERIFIED 16、L4 PROVEN 19 / DISCLOSED 11 / NOT_VERIFIED 1；前述"24"系误算，以本更正为准。）
+- **过程记录**：首个复审席曾失联无报告，协调者并行自验全部关键初级（范围/叶差/63-63/AC-81 源证/sha 验真）后该席恢复交付且结论一致；二号席及时召回零浪费。C1 自主面至此穷尽：余下全部 L3/L4 缺口需实机 C2 或 AC-4 产品半面，均已入用户决策队列。
+
+## 2026-10-31 (06:0xZ) — 外部审计 #4：四项主发现不可复现（幽灵工件），内核两项落地（主 Agent）
+- 审计 #4 所指 `ledgers/u7-3a-c1-semantics-sync-20261029.json`、`u7-r3-matrix.json`、`scripts/audit-remaining-reverification.mjs` 与其引用的基线 sha `9b2c82a9b` **均不存在于本仓任何 ref/历史/工作树**（逐项机器核验记录=evidence/u7r3-audit4-20261031/INTAKE-VERDICT-20261031.md + scan-note.txt）。跨账本 LIVE-断言 vs NOT_VERIFIED 冲突扫描=0；真账本五格（job_kill/subagent/list_agents/edit/bash）措辞同类一致，无"live C2 graded"字样；真实 PROVEN 仅 pilot 实证（job_list L3/L4、team_glob L4）。#446 实为 OPEN 非 CLOSED。**拒绝按幽灵原文"修复"（将凭空捏造工件，违反证据法）**；若审计方持有真实 checkout，需其重新对源提交。
+- 可行动内核已做：STATUS.md 顶部追加 dated CURRENT 快照段（指针指向权威源，非权威地位声明照旧）；审计回执+扫描收据入证据。BOOT-BUDGET ledger 前轮已在（12/24）；证据整合仍为用户队列项。
+
+## 2026-10-31 (06:5xZ) — 审计 #4 收口、目标收官、全栈状态快照（主 Agent）
+- **#476 合并**（audit-#4 intake 判定+STATUS 快照+扫描收据）。R475-fl/R476-fl 报告归档至 u7r3-audit4-20261031/。复审席以 1907-ref 穷举＋全对象库（含不可达树）反证全归零，"不可复现"判定经受控反证成立。
+- **目标 goal-9e7ddb2c（U7-R1/R2 + U7-R3 矩阵编制入账）按事实判完**：R1/R2 全量合并（crash 含无旋钮实机 PASS #470）；矩阵入账（gates/U7-R3-GAP-MATRIX-20261029.md）；pilot 实机判级 job_list L3+L4、team_glob L4；C1 三波共 13 格离线判级脉络（全保持 NOT_VERIFIED）；boot 12/24（机动与两预留池尽，AC-12 候选绑定预留）；机器清偿门+链法（live-gate 修复版）稳定运行。
+- **当前开放面**：PR {#463 STATE_HOME PoC、#446 (b) 旋钮} = 用户裁决；余下全部 L3/L4 缺口 = 实机 C2 boot 依赖（池需用户再分配）或 AC-4 workflowEngine 产品半面（AC 池=候选绑定，G5 域）；证据外仓=用户队列。自主临界路径已空，等待用户指令。

@@ -42,6 +42,14 @@
  * deny-lane and cancelled PA arms (zero port), the zero-flip mount gate
  * (no agentControlEnabled ⇒ no rows at all), and the closed-schema
  * validation of the family contribution.
+ *
+ * U7-R3 C1 wave adds the L3-GRADE group (AC-60…AC-65): the offline
+ * PASS-by-assertions GRADING of the amplification/enumeration refusal
+ * witnesses — the same behavior the live `ac:spawn-failclosed` cell
+ * witnesses (and the #406 verdict law records REFUSED, never PASS),
+ * graded here as real assertions. See the group header for the live-cell
+ * mapping and the honesty disclosure; C1 arms do NOT lift L3 (the PR
+ * #456/#464 precedent semantics).
  */
 import { describe, it, expect } from 'vitest'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
@@ -803,3 +811,606 @@ describe('u7-f C1 effect-split arm — the PA requested sets ARE the law (a)', (
 // AC-1 laws live in `u7-ac1-subagents-port-c1.test.ts` (AC1-P1…P10): forced
 // `toolFilter`, no agentOptions/persona, the typed route/PTC refusals and
 // the child-toolview witness. Nothing here re-pins the wrong face.
+
+// ─────────────────────────────────────────────────────────────────────────
+// THE L3-GRADE ARMS (U7-R3 C1 wave): the SAME refusal behavior the LIVE
+// `ac:spawn-failclosed` cell witnesses, GRADED PASS-by-assertions in THIS
+// offline suite. Why the live record cannot grade it: the #406 verdict law
+// for ac:spawn-failclosed has NO PASS branch — the DESIGNED answer IS a
+// refusal, and a refusal-that-is-the-answer is recorded VERBATIM as REFUSED
+// ("never promoted to PASS"), so the record grades the case REFUSED and
+// cannot back a PROVEN L3 (ledger subagent L3 note; PR #456/#464 precedent
+// semantics: a C1 arm never lifts L3). The live suite DOES show the other
+// shape — `ac:interrupt-foreign-zero` grades a refusal PASS by its witness
+// set. These arms build that grading offline and deterministically (the
+// u74a G5/G6 precedent): the QUADRUPLE
+//   (1) TYPED HEAD — the tool_result head the model sees carries
+//       `refused-agent-control` + the typed code, verbatim in shape;
+//   (2) ZERO port calls — the recording fake stays at zero (no spawn,
+//       no catalog read: the honest zero is never a half-read);
+//   (3) ZERO Control rows — the Control-leg audit is EMPTY: the fence
+//       lands BEFORE the PA edge, no ask was ever opened (the offline
+//       counterpart of the live ledger witness controlRowsForSubagent
+//       === 0 / zero ask rows);
+//   (4) ZERO RAN witnesses — no `agent-control-<row> RAN` observe line;
+// each refusal paired with a FLIP (same world where the shape allows it,
+// else the pair world differing ONLY in the refused arm) proving the zero
+// is a refusal and not a dead mount: the admitted call RANS (port 1,
+// audit 1, RAN 1). DISCLOSED HONESTY: (a) the live cell's exact trigger —
+// a mount with NO caller-authority snapshot failing closed — was
+// retargeted by the AC-1 TIER A ceiling (AC-26a) after the live record
+// bound pre-ceiling teamSha ab8a5f236; the surviving fail-closed condition
+// of the SAME fence, with the SAME typed head and the SAME
+// "no caller-authority snapshot … fail closed" detail, is a PRESENT-BUT-
+// UNBOUNDED snapshot (AC-60 mirrors that current-product form); (b) the
+// C1 stand-in legs land grants at the kernel edge but mint NO durable
+// Control row (a5-m1-control-legs header) — the audit witnesses the ask
+// OPENING, so "zero Control rows" grades here as the strongest offline
+// form "the PA edge was never reached"; durable-row accounting belongs to
+// C2; (c) this is C1: offline grading of refusal LOGIC only. The subagent
+// and list_agents L3 cells stay NOT_VERIFIED — PROVEN needs a LIVE C2
+// PASS-grade record, which these arms neither fake nor claim.
+describe('u7-f C1 L3-grade arms — refusals GRADED PASS-by-assertions (offline mirror of the live ac: witnesses)', () => {
+  interface L3World { plane: PlaneValue; fake: FakePort; observe: string[]; audit: string[] }
+  const l3 = async (opts: {
+    authority?: 'bounded' | 'unbounded' | 'ceiling' | 'non-continuable'
+    controlLeg?: 'approve' | 'deny' | 'absent'
+  } = {}): Promise<L3World> => {
+    const fake = makeFakeRuntime()
+    const observe: string[] = []
+    const audit: string[] = []
+    const injected = opts.authority === 'ceiling'
+      ? { agentRuntime: fake, agentScope: AGENT_SCOPE }
+      : opts.authority === 'unbounded'
+        ? { agentRuntime: fake, agentScope: AGENT_SCOPE, callerAuthority: 'not-a-record' }
+        : opts.authority === 'non-continuable'
+          ? trustedInjected(fake, { callerAuthority: { providers: ['prov-a'], models: ['model-1', 'model-2'], tools: ['read', 'grep'], continuable: false } })
+          : trustedInjected(fake)
+    const plane = await buildAC({
+      observe,
+      ...(opts.controlLeg === 'absent'
+        ? {}
+        : { controlLeg: opts.controlLeg === 'deny' ? denyingControlLeg(audit) : approvingControlLeg(audit) }),
+      injected,
+    })
+    return { plane, fake, observe, audit }
+  }
+  // The QUADRUPLE of AC-60…AC-63: every refusal arm must show all four
+  // witnesses at once — head, port, Control audit, RAN line.
+  const assertQuadruple = (w: L3World, rowName: string, code: string, msg: string): void => {
+    expect(msg, `${rowName} refusal head carries the refusal marker`).toContain('refused-agent-control')
+    expect(msg, `${rowName} typed code`).toContain(code)
+    expect(w.fake.calls, `${rowName} ZERO port calls`).toHaveLength(0)
+    expect(w.audit, `${rowName} ZERO Control rows — fence BEFORE the PA edge`).toHaveLength(0)
+    expect(ran(w.observe, rowName), `${rowName} ZERO RAN witnesses`).toHaveLength(0)
+  }
+  // The FLIP witness: the admitted call in (a pair) world really RANS.
+  const assertRan = (w: L3World, rowName: string, leg: string): void => {
+    expect(w.fake.callsFor(leg), `${rowName} flip: exactly one port call`).toHaveLength(1)
+    expect(w.audit, `${rowName} flip: exactly one ask opened`).toHaveLength(1)
+    expect(ran(w.observe, rowName), `${rowName} flip: exactly one RAN witness`).toHaveLength(1)
+  }
+
+  it('AC-60 L3-GRADE subagent FAIL-CLOSED spawn (live ac:spawn-failclosed mirror): typed amplification refusal, ZERO port, ZERO Control rows, ZERO RAN; pair-world flip proves a live mount', async () => {
+    // The live #406 head, verbatim in shape: `refused-agent-control
+    // agent-control-amplification-refused — a child may not carry broader
+    // authority than its caller: the mount carries no caller-authority
+    // snapshot: … (fail closed)`. Current-product surviving form of that
+    // fail-closed leg (group disclosure (a)): a PRESENT-BUT-UNBOUNDED
+    // snapshot over the same fence.
+    const w = await l3({ authority: 'unbounded' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain('a child may not carry broader authority than its caller')
+      expect(r.msg).toContain('no caller-authority snapshot')
+      expect(r.msg).toContain('fail closed')
+    }
+    // PAIR-WORLD FLIP: same row, same args, a BOUNDED record ⇒ the spawn
+    // RANS (the zero above is a refusal, not a dead mount).
+    const flip = await l3({ authority: 'bounded' })
+    const ok = await attempt(() => def(flip.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'subagent', 'spawnChild')
+  })
+
+  it('AC-61 L3-GRADE AMPLIFYING spawn over a bounded record (provider outside the caller): full quadruple; SAME-world within-authority flip RANS', async () => {
+    const w = await l3({ authority: 'bounded' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', provider: 'forbidden-provider' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain("is outside the caller's own authority")
+    }
+    const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', provider: 'prov-a', model: 'model-1' }))
+    expect(flip.ok).toBe(true)
+    assertRan(w, 'subagent', 'spawnChild')
+  })
+
+  it('AC-62 L3-GRADE Tier A ceiling (the production default seat): EVERY route arm refused with the full quadruple; SAME-world route-free spawn RANS', async () => {
+    for (const arm of [{ provider: 'prov-a' }, { model: 'model-1' }, { reasoning_effort: 'high' }, { run_in_background: true }]) {
+      const w = await l3({ authority: 'ceiling' })
+      const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', ...arm }))
+      expect(r.ok, JSON.stringify(arm)).toBe(false)
+      if (!r.ok) assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+      expect(flip.ok, `route-free flip spawns in the SAME world (${JSON.stringify(arm)})`).toBe(true)
+      assertRan(w, 'subagent', 'spawnChild')
+    }
+  })
+
+  it('AC-63 L3-GRADE AMPLIFYING continuable child (caller not continuable): full quadruple; SAME-world one-shot flip RANS', async () => {
+    const w = await l3({ authority: 'non-continuable' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', run_in_background: true }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain('a continuable child outlives a caller that is not itself continuable')
+    }
+    const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(flip.ok).toBe(true)
+    assertRan(w, 'subagent', 'spawnChild')
+  })
+
+  it('AC-64 L3-GRADE list_agents ask lane with NO Control leg: typed APPROVAL_REQUEST_UNAVAILABLE, catalog NEVER read (honest zero), ZERO RAN, no roster bytes echoed; pair-world flip with a mounted leg RANS (the offline ac:enumerate-governed shape)', async () => {
+    // This is the C1 answer to the ledger note "no list_agents refusal
+    // case in the #406 C2 suite": the enumeration row's ask-lane refusal,
+    // graded PASS-by-assertions offline.
+    const w = await l3({ controlLeg: 'absent' })
+    const r = await attempt(() => def(w.plane, 'list_agents').execute({}))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_REQUEST_UNAVAILABLE')
+      // the honest zero echoes no catalog bytes:
+      expect(r.msg).not.toContain('member-alpha')
+    }
+    expect(w.fake.calls, 'ZERO port calls — the catalog was never read').toHaveLength(0)
+    expect(w.audit, 'ZERO asks opened').toHaveLength(0)
+    expect(ran(w.observe, 'list_agents')).toHaveLength(0)
+    const flip = await l3()
+    const ok = await attempt(() => def(flip.plane, 'list_agents').execute({}))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'list_agents', 'listAgents')
+  })
+
+  it('AC-65 L3-GRADE list_agents DENY leg (offline mirror of the u74a:list-deny-leg-honest-zero shape): ask OPENED and settled DENY, body never ran — catalog NEVER read, ZERO RAN, no roster bytes echoed; pair-world approving flip RANS', async () => {
+    const w = await l3({ controlLeg: 'deny' })
+    const r = await attempt(() => def(w.plane, 'list_agents').execute({}))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_DENIED')
+      expect(r.msg).not.toContain('member-alpha')
+    }
+    // The ask really opened and really settled DENY at the seam (C1
+    // stand-in: no durable row — group disclosure (b)); the body never
+    // ran, so the enumeration answer is the honest zero.
+    expect(w.audit, 'the ask OPENED and settled DENY').toHaveLength(1)
+    expect(w.audit[0]).toContain('decision=deny')
+    expect(w.fake.calls, 'the catalog was NEVER read — the honest zero').toHaveLength(0)
+    expect(ran(w.observe, 'list_agents')).toHaveLength(0)
+    const flip = await l3()
+    const ok = await attempt(() => def(flip.plane, 'list_agents').execute({}))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'list_agents', 'listAgents')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// U7-R3 C1 WAVE 3 (lane U7-R3-C1-W3): the L3-GRADE arms for the FOUR rows the
+// wave-1 group does not reach — `subagent_fork`, `send_message`,
+// `list_subagent_models`, `workflow`. The ledger records each of these rows as
+// `no live <row> case in the #406 C2 suite` with NO offline arm either (the
+// AC-20…AC-29 group proves the zero FACT but never GRADES the refusal: no
+// typed-head check, no zero-Control-row witness, no zero-RAN witness, no flip).
+// These arms close exactly that gap, with the AC-60…AC-65 discipline and the
+// same three disclosures (a)/(b)/(c) recorded on the wave-1 group header:
+// this is C1 — offline grading of refusal LOGIC over the recording fake, never
+// the L3 grade, which needs a LIVE C2 PASS-grade record. C1 ≠ L3.
+//
+// WORKFLOW HONESTY (measured at this pin, disclosed instead of faked): the
+// workflow ROW's declared effect set (tool-invoke + domain-ref) covers every
+// spawn the driver can take, so a SPAWN-AMPLIFICATION refusal is structurally
+// a DELEGATE-level refusal — it lands AFTER the row's own PA admission (law
+// (c): "an admitted workflow can spawn legs the caller itself could not").
+// The zero witnesses graded here are therefore, per arm: the row's OWN
+// refusal lanes (closed grammar, ask lane with no Control leg, the DENY leg)
+// carry the FULL quadruple INCLUDING zero Control rows, zero runWorkflow AND
+// zero spawnChild — a refused workflow creates NO child at all; and the
+// delegate-level amplification refusal carries ZERO spawn/steer child reach,
+// ZERO child-RAN witnesses and ZERO Control asks beyond the row's own single
+// ask. The one thing the C1 world provably CANNOT witness is a LIVE workflow
+// engine driving those delegates: the production `runWorkflow` leg is unwired
+// at this pin (the port resolver answers `agent-runtime-leg-unwired`, asserted
+// below), so the driver-side law is graded over the injected driver and the
+// live leg stays a C2 question — see the PR body's BLOCKER-analysis section.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('u7-f C1 L3-grade arms WAVE 3 — subagent_fork / send_message / list_subagent_models / workflow refusals GRADED (offline)', () => {
+  interface W3World { plane: PlaneValue; fake: FakePort; observe: string[]; audit: string[] }
+  const w3 = async (opts: {
+    authority?: 'bounded' | 'unbounded' | 'ceiling' | 'non-continuable'
+    controlLeg?: 'approve' | 'deny' | 'absent'
+    policy?: Record<string, unknown>
+    roster?: boolean
+    forkContext?: 'data' | 'authority' | 'faulted'
+    workflowSteps?: Array<Record<string, unknown>>
+  } = {}): Promise<W3World> => {
+    const fake = makeFakeRuntime({ ...(opts.workflowSteps === undefined ? {} : { workflowSteps: opts.workflowSteps }) })
+    const observe: string[] = []
+    const audit: string[] = []
+    const injected: Record<string, unknown> = { agentRuntime: fake }
+    if (opts.roster !== false) injected.agentScope = AGENT_SCOPE
+    if (opts.authority === 'unbounded') injected.callerAuthority = 'not-a-record'
+    else if (opts.authority === 'non-continuable') injected.callerAuthority = { ...CALLER_AUTHORITY, continuable: false }
+    else if (opts.authority === 'bounded') injected.callerAuthority = CALLER_AUTHORITY
+    if (opts.forkContext === 'data') injected.forkContextProvider = () => ({ transcript: 'conversation data' })
+    if (opts.forkContext === 'authority') injected.forkContextProvider = () => ({ transcript: 'data', grant: 'grant-1' })
+    if (opts.forkContext === 'faulted') injected.forkContextProvider = () => { throw new Error('context source unreadable') }
+    const plane = await buildAC({
+      observe,
+      ...(opts.controlLeg === 'absent'
+        ? {}
+        : { controlLeg: opts.controlLeg === 'deny' ? denyingControlLeg(audit) : approvingControlLeg(audit) }),
+      ...(opts.policy === undefined ? {} : { policy: policyFor(opts.policy) }),
+      injected,
+    })
+    return { plane, fake, observe, audit }
+  }
+  // The wave-1 QUADRUPLE, unchanged: typed head, ZERO port, ZERO Control rows,
+  // ZERO RAN — all four at once, on the same call.
+  const expectQuadruple = (w: W3World, rowName: string, code: string, msg: string, detail?: string): void => {
+    expect(msg, `${rowName} refusal head carries the refusal marker`).toContain('refused-agent-control')
+    expect(msg, `${rowName} typed code`).toContain(code)
+    if (detail !== undefined) expect(msg, `${rowName} typed detail`).toContain(detail)
+    expect(w.fake.calls, `${rowName} ZERO port calls`).toHaveLength(0)
+    expect(w.audit, `${rowName} ZERO Control rows — fence BEFORE the PA edge`).toHaveLength(0)
+    expect(ran(w.observe, rowName), `${rowName} ZERO RAN witnesses`).toHaveLength(0)
+  }
+  const expectRan = (w: W3World, rowName: string, leg: string): void => {
+    expect(w.fake.callsFor(leg), `${rowName} flip: exactly one port call`).toHaveLength(1)
+    expect(w.audit, `${rowName} flip: exactly one ask opened`).toHaveLength(1)
+    expect(ran(w.observe, rowName), `${rowName} flip: exactly one RAN witness`).toHaveLength(1)
+  }
+
+  // ── subagent_fork ──────────────────────────────────────────────────────────
+  it('AC-66 L3-GRADE subagent_fork FAIL-CLOSED fork (AC-60 head-on, fork leg): typed amplification refusal, ZERO fork, ZERO Control rows, ZERO RAN; pair-world bounded flip forks', async () => {
+    const w = await w3({ authority: 'unbounded', controlLeg: 'approve' })
+    const r = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork it', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      // The fork branch of the SAME fence answers with the fork wording — a
+      // reader of the fork refusal sees why a fork refused.
+      expectQuadruple(w, 'subagent_fork', 'agent-control-amplification-refused', r.msg, 'no caller-authority snapshot')
+      expect(r.msg).toContain('a forked child may not carry broader authority than its caller')
+      expect(r.msg).toContain('fail closed')
+    }
+    expect(w.fake.callsFor('forkChild')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'subagent_fork').execute({ description: 'fork it', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'subagent_fork', 'forkChild')
+  })
+
+  it('AC-67 L3-GRADE subagent_fork AMPLIFYING continuable child: the Tier A ceiling seat AND a bounded non-continuable caller both refuse with the full quadruple; SAME-world one-shot fork RANS', async () => {
+    for (const seat of ['ceiling', 'non-continuable'] as const) {
+      const w = await w3({ authority: seat, controlLeg: 'approve' })
+      const r = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork bg', prompt: 'p', run_in_background: true }))
+      expect(r.ok).toBe(false)
+      if (!r.ok) {
+        expectQuadruple(w, 'subagent_fork', 'agent-control-amplification-refused', r.msg, 'a continuable child outlives a caller that is not itself continuable')
+        expect(r.msg).toContain('a forked child may not carry broader authority than its caller')
+      }
+      expect(w.fake.callsFor('forkChild'), `${seat}: zero fork`).toHaveLength(0)
+      // SAME-world flip: the identical call with the continuable arm OFF is
+      // admitted — the refusal is the arm, not a dead mount.
+      const ok = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork bg', prompt: 'p' }))
+      expect(ok.ok).toBe(true)
+      expect(w.fake.callsFor('forkChild'), `${seat}: flip fork`).toHaveLength(1)
+      expect(w.audit, `${seat}: flip ask opened`).toHaveLength(1)
+      expect(ran(w.observe, 'subagent_fork'), `${seat}: flip RAN`).toHaveLength(1)
+    }
+  })
+
+  it('AC-68 L3-GRADE subagent_fork cannot even EXPRESS authority (law (b) by shape): route/authority arms refuse WHOLE at the closed grammar with the full quadruple; SAME-world arm-free fork RANS', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    for (const arm of [{ provider: 'prov-b' }, { model: 'model-9' }, { reasoning_effort: 'high' }, { scopeKey: SCOPE_KEY }, { tools: ['write'] }]) {
+      const r = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork', prompt: 'p', ...arm }))
+      expect(r.ok).toBe(false)
+      if (!r.ok) expectQuadruple(w, 'subagent_fork', 'agent-control-schema-refused', r.msg, `unknown field '${Object.keys(arm)[0]}'`)
+    }
+    const ok = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expect(w.fake.callsFor('forkChild'), 'exactly one fork — the five refusals never reached the port').toHaveLength(1)
+    expect(w.audit, 'five refusals opened no ask, the admitted fork opened exactly one').toHaveLength(1)
+    expect(ran(w.observe, 'subagent_fork')).toHaveLength(1)
+  })
+
+  it('AC-69 L3-GRADE subagent_fork context is DATA (law (e)): authority-shaped context AND a faulted context source refuse with the full quadruple; pair-world pure-data context forks and the child receives DATA with no grant keys', async () => {
+    for (const shape of ['authority', 'faulted'] as const) {
+      const w = await w3({ authority: 'bounded', controlLeg: 'approve', forkContext: shape })
+      const r = await attempt(() => def(w.plane, 'subagent_fork').execute({ description: 'fork ctx', prompt: 'p' }))
+      expect(r.ok).toBe(false)
+      if (!r.ok) expectQuadruple(w, 'subagent_fork', 'agent-control-context-authority-refused', r.msg)
+    }
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve', forkContext: 'data' })
+    const ok = await attempt(() => def(flip.plane, 'subagent_fork').execute({ description: 'fork ctx', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'subagent_fork', 'forkChild')
+    const call = flip.fake.callsFor('forkChild')[0]
+    expect(call?.context, 'the pure-data context crosses').toEqual({ transcript: 'conversation data' })
+    expect(JSON.stringify(call?.context), 'no grant-shaped key rides to the child').not.toContain('grant')
+    expect(call?.spec, 'the fork spec carries the request only — no authority arm').toEqual({ description: 'fork ctx', prompt: 'p' })
+  })
+
+  // ── send_message ───────────────────────────────────────────────────────────
+  it('AC-70 L3-GRADE send_message foreign / unattributed target: every out-of-scope shape refuses with the full quadruple and ZERO delivery; SAME-world in-roster target delivers (steer 1, ask 1, RAN 1)', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const lanes: Array<[string, string]> = [
+      ['structural foreign scope', 'other-scope:agent-9'],
+      ['own scope key, byte-inexact (case variant)', SCOPE_KEY.toUpperCase() + ':member-alpha'],
+      ['bare id OFF the durable roster', 'not-my-agent'],
+      ['sibling member\u2019s CHILD shape', 'member-alpha/child-7'],
+      ['whitespace/case near-miss of a roster member', ' Member-Alpha'],
+    ]
+    for (const [label, target] of lanes) {
+      const r = await attempt(() => def(w.plane, 'send_message').execute({ agent_id: target, message: 'SECRET-DELIVERY-BYTES' }))
+      expect(r.ok).toBe(false)
+      if (!r.ok) {
+        expectQuadruple(w, 'send_message', 'agent-control-scope-foreign', r.msg)
+        expect(r.msg, `${label}: the answer names the fence, never the payload`).not.toContain('SECRET-DELIVERY-BYTES')
+      }
+      expect(w.fake.callsFor('steer'), `${label}: ZERO delivery`).toHaveLength(0)
+    }
+    const ok = await attempt(() => def(w.plane, 'send_message').execute({ agent_id: 'member-beta', message: 'in-scope' }))
+    expect(ok.ok).toBe(true)
+    expectRan(w, 'send_message', 'steer')
+  })
+
+  it('AC-71 L3-GRADE send_message UNATTRIBUTED mount (no durable roster): the row refuses typed scope-unresolved BEFORE the PA edge with the full quadruple; pair-world roster flip delivers', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'approve', roster: false })
+    const r = await attempt(() => def(w.plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'x' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expectQuadruple(w, 'send_message', 'agent-control-scope-unresolved', r.msg, 'no durable scope roster')
+      expect(r.msg).toContain('fail closed')
+    }
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'x' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'send_message', 'steer')
+  })
+
+  it('AC-72 L3-GRADE send_message DENY leg: the ask OPENS and settles DENY, the body never runs — ZERO delivery, ZERO RAN, no payload bytes echoed; pair-world approving leg delivers', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'deny' })
+    const r = await attempt(() => def(w.plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'SECRET-DELIVERY-BYTES' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_DENIED')
+      expect(r.msg).not.toContain('SECRET-DELIVERY-BYTES')
+    }
+    expect(w.audit, 'the ask OPENED and settled DENY').toHaveLength(1)
+    expect(w.audit[0]).toContain('decision=deny')
+    expect(w.fake.callsFor('steer'), 'ZERO delivery — the message never reached any agent').toHaveLength(0)
+    expect(ran(w.observe, 'send_message')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'send_message').execute({ agent_id: 'member-alpha', message: 'x' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'send_message', 'steer')
+  })
+
+  // ── list_subagent_models ───────────────────────────────────────────────────
+  it('AC-73 L3-GRADE list_subagent_models ask lane with NO Control leg: typed APPROVAL_REQUEST_UNAVAILABLE, the route catalog is NEVER enumerated (honest zero), ZERO RAN, no route bytes echoed; pair-world mounted leg RANS (AC-64 discipline)', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'absent' })
+    const r = await attempt(() => def(w.plane, 'list_subagent_models').execute({ provider: 'prov-a' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_REQUEST_UNAVAILABLE')
+      expect(r.msg, 'the answer invents no route surface').not.toContain('model-1')
+    }
+    expect(w.audit, 'no Control leg mounted = NO durable ask was opened').toHaveLength(0)
+    expect(w.fake.calls, 'the model catalog was NEVER read — the honest zero').toHaveLength(0)
+    expect(ran(w.observe, 'list_subagent_models')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'list_subagent_models').execute({ provider: 'prov-a' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'list_subagent_models', 'listModels')
+  })
+
+  it('AC-74 L3-GRADE list_subagent_models DENY leg: the ask OPENS and settles DENY, the catalog is NEVER enumerated, ZERO RAN, no route bytes echoed; pair-world approving leg RANS (AC-65 discipline)', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'deny' })
+    const r = await attempt(() => def(w.plane, 'list_subagent_models').execute({ provider: 'prov-a' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_DENIED')
+      expect(r.msg).not.toContain('model-1')
+    }
+    expect(w.audit, 'the ask OPENED and settled DENY').toHaveLength(1)
+    expect(w.audit[0]).toContain('decision=deny')
+    expect(w.fake.calls, 'the model catalog was NEVER read — the honest zero').toHaveLength(0)
+    expect(ran(w.observe, 'list_subagent_models')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'list_subagent_models').execute({ provider: 'prov-a' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'list_subagent_models', 'listModels')
+  })
+
+  it('AC-75 L3-GRADE list_subagent_models rule-grammar DENY lane: the default-DENY template answers TYPED template-default-deny BEFORE the PA edge (full quadruple); pair-world default-ask flip enumerates — DISCLOSED: a rule-shaped deny over the model-routes view is unprojectable at this pin', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'approve', policy: { default: 'deny' } })
+    const r = await attempt(() => def(w.plane, 'list_subagent_models').execute({}))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('template-default-deny')
+    }
+    expect(w.fake.calls, 'the catalog was NEVER read').toHaveLength(0)
+    expect(w.audit, 'the DENY default lands BEFORE the PA edge — no ask was opened').toHaveLength(0)
+    expect(ran(w.observe, 'list_subagent_models')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'list_subagent_models').execute({}))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'list_subagent_models', 'listModels')
+    // HONEST FACE (measured at this pin, not assumed): the DENY lane this row
+    // can meet is the DEFAULT-DENY gate. A rule-shaped deny over the
+    // model-routes metadata view never reaches a decision — the mount itself
+    // refuses, because the projection cannot canonicalize such a rule and
+    // dropping it would LOOSEN authority. So no arm here pretends a
+    // `read`-class rule denied the enumeration row.
+    let mountRefused = ''
+    try {
+      await w3({ authority: 'bounded', controlLeg: 'approve', policy: { default: 'ask', deny: [{ tool: 'read', resource: { kind: 'any' } }] } })
+    } catch (error) {
+      mountRefused = String((error as Error)?.message ?? error)
+    }
+    expect(mountRefused, 'a whole-tool read deny is refused by the projection, not silently dropped').toContain('projection refused')
+  })
+
+  // ── workflow ───────────────────────────────────────────────────────────────
+  it('AC-76 L3-GRADE workflow closed grammar: an authority- or route-restating row arm refuses WHOLE BEFORE the PA edge — ZERO Control rows, ZERO runWorkflow, ZERO spawnChild, ZERO RAN; SAME-world in-grammar workflow RANS and spawns one child', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    for (const arm of [{ authority: { tools: ['write'] } }, { grants: ['grant-1'] }, { provider: 'prov-b' }, { script: 'agent({})' }]) {
+      const key = Object.keys(arm)[0]
+      const r = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p', ...arm }))
+      expect(r.ok).toBe(false)
+      if (!r.ok) {
+        expect(r.msg).toContain('refused-agent-control')
+        expect(r.msg).toContain('agent-control-schema-refused')
+        expect(r.msg).toContain(`unknown field '${key}'`)
+      }
+      expect(w.fake.calls, `'${key}': the grammar refuses before the PA edge and before the port`).toHaveLength(0)
+      expect(w.audit, `'${key}': ZERO Control rows`).toHaveLength(0)
+      expect(ran(w.observe, 'workflow'), `'${key}': ZERO RAN`).toHaveLength(0)
+      expect(w.fake.callsFor('spawnChild'), `'${key}': ZERO child spawn`).toHaveLength(0)
+    }
+    const ok = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expect(w.fake.callsFor('runWorkflow'), 'the admitted workflow ran once').toHaveLength(1)
+    expect(w.fake.callsFor('spawnChild'), 'and its one child ran through the caller-bound delegate').toHaveLength(1)
+    expect(w.audit, 'four refusals opened no ask; the admitted workflow opened exactly one').toHaveLength(1)
+    expect(ran(w.observe, 'workflow')).toHaveLength(1)
+  })
+
+  it('AC-77 L3-GRADE workflow ask lane with NO Control leg: typed APPROVAL_REQUEST_UNAVAILABLE with ZERO Control rows, ZERO runWorkflow, ZERO spawnChild, ZERO RAN — a workflow that cannot ask creates NO agent-controlled child; pair-world mounted leg runs it', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'absent' })
+    const r = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_REQUEST_UNAVAILABLE')
+    }
+    expect(w.audit, 'no Control leg mounted = NO durable ask was opened').toHaveLength(0)
+    expect(w.fake.calls, 'the workflow driver was never entered').toHaveLength(0)
+    expect(w.fake.callsFor('spawnChild'), 'ZERO agent-controlled children').toHaveLength(0)
+    expect(ran(w.observe, 'workflow')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'workflow', 'runWorkflow')
+    expect(flip.fake.callsFor('spawnChild'), 'the mounted-leg world really does create the child').toHaveLength(1)
+  })
+
+  it('AC-78 L3-GRADE workflow DENY leg: the ask OPENS and settles DENY, the driver never runs — ZERO runWorkflow, ZERO spawnChild, ZERO RAN; pair-world approving leg runs and spawns', async () => {
+    const w = await w3({ authority: 'bounded', controlLeg: 'deny' })
+    const r = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_DENIED')
+    }
+    expect(w.audit, 'the ask OPENED and settled DENY').toHaveLength(1)
+    expect(w.audit[0]).toContain('decision=deny')
+    expect(w.fake.calls, 'the driver never ran').toHaveLength(0)
+    expect(w.fake.callsFor('spawnChild'), 'ZERO agent-controlled children').toHaveLength(0)
+    expect(ran(w.observe, 'workflow')).toHaveLength(0)
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve' })
+    const ok = await attempt(() => def(flip.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'workflow', 'runWorkflow')
+    expect(flip.fake.callsFor('spawnChild')).toHaveLength(1)
+  })
+
+  it('AC-79 L3-GRADE workflow SPAWN-AMPLIFICATION at the caller-bound delegate (law (c)): every widening step answers TYPED with ZERO child reach, ZERO child RAN and ZERO Control ask beyond the row\u2019s own; SAME-world in-authority step spawns through the delegate', async () => {
+    const lanes: Array<[string, Record<string, unknown>]> = [
+      ['route outside the caller', { op: 'spawn', description: 'd', prompt: 'p', provider: 'forbidden-provider' }],
+      ['model route outside the caller', { op: 'spawn', description: 'd', prompt: 'p', model: 'model-404' }],
+      ['tool surface outside the caller', { op: 'spawn', description: 'd', prompt: 'p', tools: ['write'] }],
+      ['a step restating authority', { op: 'spawn', description: 'd', prompt: 'p', authority: { tools: ['write'] } }],
+      ['a step restating the caller', { op: 'spawn', description: 'd', prompt: 'p', caller: { scopeKey: 'elsewhere' } }],
+    ]
+    for (const [label, step] of lanes) {
+      const w = await w3({ authority: 'bounded', controlLeg: 'approve', workflowSteps: [step] })
+      const r = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+      expect(r.ok, `${label}: the row itself is admitted (its declared domain-ref arm covers spawn)`).toBe(true)
+      const answer = (r as { value?: { result?: { steps?: Array<{ r?: Record<string, unknown> }> } } }).value
+      const stepAnswer = answer?.result?.steps?.[0]?.r ?? {}
+      expect(stepAnswer.ok, `${label}: the STEP refused`).toBe(false)
+      expect(String(stepAnswer.code), `${label}: typed amplification code`).toContain('agent-control-amplification-refused')
+      expect(String(stepAnswer.detail), `${label}: the detail is a typed line, never a stack`).not.toContain('\n')
+      expect(w.fake.callsFor('spawnChild'), `${label}: ZERO child spawn — the widening never reached the runtime`).toHaveLength(0)
+      expect(ran(w.observe, 'subagent'), `${label}: ZERO child-RAN witness`).toHaveLength(0)
+      expect(w.audit, `${label}: the refused child leg opened NO Control ask of its own — only the row's single ask exists`).toHaveLength(1)
+    }
+    // SAME-world flip: the identical driver, the identical delegate, one arm
+    // inside the caller — the child spawns and the child leg STILL opens no
+    // Control ask of its own (it rides the row's grant: the one-shot law).
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve', workflowSteps: [{ op: 'spawn', description: 'd', prompt: 'p', provider: 'prov-a', model: 'model-1' }] })
+    const ok = await attempt(() => def(flip.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'workflow', 'runWorkflow')
+    const spawn = flip.fake.callsFor('spawnChild')
+    expect(spawn, 'the in-authority step spawned exactly one child').toHaveLength(1)
+    expect((spawn[0]?.spec as Record<string, unknown> | undefined)?.viaWorkflow, 'the child is marked as workflow-driven and caller-bound').toBeTruthy()
+    expect(flip.audit, 'the child leg rode the row\u2019s grant — no second ask').toHaveLength(1)
+  })
+
+  it('AC-80 L3-GRADE workflow STEER leg (law (d) at the delegate): an out-of-scope steer step refuses TYPED with ZERO delivery, and the refusal opens no second ask; SAME-world in-roster step delivers through the delegate', async () => {
+    for (const [label, step] of [
+      ['foreign scope in the step', { op: 'steer', agent_id: 'ghost-scope:ghost', message: 'x' }],
+      ['bare id off the durable roster', { op: 'steer', agent_id: 'not-my-agent', message: 'x' }],
+      ['sibling member\u2019s CHILD shape', { op: 'steer', agent_id: 'member-alpha/child-7', message: 'x' }],
+    ] as Array<[string, Record<string, unknown>]>) {
+      const w = await w3({ authority: 'bounded', controlLeg: 'approve', workflowSteps: [step] })
+      const r = await attempt(() => def(w.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+      expect(r.ok, `${label}: the row is admitted, the STEP fences`).toBe(true)
+      const answer = (r as { value?: { result?: { steps?: Array<{ r?: Record<string, unknown> }> } } }).value
+      const stepAnswer = answer?.result?.steps?.[0]?.r ?? {}
+      expect(String(stepAnswer.code), `${label}: typed owner-fence code`).toContain('agent-control-scope-foreign')
+      expect(w.fake.callsFor('steer'), `${label}: ZERO delivery through the delegate`).toHaveLength(0)
+      expect(ran(w.observe, 'send_message'), `${label}: no steer RAN witness`).toHaveLength(0)
+      expect(w.audit, `${label}: the fenced step opened NO Control ask of its own`).toHaveLength(1)
+    }
+    const flip = await w3({ authority: 'bounded', controlLeg: 'approve', workflowSteps: [{ op: 'steer', agent_id: 'member-alpha', message: 'in-scope' }] })
+    const ok = await attempt(() => def(flip.plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    expectRan(flip, 'workflow', 'runWorkflow')
+    const delivered = flip.fake.callsFor('steer')
+    expect(delivered, 'the in-roster step delivered exactly once').toHaveLength(1)
+    expect(delivered[0]?.targetId).toBe('member-alpha')
+    expect(flip.audit, 'the delivered step rode the row\u2019s grant — no second ask').toHaveLength(1)
+  })
+
+  it('AC-81 L3-GRADE workflow production posture (measured, not assumed): with NO injected port the row refuses typed agent-runtime-leg-unwired with ZERO reach and ZERO children — the live driver leg is the C2 question this pin does NOT claim', async () => {
+    const observe: string[] = []
+    const audit: string[] = []
+    // The trusted mount WITHOUT the kit port: the production resolver is the
+    // one the family assembles, and at this pin it answers no runWorkflow leg.
+    const plane = await buildAC({
+      observe,
+      controlLeg: approvingControlLeg(audit),
+      injected: { agentScope: AGENT_SCOPE, callerAuthority: CALLER_AUTHORITY },
+    })
+    const r = await attempt(() => def(plane, 'workflow').execute({ description: 'w', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('agent-runtime-leg-unwired')
+    }
+    expect(audit, 'the row\u2019s own ask opened (the refusal is the LEG, not the fence)').toHaveLength(1)
+    expect(ran(observe, 'workflow'), 'ZERO workflow RAN').toHaveLength(0)
+    expect(ran(observe, 'subagent'), 'ZERO child RAN — the unwired leg created no child').toHaveLength(0)
+  })
+})

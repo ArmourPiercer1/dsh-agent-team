@@ -1,0 +1,3 @@
+probe=partial usable=true launcher=a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31 (0o755) system.node=54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc
+stable-3080-probe-before-boot=401 (read-only GET, never written)
+ports-free: no listener in 3181-3199 / 3491-3500 / 13000-13099 at 2026-10-30T01:06:43Z

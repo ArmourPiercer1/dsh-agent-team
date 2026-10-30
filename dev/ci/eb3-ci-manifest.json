@@ -282,6 +282,11 @@
       "workflow": ".github/workflows/characterization.yml",
       "job": "characterize",
       "why": "archival/manual by user ruling since 2026-09-17 (workflow_dispatch only)."
+    },
+    {
+      "workflow": ".github/workflows/pr-gate.yml",
+      "job": "settlement",
+      "why": "The machine settle-before-merge gate (ROUTER_RULES §8.5.6, audit P1-1): grades marker-first-line presence and dated-settlement coverage of the CURRENT head sha; a required check can only grade what exists at evaluation time, and §8.5.2 head-advance retirement makes the settlement comment the durable authority — this job reports the verdict token for the merge agent (§8.5.3) and reds visibly on drift/marker, without itself being the sole Required context. Skipped on push/dispatch (no PR object), never silently."
     }
   ],
   "movedSuites": [

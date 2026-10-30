@@ -74,16 +74,60 @@
  * delete `<home>/team-state/agent-state/<realm>/locks/<scope-digest>.lock`
  * (a dead owner is broken automatically on the next apply; deleting a LIVE
  * owner's lock can corrupt that scope and is never done automatically).
+ * LOCK BREAK/CLEANUP IS GENERATION-CHECKED (P0-2b, audit intake #3). The
+ * POSIX substrate offers NO compare-and-swap on file CONTENT: `rename` moves
+ * whatever a NAME holds (unconditionally), `unlink` removes by NAME, and the
+ * only atomic conditional primitive here is `link` — create-if-absent, the
+ * same link-atomics law createLockRecord publishes under. "Delete the
+ * record I judged stale" cannot therefore be atomic; it is built, honestly,
+ * as read-check → act → verify-after → reclaim:
+ *   1. the staleness DECISION is revalidated against the current name bytes
+ *      immediately before any holder-affecting move (a re-locked or re-beaten
+ *      name is not provably dead — this breaker touches nothing);
+ *   2. after the rename-aside, the MOVED object is identified by inode
+ *      (rename preserves it) and generation CONTENT (nonce = the per-acquire
+ *      generation identity; host/boot/pid are constant across a generation's
+ *      beats, so the death proof covers the whole generation): only the
+ *      judged generation is ever unlinked;
+ *   3. a foreign generation (the rename raced a fresh create) is reclaimed
+ *      with link — create-if-absent, never overwrite; if the reclaim loses,
+ *      the foreign bytes are RETAINED as the aside file rather than
+ *      destroyed (operator-addressable litter is acceptable, voiding a live
+ *      holder's lock is not). The same law holds on the holder side: a beat
+ *      re-reads the generation right before its rename and never overwrites
+ *      a foreign record (a robbed holder stops beating and hands nothing
+ *      back), a beat against a free name republishes with link semantics,
+ *      and release pins the name's inode around its nonce check.
+ * DISCLOSED RESIDUAL: the gap between the last check and each rename/unlink
+ * (thread/fd scheduling, no FS primitive closes it) remains — a creator that
+ * wins a name momentarily emptied by a breaker, or a holder robbed AFTER its
+ * own post-publish check, can both enter until a generation check fires at
+ * the next heartbeat. The deterministic audit legs pin exactly these windows
+ * and prove the reclaim never destroys and the name never empties under a
+ * revalidated decision; full mid-apply abort on detected lock loss is a
+ * named follow-up outside this lane.
  *
- * REPLAY. `applyId` (the PA call correlation) is the durable idempotence
- * anchor, and its consumption is COUPLED TO THE COMMIT: the committed record
- * itself carries the applied id (`appliedIds`, the last 256 in that scope)
- * in the same atomic rename, and the global `applied/` marker is written only
- * AFTER the commit. Under the scope lock a replay is refused
- * (`STATE_APPLY_REPLAY`, zero persistence) if EITHER witness holds the id.
- * Consequences of the order: a crash BEFORE the rename leaves no witness, so
- * the grant is NOT consumed and the same call may apply later; a crash AFTER
- * the rename leaves the id in the record, so the replay is still refused.
+ * REPLAY (audit P0-2a). `applyId` (the PA call correlation) is the durable
+ * idempotence anchor, and its consumption is CROSS-SCOPE GLOBAL while the
+ * persistence lock is PER-SCOPE — so the consumption must not depend on the
+ * scope lock. It is an O_EXCL CREATE of the `applied/` marker: one atomic
+ * create is the check AND the consume, at most one applier of a given applyId
+ * can win it whichever scope carries the apply. The marker is therefore
+ * written BEFORE the commit (consumption point); the committed record then
+ * also carries the id (`appliedIds`, the last 256 in that scope) in the same
+ * atomic rename, so after the commit BOTH witnesses hold the id and a replay
+ * is refused (`STATE_APPLY_REPLAY`, zero persistence) on either. A CLEAN
+ * failure BEFORE the commit (a refused precondition, or a typed write
+ * failure the process survives) REFUNDS the marker — a refused apply never
+ * burns its applyId, and a failed one stays re-drivable. The accepted crash
+ * window (P0-2a's conservative direction): a process that dies between
+ * consuming the marker and landing the rename leaves the grant CONSUMED with
+ * no state change — the re-drive answers `STATE_APPLY_REPLAY` and loses the
+ * write, because re-applying a possibly-consumed grant is exactly what this
+ * store must never do. (This replaces the pre-fix order — marker written
+ * only after the commit — which let two same-applyId applies at DIFFERENT
+ * scopes both pass the check under their own scope locks and DOUBLE-COMMIT;
+ * the second marker write died as a swallowed EEXIST.)
  * `expectedRevision` CAS and the create/already-exists leg mirror
  * `createRecordingStateStore` exactly — the fake is the specification.
  *
@@ -273,6 +317,10 @@ export async function safeReadRecord(path, limit = MAX_SCOPE_BYTES) {
     if (stat.nlink !== 1) {
       // The shared #409 rule and sentence (controlled-fs open-at-exec.ts:82),
       // applied in-lane — see the header for why the symbol is not imported.
+      // R-AUDIT-DEPTH b3: this proof is an AT-OPEN statement; the residual
+      // post-open hardlink window and its one-directional exposure are
+      // documented at {appendLineIn} (the append leg, where our inode stays
+      // live across the write).
       return refusal('AGENT_STATE_STORE_ALIAS_REFUSED', `hardlink-alias: the file has ${String(stat.nlink)} hard links, so a name outside the governed root may share it; containment is unprovable, refused before any byte. Use a single-link copy.`)
     }
     if (stat.size > limit) {
@@ -399,7 +447,25 @@ async function atomicWriteIn(dir, filename, text, writeBytes = writeAll) {
  *  redirected by a POST-open hardlink (the descriptor is fixed), which closes
  *  the escape axis for this operation; the sharing/integrity axis — a
  *  per-event `O_EXCL` file so a second writer cannot reuse a name — is a
- *  named follow-up and is deliberately NOT implemented here. */
+ *  named follow-up and is deliberately NOT implemented here.
+ *
+ *  RESIDUAL TOCTOU BOUNDARY (R-AUDIT-DEPTH b3; directory-trust assumption,
+ *  characterised by the C1 audit leg `post-open hardlink exposes OUR appended
+ *  bytes`): `nlink === 1` on the fstat below proves NO ALIAS EXISTED AT OPEN
+ *  TIME. It cannot speak for the window after the check: a writer INSIDE the
+ *  hostile directory may `link()` OUR inode out at any moment, and appends
+ *  already on the way land on that inode — so the new name EXPOSES OUR OWN
+ *  appended ledger bytes. The exposure is one-directional and content-less
+ *  against us: a hardlink creates an additional name for OUR inode, link(2)
+ *  refuses an existing target (EEXIST), so a pre-existing external file is
+ *  never aliased onto the inode we append to and no external bytes can be
+ *  smuggled in or rewritten; an aliased-IN name is refused at open
+ *  (O_NOFOLLOW ELOOP, or the nlink check on the next append). Records are
+ *  additionally immune in kind: their writes are replace-by-rename onto a
+ *  fresh inode, so a post-open link of a record name only ever exposes the
+ *  OLD bytes. Closing this disclosure window needs ownership/immutable-file
+ *  hardening (chown/`FS_IOC_SETFLAGS`, out of any `node:*` lane's reach) —
+ *  registered elsewhere as long-term hardening, deliberately NOT done here. */
 async function appendLineIn(dir, filename, entry) {
   const line = `${JSON.stringify(entry)}\n`
   if (Buffer.byteLength(line, 'utf8') > MAX_LEDGER_LINE_BYTES) {
@@ -428,15 +494,32 @@ async function appendLineIn(dir, filename, entry) {
  *  a verifier can never misread "unreadable" as "zero writes". A
  *  zero-side-effect assertion MUST distinguish the two: expect 0 for an
  *  honest no-op, and treat a THROW as an unverifiable disk state — never as
- *  proof of zero writes. */
+ *  proof of zero writes.
+ *
+ *  R-AUDIT-DEPTH (b1): the measure is `lstat`, NEVER the path-following
+ *  `stat` — a hostile directory that swapped the ledger NAME for a symlink
+ *  would otherwise have the TARGET's size answer for the ledger (another
+ *  file's bytes, and a number where only UNKNOWN belongs). Any non-regular
+ *  name — symlink, DIRECTORY, special file — takes exactly the FAIL-1 leg:
+ *  `AGENT_STATE_STORE_LEDGER_UNREADABLE`, the same typed UNKNOWN a permission
+ *  or I/O failure earns. Never silently followed, never answered as a size,
+ *  and an aliased name is never treated as absent either: only ENOENT
+ *  (no name at all) and a REGULAR file's real size are honest answers.
+ *  (A DIRECTORY at the name is also the root-proof test injection for this
+ *  leg: `lstat` answers it for every uid, where chmod-000 binds nobody.) */
 export async function ledgerBytes(dir, filename = 'writes.jsonl') {
+  let stat
   try {
-    const stat = await fsp.stat(join(dir, filename))
-    return stat.size
+    stat = await fsp.lstat(join(dir, filename))
   } catch (error) {
     if (error?.code === 'ENOENT') return 0
     throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} could not be read (${String(error?.code ?? error)}) — a zero-side-effect assertion must treat an unreadable ledger as UNKNOWN, never as a clean write-free outcome`)
   }
+  if (!stat.isFile()) {
+    const shape = stat.isSymbolicLink() ? 'a symlink (never followed)' : stat.isDirectory() ? 'a directory where the file belongs' : 'not a regular file'
+    throw typedError('AGENT_STATE_STORE_LEDGER_UNREADABLE', `the audit ledger ${filename} is ${shape} — a swapped-in name is UNKNOWN, never a clean write-free outcome (the target's size or a directory's bytes never stand in for the ledger)`)
+  }
+  return stat.size
 }
 
 /** This host's identity: a reboot gives a NEW boot id (Linux), so a lock from
@@ -488,13 +571,6 @@ async function writeLockTemp(dir, name, text, faultAt = async () => {}, point = 
   }
   return temp
 }
-async function putLockRecord(dir, name, text, faultAt = async () => {}) {
-  const temp = await writeLockTemp(dir, name, text, faultAt)
-  try { await fsp.rename(temp, `${dir.path}/${name}`) } catch (error) {
-    try { await fsp.unlink(temp) } catch { /* best effort */ }
-    throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock record could not be committed: ${String(error?.code ?? error)}`)
-  }
-}
 async function createLockRecord(dir, name, text, faultAt = async () => {}) {
   const temp = await writeLockTemp(dir, name, text, faultAt, 'lock-before-publish')
   try {
@@ -545,38 +621,131 @@ async function acquireLock(dir, name, { timeoutMs, staleMs, heartbeatMs, faultAt
   for (;;) {
     try {
       await createLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
+      // P0-2b double-check before any holder-affecting effect: a successful
+      // create is only HALF a hold — the name must STILL be publishing OUR
+      // generation before we may act exclusive. A concurrent breaker that
+      // moved our record between publish and this read-back means we hold
+      // NOTHING: back off and retry, never proceed under a stolen belief.
+      const published = await readLockFile(path, bootId)
+      if (published === null || published.invalid === true || published.nonce !== nonce) continue
       let stopped = false
+      let lost = false
       let inFlight = null
       const beat = setInterval(() => {
         if (stopped || inFlight !== null) return
-        inFlight = putLockRecord(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
-          .catch(() => {})
-          .finally(() => { inFlight = null })
+        inFlight = (async () => {
+          // P0-2b generation-checked beat: a foreign generation at the name
+          // means the lock was broken or stolen from under this holder — the
+          // beat stops for good (renaming over a foreign record would
+          // silently hand the scope to two writers at once) and release
+          // keeps its hands off. The temp is written first, so the CURRENT
+          // generation is read AGAIN immediately before the name-affecting
+          // rename (read-check → act, mirroring the breaker's revalidation);
+          // a free name is republished with CREATE semantics (a link can
+          // never overwrite whoever won it), never by rename-over.
+          let current = await readLockFile(path, bootId)
+          if (current !== null && current.invalid !== true && current.nonce !== nonce) { stopped = true; lost = true; clearInterval(beat); return }
+          const temp = await writeLockTemp(dir, name, lockRecord(nonce, randomUUID(), nowMs(), bootId), faultAt)
+          try {
+            current = await readLockFile(path, bootId)
+            if (current !== null && current.invalid !== true && current.nonce !== nonce) { stopped = true; lost = true; clearInterval(beat); throw Object.assign(new Error('lock lost'), { code: 'AGENT_STATE_LOCK_LOST' }) }
+            if (current === null) await fsp.link(temp, path)
+            else await fsp.rename(temp, path)
+          } catch (error) {
+            try { await fsp.unlink(temp) } catch { /* best effort */ }
+            throw error
+          }
+        })().catch(() => {}).finally(() => { inFlight = null })
       }, heartbeatMs)
       beat.unref?.()
       return async () => {
         stopped = true
         clearInterval(beat)
         if (inFlight !== null) await inFlight
+        if (lost) return // our generation is gone; whatever the name holds now is not ours to touch
+        // P0-2b: pin the name's identity around the check so the unlink can
+        // only ever remove OUR generation; a swap around the check is answered
+        // by backing off, never by a blind unlink. The residual microsecond
+        // window between the last check and the unlink is disclosed in the
+        // module header (POSIX gives no unlink-if-content primitive).
+        let pin = ''
+        try { const st = await fsp.lstat(path); pin = `${String(st.dev)}:${String(st.ino)}` } catch { return /* already gone */ }
         const held = await readLockFile(path, bootId)
-        if (held?.nonce === nonce) { try { await fsp.unlink(path) } catch { /* already gone */ } }
+        if (held?.nonce !== nonce) return // never unlink a generation we cannot pin to ours
+        try { const st2 = await fsp.lstat(path); if (`${String(st2.dev)}:${String(st2.ino)}` !== pin) return } catch { return }
+        try { await fsp.unlink(path) } catch { /* already gone */ }
       }
     } catch (error) {
       if (error?.code !== 'EEXIST') throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the lock ${name} could not be created: ${String(error?.code ?? error)}`)
     }
     const holder = await readLockFile(path, bootId)
     if (await mayBreak(dir, name, holder, staleMs, bootId)) {
-      // Break by rename-aside: exactly one breaker wins the rename; the winner
-      // verifies it took the SAME lock it judged, else restores it.
+      await faultAt('lock-before-break-rename')
+      // P0-2b read-check (revalidate the DECISION against the NAME) before a
+      // holder-affecting move: a stale judgement over a record authorises
+      // moving THAT record and NOTHING else. A different generation at the
+      // name — re-locked or re-beaten since the judgement — is not provably
+      // dead here, so this breaker touches nothing and retries.
+      const fresh = await readLockFile(path, bootId)
+      if (fresh === null || fresh.invalid === true || fresh.nonce !== holder?.nonce || fresh.token !== holder?.token) continue
+      let judgedInode = ''
+      try { const st = await fsp.lstat(path); judgedInode = `${String(st.dev)}:${String(st.ino)}` } catch { continue }
+      // Break by rename-aside: exactly one breaker wins the rename. Rename
+      // PRESERVES the inode, so the moved object's identity is verifiable
+      // AFTER the fact (verify-after); anything that is not the judged
+      // generation is reclaimed with link (create-if-absent — the substrate's
+      // only compare-and-swap, the same law createLockRecord rides), which
+      // can never overwrite a current holder.
       const aside = `${dir.path}/.${name}.broken.${randomUUID()}`
       try {
         await fsp.rename(path, aside)
-        const taken = await readLockFile(aside, bootId)
-        if (taken !== null && taken.nonce !== holder?.nonce) {
-          try { await fsp.link(aside, path) } catch { /* someone already re-locked */ }
+        await faultAt('lock-after-break-rename')
+        let moved = null
+        let movedIsJudged = false
+        try {
+          const st = await fsp.lstat(aside)
+          moved = await readLockFile(aside, bootId)
+          movedIsJudged = `${String(st.dev)}:${String(st.ino)}` === judgedInode
+            && moved !== null && moved.invalid !== true && moved.nonce === holder?.nonce
+        } catch { movedIsJudged = false }
+        if (movedIsJudged) {
+          // The proven-dead generation this breaker judged: removing it is
+          // exactly what the owner policy permits (host/boot/pid fields are
+          // constant across a generation's beats, so the death proof covers
+          // the whole generation identified by this nonce).
+          try { await fsp.unlink(aside) } catch { /* best effort */ }
+        } else {
+          // The moved object is NOT what was judged — it is somebody else's
+          // (presumptively LIVE) generation. Reclaim it onto the name with
+          // create-if-absent semantics; a lost race is retried briefly.
+          let restored = false
+          for (let attempt = 0; attempt < 8 && !restored; attempt += 1) {
+            try { await fsp.link(aside, path); restored = true } catch (error) {
+              if (error?.code !== 'EEXIST') break
+              const now = await readLockFile(path, bootId)
+              if (now === null) { await sleep(1); continue } // the name freed again — retry the reclaim
+              if (moved !== null && moved.invalid !== true && now.nonce === moved.nonce) break // its owner already re-published: aside holds a superseded generation
+              await sleep(1)
+            }
+          }
+          if (restored) { try { await fsp.unlink(aside) } catch { /* the name keeps the same inode */ } }
+          else {
+            // The reclaim lost. Unlink the aside ONLY when its bytes are
+            // provably dead: the judged generation itself, or a generation
+            // whose owner demonstrably re-published (same nonce, newer beat
+            // at the name). An unprovable foreign generation is RETAINED as
+            // the aside file — operator-addressable litter is acceptable,
+            // destroying a live holder's lock is not (never-steal, the
+            // accepted correctness-over-liveness trade).
+            const now = await readLockFile(path, bootId)
+            const superseded = now !== null && moved !== null && moved.invalid !== true
+              && now.nonce === moved.nonce && now.token !== moved.token
+            if ((moved !== null && moved.nonce === holder?.nonce) || superseded) {
+              try { await fsp.unlink(aside) } catch { /* best effort */ }
+            }
+          }
         }
-        try { await fsp.unlink(aside) } catch { /* best effort */ }
-      } catch { /* another breaker won */ }
+      } catch { /* another breaker won the rename */ }
       continue
     }
     if (nowMs() - started > timeoutMs) {
@@ -684,9 +853,16 @@ const REALM_LOCK = '_realm.lock'
  *        C1 crash-simulation seam ONLY. The descriptor never passes it.
  * @param {(point: string) => void | Promise<void>} [input.faultAt]
  *        C1 crash/latency-simulation seam ONLY ('after-read' fires inside the
- *        critical section, between the read and the commit; 'after-commit'
- *        between the record rename and the marker). The descriptor never
- *        passes it.
+ *        critical section, after the applyId has been CONSUMED, between the
+ *        read and the op's precondition check; 'after-commit' between the
+ *        record rename and the ledgers — the commit has landed there, the
+ *        marker was consumed before the commit; 'lock-before-publish'
+ *        before the lock temp is linked to the name; 'beat-before-rename'
+ *        inside a beat, before its rename; 'lock-before-break-rename' after
+ *        the break DECISION and before any holder-affecting move, and
+ *        'lock-after-break-rename' after the move and before its
+ *        verification/reclaim — the P0-2b decision→action window). The
+ *        descriptor never passes it.
  */
 export function createFsStateStore({
   rootDir, realmId, anchorDir = rootDir, armProvider = () => Object.freeze({ kind: 'model' }),
@@ -781,25 +957,35 @@ export function createFsStateStore({
       return await write()
     } finally { await release() }
   }
-  const markerPresent = async (applyId) => {
-    const dir = await dirOf('applied', false)
+  /** THE consumption point for the cross-scope-GLOBAL applyId (audit P0-2a):
+   *  an O_EXCL create of the `applied/` marker is the check AND the consume,
+   *  one atomic create, outside the reach of any single scope lock. True =
+   *  this apply consumed the id; false = already consumed (replay, zero
+   *  persistence). A create failure other than EEXIST fails CLOSED — without
+   *  its global witness an apply must not commit. */
+  const markerConsume = async (applyId, scope, op) => {
+    const dir = await dirOf('applied', true)
     try {
-      if (dir.absent === true) return false
-      try { await fsp.lstat(`${dir.path}/${markerName(applyId)}`); return true } catch (error) {
-        if (error?.code === 'ENOENT') return false
-        throw error
+      try {
+        const handle = await fsp.open(`${dir.path}/${markerName(applyId)}`, CREATE_EXCLUSIVE, 0o600)
+        try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), scope: String(scope), op, at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
+        return true
+      } catch (error) {
+        if (error?.code === 'EEXIST') return false
+        throw typedError('AGENT_STATE_STORE_WRITE_FAILED', `the applyId marker ${String(applyId)} could not be consumed: ${String(error?.code ?? error)} (refused, nothing committed — without the global witness the grant stays unconsumed)`)
       }
     } finally { await dir.close() }
   }
-  /** The global marker, written AFTER the commit (the record already holds
-   *  the id, so a failure here can only lose a redundant witness). */
-  const writeMarker = async (applyId) => {
+  /** Refund a consumption ONLY when the commit demonstrably did not land (a
+   *  refused precondition, or a typed write failure the process survives): a
+   *  refused apply never burns its applyId, a failed one stays re-drivable.
+   *  A hard crash inside [consume, commit) leaves the marker — CONSUMED with
+   *  no state change is the conservative direction (module header, REPLAY). */
+  const markerRefund = async (applyId) => {
+    const dir = await dirOf('applied', false)
     try {
-      await withDir('applied', true, async (dir) => {
-        const handle = await fsp.open(`${dir.path}/${markerName(applyId)}`, CREATE_EXCLUSIVE, 0o600)
-        try { await handle.writeFile(`${JSON.stringify({ applyId: String(applyId), at: nowIso() })}\n`, 'utf8'); await handle.sync() } finally { await handle.close() }
-      })
-    } catch { /* redundant witness; the committed record carries the id */ }
+      if (dir.absent !== true) { try { await fsp.unlink(`${dir.path}/${markerName(applyId)}`) } catch { /* absent or never ours */ } }
+    } finally { await dir.close() }
   }
   const attemptEntry = (op, scope, resource, applyId) => {
     const entry = { op, scope, key: `${scope}/${resource}`, applyId, outcome: 'refused' }
@@ -836,16 +1022,23 @@ export function createFsStateStore({
   }
 
   /**
-   * The ONE apply walk for all three mutations: scope lock → replay witnesses
-   * → fresh read → the op's own precondition legs → commit (record carries
-   * the applyId) → fault seam → marker → ledgers.
+   * The ONE apply walk for all three mutations: scope lock → record replay
+   * witness → GLOBAL applyId consumption (O_EXCL marker — the atomic
+   * check-and-consume, P0-2a) → fresh decision input → the op's own
+   * precondition legs (refund on refusal) → commit (record carries the id;
+   * refund on a typed write failure) → fault seam → ledgers.
    */
   const applyUnder = async ({ scope, op, resource, applyId, decide }) => {
     const attempt = attemptEntry(op, scope, resource, applyId)
     try {
       return await underScopeLock(scope, async (locks) => {
         const current = await readState(scope)
-        if ((current?.appliedIds ?? []).includes(String(applyId)) || await markerPresent(applyId)) {
+        if ((current?.appliedIds ?? []).includes(String(applyId))) {
+          attempt.code = 'STATE_APPLY_REPLAY'
+          await finishAttempt(attempt)
+          return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
+        }
+        if (!(await markerConsume(applyId, scope, op))) {
           attempt.code = 'STATE_APPLY_REPLAY'
           await finishAttempt(attempt)
           return { ...refusal('STATE_APPLY_REPLAY', `apply ${String(applyId)} already consumed; a consumed grant never applies twice`), audit: attempt.audit }
@@ -853,13 +1046,18 @@ export function createFsStateStore({
         await faultAt('after-read')
         const decision = decide(current)
         if (decision.ok !== true) {
+          await markerRefund(applyId) // a refused apply never burns its applyId
           attempt.code = decision.code
           await finishAttempt(attempt)
           return { ...decision, audit: attempt.audit }
         }
-        await commitState(scope, locks, current, decision.patch, applyId)
-        await faultAt('after-commit')
-        await writeMarker(applyId)
+        try {
+          await commitState(scope, locks, current, decision.patch, applyId)
+        } catch (error) {
+          await markerRefund(applyId) // the commit did not land: the grant stays re-drivable
+          throw error
+        }
+        await faultAt('after-commit') // the commit landed: the marker STAYS (pre-commit consumption)
         attempt.outcome = 'applied'
         await finishAttempt(attempt)
         const write = { op, scope, key: `${scope}/${resource}`, applyId }

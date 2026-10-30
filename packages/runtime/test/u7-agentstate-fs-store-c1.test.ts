@@ -20,29 +20,47 @@
  *  R  refusals keep ZERO durable write (writes.jsonl byte-identical, one
  *     attempts line) — stale CAS, already-exists, plan-mode inactive,
  *     cross-scope (by construction), replay (durable across restart).
+ *  A  UNAUTHORIZED AUTHORITY answers the TYPED refusal with ZERO durable
+ *     write (U7-R3-C1-GOALFAM, 2026-10-30, C1 ONLY — the L3 grade is the
+ *     live C2 lane): create_goal from SUBAGENT authority (the isRoot leg of
+ *     the arm provider), get_goal / todo_write from an UNATTRIBUTED caller
+ *     (refused BEFORE any store touch — zero reads too), exit_plan_mode
+ *     outside plan mode AT THE ROW LEG (no apply ever reaches the store —
+ *     zero attempts lines, the discriminator against R2's store-level leg).
+ *     Each case flips to a committed positive in the SAME world (non-vacuity).
  *  S  byte-exact scoping — `a`, `a `, ` a` are three scopes, never aliases.
  *  B  bounds — an oversized record refuses typed; corrupt/foreign-key
  *     records fail CLOSED (typed), never "empty state".
  *  K  hardlink + symlink law on the read path (nlink>1 refused — the #409
  *     law, pinned here so the swap to the shared symbol is behaviour-
  *     preserving).
+ *  I  applyId consumption is cross-scope-GLOBAL and ATOMIC (audit P0-2a):
+ *     the same applyId at two different scopes commits at most once, forced
+ *     through the faultAt barrier past the first-witness check.
  *  C  crash atomicity — a writer that dies mid-record leaves the PREVIOUS
  *     record intact. MUTATION CONTROL: a store whose writer skips the
  *     temp+rename (writes the target in place) goes RED on the same check.
  *  T  R-413-1 — the lock/stale/timeout/race legs (describes L and F) are
- *     deterministic under ANY runner context (v3, root-pool safe): the
- *     store measures lock elapsed-time against the PUBLIC `nowMs` seam
- *     (factory option, default Date.now — the v2 design mocked node:timers,
- *     which CANNOT follow the store's direct module import across vitest
- *     roots and went RED in the root pool). Timeout legs pass a test-owned
- *     clock and advance it (settleTimeout); the store's acquire loop keeps
- *     its REAL short backoff sleeps, so the outcome is fixed at the clock
- *     advance — load stretches the leg's duration, never its result.
- *     Stale legs use small real windows. Race legs (L1/R4-1) run
- *     CONCURRENTLY on real timers with FROZEN nowMs clocks (their timeout
- *     can never fire; the lock makes the round self-terminating) and
- *     observe the store's own durable lock record (unique nonce per holder)
- *     to pin the serialised acquisitions (R449 MED).
+ *     deterministic under ANY runner context (v3: the store measures lock
+ *     elapsed-time against the PUBLIC `nowMs` seam, factory option,
+ *     default Date.now — the v2 design mocked node:timers, which CANNOT
+ *     follow the store's direct module import across vitest roots and went
+ *     RED in the root pool). Timeout legs pass a test-owned clock and
+ *     advance it (settleTimeout); the store's acquire loop keeps its REAL
+ *     short backoff sleeps, so the outcome is fixed at the clock advance —
+ *     load stretches the leg's duration, never its result. Stale legs use
+ *     small real windows. Race legs (L1/R4-1) run CONCURRENTLY on real
+ *     timers with FROZEN nowMs clocks (their timeout can never fire; the
+ *     lock makes the round self-terminating) and settle by plain
+ *     event-driven Promise.all — NO test-owned wall-clock cap, NO disk
+ *     polling (v3's 2 ms nonce-poll observer went RED under nine-root pool
+ *     load, #450 census); each instance's critical-section entry is pinned
+ *     by the store's own 'after-read' fault seam (fires exactly once per
+ *     apply, after lock acquisition) — deterministic and load-independent
+ *     (R449 MED, rebased). The 25-round leg's DURATION is load-stretched
+ *     (real fs under the pool); L1/R4-1 carry an explicit 30 s per-test
+ *     timeout as the disclosed guard (observed census-class worst case
+ *     ≈ 8 s) — a slow settle passes, a true hang fails there.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
@@ -635,34 +653,6 @@ const settleTimeout = async <T>(p: Promise<T>, clock: { advance: (ms: number) =>
   return await p
 }
 
-/**
- * Run a four-way race on REAL timers (deterministic under any pool) and
- * observe the store's own durable lock record on the way: every holder that
- * appears on disk is recorded by its unique nonce. The racers carry FROZEN
- * nowMs clocks so their lock timeout can never fire — the round always
- * settles by the lock + CAS (one winner, three stale refusals), no matter
- * the wall load. The final `await all` rethrows any racer error, so the
- * handled promise above can never mask a failure.
- */
-const raceSettle = async (
-  racers: Array<Promise<{ ok: boolean, code?: string }>>,
-  lockPath: string,
-): Promise<{ results: Array<{ ok: boolean, code?: string }>, seen: Set<string> }> => {
-  const seen = new Set<string>()
-  const poll = (): void => {
-    try { seen.add(JSON.parse(readFileSync(lockPath, 'utf8')).nonce) } catch { /* absent or released */ }
-  }
-  const all = Promise.all(racers)
-  const settled = (): Promise<boolean> => all.then(() => true, () => true)
-  for (let i = 0; i < 20_000; i += 1) { // 20 000 × 2 ms real = 40 s hard cap
-    if (await Promise.race([settled(), new Promise<boolean>((r) => { setTimeout(() => r(false), 2) })])) break
-    poll()
-  }
-  const results = await all
-  poll()
-  return { results, seen }
-}
-
 describe('u7as X — containment is re-proven on EVERY operation (review round-1 B-1)', () => {
   // The three swap targets, each replaced by a symlink to an OUTSIDE dir.
   const targets: Array<[string, () => string]> = [
@@ -720,41 +710,54 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
   // note in the file header).
 
   it('L1 FOUR store instances race the SAME expectedRevision, 25 rounds: exactly ONE ok and three GOAL_STALE_REVISION each round, one write line per round, the revision advances exactly one', async () => {
-    // R-413-1 v3 + R449 MED: DETERMINISTICALLY concurrent arrival on REAL
-    // timers (any runner context) — all four applies are started with NO
-    // await between them, each carries a FROZEN nowMs clock (its lock
-    // timeout can never fire), and the round settles by the lock + CAS:
-    // exactly one CAS winner, three stale refusals. With the lock in
-    // place, nothing else can happen; with a lock-removal regression,
-    // several appliers could commit concurrently and the same outcome
-    // assertion goes RED.
-    const raceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:race').digest('hex')}.lock`)
+    // R-413-1 v3 + R449 MED (rebased v4 after the #450 census red):
+    // DETERMINISTICALLY concurrent arrival on REAL timers (any runner
+    // context) — all four applies are started with NO await between them,
+    // each carries a FROZEN nowMs clock (its lock timeout can never fire),
+    // and the round settles by the lock + CAS via a plain event-driven
+    // await (no test-owned wall-clock cap, no polling): exactly one CAS
+    // winner, three stale refusals. With the lock in place, nothing else
+    // can happen; with a lock-removal regression, several appliers could
+    // commit concurrently and the same outcome assertion goes RED.
+    // The 25-round leg's DURATION is load-stretched (real fs); the
+    // explicit 30 s per-test timeout below is the disclosed guard (observed
+    // census-class worst case ≈ 8 s) — a true hang fails there, a slow
+    // settle does not.
     for (let round = 1; round <= 25; round += 1) {
       await storeWith().seedGoal('agent:race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const w0 = bytesOf(writesPath())
       const linesBefore = linesOf(writesPath()).length
       const frozen = testClock() // never advanced: the racers' timeout can never fire
-      const { results, seen } = await raceSettle([0, 1, 2, 3].map((i) => storeWith({ nowMs: frozen.now }).applyGoal('agent:race', {
+      const acquires = new Set<string>()
+      const racers = [0, 1, 2, 3].map((i) => storeWith({
+        nowMs: frozen.now,
+        // 'after-read' fires exactly once per apply, INSIDE the critical
+        // section, after lock acquisition (store fs-state-store.mjs:853) —
+        // a deterministic per-instance acquire mark, no disk sampling
+        faultAt: (point: string) => { if (point === 'after-read') acquires.add(`race-${String(round)}-${String(i)}`) },
+      }).applyGoal('agent:race', {
         expectedRevision: round, applyId: `race-${String(round)}-${String(i)}`,
         next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })), raceLock)
+      }))
+      // event-driven settle: no wall-clock cap, no polling — the lock +
+      // CAS terminate the round under any load; a TRUE hang (none
+      // observed) would fail via vitest's own testTimeout (disclosed)
+      const results = await Promise.all(racers)
       expect(results.filter((r) => r.ok === true), `round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `round ${String(round)}`).toHaveLength(3)
       expect(linesOf(writesPath()).length - linesBefore).toBe(1)
       expect(bytesOf(writesPath())).toBeGreaterThan(w0)
       expect(await storeWith().readGoal('agent:race')).toMatchObject({ revision: round + 1 })
-      // R449 MED ordering assertion: the LOCK-ACQUIRE set over the round is
-      // a permutation of the four instances — the store's own durable lock
-      // record (unique nonce per holder) was observed for ALL FOUR: each
-      // acquired the scope lock exactly once (the O_EXCL create makes it
-      // exclusive — exactly one holder at a time — and each of the three
-      // stale refusals only happens after its own acquisition, i.e. only
-      // after the previous holder released). A lock-removal regression
-      // leaves no lock record to observe, so this goes RED with it — the
-      // concurrent-arrival coverage the strict sequence had lost.
-      expect(seen.size, `round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
+      // R449 MED ordering assertion (rebased after the #450 census red):
+      // every one of the four instances ENTERED the lock's critical
+      // section exactly once — the 'after-read' seam fires per apply only
+      // after lock acquisition; the 1-ok/3-stale outcome above proves the
+      // entries were mutually exclusive (simultaneous entries would
+      // double-commit and RED the outcome). No sampling, no wall-clock
+      // budget — deterministic under any pool load.
+      expect(acquires.size, `round ${String(round)}: all four instances must have entered the critical section exactly once`).toBe(4)
     }
-  })
+  }, 30_000)
 
   it('L2 a STALE lock (holder pid dead) is broken and the apply proceeds; a LIVE lock times out typed with ZERO write', async () => {
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
@@ -781,10 +784,10 @@ describe('u7as L — concurrent appliers are serialised per scope (review round-
   })
 })
 
-describe('u7as M — the applyId is consumed WITH the commit, never before it', () => {
+describe('u7as M — the applyId is consumed ATOMICALLY (O_EXCL marker), clean failures refund', () => {
   const goalV = (revision: number) => ({ goalId: 'g', objective: `rev ${String(revision)}`, phase: 'active', revision, roundsStarted: 0, armed: true })
 
-  it('M1 crash BEFORE the commit (writer dies mid-record): the grant is NOT consumed — the same applyId applies later', async () => {
+  it('M1 failure BEFORE the commit (writer dies mid-record): the grant is REFUNDED — the same applyId applies later', async () => {
     await storeWith().seedGoal('agent:m', goalV(1))
     const dying = storeWith({ recordWriter: async (h: { writeFile: (t: string, e: string) => Promise<void> }, t: string) => { await h.writeFile(t.slice(0, 10), 'utf8'); throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
     expect((await dying.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(false)
@@ -792,11 +795,14 @@ describe('u7as M — the applyId is consumed WITH the commit, never before it', 
     expect((await storeWith().applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-1' })).ok).toBe(true)
   })
 
-  it('M2 crash AFTER the commit but BEFORE the marker: the state is committed and a replay of the same applyId is STILL refused (the record carries the id)', async () => {
+  it('M2 die AFTER the commit landed (seam between rename and ledgers): BOTH witnesses hold the id (record + consumed marker) — a replay is STILL refused', async () => {
     await storeWith().seedGoal('agent:m', goalV(1))
     const crashing = storeWith({ faultAt: (point: string) => { if (point === 'after-commit') throw Object.assign(new Error('crash'), { code: 'ESIMCRASH' }) } })
     await crashing.applyGoal('agent:m', { expectedRevision: 1, next: goalV(2), applyId: 'm-2' })
-    expect(existsSync(join(storeRoot(), 'applied')) ? readdirSync(join(storeRoot(), 'applied')) : []).toEqual([])
+    // P0-2a order: the marker is the consumption point and lands BEFORE the
+    // commit, so a stop at 'after-commit' (rename done, ledgers pending)
+    // leaves BOTH witnesses: the record carries the id AND the marker exists.
+    expect(readdirSync(join(storeRoot(), 'applied'))).toHaveLength(1)
     const restarted = storeWith()
     expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
     const w0 = bytesOf(writesPath())
@@ -804,6 +810,52 @@ describe('u7as M — the applyId is consumed WITH the commit, never before it', 
     expect(replay).toMatchObject({ ok: false, code: 'STATE_APPLY_REPLAY' })
     expect(bytesOf(writesPath())).toBe(w0)
     expect(await restarted.readGoal('agent:m')).toMatchObject({ revision: 2 })
+  })
+})
+
+describe('u7as I — applyId consumption is cross-scope-GLOBAL and atomic (audit P0-2a)', () => {
+  // The port contract (state-store.mjs DURABLE IDEMPOTENCE) makes applyId
+  // consumption realm-GLOBAL: the same applyId commits AT MOST ONCE across all
+  // scopes. Persistence locking is PER-SCOPE (locks/<scope-digest>.lock), so
+  // two applies carrying the same applyId at DIFFERENT scopes never contend
+  // through that lock. This leg forces the interleaving with the C1 `faultAt`
+  // seam: a two-arrival barrier parks each apply AFTER its first-witness
+  // check ('after-read' fires past the appliedIds/markerPresent check) and
+  // BEFORE any commit or marker can land, so both legs enter the commit
+  // window with zero global witness. The VALVE (release on either apply
+  // settling) keeps the leg deterministic in both worlds: pre-fix both reach
+  // settling) keeps the leg deterministic in both worlds: pre-fix both reach
+  // the seam (two commits → RED); once consumption is atomic only the winner
+  // reaches it — the loser refuses before the seam, settles, and releases.
+  it('I1 the same applyId at two DIFFERENT scopes commits at most once (forced interleaving)', async () => {
+    const ID = 'x-global-1'
+    let arrivals = 0
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const seam = { faultAt: async (point: string) => {
+      if (point !== 'after-read') return
+      arrivals += 1
+      if (arrivals === 2) { release(); return }
+      await gate
+    } }
+    const sa = storeWith(seam)
+    const sb = storeWith(seam)
+    const pa = sa.applyTodos('agent:ia', { todos: [{ content: 'A', status: 'pending' }], applyId: ID })
+    const pb = sb.applyTodos('agent:ib', { todos: [{ content: 'B', status: 'pending' }], applyId: ID })
+    // valve: if an apply settles WITHOUT reaching the barrier (an atomic
+    // consumption refusal), the parked twin must not hang.
+    void pa.then(release, release)
+    void pb.then(release, release)
+    const [ra, rb] = await Promise.all([pa, pb])
+    const results = [ra, rb]
+    expect(arrivals, 'the interleaving must have been forced — at least one apply reached the seam').toBeGreaterThanOrEqual(1)
+    expect(results.filter((r) => r.ok === true), 'contract law: at most ONE durable commit for the same applyId, whichever scope carries it').toHaveLength(1)
+    expect(results.filter((r) => r.code === 'STATE_APPLY_REPLAY'), 'the loser answers STATE_APPLY_REPLAY').toHaveLength(1)
+    // DISK facts, not memory testimony:
+    expect(linesOf(writesPath()).filter((l) => l.applyId === ID), 'exactly one durable write-audit line for the applyId').toHaveLength(1)
+    const records = [await storeWith().stateOf('agent:ia'), await storeWith().stateOf('agent:ib')]
+    expect(records.filter((rec) => ((rec?.appliedIds ?? []) as string[]).includes(ID)), 'exactly one scope record carries the id').toHaveLength(1)
+    expect(readdirSync(join(storeRoot(), 'applied')), 'exactly one global marker').toHaveLength(1)
   })
 })
 
@@ -961,27 +1013,38 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
   })
 
   it('R4-1 empty BOOT_ID is a complete same-platform record: 10 four-way races have one winner, dead pid breaks, non-empty local refuses empty record', async () => {
-    // R-413-1 v3 + R449 MED: deterministic concurrent arrival on REAL
-    // timers, same pattern as L1 — all four started with NO await between
-    // them, each on a FROZEN nowMs clock (its timeout can never fire), the
-    // round settles by the lock + CAS, and the store's own lock record
-    // (nonce per holder) is observed on the way.
-    const emptyRaceLock = join(storeRoot(), 'locks', `${createHash('sha256').update('agent:empty-race').digest('hex')}.lock`)
+    // R-413-1 v3 + R449 MED (rebased v4 after the #450 census red):
+    // deterministic concurrent arrival on REAL timers, same pattern as L1
+    // — all four started with NO await between them, each on a FROZEN
+    // nowMs clock (its timeout can never fire), the round settles by the
+    // lock + CAS via a plain event-driven await (no test-owned wall-clock
+    // cap, no polling), and each instance's critical-section entry is
+    // marked by the store's 'after-read' fault seam. The leg's duration is
+    // load-stretched (real fs); the explicit 30 s per-test timeout is the
+    // disclosed guard (see L1).
     for (let round = 1; round <= 10; round += 1) {
       const seeded = storeWithBoot('')
       await seeded.seedGoal('agent:empty-race', { goalId: 'g', objective: `r${String(round)}`, phase: 'active', revision: round, roundsStarted: 0, armed: true })
       const frozen = testClock() // never advanced: the racers' timeout can never fire
-      const { results, seen } = await raceSettle([0, 1, 2, 3].map((i) => storeWithBoot('', { nowMs: frozen.now }).applyGoal('agent:empty-race', {
+      const acquires = new Set<string>()
+      const racers = [0, 1, 2, 3].map((i) => storeWithBoot('', {
+        nowMs: frozen.now,
+        // 'after-read' fires exactly once per apply, INSIDE the critical
+        // section, after lock acquisition — a deterministic per-instance
+        // acquire mark, no disk sampling
+        faultAt: (point: string) => { if (point === 'after-read') acquires.add(`empty-race-${String(round)}-${String(i)}`) },
+      }).applyGoal('agent:empty-race', {
         expectedRevision: round, applyId: `empty-race-${String(round)}-${String(i)}`,
         next: { goalId: 'g', objective: `winner-${String(i)}`, phase: 'active', revision: round + 1, roundsStarted: 0, armed: true },
-      })), emptyRaceLock)
+      }))
+      // event-driven settle: no wall-clock cap, no polling (see L1)
+      const results = await Promise.all(racers)
       expect(results.filter((r) => r.ok === true), `empty boot round ${String(round)}`).toHaveLength(1)
       expect(results.filter((r) => r.code === 'GOAL_STALE_REVISION'), `empty boot round ${String(round)}`).toHaveLength(3)
-      // R449 MED ordering assertion: same as L1 — the lock-acquire set is a
-      // permutation of the four instances (each acquires exactly once; the
-      // O_EXCL create keeps it exclusive); a lock-removal regression goes
-      // RED here (no lock record to observe).
-      expect(seen.size, `empty boot round ${String(round)}: all four instances must have acquired the lock exactly once`).toBe(4)
+      // R449 MED ordering assertion (rebased, same as L1): all four
+      // instances entered the critical section exactly once (after
+      // acquisition); the outcome proves the entries were exclusive.
+      expect(acquires.size, `empty boot round ${String(round)}: all four instances must have entered the critical section exactly once`).toBe(4)
     }
     mkdirSync(join(storeRoot(), 'locks'), { recursive: true })
     writeFileSync(scopeLockPath('agent:empty-dead'), JSON.stringify({ pid: 2 ** 22 + 7777, host: host(), boot: '', nonce: 'dead-empty', token: 't0', at: Date.now() }))
@@ -993,7 +1056,7 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     const refused = await settleTimeout(storeWithBoot('local-boot', { lockTimeoutMs: 80, nowMs: clock.now }).applyTodos('agent:empty-invalid', { todos: [{ content: 'no', status: 'pending' }], applyId: 'empty-invalid' }), clock, 80)
     expect(refused).toMatchObject({ ok: false, code: 'AGENT_STATE_STORE_LOCK_TIMEOUT' })
     expect(bytesOf(writesPath())).toBe(before)
-  })
+  }, 30_000)
 
   it('R3-atomic initial lock publication leaves no target after injected pre-publish crash', async () => {
     const crashing = storeWith({ faultAt: async (point: string) => { if (point === 'lock-before-publish') throw new Error('injected lock crash') } })
@@ -1029,5 +1092,220 @@ describe('u7as F — age alone NEVER breaks a live lock holder (review round-2 F
     expect((await pa).ok).toBe(true)
     expect(t2).not.toBe(t1)
     expect(existsSync(scopeLockPath('agent:beat'))).toBe(false)
+  })
+})
+
+// ── u7as A: the four authority-refusal arms (U7-R3-C1-GOALFAM, 2026-10-30) ──
+/**
+ * A — WHAT AN UNAUTHORIZED AUTHORITY COSTS THE DURABLE STORE: NOTHING,
+ * measured (the four ungraded cells of u7-tool-acceptance: create_goal,
+ * get_goal, exit_plan_mode, todo_write — L3-refusal NOT_VERIFIED because the
+ * graded u7-astore record proves the live typed zero-effect refusal on the
+ * UPDATE path only, `ast:cross-scope-zero-effect`).
+ *
+ * THE CELLS PINNED HERE are the refusal arms the SHIPPED code actually
+ * answers — read from the lane, never invented:
+ *  - create_goal / update_goal direct-human leg
+ *    (agent-state-law.mjs GOAL_TRANSITION_LAW.create.authority ←
+ *    tool-goal/src/index.ts:224 @639ed01539; the arm fact itself is the
+ *    production createHostArmProvider — `direct-human` iff a
+ *    user/message(source.kind==='user') sits in the OPEN TURN of a ROOT
+ *    agent, fs-state-store.mjs:814). A SUBAGENT session — one the host does
+ *    NOT report in agents.roots() — is never direct-human even when its
+ *    turn carries user bytes: that is the `top-level agent` leg of
+ *    GOAL_TOOL_NOT_DIRECT_HUMAN, graded here (executors.mjs:230-234).
+ *  - get_goal / create_goal with NO attributable caller —
+ *    GOAL_TOOL_AGENT_REQUIRED, refused by the scope-first front BEFORE PA
+ *    and BEFORE the store (executors.mjs:129-132 + the row's missingAgent);
+ *    the witness is ZERO reads AND zero writes, not just zero writes.
+ *  - exit_plan_mode outside plan mode — PLAN_MODE_NOT_ACTIVE at the ROW's
+ *    state leg (executors.mjs:285-289 + agent-state-law.mjs
+ *    planModeExitStateLeg ← plan-mode/src/index.ts:298). Distinct from R2,
+ *    which graded the STORE-level code INSIDE applyPlanModeExit (one
+ *    attempts line): at the row leg no apply ever reaches the store, so the
+ *    attempts ledger must NOT move — the assertion that discriminates the
+ *    two lanes (a mutant that deletes the row leg answers the SAME code via
+ *    the store and goes RED on the attempts witness).
+ *  - todo_write's OWN authority semantics: it carries NO direct-human arm
+ *    (any attributed agent — root or subagent — writes its own list), and
+ *    its refusal lanes are (a) unattributed caller → TODO_WRITE_AGENT_
+ *    REQUIRED before any store touch (executors.mjs:258), (b) the strict
+ *    list law (DEFAULT_TODO_CONFIG, at most one in_progress) refused in the
+ *    CLOSED parse — zero PA entry, zero store touch (agent-state-law.mjs
+ *    parseTodoWriteArgs:220-223).
+ *
+ * C1-ONLY HONESTY (USER-RULING-20261029B item 2: "mock/C1 只证拒绝逻辑"):
+ * this is an OFFLINE proof of the refusal LOGIC over the PRODUCTION store
+ * with a C1 stand-in host (the same public `agents`/`sessionProjections`
+ * shapes the graded arms ride) — it is NOT the L3 grade. L3 = a real-Host
+ * typed refusal with zero effect, graded by the live C2 lane after merge.
+ * Nothing here lifts the ledger level; the notes record the C1 lineage.
+ */
+describe('u7as A — unauthorized authority answers the typed refusal with ZERO durable write (C1 arms; L3 graded live)', () => {
+  /** The A-world mount: the same real plane + production store as
+   *  mountProduction, but the host stand-in models the TOP-LEVEL fact:
+   *  agents.roots() answers ONLY the ids the world declares as roots. A
+   *  session known to `agents.get` but absent from roots() is a SUBAGENT —
+   *  the exact shape the createHostArmProvider isRoot leg reads. */
+  async function mountAuthorityWorld(opts: { rootIds: readonly string[], humanTurnFor?: readonly string[] }): Promise<{ built: Built, rows: Record<RowName, Row>, store: FsStore }> {
+    const built = await plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 },
+      teamSessionId: 'u7asg-root',
+      controlLeg: approvingControlLeg(),
+      permissionPolicy: POLICY_ASK,
+      realmId: REALM,
+      templateId: 'u7asg-tpl',
+      role: 'member',
+      instanceId: 'u7asg-inst',
+      onObserve: () => {},
+      plane: { agentStateEnabled: true },
+    }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean, message?: string }, backends?: Record<string, unknown> } }
+    if (built.ok !== true) throw new Error(`mount refused: ${String(built.code)} ${String(built.message ?? '')}`)
+    const humans = new Set(opts.humanTurnFor ?? [])
+    const rootIds = new Set(opts.rootIds)
+    const agentOf = (id: string) => ({
+      id,
+      session: {
+        id,
+        snapshotEvents: () => [
+          { type: 'turn/start' },
+          ...(humans.has(id) ? [{ type: 'user/message', data: { source: { kind: 'user' } } }] : [{ type: 'user/message', data: { source: { kind: 'agent' } } }]),
+        ],
+      },
+    })
+    const known = new Map<string, ReturnType<typeof agentOf>>()
+    const agents = {
+      get: (id: string) => { if (!known.has(id)) known.set(id, agentOf(id)); return known.get(id) },
+      // THE TOP-LEVEL TEST (GREEN; the RED commit wired this naively — every
+      // known session a root — and A1 went RED on exactly that): the arm
+      // provider's direct-human leg is `agents.roots().includes(agent)`
+      // (fs-state-store.mjs:814 mirroring tool-goal authority.ts:81-117
+      // @639ed01539). A session `get` resolves but roots() omits is a
+      // SUBAGENT — never direct-human, even carrying user bytes.
+      roots: () => [...known.values()].filter((a) => rootIds.has(a.id)),
+    }
+    const services: Record<string, unknown> = {
+      agents,
+      sessionProjections: { stateOf: () => ({ openTurnStartSeq: 0 }) },
+    }
+    const mounted = built.value.mount({ get: (name: string) => services[name], tools: { register: () => () => {} } })
+    expect(mounted.ok, String(mounted.message ?? '')).toBe(true)
+    const rows: Record<string, Row> = {}
+    for (const d of built.value.definitions) rows[d.name] = d
+    const store = (built.value.backends ?? {}).agentStateStore as FsStore | undefined
+    expect(store, 'the plane exposes the mounted production store under backends.agentStateStore').toBeDefined()
+    expect((store as FsStore).name).toBe('agent-state:fs')
+    return { built, rows: rows as Record<RowName, Row>, store: store as FsStore }
+  }
+
+  const scopeFiles = (): string[] => (existsSync(join(storeRoot(), 'scopes'))
+    ? readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))
+    : [])
+  const scopeBytes = (): string[] => scopeFiles().map((f) => readFileSync(join(storeRoot(), 'scopes', f), 'utf8'))
+
+  it('A1 create_goal from SUBAGENT authority refuses GOAL_TOOL_NOT_DIRECT_HUMAN with zero durable write; root-human flip commits', async () => {
+    // 'child' carries a user/message in its open turn but is NOT a host root
+    // (subagent authority); 'rootmodel' is a root whose open turn is
+    // agent-initiated (the conservative model arm). 'alice' is the flip.
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice', 'rootmodel'], humanTurnFor: ['alice', 'child'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const sub = await rows.create_goal.execute({ objective: 'a subagent wants its own goal' }, exec('child'))
+    expect(codeOf(sub)).toBe('GOAL_TOOL_NOT_DIRECT_HUMAN')
+    expect(bytesOf(writesPath()), 'GOAL_TOOL_NOT_DIRECT_HUMAN: writes.jsonl must not grow').toBe(w0)
+    expect(linesOf(attemptsPath()).length, 'the refused call never reaches store.applyGoal').toBe(a0)
+    expect(store.log.reads.length, 'exactly one bounded fresh read, no write, no apply').toBe(r0 + 1)
+    expect(scopeFiles()).toEqual([])
+    // the conservative arm: a root agent on a model-initiated turn meets
+    // the same typed refusal (arm.kind === model, fs-state-store.mjs:775)
+    const modelRoot = await rows.create_goal.execute({ objective: 'model turn wants a goal' }, exec('rootmodel'))
+    expect(codeOf(modelRoot)).toBe('GOAL_TOOL_NOT_DIRECT_HUMAN')
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeFiles()).toEqual([])
+    // NON-VACUITY in the SAME world: the direct-human flip commits durably
+    const ok = await rows.create_goal.execute({ objective: 'a human starts a goal' }, exec('alice'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w0)
+    expect(linesOf(writesPath()).at(-1)).toMatchObject({ op: 'goal/apply' })
+    expect(await reopen().readGoal('agent:alice')).toMatchObject({ objective: 'a human starts a goal', revision: 1, phase: 'active' })
+    expect(await reopen().readGoal('agent:child')).toBe(null)
+  })
+
+  it('A2 get_goal with NO attributable caller refuses GOAL_TOOL_AGENT_REQUIRED BEFORE any store touch; a subagent read stays scope-bound', async () => {
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    // setup fact: a durable goal EXISTS for alice, so "untouched" below is a
+    // statement about real bytes, not about an empty world.
+    const created = await rows.create_goal.execute({ objective: 'alice durable goal' }, exec('alice'))
+    expect(codeOf(created)).toBe('ACCEPTED')
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const files0 = scopeBytes()
+    const anon = await rows.get_goal.execute({}, {})
+    expect(codeOf(anon)).toBe('GOAL_TOOL_AGENT_REQUIRED')
+    expect(store.log.reads.length, 'the row refused in the scope-first front: ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(linesOf(attemptsPath()).length).toBe(a0)
+    // the scope law (executors.mjs SCOPE LAW): a SUBAGENT reading its own
+    // scope meets the honest null — never alice's snapshot; alice's record
+    // bytes are byte-identical across the whole case.
+    const child = await rows.get_goal.execute({}, exec('child'))
+    expect(codeOf(child)).toBe('ACCEPTED')
+    expect(JSON.parse(child.text)).toEqual({ goal: null })
+    expect(store.log.reads.length, 'exactly the bounded own-scope read').toBe(r0 + 1)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeBytes()).toEqual(files0)
+  })
+
+  it('A3 exit_plan_mode OUTSIDE plan mode refuses PLAN_MODE_NOT_ACTIVE at the ROW leg — zero writes AND zero applies; the seeded flip commits', async () => {
+    const { rows } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const files0 = scopeFiles()
+    const r = await rows.exit_plan_mode.execute({ plan: '# Plan that never existed\n\n- step' }, exec('alice'))
+    expect(codeOf(r)).toBe('PLAN_MODE_NOT_ACTIVE')
+    expect(bytesOf(writesPath()), 'PLAN_MODE_NOT_ACTIVE (row leg): writes.jsonl must not grow').toBe(w0)
+    // the DISCRIMINATOR against R2: at the row leg the store never sees an
+    // apply, so the attempts ledger must NOT move (R2's store-level leg
+    // answers the same code WITH one attempts line inside applyPlanModeExit).
+    expect(linesOf(attemptsPath()).length, 'the row leg precedes any apply — no attempts line').toBe(a0)
+    expect(scopeFiles()).toEqual(files0)
+    // NON-VACUITY in the SAME world: plan mode ON (production seed path,
+    // the same disclosed seed shape as the graded ast:exit-plan-mode-positive)
+    await reopen().seedPlanMode('agent:alice', true)
+    const w1 = bytesOf(writesPath())
+    const ok = await rows.exit_plan_mode.execute({ plan: '# Durable exit' }, exec('alice'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(JSON.parse(ok.text)).toEqual({ exited: true, planMode: { active: false } })
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w1)
+    expect((await reopen().readPlanMode('agent:alice')).active).toBe(false)
+  })
+
+  it('A4 todo_write: unattributed refuses TODO_WRITE_AGENT_REQUIRED (zero store touch); strict list law refuses in the CLOSED parse; a SUBAGENT still commits its own list', async () => {
+    const { rows, store } = await mountAuthorityWorld({ rootIds: ['alice'], humanTurnFor: ['alice'] })
+    const w0 = bytesOf(writesPath())
+    const a0 = linesOf(attemptsPath()).length
+    const r0 = store.log.reads.length
+    const anon = await rows.todo_write.execute({ todos: [{ content: 'orphan list', status: 'pending' }] }, {})
+    expect(codeOf(anon)).toBe('TODO_WRITE_AGENT_REQUIRED')
+    expect(store.log.reads.length, 'scope-first front: ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(linesOf(attemptsPath()).length).toBe(a0)
+    expect(scopeFiles()).toEqual([])
+    // its list-law lane: the STRICT posture (DEFAULT_TODO_CONFIG) refuses a
+    // second in_progress in the CLOSED parse — before PA, before the store.
+    const bad = await rows.todo_write.execute({ todos: [{ content: 'a', status: 'in_progress' }, { content: 'b', status: 'in_progress' }] }, exec('child'))
+    expect(codeOf(bad)).toBe('AGENT_STATE_ARGS_INVALID')
+    expect(store.log.reads.length, 'parse refusal: still ZERO store reads').toBe(r0)
+    expect(bytesOf(writesPath())).toBe(w0)
+    expect(scopeFiles()).toEqual([])
+    // todo_write carries NO direct-human arm — the attributed SUBAGENT is
+    // authorized over its OWN list and commits durably (non-vacuity).
+    const ok = await rows.todo_write.execute({ todos: [{ content: 'child owns this list', status: 'pending' }] }, exec('child'))
+    expect(codeOf(ok)).toBe('ACCEPTED')
+    expect(bytesOf(writesPath()), 'the flip moved the durable write audit').toBeGreaterThan(w0)
+    expect(await reopen().readTodos('agent:child')).toEqual([{ content: 'child owns this list', status: 'pending' }])
+    expect(await reopen().readTodos('agent:alice')).toBe(null)
   })
 })

@@ -1,0 +1,36 @@
+# Ledger note sync — OPEN -> MERGED @<merge-sha>, NOTE strings only
+
+lane U7-R3-C1-W3   generated 2026-10-30T03:40:18Z
+
+file: `dev/agent-workflow/ledgers/u7-tool-acceptance.json` (31 rows, 5 affected notes)
+
+Each of these notes records a C1 lineage shipped by a PR that has since MERGED, but the
+note still said `(PR #46N, OPEN)`. Only the status token inside the note string changed;
+no status, level, gate, owner or any other ledger field moved, and no row was added or
+removed. Verification below is a field-by-field walk of the parsed JSON, HEAD vs worktree.
+
+## merge commits (source: `gh pr view <n> --json state,mergeCommit`)
+
+| PR | state | mergeCommit (full) | short-9 used in the note |
+| --- | --- | --- | --- |
+| #464 | MERGED | 458d7ac8709b729a034fe09cacc3dcd266cf7fc8 | `458d7ac87` |
+| #465 | MERGED | 9a005a39981033e6afcf916b154aafb952eb0e6a | (no OPEN note names #465 — nothing to sync) |
+| #467 | MERGED | 0be20e0f56cf6c9571c68ece19a805d991f25a71 | `0be20e0f5` |
+| #468 | MERGED | 1227cbfa61e6f0a4dc771d26e6496719150e59ac | `1227cbfa6` |
+
+## the 5 changed paths (every one is a `.L3-refusal.note` string)
+
+- row `edit` → `.rows[2].L3-refusal.note`
+- row `bash` → `.rows[4].L3-refusal.note`
+- row `subagent` → `.rows[12].L3-refusal.note`
+- row `list_agents` → `.rows[16].L3-refusal.note`
+- row `job_kill` → `.rows[23].L3-refusal.note`
+
+Proof of scope: the walk compares `git show HEAD:<file>` with the worktree file after
+parsing both. It asserts equal key sets and equal list lengths at every level and records
+every differing LEAF. Result: 5 differing leaves, all of them `L3-refusal.note` strings; 0 changed `status`, 0 changed `level`, 0 changed rows.
+
+Row count before/after: 31/31. `grep -c OPEN` after the sync: 0.
+
+No acceptance state moved: the four wave-3 rows this lane grades keep
+`L3-refusal NOT_VERIFIED` — a merged C1 PR is not a live C2 PASS-grade record.

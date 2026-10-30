@@ -1,0 +1,30 @@
+# Mutants — targeted disarms, measured red sets, clean revert
+
+lane U7-R3-C1-W3   generated 2026-10-30T03:39:39Z
+
+Method: one production-law disarm at a time in the SOURCE (the test file untouched), one
+measured run of `npx vitest run packages/runtime/test/u7-f-agent-control-c1.test.ts`, then
+`git checkout --` the disarmed file. A mutant is evidence only if it turns the NEW arm(s)
+red; each row below names the pre-existing arm that also went red, which is the
+cross-check that the disarm is real and not an artifact of the new code.
+
+| # | disarm (source line, one edit) | law being disarmed | red set (measured) | counts |
+| --- | --- | --- | --- | --- |
+| M1 | `agent-control-executor.mjs`: `const tainted = scanContextAuthority(context ?? {})` -> `const tainted = []` | (e) context is DATA — the fork context is never scanned for authority-shaped keys | AC-28, **AC-69** | 2 failed / 61 passed |
+| M2 | `agent-control-executor.mjs` workflow `spawnDelegate`: `authorityBounded(callerAuthority, {provider, model, tools, continuable})` -> `{ ok: true, violations: [] }` | (c) no-amplification fence at the caller-bound workflow spawn leg | AC-27, **AC-79** | 2 failed / 61 passed |
+| M3 | `agent-control-mechanics.mjs` `scopeMembership`: `if (members.includes(id))` -> `if (members.length >= 0)` | (d) owner fence — roster membership is never actually checked | AC-22, AC-37, AC-38, AC-38b, **AC-70**, **AC-80** | 6 failed / 57 passed |
+| M4 | `agent-control-mechanics.mjs` `scopeMembership` no-fence branch: the `agent-control-scope-unresolved` refusal -> `{ ok: true }` | fail-closed on an UNATTRIBUTED mount (no durable roster) | AC-23, **AC-71** | 2 failed / 61 passed |
+| M5 | `agent-control-executor.mjs` PA edge: `if (gate.kind === 'deny')` -> `if (false && gate.kind === 'deny')` | a settled-DENY Control answer no longer refuses the body | AC-31, AC-34, AC-44, AC-64, AC-65, **AC-72**, **AC-73**, **AC-74**, **AC-77**, **AC-78** | 10 failed / 53 passed |
+
+Every wave-3 row is covered by at least one disarm that turns IT red:
+`subagent_fork` -> M1 (AC-69) [M2/M3/M4/M5 cover the shared fences];
+`send_message` -> M3 (AC-70, AC-80), M4 (AC-71), M5 (AC-72);
+`list_subagent_models` -> M5 (AC-73, AC-74); default-DENY lane arm AC-75 is graded by the
+template gate the AC-30 lineage already pins (its flip witness is the same call admitted);
+`workflow` -> M2 (AC-79), M3 (AC-80), M5 (AC-77, AC-78), with AC-76/AC-81 pinned by the
+closed grammar and the unwired production leg respectively.
+
+Revert proof: after each run the disarmed file was restored with `git checkout --` and the
+final `git status --porcelain` before commit lists ONLY
+`dev/agent-workflow/ledgers/u7-tool-acceptance.json` and
+`packages/runtime/test/u7-f-agent-control-c1.test.ts` (see green-runs.txt).

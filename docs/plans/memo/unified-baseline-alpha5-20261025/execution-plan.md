@@ -1,5 +1,7 @@
 # Engineering Baseline × Alpha.5 Reset：统一实施计划
 
+> **STATUS 注记（2026-10-30 对齐轮，只加不改）**：用户 2026-10-25 裁决——"PR #364 合并 = 唯一实现计划正本"——已随 #364 合并生效，本文件即唯一实施计划正本（机器指针经 `docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md` 载体指向此处）。下方 2026-10-25 创建时的 DRAFT banner 保留为历史原文：其"不自动授权"语义在裁决前有效、且对**新增**授权动作依旧成立（每个 Gate/裁决仍需 Owner 明确批准，见 gates/GATE-LEDGER.md 与 USER-RULING 系列）。外部审计 #3 P2 项点名本 banner 与执行现状易误导接手者，故加此注记。
+
 > **DRAFT / DESIGN ONLY / NOT ACTIVE — 2026-10-25。** 本文件仅提出统一执行编排；创建或合并本计划 PR **不**自动授权冻结本地任务、删除文件、迁移权威、运行 Host、修改产品或发布。各阶段需另行明确 Owner、入口快照、执行批准与门禁。本文不修改 #361、#363、#360 的实际内容和现行执行合同。
 
 **规范来源：** [#361 Engineering Baseline](https://github.com/ArmourPiercer1/dsh-agent-team/pull/361)（`architecture.md`、`execution-plan.md`）、[#363 Alpha.5 Reset](https://github.com/ArmourPiercer1/dsh-agent-team/pull/363)（中心架构、五阶段、S1 细案）；[#362](https://github.com/ArmourPiercer1/dsh-agent-team/pull/362) 已合的文档/工具资产。源 PR 保留为设计来源，不自动合并，也不允许从两套 Draft 并行激活两个执行计划。本计划获审定后，才通过一次受控的阶段权威迁移将其变成唯一 active Plan。

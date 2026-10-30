@@ -2,7 +2,7 @@
 
 **文档状态**：执行路由协议 / 对当前会话主代理与其拉起的全部子代理有约束力
 **适用任务**：Agent Team vNext 无人值守长开发任务（`dsh-agent-team` 独立仓库重构）
-**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）
+**日期**：2026-08-29（改写版）；2026-10-07 执行协议裁决轮（见 §0）；2026-10-29 R-DM-1 裁决轮（见 §8.5）；2026-10-30 R-DM-1 机器执法轮（见 §8.5.6，审计 P1-1）；2026-10-30 证据绑定禁 rebase 轮（见 §8.5.7，审计 P0）
 
 > 本文档是把 vNext 开发计划作为**无人值守长任务**运行的路由与门禁协议。
 > 它只规定四件事：**谁执行、允许尝试几次、门禁如何验收、状态如何流转**。
@@ -178,3 +178,18 @@ Gate 编号
 2. Gate 执行顺序按开发计划 §11（Phase 总览）与任务分包 §10（全局 Phase DAG）：`G0 → G1 → G2 → G3 → G4 → G5 → G6 → G7 → G8 → G9 → G10`，**严格串行**；任何 Gate 未通过，不进入下一个 Phase。**G1 是硬门禁**：G1/G2 通过前不得大规模开发新的 Team capability（开发计划 §11）。Phase 内部任务并行按任务分包 §8 的六个同时条件与 §24/§25 任务簇划分判定；P9 的 UI 任务不得在 P8 的 Remote/DTO 冻结前提前执行（任务分包 §12）。
 3. Git 纪律按任务分包 §3：一任务一分支（`task/Pn-Tm-*`）一 worktree 一写者；task 经 review 后由主代理 `cherry-pick -x` 进入 `int/Px-*` integration 分支；Phase Gate 通过后才进入主发布线；**gated 历史禁止 force-push**；LOCKED_SURFACE（任务分包 §3.7）只能由 owner task 修改，其他 worker 必须提出 `CONTRACT_CHANGE_REQUEST` 而非直接编辑；`legacy-team-reference`（a3ab3199 只读 worktree）绝不作为 task branch 的 base（开发计划 §3）。首个正式 release 之前，主发布线分为：`master` = 下一 alpha 的持续开发/集成线，`stable` = 仅跟踪已裁决发布的 RC；RC 修复仍须从 task/int 线经过对应 Gate 后进入 `stable`，不得把未经 RC 裁决的 master alpha 提交直接并入 stable。首个正式 release 后另行裁决长期分支模型。
 4. **完成判据**：G0–G10 全部通过、开发计划 §43 Definition of Done 全部可答“是”、First Production Release 定义（开发计划 §40，12 项条件）与 Release Compliance Gates C1–C7（开发计划 §33）通过，并产出最终交付总结。
+5. **PR 合并清偿门禁（settle-before-merge，R-DM-1）**【2026-10-29 用户裁决 USER-RULING-20261029B 第 5 项批准入规；本文档改动 = 用户裁决 + 记录，裁决原文见 `docs/plans/memo/unified-baseline-alpha5-20261025/gates/USER-RULING-20261029B.md` §5】：
+   1. **禁并标记**：标题或正文标注 `DO-NOT-MERGE` 的 PR **不得合并**。
+   2. **唯一放行前提 = 该 PR 上的 dated 清偿记录（settlement record）**：阻断态 PR 提升为可合并，必须以一条 **dated 的 on-PR 清偿记录**为正面前提，且记录四要素齐备：**审查裁决（review verdict）**、**审查者席位与模型披露（seat + model disclosure）**、**报告 / 证据引用（report / evidence citation）**、**该记录所覆盖的 head sha**；缺一即无效，不构成清偿。
+   3. **机器拒绝；CI 全绿不解锁**：合并工具与执行合并的主体在阻断状态下必须**机器拒绝**合并；**不得以 CI 全绿单独作为解锁依据**——CI 状态与清偿状态相互独立，CI 通过不是清偿记录，也不产生放行效力。
+   4. **阻断状态定义（标记文字与记录的关系）**：阻断状态由「标记存在**或**无有效清偿记录」两者任一构成；**仅删除标记文字而不存在有效清偿记录不构成清偿**，合并仍被禁止。清偿评论是放行的**正面前提条件**，不是阻断的辅助证据。
+   5. **不得追改历史**：已发布的清偿记录**不得追改**（编辑、替换、重排均禁止）；更正一律以**新的 dated 评论**发布，原记录保持原样。
+   6. **机器执法（settle-before-merge machine gate）**【2026-10-30 外部审计 intake #3 P1-1 落地：§8.5.1–8.5.5 由本项起为机器判定，不再只是人工/代理约定；实现 = `scripts/pr-settlement-gate.mjs`（判决行 `DSH-SETTLEMENT-VERDICT`，exit 0=PASS / 1=FAIL 或 BLOCKED / 2=ERROR 拒绝），由 `.github/workflows/pr-gate.yml` 的 `pr-settlement-gate` 作业在每个 pull_request 运行调用；执行合并的主体读取该判决并机器拒绝（§8.5.3），**CI 其它腿全绿不改变本判决**（§8.5.3 独立性在机器层的重述）】：
+      1. **首行匹配法（first-line matching law，#455 三条教训固化为机器律）**：开放态禁并标记仅按两处识别——**PR 标题前缀**、或**正文第一行的原始 ASCII 前缀** `DO-NOT-MERGE`（U+002D 连字符、大小写敏感、token 后不接字母数字）。**正文其余位置的提及一律是散文，不构成标记**（#455 教训一：描述文本被朴素 title+body grep 误触发；教训二：「」角括号包裹仍含原始 token 子串、仍误触发——子串包含不是标记判据；教训三：全角排版变体 `DO－NOT－MERGE`（U+FF0D）是散文、永不作为标记匹配）。散文提及标记词应继续用全角或角括号形式书写，且不得放在正文第一行。
+      2. **清偿记录的机器判据（对 §8.5.2 的可执行化，不改变其语义）**：标记不存在时，判决 PASS 要求存在 ≥1 条 PR issue 评论同时满足：**(a)** 其**首行**以闭合集开式起始——`**[dated settlement, <YYYY-MM-DD>…]**` 或 `**[dated label settlement, <YYYY-MM-DD>…]**`（`**` 强调可选，日期分钟位允许掩码字符）；**(b)** 评论全文含 **40 位十六进制 covered head sha**，且该 sha **等于检查时刻** API 返回的 PR head sha。任一不满足即 FAIL：head sha 前进自动使先前清偿失效（覆盖语义由 sha 相等机器判定，无需另行声明作废）；`settlement-linkage` 等非闭合集开式的补充/更正评论不构成机器可判清偿（其信息效力仍受 §8.5.2 四要素约束，但须以合规开式的**新 dated 评论**表达才计入机器判决——与 §8.5.5 更正规则一致）。
+      3. **判决语义与边界**：标记存在 → `BLOCKED-BY-MARKER`（对开放中的 PR 该红是**陈述**，不是故障；本条所在 PR 自身亦受检——诚实自举）。未解决审查线程（unresolved review threads）检查由**合并代理**持有，本 gate **不重复实现**，避免同一判据两处演化。无管理员旁路；本执法不依赖也不修改分支保护。测试面（披露）：判决代数 = 脚本内 fixture `--self-test`（同 ci-pr-gate.mjs 惯例，不新增可扫描运行时测试文件）；纯函数单元 = `scripts/pr-settlement-gate.test.mjs`（node:test，scripts 测试惯例，经 `node --test` 由 CI 调用）。
+
+   7. **证据绑定分支禁 rebase（evidence-binding law）**【2026-10-30 外部审计 intake #3 P0 落地；起因 = #458 事件：携带实机 RUN 记录的分支在 boot 之后被 rebase，孤儿化了记录 `bindings.teamSha` 所绑定的 commit；CI EB3-D 正确拒绝验收（RUN_SOURCE_UNRESOLVED）——门有效，损伤在证据可达性。整改为追加式（零历史改写）：`archive/orphan-u7r3-c2-boot12/3/4` 三条 ref 恢复被绑 commit 可达，见 PR #458 dated remediation note】：
+      1. **律**：任何**已提交实机 RUN 记录（或其它以 commit sha 为绑定键的证据）**的分支，自该记录入库之时起**禁止 rebase / force-push / 任何历史重写**；前进只允许 forward-merge（`git merge` 目标基线）。绑定 sha 在远端不可达 = 该证据作废；作废的证据不能靠编辑记录抢救。
+      2. **违规整改唯一正道**：以**追加 ref**（如 `archive/*`）恢复被孤儿化 commit 的可达性，并贴 dated 披露（时间线、定性、纠正措施）；禁止反向操作（编辑 run-record 的 bindings、重跑覆盖旧记录、静默删除证据）。
+      3. **协调者与工具义务**：向携带已提交 RUN 记录的 lane 下达「刷新/rebase」类指令时只允许 merge；合并链与刷新的自动化实现必须走 merge 路径。清偿关联评论（head 前进后补发）必须机器审计 `settled-head → new-head` 为**纯前进 + PR-owned 路径零差异**（本仓实现 = `.artifacts/ops/linkage-settle.sh`），任一不满足即拒绝补发并退回重审。

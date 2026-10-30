@@ -83,7 +83,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only"
+        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only. C1 lineage 2026-10-30 (PR #467, MERGED @0be20e0f5): offline ER arms shipped in packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (real chain: plane mount -> lane -> governed edit executor on the REAL fs) — ER-1: a lane-denied edit answers TYPED (refused-admission template-deny-lane) across an existing-target AND a fresh-path attempt; ER-2: the ask lane settled DENY by the control leg answers TYPED (APPROVAL_DENIED, the durable request measured settled-deny). Both grade the whole zero-effect face the old E-9 boolean never did: the WHOLE-directory digest (entry names + every byte) measured IDENTICAL (no partial apply, no stray entry, fresh path never born, neighbours untouched), the row ledger carrying ONLY the typed denial line with ZERO governed-edit/governed-write RAN lines (zero-write ledger), each arm non-vacuous by a same-call allow/approve flip moving every witness. C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -141,7 +141,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash"
+        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash. C1 lineage 2026-10-30 (PR #467, MERGED @0be20e0f5): offline NAT arms shipped in packages/runtime/test/a5-m1-bash-c1.test.ts on the native takeover mount (plane.names.bash='bash'; NAT-0 mount identity: ownNames carries `bash`, NOT `team_bash`) — the native-spelling row answers TYPED under BOTH refusal gates: NAT-1 deny-lane (template-deny-lane) and NAT-2 PA-deny (APPROVAL_DENIED, the ask leg measured real), each with backend ZERO reach measured both ways (execCount 0 + empty stage trace), the refused command's own disk witness (touch) never landing, the root entry set unchanged and the spawn capability never armed; non-vacuous by the approving flip landing ONE real landlock confined spawn (execCount 1, the touch lands, the entry set moves). C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -266,7 +266,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal"
+        "note": "arca:search-refusal-zero-effect drives team_grep at /etc only; no committed RUN record grades a live glob refusal. C1 lineage 2026-10-29 (PR #457, MERGED 2026-10-29 @ f20e7b91f): offline ask-DENY arm shipped in packages/runtime/test/u6-pr5-kernel-flow.test.ts. Pilot C2 live attempt 2026-10-29: the live leg arca:glob-ask-deny-refusal-zero-effect (suite 040, offline 45/45 green) never reached the live face - boot u5-u6-arc-a-u7r3c2a-2026-10-29T18-24-41-088Z died at mount readiness on a worktree provisioning gap (missing pnpm farm -> host bootstrap ERR_MODULE_NOT_FOUND; farm repaired in-lane after the boot; dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/run-record.json). Boot budget 2/2 spent; NOT_VERIFIED holds. Float boot 3 (2026-10-29, farm repaired; registration VIOLATION disclosed in dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts-PRE-REGISTRATION-float.json): u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z reached the live face (10/11 PASS); the arm's durable witnesses all LANDED - PA ask row seen (toolName glob), DENIED exactly once through the public seam (200 ok), the call answered code=APPROVAL_DENIED bound to the same row fingerprint, census armed==post byte-identical, claims unechoed (dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/run-record.json). The record keeps the FAIL it measured: the boot's shut-face law token-vetoed the a5p5 zero-body landing kind (refused-admission carries BOTH shut faces and the genuine ask-lane denial; the code is the discriminator - law fixed post-boot in suite 040, no retroactive relabel). No boot graded the arm PASS under a sound law; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -389,7 +389,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level"
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level (measured: the #406 judge law for that case has NO PASS branch — refusal-that-is-the-answer is recorded verbatim, never promoted to PASS). C1 lineage 2026-10-30 (PR #468, MERGED @1227cbfa6): L3-GRADE arms AC-60-AC-63 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the SAME behavior PASS-by-assertions offline — the quadruple (typed refused-agent-control + agent-control-amplification-refused head, ZERO port calls, ZERO Control rows via an empty control-leg audit = fence BEFORE the PA edge, ZERO RAN observe witnesses) over the fail-closed snapshot / bounded-record provider / Tier A ceiling route / continuable lanes, each non-vacuous by a flip (admitted call RANS: port 1, audit 1, RAN 1); the live no-snapshot trigger was retargeted by the Tier A ceiling after the record bound teamSha ab8a5f236 — the graded current-product fail-closed form is the present-but-unbounded snapshot (arm header discloses). C1-only per the PR #456/#464 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -424,7 +424,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live subagent_fork case in the #406 C2 suite"
+        "note": "no live subagent_fork case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-66 (fail-closed fork: typed amplification refusal, ZERO fork reach, ZERO Control rows, ZERO RAN, pair-world bounded flip), AC-67 (amplifying continuable fork refused under Tier A ceiling + bounded non-continuable caller, same-world flip), AC-68 (closed grammar refuses provider|model|reasoning_effort|scopeKey|tools arms by shape), AC-69 (fork context is DATA: tainted+faulted source, pure-data flip bounds exactly what crossed) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -460,7 +460,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live send_message case in the #406 C2 suite"
+        "note": "no live send_message case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-70 (five out-of-scope target shapes: typed refusal, ZERO delivery, ZERO Control rows, ZERO RAN, SAME-world in-roster delivery flip), AC-71 (unattributed mount fails closed agent-control-scope-unresolved), AC-72 (settled-DENY leg: ask opened+settled DENY, zero delivery) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -539,7 +539,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no list_agents refusal case in the #406 C2 suite"
+        "note": "no list_agents refusal case in the #406 C2 suite. C1 lineage 2026-10-30 (PR #468, MERGED @1227cbfa6): offline refusal arms AC-64/AC-65 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the enumeration row's refusal lanes PASS-by-assertions — ask lane with NO Control leg answers typed APPROVAL_REQUEST_UNAVAILABLE with the catalog NEVER read (honest zero, no roster bytes echoed, zero RAN), and the DENY leg settles the opened ask DENIED with the body never run (offline mirror of the live u74a:list-deny-leg-honest-zero shape), each non-vacuous by a flip (leg mounted/approving: RANS, ask opened). C1-only per the PR #456/#464 precedent semantics: NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -574,7 +574,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live list_subagent_models case in the #406 C2 suite"
+        "note": "no live list_subagent_models case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-73 (no Control leg => APPROVAL_REQUEST_UNAVAILABLE, catalog never enumerated — honest zero, mounted flip), AC-74 (DENY-leg honest zero), AC-75 (default-DENY lane refuses before the PA edge; measured disclosure asserted in-arm: a rule-shaped deny over model-routes is UNPROJECTABLE — the mount itself refuses projection) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -609,7 +609,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live workflow case in the #406 C2 suite"
+        "note": "no live workflow case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-76 (closed-grammar authority arm refused whole: 0 Control rows, 0 runWorkflow, 0 spawnChild), AC-77 (no Control leg => a workflow that cannot ask creates NO child), AC-78 (DENY leg), AC-79 (spawn-amplification at the caller-bound delegate across 5 widening lanes: typed refusal, 0 child reach, 0 child RAN, audit stays at the row's own ask, viaWorkflow spawn flip), AC-80 (steer-leg owner fence + in-roster flip), AC-81 (production posture graded: runWorkflow leg UNWIRED at this pin => typed agent-runtime-leg-unwired, zero children — agent-runtime-port.mjs:325, lane AC-4 owns the workflowEngine seam) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. Live-half disclosure: a live workflow RUN needs the AC-4 workflowEngine seam; C1 grades the family-side law only. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -729,8 +729,18 @@
         }
       },
       "L3-refusal": {
-        "status": "NOT_VERIFIED",
-        "note": "no job_list refusal case in the u7-4a suite"
+        "status": "PROVEN",
+        "proof": "CASE",
+        "evidence": {
+          "record": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.u74a-run-record.json",
+          "case": "u74a:list-deny-leg-honest-zero"
+        },
+        "runOverall": "FAIL",
+        "failedScope": [
+          "u74a:kill-live-requested - pre-existing timing flake of the committed early-DELTA-read witness on an INDEPENDENT lane: the early read answered '(no new output)' before the confined child's first stdout flush, while the decisive late read past the FINAL window still proves the settle (status killed, liveFinal bytes absent). Recorded as measured, no relabel; it reads no deny-leg witness."
+        ],
+        "caseIndependence": "u74a:list-deny-leg-honest-zero asserts only on its own witnesses: the denyLedger row (seen, denied 200 ok via the public team.resolveControl seam), the fdeny-lane bash answer (typed code=APPROVAL_DENIED, zero spawn wording, claim unechoed), the foreign job_list honest zero, and zero minted ids in that lane - the kill-live lane's early/late delta reads are not among them.",
+        "note": "Live typed ask-lane refusal with zero-effect witnesses, graded 2026-10-29 pilot C2 boot#4 (run u7r3c2j2, world u5u7r3c2j2-20261029T19-13-44Z, host-starts.jsonl line 4 at 19:14Z; code 7ed2d92fb + a4215c55f on PR #458; bindings.teamSha b7aac2980, real host 639ed01539): the J4 deny-leg re-homed into the u7-4a-jobs world (the world whose committed boot MINTS and LISTS owned jobs). The foreign lane's OWN background birth armed its durable ask row (foreign memberEnvelope widened with request-control - disclosed); the RUNNER answered DENY exactly once through the public team.resolveControl seam (row ctrl-0f6rljb0j6dexw17uzeql0xw, 200 ok); the call answered a5p5-refused kind=refused-admission code=APPROVAL_DENIED fingerprint-bound to that very row (detail sha256:77b14744144ea4ac...); the foreign job_list stayed the honest zero '(no background jobs)'; the DENIED birth minted no id and echoed no claim bytes. CASE proof per schema header (record overall FAIL from ONE independent pre-existing case - see failedScope/caseIndependence). C1 lineage 2026-10-29 (PR #456, MERGED 2026-10-29 @ 47eba5f4e): offline G5 arms in packages/runtime/test/u74a-jobs-producer.test.ts. The earlier u6-jobs-world boot (u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z) keeps the FAIL it measured (world-shape wall = committed u7-t1 baseline parity, never a pass)."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -758,7 +768,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal grades the foreign job_output read"
+        "note": "no foreign job_kill refusal is graded LIVE: u74a:foreign-cross-scope-refusal grades the foreign job_output read. C1 lineage 2026-10-30 (PR #464, MERGED @458d7ac87): offline G6 arms F1-F4 shipped in packages/runtime/test/u74a-jobs-producer.test.ts — a foreign kill of the owner's attributed job answers TYPED (refused: owner-mismatch) with BOTH victim records measured UNCHANGED (counted JobRegistry double: zero reaches, no kill entry, status running, settlement unsettled, handler terminateCalls 0; Team gateway record: cancelRequested unset, zero gateway-cancel-requested observations, attribution still corded), plus the caller-unresolved / unattributed-job / shut-face lanes and the post-DENY nothing-killable census, each non-vacuous by a same-world authorized-kill flip. C1-only per the PR #456 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -848,7 +858,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's. todo_write carries NO direct-human authority arm: any attributed agent writes its OWN list; its refusal lanes are attribution + the closed list law. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A4 grades those lanes offline over the PRODUCTION store - unattributed caller meets TODO_WRITE_AGENT_REQUIRED with ZERO store touch (reads unchanged, writes/attempts unmoved); the strict posture (at most one in_progress) refuses in the CLOSED parse, before PA and before the store, zero effect; the attributed SUBAGENT flip commits its own list durably (non-vacuity, and the honest proof the row carries no authority gate); mutants M2+M4 kill the case. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -878,7 +888,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); no committed RUN record grades a live refusal on create_goal. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A1 in packages/runtime/test/u7-agentstate-fs-store-c1.test.ts grades the SUBAGENT-authority arm offline over the PRODUCTION store - a non-root session carrying user bytes in its open turn meets GOAL_TOOL_NOT_DIRECT_HUMAN (the isRoot leg of createHostArmProvider, the direct-human-on-a-TOP-LEVEL-agent guard) with writes.jsonl byte-measured zero growth, NO attempts line (no apply reaches the store) and exactly one bounded fresh read; the same-world root-human flip commits (non-vacuity); RED proved discriminating (naive all-root mount: the subagent call was ACCEPTED) and mutant M1 (isRoot leg deleted) kills the case. Offline refusal-LOGIC proof only (USER-RULING-20261029B item 2): C1 does NOT lift L3; NOT_VERIFIED holds until a live C2 boot grades the arm on the real Host."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -908,7 +918,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's; get_goal's graded C2 case is the L4 readback only. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A2 grades the authority lanes offline over the PRODUCTION store - an UNATTRIBUTED caller (no exec.agent) meets GOAL_TOOL_AGENT_REQUIRED in the scope-first front BEFORE any store touch (store.log.reads unchanged, writes.jsonl and attempts.jsonl unmoved), and the subagent read stays scope-bound: own-scope honest null, never the human's snapshot, the human's record bytes byte-identical across the case; mutant M2 (anonymous scope invented for an unattributed call) kills the case. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -972,7 +982,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "the graded u7-astore record exercises the live typed zero-effect refusal on update_goal only (ast:cross-scope-zero-effect); this tool's refusal arms (CAS/replay/already-exists/plan-mode-inactive/bounds) with byte-measured zero durable write are proven at C1 over the production store (packages/runtime/test/u7-agentstate-fs-store-c1.test.ts, R/B groups), not live"
+        "note": "graded live refusal: NONE for THIS tool - the live typed zero-effect arm (ast:cross-scope-zero-effect) is update_goal's. C1 lineage 2026-10-30 (lane U7-R3-C1-GOALFAM, branch task/u7r3-c1-gf-20261030): u7as A3 grades the row-level PLAN_MODE_NOT_ACTIVE arm offline over the PRODUCTION store - outside plan mode the row's OWN state leg refuses with writes.jsonl byte-measured zero growth AND ZERO attempts lines (the discriminator against the R2 store-level leg inside applyPlanModeExit, which answers the same code WITH one attempts line); the seeded-plan-mode flip in the SAME world commits durably (non-vacuity); mutant M3 (row leg deleted, store-level code kept) kills the case on the attempts witness. C1-only (USER-RULING-20261029B item 2): NOT_VERIFIED holds; L3 needs the live C2 grade."
       },
       "L4-positive": {
         "status": "PROVEN",

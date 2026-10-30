@@ -1,0 +1,1916 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z",
+  "suite": "u6-arc-a",
+  "startedAt": "2026-10-29T18:52:25.654Z",
+  "selectedCases": [
+    "arca:mounted",
+    "arca:probe-positive",
+    "arca:probe-unbound-refused-zero-effect",
+    "arca:probe-replay-refused-zero-effect",
+    "arca:probe-unload-settles",
+    "arca:search-grep-live",
+    "arca:search-glob-live",
+    "arca:search-refusal-zero-effect",
+    "arca:glob-ask-deny-refusal-zero-effect",
+    "arca:native-grep-control"
+  ],
+  "bindings": {
+    "teamSha": "e3e05d19984f8e8e9d8b3678c55881b4829a17bd",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "composedProfileDigest": {
+      "u5u7r3c2a2-20261029T18-52-25Z": [
+        "12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77"
+      ]
+    },
+    "trustedSourcesDigest": null,
+    "trustedSourcesUnavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.",
+    "trustedSources": {
+      "digest": null,
+      "unavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+    },
+    "worldOracleDigest": "d59dab3a3ff523b57751771d38d8815179924f760732952de839f05a3c49dca2",
+    "worldOracle": {
+      "suite": "u6-arc-a",
+      "digest": "d59dab3a3ff523b57751771d38d8815179924f760732952de839f05a3c49dca2",
+      "complete": true,
+      "entry": "tests/world-factory/suites/040-u6-arc-a.mjs",
+      "sources": [
+        "tests/kits/_shared/preset-seam.mjs",
+        "tests/paths.mjs",
+        "tests/world-factory/lib/u6-arc-a-assembly.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/suites/040-u6-arc-a.mjs"
+      ],
+      "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+      "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+      "excludedHelpers": [
+        "tests/world-factory/lib/world-factory.mjs"
+      ],
+      "externalSpecifiers": [
+        "node:crypto",
+        "node:fs",
+        "node:module",
+        "node:path",
+        "node:url"
+      ],
+      "unfollowedPaths": [],
+      "unresolvedDynamicImports": [],
+      "unresolvedLiteralReads": [],
+      "literalReadsComplete": true,
+      "missingSources": [],
+      "artifactPath": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.oracle.json",
+      "artifactSha256": "95faa8951bd9e0568894ddf85fba1b1554bb5b127153bd83ec5281d5257fd81f",
+      "evidence": [
+        {
+          "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.oracle.json",
+          "sha256": "95faa8951bd9e0568894ddf85fba1b1554bb5b127153bd83ec5281d5257fd81f",
+          "kind": "world-oracle-source-artifact"
+        }
+      ]
+    },
+    "oracleArtifactPath": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.oracle.json",
+    "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5u7r3c2a2-20261029T18-52-25Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-29T18:53:39.303Z",
+      "probed": true,
+      "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "partial",
+      "usable": true,
+      "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "partial",
+    "nativeConfinementDisclosure": "native (non-governed) confinement legs ran on a host whose sandbox probe answered \"partial\" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)",
+    "profileArtifacts": [
+      {
+        "worldId": "u5u7r3c2a2-20261029T18-52-25Z",
+        "composedProfileDigest": "12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77",
+        "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/logs/u5u7r3c2a2-20261029T18-52-25Z/composed-profile-12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77.patch.yml",
+        "artifactDigest": "12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77",
+        "launchPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/tests/homes/u5u7r3c2a2-20261029T18-52-25Z/profiles/web/cordis.patch.yml",
+        "launchedBytes": 5081,
+        "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+        "launchedDigest": "12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77",
+        "composedProfileDigestMismatch": false
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "arca:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:53:51.802Z",
+      "teamSession": true,
+      "familyMount": {
+        "at": "2026-10-29T18:53:50.855Z",
+        "world": "u5u7r3c2a2-20261029T18-52-25Z",
+        "leg": "family-mount",
+        "ok": true,
+        "state": "ACTIVE"
+      },
+      "probeRegister": {
+        "at": "2026-10-29T18:53:50.855Z",
+        "world": "u5u7r3c2a2-20261029T18-52-25Z",
+        "leg": "register",
+        "kind": "probe-tool",
+        "ok": true
+      },
+      "hostAlive": true
+    },
+    {
+      "id": "arca:probe-positive",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.332Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:probe-unbound-refused-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.333Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:probe-replay-refused-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.334Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:probe-unload-settles",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.335Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:search-grep-live",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.336Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:search-glob-live",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.336Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:search-refusal-zero-effect",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.337Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:glob-ask-deny-refusal-zero-effect",
+      "verdict": "FAIL",
+      "at": "2026-10-29T18:58:27.338Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "globDenyResult": {
+        "rowSeen": true,
+        "rowDeniedOk": true,
+        "refusalSeen": true,
+        "approvalDeniedCodeSeen": true,
+        "admissionRefused": true,
+        "censusUnchanged": true,
+        "claimsEchoed": false,
+        "allowedAnswer": false,
+        "row": {
+          "seen": true,
+          "deniedOk": true,
+          "toolName": "glob",
+          "summary": "PA ask case=tadm:session-u6arca-team-u5u7r3c2a2-20261029t18-52-25z:inst-0r9dcj11l2q9:sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395",
+          "requestId": "ctrl-155zoff1on8ysc1ibykzt1kx",
+          "resolutions": [
+            {
+              "requestId": "ctrl-155zoff1on8ysc1ibykzt1kx",
+              "status": 200,
+              "ok": true
+            }
+          ],
+          "identityMismatch": false
+        },
+        "armedAtRow": true,
+        "censusArmed": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+        "censusPost": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+        "globAskIssued": true,
+        "refusalSample": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395a5ab1118e1aea2a1",
+        "answerSample": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395a5ab1118e1aea2a1",
+        "denierErrors": []
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "arca:native-grep-control",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.339Z",
+      "markerFiles": [
+        "pos-1-marker.txt"
+      ],
+      "posNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "expectedNonce": "NONCE_POS_u5u7r3c2a2-20261029t18-52-25z",
+      "nonceMatches": true,
+      "claimCounts": {
+        "g1": 3,
+        "g2": 1,
+        "git": 0
+      },
+      "globResults": [
+        {
+          "ok": true,
+          "enumHasG3": true,
+          "gitDecoyExcluded": true
+        }
+      ],
+      "refusalResult": {
+        "refused": true,
+        "outsideRootCodeSeen": true,
+        "admissionRefused": false,
+        "censusUnchanged": true,
+        "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+      },
+      "ctlResult": {
+        "ok": true,
+        "claimFound": true
+      },
+      "censusUnchanged": true,
+      "laneDone": {
+        "grep": true,
+        "ctl": true,
+        "globden": true,
+        "probe": false,
+        "unbound": false,
+        "replay": true,
+        "teardown": false,
+        "postTeardown": true,
+        "leader": true
+      },
+      "hostKernelHits": {
+        "a5g7: placement-feed rows=": {
+          "count": 3,
+          "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+        },
+        "a5-plane: mount-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "a5-plane: placement-REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_KERNEL_UNAVAILABLE": {
+          "count": 0,
+          "sample": null
+        },
+        "PLANE_SEARCH_REGISTRATION_REFUSED": {
+          "count": 0,
+          "sample": null
+        },
+        "cannot be verified at dispatch": {
+          "count": 0,
+          "sample": null
+        },
+        "U6_PROBE": {
+          "count": 0,
+          "sample": null
+        },
+        "u6arc": {
+          "count": 9,
+          "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+        },
+        "governance-center": {
+          "count": 0,
+          "sample": null
+        }
+      },
+      "familyRows": [
+        {
+          "leg": "family-mount",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "register",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "unbound",
+          "ok": false,
+          "code": "NO_APPROVAL_ENTRY",
+          "outcome": "defer"
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "GRANT_REPLAY",
+          "outcome": null
+        },
+        {
+          "leg": "teardown",
+          "action": null,
+          "ok": true,
+          "code": null,
+          "outcome": null
+        },
+        {
+          "leg": "walk",
+          "action": "walk",
+          "ok": false,
+          "code": "KERNEL_NOT_ACTIVE",
+          "outcome": null
+        }
+      ]
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-29T18:58:27.672Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-29T18:53:39.302Z",
+        "runId": "u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z",
+        "suite": "u6-arc-a",
+        "world": "u5u7r3c2a2-20261029T18-52-25Z",
+        "phase": "u6arca-boot1"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.oracle.json",
+      "sha256": "95faa8951bd9e0568894ddf85fba1b1554bb5b127153bd83ec5281d5257fd81f",
+      "kind": "world-oracle-source-artifact"
+    }
+  ],
+  "boots": [
+    {
+      "phase": "u6arca-boot1",
+      "world": "u5u7r3c2a2-20261029T18-52-25Z",
+      "port": 3188,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-pc2/dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/logs/u5u7r3c2a2-20261029T18-52-25Z/instance-port3188.log"
+    }
+  ],
+  "u6arcaLanes": {
+    "grep": true,
+    "ctl": true,
+    "globden": true,
+    "probe": false,
+    "unbound": false,
+    "replay": true,
+    "teardown": false,
+    "postTeardown": true,
+    "leader": true
+  },
+  "u6arcaDigest": {
+    "mockTail": [
+      {
+        "seq": 56,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 7,
+        "replyKind": "tool-call"
+      },
+      {
+        "seq": 57,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 9,
+        "replyKind": "text"
+      },
+      {
+        "seq": 58,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 11,
+        "replyKind": "tool-call"
+      },
+      {
+        "seq": 59,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 13,
+        "replyKind": "text"
+      },
+      {
+        "seq": 60,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 15,
+        "replyKind": "tool-call"
+      },
+      {
+        "seq": 61,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 17,
+        "replyKind": "text"
+      },
+      {
+        "seq": 62,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 19,
+        "replyKind": "tool-call"
+      },
+      {
+        "seq": 63,
+        "path": "/v1/messages",
+        "status": 200,
+        "mockError": null,
+        "model": "u6arca-model",
+        "stream": true,
+        "toolNames": [
+          "bash",
+          "edit",
+          "glob",
+          "grep",
+          "read",
+          "read_image",
+          "team_archive_member",
+          "team_collect",
+          "team_create_member",
+          "team_delegate",
+          "team_follow_up",
+          "team_grant_permission",
+          "team_inspect_config",
+          "team_list_members",
+          "team_list_pending_control",
+          "team_list_templates",
+          "team_report_progress",
+          "team_request_control",
+          "team_resolve_control",
+          "team_revoke_permission",
+          "team_send_message",
+          "u5_canary",
+          "u6arc_probe",
+          "write"
+        ],
+        "nMessages": 21,
+        "replyKind": "text"
+      }
+    ],
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6arc_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6arc_probe"
+    ],
+    "censusPre": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+    "censusPost": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+    "markerFiles": [
+      "pos-1-marker.txt"
+    ],
+    "nonceMatches": true,
+    "grepResults": [
+      {
+        "ok": true,
+        "claimsFound": [
+          "g1"
+        ]
+      }
+    ],
+    "globResults": [
+      {
+        "ok": true,
+        "enumHasG3": true,
+        "gitDecoyExcluded": true
+      }
+    ],
+    "refusalResult": {
+      "refused": true,
+      "outsideRootCodeSeen": true,
+      "admissionRefused": false,
+      "censusUnchanged": true,
+      "refusalSample": "a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root"
+    },
+    "ctlResult": {
+      "ok": true,
+      "claimFound": true
+    },
+    "hostKernelHits": {
+      "a5g7: placement-feed rows=": {
+        "count": 3,
+        "sample": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z"
+      },
+      "a5-plane: mount-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "a5-plane: placement-REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "PLANE_KERNEL_UNAVAILABLE": {
+        "count": 0,
+        "sample": null
+      },
+      "PLANE_SEARCH_REGISTRATION_REFUSED": {
+        "count": 0,
+        "sample": null
+      },
+      "cannot be verified at dispatch": {
+        "count": 0,
+        "sample": null
+      },
+      "U6_PROBE": {
+        "count": 0,
+        "sample": null
+      },
+      "u6arc": {
+        "count": 9,
+        "sample": "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=u6arca-realm-u5u7r3c2a2-20261029t18-52-25z call=team-inst-03jarhb0f1kp-glob:hexec:f95875ac-c1db-4101-b0e6-fccb0b8e9bf9-2 pid=215 files=5 capped=false"
+      },
+      "governance-center": {
+        "count": 0,
+        "sample": null
+      }
+    },
+    "globDenyResult": {
+      "rowSeen": true,
+      "rowDeniedOk": true,
+      "refusalSeen": true,
+      "approvalDeniedCodeSeen": true,
+      "admissionRefused": true,
+      "censusUnchanged": true,
+      "claimsEchoed": false,
+      "allowedAnswer": false,
+      "row": {
+        "seen": true,
+        "deniedOk": true,
+        "toolName": "glob",
+        "summary": "PA ask case=tadm:session-u6arca-team-u5u7r3c2a2-20261029t18-52-25z:inst-0r9dcj11l2q9:sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395",
+        "requestId": "ctrl-155zoff1on8ysc1ibykzt1kx",
+        "resolutions": [
+          {
+            "requestId": "ctrl-155zoff1on8ysc1ibykzt1kx",
+            "status": 200,
+            "ok": true
+          }
+        ],
+        "identityMismatch": false
+      },
+      "armedAtRow": true,
+      "censusArmed": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+      "censusPost": ".git/notes/u6arca-git.txt:47|deep/nested/dir/u6arca-g4.txt:46|notes/u6arca-denylane-sentinel.txt:55|notes/u6arca-g1.txt:46|notes/u6arca-g2.txt:46|notes/u6arca-uni-ünicode-日本.txt:46",
+      "globAskIssued": true,
+      "refusalSample": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395a5ab1118e1aea2a1",
+      "answerSample": "a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=sha256:f4c9e8df30360d8968826ebf40505708a913f6413360c395a5ab1118e1aea2a1",
+      "denierErrors": []
+    },
+    "probeLedgerRows": 8
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-29T18:58:27.672Z"
+}

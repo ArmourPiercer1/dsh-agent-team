@@ -1,0 +1,3 @@
+FAIL C4 cross-family-influence :: honest tree passes (9 lanes declare edges); 4a detected, 4b detected, 4c detected, 4d computed-dynamic MISSED, 4e prose-in-string LEAKED, 4f static-edge detected, 4g booked-allowlist LEAKY, engines agree (auto+regex) (mutations staged on packages/tools/search-family/src/search-mechanics.mjs + packages/tools/search-family/src/r-dynimport-negctl.mjs)
+
+0/1 control(s) behaved as required

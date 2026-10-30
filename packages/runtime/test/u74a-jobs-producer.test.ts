@@ -3,7 +3,7 @@
  * ATTRIBUTION PRODUCER, its arm on the SAME confined provider, and the
  * kernel-ordering law the whole lane stands on.
  *
- * Four groups, one claim each:
+ * Six groups, one claim each:
  *  G1 THE PRODUCER (standalone, real gateway assembly + real bridge):
  *     attribution follows the host receipt (never precedes it), the
  *     fail-closed refusals leave NOTHING spawned or NOTHING exposed, the
@@ -26,6 +26,20 @@
  *     foreign viewer measures ZERO host reach, trio calls cost ZERO
  *     approvals, and a DENIED ask never reaches producer/spawn/registry at
  *     all (attribution never precedes authorization).
+ *  G5 THE job_list REFUSAL ARMS (U7-R3 two-tool pilot, lane B — the C1 twin
+ *     of the ledger's L3-refusal cell): every refusal around job_list
+ *     answers TYPED in the tool result while the counted job store records
+ *     ZERO reads AND zero writes — and the approval-DENY lane's birth is
+ *     observably UNBORN through the list face. C1-only honesty: offline/
+ *     mocked, proves the refusal LOGIC only (USER-RULING-20261029B item 2);
+ *     the L3 grade itself rides the live C2 lane after merge.
+ *  G6 THE job_kill REFUSAL ARMS (U7-R3 C1 jobs-kill lane, 2026-10-30 — the
+ *     C1 twin of the ledger's job_kill L3-refusal cell): a FOREIGN kill of
+ *     the owner's attributed job answers TYPED and mutates NOTHING of the
+ *     victim — registry record AND gateway record measured identical
+ *     across the attempt — and every job_kill lane (unnamed caller, foreign
+ *     viewer, unattributed id, shut face, post-DENY) refuses BEFORE the
+ *     host store is reached. Same C1-only honesty as G5.
  */
 import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
@@ -224,7 +238,13 @@ interface GatewayModule {
   jobsBridgeScopeKey(o: Record<string, unknown>): string
 }
 interface BridgeModule {
-  createGovernedJobsBridge(o: Record<string, unknown>): { scopeKey: string; ensureRegistered: () => number }
+  createGovernedJobsBridge(o: Record<string, unknown>): {
+    scopeKey: string
+    ensureRegistered: () => number
+    // the trio rows delegate to exactly this face, one line each
+    // (buildJobsManagementRowDefs: `jobsBridge.jobKill(args, exec?.agent?.id)`)
+    jobKill(args: Record<string, unknown>, caller?: string): Promise<{ text: string }>
+  }
   ci05GovernedGatewayRow(asm: unknown): GatewayRowLike
 }
 const producerModule = async (): Promise<ProducerModule> =>
@@ -933,3 +953,338 @@ async function g4ProducerMountDeny() {
   }
   return { asm, wrapped, svc, producer, owner: built.value, row, legs: () => legs }
 }
+
+// ── G5: the job_list L3-REFUSAL analogue (U7-R3 pilot lane B, 2026-10-29) ──
+/**
+ * G5 — what a refused job_list costs the job store: NOTHING, measured.
+ *
+ * THE CELL (u7-tool-acceptance, row job_list, L3-refusal, NOT_VERIFIED):
+ * "no job_list refusal case in the u7-4a suite". The trio rows are
+ * APPROVAL-FREE by the PR4 measured law (`u74a:exactly-once-approvals`
+ * grades it live: trio calls never arm a Control row), so a job_list
+ * refusal cannot ride the durable ask lane — the FAMILY's own refusal
+ * lanes for the trio are the governance-fence gates inside the bridge
+ * (`resolve()`/`checked()`: `caller-unresolved`, `gateway-not-active`,
+ * `unattributed-job` — zero svc reach BY ORDER OF THE CODE PATH) and the
+ * closed-configuration shut face. This group builds the job_list analogue
+ * of the zero-effect witnesses the other families stand on
+ * (`fs:refusal-zero-effect`, `fsm:refusal-zero-effect`,
+ * `web:deny-leg-zero-wire`, `ast:cross-scope-zero-effect`, K3/K5 here):
+ * EVERY refusal answers in the model-visible tool result, and the SAME
+ * counted JobRegistry double measures that the job store saw ZERO reads
+ * AND zero writes.
+ *
+ * C1-ONLY HONESTY (USER-RULING-20261029B item 2: "mock/C1 只证拒绝逻辑"):
+ * this is an OFFLINE proof of the refusal LOGIC over doubles — it is NOT
+ * the L3 grade. L3 = a real-Host typed refusal with zero effect, graded by
+ * the live C2 lane after merge. Nothing here touches the ledger or claims
+ * the level.
+ */
+async function g5ListWorld(over: { governanceOff?: boolean; noBridge?: boolean } = {}) {
+  const gw = await gatewayModule()
+  const mod = await bridgeModule()
+  const pmod = await planeModule()
+  const asm = gw.createLiveJobsGatewayAssembly({ teamRoot: domainDouble(), rootSessionId: ROOT })
+  const wrapped = mod.ci05GovernedGatewayRow(asm)
+  const svc = fakeRegistry()
+  // the governance fence is a FLIP, not a second world: the same mount
+  // answers refused while the fence row is down and answers the scoped
+  // list once it is up (non-vacuity inside ONE world — the K6 idiom).
+  let governanceOn = over.governanceOff !== true
+  const scopeKey = gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-1' })
+  let planeValue: PlaneValue | null = null
+  let legs = 0
+  const bridge = mod.createGovernedJobsBridge({
+    scopeKey, viewer: OWNER_A,
+    gatewayRow: () => (governanceOn ? wrapped : null),
+    planeRow: () => planeValue, jobsService: () => svc, observe: () => {},
+  })
+  const built = pmod.createTeamToolPlaneAssembly({
+    dispatcherLifecycle: { inflight: () => 0 },
+    teamSessionId: ROOT,
+    // the approval lane is COUNTED to prove what G5 never rides: a trio
+    // refusal must consume ZERO ask legs (the K1 law, watched on the deny
+    // face by K5).
+    controlLeg: async (input: unknown) => { legs += 1; return approvingControlLeg()(input as never) },
+    permissionPolicy: POLICY_ASK,
+    realmId: REALM, templateId: 'u74a-tpl', role: 'member', instanceId: 'inst-1',
+    onObserve: () => {},
+    plane: {
+      fsInstance: { fs: 'u74a-ctl', rootDir: join(G4_WORLD, 'root'), realmId: REALM, kind: 'absolute-path' },
+      cwdRoot: join(G4_WORLD, 'root'),
+      jobsEnabled: true,
+    },
+    backends: over.noBridge === true ? {} : { jobs: bridge },
+  })
+  if (!built.ok) throw new Error(`mount refused: ${built.code} ${built.message ?? ''}`)
+  planeValue = built.value
+  const row = (name: string): PlaneDef => {
+    const d = built.value.definitions.find((x: PlaneDef) => x.name === name)
+    if (d === undefined || d === null) throw new Error(`row ${name} not mounted`)
+    return d
+  }
+  return {
+    asm, wrapped, svc, row, legs: () => legs,
+    setGovernance: (on: boolean) => { governanceOn = on },
+  }
+}
+
+describe('u74a G5 — job_list refusal arms: typed refusal, ZERO job-store read AND write (C1 logic only — L3 is graded live)', () => {
+  it('J1 caller-unresolved: job_list refuses BEFORE any registry query — zero reads, zero writes, zero ask legs', async () => {
+    const w = await g5ListWorld()
+    const before = w.svc.reach()
+    const out = await w.row('job_list').execute({}, {})
+    expect(out.text).toContain('refused: caller-unresolved')
+    // the D5 law (u6-pr4) graded on THIS suite's counted witness: the
+    // refusal never queried unfiltered — ZERO list/read/start/kill reaches.
+    expect(w.svc.reach()).toBe(before)
+    expect(w.svc.calls).toEqual([])
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0) // the trio rides no approval lane, even when refused
+    // NON-VACUITY in the SAME world: the named caller's list DOES read —
+    // the zero above is a refusal, not a dead witness.
+    await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+  }, 60_000)
+
+  it('J2 gateway-not-active: with the governance fence row down, job_list refuses before even the caller-scoped read — then answers once the row is up (one world, flip-proven)', async () => {
+    const w = await g5ListWorld({ governanceOff: true })
+    const out = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(out.text).toContain('refused: gateway-not-active')
+    // order of the code path measured as effect: resolve() refuses on the
+    // absent fence row BEFORE jobsService is consulted — the job store saw
+    // not even the host's own caller-scoped list. Zero reads AND writes.
+    expect(w.svc.calls).toEqual([])
+    expect(w.svc.reach()).toBe(0)
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0)
+    // flip: the SAME mount, fence row up — the refusal was the gate, not
+    // the mount (non-vacuity of the zero above).
+    w.setGovernance(true)
+    const ok = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(ok.text).toBe('(no background jobs)')
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+  }, 60_000)
+
+  it('J3 shut face: jobsEnabled WITHOUT the named bridge answers the typed shut refusal and no jobs candidate registers — the host store is unreachable by construction', async () => {
+    const w = await g5ListWorld({ noBridge: true })
+    const out = await w.row('job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(out.text).toContain('IO_POLICY_UNSUPPORTED')
+    // the shut trio registers NO jobs candidate (u6-pr4 C2 law) — there is
+    // no bridge, therefore no path to the counted store: zero reaches.
+    expect(w.svc.reach()).toBe(0)
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.legs()).toBe(0)
+  }, 60_000)
+
+  it('J4 approval-DENY lane, read through job_list: the refused background birth is UNBORN — the store shows zero writes, and the only read anywhere is job_list\'s own caller-scoped list (the K3 +1 law)', async () => {
+    // THE approval-deny lane arm: g4ProducerMountDeny is K5's world (the
+    // durable Control leg answers DENY). K5 proved the denial itself
+    // reaches producer/spawn/registry ZERO times; THIS arm closes the
+    // model-visible half of the same claim: what job_list can OBSERVE of
+    // the denied call is nothing — no row, no receipt, no attribution.
+    const w = await g4ProducerMountDeny()
+    const out = await w.row(w.owner, 'bash').execute({ command: 'sleep 30', background: true }, { agent: { id: OWNER_SESSION } })
+    expect(out.text).not.toContain('started background job')
+    expect(w.svc.reach()).toBe(0) // the K5 measurement, re-witnessed here
+    expect(w.producer.stats.producerCalls).toBe(0)
+    expect(w.legs()).toBe(1) // the ask ran and was DENIED
+    const listed = await w.row(w.owner, 'job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(listed.text).toBe('(no background jobs)')
+    // zero writes: nothing was ever born; the ONLY host touch anywhere is
+    // job_list's own caller-scoped list (K3's honest +1 accounting).
+    expect(w.svc.startCalls()).toBe(0)
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`])
+    expect(w.producer.stats).toMatchObject({ hostJobsCreated: 0, attributions: 0 })
+  }, 60_000)
+})
+
+// ── G6: the job_kill L3-REFUSAL analogue (U7-R3 C1 jobs-kill lane, 2026-10-30) ──
+/**
+ * G6 — what a refused job_kill costs the VICTIM: NOTHING, measured.
+ *
+ * THE CELL (u7-tool-acceptance, row job_kill, L3-refusal, NOT_VERIFIED):
+ * "no foreign job_kill refusal is graded: u74a:foreign-cross-scope-refusal
+ * grades the foreign job_output read". K3's foreign-kill leg only measures
+ * the answer is NOT 'requested' — in THIS suite the refusal's typed FORM and,
+ * above all, the victim's UNCHANGED records are graded by nothing. (Scoped
+ * disclosure per R464-fl F-a: the sibling u6-pr4 suite's D2 leg already
+ * asserts the foreign job_kill 'owner-mismatch' text and zero svc reach —
+ * but with NO victim-record/handler/settlement witnesses; G6's increment is
+ * exactly those victim-side witnesses + handler/settlement non-termination.)
+ * G5 (lane B, the
+ * job_list arms) is this group's precedent; the trio rows are
+ * APPROVAL-FREE by the PR4 measured law, so the family's kill-face refusal
+ * lanes are the bridge's gates (`caller-unresolved`, the owner fence's
+ * `owner-mismatch`, the CI-05 `unattributed-job`, the shut face) — each
+ * answering TYPED in the model-visible result while BOTH victim records
+ * (the counted JobRegistry double AND the Team gateway record the same
+ * row exposes) stay byte-identical, witnesses proven wired by a same-world
+ * authorized-kill flip (the K6 idiom).
+ *
+ * C1-ONLY HONESTY (USER-RULING-20261029B item 2, precedent PR #456):
+ * OFFLINE proof of the refusal LOGIC over doubles — NOT the L3 grade.
+ * L3 = a real-Host typed refusal with zero effect, graded by the live C2
+ * lane after merge. Nothing here touches the ledger or claims the level.
+ */
+const cancelEvents = (asm: unknown): number =>
+  (asm as { observations?: () => Array<{ event?: string }> }).observations!().filter((o) => o?.event === 'gateway-cancel-requested').length
+
+describe('u74a G6 — job_kill refusal arms: typed foreign refusal, victim records UNCHANGED (C1 logic only — L3 is graded live)', () => {
+  it('F1 the cell: FOREIGN job_kill on the owner\'s live attributed job answers owner-mismatch with ZERO effect on either victim record — the same-world owner kill then MOVES every witness', async () => {
+    const w = await g4ProducerMount()
+    const birth = await w.row(w.owner, 'bash').execute({ command: 'sleep 25', background: true }, { agent: { id: OWNER_SESSION } })
+    expect(birth.text).toContain('started background job bash-u74a-1')
+    const victim = w.svc.jobs.get('bash-u74a-1')
+    expect(victim?.status).toBe('running')
+    let settled: { status: string; detail?: string } | null = null
+    void victim!.hooks!.done.then((r) => { settled = r })
+    const reach = w.svc.reach()
+    const legs = w.legs() // the birth rode ONE ask leg; the trio rides none (K1 law)
+    expect(cancelEvents(w.asm)).toBe(0)
+    const rec0 = w.wrapped.checkManagementAccess({ jobId: 'bash-u74a-1', viewer: OWNER_A }) as { ok?: boolean; corded?: boolean; record?: { cancelRequested?: boolean } }
+    expect(rec0).toMatchObject({ ok: true, corded: true })
+    expect(rec0.record?.cancelRequested).toBeFalsy()
+
+    const fKill = await w.row(w.foreign, 'job_kill').execute({ job_id: 'bash-u74a-1', reason: 'foreign-attempt' }, { agent: { id: FOREIGN_SESSION } })
+    // THE TYPED REFUSAL, model-visible: the owner fence, static detail, no
+    // owner identity leaked (C-GW law).
+    expect(fKill.text).toContain('refused: owner-mismatch')
+    expect(fKill.text).not.toMatch(/requested|already finished|bash-u74a-1/)
+    // ZERO EFFECT on the victim's HOST record: the fence fired before
+    // svc.kill — the registry never even heard the victim's id named.
+    expect(w.svc.reach(), 'measured: the foreign kill never reached the host store').toBe(reach)
+    expect(w.svc.calls.some((c) => c.startsWith('kill:'))).toBe(false)
+    expect(victim!.status).toBe('running')
+    expect(victim!.detail).toBeUndefined()
+    await new Promise((res) => setTimeout(res, 25))
+    expect(settled, 'the refused kill settled nothing — the victim is still LIVE').toBe(null)
+    // ZERO EFFECT on the victim's TEAM record: cancelRequested unset, no
+    // gateway-cancel-requested observation ever emitted.
+    const rec1 = w.wrapped.checkManagementAccess({ jobId: 'bash-u74a-1', viewer: OWNER_A }) as { record?: { cancelRequested?: boolean } }
+    expect(rec1.record?.cancelRequested).toBeFalsy()
+    expect(cancelEvents(w.asm)).toBe(0)
+    expect(w.legs(), 'a refused trio call consumes no approval lane').toBe(legs)
+
+    // NON-VACUITY FLIP (one world, the K6 idiom): the AUTHORIZED owner kill
+    // on the SAME id moves EVERY witness the zeros above measured — and
+    // honestly settles the real process (the K2 close).
+    const okKill = await w.row(w.owner, 'job_kill').execute({ job_id: 'bash-u74a-1', reason: 'owner-leg' }, { agent: { id: OWNER_SESSION } })
+    expect(okKill.text).toContain('requested cancellation of job bash-u74a-1')
+    const outcome = await w.svc.jobs.get('bash-u74a-1')!.hooks!.done
+    expect(outcome.status).toBe('killed')
+    expect(String(outcome.detail)).toContain('owner-leg')
+    expect(w.svc.calls.filter((c) => c.startsWith('kill:'))).toEqual(['kill:bash-u74a-1:session-u74a-member'])
+    expect(w.svc.reach()).toBe(reach + 1) // the owner's own kill is the ONE new reach
+    const rec2 = w.wrapped.checkManagementAccess({ jobId: 'bash-u74a-1', viewer: OWNER_A }) as { record?: { cancelRequested?: boolean } }
+    expect(rec2.record?.cancelRequested).toBe(true)
+    expect(cancelEvents(w.asm)).toBe(1)
+    expect(w.legs()).toBe(legs) // and the trio still cost zero approvals
+  }, 90_000)
+
+  it('F2 the victim\'s OWN handles stay untouched (counted handler world): the foreign kill answers owner-mismatch with ZERO registry reach and ZERO handler terminations; a planted id answers unattributed-job; the owner flip moves the witnesses', async () => {
+    // world(): the REAL gateway assembly + REAL bridge + counted registry
+    // over the hand-driven fake handle — the producer's own attribution
+    // lane gives a LIVE attributed victim with every side effect COUNTED.
+    // The trio rows delegate to exactly these bridge faces, one line each
+    // (buildJobsManagementRowDefs: `jobsBridge.jobKill(args, exec?.agent?.id)`).
+    const w = await world()
+    const mod = await bridgeModule()
+    const gw = await gatewayModule()
+    const r0 = await w.producer.accept(w.ctx('sleep 30')) // attributed, running, fake handle
+    expect(r0.ok).toBe(true)
+    const foreign = mod.createGovernedJobsBridge({
+      scopeKey: gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-f' }),
+      viewer: OWNER_F,
+      gatewayRow: () => w.wrapped, planeRow: () => null, jobsService: () => w.svc, observe: () => {},
+    })
+    const reach = w.svc.reach() // exactly the one 'start'
+    const h = w.handle()
+    expect(h.terminateCalls()).toBe(0)
+    let settled: unknown = null
+    void w.svc.jobs.get('bash-u74a-1')!.hooks!.done.then((x) => { settled = x })
+
+    const fKill = await foreign.jobKill({ job_id: 'bash-u74a-1', reason: 'foreign-attempt' }, FOREIGN_SESSION)
+    expect(fKill.text).toContain('refused: owner-mismatch')
+    expect(fKill.text).not.toMatch(/requested|already finished/)
+    expect(w.svc.reach()).toBe(reach) // ZERO host reach: the fence precedes the store
+    expect(w.svc.calls.some((c) => c.startsWith('kill:'))).toBe(false)
+    expect(w.svc.jobs.get('bash-u74a-1')!.status).toBe('running')
+    expect(h.terminateCalls(), 'the victim\'s process handle received NO termination request').toBe(0)
+    await new Promise((res) => setTimeout(res, 5))
+    expect(settled).toBe(null)
+
+    // a never-attributed id is the CI-05 typed refusal — also ZERO reach
+    const planted = await foreign.jobKill({ job_id: 'bash-PLANTED', reason: 'x' }, FOREIGN_SESSION)
+    expect(planted.text).toContain('refused: unattributed-job')
+    expect(w.svc.reach()).toBe(reach)
+
+    // FLIP: the owner face on the SAME id moves every witness above.
+    const owner = mod.createGovernedJobsBridge({
+      scopeKey: w.scopeKey, viewer: OWNER_A,
+      gatewayRow: () => w.wrapped, planeRow: () => ({ placementFeed: (n: string) => w.feed.get(n) }), jobsService: () => w.svc, observe: () => {},
+    })
+    const okKill = await owner.jobKill({ job_id: 'bash-u74a-1', reason: 'owner-leg' }, OWNER_SESSION)
+    expect(okKill.text).toContain('requested cancellation of job bash-u74a-1')
+    expect(w.svc.calls.filter((c) => c.startsWith('kill:'))).toEqual(['kill:bash-u74a-1:session-u74a-member'])
+    expect(h.terminateCalls()).toBe(1)
+    expect((await w.svc.jobs.get('bash-u74a-1')!.hooks!.done).status).toBe('killed')
+  }, 60_000)
+
+  it('F3 the before-the-row lanes: an UNNAMED caller refuses BEFORE the gateway or the store (victim untouched, one-world named flip); the shut trio face answers job_kill with zero path to any store', async () => {
+    const w = await world()
+    const mod = await bridgeModule()
+    const r0 = await w.producer.accept(w.ctx('sleep 30'))
+    expect(r0.ok).toBe(true)
+    const bridge = mod.createGovernedJobsBridge({
+      scopeKey: w.scopeKey, viewer: OWNER_A,
+      gatewayRow: () => w.wrapped, planeRow: () => null, jobsService: () => w.svc, observe: () => {},
+    })
+    const reach = w.svc.reach()
+    const anon = await bridge.jobKill({ job_id: 'bash-u74a-1', reason: 'anon' }, undefined)
+    expect(anon.text).toContain('refused: caller-unresolved')
+    expect(w.svc.reach(), 'the unnamed kill never queried unfiltered').toBe(reach)
+    expect(w.svc.jobs.get('bash-u74a-1')!.status).toBe('running')
+    expect(w.handle().terminateCalls()).toBe(0)
+    // FLIP in the same world: the SAME named caller on the FOREIGN-viewer
+    // bridge is answered by the NEXT gate (the Team owner fence, BEFORE any
+    // store touch) — the unnamed zero is a refusal, not a dead mount. (The
+    // owner-viewer bridge is NOT this flip: it is corded at the Team fence
+    // and the HOST caller-fence answers behind the store — a different,
+    // independently graded lane: F2's planted id and the u6-pr4 D5 law.)
+    const gw = await gatewayModule()
+    const foreign = mod.createGovernedJobsBridge({
+      scopeKey: gw.jobsBridgeScopeKey({ realmId: REALM, rootSessionId: ROOT, instanceId: 'inst-f' }),
+      viewer: OWNER_F,
+      gatewayRow: () => w.wrapped, planeRow: () => null, jobsService: () => w.svc, observe: () => {},
+    })
+    const named = await foreign.jobKill({ job_id: 'bash-u74a-1', reason: 'named' }, FOREIGN_SESSION)
+    expect(named.text).toContain('refused: owner-mismatch')
+    expect(w.svc.reach()).toBe(reach)
+    // the shut trio face (jobsEnabled WITHOUT the named bridge): typed
+    // refusal, the counted store unreachable by construction (J3's law on
+    // the kill face).
+    const shut = await g5ListWorld({ noBridge: true })
+    const shutOut = await shut.row('job_kill').execute({ job_id: 'bash-u74a-1', reason: 'shut' }, { agent: { id: OWNER_SESSION } })
+    expect(shutOut.text).toContain('IO_POLICY_UNSUPPORTED')
+    expect(shut.svc.reach()).toBe(0)
+    expect(shut.svc.startCalls()).toBe(0)
+    expect(shut.legs()).toBe(0)
+  }, 60_000)
+
+  it('F4 the approval-DENY lane read through the kill face: the refused birth is UNBORN — no id is killable (typed unattributed-job), the list is the honest zero, and the only read anywhere is job_list\'s own caller-scoped list (the K3 +1 law)', async () => {
+    const w = await g4ProducerMountDeny()
+    const out = await w.row(w.owner, 'bash').execute({ command: 'sleep 30', background: true }, { agent: { id: OWNER_SESSION } })
+    expect(out.text).not.toContain('started background job')
+    expect(w.svc.reach()).toBe(0) // the K5 measurement, re-witnessed on the kill face
+    expect(w.legs()).toBe(1) // the ask ran and was DENIED
+    const kill = await w.row(w.owner, 'job_kill').execute({ job_id: 'bash-u74a-1', reason: 'after-deny' }, { agent: { id: OWNER_SESSION } })
+    expect(kill.text).toContain('refused: unattributed-job') // nothing was EVER attributed to kill
+    expect(w.svc.reach()).toBe(0) // the kill lane added ZERO host reach
+    const listed = await w.row(w.owner, 'job_list').execute({}, { agent: { id: OWNER_SESSION } })
+    expect(listed.text).toBe('(no background jobs)')
+    expect(w.svc.startCalls()).toBe(0) // zero writes anywhere: the denied birth never happened
+    expect(w.svc.calls).toEqual([`list:${OWNER_SESSION}`]) // the ONLY host touch is job_list's own scoped list
+    expect(w.legs()).toBe(1) // the kill/list legs consumed no further approval lane
+  }, 60_000)
+})

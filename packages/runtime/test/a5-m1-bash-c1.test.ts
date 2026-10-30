@@ -6,11 +6,15 @@
  * records 9 (bash#plane-takeover) + 11 (team_bash#alias, R2).
  * NOT duplication of a5b2 (exit-code fidelity/timeouts) — this suite owns the
  * C1 refusal family (zero-side-effect-before-probe) + the R2 CHARACTERIZATION
- * pin of today's lane semantics (fix-leg detection, see R2-PIN below).
+ * pin of today's lane semantics (fix-leg detection, see R2-PIN below) + the
+ * NAT group: the native `bash` SPELLING refusal arms (U7-R3 C1 bash lane —
+ * the ledger's bash L3-refusal cell says the graded deny cases drive the
+ * team_bash alias only; the takeover spelling gets its typed refusal +
+ * zero-backend-reach + flip witness discipline here, C1-only).
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
@@ -61,7 +65,7 @@ const POLICY_BASH_ALLOW = Object.freeze({
   ask: [] as unknown[],
   deny: [] as unknown[],
 })
-function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: ControlLegInput) => Promise<ControlLegResult>) {
+function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: ControlLegInput) => Promise<ControlLegResult>, names?: Record<string, string>) {
   const built = row.createTeamToolPlaneAssembly({
           dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
 
@@ -74,6 +78,7 @@ function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input
       fsInstance: { fs: 'a5m1-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' },
       confinedProvider: confinedProvider(),
       cwdRoot: ROOT_DIR,
+      ...(names === undefined ? {} : { names }),
     },
   })
   if (built.ok !== true) throw new Error(`mount refused: ${(built as { code: string }).code}`)
@@ -173,4 +178,101 @@ describe('a5-m1-bash-c1 — confined shell C1 refusal family + success positive 
     const strays = existsSync(join(ROOT_DIR, '.a5-scratch')) || existsSync(join(WORLD, 'scratch'))
     expect(strays).toBe(false)
   })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// NAT — the NATIVE `bash` SPELLING refusal arms (U7-R3 C1 bash lane,
+// 2026-10-30). THE CELL (u7-tool-acceptance, row bash, L3-refusal,
+// NOT_VERIFIED): "no committed RUN record grades a live refusal of the
+// native `bash` spelling: … the u6-proc deny case drives team_bash".
+// Every refusal leg above drives the ALIAS row (`runBash` → team_bash);
+// the takeover spelling — the shell row mounted AT `bash`, the spelling
+// backgroundJobs REQUIRES and the spelling the PA row is governed under
+// (both disclosed on the ledger's own L4 notes) — had NO graded refusal
+// at all. These arms add the native-spelling analogue on the SAME
+// witness discipline as B-C1-4/R2: typed refusal, backend ZERO reach
+// (execCount + stage trace measured), the command's own disk effect
+// (touch) never lands, the entry set of the root is unchanged, the spawn
+// capability is never armed — and NAT-2 carries the flip leg (the
+// approving world MOVES every witness: one real confined spawn, the
+// touch lands), so the zeros are measured, not vacuous.
+// C1-only honesty (USER-RULING-20261029B item 2, PR #456/#464 semantics):
+// offline proof of the refusal LOGIC only; bash L3 stays NOT_VERIFIED —
+// the grade itself rides a live C2 boot cell after merge.
+const NATIVE = Object.freeze({ bash: 'bash' }) as Record<string, string>
+const entrySet = (dir: string): string[] => readdirSync(dir).sort()
+async function runNative(plane: ReturnType<typeof buildPlane>, raw: Record<string, unknown>): Promise<BashRun> {
+  try { return { threw: false as const, res: await def(plane, 'bash').execute(raw) } }
+  catch (e) { return { threw: true as const, msg: String((e as Error)?.message ?? e) } }
+}
+
+describe('a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1)', () => {
+  it('NAT-0 the takeover mount really speaks the native spelling: ownNames carries `bash`, NOT `team_bash` (both worlds)', () => {
+    const allow = buildPlane(POLICY_BASH_ALLOW, [], undefined, NATIVE)
+    expect(allow.ownNames).toContain('bash')
+    expect(allow.ownNames).not.toContain('team_bash')
+    const denyWorld = buildPlane(Object.freeze({
+      default: 'deny',
+      allow: [{ tool: 'read', resource: { kind: 'any' } }],
+      ask: [] as unknown[],
+      deny: [{ tool: 'bash', resource: { kind: 'any' } }],
+    }), [], undefined, NATIVE)
+    expect(denyWorld.ownNames).toContain('bash')
+    expect(denyWorld.ownNames).not.toContain('team_bash')
+  })
+
+  it('NAT-1 deny-lane refusal on the NATIVE row: TYPED template-deny-lane answer, backend ZERO reach, the touch NEVER lands, the root entry set is unchanged, the spawn capability is never armed', async () => {
+    const observe: string[] = []
+    const plane = buildPlane(Object.freeze({
+      default: 'deny',
+      allow: [{ tool: 'read', resource: { kind: 'any' } }],
+      ask: [] as unknown[],
+      deny: [{ tool: 'bash', resource: { kind: 'any' } }],
+    }), observe, undefined, NATIVE)
+    const probe = join(ROOT_DIR, 'nat1-lane-probe.txt')
+    const entriesBefore = entrySet(ROOT_DIR)
+    const r = await runNative(plane, { command: `touch ${probe}` })
+    expect(r.threw).toBe(false)
+    if (!r.threw) {
+      expect(r.res.text).toMatch(/refused/)
+      expect(r.res.text).toContain('template-deny-lane')
+    }
+    // zero effect: the refused command's OWN disk witness never lands
+    // and nothing else moved either.
+    expect(existsSync(probe)).toBe(false)
+    expect(entrySet(ROOT_DIR)).toEqual(entriesBefore)
+    // zero backend reach measured BOTH ways.
+    expect(plane.backends.shell?.execCount?.()).toBe(0)
+    expect(plane.backends.shell?.lastStageTrace?.length ?? 0).toBe(0) // never reached probe/spawn
+    expect(observe.some((l) => l.includes('confined-shell capability'))).toBe(false)
+  }, 60_000)
+
+  it('NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands', async () => {
+    const observe: string[] = []
+    const plane = buildPlane(Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }), observe, denyingControlLeg(), NATIVE)
+    const probe = join(ROOT_DIR, 'nat2-pa-probe.txt')
+    const entriesBefore = entrySet(ROOT_DIR)
+    const r = await runNative(plane, { command: `touch ${probe}` })
+    expect(r.threw).toBe(false)
+    if (!r.threw) expect(r.res.text).toMatch(/APPROVAL_DENIED/)
+    expect(existsSync(probe)).toBe(false)
+    expect(entrySet(ROOT_DIR)).toEqual(entriesBefore)
+    expect(plane.backends.shell?.execCount?.()).toBe(0)
+    expect(plane.backends.shell?.lastStageTrace?.length ?? 0).toBe(0)
+    // the ask leg was REAL (an approval was demanded and settled deny),
+    // and the spawn capability was never armed.
+    expect(observe.some((l) => l.includes('admission-requires-approval'))).toBe(true)
+    expect(observe.some((l) => l.includes('confined-shell capability'))).toBe(false)
+
+    // FLIP (sensitivity): the approving leg, SAME native row, SAME
+    // command shape — every witness MOVES.
+    const okPlane = buildPlane(Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }), [], approvingControlLeg(), NATIVE)
+    const probeFlip = join(ROOT_DIR, 'nat2-flip-probe.txt')
+    const rFlip = await runNative(okPlane, { command: `touch ${probeFlip}` })
+    expect(rFlip.threw).toBe(false)
+    if (!rFlip.threw) expect(rFlip.res.text).toContain('exit=0')
+    expect(existsSync(probeFlip)).toBe(true)
+    expect(entrySet(ROOT_DIR)).not.toEqual(entriesBefore)
+    expect(okPlane.backends.shell?.execCount?.()).toBe(1)
+  }, 90_000)
 })
