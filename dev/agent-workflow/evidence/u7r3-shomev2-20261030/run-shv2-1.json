@@ -1,0 +1,406 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7r3v2-shv2-1-20261030T12-22-33Z",
+  "suite": "u7r3-shv2",
+  "recovered": true,
+  "recoveredAt": "2026-10-30T12:26:08.443Z",
+  "recoveryRca": "drive-shv2.mjs boot1 threw ReferenceError (`state.realm` — variable only defined on the boot2 path) in the post-capture real-home census line; every artifact had already been captured. Fixed in drive-shv2.mjs. Start #1 was NOT re-spawned (budget law): this record is reconstructed OFFLINE from the surviving witnesses listed here.",
+  "startedAt": "2026-10-30T12:22:33.293Z (budget line)",
+  "selectedCases": [
+    "shv2:environ-dsh-home-unset",
+    "shv2:environ-home-opshome",
+    "shv2:production-config",
+    "shv2:store-mounted",
+    "shv2:state-under-opshome",
+    "shv2:member-write-leg-typed-ok",
+    "shv2:leader-write-legs",
+    "shv2:real-home-untouched",
+    "shv2:locks-recorded",
+    "shv2:negative-probes",
+    "shv2:stable-unchanged",
+    "shv2:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "1d884efdb8839b0d6efedd969793c8ca3ef15c5b",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/.artifacts/tmp/port-leases",
+    "leasedHost": 3181,
+    "leasedMock": 3491,
+    "opshome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+    "hostDerivedHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh",
+    "planeConfigBytesWitness": {
+      "realmId": "u7as-realm-20261030t12-22-33z",
+      "source": "profile-patch-boot1.yml (written pre-spawn by the SAME code path boot2 reruns; the code THROWS if testHomeGuard survives the delete — the spawn happened, so the check passed)",
+      "patchFile": "profile-patch-boot1.yml"
+    },
+    "storeBaseRelativeToOpsHome": "dsh/team-state/agent-state/u7as-realm-20261030t12-22-33z",
+    "bootBudget": "pool C2, EXACTLY 2 starts; this is start #1 of 2 (host-start-budget.jsonl line 1)",
+    "realmId": "u7as-realm-20261030t12-22-33z"
+  },
+  "envManifest": {
+    "setKeys": [
+      "HOME",
+      "DSH_CLIENT_COMMIT_HASH",
+      "DEEPSEEK_BASE_URL",
+      "DEEPSEEK_API_KEY(fake)"
+    ],
+    "homeValue": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+    "dshClientCommitHash": "639ed01539",
+    "dshHomeInChildEnv": false,
+    "note": "buildChildEnv SCRUBS every DSH_* key and the spawn is GATED by if (DSH_HOME in env) throw — the host spawned, so the guard passed. /proc persistence was lost in the crash; boot-2 re-proves the identical manifest via /proc.",
+    "reconstructed": true
+  },
+  "environProof": {
+    "captured": false,
+    "status": "NOT_CAPTURED_PERSISTED",
+    "inMemoryAtSpawn": "procEnvironProof ran immediately after spawn (code path before any await that could pass a failure); the boot proceeded past it",
+    "jointWitnesses": [
+      "spawn-gate: the phase throws BEFORE spawning if DSH_HOME is in the child env",
+      "disk law: resolveDshHome = configured ?? $DSH_HOME ?? homedir()/.dsh — the realm under HOME/.dsh PROVES $DSH_HOME was absent in boot-1 env",
+      "boot-2 /proc proof of the byte-identical buildChildEnv output (run-shv2-2.json)"
+    ]
+  },
+  "hostLog": {
+    "path": "logs/20261030T12-22-33Z/instance-port3181.log",
+    "bootMarker": [
+      "dsh web: http://127.0.0.1:3181/?token=<redacted>"
+    ],
+    "mount": [
+      "[dsh-agent-team] remote mount: MOUNTED channel=/team-remote"
+    ],
+    "storeLine": [
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-20261030t12-22-33z (durable root under DSH_HOME/team-state/agent-state)",
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-20261030t12-22-33z (durable root under DSH_HOME/team-state/agent-state)"
+    ],
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z"
+    ],
+    "ran": [
+      "[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z goalId=goal-2026-10-30T12:22:39.679Z-1 revision=1 phase=active",
+      "[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z",
+      "[dsh-agent-team] a5-agent-state: update_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z goalId=goal-2026-10-30T12:22:39.679Z-1 revision=2 phase=active",
+      "[dsh-agent-team] a5-agent-state: exit_plan_mode state-refusal code=PLAN_MODE_NOT_ACTIVE scope=agent:session-u7as-team-20261030t12-22-33z",
+      "[dsh-agent-team] a5-agent-state: todo_write RAN scope=agent:session-team-child-3634d56819910870bfcecdad6c7a48a0 count=2",
+      "[dsh-agent-team] a5-agent-state: update_goal state-refusal code=GOAL_NOT_FOUND scope=agent:session-team-child-3634d56819910870bfcecdad6c7a48a0",
+      "[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-team-child-3634d56819910870bfcecdad6c7a48a0"
+    ],
+    "placementCreateGoal": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z"
+    ]
+  },
+  "disk": {
+    "base": "team-state/agent-state/u7as-realm-20261030t12-22-33z",
+    "rootExists": true,
+    "realUnderHome": true,
+    "records": [
+      {
+        "file": "837a8ce06958d1510cba4350b1f85d49f6f5c55f6a8fd4bdb320e9d402ef09f4.json",
+        "nlink": 1,
+        "key": "agent:session-u7as-team-20261030t12-22-33z",
+        "goal": {
+          "goalId": "goal-2026-10-30T12:22:39.679Z-1",
+          "objective": "U7AS_GOAL_EDITED_20261030t12-22-33z",
+          "phase": "active",
+          "revision": 2,
+          "roundsStarted": 0,
+          "maxGoalRounds": 3,
+          "armed": true
+        },
+        "todos": null,
+        "planMode": {
+          "active": false,
+          "pendingIntents": []
+        }
+      },
+      {
+        "file": "f158d2f159eff9ff52376ce7396acf303cb6b02aabf8c848533b47b2ec8e3a25.json",
+        "nlink": 1,
+        "key": "agent:session-team-child-3634d56819910870bfcecdad6c7a48a0",
+        "goal": null,
+        "todos": [
+          {
+            "content": "U7AS_TODO_CLAIM_20261030t12-22-33z",
+            "status": "in_progress"
+          },
+          {
+            "content": "U7AS_TODO_CLAIM_20261030t12-22-33z second",
+            "status": "pending"
+          }
+        ],
+        "planMode": {
+          "active": false,
+          "pendingIntents": []
+        }
+      }
+    ],
+    "writes": [
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-20261030t12-22-33z",
+        "key": "agent:session-u7as-team-20261030t12-22-33z/goal",
+        "applyId": "plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:1"
+      },
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-20261030t12-22-33z",
+        "key": "agent:session-u7as-team-20261030t12-22-33z/goal",
+        "applyId": "plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:3"
+      },
+      {
+        "op": "todos/apply",
+        "scope": "agent:session-team-child-3634d56819910870bfcecdad6c7a48a0",
+        "key": "agent:session-team-child-3634d56819910870bfcecdad6c7a48a0/todos",
+        "applyId": "plane-agent-state:68200bcd-3f29-4f10-83ad-1d1c425776a2:1"
+      }
+    ],
+    "attempts": [
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-20261030t12-22-33z",
+        "key": "agent:session-u7as-team-20261030t12-22-33z/goal",
+        "applyId": "plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:1",
+        "outcome": "applied"
+      },
+      {
+        "op": "goal/apply",
+        "scope": "agent:session-u7as-team-20261030t12-22-33z",
+        "key": "agent:session-u7as-team-20261030t12-22-33z/goal",
+        "applyId": "plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:3",
+        "outcome": "applied"
+      },
+      {
+        "op": "todos/apply",
+        "scope": "agent:session-team-child-3634d56819910870bfcecdad6c7a48a0",
+        "key": "agent:session-team-child-3634d56819910870bfcecdad6c7a48a0/todos",
+        "applyId": "plane-agent-state:68200bcd-3f29-4f10-83ad-1d1c425776a2:1",
+        "outcome": "applied"
+      }
+    ],
+    "errors": []
+  },
+  "realmTree": [
+    {
+      "rel": "applied/3c4f4cc1b87c525f92fa0fa2b2ea08a37f7eaa76acc3a22d853c3c4b4adf164e.mark",
+      "bytes": 174,
+      "sha256": "7831240ab3648f776e892bc6ad75faf58de2887b5ced5dd2572ae9ad394a6d5e",
+      "mtime": "2026-10-30T12:22:41.371Z"
+    },
+    {
+      "rel": "applied/48c72e2e04a5999d776e0668eab157918aa13a3179ac843f47de1278e0725d39.mark",
+      "bytes": 190,
+      "sha256": "088db750584adf22f223241f27d993a6bcffaca1082d9428b8ceef639aa6d659",
+      "mtime": "2026-10-30T12:22:43.348Z"
+    },
+    {
+      "rel": "applied/f45c98729f05d913257d52fdfe31741736c6447baf9044756952e8618dc6adc6.mark",
+      "bytes": 174,
+      "sha256": "1d42afc79007cd4e22c82b4c15409bb4420ced95487c0bece743f6a5bef5f9c2",
+      "mtime": "2026-10-30T12:22:39.688Z"
+    },
+    {
+      "rel": "ledger/attempts.jsonl",
+      "bytes": 686,
+      "sha256": "5aa06bcca610f99110ba1101bed7e01ad9f4f0e60e3d8bd495bb25eb0f52df66",
+      "mtime": "2026-10-30T12:22:43.360Z"
+    },
+    {
+      "rel": "ledger/writes.jsonl",
+      "bytes": 626,
+      "sha256": "5b47216afdf31981c29e2e70f67970d469cc6cb226789059925afa2756d72b28",
+      "mtime": "2026-10-30T12:22:43.365Z"
+    },
+    {
+      "rel": "scopes/837a8ce06958d1510cba4350b1f85d49f6f5c55f6a8fd4bdb320e9d402ef09f4.json",
+      "bytes": 540,
+      "sha256": "f6bf691e060ce257b7265e4e65a0003ab465097289a6024a7fda575ef41e2929",
+      "mtime": "2026-10-30T12:22:41.373Z"
+    },
+    {
+      "rel": "scopes/f158d2f159eff9ff52376ce7396acf303cb6b02aabf8c848533b47b2ec8e3a25.json",
+      "bytes": 471,
+      "sha256": "e9202f4a81c1ed5b69023e19f393e195a15f0591c83e916b016ea38f8d251cce",
+      "mtime": "2026-10-30T12:22:43.357Z"
+    }
+  ],
+  "locks": [],
+  "appliedMarkers": [
+    {
+      "rel": "applied/3c4f4cc1b87c525f92fa0fa2b2ea08a37f7eaa76acc3a22d853c3c4b4adf164e.mark",
+      "bytes": 174,
+      "sha256": "7831240ab3648f776e892bc6ad75faf58de2887b5ced5dd2572ae9ad394a6d5e",
+      "mtime": "2026-10-30T12:22:41.371Z"
+    },
+    {
+      "rel": "applied/48c72e2e04a5999d776e0668eab157918aa13a3179ac843f47de1278e0725d39.mark",
+      "bytes": 190,
+      "sha256": "088db750584adf22f223241f27d993a6bcffaca1082d9428b8ceef639aa6d659",
+      "mtime": "2026-10-30T12:22:43.348Z"
+    },
+    {
+      "rel": "applied/f45c98729f05d913257d52fdfe31741736c6447baf9044756952e8618dc6adc6.mark",
+      "bytes": 174,
+      "sha256": "1d42afc79007cd4e22c82b4c15409bb4420ced95487c0bece743f6a5bef5f9c2",
+      "mtime": "2026-10-30T12:22:39.688Z"
+    }
+  ],
+  "captureManifest": [
+    {
+      "rel": "applied/3c4f4cc1b87c525f92fa0fa2b2ea08a37f7eaa76acc3a22d853c3c4b4adf164e.mark",
+      "bytes": 174,
+      "sha256": "7831240ab3648f776e892bc6ad75faf58de2887b5ced5dd2572ae9ad394a6d5e"
+    },
+    {
+      "rel": "applied/48c72e2e04a5999d776e0668eab157918aa13a3179ac843f47de1278e0725d39.mark",
+      "bytes": 190,
+      "sha256": "088db750584adf22f223241f27d993a6bcffaca1082d9428b8ceef639aa6d659"
+    },
+    {
+      "rel": "applied/f45c98729f05d913257d52fdfe31741736c6447baf9044756952e8618dc6adc6.mark",
+      "bytes": 174,
+      "sha256": "1d42afc79007cd4e22c82b4c15409bb4420ced95487c0bece743f6a5bef5f9c2"
+    },
+    {
+      "rel": "ledger/attempts.jsonl",
+      "bytes": 686,
+      "sha256": "5aa06bcca610f99110ba1101bed7e01ad9f4f0e60e3d8bd495bb25eb0f52df66"
+    },
+    {
+      "rel": "ledger/writes.jsonl",
+      "bytes": 626,
+      "sha256": "5b47216afdf31981c29e2e70f67970d469cc6cb226789059925afa2756d72b28"
+    },
+    {
+      "rel": "scopes/837a8ce06958d1510cba4350b1f85d49f6f5c55f6a8fd4bdb320e9d402ef09f4.json",
+      "bytes": 540,
+      "sha256": "f6bf691e060ce257b7265e4e65a0003ab465097289a6024a7fda575ef41e2929"
+    },
+    {
+      "rel": "scopes/f158d2f159eff9ff52376ce7396acf303cb6b02aabf8c848533b47b2ec8e3a25.json",
+      "bytes": 471,
+      "sha256": "e9202f4a81c1ed5b69023e19f393e195a15f0591c83e916b016ea38f8d251cce"
+    }
+  ],
+  "crashWindowIdentity": {
+    "captureFiles": 7,
+    "drift": [],
+    "verdict": "IDENTICAL"
+  },
+  "digest": {
+    "teamSessionId": "session-u7as-team-20261030t12-22-33z",
+    "lanes": {
+      "goalTurn": true,
+      "workerDone": "witnessed via log (mock transcript lost with the crashed driver process)",
+      "leaderDone": "same"
+    },
+    "exchanges": [],
+    "exchangesNote": "mock transcripts lived in the crashed driver process; write-leg typed-OK rests on the disk ledger (primary runner-side witness) + host-log RAN lines"
+  },
+  "negativeProbes": {
+    "at": "2026-10-30T12:26:08.449Z",
+    "rerunOffline": true,
+    "law": "same dist face the host mounted; independent second consumer; pure resolves, zero writes",
+    "probes": [
+      {
+        "name": "relative-DSH_HOME/production-arm",
+        "expect": "AGENT_STATE_STORE_HOME_INVALID",
+        "got": {
+          "ok": false,
+          "code": "AGENT_STATE_STORE_HOME_INVALID",
+          "detail": "DSH_HOME must be an absolute path — got \"relative/path\" (refused, never resolved against the cwd)"
+        },
+        "matches": true
+      },
+      {
+        "name": "nonexistent-DSH_HOME/production-arm",
+        "expect": "AGENT_STATE_STORE_HOME_INVALID",
+        "got": {
+          "ok": false,
+          "code": "AGENT_STATE_STORE_HOME_INVALID",
+          "detail": "DSH_HOME does not resolve to an existing directory: ENOENT"
+        },
+        "matches": true
+      },
+      {
+        "name": "unset-DSH_HOME/test-guard-true",
+        "expect": "AGENT_STATE_STORE_HOME_MISSING",
+        "got": {
+          "ok": false,
+          "code": "AGENT_STATE_STORE_HOME_MISSING",
+          "detail": "DSH_HOME is not set, so this mount has no durable home to write governed agent state into (refused — an invented default would write outside the sanctioned root)"
+        },
+        "matches": true
+      },
+      {
+        "name": "relative-DSH_HOME/test-guard-true",
+        "expect": "AGENT_STATE_STORE_HOME_INVALID",
+        "got": {
+          "ok": false,
+          "code": "AGENT_STATE_STORE_HOME_INVALID",
+          "detail": "DSH_HOME must be an absolute path — got \"relative/path\" (refused, never resolved against the cwd)"
+        },
+        "matches": true
+      }
+    ]
+  },
+  "homeSourceProbeBoot1": {
+    "at": "2026-10-30T12:26:08.504Z",
+    "spawnOk": true,
+    "parsed": {
+      "storeLaw": {
+        "ok": true,
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh"
+      },
+      "upstreamResolveDshHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh",
+      "envHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+      "hasDSH": false
+    },
+    "note": "child process under HOME=<opshome>, DSH_HOME absent by construction"
+  },
+  "realHomeCheck": {
+    "teamStateExists": false,
+    "touchedSinceBaseline": {
+      "count": 3,
+      "paths": [
+        "/home/user/.dsh/storages",
+        "/home/user/.dsh/storages/session_projcache/sessions",
+        "/home/user/.dsh/storages/usage-stats-cache.json"
+      ]
+    },
+    "laneRealmOrTeamStateAmongTouched": 0
+  },
+  "stablePostHoc": {
+    "at": "2026-10-30T12:26:08.542Z",
+    "status": 401,
+    "note": "read-only probe NOW (post-crash); the :3080 pre/post pair is completed by boot-2"
+  },
+  "stop": {
+    "cleanSigterm": false,
+    "observed": "host process gone; port 3181 observed free (checked below)",
+    "leakPortFree": true,
+    "note": "boot-1 host was reaped by the sandbox PID-namespace teardown when the crashed driver shell exited (DISCLOSED deviation; boot-2 exercises SIGTERM + waitForPortFree)"
+  },
+  "hostBasePost": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "ok": true
+  },
+  "verdict": {
+    "shv2:environ-dsh-home-unset": "NOT_CAPTURED_PERSISTED_JOINT_WITNESS",
+    "shv2:environ-home-opshome": "NOT_CAPTURED_PERSISTED_JOINT_WITNESS",
+    "shv2:production-config": "PASS",
+    "shv2:store-mounted": "PASS",
+    "shv2:state-under-opshome": "PASS",
+    "shv2:member-write-leg-typed-ok": "PASS",
+    "shv2:leader-write-legs": "PASS",
+    "shv2:real-home-untouched": "PASS",
+    "shv2:locks-recorded": "RECORDED",
+    "shv2:negative-probes": "PASS",
+    "shv2:stable-unchanged": "PASS_POST_HOC_401",
+    "shv2:leak-check": "PASS_WITH_DISCLOSED_DEVIATION",
+    "shv2:homeSource-derived-home-boot1": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh"
+  },
+  "finishedAt": "2026-10-30T12:26:08.646Z"
+}

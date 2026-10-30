@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=<redacted-launch-token>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 104ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-20261030t12-22-33z (durable root under DSH_HOME/team-state/agent-state)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z
+[dsh-agent-team] a5ptc: census-boot root=session-u7as-team-20261030t12-22-33z-b2 selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z-b2 goalId=goal-2026-10-30T12:26:15.127Z-1 revision=1 phase=active
+[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z-b2

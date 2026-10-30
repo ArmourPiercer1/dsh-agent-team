@@ -1,0 +1,49 @@
+{
+  "schema": "u7r3v2-preflight/1",
+  "startedAt": "2026-10-30T12:22:28.208Z",
+  "hostBase": {
+    "phase": "preflight",
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "ok": true
+  },
+  "pluginHead": {
+    "head": "1d884efdb8839b0d6efedd969793c8ca3ef15c5b",
+    "porcelainEmpty": false
+  },
+  "authority": {
+    "pointerPath": "dev/engineering/current-authority.json",
+    "pointer": {
+      "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+      "snapshot_version": "as20261026r1"
+    }
+  },
+  "faces": {
+    "row": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "store": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/packages/runtime/dist/packages/tools/agent-state-family/src/fs-state-store.mjs",
+    "rowSha": "097d8d5948c6f93c37bb1759c53616de8f94ba4fcbb803a2ad964cb41480f3a7",
+    "storeSha": "686bf5f87e1a47f17d3cd24ad4f7f2057eae1f58b1f5f28c5fccb1bbdaaa0771"
+  },
+  "portProbePreLease": {
+    "host": {
+      "port": 3181,
+      "free": true,
+      "at": "2026-10-30T12:22:28.414Z"
+    },
+    "mock": {
+      "port": 3491,
+      "free": true,
+      "at": "2026-10-30T12:22:28.414Z"
+    }
+  },
+  "ssListen3180family": [],
+  "stablePre": {
+    "status": 401,
+    "body": null
+  },
+  "notes": [
+    "The runner env carries the harness DSH_HOME/DSH_PROFILE_DIR; boot phases SCRUB every DSH_* from the child env and prove absence via /proc.",
+    ":3080 probed read-only pre/post every boot; real ~/.dsh census via receipt + find -newer baseline.",
+    "No p6t6 observer row on the production arm: packages/tools/harness/plugin.mjs:166-167 REFUSES to set up without the DSH_HOME env — the discriminating config is verified by the store LAW instead (files land only where the production default-law answers; boot1 record binds the exact plane-config bytes)."
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u7r3v2-shv2-2-20261030T12-26-10Z",
+  "suite": "u7r3-shv2",
+  "startedAt": "2026-10-30T12:26:10.979Z",
+  "restartOf": "20261030T12-22-33Z",
+  "selectedCases": [
+    "shv2:boot2-environ",
+    "shv2:boot2-store-mounted-same-realm",
+    "shv2:boot2-write-leg-typed-ok",
+    "shv2:readback-byte-identical",
+    "shv2:readback-fresh-store-instance",
+    "shv2:replay-refusal",
+    "shv2:locks-replay-healthy",
+    "shv2:homeSource-default",
+    "shv2:stable-unchanged",
+    "shv2:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "1d884efdb8839b0d6efedd969793c8ca3ef15c5b",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostBasePre": {
+      "phase": "boot2-pre",
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "ok": true
+    },
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      }
+    },
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
+    "pluginFaceDigests": {
+      "hostJs": "097d8d5948c6f93c37bb1759c53616de8f94ba4fcbb803a2ad964cb41480f3a7",
+      "storeFs": "686bf5f87e1a47f17d3cd24ad4f7f2057eae1f58b1f5f28c5fccb1bbdaaa0771"
+    },
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/.artifacts/tmp/port-leases",
+    "opshome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+    "sameHomeAndRealmAsBoot1": true,
+    "realm": "u7as-realm-20261030t12-22-33z",
+    "planeConfigBytesWitness": {
+      "realmId": "u7as-realm-20261030t12-22-33z",
+      "agentStateEnabled": true,
+      "testHomeGuardKeyPresent": false,
+      "bootPhase": "create-or-open",
+      "rootSessionId": "session-u7as-root-20261030t12-22-33z"
+    },
+    "restartLaw": "root-binding/harness/seam.mjs header: boot 2 REOPENS the persisted unit through openTeamDomain; a fresh create rootSessionId would collide with the stamped domain — hence create-or-open (resolves to resume for the existing root).",
+    "bootBudget": "pool C2, EXACTLY 2 starts (pre-registered 215362c844); this is start #2 of 2",
+    "portProof": {
+      "leasedHost": 3181,
+      "leasedMock": 3491,
+      "freeBeforeBind": {
+        "host": {
+          "port": 3181,
+          "free": true,
+          "at": "2026-10-30T12:26:11.090Z"
+        },
+        "mock": {
+          "port": 3491,
+          "free": true,
+          "at": "2026-10-30T12:26:11.091Z"
+        }
+      }
+    }
+  },
+  "envManifest": {
+    "setKeys": [
+      "HOME",
+      "DSH_CLIENT_COMMIT_HASH",
+      "DEEPSEEK_BASE_URL",
+      "DEEPSEEK_API_KEY(fake)"
+    ],
+    "homeValue": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+    "dshHomeInChildEnv": false,
+    "scrubbedKeys": [
+      "DSH_HOME",
+      "DSH_PROFILE",
+      "DSH_PROFILE_DIR",
+      "DSH_SESSION_ID",
+      "DSH_SHELL",
+      "DSH_WEB_URL"
+    ]
+  },
+  "boots": [
+    {
+      "phase": "shv2-boot2",
+      "pid": 35,
+      "port": 3181,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/dev/agent-workflow/evidence/u7r3-shomev2-20261030/logs/20261030T12-26-10Z/instance-port3181.log",
+      "token": "<launch-token, not recorded>"
+    }
+  ],
+  "environProof": {
+    "readAt": "2026-10-30T12:26:11.100Z",
+    "dshHomeAbsent": true,
+    "dshKeysPresent": [
+      "DSH_CLIENT_COMMIT_HASH"
+    ],
+    "homeEntry": "HOME=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+    "homeEqualsOpshome": true
+  },
+  "rowMountReady": {
+    "hit": true,
+    "waitedMs": 23
+  },
+  "anchorLedgerAfterResume": {
+    "status": 200,
+    "entries": 0
+  },
+  "teamCreate2": {
+    "status": 200,
+    "ok": true,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"u6fs-ix8gqtnluz\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u7as-team-20261030t12-22-33z-b2\",\"blueprint\":{\"blueprintId\":\"team.u7as.main\",\"revision\":\"1\",\"contentHash\":\"sha256:d15cd24ddc669cd4d0f042aaf21382b26b85930d70f9e07a71ea4cdc765dfe24\"},\"createdAt\":\"2026-10-30T12:26:13.578Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/t"
+  },
+  "goalPrompt2": {
+    "status": 200
+  },
+  "b2Done": {
+    "hit": true,
+    "waitedMs": 2504
+  },
+  "digest2": {
+    "exchanges": [
+      {
+        "lane": "leader-b2",
+        "name": "create_goal",
+        "input": {
+          "objective": "U7R3V2_CLAIM2_20261030T12-22-33Z",
+          "max_goal_rounds": 3
+        },
+        "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-30T12:26:15.127Z-1\",\"objective\":\"U7R3V2_CLAIM2_20261030T12-22-33Z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+      },
+      {
+        "lane": "leader-b2",
+        "name": "get_goal",
+        "input": {},
+        "head": "{\"goal\":{\"goal_id\":\"goal-2026-10-30T12:26:15.127Z-1\",\"objective\":\"U7R3V2_CLAIM2_20261030T12-22-33Z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}"
+      }
+    ],
+    "controlRows": [
+      {
+        "requestId": "ctrl-0emw2tq0awdbi30i3iny002o",
+        "toolName": "create_goal",
+        "summary": "PA ask case=tadm:session-u7as-team-20261030t12-22-33z-b2:inst-leader:sha256:dd137a1235dce24083dec3af987c58d61f4ab6c1699a33c17fb6ce94858f75fc",
+        "status": "settled"
+      },
+      {
+        "requestId": "ctrl-1x3v8qr0are59819qyzel122",
+        "toolName": "get_goal",
+        "summary": "PA ask case=tadm:session-u7as-team-20261030t12-22-33z-b2:inst-leader:sha256:520d99cb1a2586e6133efddac84cecf7b2e127e6d3a34b7929eea37c60d3622b",
+        "status": "settled"
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-0emw2tq0awdbi30i3iny002o",
+        "toolName": "create_goal",
+        "status": 200,
+        "ok": true
+      },
+      {
+        "requestId": "ctrl-1x3v8qr0are59819qyzel122",
+        "toolName": "get_goal",
+        "status": 200,
+        "ok": true
+      }
+    ],
+    "approverErrors": [],
+    "teamSessionId2": "session-u7as-team-20261030t12-22-33z-b2",
+    "claim2": "U7R3V2_CLAIM2_20261030T12-22-33Z"
+  },
+  "stop": {
+    "cleanExit": true,
+    "exitCode": 0,
+    "exitSignal": null,
+    "portFree": true
+  },
+  "byteIdentity": {
+    "boot1Files": 7,
+    "missingOrChanged": [],
+    "verdict": "IDENTICAL"
+  },
+  "freshStoreReread": {
+    "boot1GoalKey": "agent:session-u7as-team-20261030t12-22-33z",
+    "boot1GoalEqualsDisk": true,
+    "boot1TodosEqualDisk": true,
+    "claim2GoalReadBack": true
+  },
+  "replayProbe": {
+    "applyId": "plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:1",
+    "code": "STATE_APPLY_REPLAY",
+    "detail": "apply plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:1 already consumed; a consumed grant never applies twice",
+    "writesBytesUnchanged": true
+  },
+  "boot2Log": {
+    "storeLine": [
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-20261030t12-22-33z (durable root under DSH_HOME/team-state/agent-state)"
+    ],
+    "placement": [
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z"
+    ],
+    "aliasViolations": 0,
+    "mountRefusals": 0,
+    "hits": [
+      "[dsh-agent-team] a5-agent-state: agent-state store=fs realm=u7as-realm-20261030t12-22-33z (durable root under DSH_HOME/team-state/agent-state)",
+      "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,todo_write,create_goal,get_goal,update_goal,exit_plan_mode] realm=u7as-realm-20261030t12-22-33z",
+      "[dsh-agent-team] a5-agent-state: create_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z-b2 goalId=goal-2026-10-30T12:26:15.127Z-1 revision=1 phase=active",
+      "[dsh-agent-team] a5-agent-state: agent-state get_goal RAN scope=agent:session-u7as-team-20261030t12-22-33z-b2"
+    ]
+  },
+  "homeSourceProbeBoot2": {
+    "at": "2026-10-30T12:26:20.512Z",
+    "spawnOk": true,
+    "parsed": {
+      "storeLaw": {
+        "ok": true,
+        "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh"
+      },
+      "upstreamResolveDshHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh",
+      "envHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome",
+      "hasDSH": false
+    },
+    "stderr": ""
+  },
+  "realmTreeAfter": [
+    {
+      "rel": "applied/1c896398b40959c49e2aaab0f8109ae06eb86af778f11ecb133ac8b83b7dbcef.mark",
+      "bytes": 177,
+      "sha256": "2f91d02dd79e132a6168cb9cd4ef7ff0932a4a6f08f0cb7a43cf7fe516105a82",
+      "mtime": "2026-10-30T12:26:15.135Z"
+    },
+    {
+      "rel": "applied/3c4f4cc1b87c525f92fa0fa2b2ea08a37f7eaa76acc3a22d853c3c4b4adf164e.mark",
+      "bytes": 174,
+      "sha256": "7831240ab3648f776e892bc6ad75faf58de2887b5ced5dd2572ae9ad394a6d5e",
+      "mtime": "2026-10-30T12:22:41.371Z"
+    },
+    {
+      "rel": "applied/48c72e2e04a5999d776e0668eab157918aa13a3179ac843f47de1278e0725d39.mark",
+      "bytes": 190,
+      "sha256": "088db750584adf22f223241f27d993a6bcffaca1082d9428b8ceef639aa6d659",
+      "mtime": "2026-10-30T12:22:43.348Z"
+    },
+    {
+      "rel": "applied/f45c98729f05d913257d52fdfe31741736c6447baf9044756952e8618dc6adc6.mark",
+      "bytes": 174,
+      "sha256": "1d42afc79007cd4e22c82b4c15409bb4420ced95487c0bece743f6a5bef5f9c2",
+      "mtime": "2026-10-30T12:22:39.688Z"
+    },
+    {
+      "rel": "ledger/attempts.jsonl",
+      "bytes": 1156,
+      "sha256": "2eee2f90723901fe5080216f8a27d564fff037b15257e3ece8c9034291c9c626",
+      "mtime": "2026-10-30T12:26:20.448Z"
+    },
+    {
+      "rel": "ledger/writes.jsonl",
+      "bytes": 830,
+      "sha256": "9586f3f7bdd9367995b3cb1046c546ea4f8c7e6bc557adc6600ed8d1bd0b1811",
+      "mtime": "2026-10-30T12:26:15.152Z"
+    },
+    {
+      "rel": "scopes/5ec7767d6fc683c0596f660ce864b5ab9b32b2f1ea76cee9ec7ddd93a6610aa3.json",
+      "bytes": 481,
+      "sha256": "91cf92960fed8d06562b1863b1728d00941394a5791ba762ff8e9217f075d551",
+      "mtime": "2026-10-30T12:26:15.144Z"
+    },
+    {
+      "rel": "scopes/837a8ce06958d1510cba4350b1f85d49f6f5c55f6a8fd4bdb320e9d402ef09f4.json",
+      "bytes": 540,
+      "sha256": "f6bf691e060ce257b7265e4e65a0003ab465097289a6024a7fda575ef41e2929",
+      "mtime": "2026-10-30T12:22:41.373Z"
+    },
+    {
+      "rel": "scopes/f158d2f159eff9ff52376ce7396acf303cb6b02aabf8c848533b47b2ec8e3a25.json",
+      "bytes": 471,
+      "sha256": "e9202f4a81c1ed5b69023e19f393e195a15f0591c83e916b016ea38f8d251cce",
+      "mtime": "2026-10-30T12:22:43.357Z"
+    }
+  ],
+  "realHomeCheck": {
+    "teamStateExists": false,
+    "touchedSinceBaseline": {
+      "at": "2026-10-30T12:26:20.535Z",
+      "root": "/home/user/.dsh",
+      "marker": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/dev/agent-workflow/evidence/u7r3-shomev2-20261030/census-marker",
+      "count": 3,
+      "paths": [
+        "/home/user/.dsh/storages",
+        "/home/user/.dsh/storages/session_projcache/sessions",
+        "/home/user/.dsh/storages/usage-stats-cache.json"
+      ],
+      "truncated": false
+    },
+    "laneRealmOrTeamStateAmongTouched": 0
+  },
+  "hostBasePost": {
+    "phase": "boot2-post",
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainEmpty": true,
+    "ok": true
+  },
+  "globalPostChecks": {
+    "stableInstance": {
+      "pre": 401,
+      "post": 401,
+      "unchanged": true
+    },
+    "hostPorcelainEmpty": true
+  },
+  "finishedAt": "2026-10-30T12:26:20.641Z",
+  "verdict": {
+    "shv2:boot2-environ": "PASS",
+    "shv2:boot2-store-mounted-same-realm": "PASS",
+    "shv2:boot2-write-leg-typed-ok": "PASS",
+    "shv2:readback-byte-identical": "PASS",
+    "shv2:readback-fresh-store-instance": "PASS",
+    "shv2:replay-refusal": "PASS",
+    "shv2:locks-replay-healthy": "PASS",
+    "shv2:homeSource-derived-home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh",
+    "shv2:homeSource-default": "PASS",
+    "shv2:stable-unchanged": "PASS",
+    "shv2:leak-check": "PASS"
+  }
+}
