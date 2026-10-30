@@ -42,3 +42,4 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+- **EF-04 环境勘误（dated 2026-10-30T13:27Z）**：共享基线 /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness 本环境**无 .git**（TEST_METHODS 描述按有仓对待）；worktree test-use 供给的克隆源 = 主检出 tests/deepseek-harness-test-use（detached @pin，porcelain 校验后作 --local 源）。R-G4R-1a lane 实踩（其 README 披露），本条转正。托管 census capture-2 今日两次红（485 heads）待 RCA=flake-or-real 判定，EF-02 相关。
