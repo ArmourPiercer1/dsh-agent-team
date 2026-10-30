@@ -1,0 +1,8 @@
+# p4t6 RED-unbooked measurement — branch task/u7r3-463-archive-20261031 base origin/master @ 89d96a13d, worktree .worktrees/u7r3-463arch
+# new file packages/runtime/test/u7-state-home-c1.test.ts present, booking clause NOT yet added
+# command: (cd packages/testkit && pnpm exec vitest run test/p4t6-session-event-scan.test.ts) exit=1
++     "detail": "scanner counts 1391, ledger derives 983 + 407 = 1390",
++     "detail": "scanner counts 1391, ledger derives 983 + 407 = 1390",
+ Test Files  1 failed (1)
+      Tests  6 failed | 14 passed (20)
+FAIL lines: 6

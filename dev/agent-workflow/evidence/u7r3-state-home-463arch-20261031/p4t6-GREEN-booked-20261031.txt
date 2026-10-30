@@ -1,0 +1,7 @@
+# p4t6 GREEN-booked + BASE controls — branch task/u7r3-463-archive-20261031, worktree .worktrees/u7r3-463arch
+# [1] BASE control: file + booking both removed (tree == origin/master 89d96a13d content): exit=0, Tests 20 passed (20), scanner==ledger at 1390
+# [2] BOOKED run: packages/runtime/test/u7-state-home-c1.test.ts present + p4t6-bookings/u7r3-463arch.json (1390->1391):
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+# command for both: (cd packages/testkit && pnpm exec vitest run test/p4t6-session-event-scan.test.ts)
+# booking file name note: lane id must equal file name (u7r3-463arch.json), machine-checked (bad-file-name violation observed and fixed pre-commit).
