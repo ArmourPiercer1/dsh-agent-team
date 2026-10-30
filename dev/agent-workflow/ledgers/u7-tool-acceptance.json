@@ -83,7 +83,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only. C1 lineage 2026-10-30 (PR #467, OPEN): offline ER arms shipped in packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (real chain: plane mount -> lane -> governed edit executor on the REAL fs) — ER-1: a lane-denied edit answers TYPED (refused-admission template-deny-lane) across an existing-target AND a fresh-path attempt; ER-2: the ask lane settled DENY by the control leg answers TYPED (APPROVAL_DENIED, the durable request measured settled-deny). Both grade the whole zero-effect face the old E-9 boolean never did: the WHOLE-directory digest (entry names + every byte) measured IDENTICAL (no partial apply, no stray entry, fresh path never born, neighbours untouched), the row ledger carrying ONLY the typed denial line with ZERO governed-edit/governed-write RAN lines (zero-write ledger), each arm non-vacuous by a same-call allow/approve flip moving every witness. C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
+        "note": "no committed RUN record grades a live edit refusal: fsm:refusal-zero-effect exercises write only. C1 lineage 2026-10-30 (PR #467, MERGED @0be20e0f5): offline ER arms shipped in packages/runtime/test/u7-9a-fs-mutation-c1.test.ts (real chain: plane mount -> lane -> governed edit executor on the REAL fs) — ER-1: a lane-denied edit answers TYPED (refused-admission template-deny-lane) across an existing-target AND a fresh-path attempt; ER-2: the ask lane settled DENY by the control leg answers TYPED (APPROVAL_DENIED, the durable request measured settled-deny). Both grade the whole zero-effect face the old E-9 boolean never did: the WHOLE-directory digest (entry names + every byte) measured IDENTICAL (no partial apply, no stray entry, fresh path never born, neighbours untouched), the row ledger carrying ONLY the typed denial line with ZERO governed-edit/governed-write RAN lines (zero-write ledger), each arm non-vacuous by a same-call allow/approve flip moving every witness. C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -141,7 +141,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash. C1 lineage 2026-10-30 (PR #467, OPEN): offline NAT arms shipped in packages/runtime/test/a5-m1-bash-c1.test.ts on the native takeover mount (plane.names.bash='bash'; NAT-0 mount identity: ownNames carries `bash`, NOT `team_bash`) — the native-spelling row answers TYPED under BOTH refusal gates: NAT-1 deny-lane (template-deny-lane) and NAT-2 PA-deny (APPROVAL_DENIED, the ask leg measured real), each with backend ZERO reach measured both ways (execCount 0 + empty stage trace), the refused command's own disk witness (touch) never landing, the root entry set unchanged and the spawn capability never armed; non-vacuous by the approving flip landing ONE real landlock confined spawn (execCount 1, the touch lands, the entry set moves). C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
+        "note": "no committed RUN record grades a live refusal of the native `bash` spelling: the u7-4a refusal cases (u74a:planted-unattributed, u74a:foreign-cross-scope-refusal) drive the jobs trio, and the u6-proc deny case drives team_bash. C1 lineage 2026-10-30 (PR #467, MERGED @0be20e0f5): offline NAT arms shipped in packages/runtime/test/a5-m1-bash-c1.test.ts on the native takeover mount (plane.names.bash='bash'; NAT-0 mount identity: ownNames carries `bash`, NOT `team_bash`) — the native-spelling row answers TYPED under BOTH refusal gates: NAT-1 deny-lane (template-deny-lane) and NAT-2 PA-deny (APPROVAL_DENIED, the ask leg measured real), each with backend ZERO reach measured both ways (execCount 0 + empty stage trace), the refused command's own disk witness (touch) never landing, the root entry set unchanged and the spawn capability never armed; non-vacuous by the approving flip landing ONE real landlock confined spawn (execCount 1, the touch lands, the entry set moves). C1-only per the PR #456 precedent semantics: offline refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
@@ -389,7 +389,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level (measured: the #406 judge law for that case has NO PASS branch — refusal-that-is-the-answer is recorded verbatim, never promoted to PASS). C1 lineage 2026-10-30 (PR #468, OPEN): L3-GRADE arms AC-60-AC-63 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the SAME behavior PASS-by-assertions offline — the quadruple (typed refused-agent-control + agent-control-amplification-refused head, ZERO port calls, ZERO Control rows via an empty control-leg audit = fence BEFORE the PA edge, ZERO RAN observe witnesses) over the fail-closed snapshot / bounded-record provider / Tier A ceiling route / continuable lanes, each non-vacuous by a flip (admitted call RANS: port 1, audit 1, RAN 1); the live no-snapshot trigger was retargeted by the Tier A ceiling after the record bound teamSha ab8a5f236 — the graded current-product fail-closed form is the present-but-unbounded snapshot (arm header discloses). C1-only per the PR #456/#464 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level (measured: the #406 judge law for that case has NO PASS branch — refusal-that-is-the-answer is recorded verbatim, never promoted to PASS). C1 lineage 2026-10-30 (PR #468, MERGED @1227cbfa6): L3-GRADE arms AC-60-AC-63 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the SAME behavior PASS-by-assertions offline — the quadruple (typed refused-agent-control + agent-control-amplification-refused head, ZERO port calls, ZERO Control rows via an empty control-leg audit = fence BEFORE the PA edge, ZERO RAN observe witnesses) over the fail-closed snapshot / bounded-record provider / Tier A ceiling route / continuable lanes, each non-vacuous by a flip (admitted call RANS: port 1, audit 1, RAN 1); the live no-snapshot trigger was retargeted by the Tier A ceiling after the record bound teamSha ab8a5f236 — the graded current-product fail-closed form is the present-but-unbounded snapshot (arm header discloses). C1-only per the PR #456/#464 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -424,7 +424,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live subagent_fork case in the #406 C2 suite"
+        "note": "no live subagent_fork case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-66 (fail-closed fork: typed amplification refusal, ZERO fork reach, ZERO Control rows, ZERO RAN, pair-world bounded flip), AC-67 (amplifying continuable fork refused under Tier A ceiling + bounded non-continuable caller, same-world flip), AC-68 (closed grammar refuses provider|model|reasoning_effort|scopeKey|tools arms by shape), AC-69 (fork context is DATA: tainted+faulted source, pure-data flip bounds exactly what crossed) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -460,7 +460,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live send_message case in the #406 C2 suite"
+        "note": "no live send_message case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-70 (five out-of-scope target shapes: typed refusal, ZERO delivery, ZERO Control rows, ZERO RAN, SAME-world in-roster delivery flip), AC-71 (unattributed mount fails closed agent-control-scope-unresolved), AC-72 (settled-DENY leg: ask opened+settled DENY, zero delivery) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -539,7 +539,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no list_agents refusal case in the #406 C2 suite. C1 lineage 2026-10-30 (PR #468, OPEN): offline refusal arms AC-64/AC-65 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the enumeration row's refusal lanes PASS-by-assertions — ask lane with NO Control leg answers typed APPROVAL_REQUEST_UNAVAILABLE with the catalog NEVER read (honest zero, no roster bytes echoed, zero RAN), and the DENY leg settles the opened ask DENIED with the body never run (offline mirror of the live u74a:list-deny-leg-honest-zero shape), each non-vacuous by a flip (leg mounted/approving: RANS, ask opened). C1-only per the PR #456/#464 precedent semantics: NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
+        "note": "no list_agents refusal case in the #406 C2 suite. C1 lineage 2026-10-30 (PR #468, MERGED @1227cbfa6): offline refusal arms AC-64/AC-65 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the enumeration row's refusal lanes PASS-by-assertions — ask lane with NO Control leg answers typed APPROVAL_REQUEST_UNAVAILABLE with the catalog NEVER read (honest zero, no roster bytes echoed, zero RAN), and the DENY leg settles the opened ask DENIED with the body never run (offline mirror of the live u74a:list-deny-leg-honest-zero shape), each non-vacuous by a flip (leg mounted/approving: RANS, ask opened). C1-only per the PR #456/#464 precedent semantics: NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -574,7 +574,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live list_subagent_models case in the #406 C2 suite"
+        "note": "no live list_subagent_models case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-73 (no Control leg => APPROVAL_REQUEST_UNAVAILABLE, catalog never enumerated — honest zero, mounted flip), AC-74 (DENY-leg honest zero), AC-75 (default-DENY lane refuses before the PA edge; measured disclosure asserted in-arm: a rule-shaped deny over model-routes is UNPROJECTABLE — the mount itself refuses projection) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -609,7 +609,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live workflow case in the #406 C2 suite"
+        "note": "no live workflow case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-76 (closed-grammar authority arm refused whole: 0 Control rows, 0 runWorkflow, 0 spawnChild), AC-77 (no Control leg => a workflow that cannot ask creates NO child), AC-78 (DENY leg), AC-79 (spawn-amplification at the caller-bound delegate across 5 widening lanes: typed refusal, 0 child reach, 0 child RAN, audit stays at the row's own ask, viaWorkflow spawn flip), AC-80 (steer-leg owner fence + in-roster flip), AC-81 (production posture graded: runWorkflow leg UNWIRED at this pin => typed agent-runtime-leg-unwired, zero children — agent-runtime-port.mjs:325, lane AC-4 owns the workflowEngine seam) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. Live-half disclosure: a live workflow RUN needs the AC-4 workflowEngine seam; C1 grades the family-side law only. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -768,7 +768,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no foreign job_kill refusal is graded LIVE: u74a:foreign-cross-scope-refusal grades the foreign job_output read. C1 lineage 2026-10-30 (PR #464, OPEN): offline G6 arms F1-F4 shipped in packages/runtime/test/u74a-jobs-producer.test.ts — a foreign kill of the owner's attributed job answers TYPED (refused: owner-mismatch) with BOTH victim records measured UNCHANGED (counted JobRegistry double: zero reaches, no kill entry, status running, settlement unsettled, handler terminateCalls 0; Team gateway record: cancelRequested unset, zero gateway-cancel-requested observations, attribution still corded), plus the caller-unresolved / unattributed-job / shut-face lanes and the post-DENY nothing-killable census, each non-vacuous by a same-world authorized-kill flip. C1-only per the PR #456 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
+        "note": "no foreign job_kill refusal is graded LIVE: u74a:foreign-cross-scope-refusal grades the foreign job_output read. C1 lineage 2026-10-30 (PR #464, MERGED @458d7ac87): offline G6 arms F1-F4 shipped in packages/runtime/test/u74a-jobs-producer.test.ts — a foreign kill of the owner's attributed job answers TYPED (refused: owner-mismatch) with BOTH victim records measured UNCHANGED (counted JobRegistry double: zero reaches, no kill entry, status running, settlement unsettled, handler terminateCalls 0; Team gateway record: cancelRequested unset, zero gateway-cancel-requested observations, attribution still corded), plus the caller-unresolved / unattributed-job / shut-face lanes and the post-DENY nothing-killable census, each non-vacuous by a same-world authorized-kill flip. C1-only per the PR #456 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 boot cell after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "PROVEN",
