@@ -1,0 +1,34 @@
+C1-F1a GREEN: u7-astore binds 5 sources incl. packages/tools/agent-state-family/src/fs-state-store.mjs
+C1-F1b GREEN: import(x) -> complete:false ["entry.mjs:3"]
+C1-F1c RED: one byte in the dynamically imported file no longer matches the digest
+C1-F2 GREEN: 5 relative sources recompute under /tmp/u7-g4r-checkout--c3JTiX
+C1-F3 RED: capture → mutate → spawn is refused (composedProfileDigestMismatch=true)
+C1 MUTATION RED: profile + oracle one-byte tamper rejected
+C1 GREEN: validator accepts the cited artifact; one byte on it is RUN_EVIDENCE_DIGEST_MISMATCH
+C1 GREEN: eb3-run-manifest CLI grades the cited fixture (records=1 findings=0)
+✔ C1-F1a the oracle closure follows dynamic imports out of tests/world-factory (10.469866ms)
+✔ C1-F1b a non-literal dynamic import fails the closure closed (complete:false) (0.963151ms)
+✔ C1-F1c one byte inside a dynamically imported file turns the digest RED (0.944751ms)
+✔ C1-F2 sources are repo-relative and the digest recomputes in ANOTHER checkout root (16.189675ms)
+✔ C1-F3 the profile digest is the launched bytes; a writer mutating before spawn is RED (1.799208ms)
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (157.287181ms)
+✔ world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7FsUi + U7-F u7Pwsh), in prefix order, deterministic (10.563562ms)
+✔ world kinds RED-first: a REMOVED kind module turns its option into a typed refusal (was: silently a plain World) (15.541907ms)
+✔ world kinds: mutual exclusion, the {rows} shape and the core-option set are enforced once, for every kind (2.202287ms)
+✔ world kinds: the owned-path guard covers every kind path (a kind path pointed outside the home refuses the boot) (1.790109ms)
+✔ world kinds: env — every kind key is cleared on every boot, only the active kind sets its own (1.606418ms)
+✔ world kinds RED-first: malformed / clashing modules refuse at load time (69.940534ms)
+✔ a new World kind is ONE file: dropping it in registers the option, nothing else is edited (10.148283ms)
+✔ world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (16.429062ms)
+✔ suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (16.416863ms)
+✔ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (28.876628ms)
+✔ suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it) (24.166667ms)
+✔ suites RED-first: malformed / clashing suite modules refuse at load time (87.942016ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 424.082557

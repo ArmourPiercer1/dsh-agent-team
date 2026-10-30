@@ -1,0 +1,81 @@
+{
+  "label": "p2-fold-a",
+  "mode": "a-serial",
+  "gateLoadMax": 3,
+  "gateWaits": [],
+  "gateClearedAt": "2026-10-30T15:05:09.909Z",
+  "pre": {
+    "at": "2026-10-30T15:05:09.909Z",
+    "loadavg": "0.26 0.67 1.69 1/409 445",
+    "memAvailKb": 22535072,
+    "dfAvailKb": 37454620,
+    "duA": 5784200,
+    "duB": 6025500
+  },
+  "post": {
+    "at": "2026-10-30T15:05:18.701Z",
+    "loadavg": "0.37 0.68 1.68 2/419 484",
+    "memAvailKb": 22565372,
+    "dfAvailKb": 37454612,
+    "duA": 5784200,
+    "duB": 6025500,
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "totalWallMs": 419,
+  "runs": [
+    {
+      "set": "a",
+      "exit": 0,
+      "wallMsProcess": 418,
+      "delayMs": 0,
+      "timeFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/time-p2-fold-a-a.txt",
+      "outFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/out-p2-fold-a-a.txt",
+      "time": {
+        "wallClockS": null,
+        "userS": 0.57,
+        "sysS": 0.16,
+        "maxRssKb": 93324,
+        "voluntaryCtx": null,
+        "involuntaryCtx": null
+      },
+      "tail": "ℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 329.622062\n"
+    }
+  ],
+  "system": {
+    "maxMarkerRssKb": 0,
+    "minMemAvailKb": 22565372,
+    "cpuJiffiesTotal": 0,
+    "cpuSecondsApprox": 0,
+    "samplerSamples": 1,
+    "samples": [
+      {
+        "at": "2026-10-30T15:05:18.701Z",
+        "loadavg": "0.37 0.68 1.68 2/419 484",
+        "rssKb": 0,
+        "memAvailKb": 22565372
+      }
+    ]
+  },
+  "diskDelta": {
+    "dfKb": -8,
+    "duAKb": 0,
+    "duBKb": 0
+  },
+  "cleanup": {
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "methodNote": "per-run CPU+peakRSS = /usr/bin/time -v (whole waited tree); system context = 1s sampler of marker-matched /proc RSS/CPU (approximate, misses short-lived children between ticks); disk = df avail + du -sk deltas on the shared ext4; loadavg = /proc/loadavg at gate + before/after + sampler trace",
+  "coRotatedWith": {
+    "x1": {
+      "port": 3189,
+      "world": "u5xvala-20261030T15-01-54Z"
+    },
+    "x2": {
+      "port": 3190,
+      "world": "u5xvalb-20261030T15-03-33Z"
+    }
+  },
+  "coRotationNote": "P2 folded into the P0 overlap window (x3 budget slot left unspent; see README budget section). Two live Host worlds + light C1 in xval-b."
+}
