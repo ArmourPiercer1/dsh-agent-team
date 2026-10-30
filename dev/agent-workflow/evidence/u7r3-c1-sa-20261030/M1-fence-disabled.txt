@@ -1,0 +1,10 @@
+     × AC-24 AMPLIFYING spawn (provider outside the caller): typed refusal, ZERO spawnChild 15ms
+     × AC-25 AMPLIFYING continuable child (caller not continuable): refused, zero spawn 8ms
+     × AC-26b a NON-RECORD caller-authority snapshot fails closed: typed refusal, zero port 8ms
+     × AC-26c the Tier A ceiling REFUSES every route/effort/background arm (no provider/model/effort/tools, one-shot) 7ms
+     × AC-60 L3-GRADE subagent FAIL-CLOSED spawn (live ac:spawn-failclosed mirror): typed amplification refusal, ZERO port, ZERO Control rows, ZERO RAN; pair-world flip proves a live mount 4ms
+     × AC-61 L3-GRADE AMPLIFYING spawn over a bounded record (provider outside the caller): full quadruple; SAME-world within-authority flip RANS 4ms
+     × AC-62 L3-GRADE Tier A ceiling (the production default seat): EVERY route arm refused with the full quadruple; SAME-world route-free spawn RANS 4ms
+     × AC-63 L3-GRADE AMPLIFYING continuable child (caller not continuable): full quadruple; SAME-world one-shot flip RANS 4ms
+ Test Files  1 failed (1)
+      Tests  8 failed | 39 passed (47)

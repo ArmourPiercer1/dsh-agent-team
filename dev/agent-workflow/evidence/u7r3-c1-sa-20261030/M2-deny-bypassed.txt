@@ -1,0 +1,7 @@
+     × AC-31 ask lane with NO control leg: no fake approval is invented — typed refusal, zero port 10ms
+     × AC-34 DENY control leg: the PA denial settles before the body — typed refusal, zero port 4ms
+     × AC-44 the PA deny arm: typed refusal with zero port reach 2ms
+     × AC-64 L3-GRADE list_agents ask lane with NO Control leg: typed APPROVAL_REQUEST_UNAVAILABLE, catalog NEVER read (honest zero), ZERO RAN, no roster bytes echoed; pair-world flip with a mounted leg RANS (the offline ac:enumerate-governed shape) 3ms
+     × AC-65 L3-GRADE list_agents DENY leg (offline mirror of the u74a:list-deny-leg-honest-zero shape): ask OPENED and settled DENY, body never ran — catalog NEVER read, ZERO RAN, no roster bytes echoed; pair-world approving flip RANS 3ms
+ Test Files  1 failed (1)
+      Tests  5 failed | 42 passed (47)
