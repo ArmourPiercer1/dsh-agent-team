@@ -1,0 +1,119 @@
+{
+  "kind": "lane-reconstruction-NOT-a-runner-record",
+  "why": "The C2 runner writes its RUN record ONLY when --run-record <path> is passed (u5-canary-runner.mjs:992,1061). Neither of this lane's two starts passed it, so no runner-authored record exists for run u5-u7r3-uif4-pos-p2-2026-10-30T13-11-09-777Z. This file is a LANE RECONSTRUCTION: every field below is copied verbatim from the run's own artifacts (run-p2.stdout.log RUN-SUMMARY + case lines, and the suite's own *.uif4-evidence.json). Nothing here is inferred, and nothing substitutes for the runner record — the miss is disclosed in README.md and in the C-册 actuals row.",
+  "reconstructedAt": "2026-10-30T13:15Z",
+  "runId": "u5-u7r3-uif4-pos-p2-2026-10-30T13-11-09-777Z",
+  "suite": "u7r3-uif4-pos",
+  "line": "p2",
+  "subject": {
+    "teamSha": "e2f14c71bd65e3671ed72bffe9b7092db8d1b3b8",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "port": 3192,
+    "dshHome": "tests/homes/u5p2-20261030T13-11-09Z",
+    "hostLog": "u5p2-20261030T13-11-09Z.host-log.redacted.txt"
+  },
+  "overall": "FAIL",
+  "runSummaryLine": "RUN-SUMMARY run=u5-u7r3-uif4-pos-p2-2026-10-30T13-11-09-777Z suite=u7r3-uif4-pos overall=FAIL cases=8 FAIL:2 NOT_REACHED:1 PASS:5 worlds=u5p2-20261030T13-11-09Z",
+  "cases": [
+    {
+      "id": "ui:ask-approved-ran",
+      "verdict": "FAIL",
+      "earnedBy": "absence of the required witness, and the typed refusal that replaces it",
+      "witness": {
+        "governedAskRanCount": 0,
+        "hostLog": "[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request",
+        "memberToolResult": "Error: refused-io UI_INTERACTION_PORT_FAILED — the interaction port refused the question (no user-questions answerer accepted the request)",
+        "paAllowWasConsumed": "control-allow-consumed requestId=ctrl-0hye522136aslf1xkuitc0i1",
+        "answeredCountOnTheWire": 1,
+        "answeredWas": "the ARM-B native ask (agentId=session-ee6fa6c7-…), NOT the governed row"
+      },
+      "reading": "PRODUCT LAW, located: the durable Control row WAS created, WAS allowed through the public team.resolveControl v4 seam, and the allow WAS consumed — then the family's interaction port refused, because the governed call site passes no Agent (packages/tools/families/ui.mjs:82 createUserQuestionsPort(service); withAgent adds nothing without a binding), and the Host forwarder only delivers a 'waterfall' event when the carrier has a scope key AND request.agent === carrierAgent (packages/api/remotes/src/index.ts:57-67). No Agent on the request ⇒ next() ⇒ no answerer ⇒ NO_PROVIDER."
+    },
+    {
+      "id": "ui:ask-approval-chain",
+      "verdict": "PASS",
+      "witness": {
+        "controlRequestRows": [
+          {"requestId": "ctrl-0hye522136a…", "toolName": "ask_user_question", "summary": "PA ask case=tadm:session-uif4-team-u5p2-20261030t13-11-09z:inst-09jazg31pjap:sha256:ac507b38…"},
+          {"requestId": "ctrl-0384vog08zp…", "toolName": "ask_user_question", "summary": "same fingerprint case (identical args)"}
+        ],
+        "allow": {"requestId": "ctrl-0hye522136aslf1xkuitc0i1", "decision": "allow", "decider": {"kind": "human"}, "resolveStatus": 200, "ok": true},
+        "deny": {"requestId": "ctrl-0384vog08zpxcp1m89kom0xt", "decision": "deny", "decider": {"kind": "human"}, "resolveStatus": 200, "ok": true},
+        "consumed": [{"requestId": "ctrl-0hye522136aslf1xkuitc0i1"}],
+        "denyWitness": "[dsh-agent-team] u7f-ask: governed-ask pa-refused code=APPROVAL_DENIED detail=durable Control request ctrl-0384vog08zpxcp1m89kom0xt answered deny",
+        "leaderHeldNoControlTools": true
+      }
+    },
+    {
+      "id": "ui:ask-replay-refused",
+      "verdict": "PASS",
+      "witness": {
+        "secondResolveOnSameRequestId": {"requestId": "ctrl-0hye522136aslf1xkuitc0i1", "ok": false, "status": 200},
+        "seamResponse": "{\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0hye522136aslf1xkuitc0i1' already carries a durable decision (the first decis…\"}}}",
+        "governedAskRanCount": 0
+      }
+    },
+    {
+      "id": "ui:answer-wire",
+      "verdict": "PASS",
+      "witness": {
+        "muxUpgrade": "cookie-carrying GET upgrade to /api/remote.mux → 101",
+        "openFrame": {"type": "open", "streamId": "uif4-events", "endpoint": "$events", "payload": {"args": {}}},
+        "readyFrame": {"type": "item", "streamId": "uif4-events", "value": {"type": "ready", "clientId": "4388b3ed-67cb-4cdc-a18a-d365c79e8a5f", "host": {"home": "/home/user"}}},
+        "transportFrameTypes": {"item": 75},
+        "waterfallFrame": {"event": "user-questions/request", "eventId": "425456fa-8591-4fa4-8dee-283216e5306b", "agentId": "session-ee6fa6c7-7c5c-4dc8-9bcd-e5efda7764d4", "questions": 1},
+        "settlement": {"url": "/api/$events/result", "argsKeys": ["clientId", "eventId", "outcome"], "httpStatus": 200, "response": "{\"type\":\"server-response\",\"rpcId\":\"uif4-ans-425456fa\",\"result\":{\"ok\":true}}"},
+        "answerDeliveredBackIntoTheToolResult": "{\"answers\":[{\"id\":\"uif4-nq1\",\"selected\":[\"Native A\"]}]}"
+      },
+      "wireLawFinding": "The LEG-0 pin (PR #489, unmerged at spawn) described the ready/waterfall envelope as the TOP-LEVEL frame. Live truth on 0.2.0-rc.2: the mux transport is {type:'item'|'end'|'error', streamId, value?} and the envelope rides inside `value` (stream-protocol.ts:33-73,252-258; stream-server.ts:176-235). A client that tests the outer frame never sees a ready frame — this exact defect stalled start#1 (see RCA-start1-abort.md)."
+    },
+    {
+      "id": "ui:live-root-law",
+      "verdict": "NOT_REACHED",
+      "witness": {
+        "portFailedLines": ["[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request"],
+        "assertLiveRootObserved": false,
+        "delegatedCallerObserved": false
+      },
+      "reading": "Honest NOT_REACHED per lane order (L2 is NOT_RUN-safe, no extra starts): assertLiveRoot (packages/interaction/user-questions/src/index.ts:295,131-141) is only reachable when the request carries an Agent, and the governed family path never attaches one, so the live-root law cannot be exercised from the governed row at all. The ARM-B native ask succeeded instead of being refused, so CALLER_NOT_LIVE/DELEGATED_CALLER were never surfaced either."
+    },
+    {
+      "id": "ui:present-env-truth",
+      "verdict": "PASS",
+      "witness": {
+        "hostLog": "[dsh-agent-team] u7f-present: governed-present port-refusal",
+        "memberToolResult": "Error: refused-admission UI_PRESENT_PORT_ABSENT — this mount carries no injected presentation face, so nothing can be published — the governed row fails closed",
+        "presentRanCount": 0,
+        "plantedFileShaUnchanged": "5abaf19508f7df237355fee3d8f8a114220bbd46f270dc3db0c130d989b667d0",
+        "extraBootsUsed": 0
+      }
+    },
+    {
+      "id": "ui:leak-check",
+      "verdict": "FAIL",
+      "witness": {
+        "recordedReason": "teardown threw: world is not defined",
+        "cause": "LANE-KIT defect, NOT a leak: cleanup() was hoisted above the const world binding, so the finally-clause closure hit a ReferenceError and the suite's own leak evaluation never ran. Fixed on this branch after the run (the lane's own budget rule forbids a third start for a same-class lane-kit defect, so the cell keeps its FAIL verdict).",
+        "independentManualAudit": "see LEAK-AUDIT-manual.md — boot port released, no lane process left, both World homes removed, :3080 read-only probe 401 before and after, host tree tracked-porcelain 0 before and after",
+        "worldActuallyTornDown": "yes — by the runner's own World registry (tests/homes/ is empty after the run)"
+      }
+    }
+  ],
+  "starts": {
+    "pool": "C2",
+    "cap": 3,
+    "consumed": 2,
+    "ledger": "../host-start-budget.jsonl",
+    "p1": "aborted by the run-control hard watchdog with no RUN record — RCA in RCA-start1-abort.md (lane-kit: unbounded nextFrame await)",
+    "p2": "this reconstruction — full drive, all seven cells settled",
+    "p3": "NOT SPENT: reserved for ENV failures by the lane order; both failures so far are lane-kit class, and the same-class rule says stop-and-report"
+  },
+  "disclosures": [
+    "The answering client (tests/world-factory/lib/u7r3-uif4-answer.mjs) is this lane's own dependency-free inline of the unmerged PR #489 fixture (refs/heads/task/u7r3-uileg0-20261030 @ ffeaf68d6e3b4c66d9c0edf7609ce1cb172bd60b at spawn; #489 NOT merged), plus a live carrier the fixture left NOT_VERIFIED. It is lane test code, never product code.",
+    "The World's boot-line token and auth cookies are redacted in every committed log; the raw logs under logs/ are the lane's working copies.",
+    "No product or host tracked file was modified: host tree tracked-porcelain = 0 before and after both starts.",
+    "This branch carries NO push (AGENTS.md red line: push needs one-time explicit user permission).",
+    "Two untracked directories in the MAIN checkout (.pnpm-store-lane/, .u7r3-tmp/) belong to sibling lanes and were pre-existing; they are not ignored by git and were left untouched."
+  ]
+}

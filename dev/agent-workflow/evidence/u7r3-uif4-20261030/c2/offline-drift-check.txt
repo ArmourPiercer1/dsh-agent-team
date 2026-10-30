@@ -1,0 +1,23 @@
+# offline drift check (no boot): lane blueprint + row config diffed against the two PROVEN shapes they were derived from; run real 2026-10-30T13:16Z, before start#2
+
+
+### main.yaml vs the u7-f-web ASK-LANE blueprint (only names/persona/target expected): 6 differing lines
+
+### anchor.yaml vs the u7-f-web anchor: 4 differing lines
+
+### teamRowConfig vs the u7-f-ui PROVEN row config (names/paths expected only): 8 differing lines
+
+### owned-name leakage into builtinToolDeny: none
+### member default: ask present
+### request-control occurrences: 2
+### leader control tools present (must be 0): 0
+
+### uigov lane script steps: ask_user_question → ask_user_question → present → UIF4_UI_DONE
+### native lane step0: ask_user_question | args: {"questions":[{"id":"uif4-nq1","question":"UIF4_NATIVE_precheck native host tool: which option does the human pick?","options":[{"label":"Na
+### leader step0: team_create_member
+
+### pinned predicates: ready true | waterfall true
+### built result envelope: {"url":"/api/$events/result","body":{"type":"client-request","rpcId":"r1","method":"$events/result","payload":{"args":{"clientId":"c","eventId":"e1","outcome":{"kind":"result","value":{"answers":[{"id":"q1","selected":["A"]}]}}}}}}
+### batch law (wrong id): BAD_ANSWER: the batch must name each of the call's 1 questions exactly once
+
+### (full diff detail summarized: main.yaml vs u7-f-web ask-lane blueprint = 6 differing lines, all names/persona/templateId; anchor = 4 lines, names only; teamRowConfig vs u7-f-ui proven config = 8 lines, all names/paths)
