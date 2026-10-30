@@ -1,0 +1,101 @@
+{
+  "schema": "u7r3-bcr/run-record/1",
+  "lane": "u7r3-bcr-20261031 — R-CRASH-1 durable revalidation (crash-survivor closure, no --kill-after)",
+  "seatDisclosure": "Lane brief designates the 27b seat (U7-R3-BOOT-CRASH). Honest restatement: this session's harness-reported execution model is qwen3.8-flash-next; per ROUTER_RULES 0.2 model identity is not the independence guarantee (independent sessions are), and the discrepancy is disclosed rather than papered over.",
+  "writtenAt": "2026-10-30T01:12:00Z",
+  "preRegistration": "dev/agent-workflow/evidence/u7r3-bcr-20261031/PRE-REGISTRATION.json (commit 33e55cb23, pushed and origin-confirmed BEFORE spawn per the #458 F-1 correction)",
+  "bindings": {
+    "sourceSha": "33e55cb231be8b9ead2421cab60762d4ee2e57fd",
+    "sourceShaNote": "branch head of task/u7r3-bcr-20261031 BEFORE boot; equals bindings.teamSha of both runner records and the supervisor record (git rev-parse HEAD at spawn, zero commits between registration and boot). Evidence-bound from write time: forward-merge only, never rebase (ROUTER_RULES 8.5.7).",
+    "bootBaseSha": "origin/master 0be20e0f56cf6c9571c68ece19a805d991f25a71",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTreePristine": true,
+    "sandboxPreflight": "branded u7-sbx-sandbox-preflight/1 in the survivor runner record: probed=true backend=partial usable; pre-boot provision digests == manifest pins (SETUP-NOTES.md)",
+    "records": {
+      "supervisor": "dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/run-u5-crash-2026-10-30T01-07-13-380Z.json",
+      "survivorA": "dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/run-u5-crash-2026-10-30T01-07-13-380Z-A.json",
+      "probes": "dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/u5-crash-2026-10-30T01-07-13-380Z.survivor-probes.jsonl",
+      "reclaimMarker": "dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/u5-crash-2026-10-30T01-07-13-380Z.victimKilledAndReclaimed",
+      "budgetLedger": "dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/host-starts.jsonl (2 lines: victim-boot 01:08:37.440Z, survivor boot1 01:09:55.016Z)"
+    }
+  },
+  "command": "node tests/world-factory/u5-parallel-supervisor.mjs --evidence dev/agent-workflow/evidence/u7r3-bcr-20261031/crash --mode crash-reclaim --survivor-suite core --max-host-starts 2 --budget-ledger dev/agent-workflow/evidence/u7r3-bcr-20261031/crash/host-starts.jsonl",
+  "runOverall": "PASS",
+  "caseLevel": {
+    "supervisor": {
+      "abnormal-kill-reclaim": "PASS",
+      "crash-simulation-reclaim": "PASS",
+      "other-world-unaffected": "PASS",
+      "pristine-host-and-stable-untouched": "PASS",
+      "sibling-homes-untouched": "PASS"
+    },
+    "survivorACoreSuite": {
+      "token-gate": "PASS",
+      "positive-control": "PASS",
+      "error-return-with-effect": "PASS",
+      "planted-defect-detected": "PASS",
+      "oracle-blinding-divergence": "PASS",
+      "leak-check": "PASS",
+      "stable-instance-unchanged": "PASS"
+    }
+  },
+  "handshakeVerbatim": {
+    "held": {
+      "atIso": "2026-10-30T01:09:28.743Z",
+      "basis": "U5-IN-FLIGHT",
+      "victimWorld": "u5cbv-20261030T01-07-13Z",
+      "inFlightTag": "crashfly-xwsfm7"
+    },
+    "ready": {
+      "atIso": "2026-10-30T01:10:46.531Z",
+      "receiptWorldId": "u5ca-20261030T01-09-28Z",
+      "kind": "health-effect"
+    },
+    "kill": {
+      "fired": true,
+      "leg": "fired-after-ready-receipt",
+      "killAt": "2026-10-30T01:10:46.532Z",
+      "killedWhat": "victim crash-victim runner's OWNED process group (detached child we spawned): runner + host + mock die together; the group exists only because of this spawn"
+    },
+    "conditionsAllTrue": [
+      "victimHeldInFlight",
+      "survivorReadyReceipt",
+      "killFiredOnReceipt",
+      "killLandedInFlight",
+      "inFlightMarkerPresent",
+      "completionMarkerAbsent",
+      "victimRunRecordAbsent",
+      "reclaimProvenanceForEveryReleasedLease",
+      "hostLeaseReclaimedWithProvenance",
+      "mockLeaseReclaimedWithProvenance",
+      "victimHostDead",
+      "hostKillPathResolved",
+      "reclaimKillsOnlyRecordedPids",
+      "zeroProcessesClaimVictimHome",
+      "zeroRefusals",
+      "homeDeletedViaOwnershipMarker",
+      "hostPortIdle",
+      "mockPortIdle"
+    ]
+  },
+  "disclosures": [
+    "NO-KNOB RUN: --kill-after was NOT passed (verbatim command above). The record shows handshake.kill.killAfterKnobMs=1500 — that is the parseArgs DEFAULT, disclosure-only; the kill leg is 'fired-after-ready-receipt' (killFired = READY-receipt conjunction only, decideKillHandshake). Verbatim from the record: 'the --kill-after knob is accepted and recorded but never authorizes the kill; without a READY receipt the kill leg grades NOT_REACHED, never PASS'. The knob-never-authorizes law is additionally locked by the offline suite: node --test tests/world-factory/world-factory.test.mjs = 45/45 at this head BEFORE boot.",
+    "Probe entries measured: 8 in survivor-probes.jsonl, all ok=true, evidenceKind=real-io, simulated=false (registration named '7' following the prior lane's entry count; 8 measured here — timing-dependent probe count, restated honestly, not re-graded). The probes file separates entries by literal backslash-n sequences (pre-existing kit behavior, byte-identical shape in the prior lane's u7-g4r3 record file); parsed accordingly.",
+    "READY receipt arrived 77.8s after HELD, inside the 240s ready-timeout and the victim 300s gate cap; kill landed 1ms after receipt validation, mid-tool (pre marker present, post marker absent, no victim RUN record).",
+    "Prior records stand untouched: u7-g4r3 attempt-1 FAIL + retry PASS-by-knob (run-u5-crash-2026-10-28T19-27-56-518Z.json) remain as history; this boot adds a NEW durable-path record and recolored nothing.",
+    "No FAIL legs — no verbatim FAIL disclosure required.",
+    "Lease directories in the shared .artifacts/tmp/port-leases root persist as seq holders; post-run scan: 0 active leases, 0 stale leases (measured via lib/port-lease.mjs scanAllLeases/scanStaleLeases)."
+  ],
+  "hygieneReceipts": {
+    "stable3080": "before=401 after=401, read-only GET only, never written",
+    "homes": "tests/homes empty after teardown (both worlds deleted via ownership markers)",
+    "runtimeTree": "porcelain 0 before and after; HEAD == 639ed01539...",
+    "dshHomeStable": "~/.dsh never touched",
+    "processes": "no residual test hosts/runners"
+  },
+  "bootAccounting": {
+    "pool": "BOOT-BUDGET-20261029B row 'U7-R2 收口：#448 crash 复验（≤2）'",
+    "drawn": "boot#1 = 2 host starts (victim + survivor), pool 0/2 -> 2/2; conditional boot#2 RESERVED and NOT spent (outcome was PASS, not ENV_BLOCK-class NOT_REACHED)",
+    "total": "8/24 -> 10/24"
+  }
+}
