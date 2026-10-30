@@ -1,0 +1,153 @@
+/**
+ * SCRATCH PROBE (u7r3-readimage-20261030, evidence-only, NOT a committed test).
+ *
+ * Kept verbatim in the evidence dir; the live copy is placed at
+ * packages/runtime/test/scratch-u7r3-readimage-askleg.test.ts ONLY for the run
+ * and deleted after. See README.md for how to reproduce.
+ *
+ * Question: with the governed read_image row, is the fingerprinted effect set
+ * APPROVABLE under a default-ASK template (one ApprovalCase covering the
+ * tool-invoke + read + domain-ref(attachment-store) arms), or is the
+ * domain-ref arm structurally unapprovable regardless of template default?
+ *
+ * Mirrors u7-9a-fs-mutation-c1.test.ts's mountedPlane harness EXACTLY
+ * (same row, same kernel, same control-leg stand-ins); the only delta is the
+ * template default and the lane placement. A1/A3 = positive (approving leg),
+ * A2 = deny leg, A4 = default-DENY reproduces I-12's default-deny refusal.
+ */
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { createHash } from 'node:crypto'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
+
+const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
+const WORLD = join(REPO, 'tests/homes', `u7r3-rimg-${Date.now().toString(36)}`)
+const ROOT_DIR = join(WORLD, 'root')
+const REALM = 'u7r3-rimg-realm'
+const PNG_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52])
+
+const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
+const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
+const subtreeContains = ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/')
+const fsInstance = () => ({ fs: 'u7r3-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' })
+const confinedProvider = () => ({
+  trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+  assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
+})
+const dispatchLedger: { current?: { pendingCalls(): readonly unknown[] } } = {}
+
+let row: { createTeamToolPlaneAssembly: (input: Record<string, unknown>) => { ok: true; value: PlaneValue } | { ok: false; code: string; message?: string } }
+interface Definition { name: string; execute: (raw: unknown, exec?: Record<string, unknown>) => Promise<Record<string, unknown>> }
+interface PlaneValue {
+  definitions: ReadonlyArray<Definition>
+  mount: (agentCtx: Record<string, unknown>) => { dispose: () => void }
+}
+
+const makeStore = () => {
+  const store = {
+    imageLimits: { mediaTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], maxImageBytes: 8 * 1024 * 1024, maxMessageImageBytes: 5 * 1024 * 1024 },
+    saved: [] as Array<Record<string, unknown>>,
+    saveImage: async ({ data, mediaType, name }: { data: Buffer; mediaType: string; name?: string }) => {
+      const ref = { attachmentId: `att-${String(store.saved.length + 1)}`, mediaType, width: 8, height: 8, ...(name === undefined ? {} : { name }) }
+      store.saved.push({ ...ref, bytes: Buffer.from(data) })
+      return ref
+    },
+  }
+  return store
+}
+
+async function build(permissionPolicy: unknown, extra: Record<string, unknown> = {}, observe: string[] = []): Promise<PlaneValue> {
+  const built = row.createTeamToolPlaneAssembly({
+    dispatcherLifecycle: { inflight: () => dispatchLedger.current?.pendingCalls().length ?? 0 },
+    teamSessionId: 'u7r3-rimg-team-root',
+    permissionPolicy,
+    realmId: REALM,
+    templateId: 'u7r3-rimg-tpl',
+    role: 'member',
+    instanceId: 'u7r3-rimg-instance',
+    onObserve: (r: unknown) => { observe.push(String(r)) },
+    fs: { subtreeContains },
+    plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() },
+    ...extra,
+  })
+  if (built.ok !== true) throw new Error(`plane mount refused: ${built.code} ${built.message ?? ''}`)
+  return built.value
+}
+
+const def = (plane: PlaneValue, name: string): Definition => {
+  const d = plane.definitions.find((x) => x.name === name)
+  if (d === undefined) throw new Error(`no ${name} definition`)
+  return d
+}
+async function attempt(fn: () => Promise<unknown>): Promise<{ ok: true; value: Record<string, unknown> } | { ok: false; msg: string }> {
+  try { return { ok: true as const, value: await fn() as Record<string, unknown> } }
+  catch (e) { return { ok: false as const, msg: String((e as Error)?.message ?? e) } }
+}
+const execWithRoute = (): Record<string, unknown> => ({
+  name: 'read_image',
+  agent: { session: { requestHeader: () => ({ config: { provider: 'unit-prov', model: 'unit-model' } }) }, options: { provider: 'unit-prov', model: 'unit-model' } },
+})
+const mountStore = (plane: PlaneValue, store: unknown) => {
+  const llm = { resolveModelInfo: async () => ({ inputModalities: ['text', 'image'] }) }
+  return plane.mount({ tools: { register: () => undefined }, get: (name: string) => (name === 'attachments' ? store : name === 'llm' ? llm : undefined) })
+}
+const ASK_DEFAULT_ALLOW = { default: 'ask', allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], ask: [], deny: [] }
+const ASK_DEFAULT_ASK = { default: 'ask', allow: [], ask: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], deny: [] }
+const DENY_DEFAULT_ASK = { default: 'deny', allow: [], ask: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], deny: [] }
+
+beforeAll(async () => {
+  row = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as typeof row
+  mkdirSync(ROOT_DIR, { recursive: true })
+  writeFileSync(join(ROOT_DIR, 'photo.png'), PNG_BYTES)
+})
+afterAll(() => { rmSync(WORLD, { recursive: true, force: true }) })
+
+describe('u7r3 read_image ask-lane probe — the domain-ref arm across template defaults', () => {
+  it('A-1 default-ASK + allow(read_image) + APPROVING control leg: does one case cover all three arms and land?', async () => {
+    const observe: string[] = []; const audit: string[] = []; const store = makeStore()
+    const plane = await build(ASK_DEFAULT_ALLOW, { controlLeg: approvingControlLeg(audit) }, observe)
+    mountStore(plane, store)
+    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
+    console.log(`A1 outcome.ok=${String(r.ok)} ${r.ok ? `path=${String(r.value['path'] !== undefined)}` : `msg=${r.msg}`}`)
+    console.log(`A1 audit=${audit.join(' | ')}`)
+    console.log(`A1 store.saved=${String(store.saved.length)}`)
+    console.log(`A1 observe-tail=${observe.filter((l) => /image|approval|pa-|grant/i.test(l)).slice(-6).join(' || ')}`)
+    expect(true).toBe(true) // evidence probe, not a gate
+  })
+
+  it('A-2 default-ASK + allow(read_image) + DENYING control leg: zero commit', async () => {
+    const observe: string[] = []; const audit: string[] = []; const store = makeStore()
+    const plane = await build(ASK_DEFAULT_ALLOW, { controlLeg: denyingControlLeg(audit) }, observe)
+    mountStore(plane, store)
+    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
+    console.log(`A2 outcome.ok=${String(r.ok)} ${r.ok ? `value=${JSON.stringify(r.value).slice(0, 160)}` : `msg=${r.msg}`}`)
+    console.log(`A2 audit=${audit.join(' | ')}`)
+    console.log(`A2 store.saved=${String(store.saved.length)}`)
+    expect(store.saved).toHaveLength(0)
+  })
+
+  it('A-3 default-ASK + ASK-lane(read_image) (no allow rule) + APPROVING control leg', async () => {
+    const observe: string[] = []; const audit: string[] = []; const store = makeStore()
+    const plane = await build(ASK_DEFAULT_ASK, { controlLeg: approvingControlLeg(audit) }, observe)
+    mountStore(plane, store)
+    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
+    console.log(`A3 outcome.ok=${String(r.ok)} ${r.ok ? `value=${JSON.stringify(r.value).slice(0, 160)}` : `msg=${r.msg}`}`)
+    console.log(`A3 audit=${audit.join(' | ')}`)
+    console.log(`A3 store.saved=${String(store.saved.length)}`)
+    expect(true).toBe(true)
+  })
+
+  it('A-4 default-DENY + named ASK-lane(read_image): does the named ask rule open the domain-ref arm (vs I-12 default-deny refusal)?', async () => {
+    const observe: string[] = []; const audit: string[] = []; const store = makeStore()
+    const plane = await build(DENY_DEFAULT_ASK, { controlLeg: approvingControlLeg(audit) }, observe)
+    mountStore(plane, store)
+    const r = await attempt(() => def(plane, 'read_image').execute({ file_path: join(ROOT_DIR, 'photo.png') }, execWithRoute()))
+    console.log(`A4 outcome.ok=${String(r.ok)} ${r.ok ? `value=${JSON.stringify(r.value).slice(0, 160)}` : `msg=${r.msg}`}`)
+    console.log(`A4 audit=${audit.join(' | ')}`)
+    console.log(`A4 store.saved=${String(store.saved.length)}`)
+    console.log(`A4 observe-tail=${observe.filter((l) => /image|approval|pa-|deny/i.test(l)).slice(-6).join(' || ')}`)
+    expect(store.saved).toHaveLength(0)
+  })
+})
