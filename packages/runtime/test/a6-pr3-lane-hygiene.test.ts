@@ -52,7 +52,11 @@ const PROTECTED_PREFIXES = [
   `governance-center${sep}`,
 ]
 
-const SOURCE_EXTENSIONS = ['.ts', '.mjs', '.cjs', '.js']
+// `.tsx` is here because the round-5 review planted an importer in `alpha/src/offender.tsx` and the
+// dormancy leg stayed GREEN while twelve production `packages/client/src/ui/*.tsx` files sat outside the
+// walk — and PR-I2's wake states are exactly the kind of file that lands there. `.mts` needs nothing:
+// every `.mts` in this tree is a `.d.mts` declaration, already excluded.
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
 /**
@@ -135,6 +139,20 @@ describe('a6-pr3 lane hygiene', () => {
     expect(files.filter((file) => !FOUNDING_MODULES.includes(file))).toEqual([...EXTRA_MODULES_ALLOWED])
   })
 
+  it('exports exactly ONE store-key derivation, so §2\'s "no second index" is a fact, not prose', () => {
+    // The round-5 battery planted a second exported derivation (`altSlotRowKey`, a naive `a:b:c` join)
+    // in identity.ts and every one of the 76 kernel legs stayed green: the atomicity argument says the
+    // key comes from ONE function, and until this leg nothing in the repo could tell whether that was
+    // still true. A closed name list is the only honest way to pin an absence.
+    const text = readFileSync(join(LANE_DIR, 'identity.ts'), 'utf8')
+    const exported = [...text.matchAll(/^export (?:function|const) (\w+)/gm)].map((match) => match[1] as string).sort()
+    expect(exported).toEqual(['composeWakeText', 'deriveWakeId', 'sameWakeTurn', 'wakeSlotRowKey'])
+    expect(exported.filter((name) => /key/i.test(name))).toEqual(['wakeSlotRowKey'])
+    // And the barrel re-exports it exactly once, so a second barrel line cannot smuggle a synonym out.
+    const barrel = readFileSync(join(LANE_DIR, 'index.ts'), 'utf8')
+    expect(barrel.match(/wakeSlotRowKey/g) ?? []).toHaveLength(1)
+  })
+
   it('is DORMANT: no production file outside the lane imports it yet', () => {
     const offenders: string[] = []
     const packages = readdirSync(PACKAGES_ROOT, { withFileTypes: true })
@@ -143,7 +161,16 @@ describe('a6-pr3 lane hygiene', () => {
       .sort()
     expect(packages.length).toBeGreaterThan(0)
     for (const pkg of packages) {
-      for (const file of sourceFiles(join(PACKAGES_ROOT, pkg))) {
+      const files = sourceFiles(join(PACKAGES_ROOT, pkg))
+      // The floor that makes the whole leg non-vacuous. Before the round-5 review, a walk that read
+      // ZERO files passed: the only anti-vacuity was counting package NAMES from a strict readdir of
+      // PACKAGES_ROOT, so a renamed package, a wrong PACKAGES_ROOT, a subtree swallowed by a symlink
+      // loop, or an extension filter too narrow to see anything all produced a green "no offenders".
+      // Measured floor on this tree: the smallest package holds 20 source files (testkit 342, runtime
+      // 827), so this cannot accidentally trip — and it is the assertion that would catch the next
+      // vanishing-scratch race turning into silence instead of a skip.
+      expect(files, `the dormancy walk found no source file inside ${pkg}`).not.toHaveLength(0)
+      for (const file of files) {
         const rel = relative(PACKAGES_ROOT, file)
         if (rel.startsWith(join('runtime', 'review-wake') + sep)) continue
         if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`) || rel.includes('.spec.')) continue
@@ -245,7 +272,10 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
       expect(VANISHED.count, 'the vanished entry must be counted, not swallowed').toBeGreaterThan(before)
       expect(LANE_IMPORT_PATTERN.test(readFileSync(keeper, 'utf8'))).toBe(true)
       // And a read that races the same way yields null, not a throw, for a foreign tree.
-      expect(readIfPresent(join(dir, 'already-deleted'))).toBeNull()
+      // The sibling suite's cleanup is `rm -rf .tmp-fault`, which throws from the DIRECTORY listing,
+      // not from the per-entry stat the dangling symlink models. Both catches must be owned.
+      expect(sourceFiles(join(dir, 'already-deleted')), 'a directory that vanished mid-walk yields no files and no throw').toEqual([])
+      expect(readIfPresent(keeper), 'a file that is still there must still be readable through the tolerant path').not.toBeNull()
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

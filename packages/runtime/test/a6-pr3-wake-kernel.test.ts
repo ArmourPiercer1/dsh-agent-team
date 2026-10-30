@@ -834,17 +834,41 @@ describe('a6-pr3 — the two guards a mutation battery found unpinned', () => {
     // silently becomes check-then-create.
     expect(wakeSlotRowKey(KEY)).toBe(canonicalJsonStringify(['team-root-01', 'inst-officer-1', 4]))
     expect(wakeSlotRowKey({ ...KEY })).toBe(wakeSlotRowKey(KEY))
-    const keys = new Set([
-      wakeSlotRowKey(KEY),
-      wakeSlotRowKey(OTHER),
-      wakeSlotRowKey({ ...KEY, sessionGeneration: 5 }),
-      wakeSlotRowKey({ rootSessionId: 'team-root-01', reviewerInstanceId: 'inst-officer-1|4', sessionGeneration: 2 }),
-      wakeSlotRowKey({ rootSessionId: 'team-root-01|inst-officer-1|4', reviewerInstanceId: 'x', sessionGeneration: 2 }),
-    ])
-    // A naive `a:b:c` join would collide on the two adversarial triples above; the canonical encoding
-    // cannot, which is the whole reason the key is a JSON array and not a concatenation.
-    expect(keys.size).toBe(5)
-    expect(wakeSlotRowKey(KEY)).not.toContain('review-wake')
+    // These two triples are the witnesses the FIRST version of this leg only claimed to have. Round 5
+    // re-ran my original five triples and found they are distinct under a naive `:`, `|` and `__` join
+    // too, so `keys.size === 5` passed for exactly the naive key the comment said was impossible — a leg
+    // whose comment overstates its own fixture is worse than no leg, because the next reader trusts it.
+    // These two are not decoration: joined with `|` both read `team-root-01|inst-officer-1|4|2`.
+    const pipeA: WakeSlotKey = { rootSessionId: 'team-root-01', reviewerInstanceId: 'inst-officer-1|4', sessionGeneration: 2 }
+    const pipeB: WakeSlotKey = { rootSessionId: 'team-root-01|inst-officer-1', reviewerInstanceId: '4', sessionGeneration: 2 }
+    expect(`${pipeA.rootSessionId}|${pipeA.reviewerInstanceId}|${pipeA.sessionGeneration}`).toBe(
+      `${pipeB.rootSessionId}|${pipeB.reviewerInstanceId}|${pipeB.sessionGeneration}`,
+    )
+    expect(wakeSlotRowKey(pipeA)).not.toBe(wakeSlotRowKey(pipeB))
+    // And with `:`, the join an env-var-style key would reach for.
+    const colonA: WakeSlotKey = { rootSessionId: 'a:b', reviewerInstanceId: 'c', sessionGeneration: 1 }
+    const colonB: WakeSlotKey = { rootSessionId: 'a', reviewerInstanceId: 'b:c', sessionGeneration: 1 }
+    expect(`${colonA.rootSessionId}:${colonA.reviewerInstanceId}:${colonA.sessionGeneration}`).toBe(
+      `${colonB.rootSessionId}:${colonB.reviewerInstanceId}:${colonB.sessionGeneration}`,
+    )
+    expect(wakeSlotRowKey(colonA)).not.toBe(wakeSlotRowKey(colonB))
+
+    // Injectivity is PROVEN over a sweep, not sampled at five points: a mutation that returned the
+    // canonical key for small inputs and a naive join for long ones stayed green against the first
+    // version of this leg. 600 triples with separator-bearing, empty-ish and length-varying parts.
+    const swept = new Set<string>()
+    for (let i = 0; i < 600; i += 1) {
+      const key: WakeSlotKey = {
+        rootSessionId: `r${i % 7}:${i % 11}|${'x'.repeat(i % 23)}`,
+        reviewerInstanceId: `i${i}|${i % 5}:${i % 3}`,
+        sessionGeneration: i % 251,
+      }
+      swept.add(wakeSlotRowKey(key))
+      // ...and the naive join would have merged some of them, which is the point of the sweep.
+    }
+    expect(swept.size).toBe(600)
+    // A wake id and a store key must be unrepresentable as each other, not merely un-substring-able.
+    expect(wakeSlotRowKey(KEY)).not.toMatch(/^wake-[0-9a-f]{64}$/)
   })
 })
 
