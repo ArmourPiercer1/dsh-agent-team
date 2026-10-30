@@ -1,7 +1,7 @@
 {
  "schema": "u7-0/tool-obligations-manifest/v1",
  "artifacts": {
-  "expected-tool-obligations.v1.json": "sha256:ea6c95ed75a9aacb94a16617d10eae75f399130defaa4b1db24e4984b3bfbda8",
+  "expected-tool-obligations.v1.json": "sha256:28b082e20d6646289b550a8b10f03ce666c6c3753863fa2795bca40567e3139c",
   "authoritative-tool-sources.v1.json": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c"
  },
  "generator": "build-expected-tool-obligations.mjs",
@@ -16,7 +16,7 @@
   "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
   "matrix_sha256": "sha256:2a6894bb3a2d1d993d4d2f23a40a2d21ae026a72e0406b9fe1de78801f93dd84",
   "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
-  "backlog_sha256": "sha256:361bee8abcf060f6343b469a608314d530bdfe43690e1846fe3b94c0d3d5e1c3",
+  "backlog_sha256": "sha256:61f28a7b8c3f816d704729fbc77856be39eba8770c9458a7e79ec8f93053f228",
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
   "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
   "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"

@@ -48,11 +48,11 @@ const loadFixture = (): ObservedInventory => JSON.parse(readFileSync(FIXTURE, 'u
 const readJson = (p: string): Record<string, unknown> => JSON.parse(readFileSync(join(REPO_ROOT, p), 'utf8')) as Record<string, unknown>
 
 const PINNED = {
-  expected_digest: 'sha256:ea6c95ed75a9aacb94a16617d10eae75f399130defaa4b1db24e4984b3bfbda8',
+  expected_digest: 'sha256:28b082e20d6646289b550a8b10f03ce666c6c3753863fa2795bca40567e3139c',
   sources_digest: 'sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c',
   fixture_snapshot_digest: 'sha256:66da85efcfce68ab26708f37c6c880d002c7743d9e1c06f12fda716d28249c32',
   clean_counts: { missing: 0, unknown: 2, out_of_scope_observed: 32, source_findings: 0, drift: 0, scope_gaps: 18 },
-  clean_verdict_digest: 'sha256:a467ab380a6451ab47fa3bdbed6a38461f22e850a9bf746ef6e693f3178d7ca5',
+  clean_verdict_digest: 'sha256:90e00cff828560eb41895ee995510bb397b50b26647e5f52ec64d590633f6a22',
 }
 
 const pair = loadExpectedPair(REPO_ROOT)
