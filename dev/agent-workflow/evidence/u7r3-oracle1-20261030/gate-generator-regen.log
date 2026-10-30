@@ -1,0 +1,4 @@
+wrote expected-tool-obligations.v1.json (sha256:e02d4aba6fc5608587e9b103e5fc0262946bf5d10cadd5264155e3649fb5781b)
+wrote authoritative-tool-sources.v1.json (sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c)
+manifest.json digest-of-expected: sha256:e02d4aba6fc5608587e9b103e5fc0262946bf5d10cadd5264155e3649fb5781b
+CHECK OK — committed artifacts are the byte-exact replay of the generator

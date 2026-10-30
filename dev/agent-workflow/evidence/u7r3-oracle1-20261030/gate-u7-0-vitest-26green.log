@@ -1,0 +1,9 @@
+
+ RUN  v4.1.8 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-oracle1
+
+ ✓ packages/testkit/test/u7-0-census-reconcile.test.ts (26 tests) 210ms
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  17:24:46
+   Duration  438ms (transform 64ms, setup 0ms, import 88ms, tests 210ms, environment 0ms)
