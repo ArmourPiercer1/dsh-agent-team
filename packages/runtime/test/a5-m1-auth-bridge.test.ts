@@ -2060,10 +2060,25 @@ const B4_BACKENDS_MODULE: {
   SHELL_STREAM_DRAIN_MS: number
 } = await import(new URL('../../tools/process-family/src/index.mjs', import.meta.url).href)
 
+// R-413-1 XVAL round (2026-10-30, evidence/u7r3-xval-20261030/measure/
+// out-b-rca3-b.txt:3719 — D3 measured waited=-26803): the laws under the B4
+// describes are the production drain bound itself (SHELL_STREAM_DRAIN_MS,
+// real timing, untouched). The ONLY wall-clock exposure was the MEASURING
+// INSTRUMENT: every B4 elapsed-time below was a Date.now difference, and a
+// wall-clock STEP (the XVAL host measured −26.8 s backward; a forward step
+// forges the mirror) rewrites a real 2 s wait into a negative — or a fast
+// answer into a false over-bound — measurement. The B4 instruments below
+// ride the MONOTONIC hrtime clock instead; thresholds and assertion texts
+// are byte-identical, and the row's real timing still pays real time.
+// Instrument form follows the package's own precedent (a5b3-cancel-leg.test.ts
+// :93): this package's minimal process shim types neither hrtime nor env, so
+// the monotonic clock enters through a narrow globalThis view.
+const b4NowMs = (): number => Number((globalThis as unknown as { process: { hrtime: { bigint(): bigint } } }).process.hrtime.bigint() / 1_000_000n)
+
 async function b4WaitFor(cond: () => boolean, what: string, budgetMs = 5_000): Promise<void> {
-  const t0 = Date.now()
+  const t0 = b4NowMs()
   while (!cond()) {
-    if (Date.now() - t0 > budgetMs) throw new Error(`B4 fixture timeout: ${what}`)
+    if (b4NowMs() - t0 > budgetMs) throw new Error(`B4 fixture timeout: ${what}`)
     await new Promise((r) => setTimeout(r, 1))
   }
 }
@@ -2117,10 +2132,10 @@ describe('B4 (drain-on-exit): the shell row captures what the pipes delivered, n
     proc.stdout.push(null)
     proc.stderr.push(null)
     await b4WaitFor(() => proc.stdout.readableEnded === true && proc.stderr.readableEnded === true, 'both streams ended before the death event')
-    const t0 = Date.now()
+    const t0 = b4NowMs()
     proc.resolveExit({ code: 0, signal: '' })
     const answer = await running
-    const waited = Date.now() - t0
+    const waited = b4NowMs() - t0
     expect(answer.ok).toBe(true)
     expect(answer.outcome?.stdout).toBe('early-body')
     expect(answer.outcome?.truncated).toBe(false)
@@ -2140,9 +2155,9 @@ describe('B4 (drain-on-exit): the shell row captures what the pipes delivered, n
     // no push(null) anywhere: a writer this row never owns holds BOTH pipes —
     // the exact shape the bound exists for (the glob row's measured hole).
     proc.resolveExit({ code: 0, signal: '' })
-    const t0 = Date.now()
+    const t0 = b4NowMs()
     const answer = await running
-    const waited = Date.now() - t0
+    const waited = b4NowMs() - t0
     expect(answer.ok).toBe(true)
     expect(answer.outcome?.stdout).toBe('partial')
     expect(answer.outcome?.truncated, 'an expired drain may never masquerade as a complete capture').toBe(true)
@@ -2273,9 +2288,9 @@ describe('B4 (drain-on-exit): the shell row captures what the pipes delivered, n
     proc.stdout.destroy()
     proc.stderr.destroy()
     proc.resolveExit({ code: 0, signal: '' })
-    const t0 = Date.now()
+    const t0 = b4NowMs()
     const answer = await running
-    const waited = Date.now() - t0
+    const waited = b4NowMs() - t0
     expect(answer.ok).toBe(true)
     expect(answer.outcome?.stdout).toBe('cut-short') // bytes that made it stay (honest partial)
     expect(answer.outcome?.truncated, 'destroy-without-end may never masquerade as a complete capture').toBe(true)
@@ -2304,7 +2319,7 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     // after EOF): the EOFs already stand — completeness must not be re-broken.
     proc.stdout.destroy()
     proc.stderr.destroy()
-    const t0 = Date.now()
+    const t0 = b4NowMs()
     proc.resolveExit({ code: 0, signal: '' })
     const answer = await running
     expect(answer.ok).toBe(true)
@@ -2312,7 +2327,7 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(answer.outcome?.truncated, 'post-end destroy must not downgrade a completed capture').toBe(false)
     expect(answer.settlement).toEqual({ kind: 'completed' })
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
-    expect(Date.now() - t0).toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
+    expect(b4NowMs() - t0).toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
 
   it('D7b ONE stream short is enough (AND): stdout at EOF, stderr torn before its end ⇒ truncated=true, cause=stdio, exit law untouched', async () => {
@@ -2330,7 +2345,7 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     // whole capture incomplete, no matter how clean stdout was.
     proc.stderr.destroy()
     proc.resolveExit({ code: 0, signal: '' })
-    const t0 = Date.now()
+    const t0 = b4NowMs()
     const answer = await running
     expect(answer.ok).toBe(true)
     expect(answer.outcome?.stdout).toBe('stdout-complete') // the complete stream keeps its full bytes
@@ -2338,6 +2353,6 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(answer.outcome?.exitCode).toBe(0)
     expect(answer.settlement).toEqual({ kind: 'completed' })
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
-    expect(Date.now() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
+    expect(b4NowMs() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
 })
