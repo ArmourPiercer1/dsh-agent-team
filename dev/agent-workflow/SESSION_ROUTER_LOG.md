@@ -7268,3 +7268,8 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **#476 合并**（audit-#4 intake 判定+STATUS 快照+扫描收据）。R475-fl/R476-fl 报告归档至 u7r3-audit4-20261031/。复审席以 1907-ref 穷举＋全对象库（含不可达树）反证全归零，"不可复现"判定经受控反证成立。
 - **目标 goal-9e7ddb2c（U7-R1/R2 + U7-R3 矩阵编制入账）按事实判完**：R1/R2 全量合并（crash 含无旋钮实机 PASS #470）；矩阵入账（gates/U7-R3-GAP-MATRIX-20261029.md）；pilot 实机判级 job_list L3+L4、team_glob L4；C1 三波共 13 格离线判级脉络（全保持 NOT_VERIFIED）；boot 12/24（机动与两预留池尽，AC-12 候选绑定预留）；机器清偿门+链法（live-gate 修复版）稳定运行。
 - **当前开放面**：PR {#463 STATE_HOME PoC、#446 (b) 旋钮} = 用户裁决；余下全部 L3/L4 缺口 = 实机 C2 boot 依赖（池需用户再分配）或 AC-4 workflowEngine 产品半面（AC 池=候选绑定，G5 域）；证据外仓=用户队列。自主临界路径已空，等待用户指令。
+
+## 2026-10-31 (07:3xZ) — USER-RULING-20261031 下达并法典化（主 Agent）
+- 用户下达外部审查意见+六项裁决+执行次序（基准 89d96a13d）。登记正本=`gates/USER-RULING-20261031.md`；预算权威移册=`gates/BOOT-BUDGET-20261031C.md`（36 starts：AC 复证 8／他族 L3-L4 含 State Home 8／固定候选跨族集成回归 4（候选冻结前不动用）／机动 4；预登记、RCA 停线、禁探索、**新增效率门**四控制全保留；B 册封卷注记落档）。
+- GATE-LEDGER 追加两行：R-STATE-HOME-1 Family 级整改行（G5-blocking 维持，六场景 C2 关闭门）；P1 settlement-gate 不可绕过化行。
+- 新目标 goal-5ab62ca4 建档（Phase1-3 推进；G5=停线）。Phase-1 无 boot 波次随后并行派发：#446 验收调整、#463 归档处置、正式 Home 设计准备（安全审查先行）、workflow 有界 Public API PoC、证据外仓规则初版、P1 门禁改进、主检出受控盘点。
