@@ -53,6 +53,11 @@ upstream 公开契约 → `docs/plans/finished/` 四份 20260829 冻结文档（
 - **首个正式 release 之前的分支策略**：`master` 是 alpha 开发线，承载下一 alpha 的持续集成；`stable` 只跟踪已经裁决发布的 RC 基线。RC 修复先在独立 task/int 分支完成并过 Gate，再合入 `stable`；不得把未经 RC 裁决的 master alpha 提交直接推进到 stable。首个正式 release 之后必须通过新的发布决策重新定义长期分支策略。
 - 影响面必须可逆：任何对运行实例、worktree、远端的操作在 evidence 中留痕。
 
+## 等待纪律（用户裁决，真实 2026-10-30，直接指令）
+
+- 等待 subagent/后台任务时**用 `bash sleep` 在当前轮内等待，不空转 goal 轮次**：sleep 时长按被等任务实际复杂度设定（轻量审查 5 分钟级；boot、全量 CI、多包实现 10 分钟或更久），醒来后检查任务实际落点（证据文件/远端分支/agent registry 状态），未落定继续 sleep；落定即在本轮内处理。
+- 禁止以"本轮无进展"式短轮次反复唤醒协调者；goal 轮次保留给有实际新事实的工作。
+
 ## 状态与恢复
 
 - 编排状态（阶段语句、恢复指针、ready/blocked、轮次记录）唯一来源：`dev/agent-workflow/graph.yaml`（不依赖会话记忆）；当前合同六字段唯一权威：`dev/engineering/current-authority.json` 指针解析到的不可变快照（读取经 `scripts/current-authority.mjs`，失败即关闭，不回退）；执行日志只追加：`dev/agent-workflow/SESSION_ROUTER_LOG.md`。
