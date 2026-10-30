@@ -23,7 +23,7 @@ import { appendCappedLine } from '../canary/ledger-cap.mjs'
  *  the cap rows are dropped with ONE in-file notice (never truncated). */
 const BUDGET_LEDGER_CAP_BYTES = 1024 * 1024
 
-export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED'])
+export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED', 'NOT_REACHED'])
 
 /** Higher = worse. `overall` takes the max severity over selected cases. */
 export const VERDICT_SEVERITY = Object.freeze({
@@ -31,6 +31,10 @@ export const VERDICT_SEVERITY = Object.freeze({
   SKIP: 1,
   REFUSED: 2,
   ENV_BLOCK: 3,
+  // R-ENVBLOCK-1: NOT_REACHED = the DRIVE never arrived at the asserted step.
+  // A harness fact that hides a product unknown: it may never soften a record,
+  // so it sits at TIMEOUT's level and never below ENV_BLOCK.
+  NOT_REACHED: 4,
   TIMEOUT: 4,
   START_FAILED: 5,
   FAIL: 6,
