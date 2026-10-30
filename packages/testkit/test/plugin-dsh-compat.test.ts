@@ -67,15 +67,27 @@ const PINNED_GENERATION_LITERAL = '0.2.0-rc.2'
 const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
 /**
  * [PR #352 packaging round] The audited host-provides peer contract: exactly
- * these nine names, each at the same exact RC. HARD-CODED on purpose — the
+ * these ten names, each at the same exact RC. HARD-CODED on purpose — the
  * expectation must never be derived from the manifest under test (that would
  * be a self-proving assertion). The real evaluator iterates EVERY
  * `@deepseek-ai/dsh`/`@deepseek-ai/dsh-*` peer, so this full set is what its
  * `issue.peers` carries in all three negative cases below as well.
+ *
+ * [U7-R3 home lane, this round] The set widens NINE -> TEN with
+ * `@deepseek-ai/dsh-home-paths`, and the audit is the host itself: the pinned
+ * test-use host declares it as a real dependency — `packages/boot/app-boot/
+ * package.json` carries `"@deepseek-ai/dsh-home-paths": "workspace:*"` (the
+ * same publish-shape the fs-search peer rides) — and this plugin consumes its
+ * PUBLIC root export (`resolveDshHome`) as the production home answer
+ * (USER-RULING-20261031 §2 route R1; lane edge booked in
+ * scripts/eb3-family-boundaries.mjs + the agent-state-family README). Adding
+ * the peer here is the loud re-audit this pin was built to force, done with
+ * the evidence on the record — not a silent derivation from the manifest.
  */
 const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-agent': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-home-paths': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-llm': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-mcp-client': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-scope': EXPECTED_PEER_RANGE,
@@ -150,10 +162,10 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
-  it('the root manifest declares exactly the audited nine host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency', () => {
+  it('the root manifest declares exactly the audited ten host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency', () => {
     const peers = manifest.peerDependencies ?? {}
     const dshPeers = Object.entries(peers).filter(([name]) => name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-'))
-    // Exact set: the nine audited names, each at the exact RC — nothing more,
+    // Exact set: the ten audited names, each at the exact RC — nothing more,
     // nothing less (an extra/missing dsh* peer fails here, loudly).
     expect(Object.keys(peers).sort()).toEqual([...EXPECTED_HOST_PEER_NAMES].sort())
     expect(dshPeers.length).toBe(EXPECTED_HOST_PEER_NAMES.length)
@@ -165,7 +177,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
       expect(requirement).not.toMatch(/[\s|^~*><=]/)
     }
     // Host-provided contract: a declared peer must NOT also ship as a
-    // regular dependency of this manifest (9/9 stay out of `dependencies`).
+    // regular dependency of this manifest (10/10 stay out of `dependencies`).
     const deps = (manifest as { readonly dependencies?: Record<string, string> }).dependencies ?? {}
     for (const name of EXPECTED_HOST_PEER_NAMES) {
       expect(deps).not.toHaveProperty(name)
