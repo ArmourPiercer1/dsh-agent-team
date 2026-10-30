@@ -39,6 +39,20 @@
  *    the bytes committed EQUAL the disk bytes; oversized refused whole;
  *    store law-codes surface typed; default-deny zero commit; replay never
  *    double-commits.
+ *  read_image REFUSAL ZERO-EFFECT + RESULT FACE (a5w-ri round, 2026-10-30,
+ *    the read_image analogue of the ER discipline above): the IR arms grade
+ *    every deny shape — the lane's `template-deny-lane`, the settled-DENY
+ *    `APPROVAL_DENIED`, and deny-default's ungrantable `domain-ref` arm
+ *    (`IO_POLICY_UNSUPPORTED`) — against the WHOLE-directory digest, an
+ *    entry-identical WORLD, an attachment-store seam that was never CALLED
+ *    and a ledger carrying only the typed denial, each with a flip that
+ *    moves every witness. The IP arms pin the TWO public faces of one
+ *    admitted read as one source: the row's value and the two-block envelope
+ *    rendered by the presentation face of the very Definition the mount
+ *    registers (committed bytes == disk bytes == the byte count the envelope
+ *    prints, the attachment reference field-for-field identical, the path the
+ *    root-anchored one, store-reported geometry echoed verbatim, nothing
+ *    inline ever; a refusal produces no value and so no envelope at all).
  *
  * The canonicalization parity (fingerprints) is NOT here — it is the
  * golden gate (`u7-9a-mutation-golden-vectors.test.ts`), CA-01 style.
@@ -850,5 +864,394 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
     // the descriptor face carries the SAME identity (single-source const):
     const mechanics = await import(new URL('../../tools/fs-family/src/fs-mutation-mechanics.mjs', import.meta.url).href) as { ATTACHMENT_STORE_DOMAIN_AUTHORITY: string }
     expect(mechanics.ATTACHMENT_STORE_DOMAIN_AUTHORITY).toBe('attachment-store')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// IR — THE READ_IMAGE REFUSAL ZERO-EFFECT ARMS, and IP — ITS PUBLIC RESULT
+// FACE VS THE ENVELOPE FACE THE HOST ACTUALLY REGISTERS (a5w-ri read_image
+// coverage round, 2026-10-30; the read_image analogue of the ER block above).
+//
+// WHY THESE ARMS EXIST. I-1…I-13 grade the read_image MECHANICS: the pre-read
+// gate ORDER, the post-admission commit (the committed bytes EQUAL the disk
+// bytes), the cap/law-code faces, ONE default-deny lane (I-8) and the
+// ungrantable domain-ref arm (I-12). Two holes stayed open, both named by the
+// offline PoC (dev/agent-workflow/evidence/u7r3-readimage-20261030/POC-REPORT.md
+// Q5 + its ask-lane probe legs A-2/A-4) and graded there only by a SCRATCH
+// probe that never entered the committed tree:
+//
+//  (1) THE DENY ARMS (IR). Each refusal shape the governed image row answers —
+//    the governance lane's deny rule (`template-deny-lane`), the settled-DENY
+//    approval (`APPROVAL_DENIED`), and the deny-default template whose named
+//    ask rule still cannot cover the domain-ref arm (`IO_POLICY_UNSUPPORTED`)
+//    — was pinned only by its refusal STRING plus an empty store and an absent
+//    RAN line (I-8/I-12). Missing was the zero-effect half measured the way ER
+//    measures an edit refusal: the WHOLE-DIRECTORY digest (no temp file, no
+//    stray entry, neighbours byte-identical), the WORLD staying
+//    entry-identical, the attachment store never even being CALLED (a store
+//    write IS a state write: an empty `saved` array shows nothing landed, the
+//    call counter shows the seam was never touched), the row ledger carrying
+//    ONLY the typed denial line, and — the arm the kernel owes honestly —
+//    whether a Control request was born at all. Each ends in a FLIP that moves
+//    every witness, so the zeros are measured, not vacuous.
+//  (2) THE PUBLIC RESULT FACE (IP). A governed image read produces TWO faces of
+//    the same fact, and the host consumes the second: the row's execute VALUE
+//    (the tool-result side) and the row's OWN presentation face — the
+//    `{schema, render, presentationMeta}` the Definition carries through
+//    `mount(agentCtx)` into `agentCtx.tools.register(def)` (the mount loop in
+//    packages/runtime/src/plugin/live/team-tool-plane.mjs; the face is owned by
+//    packages/tools/fs-family/src/image-row.mjs), which the pinned host
+//    snapshots as the result's model-facing content. Nothing pinned that the
+//    two faces are the SAME SOURCE: that the bytes the store committed are the
+//    DISK bytes, that the value's byte count is the byte count the envelope
+//    TEXT prints, that the attachment reference the envelope carries is
+//    field-for-field the value's, that where the store reports its OWN facts
+//    (a downscaled reference) both faces report THOSE and neither re-derives
+//    the plane's numbers, that the reported path is the ROOT-ANCHORED path (a
+//    relative call resolves inward and travels no further), and that NEITHER
+//    face ever carries image bytes inline — the face is a reference. IP-1/IP-2
+//    pin that identity through the production wiring (assembly → mount → the
+//    very Definition the mount registers); IP-3 pins the refusal side, where
+//    the row throws, so NO value and therefore NO envelope exists at all.
+//
+// C1-only honesty (USER-RULING-20261029B item 2, the ER block's discipline):
+// the store is the disclosed in-test mirror of the host attachment store's
+// declared face; the durable Control row, the real sharp decode and the native
+// shadowing presentation stay the C2 legs the PoC sketch names.
+interface ImageRowValue { path?: string; image?: Record<string, unknown>; cancelled?: boolean }
+interface PresentationFace {
+  schema: { required?: unknown; properties?: Record<string, unknown>; additionalProperties?: boolean }
+  render: (args: unknown, value: unknown) => Array<Record<string, unknown>>
+  presentationMeta: (args: unknown, value: unknown) => Record<string, unknown>
+}
+interface ImageRowDefinition {
+  name: string
+  execute: (raw: unknown, exec?: Record<string, unknown>) => Promise<ImageRowValue>
+  output?: PresentationFace
+}
+interface ImageStore {
+  imageLimits: { mediaTypes: string[]; maxImageBytes: number; maxMessageImageBytes: number }
+  /** Every saveImage ENTRY, in order — the witness that the state seam was
+   *  consulted at all, kept apart from what actually landed (`saved`). */
+  calls: Array<{ mediaType: string; byteLength: number }>
+  saved: Array<{ attachmentId: string; mediaType: string; bytes: Buffer; width: number; height: number }>
+  saveImage: (i: { data: Buffer; mediaType: string; name?: string }) => Promise<Record<string, unknown>>
+}
+
+/** The store mirror. `refOver` emulates a store that reports its OWN facts
+ *  about the committed bytes (a real store downscales and reports the
+ *  post-transform geometry), which is what the public faces must echo. */
+const makeImageStore = (refOver: Record<string, unknown> = {}): ImageStore => {
+  const store: ImageStore = {
+    imageLimits: { mediaTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], maxImageBytes: 8 * 1024 * 1024, maxMessageImageBytes: 5 * 1024 * 1024 },
+    calls: [],
+    saved: [],
+    saveImage: async ({ data, mediaType, name }) => {
+      store.calls.push({ mediaType, byteLength: data.byteLength })
+      const ref: Record<string, unknown> = {
+        attachmentId: `att-${String(store.saved.length + 1)}`,
+        mediaType,
+        width: 8,
+        height: 8,
+        ...(name === undefined ? {} : { name }),
+        ...refOver,
+      }
+      store.saved.push({ attachmentId: String(ref['attachmentId']), mediaType, bytes: Buffer.from(data), width: Number(ref['width']), height: Number(ref['height']) })
+      return ref
+    },
+  }
+  return store
+}
+
+/** The mounted plane over an EXPLICIT policy object (the ask/deny arms need a
+ *  template default `policy()` cannot express), mounted against the SAME
+ *  public host seams production binds: ctx.get('attachments') / ctx.get('llm').
+ *  `registered` receives every Definition the placement hands to
+ *  `agentCtx.tools.register`, so a leg can name what the HOST is given. */
+const mountImagePlane = async (
+  frozen: unknown,
+  opts: { store: ImageStore; controlLeg?: unknown; observe?: string[]; imageCapable?: boolean; registered?: unknown[] },
+): Promise<{ plane: PlaneValue; dispose: () => void }> => {
+  const plane = await buildPolicy(frozen, opts.controlLeg === undefined ? {} : { controlLeg: opts.controlLeg }, opts.observe ?? [])
+  const modalities = opts.imageCapable === false ? ['text'] : ['text', 'image']
+  const handle = plane.mount({
+    tools: {
+      register: (definition: unknown) => {
+        opts.registered?.push(definition)
+        return () => undefined
+      },
+    },
+    get: (name: string) => (name === 'attachments' ? opts.store : name === 'llm' ? { resolveModelInfo: async () => ({ inputModalities: modalities }) } : undefined),
+  })
+  return { plane, dispose: () => { handle.dispose() } }
+}
+const imageRow = (plane: PlaneValue): ImageRowDefinition => plane.definitions.find((x) => x.name === 'read_image') as unknown as ImageRowDefinition
+const imageExec = (): Record<string, unknown> => ({
+  name: 'read_image',
+  agent: { session: { requestHeader: () => ({ config: { provider: 'unit-prov', model: 'unit-model' } }) }, options: { provider: 'unit-prov', model: 'unit-model' } },
+})
+async function attemptImage(fn: () => Promise<ImageRowValue>): Promise<{ ok: true; value: ImageRowValue } | { ok: false; msg: string }> {
+  try { return { ok: true as const, value: await fn() } }
+  catch (e) { return { ok: false as const, msg: String((e as Error)?.message ?? e) } }
+}
+const valueOrRefusal = (r: { ok: true; value: ImageRowValue } | { ok: false; msg: string }): ImageRowValue => {
+  if (!r.ok) throw new Error(`expected an admitted image read, got: ${r.msg}`)
+  return r.value
+}
+const laneDenyImage = { default: 'deny', allow: [], ask: [], deny: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }] }
+const askDefaultAllowImage = { default: 'ask', allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], ask: [], deny: [] }
+const denyDefaultNamedAskImage = { default: 'deny', allow: [], ask: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], deny: [] }
+
+describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-deny, deny-default), each with a moving flip', () => {
+  it('IR-1 governance lane-deny: TYPED template-deny-lane before any read; WHOLE-directory and WORLD entries identical over an existing image AND a fresh path; the store seam is never called; the ledger carries only the typed lane denial; the ask+approve flip commits ONCE', async () => {
+    const photo = join(ROOT_DIR, 'photo.png')
+    const fresh = join(ROOT_DIR, 'ir1-never-born.png')
+    const digestBefore = dirDigest(ROOT_DIR)
+    const worldBefore = readdirSync(WORLD).sort()
+    const observe: string[] = []
+    const store = makeImageStore()
+    const { plane, dispose } = await mountImagePlane(laneDenyImage, { store, observe })
+
+    const r1 = await attemptImage(() => imageRow(plane).execute({ file_path: photo }, imageExec()))
+    expect(r1.ok).toBe(false)
+    if (!r1.ok) {
+      expect(r1.msg).toContain('refused-admission')
+      expect(r1.msg).toContain('template-deny-lane')
+    }
+    const r2 = await attemptImage(() => imageRow(plane).execute({ file_path: fresh }, imageExec()))
+    expect(r2.ok).toBe(false)
+    if (!r2.ok) expect(r2.msg).toContain('template-deny-lane')
+
+    // ZERO SIDE EFFECT, measured over the whole directory and the whole
+    // world: no partial read landed anywhere, no temp file, no stray entry,
+    // neighbours byte-identical, the fresh path never born.
+    expect(dirDigest(ROOT_DIR), 'a refused image read must not move ONE byte or ONE directory entry').toBe(digestBefore)
+    expect(existsSync(fresh)).toBe(false)
+    expect(readdirSync(WORLD).sort()).toEqual(worldBefore)
+    // the attachment store is a STATE write: the seam was never consulted.
+    expect(store.calls).toHaveLength(0)
+    expect(store.saved).toHaveLength(0)
+    // the row ledger: ONE typed lane denial per refused attempt, and NO
+    // executor line of any other kind.
+    expect(observe.filter((l) => l.includes('governed-image lane-denied refusal code=template-deny-lane'))).toHaveLength(2)
+    expect(ran(observe, 'image')).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-image') && !l.includes('lane-denied'))).toHaveLength(0)
+    dispose()
+
+    // FLIP (sensitivity): the SAME call under the ask template with an
+    // approving control leg moves every witness. The store — not the
+    // directory — is what a read may touch: the root digest stays put even
+    // for a read that RAN, because read_image owns no write face.
+    const observeFlip: string[] = []
+    const auditFlip: string[] = []
+    const storeFlip = makeImageStore()
+    const flip = await mountImagePlane(askDefaultAllowImage, { store: storeFlip, observe: observeFlip, controlLeg: approvingControlLeg(auditFlip) })
+    const ran1 = await attemptImage(() => imageRow(flip.plane).execute({ file_path: photo }, imageExec()))
+    expect(ran1.ok).toBe(true)
+    expect(storeFlip.calls).toHaveLength(1)
+    expect(storeFlip.saved).toHaveLength(1)
+    expect(storeFlip.saved[0]!.bytes.equals(readFileSync(photo))).toBe(true)
+    expect(ran(observeFlip, 'image')).toHaveLength(1)
+    expect(auditFlip.some((l) => l.startsWith('c1-standin-landing'))).toBe(true)
+    expect(dirDigest(ROOT_DIR), 'a READ that ran still writes nothing into the governed root').toBe(digestBefore)
+    flip.dispose()
+  })
+
+  it('IR-2 PA-deny (the settled-DENY approval): TYPED APPROVAL_DENIED naming the request that answered deny; store seam never called; whole-directory zero; the ledger writes ONLY the typed pa-refused line; the approving flip commits ONCE', async () => {
+    const photo = join(ROOT_DIR, 'photo.png')
+    const digestBefore = dirDigest(ROOT_DIR)
+    const worldBefore = readdirSync(WORLD).sort()
+    const audit: string[] = []
+    const observe: string[] = []
+    const store = makeImageStore()
+    const { plane, dispose } = await mountImagePlane(askDefaultAllowImage, { store, observe, controlLeg: denyingControlLeg(audit) })
+
+    const denied = await attemptImage(() => imageRow(plane).execute({ file_path: photo }, imageExec()))
+    expect(denied.ok).toBe(false)
+    if (!denied.ok) {
+      expect(denied.msg).toContain('refused-admission')
+      expect(denied.msg).toContain('APPROVAL_DENIED')
+      // the refusal names the request it answers — a REAL closed request,
+      // not an unreachable leg.
+      expect(denied.msg).toContain('answered deny')
+    }
+    expect(audit.filter((l) => l.startsWith('c1-standin ') && l.includes('decision=deny'))).toHaveLength(1)
+    expect(dirDigest(ROOT_DIR), 'a PA-denied image read must not move ONE byte or ONE directory entry').toBe(digestBefore)
+    expect(readdirSync(WORLD).sort()).toEqual(worldBefore)
+    expect(store.calls).toHaveLength(0)
+    expect(store.saved).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-image pa-refused code=APPROVAL_DENIED'))).toHaveLength(1)
+    expect(ran(observe, 'image')).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-image') && !l.includes('pa-refused'))).toHaveLength(0)
+    dispose()
+
+    // FLIP: the approving leg runs the SAME call once — so IR-2's zeros are
+    // the DENIAL's zeros, not a mount that could never have committed.
+    const observeFlip: string[] = []
+    const storeFlip = makeImageStore()
+    const flip = await mountImagePlane(askDefaultAllowImage, { store: storeFlip, observe: observeFlip, controlLeg: approvingControlLeg([]) })
+    const ran2 = await attemptImage(() => imageRow(flip.plane).execute({ file_path: photo }, imageExec()))
+    expect(ran2.ok).toBe(true)
+    expect(storeFlip.saved).toHaveLength(1)
+    expect(ran(observeFlip, 'image')).toHaveLength(1)
+    flip.dispose()
+  })
+
+  it('IR-3 deny-default + a NAMED ask rule: the domain-ref arm stays ungrantable — TYPED IO_POLICY_UNSUPPORTED naming its arm, the control leg NEVER consulted (no Control request is ever born), store never called, ledger carries only the typed refusal', async () => {
+    const photo = join(ROOT_DIR, 'photo.png')
+    const digestBefore = dirDigest(ROOT_DIR)
+    const worldBefore = readdirSync(WORLD).sort()
+    const audit: string[] = []
+    const observe: string[] = []
+    const store = makeImageStore()
+    const { plane, dispose } = await mountImagePlane(denyDefaultNamedAskImage, { store, observe, controlLeg: approvingControlLeg(audit) })
+
+    const r = await attemptImage(() => imageRow(plane).execute({ file_path: photo }, imageExec()))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-admission')
+      expect(r.msg).toContain('IO_POLICY_UNSUPPORTED')
+      // the refusal names the arm that cannot be granted, so a reader can
+      // tell WHICH effect the grammar cannot cover — never a bare refusal.
+      expect(r.msg).toContain('(domain-ref)')
+    }
+    // zero STATE written, at the strongest face: no approval case ever
+    // reached a control leg, so there is no request to settle and no grant
+    // to consume.
+    expect(audit).toHaveLength(0)
+    expect(dirDigest(ROOT_DIR), 'an unadmittable image read must not move ONE byte or ONE directory entry').toBe(digestBefore)
+    expect(readdirSync(WORLD).sort()).toEqual(worldBefore)
+    expect(store.calls).toHaveLength(0)
+    expect(store.saved).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-image pa-refused code=IO_POLICY_UNSUPPORTED'))).toHaveLength(1)
+    expect(ran(observe, 'image')).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-image') && !l.includes('pa-refused'))).toHaveLength(0)
+    dispose()
+  })
+})
+
+describe('u7-9a C1 IP — read_image result face vs the envelope face the mount registers (byte-identical, path-scoped, single source)', () => {
+  it('IP-1 the DEFINITION THE MOUNT REGISTERS carries the family face, and value + envelope are the same source: committed bytes == disk bytes == value.bytes == the envelope text, the path is the root-anchored one, nothing travels inline', async () => {
+    const photo = join(ROOT_DIR, 'photo.png')
+    const disk = readFileSync(photo)
+    const digestBefore = dirDigest(ROOT_DIR)
+    const store = makeImageStore()
+    const observe: string[] = []
+    const audit: string[] = []
+    const registered: unknown[] = []
+    const { plane, dispose } = await mountImagePlane(askDefaultAllowImage, { store, observe, controlLeg: approvingControlLeg(audit), registered })
+    const rowDef = imageRow(plane)
+
+    // (0) THE WIRING ITSELF: the placement hands `agentCtx.tools.register`
+    // the very Definition the plane publishes, and that Definition carries
+    // the family's OWN face — so everything asserted below is what the host
+    // is given, not a test-side stand-in.
+    expect(registered).toContain(rowDef)
+    const familyRow = await import(new URL('../../tools/fs-family/src/image-row.mjs', import.meta.url).href) as { IMAGE_ROW_PRESENTATION_FACE: PresentationFace }
+    expect(rowDef.output).toBeDefined()
+    expect(rowDef.output).toBe(familyRow.IMAGE_ROW_PRESENTATION_FACE)
+
+    const value = valueOrRefusal(await attemptImage(() => rowDef.execute({ file_path: photo }, imageExec())))
+    expect(store.saved).toHaveLength(1)
+    // (a) the byte identity at the state seam: committed bytes ARE disk bytes.
+    expect(store.saved[0]!.bytes.equals(disk)).toBe(true)
+    // (b) the public tool-result side: the reference it answers, never bytes.
+    expect(value.path).toBe(photo)
+    const image = value.image ?? {}
+    expect(String(image['attachmentId'])).toBe(store.saved[0]!.attachmentId)
+    expect(String(image['mediaType'])).toBe('image/png')
+    expect(Number(image['bytes'])).toBe(disk.byteLength)
+    // (c) the envelope side: the SAME Definition's render over the SAME value.
+    const blocks = rowDef.output!.render({}, value)
+    expect(blocks.map((b) => String(b['type']))).toEqual(['text', 'image'])
+    const envelope = String(blocks[0]!['text'])
+    const attachment = blocks[1]!['attachment'] as Record<string, unknown>
+    expect(attachment).toEqual(image) // field-for-field the value's reference
+    expect(envelope).toContain(`<path>${photo}</path>`)
+    expect(envelope).toContain(`${String(disk.byteLength)} bytes`)
+    expect(envelope).toContain('image/png image, 8x8 px')
+    // (d) the presentation meta mirrors the same identity (no third copy).
+    expect(rowDef.output!.presentationMeta({}, value)).toEqual({ path: value.path, image })
+    // (e) NO face carries image bytes inline — the host resolves the
+    // reference; an inline base64 here would be a contract break.
+    const wire = JSON.stringify({ value, blocks })
+    expect(wire.includes('base64')).toBe(false)
+    expect(wire.includes(disk.toString('base64'))).toBe(false)
+    expect(Object.prototype.hasOwnProperty.call(blocks[1]!, 'data')).toBe(false)
+    // the declared schema is the reference shape too (a path + a reference,
+    // closed: nothing else may ride the result).
+    expect(rowDef.output!.schema.required).toEqual(['path', 'image'])
+    expect(rowDef.output!.schema.additionalProperties).toBe(false)
+
+    // (f) PATH SCOPE through the same production wiring: a RELATIVE call is
+    // anchored into the governed root and both faces report the anchored
+    // path — the raw relative spelling never travels to the model.
+    const relative = valueOrRefusal(await attemptImage(() => rowDef.execute({ file_path: 'photo.png' }, imageExec())))
+    expect(relative.path).toBe(photo)
+    expect(String(relative.path).startsWith(`${ROOT_DIR}/`)).toBe(true)
+    expect(store.saved).toHaveLength(2)
+    expect(ran(observe, 'image')).toHaveLength(2)
+    expect(audit).toHaveLength(2)
+    expect(dirDigest(ROOT_DIR), 'two image reads that ran still write nothing into the governed root').toBe(digestBefore)
+    dispose()
+  })
+
+  it('IP-2 where the store reports its OWN facts (a downscaled reference), value AND envelope report those facts verbatim — the plane never re-derives, never invents, and still commits the disk bytes', async () => {
+    const photo = join(ROOT_DIR, 'photo.png')
+    const disk = readFileSync(photo)
+    // a store that downscales: it reports the POST-transform geometry and the
+    // original dimensions, exactly the face the native row mirrors.
+    const store = makeImageStore({ bytes: 999, width: 4, height: 4, originalDimensions: { width: 16, height: 8 } })
+    const { plane, dispose } = await mountImagePlane(askDefaultAllowImage, { store, controlLeg: approvingControlLeg([]) })
+    const rowDef = imageRow(plane)
+
+    const value = valueOrRefusal(await attemptImage(() => rowDef.execute({ file_path: photo }, imageExec())))
+    expect(store.saved[0]!.bytes.equals(disk)).toBe(true) // what was COMMITTED is the disk bytes
+    const image = value.image ?? {}
+    expect(Number(image['bytes'])).toBe(999)
+    expect(Number(image['width'])).toBe(4)
+    expect(Number(image['height'])).toBe(4)
+    expect(image['originalDimensions']).toEqual({ width: 16, height: 8 })
+
+    const blocks = rowDef.output!.render({}, value)
+    const envelope = String(blocks[0]!['text'])
+    expect(blocks[1]!['attachment']).toEqual(image)
+    expect(envelope).toContain('image/png image, 4x4 px, 999 bytes')
+    // the downscale advice is the STORE's numbers, computed once by the face
+    // (16/4 on x, 8/2 on y — the anisotropic spelling).
+    expect(envelope).toContain('downscaled from 16x8 px')
+    expect(envelope).toContain('multiply x coordinates by 4.00 and y coordinates by 2.00')
+    dispose()
+  })
+
+  it('IP-3 a refusal has NO result face at all: an escaping target answers TYPED before any seam is consulted, the store is never called, and nothing renderable exists — so no envelope can carry an out-of-scope path', async () => {
+    const digestBefore = dirDigest(ROOT_DIR)
+    const worldBefore = readdirSync(WORLD).sort()
+    const store = makeImageStore()
+    const observe: string[] = []
+    const { plane, dispose } = await mountImagePlane(askDefaultAllowImage, { store, observe, controlLeg: approvingControlLeg([]) })
+    const rowDef = imageRow(plane)
+
+    const escaping = await attemptImage(() => rowDef.execute({ file_path: join(OUTSIDE_DIR, 'secret.png') }, imageExec()))
+    expect(escaping.ok).toBe(false)
+    if (!escaping.ok) {
+      expect(escaping.msg).toContain('locator-rejected')
+      expect(escaping.msg).toContain('escapes the governed root')
+      // the refusal is a refusal STRING, never a value: it carries no
+      // attachment reference for the host to resolve.
+      expect(escaping.msg.includes('attachmentId')).toBe(false)
+    }
+    // no value ⇒ no envelope: the row THROWS the typed refusal, so the
+    // presentation face is never reached with an out-of-scope fact.
+    expect(store.calls).toHaveLength(0)
+    expect(store.saved).toHaveLength(0)
+    expect(readdirSync(WORLD).sort()).toEqual(worldBefore)
+    expect(dirDigest(ROOT_DIR)).toBe(digestBefore)
+    expect(observe.filter((l) => l.includes('governed-image RAN'))).toHaveLength(0)
+    // and the face stays honest on a value it was never given: it renders an
+    // empty path, never one it did not receive.
+    const empty = rowDef.output!.render({}, {})
+    expect(String(empty[0]!['text'])).toContain('<path></path>')
+    dispose()
   })
 })
