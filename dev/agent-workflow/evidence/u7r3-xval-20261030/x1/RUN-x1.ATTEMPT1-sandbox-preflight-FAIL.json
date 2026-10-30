@@ -49,7 +49,8 @@
     },
     "worldIds": [],
     "noAcceptanceCredit": true,
-    "preflight": null
+    "preflight": null,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
   },
   "cases": [
     {
@@ -201,5 +202,6 @@
     }
   ],
   "overall": "FAIL",
-  "finishedAt": "2026-10-30T14:52:51.829Z"
+  "finishedAt": "2026-10-30T14:52:51.829Z",
+  "formatNormalization": " dated R495-fl F-1 supplement: canonical bindings.hostSha copied from bindings.hostBase.head (value was already bound in substance; record-shape only, no re-run)."
 }

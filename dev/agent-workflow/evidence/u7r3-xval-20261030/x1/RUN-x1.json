@@ -128,7 +128,8 @@
         "empty": true,
         "lines": []
       }
-    }
+    },
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
   },
   "cases": [
     {
@@ -376,5 +377,6 @@
     }
   ],
   "overall": "PASS",
-  "finishedAt": "2026-10-30T15:05:29.264Z"
+  "finishedAt": "2026-10-30T15:05:29.264Z",
+  "formatNormalization": " dated R495-fl F-1 supplement: canonical bindings.hostSha copied from bindings.hostBase.head (value was already bound in substance; record-shape only, no re-run)."
 }
