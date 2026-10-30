@@ -1,0 +1,9 @@
+== R483-fl guard self-test transcript (fixture-tree states, verbose reporter), captured 2026-10-30T10:32:42Z — same run as green-with.txt, guard block extracted ==
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > green fixture: own-tree test-use at its pin passes and returns the validated root 28ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > green fixture through a symlink alias of the worktree top (realpath comparison, not string comparison) 31ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: a resolved root OUTSIDE this worktree (the main-checkout fallback) fails closed, naming both roots and the command 22ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: a null resolution fails closed with the marker path and the instruction 0ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: marker present in the right tree but not a git checkout fails closed 1ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: an in-tree checkout at the WRONG commit fails closed, naming found HEAD and the pin 26ms
+ Test Files  1 passed (1)
+      Tests  13 passed (13)

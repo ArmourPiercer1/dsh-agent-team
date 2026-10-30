@@ -38,12 +38,16 @@ export function createFAgentBAssembly(opts) {
   return {
     ...inner,
     /** Deep-plain clone of the production rows; when
-     *  `agentStateEnabled === true`, set the closed boolean key on the ONE
-     *  plane config; otherwise OMIT it entirely (ABSENT = FALSE). */
+     *  `agentStateEnabled === true`, set the closed boolean keys on the ONE
+     *  plane config — the enablement AND `testHomeGuard: true` (this is a
+     *  test World: the shipped home law, live-`~/.dsh` refusal included,
+     *  stays byte-for-byte in force; R-STATE-HOME-1 design (c) choke point);
+     *  otherwise OMIT them entirely (ABSENT = FALSE). */
     teamRowsFor({ agentStateEnabled }) {
       const rows = JSON.parse(JSON.stringify(inner.teamRows()))
       if (agentStateEnabled === true) {
         rows[0].config.teamToolPlane.agentStateEnabled = true
+        rows[0].config.teamToolPlane.testHomeGuard = true
       }
       return rows
     },

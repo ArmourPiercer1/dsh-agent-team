@@ -1,0 +1,29 @@
+== R483-fl green-after-provision: worktree WITH rsync'd pristine tests/deepseek-harness-test-use ==
+== captured: 2026-10-30T10:32:26Z ==
+provisioning: rsync -a <main-checkout>/tests/deepseek-harness-test-use/ -> worktree (pristine copy per TEST_METHODS §1; the §1 clone triple is captured separately in provisioning-triple.txt)
+$ git -C tests/deepseek-harness-test-use rev-parse HEAD -> 639ed015397290b3745d163aafe02ffee4aa3f84
+$ git -C tests/deepseek-harness-test-use status --porcelain lines -> 0
+$ pnpm exec vitest run packages/testkit/test/plugin-dsh-compat.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl
+
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version 201ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the root manifest declares exactly the audited ten host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency 2ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed) 6ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects) 4ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen 6ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the vacuous-pass semantics are documented: a peerless manifest imposes no constraint (the pre-fix state the review closed) 4ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here) 4ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > green fixture: own-tree test-use at its pin passes and returns the validated root 28ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > green fixture through a symlink alias of the worktree top (realpath comparison, not string comparison) 31ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: a resolved root OUTSIDE this worktree (the main-checkout fallback) fails closed, naming both roots and the command 22ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: a null resolution fails closed with the marker path and the instruction 0ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: marker present in the right tree but not a git checkout fails closed 1ms
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts > R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees) > RED: an in-tree checkout at the WRONG commit fails closed, naming found HEAD and the pin 26ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  10:32:28
+   Duration  551ms (transform 194ms, setup 0ms, import 63ms, tests 347ms, environment 0ms)
+
+vitest exit: 0

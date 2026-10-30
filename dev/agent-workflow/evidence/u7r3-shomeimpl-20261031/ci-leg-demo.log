@@ -1,0 +1,10 @@
+== DEMO 1: pure checker, planted fixture (no disk writes) ==
+VIOLATION tests/world-factory/lib/demo-assembly.mjs:4 sets agentStateEnabled true but the file never true-sets testHomeGuard — a test World must ride the guard-ON home law (PRODUCTION-HOME-DESIGN (c)); fix: set testHomeGuard: true beside the enablement
+verdict would be: fail (1 violation(s))
+
+== DEMO 2: planted file graded by the real leg ==
+DSH-CI-LEG leg=kit-home-guard verdict=fail seconds=0 detail=1 kit row-config violation(s): tests/world-factory/lib/tmp-home-guard-demo.mjs:3 sets agentStateEnabled true but the file never true-sets testHomeGuard — a test World must ride the guard-ON home law (PRODUCTION-HOME-DESIGN (c)); fix: set testHomeGuard: true beside the enablement
+(fixture deleted)
+
+== DEMO 3: leg green again ==
+DSH-CI-LEG leg=kit-home-guard verdict=pass seconds=0 detail=75 kit .mjs file(s) scanned; every teamToolPlane config that true-sets agentStateEnabled also true-sets testHomeGuard (design (c) choke-point law)

@@ -104,9 +104,13 @@ export function createU7AStoreAssembly({ repoRoot, home, runStamp, reportDir }) 
       // THE ONE KEY. No injected store: production wiring passes `backends`
       // for the jobs bridge only, so the family's descriptor builds its
       // PRODUCTION store from the host process's DSH_HOME (this World's home).
+      // `testHomeGuard: true` is the choke-point companion (R-STATE-HOME-1
+      // design (c)): THIS is a test World, so the shipped home law — live
+      // `~/.dsh` refusal included — stays byte-for-byte in force here.
       teamToolPlane: {
         realmId: PLANE_REALM_ID,
         agentStateEnabled: true,
+        testHomeGuard: true,
       },
     }
   }

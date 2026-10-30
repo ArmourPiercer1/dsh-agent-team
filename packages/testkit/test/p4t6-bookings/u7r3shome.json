@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7R3SHOME",
+  "paths": [
+    "packages/runtime/test/u7-state-home-prod-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1390,
+    "to": 1391
+  },
+  "reason": "U7-R3 (the production Home fix lane, R-STATE-HOME-1 route R1 per USER-RULING-20261031 §2 + docs/plans/memo/unified-baseline-alpha5-20261025/state-home/PRODUCTION-HOME-DESIGN.md): the ONE new scannable file is the V1 law suite u7-state-home-prod-c1.test.ts — 25 legs pinning the two-arm resolveAgentStateHome law deterministically with NO boots: the production arm answering EXACTLY the upstream public @deepseek-ai/dsh-home-paths resolveDshHome()/defaultDshHome() (unset/blank accepted into the host's own ~/.dsh under the plugin namespace <home>/team-state/agent-state/<realmId>/, explicit ~/.dsh accepted, relative/nonexistent/file still refused, realpath validation survives), the test arm (testHomeGuard: true) reproducing every shipped refusal byte-for-byte, the discriminator matrix through the REAL descriptor + REAL closed-world checkFamilyConfig, and the fake-operator-home control (pristine CHILD processes carry the fake HOME; process.env never mutated destructively; the real ~/.dsh of the machine never consulted or written; zero-write census on every refusal cell). Every other file this lane touches is an EDIT to an already-counted path (fs-state-store.mjs, families/agent-state.mjs, manifest.json, the two kit assemblies, the two existing suites, scripts/eb3-family-boundaries.mjs, scripts/ci-pr-gate.mjs, the lane README, package.json/pnpm-lock.yaml) or lives outside packages/** (dist mirrors, dev/ evidence, tests/world-factory); the new CI leg kit-home-guard is pure-static; zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the one file on disk and this booking absent, the ledger law reads `scanner counts 1391, ledger derives 983 + 407 = 1390` (dev/agent-workflow/evidence/u7r3-shomeimpl-20261031/p4t6-booking-RED.log) — the merged tree's 1390 plus exactly this path."
+}

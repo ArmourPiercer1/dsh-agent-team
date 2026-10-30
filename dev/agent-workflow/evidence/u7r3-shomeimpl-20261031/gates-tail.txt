@@ -1,0 +1,9 @@
+== R483-fl gate tails, captured 2026-10-30T10:38:20Z ==
+$ pnpm -r run typecheck  -> exit 0 (all packages; tail: 'packages/client typecheck: Done')
+$ pnpm exec eslint packages/testkit/test/plugin-dsh-compat.test.ts  -> LINT-OK
+$ node scripts/eb3-family-boundaries.mjs  -> EB3-FAMILY-BOUNDARIES pass files=82 findings=0 engine=auto extractor=acorn 8.18.0
+$ node scripts/docs-probe.mjs --worktree-only  -> docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+   (both advisories are the standing prose advisories DOC_IMPACT_OWNED / SOURCE_CHANGED_DOC_IMPACT; no DOC_OWNER_UPDATE_MISSING)
+$ pnpm run check:artifacts  -> DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1883 glue=100
+   (no mirrored file was touched: the change is tests-only, packages/testkit/test/**; no dist dance)
+$ pnpm exec vitest run packages/testkit  -> 31 files / 455 tests passed (136s)

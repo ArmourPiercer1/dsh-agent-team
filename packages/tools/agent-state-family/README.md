@@ -30,16 +30,39 @@ edges file-by-file.
 
 ## Lane law (imports, dist, tests)
 
-- Allowed outward edges, and only these: `node:*` builtins and the two thin
+- Allowed outward edges, and only these: `node:*` builtins, the PUBLIC
+  upstream home-path package `@deepseek-ai/dsh-home-paths`, and the two thin
   faces of `../../../domain/tool-governance/src/index.js` —
   `executors.mjs` imports ONLY `parseRequestedEffectSet` (the effect-grammar
   face every governed executor carries) and `contribution.mjs` imports ONLY
   `canonicalJsonStringify` (deterministic canonical serialization for the
-  provider digest; pure function, zero authority). NO imports of the plane
+  provider digest; pure function, zero authority).
+  `fs-state-store.mjs` imports ONLY `resolveDshHome` from
+  `@deepseek-ai/dsh-home-paths` — a PUBLIC published package (root export,
+  `publishConfig.access: public`, pinned `0.2.0-rc.2` in the root peer set),
+  consumed for the production home answer per the narrowed R-STATE-HOME-1
+  ruling route R1 (same public-package precedent as the search lane's
+  `@deepseek-ai/dsh-tool-fs-search`). NO imports of the plane
   (`src/plugin/live/*`), the governance-center lane, tool-dispatch, any
   sibling family, or Host modules. No lane file imports the binder or mounts
   itself: mount authority is the plane's, config is the closed boolean
-  `agentStateEnabled` (ABSENT = FALSE).
+  `agentStateEnabled` (ABSENT = FALSE) plus the home-mode boolean
+  `testHomeGuard` (ABSENT = production).
+- HOME LAW, two arms (`resolveAgentStateHome`; design note
+  `docs/plans/memo/unified-baseline-alpha5-20261025/state-home/PRODUCTION-HOME-DESIGN.md`):
+  the PRODUCTION arm (DEFAULT; `testHomeGuard` ABSENT at the mount) answers
+  the host's own home via the upstream public `resolveDshHome()`
+  (`configured ?? $DSH_HOME ?? ~/.dsh` — priority never reimplemented),
+  keeping the raw-env shape law (blank → MISSING, relative → INVALID, never
+  cwd-resolved), the must-exist realpath + is-directory validation, and the
+  plugin-owned namespace `<home>/team-state/agent-state/<realmId>/`. The
+  TEST arm (`testHomeGuard: true`) reproduces the SHIPPED refusals
+  byte-for-byte, live-`~/.dsh` refusal included (TEST_METHODS red line).
+  Every test World sets the flag TRUE at its row-config choke point (the
+  same place that sets `agentStateEnabled`); the CI gate leg `kit-home-guard`
+  (`scripts/ci-pr-gate.mjs`) enforces that statically. V1 law suite:
+  `packages/runtime/test/u7-state-home-prod-c1.test.ts` (no boots; the live
+  V2 C2 arm is separately pre-registered, not part of this lane).
 - dist mirrors are byte-copies placed by `scripts/dist-placements/110-agent-state.json`.
 - Tests: C1 `packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts`
   (real plane + real kernel grant, 45 cases); C2
