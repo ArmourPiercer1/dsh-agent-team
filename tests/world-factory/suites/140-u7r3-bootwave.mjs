@@ -563,7 +563,28 @@ export function makeBootwaveDecide({ assembly }) {
   // is answerable without a second boot.
   decide.ids = ids
   decide.steps = steps
-  return decide
+  // RCA-2 instrumentation (bw3): the classify trace answers the ONLY question
+  // the steps counter could not — which lane EVERY provider request actually
+  // classified as, with the last-user tail that drove the decision and the
+  // reply the script chose. Pure observation: no verdict semantics move.
+  const trace = []
+  const traced = ({ req }) => {
+    const res = decide({ req })
+    if (trace.length < 160) {
+      trace.push({
+        lane: laneOf(req),
+        lu: lastUserTextOfStatic(req).slice(-140),
+        reply: res.kind === 'tool-call' ? `tool:${String(res.toolCalls?.[0]?.name ?? '?')}` : `text:${String(res.content ?? '').slice(0, 40)}`,
+        phase, fenceRounds,
+        ids: { imgov: ids.imgov ?? null, uigov: ids.uigov ?? null },
+      })
+    }
+    return res
+  }
+  traced.ids = ids
+  traced.steps = steps
+  traced.trace = trace
+  return traced
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1065,7 +1086,7 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
     record.record.bootwaveLanes = laneDone
     // Which instance each scripted lane actually ran in, and how many
     // provider turns each took — the attribution witness for any lane question.
-    record.record.bootwaveDecideFacts = { ids: decide.ids, steps: decide.steps }
+    record.record.bootwaveDecideFacts = { ids: decide.ids, steps: decide.steps, trace: decide.trace ?? [] }
 
     answerer.stop()
     approverStop = true
