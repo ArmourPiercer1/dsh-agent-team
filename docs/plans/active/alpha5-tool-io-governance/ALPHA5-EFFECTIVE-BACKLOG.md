@@ -42,3 +42,11 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+
+## D. 外部效率审查 #5 提效令（dated 真实 2026-10-30T12:0xZ，主 Agent 登记；验收缺口优先于 PR 吞吐）
+
+| ID | 项 | 状态 |
+|---|---|---|
+| EF-01 | 纯日志/同步 PR 批量化（sync 册制）——每波一批，不逐条开 PR | **已在行**（sync13=#485 为首批全量册） |
+| EF-02 | 测试影响面局部快速 CI 反馈路径（本地按受影响包/根选择跑，完整必需门仍只在合并候选 head 上跑）——降低 20.1 分钟级全量 CI 的重复成本；设计需先量测当前各 leg 时长构成，不得削弱合并门强度 | OPEN（离线，可并入下一无 boot 窗口） |
+| EF-03 | 离线 PoC → 真实 Host 验收转化率：已完成离线验证的能力（本波=State Home V2；后续=read_image/UI 族）优先排 C 池 boot，不再加设计/报告轮 | **执行中**（V2 lane 已出发） |
