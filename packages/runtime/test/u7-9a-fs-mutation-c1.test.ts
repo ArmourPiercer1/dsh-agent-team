@@ -907,9 +907,12 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
 //    leaves exactly ONE `production-admission-default-deny` and NO
 //    `admission-requires-approval` — the refusal was born AT the kernel's
 //    coverage gate, it was not admitted, granted or parked elsewhere and
-//    undone here. Each leg ends in a FLIP that moves every witness a READ can
-//    move (the store seam and the row ledger), so the zeros are measured, not
-//    vacuous. The root digest is NOT such a witness: for a read it is
+//    undone here. IR-1 and IR-2 end in a FLIP that moves every witness a READ
+//    can move (the store seam and the row ledger), so the zeros are measured,
+//    not vacuous; IR-3's arm is structurally un-flippable (a (domain-ref)
+//    resource is ungrantable in this grammar — I-12 and PoC A-4 pin that), and
+//    its positive control is the kernel's own coverage-gate row it pins.
+//    The root digest is NOT such a witness: for a read it is
 //    immovable by law, and IR-1's flip leg pins that on its own.
 //  (2) THE PUBLIC RESULT FACE (IP). A governed image read produces TWO faces of
 //    the same fact, and the host consumes the second: the row's execute VALUE
@@ -1041,7 +1044,7 @@ const laneDenyImage = { default: 'deny', allow: [], ask: [], deny: [{ tool: 'rea
 const askDefaultAllowImage = { default: 'ask', allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], ask: [], deny: [] }
 const denyDefaultNamedAskImage = { default: 'deny', allow: [], ask: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], deny: [] }
 
-describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-deny, deny-default), each with a witness-moving flip leg', () => {
+describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-deny, deny-default); IR-1/IR-2 carry a witness-moving flip leg, IR-3 the kernel gate row', () => {
   it('IR-1 governance lane-deny: TYPED template-deny-lane before any read; WHOLE-directory and WORLD entries identical over an existing image AND a fresh path; the store seam is never called; the ledger carries only the typed lane denial; the ask+approve flip commits ONCE', async () => {
     const photo = join(ROOT_DIR, 'photo.png')
     const fresh = join(ROOT_DIR, 'ir1-never-born.png')
