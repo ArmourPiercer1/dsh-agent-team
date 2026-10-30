@@ -43,3 +43,4 @@
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
 - **EF-04 环境勘误（dated 2026-10-30T13:27Z）**：共享基线 /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness 本环境**无 .git**（TEST_METHODS 描述按有仓对待）；worktree test-use 供给的克隆源 = 主检出 tests/deepseek-harness-test-use（detached @pin，porcelain 校验后作 --local 源）。R-G4R-1a lane 实踩（其 README 披露），本条转正。托管 census capture-2 今日两次红（485 heads）待 RCA=flake-or-real 判定，EF-02 相关。
+- **EF-05 u7-0 义务摘要再生成法（dated 2026-10-30，RCA 转正）**：MATRIX 与 BACKLOG 文本是 `dev/engineering/tool-obligations/build-expected-tool-obligations.mjs` 的**输入**（:144-145 直读），u7-0-census-reconcile 以字节恒等强制三份工件=回放；**编辑这两份正本必须同提交再生成**（无参跑 generator，`--check` 自检绿）。今日实证：#485 的 backlog EF 行与 sync14 的 M-05 行各自使 hosted census 红（NEW RED=u7-0 replay），plain master 绿。今后所有 sync/矩阵 PR 模板步骤含再生成。
