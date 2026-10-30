@@ -1,0 +1,4 @@
+{"op":"goal/apply","scope":"agent:session-u7as-team-20261030t12-22-33z","key":"agent:session-u7as-team-20261030t12-22-33z/goal","applyId":"plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:1"}
+{"op":"goal/apply","scope":"agent:session-u7as-team-20261030t12-22-33z","key":"agent:session-u7as-team-20261030t12-22-33z/goal","applyId":"plane-agent-state:236af13b-dca4-44d7-9345-117784d8c768:3"}
+{"op":"todos/apply","scope":"agent:session-team-child-3634d56819910870bfcecdad6c7a48a0","key":"agent:session-team-child-3634d56819910870bfcecdad6c7a48a0/todos","applyId":"plane-agent-state:68200bcd-3f29-4f10-83ad-1d1c425776a2:1"}
+{"op":"goal/apply","scope":"agent:session-u7as-team-20261030t12-22-33z-b2","key":"agent:session-u7as-team-20261030t12-22-33z-b2/goal","applyId":"plane-agent-state:f08f8fd9-bf0c-4f9d-9555-d2575cf6bc21:1"}

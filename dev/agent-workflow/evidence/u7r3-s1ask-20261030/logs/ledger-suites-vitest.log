@@ -1,0 +1,32 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 12ms
+lint-visibility: eslint read 1522 of 2794 OFFERED tracked lintable file(s); 1272 are hidden by an ignore pattern (dev/ 55, docs/ 4, packages/client/composition-shim/ 2, packages/runtime/dist/ 988, tests/ 223); 1522 + 1272 = 2794 offered, + 0 skipped = 2794 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests) 143965ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  1779ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  518ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  356ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1189ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1197ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  896ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  376ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  18616ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  17568ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  18259ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  50035ms
+       ✓ every workspace package that declares a typecheck script typechecks  15870ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  16208ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  507ms
+
+ Test Files  2 passed (2)
+      Tests  55 passed (55)
+   Start at  14:55:32
+   Duration  144.33s (transform 296ms, setup 0ms, import 779ms, tests 143.98s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

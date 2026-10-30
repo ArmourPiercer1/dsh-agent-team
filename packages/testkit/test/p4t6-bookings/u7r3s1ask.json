@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7R3S1ASK",
+  "paths": [
+    "packages/tools/test/u7f-ask-port-agent-binding.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1392,
+    "to": 1393
+  },
+  "reason": "U7-R3 (lane u7r3-s1ask, O2-A S1 per dev/agent-workflow/evidence/u7r3-o2memo-20261030/O2-A-ask-port-agent-binding.md; classification NO-centre-change in dev/agent-workflow/evidence/u7r3-s1ask-20261030/CLASSIFICATION.md): the ONE new scannable file is u7f-ask-port-agent-binding.test.ts — 13 no-boot C1 legs pinning that the governed ask row threads its per-call carrier ToolExecutionInput.agent (host public carrier, core/tools index.ts:339 @639ed01539) into the EXISTING createUserQuestionsPort second-arg binding: scoped ask/askTimed requests carry the exact carrier identity through the REAL plane/executor chain; absent/falsy/unknown carriers keep their verbatim typed refusals (NO_PROVIDER / CALLER_NOT_LIVE surfaced as the same UI_INTERACTION_PORT_FAILED), with no silent unscoped forwarding and the injected-port arm byte-equal (the 41 u7-f C1 legs unchanged); the adapter's lazy-binding and fail-closed arms are pinned directly. Every other file this lane touches is an EDIT to an already-counted path (packages/tools/families/ui.mjs, packages/tools/families/manifest.json, packages/tools/ui-family/src/ask-row.mjs, packages/tools/ui-family/src/ask-executor.mjs) or lives outside packages/** (dist mirrors under packages/runtime/dist, dev/agent-workflow/evidence/**, tests/**); zero new denylist vocabulary.",
+  "tieNote": "MEASURED, not copied: on this tree with the one file on disk and this booking absent, the ledger law reads `scanner counts 1393, ledger derives 983 + 409 = 1392` (full-suite log dev/agent-workflow/evidence/u7r3-s1ask-20261030/logs/full-vitest-raw.log; a scoped rerun of packages/testkit/test/p4t6-session-event-scan.test.ts repeats the same pair) — the merged tree's 1392 plus exactly this path."
+}

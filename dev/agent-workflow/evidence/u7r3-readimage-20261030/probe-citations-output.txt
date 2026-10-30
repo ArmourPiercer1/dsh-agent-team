@@ -1,0 +1,125 @@
+product root: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage
+product HEAD: 1d884efdb8839b0d6efedd969793c8ca3ef15c5b
+host checkout: /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+host HEAD: 639ed015397290b3745d163aafe02ffee4aa3f84
+host porcelain: (empty)
+utc: 2026-10-30T12:25:33.596Z
+========================================================================
+--- H: host tree @ pin ---
+OK  H:packages/fs/tool-fs/src/index.ts:22  [inject]
+     export const inject = ['tools', 'fs', 'systemPrompt']
+OK  H:packages/fs/tool-fs/src/index.ts:70  [ctx.inject(['attachments']]
+     ctx.inject(['attachments'], (imageCtx) => {
+OK  H:packages/fs/tool-fs/src/index.ts:71  [applyReadImageTool]
+     applyReadImageTool(imageCtx)
+OK  H:packages/fs/tool-fs/src/read-image.ts:210  [name: 'read_image']
+     name: 'read_image',
+OK  H:packages/fs/tool-fs/src/read-image.ts:253  [no attachment service is mounted]
+     throw new Error(`cannot read "${args.file_path}" as an image: no attachment service is mounted`)
+OK  H:packages/fs/tool-fs/src/read-image.ts:262  [byteCap = Math.min]
+     const byteCap = Math.min(attachments.imageLimits.maxImageBytes, attachments.imageLimits.maxMessageImageBytes)
+OK  H:packages/fs/tool-fs/src/read-image.ts:273  [attachments.saveImage]
+     ref = await attachments.saveImage({ data, mediaType, name: basename(target.displayPath) })
+OK  H:packages/fs/tool-fs/src/read-image.ts:279  [IMAGE_DIMENSION_TOO_LARGE]
+     if (error.code === 'IMAGE_DIMENSION_TOO_LARGE') {
+OK  H:packages/fs/tool-fs/src/read-image.ts:285  [IMAGE_TOO_MANY_PIXELS]
+     if (error.code === 'IMAGE_TOO_MANY_PIXELS') {
+OK  H:packages/attachment/attachment/src/index.ts:48  [attachments: AttachmentStore]
+     attachments: AttachmentStore
+OK  H:packages/attachment/attachment/src/index.ts:53  [abstract class AttachmentStore extends Service]
+     export abstract class AttachmentStore extends Service {
+OK  H:packages/attachment/attachment/src/index.ts:59  [imageLimits]
+     abstract readonly imageLimits: ImageAttachmentLimits
+OK  H:packages/attachment/attachment/src/index.ts:158  [abstract saveImage]
+     abstract saveImage(input: SaveImageAttachment): Promise<ImageAttachmentRef>
+OK  H:packages/attachment/attachment/src/index.ts:167  [abstract readImage]
+     abstract readImage(ref: ImageAttachmentRef, signal?: AbortSignal): Promise<StoredImageAttachment>
+OK  H:packages/attachment/attachment-local/package.json:31  [sharp]
+     "sharp": "^0.35.3"
+OK  H:packages/bundle/base/cordis.patch.yml:138  [attachment-local]
+     - id: attachment-local
+OK  H:packages/bundle/base/cordis.patch.yml:281  [tool-fs]
+     - id: tool-fs
+OK  H:packages/bundle/web-app/cordis.patch.yml:469  [tool-fs]
+     - id: tool-fs
+OK  H:packages/bundle/web-app/presets/standard.patch.yml:26  [tool-fs]
+     - id: tool-fs
+OK  H:packages/bundle/web-app/presets/ptc.patch.yml:26  [tool-fs]
+     - id: tool-fs
+OK  H:packages/bundle/web-app/presets/cordis.patch.yml:29  [tool-fs]
+     - id: tool-fs
+OK  H:docs/tool-catalog.md:31  [read_image]
+     | `@deepseek-ai/dsh-tool-fs` | `edit`, `read`, `read_image`, `write` | `ctx.tools`, `ctx.fs`, `ctx.systemPrompt`, `ctx.attachments (image-tool registration)`, `
+OK  H:packages/core/tools/src/index.ts:747  [already registered]
+     ? `tool "${name}" is already registered (for a per-agent variant, register through that agent's \`agent.ctx\` instead)`
+OK  H:packages/core/tools/src/index.ts:1202  [own registrations last, shadowing]
+     // The scope's own registrations last, shadowing an inherited name and
+--- P: product tree @ branch HEAD ---
+OK  P:tests/paths.mjs:71  [TEST_USE_BASELINE_SHA]
+     export const TEST_USE_BASELINE_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:300  ['read_image']
+     'read', 'read_image', 'write', 'edit', 'glob', 'grep',
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:378  [read_image: Object.freeze(['read_image'])]
+     read_image: Object.freeze(['read_image']),
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:407  [PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED]
+     return { ok: false, code: 'PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED', message: `plane row '${cls}' cannot mount under reserved native name '${spelling}' — this inst
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:1602  [const hostService =]
+     const hostService = (name) => {
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:2048  [hostServices.ctx = agentCtx]
+     hostServices.ctx = agentCtx
+OK  P:packages/runtime/src/plugin/live/team-tool-plane.mjs:2052  [agentCtx.tools.register]
+     const disposer = agentCtx.tools.register(def)
+OK  P:packages/runtime/src/plugin/live/agent-bindings.mjs:2306  [presets.mount(agentCtx]
+     await presets.mount(agentCtx, isRoot ? config.rootPresetId : config.memberPresetId)
+OK  P:packages/runtime/src/plugin/live/agent-bindings.mjs:2558  [applyBuiltInToolDeny]
+     const denyDisposer = applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)
+OK  P:packages/runtime/src/plugin/live/agent-bindings.mjs:2648  [config?.teamToolPlane]
+     if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
+OK  P:packages/runtime/src/plugin/live/agent-bindings.mjs:2842  [placement-feed rows=]
+     observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
+OK  P:packages/tools/families/fs.mjs:50  [enabled: (cap) => hasRoot(cap)]
+     enabled: (cap) => hasRoot(cap),
+OK  P:packages/tools/families/fs.mjs:51  [READ_IMAGE_NATIVE_NAME]
+     claims: (cap) => [cap.readName, WRITE_NATIVE_NAME, EDIT_NATIVE_NAME, READ_IMAGE_NATIVE_NAME],
+OK  P:packages/tools/families/fs.mjs:76  [cap.hostService('attachments')]
+     const attachmentsProvider = () => cap.hostService('attachments')
+OK  P:packages/tools/families/fs.mjs:136  [PLANE_FS_FAMILY_INCOMPLETE]
+     return { refused: { code: 'PLANE_FS_FAMILY_INCOMPLETE', message: 'the fs family mounts read+write+edit+read_image together; a partial fs lane is a broken assemb
+OK  P:packages/tools/fs-family/src/image-executor.mjs:130  [attachment-service-unmounted]
+     return refused('admission', 'attachment-service-unmounted', `cannot read "${parsed.filePath}" as an image: no attachment service is mounted`)
+OK  P:packages/tools/fs-family/src/image-executor.mjs:152  [byteCap = Math.min]
+     const byteCap = Math.min(Number(attachments.imageLimits.maxImageBytes) || 0, Number(attachments.imageLimits.maxMessageImageBytes) || 0)
+OK  P:packages/tools/fs-family/src/image-executor.mjs:168  [kind: 'domain-ref']
+     { kind: 'domain-ref', domainAuthorityId: ATTACHMENT_STORE_DOMAIN_AUTHORITY, resource: null },
+OK  P:packages/tools/fs-family/src/image-executor.mjs:227  [refused whole]
+     return refused('io', 'image-too-large', `the image measures at least ${String(read.byteLength)} bytes and exceeds the ${String(byteCap)}-byte deployment bound —
+OK  P:packages/tools/fs-family/src/image-executor.mjs:245  [attachments.saveImage]
+     ref = await attachments.saveImage({ data: read.bytes, mediaType, name })
+OK  P:packages/tools/fs-family/src/image-read-port.mjs:88  [maxBytes + 1]
+     while (total < maxBytes + 1) {
+OK  P:packages/tools/fs-family/src/image-row.mjs:78  [type: 'image']
+     { type: 'image', attachment },
+OK  P:packages/domain/tool-governance/src/effects.ts:43  [domain-ref]
+     export const EFFECT_KINDS = ['tool-invoke', 'read', 'write', 'list', 'meta', 'connect', 'domain-ref'] as const
+OK  P:packages/runtime/tool-admission/admission-kernel.ts:703  [RESOURCE_EFFECT_KINDS]
+     const RESOURCE_EFFECT_KINDS: Readonly<Partial<Record<PermissionTool, readonly EffectKind[]>>> = Object.freeze({
+OK  P:packages/runtime/tool-admission/approval-case.ts:179  [export function evaluateEffectSetExpansion]
+     export function evaluateEffectSetExpansion(
+OK  P:packages/domain/authority-envelope/src/authority-envelope.ts:505  [CEILING_NO_AUTHORITY]
+     return CEILING_NO_AUTHORITY
+OK  P:packages/runtime/test/u7-9a-fs-mutation-c1.test.ts:763  [I-6]
+     it('I-6 oversized refused WHOLE (cap = min(store limits)), zero commit', async () => {
+OK  P:packages/runtime/test/u7-9a-fs-mutation-c1.test.ts:772  [I-7]
+     it('I-7 store law-code (dimension law) surfaces typed with nothing committed', async () => {
+OK  P:packages/runtime/test/u7-9a-fs-mutation-c1.test.ts:805  [I-10]
+     it('I-10 torn-down mount: after dispose the host seams are gone — the row answers the no-store refusal, zero commit', async () => {
+OK  P:packages/runtime/test/u7-9a-fs-mutation-c1.test.ts:824  [I-12]
+     it('I-12 R1 negative control — the REAL kernel: the attachment-store commit effect has no grantable rung in the closed admission grammar (admission-kernel RESOU
+OK  P:packages/runtime/test/u7-9a-fs-mutation-c1.test.ts:837  [I-13]
+     it('I-13 R1 pin — the DECLARED second target is IN the requested set: every governed call\'s fingerprinted PA request carries tool-invoke(read_image) + read(fil
+OK  P:tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs:155  ['read_image']
+     const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
+OK  P:tests/kits/rc2-real-host-smoke/rc2-real-host-smoke.mjs:739  [tool-fs]
+     { id: 'tool-fs', name: '@deepseek-ai/dsh-tool-fs' },
+========================================================================
+ALL CITATIONS VERIFIED

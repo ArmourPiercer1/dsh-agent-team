@@ -1,0 +1,52 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1t timed face: the askTimed request carries the carrier too (the host timed law)
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-2 carrier absent: the SAME typed UI_INTERACTION_PORT_FAILED refusal as today (f3/f4 shape), service law verbatim
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3b unknown agent: the service ownership law answers verbatim (CALLER_NOT_LIVE), never a synthesized success
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=the supplied agent is not the registry live root (CALLER_NOT_LIVE)
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3c falsy non-nullish carrier (false): rides verbatim as dispatch data, the service law refuses it
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=the supplied agent is not the registry live root (CALLER_NOT_LIVE)
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-1 injected port wins with a carrier present: NO re-stamped agent on its request
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | packages/tools/test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-2 injected port without a carrier: byte-equal legacy answer path (the 41 C1 legs unchanged)
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+ ✓ packages/tools/test/u7f-ask-port-agent-binding.test.ts (13 tests) 2490ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  14:44:36
+   Duration  2.79s (transform 1.80s, setup 0ms, import 91ms, tests 2.49s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
