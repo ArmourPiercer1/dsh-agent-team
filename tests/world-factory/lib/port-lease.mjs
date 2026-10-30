@@ -610,8 +610,11 @@ function appendClaimOrder(slotPath, payload) {
  *   PORT_REFUSED    (policy violation: 3080 or outside the sanctioned ranges)
  *   LEASE_HELD      (an earlier-ordered live claim owns the port, unparsable
  *                    slot, or every retry was out-ordered)
- *   EXTERNAL_BIND   (no live lease holder, but the TCP port answers — a
- *                    foreign listener, e.g. the concurrent G1-F lane)
+ *   EXTERNAL_BIND   (no live lease holder and the port still cannot be taken:
+ *                    a foreign listener answered the connect probe, OR the
+ *                    connect was inconclusive and the bind tie-breaker could
+ *                    not bind it. The CODE name predates the RCA-1 bind
+ *                    tie-breaker and stays; the message claims no shape)
  * Sweeps STALE claims (dead holder pids) through the named-file claim
  * protocol (see file header) and stamps `reclaimedFrom` provenance (first
  * swept claim) into the new claim.
@@ -731,7 +734,15 @@ export async function acquirePortLease({ leaseRoot, port, world, purpose }) {
     } catch {
       /* we named ourselves; refusal here is noise */
     }
-    throw new LeaseError('EXTERNAL_BIND', `port ${port} answers TCP with no live lease holder — refusing (foreign listener)`)
+    // Wording discipline (dated 2026-10-30 real UTC): this used to read
+    // "answers TCP … (foreign listener)", which asserted a SHAPE the probe
+    // cannot always know. After the RCA-1 fix a port reaches here either
+    // because a listener really answered, or because the connect got no answer
+    // at all (inconclusive) and the bind tie-breaker failed to take the port —
+    // RCA-1 itself was the second case, where NOTHING answered. The code name
+    // stays EXTERNAL_BIND (consumers assert `code`, never the sentence, and so
+    // do the C1 legs); the text states only what the guard actually knows.
+    throw new LeaseError('EXTERNAL_BIND', `port ${port} is not cleanly acquirable: no live lease holder and the probe cannot prove it free (a listener answered the connect probe, or that probe was inconclusive and the bind tie-breaker could not bind it) — refusing`)
   }
   return {
     leasePath: owned.myPath,
