@@ -1,0 +1,144 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl
+
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts (25 tests | 6 failed) 367ms
+     × P1 unset → the default home is ACCEPTED as the host's own home, byte-identical to resolveDshHome()/defaultDshHome(), namespace under it (pristine child, HOME=<scratch operator>, DSH_HOME absent) 77ms
+     × P2 blank raw DSH_HOME follows upstream semantics in the PRODUCTION arm — treated as unset, the default arm activates, byte-equal to resolveDshHome (pristine child) 67ms
+     ✓ P3 relative raw DSH_HOME stays refused in the PRODUCTION arm (the shape law is preserved both modes; upstream's own cwd-resolved answer is pinned as the thing we refuse) 1ms
+     ✓ P4 absolute nonexistent → HOME_INVALID in the PRODUCTION arm too (must-exist law; the store never creates its home) 1ms
+     ✓ P5 explicit absolute existing home → accepted; the accepted value is upstream's own resolved answer (no plugin re-spelling) 1ms
+     ✓ P6 explicit DSH_HOME spelling the operator's ~/.dsh is ACCEPTED in the PRODUCTION arm (design (a) row 2: it IS the host's own home) 1ms
+     ✓ P7 a symlink whose realpath lands in the host home is ACCEPTED in the PRODUCTION arm (the sameOrUnder refusal is test-mode-only; realpath validation still runs) 1ms
+     ✓ P8 a regular FILE as DSH_HOME refuses with the is-directory law in BOTH arms (design (d)-2 unchanged) 1ms
+     ✓ T1 unset → HOME_MISSING with the shipped code AND detail 1ms
+     ✓ T2 blank → HOME_MISSING with the shipped detail, both blank shapes 1ms
+     ✓ T3 relative → HOME_INVALID with the shipped detail (never resolved against the cwd) 1ms
+     ✓ T4 nonexistent absolute → HOME_INVALID with the shipped detail shape 1ms
+     ✓ T5 the fake operator's live .dsh, a dir under it, and a symlink into it are ALL refused (mirrors the shipped H2 exactly) 6ms
+     ✓ T6 a .dsh-NAMED dir that is NOT the fake operator's live home stays a plain accepted home (the guard is the live home, not the spelling) 1ms
+     ✓ T7 the TEST arm reads the live home through the ENV (pristine child, HOME=<scratch operator>): DSH_HOME=<that home's .dsh> is refused, never consulted against a hardcoded real path 69ms
+     × D1 the descriptor books the closed boolean pair (agentStateEnabled, testHomeGuard) — no other config key 3ms
+     × D2 checkFamilyConfig: testHomeGuard must be a boolean WHEN PRESENT (PLANE_CONFIG_INCOMPLETE, never coerced); absent is legal (DEFAULT = production) 1ms
+     ✓ D3 flag TRUE + DSH_HOME unset → the mount refuses with the shipped HOME_MISSING law (test-world byte-for-byte) 1ms
+     × D4 flag ABSENT (production mount) + DSH_HOME unset + HOME=<fake host home> → the production store mounts at <home>/team-state/agent-state/<realm> and NOTHING is created by the mount (pristine child) 64ms
+     ✓ D5 flag ABSENT + DSH_HOME=<explicit host-home spelling> → accepted at the assembly level too (the refusal is gone from production by ruling) 4ms
+     × D6 flag TRUE + DSH_HOME=<host home via HOME> → refused at the assembly level too (the test-mode guard keeps its TEST_METHODS red line; pristine child) 59ms
+     ✓ D7 flag ABSENT + relative/nonexistent env shapes refuse typed at the assembly level too (the surviving laws run over the upstream answer) 1ms
+     ✓ W1 every refusal cell of the matrix leaves ZERO new files in the scratch tree (nothing created anywhere, nothing against the cwd) 2ms
+     ✓ W2 the accepted homes of every in-process cell are all under the scratch tree — homes are RESOLVED, never created 1ms
+     ✓ H1 process.env is restored after every HOME-control helper call, throw included (save/restore, never destructive) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp P — the production arm answers EXACTLY the upstream home API (route R1) > P1 unset → the default home is ACCEPTED as the host's own home, byte-identical to resolveDshHome()/defaultDshHome(), namespace under it (pristine child, HOME=<scratch operator>, DSH_HOME absent)
+AssertionError: {"ok":false,"code":"AGENT_STATE_STORE_HOME_MISSING","detail":"DSH_HOME is not set, so this mount has no durable home to write governed agent state into (refused — an invented default would write outside the sanctioned root)"}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:203:43
+    201|       `({ home: lane.resolveAgentStateHome({ testHomeGuard: false }), …
+    202|     const home = out.home as HomeAnswer
+    203|     expect(home.ok, JSON.stringify(home)).toBe(true)
+       |                                           ^
+    204|     expect((home as HomeOk).home).toBe(out.upstream)
+    205|     expect((home as HomeOk).home).toBe(out.upstreamDefault)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp P — the production arm answers EXACTLY the upstream home API (route R1) > P2 blank raw DSH_HOME follows upstream semantics in the PRODUCTION arm — treated as unset, the default arm activates, byte-equal to resolveDshHome (pristine child)
+AssertionError: "": expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:218:46
+    216|         `({ home: lane.resolveAgentStateHome({ testHomeGuard: false })…
+    217|       const home = out.home as HomeAnswer
+    218|       expect(home.ok, JSON.stringify(blank)).toBe(true)
+       |                                              ^
+    219|       expect((home as HomeOk).home).toBe(out.upstream)
+    220|       expect((home as HomeOk).home).toBe(dsh)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp D — the discriminator matrix at the assembly layer (REAL descriptor + REAL closed-world config law) > D1 the descriptor books the closed boolean pair (agentStateEnabled, testHomeGuard) — no other config key
+AssertionError: expected { agentStateEnabled: 'boolean' } to deeply equal { agentStateEnabled: 'boolean', …(1) }
+
+- Expected
++ Received
+
+  {
+    "agentStateEnabled": "boolean",
+-   "testHomeGuard": "boolean",
+  }
+
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:355:31
+    353| describe('u7shp D — the discriminator matrix at the assembly layer (RE…
+    354|   it('D1 the descriptor books the closed boolean pair (agentStateEnabl…
+    355|     expect(descriptor.config).toEqual({ agentStateEnabled: 'boolean', …
+       |                               ^
+    356|   })
+    357|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp D — the discriminator matrix at the assembly layer (REAL descriptor + REAL closed-world config law) > D2 checkFamilyConfig: testHomeGuard must be a boolean WHEN PRESENT (PLANE_CONFIG_INCOMPLETE, never coerced); absent is legal (DEFAULT = production)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:363:20
+    361|     expect(familyAssemblyModule.checkFamilyConfig(descriptor, { agentS…
+    362|     const bad = familyAssemblyModule.checkFamilyConfig(descriptor, { a…
+    363|     expect(bad.ok).toBe(false)
+       |                    ^
+    364|     expect((bad as { code: string }).code).toBe('PLANE_CONFIG_INCOMPLE…
+    365|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp D — the discriminator matrix at the assembly layer (REAL descriptor + REAL closed-world config law) > D4 flag ABSENT (production mount) + DSH_HOME unset + HOME=<fake host home> → the production store mounts at <home>/team-state/agent-state/<realm> and NOTHING is created by the mount (pristine child)
+Error: child probe failed (1): file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/[eval1]:1
+const lane = await import("file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/packages/tools/agent-state-family/src/fs-state-store.mjs");const homePaths = await import("file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/node_modules/.pnpm/@deepseek-ai+dsh-home-paths@
+ ❯ childProbe packages/runtime/test/u7-state-home-prod-c1.test.ts:121:29
+    119|     timeout: 30_000,
+    120|   })
+    121|   if (r.status !== 0) throw new Error(`child probe failed (${String(r.…
+       |                             ^
+    122|   return JSON.parse(r.stdout) as Record<string, unknown>
+    123| }
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:375:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/u7-state-home-prod-c1.test.ts > u7shp D — the discriminator matrix at the assembly layer (REAL descriptor + REAL closed-world config law) > D6 flag TRUE + DSH_HOME=<host home via HOME> → refused at the assembly level too (the test-mode guard keeps its TEST_METHODS red line; pristine child)
+Error: child probe failed (1): file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/[eval1]:1
+const lane = await import("file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/packages/tools/agent-state-family/src/fs-state-store.mjs");const homePaths = await import("file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/node_modules/.pnpm/@deepseek-ai+dsh-home-paths@
+ ❯ childProbe packages/runtime/test/u7-state-home-prod-c1.test.ts:121:29
+    119|     timeout: 30_000,
+    120|   })
+    121|   if (r.status !== 0) throw new Error(`child probe failed (${String(r.…
+       |                             ^
+    122|   return JSON.parse(r.stdout) as Record<string, unknown>
+    123| }
+ ❯ packages/runtime/test/u7-state-home-prod-c1.test.ts:404:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 19 passed (25)
+   Start at  08:47:01
+   Duration  848ms (transform 260ms, setup 0ms, import 337ms, tests 367ms, environment 0ms)
+
