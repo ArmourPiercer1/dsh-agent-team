@@ -52,6 +52,10 @@ const OTHER_FINGERPRINT = '0f9e8d7c6b5a43210fedcba987654321'
 const CASE_ID = 'case-1f2e3d4c'
 
 function officerPlan(overrides: Partial<ReviewPlan> = {}): ReviewPlan {
+  // Overrides go into the RAW DOCUMENT and are re-parsed, never spread onto the
+  // parsed object: a spread copy never met the parser, and admission now
+  // requires a parser-produced plan (the brand). A fixture that spread would
+  // quietly test the unbranded refusal in every leg.
   const result = parseReviewPlan({
     rootSessionId: 'team-root-01',
     blueprintDigest: DIGEST_64,
@@ -61,9 +65,10 @@ function officerPlan(overrides: Partial<ReviewPlan> = {}): ReviewPlan {
     actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }],
     effectScopes: [{ form: 'exact-fingerprint', value: FINGERPRINT }],
     expiresAtIso: null,
+    ...overrides,
   })
   if (!result.ok) throw new Error(`fixture plan refused: ${result.failure.code}`)
-  return { ...result.plan, ...overrides }
+  return result.plan
 }
 
 function officerCaller(overrides: Partial<ReviewerIdentity> = {}): ReviewerIdentity {
@@ -227,10 +232,30 @@ describe('a6-pr0 the plan must be live (L-3, L-5)', () => {
   })
 
   it('refuses a plan whose reviewer is the Leader instance (the Officer is not a second Leader)', () => {
-    const answer = evaluateReviewAdmission(
-      admissionInput({ caller: officerCaller({ isLeaderInstance: true }), plan: officerPlan({ reviewerInstanceId: LEADER_INSTANCE_ID }) }),
-    )
-    expect(answer.refusal).toBe('REVIEW_PLAN_REVIEWER_IS_LEADER')
+    // Two doors answer, and since the brand landed they answer in this order:
+    // the PARSER will not produce such a plan at all (a delegated seat may never
+    // name the Leader instance, so the object cannot exist), and a hand-built
+    // look-alike is refused at the admission door. The leg pins both, because
+    // "the parser refuses it" is only a fact about documents that came through
+    // the parser.
+    const parsed = parseReviewPlan({
+      rootSessionId: 'team-root-01',
+      blueprintDigest: DIGEST_64,
+      epoch: 7,
+      reviewerInstanceId: LEADER_INSTANCE_ID,
+      delegatedRung: 'leader',
+      actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }],
+      effectScopes: [{ form: 'exact-fingerprint', value: FINGERPRINT }],
+      expiresAtIso: null,
+    })
+    expect(parsed.ok).toBe(false)
+    if (parsed.ok) throw new Error('the parser must not produce a Leader-seated plan')
+    expect(parsed.failure.code).toBe('REVIEWER_IS_LEADER_INSTANCE')
+
+    const handBuilt = { ...officerPlan(), reviewerInstanceId: LEADER_INSTANCE_ID } as ReviewPlan
+    const answer = evaluateReviewAdmission(admissionInput({ plan: handBuilt }))
+    expect(answer.admitted).toBe(false)
+    expect(answer.refusal).toBe('REVIEW_PLAN_UNBRANDED')
   })
 })
 

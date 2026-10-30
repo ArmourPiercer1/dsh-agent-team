@@ -11,7 +11,7 @@
 | G-1 受保护中心 | `control/**`、`operation-permission/**`、`governance-center/**`、`tool-admission/**`、`tool-dispatch/**`、`live/agent-bindings.mjs`、`live/pa-mount-registry.mjs` 摘要钉死（`dev/agent-workflow/ledgers/arc-a-protected-center.json`，执法 `packages/runtime/test/u6-arc-a-fitness.test.ts` L1）。触及 = **具名 Center-Interface PR + ledger override 条目**（先例 #377）。前缀匹配 ⇒ 这些目录下**新增文件同样违规**。 |
 | G-2 CI 可见 | 交付 PR 的 base 必须是 `master`（否则零 workflow，检查缺席不得记为通过）。Lane 堆叠分支只用于依赖串接，其 PR 必须写明"CI 缺席"。 |
 | G-3 结算法 | 未获独立审查清偿前保留 `DO-NOT-MERGE`；解除需首行 `[dated settlement, <真实 UTC>]` + 与检查时 head 相等的 40-hex sha 评论（`scripts/pr-settlement-gate.mjs`）。 |
-| G-4 新增文件记账 | `packages/**` 新可扫文件 → `packages/testkit/test/p4t6-bookings/alpha6-<pr>.json`；投影 category → `p4t6-projection-categories-bookings/alpha6-<pr>.mjs`；新 factType → 同 PR 加 fold category。 |
+| G-4 新增文件记账 | `packages/**` 新可扫文件 → `packages/testkit/test/p4t6-bookings/alpha6-<pr>.json`；投影 category → `p4t6-projection-categories-bookings/alpha6-<pr>.mjs`；新 factType → 同 PR 加 fold category。**并且**：`packages/runtime/dist/**` 是入库的安装面——凡在 `tsconfig.build.json` include 里新增一个 lane 目录，必须同 commit 提交 `pnpm build` + `place-dist-glue` 的产物（否则 `check:artifacts-committed` 在 pr-gate / ci-security 双双报 `verdict=stale … produced-but-untracked`；PR #501 首轮 CI 即为此红）。 |
 | G-5 不冒充 | 真实 Host 腿在资源隔离未成立前一律 ENV_BLOCK；DORMANT/未接线能力不得描述为生产可用；不得为变绿削弱测试。 |
 | G-6 零语义外溢 | 不改 Alpha.5 的权限/拒绝/EffectSet/Grant 语义；不改 Blueprint schema；不改全仓 Current Authority；默认关闭（旧 Team 行为逐字节不变）。 |
 

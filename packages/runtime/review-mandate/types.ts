@@ -200,6 +200,20 @@ export interface ReviewMandate {
  * from the authoritative fold (`buildApprovalCaseState`); this module never
  * folds and never stores.
  */
+/*
+ * THE ONE INPUT THIS LANE DOES NOT OWN, stated for the PR-I1 reviewer: every
+ * field below must come from the authoritative case fold read INSIDE the team
+ * lock, never from a tool argument. This is where the phase's safety actually
+ * rests — the answer is computed from the leg's rung, the action name, the
+ * effect-set fingerprint and the list of actors who already acted, so a caller
+ * that fabricated a fold-shaped object could make a bound Member the resolver
+ * of anything, which is exactly what invariant 37 exists to prevent. The law
+ * on the PR-I1 side is therefore unconditional, and this lane's unit tests are
+ * NOT evidence about it: only an integration test that drives the real fold is.
+ * What this lane guarantees on its own is narrower and total: given a truthful
+ * case view and a parser-produced plan, no Member decides anything it was not
+ * granted, and every refusal is a closed code with no exception path.
+ */
 export interface ReviewCaseView {
   /** The derived case id. ABSENT on leg-less rows — which alone disqualifies
    *  a row from delegation (L-2). */
@@ -232,6 +246,9 @@ export const REVIEW_ADMISSION_REFUSALS = [
   'REVIEW_ROLE_ADMITS_ALREADY',
   'REVIEW_NOT_A_MEMBER_CALLER',
   'REVIEW_PLAN_ABSENT',
+  'REVIEW_PLAN_UNBRANDED',
+  'REVIEW_CASE_MALFORMED',
+  'REVIEW_CALLER_MALFORMED',
   'REVIEW_PLAN_EPOCH_STALE',
   'REVIEW_PLAN_EXPIRED',
   'REVIEW_CLOCK_INVALID',
@@ -239,7 +256,7 @@ export const REVIEW_ADMISSION_REFUSALS = [
   'REVIEW_PLAN_RUNG_NOT_DELEGABLE',
   'REVIEW_PLAN_REVOKED',
   'REVIEW_IDENTITY_FOREIGN',
-  'REVIEW_PLAN_REVIEWER_IS_LEADER',
+  'REVIEW_CALLER_IS_LEADER_INSTANCE',
   'REVIEW_KIND_NOT_DELEGABLE',
   'REVIEW_RUNG_NOT_DELEGABLE',
   'REVIEW_CASE_UNBOUND',

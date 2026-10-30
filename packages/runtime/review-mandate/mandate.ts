@@ -49,8 +49,11 @@
  */
 
 import {
+  DELEGABLE_REQUEST_KIND,
   DELEGABLE_REVIEW_RUNG,
   REVIEW_CALLER_ROLES,
+  REVIEW_REQUEST_KINDS,
+  REVIEW_RUNGS,
   type ReviewAdmission,
   type ReviewAdmissionInput,
   type ReviewAdmissionRefusal,
@@ -60,7 +63,7 @@ import {
   type ReviewCaseView,
   type ReviewerIdentity,
 } from './types.js'
-import { planActionScope, planCoversEffectScope } from './plan.js'
+import { isParsedReviewPlan, planActionScope, planCoversEffectScope } from './plan.js'
 
 /**
  * The Alpha.4 role closure, mirrored for the ordering step 1. Deliberately a
@@ -85,7 +88,42 @@ function refuse(refusal: ReviewAdmissionRefusal): ReviewAdmission {
   return { admitted: false, basis: null, refusal }
 }
 
-const ADMITTED_BY_ROLE_TABLE: ReviewAdmission = { admitted: true, basis: 'role-table', refusal: null }
+/** Frozen because it is returned to every caller that the role table admits;
+ *  a shared mutable answer would let one caller's edit change the next one's
+ *  governance answer. */
+const ADMITTED_BY_ROLE_TABLE: ReviewAdmission = Object.freeze({ admitted: true, basis: 'role-table', refusal: null })
+
+/**
+ * Is the folded case view shaped as declared? (M-3)
+ *
+ * The module header promises "no exception path": every bad answer must be a
+ * closed code. Without this guard a `requestKind` outside the closed set
+ * reaches the mirror lookup and a missing `actedCallerRefs` reaches `.includes`,
+ * and each throws a TypeError inside `resolveControl`. A throw is fail-CLOSED —
+ * it can never admit — so this is contract hygiene, not over-admission; it is
+ * still worth closing, because the caller that trips it is the one decision
+ * write path, and an exception there is a stuck case with no typed reason.
+ */
+function malformedCaseView(caseView: ReviewCaseView): ReviewAdmission | null {
+  if (typeof caseView.requestKind !== 'string' || !(REVIEW_REQUEST_KINDS as readonly string[]).includes(caseView.requestKind)) return refuse('REVIEW_CASE_MALFORMED')
+  if (typeof caseView.legReviewAuthority !== 'string' || !(REVIEW_RUNGS as readonly string[]).includes(caseView.legReviewAuthority)) return refuse('REVIEW_CASE_MALFORMED')
+  if (!Number.isSafeInteger(caseView.legOrdinal) || !Number.isSafeInteger(caseView.currentLegOrdinal)) return refuse('REVIEW_CASE_MALFORMED')
+  if (!Array.isArray(caseView.actedCallerRefs) || caseView.actedCallerRefs.some((ref) => typeof ref !== 'string')) return refuse('REVIEW_CASE_MALFORMED')
+  if (typeof caseView.requesterCallerRef !== 'string' || caseView.requesterCallerRef.length === 0) return refuse('REVIEW_CASE_MALFORMED')
+  if (typeof caseView.actionName !== 'string' || caseView.actionName.length === 0) return refuse('REVIEW_CASE_MALFORMED')
+  if (typeof caseView.effectScopeFingerprint !== 'string' || caseView.effectScopeFingerprint.length === 0) return refuse('REVIEW_CASE_MALFORMED')
+  return null
+}
+
+/** The same well-formedness law for the caller identity (see {@link malformedCaseView}). */
+function malformedCaller(caller: ReviewerIdentity): ReviewAdmission | null {
+  if (typeof caller.role !== 'string' || !(REVIEW_CALLER_ROLES as readonly string[]).includes(caller.role)) return refuse('REVIEW_CALLER_MALFORMED')
+  if (typeof caller.callerRef !== 'string' || caller.callerRef.length === 0) return refuse('REVIEW_CALLER_MALFORMED')
+  if (typeof caller.rootSessionId !== 'string' || caller.rootSessionId.length === 0) return refuse('REVIEW_CALLER_MALFORMED')
+  if (caller.instanceId !== null && typeof caller.instanceId !== 'string') return refuse('REVIEW_CALLER_MALFORMED')
+  if (typeof caller.isLeaderInstance !== 'boolean') return refuse('REVIEW_CALLER_MALFORMED')
+  return null
+}
 
 /** Is this identity a Member instance the delegation branch may even consider? */
 function isMemberCaller(caller: ReviewerIdentity): boolean {
@@ -102,26 +140,45 @@ function isMemberCaller(caller: ReviewerIdentity): boolean {
  */
 export function delegationApplicable(caseView: ReviewCaseView): boolean {
   return (
-    caseView.requestKind === 'leader-approval'
+    caseView.requestKind === DELEGABLE_REQUEST_KIND
     && caseView.legReviewAuthority === DELEGABLE_REVIEW_RUNG
+    // Whitespace is not an id. A fold row that carries ' ' as its case id is a
+    // leg-less row wearing a case id, and the L-2 gate is the one gate that
+    // keeps such rows out of Member reach.
     && typeof caseView.approvalCaseId === 'string'
-    && caseView.approvalCaseId.length > 0
+    && caseView.approvalCaseId.trim().length > 0
   )
 }
 
+/**
+ * The refusal a non-delegable row deserves, named by whichever of the three
+ * conditions actually failed. Split out so `evaluateReviewAdmission` and the
+ * future caller answer with the SAME predicate (M-2): the routing decision and
+ * the admission decision must never be two copies of one rule, or a future edit
+ * to one sends cases to a reviewer whose grant the center will always refuse.
+ */
+function nonDelegableRefusal(caseView: ReviewCaseView): ReviewAdmission {
+  if (caseView.requestKind !== DELEGABLE_REQUEST_KIND) return refuse('REVIEW_KIND_NOT_DELEGABLE')
+  if (caseView.legReviewAuthority !== DELEGABLE_REVIEW_RUNG) return refuse('REVIEW_RUNG_NOT_DELEGABLE')
+  return refuse('REVIEW_CASE_UNBOUND')
+}
+
 /** Is this plan live for this team at this epoch? */
-function planIsLive(plan: ReviewPlan | undefined, input: ReviewAdmissionInput): ReviewAdmission | null {
-  if (plan === undefined) return refuse('REVIEW_PLAN_ABSENT')
+function planIsLive(plan: ReviewPlan, input: ReviewAdmissionInput): ReviewAdmission | null {
   if (input.planRevoked) return refuse('REVIEW_PLAN_REVOKED')
   if (plan.rootSessionId !== input.caller.rootSessionId) return refuse('REVIEW_PLAN_TEAM_MISMATCH')
   if (plan.epoch !== input.currentEpoch) return refuse('REVIEW_PLAN_EPOCH_STALE')
   if (plan.expiresAtIso !== null) {
     const nowMs = Date.parse(input.nowIso)
-    if (!Number.isFinite(nowMs)) return refuse('REVIEW_CLOCK_INVALID')
-    if (nowMs > Date.parse(plan.expiresAtIso)) return refuse('REVIEW_PLAN_EXPIRED')
+    const expiryMs = Date.parse(plan.expiresAtIso)
+    // An instant this module cannot read is a refusal, never a skipped check:
+    // `now > NaN` is false, which is how an unreadable expiry silently stops
+    // expiring. The parser already refuses such a string, so this leg exists
+    // for the plan that reached here by another door.
+    if (!Number.isFinite(nowMs) || !Number.isFinite(expiryMs)) return refuse('REVIEW_CLOCK_INVALID')
+    if (nowMs > expiryMs) return refuse('REVIEW_PLAN_EXPIRED')
   }
   if (plan.delegatedRung !== DELEGABLE_REVIEW_RUNG) return refuse('REVIEW_PLAN_RUNG_NOT_DELEGABLE')
-  if (input.caller.isLeaderInstance) return refuse('REVIEW_PLAN_REVIEWER_IS_LEADER')
   return null
 }
 
@@ -156,6 +213,14 @@ function grantAgrees(mandate: ReviewMandate | undefined, plan: ReviewPlan, input
 export function evaluateReviewAdmission(input: ReviewAdmissionInput): ReviewAdmission {
   const { caller, caseView } = input
 
+  // 0. Malformed input is a closed-code refusal, never a TypeError inside the
+  //    caller's write path (M-3), and it is checked FIRST because step 1's
+  //    mirror lookup is indexed by a vocabulary field.
+  const callerFailure = malformedCaller(caller)
+  if (callerFailure !== null) return callerFailure
+  const caseFailure = malformedCaseView(caseView)
+  if (caseFailure !== null) return caseFailure
+
   // 1. The Alpha.4 closure is untouched: a role the table admits decides
   //    exactly as it does today, with or without any Alpha.6 plan present.
   if (roleTableAdmits(caller.role, caseView.requestKind)) return ADMITTED_BY_ROLE_TABLE
@@ -164,18 +229,28 @@ export function evaluateReviewAdmission(input: ReviewAdmissionInput): ReviewAdmi
   //    caller that the table refused is a `user-approval`-style mismatch, not a
   //    delegation candidate.
   if (!isMemberCaller(caller)) return refuse('REVIEW_NOT_A_MEMBER_CALLER')
+  // A caller that says `role: 'member'` AND `isLeaderInstance: true` is not a
+  // Member being delegated to — it is the Leader seat wearing Member clothing,
+  // which is the one shape this phase must never produce. Named for what it
+  // tests (the caller), and placed before any plan is consulted so the answer
+  // does not depend on what else is in the row.
+  if (caller.isLeaderInstance) return refuse('REVIEW_CALLER_IS_LEADER_INSTANCE')
 
-  // 3-4. The plan must exist and be live, and the caller must be its reviewer.
+  // 3-4. The plan must exist, be something the parser produced, be live, and
+  //      bind this caller. The brand check is not ceremony: `ReviewPlan` is
+  //      structural, so without it a hand-built object that never met the
+  //      parser gets the fail-closed parser's benefits without its refusals
+  //      (an unparseable expiry stops firing; a wildcard scope walks in).
+  if (input.plan === undefined) return refuse('REVIEW_PLAN_ABSENT')
+  if (!isParsedReviewPlan(input.plan)) return refuse('REVIEW_PLAN_UNBRANDED')
   const planFailure = planIsLive(input.plan, input)
   if (planFailure !== null) return planFailure
   const plan = input.plan
-  if (plan === undefined) return refuse('REVIEW_PLAN_ABSENT')
   if (caller.instanceId !== plan.reviewerInstanceId) return refuse('REVIEW_IDENTITY_FOREIGN')
 
   // 5. The row must be delegable at all — kind, rung, and above all a case id.
-  if (caseView.requestKind !== 'leader-approval') return refuse('REVIEW_KIND_NOT_DELEGABLE')
-  if (caseView.legReviewAuthority !== DELEGABLE_REVIEW_RUNG) return refuse('REVIEW_RUNG_NOT_DELEGABLE')
-  if (caseView.approvalCaseId === undefined || caseView.approvalCaseId.length === 0) return refuse('REVIEW_CASE_UNBOUND')
+  //    One predicate, shared with the caller's routing branch (M-2).
+  if (!delegationApplicable(caseView)) return nonDelegableRefusal(caseView)
 
   // 6. Case law: current leg only, one act per actor per case.
   if (caseView.legOrdinal !== caseView.currentLegOrdinal) return refuse('REVIEW_LEG_STALE')

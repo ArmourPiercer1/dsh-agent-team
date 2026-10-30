@@ -226,6 +226,30 @@ function readEffectScopes(value: unknown, actions: readonly ReviewPlanActionScop
   return { ok: true, value: scopes }
 }
 
+// --- the PARSED brand ----------------------------------------------------------------------
+
+/**
+ * The set of plans that came out of {@link parseReviewPlan}.
+ *
+ * WHY A BRAND AND NOT A TYPE. `ReviewPlan` is a structural type, so any caller
+ * can hand `evaluateReviewAdmission` an object that TYPES as a plan and was
+ * never parsed — and then every fail-closed rule that lives in the parser is
+ * decoration. Two concrete opens a reviewer executed against the unbranded
+ * version: a handcrafted `expiresAtIso: 'expired-yesterday-probably'` makes
+ * `now > Date.parse(garbage)` equal `now > NaN` = false, so expiry silently
+ * never fires; a handcrafted `{form:'exact-fingerprint', value:'*'}` walks a
+ * wildcard through the admission door that the parser itself refuses. A WeakSet
+ * membership test is the only check that survives both, because it is not
+ * derivable from the object's own contents and cannot be forged by a caller who
+ * never went through the parser.
+ */
+const PARSED_PLANS = new WeakSet<object>()
+
+/** Was this exact plan object produced by {@link parseReviewPlan}? */
+export function isParsedReviewPlan(plan: ReviewPlan): boolean {
+  return PARSED_PLANS.has(plan)
+}
+
 // --- the public parse ----------------------------------------------------------------------
 
 /**
@@ -269,9 +293,7 @@ export function parseReviewPlan(raw: unknown): ReviewPlanParseResult {
     expiresAtIso = record['expiresAtIso']
   }
 
-  return {
-    ok: true,
-    plan: Object.freeze({
+  const plan: ReviewPlan = Object.freeze({
       rootSessionId: root.value,
       blueprintDigest: record['blueprintDigest'],
       epoch: epoch.value,
@@ -280,8 +302,9 @@ export function parseReviewPlan(raw: unknown): ReviewPlanParseResult {
       actions: Object.freeze([...actions.value].map((action) => Object.freeze({ actionName: action.actionName, decisions: Object.freeze([...action.decisions]) }))),
       effectScopes: Object.freeze([...effectScopes.value].map((scope) => Object.freeze({ ...scope }))),
       expiresAtIso,
-    }),
-  }
+    })
+  PARSED_PLANS.add(plan)
+  return { ok: true, plan }
 }
 
 // --- the derived helpers -------------------------------------------------------------------
