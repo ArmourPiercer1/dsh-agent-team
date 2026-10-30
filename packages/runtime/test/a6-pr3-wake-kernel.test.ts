@@ -20,6 +20,7 @@ import { canonicalJsonStringify } from '../../contracts/src/index.js'
 import {
   composeWakeText,
   createWakeSlot,
+  WAKE_REFUSALS,
   deriveWakeId,
   hydrateWakeSlot,
   reconcileWakeSlots,
@@ -29,6 +30,7 @@ import {
   type WakeInboxFact,
   type WakeLimits,
   type WakeSlot,
+  type WakeRefusalCode,
   type WakeSlotKey,
 } from '../review-wake/index.js'
 
@@ -733,6 +735,23 @@ describe('a6-pr3 leg 15 — a slot is trustworthy only if this module made it', 
     expect(result.ok).toBe(false)
   })
 
+  it('a row whose wakeId is not the digest of its own tuple is refused, because that row remembers someone else\'s wake', () => {
+    const valid = row()
+    const foreign = { ...valid, wakeId: deriveWakeId({ ...OTHER, wakeSequence: valid.wakeSequence }) }
+    expect(hydrateWakeSlot(foreign)).toEqual({ ok: false, refusal: 'WAKE_SLOT_MALFORMED' })
+    // The same id with the sequence it actually belongs to is the row we would accept: the refusal is
+    // about the mismatch, not about the id's shape.
+    const consistent = { ...valid, wakeSequence: 1, wakeId: deriveWakeId({ ...KEY, wakeSequence: 1 }) }
+    expect(hydrateWakeSlot(consistent).ok).toBe(true)
+    // And a slot with no outstanding flight is legal at any sequence, because the counter never rewinds.
+    expect(hydrateWakeSlot({ ...valid, wakeSequence: 9, wakeId: null }).ok).toBe(true)
+    // Consequence worth naming: after this refusal the adapter has NO slot to hand the reducer, so a
+    // corrupted row degrades to `WAKE_NO_SLOT` behaviour (a fresh `request` may create a new slot) rather
+    // than to a slot that notifies the wrong reviewer. Fail-closed in the direction of a re-read.
+    const refused = hydrateWakeSlot(foreign)
+    expect(refused.ok).toBe(false)
+  })
+
   it('an unbranded look-alike is refused, changed nothing, and cannot reach a withdrawal', () => {
     const hydrated = hydrateWakeSlot(row())
     if (!hydrated.ok) throw new Error('fixture must hydrate')
@@ -872,8 +891,8 @@ describe('a6-pr3 — malformed anything answers a closed code (the PR0 lesson, a
   it('the refusal codes the kernel can produce are exactly the published vocabulary', () => {
     // Same discipline as PR0's round-2 finding: a type-level union proves nothing to a JS adapter that
     // switches on strings, so the produced set is pinned against the published list at runtime.
-    const produced = new Set<string>()
-    const probe = (result: { refusal: string | null }) => {
+    const produced = new Set<WakeRefusalCode>()
+    const probe = (result: { refusal: WakeRefusalCode | null }) => {
       if (result.refusal !== null) produced.add(result.refusal)
     }
     probe(reduceWakeSlot(null, null as unknown as WakeEvent, ctx()))
@@ -898,17 +917,15 @@ describe('a6-pr3 — malformed anything answers a closed code (the PR0 lesson, a
     probe(reduceWakeSlot(backingOff.slot, ev.timer('2026-01-01T00:00:00.000Z'), ctx()))
     const stopped = reduceWakeSlot(slot, ev.stop('user-stop'), ctx())
     probe(reduceWakeSlot(stopped.slot, ev.request('fp'), ctx()))
-    const published = new Set([
-      'WAKE_EVENT_MALFORMED', 'WAKE_STALE_LEASE', 'WAKE_FOREIGN_WRITER', 'WAKE_NO_SLOT', 'WAKE_SLOT_SUSPENDED',
-      'WAKE_PHASE_UNEXPECTED', 'WAKE_ID_MISMATCH', 'WAKE_TURN_MISMATCH', 'WAKE_FOREIGN_MESSAGE',
-      'WAKE_BACKOFF_PENDING', 'WAKE_REDELIVER_BUDGET_EXCEEDED', 'WAKE_TIMESTAMP_INVALID',
-      'WAKE_NO_MESSAGE_TO_WITHDRAW', 'WAKE_KEY_MISMATCH', 'WAKE_SLOT_MALFORMED', 'WAKE_SLOT_UNBRANDED',
-      'WAKE_CONTEXT_INVALID',
-    ])
-    for (const code of produced) expect(published.has(code), `${code} is outside the published list`).toBe(true)
+    // Imported, not copied. The first version of this leg carried a hand-typed copy of the list, and it
+    // drifted within the hour — it still named a code the module had deleted. A copy of a closed vocabulary
+    // in a test is a second vocabulary, which is the same mistake the kernel exists to prevent.
+    const published = WAKE_REFUSALS
+    expect(new Set(published).size, 'the published vocabulary has duplicates').toBe(published.length)
+    for (const code of produced) expect(published.includes(code), `${code} is outside the published list`).toBe(true)
     // And every code the kernel actually uses is one a reader of the list could have predicted.
     // 15 of the 16 published codes are reachable by these probes. The one that is not is
-    // `WAKE_PHASE_UNEXPECTED`'s neighbour below; a code nobody can reach would be listed here as dead
+    // one fewer than the published list; a code nobody can reach would be named here as dead
     // vocabulary, which is the finding PR0's round-3 review made about a sibling package.
     expect([...produced].sort()).toEqual([
       'WAKE_BACKOFF_PENDING', 'WAKE_CONTEXT_INVALID', 'WAKE_EVENT_MALFORMED', 'WAKE_FOREIGN_MESSAGE',

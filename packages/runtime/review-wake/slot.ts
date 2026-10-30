@@ -137,6 +137,17 @@ export function hydrateWakeSlot(raw: unknown): { readonly ok: true; readonly slo
   if (!wholeNumber(raw.revision) || !wholeNumber(raw.leaseEpoch) || !nonEmpty(raw.writerToken)) return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
   if (!wholeNumber(raw.wakeSequence) || !wholeNumber(raw.noProgressCycles) || !wholeNumber(raw.redeliveries)) return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
   if (!optionalNonEmpty(raw.wakeId) || !optionalNonEmpty(raw.messageId) || !optionalWhole(raw.claimedTurn)) return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
+  // Identity consistency, at the front door and nowhere else. A stored row is the kernel's only memory of
+  // which wake it has outstanding, and every correlator (`turn-ended`, `delivery-refused`, a re-delivery)
+  // matches on `wakeId`. A row whose id is not the digest of its own (key, wakeSequence) is therefore not a
+  // slightly odd row: it is a slot that will re-deliver, or refuse, a wake token belonging to a DIFFERENT
+  // triple — a reviewer instance being notified with another reviewer's pointer. The lane's law is that a
+  // wake id is derived and never carried, so hydration recomputes it and rejects the row that disagrees.
+  // (`wakeId === null` is legitimate: no flight is outstanding, and `wakeSequence` may be non-zero because
+  // the counter never rewinds.)
+  if (raw.wakeId !== null && raw.wakeId !== undefined && raw.wakeId !== deriveWakeId({ ...key, wakeSequence: raw.wakeSequence as number })) {
+    return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
+  }
   if (typeof raw.dirty !== 'boolean') return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
   if (!optionalIso(raw.notBeforeIso) || !optionalIso(raw.lastEventIso)) return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }
   if (!optionalNonEmpty(raw.lastWorkFingerprint)) return { ok: false, refusal: 'WAKE_SLOT_MALFORMED' }

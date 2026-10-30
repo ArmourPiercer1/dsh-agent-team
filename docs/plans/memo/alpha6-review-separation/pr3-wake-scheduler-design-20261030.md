@@ -255,10 +255,21 @@ Three things the implementation settled that the design left open:
 2. **Backoff is `min(base * 2^(n-1), cap)`** — the first wait is `base`, not `2·base` — with the shift
    clamped, because an unclamped shift on a long-failing slot overflows into a *negative* deadline, which
    means "wake immediately, forever": the storm the function exists to prevent, arriving through arithmetic.
-3. **Budget exhaustion is a suspension, not a refusal.** `WAKE_REDELIVER_BUDGET_EXCEEDED` was in the
+3. **Hydration recomputes `wakeId` instead of trusting the row.** A stored row is the kernel's only memory
+   of which wake is outstanding, and every correlator matches on that id, so a row naming another triple's
+   digest is a slot that would re-deliver a pointer belonging to a different reviewer instance. The lane's
+   law is that a wake id is derived and never carried; `hydrateWakeSlot` now enforces it. The consequence is
+   stated rather than hidden: a refused row leaves the adapter with **no** slot, so corruption degrades to
+   the `WAKE_NO_SLOT` path (a fresh `request` may open a new slot at `wakeSequence` 0, and a much older
+   unclaimed message could in principle carry a digest that a new flight re-derives) — which is an orphaned
+   *notification* with no authority in it, reported by the fold as `orphanFacts`, and not an authority
+   event. That is the fail-closed direction this lane chose: re-read cheaply, never notify the wrong person.
+4. **Budget exhaustion is a suspension, not a refusal.** `WAKE_REDELIVER_BUDGET_EXCEEDED` was in the
    vocabulary and no event could produce it, so it is gone rather than documented: dead vocabulary in a
    closed list is the finding PR0's round-3 review made about a sibling package, and this lane caught it
-   with the same reachability leg (the kernel spec pins the *produced* set against the published one).
+   with the same reachability leg (the kernel spec pins the *produced* set against the published one —
+   importing `WAKE_REFUSALS` rather than copying it, because the first version's hand-typed copy drifted
+   within the hour and still named the deleted code).
 
 Unchanged, and still the two things C1 cannot reach: the Kv adapter's real cross-process CAS atomicity, and
 the truth of `hasReadyWork` / inbox facts. Both are **C2 at the final merged HEAD** — re-run there, on a
