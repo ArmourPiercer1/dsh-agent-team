@@ -60,7 +60,13 @@
  *     (R449 MED, rebased). The 25-round leg's DURATION is load-stretched
  *     (real fs under the pool); L1/R4-1 carry an explicit 30 s per-test
  *     timeout as the disclosed guard (observed census-class worst case
- *     ≈ 8 s) — a slow settle passes, a true hang fails there.
+ *     ≈ 8 s) — a slow settle passes, a true hang fails there. N2 joins the
+ *     frozen-clock form in the 2026-10-30 XVAL round (measure/
+ *     out-a+b-parallel-2-b.txt:3722): its five realm-lock creators share one
+ *     never-advanced test clock on the same seam, because a wall-clock STEP
+ *     (−26.8 s backward measured on the XVAL host) forged a LOCK_TIMEOUT for
+ *     a Date.now-measured waiter in ~48 ms of real time — this suite's last
+ *     default-clock leg.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, linkSync, readdirSync, existsSync, statSync, realpathSync, renameSync } from 'node:fs'
@@ -878,7 +884,17 @@ describe('u7as N — the per-realm scope count is bounded', () => {
   })
 
   it('N2 concurrent creators of DIFFERENT new scopes cannot overshoot the bound (realm lock)', async () => {
-    const results = await Promise.all(['p', 'q', 'r', 's', 't'].map((id) => storeWith({ maxScopes: 2 }).applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n2-${id}` })))
+    // R-413-1 XVAL round (2026-10-30, evidence/u7r3-xval-20261030/measure/
+    // out-a+b-parallel-2-b.txt:3722): the five creators ride ONE shared
+    // FROZEN test clock through the public nowMs seam (the L1/R4-1 form).
+    // The store measures lock elapsed-time against Date.now by default, and
+    // a wall-clock STEP (the XVAL host measured a −26.8 s backward step;
+    // forward steps forge the mirror red) can manufacture a LOCK_TIMEOUT
+    // for a creator that is only waiting on real fs handoffs. Frozen clock:
+    // the creators' timeout can never fire; the REAL short backoff sleeps,
+    // the realm lock itself and the settle-by-event law are untouched.
+    const frozen = testClock() // never advanced: no timeout leg can fire
+    const results = await Promise.all(['p', 'q', 'r', 's', 't'].map((id) => storeWith({ maxScopes: 2, nowMs: frozen.now }).applyTodos(`agent:${id}`, { todos: [{ content: id, status: 'pending' }], applyId: `n2-${id}` })))
     expect(results.filter((r) => r.ok === true)).toHaveLength(2)
     expect(results.filter((r) => r.code === 'AGENT_STATE_STORE_SCOPE_LIMIT')).toHaveLength(3)
     expect(readdirSync(join(storeRoot(), 'scopes')).filter((f) => f.endsWith('.json'))).toHaveLength(2)
