@@ -2,6 +2,8 @@
 
 
 > **dated CURRENT 快照（2026-10-31，主 Agent；本文其余历史段为 dated 快照、非当前断言；权威 = graph.yaml + SESSION_ROUTER_LOG）**：U7-R1/R2 全量合并（R-CRASH-1 含无旋钮实机复验 #470 PASS）；U7-R3 缺口矩阵已入账（gates/U7-R3-GAP-MATRIX-20261029.md），pilot 实机判级 job_list L3+L4 / team_glob L4，C1 离线判级波次一~三共 13 格新增判级脉络（全部保持 NOT_VERIFIED，PROVEN 需实机 C2）；boot 总账 12/24（#448/#449 各 2/2 用尽、机动 4 已尽、AC 候选绑定 12 预留），后续 boot 需用户再分配；开放 PR = {#463 STATE_HOME PoC（待用户）、#446（待用户 (b) 旋钮裁决）}；外部审计 #4 四项主发现判为不可复现（幽灵工件，evidence/u7r3-audit4-20261031/）。
+>
+> **dated 更正（2026-10-31，#446 lane u7r3-446adj；上行原文照留不 rewrite）**：上行「#446（待用户 (b) 旋钮裁决）」已有裁决——**USER-RULING-20261031 §3：(b) 旋钮不批准**（不为制造 NOT_REACHED 修改正式 Host 或被测产品时序）。#446 验收范围调整落地：保留真实 Host 7/7 PASS ×2 + 零虚假 ENV_BLOCK + C1 分类器负控；自然 NOT_REACHED 记为**未观察到且结构性难以到达**；确定性替代 = 明确标记合成的 `synth:T18`（不得冒充真实 Host C2，**不得声称 (b) 已获真实 C2 PASS**）。前向同步 master `89d96a13d` 已完成；开放面收敛为 #446 待 R446-rereview + 清偿（DO-NOT-MERGE 保持）。详见 GATE-LEDGER dated 行 + `evidence/u7r3-envblock-c2-20261029/README.md` dated addendum + `evidence/u7r3-446adj-20261031/`。
 
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 pre-alpha3 handoff closure 轮，2026-10-01）。
