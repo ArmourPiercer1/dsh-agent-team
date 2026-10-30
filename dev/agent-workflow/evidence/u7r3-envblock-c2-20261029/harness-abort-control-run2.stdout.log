@@ -1,0 +1,6 @@
+start; run1 world excluded: u5u7r3eb-20261029T15-32-10Z
+world=u5u7r3eb-20261029T15-45-02Z createRoot=session-u7fweb-team-u5u7r3eb-20261029t15-45-02z home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r2-envb/tests/homes/u5u7r3eb-20261029T15-45-02Z
+host port=3188 (boot line seen)
+KILL TARGET (this lane's own process): pid=74 port=3188 world=u5u7r3eb-20261029T15-45-02Z
+WINDOW READ ok:true requests=[] (team.create landed, zero PA asks) -> SIGKILL pid=74
+SIGKILL delivered. The drive is now a harness-abort; verdicts belong to the committed law.

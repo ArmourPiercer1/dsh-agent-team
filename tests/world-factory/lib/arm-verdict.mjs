@@ -1,0 +1,257 @@
+/**
+ * lib/arm-verdict.mjs — R-ENVBLOCK-1: the three-way law for an UNWITNESSED arm.
+ *
+ * A C2 arm whose expected witness (an approval row, a wired call, a typed
+ * refusal) is absent can mean three different things, and this repo has been
+ * sloppy about which claim it is making:
+ *
+ *   1. FAIL          the drive DID reach the expected step and the product did
+ *                    not produce the witness → a product fact.
+ *   2. NOT_REACHED   the drive never got to that step → a fact about THIS TEST
+ *                    HARNESS (drive order, cadence, budget). It says NOTHING
+ *                    about the environment and must never be read as one.
+ *   3. ENV_BLOCK     the environment itself could not provide what the arm
+ *                    needs (the host refuses to provision the governed surface,
+ *                    a kit cannot be provisioned, the sandbox backend is
+ *                    unusable, a port/permission wall) → an environment fact,
+ *                    and it is only usable as evidence when the SIGNAL IS
+ *                    QUOTED AND VERIFIABLE.
+ *
+ * Before this helper, a suite could (and did: `web:fetch-positive`) write
+ * ENV_BLOCK with nothing but an in-test sentence — an environment claim with
+ * no environment evidence, which launders a harness gap into "the host is at
+ * fault". `envSignal()` is now the only way to earn ENV_BLOCK, and
+ * `gateEnvBlock()` is the door a suite's `add()` runs every verdict through,
+ * so a future writer cannot emit ENV_BLOCK without a signal: it is demoted to
+ * NOT_REACHED with the would-be reason kept.
+ *
+ * The shape mirrors the existing precedent in lib/host-sandbox-assets.mjs
+ * (`nativeConfinementEnvBlock`): return `null` unless hard proof exists, and
+ * quote the typed signal inside the returned object.
+ */
+
+export const NOT_REACHED = 'NOT_REACHED'
+
+/**
+ * The closed set of channels a signal may be quoted FROM. A channel is a place
+ * a human can go re-read the same text: the captured host log, the host's
+ * captured stderr/stdout, the kit-provisioning record, the sandbox pre-flight
+ * record, the OS bind result. Anything else is inference, not observation.
+ */
+export const ENV_SIGNAL_CHANNELS = Object.freeze([
+  'host-log',
+  'host-stderr',
+  'host-stdout',
+  'kit-provision',
+  'sandbox-preflight',
+  'port-bind',
+])
+
+/**
+ * Environment-class signals: the host/platform could not provide the thing the
+ * arm needs. Deliberately narrow — every pattern names a provider of a
+ * resource, not a decision about a request.
+ */
+const ENV_SIGNAL_PATTERNS = Object.freeze([
+  // the plane refused to hand the member the governed surface at all
+  /a5-plane: (?:mount|placement)-REFUSED/,
+  // kit / runtime provisioning refused or impossible
+  /kit[- ](?:provision|provisioning|install)\S*\s+(?:REFUSED|refused|failed|FAILED)/,
+  /no (?:usable|available) sandbox backend|sandbox backend:?\s*unusable|probe\S{0,16}unusable/,
+  // OS-level walls observed while binding a listener or touching the home
+  /EADDRINUSE|EACCES|EPERM|ENOENT[\s:]/,
+])
+
+/**
+ * PRODUCT refusal classes. A governed tool refusing a destination, a binding
+ * or a request is the product working — it is the WITNESS a great many arms
+ * are asserting, and it must never be promoted into an environment claim.
+ * Checked BEFORE the environment patterns.
+ */
+const PRODUCT_REFUSAL_PATTERNS = Object.freeze([
+  /PLANE_WEB_[A-Z_]+/,
+  /PLANE_AGENT_STATE_[A-Z_]+/,
+  /governed-web-\w+ (?:REFUSED|pa-refused|lane-denied|default-deny)/,
+  /APPROVAL_DENIED/,
+  /WEB_SEARCH_NO_PROVIDER/,
+])
+
+/**
+ * R-ENVBLOCK-2 (review finding R446-27b, adopted P2 by the 2026-10-29 external
+ * architecture review): **a signal is an identity, not a shape.** Shape is
+ * public — the fields below are documented and they land in every RUN record,
+ * so a hand-written `{ channel: 'host-log', text: 'a5-plane: mount-REFUSED …' }`
+ * would otherwise buy ENV_BLOCK without anyone ever having observed it. Signals
+ * are therefore branded in module-private storage, exactly as
+ * `host-sandbox-assets.mjs` brands its pre-flight records (`PREFLIGHT_RECORDS`):
+ *
+ *   - `BRANDED_SIGNALS`   a WeakSet of the objects envSignal() actually built;
+ *   - `SIGNAL_PROVENANCE` each such object → the corpus ARRAY REFERENCE it was
+ *     proved against (plus the pre-flight object, for that channel).
+ *
+ * The brand is not serialisable and not reachable from outside this module, so
+ * a JSON copy of a genuine signal is a claim ABOUT an observation, not an
+ * observation. `gateEnvBlock()` re-derives the proof at gate time against that
+ * recorded reference, so a quote that is no longer a verbatim member of its own
+ * corpus (mutated, rotated away, or actually a product-refusal line) loses
+ * ENV_BLOCK at the door and the arm falls out exactly as if no signal had been
+ * offered: FAIL if the step was reached, NOT_REACHED otherwise.
+ */
+const BRANDED_SIGNALS = new WeakSet()
+const SIGNAL_PROVENANCE = new WeakMap()
+
+/**
+ * Re-derive a signal's proof from its recorded provenance. Internal: the ONLY
+ * path by which any verdict may trust a signal (R-ENVBLOCK-2).
+ * @param {unknown} sig
+ * @returns {{ok: true, rederived: object}|{ok: false, why: string}}
+ */
+function reverifySignal(sig) {
+  if (sig === null || typeof sig !== 'object') return { ok: false, why: 'no signal object was supplied' }
+  if (!BRANDED_SIGNALS.has(sig)) return { ok: false, why: 'unbranded — this object was not produced by envSignal(); a shape-identical forgery proves nothing' }
+  const prov = SIGNAL_PROVENANCE.get(sig)
+  if (prov === undefined) return { ok: false, why: 'no recorded provenance (a deserialised copy of a signal is not a signal)' }
+  // R-ENVBLOCK-2 F-2: the CHANNEL comes from the provenance record, never from
+  // sig.channel. A branded object is still a mutable object, and a field flipped
+  // after minting must not change which rules the signal is judged by. (The text
+  // needs no such binding: a mutated quote fails corpus membership anyway.)
+  const rederived = envSignal({ channel: prov.channel, text: sig.text, observed: prov.corpus, preflight: prov.preflight })
+  if (rederived === null) return { ok: false, why: 'the quoted line is no longer a verbatim member of the corpus it was proved against, or it classifies as a product refusal' }
+  return {
+    ok: true,
+    rederived,
+    mismatch: sig.channel === prov.channel ? null : { claimedChannel: sig.channel, boundChannel: prov.channel },
+  }
+}
+
+/**
+ * Prove (or fail to prove) an environment-unavailability signal.
+ *
+ * @param {object} input
+ * @param {string} input.channel        one of ENV_SIGNAL_CHANNELS
+ * @param {string} input.text           the VERBATIM observed line the writer
+ *                                      wants to stand behind
+ * @param {string[]} input.observed     the corpus this run actually captured
+ *                                      from that channel (host-log lines read
+ *                                      off disk, provisioning records, …)
+ * @param {object} [input.preflight]    required for `sandbox-preflight`: the
+ *                                      run's pre-flight record; only
+ *                                      `backend === 'unusable'` proves it
+ * @returns {{channel: string, text: string, proof: string, observedCount: number}|null}
+ *          the quotable signal, or null (= there is NO environment evidence)
+ */
+export function envSignal({ channel = null, text = null, observed = [], preflight = null } = {}) {
+  if (!ENV_SIGNAL_CHANNELS.includes(channel)) return null
+  const quote = typeof text === 'string' ? text.trim() : ''
+  if (quote.length === 0) return null
+  if (!Array.isArray(observed) || observed.length === 0) return null
+  // Membership, not fuzzy matching: the quote must be a line this run really
+  // captured, so a writer cannot paraphrase, summarise, or invent one.
+  const index = observed.findIndex((l) => typeof l === 'string' && l.trim() === quote)
+  if (index < 0) return null
+  if (PRODUCT_REFUSAL_PATTERNS.some((re) => re.test(quote))) return null
+  if (!ENV_SIGNAL_PATTERNS.some((re) => re.test(quote))) return null
+  if (channel === 'sandbox-preflight' && preflight?.backend !== 'unusable') return null
+  const signal = {
+    channel,
+    text: quote,
+    proof: `verbatim line ${String(index)} of ${String(observed.length)} captured on the "${channel}" channel`,
+    observedCount: observed.length,
+  }
+  // Brand + provenance live OUTSIDE the object: nothing copyable is added to
+  // it, so shape carries no authority (R-ENVBLOCK-2). The corpus is held by
+  // REFERENCE, which is what lets the gate re-check the quote causally.
+  BRANDED_SIGNALS.add(signal)
+  // The channel is bound HERE, at mint, alongside the corpus reference (F-2).
+  SIGNAL_PROVENANCE.set(signal, { channel, corpus: observed, preflight: preflight ?? null })
+  return signal
+}
+
+/**
+ * Classify an arm whose expected witness is absent.
+ *
+ * @param {object} input
+ * @param {string} input.step            human name of the expected step, for the reason
+ * @param {boolean} input.reachedStep    did the drive reach that step? (witnessed arrival)
+ * @param {object|null} [input.signal]   the object envSignal() returned, nothing else
+ * @param {object} [input.extra]         facts folded into the recorded detail
+ * @returns {{verdict: string, detail: object}}
+ */
+export function classifyUnwitnessedArm({ step = 'the expected step', reachedStep = false, signal = null, extra = {} } = {}) {
+  if (reachedStep === true) {
+    return {
+      verdict: 'FAIL',
+      detail: { reason: `the drive reached ${step} and the expected witness is absent — product behavior`, ...extra },
+    }
+  }
+  // R-ENVBLOCK-2: trust is identity + causal re-derivation, never shape. A
+  // rejected signal is recorded as rejected, never silently dropped.
+  const trust = signal === null || signal === undefined
+    ? { ok: false, why: 'no signal offered' }
+    : reverifySignal(signal)
+  if (trust.ok) {
+    return {
+      verdict: 'ENV_BLOCK',
+      detail: {
+        reason: `the drive never reached ${step}; the environment itself refused what this arm needs — quoted signal (${trust.rederived.channel}): ${trust.rederived.text}`,
+        envSignal: signal,
+        envSignalRecheck: {
+          ok: true,
+          proof: trust.rederived.proof,
+          boundChannel: trust.rederived.channel,
+          channelMismatch: trust.mismatch,
+        },
+        ...extra,
+      },
+    }
+  }
+  return {
+    verdict: NOT_REACHED,
+    detail: {
+      reason: `the drive never reached ${step} and no environment-unavailability signal was observed — a TEST-HARNESS fact, NOT an environment claim`,
+      signalRejected: trust.why,
+      ...extra,
+    },
+  }
+}
+
+/**
+ * The door every suite `add()` runs a verdict through. ENV_BLOCK is the only
+ * verdict it rewrites, and R-ENVBLOCK-2 makes the rewrite causal: the signal in
+ * the detail must be one THIS process produced (`BRANDED_SIGNALS`) and its
+ * quote must still re-prove against the corpus reference it was drawn from.
+ * An unbranded, deserialised, stale or product-refusal signal is ignored — the
+ * verdict falls out as it would with no signal at all, never as ENV_BLOCK — and
+ * the writer's reason is kept so the reader can see what was claimed.
+ *
+ * @param {string} verdict
+ * @param {object} detail
+ * @returns {{verdict: string, detail: object}}
+ */
+export function gateEnvBlock(verdict, detail = {}) {
+  if (verdict !== 'ENV_BLOCK') return { verdict, detail }
+  const trust = reverifySignal(detail?.envSignal)
+  if (trust.ok) {
+    return {
+      verdict,
+      detail: {
+        ...detail,
+        envSignalRecheck: {
+          ok: true,
+          proof: trust.rederived.proof,
+          boundChannel: trust.rederived.channel,
+          channelMismatch: trust.mismatch,
+          at: 'gate',
+        },
+      },
+    }
+  }
+  return {
+    verdict: NOT_REACHED,
+    detail: {
+      ...detail,
+      reason: `ENV_BLOCK demoted by the R-ENVBLOCK-1/R-ENVBLOCK-2 gate: the offered signal is not trusted (${trust.why}). Original writer reason: ${String(detail?.reason ?? '(none)')}`,
+      signalRejected: trust.why,
+    },
+  }
+}
