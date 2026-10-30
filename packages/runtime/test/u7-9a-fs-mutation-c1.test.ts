@@ -44,15 +44,19 @@
  *    every deny shape — the lane's `template-deny-lane`, the settled-DENY
  *    `APPROVAL_DENIED`, and deny-default's ungrantable `domain-ref` arm
  *    (`IO_POLICY_UNSUPPORTED`) — against the WHOLE-directory digest, an
- *    entry-identical WORLD, an attachment-store seam that was never CALLED
- *    and a ledger carrying only the typed denial, each with a flip that
- *    moves every witness. The IP arms pin the TWO public faces of one
+ *    entry-identical WORLD, an attachment-store seam that was never CALLED,
+ *    a ledger carrying only the typed denial and the KERNEL'S OWN admission
+ *    rows (the `a5p2prod:` channel), each with a flip leg that moves every
+ *    witness a READ can move (the store seam and the row ledger; the root
+ *    digest is immovable for a read by law and is pinned on its own). The
+ *    IP arms pin the TWO public faces of one
  *    admitted read as one source: the row's value and the two-block envelope
  *    rendered by the presentation face of the very Definition the mount
  *    registers (committed bytes == disk bytes == the byte count the envelope
  *    prints, the attachment reference field-for-field identical, the path the
- *    root-anchored one, store-reported geometry echoed verbatim, nothing
- *    inline ever; a refusal produces no value and so no envelope at all).
+ *    root-anchored one, store-reported geometry echoed field-for-field,
+ *    nothing inline ever; a refusal produces no value and so no envelope at
+ *    all).
  *
  * The canonicalization parity (fingerprints) is NOT here — it is the
  * golden gate (`u7-9a-mutation-golden-vectors.test.ts`), CA-01 style.
@@ -892,8 +896,21 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
 //    write IS a state write: an empty `saved` array shows nothing landed, the
 //    call counter shows the seam was never touched), the row ledger carrying
 //    ONLY the typed denial line, and — the arm the kernel owes honestly —
-//    whether a Control request was born at all. Each ends in a FLIP that moves
-//    every witness, so the zeros are measured, not vacuous.
+//    whether a Control request was born at all, AND by the kernel's OWN
+//    handwriting on the plane's observe channel: the production admission
+//    assembly writes through the sink the trusted mount hands it
+//    (packages/runtime/src/plugin/live/team-tool-plane.mjs:859 wraps every
+//    row as `a5p2prod: <event>`), so a leg reads the CENTER's ledger instead
+//    of inferring from the row's self-report. A lane-denied call leaves NO
+//    call-bearing kernel row; a PA-denied call leaves exactly ONE
+//    `admission-requires-approval` and NO grant row; the deny-default call
+//    leaves exactly ONE `production-admission-default-deny` and NO
+//    `admission-requires-approval` — the refusal was born AT the kernel's
+//    coverage gate, it was not admitted, granted or parked elsewhere and
+//    undone here. Each leg ends in a FLIP that moves every witness a READ can
+//    move (the store seam and the row ledger), so the zeros are measured, not
+//    vacuous. The root digest is NOT such a witness: for a read it is
+//    immovable by law, and IR-1's flip leg pins that on its own.
 //  (2) THE PUBLIC RESULT FACE (IP). A governed image read produces TWO faces of
 //    the same fact, and the host consumes the second: the row's execute VALUE
 //    (the tool-result side) and the row's OWN presentation face — the
@@ -938,9 +955,15 @@ interface ImageStore {
   saveImage: (i: { data: Buffer; mediaType: string; name?: string }) => Promise<Record<string, unknown>>
 }
 
-/** The store mirror. `refOver` emulates a store that reports its OWN facts
- *  about the committed bytes (a real store downscales and reports the
- *  post-transform geometry), which is what the public faces must echo. */
+/** The store mirror, faithful to the host attachment store's DECLARED face:
+ *  a reference carries `bytes` (the schema requires it), so the default ref
+ *  reports the length of what it was handed, and `refOver` emulates a store
+ *  that reports its OWN facts about those bytes (a real store downscales and
+ *  names the post-transform geometry plus the original dimensions). Which of
+ *  the two branches the row takes therefore matters: the IP legs walk the
+ *  store-reported branch (`ref.bytes`), while the I-* legs keep walking the
+ *  measured-read fallback (`?? read.byteLength`) because their own store
+ *  fixture omits `bytes` — both branches stay covered, neither is assumed. */
 const makeImageStore = (refOver: Record<string, unknown> = {}): ImageStore => {
   const store: ImageStore = {
     imageLimits: { mediaTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], maxImageBytes: 8 * 1024 * 1024, maxMessageImageBytes: 5 * 1024 * 1024 },
@@ -951,6 +974,7 @@ const makeImageStore = (refOver: Record<string, unknown> = {}): ImageStore => {
       const ref: Record<string, unknown> = {
         attachmentId: `att-${String(store.saved.length + 1)}`,
         mediaType,
+        bytes: data.byteLength,
         width: 8,
         height: 8,
         ...(name === undefined ? {} : { name }),
@@ -998,11 +1022,26 @@ const valueOrRefusal = (r: { ok: true; value: ImageRowValue } | { ok: false; msg
   if (!r.ok) throw new Error(`expected an admitted image read, got: ${r.msg}`)
   return r.value
 }
+/** Count the PRODUCTION ADMISSION KERNEL's own rows on the plane's observe
+ *  channel. The mount hands the center its sink
+ *  (packages/runtime/src/plugin/live/team-tool-plane.mjs:859) and every row
+ *  arrives as `a5p2prod: <event>`, the events being the kernel's own
+ *  (packages/runtime/tool-admission/admission-kernel.ts — :1191 the
+ *  default-deny coverage gate, :450 requires-approval, :307 grant-minted,
+ *  :578 approved-grant-issued). This is what lets a refusal leg say "no
+ *  authority was ever born here" from the CENTER's ledger rather than from
+ *  the row's self-report. The two mount-time rows
+ *  (`production-admission-note`, `production-admission-constructed`) ride
+ *  every mount, so a leg claiming NOTHING happened also pins the total. */
+const kernelRows = (observe: string[], event: string): number =>
+  observe.filter((l) => l.includes(`a5p2prod: ${event}`)).length
+const kernelRowTotal = (observe: string[]): number => observe.filter((l) => l.includes('a5p2prod: ')).length
+
 const laneDenyImage = { default: 'deny', allow: [], ask: [], deny: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }] }
 const askDefaultAllowImage = { default: 'ask', allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], ask: [], deny: [] }
 const denyDefaultNamedAskImage = { default: 'deny', allow: [], ask: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], deny: [] }
 
-describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-deny, deny-default), each with a moving flip', () => {
+describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-deny, deny-default), each with a witness-moving flip leg', () => {
   it('IR-1 governance lane-deny: TYPED template-deny-lane before any read; WHOLE-directory and WORLD entries identical over an existing image AND a fresh path; the store seam is never called; the ledger carries only the typed lane denial; the ask+approve flip commits ONCE', async () => {
     const photo = join(ROOT_DIR, 'photo.png')
     const fresh = join(ROOT_DIR, 'ir1-never-born.png')
@@ -1036,12 +1075,24 @@ describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-den
     expect(observe.filter((l) => l.includes('governed-image lane-denied refusal code=template-deny-lane'))).toHaveLength(2)
     expect(ran(observe, 'image')).toHaveLength(0)
     expect(observe.filter((l) => l.includes('governed-image') && !l.includes('lane-denied'))).toHaveLength(0)
+    // THE CENTER'S OWN LEDGER: the lane refused BEFORE the admission edge, so
+    // the kernel wrote NOTHING for these two calls — not the default-deny
+    // coverage note, not an approval request, not a grant. The only
+    // `a5p2prod:` rows on the channel are the two the mount itself writes at
+    // construction, which is what makes the four zeros a CLOSED statement: a
+    // future call-bearing kernel event cannot slip through uncounted.
+    for (const event of ['production-admission-default-deny', 'admission-requires-approval', 'admission-grant-minted', 'admission-approved-grant-issued']) {
+      expect(kernelRows(observe, event), `a lane-denied read must never reach the admission edge (${event})`).toBe(0)
+    }
+    expect(kernelRowTotal(observe), 'only the two mount-time admission rows may exist').toBe(2)
     dispose()
 
     // FLIP (sensitivity): the SAME call under the ask template with an
-    // approving control leg moves every witness. The store — not the
-    // directory — is what a read may touch: the root digest stays put even
-    // for a read that RAN, because read_image owns no write face.
+    // approving control leg moves every witness a READ can move — the store
+    // seam and the row ledger, plus the kernel rows (this leg is the only one
+    // here that walks the admission edge at all). The root digest is NOT such
+    // a witness: for a read it is immovable by law, pinned by the last line
+    // below, because read_image owns no write face.
     const observeFlip: string[] = []
     const auditFlip: string[] = []
     const storeFlip = makeImageStore()
@@ -1053,6 +1104,10 @@ describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-den
     expect(storeFlip.saved[0]!.bytes.equals(readFileSync(photo))).toBe(true)
     expect(ran(observeFlip, 'image')).toHaveLength(1)
     expect(auditFlip.some((l) => l.startsWith('c1-standin-landing'))).toBe(true)
+    expect(kernelRows(observeFlip, 'admission-requires-approval')).toBe(1)
+    expect(kernelRows(observeFlip, 'admission-grant-minted')).toBe(1)
+    expect(kernelRows(observeFlip, 'admission-approved-grant-issued')).toBe(1)
+    expect(kernelRows(observeFlip, 'production-admission-default-deny')).toBe(0)
     expect(dirDigest(ROOT_DIR), 'a READ that ran still writes nothing into the governed root').toBe(digestBefore)
     flip.dispose()
   })
@@ -1083,6 +1138,16 @@ describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-den
     expect(observe.filter((l) => l.includes('governed-image pa-refused code=APPROVAL_DENIED'))).toHaveLength(1)
     expect(ran(observe, 'image')).toHaveLength(0)
     expect(observe.filter((l) => l.includes('governed-image') && !l.includes('pa-refused'))).toHaveLength(0)
+    // THE CENTER'S OWN LEDGER: the approval case WAS born here — exactly one
+    // `admission-requires-approval` — and NO grant row was ever written for it
+    // (neither minted nor issued): the kernel's own testimony that the denial
+    // closed the case before any authority existed. The total is pinned with
+    // it — two mount-time rows plus that one request, nothing else.
+    expect(kernelRows(observe, 'admission-requires-approval')).toBe(1)
+    expect(kernelRows(observe, 'admission-grant-minted')).toBe(0)
+    expect(kernelRows(observe, 'admission-approved-grant-issued')).toBe(0)
+    expect(kernelRows(observe, 'production-admission-default-deny')).toBe(0)
+    expect(kernelRowTotal(observe), 'two mount-time rows and exactly one approval request').toBe(3)
     dispose()
 
     // FLIP: the approving leg runs the SAME call once — so IR-2's zeros are
@@ -1126,6 +1191,18 @@ describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-den
     expect(observe.filter((l) => l.includes('governed-image pa-refused code=IO_POLICY_UNSUPPORTED'))).toHaveLength(1)
     expect(ran(observe, 'image')).toHaveLength(0)
     expect(observe.filter((l) => l.includes('governed-image') && !l.includes('pa-refused'))).toHaveLength(0)
+    // THE CENTER'S OWN LEDGER, and the door this closes: the refusal was
+    // written BY the kernel's default-deny coverage gate — exactly ONE
+    // `production-admission-default-deny` for the one uncovered arm — and NO
+    // `admission-requires-approval` was ever emitted. So the "no Control
+    // request" zero above is not an unreachable leg, and not a call that was
+    // admitted or granted elsewhere and undone here: the center itself says
+    // the effect set died at its coverage gate.
+    expect(kernelRows(observe, 'production-admission-default-deny')).toBe(1)
+    expect(kernelRows(observe, 'admission-requires-approval')).toBe(0)
+    expect(kernelRows(observe, 'admission-grant-minted')).toBe(0)
+    expect(kernelRows(observe, 'admission-approved-grant-issued')).toBe(0)
+    expect(kernelRowTotal(observe), 'two mount-time rows and exactly one coverage-gate refusal').toBe(3)
     dispose()
   })
 })
@@ -1153,9 +1230,15 @@ describe('u7-9a C1 IP — read_image result face vs the envelope face the mount 
 
     const value = valueOrRefusal(await attemptImage(() => rowDef.execute({ file_path: photo }, imageExec())))
     expect(store.saved).toHaveLength(1)
-    // (a) the byte identity at the state seam: committed bytes ARE disk bytes.
+    // (a) the byte identity at the state seam: what the store RECEIVED is the
+    // disk length, and what it COMMITTED is the disk bytes themselves.
+    expect(store.calls[0]!.byteLength).toBe(disk.byteLength)
     expect(store.saved[0]!.bytes.equals(disk)).toBe(true)
     // (b) the public tool-result side: the reference it answers, never bytes.
+    // This leg walks the STORE-REPORTED branch (the mirror names `bytes`, as
+    // the host face requires), so the count below is the store's own number
+    // for what it was handed — and it still equals the disk length, which is
+    // the identity that has to hold for the model-facing face.
     expect(value.path).toBe(photo)
     const image = value.image ?? {}
     expect(String(image['attachmentId'])).toBe(store.saved[0]!.attachmentId)
@@ -1178,10 +1261,21 @@ describe('u7-9a C1 IP — read_image result face vs the envelope face the mount 
     expect(wire.includes('base64')).toBe(false)
     expect(wire.includes(disk.toString('base64'))).toBe(false)
     expect(Object.prototype.hasOwnProperty.call(blocks[1]!, 'data')).toBe(false)
-    // the declared schema is the reference shape too (a path + a reference,
-    // closed: nothing else may ride the result).
+    // the declared schema is the reference shape too — closed at BOTH levels,
+    // so nothing else may ride the result and the reference cannot be
+    // half-populated (packages/tools/fs-family/src/image-row.mjs is the face's
+    // owner; the inner arms are pinned with the same law as the outer one).
     expect(rowDef.output!.schema.required).toEqual(['path', 'image'])
     expect(rowDef.output!.schema.additionalProperties).toBe(false)
+    const imageSchema = rowDef.output!.schema.properties?.image as { required?: unknown; additionalProperties?: boolean; properties?: Record<string, unknown> }
+    expect(imageSchema.required).toEqual(['attachmentId', 'mediaType', 'bytes', 'width', 'height'])
+    expect(imageSchema.additionalProperties).toBe(false)
+    const originalDimensions = imageSchema.properties?.originalDimensions as { required?: unknown; additionalProperties?: boolean }
+    expect(originalDimensions.required).toEqual(['width', 'height'])
+    expect(originalDimensions.additionalProperties).toBe(false)
+    // the value this very face renders satisfies the face it is rendered under
+    // (required arms present, no unlisted key on the reference):
+    for (const key of ['attachmentId', 'mediaType', 'bytes', 'width', 'height']) expect(Object.prototype.hasOwnProperty.call(image, key)).toBe(true)
 
     // (f) PATH SCOPE through the same production wiring: a RELATIVE call is
     // anchored into the governed root and both faces report the anchored
@@ -1196,7 +1290,7 @@ describe('u7-9a C1 IP — read_image result face vs the envelope face the mount 
     dispose()
   })
 
-  it('IP-2 where the store reports its OWN facts (a downscaled reference), value AND envelope report those facts verbatim — the plane never re-derives, never invents, and still commits the disk bytes', async () => {
+  it('IP-2 where the store reports its OWN facts (a downscaled reference), value AND envelope carry those facts field-for-field — the plane never re-derives, never invents, and still commits the disk bytes', async () => {
     const photo = join(ROOT_DIR, 'photo.png')
     const disk = readFileSync(photo)
     // a store that downscales: it reports the POST-transform geometry and the
@@ -1218,7 +1312,7 @@ describe('u7-9a C1 IP — read_image result face vs the envelope face the mount 
     expect(blocks[1]!['attachment']).toEqual(image)
     expect(envelope).toContain('image/png image, 4x4 px, 999 bytes')
     // the downscale advice is the STORE's numbers, computed once by the face
-    // (16/4 on x, 8/2 on y — the anisotropic spelling).
+    // (16/4 on x, 8/4 on y — the anisotropic spelling).
     expect(envelope).toContain('downscaled from 16x8 px')
     expect(envelope).toContain('multiply x coordinates by 4.00 and y coordinates by 2.00')
     dispose()
