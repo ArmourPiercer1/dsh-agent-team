@@ -1,0 +1,36 @@
+== R483-fl RED state: worktree WITHOUT tests/deepseek-harness-test-use ==
+== captured: 2026-10-30T10:31:27Z (re-capture after message de-duplication; the pre-guard behavior in this exact state was 4 REDS grading the MAIN checkout's manifest, per the R483 review) ==
+$ git rev-parse --abbrev-ref HEAD -> task/u7r3-shomeimpl-20261031
+$ ls tests/deepseek-harness-test-use -> ls: cannot access '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl/tests/deepseek-harness-test-use': No such file or directory
+$ pnpm exec vitest run packages/testkit/test/plugin-dsh-compat.test.ts
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl
+
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/testkit/test/plugin-dsh-compat.test.ts [ packages/testkit/test/plugin-dsh-compat.test.ts ]
+DSH_TEST_USE_NOT_PROVISIONED: test-use provisioning probe refused the grade: the test-use root walked up OUT of this worktree into a foreign tree; this suite reads the manifest under test from the resolved root, so continuing would grade that foreign checkout (the R483-fl trap)
+  path found:    /srv/workspace/dsh-plugins/dsh-agent-team
+  expected root: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl (this test's own tree; test-use must be pinned at 639ed015397290b3745d163aafe02ffee4aa3f84)
+  provisioning:  provision a worktree-local tests/deepseek-harness-test-use inside the expected root: `git clone --local --no-hardlinks <pristine baseline> tests/deepseek-harness-test-use` (shared baseline /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness, or copy from the main checkout), then `git -C tests/deepseek-harness-test-use checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84` and require `git -C tests/deepseek-harness-test-use rev-parse HEAD` = the pin with a clean `git status --porcelain` (docs/TEST_METHODS.md §1; build per §2 before runtime-consuming suites).
+ ❯ fail packages/testkit/test/plugin-dsh-compat.test.ts:106:19
+    104| function assertTestUseProvisioned(input: ProvisioningProbeInput): stri…
+    105|   const fail = (detail: string, foundPath: string | null): Error => {
+    106|     const error = new Error(
+       |                   ^
+    107|       `test-use provisioning probe refused the grade: ${detail}\n`
+    108|       + `  path found:    ${foundPath ?? `(no ancestor of this test fi…
+ ❯ assertTestUseProvisioned packages/testkit/test/plugin-dsh-compat.test.ts:121:11
+ ❯ packages/testkit/test/plugin-dsh-compat.test.ts:156:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  10:31:28
+   Duration  204ms (transform 36ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+vitest exit: 1

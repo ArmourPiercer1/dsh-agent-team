@@ -1,0 +1,44 @@
+== R483-fl provisioning triple (TEST_METHODS §1 fresh-worktree flow), captured 2026-10-30T10:32:03Z ==
+source note: the shared baseline /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness exists in this environment
+but WITHOUT its .git ('git -C ... rev-parse HEAD' -> 'not a git repository'; environment migration gap),
+so the --local clone source here is the MAIN checkout's tests/deepseek-harness-test-use, which is the
+alternative the failure text itself names ('or copy from the main checkout'). HEAD verified @ pin below.
+
+TEST_USE_BASELINE_SHA read from tests/paths.mjs (not restated): 639ed015397290b3745d163aafe02ffee4aa3f84
+
+$ git clone --local --no-hardlinks /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use /srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/u7r3-r483fl-triple-probe
+warning: source repository is shallow, ignoring --local
+warning: --local is ignored
+Note: switching to '639ed015397290b3745d163aafe02ffee4aa3f84'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+clone exit: 0
+
+$ git -C scratch rev-parse HEAD (clone lands on the source's detached pin commit directly)
+639ed015397290b3745d163aafe02ffee4aa3f84
+
+$ git -C scratch checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84
+detach exit: 0
+
+TRIPLE-CHECK 1: rev-parse HEAD == pin?
+YES (639ed015397290b3745d163aafe02ffee4aa3f84)
+TRIPLE-CHECK 2: git status --porcelain line count (must be 0)
+0
+TRIPLE-CHECK 3: porcelain empty AND detached (symbolic-ref must fail)
+detached HEAD confirmed (symbolic-ref exit 1)
+
+(scratch clone deleted after capture; the lane worktree itself is provisioned via the rsync copy)

@@ -30,6 +30,25 @@
  * only check, no `allow-version` exemption making a mismatched case pass,
  * no field-presence-only assertion without checker behavior.
  *
+ * [R483-fl, this round] NO SILENT CROSS-TREE GRADING. This suite reads TWO
+ * trees: the manifest under test (`repoRoot/package.json` — the tree this
+ * test file lives in) and the evaluator host (`test-use`). Walking UP for the
+ * FIRST tree is a trap: a git worktree without the gitignored
+ * `tests/deepseek-harness-test-use` resolved to the MAIN checkout and graded
+ * THAT tree's manifest instead — measured on PR #483's branch: 4 REDs against
+ * a foreign 9-peer peer set while the branch itself declared ten. The probe
+ * below (`assertTestUseProvisioned`, self-tested in this file) fails closed
+ * with `DSH_TEST_USE_NOT_PROVISIONED` unless the resolved root IS this
+ * worktree (realpath-compared) AND its test-use checkout is a git repo whose
+ * HEAD equals `TEST_USE_BASELINE_SHA`. Main-checkout runs, provisioned
+ * worktrees, and the hosted census legs (which provision at the checkout root
+ * and assert the pin — see `.github/workflows/census-runtime.yml` /
+ * `ci-full.yml`; `pr-gate.yml` refuses its census leg before vitest ever
+ * starts) all satisfy that shape, so the probe is a no-op exactly where this
+ * suite runs green today; a worktree that has NOT provisioned its own
+ * test-use now stops loudly with the provisioning instruction (TEST_METHODS
+ * §1) instead of grading a foreign tree.
+ *
  * 0.2.0-rc.2 host upgrade round (2026-10-03, task/dsh-020rc2-upgrade-20261003):
  * the version expectations are read from the canonical pin
  * (`tests/paths.mjs` → `DSH_BASELINE_VERSION`) instead of restating the
@@ -42,18 +61,105 @@
  * plugin-compatibility.ts`), so no assertion had to be weakened — only the
  * pinned generation moved.
  */
-import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { afterAll, describe, expect, it } from 'vitest'
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { join } from 'node:path'
-import { DSH_BASELINE_VERSION, findTestRepoRoot, testUseTree, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
+import { dirname, join } from 'node:path'
+import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, TEST_USE_REL, testUseTree } from '../../../tests/paths.mjs'
 
-const resolvedRepoRoot = findTestRepoRoot(fileURLToPath(import.meta.url))
-if (resolvedRepoRoot === null) {
-  throw new Error('plugin-dsh-compat: cannot resolve the team-repo root from the test location')
+/**
+ * Fail-closed test-use provisioning probe (R483-fl). Named error so a red in
+ * any transcript is greppable and self-explaining; the message carries the
+ * three facts a stranger needs: what was found, what was expected, and the
+ * exact provisioning command per docs/TEST_METHODS.md §1.
+ */
+const TEST_USE_NOT_PROVISIONED = 'DSH_TEST_USE_NOT_PROVISIONED'
+
+/** The §1 fresh-worktree provisioning triple, spelled out for the failure text. */
+function provisioningInstruction(expectedSha: string): string {
+  return 'provision a worktree-local ' + TEST_USE_REL + ' inside the expected root: '
+    + '`git clone --local --no-hardlinks <pristine baseline> ' + TEST_USE_REL + '` '
+    + '(shared baseline /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness, or copy from the main checkout), '
+    + 'then `git -C ' + TEST_USE_REL + ' checkout --detach ' + expectedSha + '` and require '
+    + '`git -C ' + TEST_USE_REL + ' rev-parse HEAD` = the pin with a clean `git status --porcelain` '
+    + '(docs/TEST_METHODS.md §1; build per §2 before runtime-consuming suites).'
 }
-// A separate const so the null-guard narrowing is part of the declared type
-// (top-level narrowing does not flow into function bodies).
+
+interface ProvisioningProbeInput {
+  /** What `findTestRepoRoot` walked up to (null when no ancestor carries the marker). */
+  readonly foundRoot: string | null
+  /** Top of the worktree/checkout the TEST FILE itself lives in (git toplevel). */
+  readonly worktreeTop: string
+  /** The baseline the test-use checkout's HEAD must equal (`TEST_USE_BASELINE_SHA`). */
+  readonly expectedSha: string
+}
+
+/**
+ * Returns the validated repo root or throws `DSH_TEST_USE_NOT_PROVISIONED`.
+ * Pure in its inputs (filesystem + `git rev-parse HEAD` under the resolved
+ * root only), which is what lets the self-test below drive every state from
+ * fixture trees instead of from the absence of a real provisioning mistake.
+ */
+function assertTestUseProvisioned(input: ProvisioningProbeInput): string {
+  const fail = (detail: string, foundPath: string | null): Error => {
+    const error = new Error(
+      `test-use provisioning probe refused the grade: ${detail}\n`
+      + `  path found:    ${foundPath ?? `(no ancestor of this test file carries ${TEST_USE_REL})`}\n`
+      + `  expected root: ${input.worktreeTop} (this test's own tree; test-use must be pinned at ${input.expectedSha})\n`
+      + `  provisioning:  ${provisioningInstruction(input.expectedSha)}`,
+    )
+    error.name = TEST_USE_NOT_PROVISIONED
+    return error
+  }
+  if (input.foundRoot === null) {
+    throw fail('no ancestor of this test file carries the test-use marker, so nothing here can grade the pinned host', null)
+  }
+  const foundRoot = realpathSync(input.foundRoot)
+  const worktreeTop = realpathSync(input.worktreeTop)
+  if (foundRoot !== worktreeTop) {
+    throw fail(
+      'the test-use root walked up OUT of this worktree into a foreign tree; this suite reads the manifest '
+      + 'under test from the resolved root, so continuing would grade that foreign checkout (the R483-fl trap)',
+      foundRoot,
+    )
+  }
+  const testUse = join(foundRoot, TEST_USE_REL)
+  if (!existsSync(join(testUse, '.git'))) {
+    throw fail(`${TEST_USE_REL} exists but is not its own git checkout (TEST_METHODS §1: the pristine tree is its own git repo)`, testUse)
+  }
+  let head: string
+  try {
+    head = execFileSync('git', ['-C', testUse, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  } catch {
+    throw fail(`${TEST_USE_REL} is present but git could not read its HEAD — it is not a usable pinned checkout`, testUse)
+  }
+  if (head !== input.expectedSha) {
+    throw fail(`the test-use checkout is pinned at ${head}, not at the baseline ${input.expectedSha} — grading a different host than the pin claims is not a variation, it is a false grade`, testUse)
+  }
+  return foundRoot
+}
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+/**
+ * The tree UNDER REVIEW: the worktree/checkout this test file itself lives in.
+ * Same discipline `rc2-kit-pin-hygiene.test.ts` adopted after the ~954-offender
+ * incident — the subject of a guard is enumerated from the tree the guard
+ * file lives in, never from wherever the walk-up happened to land.
+ */
+const WORKTREE_TOP = realpathSync(
+  execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: HERE, encoding: 'utf8' }).trim(),
+)
+// Fails closed (DSH_TEST_USE_NOT_PROVISIONED) BEFORE any case below runs when
+// this tree has not provisioned its own pinned test-use — no silent grading
+// of a foreign checkout, no vacuous local green.
+const resolvedRepoRoot = assertTestUseProvisioned({
+  foundRoot: findTestRepoRoot(HERE),
+  worktreeTop: WORKTREE_TOP,
+  expectedSha: TEST_USE_BASELINE_SHA,
+})
+// Declared type kept explicit: `repoRoot` is the probe-validated root, and
+// every read below (manifest, evaluator path) goes through it.
 const repoRoot: string = resolvedRepoRoot
 
 /**
@@ -237,5 +343,122 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     // smoke asserts no compatibility.json grant exists.
     expect(issue?.peers).toEqual(EXPECTED_HOST_PEERS)
     expect(issue?.exempted).toBe(true)
+  })
+})
+
+/**
+ * R483-fl — the provisioning probe's own tests, driven from fixture trees
+ * under `tests/homes/` (gitignored, in-workspace, removed at teardown, per
+ * TEST_METHODS §7 — same scratch convention `rc2-kit-fault-injection.test.ts`
+ * uses). Every RED state of the probe is reproducible here WITHOUT hiding a
+ * real provisioning: the probe is pure in its inputs, so the fixtures plant
+ * exactly the tree shape each branch of the guard sees. The GREEN fixture is
+ * the shape main-checkout runs, provisioned worktrees, and the hosted census
+ * legs all present: resolved root = own tree, test-use = its own git repo at
+ * the expected pin.
+ */
+describe('R483-fl provisioning probe fails closed (DSH_TEST_USE_NOT_PROVISIONED, fixture trees)', () => {
+  const SCRATCH = realpathSync(mkdtempSync(join(WORKTREE_TOP, 'tests', 'homes', 'u7r3-r483fl-')))
+
+  afterAll(() => {
+    rmSync(SCRATCH, { recursive: true, force: true })
+  })
+
+  /** A bare fake tree root (no test-use marker). */
+  function makeTree(name: string): string {
+    const dir = join(SCRATCH, name)
+    mkdirSync(dir, { recursive: true })
+    return realpathSync(dir)
+  }
+
+  /**
+   * A tree with `tests/deepseek-harness-test-use` inside; `mode: 'repo'`
+   * makes the marker its own git checkout (one empty commit) and returns its
+   * HEAD as the fixture "pin"; `mode: 'plain'` leaves a marker that is not a
+   * checkout.
+   */
+  function makeProvisionedTree(name: string, mode: 'repo' | 'plain'): { root: string; head: string } {
+    const root = makeTree(name)
+    const testUse = join(root, TEST_USE_REL)
+    mkdirSync(testUse, { recursive: true })
+    if (mode === 'plain') return { root, head: '' }
+    execFileSync('git', ['-C', testUse, 'init', '-q', '.'], { stdio: 'ignore' })
+    execFileSync('git', ['-C', testUse, '-c', 'user.email=guard@fixture.invalid', '-c', 'user.name=guard',
+      'commit', '-q', '--allow-empty', '-m', 'fixture baseline'], { stdio: 'ignore' })
+    const head = execFileSync('git', ['-C', testUse, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    return { root, head }
+  }
+
+  /** Run the probe, capture the failure instead of letting it escape the case. */
+  function probeFailure(input: ProvisioningProbeInput): { name: string; message: string } | null {
+    try {
+      assertTestUseProvisioned(input)
+      return null
+    } catch (error) {
+      const err = error as Error
+      return { name: err.name, message: err.message }
+    }
+  }
+
+  const FAKE_PIN = 'f'.repeat(40)
+
+  it('green fixture: own-tree test-use at its pin passes and returns the validated root', () => {
+    const fixture = makeProvisionedTree('green', 'repo')
+    const validated = assertTestUseProvisioned({
+      foundRoot: fixture.root,
+      worktreeTop: fixture.root,
+      expectedSha: fixture.head,
+    })
+    expect(validated).toBe(fixture.root)
+  })
+
+  it('green fixture through a symlink alias of the worktree top (realpath comparison, not string comparison)', () => {
+    const fixture = makeProvisionedTree('symlink', 'repo')
+    const alias = join(SCRATCH, 'alias-to-green')
+    execFileSync('ln', ['-s', fixture.root, alias])
+    const validated = assertTestUseProvisioned({
+      foundRoot: alias,
+      worktreeTop: fixture.root,
+      expectedSha: fixture.head,
+    })
+    expect(validated).toBe(fixture.root)
+  })
+
+  it('RED: a resolved root OUTSIDE this worktree (the main-checkout fallback) fails closed, naming both roots and the command', () => {
+    const foreign = makeProvisionedTree('foreign-found', 'repo')
+    const own = makeTree('own-worktree')
+    const failure = probeFailure({ foundRoot: foreign.root, worktreeTop: own, expectedSha: FAKE_PIN })
+    expect(failure, 'the walk-up-to-foreign-tree state must not pass').not.toBeNull()
+    expect(failure!.name).toBe(TEST_USE_NOT_PROVISIONED)
+    expect(failure!.message).toContain(foreign.root) // path found
+    expect(failure!.message).toContain(own) // expected root
+    expect(failure!.message).toContain('clone --local --no-hardlinks') // §1 instruction
+    expect(failure!.message).toContain(FAKE_PIN)
+  })
+
+  it('RED: a null resolution fails closed with the marker path and the instruction', () => {
+    const own = makeTree('null-found')
+    const failure = probeFailure({ foundRoot: null, worktreeTop: own, expectedSha: FAKE_PIN })
+    expect(failure, 'no marker anywhere must not pass').not.toBeNull()
+    expect(failure!.name).toBe(TEST_USE_NOT_PROVISIONED)
+    expect(failure!.message).toContain(TEST_USE_REL)
+    expect(failure!.message).toContain(own)
+  })
+
+  it('RED: marker present in the right tree but not a git checkout fails closed', () => {
+    const fixture = makeProvisionedTree('not-a-repo', 'plain')
+    const failure = probeFailure({ foundRoot: fixture.root, worktreeTop: fixture.root, expectedSha: FAKE_PIN })
+    expect(failure, 'a directory masquerading as the pristine host must not pass').not.toBeNull()
+    expect(failure!.name).toBe(TEST_USE_NOT_PROVISIONED)
+    expect(failure!.message).toContain('not its own git checkout')
+  })
+
+  it('RED: an in-tree checkout at the WRONG commit fails closed, naming found HEAD and the pin', () => {
+    const fixture = makeProvisionedTree('wrong-pin', 'repo')
+    const failure = probeFailure({ foundRoot: fixture.root, worktreeTop: fixture.root, expectedSha: FAKE_PIN })
+    expect(failure, 'a baseline drift must not pass').not.toBeNull()
+    expect(failure!.name).toBe(TEST_USE_NOT_PROVISIONED)
+    expect(failure!.message).toContain(fixture.head) // what it actually is
+    expect(failure!.message).toContain(FAKE_PIN) // what it must be
   })
 })
