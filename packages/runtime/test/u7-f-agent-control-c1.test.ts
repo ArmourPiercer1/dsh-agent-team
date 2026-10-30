@@ -42,6 +42,14 @@
  * deny-lane and cancelled PA arms (zero port), the zero-flip mount gate
  * (no agentControlEnabled ⇒ no rows at all), and the closed-schema
  * validation of the family contribution.
+ *
+ * U7-R3 C1 wave adds the L3-GRADE group (AC-60…AC-65): the offline
+ * PASS-by-assertions GRADING of the amplification/enumeration refusal
+ * witnesses — the same behavior the live `ac:spawn-failclosed` cell
+ * witnesses (and the #406 verdict law records REFUSED, never PASS),
+ * graded here as real assertions. See the group header for the live-cell
+ * mapping and the honesty disclosure; C1 arms do NOT lift L3 (the PR
+ * #456/#464 precedent semantics).
  */
 import { describe, it, expect } from 'vitest'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
@@ -803,3 +811,189 @@ describe('u7-f C1 effect-split arm — the PA requested sets ARE the law (a)', (
 // AC-1 laws live in `u7-ac1-subagents-port-c1.test.ts` (AC1-P1…P10): forced
 // `toolFilter`, no agentOptions/persona, the typed route/PTC refusals and
 // the child-toolview witness. Nothing here re-pins the wrong face.
+
+// ─────────────────────────────────────────────────────────────────────────
+// THE L3-GRADE ARMS (U7-R3 C1 wave): the SAME refusal behavior the LIVE
+// `ac:spawn-failclosed` cell witnesses, GRADED PASS-by-assertions in THIS
+// offline suite. Why the live record cannot grade it: the #406 verdict law
+// for ac:spawn-failclosed has NO PASS branch — the DESIGNED answer IS a
+// refusal, and a refusal-that-is-the-answer is recorded VERBATIM as REFUSED
+// ("never promoted to PASS"), so the record grades the case REFUSED and
+// cannot back a PROVEN L3 (ledger subagent L3 note; PR #456/#464 precedent
+// semantics: a C1 arm never lifts L3). The live suite DOES show the other
+// shape — `ac:interrupt-foreign-zero` grades a refusal PASS by its witness
+// set. These arms build that grading offline and deterministically (the
+// u74a G5/G6 precedent): the QUADRUPLE
+//   (1) TYPED HEAD — the tool_result head the model sees carries
+//       `refused-agent-control` + the typed code, verbatim in shape;
+//   (2) ZERO port calls — the recording fake stays at zero (no spawn,
+//       no catalog read: the honest zero is never a half-read);
+//   (3) ZERO Control rows — the Control-leg audit is EMPTY: the fence
+//       lands BEFORE the PA edge, no ask was ever opened (the offline
+//       counterpart of the live ledger witness controlRowsForSubagent
+//       === 0 / zero ask rows);
+//   (4) ZERO RAN witnesses — no `agent-control-<row> RAN` observe line;
+// each refusal paired with a FLIP (same world where the shape allows it,
+// else the pair world differing ONLY in the refused arm) proving the zero
+// is a refusal and not a dead mount: the admitted call RANS (port 1,
+// audit 1, RAN 1). DISCLOSED HONESTY: (a) the live cell's exact trigger —
+// a mount with NO caller-authority snapshot failing closed — was
+// retargeted by the AC-1 TIER A ceiling (AC-26a) after the live record
+// bound pre-ceiling teamSha ab8a5f236; the surviving fail-closed condition
+// of the SAME fence, with the SAME typed head and the SAME
+// "no caller-authority snapshot … fail closed" detail, is a PRESENT-BUT-
+// UNBOUNDED snapshot (AC-60 mirrors that current-product form); (b) the
+// C1 stand-in legs land grants at the kernel edge but mint NO durable
+// Control row (a5-m1-control-legs header) — the audit witnesses the ask
+// OPENING, so "zero Control rows" grades here as the strongest offline
+// form "the PA edge was never reached"; durable-row accounting belongs to
+// C2; (c) this is C1: offline grading of refusal LOGIC only. The subagent
+// and list_agents L3 cells stay NOT_VERIFIED — PROVEN needs a LIVE C2
+// PASS-grade record, which these arms neither fake nor claim.
+describe('u7-f C1 L3-grade arms — refusals GRADED PASS-by-assertions (offline mirror of the live ac: witnesses)', () => {
+  interface L3World { plane: PlaneValue; fake: FakePort; observe: string[]; audit: string[] }
+  const l3 = async (opts: {
+    authority?: 'bounded' | 'unbounded' | 'ceiling' | 'non-continuable'
+    controlLeg?: 'approve' | 'deny' | 'absent'
+  } = {}): Promise<L3World> => {
+    const fake = makeFakeRuntime()
+    const observe: string[] = []
+    const audit: string[] = []
+    const injected = opts.authority === 'ceiling'
+      ? { agentRuntime: fake, agentScope: AGENT_SCOPE }
+      : opts.authority === 'unbounded'
+        ? { agentRuntime: fake, agentScope: AGENT_SCOPE, callerAuthority: 'not-a-record' }
+        : opts.authority === 'non-continuable'
+          ? trustedInjected(fake, { callerAuthority: { providers: ['prov-a'], models: ['model-1', 'model-2'], tools: ['read', 'grep'], continuable: false } })
+          : trustedInjected(fake)
+    const plane = await buildAC({
+      observe,
+      ...(opts.controlLeg === 'absent'
+        ? {}
+        : { controlLeg: opts.controlLeg === 'deny' ? denyingControlLeg(audit) : approvingControlLeg(audit) }),
+      injected,
+    })
+    return { plane, fake, observe, audit }
+  }
+  // The QUADRUPLE of AC-60…AC-63: every refusal arm must show all four
+  // witnesses at once — head, port, Control audit, RAN line.
+  const assertQuadruple = (w: L3World, rowName: string, code: string, msg: string): void => {
+    expect(msg, `${rowName} refusal head carries the refusal marker`).toContain('refused-agent-control')
+    expect(msg, `${rowName} typed code`).toContain(code)
+    expect(w.fake.calls, `${rowName} ZERO port calls`).toHaveLength(0)
+    expect(w.audit, `${rowName} ZERO Control rows — fence BEFORE the PA edge`).toHaveLength(0)
+    expect(ran(w.observe, rowName), `${rowName} ZERO RAN witnesses`).toHaveLength(0)
+  }
+  // The FLIP witness: the admitted call in (a pair) world really RANS.
+  const assertRan = (w: L3World, rowName: string, leg: string): void => {
+    expect(w.fake.callsFor(leg), `${rowName} flip: exactly one port call`).toHaveLength(1)
+    expect(w.audit, `${rowName} flip: exactly one ask opened`).toHaveLength(1)
+    expect(ran(w.observe, rowName), `${rowName} flip: exactly one RAN witness`).toHaveLength(1)
+  }
+
+  it('AC-60 L3-GRADE subagent FAIL-CLOSED spawn (live ac:spawn-failclosed mirror): typed amplification refusal, ZERO port, ZERO Control rows, ZERO RAN; pair-world flip proves a live mount', async () => {
+    // The live #406 head, verbatim in shape: `refused-agent-control
+    // agent-control-amplification-refused — a child may not carry broader
+    // authority than its caller: the mount carries no caller-authority
+    // snapshot: … (fail closed)`. Current-product surviving form of that
+    // fail-closed leg (group disclosure (a)): a PRESENT-BUT-UNBOUNDED
+    // snapshot over the same fence.
+    const w = await l3({ authority: 'unbounded' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain('a child may not carry broader authority than its caller')
+      expect(r.msg).toContain('no caller-authority snapshot')
+      expect(r.msg).toContain('fail closed')
+    }
+    // PAIR-WORLD FLIP: same row, same args, a BOUNDED record ⇒ the spawn
+    // RANS (the zero above is a refusal, not a dead mount).
+    const flip = await l3({ authority: 'bounded' })
+    const ok = await attempt(() => def(flip.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'subagent', 'spawnChild')
+  })
+
+  it('AC-61 L3-GRADE AMPLIFYING spawn over a bounded record (provider outside the caller): full quadruple; SAME-world within-authority flip RANS', async () => {
+    const w = await l3({ authority: 'bounded' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', provider: 'forbidden-provider' }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain("is outside the caller's own authority")
+    }
+    const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', provider: 'prov-a', model: 'model-1' }))
+    expect(flip.ok).toBe(true)
+    assertRan(w, 'subagent', 'spawnChild')
+  })
+
+  it('AC-62 L3-GRADE Tier A ceiling (the production default seat): EVERY route arm refused with the full quadruple; SAME-world route-free spawn RANS', async () => {
+    for (const arm of [{ provider: 'prov-a' }, { model: 'model-1' }, { reasoning_effort: 'high' }, { run_in_background: true }]) {
+      const w = await l3({ authority: 'ceiling' })
+      const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', ...arm }))
+      expect(r.ok, JSON.stringify(arm)).toBe(false)
+      if (!r.ok) assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+      expect(flip.ok, `route-free flip spawns in the SAME world (${JSON.stringify(arm)})`).toBe(true)
+      assertRan(w, 'subagent', 'spawnChild')
+    }
+  })
+
+  it('AC-63 L3-GRADE AMPLIFYING continuable child (caller not continuable): full quadruple; SAME-world one-shot flip RANS', async () => {
+    const w = await l3({ authority: 'non-continuable' })
+    const r = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p', run_in_background: true }))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      assertQuadruple(w, 'subagent', 'agent-control-amplification-refused', r.msg)
+      expect(r.msg).toContain('a continuable child outlives a caller that is not itself continuable')
+    }
+    const flip = await attempt(() => def(w.plane, 'subagent').execute({ description: 'd', prompt: 'p' }))
+    expect(flip.ok).toBe(true)
+    assertRan(w, 'subagent', 'spawnChild')
+  })
+
+  it('AC-64 L3-GRADE list_agents ask lane with NO Control leg: typed APPROVAL_REQUEST_UNAVAILABLE, catalog NEVER read (honest zero), ZERO RAN, no roster bytes echoed; pair-world flip with a mounted leg RANS (the offline ac:enumerate-governed shape)', async () => {
+    // This is the C1 answer to the ledger note "no list_agents refusal
+    // case in the #406 C2 suite": the enumeration row's ask-lane refusal,
+    // graded PASS-by-assertions offline.
+    const w = await l3({ controlLeg: 'absent' })
+    const r = await attempt(() => def(w.plane, 'list_agents').execute({}))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_REQUEST_UNAVAILABLE')
+      // the honest zero echoes no catalog bytes:
+      expect(r.msg).not.toContain('member-alpha')
+    }
+    expect(w.fake.calls, 'ZERO port calls — the catalog was never read').toHaveLength(0)
+    expect(w.audit, 'ZERO asks opened').toHaveLength(0)
+    expect(ran(w.observe, 'list_agents')).toHaveLength(0)
+    const flip = await l3()
+    const ok = await attempt(() => def(flip.plane, 'list_agents').execute({}))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'list_agents', 'listAgents')
+  })
+
+  it('AC-65 L3-GRADE list_agents DENY leg (offline mirror of the u74a:list-deny-leg-honest-zero shape): ask OPENED and settled DENY, body never ran — catalog NEVER read, ZERO RAN, no roster bytes echoed; pair-world approving flip RANS', async () => {
+    const w = await l3({ controlLeg: 'deny' })
+    const r = await attempt(() => def(w.plane, 'list_agents').execute({}))
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.msg).toContain('refused-agent-control')
+      expect(r.msg).toContain('APPROVAL_DENIED')
+      expect(r.msg).not.toContain('member-alpha')
+    }
+    // The ask really opened and really settled DENY at the seam (C1
+    // stand-in: no durable row — group disclosure (b)); the body never
+    // ran, so the enumeration answer is the honest zero.
+    expect(w.audit, 'the ask OPENED and settled DENY').toHaveLength(1)
+    expect(w.audit[0]).toContain('decision=deny')
+    expect(w.fake.calls, 'the catalog was NEVER read — the honest zero').toHaveLength(0)
+    expect(ran(w.observe, 'list_agents')).toHaveLength(0)
+    const flip = await l3()
+    const ok = await attempt(() => def(flip.plane, 'list_agents').execute({}))
+    expect(ok.ok).toBe(true)
+    assertRan(flip, 'list_agents', 'listAgents')
+  })
+})

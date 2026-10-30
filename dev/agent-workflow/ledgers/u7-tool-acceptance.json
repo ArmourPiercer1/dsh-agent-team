@@ -389,7 +389,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level"
+        "note": "ac:spawn-failclosed witnesses a typed amplification refusal with zero Control rows, but the record grades the case REFUSED, not PASS, so it does not back a PROVEN level (measured: the #406 judge law for that case has NO PASS branch — refusal-that-is-the-answer is recorded verbatim, never promoted to PASS). C1 lineage 2026-10-30 (PR #468, OPEN): L3-GRADE arms AC-60-AC-63 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the SAME behavior PASS-by-assertions offline — the quadruple (typed refused-agent-control + agent-control-amplification-refused head, ZERO port calls, ZERO Control rows via an empty control-leg audit = fence BEFORE the PA edge, ZERO RAN observe witnesses) over the fail-closed snapshot / bounded-record provider / Tier A ceiling route / continuable lanes, each non-vacuous by a flip (admitted call RANS: port 1, audit 1, RAN 1); the live no-snapshot trigger was retargeted by the Tier A ceiling after the record bound teamSha ab8a5f236 — the graded current-product fail-closed form is the present-but-unbounded snapshot (arm header discloses). C1-only per the PR #456/#464 precedent semantics: offline/mocked refusal LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -539,7 +539,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no list_agents refusal case in the #406 C2 suite"
+        "note": "no list_agents refusal case in the #406 C2 suite. C1 lineage 2026-10-30 (PR #468, OPEN): offline refusal arms AC-64/AC-65 shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts grade the enumeration row's refusal lanes PASS-by-assertions — ask lane with NO Control leg answers typed APPROVAL_REQUEST_UNAVAILABLE with the catalog NEVER read (honest zero, no roster bytes echoed, zero RAN), and the DENY leg settles the opened ask DENIED with the body never run (offline mirror of the live u74a:list-deny-leg-honest-zero shape), each non-vacuous by a flip (leg mounted/approving: RANS, ask opened). C1-only per the PR #456/#464 precedent semantics: NOT the L3 grade — L3 needs the live C2 PASS-grade record after merge; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
