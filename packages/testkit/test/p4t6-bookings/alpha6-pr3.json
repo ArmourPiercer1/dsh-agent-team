@@ -1,0 +1,19 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ALPHA6-PR3",
+  "paths": [
+    "packages/runtime/review-wake/types.ts",
+    "packages/runtime/review-wake/identity.ts",
+    "packages/runtime/review-wake/slot.ts",
+    "packages/runtime/review-wake/recovery.ts",
+    "packages/runtime/review-wake/index.ts",
+    "packages/runtime/test/a6-pr3-wake-kernel.test.ts",
+    "packages/runtime/test/a6-pr3-lane-hygiene.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1402,
+    "to": 1409
+  },
+  "reason": "Alpha.6 PR3′ (Lane 2) ships the single-flight review-wake scheduler kernel, DORMANT. Five lane modules: types.ts (closed vocabularies — 7 phases, 11 event kinds, 4 effect kinds, 16 refusal codes; the file states L-1 and a reader can confirm no decision, mandate, case or allow field exists by looking), identity.ts (wakeId = sha256 over the canonical tuple [rootSessionId, reviewerInstanceId, sessionGeneration, wakeSequence], derived not random, because a restart has to recognise its own outstanding ask from the checkpoint plus inbox facts — the whole content of A6-SF-08 — and because a random id would make every determinism leg unassertable), slot.ts (reduceWakeSlot, the one transition function, plus createWakeSlot/hydrateWakeSlot as the ONLY front doors: slots are WeakSet-branded for the same reason PR0 brands parsed plans, because withdraw-wake carries an exact messageId an adapter deletes and a fabricated slot would be a plugin deleting a message it never authored; container presence is checked before any destructuring, the lesson PR0 round 2 recorded, applied before it had to be learned twice here), recovery.ts (reconcileWakeSlots: the restart fold emits EVENTS, never effects and never its own next state, because a second copy of the transition law is the second-ledger mistake in miniature; it reports what it declined to act on — unobserved, suspended, released, orphanFacts, rejected — instead of dropping it), index.ts (barrel plus the dormancy declaration: no function exported here can reach a Session; delivery is PR-I2). Two specs, 87 legs measured by vitest on this tree: a6-pr3-wake-kernel (73 legs = design matrix 1-12, 14, 15, 16 — 100 requests to 1 wake, one wake per completed turn, no wake into an empty queue with a planted-true negative control, withdrawal exact-id and unclaimed-only, Stop sticky at all five non-terminal phases with every later event refused, the five crash windows plus the fold's own report, the store-key-is-the-triple creation race, epoch fencing, the no-progress storm bound with its backoff geometry capped, byte-determinism with the wake id recomputed independently, re-arm after a trusted false negative, five slot forgeries refused, mis-routed events refused, and ~35 malformed-input probes that must answer a closed code rather than throw), a6-pr3-lane-hygiene (14 legs: exact module set, zero production consumers with seven positive controls and a negative control, no reverse import of the ARC-A protected centre, both tsconfigs name the lane, tsconfig.build.json stays JSON.parse-able, the pure-lane import allow-list and the lexical clock/IO floor).",
+  "tieNote": "Counted by moving BOTH alpha6 bookings aside and reading the leg's own arithmetic: scanner counts 1409, ledger derives 983 + 410 = 1393, so this lane's seven files plus alpha6-pr0's nine are the whole 16-file difference. That reading also publicly corrects an earlier claim of mine in alpha6-pr0.json: PR #501 IS based on master, hosted CI DID run, and it was red with drift=16 because I had not committed the rebuilt dist — the co-commit law now bites on this lane too (packages/runtime/dist/packages/runtime/review-wake/* is committed in the same commit set as the sources that produced it)."
+}

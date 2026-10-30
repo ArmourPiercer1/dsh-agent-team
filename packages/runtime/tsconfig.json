@@ -33,6 +33,7 @@
     // declaration (nothing imports it until the named Center-Interface PR), so
     // it must be NAMED here or no repo-wide tsc ever reads it.
     "review-mandate",
+    "review-wake",
     "test",
     "vitest.config.ts"
   ]
