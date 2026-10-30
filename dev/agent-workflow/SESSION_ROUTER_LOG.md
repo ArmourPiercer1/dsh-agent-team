@@ -7281,6 +7281,12 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **dated 更正（原文照留）**：GATE-LEDGER 新增 dated 行；BOOT-BUDGET-20261029B 尾部 dated 更正节；`evidence/u7r3-envblock-c2-20261029/README.md` 尾部 dated addendum（该目录其余文件零改动）；STATUS.md CURRENT 快照下 dated 更正节；PR 正文新版=待用户发布，文本在 `dev/agent-workflow/evidence/u7r3-446adj-20261031/PR-446-BODY-20261031.md`（本 lane 零 PR 评论）。
 - **离线收据**：`node --test tests/world-factory/arm-verdict.test.mjs`=17/17（含 synth:T18）；`registries.test.mjs`=12/12；`node --test tests/world-factory/*.test.mjs` 全套=134/134；`docs:probe --worktree-only` blocking=0。零 boot、零产品字节改动、`:3080`/`~/.dsh` 未触。#446 **DO-NOT-MERGE 标记保持**（合并仅在 R446-rereview + 清偿之后）。
 
+## 2026-10-30 (09:4xZ) — 外部日常审计：日历标签 +1 天排查定性 + R-CLOCK-1 时钟锚点律落地（主 Agent）
+
+- 审计问题：日志内部日期 10-31 vs GitHub 实测 10-30 UTC，dated 锚点体系疑似日历漂移。排查（三独立时钟源 + 最近 26 条日志头逐条对照 commit 真实 UTC）：**机器时钟正常**（本机 `date -u` 与 GitHub Date header <30s 一致，全天如此）；**偏移真实存在于主 Agent 叙事标签层**——自 2026-10-29 21:44Z（审计 #3 intake 条目）起部分头行/裁决名/预算册名日期分量 +1 天（时间后缀仍真实），boot lane 与全部清偿评论开式经抽验为真实 UTC，`pr-settlement-gate` 判据（head sha 相等）不读日历、机器门未被污染。定性：上下文继承的日历信念，非仪器故障；无需时钟校正。
+- 处置（不改名，名称=稳定标识符；append-only 不追溯改写）：新增 ROUTER_RULES **§8.5.8 时钟锚点律**（新 dated 锚点一律取书写时 `date -u`，禁叙事继承；历史 +1 标签冻结映射）；勘误正本 `dev/agent-workflow/gates/CLOCK-ANCHOR-20261030.md`（三源实测、26 条偏移表、受影响清单映射、§8.5.7 头部行两条「2026-10-30 轮」实为真实 10-29 之注记）。本条目头行按新律书写（真实 UTC），作示范。
+- 本 PR 文件名/分支名同样按真实 UTC 命名（`-20261030`），为关闭偏移窗口的标志。
+
 ## 2026-10-30 (10:0–10:4xZ) — State-Home 整改波次：#480/#481/#482 合并、#463 处置关闭、P1 ruleset 上线、R-CLOCK-1 修复合入中（主 Agent）
 
 - **#480 MERGED**（真实 10-30）：#463 PoC 的判级归档 + 20 臂 vitest 正式 C1 + sha256 校验证据 + p4t6 诚实登记（R480-fl PASS，seat 披露）。合并后 **#463 以 dated disposition 关闭**（裁决 §2 六答逐条入账；头 2229c1bcbe 未动、0 评论历史保持）。边界律随归档文本落地：显式测试 Home 的 20/20 不替代正式默认 Home 验收。
@@ -7296,3 +7302,4 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **#483 MERGED** @ bf93306ed：正式 Home V1（两臂解析 + 判别器 + CI 腿 + V1 25/25 + compat 失败即关探针 + 全门绿）。**新必需门首次完整周期**：旧红 gate 真挡合并（405 拒绝）→ 清偿重跑 → 绿 → 放行。
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
+ origin/master

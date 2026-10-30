@@ -112,7 +112,12 @@ async function mount(opts: {
     ...(opts.store === undefined ? {} : { backends: { agentState: opts.store } }),
     plane: {
       fsInstance,
-      ...(opts.agentStateEnabled === undefined ? {} : { agentStateEnabled: opts.agentStateEnabled }),
+      // TEST world: enabling the family sets BOTH closed keys — the same
+      // choke-point law the kit assemblies follow (R-STATE-HOME-1 design (c);
+      // M2's HOME_MISSING fail-closed is the test-arm law byte-for-byte).
+      ...(opts.agentStateEnabled === undefined
+        ? {}
+        : { agentStateEnabled: opts.agentStateEnabled, ...(opts.agentStateEnabled === true ? { testHomeGuard: true } : {}) }),
     },
   }) as Built
 }

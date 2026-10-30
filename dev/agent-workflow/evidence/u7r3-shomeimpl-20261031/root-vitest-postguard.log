@@ -1,0 +1,6 @@
+== root 'pnpm exec vitest run' AFTER the R483-fl guard (649 files unchanged; the guard lives inside plugin-dsh-compat.test.ts: 7 -> 13 tests) ==
+== captured from the managed background job bash-12324, tail summary, written 2026-10-30T10:38:20Z ==
+ Test Files  649 passed (649)
+      Tests  8543 passed (8543)
+   Duration  282.67s (transform 34.37s, setup 0ms, import 246.30s, tests 667.83s, environment 114ms)
+(exit code 0)

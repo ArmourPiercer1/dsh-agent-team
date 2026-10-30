@@ -20,17 +20,29 @@
  *      harness home, `<DSH_HOME>/team-state/agent-state/<realmId>/`, with its
  *      execution-origin arm resolved lazily from the mount's public host
  *      services (`cap.hostService`);
- *   3. when NO home is resolvable (DSH_HOME absent/blank/relative/missing,
- *      or resolving into the operator's live `~/.dsh`) or the realm id is
- *      not a path-safe segment, the WHOLE MOUNT refuses with the existing
+ *   3. when NO home is resolvable, or the realm id is not a path-safe
+ *      segment, the WHOLE MOUNT refuses with the existing
  *      `PLANE_AGENT_STATE_STORE_MISSING` — fail closed at the mount, never a
  *      row that could only ever refuse at call time, never an invented
- *      default location, and never a native fallback.
+ *      default location, and never a native fallback. WHICH shapes are
+ *      resolvable is the two-arm home law
+ *      (`agent-state-family/src/fs-state-store.mjs`, `resolveAgentStateHome`):
+ *      the PRODUCTION arm (DEFAULT, mount key `testHomeGuard` ABSENT) answers
+ *      the host's own home through the PUBLIC upstream
+ *      `@deepseek-ai/dsh-home-paths` `resolveDshHome()`; the TEST arm
+ *      (`testHomeGuard: true`, set by every test World at its row-config
+ *      choke point) keeps the shipped refusals byte-for-byte (USER-RULING-
+ *      20261031 §2 via PRODUCTION-HOME-DESIGN (c)). The discriminator is
+ *      trusted mount config — never an environment variable.
  *
  * The enablement is the closed boolean consumption key `agentStateEnabled`
  * (the jobs/glob zero-flip precedent): ABSENT = FALSE — no rows, kernel
  * owns nothing, the native hosts ride exactly as today (shipped worlds
- * byte-identical).
+ * byte-identical). The home-mode is the second closed boolean key
+ * `testHomeGuard`: ABSENT = production (guard off), TRUE = the shipped
+ * test-safety home law. Both keys go through the SAME closed-world
+ * `checkFamilyConfig` law (a present key of the wrong type refuses the
+ * mount, never coerced).
  *
  * @module tools/families/agent-state
  */
@@ -52,9 +64,12 @@ const storeMissing = (detail) => ({
   },
 })
 
-/** The production store, or the typed reason there is none. */
+/** The production store, or the typed reason there is none. The home-mode
+ *  arrives through the trusted mount config (`cap.planeConfig.testHomeGuard`
+ *  — the same layer `enabled` reads `agentStateEnabled`); ABSENT means
+ *  production, TRUE the shipped test-safety law. */
 function productionStore(cap) {
-  const home = resolveAgentStateHome()
+  const home = resolveAgentStateHome({ testHomeGuard: cap.planeConfig.testHomeGuard === true })
   if (home.ok !== true) return { ok: false, detail: `${home.code}: ${home.detail}` }
   const root = storeRootFor(home.home, cap.realmId)
   if (root.ok !== true) return { ok: false, detail: `${root.code}: ${root.detail}` }
@@ -74,7 +89,7 @@ export const familyAssembly = Object.freeze({
   familyId: 'dsh.agent-state-family',
   order: 40,
   placement: 40,
-  config: Object.freeze({ agentStateEnabled: 'boolean' }),
+  config: Object.freeze({ agentStateEnabled: 'boolean', testHomeGuard: 'boolean' }),
   claims: () => [...AGENT_STATE_NAMES],
   enabled: (cap) => cap.planeConfig.agentStateEnabled === true,
   disabledOwned: () => [],

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomeimpl
+
+ ✓ packages/runtime/test/u7-state-home-prod-c1.test.ts (25 tests) 619ms
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  09:11:55
+   Duration  1.41s (transform 465ms, setup 0ms, import 613ms, tests 619ms, environment 0ms)
+
