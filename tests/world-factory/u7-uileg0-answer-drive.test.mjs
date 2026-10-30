@@ -224,13 +224,16 @@ test('attachWait witness frame carries the generated wire args', () => {
 })
 
 // Dated 2026-10-30 coordinator addendum (live correction from lane u7r3-uif4 p2):
-// the live mux downlink is item-wrapped {item,streamId,value}; a client that
-// matches top-level frame.type hangs silently (uif4 start p1 RCA).
+// the live mux downlink is {type:'item',streamId,value} (type-discriminated,
+// exactKeys law); a client that matches top-level frame.type on the WIRE hangs
+// silently (uif4 start p1 RCA). Key-discrimination on 'item' was itself wrong
+// (R489 re-check) — real parsers reject an 'item' key outright.
 test('item-wrapped downlink frames are accepted at both predicates (live wire law)', () => {
-  const ready = { item: true, streamId: 's-1', value: { type: 'ready', clientId: 'c-1', host: { home: '/h' } } }
-  const wf = { item: true, streamId: 's-1', value: { type: 'waterfall', event: 'user-questions/request', eventId: 'e-1', agentId: 'session-1', request: { questions: [{ id: 'q1' }] } } }
+  const ready = { type: 'item', streamId: 's-1', value: { type: 'ready', clientId: 'c-1', host: { home: '/h' } } }
+  const wf = { type: 'item', streamId: 's-1', value: { type: 'waterfall', event: 'user-questions/request', eventId: 'e-1', agentId: 'session-1', request: { questions: [{ id: 'q1' }] } } }
   assert.equal(isReadyFrame(ready), true)
   assert.equal(isQuestionWaterfallFrame(wf), true)
-  assert.equal(unwrapMuxFrame({ item: true, streamId: 's', value: { type: 'end' } }).type, 'end')
-  assert.equal(isReadyFrame({ item: true, streamId: 's', value: { type: 'waterfall' } }), false)
+  assert.equal(unwrapMuxFrame({ type: 'end', streamId: 's' }).type, 'end')
+  assert.equal(isReadyFrame({ type: 'item', streamId: 's', value: { type: 'waterfall' } }), false)
+  assert.equal(isReadyFrame({ type: 'item', streamId: 's', value: null }), false)
 })

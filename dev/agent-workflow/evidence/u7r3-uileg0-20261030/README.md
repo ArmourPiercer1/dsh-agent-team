@@ -142,3 +142,7 @@ C2 公开驱动序列（ask_user_question 正臂的审批车道部分）——ba
 ## Dated 更正（2026-10-30T13:26Z，真实 UTC，协调者；原文照留）——mux 下行帧层以活体为准
 
 Q1/Q3 的**信封内容**钉形全部成立（R489-fl 复核通过），但**传输帧层**描述有误：本 pin（0.2.0-rc.2）的 mux 下行实为 `{item|end|error, streamId, value?}`，信封位于 `value` 内（gateway stream-protocol.ts:33-73,252-258；stream-server.ts:176-235）。活体证据 = 后续 lane u7r3-uif4 start p2：item 帧 75 条全程、应答逐字回 tool_result。按本 README 原帧层描述写的客户端会**静默挂起**——该缺陷正是 uif4 start p1 中止根因（RCA 见 u7r3-uif4-20261030/c2/RCA-start1-abort.md）。已提交修复（dated addendum）：lib 新增 unwrapMuxFrame 双兼容 + 两谓词接活体层 + 第 10 腿测试。上方原文不改。
+
+## Dated 更正之二（2026-10-30T13:35Z，真实 UTC，协调者；R489 复审增补捕获，原文照留）
+
+上方更正段自身的帧层速记 `{item|end|error,…}` 不确：线帧为 **type 判别** `{type:'item'|'end'|'error', streamId, value?}`，解析器 exactKeys(['type','streamId','value'])（stream-protocol.ts:242-258,:293-315），`item` 作为键在合法线上不存在；stream-client.ts:125 `frame.type==='item'` 取 value。首版修复按 `'item' in frame` 键判别实现 = 对真帧不解包（第 10 腿喂的是网关不可能发出的虚构帧，空转通过）。已改为 `frame.type==='item'` 判别并把第 10 腿重定向到真帧形（含 value:null 负例）。

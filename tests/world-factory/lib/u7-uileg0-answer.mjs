@@ -201,7 +201,7 @@ export function openEventsStreamFrame(streamId) {
  * and item-wrapped downlink frames (browser/WS side).
  */
 export function unwrapMuxFrame(frame) {
-  if (frame !== null && typeof frame === 'object' && 'item' in frame
+  if (frame !== null && typeof frame === 'object' && frame.type === 'item'
     && frame.value !== null && typeof frame.value === 'object') return frame.value
   return frame
 }
