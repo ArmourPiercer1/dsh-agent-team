@@ -24,6 +24,14 @@
  *    read+write effect coverage under default-deny (M-02 — the read effect
  *    is not decorative); replaceAll law; symlink/outside zero-disk; replay
  *    + close-before-body zero-disk.
+ *  edit REFUSAL ZERO-EFFECT (U7-R3 C1 edit lane, the offline twin of the
+ *    ledger's edit L3-refusal cell — fsm:refusal-zero-effect exercises
+ *    write only): a lane-denied and a PA-denied edit each answer TYPED
+ *    (`template-deny-lane` / `APPROVAL_DENIED`) with the WHOLE-directory
+ *    digest identical (no partial apply, no stray entry) and a row ledger
+ *    whose only edit line is the typed denial — plus a flip leg moving
+ *    every witness. C1-only honesty: offline, grades the refusal LOGIC
+ *    only (USER-RULING-20261029B item 2); the L3 grade rides live C2.
  *  read_image: native pre-read gate ORDER + sentences (extension law →
  *    store mounted → route capability → deployment media acceptance) —
  *    every gate refusal happens with zero fs I/O and zero attachment
@@ -37,7 +45,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
@@ -456,6 +464,142 @@ describe('u7-9a C1 edit — never creates, M-02 paired coverage, refusals zero-d
     const no = await attempt(() => def(planeNo, 'edit').execute({ file_path: join(ROOT_DIR, 'e9.txt'), old_string: 'approved', new_string: 'DENIED' }))
     expect(no.ok).toBe(false)
     expect(bytesEqual(join(ROOT_DIR, 'e9.txt'), 'ask-approved\n')).toBe(true)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// ER — THE EDIT-REFUSAL ZERO-EFFECT ARMS (U7-R3 C1 edit lane, 2026-10-30).
+//
+// THE CELL (u7-tool-acceptance, row edit, L3-refusal, NOT_VERIFIED):
+// "no committed RUN record grades a live edit refusal: fsm:refusal-zero-
+// effect exercises write only". The live fsm case denies a WRITE; on the
+// offline side E-9's deny leg measures only the boolean (refused: yes/no)
+// plus the target bytes — the refusal's TYPED identity, the row ledger's
+// zero-write state and the WHOLE-DIRECTORY zero effect (no partial apply,
+// no stray temp file, neighbours untouched) are graded by nothing. These
+// two arms add the edit analogue of exactly that witness discipline, on
+// this suite's EXISTING machinery (real chain: plane mount → lane →
+// governed edit executor on the REAL filesystem):
+//
+//  ER-1 the LANE-DENY arm — a template deny rule over the edit class
+//    answers `refused-admission template-deny-lane` BEFORE any authority
+//    or disk: the whole-directory digest (every entry name + every byte,
+//    entries included) is IDENTICAL across an existing-target and a
+//    fresh-path attempt, the row ledger carries the typed lane-denied line
+//    and ZERO `governed-edit RAN` / `governed-write RAN` lines. The flip
+//    (same call under the paired ALLOW_EDIT policy) MOVES every witness —
+//    digest changes, the RAN line appears — so the zeros are measured,
+//    not vacuous.
+//  ER-2 the PA-DENY arm — the ask lane settled DENY by the control leg
+//    answers `refused-admission APPROVAL_DENIED` with the same whole-
+//    directory zero and a ledger whose ONLY edit line is the typed
+//    pa-refused one; flip: the approving leg lands the same edit once.
+//
+// C1-only honesty (USER-RULING-20261029B item 2, PR #456/#464 semantics):
+// this grades the refusal LOGIC offline; it does NOT upgrade edit L3 —
+// the L3 grade itself rides a live C2 boot cell after merge.
+const dirDigest = (dir: string): string => {
+  const h = createHash('sha256')
+  for (const name of readdirSync(dir).sort()) {
+    h.update(name).update('\u0000')
+    try {
+      h.update(readFileSync(join(dir, name)))
+    } catch {
+      h.update('<entry-not-a-plain-file>')
+    }
+    h.update('\u0001')
+  }
+  return h.digest('hex')
+}
+
+describe('u7-9a C1 ER — edit-refusal zero-effect arms (U7-R3 C1 edit lane)', () => {
+  it('ER-1 lane-deny: TYPED refusal before any authority; the WHOLE directory digest is identical across existing-target AND fresh-path attempts; ledger carries the typed denial and zero RAN lines; the allow flip moves every witness', async () => {
+    const observe: string[] = []
+    const plane = await buildPolicy({
+      default: 'deny',
+      allow: [{ tool: 'read', resource: { kind: 'subtree', path: ROOT_DIR } }],
+      ask: [],
+      deny: [{ tool: 'edit', resource: { kind: 'subtree', path: ROOT_DIR } }],
+    }, {}, observe)
+    writeFileSync(join(ROOT_DIR, 'er1.txt'), 'er1-before-line\n')
+    const fresh = join(ROOT_DIR, 'er1-never-born.txt')
+    const digestBefore = dirDigest(ROOT_DIR)
+
+    const r1 = await attempt(() => def(plane, 'edit').execute({ file_path: join(ROOT_DIR, 'er1.txt'), old_string: 'before', new_string: 'MUTATED' }))
+    expect(r1.ok).toBe(false)
+    if (!r1.ok) {
+      expect(r1.msg).toContain('refused-admission')
+      expect(r1.msg).toContain('template-deny-lane')
+    }
+    const r2 = await attempt(() => def(plane, 'edit').execute({ file_path: fresh, old_string: 'absent', new_string: 'x' }))
+    expect(r2.ok).toBe(false)
+    if (!r2.ok) expect(r2.msg).toContain('template-deny-lane')
+
+    // zero effect measured OVER THE WHOLE DIRECTORY: no partial apply, no
+    // temp entry, no fresh file born, neighbours byte-identical.
+    expect(dirDigest(ROOT_DIR), 'a refused edit must not move ONE byte or ONE directory entry').toBe(digestBefore)
+    expect(existsSync(fresh)).toBe(false)
+    expect(bytesEqual(join(ROOT_DIR, 'er1.txt'), 'er1-before-line\n')).toBe(true)
+    // the row ledger: ONE typed lane denial per refused attempt (two
+    // legs above); NO edit/write executor line was ever written.
+    expect(observe.filter((l) => l.includes('governed-edit lane-denied refusal code=template-deny-lane'))).toHaveLength(2)
+    expect(ran(observe, 'edit')).toHaveLength(0)
+    expect(ran(observe, 'write')).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-edit') && !l.includes('lane-denied'))).toHaveLength(0)
+
+    // FLIP (sensitivity): the SAME calls under the paired-allow policy
+    // move every witness — digest changes, the RAN line lands.
+    const observeF: string[] = []
+    const planeOk = await buildPolicy(ALLOW_EDIT, {}, observeF)
+    const flip = await attempt(() => def(planeOk, 'edit').execute({ file_path: join(ROOT_DIR, 'er1.txt'), old_string: 'before', new_string: 'MUTATED' }))
+    expect(flip.ok).toBe(true)
+    expect(bytesEqual(join(ROOT_DIR, 'er1.txt'), 'er1-MUTATED-line\n')).toBe(true)
+    expect(dirDigest(ROOT_DIR)).not.toBe(digestBefore)
+    expect(ran(observeF, 'edit')).toHaveLength(1)
+  })
+
+  it('ER-2 PA-deny: the ask lane settled DENY answers TYPED APPROVAL_DENIED; whole-directory zero; the ledger writes ONLY the typed pa-refused line; the approving flip lands the edit ONCE', async () => {
+    const askEdit = {
+      default: 'deny',
+      allow: [],
+      ask: [
+        { tool: 'edit', resource: { kind: 'subtree', path: ROOT_DIR } },
+        { tool: 'read', resource: { kind: 'subtree', path: ROOT_DIR } },
+      ],
+      deny: [],
+    }
+    writeFileSync(join(ROOT_DIR, 'er2.txt'), 'er2-before-line\n')
+    const digestBefore = dirDigest(ROOT_DIR)
+
+    const audit: string[] = []
+    const observe: string[] = []
+    const planeNo = await buildPolicy(askEdit, { controlLeg: denyingControlLeg(audit) }, observe)
+    const no = await attempt(() => def(planeNo, 'edit').execute({ file_path: join(ROOT_DIR, 'er2.txt'), old_string: 'before', new_string: 'DENIED' }))
+    expect(no.ok).toBe(false)
+    if (!no.ok) {
+      expect(no.msg).toContain('refused-admission')
+      expect(no.msg).toContain('APPROVAL_DENIED')
+      expect(no.msg).toContain('answered deny')
+    }
+    // the durable request actually settled deny (the refusal is about a
+    // REAL closed request, not an unreachable leg)
+    expect(audit.some((l) => l.startsWith('c1-standin ') && l.includes('decision=deny'))).toBe(true)
+    expect(dirDigest(ROOT_DIR), 'a PA-denied edit must not move ONE byte or ONE directory entry').toBe(digestBefore)
+    expect(bytesEqual(join(ROOT_DIR, 'er2.txt'), 'er2-before-line\n')).toBe(true)
+    // ledger zero-write (mutation face): the ONLY edit line is the typed
+    // pa-refused one; no RAN line was ever written.
+    expect(observe.filter((l) => l.includes('governed-edit pa-refused code=APPROVAL_DENIED'))).toHaveLength(1)
+    expect(ran(observe, 'edit')).toHaveLength(0)
+    expect(observe.filter((l) => l.includes('governed-edit') && !l.includes('pa-refused'))).toHaveLength(0)
+
+    // FLIP (sensitivity): the approving leg lands the SAME edit once.
+    const observeF: string[] = []
+    const planeOk = await buildPolicy(askEdit, { controlLeg: approvingControlLeg([]) }, observeF)
+    const flip = await attempt(() => def(planeOk, 'edit').execute({ file_path: join(ROOT_DIR, 'er2.txt'), old_string: 'before', new_string: 'APPROVED' }))
+    expect(flip.ok).toBe(true)
+    expect(bytesEqual(join(ROOT_DIR, 'er2.txt'), 'er2-APPROVED-line\n')).toBe(true)
+    expect(dirDigest(ROOT_DIR)).not.toBe(digestBefore)
+    expect(ran(observeF, 'edit')).toHaveLength(1)
   })
 })
 
