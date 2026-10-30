@@ -7268,3 +7268,21 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **#476 合并**（audit-#4 intake 判定+STATUS 快照+扫描收据）。R475-fl/R476-fl 报告归档至 u7r3-audit4-20261031/。复审席以 1907-ref 穷举＋全对象库（含不可达树）反证全归零，"不可复现"判定经受控反证成立。
 - **目标 goal-9e7ddb2c（U7-R1/R2 + U7-R3 矩阵编制入账）按事实判完**：R1/R2 全量合并（crash 含无旋钮实机 PASS #470）；矩阵入账（gates/U7-R3-GAP-MATRIX-20261029.md）；pilot 实机判级 job_list L3+L4、team_glob L4；C1 三波共 13 格离线判级脉络（全保持 NOT_VERIFIED）；boot 12/24（机动与两预留池尽，AC-12 候选绑定预留）；机器清偿门+链法（live-gate 修复版）稳定运行。
 - **当前开放面**：PR {#463 STATE_HOME PoC、#446 (b) 旋钮} = 用户裁决；余下全部 L3/L4 缺口 = 实机 C2 boot 依赖（池需用户再分配）或 AC-4 workflowEngine 产品半面（AC 池=候选绑定，G5 域）；证据外仓=用户队列。自主临界路径已空，等待用户指令。
+
+## 2026-10-31 (07:3xZ) — USER-RULING-20261031 下达并法典化（主 Agent）
+- 用户下达外部审查意见+六项裁决+执行次序（基准 89d96a13d）。登记正本=`gates/USER-RULING-20261031.md`；预算权威移册=`gates/BOOT-BUDGET-20261031C.md`（36 starts：AC 复证 8／他族 L3-L4 含 State Home 8／固定候选跨族集成回归 4（候选冻结前不动用）／机动 4；预登记、RCA 停线、禁探索、**新增效率门**四控制全保留；B 册封卷注记落档）。
+- GATE-LEDGER 追加两行：R-STATE-HOME-1 Family 级整改行（G5-blocking 维持，六场景 C2 关闭门）；P1 settlement-gate 不可绕过化行。
+- 新目标 goal-5ab62ca4 建档（Phase1-3 推进；G5=停线）。Phase-1 无 boot 波次随后并行派发：#446 验收调整、#463 归档处置、正式 Home 设计准备（安全审查先行）、workflow 有界 Public API PoC、证据外仓规则初版、P1 门禁改进、主检出受控盘点。
+ origin/master
+## 2026-10-31 (u7r3-446adj lane) — #446 验收范围调整落地（USER-RULING-20261031 §3）
+- **席位披露**：implementation worker `qiyuan-self/qwen3.8-flash-next`，全新独立会话（无共享 transcript），ROUTER_RULES §0.2 独立性=独立会话；本条为执行日志追加，非 gate 裁决。
+- **裁决登记（只追加）**：USER-RULING-20261031 §3 —— PR #446 **(b) 旋钮不批准**（不为制造 NOT_REACHED 修改正式 Host 或被测产品执行时序）。此前各行（7222/7229/7242/7270 的「(b) 旋钮=用户决策项/用户裁决」队列条目）就此**销项**，原文照留。
+- **调整落地**：分支 `task/u7r2-envblock-time-20261029` 前向合并 `origin/master@89d96a13d`（**未 rebase**，§8.5.7 证据绑定法，boot RUN 记录绑定完好；merge 无冲突）。调整后的验收：保留真实 Host 两轮 7/7 PASS（run1/run3）+ 零虚假 ENV_BLOCK（0/4）+ C1 分类器负控（arm-verdict.test.mjs）；「本条真实执行路径自然产生 NOT_REACHED」= **未观察到且结构性难以到达**（结构性发现=最终记录，不强制制造故障）。新增**明确标记合成**的纯测试侧确定性注入 `synth:T18`（arm-verdict.test.mjs，注入 never-reached 驱动形态 → NOT_REACHED 经 gateEnvBlock 门不变，不可洗成 ENV_BLOCK/PASS）；**不得冒充自然真实 Host C2 证据；不得声称 (b) 已获真实 C2 PASS**。
+- **dated 更正（原文照留）**：GATE-LEDGER 新增 dated 行；BOOT-BUDGET-20261029B 尾部 dated 更正节；`evidence/u7r3-envblock-c2-20261029/README.md` 尾部 dated addendum（该目录其余文件零改动）；STATUS.md CURRENT 快照下 dated 更正节；PR 正文新版=待用户发布，文本在 `dev/agent-workflow/evidence/u7r3-446adj-20261031/PR-446-BODY-20261031.md`（本 lane 零 PR 评论）。
+- **离线收据**：`node --test tests/world-factory/arm-verdict.test.mjs`=17/17（含 synth:T18）；`registries.test.mjs`=12/12；`node --test tests/world-factory/*.test.mjs` 全套=134/134；`docs:probe --worktree-only` blocking=0。零 boot、零产品字节改动、`:3080`/`~/.dsh` 未触。#446 **DO-NOT-MERGE 标记保持**（合并仅在 R446-rereview + 清偿之后）。
+
+## 2026-10-30 (09:4xZ) — 外部日常审计：日历标签 +1 天排查定性 + R-CLOCK-1 时钟锚点律落地（主 Agent）
+
+- 审计问题：日志内部日期 10-31 vs GitHub 实测 10-30 UTC，dated 锚点体系疑似日历漂移。排查（三独立时钟源 + 最近 26 条日志头逐条对照 commit 真实 UTC）：**机器时钟正常**（本机 `date -u` 与 GitHub Date header <30s 一致，全天如此）；**偏移真实存在于主 Agent 叙事标签层**——自 2026-10-29 21:44Z（审计 #3 intake 条目）起部分头行/裁决名/预算册名日期分量 +1 天（时间后缀仍真实），boot lane 与全部清偿评论开式经抽验为真实 UTC，`pr-settlement-gate` 判据（head sha 相等）不读日历、机器门未被污染。定性：上下文继承的日历信念，非仪器故障；无需时钟校正。
+- 处置（不改名，名称=稳定标识符；append-only 不追溯改写）：新增 ROUTER_RULES **§8.5.8 时钟锚点律**（新 dated 锚点一律取书写时 `date -u`，禁叙事继承；历史 +1 标签冻结映射）；勘误正本 `dev/agent-workflow/gates/CLOCK-ANCHOR-20261030.md`（三源实测、26 条偏移表、受影响清单映射、§8.5.7 头部行两条「2026-10-30 轮」实为真实 10-29 之注记）。本条目头行按新律书写（真实 UTC），作示范。
+- 本 PR 文件名/分支名同样按真实 UTC 命名（`-20261030`），为关闭偏移窗口的标志。

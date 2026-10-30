@@ -1,0 +1,7 @@
+v3 start; prior worlds excluded: ['u5u7r3eb-20261029T15-32-10Z', 'u5u7r3eb-20261029T15-45-02Z', 'u5u7r3eb-20261029T15-47-53Z']
+world=u5u7r3eb-20261029T15-50-28Z port=3188
+KILL TARGET (lane-owned): pid=74
+authenticated (cookie ok)
+ledger page live: entries=0 asks=0; settling 300ms
+WINDOW: create committed, asks=0 (entries=1) -> SIGKILL pid=74
+SIGKILL delivered; verdicts belong to the committed law

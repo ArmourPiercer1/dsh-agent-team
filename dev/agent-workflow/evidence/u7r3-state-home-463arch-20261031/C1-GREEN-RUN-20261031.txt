@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch
+
+ ✓ packages/runtime/test/u7-state-home-c1.test.ts (20 tests) 138ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  08:13:37
+   Duration  723ms (transform 355ms, setup 0ms, import 439ms, tests 138ms, environment 0ms)
+
+
+# environment: node v24.21.0, vitest 4.1.11, offline (no network, no Host boot), branch task/u7r3-463-archive-20261031 (base origin/master @ 89d96a13d), worktree .worktrees/u7r3-463arch
+# second confirmation run follows:
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Duration  798ms (transform 396ms, setup 0ms, import 488ms, tests 144ms, environment 0ms)
+# [addendum 2026-10-31, narrowing amendment round] After appending the dated A2/A4 TEST-WORLD scope comments + header AMENDMENT to the spec,
+# the same command re-ran GREEN: Test Files 1 passed (1) / Tests 20 passed (20); eslint 0; tsc -p tsconfig.json 0.
