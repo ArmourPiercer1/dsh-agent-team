@@ -1,0 +1,714 @@
+{
+  "schema": "evidence-manifest/1",
+  "manifestId": "u7r3-pilot-c2-20261029",
+  "createdAt": "2026-10-30T08:08:57.551Z",
+  "generator": {
+    "name": "generate-example.mjs",
+    "version": "v1",
+    "note": "example generator, not scripts/evidence-verify.mjs"
+  },
+  "rules": {
+    "doc": "dev/agent-workflow/gates/EVIDENCE-OFFLOAD-RULES-20261031.md",
+    "version": "v1.0",
+    "authority": "USER-RULING-20261031 §5 (原则批准 2026-10-31)"
+  },
+  "index": {
+    "repo": "dsh-agent-team",
+    "commit": "89d96a13d3219aa52b3492beb42d30a1ba59daf7",
+    "indexedPath": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029"
+  },
+  "runs": [
+    {
+      "runId": "u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z",
+      "suite": "u6-arc-a",
+      "runRecord": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/run-record.json",
+      "bindings": {
+        "teamSha": "e3e05d19984f8e8e9d8b3678c55881b4829a17bd",
+        "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "overallVerdict": "FAIL",
+      "startedAt": "2026-10-29T18:52:25.654Z",
+      "finishedAt": "2026-10-29T18:58:27.672Z"
+    },
+    {
+      "runId": "u7r3c2j2",
+      "suite": "u7-4a-jobs",
+      "runRecord": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.u74a-run-record.json",
+      "bindings": {
+        "teamSha": "b7aac2980cd8fbf878c0e03774b3570cb47d4ad5",
+        "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "overallVerdict": "FAIL",
+      "startedAt": "2026-10-29T19:13:44.476Z",
+      "finishedAt": "2026-10-29T19:16:03.966Z"
+    },
+    {
+      "runId": "u5-u6-arc-a-u7r3c2a-2026-10-29T18-24-41-088Z",
+      "suite": "u6-arc-a",
+      "runRecord": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/run-record.json",
+      "bindings": {
+        "teamSha": "348501241b82be96cb5b8a406d91b96c25d36163",
+        "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "overallVerdict": "FAIL",
+      "startedAt": "2026-10-29T18:24:41.215Z",
+      "finishedAt": "2026-10-29T18:26:36.006Z"
+    },
+    {
+      "runId": "u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z",
+      "suite": "u6-jobs",
+      "runRecord": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/run-record.json",
+      "bindings": {
+        "teamSha": "348501241b82be96cb5b8a406d91b96c25d36163",
+        "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "overallVerdict": "FAIL",
+      "startedAt": "2026-10-29T18:31:24.457Z",
+      "finishedAt": "2026-10-29T18:38:13.861Z"
+    }
+  ],
+  "backend": {
+    "kind": "none",
+    "endpoint": null,
+    "bucket": null,
+    "prefix": "evidence/",
+    "immutability": "none",
+    "note": "示例状态：原件仍在 git 内（in-git），尚未外仓。本 lane 不部署后端（USER-RULING-20261031 §5 + lane 授权边界）。"
+  },
+  "policy": {
+    "bulkyThresholdBytes": 65536,
+    "sampling": {
+      "minFiles": 3,
+      "minPerRun": 1,
+      "minPctOfArtifacts": 10
+    }
+  },
+  "artifacts": [
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a.stdout.log",
+      "sha256": "bb7431da85dd98e9b725f4e57a2e194fa8cf5d3152b98e50e4192048b620baa9",
+      "sizeBytes": 3057,
+      "class": "transcript-log",
+      "retention": {
+        "lane": "offload-eligible",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/logs/u5u7r3c2a2-20261029T18-52-25Z/composed-profile-12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77.patch.yml",
+      "sha256": "12c9df6579c237a8717c4533a37bf63b376d895ad8828c0d20f2e1fd4fb97b77",
+      "sizeBytes": 5081,
+      "class": "profile-snapshot",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R5"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/logs/u5u7r3c2a2-20261029T18-52-25Z/instance-port3188.log",
+      "sha256": "9eb57dc66d9327a24f7e600140a7e0c5363783572d613d5b97b9f7b8a29d354e",
+      "sizeBytes": 2443,
+      "class": "host-log",
+      "retention": {
+        "lane": "restricted",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "finding",
+          "count": 1,
+          "sample": [
+            {
+              "pattern": "boot-token-url",
+              "offset": 228,
+              "length": 50
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/run-record.json",
+      "sha256": "d6947288c0a2662655a56c05c4eee9d01f56a311bb646a5cd3fe99e6edf67155",
+      "sizeBytes": 56717,
+      "class": "run-record",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R1"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.digest.json",
+      "sha256": "c63d018161a51aecd91203d1f8d65d7d8b9db28f84a850fad4580627fa1bf39f",
+      "sizeBytes": 23038,
+      "class": "settlement-digest",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R3"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/arc-a/u5-u6-arc-a-u7r3c2a2-2026-10-29T18-52-25-523Z.oracle.json",
+      "sha256": "95faa8951bd9e0568894ddf85fba1b1554bb5b127153bd83ec5281d5257fd81f",
+      "sizeBytes": 146146,
+      "class": "verdict-artifact",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R2"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs.stdout.log",
+      "sha256": "59ca2ae00dfdd3cbe7f5e4cf7564fcaf70c24f8b2c017398b9261d98646018ba",
+      "sizeBytes": 4207,
+      "class": "transcript-log",
+      "retention": {
+        "lane": "offload-eligible",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/composed-profile-0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d.patch.yml",
+      "sha256": "0e3eb66740822b5904fcbfed39856bff191939669ee1fddac6e23a991e62377d",
+      "sizeBytes": 4840,
+      "class": "profile-snapshot",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R5"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/instance-port3189.log",
+      "sha256": "e783c8046c533d969a4a8d05752e042f7b1312d1cf3e115298b73ea14f4c4724",
+      "sizeBytes": 5665,
+      "class": "host-log",
+      "retention": {
+        "lane": "restricted",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "finding",
+          "count": 1,
+          "sample": [
+            {
+              "pattern": "boot-token-url",
+              "offset": 228,
+              "length": 50
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/logs/u5u7r3c2j2-20261029T19-13-44Z/u7r3c2j2.u74a-evidence.json",
+      "sha256": "8fe92542c3da2f5553e9e4832cd1000f5466e9a06971586e3b55254229baaf20",
+      "sizeBytes": 20318,
+      "class": "settlement-digest",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R3"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.oracle.json",
+      "sha256": "48809594ac8caf97337f4d0cb240000c4548c073b91862cf814b26847b4cb605",
+      "sizeBytes": 330846,
+      "class": "verdict-artifact",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R2"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2-r2/jobs/u7r3c2j2.u74a-run-record.json",
+      "sha256": "2ac955def25570efef57c23299c24714643f628c4190cee54c59ca1e98f18f12",
+      "sizeBytes": 24040,
+      "class": "run-record",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R1"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a.stdout.log",
+      "sha256": "42b36793db9bfd52afcb2fa0f6ca587fcc97ce50de56756ac36a1cba006f7844",
+      "sizeBytes": 1210,
+      "class": "transcript-log",
+      "retention": {
+        "lane": "offload-eligible",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/logs/u5u7r3c2a-20261029T18-24-41Z/composed-profile-d48d706c9831bbf00ac95aa9e3a8bf3e37f01c6b32e680a37e2e7b8e4fad185d.patch.yml",
+      "sha256": "d48d706c9831bbf00ac95aa9e3a8bf3e37f01c6b32e680a37e2e7b8e4fad185d",
+      "sizeBytes": 5070,
+      "class": "profile-snapshot",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R5"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/logs/u5u7r3c2a-20261029T18-24-41Z/instance-port3188.log",
+      "sha256": "9c6b46fcccfa834b38bf781b084f3ec5b5dce29d6156d4f171ec86f649bc3d56",
+      "sizeBytes": 1281,
+      "class": "host-log",
+      "retention": {
+        "lane": "restricted",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "finding",
+          "count": 1,
+          "sample": [
+            {
+              "pattern": "boot-token-url",
+              "offset": 1230,
+              "length": 50
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/logs/u5u7r3c2a-20261029T18-24-41Z/setup-failure.json",
+      "sha256": "d104481b52a73c4e034abe2a1aed2a3e68afc984e64d85ad98e9d96b352fc05f",
+      "sizeBytes": 1197,
+      "class": "raw-receipt",
+      "retention": {
+        "lane": "offload-eligible",
+        "policyRow": "R7"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/run-record.json",
+      "sha256": "3d2ec0d48c55e0add75a9454bda947e375db65ec0e72939d6b732412151d6517",
+      "sizeBytes": 12022,
+      "class": "run-record",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R1"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/arc-a/u5-u6-arc-a-u7r3c2a-2026-10-29T18-24-41-088Z.oracle.json",
+      "sha256": "95faa8951bd9e0568894ddf85fba1b1554bb5b127153bd83ec5281d5257fd81f",
+      "sizeBytes": 146146,
+      "class": "verdict-artifact",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R2"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs.stdout.log",
+      "sha256": "6a45ad9ce877e61479f31ed42a353c50affadca2644e20c1ffe02020a2ae5ec9",
+      "sizeBytes": 2703,
+      "class": "transcript-log",
+      "retention": {
+        "lane": "offload-eligible",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/logs/u5u7r3c2j-20261029T18-30-55Z/composed-profile-4d67ff956dc6e7329df1ce4a0de85e0a278377b4a7470dbca1de2ee24badacc2.patch.yml",
+      "sha256": "4d67ff956dc6e7329df1ce4a0de85e0a278377b4a7470dbca1de2ee24badacc2",
+      "sizeBytes": 4599,
+      "class": "profile-snapshot",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R5"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/logs/u5u7r3c2j-20261029T18-30-55Z/instance-port3188.log",
+      "sha256": "1a7f7555d3d299a65ab65348f6120d1a69f3249c2dd486a26cbee2810dc32ebc",
+      "sizeBytes": 1188,
+      "class": "host-log",
+      "retention": {
+        "lane": "restricted",
+        "policyRow": "R6"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "finding",
+          "count": 1,
+          "sample": [
+            {
+              "pattern": "boot-token-url",
+              "offset": 228,
+              "length": 50
+            }
+          ]
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/run-record.json",
+      "sha256": "f0aed4986462a4b4593543e3362f9a732aff6b7a4af4685a1ef8fa9265ccac7a",
+      "sizeBytes": 30298,
+      "class": "run-record",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R1"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z.oracle.json",
+      "sha256": "d2c2cfc08e5e93e83b2c832776acd1543bad0fb33a4ff5d5698a8a879cd436cc",
+      "sizeBytes": 150688,
+      "class": "verdict-artifact",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R2"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/c2/jobs/u5-u6-jobs-u7r3c2j-2026-10-29T18-31-24-328Z.u6jobs-evidence.json",
+      "sha256": "2c1be3181e9278c9276f06a3dce78e5e376010c2178e2aa1b55338124d34b657",
+      "sizeBytes": 14331,
+      "class": "settlement-digest",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R3"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts-PRE-REGISTRATION-float.json",
+      "sha256": "3112b5571d8592f7d4e04fde3e0f9d73cad97a04afe7eeacf1dc00a405ac1399",
+      "sizeBytes": 5011,
+      "class": "boot-ledger",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R4"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts-PRE-REGISTRATION.json",
+      "sha256": "4eda8aa199a8900517780f4bc439d86153c638f6a8cff4eca38cca8dbfc62b77",
+      "sizeBytes": 2952,
+      "class": "boot-ledger",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R4"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-pilot-c2-20261029/host-starts.jsonl",
+      "sha256": "325a4eb7f18062de3ef553c394f07844b7a77b9c347542c4c3a59ccc3c7451bf",
+      "sizeBytes": 645,
+      "class": "boot-ledger",
+      "retention": {
+        "lane": "git-forever",
+        "policyRow": "R4"
+      },
+      "location": {
+        "state": "in-git",
+        "uri": null,
+        "uploadedAt": null,
+        "verifiedAt": null
+      },
+      "sensitivity": {
+        "secretScan": {
+          "checkedWith": "generate-example.mjs/v1",
+          "status": "clean"
+        }
+      }
+    }
+  ]
+}
