@@ -109,3 +109,6 @@ port N is not cleanly acquirable: no live lease holder and the probe cannot prov
 `world-factory.test.mjs` **45/45 pass EXIT=0**（113.8 s）、`port-probe.test.mjs` **5/5 pass EXIT=0**；
 NC-2 本轮仍是黑洞形态（`port=3492 shape=black-holed elapsed=1505ms`，verdict from the bind tie-breaker），
 NC-4 仍按 code 拒绝。渲染后的实际文案以真实无租约监听者（13085）现场取证，见同一日志末尾。
+
+## §7 E-1 清理披露（dated 2026-10-30T22:57Z，协调者执行，R504 独立复核意见）
+R504 复核（PASS @462f2d8b4）发现本 lane 改动前红跑（C1 dryclm 腿在取得租约前死于旧探针误判）留下两个 DSH_HOME 残留 tests/homes/u5dryclm-20261030T21-59-11Z / ...T22-04-27Z 与 .artifacts/tmp/dryrun-leases-{zXHR6H,SM3FKk}（gitignored，含 .u5-created.json 无宿主日志，无 .u5-ownership.json）。修复后绿跑（45/45）该腿自清理。残留已于 2026-10-30T22:57Z 手工 rm -rf 清除，tests/homes 现空。E-2（world-factory.test.mjs 头注"ZERO ports bound"措辞过时）、E-3（不确定路径最坏时延 timeoutMs+max(timeoutMs,1000)≈3s，boot 预算按最坏值）、E-4（C1 与本 boot 波次串行律）登记为合并后跟进。
