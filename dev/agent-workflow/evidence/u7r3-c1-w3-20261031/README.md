@@ -22,9 +22,13 @@ carry `L3-refusal NOT_VERIFIED` with the note "no live <row> case in the #406 C2
 and unlike `subagent`/`list_agents` they had **no offline grading arm either**. The
 existing AC-20..AC-29 group touches three of these rows but only proves the zero FACT
 (typed code + zero port calls): it never witnesses the refusal HEAD, never counts Control
-rows, never counts `RAN` observe lines, and never flips — so a disarmed fence would have
-left that group green (mutants M3/M5 show exactly that: the pre-existing arms catch M3,
-and only the new arms catch AC-70/AC-71/AC-80 in their graded form).
+rows, never counts `RAN` observe lines, and never flips — so a disarmed fence WOULD be caught
+by the group's zero facts, yet nothing on these rows was GRADED in refusal form (measured:
+mutants M3/M5 redden the pre-existing arms — AC-22/37/38/38b on M3, AC-31/34/44/64/65 on M5 —
+via the zero facts; only the new arms carry the typed-head/Control-row/RAN/flip GRADED form,
+e.g. AC-70/AC-71/AC-80). The gap was graded FORM, not detection. [Wording corrected
+2026-10-31 per R474-fl F-1: zero-facts present, quadruple FORM absent; the earlier
+"would have left that group green" phrasing overstated the gap.]
 
 ## The arms (this lane) — AC-66 … AC-81, 16 arms, same file, same QUADRUPLE discipline
 

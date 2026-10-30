@@ -424,7 +424,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live subagent_fork case in the #406 C2 suite"
+        "note": "no live subagent_fork case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-66 (fail-closed fork: typed amplification refusal, ZERO fork reach, ZERO Control rows, ZERO RAN, pair-world bounded flip), AC-67 (amplifying continuable fork refused under Tier A ceiling + bounded non-continuable caller, same-world flip), AC-68 (closed grammar refuses provider|model|reasoning_effort|scopeKey|tools arms by shape), AC-69 (fork context is DATA: tainted+faulted source, pure-data flip bounds exactly what crossed) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -460,7 +460,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live send_message case in the #406 C2 suite"
+        "note": "no live send_message case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-70 (five out-of-scope target shapes: typed refusal, ZERO delivery, ZERO Control rows, ZERO RAN, SAME-world in-roster delivery flip), AC-71 (unattributed mount fails closed agent-control-scope-unresolved), AC-72 (settled-DENY leg: ask opened+settled DENY, zero delivery) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -574,7 +574,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live list_subagent_models case in the #406 C2 suite"
+        "note": "no live list_subagent_models case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-73 (no Control leg => APPROVAL_REQUEST_UNAVAILABLE, catalog never enumerated — honest zero, mounted flip), AC-74 (DENY-leg honest zero), AC-75 (default-DENY lane refuses before the PA edge; measured disclosure asserted in-arm: a rule-shaped deny over model-routes is UNPROJECTABLE — the mount itself refuses projection) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",
@@ -609,7 +609,7 @@
       },
       "L3-refusal": {
         "status": "NOT_VERIFIED",
-        "note": "no live workflow case in the #406 C2 suite"
+        "note": "no live workflow case in the #406 C2 suite. C1 lineage 2026-10-31 (PR #474): offline arms AC-76 (closed-grammar authority arm refused whole: 0 Control rows, 0 runWorkflow, 0 spawnChild), AC-77 (no Control leg => a workflow that cannot ask creates NO child), AC-78 (DENY leg), AC-79 (spawn-amplification at the caller-bound delegate across 5 widening lanes: typed refusal, 0 child reach, 0 child RAN, audit stays at the row's own ask, viaWorkflow spawn flip), AC-80 (steer-leg owner fence + in-roster flip), AC-81 (production posture graded: runWorkflow leg UNWIRED at this pin => typed agent-runtime-leg-unwired, zero children — agent-runtime-port.mjs:325, lane AC-4 owns the workflowEngine seam) shipped in packages/runtime/test/u7-f-agent-control-c1.test.ts. Live-half disclosure: a live workflow RUN needs the AC-4 workflowEngine seam; C1 grades the family-side law only. C1-only per the PR #456 precedent semantics: offline graded LOGIC only (USER-RULING-20261029B item 2), NOT the L3 grade — L3 needs a live C2 PASS-grade record; NOT_VERIFIED holds."
       },
       "L4-positive": {
         "status": "DISCLOSED",

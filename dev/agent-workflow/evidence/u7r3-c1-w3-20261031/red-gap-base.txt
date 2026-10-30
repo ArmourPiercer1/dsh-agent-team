@@ -34,3 +34,9 @@ pin — the AC-20..AC-29 group proves the zero FACT (typed code + zero port call
 refusal: no typed-head witness, no zero-Control-row witness, no zero-RAN witness, and no flip, so
 a disarmed fence would have kept that group green. RED here = gap; GREEN = the 16 arms; the
 discrimination (that each arm can actually fail) = mutants.txt.
+
+Dated correction 2026-10-31 (R474-fl F-1; line above kept verbatim per receipt-append discipline):
+"would have kept that group green" OVERSTATES the gap — per this lane's own mutants.txt, M3/M5
+REDDEN pre-existing arms (AC-22/37/38/38b on M3; AC-31/34/44/64/65 on M5) via their zero facts.
+Precise claim: the pre-existing group DETECTED disarms via zero facts but GRADED nothing in
+quadruple refusal FORM on these four rows; the 16 new arms carry the graded form.
