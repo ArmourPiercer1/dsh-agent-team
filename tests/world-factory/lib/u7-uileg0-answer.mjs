@@ -189,12 +189,31 @@ export function openEventsStreamFrame(streamId) {
 }
 
 /**
+ * Dated 2026-10-30 live correction (coordinator, from lane u7r3-uif4 start p2
+ * live witness; original text of the two predicates below kept unchanged):
+ * the live 0.2.0-rc.2 mux DOWNLINK wraps every envelope in a transport frame
+ * `{item|end|error, streamId, value?}` — the envelope rides inside `value`
+ * (gateway stream-protocol.ts:33-73,252-258; stream-server.ts:176-235; live:
+ * uif4 p2 answer-wire, 75 item frames, answer verbatim in tool_result).
+ * Matching top-level `frame.type` on the wire silently hangs a client — the
+ * exact defect that aborted uif4 start p1 (RCA-start1-abort.md). unwrapMuxFrame
+ * accepts BOTH layers: envelopes passed directly (host-internal/gateway side)
+ * and item-wrapped downlink frames (browser/WS side).
+ */
+export function unwrapMuxFrame(frame) {
+  if (frame !== null && typeof frame === 'object' && 'item' in frame
+    && frame.value !== null && typeof frame.value === 'object') return frame.value
+  return frame
+}
+
+/**
  * Is this downlink frame the ready frame binding later HTTP results to
  * this stream generation? Carries the opaque clientId (stream-protocol.ts:34-41).
  */
 export function isReadyFrame(frame) {
-  return frame !== null && typeof frame === 'object' && frame.type === 'ready'
-    && typeof frame.clientId === 'string'
+  const env = unwrapMuxFrame(frame)
+  return env !== null && typeof env === 'object' && env.type === 'ready'
+    && typeof env.clientId === 'string'
 }
 
 /**
@@ -205,11 +224,12 @@ export function isReadyFrame(frame) {
  * waterfall forward at api/remotes/src/remote-events.ts:45).
  */
 export function isQuestionWaterfallFrame(frame) {
-  return frame !== null && typeof frame === 'object' && frame.type === 'waterfall'
-    && frame.event === QUESTION_EVENT
-    && typeof frame.eventId === 'string' && typeof frame.agentId === 'string'
-    && frame.request !== null && typeof frame.request === 'object'
-    && Array.isArray(frame.request.questions)
+  const env = unwrapMuxFrame(frame)
+  return env !== null && typeof env === 'object' && env.type === 'waterfall'
+    && env.event === QUESTION_EVENT
+    && typeof env.eventId === 'string' && typeof env.agentId === 'string'
+    && env.request !== null && typeof env.request === 'object'
+    && Array.isArray(env.request.questions)
 }
 
 /**

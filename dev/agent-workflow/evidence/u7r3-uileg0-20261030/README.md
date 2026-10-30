@@ -138,3 +138,7 @@ C2 公开驱动序列（ask_user_question 正臂的审批车道部分）——ba
 3. `attachWait` 流对 governed 行的适用性（面 C 仅形状钉死）。
 4. 若 member 判非 live root（L2 反向），leader-lane 挪位方案的完整 blueprint 形状。
 5. chromium 浏览器腿（本 lane 已把它移出应答正臂关键路径；GUI 渲染验收若被点名仍需独立勘察）。
+
+## Dated 更正（2026-10-30T13:26Z，真实 UTC，协调者；原文照留）——mux 下行帧层以活体为准
+
+Q1/Q3 的**信封内容**钉形全部成立（R489-fl 复核通过），但**传输帧层**描述有误：本 pin（0.2.0-rc.2）的 mux 下行实为 `{item|end|error, streamId, value?}`，信封位于 `value` 内（gateway stream-protocol.ts:33-73,252-258；stream-server.ts:176-235）。活体证据 = 后续 lane u7r3-uif4 start p2：item 帧 75 条全程、应答逐字回 tool_result。按本 README 原帧层描述写的客户端会**静默挂起**——该缺陷正是 uif4 start p1 中止根因（RCA 见 u7r3-uif4-20261030/c2/RCA-start1-abort.md）。已提交修复（dated addendum）：lib 新增 unwrapMuxFrame 双兼容 + 两谓词接活体层 + 第 10 腿测试。上方原文不改。
