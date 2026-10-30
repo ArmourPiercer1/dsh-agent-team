@@ -37,6 +37,16 @@ packages/runtime/review-wake/
   index.ts     barrel + the dormancy declaration
 ```
 
+**The store key IS the slot triple** (`rootSessionId | reviewerInstanceId | sessionGeneration`), one row
+per triple, phases and counters inside it — added from round-3 design review, because the atomicity claim
+depends on it and the earlier draft never said it. `WakeSlotStore.compareAndSwap` is atomic per key, so
+"at most one outstanding slot per triple" (invariant 1) is store-atomic only while creation and update of
+the same triple contend on the same key. If slots instead had their own row ids, two writers could each
+create a first slot for one triple without ever contending, and invariant 1 would silently degrade from a
+CAS to check-then-create. Consequence for the adapter and for matrix leg 9: the key is derived from the
+triple by one exported function, there is no second index, and the test asserts that two concurrent first
+requests for one triple produce exactly one surviving slot.
+
 Pure and synchronous. `reduce` returns *effect descriptors*; an adapter (PR-I2, out of scope here) is the
 only thing that could execute them. That split is the reason the 100-request and 1000-event tests below
 run in milliseconds and are deterministic: no timers, no promises, no fakes whose behaviour I control.
@@ -50,6 +60,18 @@ run in milliseconds and are deterministic: no timers, no promises, no fakes whos
 | `WakeLease` | current `leaseEpoch` + `writerToken` (fencing identity of this writer) | host/runtime wiring; **single-writer guarantee is NOT made here** |
 | `PendingWorkSource` | `hasReadyWork(recipient, context)` — re-read of authoritative pending review work | ControlService/TeamDomain read path (PR2′/PR-I1 side) |
 | `InboxFactSource` | which wake messages are still unclaimed, by `messageId` | `ctx.agents.get(...).inbox` / host facts (PR-I2) |
+
+**Who is allowed to speak to the kernel** (round-3 review, undeclared before it): `claimed`, `turn-ended`
+and `resume` are authenticated inside the kernel only by `wakeId`/correlator, and `wakeId` is a sha256 over
+a *public* tuple — anyone who can name the triple can compute it. The kernel therefore cannot authenticate
+event ingress by construction, and must not be asked to pretend otherwise. **PR-I2's obligation: the events
+fed to `reduceWakeSlot` come from host facts only** (the inbox facts, the `turn/start` and `turn/end`
+projections), never from a Member-authored message or a tool call. Blast radius if that obligation were
+ignored is scheduling damage and nothing else — a forged `turn/end` advances a slot toward one cheap
+re-read turn; a forged `resume` clears a suspension the scheduler itself set; neither can mint an approval,
+a mandate or a decision, because no such field exists in this package (L-1) and the decision path
+revalidates identity, leg and mandate independently (PR0 / PR-I1). That is the honest shape of the
+guarantee: the worst case is bounded by what the state cannot say, not by the kernel's ability to check.
 
 The kernel is total: every port call is treated as possibly-failing and a failure is a **refusal code with
 a state transition**, never an exception and never a guess.
@@ -127,6 +149,18 @@ authoritative effect** — because the second physical message, if one exists, s
 to re-read cases it did not already decide, and the decision path itself revalidates identity/leg/mandate
 (PR0/PR-I1). Concretely the kernel is written so each window lands recoverable:
 
+**The one window the pure shape cannot see, stated rather than hidden** (round-3 review): the
+`reconciling → idle` edge trusts `hasReadyWork=false` *when the port answers successfully and is wrong*. A
+stale read that says "nothing ready" releases the slot and emits nothing, and nothing rearms it until the
+next `request` event. That is a lost-wake **liveness** hole, not an authority hole: the direction of failure
+is "a reviewer is not notified", which is exactly the failure this notification is designed to survive —
+the Case is still there, and the next request, the next turn, or a human reading the pending list recovers
+it. It is worth naming because SF-4's absoluteness has a second reading: "no wake into an empty queue" also
+means "a queue that was *reported* empty ends the flight". The kernel cannot distinguish "no work" from "the
+port lied", and no leg can test the difference at C1, because the port is injected either way. The mitigation
+that IS testable is the re-arm path: a later `request` for the same triple must reserve again from `idle`
+(matrix leg 14), so the false negative costs latency and never costs the flight permanently.
+
 | window | state after restart | recovery action |
 | --- | --- | --- |
 | slot reserved, message never sent | `reserved`, no `messageId` | re-emit the wake (same `wakeId`) — bounded |
@@ -138,6 +172,15 @@ to re-read cases it did not already decide, and the decision path itself revalid
 Recovery is a **pure fold** over observed facts so it is testable without a host: give it the slot table,
 the inbox facts and the turn facts, assert the action list. Real-host timing of `claim`/`turn/end`/
 `remove`/Stop stays a **C2** obligation at the final merged HEAD (ENV_BLOCK here, never PASS).
+
+### What C1 cannot prove here (named before the run, not after)
+
+The unit matrix drives the reducer against a **model** of the store, so it proves the reducer's CAS
+protocol (expected-revision discipline, refusal-on-lose) and not the adapter's real cross-process atomicity;
+it drives `recovery.ts` against **synthetic** inbox facts, so it proves the fold's decisions and not the
+truth of those facts. Both belong to C2, next to the existing timing legs, at the final merged HEAD on a
+real Host: adapter atomicity under two processes, and inbox-fact fidelity (does `inbox` really still show an
+unclaimed wake, and until when). A green unit matrix is not evidence about either.
 
 ## 5. Test matrix for PR3′ (unit tier C1; deterministic, no fake timers)
 
@@ -153,15 +196,29 @@ the inbox facts and the turn facts, assert the action list. Real-host timing of 
    (A6-SF-10).
 8. Restart fold, one leg per crash window in the table above, plus "restart with a slot in every phase"
    (7 slots, exact expected actions).
-9. Concurrent release vs new request (A6-SF-07): the CAS loser gets `REVISION_CONFLICT`, recomputes, and
+9. Concurrent release vs new request (A6-SF-07): the CAS loser gets a lost-CAS outcome, recomputes, and
    the outcome is exactly one wake — asserted over all interleavings of a small event set, not one lucky
-   order.
+   order. **Including the creation race**: two first-time requests for the same triple, both seeing "no
+   slot", contend on the one key derived from that triple (the §2 store-key law), so exactly one slot
+   survives. Without that keying this leg cannot fail, which is the round-3 finding.
 10. Stale-epoch callback after handoff ⇒ `STALE_GENERATION`, slot unchanged (fencing).
 11. No-progress: identical pending-work fingerprint for N cycles ⇒ `backoff` then `suspended`, and the
     wake count stops growing (the storm bound).
 12. Determinism: same event sequence twice ⇒ byte-identical slot and effect list; `wakeId` literal pinned.
 13. Hygiene/dormancy, same shape as PR0: exact file set, no protected imports, no clock/IO tokens, no
     consumers, both tsconfigs name the lane, plus its own p4t6 booking.
+14. **Re-arm after a trusted false negative** (round-3 finding (c)): drive `reconciling` with
+    `hasReadyWork=false` ⇒ `idle` with zero effects; then feed one `request` for the same triple ⇒ the slot
+    reserves and emits exactly one `deliver-wake`. Pins the recovery path of a liveness hole the kernel
+    cannot see (§4), so the hole costs latency and never costs the flight.
+15. **Slot brand** (the PR0 lesson applied before it is ever learned the hard way here): a hand-built
+    `WakeSlot` object — including a look-alike made by spreading a real hydrated slot, and one made by
+    copying property descriptors — is refused with the unbranded code and changes nothing. The attack this
+    pins is specific and worth stating: `withdraw-wake` carries an exact `messageId` an adapter will delete,
+    so an unvalidated slot would be a plugin deleting a message it never authored.
+16. **Mis-routed event refused**: every event carries the slot triple it is about; an event whose key
+    differs from the slot it is applied to is refused and changes nothing. `wakeId` is derived from the
+    triple, so a kernel that trusted a mismatched key would route a wake to a reviewer that never asked.
 
 ## 6. Explicitly out of scope for PR3′ (so "done" cannot drift)
 
@@ -175,3 +232,65 @@ S0-D condition C2 as ENV_BLOCK on this machine).
 
 Also out: `team_review_defer`, UI states, metrics. They are named in the design source's later sections
 and land with the productization PRs, not with a kernel that nothing calls yet.
+
+## 7. Implementation status (written with the code in the tree, not before it)
+
+This section is part of the same commit as the implementation, which matters for one honest reason: the
+round-3 design amendments above — the store-key-is-the-triple paragraph in §2, the event-ingress trust
+declaration in §5.4's neighbourhood, the false-negative liveness window in §4 and matrix legs 14–16 — are
+**not** in `3e1d28464`. They land here. Anyone reading the earlier commit sees the pre-review design.
+
+Shipped, dormant, in `packages/runtime/review-wake/`: `types.ts`, `identity.ts`, `slot.ts`, `recovery.ts`,
+`index.ts`, plus `packages/runtime/test/a6-pr3-wake-kernel.test.ts` (**73 legs**, matrix 1–12 and 14–16) and
+`packages/runtime/test/a6-pr3-lane-hygiene.test.ts` (**14 legs**, matrix 13). Both tsconfigs name the lane;
+`packages/testkit/test/p4t6-bookings/alpha6-pr3.json` books the seven files (census 1402 → 1409, measured by
+moving the bookings aside and reading the leg's own arithmetic).
+
+Three things the implementation settled that the design left open:
+
+1. **A takeover advances `revision` twice** (re-bind, then transition). Deliberate: recording a new
+   `(leaseEpoch, writerToken)` requires minting a branded slot, and the CAS contract is on the revision the
+   adapter *loaded*, not on the size of a step. Leg 10 pins monotonicity and refuses a stale writer, and
+   says out loud that pinning `+1` would be pinning an implementation detail.
+2. **Backoff is `min(base * 2^(n-1), cap)`** — the first wait is `base`, not `2·base` — with the shift
+   clamped, because an unclamped shift on a long-failing slot overflows into a *negative* deadline, which
+   means "wake immediately, forever": the storm the function exists to prevent, arriving through arithmetic.
+3. **Hydration recomputes `wakeId` instead of trusting the row.** A stored row is the kernel's only memory
+   of which wake is outstanding, and every correlator matches on that id, so a row naming another triple's
+   digest is a slot that would re-deliver a pointer belonging to a different reviewer instance. The lane's
+   law is that a wake id is derived and never carried; `hydrateWakeSlot` now enforces it. The consequence is
+   stated rather than hidden: a refused row leaves the adapter with **no** slot, so corruption degrades to
+   the `WAKE_NO_SLOT` path (a fresh `request` may open a new slot at `wakeSequence` 0, and a much older
+   unclaimed message could in principle carry a digest that a new flight re-derives) — which is an orphaned
+   *notification* with no authority in it, reported by the fold as `orphanFacts`, and not an authority
+   event. That is the fail-closed direction this lane chose: re-read cheaply, never notify the wrong person.
+4. **Budget exhaustion is a suspension, not a refusal.** `WAKE_REDELIVER_BUDGET_EXCEEDED` was in the
+   vocabulary and no event could produce it, so it is gone rather than documented: dead vocabulary in a
+   closed list is the finding PR0's round-3 review made about a sibling package, and this lane caught it
+   with the same reachability leg (the kernel spec pins the *produced* set against the published one —
+   importing `WAKE_REFUSALS` rather than copying it, because the first version's hand-typed copy drifted
+   within the hour and still named the deleted code).
+
+Unchanged, and still the two things C1 cannot reach: the Kv adapter's real cross-process CAS atomicity, and
+the truth of `hasReadyWork` / inbox facts. Both are **C2 at the final merged HEAD** — re-run there, on a
+single-owner machine, before anything in this lane is wired to `allow`.
+
+### Round-4 review disposition (independent reviewer, executed not read)
+
+Verdict on the stack `fd6c08ddd + 92fef05c8 + ab56a5146`: **safe to merge DORMANT**, from an
+18-sequence external attack suite and an 11-mutation battery run against mirrors of the committed
+blobs — 10 of 11 mutations turned at least one leg red. The one that survived, and the two things
+closed out of it:
+
+* **NEW-2 (minor, fixed here).** `recovery-observed` with `inbox='unclaimed'` and no `messageId` was
+  refused at runtime and pinned by nothing: deleting the guard left the whole suite green. One leg now
+  owns it, with the adopt-with-id case as its positive control.
+* **NEW-3 (minor, fixed here).** §2 claimed the store key came from "one exported function" and no such
+  export existed — the key was derived inside the test, i.e. the atomicity story had no shipped anchor.
+  `wakeSlotRowKey` is now that export, the CAS model in leg 9 uses it, and a leg pins its
+  order-sensitivity and its resistance to the `a:b:c`-join collisions a hand-rolled key would hit.
+* **NEW-5 (note, fixed here).** The booking's leg counts are prose; what the census machine-enforces is
+  the path set and the delta arithmetic. The booking now says which is which, because a note that reads
+  like a guarantee and isn't one is the same species of error as a test that copies a vocabulary.
+* **Carried to PR-I2, not fixed here:** host-facts-only ingress (already in §5) and the withdraw journal
+  above.
