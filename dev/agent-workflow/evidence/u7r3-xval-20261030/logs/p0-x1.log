@@ -1,0 +1,6 @@
+[2026-10-30T15:01:54.574Z] x1: env pre: load=0.14 1.06 2.04 1/364 17 :3080={"reachable":true,"status":401} ~/.dsh={"mtimeMs":1793195142559.5686,"mtime":"2026-10-28T13:45:42.560Z"}
+[2026-10-30T15:01:54.579Z] x1: leaseRoot = /srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases (hoisted=true)
+[2026-10-30T15:01:54.887Z] x1: world u5xvala-20261030T15-01-54Z home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/homes/u5xvala-20261030T15-01-54Z
+[2026-10-30T15:03:31.688Z] x1: booted port=3189 in 46005ms pid=185
+RUN-SUMMARY run=x1-20261030T15-01-54Z suite=u7r3-xval-parallel-validation (NO-ACCEPTANCE-CREDIT) overall=PASS cases=17 PASS:17 worlds=u5xvala-20261030T15-01-54Z
+RUN record: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x1/RUN-x1.json

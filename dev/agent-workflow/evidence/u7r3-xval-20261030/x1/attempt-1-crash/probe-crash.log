@@ -1,0 +1,11 @@
+[2026-10-30T14:55:52.121Z] x1: env pre: load=1.54 2.01 2.61 6/439 18 :3080={"reachable":true,"status":401} ~/.dsh={"mtimeMs":1793195142559.5686,"mtime":"2026-10-28T13:45:42.560Z"}
+[2026-10-30T14:55:52.129Z] x1: leaseRoot = /srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases (hoisted=true)
+[2026-10-30T14:55:52.489Z] x1: world u5xvala-20261030T14-55-52Z home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/homes/u5xvala-20261030T14-55-52Z
+file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/probes/xval-boot-probe.mjs:165
+record.getCase('budget-line-before-spawn').detail.spawnedAt = now()
+                                                            ^
+
+TypeError: Cannot set properties of undefined (setting 'spawnedAt')
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/probes/xval-boot-probe.mjs:165:61
+
+Node.js v24.21.0
