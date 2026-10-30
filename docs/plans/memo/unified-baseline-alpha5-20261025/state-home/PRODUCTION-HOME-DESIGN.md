@@ -37,14 +37,14 @@ Is it importable under our red lines? YES, on verified facts:
   `publishConfig.access: "public"`, `exports["."] → lib/index.js`
   (`tests/deepseek-harness-test-use/packages/util/home-paths/package.json`); the API we need
   (`resolveDshHome`, `defaultDshHome`, `DSH_HOME_ENV`) is root-exported public surface
-  (`src/index.ts:61-100`) — not a private/internal API (red line targets those).
+  (`resolveDshHome`/`defaultDshHome` at `src/index.ts:87-95`, `DSH_HOME_ENV` at `:18`; erratum 2026-10-31 R481-F2: an earlier draft cited `:61-100`, which spans neither constant) — not a private/internal API (red line targets those).
 - **Existing precedent, same layer**: our tools families already import an upstream public package
   directly — `packages/tools/search-family/src/search-backend.mjs:205` and
   `glob-backend.mjs:198` import `@deepseek-ai/dsh-tool-fs-search`; further precedent
   `agent-bindings.mjs:339-470`, `team-spill-local.ts:46-49`, `client/plugin/team-mount-core.ts:49-56`.
   Upstream deps are declared at the workspace root pinned to the baseline
   (`package.json:52-60`, `@deepseek-ai/* @ 0.2.0-rc.2`); resolution in production worlds is covered by
-  the `upstream-resolver.mjs` hook (`host.ts` registers it at load; normal-first, drift-loud).
+  the `upstream-resolver.mjs` hook (`host.ts` registers it in bootstrap() — `host.ts:1727`; erratum 2026-10-31 R481-F3: earlier said "at load") ; normal-first, drift-loud).
   Impl PR must ADD `@deepseek-ai/dsh-home-paths` to the root deps set (same pin) — config, not code.
 - **Family-lifecycle reachability: YES.** The home law runs synchronously inside `build(cap)`
   (`packages/tools/families/agent-state.mjs:56-58` → `resolveAgentStateHome()` at
@@ -71,7 +71,7 @@ the standing gate: independent security review MUST precede any centre-interface
 mode-aware resolution arm — production: when `DSH_HOME` raw env is absent/blank, the home is
 `defaultDshHome()` (upstream answer) instead of `HOME_MISSING`; every other validation (below, (d))
 runs over it unchanged. The `~/.dsh` refusal becomes **test-mode-only**. `agent-state.mjs`, the plane,
-`family-assembly.mjs`, and every Host interface are UNTOUCHED. Zero centre lines; upstream untouched
+`family-assembly.mjs` get ONE-LINE mode-threads only (erratum 2026-10-31 R481-F1: the discriminator must be read where agentStateEnabled is read — `agent-state.mjs:56-58/:79` — so "UNTOUCHED" here means zero LOGIC change, one-line planeConfig.testHomeGuard plumbing per layer, no seam change), and every Host interface is UNTOUCHED. Zero centre lines; upstream untouched
 (CORE PATCH BUDGET = 0 intact).
 
 ## (c) Production-vs-test policy split
@@ -128,7 +128,7 @@ All in `packages/tools/agent-state-family/src/fs-state-store.mjs` unless noted:
 6. Locks: heartbeat + stale classification + generation-checked break, "live pid → NEVER break",
    operator-clear-only (`:50-101`, `acquireLock :616`, `writeLockTemp :561`); #461 lock-ownership law.
 7. Idempotence: applied markers consumed via atomic no-replace link, cross-scope-global replay
-   (`:50,111-124`); per-home replay domain (PoC C6-C7).
+   (`:50` = lock-record publish path; marker law itself `:113-115` O_EXCL create — erratum 2026-10-31 R481-F4; replay `:111-124`); per-home replay domain (PoC C6-C7).
 8. Audit rows: `ledger/{attempts,writes}.jsonl` append-only, `ledgerBytes` tri-state, never
    zero-as-clean (`:135-140,491,510`); R-AUDIT-FAIL-1 CONFIRMED/UNCONFIRMED semantics.
 9. Mount fail-closure law (`agent-state.mjs` header + `storeMissing`): enabled family with no usable
