@@ -1,0 +1,17 @@
+== pre-boot probes (lane u7r3-b49-20261031, boot#1) ==
+probedAt: 2026-10-30T02:38:10Z
+stable :3080 GET / (no token) => 401  [read-only probe; never written, never signalled]
+hostTree HEAD: 639ed015397290b3745d163aafe02ffee4aa3f84
+hostTree porcelain lines: 0
+probe        : before-provision=partial -> after-provision=partial
+backend      : partial (usable: true)
+launcher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+porcelain    : empty (assets are gitignored)
+port 3181 free
+port 3182 free
+port 3183 free
+port 3491 free
+port 3492 free
+port 13000 free
+port 13050 free
+~/.dsh: never touched (no command in this lane addresses $HOME/.dsh)
