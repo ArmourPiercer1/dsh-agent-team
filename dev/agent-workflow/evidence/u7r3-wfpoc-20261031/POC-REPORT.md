@@ -9,7 +9,7 @@ Method = 有界 Public API PoC. **Verdict: route B — defer the workflow positi
 - 席位：独立只读调查子代理（delegated subagent seat）。**非 participant**：本席位未参与任何被审 PR 的实现，
   未改动 Host 树、未改动本产品树任何执行文件、未 boot、未占 pool。
 - 模型：`qwen3.8-flash-next`（DSH harness 下运行）。
-- 覆盖 head sha：本报告断言的对象 = `origin/master` @ `89d96a13d3219aa52b49d3c4b94adfb512b3fb95`
+- 覆盖 head sha：本报告断言的对象 = `origin/master` @ `89d96a13d3219aa52b3492beb42d30a1ba59daf7`
   （本分支 `task/u7r3-wfpoc-20261031` 的基座）与 pristine Host @ `639ed015397290b3745d163aafe02ffee4aa3f84`。
 
 ## 基线与可复核性
@@ -39,8 +39,8 @@ Method = 有界 Public API PoC. **Verdict: route B — defer the workflow positi
 **realm caveat（这是本 lane 的第一个非显然结论）**：在已发货 web-app 组成里，host plane 的 `workflow-ptc`
 被显式停用（`H:packages/bundle/web-app/cordis.patch.yml:537-538` `- id: workflow-ptc` / `disabled: true`），
 引擎被挂进 preset 的 `delegation` 组且 `isolate: workflowEngine: true`
-（`H:packages/bundle/web-app/presets/standard.patch.yml:83-84, :119-120`）。isolate realm 的实现存于 realm-private
-symbol（`H:vendor/cordis/src/reflect.ts:238` `const key = this.ctx[symbols.isolate][name]`），preset 服务向 root realm
+（`H:packages/bundle/web-app/presets/standard.patch.yml:83-84, :119-120`）。isolate realm 的实现存于 realm-local scope-label
+symbol（勘误 2026-10-31 R482-F3：`Symbol.for('isolate')` 本身共享，隐私来自 realm-local label + per-ctx map；结论不变）（`H:vendor/cordis/src/reflect.ts:238` `const key = this.ctx[symbols.isolate][name]`），preset 服务向 root realm
 泄漏会在挂载期直接抛错（`H:packages/preset/agent-preset-registry/src/mount.ts:267`
 `Preset services require isolate realms`）。
 
@@ -54,54 +54,7 @@ symbol（`H:vendor/cordis/src/reflect.ts:238` `const key = this.ctx[symbols.isol
 （`H:docs/subsystems/core.md:545`，`### ctx.agentPresets` 节 @ `:487`，块内标记
 `BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts)`）。`agentPresets` 本身在 host plane
 （`H:packages/bundle/web-app/cordis.patch.yml:561-565`）。我们的 mount 已持有 DISPATCH 提供的 `exec.agent`
-（`P:packages/tools/agent-control-family/src/workflow-row.mjs:34`）并已 join preset
-（`P:packages/runtime/src/plugin/live/agent-bindings.mjs:2295` `presets.composedPreset(agentCtx)` 探针、
-`:2306` `presets.mount(agentCtx, …)`，id 缺省 ⇒ deployment default），条件齐备。
-
-**presence 是 preset 事实、不是保证**：`minimal` preset 一个 workflow 行都不挂
-（`H:packages/bundle/web-app/presets/minimal.patch.yml` grep `workflow` = 0）；`standard`（deployment default）挂。
-
-## ② 步骤权限继承 — **不通过（FAIL）：继承由 Host 侧固定，调用方没有可写入口**
-
-**答案：继承存在，但继承什么由引擎决定，不由调用方决定；统一 PA/Control 授权链无法沿公开 seam 保持。**
-
-事实链（决定性）：
-
-1. 引擎**自己**起子任务，不回调调用方：
-   `H:packages/workflow/workflow-ptc/src/host.ts:200-211` —
-   `this.subagents.start(this.provider, { prompt, parent, signal, outputSchema?, agentOptions? })`。
-   请求体里**没有 `toolFilter`**（探针 negative claim：`host.ts` 全文无 `toolFilter`）。
-2. 公开 start 契约里**也没有**给调用方留任何收窄位：
-   `H:packages/workflow/workflow/src/runtime-types.ts:19-34` 全文无 `toolFilter`（探针 negative claim）。
-3. 子任务工具视图只在"有人传了 filter"时才收窄：
-   `H:packages/subagent/subagent/src/child-agent.ts:218`
-   `if (composition.toolFilter !== undefined) childCtx.tools.restrict(composition.toolFilter)` — 无人传 ⇒ 不收窄。
-4. 脚本自己可以挑路由：`H:packages/workflow/workflow-ptc/src/runtime.ts:33`
-   `SUPPORTED_AGENT_OPTIONS = new Set(['label','phase','schema','provider','model'])`，
-   经 `host.ts:205-210` 变成 `agentOptions:{provider,model}`；`agentOptions` 能力位由 provider 声明
-   （`H:packages/subagent/subagent/src/index.ts:645-649` `assertCapabilities`）。
-5. **公开继承的到底是什么**：父 session 的文件策略
-   （`H:packages/workflow/workflow-ptc/src/index.ts:166`
-   `runCtx.sandboxPolicy.resolve({ session: request.parent.session })`）、lineage（`parent`）、
-   preset composition（`child-agent.ts:206` `composeFrom(childCtx, parent.ctx)`）。
-
-对照我方现行法律：Tier A 要求每个子任务强制 `toolFilter:{allow:[]}` 且 spec 禁带
-provider/model/agentOptions（`P:packages/tools/agent-control-family/src/agent-runtime-port.mjs:82-83, :198-205`）；
-law (c) 要求工作流只能经 caller-bound delegate 触达 agent
-（`P:packages/tools/agent-control-family/src/agent-control-executor.mjs:203-237`）。
-Host 引擎的 `start()` **不接收**这两样东西——它根本不看调用方的 delegate。
-
-**唯一候选 route-A seam（公开、非私有、无 Host 改动）**：`ctx.subagents.registerProvider()`
-（`H:packages/subagent/subagent/src/index.ts:512-528`，effect-scoped，`DUPLICATE_PROVIDER` 守卫）注册一个我方
-governed provider，再用 `WorkflowStartRequest.subagentProvider`
-（`H:packages/workflow/workflow/src/runtime-types.ts:27`，解析点
-`H:packages/workflow/workflow-ptc/src/index.ts:67-79`）把工作流的孩子整体改道到我方 provider。
-
-**为什么它仍不满足"保持统一 PA/Control 授权链"（三条，逐条可驳）**：
-
-- **授权来源退化**。我方现行法要求 caller 由 DISPATCH 携带、绝不由环境推导
-  （`P:.../workflow-row.mjs:34` 原文："DISPATCH-provided, never derived from the ambient session — the native
-  callingAgent law"）。provider 被引擎调用时，唯一可用的是 `request.parent`（一个 Agent）——authority 必须**反推**，
+  （`P:.../workflow-row.mjs:33-34` 原文：“The DISPATCH-provided caller identity (native callingAgent law): trusted transport data — the model cannot express or restate it.”〔勘误 2026-10-31 R482-F2：初稿此处英文引文系转述误挂原文，现以文件实际注释替换；law 实质不变——caller 只可随 DISPATCH 传输、模型不可表达或复述，ambient 环境推导不在合法来源集内〕）provider 被引擎调用时，唯一可用的是 `request.parent`（一个 Agent）——authority 必须**反推**，
   正是本仓明令禁止的 ambient-derived caller。
 - **law (c) 的执法点消失**。executor 的 `workflow:` 行现在把 `spawn`/`steer`/`enumerate` delegate 交给 port leg
   （`P:.../agent-control-executor.mjs:245-275`）；Host 引擎从不接收它们。若把 fence 搬进 provider，fence 就搬到
