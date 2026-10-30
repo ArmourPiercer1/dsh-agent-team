@@ -69,3 +69,10 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - 绑定律 = 套件内置自拒：BOOTWAVE_PRE_REG_SHA 必须 == 运行 HEAD，spawn 前校验（SOURCE_SHA_MISMATCH 全格 FAIL）；产品树 = 本分支 HEAD（fmerge master@3e7fd25e0b 后，产品码与 master 恒等，diff 零产品文件）；宿主 = tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84（porcelain 0，主树只读回退）。
 - 停线律 = 同类失败 ×2 停线进入 RCA（rcaClass 逐格落记录），禁 boot 探索未证接口；效率门 = 每 start ≥1 有效格，否则记 WASTED 并停止续耗。
 - 全量腿清单/判定律/审批序 = dev/agent-workflow/evidence/a5w-bootwave-20261030/PRE-REGISTRATION-DRAFT.md + PRE-REGISTRATION.json（同 commit 在册）。本 lane boot 前实耗 = 0（dry-run + 预算门拒启收据在案）。
+
+## C2 池使用回执（lane=a5w-bootwave，dated 2026-10-30T23:54Z）
+- bw1/bw2：ENV 类（旧探针误判），spawn 前死，真实启动 0，池计数不动（RCA-1）。
+- bw3 +1（5/8）：真实启动 1，首绿 placement/ui:f4/leak（RCA-2）。
+- bw4 +1（6/8）：真实启动 1，trace 定根因主链（RCA-3）。
+- bw5 +1（7/8）：真实启动 1，捕获 fault 全文，裁决=产品装配缺口（RCA-4）。
+- 预登记池 3/3 耗尽；复跑需新预登记。
