@@ -19,6 +19,7 @@ booting.
 | tier | what | run | touches Host? |
 | --- | --- | --- | --- |
 | **C1 adapter-local** | offline unit + sensitivity tests of the factory machinery (port leases incl. the FIX-T cross-process race harness, verdict algebra, Oracle fault-planting sensitivity, cleanup-ownership guards, capped ledgers, owned-path guard, mock decide discrimination, host-base guard) | `node --test tests/world-factory/world-factory.test.mjs` | NO — CI-safe (`U5_RACE_TRIALS` raises the race sample) |
+| **C1 port-probe negative controls** (added 2026-10-30 after RCA-1) | the five NCs for `portInUse`'s three-way classification (connect answers / errors / times out → bind tie-breaker) and for the lease second guard: real listener still busy, closed in-band port free, three leases → three different ports, leaseless foreign bind still `EXTERNAL_BIND`, zero-budget verdicts | `node --test tests/world-factory/port-probe.test.mjs` | NO — CI-safe, but unlike its siblings this file is **"zero ports LEAKED"**, not "zero ports bound": it binds sanctioned-band ports for milliseconds on purpose (3080/3180 asserted out of range; see `dev/agent-workflow/evidence/a5w-portprobe-20261030/`) |
 | **C2 real-Host, candidate-pinned** | the Canary suites below against the pinned pristine Host at `TEST_USE_BASELINE_SHA` (the fixed candidate; no floating versions) | `node tests/world-factory/u5-canary-runner.mjs --suite <core\|core-restart\|negatives\|u6-shadow\|crash-victim\|any suites/*.mjs name> --line <line> --evidence <dir> [--budget-ledger <jsonl>] [--max-host-starts 15]` | YES — budget-leased |
 | **C3 parallel/crash orchestration** | two Worlds live in parallel; victim SIGKILLed; crash-residue reclaim; other-World + pristine + :3080 + sibling-home untouched checks | `node tests/world-factory/u5-parallel-supervisor.mjs --evidence <dir> [--mode parallel\|crash-reclaim] [--survivor-suite core\|core-restart] [--inflight-timeout ms]` (`--reconstruct <liveRecord>` re-judges a finished live run with zero spawns) | YES (2–3 starts) |
 
@@ -27,6 +28,16 @@ from the `tests/paths.mjs` bands (World hosts: `HOST_PORT_BANDS` 3181–3199 the
 13000–13049; mocks: `MOCK_PORT_BANDS` 3491–3500 then 13050–13099; widened by
 the 2026-10-26 user ruling) — never 3080 (the stable dev instance is probed
 read-only before/after and never signalled).
+
+Two measured facts about those bands on this executor (dated 2026-10-30, real
+UTC, evidence in `dev/agent-workflow/evidence/a5w-portprobe-20261030/`): a port
+this box has never bound locally BLACK-HOLES a loopback SYN (the connect probe
+waits its whole 1500 ms budget, then the bind tie-breaker answers), so budget
+~1.5 s per first-seen port on a cold boot wave — after one local bind+close the
+same port answers with a fast RST; and a few in-band ports are held by
+Windows-side listeners that never appear in `/proc/net/tcp` (13030–13032, and
+transiently 3496–3500), which `acquirePortLease` correctly refuses as
+`EXTERNAL_BIND` while `acquireFirstFreeLease` steps over them.
 
 ## Drop-in registries (u7-w0, 2026-10-26)
 

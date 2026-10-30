@@ -1,0 +1,104 @@
+=== RUN A: C1 world-factory.test.mjs (post-fix, incl. DSH_U5_LEASE_PAUSE cross-process race)
+start=2026-10-30T22:25:58Z head=3e7fd25e0ba32004f427a235c7691fdc4fdfec37 node=v24.21.0
+SURVIVOR-PROBE 1793399158363 health-effect ok=true
+U5-SURVIVOR-READY fake-survivor 1793399158363 health-effect
+SURVIVOR-PROBE 1793399158614 after-reclaim ok=true
+SURVIVOR-PROBE 1793399161339 health-effect ok=true
+SURVIVOR-PROBE 1793399161590 after-reclaim ok=true
+✔ C1 dry-run uses supervisor path without starts and proves hold ordering (4441.210775ms)
+✔ C1 team-tree provenance is independent and fail-closed on dirty tracked paths (0.620214ms)
+✔ C1 survivor sequencing is fail-closed with real successful probes and identity continuity (0.238731ms)
+✔ C1 kill handshake: kill fires ONLY after HELD + authenticated READY receipt; knob without receipt is NOT_REACHED (0.185081ms)
+✔ C1 survivor sequencing: window and held-until-reclaim are independent facts (no aliased boolean) (0.108676ms)
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (41.758364ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (0.682622ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.475881ms)
+✔ port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds) (99232.334937ms)
+ℹ upper band carried foreign listeners on 13030,13031,13032
+✔ port lease T1: dir-slot dead claim reclaimed BY NAME with provenance; live claim never moved (48.810948ms)
+✔ port lease T1: release is token-guarded, idempotent, and leak-check scan sees zero claims after teardown (1505.149102ms)
+✔ port lease T1: cross-process race — zero double-ownership, natural AND forced stale/reclaim interleaving (5047.355584ms)
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (6.690005ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (230.076144ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (1.749131ms)
+✔ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.609516ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (33.875119ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (0.491351ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (0.117663ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (0.973243ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (22.8838ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (0.38557ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (0.242439ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (0.154944ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (48.745102ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (6.601628ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (0.17974ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.0741ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (3.91951ms)
+✔ u7-agent-control: SUITE_CASES entry and parseArgs wiring (0.114376ms)
+✔ u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven (2.12338ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (3.443588ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (1.45247ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (1.023488ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (4.775609ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (1.803055ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (0.284128ms)
+✔ u6-fs: the decide script discriminates lanes by request token (0.691389ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (1.638913ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (0.822127ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (4.456166ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (0.689205ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (0.382525ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (0.201772ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (0.741765ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110792.775586
+EXIT_A=0
+end=2026-10-30T22:27:49Z
+
+=== RUN B: sibling offline suites that import the lease/port machinery
+--- registries.test.mjs
+start=2026-10-30T22:27:49Z
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0
+ℹ duration_ms 205.647789
+EXIT_B_registries.test.mjs=0
+--- binding-digests.test.mjs
+start=2026-10-30T22:27:49Z
+ℹ tests 14
+ℹ pass 14
+ℹ fail 0
+ℹ duration_ms 182.277114
+EXIT_B_binding-digests.test.mjs=0
+--- u6-arc-d.test.mjs
+start=2026-10-30T22:27:49Z
+ℹ tests 8
+ℹ pass 8
+ℹ fail 0
+ℹ duration_ms 148.664078
+EXIT_B_u6-arc-d.test.mjs=0
+--- port-probe.test.mjs
+start=2026-10-30T22:27:49Z
+ℹ tests 5
+ℹ pass 5
+ℹ fail 0
+ℹ duration_ms 6121.251038
+EXIT_B_port-probe.test.mjs=0
+
+=== RUN C: p4t6 scanner self-proof (tests/ is outside the scanned domain = packages/**)
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 8ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  06:27:56
+   Duration  424ms (transform 56ms, setup 0ms, import 327ms, tests 8ms, environment 0ms)
+
+end=2026-10-30T22:27:56Z
