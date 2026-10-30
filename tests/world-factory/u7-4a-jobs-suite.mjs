@@ -78,7 +78,7 @@ import {
 } from './lib/u74a-jobs-assembly.mjs'
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
-import { bindWorldProfile, captureOracleBinding, trustedSourcesUnavailable } from './lib/binding-digests.mjs'
+import { bindWorldProfile, captureOracleBinding, captureTrustedSourcesBinding } from './lib/binding-digests.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -146,6 +146,13 @@ async function main() {
   const factory = new TestWorldFactory({ repoRoot: REPO_ROOT, evidenceRoot: evidence, hostTree: testUseTree(hostRepoRoot) })
   const hostBaseStartup = factory.assertHostBase('startup')
   const oracleBinding = captureOracleBinding({ artifactPath: fileURLToPath(import.meta.url), sourceRoot: HERE, repoRoot: REPO_ROOT, suite: 'u7-4a-jobs', evidencePath: join(evidence, `${runId}.oracle.json`) })
+  // R-G4R-1a: plane trusted-sources digest (obligations family + this suite's oracle
+  // closure; profile entries join via bindWorldProfile). Null-with-reason comes from the
+  // surface itself when the set is not computable — never backfilled.
+  const trustedSourcesBinding = captureTrustedSourcesBinding({
+    repoRoot: REPO_ROOT,
+    extraEntries: [{ role: 'world-oracle', path: oracleBinding.worldOracle.evidence[0]?.path ?? '', sha256: oracleBinding.worldOracleDigest }],
+  })
   const record = createRunRecord({
     runId,
     suite: 'u7-4a-jobs',
@@ -156,7 +163,7 @@ async function main() {
       hostSha: hostBaseStartup.head,
       hostTreeSha: hostBaseStartup.head,
       composedProfileDigest: {},
-      ...trustedSourcesUnavailable(),
+      ...trustedSourcesBinding,
       ...oracleBinding,
       authority: readAuthorityBinding(REPO_ROOT),
       plant,

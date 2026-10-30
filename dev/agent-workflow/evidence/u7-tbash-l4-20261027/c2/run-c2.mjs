@@ -55,6 +55,16 @@
  *  F4 The `--fixtures` lookup reads the flag by name (an absent flag fails
  *     closed naming the flag — the old argv[indexOf+1] trap yielded argv[0],
  *     the node ELF binary, straight into JSON.parse).
+ *
+ * Dated addendum (R-G4R-1a, 2026-10-30 real UTC, lane evidence
+ * dev/agent-workflow/evidence/u7r3-g4r1a-20261030/): G4-R2 review F1/M1 — the earlier
+ * records made by this driver carried NO digest cells. The LIVE drive path now persists
+ * the same honest cells the canary runners persist (oracle source closure + cited
+ * artifact through the F3 writtenOut pipeline, plane trusted-sources union digest,
+ * per-world composed-profile capture via factory.onProfileBinding, sandbox pre-flight
+ * via factory.bindRunRecord). Computed-from-bytes or null-with-reason; nothing is
+ * backfilled and NO committed record was rewritten. The `--dry-run` path is unchanged
+ * on purpose: dry-run records are synthetic and still carry no live binding cells.
  */
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve, dirname, sep } from 'node:path'
@@ -64,6 +74,7 @@ import { createHash } from 'node:crypto'
 import { TestWorldFactory, apiPrompt, authenticate, fetchJson } from '../../../../../tests/world-factory/lib/world-factory.mjs'
 import { remoteCall, hasMarker, surfaceNamesOf, MANAGED_TOOL_NAMES, SAFE_UNMANAGED_TOOL_NAMES } from '../../../../../tests/world-factory/lib/u6-fs-assembly.mjs'
 import { createRunRecord, readAuthorityBinding } from '../../../../../tests/world-factory/lib/run-record.mjs'
+import { bindWorldProfile, captureOracleBinding, captureTrustedSourcesBinding } from '../../../../../tests/world-factory/lib/binding-digests.mjs'
 import { testUseTree } from '../../../../../tests/paths.mjs'
 import {
   TBASH_CASES, createTbashAssembly, makeTbashDecide, askerScript, decideResolution,
@@ -339,6 +350,34 @@ async function main() {
   })
   const hostBase = factory.assertHostBase('c2-check')
   run.record.bindings.hostSha = hostBase.head
+  // R-G4R-1a + G4-R2 review closure ("emit profile/oracle digests from the c-suite"):
+  // this driver's earlier records carried NO digest cells. FUTURE runs of this driver
+  // persist the same honest cells the canary runners persist — oracle source closure
+  // (entry = this driver module: the expected answers live here), the plane trusted-
+  // sources union digest, per-world profile capture, and the sandbox pre-flight
+  // registration. Computed-from-bytes or null-with-reason, never backfilled; existing
+  // records are history and stay untouched.
+  const oracleBinding = captureOracleBinding({
+    artifactPath: fileURLToPath(import.meta.url),
+    evidencePath: join(OUT_DIR, `${run.record.runId}.oracle.json`),
+    sourceRoot: HERE,
+    repoRoot: REPO,
+    suite: 'u7-team-bash-l4',
+  })
+  Object.assign(run.record.bindings, {
+    composedProfileDigest: {},
+    ...captureTrustedSourcesBinding({
+      repoRoot: REPO,
+      extraEntries: [{ role: 'world-oracle', path: oracleBinding.worldOracle.evidence[0]?.path ?? '', sha256: oracleBinding.worldOracleDigest }],
+    }),
+    ...oracleBinding,
+  })
+  // F3 law: the oracle artifact IS a file this run wrote — cite it through the
+  // same writtenOut pipeline as every other evidence name (the finalize-time
+  // evidence assembly is F3-maintained; nothing is cited that a write missed).
+  writtenOut.push(`${run.record.runId}.oracle.json`)
+  factory.onProfileBinding = (entry) => bindWorldProfile(run.record.bindings, entry)
+  factory.bindRunRecord(run)
   const world = await factory.createWorld({ line: 'u7tb' })
   const assembly = createTbashAssembly({ repoRoot: REPO, home: world.home, runStamp: world.id, reportDir: world.logDir })
   const planted = assembly.writePreBootFiles()

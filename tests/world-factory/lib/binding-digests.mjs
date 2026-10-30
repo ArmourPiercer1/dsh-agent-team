@@ -11,12 +11,20 @@
  *                          followed anywhere inside the repo root) plus the
  *                          repo-relative source list (F2) under the hashing
  *                          law stated in ORACLE_HASH_LAW.
- *   trustedSources         explicit null + reason (the public seam exposes no
- *                          plane admission-source document; see below).
+ *   trustedSources         the union digest over the PLANE trusted-source set (R-G4R-1a: the
+ *                          reviewed tool-obligations family + the oracle-closure digest + one
+ *                          composed-profile entry per launched World; every entry computed
+ *                          from bytes — design dev/agent-workflow/gates/R-G4R-1a-DIGEST-SURFACE.md).
+ *                          Null-with-reason stays legal and fail-closed: an empty declared
+ *                          set, or any missing family file, emits NO digest. The RUNNING
+ *                          World's admission-source document is still NOT exposed on the
+ *                          public World/HTTP surface; that disclosure travels INSIDE the cell
+ *                          (`admissionDocument`), verbatim.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const ONE_MIB = 1024 * 1024
 const NUL = Buffer.from([0])
@@ -430,10 +438,161 @@ export function verifyProfileBindingLaunched(entry, { read = (p) => readFileSync
   return entry
 }
 
+/**
+ * R-G4R-1a — the PLANE TRUSTED-SOURCES digest surface.
+ * Design: dev/agent-workflow/gates/R-G4R-1a-DIGEST-SURFACE.md. The three source families a
+ * runner's verdicts are computed against (each named there, cited there):
+ *   1. the reviewed tool-obligations family (`TRUSTED_SOURCE_FAMILY` below — manifest +
+ *      census + expected set; the BL pins ride in via the manifest's input digests);
+ *   2. the oracle closure digest (`role: 'world-oracle'`, sha256 = worldOracleDigest);
+ *   3. one composed-profile entry per launched World (`role: 'composed-profile/<worldId>'`,
+ *      sha256 = composedProfileDigest; appended by `bindWorldProfile`, which refreshes the
+ *      union digest so a record's final digest covers every World it launched).
+ * Honesty law (same pattern as the other two cells): compute-from-bytes or null-with-reason,
+ * never a partial or retroactive digest. A missing family file voids the digest entirely
+ * (a PARTIAL union would misrepresent what is bound); an empty declared set says so.
+ * This digest is NOT a claim that the census inventory substitutes for the plane's runtime
+ * admission document — the substitution ruling is lead/user-owned; the cell pins
+ * `substituteAdoption: 'none'` and keeps the admission-document refusal verbatim inside itself.
+ */
+export const TRUSTED_SOURCES_SCHEMA = 'u7r3-g4r1a/plane-trusted-sources/1'
+/** The hashing law, stated exactly; `recomputeTrustedSources` is its enforcement. */
+export const TRUSTED_SOURCES_HASH_LAW = 'sha256(concat(for each entry in trustedSources.sources order: utf8(role) + 0x00 + utf8(repo-relative posix path) + 0x00 + utf8(per-source sha256 hex) + 0x00))'
+/** What "in order" means; `sources` is written in this order (order-independence law). */
+export const TRUSTED_SOURCES_ORDER = 'sources listed in lexically ascending role + 0x00 + path (JS string order); the digest consumes them in exactly that order, insertion order never affects it'
+/**
+ * The RUNNING World's admission-source gap, verbatim from the R-G4R-1 disclosure. It is a
+ * fact about the host's public World/HTTP surface, not about the tracked bytes bound here,
+ * and CORE PATCH BUDGET = 0 forbids minting the missing endpoint — so it stays disclosed
+ * INSIDE the cell for as long as any digest or null travels in it.
+ */
+export const ADMISSION_DOCUMENT_UNAVAILABLE = 'The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.'
+/** The tracked reviewed authority documents whose BYTES every runner verdict input derives from. */
+export const TRUSTED_SOURCE_FAMILY = Object.freeze([
+  Object.freeze({ role: 'tool-obligations-manifest', path: 'dev/engineering/tool-obligations/manifest.json' }),
+  Object.freeze({ role: 'authoritative-tool-sources', path: 'dev/engineering/tool-obligations/authoritative-tool-sources.v1.json' }),
+  Object.freeze({ role: 'expected-tool-obligations', path: 'dev/engineering/tool-obligations/expected-tool-obligations.v1.json' }),
+])
+
+const SHA256_HEX_RE = /^[0-9a-f]{64}$/
+const entryKey = (e) => `${e.role}\u0000${e.path}`
+
+/** Pure digest core: validate + canonicalise + hash. Throws on a malformed entry. */
+export function computeTrustedSourcesDigest(entries) {
+  const sources = []
+  const seen = new Set()
+  for (const e of entries) {
+    if (e === null || typeof e !== 'object') throw new Error(`trusted-sources entry is not an object: ${JSON.stringify(e)}`)
+    const { role, path, sha256 } = e
+    if (typeof role !== 'string' || role === '' || role.includes('\u0000')) throw new Error(`trusted-sources entry role is not a NUL-free string: ${JSON.stringify(role)}`)
+    if (typeof path !== 'string' || path.includes('\u0000') || path.includes('\\') || isAbsolute(path)) throw new Error(`trusted-sources entry path is not a repo-relative posix path (empty allowed for digest-carried entries): ${JSON.stringify(path)}`)
+    if (typeof sha256 !== 'string' || !SHA256_HEX_RE.test(sha256)) throw new Error(`trusted-sources entry sha256 is not 64-hex: ${JSON.stringify(sha256)} (${role})`)
+    const key = entryKey({ role, path })
+    if (seen.has(key)) throw new Error(`duplicate trusted-sources entry ${role} @ ${JSON.stringify(path)}`)
+    seen.add(key)
+    sources.push({ role, path, sha256 })
+  }
+  sources.sort((a, b) => (entryKey(a) < entryKey(b) ? -1 : entryKey(a) > entryKey(b) ? 1 : 0))
+  const digest = createHash('sha256')
+  for (const s of sources) digest.update(Buffer.from(s.role, 'utf8')).update(NUL).update(Buffer.from(s.path, 'utf8')).update(NUL).update(Buffer.from(s.sha256, 'utf8')).update(NUL)
+  return { digest: digest.digest('hex'), sources }
+}
+
+/**
+ * Runner-side capture (spreadable into a `createRunRecord` bindings block).
+ * @param {object} p
+ * @param {string} [p.repoRoot]          defaults to this module's repo root
+ * @param {Array<{role,path}>} [p.family] family files to hash (defaults to TRUSTED_SOURCE_FAMILY;
+ *                                        `[]` declares an empty set — legal, emits null-with-reason)
+ * @param {Array<{role,path,sha256}>} [p.extraEntries] entries whose sha256 the caller computed
+ *                                        from bytes (oracle closure digest, per-world profiles)
+ */
+export function captureTrustedSourcesBinding({ repoRoot, family = TRUSTED_SOURCE_FAMILY, extraEntries = [] } = {}) {
+  const root = resolve(repoRoot ?? findRepoRoot(fileURLToPath(import.meta.url)))
+  const entries = []
+  const missingSources = []
+  for (const f of family) {
+    try {
+      entries.push({ role: f.role, path: f.path, sha256: digestFile(join(root, f.path)) })
+    } catch (error) {
+      missingSources.push(`${f.role} (${f.path}: ${String(error?.code ?? error?.message ?? error)})`)
+    }
+  }
+  entries.push(...extraEntries)
+  const admissionDocument = { available: false, reason: ADMISSION_DOCUMENT_UNAVAILABLE }
+  const cellBase = { schema: TRUSTED_SOURCES_SCHEMA, hashLaw: TRUSTED_SOURCES_HASH_LAW, order: TRUSTED_SOURCES_ORDER, admissionDocument, substituteAdoption: 'none', recompute: 'recomputeTrustedSources(record, repoRoot): family sha256 re-hashed from the tracked bytes; the union digest re-derived from the entry list; profile/oracle entries are covered by their own cells (launched-profile re-hash / recomputeWorldOracle)' }
+  // fail-closed legs FIRST: a missing family file or an empty set mints NO digest, with a
+  // machine-readable reason — never a partial digest, never a silent shrink of the set.
+  if (missingSources.length > 0) {
+    const reason = `trusted-sources digest refused: ${String(missingSources.length)} declared source file(s) unreadable under the repo root — a partial union digest would misrepresent what is bound. Missing: ${missingSources.join('; ')}`
+    return { trustedSourcesDigest: null, trustedSourcesUnavailableReason: reason,
+      trustedSources: { ...cellBase, digest: null, unavailableReason: reason, sources: [], missingSources } }
+  }
+  if (entries.length === 0) {
+    const reason = 'trusted-sources digest refused: the declared source set is empty (an empty set binds nothing — null-with-reason, not a hash of nothing).'
+    return { trustedSourcesDigest: null, trustedSourcesUnavailableReason: reason,
+      trustedSources: { ...cellBase, digest: null, unavailableReason: reason, sources: [], missingSources } }
+  }
+  const { digest, sources } = computeTrustedSourcesDigest(entries)
+  return { trustedSourcesDigest: digest,
+    trustedSources: { ...cellBase, digest, unavailableReason: null, sources, missingSources } }
+}
+
+/**
+ * Recompute the union digest after the set grew (one more launched World). Returns the
+ * digest, or null when the bindings carry no current-schema cell (legacy shape untouched).
+ */
+export function refreshTrustedSourcesDigest(bindings) {
+  const ts = bindings?.trustedSources
+  if (ts === undefined || ts === null || ts.schema !== TRUSTED_SOURCES_SCHEMA) return null
+  if (!Array.isArray(ts.sources)) throw new Error('refreshTrustedSourcesDigest: trustedSources.sources is not an array')
+  if (ts.sources.length === 0) return null // empty declared set stays null-with-reason by law
+  const { digest, sources } = computeTrustedSourcesDigest(ts.sources)
+  ts.sources = sources
+  ts.digest = digest
+  ts.unavailableReason = null
+  bindings.trustedSourcesDigest = digest
+  delete bindings.trustedSourcesUnavailableReason
+  return digest
+}
+
+/**
+ * Cold-reader verification: re-hash the family files under ANY checkout root, re-derive the
+ * union digest from the recorded entries, report per-entry agreement. One flipped byte in
+ * any family document turns `matches` false — mutation is RED, not a shrug.
+ */
+export function recomputeTrustedSources(record, repoRoot) {
+  const ts = record?.bindings?.trustedSources ?? record?.trustedSources ?? null
+  if (ts === null || typeof ts !== 'object') throw new Error('recomputeTrustedSources: the record carries no bindings.trustedSources')
+  if (ts.schema !== TRUSTED_SOURCES_SCHEMA) throw new Error(`recomputeTrustedSources: recorded cell schema is not the implemented one (${String(ts.schema)})`)
+  if (ts.digest === null) return { digest: null, matches: null, reason: ts.unavailableReason ?? 'recorded digest is null', entries: Array.isArray(ts.sources) ? ts.sources.length : 0 }
+  if (ts.hashLaw !== TRUSTED_SOURCES_HASH_LAW) throw new Error(`recomputeTrustedSources: recorded hashLaw is not the implemented law (${String(ts.hashLaw)})`)
+  const root = resolve(repoRoot)
+  const familyRoles = new Set(TRUSTED_SOURCE_FAMILY.map((f) => f.role))
+  const familyRehashed = []
+  for (const s of ts.sources) {
+    if (!familyRoles.has(s.role) || s.path === '') continue
+    let recomputed = null
+    try { recomputed = digestFile(join(root, s.path)) } catch { recomputed = null }
+    familyRehashed.push({ role: s.role, path: s.path, agree: recomputed === s.sha256 })
+  }
+  const { digest } = computeTrustedSourcesDigest(ts.sources)
+  const digestMatches = digest === ts.digest
+  const bytesAgree = familyRehashed.every((f) => f.agree)
+  // `matches` is the conjunction a cold reader needs: the recorded digest re-derives from
+  // the recorded entries (law) AND every family sha256 re-hashes from the bytes on disk
+  // (truth). Oracle/profile entries are covered by their own cells' laws, named in `recompute`.
+  return { digest, matches: digestMatches && bytesAgree, digestMatches, bytesAgree, familyRehashed, entries: ts.sources.length }
+}
+
+/** The legacy null-with-reason shape (R-G4R-1 disclosure). Kept for readers and fixtures;
+ *  runners that capture the plane set use `captureTrustedSourcesBinding` instead. */
 export function trustedSourcesUnavailable() {
-  const unavailableReason = 'The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.'
+  const unavailableReason = ADMISSION_DOCUMENT_UNAVAILABLE
   return { trustedSourcesDigest: null, trustedSourcesUnavailableReason: unavailableReason,
-    trustedSources: { digest: null, unavailableReason } }
+    trustedSources: { schema: TRUSTED_SOURCES_SCHEMA, digest: null, unavailableReason,
+      sources: [], missingSources: [], admissionDocument: { available: false, reason: unavailableReason },
+      substituteAdoption: 'none' } }
 }
 
 /**
@@ -449,6 +608,18 @@ export function bindWorldProfile(bindings, entry) {
     bindings.composedProfileDigest[entry.worldId] ??= []
     bindings.composedProfileDigest[entry.worldId].push(entry.composedProfileDigest)
     bindings.profileArtifacts.push(entry)
+    // R-G4R-1a: the launched profile is a trusted source of the run's verdicts — add its
+    // entry (sha256 = the composedProfileDigest, bytes bound by the profile cell itself)
+    // and refresh the union digest. No-op for legacy/absent cells (schema-guarded). The
+    // role carries the entry's index in that world's digest list so a relaunched World that
+    // launches a DIFFERENT profile still books both entries (never a silent drop).
+    const ts = bindings.trustedSources
+    if (ts !== undefined && ts !== null && ts.schema === TRUSTED_SOURCES_SCHEMA && ts.digest !== null) {
+      const digests = bindings.composedProfileDigest[entry.worldId]
+      const role = `composed-profile/${entry.worldId}#${String(digests.length)}`
+      if (!ts.sources.some((s) => s.role === role)) ts.sources.push({ role, path: '', sha256: entry.composedProfileDigest })
+      refreshTrustedSourcesDigest(bindings)
+    }
   }
   if (bindings.profileArtifacts.some((e) => e.composedProfileDigestMismatch === true)) bindings.composedProfileDigestMismatch = true
   return entry
