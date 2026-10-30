@@ -22,3 +22,9 @@
 
 ## 封卷注记
 B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（pilot 4、#446 boot 4、crash 复验 2、State Store 生产路径 2）全部收据保留于 B 册原文不改写；本 C 册为自 2026-10-31 起唯一预算权威。
+
+## 预登记（registeredAt 2026-10-30T12:35Z，真实 UTC）— lane=u7r3-uif4，池 C2 申请 3 starts（计划 1 + 装配漂移备用 1 + ENV 备用 1）
+
+- 目标：ask_user_question **L4 正向 live**（UI 阻断验证类格的正臂；ledger :647 DISCLOSED 格的闭合材料）：经公开面闭环 = default:ask 模板 → 耐久 Control 行 → 只读探针行 → team.resolveControl v4（/team-remote）落授 → **公开应答面**（WS $events waterfall→POST /api/$events/result；续答走 /api/userQuestions/answer，LEG-0 已钉形）→ 恰一 RAN + 盘上 user-question-reply 见证 + 拒批臂零副作用 + consume-once 重放拒。cells：ui:ask-approved-ran / approval-chain / replay-refused / answer-wire / live-root-law（NOT_RUN-safe，L2 不烧预算）/ present-env-truth（UI_PRESENT_PORT_ABSENT 环境真值随行）/ leak-check。
+- 被测对象 = 合并 #489 夹具后的 master（或登记时的 origin/master tip，lane 记录写实际 sha）；World=DSH_HOME 纪律照常（本腿与生产 Home 无关）；chromium 不在关键路径（LEG-0 降级）。
+- 控制：ENV/同类失败 RCA 停线；3 starts 上限硬约束（预算 jsonl 逐 spawn 记账）；每 start 必出 RUN Record 或点名 blocker。
