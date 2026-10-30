@@ -62,3 +62,10 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 
 ## 更正（dated 2026-10-30T15:47Z 真实 UTC，append-only，原文照留）— lane=u7r3-xval 池归类勘误
 本 lane 预登记与本册已用登记行将 3 starts 记入 **C1**，但本册 C1 用途=「Agent Control 真实 Host 复证」，本试验（并行基础设施验证）用途应为 **C4「机动与故障归因」**（含探针崩溃 RCA 的归因属性）。**勘误：3 starts 由 C1 划转 C4，C4 计 3/4，C1 回到 0/8。** 本更正不改变任何收据（budget jsonl 三行原样、RUN Records 原样、零验收格不变），只更正池归属；协调者裁决依据=池表用途列原文。
+
+## 预登记（registeredAt 2026-10-30T21:34Z，真实 UTC，协调者并入草稿）— lane=a5w-bootwave，池 **C2** 申请 3 starts（bw1 主跑 / bw2 同类修复重试 / bw3 ENV 备用）
+
+- 目标 = 单 World 双腿一次 boot：read_image 治理行正腿（ask-approve→typed grant→RAN→恰一附件对象）+ 两条拒绝臂（answered-deny 零副作用；store 像素法零 commit）+ UI f4 公开应答面复跑（#489 waitReady 修复后）+ leak-check；套件 tests/world-factory/suites/140-u7r3-bootwave.mjs（9 格）。
+- 绑定律 = 套件内置自拒：BOOTWAVE_PRE_REG_SHA 必须 == 运行 HEAD，spawn 前校验（SOURCE_SHA_MISMATCH 全格 FAIL）；产品树 = 本分支 HEAD（fmerge master@3e7fd25e0b 后，产品码与 master 恒等，diff 零产品文件）；宿主 = tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84（porcelain 0，主树只读回退）。
+- 停线律 = 同类失败 ×2 停线进入 RCA（rcaClass 逐格落记录），禁 boot 探索未证接口；效率门 = 每 start ≥1 有效格，否则记 WASTED 并停止续耗。
+- 全量腿清单/判定律/审批序 = dev/agent-workflow/evidence/a5w-bootwave-20261030/PRE-REGISTRATION-DRAFT.md + PRE-REGISTRATION.json（同 commit 在册）。本 lane boot 前实耗 = 0（dry-run + 预算门拒启收据在案）。
