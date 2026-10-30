@@ -12,6 +12,15 @@
  * earn: in-test prose, a paraphrase, a product refusal code, or a quote from
  * a channel nobody captured all fall back to NOT_REACHED — which is a fact
  * about the drive, and is allowed to say nothing at all about the environment.
+ *
+ * Dated addendum 2026-10-31 (USER-RULING-20261031 §3 — knob (b) DENIED):
+ * every test in this file is pure TEST-SIDE construction, i.e. SYNTHETIC
+ * classification control — none of it is, or may be cited as, real-host C2
+ * evidence. synth:T18 is the explicitly-labeled synthetic stand-in for the
+ * PR #446 (b)-leg; "a natural NOT_REACHED on the real execution path" stays
+ * recorded UNOBSERVED and structurally hard to reach (evidence
+ * dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/README.md), and no
+ * lane may modify tested Host/product timing to manufacture one.
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -185,4 +194,45 @@ test('T17 (R-ENVBLOCK-2 F-2) the channel is bound at MINT: a post-mutated sig.ch
   assert.equal(d.verdict, 'ENV_BLOCK')
   assert.equal(d.detail.envSignalRecheck.boundChannel, 'sandbox-preflight')
   assert.equal(d.detail.envSignalRecheck.channelMismatch.boundChannel, 'sandbox-preflight')
+})
+
+// ── PR #446 (b)-leg stand-in — SYNTHETIC per USER-RULING-20261031 §3 ─────────
+// The ruling DENIED knob (b): no lane may change tested Host/product timing to
+// manufacture a live NOT_REACHED; the natural one stays UNOBSERVED (structural
+// finding: dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/README.md).
+// What the ruling ALLOWS is a pure test-side deterministic injection, clearly
+// labeled synthetic. This is exactly that test: it proves the committed
+// three-way law grades an injected never-reached drive as NOT_REACHED through
+// the very door the 070-u7-f-web suite's add() uses — and never launders it
+// into ENV_BLOCK or PASS. SYNTHETIC: it is NOT, and must never be cited as,
+// natural real-host C2 evidence for obligation (b).
+
+test('synth:T18 injected never-reached drive → NOT_REACHED through the suite door (SYNTHETIC — never real-host C2, USER-RULING-20261031 §3)', () => {
+  // SYNTHETIC INJECTION (test-side construction only): the drive stopped
+  // before the first durable `control-request-recorded` row — the exact
+  // never-reached shape the live C2 could not reach without a knob. The
+  // captured host-log corpus for this synthetic run is EMPTY: no honest
+  // environment signal exists, so ENV_BLOCK cannot mint.
+  const capturedHostLog = []
+  const injected = classifyUnwitnessedArm({
+    step: 'the durable PA ask row',
+    reachedStep: false,
+    signal: envSignal({ channel: 'host-log', text: null, observed: capturedHostLog }),
+    extra: { askRows: 0, stubLedger: { claimHits: 0 }, injection: 'synthetic (test-side only)' },
+  })
+  assert.equal(injected.verdict, NOT_REACHED, 'an injected never-reached drive grades NOT_REACHED')
+  assert.match(injected.detail.reason, /NOT an environment claim/)
+  assert.equal(injected.detail.envSignal, undefined)
+  // The suite add() door (gateEnvBlock): NOT_REACHED passes through UNCHANGED
+  // — never softened to PASS, never laundered into ENV_BLOCK.
+  const graded = gateEnvBlock(injected.verdict, injected.detail)
+  assert.equal(graded.verdict, NOT_REACHED)
+  assert.notEqual(graded.verdict, 'PASS')
+  assert.notEqual(graded.verdict, 'ENV_BLOCK')
+  // Negative-control companion: even an unbranded look-alike wall offered
+  // alongside the synthetic injection cannot upgrade the verdict.
+  const forgedWall = { channel: 'host-log', text: MOUNT_REFUSED, proof: 'verbatim', observedCount: 1 }
+  const withForged = classifyUnwitnessedArm({ step: 'the durable PA ask row', reachedStep: false, signal: forgedWall })
+  assert.equal(withForged.verdict, NOT_REACHED)
+  assert.match(withForged.detail.signalRejected, /unbranded/)
 })

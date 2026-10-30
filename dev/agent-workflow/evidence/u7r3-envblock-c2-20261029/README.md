@@ -87,3 +87,27 @@ All four worlds torn down (runs 1/3 leak-check PASS); runs 2/4 carry the
 no host/watcher process alive, no 3181-3199/3491-3500 listeners, no
 `tests/homes/u7r3eb-*` remaining, `:3080` state unchanged. Raw worlds deleted
 (gitignored per TEST_METHODS §7); no `--keep-home` used.
+
+## Dated correction 2026-10-31 — USER-RULING-20261031 §3 (appended; everything above unchanged)
+
+The "Structural finding" section above closes with *"grading it live needs an in-suite perturbation
+knob … Recommend a follow-up lane if boot-level NOT_REACHED evidence is required for settlement."*
+**That recommendation is superseded by user ruling — 原文照留, nothing above is rewritten:**
+
+- **Knob (b) DENIED** (USER-RULING-20261031 §3): 不为制造 NOT_REACHED 修改正式 Host 或被测产品的执行
+  时序 — no in-suite perturbation knob will be built; no lane may modify tested Host/product timing to
+  manufacture a NOT_REACHED. The structural finding above stands as the **final** characterization:
+  a natural NOT_REACHED on this execution path is **UNOBSERVED and STRUCTURALLY HARD TO REACH**,
+  and that is *not* a reason to force failures.
+- Obligation (b) is therefore **closed-as-adjusted**, not closed-by-evidence: the deterministic
+  stand-in is the pure test-side, clearly labeled **synthetic** test `synth:T18` in
+  `tests/world-factory/arm-verdict.test.mjs` (classification law only). It is **not** natural
+  real-host C2 evidence and **must never be cited as such**; no seat may claim (b) got a real
+  C2 PASS. Obligations (a)(c)(d) verdicts above are unchanged by this ruling.
+- Merge path as adjusted: forward-sync master (done: `89d96a13d` forward-merged into
+  `task/u7r2-envblock-time-20261029`, no rebase) + independent R446-rereview confirming the
+  scope adjustment masks no product defect + dated settlement. **DO-NOT-MERGE stays until then.**
+
+Correction seat: implementation worker `qiyuan-self/qwen3.8-flash-next`, fresh isolated session
+(u7r3-446adj lane), per ROUTER_RULES §0.2. No file in this evidence dir other than this README
+append was touched; all RUN records, watchers, budgets and logs byte-identical.

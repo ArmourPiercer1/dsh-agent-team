@@ -9,3 +9,9 @@
 | 机动（4） | 4/4 用尽 | **U7-R3 pilot lane-C2（#458）**：boot#1 u6-arc-a（18:25Z 账本行；farm provisioning 缺口 → bootstrap ERR_MODULE_NOT_FOUND，计入）；boot#2 u6-jobs（18:31Z；世界形态墙=committed u7-t1 基线 parity，计入）；boot#3 u6-arc-a re-boot（float，账本行 18:53:39Z；10/11 PASS，新 glob arm 全部产品见证落地，判法 token 误杀记 FAIL 保持原判；**violation-on-record：该 boot 为 post-registration（登记文件 birth 18:56:57Z > spawn），RULING-B 硬律违例，主 Agent F-1 定性，纠正=boot#4 严格先登后启且等 push 确认**）。boot#4 u7-4a-jobs（19:14:05Z 账本行；登记先行+push 确认后启动，F-1 纠正生效）：overall FAIL 12/13，re-home 案例 u74a:list-deny-leg-honest-zero 实机 PASS → job_list L3-refusal 升 PROVEN(CASE)；唯一 FAIL 为既有独立案例 u74a:kill-live-requested（早读 delta 竞态，按测得记录不改判）。机动 4/4 用尽，总账 8/24。 |
 
 **总额：12/24。**（2026-10-30 u7r3-b49 车道更新：#449 生产路径 boot 2 starts 入账 10/24→12/24——boot#1 provisioning 缺口 FAIL 原判保留 + boot#2 PASS 10/10，见 #449 行。）（2026-10-30 u7r3-bcr 车道更新：#448 crash 复验 1 boot=2 starts 入账 8/24→10/24，无旋钮 durable-path PASS，见 #448 行；条件性 boot#2 预留未动用。）（2026-10-29 #458 审查后补记同步：pilot lane-C2 前三 boot 入账；违规与预留见机动行与 SESSION_ROUTER_LOG 2026-10-29 BACKFILL 条。） 同类失败停线律：#2/#4 属对照设计的诱导失败（控制实验），非同类产品失败，不构成停线；两 PASS 运行互证稳定性。:3080 与 ~/.dsh 全程未触（401==401 探针在案），世界全拆除。
+
+---
+
+## dated 更正 2026-10-31（USER-RULING-20261031 §3；u7r3-446adj 车道追加，上方原文照留未改）
+
+本文件 #446 行句末「**(b) 旋钮提案=用户决策项**」已有裁决，原文保持原样，此处只追加更正：**用户裁决 = 不批准（denied）**——「不为制造 NOT_REACHED 修改正式 Host 或被测产品的执行时序」（USER-RULING-20261031 §3 登记正本）。义务 (b) 的处置随裁决调整：(a) 真实 Host 两轮 7/7 PASS 保留（run1/run3，原判不变）；虚假 ENV_BLOCK 零（0/4，原判不变）；C1 分类器负控保留并新增**明确标记为合成**的纯测试侧确定性注入 `synth:T18`（`tests/world-factory/arm-verdict.test.mjs`，离线通过，**不得冒充自然发生的真实 Host C2 证据**）；「在本条真实执行路径中自然产生 NOT_REACHED」= **未观察到且结构性难以到达**（上文结构性发现即最终记录），不作为强制制造故障的理由。**不得声称 (b) 已获真实 C2 PASS。** #446 合并门（按裁决）：前向同步 master（本分支已合入 `89d96a13d`，未 rebase、RUN 记录绑定完好）+ 独立审查确认范围调整未掩盖产品缺陷（R446-rereview）+ dated 清偿；DO-NOT-MERGE 标记在此之前保持不动。
