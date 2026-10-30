@@ -1,0 +1,81 @@
+{
+  "schema": "u7r3-b49/boot1-run-receipt/1",
+  "runId": "u5-u7r3-b49-lockseam-b49-2026-10-30T02-38-35-645Z",
+  "suite": "u7r3-b49-lockseam",
+  "line": "b49",
+  "howSaved": "RECONSTRUCTED receipt: the boot#1 command omitted the runner --run-record flag (record.write only fires with a path), so the runner never wrote its RUN record. This file is an honest reconstruction from the runner stdout (boot1/RUNNER-STDOUT.log, token-free, committed) + the runner oracle artifact (committed beside it). Detail payloads carry the runner log lines VERBATIM, which the runner truncated. The boot#2 command passes --run-record. Reconstruction happened the same session, before any boot#2 start; nothing was recolored.",
+  "bootBaseSha": "80eef96e58dc356f56570e86b1baaa804942d789",
+  "bindings": {
+    "teamSha": "80eef96e58dc356f56570e86b1baaa804942d789",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "storeModule": "packages/tools/agent-state-family/src/fs-state-store.mjs",
+    "storeModuleSha256": "4428c2297b652f2198d9633ea71fa5a373719ca59813ca791e1ba406808b7db4",
+    "seamsUsed": {
+      "faultAt": "none",
+      "nowMs": "default Date.now",
+      "bootId": "default /proc boot_id",
+      "recordWriter": "none"
+    },
+    "poolRow": "#449 \u53d7\u5f71\u54cd\u751f\u4ea7\u8def\u5f84 (<=2) \u2014 start 1/2 (boot#1, of 2 reserved)",
+    "hostStarts": 1,
+    "worldId": "u5b49-20261030T02-38-35Z"
+  },
+  "readiness": "health=200 state=false \u2014 the Team ROW bootstrap FAILED inside the host process: ERR_MODULE_NOT_FOUND @deepseek-ai/dsh-storage-domain imported from tests/deepseek-harness-test-use/apps/cli/lib/__resolver__.js (verbatim machine receipt: boot1/team-row-setup-failure.json). CLASS: lane provisioning gap \u2014 the lane worktree had no pnpm-installed node_modules, so the production row\\'s registry-pinned dependency (packages/runtime package.json pin 0.2.0-rc.2) was unresolvable and the team row never mounted; hostLaneReached=false, zero model exchanges were attempted. NOT a product failure: nothing graded here contradicts or supports the production code; the two host-lane cases are graded FAIL by the suite honestly (silence fails), hostLaneReached:false in the leak row.",
+  "cases": [
+    {
+      "case": "u7as:P-live-host-positive",
+      "verdict": "FAIL",
+      "detailLogLineTruncatedByRunner": "{\"diskRecord\":null,\"writesAudit\":[],\"modelSaw\":null,\"lanes\":{\"health\":false,\"state\":false,\"goalTurn\":false,\"laneDone\":false},\"law\":\"the governed create_goal row (durable Control ask settled ONCE by the public resolveControl seam) committed through the host process's PRODUCTION fs"
+    },
+    {
+      "case": "u7as:L-live-serialise",
+      "verdict": "FAIL",
+      "detailLogLineTruncatedByRunner": "{\"plant\":null,\"releaseCheck\":null,\"release\":null,\"createApprovalAtMs\":null,\"commitAtMs\":null,\"leaderLockDigest\":\"abb769b0cb2f\u2026\",\"locksDirAfter\":[],\"law\":\"u7as:L live arm: a SEPARATE live OS process (the hold child) planted+beat the leader-scope lock; the HOST process's production"
+    },
+    {
+      "case": "u7as:F-live-timeout-refusal",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"waiter\":{\"pid\":95,\"atMs\":1793328226138,\"kind\":\"RESULT\",\"ok\":false,\"code\":\"AGENT_STATE_STORE_LOCK_TIMEOUT\",\"elapsedMs\":3019,\"head\":\"{\\\"ok\\\":false,\\\"code\\\":\\\"AGENT_STATE_STORE_LOCK_TIMEOUT\\\",\\\"detail\\\":\\\"the 9d1e7627af13f911ebf2556e84385ad9c555c56476032c8d89ee659215b95ad3.lock lo"
+    },
+    {
+      "case": "u7as:F-live-break-after-death",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"diedPid\":107,\"pidAliveRecheck\":\"ESRCH (dead)\",\"plantAgeMs\":45000,\"elapsedMs\":1043,\"res\":\"{\\\"ok\\\":true,\\\"todos\\\":[{\\\"content\\\":\\\"D-after-break\\\",\\\"status\\\":\\\"pending\\\"}],\\\"audit\\\":\\\"CONFIRMED\\\"}\",\"locksAfter\":[],\"law\":\"u7as:F live death arm: a REAL process planted the lock and E"
+    },
+    {
+      "case": "u7as:R3-live-break-revalidate",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"parent\":\"{\\\"ok\\\":true,\\\"todos\\\":[{\\\"content\\\":\\\"E-parent\\\",\\\"status\\\":\\\"pending\\\"}],\\\"audit\\\":\\\"CONFIRMED\\\"}\",\"child\":{\"pid\":123,\"atMs\":1793328230327,\"kind\":\"RESULT\",\"ok\":true,\"code\":null,\"elapsedMs\":1028,\"head\":\"{\\\"ok\\\":true,\\\"todos\\\":[{\\\"content\\\":\\\"E-child\\\",\\\"status\\\":\\\"pen"
+    },
+    {
+      "case": "u7as:M-live-replay",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"first\":{\"pid\":135,\"atMs\":1793328230477,\"kind\":\"RESULT\",\"ok\":true,\"code\":null,\"elapsedMs\":28,\"head\":\"{\\\"ok\\\":true,\\\"todos\\\":[{\\\"content\\\":\\\"M-first\\\",\\\"status\\\":\\\"pending\\\"}],\\\"audit\\\":\\\"CONFIRMED\\\"}\"},\"replaySameScope\":{\"ok\":false,\"code\":\"STATE_APPLY_REPLAY\"},\"replayOtherScope\""
+    },
+    {
+      "case": "u7as:I-live-cross-scope-replay",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"rounds\":[{\"r\":1,\"parentScope\":\"agent:b49-Ia1-u5b49-20261030t02-38-35z\",\"childScope\":\"agent:b49-Ib1-u5b49-20261030t02-38-35z\",\"codes\":[\"ok\",\"STATE_APPLY_REPLAY\"],\"oks\":1,\"writes\":1,\"markers\":1,\"childStderr\":\"\"},{\"r\":2,\"parentScope\":\"agent:b49-Ib2-u5b49-20261030t02-38-35z\",\"child"
+    },
+    {
+      "case": "u7as:R-live-refund",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"refused\":{\"ok\":false,\"code\":\"GOAL_STALE_REVISION\"},\"markerAfterRefuse\":0,\"writesAfterRefuse\":0,\"redrive\":{\"ok\":true},\"markerAfterRedrive\":1,\"writesAfterRedrive\":1,\"law\":\"u7as:R/M1 live arms: applyId Z consumed (the marker create PRECEDES the commit), the CAS precheck refused (G"
+    },
+    {
+      "case": "u7as:leak-check",
+      "verdict": "PASS",
+      "detailLogLineTruncatedByRunner": "{\"ownedPidsDead\":true,\"portsReleased\":true,\"stillBound\":[],\"homeReleased\":true,\"leasesReleased\":true,\"heldLease\":[],\"notes\":[],\"childrenSpawned\":9,\"hostLaneReached\":false,\"approverErrors\":[],\"law\":\"every leased port idle, every owned pid dead, every lease file gone, World home re"
+    }
+  ],
+  "extraRowNote": "The runner counts 10 rows: its OWN token-gate law row (401-without-token verified at boot, PASS) joins the 9 suite case rows; RUN-SUMMARY prints cases=10 FAIL:2 PASS:8.",
+  "runOverall": "FAIL",
+  "runnerSummaryLineVerbatim": "RUN-SUMMARY run=u5-u7r3-b49-lockseam-b49-2026-10-30T02-38-35-645Z suite=u7r3-b49-lockseam overall=FAIL cases=10 FAIL:2 PASS:8 worlds=u5b49-20261030T02-38-35Z",
+  "gradingOfThisBoot": "boot#1 CONSUMED 1 of the 2 reserved starts for #449 (host-starts.jsonl line 1). The 7 graded PASS legs are REAL C2-process-boundary evidence over the production store module at sha 4428c2297b65\u2026 (runner process + real children, no seams) \u2014 kept as evidence. The host-lane anchor (u7as:P) and host-side wait (u7as:L) did NOT reach graded execution; boot#2 re-runs the FULL suite under the fixed provisioning per PRE-REGISTRATION-BOOT2.json. Prior records stand; nothing recolored.",
+  "hygiene": {
+    "rawBootLogs": "withheld (boot-line tokens; TEST_METHODS 3.6) \u2014 c2/logs/.gitignore now ignores the pattern-carrying dir (boot#1 committed an ASCII-prose gitignore by mistake, fixed in this commit)",
+    "tokenScan": "RUNNER-STDOUT.log + team-row-setup-failure.json greped clean (0 matches)",
+    "hostTreePorcelainAfter": "main test-use tree untouched (0 lines; READ-ONLY usage confirmed)",
+    "homeReleased": true
+  }
+}
