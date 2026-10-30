@@ -1,0 +1,4 @@
+# Raw world boot logs — NOT committed (TEST_METHODS 3.6: launch lines carry boot tokens; never commit)
+# Worlds torn down (tokens dead). Files kept UNEDITED in this lane worktree, integrity anchors:
+f64a4417fdb753546acbe44a9a7c9b6e6aca8703437959ac38ce3beb68fe1dad  u5cbv-20261030T01-07-13Z/instance-port3190.log
+cbafe61fa27c049c02e37f10efbaabce735bb23a8587a9bad54060bdd9575fae  u5ca-20261030T01-09-28Z/instance-port3191.log
