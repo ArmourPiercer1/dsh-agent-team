@@ -28,6 +28,12 @@
     "projection",
     "requirements",
     "root-binding",
+    // Alpha.6 PR0 (Lane 2): the review-delegation vocabulary lane (trusted
+    // ReviewPlan + bound reviewer identity + case-scoped mandate admission).
+    // In the COMPILE FACE from the day it lands, like every prior lane: it is
+    // dormant (no production consumer until PR-I1), so without this entry the
+    // lane would be typechecked only through its own tests.
+    "review-mandate",
     "tool-admission",
     "governance-center",
     "tool-dispatch",

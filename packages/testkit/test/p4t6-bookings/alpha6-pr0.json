@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ALPHA6-PR0",
+  "paths": [
+    "packages/runtime/review-mandate/types.ts",
+    "packages/runtime/review-mandate/plan.ts",
+    "packages/runtime/review-mandate/mandate.ts",
+    "packages/runtime/review-mandate/index.ts",
+    "packages/runtime/test/a6-pr0-review-plan.test.ts",
+    "packages/runtime/test/a6-pr0-mandate-admission.test.ts",
+    "packages/runtime/test/a6-pr0-lane-hygiene.test.ts"
+  ],
+  "expectedDelta": { "from": 1393, "to": 1400 },
+  "reason": "Alpha.6 PR0 (Lane 2, branch `alpha6/lane2-s0-20261030`): the case-scoped review-delegation vocabulary lane, shipped DORMANT. Four production sources — types.ts (the closed vocabularies: the four rungs, the three control kinds, the delegable-rung and delegable-kind constants, ReviewPlan, ReviewerIdentity, ReviewMandate, ReviewCaseView and the closed 28-code refusal table), plan.ts (the closed-world ReviewPlan parser: every object checked key-by-key against a fixed key set, unknown key a refusal not a default; a Leader-named reviewer, a human delegated rung, a wildcard or prefix effect scope, a by-action-name scope naming an unlisted action and a non-instant expiry all refused; plus reviewPlanDigest and the two coverage questions the admission asks), mandate.ts (the admission law in one ordered function: the Alpha.4 role closure answers first and unchanged, then Member-only, then plan liveness (epoch, wall-clock expiry, revocation, team, rung), then reviewer-identity binding, then the load-bearing L-2 gate `approvalCaseId` presence so a leg-less row can never gain a Member resolver, then case law, then self-interest, then grant agreement), index.ts (the barrel, which states the dormancy declaration in the source) — plus three specs: a6-pr0-review-plan (26 legs: the legal shape and the closed refusal list), a6-pr0-mandate-admission (45 legs, mostly NEGATIONS: one widening planted per leg, plus two regression pins that read `control/types.ts` at test time and require CONTROL_RESOLVER_ROLES to still agree with the lane's mirror AND still contain no 'member' — invariant 37), a6-pr0-lane-hygiene (5 legs: the import set from disk is empty until the named Center-Interface PR, zero imports from the ARC-A protected center, both tsconfigs name the lane, and the lane reads no clock and performs no I/O). Everything else this lane touched is an EDIT to already-counted paths (packages/runtime/tsconfig.json, packages/runtime/tsconfig.build.json) or lives outside packages/** (docs/plans/memo/alpha6-review-separation/**, dev/agent-workflow/evidence/alpha6-lane2-s0-20261030/**). An edit is not an increment.",
+  "tieNote": "MEASURED on this tree, not copied from a chain: with the seven files present and this entry absent, the coverage leg reads `scanner counts 1400, ledger derives 983 + 410 = 1393` (the run of `npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` on `alpha6/lane2-s0-20261030`, 2026-10-30 real UTC). 1400 - 1393 = 7 = the seven paths booked above, each additionally asserted present by path in the loop above. The number is THIS tree's: it is not the master number, and a Lane-2 branch PR carries no hosted CI (every workflow filters `pull_request` on base=master), so this measurement and the dated settlement comment are the whole of the evidence for this leg until the lane reaches master."
+}
