@@ -262,7 +262,65 @@ silently returns zero files?).
    as authority), plus the "old notifier and new notifier never both deliver" negative test (P-6).
 3. **PR5′** — read-only UI/metrics surfaces over the scheduler's non-authoritative state
    (slot phase, redelivery count, suspend reason), no new authority surface.
-   **PR2′ feasibility, measured rather than assumed (found while waiting on measurement):** the
+   **PR2′ feasibility — CORRECTED 2026-10-31, after PR2′ was actually built and measured (#507).** The
+   paragraph below is kept as written, because the correction is only meaningful next to the claim it
+   corrects. Its load-bearing sentence was: "the plugin-facing `appendLedger(teamSessionId, entry)`
+   exists at `packages/runtime/src/plugin/root.ts:456` and `plugin/durable-mutation-store.ts:218`, both
+   **outside** the 33 protected paths". **That is a real code path and it is not a durable one.**
+   `root.ts:456-461` appends to a `Map`: `const list = ledgerByTeam.get(team) ?? []; list.push(entry);
+   ledgerByTeam.set(team, list)` — no repository, no sequence allocation, no `createdAt`, and the value
+   type is `MutationLedgerEntry[]` (`root.ts:396`), not `LedgerEntry`; `durable-mutation-store.ts:218-219`
+   is a verbatim delegation to that same object. So this report's own open question — "`MutationLedgerEntry`
+   vs `LedgerEntry` may be different stores" — is answered: **they are different stores**, and the one
+   named here is the in-memory one.
+
+   What the durable append actually looks like, measured at `f0e567f36`, four precedents all **outside**
+   the protected centre (the ledger holds 33 files + 3 overrides; verified by listing them, not by
+   trusting this sentence):
+   1. `src/plugin/durable-mutation-store.ts:283-300 writePolicyStateTransitionRow(ledger, rootSessionId, …)`
+      — takes the OPENED TeamDomain `ledger` repository as a parameter and does
+      `await ledger.allocateSequence()` then `await ledger.put({schemaVersion, sequence, rootSessionId,
+      factType, payload, createdAt})`. Its doc block states the three laws a writer needs:
+      `allocateSequence` is atomic on the domain write chain (allocation order = admission order), `put`
+      is idempotent on identical bytes, and a failure propagates to the caller (no silent ack, no retry).
+   2. `src/plugin/host.ts:2978-2992 ArtifactLedgerPort.appendGranted` — same shape through
+      `domain.repositories.ledger`, with the comment "Allocate + put serialize on the domain's single
+      write chain".
+   3. `src/plugin/root.ts:4264-4271 factLedgerFor(rootSessionId)` — the composition root **constructs** a
+      two-method durable port `{allocateSequence, put}` from `repos.ledger` (choosing `putPreTeam` vs
+      `put` on whether the TeamSession record exists yet) and hands it to a governance writer
+      (`grantDegradationConsent({ledger: …})`). This is the shape PR2′ needs, already in the tree.
+   4. `governance/proposal-store.ts:703/721` — a governance writer that is not protected either,
+      declaring its port structurally (`allocateSequence(): Promise<number>`, `put(…)`, `list()`).
+   And the read side of the same store: `src/plugin/projection-source.ts:851` folds `repos.ledger.list()`,
+   the repository all four writers above write into — so the "does the append land in the ledger the
+   projection folds?" question this paragraph said PR2′ must prove **before** writing a fact is answered
+   yes, with line numbers.
+
+   **What that changes, and what it does not.** It was wrong to say "if it does not [land in the same
+   store], PR2′ collapses back into PR-I1's protected surface, and the answer to ruling (a) becomes urgent
+   instead of scheduled" — the store question resolves the other way, so **a durable assignment writer
+   does not require editing any protected file**: the port is threaded from `src/plugin/*.ts`, which is
+   unprotected, exactly as `factLedgerFor` threads it to governance today. What PR-I1 still has to decide
+   is not *where the bytes go* but *who may hand a lane that port and under what single-writer discipline*
+   — the four precedents above each scope their writer to one fact family by the writer's own validation,
+   and none of them exposes a general-purpose `append` to a tool lane. Ruling (a) therefore stays
+   scheduled rather than urgent, and ruling (b)'s C2 question is untouched. Disclosure of a limit: no C2
+   leg was run, so "it lands in the durable store" is established by reading the four call sites and the
+   projection's read path, not by booting a Host.
+
+   Two more corrections from the same work, both cheaper to state than they were to find. (i) There is no
+   `'active'` member lifecycle: the frozen five are `CREATED / RUNNING / SETTLED / ARCHIVED / DISPOSED`
+   (`contracts/src/dto/member-instance-record.ts`), so any eligibility rule written against `'active'`
+   fails closed and every test stays green — PR2′'s first draft did exactly that. (ii) The R-6 "same PR"
+   booking law is wider than this report said: a new `factType` must be booked in the host
+   `projection-source.ts` **and** in the client mirror `packages/client/src/model/ledger-adapter.ts` in the
+   same commit, with the mirror's *value* pinned by that package's own test, because
+   `a4pr0a-fact-type-closed-set` C3 compares the two maps' **key sets only**.
+
+   >>> ORIGINAL TEXT, UNCHANGED (superseded by the above): **PR2′ feasibility, measured rather than
+   assumed (found while waiting on measurement):** the
+
    design's `ReviewAssignment` fact does **not** obviously require a protected file. Three reads
    establish it: `LedgerEntry.factType` is a free-form hygienic string of 1–128 chars validated in
    `packages/storage/schema/ledger.ts` (no closed enum at the store layer); the plugin-facing
