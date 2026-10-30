@@ -245,3 +245,44 @@ the full aggregate green. `CI_DEFERRAL_CONFLICT` reds a head that shows both the
 * [RELEASE.md](./RELEASE.md) — the release promotion procedure that requires the candidate tuple.
 * [dev/agent-workflow/ledgers/arc-a-protected-center.json](../dev/agent-workflow/ledgers/arc-a-protected-center.json)
   — the digest-pinned protected-center set that governs what a family-addition PR may not touch.
+
+## 7. 受控三工作流 WIP 制度（用户直令，真实 UTC 2026-10-30；本节随合并即时生效）
+
+**依据**：用户 2026-10-30 直接指令（机器迁移接管轮）批准 Alpha.5 调整为**最多三条活跃工作流**；
+事实基础 = PR #495 的 XVAL 受控并行试验（其完整原始收据随该 PR 入册，语义 = **NO ACCEPTANCE
+CREDIT**；其 3 次真实 Host starts 计入 C4 机动与故障归因池而非 C1，**C4=3/4 为已发生实耗，不因
+换机归零**）。本节是 WIP 上限与资源互斥规则的正式化，**不**新建工程权威、总计划或调度框架；
+EB4-E 绑定律、§4a drop-in 注册表、settlement 法（ROUTER_RULES §8.5）、boot 预算册全部照旧适用。
+
+**三条工作流（槽位上限 3，不是任务配额）**：
+
+| 流 | 范围 | 备注 |
+| --- | --- | --- |
+| **A 产品功能** | `read_image` 正式实现与真实正向验收；UI `ask_user_question`/`present` 产品接线与负控；`web_search` Provider；其他未完成的必交工具 Family | 按源码所有权与依赖分派；多个 writer 禁同时改相同安全接口 |
+| **B 真实 Host 验收** | Agent Control 剩余 L3/L4 复证；已完成 Family 的真实 C2；固定候选跨 Family 集成；权限拒绝/实际副作用/重启/取消/身份归属 | 仅当生产接口已证 + C1 预检完成后才消耗真实 Host starts |
+| **C 工程与测试基线** | R-413-1 定时测试稳定性；R-G4R-1a / R-ORACLE-1 技术缺口；CI 影响面、候选来源摘要、Oracle、RUN 绑定；门禁与证据治理改进 | 目标 = 移除交付阻断；不得扩张为独立于产品开发的文档建设项目 |
+
+**主 Agent = 唯一 Integrator**：维护 READY / RUNNING / REVIEW / INTEGRATING / BLOCKED 状态；优先派发
+互不阻塞任务；调配共享接口所有权；组织审查与短事务集成；管理 boot 预算、当前候选与最终 Gate；
+汇总真实进度。**等待不冻结全局**：一个工作包在等外部 CI / Reviewer / Host 时，主 Agent 继续推进
+其它 READY 工作。若 harness 无法提供三个真正独立的执行体，不制造虚假并行，如实披露实际并行度。
+
+**并行资源互斥规则**（XVAL 已证边界；在新环境完成实测量测前保持有效）：
+
+1. 同一时间最多一个重型 CPU 套件。
+2. 同一时间最多一次真实 Host 启动；不同 World 可在已证明安全的条件下同时驻留。
+3. 重型 Vitest 与真实 Host 的**启动阶段**未经独立验证不得重叠。
+4. 同一 Host 树的 build 与 test 必须互斥（防读取改写中的 dist）。
+5. 不同 worktree 使用独立 Home / Workspace / 日志 / 测试产物，共享同一端口租约根。
+6. 共享可写 pnpm store 的并发安装未经试验，保持串行或显式隔离。
+7. 计时敏感测试保留独立运行窗口；既有真实负控与失败判据不得削弱。
+8. 每次真实 Host start：预登记、候选绑定、预算计数、收据、清理，缺一不可。
+
+**并发上限的扩张**只由新环境上的实测性能数据支持：普通 C1 并行度可依实测自主调整；更高风险的
+Host 并发启动须先完成独立 PoC 并取得必要授权。不为重复证明已成立的 XVAL 结论再做大规模试验。
+
+**效率度量（每个工作包必记，用于反馈而非表演）**：READY→开始实现等待；实现→审查完成；审查完成→
+合并；完整 CI 等待时长与无效重复次数；合并冲突与修复轮数；新增有效 L3/L4 验收格；每个有效 C2
+结果消耗的 Host starts；共享接口/资源争抢/测试不稳定造成的等待或返工。成功标准 = 真实交付墙钟
+时间下降与有效验收产出上升；**不得**以 PR 数量、模型轮次、测试总数、活跃进程数或 CPU 利用率单独
+证明提效。
