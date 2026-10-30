@@ -1,0 +1,14 @@
+{
+  "note": "read-only post-mortem extraction from the aborted start#1 World (p1), copied out before the world was removed per TEST_METHODS \u00a77",
+  "team_sessions": {
+    "session-uif4-root-u5p1-20261030t12-47-29z": "{\"blueprint\":{\"blueprintId\":\"team.uif4.anchor\",\"contentHash\":\"sha256:4709945f173b16a08b93b0ef8c1f105fa3d1cb5a5b6585e847684752d1830129\",\"revision\":\"1\"},\"createdAt\":\"2026-10-30T12:49:26.339Z\",\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use\",\"generation\":2,"
+  },
+  "member_instances": {
+    "{\"instanceId\":\"inst-leader\",\"rootSessionId\":\"session-uif4-root-u5p1-20261030t12-47-29z\"}": "{\"activityVersion\":1,\"createdAt\":\"2026-10-30T12:49:26.345Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"session-uif4-root-u5p1-20261030t12-47-29z\",\"schemaVersion\":2,\"templateId\":\"lead"
+  },
+  "blueprint_registry_keys": [
+    "team.uif4.anchor@1"
+  ],
+  "ledger_rows": 0,
+  "operations_rows": 0
+}
