@@ -1,0 +1,496 @@
+{
+  "version": 7,
+  "record": {
+    "identity": {
+      "formatVersion": 4,
+      "createdAt": 1793362958160,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
+      "isSeeded": false,
+      "inheritedEventCount": 0
+    },
+    "rows": {
+      "title": {
+        "ver": 1,
+        "seq": 135,
+        "val": "u7as assembly session"
+      },
+      "titleInput": {
+        "ver": 3,
+        "seq": 135,
+        "val": {
+          "first": {
+            "seq": 8,
+            "text": "[team-root-work requestToken=team-create:initial-work:sha256:d6b7fb9fba9269a4e62f9b805e2c621dcbbed21d5dd764c3e854232b1f9e91f8] U7AS_L1_20261030t12-22-33z"
+          },
+          "count": 6,
+          "lastSeq": 124
+        }
+      },
+      "llmRetry": {
+        "ver": 1,
+        "seq": 135,
+        "val": {}
+      },
+      "sandboxMode": {
+        "ver": 1,
+        "seq": 135,
+        "val": "workspace-write"
+      },
+      "goal": {
+        "ver": 6,
+        "seq": 135,
+        "val": {
+          "current": null,
+          "seenGoalIds": [],
+          "failure": null
+        }
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 34107,
+            "outputTokens": 2121,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": {
+            "turn": 7,
+            "step": 1,
+            "buckets": {
+              "uncachedInputTokens": 3174,
+              "outputTokens": 12,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0
+            }
+          }
+        }
+      },
+      "contextPressure": {
+        "ver": 5,
+        "seq": 135,
+        "val": {
+          "surfaceTokens": 3522,
+          "contextWindow": 1000000,
+          "pressureTokens": 3174,
+          "sampledSurfaceTokens": 3511
+        }
+      },
+      "contextBreakdown": {
+        "ver": 5,
+        "seq": 135,
+        "val": {
+          "nodes": [
+            {
+              "seq": 7,
+              "heuristicTokens": 855,
+              "system": true
+            },
+            {
+              "seq": 8,
+              "heuristicTokens": 47,
+              "system": false
+            },
+            {
+              "seq": 9,
+              "heuristicTokens": 143,
+              "system": false
+            },
+            {
+              "seq": 14,
+              "heuristicTokens": 15,
+              "system": false
+            },
+            {
+              "seq": 22,
+              "heuristicTokens": 15,
+              "system": false
+            },
+            {
+              "seq": 23,
+              "heuristicTokens": 29,
+              "system": false
+            },
+            {
+              "seq": 25,
+              "heuristicTokens": 55,
+              "system": false
+            },
+            {
+              "seq": 28,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 30,
+              "heuristicTokens": 55,
+              "system": false
+            },
+            {
+              "seq": 33,
+              "heuristicTokens": 42,
+              "system": false
+            },
+            {
+              "seq": 35,
+              "heuristicTokens": 55,
+              "system": false
+            },
+            {
+              "seq": 38,
+              "heuristicTokens": 29,
+              "system": false
+            },
+            {
+              "seq": 40,
+              "heuristicTokens": 28,
+              "system": false
+            },
+            {
+              "seq": 43,
+              "heuristicTokens": 52,
+              "system": false
+            },
+            {
+              "seq": 45,
+              "heuristicTokens": 120,
+              "system": false
+            },
+            {
+              "seq": 48,
+              "heuristicTokens": 66,
+              "system": false
+            },
+            {
+              "seq": 50,
+              "heuristicTokens": 92,
+              "system": false
+            },
+            {
+              "seq": 53,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 55,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 58,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 60,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 63,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 65,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 68,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 70,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 73,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 75,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 78,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 81,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 84,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 86,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 89,
+              "heuristicTokens": 49,
+              "system": false
+            },
+            {
+              "seq": 91,
+              "heuristicTokens": 97,
+              "system": false
+            },
+            {
+              "seq": 94,
+              "heuristicTokens": 16,
+              "system": false
+            },
+            {
+              "seq": 101,
+              "heuristicTokens": 165,
+              "system": false
+            },
+            {
+              "seq": 102,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 108,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 109,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 116,
+              "heuristicTokens": 165,
+              "system": false
+            },
+            {
+              "seq": 117,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 124,
+              "heuristicTokens": 164,
+              "system": false
+            },
+            {
+              "seq": 125,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 132,
+              "heuristicTokens": 69,
+              "system": false
+            },
+            {
+              "seq": 133,
+              "heuristicTokens": 11,
+              "system": false
+            }
+          ],
+          "breakdown": {
+            "systemTokens": 855,
+            "toolsTokens": 2837,
+            "messageTokens": 2667
+          }
+        }
+      },
+      "turnBoundary": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "openTurnStartSeq": null,
+          "lastStepStartSeq": 131,
+          "lastStepBoundary": {
+            "kind": "end",
+            "seq": 134
+          },
+          "lastTurn": 7
+        }
+      },
+      "inbox": {
+        "ver": 1,
+        "seq": 135,
+        "val": {
+          "next-turn": [],
+          "next-step": []
+        }
+      },
+      "sessionStats": {
+        "ver": 1,
+        "seq": 135,
+        "val": {
+          "turns": 7,
+          "steps": 21,
+          "llmMs": 356,
+          "toolMs": 4081,
+          "ttftMs": 338,
+          "ttftSteps": 21,
+          "decodeMs": 18,
+          "decodeTokens": 2121,
+          "lastTurn": 7,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "turnOutline": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "turns": [
+            {
+              "turn": 1,
+              "seq": 4,
+              "prompt": "[team-root-work requestToken=team-create:initial-…",
+              "response": "U7AS_L1_WAITING_FOR_HUMAN"
+            },
+            {
+              "turn": 2,
+              "seq": 19,
+              "prompt": "U7AS_GOAL_20261030t12-22-33z",
+              "response": "U7AS_FENCE_HOLD_U7AS_WORKER_DONE"
+            },
+            {
+              "turn": 3,
+              "seq": 98,
+              "prompt": "[team-control requestId=ctrl-1ut681m0ctwho11u2f9x…",
+              "response": "U7AS_L1_DONE"
+            },
+            {
+              "turn": 4,
+              "seq": 105,
+              "prompt": "U7AS_PHASE_w",
+              "response": "U7AS_L1_DONE"
+            },
+            {
+              "turn": 5,
+              "seq": 113,
+              "prompt": "[team-control requestId=ctrl-1pdr2kz0mgab0y0f1krw…",
+              "response": "U7AS_L1_DONE"
+            },
+            {
+              "turn": 6,
+              "seq": 121,
+              "prompt": "[team-control requestId=ctrl-12ayhg81gcd5vr0t42w2…",
+              "response": "U7AS_L1_DONE"
+            },
+            {
+              "turn": 7,
+              "seq": 129,
+              "prompt": "",
+              "response": "U7AS_L1_DONE"
+            }
+          ],
+          "draft": ""
+        }
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 135,
+        "val": null
+      },
+      "userQuestions": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "inheritedEventCount": 0,
+          "timed": false,
+          "questions": {
+            "active": [],
+            "settled": []
+          }
+        }
+      },
+      "subagentCatalog": {
+        "ver": 3,
+        "seq": 135,
+        "val": {
+          "inheritedEventCount": 0
+        }
+      },
+      "subagentTiming": {
+        "ver": 3,
+        "seq": 135,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 135,
+        "val": {}
+      },
+      "permissions": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask",
+          "seeded": false
+        }
+      },
+      "todos": {
+        "ver": 2,
+        "seq": 135,
+        "val": null
+      },
+      "plan": {
+        "ver": 3,
+        "seq": 135,
+        "val": {
+          "active": false,
+          "wanted": null,
+          "running": null,
+          "activeAtLastHeader": false
+        }
+      },
+      "subagentModelSelectionPolicy": {
+        "ver": 1,
+        "seq": 135,
+        "val": null
+      },
+      "modelSelection": {
+        "ver": 2,
+        "seq": 135,
+        "val": {
+          "lastUsed": {
+            "provider": "deepseek-official",
+            "model": "u7as-model",
+            "reasoningEffort": "high"
+          },
+          "pending": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 135,
+        "val": {
+          "blank": false,
+          "lastPromptAt": 1793362964265
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 135,
+        "val": null
+      }
+    }
+  }
+}

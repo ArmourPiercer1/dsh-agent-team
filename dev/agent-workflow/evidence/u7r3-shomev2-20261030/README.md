@@ -116,3 +116,7 @@ in `opshome-tree.txt`, realm bytes captured under `capture-boot1/`).
 (write + restart/replay) within the registered 2-start budget; the two
 boot-1 `/proc`-only cases stand as joint-witnessed (disclosed above), all
 other cases runner-side PASS.
+
+## 更正（dated ，append-only，原文照留）
+两条 RUN 记录缺 EB3 终结字段（手写 boot 脚本只写 verdict map），托管 ci-integration 正确点红（RUN_INCOMPLETE=新记录未终结不算结果）。协调者按闭集阶梯机械补 cases/overall（映射表全文在记录 formatNormalization 字段）；**run-shv2-1 overall=NOT_REACHED**（两条 environ 联合见证 NOT_CAPTURED 的本就是未断言披露项，归一后 worst-of 如实落非绿，与 lane 披露一致）；run-shv2-2 overall=PASS。verdict map 一字未动。
+同一更正另补 `bindings.authority`（canonical readAuthorityBinding() 实时指针=as20261026r1 代际，与 12:2xZ 两次 boot 同一指针，当日未换代）。补后 EB3-RUN-MANIFEST --new-since 本地 findings=0。

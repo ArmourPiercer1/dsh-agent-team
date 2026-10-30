@@ -30,7 +30,9 @@
       "pointer": {
         "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
         "snapshot_version": "as20261026r1"
-      }
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
     },
     "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
     "pluginFaceDigests": {
@@ -325,5 +327,59 @@
     "shv2:homeSource-default": "PASS",
     "shv2:stable-unchanged": "PASS",
     "shv2:leak-check": "PASS"
-  }
+  },
+  "cases": [
+    {
+      "id": "shv2:boot2-environ",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:boot2-store-mounted-same-realm",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:boot2-write-leg-typed-ok",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:readback-byte-identical",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:readback-fresh-store-instance",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:replay-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:locks-replay-healthy",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:homeSource-default",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:stable-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    },
+    {
+      "id": "shv2:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:20.641Z"
+    }
+  ],
+  "overall": "PASS",
+  "formatNormalization": "dated 2026-10-30T15:30Z: cases[] + overall added mechanically from the untouched verdict map (closed-set ladder; mapping PASS->PASS, PASS_POST_HOC_401/PASS_WITH_DISCLOSED_DEVIATION->PASS+disclosed_original, RECORDED->SKIP, NOT_CAPTURED_PERSISTED_JOINT_WITNESS->NOT_REACHED; non-verdict path entries excluded from cases and retained verbatim in verdict). No verdict value altered; coordinator normalization for the EB3 RUN finalization law. bindings.authority added via canonical readAuthorityBinding() (live pointer identical to run-time generation as20261026r1; V2 runs executed same-day under this pointer)."
 }

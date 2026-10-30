@@ -36,7 +36,16 @@
     },
     "storeBaseRelativeToOpsHome": "dsh/team-state/agent-state/u7as-realm-20261030t12-22-33z",
     "bootBudget": "pool C2, EXACTLY 2 starts; this is start #1 of 2 (host-start-budget.jsonl line 1)",
-    "realmId": "u7as-realm-20261030t12-22-33z"
+    "realmId": "u7as-realm-20261030t12-22-33z",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    }
   },
   "envManifest": {
     "setKeys": [
@@ -402,5 +411,74 @@
     "shv2:leak-check": "PASS_WITH_DISCLOSED_DEVIATION",
     "shv2:homeSource-derived-home-boot1": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh"
   },
-  "finishedAt": "2026-10-30T12:26:08.646Z"
+  "finishedAt": "2026-10-30T12:26:08.646Z",
+  "cases": [
+    {
+      "id": "shv2:environ-dsh-home-unset",
+      "verdict": "NOT_REACHED",
+      "at": "2026-10-30T12:26:08.646Z",
+      "disclosed_original": "NOT_CAPTURED_PERSISTED_JOINT_WITNESS"
+    },
+    {
+      "id": "shv2:environ-home-opshome",
+      "verdict": "NOT_REACHED",
+      "at": "2026-10-30T12:26:08.646Z",
+      "disclosed_original": "NOT_CAPTURED_PERSISTED_JOINT_WITNESS"
+    },
+    {
+      "id": "shv2:production-config",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:store-mounted",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:state-under-opshome",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:member-write-leg-typed-ok",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:leader-write-legs",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:real-home-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:locks-recorded",
+      "verdict": "SKIP",
+      "at": "2026-10-30T12:26:08.646Z",
+      "disclosed_original": "RECORDED"
+    },
+    {
+      "id": "shv2:negative-probes",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z"
+    },
+    {
+      "id": "shv2:stable-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z",
+      "disclosed_original": "PASS_POST_HOC_401"
+    },
+    {
+      "id": "shv2:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-30T12:26:08.646Z",
+      "disclosed_original": "PASS_WITH_DISCLOSED_DEVIATION"
+    }
+  ],
+  "overall": "NOT_REACHED",
+  "formatNormalization": "dated 2026-10-30T15:30Z: cases[] + overall added mechanically from the untouched verdict map (closed-set ladder; mapping PASS->PASS, PASS_POST_HOC_401/PASS_WITH_DISCLOSED_DEVIATION->PASS+disclosed_original, RECORDED->SKIP, NOT_CAPTURED_PERSISTED_JOINT_WITNESS->NOT_REACHED; non-verdict path entries excluded from cases and retained verbatim in verdict). No verdict value altered; coordinator normalization for the EB3 RUN finalization law. bindings.authority added via canonical readAuthorityBinding() (live pointer identical to run-time generation as20261026r1; V2 runs executed same-day under this pointer)."
 }
