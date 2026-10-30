@@ -22,8 +22,10 @@
  * INVOCATION LAW (learned the hard way on this lane): the runner writes its
  * RUN record ONLY when `--run-record <path>` is passed. Both of this lane's
  * starts omitted it, so the durable record is the stdout RUN-SUMMARY plus the
- * suite's own `*.uif4-evidence.json`; run the next lane with
- * `--run-record dev/agent-workflow/evidence/u7r3-uif4-20261030/c2/run-uif4-<line>.json`.
+ * suite's own `*.uif4-evidence.json`; the next lane MUST pass --run-record with
+ * one per-start record file placed in this suite's evidence c2 directory (a
+ * tracked directory in the lane branch; spelled out here as prose so the
+ * docs:sync cited-path law never trips on a placeholder shape).
  *
  * Honesty law: a verdict is earned by a named witness (host-log observe line,
  * the ledger face, the mock transcript's tool_result head, or the runner's own
