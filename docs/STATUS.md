@@ -1,5 +1,8 @@
 # STATUS — Team vNext 当前状态总览
 
+
+> **dated CURRENT 快照（2026-10-31，主 Agent；本文其余历史段为 dated 快照、非当前断言；权威 = graph.yaml + SESSION_ROUTER_LOG）**：U7-R1/R2 全量合并（R-CRASH-1 含无旋钮实机复验 #470 PASS）；U7-R3 缺口矩阵已入账（gates/U7-R3-GAP-MATRIX-20261029.md），pilot 实机判级 job_list L3+L4 / team_glob L4，C1 离线判级波次一~三共 13 格新增判级脉络（全部保持 NOT_VERIFIED，PROVEN 需实机 C2）；boot 总账 12/24（#448/#449 各 2/2 用尽、机动 4 已尽、AC 候选绑定 12 预留），后续 boot 需用户再分配；开放 PR = {#463 STATE_HOME PoC（待用户）、#446（待用户 (b) 旋钮裁决）}；外部审计 #4 四项主发现判为不可复现（幽灵工件，evidence/u7r3-audit4-20261031/）。
+
 > **性质**：living 快照文档，**不是权威源**。权威 = `dev/agent-workflow/graph.yaml`（编排状态唯一来源）+
 > `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加执行日志，已记录至 pre-alpha3 handoff closure 轮，2026-10-01）。
 > **更新纪律**：阶段收口 / 门禁裁决 / 用户指令变更后由主 Agent 同步刷新；文档与权威源冲突时以

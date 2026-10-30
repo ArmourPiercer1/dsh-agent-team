@@ -1,0 +1,6 @@
+cross-ledger LIVE-vs-NOT_VERIFIED scan (2026-10-31, coordinator):
+- input: origin/master:dev/agent-workflow/ledgers/*.json (3 files); tool set = every row with L3 or L4 != PROVEN (u7-tool-acceptance.json).
+- method: per-tool regex over each ledger for co-occurrence of tool name + live/LIVE + PROVEN outside quoted C1-lineage notes.
+- result: 0 conflicts.
+- ghost-file checks: `git log --all --oneline -- '*u7-3a-c1-semantics*'` = empty; 300 remote tips tree-grep = 0; find over main checkout + all .worktrees = 0;
+  `git cat-file -t 9b2c82a9b` = "Not a valid object name"; scripts/ ls-tree audit* = audit-a5-tool-governance-imports.mjs only.
