@@ -34,6 +34,10 @@
 | BL-17 | bg producer（team_bash 后台臂） | **未合入基线** | 工作区 bg WIP 未跟踪；本分支禁混入；恢复走原 task 纪律。 |
 | BL-18 | a9b2-approval-diag 原件入册 | carried-forward 待批 | root per-SHA evidence commit 另批；本轮矩阵仅路径引用+"尚未入 git"披露。 |
 | BL-19 | glob/grep 判据线**运行面复验**（#342/#343/#354 已合后的现运行行为） | carried-forward 待复验轮 | BL-10/BL-11 关闭的是**合入/取代事实**；运行行为复验属矩阵复验轮（需测试轮授权，当前产品冻结未开）。 |
+| BL-20 | R-CRASH-1：u5-parallel-supervisor `survivorHealthyAt<killAt` hold/probe 握手 + 拆分混指 sequencing 单元 | carried-forward **post-freeze**（G4-R2 F4/B-MED） | crash 腿 PASS-by-knob（`--kill-after 6000` 经验缓解，RULING-B-G4R-6），断言结构非确定；修复=tests/world-factory harness 代码，禁在车道中途动；R-CRASH-1 行见 `dev/agent-workflow/evidence/review-routing-20261028/REVIEW-REMEDIATION-20261028.md`。 |
+| BL-21 | trustedSources 平面摘要暴露（R-G4R-1 全闭合前置） | carried-forward（G4-R2 F1/B-MED） | 各候选记录 `trustedSourcesDigest=null`+机读理由（与 phase-2 同，非 null-as-satisfied）；闭合=在 runner 公开 World/HTTP 面暴露 plane TrustSources 摘要并持久+重绑，或显式裁决 census inventory 替代；R1 关闭项 4 现 2/3。 |
+| BL-22 | world-oracle 动态导入边 `host-sandbox-assets.mjs:223`（ARC-D/Jobs `complete=false`） | carried-forward（G4-R2 F2/B-MED） | oracle vouched 闭包外一边；今日由 candidate..HEAD judge diff 空覆盖，任何后续 commit 触该文件则两腿不可变性论证须重推；lane README dated addendum 已披露该格。 |
+| BL-23 | crash RCA 原件入册（tracked 副本） | **closed-by #439（merge-order 保证：本行落库时 #439 已先行入库）**；任何 checkout 若缺 `dev/agent-workflow/evidence/u7-g4r3-20261028/analysis/crash-sequencing-rca-20261028.md` 即降级为 pending 并按缺证披露（G4-R2 F5/LOW；R440 M2 措辞修正） | 原稿在会话 scratch `.artifacts/findings/`；#439 逐字入册 + README addendum；RULING-B-G4R-6 正文独立成立（两 reviewer 均判可独立审计）。 |
 
 ## C. 本 docs-realignment 轮自身
 
