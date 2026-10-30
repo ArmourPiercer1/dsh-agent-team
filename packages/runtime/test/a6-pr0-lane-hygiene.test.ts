@@ -34,7 +34,24 @@ const PACKAGES_ROOT = join(RUNTIME_ROOT, '..')
 /** Production source files that may import the lane. Empty until PR-I1 wires
  *  it — and PR-I1 must arrive WITH its Center-Interface ledger override, its
  *  own tests and this list updated in the same change, never as a stray edit. */
-const ALLOWED_CONSUMERS: readonly string[] = []
+/**
+ * Production consumers of the delegation vocabulary. One entry, added by Alpha.6 PR2′ (#507) — the
+ * first PR after PR0 that is allowed to exist, and the mechanism this list was built for: a consumer is
+ * named in the PR that adds it, and everything unnamed stays a failure.
+ *
+ * `review-assignment/router.ts` imports PR0 for exactly one reason, and it is the reason PR0 exists:
+ * the router calls `evaluateReviewAdmission` (plus `isParsedReviewPlan` and `DELEGABLE_REVIEW_RUNG`) so
+ * that the router can never be wider than the admission gate. A router that re-implemented that check
+ * would be a second vocabulary deciding who may decide — the failure mode this phase keeps refusing.
+ *
+ * Three things did NOT change, and a reader should be able to check each in one line: the consumer is
+ * itself dormant (`a6-pr2-lane-hygiene.test.ts` walks `packages/**` and requires ITS consumer set to be
+ * empty, so nothing reaches it from production either); the consumer imports nothing from PR0 beyond the
+ * three names above (`a6-pr2-lane-hygiene.test.ts` pins its whole import set against a closed
+ * allow-list); and no Alpha.5 permission/refusal/EffectSet/Grant semantics moved — this PR0 spec is the
+ * only file of #501's delivery that #507 touches, and it touches one constant here.
+ */
+const ALLOWED_CONSUMERS: readonly string[] = ['runtime/review-assignment/router.ts']
 
 /** Prefixes inside the ARC-A protected center (the set
  *  `packages/testkit/test/arc-a-fitness/scan.mjs` pins; restated here as the
