@@ -554,7 +554,11 @@ export function makeBootwaveDecide({ assembly }) {
       fenceRounds += 1
       if (fenceRounds <= 12) return toolCall('team_collect', { rootSessionId: assembly.CREATE_ROOT, requestToken: tokens(`f${String(ph.tok)}-${String(fenceRounds)}`), requestTokens: [tokens(ph.tok)] })
       fenceRounds = 0
-      return { kind: 'text', content: `BOOTWAVE_FENCE_HOLD_${ph.fence}` }
+      // RCA-3 bug-2: the hold text must NOT embed the fence string. The leader
+      // transcript keeps its own past replies, so a text containing
+      // BOOTWAVE_IMG_DONE self-satisfied the fence on the next wake round.
+      // The vocabulary here is the drive script's own, not a judged law.
+      return { kind: 'text', content: `BOOTWAVE_HOLD_${ph.tok.toUpperCase()}_ROUNDS12` }
     }
     return { kind: 'text', content: 'BOOTWAVE_L1_DONE' }
   }
@@ -571,9 +575,11 @@ export function makeBootwaveDecide({ assembly }) {
   const traced = ({ req }) => {
     const res = decide({ req })
     if (trace.length < 160) {
+      const luFull = lastUserTextOfStatic(req)
       trace.push({
         lane: laneOf(req),
-        lu: lastUserTextOfStatic(req).slice(-140),
+        lu: luFull.slice(-1600),
+        luHead: /ACTIVATION_|_FAILED/.test(luFull) ? luFull.slice(0, 1600) : undefined,
         reply: res.kind === 'tool-call' ? `tool:${String(res.toolCalls?.[0]?.name ?? '?')}` : `text:${String(res.content ?? '').slice(0, 40)}`,
         phase, fenceRounds,
         ids: { imgov: ids.imgov ?? null, uigov: ids.uigov ?? null },
