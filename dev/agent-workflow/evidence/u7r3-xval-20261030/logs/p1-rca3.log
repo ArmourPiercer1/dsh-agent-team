@@ -1,0 +1,1 @@
+{"label":"b-rca3","mode":"b-serial","ok":false,"totalWallMs":251533,"gateWaits":0,"runs":[{"set":"b","exit":1,"wallClockS":251.52,"userS":452.17,"sysS":138.72,"maxRssKb":1899796}]}

@@ -1,0 +1,108 @@
+{
+  "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+  "band": [
+    13040,
+    13045
+  ],
+  "children": 8,
+  "censusBefore": [],
+  "censusMid": [
+    "13040:u5xvalraceb2-20261030T145245",
+    "13041:u5xvalracea0-20261030T145245",
+    "13042:u5xvalraceb1-20261030T145245",
+    "13043:u5xvalraceb3-20261030T145245",
+    "13044:u5xvalracea3-20261030T145245",
+    "13045:u5xvalracea2-20261030T145245"
+  ],
+  "censusAfter": [],
+  "winners": [
+    13040,
+    13041,
+    13042,
+    13043,
+    13044,
+    13045
+  ],
+  "losers": [
+    {
+      "code": "LEASE_HELD",
+      "ms": 11
+    },
+    {
+      "code": "LEASE_HELD",
+      "ms": 6
+    }
+  ],
+  "assertNoDoubleAcquire": true,
+  "assertRefusalsAreExhaustion": true,
+  "assertZeroLiveAfter": true,
+  "assertDistinctPortsInRange": true,
+  "results": [
+    {
+      "side": "A0",
+      "world": "u5xvalracea0-20261030T145245",
+      "ok": true,
+      "port": 13041,
+      "acquireMs": 8,
+      "at": "2026-10-30T14:52:45.893Z"
+    },
+    {
+      "side": "A1",
+      "world": "u5xvalracea1-20261030T145245",
+      "ok": false,
+      "code": "LEASE_HELD",
+      "error": "port 13045 leased by pid 27 since 2026-10-30T14:52:45.892Z",
+      "acquireMs": 11,
+      "at": "2026-10-30T14:52:45.895Z"
+    },
+    {
+      "side": "A2",
+      "world": "u5xvalracea2-20261030T145245",
+      "ok": true,
+      "port": 13045,
+      "acquireMs": 11,
+      "at": "2026-10-30T14:52:45.895Z"
+    },
+    {
+      "side": "A3",
+      "world": "u5xvalracea3-20261030T145245",
+      "ok": true,
+      "port": 13044,
+      "acquireMs": 8,
+      "at": "2026-10-30T14:52:45.895Z"
+    },
+    {
+      "side": "B0",
+      "world": "u5xvalraceb0-20261030T145245",
+      "ok": false,
+      "code": "LEASE_HELD",
+      "error": "port 13045 leased by pid 27 since 2026-10-30T14:52:45.892Z",
+      "acquireMs": 6,
+      "at": "2026-10-30T14:52:45.893Z"
+    },
+    {
+      "side": "B1",
+      "world": "u5xvalraceb1-20261030T145245",
+      "ok": true,
+      "port": 13042,
+      "acquireMs": 6,
+      "at": "2026-10-30T14:52:45.891Z"
+    },
+    {
+      "side": "B2",
+      "world": "u5xvalraceb2-20261030T145245",
+      "ok": true,
+      "port": 13040,
+      "acquireMs": 5,
+      "at": "2026-10-30T14:52:45.889Z"
+    },
+    {
+      "side": "B3",
+      "world": "u5xvalraceb3-20261030T145245",
+      "ok": true,
+      "port": 13043,
+      "acquireMs": 12,
+      "at": "2026-10-30T14:52:45.897Z"
+    }
+  ]
+}

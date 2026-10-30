@@ -1,0 +1,207 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "x1-20261030T14-52-51Z",
+  "suite": "u7r3-xval-parallel-validation (NO-ACCEPTANCE-CREDIT)",
+  "startedAt": "2026-10-30T14:52:51.603Z",
+  "selectedCases": [
+    "host-base-pre",
+    "sandbox-preflight",
+    "budget-line-before-spawn",
+    "boot",
+    "token-gate-401",
+    "auth-303",
+    "readiness-200",
+    "lease-capture",
+    "overlap-window",
+    "teardown",
+    "host-base-post",
+    "ports-released",
+    "leases-released",
+    "home-removed",
+    "stable-3080-untouched",
+    "real-dsh-home-untouched"
+  ],
+  "bindings": {
+    "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a",
+    "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a",
+    "token": "x1",
+    "phase": "p0-concurrent",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/deepseek-harness-test-use",
+    "hostBase": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "pre-bindings"
+    },
+    "leaseRoot": {
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "expectedMainHoist": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hoisted": true
+    },
+    "homeRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/homes",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "worldIds": [],
+    "noAcceptanceCredit": true,
+    "preflight": null,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "cases": [
+    {
+      "id": "host-base-pre",
+      "verdict": "PASS",
+      "at": "2026-10-30T14:52:51.710Z",
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "host-base-pre"
+    },
+    {
+      "id": "sandbox-preflight",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "error": "host-sandbox-assets: SOURCE_IS_DESTINATION: the provisioning source resolves to the destination tree (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/deepseek-harness-test-use) and the assets are not present there — name a source tree with `--source-tree` or DSH_TEAM_SANDBOX_ASSET_SOURCE"
+    },
+    {
+      "id": "budget-line-before-spawn",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "boot",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "token-gate-401",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "auth-303",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "readiness-200",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "lease-capture",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "overlap-window",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "teardown",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.828Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "host-base-post",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "ports-released",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "leases-released",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "home-removed",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "stable-3080-untouched",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "real-dsh-home-untouched",
+      "verdict": "FAIL",
+      "at": "2026-10-30T14:52:51.829Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/host-start-budget.jsonl",
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  },
+  "envShots": [
+    {
+      "at": "2026-10-30T14:52:51.445Z",
+      "phase": "pre",
+      "loadavg": "0.21 2.95 3.01 1/382 16",
+      "stable3080": {
+        "reachable": true,
+        "status": 401
+      },
+      "realDshHome": {
+        "mtimeMs": 1793195142559.5686,
+        "mtime": "2026-10-28T13:45:42.560Z"
+      },
+      "diskAvailKb": 37590508
+    }
+  ],
+  "overall": "FAIL",
+  "finishedAt": "2026-10-30T14:52:51.829Z",
+  "formatNormalization": " dated R495-fl F-1 supplement: canonical bindings.hostSha copied from bindings.hostBase.head (value was already bound in substance; record-shape only, no re-run)."
+}

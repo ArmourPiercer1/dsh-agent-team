@@ -34,6 +34,10 @@
 | BL-17 | bg producer（team_bash 后台臂） | **未合入基线** | 工作区 bg WIP 未跟踪；本分支禁混入；恢复走原 task 纪律。 |
 | BL-18 | a9b2-approval-diag 原件入册 | carried-forward 待批 | root per-SHA evidence commit 另批；本轮矩阵仅路径引用+"尚未入 git"披露。 |
 | BL-19 | glob/grep 判据线**运行面复验**（#342/#343/#354 已合后的现运行行为） | carried-forward 待复验轮 | BL-10/BL-11 关闭的是**合入/取代事实**；运行行为复验属矩阵复验轮（需测试轮授权，当前产品冻结未开）。 |
+| BL-20 | R-CRASH-1：u5-parallel-supervisor `survivorHealthyAt<killAt` hold/probe 握手 + 拆分混指 sequencing 单元 | carried-forward **post-freeze**（G4-R2 F4/B-MED） | crash 腿 PASS-by-knob（`--kill-after 6000` 经验缓解，RULING-B-G4R-6），断言结构非确定；修复=tests/world-factory harness 代码，禁在车道中途动；R-CRASH-1 行见 `dev/agent-workflow/evidence/review-routing-20261028/REVIEW-REMEDIATION-20261028.md`。 |
+| BL-21 | trustedSources 平面摘要暴露（R-G4R-1 全闭合前置） | carried-forward（G4-R2 F1/B-MED） | 各候选记录 `trustedSourcesDigest=null`+机读理由（与 phase-2 同，非 null-as-satisfied）；闭合=在 runner 公开 World/HTTP 面暴露 plane TrustSources 摘要并持久+重绑，或显式裁决 census inventory 替代；R1 关闭项 4 现 2/3。 |
+| BL-22 | world-oracle 动态导入边 `host-sandbox-assets.mjs:223`（ARC-D/Jobs `complete=false`） | carried-forward（G4-R2 F2/B-MED） | oracle vouched 闭包外一边；今日由 candidate..HEAD judge diff 空覆盖，任何后续 commit 触该文件则两腿不可变性论证须重推；lane README dated addendum 已披露该格。 |
+| BL-23 | crash RCA 原件入册（tracked 副本） | **closed-by #439（merge-order 保证：本行落库时 #439 已先行入库）**；任何 checkout 若缺 `dev/agent-workflow/evidence/u7-g4r3-20261028/analysis/crash-sequencing-rca-20261028.md` 即降级为 pending 并按缺证披露（G4-R2 F5/LOW；R440 M2 措辞修正） | 原稿在会话 scratch `.artifacts/findings/`；#439 逐字入册 + README addendum；RULING-B-G4R-6 正文独立成立（两 reviewer 均判可独立审计）。 |
 
 ## C. 本 docs-realignment 轮自身
 
@@ -50,3 +54,8 @@
 | EF-01 | 纯日志/同步 PR 批量化（sync 册制）——每波一批，不逐条开 PR | **已在行**（sync13=#485 为首批全量册） |
 | EF-02 | 测试影响面局部快速 CI 反馈路径（本地按受影响包/根选择跑，完整必需门仍只在合并候选 head 上跑）——降低 20.1 分钟级全量 CI 的重复成本；设计需先量测当前各 leg 时长构成，不得削弱合并门强度 | OPEN（离线，可并入下一无 boot 窗口） |
 | EF-03 | 离线 PoC → 真实 Host 验收转化率：已完成离线验证的能力（本波=State Home V2；后续=read_image/UI 族）优先排 C 池 boot，不再加设计/报告轮 | **执行中**（V2 lane 已出发） |
+
+<!-- dated 2026-10-30T19:45Z coordinator conflict resolution (sync14 fmerge master): both sides kept verbatim, real-UTC order (section D 12:0xZ before EF-04..06 rows 13:2xZ); zero deletions -->
+- **EF-04 环境勘误（dated 2026-10-30T13:27Z）**：共享基线 /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness 本环境**无 .git**（TEST_METHODS 描述按有仓对待）；worktree test-use 供给的克隆源 = 主检出 tests/deepseek-harness-test-use（detached @pin，porcelain 校验后作 --local 源）。R-G4R-1a lane 实踩（其 README 披露），本条转正。托管 census capture-2 今日两次红（485 heads）待 RCA=flake-or-real 判定，EF-02 相关。
+- **EF-05 u7-0 义务摘要再生成法（dated 2026-10-30，RCA 转正）**：MATRIX 与 BACKLOG 文本是 `dev/engineering/tool-obligations/build-expected-tool-obligations.mjs` 的**输入**（:144-145 直读），u7-0-census-reconcile 以字节恒等强制三份工件=回放；**编辑这两份正本必须同提交完成三步仪式**：①无参跑 generator 重生成三工件（`--check` 绿）；②更新 `packages/testkit/test/u7-0-census-reconcile.test.ts` 的 `PINNED.expected_digest` 与 `clean_verdict_digest` 为新实际值并跑绿 26/26（这两常数=漂移探测器本体，同 PR diff 可见=有意变更通道）；③docs:sync findings=0。今日实证：#485 的 backlog EF 行与 sync14 的 M-05 行各自使 hosted census 红（NEW RED=u7-0 replay），plain master 绿。今后所有 sync/矩阵 PR 模板步骤含再生成。
+- **EF-06 docs:sync 引用路径法（dated 2026-10-30，RCA 转正）**：`CITED_PATH_MISSING` 检查对**任何形态像 repo 内路径的 token**（含代码注释里的占位路径如 `…/run-uif4-<line>.json`）做冷克隆可开性校验；不存在=blocking。写注释/文档时占位路径必须散文改写或指向真实文件。今日实证：#491 suites/085 头注释（托管 ci-integration 红 → 一行修复重清偿）。与 EF-05 同族=「正本文稿的机器可校验面」。

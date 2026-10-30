@@ -1,0 +1,6 @@
+# P1 set selection smokes (pre-measurement, xval-b, warm caches, real-UTC ~15:09)
+2026-10-30T15:09:2xZ u7-9a-fs-mutation-c1 single file: real 2.582s user 2.832 sys 0.562 (37 tests) — too light
+2026-10-30T15:09:2xZ vitest run u7-9a (2 files): real 2.529s — too light
+2026-10-30T15:09:3xZ vitest run packages/tools/test (13 files,162 tests): real 3.240s user 7.779 — light
+2026-10-30T15:09:39Z..15:14:28Z vitest run packages/runtime/test (466 files,5777 tests): wall 289s (Duration 288.20s) user 7m36 sys 2m21 — CHOSEN set B (targeted single package dir; matches the brief's 2-4min family scale)
+set A measured earlier: node --test binding-digests+registries real 0.431s (18 tests) — light by design (brief names it)
