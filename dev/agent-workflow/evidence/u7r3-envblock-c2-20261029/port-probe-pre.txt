@@ -1,0 +1,5 @@
+# port probe pre (UTC 2026-10-29T15:32:04Z) — workspace-write Linux host; :3080 stable instance LISTENING (read-only probe only), 3180-3199 + 3491-3500 test bands:
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+LISTEN 0      511        127.0.0.1:3080      0.0.0.0:*          
+# :3080 state pre:
+401

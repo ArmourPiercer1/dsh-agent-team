@@ -14,13 +14,20 @@
  * team_resolve_control allow / deny from the mock corpus.
  *
  * Verdict law: every PASS names its witnesses (stub ledger counts,
- * host-log family witnesses, corpus decision facts). An approval-chain
- * gap or an environment wall (e.g. the member-surface coverage law
- * refusing the governed pair) lands as ENV_BLOCK with the VERBATIM
- * refusal text — a blocked arm is DISCLOSED, never flipped to PASS.
+ * host-log family witnesses, corpus decision facts). A blocked arm is
+ * DISCLOSED, never flipped to PASS — and R-ENVBLOCK-1 splits the three
+ * different things "the witness is absent" used to mean (see
+ * ../lib/arm-verdict.mjs): the drive reached the step and the product
+ * misbehaved → FAIL; the drive never got there → NOT_REACHED (a harness
+ * fact, it claims NOTHING about the environment); ENV_BLOCK ONLY when a
+ * verifiable environment-unavailability signal exists (the host refusing to
+ * provision the governed surface, a kit that cannot be provisioned, an
+ * unusable sandbox backend) quoted VERBATIM through `envSignal()`. A bare
+ * in-test reason can no longer buy ENV_BLOCK: `add()` demotes it.
  */
 import { apiPrompt, authenticate, fetchJson } from '../lib/world-factory.mjs'
 import { remoteCall, hasMarker, surfaceNamesOf } from '../lib/u6-fs-assembly.mjs'
+import { classifyUnwitnessedArm, envSignal, gateEnvBlock } from '../lib/arm-verdict.mjs'
 import { createU7WebAssembly, makeU7WebDecide, MANAGED_TOOL_NAMES, SAFE_UNMANAGED_TOOL_NAMES, FAMILY_OWNED_NAMES } from '../lib/u7f-web-assembly.mjs'
 import { MOCK_PORT_BANDS, portsOfBands } from '../../paths.mjs'
 import { createServer } from 'node:http'
@@ -55,9 +62,13 @@ async function startStub() {
 async function runU7Web({ factory, record, rc, log, line, worlds, keepHome, evidence, runId }, { sleep, waitUntil, evaluateLeak, REPO_ROOT, RUN_LIFETIME_MS }) {
   const done = new Set()
   const add = (id, verdict, detail) => {
+    // R-ENVBLOCK-1 gate: an ENV_BLOCK that carries no quotable environment
+    // signal is a harness non-arrival in disguise. Every writer in this suite
+    // passes this door, so the old habit cannot come back.
+    const gated = gateEnvBlock(verdict, detail)
     done.add(id)
-    record.addCase(id, verdict, detail)
-    log(`case ${id}: ${verdict} ${JSON.stringify(detail).slice(0, 260)}`)
+    record.addCase(id, gated.verdict, gated.detail)
+    log(`case ${id}: ${gated.verdict} ${JSON.stringify(gated.detail).slice(0, 260)}`)
   }
   const failRest = (why, extra = {}) => {
     for (const id of CASES) if (!done.has(id)) add(id, 'FAIL', { reason: why, ...extra })
@@ -292,6 +303,24 @@ async function runU7Web({ factory, record, rc, log, line, worlds, keepHome, evid
   const noProviderSeen = anyText.includes('WEB_SEARCH_NO_PROVIDER')
   const refusalSeen = anyText.includes('refused-admission') || anyText.includes('refused-approval')
   const lanes = record.record.u7fwebLanes ?? {}
+  // ── R-ENVBLOCK-1: arrival witnesses + the one admissible environment signal ─
+  // Arrival at a step must be witnessed by something OTHER than the witness
+  // being asserted (otherwise "never reached" is circular): the family logged
+  // the call, the stub ledger saw wire, an ask surfaced in a transcript, or a
+  // decision came back through the public seam.
+  const fetchStepReached = ranLines.length > 0 || claimHits > 0 || askNoticed || resolveFacts.length > 0
+  const chainStepReached = askRowsLedger.length > 0 || askNoticed || resolveFacts.length > 0
+  const denyLegStepReached = resolveFacts.some((r) => r.decision === 'deny') || deniedRefusal.length > 0 || victimHits > 0
+  const searchStepReached = searchLines.length > 0 || anyText.includes('web_search')
+  // The only channel this suite can honestly quote a wall from is the host log
+  // it already captured. PRODUCT refusals (PLANE_WEB_*, APPROVAL_DENIED,
+  // WEB_SEARCH_NO_PROVIDER) are the witnesses several arms assert — envSignal()
+  // refuses them as environment evidence by construction.
+  const envWallSignal = envSignal({
+    channel: 'host-log',
+    text: logLines.find((l) => /a5-plane: (?:mount|placement)-REFUSED|EADDRINUSE|EACCES|EPERM/.test(l)) ?? null,
+    observed: logLines,
+  })
   log(`approvals: ${JSON.stringify(resolveFacts).slice(0, 500)} errors=${JSON.stringify(record.record.u7fwebAsks?.errors ?? []).slice(0, 200)}`)
   log(`probe second face: ${JSON.stringify(record.record.u7fwebAsks?.probe ?? null).slice(0, 300)}`)
 
@@ -306,7 +335,16 @@ async function runU7Web({ factory, record, rc, log, line, worlds, keepHome, evid
     if (claimHits === 1 && ranLines.some((l) => l.includes(`dest=${stubOrigin}`) && l.includes('status=200')) && anyText.includes(String(STUB_CLAIM))) {
       add('web:fetch-positive', 'PASS', { stubLedger, ran: ranLines[0]?.slice(0, 220), claimReadBackInCorpus: true, law: 'durable ALLOW -> grant consumed -> the family PRODUCTION node:http transport wired the stub once; body read back through the model transcript' })
     } else if (askRowsLedger.length === 0) {
-      add('web:fetch-positive', 'ENV_BLOCK', { reason: 'no durable ask row reached the ledger face (the governed member never hit PA — see web:mounted)', stubLedger })
+      // R-ENVBLOCK-1: no durable ask row is EITHER a harness non-arrival (the
+      // governed member never got to the governed call) OR a product failure to
+      // book one. ENV_BLOCK only if the HOST said the surface is unavailable.
+      const v = classifyUnwitnessedArm({
+        step: 'the governed web_fetch PA step (a durable ask row on the ledger face)',
+        reachedStep: fetchStepReached,
+        signal: envWallSignal,
+        extra: { stubLedger, askerDone: String(lanes.askerDone), ran: ranLines.slice(0, 2) },
+      })
+      add('web:fetch-positive', v.verdict, v.detail)
     } else {
       add('web:fetch-positive', 'FAIL', { stubLedger, ran: ranLines.slice(0, 3), askerDone: String(lanes.askerDone), resolutions: resolveFacts })
     }
@@ -319,7 +357,15 @@ async function runU7Web({ factory, record, rc, log, line, worlds, keepHome, evid
         law: 'leader carries NO control tools — the decisions came from the human public seam only',
       })
     } else if (allowResolution === null && askRowsLedger.length === 0) {
-      add('web:approval-chain-live', 'ENV_BLOCK', { reason: 'no durable ask row appeared in the ledger face (upstream wall — see fetch-positive and mounted witnesses)', resolutions: resolveFacts })
+      // R-ENVBLOCK-1: "upstream wall" was prose. Split on arrival witnesses;
+      // an environment claim now needs the host's own quoted refusal line.
+      const v = classifyUnwitnessedArm({
+        step: 'the live approval chain (durable PA ask rows answered through team.resolveControl)',
+        reachedStep: chainStepReached,
+        signal: envWallSignal,
+        extra: { resolutions: resolveFacts, askRows: askRowsLedger.length },
+      })
+      add('web:approval-chain-live', v.verdict, v.detail)
     } else {
       add('web:approval-chain-live', 'FAIL', { askRows: askRowsLedger.length, allowResolution, denyResolution })
     }
@@ -327,15 +373,35 @@ async function runU7Web({ factory, record, rc, log, line, worlds, keepHome, evid
   if (!done.has('web:deny-leg-zero-wire')) {
     if (victimHits === 0 && (deniedRefusal.length > 0 || refusalSeen)) {
       add('web:deny-leg-zero-wire', 'PASS', { victimHits: 0, witness: deniedRefusal[0]?.slice(0, 200) ?? 'refused-admission in corpus', law: 'human seam DENIED the second ask; the stub proves ZERO wire to the denied endpoint' })
+    } else if (victimHits > 0) {
+      add('web:deny-leg-zero-wire', 'FAIL', { victimHits, deniedRefusal: deniedRefusal.slice(0, 2), refusalSeen, reason: 'DENIED call wired the stub' })
     } else {
-      add('web:deny-leg-zero-wire', victimHits > 0 ? 'FAIL' : 'ENV_BLOCK', { victimHits, deniedRefusal: deniedRefusal.slice(0, 2), refusalSeen, reason: victimHits > 0 ? 'DENIED call wired the stub' : 'the denied leg never reached its refusal witness (approval chain blocked upstream)' })
+      // R-ENVBLOCK-1: zero wire with no refusal witness is a non-arrival
+      // unless the environment itself refused; the DENIED-the-wire FAIL leg
+      // above is untouched.
+      const v = classifyUnwitnessedArm({
+        step: 'the DENIED leg (a resolved deny whose refusal the stub must not see)',
+        reachedStep: denyLegStepReached,
+        signal: envWallSignal,
+        extra: { victimHits: 0, deniedRefusal: deniedRefusal.slice(0, 2), refusalSeen, askRows: askRowsLedger.length },
+      })
+      add('web:deny-leg-zero-wire', v.verdict, v.detail)
     }
   }
   if (!done.has('web:search-no-provider')) {
     if (noProviderSeen && searchLines.filter((l) => l.includes('RAN')).length === 0) {
       add('web:search-no-provider', 'PASS', { witness: 'WEB_SEARCH_NO_PROVIDER typed refusal in the member transcript; no governed-web-search RAN witness; zero stub wire beyond /claim', stubLedger })
-    } else if (!noProviderSeen && lanes.askerDone !== true) {
-      add('web:search-no-provider', 'ENV_BLOCK', { reason: 'asker lane never reached the web_search step (upstream wall)', askerDone: String(lanes.askerDone) })
+    } else if (!noProviderSeen && searchStepReached === false && lanes.askerDone !== true) {
+      // R-ENVBLOCK-1: the asker lane not arriving is a drive fact. It becomes
+      // ENV_BLOCK only on a quoted host wall, and it stays FAIL once the
+      // search step was actually reached without the typed refusal.
+      const v = classifyUnwitnessedArm({
+        step: 'the governed web_search step (the WEB_SEARCH_NO_PROVIDER typed refusal)',
+        reachedStep: searchStepReached,
+        signal: envWallSignal,
+        extra: { askerDone: String(lanes.askerDone), searchWitnesses: searchLines.length },
+      })
+      add('web:search-no-provider', v.verdict, v.detail)
     } else {
       add('web:search-no-provider', 'FAIL', { noProviderSeen })
     }

@@ -1,0 +1,18 @@
+# u7r3-446adj offline receipts — 2026-10-31, seat qiyuan-self/qwen3.8-flash-next (isolated session), head under test = working tree at merge 5361e704d + adjustment commit
+$ node --test tests/world-factory/arm-verdict.test.mjs
+ℹ tests 17
+ℹ pass 17
+ℹ fail 0
+$ node --test tests/world-factory/registries.test.mjs
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0
+$ node --test tests/world-factory/*.test.mjs
+ℹ tests 134
+ℹ pass 134
+ℹ fail 0
+$ node scripts/docs-probe.mjs --worktree-only
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
