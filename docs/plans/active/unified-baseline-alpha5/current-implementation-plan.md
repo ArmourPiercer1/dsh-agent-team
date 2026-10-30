@@ -7,4 +7,5 @@
 - **唯一实施计划正本** = [`docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md`](../../memo/unified-baseline-alpha5-20261025/execution-plan.md)（PR #364；用户 2026-10-25 裁决："PR #364 合并 = 唯一实现计划正本"）。本文件只是机器 `active_plan` 的载体（`docs/plans/active/` 前缀为冻结 schema 与 ci-pr-gate Q2 要求），**不复制计划内容**；冲突时以正本为准。
 - 有效待办 / 逐工具验收仍为 [`../alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md`](../alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md) 与 [`../alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md`](../alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md)。
 - U6 设计与切片：[`../../memo/unified-baseline-alpha5-20261025/u6/`](../../memo/unified-baseline-alpha5-20261025/u6/)；门禁记录：[`../../memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md`](../../memo/unified-baseline-alpha5-20261025/gates/GATE-LEDGER.md)。
+- **执行编排（用户直令，真实 UTC 2026-10-30）**：Alpha.5 采用**受控三工作流**（A 产品功能 / B 真实 Host 验收 / C 工程与测试基线；主 Agent 唯一 Integrator；槽位=WIP 上限非配额），规则正本 = [`docs/PARALLEL-INTEGRATION.md` §7](../../../PARALLEL-INTEGRATION.md)，本行只指不复制。
 - release 状态 = BLOCKED（全工具审批未达）。
