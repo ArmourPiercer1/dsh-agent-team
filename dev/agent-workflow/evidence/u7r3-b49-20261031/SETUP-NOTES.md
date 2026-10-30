@@ -62,3 +62,28 @@ start; boot#2 reserved for an ENV_BLOCK-class NOT_REACHED ONLY) / source-sha rul
 (incl. "ENV_BLOCK never PASS" and the anti-vacuity timestamp conjunctions) / max starts BEFORE any
 spawn, per USER-RULING-20261029B item 1 and the #458 F-1 correction (registration commit pushed
 and CONFIRMED on origin before the runner starts).
+
+## Boot#1 (post-registration, appended honestly after the fact)
+- Booted at the pre-registration head `80eef96e5` (source-sha gate passed; ledger line 1 =
+  start 1/2). Result **runOverall FAIL**: 7/9 suite cases PASS (all cross-process production-store
+  legs: timeout refusal while held 3019 ms, break-after-REAL-death 1043 ms, generation revalidate
+  race both-ok serial, replay same+cross-scope exactly-once, refund+re-drive, zero residue; the
+  runner's own token-gate row PASS makes 10 rows), but the 2 host-lane cases NEVER REACHED graded
+  execution: the Team row's bootstrap failed in the host process —
+  `ERR_MODULE_NOT_FOUND @deepseek-ai/dsh-storage-domain` (machine receipt
+  `c2/boot1/team-row-setup-failure.json`, token-free). Root cause: the lane worktree had no
+  pnpm-installed `node_modules`, so the row's registry-pinned 0.2.0-rc.2 dependency graph was
+  unresolvable. Lane provisioning gap, same class as the #458 pilot boot#1 farm gap / g4r3
+  attempt-1 ENV class named by the prior lane's notes. Receipt: `c2/RUN-RECORD-BOOT1.json`
+  (reconstructed — boot#1 omitted `--run-record`, disclosed inside; runner stdout committed
+  verbatim under `c2/boot1/`; raw boot logs withheld, token law — `c2/logs/.gitignore` now holds
+  real patterns, the pre-reg commit's prose-only ignore was the mistake it fixes).
+- Fix (setup-only, zero boots): `pnpm install --frozen-lockfile --ignore-scripts --prefer-offline`
+  at the lane root against a workspace-local store copy (`/srv/.../.pnpm-store-lane`; the global
+  store mount is read-only in this environment — only the `@deepseek-ai/dsh@0.2.0-rc.2` tarball
+  came from the registry). Lockfile unchanged; resolution verified from the lane dist tree
+  (`@deepseek-ai/dsh-storage-domain` → lockfile-pinned 0.2.0-rc.2, the design — workspace packages
+  carry other names; the module under test loads from the LANE path, sha `4428c2297b65…`).
+  Host runtime tree re-verified: HEAD == 639ed01539, porcelain EMPTY after boot#1 (READ-ONLY law
+  held); world `u5b49-…` home released by the leak row.
+- Boot#2 registered in `PRE-REGISTRATION-BOOT2.json` (pool #449 → 2/2, final start) before spawn.
