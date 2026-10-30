@@ -7303,3 +7303,12 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+
+<!-- dated 2026-10-30T20:14Z coordinator conflict resolution (xval fmerge master@12cc9843e incl #492): both sides kept verbatim, real-UTC order (master sections 10:0-10:4xZ wave / 12:27-13:27Z before xval sections 14:21-15:5xZ); zero deletions -->
+## 2026-10-30 (15:5xZ) — u7r3-xval 受控并行验证试验收束（lane 子代理，用户直接指令，零验收格）
+
+- **P0 双 worktree TestWorldFactory 真并发 = PASS**（x1@:3189/x2@:3190，mock 13054/13055，各 17/17；共享租约根=主树 .artifacts/tmp/port-leases hoist 双侧证明；DSH_HOME/证据树各自 worktree；同 Team SHA 51b023dad4 + 同 Host pin 639ed0153972；118 个重叠健康采样证明双世界同转；teardown 收据完整）。强制租约竞争探针（0 boot）：8 抢 6 → 6 胜 2 负（LEASE_HELD 6–11ms），零悬挂——租约层毫秒级自仲裁，无需 workflow 级锁。
+- **P1 串行vs并行**：重集（vitest packages/runtime/test，466 文件）并行/串行墙钟比 **x1.00**（CPU 总量不变≈600s，RSS 无差）；轻集 +0.05–0.11s。全部行 ambient loadavg 在录，loadavg<3 门 0 次触发。两行 exit=1 为两个不同的墙钟敏感腿各 flake 一次（u7as N2 / a5-m1 B4-D3；单文件复跑 6/6、3/3 绿；**standalone 串行复跑也 flake** ⇒ 排除共转因果；R-413-1 台账 ~2/10 既有登记），失败留表不洗，RCA 见 evidence/…/measure/FLAKE-RCA.md。
+- **P2 真实 Host+轻 C1 共转 = PASS（折叠）**：x3 未动用（预算 ≤3 行硬顶：line1 被探针脚本缺陷崩溃真实消耗，RCA 后同类失败律合规重试），C1 测量在双活 Host 重叠窗口内完成 = 0.419s vs 串行 0.399/0.400s（x1.05，且为比注册用途更严苛的共转条件）。
+- **C1 已用 +3**（append-only 行已落 BOOT-BUDGET-20261031C.md）；:3080 401 前后 byte-witness、~/.dsh mtime 不变、xval-a/b test-use porcelain 空、homes/leases 零残留。
+- **结论**（详见 evidence/u7r3-xval-20261030/XVAL-REPORT.md）：2→3 workflows = YES 有条件（≤1 重 CPU 族套件在飞、boot 保持逐个、时序敏感 census 隔离或先落 fake-clock PR、保留 loadavg<3 门）；RAM/disk 加购 NO，vCPU 当前制度 NO（峰值 2.7/6 核）、仅双重套件并发制度化时 +2 诚实开价。EF 台账：/home/user 只读挂载（pnpm store 需重定向）、main test-use 为 shallow、沙箱资产 §9 合规路径=worktree 内 cp -al 硬链副本（EF-01…05 见 README）。

@@ -1,0 +1,70 @@
+{
+  "label": "a-serial-1",
+  "mode": "a-serial",
+  "gateLoadMax": 3,
+  "gateWaits": [],
+  "gateClearedAt": "2026-10-30T15:14:57.528Z",
+  "pre": {
+    "at": "2026-10-30T15:14:57.528Z",
+    "loadavg": "0.72 1.14 1.44 1/360 13",
+    "memAvailKb": 23135184,
+    "dfAvailKb": 37453184,
+    "duA": 5784120,
+    "duB": 6026548
+  },
+  "post": {
+    "at": "2026-10-30T15:15:04.742Z",
+    "loadavg": "0.74 1.13 1.44 2/360 52",
+    "memAvailKb": 23132380,
+    "dfAvailKb": 37453176,
+    "duA": 5784120,
+    "duB": 6026548,
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "totalWallMs": 399,
+  "runs": [
+    {
+      "set": "a",
+      "exit": 0,
+      "wallMsProcess": 397,
+      "delayMs": 0,
+      "timeFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/time-a-serial-1-a.txt",
+      "outFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/out-a-serial-1-a.txt",
+      "time": {
+        "wallClockS": null,
+        "userS": 0.58,
+        "sysS": 0.15,
+        "maxRssKb": 93408,
+        "voluntaryCtx": null,
+        "involuntaryCtx": null
+      },
+      "tail": "ℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 325.311661\n"
+    }
+  ],
+  "system": {
+    "maxMarkerRssKb": 0,
+    "minMemAvailKb": 23132380,
+    "cpuJiffiesTotal": 0,
+    "cpuSecondsApprox": 0,
+    "samplerSamples": 1,
+    "samples": [
+      {
+        "at": "2026-10-30T15:15:04.742Z",
+        "loadavg": "0.74 1.13 1.44 2/360 52",
+        "rssKb": 0,
+        "memAvailKb": 23132380
+      }
+    ]
+  },
+  "diskDelta": {
+    "dfKb": -8,
+    "duAKb": 0,
+    "duBKb": 0
+  },
+  "cleanup": {
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "methodNote": "per-run CPU+peakRSS = /usr/bin/time -v (whole waited tree); system context = 1s sampler of marker-matched /proc RSS/CPU (approximate, misses short-lived children between ticks); disk = df avail + du -sk deltas on the shared ext4; loadavg = /proc/loadavg at gate + before/after + sampler trace"
+}

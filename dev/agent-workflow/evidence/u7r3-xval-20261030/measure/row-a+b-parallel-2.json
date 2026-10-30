@@ -1,0 +1,387 @@
+{
+  "label": "a+b-parallel-2",
+  "mode": "a+b",
+  "gateLoadMax": 3,
+  "gateWaits": [],
+  "gateClearedAt": "2026-10-30T15:28:42.311Z",
+  "pre": {
+    "at": "2026-10-30T15:28:42.311Z",
+    "loadavg": "1.35 2.41 2.23 1/360 31895",
+    "memAvailKb": 23144684,
+    "dfAvailKb": 37451668,
+    "duA": 5784120,
+    "duB": 6026704
+  },
+  "post": {
+    "at": "2026-10-30T15:32:59.460Z",
+    "loadavg": "1.44 2.46 2.35 1/378 42447",
+    "memAvailKb": 23021396,
+    "dfAvailKb": 37450492,
+    "duA": 5784120,
+    "duB": 6026756,
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "totalWallMs": 250368,
+  "runs": [
+    {
+      "set": "a",
+      "exit": 0,
+      "wallMsProcess": 30456,
+      "delayMs": 30000,
+      "timeFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/time-a+b-parallel-2-a.txt",
+      "outFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/out-a+b-parallel-2-a.txt",
+      "time": {
+        "wallClockS": 0.44,
+        "userS": 0.6,
+        "sysS": 0.15,
+        "maxRssKb": 92564,
+        "voluntaryCtx": null,
+        "involuntaryCtx": null
+      },
+      "tail": "ℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 380.692672\n"
+    },
+    {
+      "set": "b",
+      "exit": 1,
+      "wallMsProcess": 250368,
+      "delayMs": 0,
+      "timeFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/time-a+b-parallel-2-b.txt",
+      "outFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/measure/out-a+b-parallel-2-b.txt",
+      "time": {
+        "wallClockS": 250.36,
+        "userS": 457.08,
+        "sysS": 136.64,
+        "maxRssKb": 1657660,
+        "voluntaryCtx": null,
+        "involuntaryCtx": null
+      },
+      "tail": " Test Files  1 failed | 465 passed (466)\n      Tests  1 failed | 5776 passed (5777)\n   Start at  15:28:49\n   Duration  249.46s (transform 22.06s, setup 0ms, import 187.95s, tests 427.60s, environment 68ms)\n\n"
+    }
+  ],
+  "system": {
+    "maxMarkerRssKb": 1756720,
+    "minMemAvailKb": 21362604,
+    "cpuJiffiesTotal": 36569,
+    "cpuSecondsApprox": 365.69,
+    "samplerSamples": 251,
+    "samples": [
+      {
+        "at": "2026-10-30T15:28:50.093Z",
+        "loadavg": "1.33 2.39 2.22 7/404 31954",
+        "rssKb": 416684,
+        "memAvailKb": 22813212
+      },
+      {
+        "at": "2026-10-30T15:28:55.099Z",
+        "loadavg": "1.78 2.46 2.24 5/409 32282",
+        "rssKb": 1035820,
+        "memAvailKb": 22162768
+      },
+      {
+        "at": "2026-10-30T15:29:00.105Z",
+        "loadavg": "1.80 2.46 2.24 6/419 32645",
+        "rssKb": 1059392,
+        "memAvailKb": 22093240
+      },
+      {
+        "at": "2026-10-30T15:29:05.115Z",
+        "loadavg": "1.89 2.46 2.25 6/418 33114",
+        "rssKb": 1097956,
+        "memAvailKb": 22020936
+      },
+      {
+        "at": "2026-10-30T15:29:10.117Z",
+        "loadavg": "1.98 2.47 2.25 5/418 33720",
+        "rssKb": 1093680,
+        "memAvailKb": 22040108
+      },
+      {
+        "at": "2026-10-30T15:29:15.122Z",
+        "loadavg": "1.98 2.47 2.25 7/423 34358",
+        "rssKb": 1194452,
+        "memAvailKb": 21943488
+      },
+      {
+        "at": "2026-10-30T15:29:20.125Z",
+        "loadavg": "2.07 2.47 2.25 5/428 34876",
+        "rssKb": 1201152,
+        "memAvailKb": 21915108
+      },
+      {
+        "at": "2026-10-30T15:29:25.133Z",
+        "loadavg": "2.38 2.53 2.28 6/421 35390",
+        "rssKb": 1336252,
+        "memAvailKb": 21677744
+      },
+      {
+        "at": "2026-10-30T15:29:30.144Z",
+        "loadavg": "2.67 2.59 2.30 7/415 35750",
+        "rssKb": 1479728,
+        "memAvailKb": 21557444
+      },
+      {
+        "at": "2026-10-30T15:29:35.150Z",
+        "loadavg": "2.78 2.61 2.30 9/418 36029",
+        "rssKb": 1450804,
+        "memAvailKb": 21630092
+      },
+      {
+        "at": "2026-10-30T15:29:40.155Z",
+        "loadavg": "3.04 2.67 2.32 16/424 36280",
+        "rssKb": 1442448,
+        "memAvailKb": 21650080
+      },
+      {
+        "at": "2026-10-30T15:29:45.162Z",
+        "loadavg": "3.75 2.83 2.38 5/414 36449",
+        "rssKb": 1390736,
+        "memAvailKb": 21720312
+      },
+      {
+        "at": "2026-10-30T15:29:50.169Z",
+        "loadavg": "4.41 2.98 2.43 9/410 36626",
+        "rssKb": 1321832,
+        "memAvailKb": 21742908
+      },
+      {
+        "at": "2026-10-30T15:29:55.175Z",
+        "loadavg": "4.46 3.01 2.44 10/421 36787",
+        "rssKb": 1543132,
+        "memAvailKb": 21539316
+      },
+      {
+        "at": "2026-10-30T15:30:28.981Z",
+        "loadavg": "4.83 3.11 2.48 5/403 36948",
+        "rssKb": 1529372,
+        "memAvailKb": 21510316
+      },
+      {
+        "at": "2026-10-30T15:30:33.987Z",
+        "loadavg": "4.76 3.13 2.49 7/409 37111",
+        "rssKb": 1598084,
+        "memAvailKb": 21466468
+      },
+      {
+        "at": "2026-10-30T15:30:38.991Z",
+        "loadavg": "4.62 3.12 2.49 9/413 37270",
+        "rssKb": 1626276,
+        "memAvailKb": 21479320
+      },
+      {
+        "at": "2026-10-30T15:30:15.196Z",
+        "loadavg": "4.41 3.11 2.49 11/420 37440",
+        "rssKb": 1639120,
+        "memAvailKb": 21480588
+      },
+      {
+        "at": "2026-10-30T15:30:20.205Z",
+        "loadavg": "4.38 3.12 2.50 6/418 37606",
+        "rssKb": 1602988,
+        "memAvailKb": 21477484
+      },
+      {
+        "at": "2026-10-30T15:30:25.211Z",
+        "loadavg": "4.59 3.19 2.52 8/407 37768",
+        "rssKb": 1538640,
+        "memAvailKb": 21484272
+      },
+      {
+        "at": "2026-10-30T15:30:30.218Z",
+        "loadavg": "4.46 3.18 2.52 6/418 37931",
+        "rssKb": 1594792,
+        "memAvailKb": 21399048
+      },
+      {
+        "at": "2026-10-30T15:30:35.223Z",
+        "loadavg": "4.66 3.25 2.55 10/409 38095",
+        "rssKb": 1703128,
+        "memAvailKb": 21388144
+      },
+      {
+        "at": "2026-10-30T15:30:40.233Z",
+        "loadavg": "4.45 3.22 2.54 7/410 38258",
+        "rssKb": 1643736,
+        "memAvailKb": 21399384
+      },
+      {
+        "at": "2026-10-30T15:30:45.234Z",
+        "loadavg": "4.17 3.19 2.54 2/404 38404",
+        "rssKb": 1543164,
+        "memAvailKb": 21631444
+      },
+      {
+        "at": "2026-10-30T15:30:50.240Z",
+        "loadavg": "3.92 3.15 2.53 1/403 38553",
+        "rssKb": 1085060,
+        "memAvailKb": 22039016
+      },
+      {
+        "at": "2026-10-30T15:30:55.243Z",
+        "loadavg": "3.92 3.16 2.54 2/414 38702",
+        "rssKb": 1085188,
+        "memAvailKb": 22062308
+      },
+      {
+        "at": "2026-10-30T15:31:00.249Z",
+        "loadavg": "3.69 3.13 2.53 3/410 38852",
+        "rssKb": 1085316,
+        "memAvailKb": 22064876
+      },
+      {
+        "at": "2026-10-30T15:31:05.251Z",
+        "loadavg": "3.47 3.09 2.52 2/424 39003",
+        "rssKb": 1085316,
+        "memAvailKb": 22041872
+      },
+      {
+        "at": "2026-10-30T15:31:10.255Z",
+        "loadavg": "3.28 3.06 2.51 2/413 39154",
+        "rssKb": 1087876,
+        "memAvailKb": 22039560
+      },
+      {
+        "at": "2026-10-30T15:31:15.260Z",
+        "loadavg": "3.09 3.02 2.50 3/417 39304",
+        "rssKb": 1090308,
+        "memAvailKb": 22049516
+      },
+      {
+        "at": "2026-10-30T15:31:20.265Z",
+        "loadavg": "3.01 3.01 2.50 2/409 39457",
+        "rssKb": 1090308,
+        "memAvailKb": 22070892
+      },
+      {
+        "at": "2026-10-30T15:31:25.270Z",
+        "loadavg": "2.85 2.97 2.49 3/417 39608",
+        "rssKb": 846564,
+        "memAvailKb": 22305592
+      },
+      {
+        "at": "2026-10-30T15:31:30.275Z",
+        "loadavg": "2.78 2.96 2.49 2/414 39760",
+        "rssKb": 846564,
+        "memAvailKb": 22356844
+      },
+      {
+        "at": "2026-10-30T15:31:35.280Z",
+        "loadavg": "2.63 2.92 2.48 2/418 39910",
+        "rssKb": 846564,
+        "memAvailKb": 22310088
+      },
+      {
+        "at": "2026-10-30T15:31:40.284Z",
+        "loadavg": "2.50 2.89 2.47 2/408 40060",
+        "rssKb": 846820,
+        "memAvailKb": 22303684
+      },
+      {
+        "at": "2026-10-30T15:31:45.289Z",
+        "loadavg": "2.38 2.86 2.46 2/418 40212",
+        "rssKb": 846820,
+        "memAvailKb": 22276840
+      },
+      {
+        "at": "2026-10-30T15:31:50.294Z",
+        "loadavg": "2.43 2.86 2.47 3/409 40363",
+        "rssKb": 847332,
+        "memAvailKb": 22274412
+      },
+      {
+        "at": "2026-10-30T15:31:55.299Z",
+        "loadavg": "2.32 2.83 2.46 2/408 40512",
+        "rssKb": 853988,
+        "memAvailKb": 22305204
+      },
+      {
+        "at": "2026-10-30T15:32:00.312Z",
+        "loadavg": "2.21 2.80 2.45 1/407 40665",
+        "rssKb": 860132,
+        "memAvailKb": 22303844
+      },
+      {
+        "at": "2026-10-30T15:32:05.317Z",
+        "loadavg": "2.03 2.75 2.44 3/409 40817",
+        "rssKb": 860260,
+        "memAvailKb": 22303896
+      },
+      {
+        "at": "2026-10-30T15:32:10.321Z",
+        "loadavg": "1.95 2.72 2.43 2/418 40968",
+        "rssKb": 860260,
+        "memAvailKb": 22294284
+      },
+      {
+        "at": "2026-10-30T15:32:15.325Z",
+        "loadavg": "1.87 2.70 2.42 1/407 41119",
+        "rssKb": 860516,
+        "memAvailKb": 22266436
+      },
+      {
+        "at": "2026-10-30T15:32:20.330Z",
+        "loadavg": "1.80 2.67 2.41 2/418 41272",
+        "rssKb": 860644,
+        "memAvailKb": 22267188
+      },
+      {
+        "at": "2026-10-30T15:32:25.338Z",
+        "loadavg": "1.66 2.62 2.40 3/408 41424",
+        "rssKb": 860028,
+        "memAvailKb": 22297220
+      },
+      {
+        "at": "2026-10-30T15:32:30.342Z",
+        "loadavg": "1.61 2.60 2.39 3/408 41576",
+        "rssKb": 860156,
+        "memAvailKb": 22291872
+      },
+      {
+        "at": "2026-10-30T15:32:35.344Z",
+        "loadavg": "1.56 2.57 2.38 2/408 41728",
+        "rssKb": 860924,
+        "memAvailKb": 22269004
+      },
+      {
+        "at": "2026-10-30T15:32:40.348Z",
+        "loadavg": "1.51 2.54 2.38 2/407 41881",
+        "rssKb": 861436,
+        "memAvailKb": 22292060
+      },
+      {
+        "at": "2026-10-30T15:32:45.351Z",
+        "loadavg": "1.47 2.52 2.37 2/418 42034",
+        "rssKb": 862332,
+        "memAvailKb": 22280728
+      },
+      {
+        "at": "2026-10-30T15:32:50.356Z",
+        "loadavg": "1.43 2.49 2.36 2/416 42187",
+        "rssKb": 862716,
+        "memAvailKb": 22270024
+      },
+      {
+        "at": "2026-10-30T15:32:55.362Z",
+        "loadavg": "1.48 2.48 2.36 2/417 42338",
+        "rssKb": 863356,
+        "memAvailKb": 22282940
+      },
+      {
+        "at": "2026-10-30T15:32:59.460Z",
+        "loadavg": "1.44 2.46 2.35 1/378 42447",
+        "rssKb": 0,
+        "memAvailKb": 23021396
+      }
+    ]
+  },
+  "diskDelta": {
+    "dfKb": -1176,
+    "duAKb": 0,
+    "duBKb": 52
+  },
+  "cleanup": {
+    "porcelainA": 0,
+    "porcelainB": 0
+  },
+  "methodNote": "per-run CPU+peakRSS = /usr/bin/time -v (whole waited tree); system context = 1s sampler of marker-matched /proc RSS/CPU (approximate, misses short-lived children between ticks); disk = df avail + du -sk deltas on the shared ext4; loadavg = /proc/loadavg at gate + before/after + sampler trace"
+}
