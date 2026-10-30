@@ -22,3 +22,11 @@
 
 ## 封卷注记
 B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（pilot 4、#446 boot 4、crash 复验 2、State Store 生产路径 2）全部收据保留于 B 册原文不改写；本 C 册为自 2026-10-31 起唯一预算权威。
+
+## 预登记（registeredAt 2026-10-30T11:20Z，真实 UTC；R-CLOCK-1 合规）— lane=u7r3-shomev2，池 C2 申请 2 starts
+
+- 目标：V2 = 真实 Host **生产默认 Home** 活体腿（#483 合并后的 master 为被测对象）：
+  (1) start#1：operator 环境 = HOME=<workspace 内 tmp operator home>、DSH_HOME **unset**、agentStateEnabled=true、**testHomeGuard 不设**（production arm）→ 写入臂：agent-state 落 <home>/team-state/agent-state/<realmId>/ 且 typed 结果 OK；(2) start#2：同环境重启 → 持久化读回 + 非法路径拒绝腿（显式相对/不存在 Home 仍 typed refusal）。
+- 计数=2 starts（写 + 重启，per-spawn 记法，先例 crash 对 2/2）；池 C2（其它族含 State Home）0/8 内。
+- 控制随附：同族失败 RCA 停线（boot 类失败先归因再重启）；无 boot 探索（spawn 仅按本登记）；效率门（每 start 必须产出 RUN Record 或点名 blocker）。
+- World 纪律：DSH_HOME/tests homes 不用于本腿（本腿验证的正是非 World 默认路径）；:3080 与真实 ~/.dsh 零触碰（operator home 在 workspace 内）；port 3180 族。
