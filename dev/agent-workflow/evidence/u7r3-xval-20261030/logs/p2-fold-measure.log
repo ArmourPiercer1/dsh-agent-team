@@ -1,0 +1,1 @@
+{"label":"p2-fold-a","mode":"a-serial","ok":true,"totalWallMs":419,"gateWaits":0,"runs":[{"set":"a","exit":0,"wallClockS":null,"userS":0.57,"sysS":0.16,"maxRssKb":93324}]}
