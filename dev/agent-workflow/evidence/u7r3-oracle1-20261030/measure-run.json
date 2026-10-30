@@ -1,0 +1,477 @@
+{
+ "schema": "u7r3-oracle1/measure-20261030",
+ "scratch": "<caller-supplied scratch dir, artifacts not tracked>",
+ "repoHead": "f7d5b3e75ab5931067570b69bb86752ba434271d",
+ "rows": [
+  {
+   "suite": "core",
+   "entry": "tests/world-factory/u5-canary-runner.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 10,
+   "digest": "b66c027e90d0c474209efa5dd86ffb51f30db6c4f46d794e1699b37751fa2472",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/port-lease.mjs:163",
+    "tests/world-factory/lib/run-record.mjs:200",
+    "tests/world-factory/u5-canary-runner.mjs:374"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:net",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/suites.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "core-restart",
+   "entry": "tests/world-factory/u5-canary-runner.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 10,
+   "digest": "b66c027e90d0c474209efa5dd86ffb51f30db6c4f46d794e1699b37751fa2472",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/port-lease.mjs:163",
+    "tests/world-factory/lib/run-record.mjs:200",
+    "tests/world-factory/u5-canary-runner.mjs:374"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:net",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/suites.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "negatives",
+   "entry": "tests/world-factory/u5-canary-runner.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 10,
+   "digest": "b66c027e90d0c474209efa5dd86ffb51f30db6c4f46d794e1699b37751fa2472",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/port-lease.mjs:163",
+    "tests/world-factory/lib/run-record.mjs:200",
+    "tests/world-factory/u5-canary-runner.mjs:374"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:net",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/suites.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "crash-victim",
+   "entry": "tests/world-factory/u5-canary-runner.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 10,
+   "digest": "b66c027e90d0c474209efa5dd86ffb51f30db6c4f46d794e1699b37751fa2472",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/port-lease.mjs:163",
+    "tests/world-factory/lib/run-record.mjs:200",
+    "tests/world-factory/u5-canary-runner.mjs:374"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:net",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/suites.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-shadow",
+   "entry": "tests/world-factory/u5-canary-runner.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 10,
+   "digest": "b66c027e90d0c474209efa5dd86ffb51f30db6c4f46d794e1699b37751fa2472",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/port-lease.mjs:163",
+    "tests/world-factory/lib/run-record.mjs:200",
+    "tests/world-factory/u5-canary-runner.mjs:374"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:net",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/suites.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-fs",
+   "entry": "tests/world-factory/suites/010-u6-fs.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 3,
+   "digest": "4defbfa019b24a8b4241db82ff7ebd059573ae2180367f0a45fa5bc8b6873140",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-proc",
+   "entry": "tests/world-factory/suites/020-u6-proc.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "a79c8311c2b6f0d21a449ec5a639e4898c4b4a4bbb642e880d26e6b3c10db0d3",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-jobs",
+   "entry": "tests/world-factory/suites/030-u6-jobs.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "3c41381605e5a9cdd8d44b0057ac0c0c18ab81b3f74b6a954f5e666284c7f4fe",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-arc-a",
+   "entry": "tests/world-factory/suites/040-u6-arc-a.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 5,
+   "digest": "3cb6a15fee2b8977f22d68bab0269af2294e5d3a36c7162b48c5a2b077094d3f",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:module",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u6-arc-d",
+   "entry": "tests/world-factory/suites/050-u6-arc-d.mjs",
+   "complete": false,
+   "literalReadsComplete": true,
+   "sources": 6,
+   "digest": "f65d5598063c0ef4a1396ffbd89e1cd6261ea2312e328a5db9d1872049b11810",
+   "unresolvedDynamicImports": [
+    "tests/world-factory/lib/host-sandbox-assets.mjs:231"
+   ],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:module",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-fs-mut",
+   "entry": "tests/world-factory/suites/060-u7-fs-mut.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "a15222bc950c24a6e66af3627dc83645bafaf88ed756b2d5626e4161d61071bf",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-f-web",
+   "entry": "tests/world-factory/suites/070-u7-f-web.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 6,
+   "digest": "505884282f612ff93bc036ccaf39a5be66c214f47438cf11b7d470017eee6168",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:fs",
+    "node:http",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-pwsh",
+   "entry": "tests/world-factory/suites/070-u7-pwsh.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "77f1281a6142fa341b00acc2bff02059e5c1eab7a159263a27cb73cd5714ef6e",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-agent-control",
+   "entry": "tests/world-factory/suites/080-u7-agent-control.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "c7d04c7cdc2cc2ade3ceed739bb9118f223de3dd258b17d7a6a8c820e1b79b25",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-f-ui",
+   "entry": "tests/world-factory/suites/080-u7-f-ui.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 4,
+   "digest": "e02b7dac58806c05b8b3d61d832368b9ff1836ab3132586dc376130612a4d5c2",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-fagentb",
+   "entry": "tests/world-factory/suites/110-u7-fagentb.mjs",
+   "complete": true,
+   "literalReadsComplete": true,
+   "sources": 5,
+   "digest": "a0a6726ec1e6b2084a0d6e14cdb7d2b5c4c3a093ff92aec070c97f720c415c40",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [],
+   "externalSpecifiers": [
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url",
+    "node:zlib"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-astore",
+   "entry": "tests/world-factory/suites/120-u7-astore.mjs",
+   "complete": true,
+   "literalReadsComplete": false,
+   "sources": 5,
+   "digest": "93e199f801401c2b470dd82a56c42d7ab5ced567b917fe2c837359f0d8d8e96b",
+   "unresolvedDynamicImports": [],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/u7astore-assembly.mjs:239"
+   ],
+   "externalSpecifiers": [
+    "node:buffer",
+    "node:crypto",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:process",
+    "node:timers",
+    "node:timers/promises",
+    "node:url"
+   ],
+   "unfollowedPaths": [
+    "../../../../../../proc/sys/kernel/random/boot_id"
+   ],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7r3-b49-lockseam",
+   "entry": "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs",
+   "complete": false,
+   "literalReadsComplete": false,
+   "sources": 4,
+   "digest": "d445c18d6cc8b27cb6c4630cb0e61458f4c2d37573042f8342b60eef143cd890",
+   "unresolvedDynamicImports": [
+    "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:102",
+    "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:384",
+    "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:435"
+   ],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/u7astore-assembly.mjs:239",
+    "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:417"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [
+    "../../../../../../proc/sys/kernel/random/boot_id"
+   ],
+   "excludedHelpers": [
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  },
+  {
+   "suite": "u7-4a-jobs",
+   "entry": "tests/world-factory/u7-4a-jobs-suite.mjs",
+   "complete": false,
+   "literalReadsComplete": false,
+   "sources": 11,
+   "digest": "509a6e399a001858a3a5636aa240b7c3b1950e03f2361ebe9b9f62fd6f0657d3",
+   "unresolvedDynamicImports": [
+    "tests/world-factory/lib/host-sandbox-assets.mjs:231"
+   ],
+   "unresolvedLiteralReads": [
+    "tests/world-factory/lib/run-record.mjs:200"
+   ],
+   "externalSpecifiers": [
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:url"
+   ],
+   "unfollowedPaths": [],
+   "excludedHelpers": [
+    "tests/world-factory/lib/binding-digests.mjs",
+    "tests/world-factory/lib/world-factory.mjs"
+   ],
+   "missingSources": []
+  }
+ ],
+ "measuredAtUtc": "2026-10-30T17:26Z"
+}
