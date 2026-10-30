@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-uif4/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3192/?token=[REDACTED]
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=uif4-realm-u5p2-20261030t13-11-09z
+[dsh-agent-team] a5ptc: census-boot root=session-uif4-team-u5p2-20261030t13-11-09z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-uif4/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=uif4-realm-u5p2-20261030t13-11-09z
+[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
+[dsh-agent-team] u7f-ask: governed-ask pa-refused code=APPROVAL_DENIED detail=durable Control request ctrl-0384vog08zpxcp1m89kom0xt answered deny
+[dsh-agent-team] u7f-present: governed-present port-refusal

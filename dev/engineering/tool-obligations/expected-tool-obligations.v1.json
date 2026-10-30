@@ -17,7 +17,7 @@
   "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
   "matrix_sha256": "sha256:90e436a493ab4a0147f66383b7a517c88e2cd4e193558976a8bfc477d375174b",
   "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
-  "backlog_sha256": "sha256:61f28a7b8c3f816d704729fbc77856be39eba8770c9458a7e79ec8f93053f228",
+  "backlog_sha256": "sha256:f5a4205bd5c9da9f7eeab9bbd7e82cd90e91b52191a54307c8bcfd6690cae76a",
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
   "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
   "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"

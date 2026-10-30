@@ -1,0 +1,47 @@
+== R-G4R-1a gate tails (real UTC 2026-10-30, worktree .worktrees/u7r3-g4r1a, seat qwen3.8-flash-next) ==
+
+$ node --test tests/world-factory/binding-digests.test.mjs
+  -> 14 tests / 14 pass / 0 fail (6 pre-existing + C1-F4a..F4g added by this lane)
+     transcript: binding-digests-unit.log
+
+$ node --test tests/world-factory/*.test.mjs
+  -> 142 / 142 pass (full world-factory node suite; includes u7-tbash* after the driver edit)
+     transcript: world-factory-node-tests.log
+
+$ node --test scripts/pr-settlement-gate.test.mjs scripts/eb3-tool-acceptance.test.mjs
+  -> 30 / 30 pass
+
+$ node scripts/eb3-trusted-sources.mjs
+  -> EB3-TRUSTED-SOURCES pass files=2017 findings=0
+
+$ node scripts/eb3-family-boundaries.mjs
+  -> EB3-FAMILY-BOUNDARIES pass files=82 findings=0 engine=auto extractor=acorn 8.18.0
+     (no new scannable runtime file was created; the eb3 boundary rule was checked FIRST and
+      the code went into the existing trusted plane-code home tests/world-factory/lib/binding-digests.mjs)
+
+$ node scripts/docs-probe.mjs --worktree-only
+  -> docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
+
+$ pnpm run check:artifacts (via build:composition tail)
+  -> DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1883 glue=100
+     (no mirrored src/dist file was touched: packages/** is untouched by this lane)
+
+$ pnpm -r run typecheck
+  -> exit 0 (all packages)
+
+$ pnpm test   (root vitest FULL, after pnpm build + pnpm build:composition + test-use provisioning, see README)
+  -> first run: 3 failed files / 1 failed test — all three were unbuilt-composition artifacts (the CI
+     order builds before the gate; this worktree had not been built yet — provisioning fact, not a regression)
+  -> second run (after lane-local build): 2 collection failures = DSH_TEST_USE_NOT_PROVISIONED named
+     refusals in packages/testkit/test/plugin-dsh-compat.test.ts and packages/runtime/test/
+     u7-f-agent-control-native-output-schema-c1.test.ts (the R483-fl cross-tree guard: this worktree
+     had no tests/deepseek-harness-test-use)
+  -> provisioning per docs/TEST_METHODS.md §2: git clone --local --no-hardlinks from the main-checkout
+     pristine repo, checkout --detach 639ed01539… (porcelain 0), pnpm install --ignore-scripts
+     --frozen-lockfile, DSH_CLIENT_COMMIT_HASH=639ed01539 ESBUILD_WORKER_THREADS=1 pnpm run build
+     (porcelain still 0; shared baseline /srv/workspace/dsh-stable-3-0.2.0-rc.2 NOT used — this
+     environment's copy is not a git repo; the main-checkout test-use WAS the clone source)
+  -> the two refused files after provisioning: 2 files / 17 tests passed
+  -> FINAL full run: Test Files 650 passed (650) | Tests 8563 passed (8563) | EXIT=0  (649+ maintained, 0 fail)
+
+eslint: tests/world-factory/** and dev/** are eslint-ignored by config (0 errors on any touched file).

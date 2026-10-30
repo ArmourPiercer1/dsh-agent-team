@@ -42,6 +42,16 @@
 | BR-01 | 三当前态文档 + graph current_contract + AGENTS 入口 + 历史 banner | 本分支首批 commit（已含） |
 | BR-02 | CI state-freshness 扩检（Q1-Q8）+ legacy fixture 钉 legacy-only + 正负控 | 本分支第二批（同 PR，非二批） |
 | BR-03 | 矩阵 26 行实填（含 R2 行；适用性按依赖路径 drift 实测） | 本分支首批已含实填；复验轮（跑测试/Host）另行，见 current-execution-plan §3 |
+
+## D. 外部效率审查 #5 提效令（dated 真实 2026-10-30T12:0xZ，主 Agent 登记；验收缺口优先于 PR 吞吐）
+
+| ID | 项 | 状态 |
+|---|---|---|
+| EF-01 | 纯日志/同步 PR 批量化（sync 册制）——每波一批，不逐条开 PR | **已在行**（sync13=#485 为首批全量册） |
+| EF-02 | 测试影响面局部快速 CI 反馈路径（本地按受影响包/根选择跑，完整必需门仍只在合并候选 head 上跑）——降低 20.1 分钟级全量 CI 的重复成本；设计需先量测当前各 leg 时长构成，不得削弱合并门强度 | OPEN（离线，可并入下一无 boot 窗口） |
+| EF-03 | 离线 PoC → 真实 Host 验收转化率：已完成离线验证的能力（本波=State Home V2；后续=read_image/UI 族）优先排 C 池 boot，不再加设计/报告轮 | **执行中**（V2 lane 已出发） |
+
+<!-- dated 2026-10-30T19:45Z coordinator conflict resolution (sync14 fmerge master): both sides kept verbatim, real-UTC order (section D 12:0xZ before EF-04..06 rows 13:2xZ); zero deletions -->
 - **EF-04 环境勘误（dated 2026-10-30T13:27Z）**：共享基线 /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness 本环境**无 .git**（TEST_METHODS 描述按有仓对待）；worktree test-use 供给的克隆源 = 主检出 tests/deepseek-harness-test-use（detached @pin，porcelain 校验后作 --local 源）。R-G4R-1a lane 实踩（其 README 披露），本条转正。托管 census capture-2 今日两次红（485 heads）待 RCA=flake-or-real 判定，EF-02 相关。
 - **EF-05 u7-0 义务摘要再生成法（dated 2026-10-30，RCA 转正）**：MATRIX 与 BACKLOG 文本是 `dev/engineering/tool-obligations/build-expected-tool-obligations.mjs` 的**输入**（:144-145 直读），u7-0-census-reconcile 以字节恒等强制三份工件=回放；**编辑这两份正本必须同提交完成三步仪式**：①无参跑 generator 重生成三工件（`--check` 绿）；②更新 `packages/testkit/test/u7-0-census-reconcile.test.ts` 的 `PINNED.expected_digest` 与 `clean_verdict_digest` 为新实际值并跑绿 26/26（这两常数=漂移探测器本体，同 PR diff 可见=有意变更通道）；③docs:sync findings=0。今日实证：#485 的 backlog EF 行与 sync14 的 M-05 行各自使 hosted census 红（NEW RED=u7-0 replay），plain master 绿。今后所有 sync/矩阵 PR 模板步骤含再生成。
 - **EF-06 docs:sync 引用路径法（dated 2026-10-30，RCA 转正）**：`CITED_PATH_MISSING` 检查对**任何形态像 repo 内路径的 token**（含代码注释里的占位路径如 `…/run-uif4-<line>.json`）做冷克隆可开性校验；不存在=blocking。写注释/文档时占位路径必须散文改写或指向真实文件。今日实证：#491 suites/085 头注释（托管 ci-integration 红 → 一行修复重清偿）。与 EF-05 同族=「正本文稿的机器可校验面」。

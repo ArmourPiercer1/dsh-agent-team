@@ -17,6 +17,13 @@
  *                       for the launch, and a writer that mutates the launch
  *                       file between capture and spawn sets
  *                       `composedProfileDigestMismatch` and fails the proof.
+ *   F4  trusted sources (R-G4R-1a) the plane TrustSources union digest: exact-law
+ *                       reproduction, order-independence, null-with-reason and
+ *                       empty-set legs (never a partial or backfilled digest),
+ *                       cold-reader recompute, one-byte mutation RED, per-world
+ *                       profile entries through bindWorldProfile (idempotent,
+ *                       relaunch-safe), and the new cells grading clean through
+ *                       the real eb3 validator.
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
@@ -28,8 +35,10 @@ import test from 'node:test'
 import { context, validateRunRecord } from '../../scripts/eb3-run-manifest.mjs'
 import { createRunRecord, readAuthorityBinding } from './lib/run-record.mjs'
 import {
-  ORACLE_HASH_LAW, bindWorldProfile, captureOracleBinding, captureProfileBinding,
-  recomputeWorldOracle, trustedSourcesUnavailable, verifyProfileBindingLaunched,
+  ADMISSION_DOCUMENT_UNAVAILABLE, ORACLE_HASH_LAW, TRUSTED_SOURCE_FAMILY, TRUSTED_SOURCES_HASH_LAW,
+  TRUSTED_SOURCES_SCHEMA, bindWorldProfile, captureOracleBinding, captureProfileBinding,
+  captureTrustedSourcesBinding, computeTrustedSourcesDigest, recomputeTrustedSources,
+  recomputeWorldOracle, refreshTrustedSourcesDigest, trustedSourcesUnavailable, verifyProfileBindingLaunched,
 } from './lib/binding-digests.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
@@ -211,4 +220,193 @@ test('C1 binding digests equal exact artifacts, mutation is RED, and RUN schema 
   const cli = execFileSync(process.execPath, ['scripts/eb3-run-manifest.mjs', '--paths', fixtureRel], { cwd: ROOT, encoding: 'utf8' })
   assert.match(cli, /EB3-RUN-MANIFEST pass records=1 strict=0 .*findings=0/, `the real CLI must grade the cited fixture clean: ${cli}`)
   console.log('C1 GREEN: eb3-run-manifest CLI grades the cited fixture (records=1 findings=0)')
+})
+
+// ── F4 (R-G4R-1a) — the plane TrustSources digest surface ──────────────────
+// Design: dev/agent-workflow/gates/R-G4R-1a-DIGEST-SURFACE.md. Every leg is checked BOTH
+// green (law reproduced by hand from the recorded law string) and RED (tamper, missing
+// file, empty set), because this cell's whole claim is compute-from-bytes-or-say-null.
+
+/** Fixture trusted-source tree: three tracked-document lookalikes under a scratch root. */
+const tsFixtureTree = (name) => {
+  const dir = scratch(`${name}-`)
+  mkdirSync(join(dir, 'dev/engineering/tool-obligations'), { recursive: true })
+  const rels = TRUSTED_SOURCE_FAMILY.map((f) => f.path)
+  rels.forEach((rel, i) => writeFileSync(join(dir, rel), `${rel} fixture bytes v1 (${String(i)})\n`))
+  return dir
+}
+const tsFixtureFamily = () => TRUSTED_SOURCE_FAMILY.map((f) => ({ role: f.role, path: f.path }))
+
+test('C1-F4a the digest equals the RECORDED LAW hand-reproduced, and is deterministic', () => {
+  const dir = tsFixtureTree('ts-law')
+  const binding = captureTrustedSourcesBinding({ repoRoot: dir, family: tsFixtureFamily() })
+  const digest = binding.trustedSourcesDigest
+  assert.match(digest, /^[0-9a-f]{64}$/, 'a computed digest is 64-hex, not null')
+  assert.equal(binding.trustedSourcesUnavailableReason, undefined, 'a computable set carries no unavailable reason')
+  // Hand-compute the law exactly as TRUSTED_SOURCES_HASH_LAW states it, from the entries.
+  const entries = [...binding.trustedSources.sources].sort((a, b) => (`${a.role}\u0000${a.path}` < `${b.role}\u0000${b.path}` ? -1 : 1))
+  const h = createHash('sha256')
+  for (const e of entries) h.update(Buffer.from(e.role, 'utf8')).update(Buffer.from([0])).update(Buffer.from(e.path, 'utf8')).update(Buffer.from([0])).update(Buffer.from(e.sha256, 'utf8')).update(Buffer.from([0]))
+  assert.equal(digest, h.digest('hex'), 'the implementation IS the recorded law (a reader holding only the law string reproduces the digest)')
+  for (const e of binding.trustedSources.sources) assert.equal(e.sha256, sha(join(dir, e.path)), 'each entry sha256 is the source bytes hashed')
+  // Anti-laundering fields the design pins.
+  assert.equal(binding.trustedSources.schema, TRUSTED_SOURCES_SCHEMA)
+  assert.equal(binding.trustedSources.hashLaw, TRUSTED_SOURCES_HASH_LAW, 'the cell states the law the code implements')
+  assert.equal(binding.trustedSources.substituteAdoption, 'none', 'the census-substitution ruling is NOT taken by this cell')
+  assert.equal(binding.trustedSources.admissionDocument.available, false)
+  assert.equal(binding.trustedSources.admissionDocument.reason, ADMISSION_DOCUMENT_UNAVAILABLE, 'the runtime admission-document refusal travels verbatim inside the cell')
+  // Deterministic: same bytes, fresh capture, same digest.
+  assert.equal(captureTrustedSourcesBinding({ repoRoot: dir, family: tsFixtureFamily() }).trustedSourcesDigest, digest)
+  console.log(`C1-F4a GREEN: law hand-reproduction == implementation (${digest.slice(0, 12)}…)`)
+})
+
+test('C1-F4a2 order-independence: entry insertion order never moves the digest', () => {
+  const entries = [
+    { role: 'alpha-source', path: 'a/one.json', sha256: 'a'.repeat(64) },
+    { role: 'beta-source', path: 'b/two.json', sha256: 'b'.repeat(64) },
+    { role: 'gamma-source', path: 'c/three.json', sha256: 'c'.repeat(64) },
+  ]
+  const d1 = computeTrustedSourcesDigest(entries).digest
+  const d2 = computeTrustedSourcesDigest([...entries].reverse()).digest
+  const d3 = computeTrustedSourcesDigest([entries[1], entries[2], entries[0]]).digest
+  assert.equal(d1, d2, 'reversed insertion order produces the same digest')
+  assert.equal(d1, d3, 'rotated insertion order produces the same digest')
+  // One flipped byte inside one source's sha is RED.
+  const tampered = entries.map((e) => (e.role === 'beta-source' ? { ...e, sha256: 'f'.repeat(64) } : e))
+  assert.notEqual(computeTrustedSourcesDigest(tampered).digest, d1, 'a flipped source digest flips the union digest')
+  // Duplicate identities are refused, never silently deduped.
+  assert.throws(() => computeTrustedSourcesDigest([...entries, entries[0]]), /duplicate trusted-sources entry/)
+  console.log('C1-F4a2 GREEN: order-independence + mutation RED + duplicate refusal')
+})
+
+test('C1-F4b null-with-reason: a missing family file mints NO digest (fail-closed, named)', () => {
+  const emptyRoot = scratch('ts-missing-')
+  const binding = captureTrustedSourcesBinding({ repoRoot: emptyRoot, family: tsFixtureFamily() })
+  assert.equal(binding.trustedSourcesDigest, null, 'a partial union digests NOTHING — the cell says null')
+  assert.equal(binding.trustedSources.digest, null)
+  assert.match(binding.trustedSourcesUnavailableReason, /trusted-sources digest refused/, 'the reason is machine-recognisable')
+  assert.equal(binding.trustedSources.missingSources.length, 3, 'every missing source is NAMED, none silently dropped')
+  assert.deepEqual(binding.trustedSources.sources, [], 'no partial entry list is presented as a bound set')
+  console.log(`C1-F4b GREEN: missing files -> null + reason (${binding.trustedSources.missingSources.length} named)`)
+})
+
+test('C1-F4c empty-set leg: an empty declared set is null-with-reason, not hash-of-nothing', () => {
+  const binding = captureTrustedSourcesBinding({ repoRoot: ROOT, family: [] })
+  assert.equal(binding.trustedSourcesDigest, null)
+  assert.match(binding.trustedSourcesUnavailableReason, /empty/, 'the reason says the set was empty')
+  assert.equal(binding.trustedSources.digest, null)
+  // The legacy disclosure helper keeps its exact shape (existing readers/tests keep working).
+  const legacy = trustedSourcesUnavailable()
+  assert.equal(legacy.trustedSourcesDigest, null)
+  assert.equal(legacy.trustedSourcesUnavailableReason, ADMISSION_DOCUMENT_UNAVAILABLE)
+  assert.equal(legacy.trustedSources.digest, null)
+  console.log('C1-F4c GREEN: empty set + legacy unavailable() shapes are honest nulls')
+})
+
+test('C1-F4d the real obligations family digests, recomputes cold, and one byte is RED', () => {
+  const binding = captureTrustedSourcesBinding({ repoRoot: ROOT })
+  assert.match(binding.trustedSourcesDigest, /^[0-9a-f]{64}$/, 'the tracked family digests from bytes on this checkout')
+  const roles = binding.trustedSources.sources.map((s) => s.role)
+  for (const f of TRUSTED_SOURCE_FAMILY) assert.ok(roles.includes(f.role), `family role ${f.role} is booked`)
+  const rec = { bindings: { ...binding } }
+  const cold = recomputeTrustedSources(rec, ROOT)
+  assert.equal(cold.matches, true, 'the recorded digest AND every family sha256 re-derive from this checkout')
+  assert.equal(cold.digestMatches, true)
+  assert.equal(cold.bytesAgree, true)
+  // Relocate the family into a DIFFERENT root, flip one byte there: bytes disagree -> RED.
+  const otherRoot = scratch('ts-relocate-')
+  for (const s of binding.trustedSources.sources) {
+    mkdirSync(dirname(join(otherRoot, s.path)), { recursive: true })
+    copyFileSync(join(ROOT, s.path), join(otherRoot, s.path))
+  }
+  const manifestRel = TRUSTED_SOURCE_FAMILY[0].path
+  writeFileSync(join(otherRoot, manifestRel), `${readFileSync(join(otherRoot, manifestRel), 'utf8')}\n`)
+  const moved = recomputeTrustedSources(rec, otherRoot)
+  assert.equal(moved.digestMatches, true, 'the entry list still re-derives the digest (the law is entry-based)')
+  assert.equal(moved.bytesAgree, false, 'but the ONE tampered family file no longer hashes to its booked sha256')
+  assert.equal(moved.matches, false, 'C1-F4d RED: one byte in a trusted source turns the cold-reader check false')
+  // A tampered ENTRY is RED too (digest law leg).
+  const forged = { bindings: { trustedSources: { ...binding.trustedSources, sources: binding.trustedSources.sources.map((s, i) => (i === 0 ? { ...s, sha256: '0'.repeat(64) } : s)) } } }
+  assert.equal(recomputeTrustedSources(forged, ROOT).digestMatches, false, 'a forged entry sha breaks the union digest')
+  console.log('C1-F4d GREEN: real family leg recomputes; one byte + forged entry are both RED')
+})
+
+test('C1-F4e profile entries join via bindWorldProfile: refresh, idempotent, relaunch-books-both', () => {
+  const dir = tsFixtureTree('ts-profile')
+  const base = captureTrustedSourcesBinding({ repoRoot: dir, family: tsFixtureFamily() })
+  const bindings = { ...base }
+  const digestAtCapture = bindings.trustedSourcesDigest
+  const launch = join(dir, 'cordis.patch.yml')
+  writeFileSync(launch, '# launch bytes A\n- insert: [{id: a}]\n')
+  const p1 = captureProfileBinding({ patchFile: launch, logDir: join(dir, 'ev'), worldId: 'w1' })
+  bindWorldProfile(bindings, p1)
+  const roles = bindings.trustedSources.sources.map((s) => s.role)
+  assert.ok(roles.includes('composed-profile/w1#1'), `profile entry booked, got ${JSON.stringify(roles)}`)
+  assert.notEqual(bindings.trustedSourcesDigest, digestAtCapture, 'the union digest covers the launched profile')
+  const d1 = bindings.trustedSourcesDigest
+  bindWorldProfile(bindings, p1) // the post-spawn re-publish must not duplicate or drift
+  assert.equal(bindings.trustedSourcesDigest, d1, 're-publishing the same entry changes nothing')
+  assert.equal(bindings.trustedSources.sources.filter((s) => s.role.startsWith('composed-profile/')).length, 1)
+  // A relaunched World that launches DIFFERENT bytes books BOTH (no silent drop).
+  const launch2 = join(dir, 'cordis-restart.patch.yml')
+  writeFileSync(launch2, '# launch bytes B (post-restart)\n- insert: [{id: b}]\n')
+  const p2 = captureProfileBinding({ patchFile: launch2, logDir: join(dir, 'ev'), worldId: 'w1' })
+  bindWorldProfile(bindings, p2)
+  assert.notEqual(bindings.trustedSourcesDigest, d1, 'the relaunched profile moves the digest')
+  assert.equal(bindings.trustedSources.sources.filter((s) => s.role.startsWith('composed-profile/w1#')).length, 2, 'both profile digests are booked')
+  // refresh on a legacy/absent cell is a no-op null, never an invention.
+  assert.equal(refreshTrustedSourcesDigest({}), null)
+  console.log('C1-F4e GREEN: profile entries refresh the union digest idempotently; relaunch books both')
+})
+
+test('C1-F4f a full RUN record with the new cells grades clean through the real EB3 validator', () => {
+  const dir = join(ROOT, '.artifacts/tmp/u7-g4r-c1')
+  mkdirSync(dir, { recursive: true })
+  const oracle = join(dir, 'ts-oracle-entry.mjs')
+  writeFileSync(oracle, 'export const answer = "PASS";\n')
+  const citedPath = join(dir, 'ts-cited.oracle.json')
+  const citedBinding = captureOracleBinding({ artifactPath: oracle, evidencePath: citedPath, repoRoot: ROOT, suite: 'offline' })
+  const tsBinding = captureTrustedSourcesBinding({
+    repoRoot: ROOT,
+    extraEntries: [{ role: 'world-oracle', path: citedBinding.worldOracle.evidence[0]?.path ?? '', sha256: citedBinding.worldOracleDigest }],
+  })
+  const teamSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim()
+  const rr = createRunRecord({
+    runId: 'u7r3-g4r1a-c1', suite: 'offline', selectedCases: ['trusted-sources-cells'],
+    bindings: {
+      teamSha, hostSha: context(ROOT).host.sha, authority: readAuthorityBinding(ROOT),
+      composedProfileDigest: {}, ...tsBinding,
+      worldOracleDigest: citedBinding.worldOracleDigest, worldOracle: citedBinding.worldOracle,
+      hostTreeSha: context(ROOT).host.sha,
+    },
+  })
+  rr.addCase('trusted-sources-cells', 'PASS')
+  const record = rr.finalize()
+  record.evidence = [...citedBinding.worldOracle.evidence]
+  assert.deepEqual(validateRunRecord({ record, rel: 'fixture', ctx: context(ROOT) }).findings, [], 'additive cells must not move the validator')
+  const cellCheck = recomputeTrustedSources({ bindings: record.bindings }, ROOT)
+  assert.equal(cellCheck.matches, true, 'the record-level cell cold-recomputes, oracle entry included')
+  const fixtureRel = '.artifacts/tmp/u7-g4r-c1/ts-fixture.json'
+  writeFileSync(join(ROOT, fixtureRel), JSON.stringify(record))
+  const cli = execFileSync(process.execPath, ['scripts/eb3-run-manifest.mjs', '--paths', fixtureRel], { cwd: ROOT, encoding: 'utf8' })
+  assert.match(cli, /EB3-RUN-MANIFEST pass records=1 strict=0 .*findings=0/, `the real CLI must grade the new-cell fixture clean: ${cli}`)
+  console.log('C1-F4f GREEN: eb3 validator + CLI grade the trusted-sources-cell record clean (findings=0)')
+})
+
+test('C1-F4g the arc-b c-suite driver gains a recomputable oracle cell (future records emit it)', () => {
+  const dir = join(ROOT, '.artifacts/tmp/u7-g4r-c1')
+  mkdirSync(dir, { recursive: true })
+  const driverRel = 'dev/agent-workflow/evidence/u7-tbash-l4-20261027/c2/run-c2.mjs'
+  const binding = captureOracleBinding({
+    artifactPath: join(ROOT, driverRel),
+    evidencePath: join(dir, 'u7tb-c2-driver.oracle.json'),
+    sourceRoot: dirname(join(ROOT, driverRel)),
+    repoRoot: ROOT,
+    suite: 'u7-team-bash-l4',
+  })
+  assert.ok(binding.worldOracle.sources.includes(driverRel), 'the c-suite record closes over the driver that judges it')
+  assert.ok(binding.worldOracle.sources.includes('tests/world-factory/lib/u7-tbash-assembly.mjs'), 'and over the assembly holding the expected answers')
+  const cold = recomputeWorldOracle({ bindings: binding }, ROOT)
+  assert.equal(cold.matches, true, 'the driver-closure digest recomputes from repo-relative paths')
+  console.log(`C1-F4g GREEN: u7-tbash driver closure binds ${binding.worldOracle.sources.length} sources, recompute matches (complete=${String(binding.worldOracle.complete)})`)
 })

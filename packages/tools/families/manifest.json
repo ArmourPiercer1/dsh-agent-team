@@ -57,7 +57,7 @@
     },
     {
       "module": "ui.mjs",
-      "sha256": "160c318b52820d45741bd81ac797835d3560983951a44ccde664c11139679a76"
+      "sha256": "df49614d812d094338e584a49b01f11766fb2662a043b1652ffe17384030e655"
     },
     {
       "module": "agent-state.mjs",

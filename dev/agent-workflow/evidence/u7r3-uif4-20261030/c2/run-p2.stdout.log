@@ -1,0 +1,16 @@
+[u7r3-uif4-pos] $events ready clientId=4388b3ed-67c… (transport=item)
+[u7r3-uif4-pos] approval allow requestId=ctrl-0hye522… ok=true matched=true
+[u7r3-uif4-pos] replay resolve ok=false status=200
+[u7r3-uif4-pos] approval deny requestId=ctrl-0384vog… ok=true matched=true
+[u7r3-uif4-pos] waterfall user-questions/request eventId=425456fa-859… agentId=session-ee6fa6c7-7c5c-4d
+[u7r3-uif4-pos] answered eventId=425456fa-859… status=200 body={"type":"server-response","rpcId":"uif4-ans-425456fa","result":{"ok":true}}
+[u7r3-uif4-pos] case ui:ask-approved-ran: FAIL {"ranWitness":null,"ranCount":0,"answeredCount":1,"answeredHead":{"eventId":"425456fa-8591-4fa4-8dee-283216e5306b","agentId":"session-ee6fa6c7-7c5c-4dc8-9bcd-e5efda7764d4","answers":[{"id":"uif4-nq1","selected":["Native A"]}],"httpStatus":200,"responseHead":"{
+[u7r3-uif4-pos] case ui:ask-approval-chain: PASS {"askToolRows":2,"rowToolNames":["ask_user_question","ask_user_question"],"allowResolution":{"requestId":"ctrl-0hye522136aslf1xkuitc0i1","decision":"allow","ok":true,"matchedAsk":true,"resolveStatus":200,"bodyHead":"{\"type\":\"server-response\",\"rpcId\":\"ui
+[u7r3-uif4-pos] case ui:ask-replay-refused: PASS {"secondResolveOnSettledRow":{"requestId":"ctrl-0hye522136aslf1xkuitc0i1","ok":false,"status":200,"bodyHead":"{\"type\":\"server-response\",\"rpcId\":\"uif4-replay-8h1s0ws99p\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\
+[u7r3-uif4-pos] case ui:answer-wire: PASS {"muxPath":"/api/remote.mux","readyFrame":{"clientId":"4388b3ed-67cb-4cdc-a18a-d365c79e8a5f","host":{"home":"/home/user"},"transport":"item"},"waterfallShapeOk":true,"waterfallFrames":[{"event":"user-questions/request","agentId":"session-ee6fa6c7-7c5c-4d","nQu
+[u7r3-uif4-pos] case ui:live-root-law: NOT_REACHED {"laneRefusal":false,"assertLiveRootObserved":false,"memberArmReached":true,"portFailedLines":["[dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request"],"law":"L2 as-is: assertLiveRoot only runs when the reque
+[u7r3-uif4-pos] case ui:present-env-truth: PASS {"presentRefusalLine":"[dsh-agent-team] u7f-present: governed-present port-refusal","presentRanCount":0,"law":"PRESENT-PUBLISH-GAP-MEMO O1: no host ctx service carries a presentation face, so UI_PRESENT_PORT_ABSENT is the environment truth (LEG-0 Q2). One witn
+[u7r3-uif4-pos] uif4 run u5-u7r3-uif4-pos-p2-2026-10-30T13-11-09-777Z: lanes={"uigov":true,"leader":true} answers=1 waterfalls=1 resolutions=2 approverErrors=[]
+[u7r3-uif4-pos] case ui:leak-check: FAIL {"reason":"teardown threw: world is not defined"}
+RUN-SUMMARY run=u5-u7r3-uif4-pos-p2-2026-10-30T13-11-09-777Z suite=u7r3-uif4-pos overall=FAIL cases=8 FAIL:2 NOT_REACHED:1 PASS:5 worlds=u5p2-20261030T13-11-09Z
+EXIT=1
