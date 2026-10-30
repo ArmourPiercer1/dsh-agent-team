@@ -1,0 +1,46 @@
+# registry pin + suite-loader collection — node --test tests/world-factory/registries.test.mjs
+# written 2026-10-30T21:27:25Z (cwd = .worktrees/a5w-bootwave; the worktree HAS the new suite file, so 12/12 also proves the module loads under the collector)
+✔ world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7FsUi + U7-F u7Pwsh), in prefix order, deterministic (3.949106ms)
+✔ world kinds RED-first: a REMOVED kind module turns its option into a typed refusal (was: silently a plain World) (7.412964ms)
+✔ world kinds: mutual exclusion, the {rows} shape and the core-option set are enforced once, for every kind (1.033186ms)
+✔ world kinds: the owned-path guard covers every kind path (a kind path pointed outside the home refuses the boot) (0.772453ms)
+✔ world kinds: env — every kind key is cleared on every boot, only the active kind sets its own (0.698142ms)
+✔ world kinds RED-first: malformed / clashing modules refuse at load time (31.301899ms)
+✔ a new World kind is ONE file: dropping it in registers the option, nothing else is edited (4.705118ms)
+✔ world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (6.152497ms)
+✔ suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (9.186382ms)
+✔ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (20.133947ms)
+✔ suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it) (11.24005ms)
+✔ suites RED-first: malformed / clashing suite modules refuse at load time (48.529682ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 221.723498
+exit code: 0
+
+## the two-pin change (diff against the branch base)
+diff --git a/tests/world-factory/registries.test.mjs b/tests/world-factory/registries.test.mjs
+index 305d2862e..498cb8b3d 100644
+--- a/tests/world-factory/registries.test.mjs
++++ b/tests/world-factory/registries.test.mjs
+@@ -226,11 +226,15 @@ test('suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-
+     // (130/110 since 69d514a62 — this pin was stale-red on origin/master
+     // ee3bd279e, disclosed); + the new drop-in lane suite 130-u7r3-b49-lockseam.
+     ['u6-fs', 80], ['u6-proc', 130], ['u6-jobs', 130], ['u6-arc-a', 110], ['u6-arc-d', 90], ['u7-fs-mut', 80], ['u7-f-web', 90], ['u7-pwsh', 70], ['u7-agent-control', 60], ['u7-f-ui', 60], ['u7r3-uif4-pos', 90], ['u7-fagentb', 160], ['u7-astore', 110], ['u7r3-b49-lockseam', 60],
++    // a5w-bootwave: the new drop-in lane suite 140-u7r3-bootwave (ONE boot,
++    // TWO governed capability members: the read_image ask lane + the f4 UI ask
++    // re-run). 160 = the two-leg wake cadence plus the member scripts.
++    ['u7r3-bootwave', 160],
+   ])
+   assert.deepEqual(a.map((s) => s.file), b.map((s) => s.file))
+   const { SUITE_CASES } = await import('./u5-canary-runner.mjs')
+   for (const s of a) assert.deepEqual([...SUITE_CASES[s.suite]], [...s.cases], `SUITE_CASES carries the collected ${s.suite}`)
+-  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-astore', 'u7-f-ui', 'u7-f-web', 'u7-fagentb', 'u7-fs-mut', 'u7-pwsh', 'u7r3-b49-lockseam', 'u7r3-uif4-pos'])
++  assert.deepEqual(Object.keys(SUITE_CASES).sort(), ['core', 'core-restart', 'crash-victim', 'negatives', 'u6-arc-a', 'u6-arc-d', 'u6-fs', 'u6-jobs', 'u6-proc', 'u6-shadow', 'u7-agent-control', 'u7-astore', 'u7-f-ui', 'u7-f-web', 'u7-fagentb', 'u7-fs-mut', 'u7-pwsh', 'u7r3-b49-lockseam', 'u7r3-bootwave', 'u7r3-uif4-pos'])
+ })
+ 
+ test('suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it)', async () => {

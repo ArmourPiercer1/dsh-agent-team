@@ -1,0 +1,33 @@
+# node tests/world-factory/suites/140-u7r3-bootwave.mjs --dry   (run from .worktrees/a5w-bootwave)
+# written 2026-10-30T21:27:06Z against the exact suite file in this commit; exit code at the bottom
+# ── u7r3-bootwave DRY RUN — assembly up to the step before spawn ─────────────
+# date -u             : Fri Oct 30 21:27:06 UTC 2026
+# product tree        : /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave
+#   HEAD              : bff1bf206cd2ec9b388824fefe8c609eeb0c477a  porcelain(no -u): DIRTY(1 lines)
+# host tree (runtime) : /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+#   HEAD              : 639ed015397290b3745d163aafe02ffee4aa3f84  porcelain: empty
+#   pinned baseline   : 639ed015397290b3745d163aafe02ffee4aa3f84 (tests/paths.mjs TEST_USE_BASELINE_SHA)
+# DSH_HOME root       : /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes (workspace-internal, gitignored)
+# port bands          : host [[3181,3199],[13000,13049]] · mock [[3491,3500],[13050,13099]] · stable :3080 untouched
+# ZERO BOOT: no mock server, no host child, no spawn. Host-start budget spend of this run: 0.
+ok   host base: pristine @ pinned baseline, porcelain empty: {"hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+ok   factory.assertHostBase("dry-preflight"): exit 0
+ok   native sandbox pre-flight (provision:false = probe only, never copies): {"probed":true,"backend":"full","usable":true,"provisioned":null,"launcherSha256":"a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31"}
+ok   stable :3080 probe (read-only, must stay untouched): {"reachable":true,"status":401}
+ok   port preflight: candidate 3193 free=true · 3194 free=true · mock 3491 free=true  (the boot binds a first-free LEASE inside HOST_PORT_BANDS with preferred:[] — lib/port-lease.mjs — so the actual port is chosen by the factory, not pinned here)
+ok   world materialization (home + blueprint dir + PNG plants + row assembly; NO spawn): {"worldId":"u5bootwavedry-20261030T21-27-06Z","home":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bootwavedry-20261030T21-27-06Z","rows":["dsh-agent-team","p6t6-team-tools","preset-bootwave-base-u5bootwavedry-20261030t21-27-06z"],"plants":{"good":69,"deny":69,"huge":62326},"storeCensusBefore":[],"launcherSha256":"1264ea584e3438d6"}
+ok   profile-patch emission (emitPatchLayer over the EXACT rows — the last artifact before the spawn): {"file":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bootwavedry-20261030T21-27-06Z/dry-profile-patch.yaml","bytes":4847,"model":{"provider":"deepseek-official","model":"deepseek-flash"},"governedRoot":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bootwavedry-20261030T21-27-06Z/workspace"}
+ok   confinedProvider trio passes the mount's OWN pairing law (dist team-tool-plane face, pb-CONTRACT §1.3): {"trustRoot":"sha256:1264ea584e3438d6#/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py","launcherPath":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py","minAbiVersion":3}
+ok   blueprint validation — the host's OWN strong validator (dist domain face) over anchor + main: {"anchor":{"blueprintId":"team.bootwave.anchor","revision":"1","contentHash":"sha256:427be682b"},"main":{"blueprintId":"team.bootwave.main","revision":"1","contentHash":"sha256:9be41bca6","templates":["leader","imgov","uigov"]},"denyListAfterFamilyFilter":["grep","glob","web_search"]}
+ok   assembly law: family-owned names never enter builtinToolDeny; both ask lanes present: {"templates":["leader (no control tool)","imgov (ask lane: read_image subtree over the governed root)","uigov (default ask, no rule)"]}
+ok   fixture law: the over-pixel PNG crosses ONLY the pixel rule (H:attachment-local limits): {"hugePixels":64036864,"limitPixels":64000000,"hugeDimensions":"8192x7817","limitDimension":8192,"hugeFileBytes":62326,"limitBytes":20971520,"goodFileBytes":69}
+ok   no spawn happened (mock null, no DshInstance, no host lease): {"mock":null,"instance":null,"hostLease":null,"hostStartsRecorded":0}
+ok   dry world torn down: homeDeleted=true releasedPorts=[] notes=[]
+DRY RESULT: PASS — assembly, patch emission, blueprint validation and every pre-flight are green; ZERO host starts, zero spawns.
+# evidence dir (dry): /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/.artifacts/world-factory-evidence/bootwave-dry-2026-10-30T21-27-06-083Z
+exit code: 0
+
+# note: raw dry scratch (empty log dirs) went to the gitignored .artifacts/world-factory-evidence/ — the
+# transcript above is the complete stdout+stderr of the run.
+# sha256 of the suite file this transcript was produced against (cross-check against the commit):
+#   0ec7267f336eda57d5418f6c3193512e7c9bebc5770fa207cae858b4fc9f4eba  tests/world-factory/suites/140-u7r3-bootwave.mjs
