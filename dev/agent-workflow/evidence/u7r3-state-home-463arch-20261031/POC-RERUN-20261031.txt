@@ -1,0 +1,40 @@
+# re-run of the VERBATIM #463 PoC script (sha256 f25438d58e8eefeb…, byte-unchanged) from a same-depth scratch dir
+# (dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/, deleted after the run) on this branch's tree;
+# committed poc-receipt.json above stays the historical #463-lane receipt, untouched.
+# command: node run-poc.mjs (exit=0)
+# R-STATE-HOME-1 PoC run 2026-10-30T08:16:18.006Z
+# package API = packages/runtime/dist/packages/tools/agent-state-family/src/index.mjs (public exports only; src↔dist byte-identical for this package)
+# homes: alpha=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/worlds/home-alpha beta=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/worlds/home-beta gamma(relocation-target)=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/worlds/home-gamma
+# layout under each home: team-state/agent-state/<realmId>/
+
+CHECK A1   PASS  declared absolute home resolves  — home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/worlds/home-alpha
+CHECK A2   PASS  unset DSH_HOME refuses (never invents a default)  — AGENT_STATE_STORE_HOME_MISSING
+CHECK A3   PASS  relative home refuses (never resolved against cwd)  — AGENT_STATE_STORE_HOME_INVALID
+CHECK A4   PASS  operator live harness home refuses  — AGENT_STATE_STORE_HOME_INVALID
+CHECK B1   PASS  realm derives its directory under the declared home  — /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/worlds/home-alpha/team-state/agent-state/poc-realm-1
+CHECK B2   PASS  realm id cannot name another directory  — AGENT_STATE_STORE_REALM_INVALID
+CHECK C1   PASS  home A records the goal (apply ok + read back)  — audit=CONFIRMED
+CHECK C2   PASS  home A todos applied  — audit=CONFIRMED
+CHECK C3   PASS  realm isolation INSIDE one home (same scope → goals absent; two REALM directories materialise)
+CHECK C4   PASS  HOME isolation (same realmId + same scope in home B → absent)
+CHECK C5   PASS  home B stayed at zero durable writes  — writesBytes=0
+CHECK C6   PASS  replay domain is PER-HOME: home A refuses the consumed applyId  — STATE_APPLY_REPLAY
+CHECK C7   PASS  the same applyId is a DIFFERENT fact in home B (per-home replay domain, applies fresh)  — ok
+CHECK D1   PASS  cross-home rooting refuses (root under A, anchor B)  — AGENT_STATE_STORE_PATH_REFUSED
+CHECK E1   PASS  home A and home B digests differ (different state, different digest)  — A=a1bb760150176c74… (9 files)  B=db7d3501c27a85ca… (4 files)
+CHECK E2   PASS  digest is RELOCATABLE: byte-copied subtree under a new home digests identical  — C=a1bb760150176c74… vs A=a1bb760150176c74…  equal=true
+CHECK E3   PASS  relocated home reads the record back through a fresh public store instance  — objective=R-STATE-HOME-1 PoC claim
+CHECK E4   PASS  the relocated home keeps the consumed-grant refusal (applied/ markers travelled with the bytes)  — STATE_APPLY_REPLAY
+
+CENSUS (one walk over the worlds parent):
+home        state-home  realm          scopes  applied  locks  writesB  attemptsB  subtree-digest
+home-alpha   RESOLVED     poc-realm-1     1        2        0      208      399        a1bb760150176c74…
+home-alpha   RESOLVED     poc-realm-2     1        1        0      106      126        a1bb760150176c74…
+home-beta    RESOLVED     poc-realm-1     1        1        0      103      123        db7d3501c27a85ca…
+home-gamma   RESOLVED     poc-realm-1     1        2        0      208      550        15ec3a01336bb13d…
+home-gamma   RESOLVED     poc-realm-2     1        1        0      106      126        15ec3a01336bb13d…
+CHECK F1   PASS  census enumerates both homes with per-realm scope counts and digests  — alpha realms=2 (r1 scopes=1) beta realms=1
+CHECK F2   PASS  census ledger bytes witness the durable writes (A>0, B>0 after C7)
+
+VERDICT: 20/20 checks PASS
+receipt written: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-463arch/dev/agent-workflow/evidence/.u7r3-463arch-pocrepro/poc-receipt.json

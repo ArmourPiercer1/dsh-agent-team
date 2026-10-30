@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "U7R3-463ARCH",
+  "paths": [
+    "packages/runtime/test/u7-state-home-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1390,
+    "to": 1391
+  },
+  "reason": "u7r3-463-arch (archive PR for adjudicated PR #463 content per USER-RULING-20261031 §2;\nbranch task/u7r3-463-archive-20261031 off origin/master 89d96a13d): the ONE scannable file\nthis round ADDS — the formal C1 multi-home governed state-store suite (packages/runtime/test/\nu7-state-home-c1.test.ts: the 20 deterministic legs A1-A4/B1-B2/C1-C7/D1/E1-E4/F1-F2 of the\n#463 PoC promoted into the C1 suite per ruling §2 Q6 — governed home resolution,\nrealm/home isolation with the per-home replay domain, cross-home anchor law, the\nrelocatable subtree digest, and the census walk; offline, public API only, zero boot).\nPR #463 itself is NOT merged and stays untouched; this booking is the test-promotion\nhalf of the ruling's disposition. Every other file this PR adds lives outside\npackages/** (docs/plans/memo/**, dev/agent-workflow/evidence/**); zero production\nsrc/dist edits, zero new denylist vocabulary, quarantine hits unchanged.",
+  "tieNote": "U7R3-463ARCH's tie, MEASURED on THIS tree at booking time (scanner run in-place,\nthe one file present, clause unbooked, reading `scanner counts 1391, ledger derives\n983 + 407 = 1390`, i.e. scanner counts 1391 while the ledger derives 1390): the chain\nis the booked 1390 plus exactly this one file — no chain value copied. Capture\ndev/agent-workflow/evidence/u7r3-state-home-463arch-20261031/p4t6-RED-unbooked-20261031.txt\n(vitest run of test/p4t6-session-event-scan.test.ts in the worktree, exit 1, 6 failed |\n14 passed). Confirmed causal: the same suite is GREEN on origin/master 89d96a13d without\nthe file, so the movement is this round's one added file and nothing else."
+}
