@@ -1,0 +1,74 @@
+2026-10-30T22:11:10Z POST-FIX C1 world-factory.test.mjs head=3e7fd25e0ba32004f427a235c7691fdc4fdfec37
+SURVIVOR-PROBE 1793398270716 health-effect ok=true
+U5-SURVIVOR-READY fake-survivor 1793398270716 health-effect
+SURVIVOR-PROBE 1793398270967 after-reclaim ok=true
+SURVIVOR-PROBE 1793398273691 health-effect ok=true
+SURVIVOR-PROBE 1793398273942 after-reclaim ok=true
+✔ C1 dry-run uses supervisor path without starts and proves hold ordering (4440.847846ms)
+✔ C1 team-tree provenance is independent and fail-closed on dirty tracked paths (0.829121ms)
+✔ C1 survivor sequencing is fail-closed with real successful probes and identity continuity (0.313574ms)
+✔ C1 kill handshake: kill fires ONLY after HELD + authenticated READY receipt; knob without receipt is NOT_REACHED (0.230526ms)
+✔ C1 survivor sequencing: window and held-until-reclaim are independent facts (no aliased boolean) (0.129885ms)
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (50.134549ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (0.885196ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.5439ms)
+✖ port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds) (73661.72601ms)
+✔ port lease T1: dir-slot dead claim reclaimed BY NAME with provenance; live claim never moved (45.717888ms)
+✔ port lease T1: release is token-guarded, idempotent, and leak-check scan sees zero claims after teardown (1505.082027ms)
+✔ port lease T1: cross-process race — zero double-ownership, natural AND forced stale/reclaim interleaving (5353.305815ms)
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (5.73657ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (251.470311ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (1.110922ms)
+✔ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.39089ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (39.915098ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (0.426358ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (0.120839ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (0.982451ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (23.752418ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (0.398204ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (0.230336ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (0.130487ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (56.421154ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (5.527906ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (0.220217ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.075763ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (3.988721ms)
+✔ u7-agent-control: SUITE_CASES entry and parseArgs wiring (0.12125ms)
+✔ u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven (2.155711ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (4.895237ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (1.651718ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (1.068994ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (3.401801ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (1.91129ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (0.384377ms)
+✔ u6-fs: the decide script discriminates lanes by request token (1.044507ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (2.618257ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (1.062101ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (5.785803ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (0.801076ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (0.393685ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (0.24825ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (0.795716ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 44
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85573.116443
+
+✖ failing tests:
+
+test at tests/world-factory/world-factory.test.mjs:263:1
+✖ port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds) (73661.72601ms)
+  Error [LeaseError]: port 13030 answers TCP with no live lease holder — refusing (foreign listener)
+      at acquirePortLease (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-portprobe/tests/world-factory/lib/port-lease.mjs:734:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-portprobe/tests/world-factory/world-factory.test.mjs:280:73)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'EXTERNAL_BIND'
+  }
+EXIT=1
+2026-10-30T22:12:36Z END

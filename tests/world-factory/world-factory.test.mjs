@@ -260,14 +260,39 @@ test('port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock 
   assert.throws(() => portsOfBands([[3079, 3081]]), /leaves the sanctioned ranges at 3079/)
 })
 
-test('port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds)', async () => {
+test('port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds)', async (t) => {
   const root = tmp('fallthrough')
   const held = []
+  // Saturation helper. A port that a FOREIGN listener already owns is not
+  // free either — the band is exactly as unavailable for our purposes — so an
+  // EXTERNAL_BIND during the "hold everything" loops counts as saturated
+  // instead of failing the leg. Recorded and printed, never ignored: this box
+  // measurably carries Windows-side listeners inside the host band that do
+  // NOT appear in /proc/net/tcp (WSL mirrored networking), e.g. 13030-13032
+  // on 2026-10-30 (connect answers in 1ms AND bind says EADDRINUSE; see
+  // dev/agent-workflow/evidence/a5w-portprobe-20261030/foreign-band-listeners.md).
+  // Both laws this leg owns stay asserted: fall-through lands in the 13000
+  // band, and exhausting every host band fails closed.
+  const saturate = async (ports, world) => {
+    const mine = []
+    const foreign = []
+    for (const port of ports) {
+      try {
+        mine.push(await acquirePortLease({ leaseRoot: root, port, world, purpose: 'host' }))
+      } catch (error) {
+        if (error instanceof LeaseError && error.code === 'EXTERNAL_BIND') { foreign.push(port); continue }
+        throw error
+      }
+    }
+    return { mine, foreign }
+  }
   try {
     // Hold every low host port with a LIVE claim of our own pid — exactly what a
     // concurrent World in this process would leave; acquisition must step over them.
-    for (const port of portsOfBands([HOST_PORT_BANDS[0]])) held.push(await acquirePortLease({ leaseRoot: root, port, world: 'u7w0-held', purpose: 'host' }))
-    assert.equal(held.length, 19)
+    const low = await saturate(portsOfBands([HOST_PORT_BANDS[0]]), 'u7w0-held')
+    held.push(...low.mine)
+    assert.equal(low.mine.length + low.foreign.length, 19, 'every low host port is claimed by us or by a foreign listener')
+    if (low.foreign.length > 0) t.diagnostic(`low band carried foreign listeners on ${low.foreign.join(',')}`)
     const lease = await acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-fall', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) })
     try {
       assert.ok(lease.port >= 13000 && lease.port <= 13049, `fell through to the 13000 band (got ${lease.port})`)
@@ -277,7 +302,10 @@ test('port bands: host leasing falls through to the 13000 band when 3181-3199 ar
     // exhausting EVERY host band fails closed (no wandering outside the bands)
     const upper = []
     try {
-      for (const port of portsOfBands([HOST_PORT_BANDS[1]])) upper.push(await acquirePortLease({ leaseRoot: root, port, world: 'u7w0-held2', purpose: 'host' }))
+      const top = await saturate(portsOfBands([HOST_PORT_BANDS[1]]), 'u7w0-held2')
+      upper.push(...top.mine)
+      assert.equal(top.mine.length + top.foreign.length, 50, 'every upper host-band port is claimed by us or by a foreign listener')
+      if (top.foreign.length > 0) t.diagnostic(`upper band carried foreign listeners on ${top.foreign.join(',')}`)
       await assert.rejects(
         acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-none', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) }),
         (e) => e instanceof LeaseError && (e.code === 'LEASE_HELD' || e.code === 'EXTERNAL_BIND'),

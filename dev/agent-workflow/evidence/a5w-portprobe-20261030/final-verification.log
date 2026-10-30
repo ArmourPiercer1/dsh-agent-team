@@ -1,0 +1,17 @@
+start=2026-10-30T22:29:22Z
+ℹ tests 45
+ℹ pass 45
+ℹ fail 0
+ℹ duration_ms 113749.017218
+EXIT=0
+ℹ NC-1 port=3491 inUse=true elapsed=3ms
+ℹ NC-2 port=3492 shape=black-holed connect-census=clean portInUse=false elapsed=1506ms
+ℹ NC-2 raw connect trail (first 8): 3491:refused/ECONNREFUSED 3492:timed-out
+ℹ NC-2 verdict came from the bind tie-breaker (connect was inconclusive at 1500ms)
+ℹ NC-3 leased [3491,3492,3493]
+ℹ NC-4 refused port=13080 as EXTERNAL_BIND while a leaseless listener held it
+ℹ NC-5 port=3494 listener: inUse=true elapsed=0ms | closed: inUse=false elapsed=1ms
+ℹ tests 5
+ℹ pass 5
+ℹ fail 0
+end=2026-10-30T22:31:22Z
