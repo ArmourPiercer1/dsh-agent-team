@@ -23,7 +23,7 @@
 | re-review baseline | `origin/master @ 12cc9843e840849e7f831d513fdcd83b0813a921` = the starting HEAD of this clone |
 | distance travelled by the design | `fe829038..12cc9843e` = **942 commits**; inside Alpha.6's blast radius: `control/**` 1 commit, `operation-permission/**` 3 |
 | host pin | DSH `0.2.0-rc.2 @ 639ed01539…`, pristine read-only source, **CORE PATCH BUDGET = 0 — still 0** |
-| lane-2 branch chain | `12cc9843e` (master) → `4c2da8e96` → `fe551196e` → `60016ed2b` → `3e1d28464` (**PR #501** head: PR0 review-mandate lane) → `fd6c08ddd` → `92fef05c8` → `ab56a5146` → `f56b67e07` → `9a030b28c` → **`ee4c0e437`** (**PR #503** head: PR3′ review-wake lane) |
+| lane-2 branch chain | `12cc9843e` (master) → `4c2da8e96` → `fe551196e` → `60016ed2b` → `3e1d28464` (**PR #501** head: PR0 review-mandate lane) → `fd6c08ddd` → `92fef05c8` → `ab56a5146` → `f56b67e07` → `9a030b28c` → **`ee4c0e437`** (**PR #503** head: PR3′ review-wake lane); the report branch forks at `12cc9843e` → `bf02f582e` → `7c81a0871` (**PR #505**) |
 
 Two independent new lanes (`packages/runtime/review-mandate/`, `packages/runtime/review-wake/`),
 **219 new legs (128 + 91)**, **zero protected files touched**, **zero production importers** — both lanes are
@@ -166,6 +166,7 @@ suite 20/20) · `eb3-security-run` `verdict=PASS suites=19 passed=254 failed=0` 
 | `ab56a5146` (idle) | 51 / 658 | 16 / 8244 | none | **zero new**, 2 baseline failures now green |
 | `f56b67e07` (idle) | 54 / 658 | — / — | **2: `a6-pr0-lane-hygiene`, `a6-pr3-lane-hygiene`** | +3 |
 | **`9a030b28c`** (idle) | **53 / 658** | **18 / 8246** | **none** | net 53: `a5p4-lane-hygiene` in (green 8/8 alone, third confirmation), `a5-cancel-glob` out |
+| **`ee4c0e437`** (idle) | **52 / 658** | **17 / 8248** | **none** | **zero new failures**, `a5-cancel-glob` out — the round's cleanest measurement |
 
 The third row is a real defect in my own two hygiene specs, found only by a third run: they walk
 every package to prove dormancy with `readdirSync` + `statSync`, and the f3a/f3b/f3c and
@@ -198,6 +199,7 @@ cleaned or borrowed.
 | --- | --- |
 | **PR #501** (`DO-NOT-MERGE`, draft) | PR0: `packages/runtime/review-mandate/` — trusted `ReviewPlan` parsing, mandate derivation/admission, 127 legs; base `12cc9843e`, head `3e1d28464`; hosted CI 10 pass / 1 skip / 1 marker-refusal |
 | **PR #503** (`DO-NOT-MERGE`, draft) | PR3′: `packages/runtime/review-wake/` — single-flight wake kernel, 92 legs; five review rounds; base `3e1d28464`, head `ee4c0e437`; round-4 review report and both measurement tables in [comment 6534610525](https://github.com/ArmourPiercer1/dsh-agent-team/pull/503#issuecomment-6534610525) |
+| **PR #505** (`DO-NOT-MERGE`, draft, docs-only, base `master`) | **this file**, filed at master's base so a round report is the one Alpha.6 artifact that gets hosted CI: `pr-gate`, `ci-fast`, `ci-integration`, `ci-security`, `candidate-protection`, `synthesize-merge-tree` all pass, `ci-full` and `census-runtime` ran at filing, and `pr-settlement-gate` is red with `BLOCKED-BY-MARKER` exactly as the marker requires. Head `7c81a0871d5a58e0228839038edce47ed880e805`. |
 | **Issue #502** | cross-lane interface/ownership table + Lane 2 progress log (four progress comments; the only cross-lane channel in use) |
 | commits | `4c2da8e96` S0 docs · `fe551196e` PR0 · `60016ed2b` PR0 review fixes + co-committed dist · `3e1d28464` PR0 review round 2/3 closures · `fd6c08ddd` PR3′ kernel · `92fef05c8` hydration identity + vocabulary single source · `ab56a5146` dead-helper removal · `f56b67e07` round-4 closures · `9a030b28c` race-safe tree walks · `ee4c0e437` round-5 closures |
 | no force-push, no amend of pushed history | every fix is a new commit; `master`/`stable` untouched and unpushed |
