@@ -1,0 +1,330 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z",
+  "suite": "u7-f-web",
+  "startedAt": "2026-10-29T15:47:53.134Z",
+  "selectedCases": [
+    "web:mounted",
+    "web:fetch-positive",
+    "web:approval-chain-live",
+    "web:deny-leg-zero-wire",
+    "web:search-no-provider",
+    "web:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "baa26f567582ba10cc1c79dbf5cd04be3732a09e",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "composedProfileDigest": {
+      "u5u7r3eb-20261029T15-47-53Z": [
+        "7a808e9825ad8e152244eb7dfbc9179f7c0987185ac39032e07204363f43db87"
+      ]
+    },
+    "trustedSourcesDigest": null,
+    "trustedSourcesUnavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.",
+    "trustedSources": {
+      "digest": null,
+      "unavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+    },
+    "worldOracleDigest": "505884282f612ff93bc036ccaf39a5be66c214f47438cf11b7d470017eee6168",
+    "worldOracle": {
+      "suite": "u7-f-web",
+      "digest": "505884282f612ff93bc036ccaf39a5be66c214f47438cf11b7d470017eee6168",
+      "complete": true,
+      "entry": "tests/world-factory/suites/070-u7-f-web.mjs",
+      "sources": [
+        "tests/kits/_shared/preset-seam.mjs",
+        "tests/paths.mjs",
+        "tests/world-factory/lib/arm-verdict.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/lib/u7f-web-assembly.mjs",
+        "tests/world-factory/suites/070-u7-f-web.mjs"
+      ],
+      "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+      "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+      "excludedHelpers": [
+        "tests/world-factory/lib/world-factory.mjs"
+      ],
+      "externalSpecifiers": [
+        "node:fs",
+        "node:http",
+        "node:path",
+        "node:url"
+      ],
+      "unfollowedPaths": [],
+      "unresolvedDynamicImports": [],
+      "unresolvedLiteralReads": [],
+      "literalReadsComplete": true,
+      "missingSources": [],
+      "artifactPath": "dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z.oracle.json",
+      "artifactSha256": "85a6a68314065b86e232ad403cbc09d24ebb08428822572d0b06a58c34c03760",
+      "evidence": [
+        {
+          "path": "dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z.oracle.json",
+          "sha256": "85a6a68314065b86e232ad403cbc09d24ebb08428822572d0b06a58c34c03760",
+          "kind": "world-oracle-source-artifact"
+        }
+      ]
+    },
+    "oracleArtifactPath": "dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z.oracle.json",
+    "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5u7r3eb-20261029T15-47-53Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-29T15:48:36.518Z",
+      "probed": true,
+      "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "partial",
+      "usable": true,
+      "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "partial",
+    "nativeConfinementDisclosure": "native (non-governed) confinement legs ran on a host whose sandbox probe answered \"partial\" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)",
+    "profileArtifacts": [
+      {
+        "worldId": "u5u7r3eb-20261029T15-47-53Z",
+        "composedProfileDigest": "7a808e9825ad8e152244eb7dfbc9179f7c0987185ac39032e07204363f43db87",
+        "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r2-envb/dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/logs/u5u7r3eb-20261029T15-47-53Z/composed-profile-7a808e9825ad8e152244eb7dfbc9179f7c0987185ac39032e07204363f43db87.patch.yml",
+        "artifactDigest": "7a808e9825ad8e152244eb7dfbc9179f7c0987185ac39032e07204363f43db87",
+        "launchPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r2-envb/tests/homes/u5u7r3eb-20261029T15-47-53Z/profiles/web/cordis.patch.yml",
+        "launchedBytes": 4550,
+        "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+        "launchedDigest": "7a808e9825ad8e152244eb7dfbc9179f7c0987185ac39032e07204363f43db87",
+        "composedProfileDigestMismatch": false
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "web:mounted",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.504Z",
+      "health": "p6t6 ok",
+      "placement": "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,web_fetch,web_search] realm=u7fweb-realm-u5u7r3eb-20261029t15-47-53z",
+      "webEnabled": "planeCfg.webEnabled=true (trusted row config)"
+    },
+    {
+      "id": "web:fetch-positive",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.504Z",
+      "stubLedger": {
+        "port": 3491,
+        "claimHits": 1,
+        "victimHits": 0,
+        "other": {}
+      },
+      "ran": "[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=62 hops=0 dest=http://127.0.0.1:3491",
+      "claimReadBackInCorpus": true,
+      "law": "durable ALLOW -> grant consumed -> the family PRODUCTION node:http transport wired the stub once; body read back through the model transcript"
+    },
+    {
+      "id": "web:approval-chain-live",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.504Z",
+      "askRows": 2,
+      "askNoticed": true,
+      "witness": "two durable PA ask rows in the p6t6 ledger (tool=web_fetch); the Human public seam team.resolveControl v4 answered allow then deny; host log: RAN x1, APPROVAL_DENIED x1",
+      "law": "leader carries NO control tools — the decisions came from the human public seam only"
+    },
+    {
+      "id": "web:deny-leg-zero-wire",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.504Z",
+      "victimHits": 0,
+      "witness": "[dsh-agent-team] web-fetch: governed-web-fetch pa-refused code=APPROVAL_DENIED dest=http://127.0.0.1:3491",
+      "law": "human seam DENIED the second ask; the stub proves ZERO wire to the denied endpoint"
+    },
+    {
+      "id": "web:search-no-provider",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.504Z",
+      "witness": "WEB_SEARCH_NO_PROVIDER typed refusal in the member transcript; no governed-web-search RAN witness; zero stub wire beyond /claim",
+      "stubLedger": {
+        "port": 3491,
+        "claimHits": 1,
+        "victimHits": 0,
+        "other": {}
+      }
+    },
+    {
+      "id": "web:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.824Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-29T15:49:51.958Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/budget.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-29T15:48:36.516Z",
+        "runId": "u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z",
+        "suite": "u7-f-web",
+        "world": "u5u7r3eb-20261029T15-47-53Z",
+        "phase": "u7fweb-boot1"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/u5-u7-f-web-u7r3eb-2026-10-29T15-47-52-997Z.oracle.json",
+      "sha256": "85a6a68314065b86e232ad403cbc09d24ebb08428822572d0b06a58c34c03760",
+      "kind": "world-oracle-source-artifact"
+    }
+  ],
+  "boots": [
+    {
+      "phase": "u7fweb-boot1",
+      "world": "u5u7r3eb-20261029T15-47-53Z",
+      "port": 3188,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r2-envb/dev/agent-workflow/evidence/u7r3-envblock-c2-20261029/logs/u5u7r3eb-20261029T15-47-53Z/instance-port3188.log"
+    }
+  ],
+  "u7fwebLanes": {
+    "askerDone": true,
+    "leaderDone": true
+  },
+  "u7fwebAsks": {
+    "resolutions": [
+      {
+        "requestId": "ctrl-0pkc55l0976cmk1ivnccj0yh",
+        "decision": "allow",
+        "ok": true,
+        "resolveStatus": 200,
+        "summary": "PA ask case=tadm:session-u7fweb-team-u5u7r3eb-20261029t15-47-53z:inst-1kksuwr1swwt:sha256:f864438709cb0ae497f750be503ce6a386059f25d3aadf6cfb2f4fac0ab08d1d:g0 ru"
+      },
+      {
+        "requestId": "ctrl-18xivcu12hvalb1u0zglk1vf",
+        "decision": "deny",
+        "ok": true,
+        "resolveStatus": 200,
+        "summary": "PA ask case=tadm:session-u7fweb-team-u5u7r3eb-20261029t15-47-53z:inst-1kksuwr1swwt:sha256:f864438709cb0ae497f750be503ce6a386059f25d3aadf6cfb2f4fac0ab08d1d:g0 ru"
+      }
+    ],
+    "errors": [],
+    "probe": {
+      "health": 200,
+      "healthBody": {
+        "ok": true
+      },
+      "controls": 200,
+      "controlsBody": {
+        "ok": true,
+        "requests": [
+          {
+            "requestId": "ctrl-0pkc55l0976cmk1ivnccj0yh",
+            "kind": "leader-approval",
+            "status": "pending",
+            "summary": "PA ask case=tadm:session-u7fweb-team-u5u7r3eb-20261029t15-47-53z:inst-1kksuwr1swwt:sha256:f864438709cb0ae497f750be503ce6a386059f25d3aadf6cfb2f4fac0ab08d1d:g0 rung=leader tool=web_f"
+          }
+        ]
+      }
+    },
+    "lastSeenRows": [
+      {
+        "requestId": "ctrl-0pkc55l0976",
+        "toolName": "web_fetch",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-u7fweb-team-u5u7r3eb-20261029t15-47-53z:inst-1kksuwr1swwt:sha256:f864438709cb0ae497f750be503ce6"
+      },
+      {
+        "requestId": "ctrl-18xivcu12hv",
+        "toolName": "web_fetch",
+        "status": "pending",
+        "summary": "PA ask case=tadm:session-u7fweb-team-u5u7r3eb-20261029t15-47-53z:inst-1kksuwr1swwt:sha256:f864438709cb0ae497f750be503ce6"
+      }
+    ]
+  },
+  "u7fwebStub": {
+    "port": 3491,
+    "claimHits": 1,
+    "victimHits": 0,
+    "other": {}
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-29T15:49:51.958Z"
+}

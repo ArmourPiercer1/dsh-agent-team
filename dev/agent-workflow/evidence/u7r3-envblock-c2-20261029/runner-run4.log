@@ -1,0 +1,10 @@
+[u7-f-web] case web:mounted: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] case web:fetch-positive: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] case web:approval-chain-live: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] case web:deny-leg-zero-wire: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] case web:search-no-provider: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] case web:leak-check: FAIL {"reason":"team.create failed: status=0 body=null"}
+[u7-f-web] approvals: [] errors=[]
+[u7-f-web] probe second face: null
+[u7-f-web] u7fweb run u5-u7-f-web-u7r3eb-2026-10-29T15-50-28-006Z: stub={"port":3491,"claimHits":0,"victimHits":0,"other":{}} lanes={}
+RUN-SUMMARY run=u5-u7-f-web-u7r3eb-2026-10-29T15-50-28-006Z suite=u7-f-web overall=FAIL cases=7 FAIL:6 PASS:1 worlds=u5u7r3eb-20261029T15-50-28Z
