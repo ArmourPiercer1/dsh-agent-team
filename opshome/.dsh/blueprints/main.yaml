@@ -1,0 +1,81 @@
+---
+schemaVersion: 3
+blueprintId: team.u7as.main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the u7as assembly team. U7AS_L1_20261030t12-22-33z starts your chain; when the user sends U7AS_GOAL_20261030t12-22-33z, create the goal, read it back, then create the one asworker member and delegate its script exactly as instructed."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_create_member
+        - team_delegate
+        - team_collect
+    builtinToolDeny:
+      - edit
+      - glob
+      - grep
+      - read
+      - read_image
+      - write
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - create-member
+    - assign-task
+    - send-message
+    - report-progress
+    - request-control
+  deny: []
+members:
+  - templateId: asworker
+    displayName: "u7as agent-state worker"
+    persona: "You are a worker of the u7as assembly team (agent-state lane). Follow the delegated script exactly, one tool call at a time."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - edit
+        - glob
+        - grep
+        - read
+        - read_image
+        - write
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow: []
+        ask: []
+        deny: []
+memberEnvelopes:
+  - templateId: asworker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

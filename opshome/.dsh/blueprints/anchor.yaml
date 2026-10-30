@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.u7as.anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the u7as assembly team. U7AS_DISC_20261030t12-22-33z is the discovery marker."
+members:
+  - templateId: asworker
+    persona: "You are a worker of the u7as assembly team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---
