@@ -75,11 +75,17 @@ export const familyAssembly = Object.freeze({
     // The port resolution is LAZY per call (the image row's host-seam law):
     // an injected port wins; else the host's public userQuestions service
     // behind the family adapter; else null = fail closed at the row gate.
+    // The ask row passes its per-call carrier Agent (the dispatch-provided
+    // `exec.agent`, O2-A S1) into the adapter's EXISTING second-arg binding,
+    // resolved lazily for THIS call only — never captured at mount. A call
+    // without a carrier leaves the binding off exactly as before: the service
+    // then answers its own typed refusal, which the row surfaces verbatim
+    // (ui-interaction-port.mjs:73-79). An injected port owns its own binding.
     const injected = cap.injected?.uiInteraction ?? null
-    const portRef = () => {
+    const portRef = (agent) => {
       if (injected !== null && typeof injected === 'object') return injected
       const service = typeof cap.hostService === 'function' ? cap.hostService('userQuestions') : undefined
-      return createUserQuestionsPort(service)
+      return createUserQuestionsPort(service, { agent: () => agent })
     }
     const subtree = typeof cap.subtreeContains === 'function' ? { subtreeContains: cap.subtreeContains } : {}
     const askExecutor = createGovernedAskExecutor({

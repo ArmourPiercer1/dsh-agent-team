@@ -153,6 +153,15 @@ export function buildAskRowDefinition({ askExecutor, timed = false }) {
         token: exec?.token,
         ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
         ...(exec?.signal !== undefined ? { signal: exec.signal } : {}),
+        // The DISPATCH-provided caller identity (native callingAgent law, the
+        // spawn-row.mjs:41-43 pattern): trusted transport data — the model
+        // cannot express or restate it. A nullish carrier is NOT carried: the
+        // adapter's documented no-agent arm stands (ui-interaction-port.mjs
+        // :73-79) and the Host service answers its OWN typed refusal verbatim
+        // — this row never turns a carrier-less call into a new unscoped
+        // delivery, and the refusal stays the same typed UI_INTERACTION_PORT_
+        // FAILED the row answers today.
+        ...(exec?.agent === null || exec?.agent === undefined ? {} : { agent: exec.agent }),
       }
       const outcome = await askExecutor(raw, corr)
       if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') return outcome.value
