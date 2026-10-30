@@ -7263,3 +7263,8 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 ## 2026-10-31 (06:0xZ) — 外部审计 #4：四项主发现不可复现（幽灵工件），内核两项落地（主 Agent）
 - 审计 #4 所指 `ledgers/u7-3a-c1-semantics-sync-20261029.json`、`u7-r3-matrix.json`、`scripts/audit-remaining-reverification.mjs` 与其引用的基线 sha `9b2c82a9b` **均不存在于本仓任何 ref/历史/工作树**（逐项机器核验记录=evidence/u7r3-audit4-20261031/INTAKE-VERDICT-20261031.md + scan-note.txt）。跨账本 LIVE-断言 vs NOT_VERIFIED 冲突扫描=0；真账本五格（job_kill/subagent/list_agents/edit/bash）措辞同类一致，无"live C2 graded"字样；真实 PROVEN 仅 pilot 实证（job_list L3/L4、team_glob L4）。#446 实为 OPEN 非 CLOSED。**拒绝按幽灵原文"修复"（将凭空捏造工件，违反证据法）**；若审计方持有真实 checkout，需其重新对源提交。
 - 可行动内核已做：STATUS.md 顶部追加 dated CURRENT 快照段（指针指向权威源，非权威地位声明照旧）；审计回执+扫描收据入证据。BOOT-BUDGET ledger 前轮已在（12/24）；证据整合仍为用户队列项。
+
+## 2026-10-31 (06:5xZ) — 审计 #4 收口、目标收官、全栈状态快照（主 Agent）
+- **#476 合并**（audit-#4 intake 判定+STATUS 快照+扫描收据）。R475-fl/R476-fl 报告归档至 u7r3-audit4-20261031/。复审席以 1907-ref 穷举＋全对象库（含不可达树）反证全归零，"不可复现"判定经受控反证成立。
+- **目标 goal-9e7ddb2c（U7-R1/R2 + U7-R3 矩阵编制入账）按事实判完**：R1/R2 全量合并（crash 含无旋钮实机 PASS #470）；矩阵入账（gates/U7-R3-GAP-MATRIX-20261029.md）；pilot 实机判级 job_list L3+L4、team_glob L4；C1 三波共 13 格离线判级脉络（全保持 NOT_VERIFIED）；boot 12/24（机动与两预留池尽，AC-12 候选绑定预留）；机器清偿门+链法（live-gate 修复版）稳定运行。
+- **当前开放面**：PR {#463 STATE_HOME PoC、#446 (b) 旋钮} = 用户裁决；余下全部 L3/L4 缺口 = 实机 C2 boot 依赖（池需用户再分配）或 AC-4 workflowEngine 产品半面（AC 池=候选绑定，G5 域）；证据外仓=用户队列。自主临界路径已空，等待用户指令。
