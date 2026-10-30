@@ -7236,3 +7236,8 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **披露**：lane brief 名 27b seat，本会话 harness 报告模型 = qwen3.8-flash-next（§0.2：独立性=独立会话非模型标识，差异如实登记不粉饰）；probes jsonl 以字面 `\n` 分隔（与既往 lane 记录字节同形的既有 kit 行为）。
 - 证据：`dev/agent-workflow/evidence/u7r3-bcr-20261031/`（PRE-REGISTRATION / SETUP-NOTES / RUN-RECORD / crash/ 全记录绑 teamSha=33e55cb231be…）；账本行 `dev/agent-workflow/gates/BOOT-BUDGET-20261029B.md`；判据行 `GATE-LEDGER.md` 2026-10-30 追加行。
 - （更正，2026-10-31T02:0xZ，§8.5.5 式条目更正，不改原文）上一条 boot-lane 条目头标注 "2026-10-30 (01:1xZ)" 系日期笔误：按其自证时间线（PRE-REG commit 01:07:00Z → 工件 01:07:13Z → kill 01:10:48Z，均 UTC）实际发生于 **2026-10-31** 凌晨；条目其余内容不受影响，原文照留。
+
+## 2026-10-31 (02:3xZ) — 崩溃持久闭合、陈旧草案清场、链法加固（主 Agent）
+- **R-CRASH-1 持久路径实机闭合**：#470（boot lane，预登记先行 33e55cb23→工件 01:1xZ 全时序在案；supervisor 5/5、survivor core 7/7、probes 8/8、kill=READY 收据后 +1ms，`killAfterMs=1500` 为 parseArgs 默认且物证非定时触发=“knob 未授权任何事”实质为真；R470-fl 八项 APPROVE）合并 @ d8aed1f74。boot 总账 **10/24**（#448 2/2 用尽、boot#2 预留未动）。协调者前向合并解 SESSION_ROUTER_LOG EOF 双追加（union 双保真），并对 boot 条目日期笔误按 §8.5.5 追加更正（原文照留）；机器关联在 merge-tree 冲突处**正确拒发**，改以人工祖先+证据零漂移审计补发。
+- **审计 P2 陈旧草案清场**：#360/#361/#363/#355/#350/#346/#347/#337/#319 九条 pre-#364 设计/试验草案 PR 逐条贴 dated 说明后关闭（可逆、零历史改写；含"如仍有效请回复重开"通道）。开放 PR 面收敛至 #463（待用户 STATE_HOME）与 #446（待用户 (b) 旋钮）。
+- **合并链法加固**：live-gate 取码去管道化+只认 DSH-SETTLEMENT-VERDICT PASS 行（波次二已自曝并生效）；linkage-settle v2 merge-tree 树等值审计在 #470 冲突场景验证"拒绝→人工重审"分工正确。R469-fl/R470-fl 报告入证据目录。
