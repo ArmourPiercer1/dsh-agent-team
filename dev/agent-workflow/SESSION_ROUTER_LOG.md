@@ -7287,6 +7287,24 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - 处置（不改名，名称=稳定标识符；append-only 不追溯改写）：新增 ROUTER_RULES **§8.5.8 时钟锚点律**（新 dated 锚点一律取书写时 `date -u`，禁叙事继承；历史 +1 标签冻结映射）；勘误正本 `dev/agent-workflow/gates/CLOCK-ANCHOR-20261030.md`（三源实测、26 条偏移表、受影响清单映射、§8.5.7 头部行两条「2026-10-30 轮」实为真实 10-29 之注记）。本条目头行按新律书写（真实 UTC），作示范。
 - 本 PR 文件名/分支名同样按真实 UTC 命名（`-20261030`），为关闭偏移窗口的标志。
 
+## 2026-10-30 (10:0–10:4xZ) — State-Home 整改波次：#480/#481/#482 合并、#463 处置关闭、P1 ruleset 上线、R-CLOCK-1 修复合入中（主 Agent）
+
+- **#480 MERGED**（真实 10-30）：#463 PoC 的判级归档 + 20 臂 vitest 正式 C1 + sha256 校验证据 + p4t6 诚实登记（R480-fl PASS，seat 披露）。合并后 **#463 以 dated disposition 关闭**（裁决 §2 六答逐条入账；头 2229c1bcbe 未动、0 评论历史保持）。边界律随归档文本落地：显式测试 Home 的 20/20 不替代正式默认 Home 验收。
+- **#481 MERGED**：PRODUCTION-HOME-DESIGN.md（R1 复用公开 @deepseek-ai/dsh-home-paths 路线；R2/R3 弃案理由在册；10 项防回归清单；判别器 teamToolPlane.testHomeGuard）+ R481-fl 四 nit 披露式勘误（F1-F4）。
+- **#482 MERGED**：workflow 有界 Public-API PoC（五问；②④⑤ FAIL 独立复核成立）→ **route B：workflow 正向功能递延至 Alpha.6——递延裁决权在用户，已入账待答**（§4）。附带非显然结论：web-app 组成中 workflowEngine 为 preset-isolate，公开路径 = agentPresets.serviceFor（hostService 返回 undefined 属设计）；R482-fl 三引用缺陷（F1 SHA 尾、F2 引文误挂原文、F3 isolate 措辞）披露式预修后合并。runWorkflow 保持 UNWIRED、矩阵行 UNKNOWN、L3/L4 NOT_VERIFIED 全部原样。
+- **P1 完成（不可绕过合并保护）**：仓库已迁移 rulesets（legacy branch protection PUT 404）→ 新建 ruleset **merge-gate-protection**（active，refs/heads/master，strict，required = pr-gate + ci-required + **pr-settlement-gate**，**零旁路主体**）。收执 `.artifacts/ops/p1-settlement-gate-20261031/`（before/after JSON + rulesets-after.txt）。#484 为首个在新门下走完全程的 PR。
+- **R-CLOCK-1（#484，外部日常审计修复）**：排查定性 = 机器时钟正常（三源 <30s），主 Agent 叙事层自真实 10-29 19:3xZ 起日期分量 +1（boot lane/清偿不受染，机器判据不读日历）；处置 = ROUTER_RULES §8.5.8 时钟锚点律 + 勘误映射正本 CLOCK-ANCHOR-20261030.md（不改名，历史标签=标识符；新 dated 锚点一律 `date -u` 现取）。R484-fl PASS + 增补 F-1（起点前移 + setlgate 分支名入账）。
+- **#483 进行中**：正式 Home 产品实现（V1 全门绿）R483-fl PASS（8/8，含顺序门：设计文档先经 #481 入 master，已满足）；R483-fl 复现陷阱发现 → 追加 b8842869d 失败即关 test-use 供给探针（DSH_TEST_USE_NOT_PROVISIONED，三态证明 + 6 自测臂），delta 复审席 R483b 在途。V2 boot（C2 池 2 starts）另行预登记。
+
+## 2026-10-30 (11:5–12:0xZ) — 外部效率审查 #5 两项缺陷整改 + #483 合并（新门首验）+ V2 boot 出发（主 Agent）
+
+- 外审 #5（GitHub 实况复核）两项命中：**P1 假关闭**与 **#483 CI 描述失实**。整改：P1 真门 = legacy contexts 端点加 pr-settlement-gate（strict 三检查回读为证；ruleset POST 被 GitHub 静默清空的教训 = 宣告关闭前必须回读规则内容），空 ruleset 删除；#483 贴第二则 dated 更正（其 head 自身 ci-full 日志 11:23:44Z `host build ok at 639ed01539…` + 11:35:56Z census 650f/8563l 恒等集全绿 = compat/守卫确在 hosted 执行且绿，11:19Z 更正对 ci-full 属过改——审计点属实即证据闭环）。
+- **#483 MERGED** @ bf93306ed：正式 Home V1（两臂解析 + 判别器 + CI 腿 + V1 25/25 + compat 失败即关探针 + 全门绿）。**新必需门首次完整周期**：旧红 gate 真挡合并（405 拒绝）→ 清偿重跑 → 绿 → 放行。
+- **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
+- 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
+ origin/master
+
+<!-- dated 2026-10-30T20:14Z coordinator conflict resolution (xval fmerge master@12cc9843e incl #492): both sides kept verbatim, real-UTC order (master sections 10:0-10:4xZ wave / 12:27-13:27Z before xval sections 14:21-15:5xZ); zero deletions -->
 ## 2026-10-30 (15:5xZ) — u7r3-xval 受控并行验证试验收束（lane 子代理，用户直接指令，零验收格）
 
 - **P0 双 worktree TestWorldFactory 真并发 = PASS**（x1@:3189/x2@:3190，mock 13054/13055，各 17/17；共享租约根=主树 .artifacts/tmp/port-leases hoist 双侧证明；DSH_HOME/证据树各自 worktree；同 Team SHA 51b023dad4 + 同 Host pin 639ed0153972；118 个重叠健康采样证明双世界同转；teardown 收据完整）。强制租约竞争探针（0 boot）：8 抢 6 → 6 胜 2 负（LEASE_HELD 6–11ms），零悬挂——租约层毫秒级自仲裁，无需 workflow 级锁。

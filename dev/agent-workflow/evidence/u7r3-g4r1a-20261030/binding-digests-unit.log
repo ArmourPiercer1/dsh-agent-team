@@ -1,0 +1,38 @@
+C1-F1a GREEN: u7-astore binds 5 sources incl. packages/tools/agent-state-family/src/fs-state-store.mjs
+C1-F1b GREEN: import(x) -> complete:false ["entry.mjs:3"]
+C1-F1c RED: one byte in the dynamically imported file no longer matches the digest
+C1-F2 GREEN: 5 relative sources recompute under /tmp/u7-g4r-checkout--A2ODcU
+C1-F3 RED: capture → mutate → spawn is refused (composedProfileDigestMismatch=true)
+C1 MUTATION RED: profile + oracle one-byte tamper rejected
+C1 GREEN: validator accepts the cited artifact; one byte on it is RUN_EVIDENCE_DIGEST_MISMATCH
+C1 GREEN: eb3-run-manifest CLI grades the cited fixture (records=1 findings=0)
+C1-F4a GREEN: law hand-reproduction == implementation (b365f59cc323…)
+C1-F4a2 GREEN: order-independence + mutation RED + duplicate refusal
+C1-F4b GREEN: missing files -> null + reason (3 named)
+C1-F4c GREEN: empty set + legacy unavailable() shapes are honest nulls
+C1-F4d GREEN: real family leg recomputes; one byte + forged entry are both RED
+C1-F4e GREEN: profile entries refresh the union digest idempotently; relaunch books both
+C1-F4f GREEN: eb3 validator + CLI grade the trusted-sources-cell record clean (findings=0)
+C1-F4g GREEN: u7-tbash driver closure binds 7 sources, recompute matches (complete=true)
+✔ C1-F1a the oracle closure follows dynamic imports out of tests/world-factory (14.059003ms)
+✔ C1-F1b a non-literal dynamic import fails the closure closed (complete:false) (3.717501ms)
+✔ C1-F1c one byte inside a dynamically imported file turns the digest RED (1.0926ms)
+✔ C1-F2 sources are repo-relative and the digest recomputes in ANOTHER checkout root (18.902003ms)
+✔ C1-F3 the profile digest is the launched bytes; a writer mutating before spawn is RED (1.398899ms)
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (169.266832ms)
+✔ C1-F4a the digest equals the RECORDED LAW hand-reproduced, and is deterministic (2.064ms)
+✔ C1-F4a2 order-independence: entry insertion order never moves the digest (2.414501ms)
+✔ C1-F4b null-with-reason: a missing family file mints NO digest (fail-closed, named) (0.5345ms)
+✔ C1-F4c empty-set leg: an empty declared set is null-with-reason, not hash-of-nothing (0.2516ms)
+✔ C1-F4d the real obligations family digests, recomputes cold, and one byte is RED (3.6706ms)
+✔ C1-F4e profile entries join via bindWorldProfile: refresh, idempotent, relaunch-books-both (3.189101ms)
+✔ C1-F4f a full RUN record with the new cells grades clean through the real EB3 validator (174.223633ms)
+✔ C1-F4g the arc-b c-suite driver gains a recomputable oracle cell (future records emit it) (9.900702ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 550.439704

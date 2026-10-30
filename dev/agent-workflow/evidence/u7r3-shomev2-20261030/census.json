@@ -1,0 +1,16 @@
+{
+  "schema": "u7r3v2-census/1",
+  "at": "2026-10-30T12:27:11.412Z",
+  "opshomeEntries": 55,
+  "realHome": {
+    "touchedCount": 3,
+    "teamStateOrRealmTouched": 0,
+    "teamStateExists": false
+  },
+  "budgetLines": 2,
+  "portLeaseClaimsMine": [],
+  "stable": {
+    "status": 401,
+    "body": null
+  }
+}

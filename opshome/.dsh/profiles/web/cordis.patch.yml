@@ -1,0 +1,70 @@
+# u7r3-shomev2 C2 boot2 (restart arm): SAME operator home, SAME realm,
+# bootPhase create-or-open (seam law: reopen the persisted unit),
+# still NO testHomeGuard — the production arm answers again.
+- insert:
+    - id: "dsh-agent-team"
+      name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-u7as-root-20261030t12-22-33z"
+        bootPhase: "create-or-open"
+        blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.u7as.anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the u7as assembly team. U7AS_DISC_20261030t12-22-33z is the discovery marker.\"\nmembers:\n  - templateId: asworker\n    persona: \"You are a worker of the u7as assembly team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+        blueprintDir: "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/opshome/.dsh/blueprints"
+        rootPresetId: "u7as-base-20261030t12-22-33z"
+        memberPresetId: "u7as-base-20261030t12-22-33z"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "u7as-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/packages/runtime/root-binding/harness/seam.mjs"
+        teamToolPlane:
+          realmId: "u7as-realm-20261030t12-22-33z"
+          agentStateEnabled: true
+    - id: "preset-u7as-base-20261030t12-22-33z"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "u7as-base-20261030t12-22-33z"
+        name: "u7r3v2 base"
+        description: "u7r3v2 production-arm base preset (u7as-base-20261030t12-22-33z)"
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+# U5 disclosure: disable ONLY the two deepseekLlmApiExtensions metadata
+# contributors through their own public config flag (s1-h0-m1 noext
+# precedent; schemas session-log-deepseek/src/index.ts:51-52).
+- id: session-log-deepseek
+  config:
+    enabled: false
+- id: plugin-package-inventory-deepseek
+  config:
+    enabled: false

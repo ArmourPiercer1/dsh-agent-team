@@ -1,7 +1,7 @@
 {
  "schema": "u7-0/tool-obligations-manifest/v1",
  "artifacts": {
-  "expected-tool-obligations.v1.json": "sha256:536a358c36667eba476885725e6870b6a2872443548804125af27424e1d481e2",
+  "expected-tool-obligations.v1.json": "sha256:b6616b2ece7902173d4ed272a02d692f678ebd3823cbc9d4262c0d6af0d1d8a2",
   "authoritative-tool-sources.v1.json": "sha256:abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c"
  },
  "generator": "build-expected-tool-obligations.mjs",
@@ -14,9 +14,9 @@
   "reviewed_seed": "sources/u4-reviewed-obligations.seed.json",
   "reviewed_seed_sha256": "sha256:0b4b480db6aa21eab37882f0639d0146e56aaf136440437f7e64c644114abb6d",
   "matrix": "docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md",
-  "matrix_sha256": "sha256:43bdd74399274777c7457bda3fad6d959e01169ca452a860a36ce5c78f0e6ea9",
+  "matrix_sha256": "sha256:90e436a493ab4a0147f66383b7a517c88e2cd4e193558976a8bfc477d375174b",
   "backlog": "docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md",
-  "backlog_sha256": "sha256:cd296c623b4d707d7d710248b833336adc42c5b0967fd9caa3de47ee7b132387",
+  "backlog_sha256": "sha256:f5a4205bd5c9da9f7eeab9bbd7e82cd90e91b52191a54307c8bcfd6690cae76a",
   "source_census_seed": "sources/u1c-static-source-census.seed.json",
   "source_census_seed_sha256": "sha256:bfdf5f035f620db66b1589ab4c95e66cb49c5daeac97697e0a4c514dd88928fa",
   "unknown_dispositions_seed_sha256": "sha256:5ad4b35e6c8a31966e61be6122f7871e48c4d0da43dc7074104f5a23a528ef18"

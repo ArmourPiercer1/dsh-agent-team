@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage/packages/runtime
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-1 default-ASK + allow(read_image) + APPROVING control leg: does one case cover all three arms and land?
+[dsh-agent-team] a5g7-image: governed-image RAN bytes=16 mediaType=image/png path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage/tests/homes/u7r3-rimg-mvuy0dox/root/photo.png
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-1 default-ASK + allow(read_image) + APPROVING control leg: does one case cover all three arms and land?
+A1 outcome.ok=true path=true
+A1 audit=c1-standin-landing paCase=tadm:u7r3-rimg-team-root:u7r3-rimg-instance:sha256:5397bc7ef21c227a962d3eccc7ff08d331f91d139aaed814775d867070071c44:g0 rung=leader
+A1 store.saved=1
+A1 observe-tail=a5-plane: placed [team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] || a5p2prod: admission-requires-approval || a5p2prod: admission-grant-minted || a5p2prod: admission-approved-grant-issued || a5g7-image: governed-image RAN bytes=16 mediaType=image/png path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage/tests/homes/u7r3-rimg-mvuy0dox/root/photo.png
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-2 default-ASK + allow(read_image) + DENYING control leg: zero commit
+[dsh-agent-team] a5g7-image: governed-image pa-refused code=APPROVAL_DENIED detail=durable Control request c1-standin-plane-image-eb683069-6869-4eb1-ad82-0e8b00d7996a-1 answered deny
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-2 default-ASK + allow(read_image) + DENYING control leg: zero commit
+A2 outcome.ok=false msg=refused-admission APPROVAL_DENIED — durable Control request c1-standin-plane-image-eb683069-6869-4eb1-ad82-0e8b00d7996a-1 answered deny
+A2 audit=c1-standin paCase=tadm:u7r3-rimg-team-root:u7r3-rimg-instance:sha256:5397bc7ef21c227a962d3eccc7ff08d331f91d139aaed814775d867070071c44:g0 decision=deny
+A2 store.saved=0
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-3 default-ASK + ASK-lane(read_image) (no allow rule) + APPROVING control leg
+[dsh-agent-team] a5g7-image: governed-image RAN bytes=16 mediaType=image/png path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage/tests/homes/u7r3-rimg-mvuy0dox/root/photo.png
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-3 default-ASK + ASK-lane(read_image) (no allow rule) + APPROVING control leg
+A3 outcome.ok=true value={"path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-readimage/tests/homes/u7r3-rimg-mvuy0dox/root/photo.png","image":{"attachmentId":"att-1","med
+A3 audit=c1-standin-landing paCase=tadm:u7r3-rimg-team-root:u7r3-rimg-instance:sha256:5397bc7ef21c227a962d3eccc7ff08d331f91d139aaed814775d867070071c44:g0 rung=leader
+A3 store.saved=1
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-4 default-DENY + named ASK-lane(read_image): does the named ask rule open the domain-ref arm (vs I-12 default-deny refusal)?
+[dsh-agent-team] a5g7-image: governed-image pa-refused code=IO_POLICY_UNSUPPORTED detail=admission refused: the template policy defaults to DENY and no rule covers this effect (domain-ref) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+
+stdout | test/scratch-u7r3-readimage-askleg.test.ts > u7r3 read_image ask-lane probe — the domain-ref arm across template defaults > A-4 default-DENY + named ASK-lane(read_image): does the named ask rule open the domain-ref arm (vs I-12 default-deny refusal)?
+A4 outcome.ok=false msg=refused-admission IO_POLICY_UNSUPPORTED — admission refused: the template policy defaults to DENY and no rule covers this effect (domain-ref) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+A4 audit=
+A4 store.saved=0
+A4 observe-tail=a5-plane: placed [team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image] || a5p2prod: production-admission-default-deny || a5g7-image: governed-image pa-refused code=IO_POLICY_UNSUPPORTED detail=admission refused: the template policy defaults to DENY and no rule covers this effect (domain-ref) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)
+
+ ✓ test/scratch-u7r3-readimage-askleg.test.ts (4 tests) 1488ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  12:22:52
+   Duration  1.67s (transform 1.14s, setup 0ms, import 40ms, tests 1.49s, environment 0ms)
+
