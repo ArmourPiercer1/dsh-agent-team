@@ -1,0 +1,62 @@
+# GREEN runs on the final tree (final content, nothing disarmed)
+
+lane U7-R3-C1-W3   generated 2026-10-30T03:59:22Z   tree HEAD 9f0c7b614 + this lane's two edited files
+
+| run | scope | Test Files | Tests | exit |
+| --- | --- | --- | --- | --- |
+| 1 | `npx vitest run` (full workspace) | 648 passed (648) | 8512 passed (8512) | 0 |
+| 2 | `npx vitest run` (full workspace, repeat) | 648 passed (648) | 8512 passed (8512) | 0 |
+
+Both runs are byte-for-byte identical in their verdicts. The `collectTests` stack lines in
+the logs are the workspace's ordinary per-file teardown noise, not failures: zero failed
+files, zero failed tests, exit 0 both times.
+
+## Per-arm and per-gate legs
+
+- `npx vitest run packages/runtime/test/u7-f-agent-control-c1.test.ts` -> **63 passed
+  (63)**: the 47 base arms of this file (mount gate, positives, AC-20..AC-29 refusals,
+  law-(b)/(a), honesty, wave-1 AC-60..AC-65) plus the **16 new wave-3 arms AC-66..AC-81**.
+- `pnpm build` (all packages) -> exit 0. Required by the `a4p7-merge-gate` composition-smoke
+  leg, which reads declared build outputs (`packages/*/dist`), and by
+  `u7-f-agent-control-native-output-schema-c1.test.ts`, which reads the pinned Host's built
+  native tool definitions.
+- `npx tsc -p packages/runtime/tsconfig.json` -> exit 0. (The `a4p7-merge-gate` typecheck leg
+  runs `pnpm -r run typecheck`; it is what caught the nine TS2532/TS2339/TS18048 hits in the
+  first draft of the new arms — fixed to the file's own optional-chaining convention rather
+  than by loosening any assertion.)
+- `npx eslint packages/runtime/test/u7-f-agent-control-c1.test.ts` -> exit 0.
+- `npx vitest run packages/testkit/test/a4p7-merge-gate.test.ts` -> **35 passed (35)**
+  (the §7.6 merge-gate legs, including typecheck and the composition smoke leg).
+
+## Environment preconditions found and closed in this worktree (not repo changes)
+
+Both legs below were red for MISSING ARTIFACTS, not for product or test logic. They are
+gitignored runtime surfaces, so nothing in the committed tree depends on them; recording
+them because a green claim that hides an unprovisioned worktree is not a green claim.
+
+1. `packages/*/dist` absent in a fresh worktree -> `a4p7-merge-gate` composition-smoke leg
+   refused (`TOOL_BINDING…packages/client/dist does not exist`). Closed with `pnpm build`.
+2. `tests/deepseek-harness-test-use` (pristine Host checkout, detached @
+   `639ed015397290b3745d163aafe02ffee4aa3f84`, per `tests/paths.mjs`) absent -> the
+   native-output-schema C1 file threw at collection (`native-schema C1 requires the pristine
+   test-use checkout`). The documented clone source in AGENTS.md
+   (`/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`) is NOT a git repository in
+   this environment, so the checkout was copied from the main worktree's pinned copy
+   (`cp -a`), which is the same procedure the sibling worktrees in `.worktrees/` carry.
+   After provisioning: `u7-f-agent-control-native-output-schema-c1.test.ts` -> 4 passed.
+   DISCLOSURE for the coordinator: this environment gap is a lane-infra fact, not a
+   product fact, and it affects every fresh worktree in this wave — the earlier wave-3
+   full-suite runs (before provisioning) read 8508 passed / 0 failed with exactly that one
+   file refusing to collect.
+3. `pnpm install --frozen-lockfile --offline` needed `--store-dir` pointed inside the
+   workspace (the default content-addressable store is not writable in this sandbox:
+   `ERR_SQLITE_ERROR unable to open database file`). Lockfile unchanged.
+
+## Tree state before commit
+
+`git status --porcelain` lists exactly:
+` M dev/agent-workflow/ledgers/u7-tool-acceptance.json`,
+` M packages/runtime/test/u7-f-agent-control-c1.test.ts`,
+` ?? dev/agent-workflow/evidence/u7r3-c1-w3-20261031/`.
+No `src/` file is modified: every mutant in mutants.txt was reverted with `git checkout --`
+before these runs, and the two full-suite runs above were executed on that reverted tree.

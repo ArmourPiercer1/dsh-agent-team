@@ -1,0 +1,55 @@
+# Measured product refusal shapes behind every wave-3 assertion
+
+lane U7-R3-C1-W3   generated 2026-10-30T03:40:05Z
+
+Every expected string in AC-66..AC-81 was READ OFF THE PRODUCT before it was asserted —
+never written from a reading of the source. Method: a scratch probe
+(`packages/runtime/test/z-u7r3w3-probe.scratch.test.ts`, run under
+`npx vitest run --config vitest.scratch.config.ts` — the only config that includes
+`*.scratch.test.ts`; the root config excludes it) mounting the REAL
+`createTeamToolPlaneAssembly` with the same trusted backends the precedent suite uses,
+printing the refusal head, the recorded port legs, the control-leg audit length and the RAN
+observe lines per call. The probe file was DELETED before commit (authoring face only).
+
+Verbatim measured answers (trimmed to the head + detail the arms assert):
+
+| row | injected condition | measured answer | port legs | audit | RAN |
+| --- | --- | --- | --- | --- | --- |
+| subagent_fork | `callerAuthority: 'not-a-record'` | `refused-agent-control agent-control-amplification-refused — a forked child may not carry broader authority than its caller: the mount carries no caller-authority snapshot: … (fail closed)` | `[]` | 0 | 0 |
+| subagent_fork | Tier A ceiling (no snapshot) + `run_in_background:true` | `… — a forked child may not carry broader authority than its caller: a continuable child outlives a caller that is not itself continuable` | `[]` | 0 | 0 |
+| subagent_fork | SAME mount, arm OFF (same-world flip) | fork RAN | `[forkChild]` | 1 | 1 |
+| subagent_fork | `provider` / `model` / `reasoning_effort` / `scopeKey` / `tools` arm | `refused-agent-control agent-control-schema-refused — unknown field 'provider'` (one per arm) | `[]` | 0 | 0 |
+| subagent_fork | fork context `{grant:'g-1'}` | `refused-agent-control agent-control-context-authority-refused — the fork context carries authority-shaped keys ($.grant) — a forked child inherits CONVERSATION DATA, never grants` | `[]` | 0 | 0 |
+| subagent_fork | fork context source THROWS | `… agent-control-context-authority-refused — the mount's fork context source faulted — context is DATA; a source that cannot prove it is data refuses the fork` | `[]` | 0 | 0 |
+| subagent_fork | pure-data context (flip) | fork RAN; the port received `context: {transcript:'data…'}` and `spec: {description,prompt}` — no grant key crossed | `[forkChild]` | 1 | 1 |
+| send_message | `other-scope:agent-9` | `… agent-control-scope-foreign — target is outside this mount's scope (target names scope 'other-scope', not this mount's own scope) — zero reach, nothing was probed` | `[]` | 0 | 0 |
+| send_message | `not-my-agent` / `member-alpha/child-7` / ` Member-Alpha` | `… agent-control-scope-foreign — target '…' is not a member of this mount's own scope — steering an agent the caller does not own is refused with zero reach` | `[]` | 0 | 0 |
+| send_message | `U7F-C1-REALM:U7F-INSTANCE:member-alpha` (byte-inexact own scope) | foreign — the scope comparison is exact, never case-folded | `[]` | 0 | 0 |
+| send_message | legit `member-beta` in the SAME world (flip) | steer RAN | `[steer]` | 1 | 1 |
+| send_message | no roster mounted | `… agent-control-scope-unresolved — this mount carries no durable scope roster, so no steer or interrupt target can be proven in-scope — the call refuses before any runtime is touched (fail closed)` | `[]` | 0 | 0 |
+| send_message | DENY control leg | `… agent-control-pa-APPROVAL_DENIED — durable Control request c1-standin-… answered deny` | `[]` | 1 (`decision=deny`) | 0 |
+| list_subagent_models | ask lane, NO control leg | `… agent-control-pa-APPROVAL_REQUEST_UNAVAILABLE — PA logical case tadm:…:sha256:…:g0 needs a durable Control request; none is mounted (pending never runs)` | `[]` | 0 | 0 |
+| list_subagent_models | DENY control leg | `… agent-control-pa-APPROVAL_DENIED — durable Control request … answered deny` | `[]` | 1 (`decision=deny`) | 0 |
+| list_subagent_models | template `default:'deny'` | `refused-agent-control template-default-deny — the template policy defaults to DENY and the closed rule grammar names no agent-control tool — an effect the policy never names is not an effect the policy allows` | `[]` | 0 | 0 |
+| list_subagent_models | policy deny rule `read@any` | MOUNT REFUSED `TOOL_BINDING_UNVERIFIED projection refused: a deny-lane whole-tool ('any') rule for the file-class tool 'read' cannot be projected — the PR0 document family has no resource catch-all match` | — | — | — |
+| list_subagent_models | policy deny rule `read@exact model-routes` | MOUNT REFUSED `… rule deny[0] (read@model-routes) is an deny rule whose resource cannot be canonicalized — dropping it would LOOSEN authority …` | — | — | — |
+| workflow | `authority` / `grants` / `provider` / `script` row arm | `refused-agent-control agent-control-schema-refused — unknown field 'authority'` (one per arm) | `[]` | 0 | 0 (spawnChild 0) |
+| workflow | in-grammar row (flip) | runWorkflow + exactly one delegate spawnChild carrying `spec.viaWorkflow` | `[runWorkflow, spawnChild]` | 1 | workflow 1 |
+| workflow | ask lane, NO control leg | `… agent-control-pa-APPROVAL_REQUEST_UNAVAILABLE …` | `[]` | 0 | 0 (spawnChild 0) |
+| workflow | DENY control leg | `… agent-control-pa-APPROVAL_DENIED …` | `[]` | 1 (`decision=deny`) | 0 (spawnChild 0) |
+| workflow | spawn step `provider:'forbidden-provider'` | step answer `{ok:false, code:'agent-control-amplification-refused', detail:"workflow spawn leg refused: provider 'forbidden-provider' is outside the caller's own authority"}` | `[runWorkflow]` only | 1 (the row's own ask) | workflow RAN 1, child RAN 0, spawnChild 0 |
+| workflow | spawn step `authority:{…}` / steer step `scopeKey:'other'` | `… workflow spawn leg refused: workflow override arm 'authority' tries to restate authority: the runtime legs run as THIS caller and no other …` | `[runWorkflow]` only | 1 | child reach 0 |
+| workflow | steer step `agent_id:'ghost-scope:ghost'` | step answer `{code:'agent-control-scope-foreign', detail:"workflow steer leg refused: target names scope 'ghost-scope', not this mount's own scope"}` | `[runWorkflow]` only | 1 | steer reach 0 |
+| workflow | steer step `agent_id:'member-alpha'` (flip) | step answer `{messageId:'message-1'}` | `[runWorkflow, steer]` | 1 | steer 1 |
+| workflow | NO port injected at all (production posture) | `refused-agent-control agent-runtime-leg-unwired — no agent-runtime port answers this leg for this mount — the governed row refuses with zero reach, never a fake and never a bypass (leg 'runWorkflow')` | n/a | 1 | 0 (spawnChild 0) |
+
+Two findings the arms carry as DISCLOSURES rather than assumptions:
+
+1. `list_subagent_models` has no rule-shaped DENY lane at this pin: the projection refuses the
+   MOUNT for such a rule (rows above), so AC-75 grades the default-DENY gate and asserts the
+   mount-refusal itself instead of inventing a lane the product rejects.
+2. `workflow`'s spawn-amplification refusal is structurally a DELEGATE-level answer: the row's
+   own PA admission lands first (its declared effect set covers every spawn the driver can
+   take), so `audit == 0` is NOT the witness for that arm. Witnessed instead: zero child reach,
+   zero child-RAN, zero child Control ask — and in the row-level refusal lanes (closed grammar,
+   no Control leg, DENY leg) zero runWorkflow AND zero spawnChild.
