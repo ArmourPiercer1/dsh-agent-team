@@ -182,8 +182,15 @@ export const LANE_EDGES = Object.freeze({
   // the pinned consumer set). The state-store port is a consumed INTERFACE,
   // injected via cap.injected.agentState — not an import edge — so it adds no
   // outward edge here.
+  // R-STATE-HOME-1 (USER-RULING-20261031 §2, route R1): ONE public upstream
+  // package edge, booked like the search lane books dsh-tool-fs-search —
+  // `@deepseek-ai/dsh-home-paths` is a PUBLIC published package (root export,
+  // `publishConfig.access: public`), consumed by `fs-state-store.mjs` for the
+  // production home answer (`resolveDshHome`) ONLY. No Host internal, no
+  // private API, no centre interface.
   'dsh.agent-state-family': Object.freeze([
     'node:*',
+    '@deepseek-ai/dsh-home-paths',
     'packages/domain/tool-governance/src/*',
   ]),
 })

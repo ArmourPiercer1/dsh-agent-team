@@ -163,7 +163,10 @@ async function mountProduction(opts: { humanFor?: string[] } = {}): Promise<{ bu
     role: 'member',
     instanceId: 'u7as-inst',
     onObserve: () => {},
-    plane: { agentStateEnabled: true },
+    // This suite is a TEST world: `testHomeGuard: true` keeps the shipped
+    // two-arm home law on its test arm (H1/H2 refusals byte-for-byte;
+    // R-STATE-HOME-1 design (c) — every enablement site sets the flag).
+    plane: { agentStateEnabled: true, testHomeGuard: true },
   }) as Built & { value: { mount?: (ctx: unknown) => { ok: boolean } } }
   if (built.ok !== true) return { built, rows: {} as Record<RowName, Row> }
   const humans = new Set(opts.humanFor ?? [])
@@ -256,7 +259,7 @@ describe('u7as H — the durable home is resolved fail-closed (no invented defau
     const built = descriptor.build({
       realmId: REALM, injected: {}, hostService: () => undefined, logBackend: () => () => {},
       permissionPolicy: POLICY_ASK, decide: () => ({ kind: 'allow' }), pa: async () => ({ kind: 'allow' }), presentationFace: {},
-      planeConfig: { agentStateEnabled: true },
+      planeConfig: { agentStateEnabled: true, testHomeGuard: true },
     })
     expect(built.refused).toBeUndefined()
     const port = built.diagnostics?.agentStateStore as unknown as { name: string, rootDir: string }
@@ -570,7 +573,7 @@ describe('u7as G — every row meets the production bridge shape (tool-invoke na
     const built = await plane.createTeamToolPlaneAssembly({
       dispatcherLifecycle: { inflight: () => 0 }, teamSessionId: 'u7as-root', controlLeg: bridgeShapeLeg(seen),
       permissionPolicy: POLICY_ASK, realmId: REALM, templateId: 'u7as-tpl', role: 'member', instanceId: 'u7as-inst',
-      onObserve: () => {}, plane: { agentStateEnabled: true },
+      onObserve: () => {}, plane: { agentStateEnabled: true, testHomeGuard: true },
     }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean } } }
     expect(built.ok).toBe(true)
     const humans = new Set(['alice'])
@@ -1158,7 +1161,7 @@ describe('u7as A — unauthorized authority answers the typed refusal with ZERO 
       role: 'member',
       instanceId: 'u7asg-inst',
       onObserve: () => {},
-      plane: { agentStateEnabled: true },
+      plane: { agentStateEnabled: true, testHomeGuard: true },
     }) as Built & { value: { mount: (ctx: unknown) => { ok: boolean, message?: string }, backends?: Record<string, unknown> } }
     if (built.ok !== true) throw new Error(`mount refused: ${String(built.code)} ${String(built.message ?? '')}`)
     const humans = new Set(opts.humanTurnFor ?? [])

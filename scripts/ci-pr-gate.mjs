@@ -115,6 +115,7 @@ const GRAPH_YAML = 'dev/agent-workflow/graph.yaml'
  */
 const LEG_ORDER = [
   'graph-parse',
+  'kit-home-guard',
   'state-freshness',
   'install',
   'blueprint-fence',
@@ -1354,6 +1355,37 @@ export function checkTranscript(text) {
  * than by design. Throwing is reserved for "this gate cannot grade anything" (a missing
  * baseline file), which the harness turns into `fail` with the reason.
  */
+/**
+ * R-STATE-HOME-1 (USER-RULING-20261031 §2 via
+ * `docs/plans/memo/unified-baseline-alpha5-20261025/state-home/PRODUCTION-HOME-DESIGN.md` (c)):
+ * the production default is the DEFAULT (ABSENT `testHomeGuard` = production
+ * arm), so the ONLY thing keeping a test World on the shipped guard-ON home
+ * law is the explicit `testHomeGuard: true` set at the same row-config choke
+ * point that sets `agentStateEnabled: true`. A kit row that forgets the flag
+ * silently moves its World onto the production arm — where homes that MUST be
+ * refused for tests (the operator's live `~/.dsh` included) are accepted,
+ * i.e. the TEST_METHODS red line, quietly. Pure-static shape check, no
+ * parse, no spawn: a file under `tests/world-factory/` that carries a plane
+ * config (`teamToolPlane`) and TRUE-sets `agentStateEnabled` must TRUE-set
+ * `testHomeGuard` in the same file (`: true` or `= true`; `=== true`
+ * comparisons never count as a set). Violations name `file:line` so the fix
+ * is one edit. `files` is a list of `{rel, text}`; exported pure for tests
+ * and evidence demos.
+ */
+export function checkKitHomeGuard(files) {
+  const LAW = 'sets agentStateEnabled true but the file never true-sets testHomeGuard — a test World must ride the guard-ON home law (PRODUCTION-HOME-DESIGN (c)); fix: set testHomeGuard: true beside the enablement'
+  const violations = []
+  for (const { rel, text } of files) {
+    if (!text.includes('teamToolPlane')) continue
+    const enable = text.match(/^.*\bagentStateEnabled\s*[:=](?!=)\s*true\b.*$/m)
+    if (enable === null) continue
+    if (/\btestHomeGuard\s*[:=](?!=)\s*true\b/.test(text)) continue
+    const line = text.slice(0, enable.index).split('\n').length
+    violations.push(`${rel}:${String(line)} ${LAW}`)
+  }
+  return violations
+}
+
 const LEGS = {
   // Takes no ctx: this leg runs one parser over one file, and writing `ctx` to satisfy the
   // harness signature would imply it uses the run context when it does not.
@@ -1391,6 +1423,31 @@ const LEGS = {
     if (r.code === 1) return { verdict: 'fail', detail: `${GRAPH_YAML} does not parse — ${tail(out, 3)}` }
     if (r.code === 3) return { verdict: 'fail', detail: `${GRAPH_YAML} parsed but is not a non-empty mapping — ${tail(out, 3)}` }
     return { verdict: 'fail', detail: `${GRAPH_YAML} leg could not run (exit ${String(r.code)}, signal ${String(r.signal)}): ${tail(out, 3)}` }
+  },
+
+  'kit-home-guard'() {
+    const ROOT_REL = 'tests/world-factory'
+    const abs = resolve(REPO_ROOT, ROOT_REL)
+    if (!existsSync(abs)) {
+      return { verdict: 'fail', detail: `${ROOT_REL} is absent; the kit home-guard law cannot be graded on a missing tree` }
+    }
+    const files = []
+    const walk = (dir, relDir) => {
+      const entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))
+      for (const entry of entries) {
+        if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
+        const absPath = join(dir, entry.name)
+        const relPath = `${relDir}/${entry.name}`
+        if (entry.isDirectory()) { walk(absPath, relPath); continue }
+        if (entry.isFile() && entry.name.endsWith('.mjs')) files.push({ rel: relPath, text: readFileSync(absPath, 'utf8') })
+      }
+    }
+    walk(abs, ROOT_REL)
+    const violations = checkKitHomeGuard(files)
+    if (violations.length > 0) {
+      return { verdict: 'fail', detail: `${String(violations.length)} kit row-config violation(s): ${violations.join(' ;; ')}` }
+    }
+    return { verdict: 'pass', detail: `${String(files.length)} kit .mjs file(s) scanned; every teamToolPlane config that true-sets agentStateEnabled also true-sets testHomeGuard (design (c) choke-point law)` }
   },
 
   'state-freshness'() {

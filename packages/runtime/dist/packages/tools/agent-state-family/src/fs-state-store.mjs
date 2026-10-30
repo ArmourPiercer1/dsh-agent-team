@@ -162,8 +162,13 @@
  *   below applies the same rule (nlink > 1 ⇒ refused before any byte) and
  *   carries the shared law's detail sentence; C1 K1 pins it.
  *
- * PURITY: `node:*` only (the lane's booked edge). No import of the plane, the
- * governance center, another family lane, or any Host internal.
+ * PURITY: `node:*` builtins, plus the ONE booked upstream edge —
+ * `@deepseek-ai/dsh-home-paths`, a PUBLIC published package whose root export
+ * `resolveDshHome` answers the host's own home in the PRODUCTION arm (the
+ * search lane imports an upstream public package the same way; the edge is
+ * booked in `scripts/eb3-family-boundaries.mjs` + this lane's README). No
+ * import of the plane, the governance center, another family lane, or any
+ * Host internal.
  *
  * @module tools/agent-state-family/fs-state-store
  */
@@ -175,6 +180,7 @@ import { isAbsolute, join, relative, sep } from 'node:path'
 import process from 'node:process'
 import { setTimeout as delayFor } from 'node:timers/promises'
 import { clearInterval, setInterval } from 'node:timers'
+import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 
 /** The durable subtree this store owns, relative to the harness home. */
 export const STATE_STORE_SUBTREE = Object.freeze(['team-state', 'agent-state'])
@@ -222,57 +228,95 @@ const digestOf = (text) => createHash('sha256').update(Buffer.from(text, 'utf8')
 const sameOrUnder = (child, parent) => child === parent || child.startsWith(parent.endsWith(sep) ? parent : `${parent}${sep}`)
 
 /**
- * Resolve the durable harness home for the agent-state store from the
- * environment, with every dangerous shape REFUSED (never defaulted):
+ * Resolve the durable harness home for the agent-state store. TWO arms,
+ * selected ONLY by the assembly-set discriminator `testHomeGuard` (never by
+ * an env var — an env-selected guard is bypassable by the same config that
+ * misconfigures the mount; USER-RULING-20261031 §2 via
+ * `docs/plans/memo/unified-baseline-alpha5-20261025/state-home/PRODUCTION-HOME-DESIGN.md` (c)):
+ *
+ *  TEST arm (`testHomeGuard: true` — the unit-boundary default, the
+ *  fail-closed direction; every test World threads it true at its row-config
+ *  choke point): the shipped law, every dangerous shape REFUSED (never
+ *  defaulted), byte-for-byte as before this split:
  *   - absent or blank                      -> AGENT_STATE_STORE_HOME_MISSING
  *   - relative / not an existing directory -> AGENT_STATE_STORE_HOME_INVALID
  *   - realpath equal to or beneath the
  *     operator's real `~/.dsh`              -> AGENT_STATE_STORE_HOME_INVALID
+ *  The `~/.dsh` refusal is a POSITIVE guard, not a fallback: the harness's
+ *  own `resolveDshHome()` quietly answers `~/.dsh` when `$DSH_HOME` is unset,
+ *  and writing governed state into a developer's live harness home is exactly
+ *  the accident the test-methods red line forbids.
  *
- * The `~/.dsh` refusal is a POSITIVE guard, not a fallback: the harness's own
- * `resolveDshHome()` quietly answers `~/.dsh` when `$DSH_HOME` is unset, and
- * writing governed state into a developer's live harness home is exactly the
- * accident the test-methods red line forbids. Only an explicit, absolute,
- * existing, non-live-home `$DSH_HOME` is accepted. Precedent for reading the
- * variable directly: `packages/tools/harness/plugin.mjs:166`.
+ *  PRODUCTION arm (`testHomeGuard: false` — the mount-config DEFAULT, design
+ *  (c): "ABSENT = production"): the home is the HOST's own sanctioned root,
+ *  answered by the upstream PUBLIC API `@deepseek-ai/dsh-home-paths` →
+ *  `resolveDshHome()` (`configured ?? $DSH_HOME ?? ~/.dsh`; the priority
+ *  lives in that package and is NEVER reimplemented here). The plugin writes
+ *  only its own namespace `<home>/team-state/agent-state/<realmId>/` under
+ *  it. The live-home refusal above is a TEST-SAFETY rule and is gone from
+ *  this arm BY RULING — refusing the host's own home would make the plugin
+ *  unable to serve a normal install (design (a) rows 1–2). EVERY OTHER guard
+ *  survives this arm unchanged (design (d)): a blank raw DSH_HOME stays
+ *  HOME_MISSING; a relative raw DSH_HOME stays HOME_INVALID and is never
+ *  resolved against the cwd (upstream's resolver WOULD cwd-resolve that
+ *  shape — refusing it is the deliberate preserved divergence); the resolved
+ *  home must EXIST as a real directory (realpath + isDirectory — on a real
+ *  install the Host creates the home before any plugin mounts, so "must
+ *  exist" refuses only a genuinely absent home; disclosed). The
+ *  alias/symlink/hardlink/atomic/lock/audit laws below are untouched.
  *
  * SYNCHRONOUS on purpose: the descriptor's `build(cap)` is called
  * synchronously by the plane (`team-tool-plane.mjs:1644`).
  *
- * NAMED FOLLOW-UP (not a permanent design): this reads the environment
- * because the family capability object (`CAPABILITY_KEYS`,
- * `family-assembly.mjs:60-74`) carries no home path, and
- * `cap.hostService('dshHomePath')` binds only at `mount(agentCtx)`
- * (`team-tool-plane.mjs:2048`) — after `build`. A `homePath` capability is
- * the clean fix; it is a named center-interface change and is NOT made here
- * (CORE PATCH BUDGET = 0).
+ * The environment read RETIRED the named `homePath` center-interface
+ * follow-up (design (g)): its premise ("no public way to learn the
+ * sanctioned home") is falsified by `@deepseek-ai/dsh-home-paths`' public
+ * export plus the booked upstream-import precedent (search lane). The env is
+ * read for the raw-ENV SHAPE law (survives both arms); the ANSWER for the
+ * production default comes from the package.
  *
- * @param {{env?: Record<string, string | undefined>, realHome?: string}} [opts]
+ * @param {{env?: Record<string, string | undefined>, realHome?: string, testHomeGuard?: boolean}} [opts]
+ * @param realHome operator-home override — TEST arm only (injectable so unit
+ *   tests pin the guard with a fake operator, never the real `~/.dsh`); the
+ *   PRODUCTION arm never consults it
+ * @param testHomeGuard discriminator from the trusted plane-mount config; the
+ *   assembly ALWAYS threads it explicitly (`agent-state.mjs`), and at the
+ *   mount level an ABSENT key means production (closed-world config law).
+ *   This unit default is TRUE: a direct consumer that forgets the parameter
+ *   gets today's law, never an invented default home.
  * @returns {{ok: true, home: string} | {ok: false, code: string, detail: string}}
  */
-export function resolveAgentStateHome({ env = process.env, realHome } = {}) {
+export function resolveAgentStateHome({ env = process.env, realHome, testHomeGuard = true } = {}) {
   const raw = env?.DSH_HOME
-  if (raw === undefined || String(raw).trim().length === 0) {
-    return refusal('AGENT_STATE_STORE_HOME_MISSING', 'DSH_HOME is not set, so this mount has no durable home to write governed agent state into (refused — an invented default would write outside the sanctioned root)')
-  }
-  const candidate = String(raw)
-  if (!isAbsolute(candidate)) {
+  const candidate = raw === undefined || String(raw).trim().length === 0 ? undefined : String(raw)
+  // — raw-env shape law, preserved in BOTH arms (design (d)-1): a non-blank
+  // relative DSH_HOME is refused here, never resolved against the cwd. —
+  if (candidate !== undefined && !isAbsolute(candidate)) {
     return refusal('AGENT_STATE_STORE_HOME_INVALID', `DSH_HOME must be an absolute path — got ${JSON.stringify(candidate.slice(0, 120))} (refused, never resolved against the cwd)`)
+  }
+  if (candidate === undefined) {
+    if (testHomeGuard === true) {
+      return refusal('AGENT_STATE_STORE_HOME_MISSING', 'DSH_HOME is not set, so this mount has no durable home to write governed agent state into (refused — an invented default would write outside the sanctioned root)')
+    }
+    // Production default arm: the upstream trusted home answers (unset, or
+    // blank — upstream's documented semantics treats blank as unset).
   }
   let real
   try {
-    real = realpathSync(candidate)
+    real = realpathSync(candidate ?? resolveDshHome(undefined, env))
   } catch (error) {
     return refusal('AGENT_STATE_STORE_HOME_INVALID', `DSH_HOME does not resolve to an existing directory: ${String(error?.code ?? error)}`)
   }
-  const operatorHome = realHome ?? homedir()
-  let realOperatorHome = operatorHome
-  try { realOperatorHome = realpathSync(operatorHome) } catch { /* keep the given form */ }
-  const liveDsh = join(realOperatorHome, '.dsh')
-  let realLiveDsh = liveDsh
-  try { realLiveDsh = realpathSync(liveDsh) } catch { /* absent live home: compare the spelling */ }
-  if (sameOrUnder(real, liveDsh) || sameOrUnder(real, realLiveDsh)) {
-    return refusal('AGENT_STATE_STORE_HOME_INVALID', `DSH_HOME resolves to the operator's live harness home (${liveDsh}) — governed agent state is never written there; refusing`)
+  if (testHomeGuard === true) {
+    const operatorHome = realHome ?? homedir()
+    let realOperatorHome = operatorHome
+    try { realOperatorHome = realpathSync(operatorHome) } catch { /* keep the given form */ }
+    const liveDsh = join(realOperatorHome, '.dsh')
+    let realLiveDsh = liveDsh
+    try { realLiveDsh = realpathSync(liveDsh) } catch { /* absent live home: compare the spelling */ }
+    if (sameOrUnder(real, liveDsh) || sameOrUnder(real, realLiveDsh)) {
+      return refusal('AGENT_STATE_STORE_HOME_INVALID', `DSH_HOME resolves to the operator's live harness home (${liveDsh}) — governed agent state is never written there; refusing`)
+    }
   }
   let stat
   try { stat = statSync(real) } catch (error) {
