@@ -1,0 +1,502 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z",
+  "suite": "u7r3-b49-lockseam",
+  "startedAt": "2026-10-30T02:49:29.098Z",
+  "selectedCases": [
+    "u7as:P-live-host-positive",
+    "u7as:L-live-serialise",
+    "u7as:F-live-timeout-refusal",
+    "u7as:F-live-break-after-death",
+    "u7as:R3-live-break-revalidate",
+    "u7as:M-live-replay",
+    "u7as:I-live-cross-scope-replay",
+    "u7as:R-live-refund",
+    "u7as:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "604f9d585d68d70de7b6da521dd0173aec1be267",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "composedProfileDigest": {
+      "u5b49-20261030T02-49-29Z": [
+        "479042bffaa1a69c376bf3b9ef43d02b86f6561d801bd8ceede93551628b4b6a"
+      ]
+    },
+    "trustedSourcesDigest": null,
+    "trustedSourcesUnavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute.",
+    "trustedSources": {
+      "digest": null,
+      "unavailableReason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+    },
+    "worldOracleDigest": "404553f445f1ad974a8c9a78059b01a0ed86707d38a0e17454535fcdcd69bccf",
+    "worldOracle": {
+      "suite": "u7r3-b49-lockseam",
+      "digest": "404553f445f1ad974a8c9a78059b01a0ed86707d38a0e17454535fcdcd69bccf",
+      "complete": false,
+      "entry": "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs",
+      "sources": [
+        "tests/kits/_shared/preset-seam.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/lib/u7astore-assembly.mjs",
+        "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs"
+      ],
+      "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+      "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+      "excludedHelpers": [
+        "tests/world-factory/lib/world-factory.mjs"
+      ],
+      "externalSpecifiers": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:os",
+        "node:path",
+        "node:url"
+      ],
+      "unfollowedPaths": [
+        "../../../../../../proc/sys/kernel/random/boot_id"
+      ],
+      "unresolvedDynamicImports": [
+        "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:102",
+        "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:384",
+        "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:435"
+      ],
+      "unresolvedLiteralReads": [
+        "tests/world-factory/lib/u7astore-assembly.mjs:235",
+        "tests/world-factory/suites/130-u7r3-b49-lockseam.mjs:417"
+      ],
+      "literalReadsComplete": false,
+      "missingSources": [],
+      "artifactPath": "dev/agent-workflow/evidence/u7r3-b49-20261031/c2/u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z.oracle.json",
+      "artifactSha256": "7bcad1558a78160ced8c0e5cbf8894387dd347f1374e691c3c99a32929f8773d",
+      "evidence": [
+        {
+          "path": "dev/agent-workflow/evidence/u7r3-b49-20261031/c2/u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z.oracle.json",
+          "sha256": "7bcad1558a78160ced8c0e5cbf8894387dd347f1374e691c3c99a32929f8773d",
+          "kind": "world-oracle-source-artifact"
+        }
+      ]
+    },
+    "oracleArtifactPath": "dev/agent-workflow/evidence/u7r3-b49-20261031/c2/u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z.oracle.json",
+    "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5b49-20261030T02-49-29Z"
+    ],
+    "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+    "sourceShaRule": "bindings.teamSha (runner-recorded git HEAD of the lane checkout) must equal B49_PRE_REG_SHA (the pre-registration commit; zero commits between registration and boot); evidence-bound from that moment — forward-merge only, never rebase (ROUTER_RULES §8.5.7)",
+    "preRegistrationSha": "604f9d585d68d70de7b6da521dd0173aec1be267",
+    "storeModule": {
+      "path": "packages/tools/agent-state-family/src/fs-state-store.mjs",
+      "sha256": "4428c2297b652f2198d9633ea71fa5a373719ca59813ca791e1ba406808b7db4",
+      "clockSeam": "nowMs defaults to Date.now — NO injected clock, NO faultAt seam in ANY store instance this boot builds (production defaults throughout)"
+    },
+    "agentStateStore": {
+      "base": "DSH_HOME/team-state/agent-state/<realmId>",
+      "baseRelativeToHome": "team-state/agent-state/u7as-realm-u5b49-20261030t02-49-29z",
+      "realmId": "u7as-realm-u5b49-20261030t02-49-29z",
+      "homeUnderTestsHomes": true,
+      "homeSource": "the host process DSH_HOME (the World home) — the host builds the PRODUCTION store from it; runner-side child processes open the SAME realm root as separate OS processes",
+      "bootBudget": "pool #449 <=2 starts; this run declares 1 start (the reserved 2nd is spendable only on an ENV_BLOCK-class NOT_REACHED, re-registered first)"
+    },
+    "seamsUsed": {
+      "faultAt": "none",
+      "nowMs": "none (production default Date.now)",
+      "bootId": "default (local boot id)",
+      "recordWriter": "none"
+    },
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-30T02:50:19.430Z",
+      "probed": true,
+      "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "partial",
+      "usable": true,
+      "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "partial",
+    "nativeConfinementDisclosure": "native (non-governed) confinement legs ran on a host whose sandbox probe answered \"partial\" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)",
+    "profileArtifacts": [
+      {
+        "worldId": "u5b49-20261030T02-49-29Z",
+        "composedProfileDigest": "479042bffaa1a69c376bf3b9ef43d02b86f6561d801bd8ceede93551628b4b6a",
+        "artifactPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-b49/dev/agent-workflow/evidence/u7r3-b49-20261031/c2/logs/u5b49-20261030T02-49-29Z/composed-profile-479042bffaa1a69c376bf3b9ef43d02b86f6561d801bd8ceede93551628b4b6a.patch.yml",
+        "artifactDigest": "479042bffaa1a69c376bf3b9ef43d02b86f6561d801bd8ceede93551628b4b6a",
+        "launchPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-b49/tests/homes/u5b49-20261030T02-49-29Z/profiles/web/cordis.patch.yml",
+        "launchedBytes": 3653,
+        "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+        "launchedDigest": "479042bffaa1a69c376bf3b9ef43d02b86f6561d801bd8ceede93551628b4b6a",
+        "composedProfileDigestMismatch": false
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "u7as:P-live-host-positive",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:18.859Z",
+      "diskRecord": {
+        "key": "agent:session-u7as-team-u5b49-20261030t02-49-29z",
+        "goal": {
+          "goalId": "goal-2026-10-30T02:51:07.788Z-1",
+          "objective": "U7AS_GOAL_CLAIM_u5b49-20261030t02-49-29z",
+          "phase": "active",
+          "revision": 1,
+          "roundsStarted": 0,
+          "maxGoalRounds": 3,
+          "armed": true
+        },
+        "nlink": 1
+      },
+      "writesAudit": [
+        {
+          "op": "goal/apply",
+          "scope": "agent:session-u7as-team-u5b49-20261030t02-49-29z",
+          "key": "agent:session-u7as-team-u5b49-20261030t02-49-29z/goal",
+          "applyId": "plane-agent-state:875cc96c-f16a-4731-a315-4a00f4f6c4c4:1"
+        }
+      ],
+      "freshStoreReread": {
+        "goalId": "goal-2026-10-30T02:51:07.788Z-1",
+        "objective": "U7AS_GOAL_CLAIM_u5b49-20261030t02-49-29z",
+        "phase": "active",
+        "revision": 1,
+        "roundsStarted": 0,
+        "maxGoalRounds": 3,
+        "armed": true
+      },
+      "modelSaw": "{\"goal\":{\"goal_id\":\"goal-2026-10-30T02:51:07.788Z-1\",\"objective\":\"U7AS_GOAL_CLAIM_u5b49-20261030t02-49-29z\",\"phase\":\"active\",\"revision\":1,\"rounds_started\":0,\"max_goal_rounds\":3,\"armed\":true}}",
+      "lanes": {
+        "health": true,
+        "state": true,
+        "goalTurn": true,
+        "laneDone": true
+      },
+      "law": "the governed create_goal row (durable Control ask settled ONCE by the public resolveControl seam) committed through the host process's PRODUCTION fs store built from its DSH_HOME = the World home (realpath under tests/homes), re-read from disk AND by a fresh production store instance"
+    },
+    {
+      "id": "u7as:L-live-serialise",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:18.859Z",
+      "plant": {
+        "pid": 139,
+        "atMs": 1793328666731,
+        "kind": "PLANTED",
+        "nonce": "b49hold-4b3a258a-7271-4c93-8215-a99672a3c4d2",
+        "token": "t0-46839ba6-cdd8-4455-9797-0ead23c57b53"
+      },
+      "releaseCheck": {
+        "pid": 139,
+        "atMs": 1793328675733,
+        "kind": "RELEASE_CHECK",
+        "present": true,
+        "mine": true,
+        "nonceSeen": "b49hold-4b3a258a-7271-4c93-8215-a99672a3c4d2"
+      },
+      "release": {
+        "pid": 139,
+        "atMs": 1793328675733,
+        "kind": "RELEASED"
+      },
+      "createApprovalAtMs": 1793328667720,
+      "commitAtMs": 1793328675774,
+      "leaderLockDigest": "50f4f46f58f6…",
+      "locksDirAfter": [],
+      "law": "u7as:L live arm: a SEPARATE live OS process (the hold child) planted+beat the leader-scope lock; the HOST process's production apply (its own store instance, production nowMs=Date.now) waited serially — commit strictly after release, real elapsed wait, the live holder's record NEVER broken (age irrelevant: positive-proof law), one goal/apply write, zero lock residue"
+    },
+    {
+      "id": "u7as:F-live-timeout-refusal",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:24.178Z",
+      "waiter": {
+        "pid": 251,
+        "atMs": 1793328682361,
+        "kind": "RESULT",
+        "ok": false,
+        "code": "AGENT_STATE_STORE_LOCK_TIMEOUT",
+        "elapsedMs": 3037,
+        "head": "{\"ok\":false,\"code\":\"AGENT_STATE_STORE_LOCK_TIMEOUT\",\"detail\":\"the dc3f520636a8362d8d846ca43df28788f2908848cecfa28d6f43c0a8a301cdc9.lock lock is held by another applier (pid 243 on host dsh-plugin-dev) and cannot be proven abandoned — refused, nothing written (a live or unprovable holder is never broken; see the module header for the operator clear)\",\"audit\":\"CONFIRMED\"}"
+      },
+      "waiterStderr": "",
+      "holdExit": 0,
+      "holdCheck": {
+        "pid": 243,
+        "atMs": 1793328684117,
+        "kind": "RELEASE_CHECK",
+        "present": true,
+        "mine": true,
+        "nonceSeen": "b49hold-dff000f0-155c-40af-889c-008548dc4948"
+      },
+      "lockAfter": "gone (self-released)",
+      "plantedNonce": "b49hold-dff000f0-155c-40af-889c-008548dc4948",
+      "config": "waiter store lockTimeoutMs=3000 (public documented input; production default is 10000 — the refusal CLASS is the config-independent law)",
+      "law": "u7as:F live arm: holder pid ALIVE => mayBreak answers false on every retry (age irrelevant) — the second process's production apply ends in the typed AGENT_STATE_STORE_LOCK_TIMEOUT refusal with ZERO durable write, zero record, the holder's generation never moved"
+    },
+    {
+      "id": "u7as:F-live-break-after-death",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:25.332Z",
+      "diedPid": 263,
+      "pidAliveRecheck": "ESRCH (dead)",
+      "plantAgeMs": 45000,
+      "elapsedMs": 1038,
+      "res": "{\"ok\":true,\"todos\":[{\"content\":\"D-after-break\",\"status\":\"pending\"}],\"audit\":\"CONFIRMED\"}",
+      "locksAfter": [],
+      "law": "u7as:F live death arm: a REAL process planted the lock and EXITED (pid proven ESRCH); the production breaker judged the generation provably dead, watched the token-stable observation window (real >=~1 s elapsed at production defaults), broke via rename-aside, VERIFIED the moved object by inode+nonce was exactly the judged generation, removed only that generation, then acquired and committed — zero residue"
+    },
+    {
+      "id": "u7as:R3-live-break-revalidate",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:26.595Z",
+      "parent": "{\"ok\":true,\"todos\":[{\"content\":\"E-parent\",\"status\":\"pending\"}],\"audit\":\"CONFIRMED\"}",
+      "child": {
+        "pid": 279,
+        "atMs": 1793328686537,
+        "kind": "RESULT",
+        "ok": true,
+        "code": null,
+        "elapsedMs": 1029,
+        "head": "{\"ok\":true,\"todos\":[{\"content\":\"E-child\",\"status\":\"pending\"}],\"audit\":\"CONFIRMED\"}"
+      },
+      "childStderr": "",
+      "record": [
+        {
+          "content": "E-child",
+          "status": "pending"
+        }
+      ],
+      "locksAfter": [],
+      "law": "#461 live arm (R3-1 owner policy): two breakers raced the same dead lock; whichever won the rename-aside, the loser REVALIDATED the name against its judgement and touched NOTHING it had not judged — when the winner's fresh lock went live, the loser treated it as the live holder it is (never broken, waited, committed only after release). Serialisation holds across processes and re-races: two writes, one record, zero stolen generations, zero residue"
+    },
+    {
+      "id": "u7as:M-live-replay",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:26.765Z",
+      "first": {
+        "pid": 291,
+        "atMs": 1793328686687,
+        "kind": "RESULT",
+        "ok": true,
+        "code": null,
+        "elapsedMs": 28,
+        "head": "{\"ok\":true,\"todos\":[{\"content\":\"M-first\",\"status\":\"pending\"}],\"audit\":\"CONFIRMED\"}"
+      },
+      "replaySameScope": {
+        "ok": false,
+        "code": "STATE_APPLY_REPLAY"
+      },
+      "replayOtherScope": {
+        "ok": false,
+        "code": "STATE_APPLY_REPLAY"
+      },
+      "writesForId": 1,
+      "markersForId": 1,
+      "law": "u7as:M live arm: one process consumed applyId X (O_EXCL marker BEFORE the commit); TWO FRESH store instances replay X — at the committing scope (scope-local appliedIds witness) and at a DIFFERENT scope (the cross-scope-GLOBAL marker witness) — both answer STATE_APPLY_REPLAY with zero persistence; exactly one durable write and one marker for X"
+    },
+    {
+      "id": "u7as:I-live-cross-scope-replay",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:27.755Z",
+      "rounds": [
+        {
+          "r": 1,
+          "parentScope": "agent:b49-Ia1-u5b49-20261030t02-49-29z",
+          "childScope": "agent:b49-Ib1-u5b49-20261030t02-49-29z",
+          "codes": [
+            "ok",
+            "STATE_APPLY_REPLAY"
+          ],
+          "oks": 1,
+          "writes": 1,
+          "markers": 1,
+          "childStderr": ""
+        },
+        {
+          "r": 2,
+          "parentScope": "agent:b49-Ib2-u5b49-20261030t02-49-29z",
+          "childScope": "agent:b49-Ia2-u5b49-20261030t02-49-29z",
+          "codes": [
+            "ok",
+            "STATE_APPLY_REPLAY"
+          ],
+          "oks": 1,
+          "writes": 1,
+          "markers": 1,
+          "childStderr": ""
+        },
+        {
+          "r": 3,
+          "parentScope": "agent:b49-Ia3-u5b49-20261030t02-49-29z",
+          "childScope": "agent:b49-Ib3-u5b49-20261030t02-49-29z",
+          "codes": [
+            "ok",
+            "STATE_APPLY_REPLAY"
+          ],
+          "oks": 1,
+          "writes": 1,
+          "markers": 1,
+          "childStderr": ""
+        }
+      ],
+      "law": "#460 live race: for each applyId, two OS processes applied it at DIFFERENT scopes gated to start together; the O_EXCL marker is check AND consume, outside the reach of either scope lock — exactly one durable commit, exactly one marker, the loser refused verbatim STATE_APPLY_REPLAY with zero persistence. This is the interleaving the pre-fix scope-locked check lost (audit P0-2a), graded live"
+    },
+    {
+      "id": "u7as:R-live-refund",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:27.793Z",
+      "refused": {
+        "ok": false,
+        "code": "GOAL_STALE_REVISION"
+      },
+      "markerAfterRefuse": 0,
+      "writesAfterRefuse": 0,
+      "redrive": {
+        "ok": true
+      },
+      "markerAfterRedrive": 1,
+      "writesAfterRedrive": 1,
+      "law": "u7as:R/M1 live arms: applyId Z consumed (the marker create PRECEDES the commit), the CAS precheck refused (GOAL_STALE_REVISION) => clean refund: marker GONE, zero write, the grant stays re-drivable; the SAME applyId re-driven at a valid precondition commits exactly once (marker back, one write)"
+    },
+    {
+      "id": "u7as:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:28.040Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": [],
+      "childrenSpawned": 10,
+      "hostLaneReached": true,
+      "approverErrors": [],
+      "law": "every leased port idle, every owned pid dead, every lease file gone, World home released; :3080 never signalled, ~/.dsh never touched"
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-30T02:51:28.138Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/u7r3-b49-20261031/c2/host-starts.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-30T02:50:19.429Z",
+        "runId": "u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z",
+        "suite": "u7r3-b49-lockseam",
+        "world": "u5b49-20261030T02-49-29Z",
+        "phase": "b49-boot1",
+        "poolRow": "#449 受影响生产路径 (<=2) — start 1/2"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": "dev/agent-workflow/evidence/u7r3-b49-20261031/c2/u5-u7r3-b49-lockseam-b49-2026-10-30T02-49-28-968Z.oracle.json",
+      "sha256": "7bcad1558a78160ced8c0e5cbf8894387dd347f1374e691c3c99a32929f8773d",
+      "kind": "world-oracle-source-artifact"
+    }
+  ],
+  "boots": [
+    {
+      "phase": "b49-boot1",
+      "world": "u5b49-20261030T02-49-29Z",
+      "port": 3189,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-b49/dev/agent-workflow/evidence/u7r3-b49-20261031/c2/logs/u5b49-20261030T02-49-29Z/instance-port3189.log"
+    }
+  ],
+  "b49Create": {
+    "status": 200,
+    "ok": true,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"u6fs-f1o2r2l4r2\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-u7as-team-u5b49-20261030t02-49-29z\",\"blueprint\":{\"blueprintId\":\"team.u7as.main\",\"revision\":\"1\",\"contentHash\":\"sha256:28b5a9b55f1c3f965acebca3d26c442ae5112a9261f246006d5e83af2d07bc88\"},\"createdAt\":\"2026-10-30T02:51:06.418Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness"
+  },
+  "b49GoalPrompt": {
+    "status": 200
+  },
+  "b49LegErrors": [],
+  "b49Disk": {
+    "base": "team-state/agent-state/u7as-realm-u5b49-20261030t02-49-29z",
+    "rootExists": false,
+    "realUnderHome": null,
+    "records": [],
+    "writes": [],
+    "attempts": [],
+    "errors": [
+      "store root: ENOENT"
+    ]
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "PASS",
+  "finishedAt": "2026-10-30T02:51:28.138Z"
+}
