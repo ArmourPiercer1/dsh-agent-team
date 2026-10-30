@@ -1,5 +1,13 @@
 # Alpha.6 Lane 2 — Round-1 report (2026-10-30 / 2026-10-31 real UTC)
 
+> **Reading note for a reader on `master`.** This memo reports on Lane 2's branches; it does not
+> describe this tree. The code it names (`packages/runtime/review-mandate/`,
+> `packages/runtime/review-wake/`, the p4t6 booking `alpha6-pr3.json`) lives on
+> `alpha6/lane2-s0-20261030` and `alpha6/lane2-pr3-wake-20261030`, **not** on `master`, and nothing here
+> claims otherwise. It is filed on a docs-only branch so the round's numbers, verdicts and open rulings
+> have one durable, reviewable home next to the S0 revalidation that preceded them; every measurement is
+> reproducible from the SHAs it names on those branches.
+
 > **Status of this file.** A lane-internal round report, **not** Current Authority. The repository's
 > current authority is unchanged: `dev/engineering/current-authority.json` → Alpha.5
 > (`alpha5-tool-io-governance`). Nothing here changes it, wires anything to `allow`, or enables
