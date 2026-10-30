@@ -9,9 +9,9 @@
 
 **不需要新造词汇。** 真实拓扑里产物-可观察性的既有闭形就是原生事件行：
 
-- 事件名 `deliverables/presented`，core 注册（`core/session/src/known-event-types.ts:36`），
+- 事件名 `deliverables/presented`，core 注册（`tests/deepseek-harness-test-use/packages/core/session/src/known-event-types.ts:36`），
   payload 形状 = `{ turn: number, callId: ToolCallId, files: [{ path, description? }] }`
-  （生产者亲笔 `tool-present/src/index.ts:105-107`；`files` 闭形与我方 `ui-mechanics.mjs:195-231`
+  （生产者亲笔 `tests/deepseek-harness-test-use/packages/deliverables/tool-present/src/index.ts:105-107`；`files` 闭形与我方 `ui-mechanics.mjs:199-228`
   的 `parsePresentArgs` 已互为镜像）。
 - GUI 消费端已在（宿主 client deliverables 插件读 durable 行 + `/api/present.open|host`
   桌面动作，`ui-deliverables/src/presented.ts:7,10`）。
@@ -28,7 +28,7 @@
 ## 2. session 绑定强制（简报设计点 2）
 
 绑定由构造保证、不新增机制：原生行的 `session` 参数**就是调用方 agent 的 Session**
-（`tool-present:77 exec.agent.session`，`:105 session.append`）。A-session 的行不在 B-session
+（`tool-present:78 stateOf(exec.agent.session,…)`，`:105 session.append`）。A-session 的行不在 B-session
 读面出现是宿主 session 作用域既有律（GUI 每 session 读自己的事件流；`/api/present.*` 同理）。
 我方治理行经 port receipt 只回整数 `turn`（`present-executor.mjs:327-369`），**永不持有/传递
 session 句柄** ⇒ 跨 session/跨 realm 泄漏在 plane 侧无通路。401/授权面零改动（不触 auth）。
@@ -62,7 +62,7 @@ NC1）。任何后续接线只替换「port 脸缺席」为「port 脸接到受�
   `refused-admission UI_PRESENT_PORT_ABSENT` 零效果（live 在案：PR #491
   `u7r3-uif4-20261030` `ui:present-env-truth` PASS + 盘上 SHA 不变 oracle）；即便有 port 脸，
   allowlist 无 deliverable 条目 ⇒ 新帧词汇不可达 mux。
-- **Affected invariant**：`present` L4-positive（`u7-tool-acceptance.json:653-682`，reason `:678`）
+- **Affected invariant**：`present` L4-positive（`dev/agent-workflow/ledgers/u7-tool-acceptance.json:653-682`，reason `:678`）
   与 G5 逐工具正控判据（`execution-plan.md:148`）；以及「产物对 session 的 GUI 侧可观察」的
   用户直令目标。
 - **为何不立案**：blocker 前置判据「证明无既有 public composition path」（ROUTER_RULES :130，
@@ -92,7 +92,7 @@ NC1）。任何后续接线只替换「port 脸缺席」为「port 脸接到受�
   照抄）。**不触发 contracts 冻结。**
 - **R-N3（仅当 owner 明文裁决仿写可）**：注入点在 **ARC-A 保护文件** `agent-bindings.mjs`
   （ledger 在册；backends 注入 seam 形状 `:2811-2814`）⇒ **具名 Center Interface PR + 独立安全
-  审查**（USER-RULING :24），且须原样重实现 open-turn/maxFiles/tools-result 配对或诚实缩形；
+  审查**（`dev/agent-workflow/gates/USER-RULING-20261031.md:24`），且须原样重实现 open-turn/maxFiles/tools-result 配对或诚实缩形；
   语义仿写风险由裁决承担。本 lane 不代裁。
 - **R-OWNED（不推荐）**：plane 自有帧词汇入 `packages/remote`（合同版本推进 + contracts 冻结流程
   + 取件方法）。生产世界生产者恒缺（port 无 present 脸）⇒ 正臂只能 mock 造 = 违 #446 无旋钮律 +
