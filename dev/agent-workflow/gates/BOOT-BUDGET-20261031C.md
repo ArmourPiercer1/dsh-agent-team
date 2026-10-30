@@ -45,3 +45,7 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - **点名 blocker（合规控制"每 start 必出 RUN Record 或点名 blocker"）**：两次启动均未传 `--run-record`，故无 runner 生成的 RUN Record；已用 `run-uif4-p2-reconstructed.json`（逐字段标注来源的 lane 重建，非 runner 记录）+ stdout RUN-SUMMARY 代位，并已在套件头部写入调用律。此为纪律缺口，责任在本 lane。
 - C2 池级"已用"表行由协调者统一记（本 lane 不知同池兄弟 lane 实耗，不代改共享行）：本 lane 应计入 **C2 +2**。
 - 环境不变式复核：:3080 只读 401 未变；~/.dsh mtime 2026-10-28 未变；host 树 tracked porcelain 两次启动前后均 0；本 lane World homes 已全部拆除。
+<!-- dated 2026-10-30T19:45Z coordinator conflict resolution (sync14 fmerge master): master side (used-rows 12:27Z→receipt 13:16Z) kept BEFORE branch side (coordinator pool ledger 13:27Z) per real-UTC order; zero deletions; both sections verbatim -->
+## 池总账（dated 2026-10-30T13:27Z，真实 UTC，协调者合并账；各行原文照留）
+
+- **C2 = 4/8**：u7r3-shomev2 2（#487，12:22:33Z/12:26:11Z）+ u7r3-uif4 2（#491，12:48:29Z/13:12:09Z；预登记 fa756733d，p3 未耗）。两 lane 收据各自在册，无双计。
