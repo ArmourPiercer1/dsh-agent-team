@@ -49,3 +49,16 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 ## 池总账（dated 2026-10-30T13:27Z，真实 UTC，协调者合并账；各行原文照留）
 
 - **C2 = 4/8**：u7r3-shomev2 2（#487，12:22:33Z/12:26:11Z）+ u7r3-uif4 2（#491，12:48:29Z/13:12:09Z；预登记 fa756733d，p3 未耗）。两 lane 收据各自在册，无双计。
+
+<!-- dated 2026-10-30T20:14Z coordinator conflict resolution (xval fmerge master@12cc9843e incl #492): both sides kept verbatim, real-UTC order (master sections 10:0-10:4xZ wave / 12:27-13:27Z before xval sections 14:21-15:5xZ); zero deletions -->
+## 预登记（registeredAt 2026-10-30T14:21Z，真实 UTC）— lane=u7r3-xval（受控并行验证试验，用户直接指令 2026-10-30），池 **C1（环境验证池）** 申请 3 starts
+
+- **目的**（用户指令原文要点）：核验 TestWorldFactory 双 worktree 真并发（共享租约根/独立 HOME/独立 Workspace/独立日志/固定 Host SHA/原生沙箱预检），C1 串行vs并行对照，及一组「真实 Host 启动 + 轻量 C1」共转试验；产资源效率对照报告。
+- **池归类声明**：本试验按 USER-RULING §一 池按**用途**归类——所购全部为「非验收验证（装配/环境）」= C1 池；**不得为任何 Family 记验收格**（分支 C2 不冒充合并后候选 C2；World 启动 RUN Record 来源绑定试验 lane，证据目录独立）。
+- 三 start 用途：x1/x2 = P0 双 worktree 双 World 同转（各 1）；x3 = P2 真实 Host 与轻量 C1 共转。P0/P2 各自出 RUN Record 或点名 blocker；沙箱预检必须落 Record；同类失败 RCA 停线；:3080/真实 ~/.dsh 红线与全套既有纪律不变。
+
+## 已用追加（append-only used-count）
+- **C1 +3**（记 3/8；lane=u7r3-xval 受控并行验证试验，真实 2026-10-30，用户直接指令，零验收格）：账本 `dev/agent-workflow/evidence/u7r3-xval-20261030/host-start-budget.jsonl` 恰 3 行——line1 token x1 14:56:53Z（真实启动后被 lane 探针脚本缺陷崩溃消耗，RCA=探针 TypeError，孤儿 World 经 reclaimWorld 回收留痕，同类失败律先 RCA 后重试）；line2 token x1 15:02:45Z 与 line3 token x2 15:04:23Z = P0 双 worktree 双 World 同转（:3189/:3190，RUN Record 各 17/17 PASS）。注册用途 x3 **未动用**（预算上限 ≤3 行下的 P2 共转测量折叠进 P0 重叠窗口，见 XVAL-REPORT.md 披露）。:3080/真实 ~/.dsh 只读不变式全程 byte-witness 未动。
+
+## 更正（dated 2026-10-30T15:47Z 真实 UTC，append-only，原文照留）— lane=u7r3-xval 池归类勘误
+本 lane 预登记与本册已用登记行将 3 starts 记入 **C1**，但本册 C1 用途=「Agent Control 真实 Host 复证」，本试验（并行基础设施验证）用途应为 **C4「机动与故障归因」**（含探针崩溃 RCA 的归因属性）。**勘误：3 starts 由 C1 划转 C4，C4 计 3/4，C1 回到 0/8。** 本更正不改变任何收据（budget jsonl 三行原样、RUN Records 原样、零验收格不变），只更正池归属；协调者裁决依据=池表用途列原文。

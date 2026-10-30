@@ -1,0 +1,168 @@
+{
+  "self": {
+    "world": "u5xvalb-20261030T15-03-33Z",
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes/u5xvalb-20261030T15-03-33Z",
+    "workspaceDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes/u5xvalb-20261030T15-03-33Z/workspace",
+    "logDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x2/logs/u5xvalb-20261030T15-03-33Z",
+    "instanceLog": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x2/logs/u5xvalb-20261030T15-03-33Z/instance-port3190.log",
+    "hostPort": 3190,
+    "mockPort": 13055,
+    "leaseEntries": [
+      {
+        "port": 13055,
+        "file": "c-000000002966-w-203-76783fc0bb31d00c.json",
+        "alive": true,
+        "purpose": "mock-provider"
+      },
+      {
+        "port": 3190,
+        "file": "c-000000002732-w-203-1cc67e794f4709e4.json",
+        "alive": true,
+        "purpose": "host"
+      }
+    ],
+    "dshHomeUnderOwnWorktree": true,
+    "tokenFingerprint": "da2e6b51"
+  },
+  "peer": {
+    "token": "x1",
+    "world": "u5xvala-20261030T15-01-54Z",
+    "port": 3189,
+    "mockPort": 13054,
+    "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/homes/u5xvala-20261030T15-01-54Z",
+    "at": "2026-10-30T15:03:31.821Z",
+    "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a"
+  },
+  "samples": [
+    {
+      "at": "2026-10-30T15:05:09.572Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.26 0.67 1.69 1/403 436"
+    },
+    {
+      "at": "2026-10-30T15:05:10.577Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.26 0.67 1.69 2/409 447"
+    },
+    {
+      "at": "2026-10-30T15:05:11.582Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.32 0.67 1.69 1/409 447"
+    },
+    {
+      "at": "2026-10-30T15:05:12.587Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.32 0.67 1.69 1/409 447"
+    },
+    {
+      "at": "2026-10-30T15:05:13.591Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.32 0.67 1.69 3/409 447"
+    },
+    {
+      "at": "2026-10-30T15:05:14.594Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.32 0.67 1.69 3/409 448"
+    },
+    {
+      "at": "2026-10-30T15:05:15.599Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.32 0.67 1.69 3/409 448"
+    },
+    {
+      "at": "2026-10-30T15:05:16.604Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.37 0.68 1.68 2/409 448"
+    },
+    {
+      "at": "2026-10-30T15:05:17.608Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.37 0.68 1.68 2/419 448"
+    },
+    {
+      "at": "2026-10-30T15:05:18.611Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.37 0.68 1.68 3/433 484"
+    },
+    {
+      "at": "2026-10-30T15:05:19.614Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.37 0.68 1.68 2/420 486"
+    },
+    {
+      "at": "2026-10-30T15:05:20.617Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.37 0.68 1.68 2/420 486"
+    },
+    {
+      "at": "2026-10-30T15:05:21.621Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.43 0.68 1.68 3/420 486"
+    },
+    {
+      "at": "2026-10-30T15:05:22.624Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.43 0.68 1.68 4/420 487"
+    },
+    {
+      "at": "2026-10-30T15:05:23.627Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.43 0.68 1.68 2/420 487"
+    },
+    {
+      "at": "2026-10-30T15:05:24.631Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.43 0.68 1.68 3/421 487"
+    },
+    {
+      "at": "2026-10-30T15:05:25.634Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.43 0.68 1.68 1/421 501"
+    },
+    {
+      "at": "2026-10-30T15:05:26.637Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.47 0.69 1.67 2/410 501"
+    },
+    {
+      "at": "2026-10-30T15:05:27.640Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.47 0.69 1.67 2/410 515"
+    },
+    {
+      "at": "2026-10-30T15:05:28.645Z",
+      "mine": 401,
+      "theirs": 401,
+      "loadavg": "0.47 0.69 1.67 1/402 525"
+    }
+  ],
+  "distinct": {
+    "portsDistinct": true,
+    "mockPortsDistinct": true,
+    "homesDistinct": true,
+    "teamShasSame": true
+  },
+  "window": {
+    "overlapSamples": 20,
+    "bothUpSince": "2026-10-30T15:03:31.821Z"
+  }
+}
