@@ -46,4 +46,16 @@ export interface WakeTurnCorrelation {
     readonly turn: number;
 }
 export declare function sameWakeTurn(a: WakeTurnCorrelation, b: WakeTurnCorrelation): boolean;
+/**
+ * THE store key for a slot row: one canonical string derived from the triple, exported because the
+ * atomicity of "at most one outstanding wake per triple" depends on there being exactly ONE derivation of
+ * it. `WakeSlotStore.compareAndSwap` is atomic per key, so if an adapter invented its own key shape — an
+ * object with keys in another order, a `${a}:${b}` join, a per-row id with a secondary index — two writers
+ * could each create a first slot for one triple without ever contending, and invariant 1 would silently
+ * degrade from a CAS to check-then-create. A function nobody can forget to use is worth three lines.
+ *
+ * Canonical ARRAY encoding of the triple, so field order is data rather than luck and a key can never
+ * collide with a wake id (which hashes a 4-tuple including `wakeSequence`).
+ */
+export declare function wakeSlotRowKey(key: WakeSlotKey): string;
 //# sourceMappingURL=identity.d.ts.map

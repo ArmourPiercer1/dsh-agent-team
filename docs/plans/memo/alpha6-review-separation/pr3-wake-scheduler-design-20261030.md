@@ -274,3 +274,23 @@ Three things the implementation settled that the design left open:
 Unchanged, and still the two things C1 cannot reach: the Kv adapter's real cross-process CAS atomicity, and
 the truth of `hasReadyWork` / inbox facts. Both are **C2 at the final merged HEAD** — re-run there, on a
 single-owner machine, before anything in this lane is wired to `allow`.
+
+### Round-4 review disposition (independent reviewer, executed not read)
+
+Verdict on the stack `fd6c08ddd + 92fef05c8 + ab56a5146`: **safe to merge DORMANT**, from an
+18-sequence external attack suite and an 11-mutation battery run against mirrors of the committed
+blobs — 10 of 11 mutations turned at least one leg red. The one that survived, and the two things
+closed out of it:
+
+* **NEW-2 (minor, fixed here).** `recovery-observed` with `inbox='unclaimed'` and no `messageId` was
+  refused at runtime and pinned by nothing: deleting the guard left the whole suite green. One leg now
+  owns it, with the adopt-with-id case as its positive control.
+* **NEW-3 (minor, fixed here).** §2 claimed the store key came from "one exported function" and no such
+  export existed — the key was derived inside the test, i.e. the atomicity story had no shipped anchor.
+  `wakeSlotRowKey` is now that export, the CAS model in leg 9 uses it, and a leg pins its
+  order-sensitivity and its resistance to the `a:b:c`-join collisions a hand-rolled key would hit.
+* **NEW-5 (note, fixed here).** The booking's leg counts are prose; what the census machine-enforces is
+  the path set and the delta arithmetic. The booking now says which is which, because a note that reads
+  like a guarantee and isn't one is the same species of error as a test that copies a vocabulary.
+* **Carried to PR-I2, not fixed here:** host-facts-only ingress (already in §5) and the withdraw journal
+  above.

@@ -58,7 +58,7 @@ export {
   type WakeReduceResult,
 } from './types.js'
 
-export { deriveWakeId, composeWakeText, sameWakeTurn, type WakeIdentityInput, type WakeTurnCorrelation } from './identity.js'
+export { deriveWakeId, composeWakeText, sameWakeTurn, wakeSlotRowKey, type WakeIdentityInput, type WakeTurnCorrelation } from './identity.js'
 
 export { reduceWakeSlot, createWakeSlot, hydrateWakeSlot, isBrandedWakeSlot } from './slot.js'
 

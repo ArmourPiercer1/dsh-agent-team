@@ -31,7 +31,7 @@
  * enabled by default, and no Alpha.5 permission, refusal, EffectSet or Grant semantics are touched.
  */
 export { WAKE_PHASES, WAKE_OUTSTANDING_PHASES, WAKE_EVENT_KINDS, WAKE_DELIVERY_FAILURES, WAKE_SUSPEND_REASONS, WAKE_INBOX_OBSERVATIONS, WAKE_EFFECT_KINDS, WAKE_REFUSALS, isOutstandingWake, } from './types.js';
-export { deriveWakeId, composeWakeText, sameWakeTurn } from './identity.js';
+export { deriveWakeId, composeWakeText, sameWakeTurn, wakeSlotRowKey } from './identity.js';
 export { reduceWakeSlot, createWakeSlot, hydrateWakeSlot, isBrandedWakeSlot } from './slot.js';
 export { reconcileWakeSlots } from './recovery.js';
 //# sourceMappingURL=index.js.map

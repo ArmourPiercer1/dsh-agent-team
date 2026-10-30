@@ -20,6 +20,7 @@ import { canonicalJsonStringify } from '../../contracts/src/index.js'
 import {
   composeWakeText,
   createWakeSlot,
+  wakeSlotRowKey,
   WAKE_REFUSALS,
   deriveWakeId,
   hydrateWakeSlot,
@@ -389,11 +390,13 @@ describe('a6-pr3 leg 9 — the store key is the triple, so creation is a CAS and
   interface Row { readonly key: string; readonly slot: WakeSlot }
   class Store {
     private readonly rows = new Map<string, Row>()
+    // The store uses the KERNEL's exported key function. That is the point of NEW-3: if the adapter were
+    // free to derive its own, this leg would be proving a key that no production code computes.
     load(key: WakeSlotKey): WakeSlot | null {
-      return this.rows.get(JSON.stringify(canonicalJsonStringify([key.rootSessionId, key.reviewerInstanceId, key.sessionGeneration])))?.slot ?? null
+      return this.rows.get(wakeSlotRowKey(key))?.slot ?? null
     }
     cas(key: WakeSlotKey, expectedRevision: number, next: WakeSlot): boolean {
-      const text = JSON.stringify(canonicalJsonStringify([key.rootSessionId, key.reviewerInstanceId, key.sessionGeneration]))
+      const text = wakeSlotRowKey(key)
       const current = this.rows.get(text)
       if ((current?.slot.revision ?? 0) !== expectedRevision) return false
       this.rows.set(text, { key: text, slot: next })
@@ -805,6 +808,43 @@ describe('a6-pr3 leg 16 — an event about the wrong triple is refused, however 
       expect(result.refusal).toBe('WAKE_EVENT_MALFORMED')
       expect(result.slot).toBeNull()
     }
+  })
+})
+
+describe('a6-pr3 — the two guards a mutation battery found unpinned', () => {
+  it('a recovery observation that says "unclaimed" without naming the message is refused (NEW-2)', () => {
+    // Round-4 mutation M9: deleting this refusal left every other leg green, which is how I learned the
+    // guard was real but unowned. `unclaimed` without an id is the one observation that cannot be acted
+    // on — adopting nothing is a state change with no subject, and re-delivering would create the second
+    // physical message the whole withdraw law exists to avoid.
+    const reserved = reduceWakeSlot(null, ev.request('fp-a'), ctx())
+    const result = reduceWakeSlot(reserved.slot, ev.recovery('unclaimed', null), ctx())
+    expect(result.refusal).toBe('WAKE_EVENT_MALFORMED')
+    expect(result.effects).toEqual([])
+    expect(result.slot).toBe(reserved.slot)
+    // Positive control: the same observation WITH the id is the adopt case, accepted and silent.
+    const adopted = reduceWakeSlot(reserved.slot, ev.recovery('unclaimed', 'msg-1'), ctx())
+    expect(adopted.refusal).toBeNull()
+    expect(adopted.effects).toEqual([])
+  })
+
+  it('the store key is one exported derivation of the triple, order-sensitive and collision-free (NEW-3)', () => {
+    // The CAS in leg 9 is only as strong as the single-ness of this function: the atomicity of "one
+    // outstanding wake per triple" is per KEY, so two derivations of "the same" key is how invariant 1
+    // silently becomes check-then-create.
+    expect(wakeSlotRowKey(KEY)).toBe(canonicalJsonStringify(['team-root-01', 'inst-officer-1', 4]))
+    expect(wakeSlotRowKey({ ...KEY })).toBe(wakeSlotRowKey(KEY))
+    const keys = new Set([
+      wakeSlotRowKey(KEY),
+      wakeSlotRowKey(OTHER),
+      wakeSlotRowKey({ ...KEY, sessionGeneration: 5 }),
+      wakeSlotRowKey({ rootSessionId: 'team-root-01', reviewerInstanceId: 'inst-officer-1|4', sessionGeneration: 2 }),
+      wakeSlotRowKey({ rootSessionId: 'team-root-01|inst-officer-1|4', reviewerInstanceId: 'x', sessionGeneration: 2 }),
+    ])
+    // A naive `a:b:c` join would collide on the two adversarial triples above; the canonical encoding
+    // cannot, which is the whole reason the key is a JSON array and not a concatenation.
+    expect(keys.size).toBe(5)
+    expect(wakeSlotRowKey(KEY)).not.toContain('review-wake')
   })
 })
 
