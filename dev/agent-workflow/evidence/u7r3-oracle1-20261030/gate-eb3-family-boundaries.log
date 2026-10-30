@@ -1,0 +1,1 @@
+EB3-FAMILY-BOUNDARIES pass files=82 findings=0 engine=auto extractor=regex+string-masking (acorn unresolvable: bare: Cannot find module 'acorn' ;; pnpm-hoist: Cannot find module 'acorn')

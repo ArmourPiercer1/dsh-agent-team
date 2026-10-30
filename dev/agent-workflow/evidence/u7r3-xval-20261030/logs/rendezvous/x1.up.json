@@ -1,0 +1,9 @@
+{
+  "token": "x1",
+  "world": "u5xvala-20261030T15-01-54Z",
+  "port": 3189,
+  "mockPort": 13054,
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-a/tests/homes/u5xvala-20261030T15-01-54Z",
+  "at": "2026-10-30T15:03:31.821Z",
+  "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a"
+}

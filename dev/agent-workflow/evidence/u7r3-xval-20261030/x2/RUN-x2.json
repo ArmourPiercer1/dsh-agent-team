@@ -1,0 +1,488 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "x2-20261030T15-03-32Z",
+  "suite": "u7r3-xval-parallel-validation (NO-ACCEPTANCE-CREDIT)",
+  "startedAt": "2026-10-30T15:03:32.955Z",
+  "selectedCases": [
+    "host-base-pre",
+    "sandbox-preflight",
+    "budget-line-before-spawn",
+    "boot",
+    "token-gate-401",
+    "auth-303",
+    "readiness-200",
+    "lease-capture",
+    "overlap-window",
+    "teardown",
+    "host-base-post",
+    "ports-released",
+    "leases-released",
+    "home-removed",
+    "stable-3080-untouched",
+    "real-dsh-home-untouched"
+  ],
+  "bindings": {
+    "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a",
+    "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b",
+    "token": "x2",
+    "phase": "p0-concurrent",
+    "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+    "hostBase": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "pre-bindings"
+    },
+    "leaseRoot": {
+      "leaseRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "expectedMainHoist": "/srv/workspace/dsh-plugins/dsh-agent-team/.artifacts/tmp/port-leases",
+      "hoisted": true
+    },
+    "homeRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes",
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "worldIds": [
+      "u5xvalb-20261030T15-03-33Z"
+    ],
+    "noAcceptanceCredit": true,
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-30T15:03:33.051Z",
+      "probed": true,
+      "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "partial",
+      "usable": true,
+      "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "unusable",
+          "launcherPresent": false
+        },
+        {
+          "phase": "after-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        }
+      ],
+      "asset": {
+        "schema": "u7-sbx-host-sandbox-assets/1",
+        "at": "2026-10-30T15:03:33.251Z",
+        "action": "provisioned",
+        "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+        "platformDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64",
+        "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+        "baseline": {
+          "version": "0.2.0-rc.2",
+          "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+          "manifestKey": "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84"
+        },
+        "platform": "linux-x64",
+        "libc": "glibc",
+        "manifestLauncher": "bin/landlock-run",
+        "source": {
+          "kind": "env",
+          "tree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/.artifacts/tmp/xval-sbx-source",
+          "realTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/.artifacts/tmp/xval-sbx-source",
+          "runtimeHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+          "headEvidence": "git rev-parse HEAD",
+          "headMatchesPinnedBaseline": true
+        },
+        "files": [
+          {
+            "relPath": "bin/glibc/system.node",
+            "role": "addon",
+            "state": "present",
+            "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+            "expectedSha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+            "bytes": 17360,
+            "mode": "0o755"
+          },
+          {
+            "relPath": "bin/landlock-run",
+            "role": "launcher",
+            "state": "copied",
+            "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+            "expectedSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+            "bytes": 38552,
+            "mode": "0o755"
+          }
+        ],
+        "bytesWritten": 38552,
+        "porcelainBefore": {
+          "empty": true,
+          "available": true
+        },
+        "porcelainAfter": {
+          "empty": true,
+          "available": true,
+          "lines": []
+        }
+      },
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "partial",
+    "nativeConfinementDisclosure": "native (non-governed) confinement legs ran on a host whose sandbox probe answered \"partial\" — recorded as a pre-flight verdict, never as a product PASS (see docs/TEST_METHODS.md §9 and bindings.sandboxPreflight)",
+    "preflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-30T15:03:33.051Z",
+      "probed": true,
+      "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "partial",
+      "usable": true,
+      "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "unusable",
+          "launcherPresent": false
+        },
+        {
+          "phase": "after-provision",
+          "backend": "partial",
+          "launcherPresent": true
+        }
+      ],
+      "asset": {
+        "schema": "u7-sbx-host-sandbox-assets/1",
+        "at": "2026-10-30T15:03:33.251Z",
+        "action": "provisioned",
+        "runtimeTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+        "platformDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64",
+        "launcherPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+        "baseline": {
+          "version": "0.2.0-rc.2",
+          "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+          "manifestKey": "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84"
+        },
+        "platform": "linux-x64",
+        "libc": "glibc",
+        "manifestLauncher": "bin/landlock-run",
+        "source": {
+          "kind": "env",
+          "tree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/.artifacts/tmp/xval-sbx-source",
+          "realTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/.artifacts/tmp/xval-sbx-source",
+          "runtimeHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+          "headEvidence": "git rev-parse HEAD",
+          "headMatchesPinnedBaseline": true
+        },
+        "files": [
+          {
+            "relPath": "bin/glibc/system.node",
+            "role": "addon",
+            "state": "present",
+            "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+            "expectedSha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+            "bytes": 17360,
+            "mode": "0o755"
+          },
+          {
+            "relPath": "bin/landlock-run",
+            "role": "launcher",
+            "state": "copied",
+            "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+            "expectedSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+            "bytes": 38552,
+            "mode": "0o755"
+          }
+        ],
+        "bytesWritten": 38552,
+        "porcelainBefore": {
+          "empty": true,
+          "available": true
+        },
+        "porcelainAfter": {
+          "empty": true,
+          "available": true,
+          "lines": []
+        }
+      },
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+  },
+  "cases": [
+    {
+      "id": "host-base-pre",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:03:33.051Z",
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "host-base-pre"
+    },
+    {
+      "id": "sandbox-preflight",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:03:33.345Z",
+      "backend": "partial"
+    },
+    {
+      "id": "budget-line-before-spawn",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:04:23.895Z",
+      "budgetLineCount": 3,
+      "entry": {
+        "at": "2026-10-30T15:04:23.895Z",
+        "runId": "x2-20261030T15-03-32Z",
+        "suite": "u7r3-xval-parallel-validation (NO-ACCEPTANCE-CREDIT)",
+        "world": "u5xvalb-20261030T15-03-33Z",
+        "phase": "p0-concurrent",
+        "token": "x2",
+        "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b",
+        "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+        "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a"
+      },
+      "wroteAt": "2026-10-30T15:04:23.895Z",
+      "spawnedAt": "2026-10-30T15:05:09.392Z"
+    },
+    {
+      "id": "boot",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:09.392Z",
+      "port": 3190,
+      "bootMs": 45497,
+      "logPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x2/logs/u5xvalb-20261030T15-03-33Z/instance-port3190.log",
+      "hostPid": 423,
+      "redacted": "http://127.0.0.1:3190/?token=REDACTED"
+    },
+    {
+      "id": "token-gate-401",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:09.437Z",
+      "status": 401
+    },
+    {
+      "id": "auth-303",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:09.439Z",
+      "via": "authenticate(): GET /?token -> 303 + set-cookie"
+    },
+    {
+      "id": "readiness-200",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:09.446Z",
+      "status": 200,
+      "bytes": 34845,
+      "disclosure": null
+    },
+    {
+      "id": "lease-capture",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:09.567Z",
+      "world": "u5xvalb-20261030T15-03-33Z",
+      "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes/u5xvalb-20261030T15-03-33Z",
+      "workspaceDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes/u5xvalb-20261030T15-03-33Z/workspace",
+      "logDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x2/logs/u5xvalb-20261030T15-03-33Z",
+      "instanceLog": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/x2/logs/u5xvalb-20261030T15-03-33Z/instance-port3190.log",
+      "hostPort": 3190,
+      "mockPort": 13055,
+      "leaseEntries": [
+        {
+          "port": 13055,
+          "file": "c-000000002966-w-203-76783fc0bb31d00c.json",
+          "alive": true,
+          "purpose": "mock-provider"
+        },
+        {
+          "port": 3190,
+          "file": "c-000000002732-w-203-1cc67e794f4709e4.json",
+          "alive": true,
+          "purpose": "host"
+        }
+      ],
+      "dshHomeUnderOwnWorktree": true,
+      "tokenFingerprint": "da2e6b51"
+    },
+    {
+      "id": "overlap-window",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.645Z",
+      "peerToken": "x1",
+      "distinct": {
+        "portsDistinct": true,
+        "mockPortsDistinct": true,
+        "homesDistinct": true,
+        "teamShasSame": true
+      },
+      "sampleCount": 20,
+      "firstSample": {
+        "at": "2026-10-30T15:05:09.572Z",
+        "mine": 401,
+        "theirs": 401,
+        "loadavg": "0.26 0.67 1.69 1/403 436"
+      },
+      "lastSample": {
+        "at": "2026-10-30T15:05:28.645Z",
+        "mine": 401,
+        "theirs": 401,
+        "loadavg": "0.47 0.69 1.67 1/402 525"
+      }
+    },
+    {
+      "id": "teardown",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.720Z",
+      "receipts": {
+        "killedPids": [
+          423
+        ],
+        "releasedPorts": [
+          3190,
+          13055,
+          3190
+        ],
+        "homeDeleted": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/homes/u5xvalb-20261030T15-03-33Z",
+        "notes": []
+      }
+    },
+    {
+      "id": "ports-released",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.720Z",
+      "hostPort": 3190,
+      "hostFree": true,
+      "mockPort": 13055,
+      "mockFree": true
+    },
+    {
+      "id": "leases-released",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.833Z",
+      "leftover": []
+    },
+    {
+      "id": "home-removed",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.833Z",
+      "censusWorlds": [],
+      "leftoverHomes": 0
+    },
+    {
+      "id": "host-base-post",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.945Z",
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "host-base-post",
+      "pinned": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    {
+      "id": "sandbox-preflight-note",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.945Z",
+      "note": "preflight record in bindings"
+    },
+    {
+      "id": "stable-3080-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.945Z",
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      }
+    },
+    {
+      "id": "real-dsh-home-untouched",
+      "verdict": "PASS",
+      "at": "2026-10-30T15:05:28.945Z",
+      "pre": {
+        "mtimeMs": 1793195142559.5686,
+        "mtime": "2026-10-28T13:45:42.560Z"
+      },
+      "post": {
+        "mtimeMs": 1793195142559.5686,
+        "mtime": "2026-10-28T13:45:42.560Z"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-xval/dev/agent-workflow/evidence/u7r3-xval-20261030/host-start-budget.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-30T15:04:23.895Z",
+        "runId": "x2-20261030T15-03-32Z",
+        "suite": "u7r3-xval-parallel-validation (NO-ACCEPTANCE-CREDIT)",
+        "world": "u5xvalb-20261030T15-03-33Z",
+        "phase": "p0-concurrent",
+        "token": "x2",
+        "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b",
+        "hostTree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/xval-b/tests/deepseek-harness-test-use",
+        "teamSha": "51b023dad4488d936eccceafb2afd396e92df66a"
+      }
+    ]
+  },
+  "envShots": [
+    {
+      "at": "2026-10-30T15:03:32.829Z",
+      "phase": "pre",
+      "loadavg": "0.27 0.82 1.85 1/385 212",
+      "stable3080": {
+        "reachable": true,
+        "status": 401
+      },
+      "realDshHome": {
+        "mtimeMs": 1793195142559.5686,
+        "mtime": "2026-10-28T13:45:42.560Z"
+      },
+      "diskAvailKb": 37454876
+    },
+    {
+      "at": "2026-10-30T15:05:28.833Z",
+      "phase": "post",
+      "loadavg": "0.47 0.69 1.67 1/391 525",
+      "stable3080": {
+        "reachable": true,
+        "status": 401
+      },
+      "realDshHome": {
+        "mtimeMs": 1793195142559.5686,
+        "mtime": "2026-10-28T13:45:42.560Z"
+      },
+      "diskAvailKb": 37454684
+    }
+  ],
+  "overall": "PASS",
+  "finishedAt": "2026-10-30T15:05:28.945Z",
+  "formatNormalization": " dated R495-fl F-1 supplement: canonical bindings.hostSha copied from bindings.hostBase.head (value was already bound in substance; record-shape only, no re-run)."
+}

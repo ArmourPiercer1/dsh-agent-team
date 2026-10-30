@@ -1,0 +1,11 @@
+2026-10-30T14:27:03Z
+2.75 3.86 2.04 2/421 7
+6
+               total        used        free      shared  buff/cache   available
+Mem:        25176080     2982276     6432460       18064    16193456    22193804
+/dev/mapper/ubuntu--vg-ubuntu--lv 112173732 65470540  41496784  62% /
+/dev/mapper/ubuntu--vg-ubuntu--lv 112173732 65470540  41496784  62% /
+HOME=/home/user
+2026-10-28 13:45:42.559568537 +0000 /home/user/.dsh
+:%3080 status=401
+(port scan of test bands done)
