@@ -1,0 +1,183 @@
+=== GATE CHAIN START 2026-10-30T14:39:47Z ===
+--- pnpm typecheck ---
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+TYPECHECK_EXIT=0
+--- pnpm build ---
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+BUILD_EXIT=0
+--- pnpm build:composition ---
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/team-tool-plane.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/ptc-escalation-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/center-shadow-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/jobs-family-bridge.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/jobs-family-bridge.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/jobs-background-producer.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/jobs-background-producer.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/pa-mount-registry.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/upstream-resolver.mjs -> packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs (byte-identical)
+place-dist-glue: packages/runtime/root-binding/harness/seam.mjs -> packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs (byte-identical)
+place-dist-glue: packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py -> packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/index.mjs -> packages/runtime/dist/packages/tools/fs-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/fs-mechanics.mjs -> packages/runtime/dist/packages/tools/fs-family/src/fs-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/read-presentation.mjs -> packages/runtime/dist/packages/tools/fs-family/src/read-presentation.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/read-executor.mjs -> packages/runtime/dist/packages/tools/fs-family/src/read-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/read-row.mjs -> packages/runtime/dist/packages/tools/fs-family/src/read-row.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/fs-read-contribution.mjs -> packages/runtime/dist/packages/tools/fs-family/src/fs-read-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/fs-mutation-mechanics.mjs -> packages/runtime/dist/packages/tools/fs-family/src/fs-mutation-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/write-executor.mjs -> packages/runtime/dist/packages/tools/fs-family/src/write-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/write-row.mjs -> packages/runtime/dist/packages/tools/fs-family/src/write-row.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/edit-executor.mjs -> packages/runtime/dist/packages/tools/fs-family/src/edit-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/edit-row.mjs -> packages/runtime/dist/packages/tools/fs-family/src/edit-row.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/image-executor.mjs -> packages/runtime/dist/packages/tools/fs-family/src/image-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/image-read-port.mjs -> packages/runtime/dist/packages/tools/fs-family/src/image-read-port.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/image-row.mjs -> packages/runtime/dist/packages/tools/fs-family/src/image-row.mjs (byte-identical)
+place-dist-glue: packages/tools/fs-family/src/fs-family-contribution.mjs -> packages/runtime/dist/packages/tools/fs-family/src/fs-family-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/index.mjs -> packages/runtime/dist/packages/tools/process-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/shell-mechanics.mjs -> packages/runtime/dist/packages/tools/process-family/src/shell-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/confined-shell-executor.mjs -> packages/runtime/dist/packages/tools/process-family/src/confined-shell-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/bash-row.mjs -> packages/runtime/dist/packages/tools/process-family/src/bash-row.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/bash-contribution.mjs -> packages/runtime/dist/packages/tools/process-family/src/bash-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/pwsh-mechanics.mjs -> packages/runtime/dist/packages/tools/process-family/src/pwsh-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/pwsh-confined.mjs -> packages/runtime/dist/packages/tools/process-family/src/pwsh-confined.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/pwsh-executor.mjs -> packages/runtime/dist/packages/tools/process-family/src/pwsh-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/process-family/src/pwsh-row.mjs -> packages/runtime/dist/packages/tools/process-family/src/pwsh-row.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/index.mjs -> packages/runtime/dist/packages/tools/search-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/search-mechanics.mjs -> packages/runtime/dist/packages/tools/search-family/src/search-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/search-backend.mjs -> packages/runtime/dist/packages/tools/search-family/src/search-backend.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/glob-backend.mjs -> packages/runtime/dist/packages/tools/search-family/src/glob-backend.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/cancel-leg.mjs -> packages/runtime/dist/packages/tools/search-family/src/cancel-leg.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/search-row.mjs -> packages/runtime/dist/packages/tools/search-family/src/search-row.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/search-contribution.mjs -> packages/runtime/dist/packages/tools/search-family/src/search-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/search-family/src/stream-drain.mjs -> packages/runtime/dist/packages/tools/search-family/src/stream-drain.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/approval-entry-binder.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/approval-entry-binder.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/family-assembly.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/family-assembly.mjs (byte-identical)
+place-dist-glue: packages/tools/families/manifest.json -> packages/runtime/dist/packages/tools/families/manifest.json (byte-identical)
+place-dist-glue: packages/tools/families/index.mjs -> packages/runtime/dist/packages/tools/families/index.mjs (byte-identical)
+place-dist-glue: packages/tools/families/fs.mjs -> packages/runtime/dist/packages/tools/families/fs.mjs (byte-identical)
+place-dist-glue: packages/tools/families/process.mjs -> packages/runtime/dist/packages/tools/families/process.mjs (byte-identical)
+place-dist-glue: packages/tools/families/search.mjs -> packages/runtime/dist/packages/tools/families/search.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/agent-control-contribution.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/agent-control-executor.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/agent-control-mechanics.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/agent-control-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/agent-runtime-port.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/agent-runtime-port.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/fork-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/fork-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/index.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/interrupt-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/interrupt-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/list-agents-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/list-agents-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/list-models-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/list-models-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/native-output-schemas.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/native-output-schemas.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/spawn-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/spawn-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/steer-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/steer-row.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-control-family/src/workflow-row.mjs -> packages/runtime/dist/packages/tools/agent-control-family/src/workflow-row.mjs (byte-identical)
+place-dist-glue: packages/tools/families/agent-control.mjs -> packages/runtime/dist/packages/tools/families/agent-control.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/index.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/row-names.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/row-names.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/skill-mechanics.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/skill-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/skill-executor.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/skill-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/skill-row.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/skill-row.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/inspect-mechanics.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/inspect-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/inspect-executor.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/inspect-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/inspect-rows.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/inspect-rows.mjs (byte-identical)
+place-dist-glue: packages/tools/inspect-family/src/inspect-family-contribution.mjs -> packages/runtime/dist/packages/tools/inspect-family/src/inspect-family-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/families/inspect.mjs -> packages/runtime/dist/packages/tools/families/inspect.mjs (byte-identical)
+place-dist-glue: packages/tools/families/ui.mjs -> packages/runtime/dist/packages/tools/families/ui.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/index.mjs -> packages/runtime/dist/packages/tools/ui-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/ui-mechanics.mjs -> packages/runtime/dist/packages/tools/ui-family/src/ui-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/ui-interaction-port.mjs -> packages/runtime/dist/packages/tools/ui-family/src/ui-interaction-port.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/ask-executor.mjs -> packages/runtime/dist/packages/tools/ui-family/src/ask-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/present-executor.mjs -> packages/runtime/dist/packages/tools/ui-family/src/present-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/ask-row.mjs -> packages/runtime/dist/packages/tools/ui-family/src/ask-row.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/present-row.mjs -> packages/runtime/dist/packages/tools/ui-family/src/present-row.mjs (byte-identical)
+place-dist-glue: packages/tools/ui-family/src/ui-family-contribution.mjs -> packages/runtime/dist/packages/tools/ui-family/src/ui-family-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/index.mjs -> packages/runtime/dist/packages/tools/web-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/web-mechanics.mjs -> packages/runtime/dist/packages/tools/web-family/src/web-mechanics.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/web-transport.mjs -> packages/runtime/dist/packages/tools/web-family/src/web-transport.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/web-search-provider.mjs -> packages/runtime/dist/packages/tools/web-family/src/web-search-provider.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/fetch-executor.mjs -> packages/runtime/dist/packages/tools/web-family/src/fetch-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/search-executor.mjs -> packages/runtime/dist/packages/tools/web-family/src/search-executor.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/fetch-row.mjs -> packages/runtime/dist/packages/tools/web-family/src/fetch-row.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/search-row.mjs -> packages/runtime/dist/packages/tools/web-family/src/search-row.mjs (byte-identical)
+place-dist-glue: packages/tools/web-family/src/web-family-contribution.mjs -> packages/runtime/dist/packages/tools/web-family/src/web-family-contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/families/web.mjs -> packages/runtime/dist/packages/tools/families/web.mjs (byte-identical)
+place-dist-glue: packages/tools/families/agent-state.mjs -> packages/runtime/dist/packages/tools/families/agent-state.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/index.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/index.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/agent-state-law.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/agent-state-law.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/state-store.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/state-store.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/executors.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/executors.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/contribution.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/contribution.mjs (byte-identical)
+place-dist-glue: packages/tools/agent-state-family/src/fs-state-store.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/fs-state-store.mjs (byte-identical)
+place-dist-glue: done (100 placement(s))
+build-client-composition: 96 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask/packages/client/composition-shim/client-bundle.js (1308108 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask/packages/client/composition-shim/package.json
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1883 glue=100
+[check-artifacts-committed] OK: 1883 files — working tree equals the git INDEX for both install surfaces (incl. 100 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+COMPOSITION_EXIT=0
+--- pnpm check:artifacts ---
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1883 glue=100
+[check-artifacts-committed] OK: 1883 files — working tree equals the git INDEX for both install surfaces (incl. 100 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+ARTIFACTS_EXIT=0
+--- docs:probe (--worktree-only; the CI leg names its base ref) ---
+docs:probe base=(worktree-only) head=e2f14c71b changed=15 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+ADVISORY DOC_IMPACT_OWNED: 10 source path(s) have declared owner documents
+ADVISORY SOURCE_CHANGED_DOC_IMPACT: owning-document selection is advisory except where dev/engineering/doc-ownership.yaml marks a rule enforce:true; those are self-imposed refusals (DOC_OWNER_UPDATE_MISSING), and CI wiring (EB-ADR-0001) remains a separate coordination decision
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+DOCPROBE_EXIT=0
+--- lint identity (a4p7 leg law, named baseline) ---
+lint-identities: 161 identity lines, 76 distinct (target .)
+lint-identities: universe: 1522 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+LINTID_EXIT=0
+--- eb3 static legs ---
+eb3-family-boundaries EXIT=0
+eb3-family-definitions EXIT=0
+eb3-tool-acceptance EXIT=0
+eb3-trusted-sources EXIT=0
+gen-family-index EXIT=0
+=== GATE CHAIN END 2026-10-30T14:40:32Z ===

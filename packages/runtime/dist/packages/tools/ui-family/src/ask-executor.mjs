@@ -54,10 +54,15 @@ import { hasUiPortFace } from './ui-interaction-port.mjs'
  * @param {(paCall: object) => Promise<object>} input.pa - the Kernel's
  *   admission edge (admit → ask when required → one-shot consume, all
  *   inside; the returned `allow` IS the consumed proof).
- * @param {() => unknown} input.portRef - the INJECTED interaction port,
- *   resolved per call (absent = the fail-closed typed refusal; a trusted
- *   mount may swap the port in after the plane was built — the image row's
- *   lazy host-seam law).
+ * @param {(agent?: unknown) => unknown} input.portRef - the INJECTED
+ *   interaction port, resolved per call (absent = the fail-closed typed
+ *   refusal; a trusted mount may swap the port in after the plane was built —
+ *   the image row's lazy host-seam law). The call's carrier Agent (the row's
+ *   `exec.agent`, carried on `corr` as trusted transport data) rides as the
+ *   ONE argument: the host-service arm binds it lazily for THIS call only
+ *   (O2-A S1 — no mount-time capture); an injected port owns its own binding
+ *   and receives no re-stamped carrier. The Agent is never a correlation
+ *   field: it enters no line, no callId, no ledger string.
  * @param {boolean} [input.timed] - mount-level variant selection (the host
  *   `mode: 'timed'` mirror): true registers the timed shape (the `timeout`
  *   parameter, unique question ids, the bounded wait and its pending
@@ -110,7 +115,7 @@ export function createGovernedAskExecutor({ realmId, policy, decide, pa, portRef
       // ── The port gate BEFORE any authority force: absent face = the
       // fail-closed typed refusal with ZERO PA consumption and ZERO port
       // calls (a call that could never interact never spends a grant). ────
-      const port = typeof portRef === 'function' ? portRef() : null
+      const port = typeof portRef === 'function' ? portRef(corr?.agent) : null
       const timeout = timed ? (parsed.value[TIMED_WAIT_PARAMETER] ?? DEFAULT_ASK_TIMEOUT_SECONDS) : undefined
       const face = timed && timeout !== -1 ? 'askTimed' : 'ask'
       if (!hasUiPortFace(port, face)) {

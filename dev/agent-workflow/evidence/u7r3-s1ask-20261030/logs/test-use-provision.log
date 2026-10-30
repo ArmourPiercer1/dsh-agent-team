@@ -1,0 +1,35 @@
+runtime tree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask/tests/deepseek-harness-test-use
+baseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+probe        : before-provision=unusable -> after-provision=unusable
+backend      : unusable (usable: false)
+launcher     : ABSENT 
+provision    : refused (ENTRY_MODULE_MISSING) — environment state, recorded as ENV_BLOCK by suites
+porcelain    : empty (assets are gitignored)
+runtime tree : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-s1ask/tests/deepseek-harness-test-use
+baseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+probe        : before-provision=unusable -> after-provision=partial
+backend      : partial (usable: true)
+launcher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+provisioning : provisioned (38552 bytes) from default-team-checkout /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use
+  bin/glibc/system.node  present  54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc  0o755
+  bin/landlock-run  copied  a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31  0o755
+porcelain    : empty (assets are gitignored)
+
+--- test-use checkout provisioning record (lane u7r3-s1ask, real 2026-10-30T14:13Z-14:22Z) ---
+EF-04: shared baseline /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness has NO .git in this
+environment -> cloned --local --no-hardlinks FROM the main checkout's tests/deepseek-harness-test-use.
+  git clone --local --no-hardlinks <main>/tests/deepseek-harness-test-use tests/deepseek-harness-test-use
+  git checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84   (HEAD verified = baseline)
+  pnpm install --ignore-scripts --frozen-lockfile --store-dir <main>/.pnpm-store-lane (porcelain 0 before/after)
+  DSH_CLIENT_COMMIT_HASH=639ed01539 ESBUILD_WORKER_THREADS=1 pnpm run build  (exit 0; 347 client artifacts recorded)
+  post-check: git status --porcelain = 0 lines; git rev-parse HEAD = 639ed015397290b3745d163aafe02ffee4aa3f84
+--- native sandbox assets (TEST_METHODS §9) ---
+First attempts from the worktree fail closed by design: SOURCE_IS_DESTINATION (assets absent in the
+worktree itself), then ENTRY_MODULE_MISSING for the shared baseline (source checkout, entry lib/ is
+gitignored and never built there), and the main checkout is not inside the WORKTREE's trusted roots.
+Sanctioned path = run the MAIN checkout's provisioner with --runtime-tree pointing at the worktree
+(reads the main runtime tree read-only, writes only the gitignored native assets of the worktree):
+  node <main>/tests/world-factory/provision-host-sandbox.mjs --runtime-tree <worktree>/tests/deepseek-harness-test-use
+  -> exit 0; probe unusable -> partial (usable: true); launcher a752bc72f111…; porcelain empty.

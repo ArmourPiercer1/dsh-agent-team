@@ -1,0 +1,13 @@
+real operator home READ-ONLY census (never written by this lane)
+path: /home/user/.dsh
+pre-run (preflight 2026-10-30T12:22:28.412Z): mtimeMs=1793195142559.5686 mtime=2026-10-28T13:45:42.560Z ctimeMs=1793195142559.5686
+team-state/ present pre-run: false
+baseline marker: census-marker touched at 2026-10-30T12:22:28.412Z
+post-run (census 2026-10-30T12:27:11.439Z): mtimeMs=1793195142559.5686 mtime=2026-10-28T13:45:42.560Z ctimeMs=1793195142559.5686
+team-state/ present post-run: false
+find /home/user/.dsh -maxdepth 3 -newer census-marker: 3 entr(ies)
+attribution note: the :3080 stable instance AND this very harness session write their own state under the real ~/.dsh continuously; the lane law is that NOTHING of this lane's namespace appears there:
+  /home/user/.dsh/storages
+  /home/user/.dsh/storages/session_projcache/sessions
+  /home/user/.dsh/storages/usage-stats-cache.json
+team-state / lane-realm paths among them (MUST be 0): 0

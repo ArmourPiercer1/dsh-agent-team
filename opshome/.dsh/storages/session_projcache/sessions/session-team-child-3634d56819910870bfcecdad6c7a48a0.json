@@ -1,0 +1,290 @@
+{
+  "version": 7,
+  "record": {
+    "identity": {
+      "formatVersion": 4,
+      "createdAt": 1793362962488,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/u7r3-shomev2/tests/deepseek-harness-test-use",
+      "isSeeded": false,
+      "inheritedEventCount": 0
+    },
+    "rows": {
+      "title": {
+        "ver": 1,
+        "seq": 32,
+        "val": "u7as assembly session"
+      },
+      "titleInput": {
+        "ver": 3,
+        "seq": 32,
+        "val": {
+          "first": {
+            "seq": 8,
+            "text": "[team-work requestToken=u7as-d1-20261030t12-22-33z] U7AS_SCRIPT_20261030t12-22-33z"
+          },
+          "count": 1,
+          "lastSeq": 8
+        }
+      },
+      "llmRetry": {
+        "ver": 1,
+        "seq": 32,
+        "val": {}
+      },
+      "sandboxMode": {
+        "ver": 1,
+        "seq": 32,
+        "val": "workspace-write"
+      },
+      "goal": {
+        "ver": 6,
+        "seq": 32,
+        "val": {
+          "current": null,
+          "seenGoalIds": [],
+          "failure": null
+        }
+      },
+      "tokenUsage": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "totals": {
+            "uncachedInputTokens": 1329,
+            "outputTokens": 283,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "last": {
+            "turn": 1,
+            "step": 4,
+            "buckets": {
+              "uncachedInputTokens": 447,
+              "outputTokens": 16,
+              "cacheReadTokens": 0,
+              "cacheWriteTokens": 0
+            }
+          }
+        }
+      },
+      "contextPressure": {
+        "ver": 5,
+        "seq": 32,
+        "val": {
+          "surfaceTokens": 1216,
+          "contextWindow": 1000000,
+          "pressureTokens": 447,
+          "sampledSurfaceTokens": 1204
+        }
+      },
+      "contextBreakdown": {
+        "ver": 5,
+        "seq": 32,
+        "val": {
+          "nodes": [
+            {
+              "seq": 7,
+              "heuristicTokens": 847,
+              "system": true
+            },
+            {
+              "seq": 8,
+              "heuristicTokens": 29,
+              "system": false
+            },
+            {
+              "seq": 9,
+              "heuristicTokens": 143,
+              "system": false
+            },
+            {
+              "seq": 14,
+              "heuristicTokens": 51,
+              "system": false
+            },
+            {
+              "seq": 17,
+              "heuristicTokens": 61,
+              "system": false
+            },
+            {
+              "seq": 20,
+              "heuristicTokens": 31,
+              "system": false
+            },
+            {
+              "seq": 22,
+              "heuristicTokens": 19,
+              "system": false
+            },
+            {
+              "seq": 25,
+              "heuristicTokens": 11,
+              "system": false
+            },
+            {
+              "seq": 27,
+              "heuristicTokens": 12,
+              "system": false
+            },
+            {
+              "seq": 30,
+              "heuristicTokens": 12,
+              "system": false
+            }
+          ],
+          "breakdown": {
+            "systemTokens": 847,
+            "toolsTokens": 1424,
+            "messageTokens": 369
+          }
+        }
+      },
+      "turnBoundary": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "openTurnStartSeq": null,
+          "lastStepStartSeq": 29,
+          "lastStepBoundary": {
+            "kind": "end",
+            "seq": 31
+          },
+          "lastTurn": 1
+        }
+      },
+      "inbox": {
+        "ver": 1,
+        "seq": 32,
+        "val": {
+          "next-turn": [],
+          "next-step": []
+        }
+      },
+      "sessionStats": {
+        "ver": 1,
+        "seq": 32,
+        "val": {
+          "turns": 1,
+          "steps": 4,
+          "llmMs": 84,
+          "toolMs": 2595,
+          "ttftMs": 83,
+          "ttftSteps": 4,
+          "decodeMs": 1,
+          "decodeTokens": 283,
+          "lastTurn": 1,
+          "openStep": null,
+          "pendingCalls": {}
+        }
+      },
+      "turnOutline": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "turns": [
+            {
+              "turn": 1,
+              "seq": 4,
+              "prompt": "[team-work requestToken=u7as-d1-20261030t12-22-33…",
+              "response": "U7AS_WORKER_DONE"
+            }
+          ],
+          "draft": ""
+        }
+      },
+      "agentPreset": {
+        "ver": 1,
+        "seq": 32,
+        "val": null
+      },
+      "userQuestions": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "inheritedEventCount": 0,
+          "timed": false,
+          "questions": {
+            "active": [],
+            "settled": []
+          }
+        }
+      },
+      "subagentCatalog": {
+        "ver": 3,
+        "seq": 32,
+        "val": {
+          "inheritedEventCount": 0
+        }
+      },
+      "subagentTiming": {
+        "ver": 3,
+        "seq": 32,
+        "val": {
+          "descriptorSeen": false,
+          "settledMs": 0
+        }
+      },
+      "subagent": {
+        "ver": 2,
+        "seq": 32,
+        "val": {}
+      },
+      "permissions": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "preset": "workspace-write",
+          "sandbox": "workspace-write",
+          "approval": "ask",
+          "seeded": false
+        }
+      },
+      "todos": {
+        "ver": 2,
+        "seq": 32,
+        "val": null
+      },
+      "plan": {
+        "ver": 3,
+        "seq": 32,
+        "val": {
+          "active": false,
+          "wanted": null,
+          "running": null,
+          "activeAtLastHeader": false
+        }
+      },
+      "subagentModelSelectionPolicy": {
+        "ver": 1,
+        "seq": 32,
+        "val": null
+      },
+      "modelSelection": {
+        "ver": 2,
+        "seq": 32,
+        "val": {
+          "lastUsed": {
+            "provider": "deepseek-official",
+            "model": "u7as-model",
+            "reasoningEffort": "high"
+          },
+          "pending": null
+        }
+      },
+      "sessionListMetadata": {
+        "ver": 1,
+        "seq": 32,
+        "val": {
+          "blank": false,
+          "lastPromptAt": 1793362962604
+        }
+      },
+      "imageLimits": {
+        "ver": 1,
+        "seq": 32,
+        "val": null
+      }
+    }
+  }
+}
