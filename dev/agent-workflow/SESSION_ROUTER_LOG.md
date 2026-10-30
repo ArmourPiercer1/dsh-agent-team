@@ -7289,3 +7289,10 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **P1 完成（不可绕过合并保护）**：仓库已迁移 rulesets（legacy branch protection PUT 404）→ 新建 ruleset **merge-gate-protection**（active，refs/heads/master，strict，required = pr-gate + ci-required + **pr-settlement-gate**，**零旁路主体**）。收执 `.artifacts/ops/p1-settlement-gate-20261031/`（before/after JSON + rulesets-after.txt）。#484 为首个在新门下走完全程的 PR。
 - **R-CLOCK-1（#484，外部日常审计修复）**：排查定性 = 机器时钟正常（三源 <30s），主 Agent 叙事层自真实 10-29 19:3xZ 起日期分量 +1（boot lane/清偿不受染，机器判据不读日历）；处置 = ROUTER_RULES §8.5.8 时钟锚点律 + 勘误映射正本 CLOCK-ANCHOR-20261030.md（不改名，历史标签=标识符；新 dated 锚点一律 `date -u` 现取）。R484-fl PASS + 增补 F-1（起点前移 + setlgate 分支名入账）。
 - **#483 进行中**：正式 Home 产品实现（V1 全门绿）R483-fl PASS（8/8，含顺序门：设计文档先经 #481 入 master，已满足）；R483-fl 复现陷阱发现 → 追加 b8842869d 失败即关 test-use 供给探针（DSH_TEST_USE_NOT_PROVISIONED，三态证明 + 6 自测臂），delta 复审席 R483b 在途。V2 boot（C2 池 2 starts）另行预登记。
+
+## 2026-10-30 (11:5–12:0xZ) — 外部效率审查 #5 两项缺陷整改 + #483 合并（新门首验）+ V2 boot 出发（主 Agent）
+
+- 外审 #5（GitHub 实况复核）两项命中：**P1 假关闭**与 **#483 CI 描述失实**。整改：P1 真门 = legacy contexts 端点加 pr-settlement-gate（strict 三检查回读为证；ruleset POST 被 GitHub 静默清空的教训 = 宣告关闭前必须回读规则内容），空 ruleset 删除；#483 贴第二则 dated 更正（其 head 自身 ci-full 日志 11:23:44Z `host build ok at 639ed01539…` + 11:35:56Z census 650f/8563l 恒等集全绿 = compat/守卫确在 hosted 执行且绿，11:19Z 更正对 ci-full 属过改——审计点属实即证据闭环）。
+- **#483 MERGED** @ bf93306ed：正式 Home V1（两臂解析 + 判别器 + CI 腿 + V1 25/25 + compat 失败即关探针 + 全门绿）。**新必需门首次完整周期**：旧红 gate 真挡合并（405 拒绝）→ 清偿重跑 → 绿 → 放行。
+- **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
+- 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
