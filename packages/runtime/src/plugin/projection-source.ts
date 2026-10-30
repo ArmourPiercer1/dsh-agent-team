@@ -210,6 +210,15 @@ export type TeamDomainReadPortErrorCode =
 //                                   §E.5 — a recovery incident closed (fresh
 //                                   evaluation PASS + materialization); a
 //                                   compatibility-category fact)           → compatibility
+//   'review-assignment-created'    runtime/review-assignment (ALPHA6-PR2', dormant —
+//                                   who is expected to look at a case; a NON-
+//                                   AUTHORIZING coordination fact)                  → team
+//   'review-assignment-transferred' runtime/review-assignment (ALPHA6-PR2' — a handoff
+//                                   moves the target to the Leader; the leg's rung is
+//                                   untouched, so this is not an escalation fact)   → team
+//   'review-assignment-retired'    runtime/review-assignment (ALPHA6-PR2' — nobody is
+//                                   the current handler; the retired target may no
+//                                   longer submit)                                  → team
 //
 // The `compatibility` category's first production writer landed in
 // pre-alpha3 PR-C (the `capability-runtime-event` telemetry fact); the
@@ -285,6 +294,26 @@ const FACT_OPTIONAL_REQUIREMENT_ACCEPTED = 'optional-requirement-accepted'
 const FACT_TEMPLATE_AVAILABILITY_SET = 'template-availability-set'
 const FACT_RECOVERY_INCIDENT_OPENED = 'recovery-incident-opened'
 const FACT_RECOVERY_INCIDENT_CLOSED = 'recovery-incident-closed'
+// ALPHA6-PR2' (Lane 2, dormant): the review-assignment family — who is expected to look at a case,
+// recorded as a NON-AUTHORIZING fact (PR #319 §4/§6: an assignment is a control-plane projection row,
+// never a permission credential and never a substitute for the current leg). Written by nothing today:
+// the lane ships the row shape and the CAS pre-flight, and the durable append arrives with the named
+// Center-Interface PR. MIRRORED as literals here for the reason every row above is mirrored — this
+// module sits on the plugin's read path, the writer's constants live in `runtime/review-assignment`,
+// and the lane must never be dragged onto the emit path for a name.
+//
+// The category is `team`, and the choice is not taste: the frozen contract describes `team` as
+// "Team-level lifecycle facts (creation, admission, handoff, archive)" — the only one of the eight
+// whose description names a handoff — and describes `control` as "Control requests, decisions,
+// consumption, and durable authorization grants". An assignment is none of those four, and a row that
+// files itself under the authorization category while authorizing nothing is the failure a later
+// operator cannot see coming. `a6-pr2-assignment-kernel.test.ts` pins all three literals AND this
+// category against the lane's own constants, because the ledger is append-only: a drift here does not
+// fail a build, it breaks `team.getProjection` permanently for every Team that ever writes the fact
+// (the `control-request-abandoned` and `artifact-read-granted` history, both recorded above).
+const FACT_REVIEW_ASSIGNMENT_CREATED = 'review-assignment-created'
+const FACT_REVIEW_ASSIGNMENT_TRANSFERRED = 'review-assignment-transferred'
+const FACT_REVIEW_ASSIGNMENT_RETIRED = 'review-assignment-retired'
 
 /** The closed fact-type → frozen-category map (see the vocabulary above). */
 const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new Map([
@@ -326,6 +355,15 @@ const FACT_TYPE_CATEGORY: ReadonlyMap<string, keyof LedgerCategoryCounts> = new 
   [FACT_TEMPLATE_AVAILABILITY_SET, 'compatibility'],
   [FACT_RECOVERY_INCIDENT_OPENED, 'compatibility'],
   [FACT_RECOVERY_INCIDENT_CLOSED, 'compatibility'],
+  // ALPHA6-PR2' (Lane 2): the assignment family's three rows, all in the frozen `team` category
+  // beside the team-lifecycle rows they describe. No ninth category (A3-7 stands), so
+  // `totalEntries == sum(byCategory)` is untouched, and the summary's `pendingControlCount` is
+  // computed from `control-request-recorded` rows alone — a fact in this family can therefore never
+  // make anything look pending that is not, which is the property the `team` (not `control`) choice
+  // exists to guarantee.
+  [FACT_REVIEW_ASSIGNMENT_CREATED, 'team'],
+  [FACT_REVIEW_ASSIGNMENT_TRANSFERRED, 'team'],
+  [FACT_REVIEW_ASSIGNMENT_RETIRED, 'team'],
 ])
 
 // --- structurally valid empty views (never fabricated values) ------------------

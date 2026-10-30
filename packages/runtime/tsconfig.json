@@ -34,6 +34,11 @@
     // it must be NAMED here or no repo-wide tsc ever reads it.
     "review-mandate",
     "review-wake",
+    // Alpha.6 PR2' (Lane 2): the review router + non-authorizing assignment facts. Dormant by
+    // declaration, and consumed by no production file, so this entry is the only thing that puts the
+    // lane in front of a compiler at all — measured, not assumed: with the entry missing,
+    // `tsc --listFilesOnly` listed every file of the two lanes above and none of this one.
+    "review-assignment",
     "test",
     "vitest.config.ts"
   ]
