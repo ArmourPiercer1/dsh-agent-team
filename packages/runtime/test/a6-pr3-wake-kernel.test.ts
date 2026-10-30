@@ -88,18 +88,6 @@ function drive(events: readonly WakeEvent[], context: WakeContext = ctx()): Driv
 const delivers = (effects: Drive['effects']) => effects.filter((e) => e.kind === 'deliver-wake')
 const withdraws = (effects: Drive['effects']) => effects.filter((e) => e.kind === 'withdraw-wake')
 
-/** The canonical first flight: request → wake → accepted → claimed → turn ends. */
-function oneFullCycle(workFingerprint = 'fp-a', turn = 7): Drive {
-  const first = drive([ev.request(workFingerprint)])
-  const wakeId = (first.slot as WakeSlot).wakeId as string
-  return drive([
-    ev.request(workFingerprint),
-    ev.accepted(wakeId, 'msg-1'),
-    ev.claimed(wakeId, 'msg-1', turn),
-    ev.turnEnded(wakeId, turn),
-  ])
-}
-
 // --- leg 1 ---------------------------------------------------------------------------------------------
 
 describe('a6-pr3 leg 1 — one hundred requests, one wake', () => {
