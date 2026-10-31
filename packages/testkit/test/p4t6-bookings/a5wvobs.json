@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5WVOBS",
+  "paths": [
+    "packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1395,
+    "to": 1396
+  },
+  "reason": "A5WVOBS (this round, branch task/a5w-vobs-20261031) adds its ONE scannable spec (packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts - the admission-kernel audit-row mount-face C1: the real createTeamToolPlaneAssembly over the real createProductionAdmissionAssembly renders the ask->approve->mint sequence as whitelist single-line `a5-admission: event=...` rows with the callId/grantId/caseId pairing, witnesses the verbatim stdout echo beside the executor's RAN line, pins the kernel detail/note/deniedEffects omissions against a FORGED foreign-case approval (the real :490 stale arm), and pins the absent-sink base behavior; admission-grant-consumed is disclosed unreachable at this face as a ZERO). The production edit is ONE in-place edit on an ALREADY-COUNTED file (team-tool-plane.mjs: the whitelisted renderer + the sink echo on the unguarded mount face; agent-bindings.mjs stays byte-identical - the ARC-A digest-locked center is NOT touched, no override entry); the two adapted existing specs (u7-9a-fs-mutation-c1.test.ts, a5int-r3-mount-integration.test.ts) are likewise in-place edits on already-counted files - an edit is not an increment; zero new denylist vocabulary.",
+  "tieNote": "MEASURED on THIS tree at booking time (origin/master f995ce781 with the fix + the new spec on disk and this clause unbooked): the coverage leg read `scanner counts 1396, ledger derives 983 + 412 = 1395` (vitest run of test/p4t6-session-event-scan.test.ts in the worktree, 2026-10-31T04:35Z, real UTC). Exactly this one path; the measured value equals 1396; no chain value copied. The same run measured zero new denylist vocabulary with the quarantine hits unchanged (the denylist legs pass with the file on disk)."
+}

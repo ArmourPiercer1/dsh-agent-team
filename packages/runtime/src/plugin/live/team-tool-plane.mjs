@@ -622,6 +622,62 @@ const paBindingIdentityGap = ({ admittedFacts, admittedFactsFault, admittedFacts
 }
 
 /**
+ * a5w-vobs (dated 2026-10-31, real UTC; bw8): the WHITELISTED single-line
+ * rendering of one production-admission-assembly observation row.
+ *
+ * WHY: the kernel emits its audit rows as OBJECTS
+ * (`tool-admission/admission-kernel.ts` :307/:450/:464/:490/:578/:624 and the
+ * assembly's own :1182-:1191). The previous sink rendered
+ * `String(row?.event ?? row)` — the event NAME ONLY — so the grant/case/call
+ * identifiers that make an audit row an AUDIT row were dropped at the mount,
+ * and the L4 acceptance could not pair a mint to a call on any observable
+ * face. This renderer keeps ONE LINE per event and carries ONLY the kernel's
+ * scalar identity fields, in a fixed order:
+ *   event · callId · grantId · approvalCaseId · caseId · leaseId · effects ·
+ *   effectIndex · effectKind · requiredAuthority · templateDefault · notes ·
+ *   realmId · templateId
+ * (field names are the kernel's OWN — `approvalCaseId` at :450, `caseId` at
+ * :490/:578; no renaming, no invention. `code`/`name`/`outcome` are NOT
+ * emitted by this kernel today, so they are not whitelisted — when a real
+ * emitter adds one, it joins this list with its emission.)
+ *
+ * OMITTED BY CONSTRUCTION, disclosed (the whole point of the whitelist — a
+ * whole-object JSON.stringify would smuggle these onto every instance log):
+ *  - `detail` (:490/:509/:538/:554/:565) — a refusal MESSAGE; verified-error
+ *    and reproof texts can embed resource paths and policy sentences.
+ *  - `note` (:1182) — projection prose that embeds governed rule resource
+ *    paths (`rule <path> …`); its existence still rides as the `notes` COUNT
+ *    on the constructed row.
+ *  - `requiredAuthority` is whitelisted as the SCALAR rung the kernel puts on
+ *    :450, but `deniedEffects` (:450) and every other array/object member is
+ *    dropped — effect descriptors carry absolute resource paths.
+ * Non-scalar values never render at all, so a future field that is an object
+ * stays off the row even if its NAME were whitelisted. Strings are capped at
+ * 160 chars (the slice(0,160) law of this file family).
+ */
+const ADMISSION_OBSERVATION_FIELDS = Object.freeze([
+  'callId', 'grantId', 'approvalCaseId', 'caseId', 'leaseId',
+  'effects', 'effectIndex', 'effectKind', 'requiredAuthority',
+  'templateDefault', 'notes', 'realmId', 'templateId',
+])
+const renderAdmissionObservation = (row) => {
+  const record = row !== null && typeof row === 'object'
+    ? /** @type {Record<string, unknown>} */ (row)
+    : undefined
+  const event = typeof record?.event === 'string' ? record.event : String(row ?? '')
+  const parts = [`a5-admission: event=${event.slice(0, 160)}`]
+  if (record !== undefined) {
+    for (const field of ADMISSION_OBSERVATION_FIELDS) {
+      const value = record[field]
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        parts.push(`${field}=${String(value).slice(0, 160)}`)
+      }
+    }
+  }
+  return parts.join(' ')
+}
+
+/**
  * Create the per-agent governed tool plane. `input`:
  *  { permissionPolicy, realmId, templateId, role, instanceId,
  *    fs?: { canonicalizeResource?, subtreeContains? },
@@ -856,7 +912,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // missing). The world lives HERE with the law, never in the center.
     invokeClasses: { grep: ['read'], glob: ['read'] },
     knownEffectClasses: ['grep', 'glob'],
-    onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
+    // a5w-vobs (bw8): the kernel/assembly rows render through the WHITELIST
+    // renderer above — one line per event as
+    // `a5-admission: event=… callId=… [grantId=… caseId=… …]` — pushed into
+    // THIS mount's existing observations channel AND echoed to stdout in the
+    // shipped `[dsh-agent-team]` style. Event-name-only rendering was what
+    // dropped the grant/case/call ids that make an audit row an audit row
+    // (the renderer's omissions — detail messages, note prose, effect
+    // arrays — are disclosed at its definition); and bw8 proved the L4
+    // audit face is the INSTANCE LOG, which the memory-only observations
+    // array never reaches (the rows RAN, the log carried zero admission
+    // lines). This sink is the assembly's ONLY channel — every row it
+    // receives is an `a5-admission: event=` row — so the echo lives HERE,
+    // on the unguarded mount face, in the exact law of the logBackend echo
+    // below (whose `governed-image RAN` line is the bw8 log's own witness
+    // that this stdout face is what L4 reads). The protected center
+    // (agent-bindings.mjs, digest-locked by the ARC-A ledger) is not
+    // touched for it: no override, no citation, no drift.
+    onObserve: (row) => {
+      const line = renderAdmissionObservation(row)
+      observe(line)
+      // `.mjs` lint law: no ambient `console` global — same as logBackend.
+      globalThis.console?.log(`[dsh-agent-team] ${line}`)
+    },
   })
   if (built.ok !== true) {
     return { ok: false, code: String(built.error?.code ?? 'ADMISSION_ASSEMBLY_REFUSED'), message: String(built.error?.message ?? 'production admission assembly refused construction') }

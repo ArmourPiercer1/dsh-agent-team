@@ -197,7 +197,7 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     expect(bare.built.ok, JSON.stringify(bare.built)).toBe(true)
     if (!bare.built.ok) return
     // an unconfigured plane builds no fs-class/shell row, so it announces no row —
-    // only its own admission note (a5p2prod) is on the host channel.
+    // only its own admission note (a5-admission) is on the host channel.
     const bareObserved = bare.sink.join('\n')
     expect(bareObserved).not.toContain('a5glb-glob')
     expect(bareObserved).not.toContain('a5g7-shell')
