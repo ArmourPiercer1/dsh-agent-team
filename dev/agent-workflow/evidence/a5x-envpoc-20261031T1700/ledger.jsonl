@@ -1,0 +1,9 @@
+{"at":1793466007641,"ev":"boot","node":"v24.21.0"}
+{"at":1793466008313,"ev":"agent/created","agent":"a5x-20261031T1700"}
+{"at":1793466008321,"ev":"plant","agent":"a5x-20261031T1700","fsProvide":"ERR service \"fs\" has been registered at <SandboxedFileSystem>","webProvide":"ERR service \"web\" has been registered at <WebRuntime>","isoReapply":"applied","agentReapply":"ERR prompt section \"tool:read\" is already registered in this scope","evilRegistered":true}
+{"at":1793466008330,"ev":"done","agents":1}
+{"at":1793466008352,"ev":"confine","agent":"a5x-20261031T1700","confinePresent":true,"writeLeg":{"exit":2,"denied":true,"secretIntact":true},"readLeg":{"exit":0,"readAllowedUnderConfine":true}}
+{"at":1793466008510,"ev":"fs-guard","method":"stat","kind":"read","path":"[object Object]","verdict":"refuse"}
+{"at":1793466008534,"ev":"fs-guard","method":"stat","kind":"read","path":"[object Object]","verdict":"refuse"}
+{"at":1793466008558,"ev":"fs-guard","method":"writeText","kind":"write","path":"[object Object]","verdict":"refuse"}
+{"at":1793466008581,"ev":"fs-guard","method":"writeText","kind":"write","path":"[object Object]","verdict":"refuse"}

@@ -1,0 +1,8 @@
+{"at":1793464893395,"ev":"boot","node":"v24.21.0"}
+{"at":1793464894287,"ev":"agent/created","agent":"a5x-20261031T1641"}
+{"at":1793464894295,"ev":"E1","agent":"a5x-20261031T1641","globalReadBefore":false,"toolfsModuleUrl":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js","toolfsApplyIsNativeFunction":true,"isolateSupported":true,"nativeFiberStarted":true,"scopedReadRegistered":false,"sameAsGlobal":true}
+{"at":1793464894295,"ev":"E1-global-host-intact","error":"Cannot read properties of undefined (reading 'execute')"}
+{"at":1793464894295,"ev":"E4","agent":"a5x-20261031T1641","error":"tool \"a5x_evil\" must declare output { schema, render, presentationMeta? }"}
+{"at":1793464894309,"ev":"E3","agent":"a5x-20261031T1641","webPresent":true,"webMethods":["constructor","registerSearchProvider","registerFetchProvider","registerProvider","search","fetch"],"registerFetchProvider":true,"providerRegistered":true,"webFetchVisible":false}
+{"at":1793464894309,"ev":"done","agents":1}
+{"at":1793464894321,"ev":"E2","agent":"a5x-20261031T1641","confinePresent":true,"confineShape":["argv","enforcement","denialSignatures","runnerFailureRules"],"spawnExit":2,"secretIntact":true,"stderr":"/bin/sh: 1: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-envpoc-20261031T1641/secret/outside.md: Read-only file system\n"}

@@ -1,0 +1,5 @@
+{"at":1793465964752,"ev":"boot","node":"v24.21.0"}
+{"at":1793465965524,"ev":"agent/created","agent":"a5x-20261031T1659"}
+{"at":1793465965528,"ev":"plant","agent":"a5x-20261031T1659","fsSwap":"ERR service \"fs\" has been registered at <SandboxedFileSystem>","webSwap":"ERR service \"web\" has been registered at <WebRuntime>","evilRegistered":true}
+{"at":1793465965536,"ev":"done","agents":1}
+{"at":1793465965554,"ev":"confine","agent":"a5x-20261031T1659","confinePresent":true,"writeLeg":{"exit":2,"denied":true,"secretIntact":true},"readLeg":{"exit":0,"readAllowedUnderConfine":true}}

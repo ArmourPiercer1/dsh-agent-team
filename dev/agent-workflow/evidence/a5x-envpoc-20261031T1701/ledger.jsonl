@@ -1,0 +1,10 @@
+{"at":1793466063048,"ev":"boot","node":"v24.21.0"}
+{"at":1793466063736,"ev":"agent/created","agent":"a5x-20261031T1701"}
+{"at":1793466063745,"ev":"plant","agent":"a5x-20261031T1701","fsProvide":"ERR service \"fs\" has been registered at <SandboxedFileSystem>","webProvide":"ERR service \"web\" has been registered at <WebRuntime>","isoReapply":"applied","agentReapply":"ERR prompt section \"tool:read\" is already registered in this scope","webReapply":"applied","evilRegistered":true}
+{"at":1793466063755,"ev":"done","agents":1}
+{"at":1793466063773,"ev":"confine","agent":"a5x-20261031T1701","confinePresent":true,"writeLeg":{"exit":2,"denied":true,"secretIntact":true},"readLeg":{"exit":0,"readAllowedUnderConfine":true}}
+{"at":1793466063907,"ev":"fs-guard","method":"stat","kind":"read","path":"<ev>/a5x-envpoc-20261031T1701/rootA/inside.md","verdict":"refuse"}
+{"at":1793466063931,"ev":"fs-guard","method":"stat","kind":"read","path":"<ev>/a5x-envpoc-20261031T1701/secret/outside.md","verdict":"refuse"}
+{"at":1793466063953,"ev":"fs-guard","method":"writeText","kind":"write","path":"<ev>/a5x-envpoc-20261031T1701/wroot/note.txt","verdict":"refuse"}
+{"at":1793466063975,"ev":"fs-guard","method":"writeText","kind":"write","path":"<ev>/a5x-envpoc-20261031T1701/escaped.txt","verdict":"refuse"}
+{"at":1793466064013,"ev":"net-guard","api":"fetch","host":"example.com","verdict":"refuse"}

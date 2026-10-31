@@ -1,0 +1,8 @@
+{"at":1793465525902,"ev":"boot","node":"v24.21.0"}
+{"at":1793465527175,"ev":"agent/created","agent":"a5x-20261031T1652"}
+{"at":1793465527181,"ev":"D0","svc:fs":true,"svc:systemPrompt":true,"svc:sandboxPolicy":true,"svc:attachments":true,"svc:approval":true,"svc:terminals":false,"svc:web":true,"svc:sandbox":true,"tool:read":false,"tool:write":false,"tool:edit":false,"tool:read_image":false,"tool:bash":false,"tool:web_fetch":false,"tool:web_search":false}
+{"at":1793465527181,"ev":"D2-skipped","reason":"no native read visible in agent scope (preset world missing or visibility gap)"}
+{"at":1793465527594,"ev":"D1","agent":"a5x-20261031T1652","nativeFiberStarted":true,"registeredInIsoScope":false,"stillInAgentScope":false}
+{"at":1793465527595,"ev":"E4","agent":"a5x-20261031T1652","registeredInAgentScope":true,"visibleInAgentScope":false}
+{"at":1793465527611,"ev":"done","agents":1}
+{"at":1793465527645,"ev":"E2","agent":"a5x-20261031T1652","confinePresent":true,"writeLeg":{"exit":2,"denied":true,"secretIntact":true},"readLeg":{"exit":0,"readAllowedUnderConfine":true}}

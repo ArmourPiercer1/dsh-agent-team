@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a5x-1n6ed3lkcq",
+    "result": {
+      "ok": true,
+      "value": {
+        "sessionId": "a5x-20261031T1700",
+        "agentPreset": "a5x-tools"
+      }
+    }
+  }
+}

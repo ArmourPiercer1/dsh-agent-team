@@ -1,0 +1,19 @@
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3543
+	for (const patch of patches) patch.insert?.forEach(visit);
+	                                           ^
+
+TypeError: patch.insert?.forEach is not a function
+    at anchorInsertedPluginNames (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3543:45)
+    at parsePatchList (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3570:9)
+    at loadOverlayPatches (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:3534:9)
+    at loadProfileDirectory (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:947:73)
+    at loadProfile (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:979:9)
+    at prepareProfile (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:187:18)
+    at composeProfile (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:206:46)
+    at runProfile (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-BZ2ZjNWi.js:241:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runCli (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:215:5)
+
+Node.js v24.21.0
+
+[a5x-kit] host closed code=1 signal=null
