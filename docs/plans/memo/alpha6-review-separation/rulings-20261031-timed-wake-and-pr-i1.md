@@ -109,7 +109,7 @@ Affected invariant（受影响能力，逐条）：
 
 硬约束：复用既有 TeamDomain Ledger、写入序列、Team 锁与投影；**不得建设第二套审批 Ledger**；factType 若新增
 必须 host `FACT_TYPE_CATEGORY` 与 client 镜像同 commit 落账（PR2′ 已有先例 commit `dcef2a56b`）；默认关闭，未
-启用的 Team 行为不变。
+启用的 Team 行为**逐字节**不变（G-6 / 执行计划 R-4 同一标准）。
 
 ### 2.3 PR-I1b 的范围与前置（可并行开发，不得混入 I1a）
 

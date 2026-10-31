@@ -57,11 +57,11 @@
 `s0-addendum-timed-wake-carrier-20261031.md`（新增命题 N-1）；阻塞台账 =
 `dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`。
 
-### R-1 依赖图变化（唯一新增的阻塞边）
+### R-1 依赖图变化（新增一条阻塞边，重述一条既有边）
 
 ```
 新增：CORE_SEAM_BLOCKER(alpha6-pr-i2-timed-wake-carrier) --阻塞--> PR-I2 的 floor-delayed 定时唤醒子集
-新增：BL-01(OPEN RELEASE BLOCKER, Alpha.5)                  --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
+重述（既有裁决，非本阶段新增边）：BL-01(OPEN RELEASE BLOCKER, Alpha.5) --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
 不变：PR-I1a --无前置--> 可开工（本轮已开始）
 不变：PR-I1b --前置--> 具名 Center-Interface PR + ARC-A override + 与 Alpha.5 的文件所有权协调；可与 I1a 并行开发
 不变：PR5′  --前置--> 仅读现有真实事实；优先级低于 PR-I1

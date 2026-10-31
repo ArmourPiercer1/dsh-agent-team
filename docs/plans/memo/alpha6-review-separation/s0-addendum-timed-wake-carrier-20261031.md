@@ -4,14 +4,18 @@
 > 不回填、不覆盖、不重排。本文件只追加一条 S0 当轮**未提出**的能力命题，并给出它的证据、裁决与影响面。
 > 触发原因：用户 2026-10-31 裁决（正本见同目录 `rulings-20261031-timed-wake-and-pr-i1.md`）。
 
-## 1. S0 说了什么（原文位置，逐字引用，未改动）
+## 1. S0 说了什么（S0 第 75、79 行逐字引用；§0/§6 条目是**摘要**，非逐字）
 
-- S0 结论 §0 与 §6：**PR3（单飞调度器内核）与 PR0（ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；
-  PR1/PR2 的决策与路由入口改造是具名 Center-Interface PR；真实 Host 腿在 C2 落地前全部 ENV_BLOCK，不冒充。
+- S0 结论 §0 与 §6（**摘要**，非逐字；正本见 `s0-revalidation-20261030.md:115`）：**PR3（单飞调度器内核）与
+  PR0（**可信** ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；PR1/PR2 的决策与路由入口改造是具名
+  Center-Interface PR，**排在 C1 条件落地之后**；真实 Host 腿（PR4/PR5 的验收形态）在 C2 条件落地之前全部
+  ENV_BLOCK，不冒充。（本条压缩自 S0 的一句话结论，删去连接词但保留全部三个限定：可信、C1 之后、C2 前 ENV_BLOCK。）
 - S0 §3 能力表第 75 行：`调度器持久状态 | storageDomain.open(defineDomain(...)) KvTable（CAS/条件写）+
   domain/changed | packages/storage/storage-domain/src/index.ts`。
-- S0 §3 硬约束第 79 行：调度器**只订阅 emit-mode 事件**（`agent/created` / `pre-step` / `turn-stopping` 是被
-  await 的钩子，明文禁止在其中 `whenIdle()`）。
+- S0 §3 硬约束第 79 行（逐字）：
+  > **硬约束**：`whenIdle()` 等待整个队列抽干（`agent.ts:237-241`），今日控制通知正因此成为多余轮次的放大器
+  > （`agent-bindings.mjs:5033`）；`agent/created` / `pre-step` / `turn-stopping` 是**被 await 的**钩子
+  > （`runtime-types.ts:252-254` 明文禁止在钩子里 `whenIdle()`）⇒ 调度器只订阅 emit-mode 事件。
 - 执行计划 §2 记录 S0-B 判定：**无需 host patch**（CORE PATCH BUDGET = 0 未被触碰）。
 
 **以上结论对本补遗而言仍然成立**（唯一例外见 §4：S0-B 的「无需 host patch」判断，对 N-1 这一条
@@ -32,9 +36,9 @@ S0 §3 枚举的是**状态与事件面**（KvTable 持久状态、`domain/chang
 
 1. `domain/changed` 严格是**写后**事件（storage-domain 的 events/domain 实现），只能在 append 落地的那一刻触发，
    不能在任意未来时刻触发 ⇒ S0 第 75 行的组合足以承载**状态与对账**，不足以承载**到期唤醒**。
-2. 宿主唯一可达的墙钟原语是 **ScheduleService**，而它在 `app-boot/src/profile.ts:212-218` 属
-   `OPTIONAL_BUNDLES`（注释明文「offered switched off by the plugin manager」）⇒ 可选、默认关，不能充当始终存在
-   的运行时前提。
+2. 宿主唯一可达的墙钟原语是 **ScheduleService**，而它在 `app-boot/src/profile.ts:213-218` 的
+   `OPTIONAL_BUNDLES` 清单内（条目在 `:217`；注释明文「offered switched off by the plugin manager」在 `:209`）
+   ⇒ 可选、默认关，不能充当始终存在的运行时前提。（宿主 `639ed01539` 复核；本轮同一条事实的裁决正本已用同一组行号。）
 3. 该原语的到期动作是 `runtime.ts:101` `resolveAgent(...)` → `:118` `renderReminderFraming(...)` →
    `:119-121` `createUserMessage({ source: { kind: 'schedule' } })` → `:123` `agent.followup(...)`
    （行号经 round-1 records review 复核修正），即**一条用户可见的提醒轮**，且 `index.ts:396` 只发

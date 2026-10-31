@@ -7361,3 +7361,25 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   凡写入记录的 file:line，写的时候就要 open 那一行，被引 commit 与后续加宽后的状态必须分开表述。
 - 本轮性质：records-only。零 `packages/**` 改动，零 build/test 依赖，CORE PATCH BUDGET 仍为 0；#513 维持
   Draft + `DO-NOT-MERGE`，settlement gate 的 `BLOCKED-BY-MARKER` 是预期红。开发授权 ≠ 合并/启用/放宽门禁。
+### 2026-10-31 — Alpha.6 Lane 2：#513 第二轮独立复核结案（更正上一条目的一处不实陈述）
+
+- **更正（本条目存在的唯一必要理由）**：本 log 上一条目（#513 第一轮结案）写「补遗 §1 的 S0 §0/§6 条目标为
+  **摘要**（同节 S0:75/79 两行仍是逐字）」。**该陈述为假**：`grep -n 摘要` 在补遗文件返回 exit 1，§1 标题在该
+  commit 仍是「原文位置，逐字引用，未改动」，S0:79 那条也确实重排过语序并删去了 `runtime-types.ts:252-254` 归属。
+  修 LOW-1 的那个 commit 只动了 §1 结尾段与 §2.3。按只追加纪律不回改 7355 行，由本条目作废其陈述；树是权威，log
+  不是。同轮 PR body 的「`git diff --name-only HEAD~1` 返回六个路径」在 `477d39311` 也不成立（实际四个，
+  `blockers/` 与 `PENDING-GATES.md` 是上一 commit 引入的），随本轮 body 更正为按 commit 表述。
+- 本轮由独立 reviewer 在 `477d39311` 复核：1 BLOCKER（上述缺失的 摘要 标签，四处记录一致宣称、文件里不存在）、
+  1 MAJOR（body 的 HEAD~1 计数在自己的 head 上不复现）、3 MINOR（补遗 §2 的 `profile.ts:212-218` 未随裁决正本
+  一起改到 :209/:213-218/:217；S0:79 在「逐字」标题下不是逐字；裁决 §2.2 记 I1a 默认关为「行为不变」而同改动集
+  R-4 要求「逐字节不变」）、1 MINOR（R-1 标题「唯一新增的阻塞边」与块内两条「新增：」相抵）。
+- 落地（新 commit，不 amend）：§1 标题改为点名哪两行逐字、§0/§6 条目显式标 **摘要** 并补回被压缩掉的三个限定
+  （**可信**、**排在 C1 条件落地之后**、C2 前 ENV_BLOCK）；S0:79 改为整行逐字引用；`profile.ts` 行号与裁决正本
+  对齐；裁决 §2.2 补「逐字节」；R-1 把 BL-01 那条重标为「重述（既有裁决，非本阶段新增边）」。第一轮的两处修正
+  （needle 集按被引 commit `98c25a091` 引用、宿主行号 `639ed01539`）经独立复核**确认正确**，本轮未动。
+- 方法入账：**「已修」是一个可 grep 的事实，不是一句承诺**。文档类 finding 的结案动作是让第一轮用来指控的那条
+  命令重新跑一遍（这里是 `grep -n 摘要` 从 exit 1 变成命中），而不是在 commit message、PR body、结案评论和 log
+  里各写一遍「已标为摘要」——四处记录同谋，比一处错误更难被发现，因为它看起来像证据。第二条：追加式记录里的错误
+  只能由新条目作废，本轮即按此执行（不回改 7355）。
+- 本轮性质：records-only。零 `packages/**` 改动，零 build/test 依赖，CORE PATCH BUDGET 仍为 0；#513 维持
+  Draft + `DO-NOT-MERGE`，settlement gate 的 `BLOCKED-BY-MARKER` 是预期红。开发授权 ≠ 合并/启用/放宽门禁。
