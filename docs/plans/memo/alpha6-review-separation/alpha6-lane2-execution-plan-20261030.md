@@ -48,3 +48,45 @@
 2. 共享 store 在本沙箱只读 ⇒ Lane 2 用工作区内 store 副本，绝不写 `~/.local/share/pnpm`。
 3. 真实 Host：**本轮零启动**。开工前置 = 跨 clone 端口分区共识（Lane 2 拟用 13000-13099 段）+ BOOT-BUDGET C-册预登记行 + 宿主树供给（本机 `/srv` 基线缺失，需从 `ArmourPiercer1/deepseek-harness` 分支 `stable-3-0.2.0-rc.2` 克隆至 `tests/deepseek-harness-test-use`）。
 4. `:3080`、用户正式 DSH_HOME、Lane 1 目录、上游 pristine 树：绝不读写。
+
+---
+
+## 修订记录（2026-10-31 真实 UTC，用户裁决驱动；原文 §0–§4 不改写）
+
+裁决正本 = 同目录 `rulings-20261031-timed-wake-and-pr-i1.md`；能力边界变化 = 同目录
+`s0-addendum-timed-wake-carrier-20261031.md`（新增命题 N-1）；阻塞台账 =
+`dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`。
+
+### R-1 依赖图变化（唯一新增的阻塞边）
+
+```
+新增：CORE_SEAM_BLOCKER(alpha6-pr-i2-timed-wake-carrier) --阻塞--> PR-I2 的 floor-delayed 定时唤醒子集
+新增：BL-01(OPEN RELEASE BLOCKER, Alpha.5)                  --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
+不变：PR-I1a --无前置--> 可开工（本轮已开始）
+不变：PR-I1b --前置--> 具名 Center-Interface PR + ARC-A override + 与 Alpha.5 的文件所有权协调；可与 I1a 并行开发
+不变：PR5′  --前置--> 仅读现有真实事实；优先级低于 PR-I1
+不变：真实 Host C2 --ENV_BLOCK--> 最终候选 HEAD 的单所有者运行（资源隔离未证明前不计 PASS）
+```
+
+### R-2 §1 表的编号映射（消歧，不改内容；历史编号不得静默重定义）
+
+| 原 §1 行 | 当前编号 | 变更性质 |
+| --- | --- | --- |
+| PR2′（含 `ReviewAssignment` fact + 投影 booking） | **PR2′（#507 已交付）** + **PR-I1a（新名，本轮开工）** | PR-I1a = 原 PR2′ 行中被递延的"持久化 Writer"那一半，正式命名；不是新造历史编号 |
+| PR-I1（4 站点 role-closure 的 Mandate 准入 OR 支 + arc-a override） | **PR-I1b** | 仅编号细化以腾出 I1a；内容、受保护面、override 要求一字不改 |
+| PR-I2（`agent-bindings.mjs` 投递面 + 互斥开关） | **PR-I2（不变）**，内部区分「即时唤醒子集」与「定时唤醒子集」 | 后者被 R-1 的 blocker 停掉；**不新建 PR 编号**；PR-I2 的 PR 描述必须显式声明只含即时唤醒子集 |
+| PR1 / PR4 / PR5 / PR6 | 维持原编号；PR5′ = 只读展示收窄版 | BL-01 与 C2 的门槛按裁决重述，语义不变 |
+
+### R-3 本轮实际交付（替换 §1 末行"本轮实际交付"的时点陈述，原文保留）
+
+已交付：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 文件 / 零生产文件；三轮独立审查
+闭合中）。进行中：**PR-I1a**（受治理的 `ReviewAssignment` 唯一持久化 Writer）。并行允许：PR-I1b 的接口设计与
+安全负控（其受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权）。受阻：PR-I2 定时唤醒子集（R-1）。
+
+### R-4 PR-I1a 的验收判据（用户裁决六条，逐条必须有测试）
+
+创建/转交/退休的持久化写入与恢复；Epoch/CAS + 幂等 + 并发冲突 + 写入失败的明确处理；ledger 所有权校验 + 跨
+Case/Team 隔离 + 损坏记录诊断；host/client factType-category 一致 + 重启后 Projection 重建；**Assignment 只是
+处理者归属事实，绝不是授权凭据**；条件无法证明时**退回 Leader**，禁止由空 Assignment 或缺失记录推导出允许执行。
+硬约束：复用 TeamDomain Ledger / 写入序列 / Team 锁 / 投影；**不建第二套审批 Ledger**；factType 新增必须 host +
+client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变。

@@ -1,0 +1,62 @@
+# S0 具名补遗（2026-10-31）：能力边界新增一条——"在任意未来时刻发起唤醒"不属于公开面
+
+> **本文件是补遗，不是修订。** `s0-revalidation-20261030.md` 的原文、dated banner 与其全部历史结论**保持原样**，
+> 不回填、不覆盖、不重排。本文件只追加一条 S0 当轮**未提出**的能力命题，并给出它的证据、裁决与影响面。
+> 触发原因：用户 2026-10-31 裁决（正本见同目录 `rulings-20261031-timed-wake-and-pr-i1.md`）。
+
+## 1. S0 说了什么（原文位置，逐字引用，未改动）
+
+- S0 结论 §0 与 §6：**PR3（单飞调度器内核）与 PR0（ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；
+  PR1/PR2 的决策与路由入口改造是具名 Center-Interface PR；真实 Host 腿在 C2 落地前全部 ENV_BLOCK，不冒充。
+- S0 §3 能力表第 75 行：`调度器持久状态 | storageDomain.open(defineDomain(...)) KvTable（CAS/条件写）+
+  domain/changed | packages/storage/storage-domain/src/index.ts`。
+- S0 §3 硬约束第 79 行：调度器**只订阅 emit-mode 事件**（`agent/created` / `pre-step` / `turn-stopping` 是被
+  await 的钩子，明文禁止在其中 `whenIdle()`）。
+- 执行计划 §2 记录 S0-B 判定：**无需 host patch**（CORE PATCH BUDGET = 0 未被触碰）。
+
+**以上结论对本补遗而言全部仍然成立**，且已被实际交付复核：PR0（`review-mandate/`）、PR2′（#507）、PR3′
+（`review-wake/`）、PR4′（#509 defer 面）四张 PR 累计**消耗 0 个核心补丁**，无一需要 host 改动。
+
+## 2. S0 没有问的那一个问题（本补遗的新增边界）
+
+S0 §3 枚举的是**状态与事件面**（KvTable 持久状态、`domain/changed` 事件、emit-mode 钩子）。它没有提出、因而也
+没有回答这个问题：
+
+> **始终存在的公开面上，是否存在一个原语，能让插件在"某个指定的未来时刻"发起一次唤醒？**
+
+这不是 S0 的疏漏式错误，而是 S0 的问题集合里没有这一项：defer/floor（静默到期再唤醒）是 PR4′ 之后才成为需求
+的。本补遗把它记为新增命题 **N-1**。
+
+**N-1 的答案（2026-10-31，pristine host `0.2.0-rc.2 @ 639ed01539` 只读复核，逐条 file:line）：不存在。**
+
+1. `domain/changed` 严格是**写后**事件（storage-domain 的 events/domain 实现），只能在 append 落地的那一刻触发，
+   不能在任意未来时刻触发 ⇒ S0 第 75 行的组合足以承载**状态与对账**，不足以承载**到期唤醒**。
+2. 宿主唯一可达的墙钟原语是 **ScheduleService**，而它在 `app-boot/src/profile.ts:212-218` 属
+   `OPTIONAL_BUNDLES`（注释明文「offered switched off by the plugin manager」）⇒ 可选、默认关，不能充当始终存在
+   的运行时前提。
+3. 该原语的到期动作是 `runtime.ts:103` `resolveAgent(...)` → `:117-121` `createUserMessage({ source:
+   { kind: 'schedule' } })` → `agent.followup(...)`，即**一条用户可见的提醒轮**，且 `index.ts:396` 只发
+   payload-less 的 `schedule/changed`（`types.ts:471` 声明为 `(): void`）⇒ 唤醒归属、来源语义、取消、去重、恢复
+   都无法由该通道承担。
+4. 宿主 `setInterval` 全集中不存在插件注册点；jobs 需先存在 job；goal round 驱动不可注册；插件自建
+   `setInterval/setTimeout` 属本阶段红线（S0 自身 P-4：不建第二套调度器）。
+
+## 3. 由 N-1 产生的边界修订（只此一条，scope 严格）
+
+- 登记具名 **`CORE_SEAM_BLOCKER`**：拟名 **Host TimedWakePort**——宿主属主的"在 instant T 唤醒一个已存在
+  Session"一次性原语，要求插件可归属、类型化投递回执、可取消、重启可恢复；at-least-once 可接受（去重与恢复归
+  既有 Wake Kernel）。固定格式全文 + 最小复现 + 受影响不变量：`rulings-20261031-timed-wake-and-pr-i1.md` §1.1，
+  台账条目 `dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`。
+- **Scope 由用户裁决严格限定为 PR-I2 的 floor-delayed timed wake carrier**：不阻塞 Alpha.6 其余部分，不阻塞
+  PR-I2 的事件驱动即时唤醒子集，不阻塞 PR-I1a / PR-I1b / PR5′。
+- PR #509 的 defer 面继续 **DORMANT**；缺时间触发源时 floor-delayed 请求必须**显式拒绝**，不得返回
+  `accepted: true`，不得静默丢弃未来唤醒保证。
+- ScheduleService 仅可作为**未来独立 PoC 的候选适配器**存在；本轮不赋予生产载体地位。
+
+## 4. 明确不受影响、因此不改写的历史结论（列出以免被误读为推翻）
+
+- S0-A（受限委托能否进唯一权威路径）判定不变；PR-I1b 的具名 Center-Interface 路径不变。
+- S0-B「无需 host patch」对**除 N-1 以外的全部 Alpha.6 路径**仍然成立；N-1 不是对它的否定，而是它未覆盖的一格。
+- S0-C 所有权矩阵、S0-D CI 与同机资源隔离结论不变；真实 Host（C2）腿仍 ENV_BLOCK，不因本补遗而"变得可做"。
+- S0 §3 关于调度器持久状态与 emit-mode 订阅的两条约束**继续有效**（PR-I1a 的写入者正是复用 TeamDomain
+  Ledger/写入序列/Team 锁，不新增第二套账本）。

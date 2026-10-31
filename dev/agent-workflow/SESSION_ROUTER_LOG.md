@@ -7303,3 +7303,33 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+
+## 2026-10-31 · Alpha.6 Lane 2（独立 integrator clone）· #509 第三轮结案 + 两项裁决落地
+
+- **#509 第三轮 = 定向复核"第二轮修复本身"**：verdict **2 MINOR + 8 LOW，无 blocker 重开**，且两个 MINOR 就在我为
+  关闭 R2-1 而写的 `usableLimits` 里（R3-1 构造期校验后仍持调用方对象 ⇒ 一行 `limits.horizonMs = NaN` 即重开旧洞，
+  实测十年 floor + 200 条入库；R3-2 整对象替换会**放松抑制侧边界**：`{60_000, 2.5}` 因另一字段不可用而变成一小时
+  静默 = 60×，正是本 lane 禁止的方向）。另有三条"替换句"与它们所替换的原句犯同一种错（R3-3 `new Date` 从来不是
+  needle；R3-4 全树扫描不读 camelCase ⇒ `reviewDeferEnabled` 不可见；R3-5 `.mts` 注释举例的形状无人捕获）——本轮
+  一律**让扫描追上句子的强度**，而不是把句子降到扫描的强度。R3-7 regex 强制转换家族（id 只测 pattern 不测类型 ⇒
+  非字符串在"只会拒绝"的函数里抛 TypeError，或建出合法字符串永远寻址不到的槽位）、R3-8 扫描守卫与写路径谓词不一致、
+  R3-6 R2-3 类别只是搬家、R3-10 只钉了一个方向。全部先在**构建产物**上复现再改，改后再探。R3-9（不可读时钟下
+  `list` 与 wake 结论相反）按披露保留，真正的修法（`list` 返回 `ReviewDeferResult`）随 PR-I2 记入。
+- 修复 commit **`45211aa1f`**（新 commit，绝不 amend `98c25a091`）：PR4 规格 **67/67**，Alpha.6 家族 **17 文件 /
+  442 通过**，两个 tsc 面 + eslint 干净，`check-artifacts-at-head verdict=ok compared=1955 drift=0`（commit 后复跑），
+  安全 254/254，evidence-guard 0，`ci-pr-gate --full pass=8 fail=1`（census 腿**环境拒绝**：本 clone 无
+  `tests/deepseek-harness-test-use`，坚持不用 `--allow-refused`），根套件 `52 failed | 611 passed` 文件 /
+  `17 failed | 8413 passed` 测试 ⇒ 相对 53 文件基线**回归方向零命中**，且上轮负载敏感的
+  `alpha5-glob-backend X3` 转绿。仍是 26 文件 / 零生产文件；第四轮定向复核进行中。
+- **裁决一**：PR-I2 定时唤醒载体选择 **A（登记阻塞）**，具名 `CORE_SEAM_BLOCKER`，scope 严格限定为 floor-delayed
+  timed wake carrier，不扩大到 Alpha.6 或整个 PR-I2。ScheduleService 被否决作为本轮载体（可选默认关
+  `profile.ts:212-218`；到期 = user-role 提醒轮 `runtime.ts:117-121`；`schedule/changed` 无 payload
+  `types.ts:471`）。#509 保持 DORMANT；缺触发源的 floor-delayed 请求必须显式拒绝。S0 以**具名补遗**新增命题 N-1
+  修订能力边界，原文与历史结论不动。
+- **裁决二**：进入实际实现，PR-I1 按职责拆 **I1a / I1b**，并先出具**具名职责映射**（原 PR2′ 行被递延的"持久化
+  Writer"= I1a；原计划 PR-I1 = I1b，内容一字不改；PR-I2 不新建编号，只在内部区分即时/定时两个子集）。
+  **PR-I1a 本轮开工**；PR-I1b 可并行开发与做安全负控，受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权。
+  BL-01 维持 OPEN RELEASE BLOCKER（阻 `allow` 接线与发布验收，不阻开发/审查）；C2 在资源隔离证明前仍 ENV_BLOCK，
+  不计 PASS；Alpha.6 开发 PR 一律 Draft + `DO-NOT-MERGE`。
+- 方法结论入账（不是修辞）：**修复本身是新面**；**文档句是没人跑的测试**。第四轮与 PR-I1a 的 review brief 直接沿用
+  "攻击修复"这一 brief 形态，不另造。
