@@ -7303,3 +7303,103 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+
+## 2026-10-31（Alpha.6 / lane-2，PR-I1a #517 第二轮独立复核结案）
+
+- #517（`alpha6/lane2-pri1a-writer-20261031`，PR-I1a 唯一耐久 writer，Draft + DO-NOT-MERGE）第二轮独立复核在
+  `f1457d737` 上进行，结论 **0 BLOCKER / 2 MAJOR / 5 MINOR / 3 INFO**：F-R2-1 `ROW_DURABLE` 只按 sequence 认行，
+  于是把别队 `control-leg-decided` 说成本命令耐久行并许诺一个自己随后拒绝的重试结果；F-R2-2 上一轮结案说明的
+  「盖章残留」读者清单漏掉投影帧（generation 相等 ⇒ 客户端判 duplicate 并丢帧 ⇒ 静默少报，非拒答）；F-R2-3
+  「不逃逸」规则只覆盖四次 `list()` 中的一次；F-R2-4 头部「三个答案」法律被上一轮修法变成假话且无人跑；
+  F-R2-5/F-R2-6/F-R2-7 closed-set 与 sole-writer 两处守卫仍各有可测洞（简写标签、一个空格的调用、别名导入、
+  `.bind`/计算成员、缺 `.mts/.cts`、植物与备择一一对应看不见成对删除）。全部在本轮修完（memo R-15..R-21）。
+- 修法要点：catch 复用成功路径同一把尺（family ∧ root ∧ payload）并删去对重发结果的许诺；自有拒绝代码 8→9（
+  `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`），头部改为「四个耐久声明、一码一义」并由一条驱动四态的腿钉住；
+  四处 `list()` 全部有分支；漏斗 needle 与分类器统一；sole-writer 动词补 `.bind`/计算成员，扩展表补 `.mts/.cts`，
+  植物改为自声明驱动关系 + 动词表 key 名单手写。
+- 本轮度量（新 head，见 commit）：`a6-pri1a-writer` 45/45；`a4pr0a-fact-type-closed-set` 10/10（C5 真实树多出
+  三条简写标签站点，按文件钉住）；`a6-pr2-lane-hygiene` 28/28；六个变异（M-E/M-F/M-G/M-H/M-I/M-J）各自点名变红，
+  变异只在临时副本上做，做完按 sha256 校验还原。
+- 方法条目：**"看了"不等于"看对了地方"** —— F-R2-1 与 F-R2-3 都是上一轮修法自身缺一块（一把尺只用在一处、一条
+  规则只用在一处），而它们看起来像已经修好了；把修好的东西逐句改写成「它在每种状态下会怎么回答」，缺口就自己
+  开口。另一条：**清点报告"干净"和我方说明"没有读者依赖它"都是断言**，断言的验证方式是去跑那个读者，不是再抄
+  一遍结论。
+- 边界：本轮零 protected-centre 文件改动（ARC-A 词表与 digest 不变），PR-I1a 仍 DORMANT（`ALLOWED_CONSUMERS` 空、
+  无 flag、无挂载、无模型可见面）；PR-I1b 的接线义务（含盖章残留的读者问题）已按"提前公告"记在 Issue #502。
+  开发授权不等于合并、启用或放松门禁。
+## 2026-10-31 — #517 round-3 独立复核落地：2 MAJOR / 4 MINOR / 3 INFO 全接受并修复；四处"句子比代码强"被逐条钉住；我此前一条环境结论被复核者证明并升级
+
+- **复核范围与纪律**（复核者自述，我复核其结论）：head `daf476b6d57bd5cfff15c18dbf6f53b3d4e20be3`，只读 git、只读
+  `gh`、未跑根套件、约 40 次变异全部"就地改 + 还原 + 对照 6922 个跟踪文件 sha256 快照校验"，收尾 porcelain 空。
+  结论我全部按"重跑定罪命令"复验，不采信转述。
+- **F-R3-1（MAJOR）**：round-2 的"每次读都不外抛"承诺在第一处读上只包住 `list()` 调用，`filter`（逐行取属性）在
+  try 外；另三处读包住了产物。三种普通适配器形状（数组含 null 行 / 元素 getter 抛 / 惰性对象 `filter` 抛）实测
+  抛出。修：try 覆盖读与其产物，补 3 条形状腿。**"保护了调用"不等于"保护了读"**。
+- **F-R3-2（MAJOR）**：`READBACK_MISMATCH` 实测三处产生（:521/:567/:579），头注释写"两个分支"；:567 状态是"append
+  报成功、再读那个 sequence 什么都没有"，而代码语义是"那个位置上的东西不是本命令写的行"——那里没有东西可比较。
+  且它是十一处耐久回答中唯一**没有腿钉代码**的一处：换成邻居代码 73 条腿全绿。修：语义改写为三分支共同的否定
+  命题、注释逐个点名三分支、新腿把该码对三个邻居各否定一次。**一条声称只有在把它的代码换掉之后才知道有没有腿。**
+- **F-R3-3（MINOR）**：分配失败处的 "nothing was written" 越claim（计数器可能已推进；实测下一行落在 consumed 之后）。
+  修：两处 detail 补"预留已花费"，用行为钉（比较 sequence 与被消费的 sequence）。
+- **F-R3-4（MINOR）**：round-2 的 `.mts`/`.cts` 加宽与 `.d.*` 跳过都可回退且 28 条腿全绿，且当前判 0 个文件。
+  修：指向 scratch 目录的行为腿 + 列表钉成数据 + 注释里 30/14 两个数字就地重测。**空转要写在明处**，不能藏在
+  一个两边都绿的腿后面。
+- **F-R3-5 + INFO-2（MINOR/INFO）**：闭集守卫可把文件判成 writer 后既不断言也不命名（18 个 writer 里 4 个静默；
+  有可读诱饵写时 `(0, fun)(…)` / `['factType']:` / `factType /* t */:` 三种写法既不被派生也不被命名）。修：推广
+  识别（共享 call/label 识别子，同时喂 harvest 与分类臂）+ 两条覆盖率 census 取代带门回退 + C8 枚举 pass-through
+  账目；INFO-2 的"四连删全绿"改由派生耦合关闭（现在单独被 C5 判红），七连删仍绿并披露其界限（一个不 import 生产
+  代码的测试文件无法判定自身阅读机构被删）。23 个变异我独立复跑：**22 红 / 1 绿（即披露项）**。
+  **顺带修掉真实缺陷**：平衡括号扫描 `depth = 0` 起算，第一个嵌套调用即收尾 → 第 4 参落在区域外；5 个真实文件命中，
+  arg4 两种算法逐字节相同（故今天不移动结论，会移动下一个写者），改 `depth = 1` 并用 plant 钉住。所有 harvest 改动
+  先证明 census 零漂移（分类 18→18、unresolved 15→15、per-file diff 0）再合。
+- **F-R3-6（MINOR）**：时钟与锁端口不在任何"不外抛"句子之下，实测双双逃出。修：时钟 try 与既有值屏同码；锁**获取**
+  失败答第一条耐久claim，并用 `enteredCriticalSection` 标志把临界区内部的拒绝原样重抛（重贴标签=声称未观察到的状态）。
+- **复核者自己的引用也重开了一次（本会话第二次记这类）**：F-R3-5 里它给四个静默文件的理由是"`mutation/types.ts`
+  匹配到 `factType:` 类型声明"；实测这四个文件 `factType` 出现 0 次（`packages/runtime/mutation` 非测试代码 0 次，
+  我本会话复验），真实形状见 memo R-27。它自己另两处自我更正（撤回 "the 36" 腿数误记）已如实记录。
+- **我此前一条环境结论被升级（forward-only，不改历史行）**：round-2 我在 PR 正文写 `a4p7-merge-gate` 闭合腿在
+  linked worktree 里多一条红，"两个安装之间的差异未确立"。复核者本轮**确立了机制**：linked worktree 的按包 scoped
+  目录是指回主 clone 的绝对符号链接（7 个），其内层解析到主 clone 的 `.pnpm`（同一 inode）；向真实
+  `scanModuleClosure` 注入 `io.fileExists` 实测客户端入口闭包 460 条访问路径中 100 条在 worktree、**359 条在主
+  clone**（含 `…/node_modules/.pnpm/node_modules/clsx/dist/clsx.mjs`），因此该腿改名的那个目录根本不在行走路径上；
+  主 clone 里同路径是真目录，故隐藏它能破坏行走。扫描本身两侧都干净（worktree 371 文件 / 0 未遍历；主 clone
+  369 / 0），腿自还原无残留。**结论：安装布局，不是代码。** 正文对应行按此更正（不是删除旧结论，而是新结论 +
+  指明旧结论所在处）。
+- **本轮度量（在新 head 上，非引用旧值）**：writer 规格 **49/49**（45→49，+4）；lane hygiene **29/29**（28→29）；
+  `a4pr0a` **11/11**（10→11，新增 C8；plants 8→24；C5 15→15 零churn）；lane family **17 文件 / 477 通过**
+  （原 471 + 4 + 1 + 1，逐项相加即标题值）；round-1 攻击套件仍 **3 失败 / 9 通过**（三条都断言 round-2 删掉的那句
+  `no assignment row exists at that sequence`，故意保留可见、不改写）；`tsc --noEmit -p packages/runtime` rc=0；
+  eslint 四个改动文件 rc=0；`check-artifacts-at-head` 见下一段（安装面同批提交：writer.ts 生产变更 ⇒ dist 四件漂移）。
+- **新的方法条目**：①"保护了调用"不等于"保护了读"；②耐久答案的**码**要有腿，光状态被走到不算钉住；③复核者的
+  引用与处方都要重开原文再接受；④空转的加宽必须行为化并披露空转；⑤改 harvest 先证明 census 零漂移；
+  ⑥往中文正本里写含 `\b` 的正则字面量时，python 普通字符串会把 `\b` 写成退格符 —— 落盘后必须
+  `grep -c $'\x08'` 复核（本会话抓到并修好一次，正本无控制字符）。
+## 2026-10-31 — #517 round-3 公开发布完成；我自己重复了一个没测过的数字并被自己抓住（symlink 计数 7→2）；根套件两次全量结果与一处新残留的归属声明
+
+- **发布链**：round-3 复核报告原文 = #517 comment `6541504069`；逐条处置（含我对每条定罪命令的独立复跑与本轮新度
+  量）= `6541534392`；我自己的更正 = `6541555381`；PR 正文按 forward-only 更新（head 行 → `8603f1ae9`、§7 标题 49 条、
+  §8 三行加 round-3 指针与更正、新增 §11；44,403 字符）。#502 的 PR-I1b 继承义务**加补编 3** = `6541556958`（7 条，
+  每条都指明"为什么"是继承：PR-I1b 复用 PR-I1a 的 writer/账本/锁）。
+- **我自己犯的、正好是本轮抓别人的那个错**：处置说明里我照抄复核者的"7 个 `@deepseek-ai` scoped 目录是绝对符号链
+  接"。本会话实测只有 **2 个**（`packages/runtime`、`packages/client`）；其内的包链接是**相对**链接
+  （`../../../../node_modules/.pnpm/…`），因 scoped 目录先解析到父 clone，相对链接遂在父 clone 的 store 里落地——
+  `readlink -f packages/client/node_modules/@deepseek-ai/cordis` →
+  `/home/armourpiercer/projects/dsh-agent-team-lane-2/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_…`，而本 worktree
+  自己也有 `node_modules/.pnpm` 却永远走不到。结论（closure 腿在 linked worktree 里拿不到它的红）不变；**我公布的
+  数字错**。方法条目：**凡不是我亲手测出来的数字，发布前必须自己测一遍**；更正以新 comment 公开，原 comment 保留
+  原文以便日后看清"我当时说过什么、什么时候改的"。
+- **根套件在同一 head 两次全量**：`8603f1ae9` ⇒ 第一次 53 files / 19 tests 失败，第二次 54 / 20；两次都含同一新名
+  `packages/runtime/test/a5-cancel-glob.test.ts` 同一腿（`a5-cancel/glob T`，
+  `a settled timeout was rewritten into a cancel refusal: expected false to be true`），单跑 26/26，且不在本 PR diff
+  内。故 round-2 那句"失败集里没有此前未记录过的名字"只在它那一次样本上成立，已 forward 更正；**归因给 round-3 未
+  确立**（父 head 只跑过一次全量，单样本无法把真实增量与 run 间方差分开）。
+- **门禁（新 head 复测，非引用）**：`check-artifacts-at-head verdict=ok compared=1943 drift=0`；`ci-pr-gate --full`
+  `pass=8 fail=1`（census 为"undeclared refusal"，未用 `--allow-refused`）；`eb3-security-run` 254/254；
+  evidence-guard（HEAD~1）findings=0；docs-sync findings=0；settlement gate
+  `BLOCKED-BY-MARKER marker=body-first-line matches=0 candidates=0`，notes 同时点名 `title-prefix` 与
+  `body-first-line`。**归因规则读源码确立**（`scripts/pr-settlement-gate.mjs:68`
+  `MARKER_RE=/^DO-NOT-MERGE(?![0-9A-Za-z])/` 施加于 body 首行与 title 的 trimStart；verdictToken 优先报
+  `body-first-line`）：#517 正文首行以 `DO-NOT-MERGE ` 开头 ⇒ 命中 body 首行；#520 正文首行以 `**DO-NOT-MERGE` 开头
+  ⇒ 锚定失配，只命中 title，故同一脚本两 PR 的 token 不同，且与源码规则完全一致。我先前想写的"早先几轮归因不同是
+  因为当时正文首行不含 marker"是**未经证实的推断**（我保留了当时的正文首行，它同样以 marker 开头，故该推断不成立），
+  按律不写进正本；此处只留可由源码与两次实测复现的部分。
