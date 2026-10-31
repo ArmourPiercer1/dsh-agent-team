@@ -96,3 +96,9 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - 事实②：bw6x 探针=协调者误操作（用 --line bw6x + /tmp 账本想快读 REFUSED 文本；head -6 SIGPIPE 杀死 runner，但主机已真实 spawn）。**未入账真实 Host start +1**；world 残留已手工回收（rm -rf tests/homes/u5bw6x-…，与 §7 先例同法）。**记销：本 start 计 C2 第 8/8 格（有效格=否，WASTED，责任=协调者，非 ENV 非产品）**。C2 池 8/8 耗尽。不 launder、不隐藏。
 - 事实③：bw6 正式重发射=更正参数（max-host-starts 4 ≥ 账本 4 行）消耗 **C4 第 4/4 格**（用户 2026-10-31 裁决现行余额，预登记四件套照走）。C4 机动 +2 仍未动用（无具名失败证明其必要；bw6 若成且无新具名失败=不需要）。
 - 下一批需求（捆绑报告，per 用户 6/8 触发条款）：C2 已尽。bw7（若 bw6 出修复后可再验）需用户批新 C2 格（建议 2）；C4 余额用尽后若 read_image L4 五格仍未闭合且具名归因成立，届时申请启用机动 +2。
+
+## bw7 机动预登记（lane=a5w-bootwave，dated 2026-10-31T01:34Z；C4 机动 1/2，用户 2026-10-31 裁决启用）
+- 前置①离线预检完成（boot head 全套，本 commit 后复跑 --dry+registries 在册）；前置②=RCA-6 具名归因（套件双行决策缺陷，C4 余额 0 证不足）。
+- boot head=本 commit 后 HEAD（含 RCA-6 修复）；max-host-starts=5（账本现 4 行，计数器语义=总行数上限）。
+- 有效格判据：五目标格任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=停线升级。
+- 收据：run-bw7.json + oracle + host-starts.jsonl 行 + 本册回执，缺一即违规。

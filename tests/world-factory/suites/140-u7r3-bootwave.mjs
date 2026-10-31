@@ -997,13 +997,54 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
       }
       return rows
     }
-    // THE DECISION LAW (pinned before the first row exists, recorded per row):
-    // read_image rows in creation order = ALLOW, DENY, ALLOW (R1, R2, R3);
-    // ask_user_question = ALLOW; anything unmatched = DENY and disclosed.
+    // THE DECISION LAW (pinned before the first row exists, recorded per row).
+    // RCA-5 (bw6): ONE read_image call records TWO control rows — the
+    // call-fingerprint row (summary `read_image <absolute path>`) and a
+    // `PA ask case=<tadm case id>` row. The old per-REQUEST ordinal let the
+    // next script value poison the SAME call's second leg. The law is now
+    // keyed by the CALL: read_image calls in creation order = ALLOW, DENY,
+    // ALLOW (R1 good, R2 denied, R3 huge); every row that belongs to a call
+    // carries that call's decision; ask_user_question = ALLOW; anything
+    // unmatched = DENY and disclosed. The cell laws (RAN line required etc.)
+    // are untouched — only the driver's answering map is corrected.
     const planFor = (r, ordinal) => {
       if (r.toolName === 'read_image') return ordinal === 1 ? 'allow' : (ordinal === 2 ? 'deny' : 'allow')
       if (r.toolName === 'ask_user_question') return 'allow'
       return 'deny'
+    }
+    const callOfSummary = (summary) => {
+      const m = /read_image\s+(\S+\.png)/.exec(summary ?? '')
+      return m ? m[1] : null
+    }
+    const caseOfSummary = (summary) => {
+      const m = /case=(\S+)/.exec(summary ?? '')
+      return m ? m[1] : null
+    }
+    const callOrdinal = new Map()
+    const callDecision = new Map()
+    let lastCallDecision = null
+    const decisionFor = (r) => {
+      const call = callOfSummary(r.summary)
+      if (call !== null) {
+        if (!callDecision.has(call)) {
+          const ordinal = callDecision.size + 1
+          callDecision.set(call, { ordinal, decision: planFor({ ...r, summary: '' }, ordinal) })
+        }
+        const d = callDecision.get(call)
+        lastCallDecision = d
+        return { decision: d.decision, ordinal: d.ordinal, via: 'call' }
+      }
+      // A `PA ask case=…` row carries a tadm case id (instance + content hash),
+      // not the path: its decision follows the most recent call-fingerprint
+      // row it belongs to (the product records the call row before the case
+      // leg for that same blocked call; every leg of one call must answer the
+      // SAME way — RCA-5).
+      if (r.toolName === 'read_image' && caseOfSummary(r.summary) !== null && lastCallDecision !== null) {
+        return { decision: lastCallDecision.decision, ordinal: lastCallDecision.ordinal, via: 'case-after-call' }
+      }
+      const n = (seenToolOrdinal.get(r.toolName) ?? 0) + 1
+      seenToolOrdinal.set(r.toolName, n)
+      return { decision: planFor(r, n), ordinal: n, via: 'tool-ordinal' }
     }
     let approverStop = false
     const approverErrors = []
@@ -1022,9 +1063,9 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
             if (approverStop || overBudget()) break
             const rid = String(r?.requestId ?? '')
             if (rid === '' || resolved.has(rid) || r?.status !== 'pending') continue
-            const n = (seenToolOrdinal.get(r.toolName) ?? 0) + 1
-            seenToolOrdinal.set(r.toolName, n)
-            const decision = planFor(r, n)
+            const plan = decisionFor(r)
+            const n = plan.ordinal
+            const decision = plan.decision
             const res = await Promise.race([
               remoteCall(fetchJson, origin, cookie, 'team.resolveControl',
                 { teamSessionId: assembly.CREATE_ROOT, requestId: rid, decision, note: `bootwave-${String(r.toolName)}-${String(n)}-${decision}` }, 'bootwave-approval', 4),
@@ -1032,8 +1073,8 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
             ])
             const ok = res?.status === 200 && (res?.body?.result?.ok === true || res?.body?.result?.value !== undefined)
             resolved.set(rid, { decision, ok })
-            facts.approval.resolutions.push({ requestId: rid, ordinal: n, decision, ok, toolName: r.toolName, resolveStatus: res?.status ?? null, bodyHead: JSON.stringify(res?.body ?? null).slice(0, 200) })
-            log(`approval ${decision} #${String(n)} tool=${String(r.toolName)} requestId=${rid.slice(0, 12)}… ok=${String(ok)}`)
+            facts.approval.resolutions.push({ requestId: rid, ordinal: n, decision, ok, via: plan.via, toolName: r.toolName, resolveStatus: res?.status ?? null, bodyHead: JSON.stringify(res?.body ?? null).slice(0, 200) })
+            log(`approval ${decision} #${String(n)} via=${String(plan.via)} tool=${String(r.toolName)} requestId=${rid.slice(0, 12)}… ok=${String(ok)}`)
           }
         } catch (err) { approverErrors.push(String(err?.message ?? err).slice(0, 200)) }
         await sleep(350)
