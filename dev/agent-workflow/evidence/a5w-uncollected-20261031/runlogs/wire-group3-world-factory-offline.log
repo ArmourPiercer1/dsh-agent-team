@@ -1,0 +1,115 @@
+✔ T1 reached the step and the witness is absent → FAIL, never an environment verdict (1.168692ms)
+✔ T2 never reached + no signal → NOT_REACHED, and it states it is not an environment claim (0.170373ms)
+✔ T3 a bare in-test reason is NOT a signal — prose-only writers get NOT_REACHED (0.186193ms)
+✔ T4 a paraphrased signal (not verbatim in the captured channel) is rejected (0.227151ms)
+✔ T5 a signal from a channel outside the closed set is rejected (0.163549ms)
+✔ T6 a PRODUCT refusal quote never buys ENV_BLOCK (the laundering case) (0.156546ms)
+✔ T7 a verbatim host-log plane-admission refusal IS a signal → ENV_BLOCK quoting it (0.457757ms)
+✔ T8 the kit-provision channel is the second sanctioned environment wall (0.229856ms)
+✔ T9 the sandbox channel needs the pre-flight conjunction, same law as nativeConfinementEnvBlock (0.333742ms)
+✔ T10 gateEnvBlock: the suite-level door demotes a signal-less ENV_BLOCK to NOT_REACHED (0.422099ms)
+✔ T11 an empty / whitespace-only observed corpus can never produce a signal (0.151276ms)
+✔ T12 a shape-identical FORGED signal buys nothing at either door (0.136589ms)
+✔ T13 a JSON round-trip copy of a GENUINE signal is not a signal (0.756342ms)
+✔ T14 the gate re-derives CAUSALLY: a quote its corpus no longer contains loses ENV_BLOCK (0.139854ms)
+✔ T15 the suite wire (envSignal → classify → add()/gate) honors a genuine wall, nothing else (0.258199ms)
+✔ T17 (R-ENVBLOCK-2 F-2) the channel is bound at MINT: a post-mutated sig.channel buys nothing (0.320136ms)
+✔ synth:T18 injected never-reached drive → NOT_REACHED through the suite door (SYNTHETIC — never real-host C2, USER-RULING-20261031 §3) (0.190341ms)
+C1-F1a GREEN: u7-astore binds 5 sources incl. packages/tools/agent-state-family/src/fs-state-store.mjs
+C1-F1b GREEN: import(x) -> complete:false ["entry.mjs:3"]
+C1-F1c RED: one byte in the dynamically imported file no longer matches the digest
+C1-F2 GREEN: 5 relative sources recompute under /tmp/u7-g4r-checkout--vJtlfC
+C1-F3 RED: capture → mutate → spawn is refused (composedProfileDigestMismatch=true)
+C1 MUTATION RED: profile + oracle one-byte tamper rejected
+C1 GREEN: validator accepts the cited artifact; one byte on it is RUN_EVIDENCE_DIGEST_MISMATCH
+C1 GREEN: eb3-run-manifest CLI grades the cited fixture (records=1 findings=0)
+C1-F4a GREEN: law hand-reproduction == implementation (b365f59cc323…)
+C1-F4a2 GREEN: order-independence + mutation RED + duplicate refusal
+C1-F4b GREEN: missing files -> null + reason (3 named)
+C1-F4c GREEN: empty set + legacy unavailable() shapes are honest nulls
+C1-F4d GREEN: real family leg recomputes; one byte + forged entry are both RED
+C1-F4e GREEN: profile entries refresh the union digest idempotently; relaunch books both
+C1-F4f GREEN: eb3 validator + CLI grade the trusted-sources-cell record clean (findings=0)
+C1-F4g GREEN: u7-tbash driver closure binds 7 sources, recompute matches (complete=true)
+✔ C1-F1a the oracle closure follows dynamic imports out of tests/world-factory (7.566143ms)
+✔ C1-F1b a non-literal dynamic import fails the closure closed (complete:false) (0.936423ms)
+✔ C1-F1c one byte inside a dynamically imported file turns the digest RED (0.969425ms)
+✔ C1-F2 sources are repo-relative and the digest recomputes in ANOTHER checkout root (7.216553ms)
+✔ C1-F3 the profile digest is the launched bytes; a writer mutating before spawn is RED (1.05662ms)
+✔ C1 binding digests equal exact artifacts, mutation is RED, and RUN schema accepts cells (56.746299ms)
+✔ C1-F4a the digest equals the RECORDED LAW hand-reproduced, and is deterministic (1.173701ms)
+✔ C1-F4a2 order-independence: entry insertion order never moves the digest (0.434602ms)
+✔ C1-F4b null-with-reason: a missing family file mints NO digest (fail-closed, named) (0.355473ms)
+✔ C1-F4c empty-set leg: an empty declared set is null-with-reason, not hash-of-nothing (0.331369ms)
+✔ C1-F4d the real obligations family digests, recomputes cold, and one byte is RED (1.353022ms)
+✔ C1-F4e profile entries join via bindWorldProfile: refresh, idempotent, relaunch-books-both (0.676539ms)
+✔ C1-F4f a full RUN record with the new cells grades clean through the real EB3 validator (50.250745ms)
+✔ C1-F4g the arc-b c-suite driver gains a recomputable oracle cell (future records emit it) (3.026428ms)
+✔ NC-1 a real listener reads as IN USE (fast connect path, never optimistic) (14.261858ms)
+ℹ NC-1 port=3491 inUse=true elapsed=2ms
+✔ NC-2 a closed in-band port reads as FREE within the timeout bound (RCA-1 black hole) (3015.76138ms)
+ℹ NC-2 port=3492 shape=black-holed connect-census=clean portInUse=false elapsed=1504ms
+ℹ NC-2 raw connect trail (first 8): 3491:refused/ECONNREFUSED 3492:timed-out
+ℹ NC-2 verdict came from the bind tie-breaker (connect was inconclusive at 1500ms)
+✔ NC-3 lease round-trip: three acquisitions in the mock band give three DIFFERENT ports and release clean (1511.816784ms)
+ℹ NC-3 leased [3491,3492,3493]
+✔ NC-4 a foreign bind with no lease is still refused with EXTERNAL_BIND and leaves no claim behind (17.475075ms)
+ℹ NC-4 refused port=13080 as EXTERNAL_BIND while a leaseless listener held it
+✔ NC-5 with ZERO connect budget the classifier still answers both ways and never fails closed on a free port (29.207173ms)
+ℹ NC-5 port=3494 listener: inUse=true elapsed=10ms | closed: inUse=false elapsed=1ms
+✔ world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7FsUi + U7-F u7Pwsh), in prefix order, deterministic (5.060602ms)
+✔ world kinds RED-first: a REMOVED kind module turns its option into a typed refusal (was: silently a plain World) (10.08875ms)
+✔ world kinds: mutual exclusion, the {rows} shape and the core-option set are enforced once, for every kind (1.17322ms)
+✔ world kinds: the owned-path guard covers every kind path (a kind path pointed outside the home refuses the boot) (0.999121ms)
+✔ world kinds: env — every kind key is cleared on every boot, only the active kind sets its own (0.748357ms)
+✔ world kinds RED-first: malformed / clashing modules refuse at load time (27.613066ms)
+✔ a new World kind is ONE file: dropping it in registers the option, nothing else is edited (5.097151ms)
+✔ world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (6.999602ms)
+✔ suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (11.175888ms)
+✔ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (23.166255ms)
+✔ suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it) (11.707024ms)
+✔ suites RED-first: malformed / clashing suite modules refuse at load time (51.45867ms)
+✔ G4-D recorded native failure: same mock drive reads exact effect before edit; missing observation mutation stays RED (11.772506ms)
+✔ u6-arc-d: SUITE_CASES entry and parseArgs wiring (31.417509ms)
+✔ u6-arc-d: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (45.390962ms)
+✔ u6-arc-d: the assembly materializes the CI-03 lane (NO capabilities block) + plane + fixture (5.168987ms)
+✔ u6-arc-d: the probe row mounts the PR5 family AS SHIPPED and the kernel holds every adversarial leg at ZERO effect (dist seams) (8.644274ms)
+✔ u6-arc-d: makeArcDDecide answers each trigger with ONE probe call and closes each leg by its own fence (1.904665ms)
+✔ u6-arc-d: the judge passes the honest digest and EVERY verdict moves when its evidence moves (1.236481ms)
+✔ u6-arc-d: the factory wires u6ArcD (row exports, option validation, one-World-one-suite) (0.99333ms)
+✔ u7-tbash offline drive identity, ledger, resolution and judge use committed wire shapes (3.157187ms)
+✔ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (1.087199ms)
+✔ u7-tbash seam (b): flags override budget, ledger and evidence dir (0.372615ms)
+✔ u7-tbash seam (c): --evidence without the other two flags is refused (0.636324ms)
+✔ u7-tbash seam (d): paths outside the repo or inside the closed lane are refused (0.70224ms)
+✔ u7-tbash seam (e): a ledger already at budget is refused before the next boot (0.397703ms)
+✔ u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing (0.579367ms)
+✔ u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence (0.583064ms)
+✔ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (142.299618ms)
+✔ u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0] (57.52259ms)
+✔ u7-tbash: blueprints pass the host validator; leader has no shell lane; asker can open an ask row (58.388748ms)
+✔ u7-tbash: commands are harmless printf appends inside the team root (0.712239ms)
+✔ u7-tbash: projection identity extractor reads only projection.teamSessionId (0.147409ms)
+✔ u7-tbash: governed identity extractor fails closed and accepts only good fresh-root identity (0.379598ms)
+✔ u7-tbash: the lane-scoped resolver allows exactly the pinned command once (0.541706ms)
+✔ u7-tbash: results join to calls by tool_use_id, not by position (r5 artifact) (0.408904ms)
+✔ u7-tbash: the brain issues the 4-step script from the transcript; fence never self-satisfies (1.685541ms)
+✔ u7-tbash: judge — all-green PASSes, and every case flips on its own evidence (mutation controls) (3.777962ms)
+✔ boot line parses to origin + single launch token; junk and multi-token URLs refuse (1.654341ms)
+✔ token exchange rides GET /?token= and only the dsh-auth-* pair is kept (0.276784ms)
+✔ answer RPC is a client-request envelope with the generated wire args {agentId,callId,answer} (0.267196ms)
+✔ BAD_ANSWER preflight (service index.ts:176-182): each question exactly once, else zero wire (0.325446ms)
+✔ answer outcomes classify by the SERVICE law, never optimistic success (0.397272ms)
+✔ mux open frame for $events and frame recognition (stream-protocol.ts:7-15,53-60) (0.275502ms)
+✔ waterfall answer settles through POST /api/$events/result with exactly {clientId,eventId,outcome} (0.182987ms)
+✔ end-to-end offline drive: boot line → 303 cookie → waterfall answer → late-answer RPC (0.634902ms)
+✔ attachWait witness frame carries the generated wire args (0.297363ms)
+✔ item-wrapped downlink frames are accepted at both predicates (live wire law) (0.27981ms)
+ℹ tests 84
+ℹ suites 0
+ℹ pass 84
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6127.036915

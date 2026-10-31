@@ -124,6 +124,20 @@ jobs:
       - name: "EB3-C: required-job shape (layers present, triggered, non-skippable, summarised)"
         run: node scripts/eb3-ci-required.mjs
 
+      - name: "EB3-NODE-TEST-COLLECTION: every tracked *.test.mjs is collected or exempted"
+        # a5w-collect (2026-10-31): the a5w-uncollected audit measured 32 tracked *.test.mjs
+        # files that NO collection source runs (38 tracked − 6 named anywhere) — the same
+        # exposure that left eb3-tool-acceptance's law fixtures and tests/checks/dist-placements
+        # red-for-no-one. This gate turns that set-difference into a standing law: it enumerates
+        # `git ls-files '*.test.mjs'`, parses every collection source (cmd/check tokens of every
+        # leg in dev/ci/eb3-ci-manifest.json plus the explicit `node --test` lines in pr-gate.yml
+        # and ci-*.yml), and refuses any file collected nowhere AND absent from the script's
+        # EXEMPT table (each exemption carries category, reason, re-review trigger). An exempted
+        # file that IS collected warns — delete the exemption. The table lives in the script, so
+        # quietly dropping a file from CI without naming it red fails HERE; CI_LAYER_LEG_MISSING
+        # covers deleting this step.
+        run: node scripts/eb3-node-test-collection.mjs
+
       - name: "EB3-A/D: trusted MCP tool sources (an unbooked mcp__ tool is UNKNOWN, never authorised)"
         run: node scripts/eb3-trusted-sources.mjs
 
@@ -185,6 +199,46 @@ jobs:
         # under CI; declared in dev/ci/eb3-ci-manifest.json with the file path as a
         # required token. Dropping it is CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/eb3-tool-acceptance.test.mjs
+
+      - name: "root-binding + scripts + evidence-store regressions (node:test, host-free)"
+        # a5w-collect (2026-10-31): the a5w-uncollected audit ran these three tracked suites
+        # green on a clean checkout (6/6 + 25/25 + 10/10) with no CI collecting them. All three
+        # are host-free: they spawn only local node stubs / sanitize + evidence-store tool
+        # copies in scratch dirs, no ports, no DSH_HOME, no pristine host. Declared as a leg in
+        # dev/ci/eb3-ci-manifest.json with all three paths as required tokens — dropping any is
+        # CI_LAYER_LEG_WEAKENED. New files in this family join this step AND the manifest leg.
+        run: node --test packages/runtime/root-binding/harness/bounded-run.regression.test.mjs scripts/sanitize-evidence.regression.test.mjs tests/evidence-store/evidence-store.test.mjs
+
+      - name: "tests/s2-authority suites (node:test; needs the fetch-depth: 0 checkout above)"
+        # a5w-collect (2026-10-31): the seven s2-authority authority-governance suites, green
+        # 7/7 on a clean checkout, previously collected by nothing. WHY THIS JOB'S CHECKOUT MUST
+        # STAY fetch-depth: 0 (Checkout step above, line "fetch-depth: 0"): four of them replay
+        # pinned ancestor blobs at runtime via `git show <SHA>:scripts/…` — 3d6f6aad
+        # (ci-snapshot-reader), 5f0d0e58 (consumer-candidate), 09fd3946 (probe-candidate),
+        # 61df0b42 (sync-candidate-resolver); authority-snapshot-isolated names 291165d7 only
+        # in a comment (measured, this seat; AUDIT note ① listed it with the four). A shallow
+        # checkout could not resolve those pins and the suites would fail on history the tree
+        # never had. The job already checked out full history (devex E4/E5/D11 need
+        # origin/master the same way); this note exists so no one "optimises" the depth later.
+        # host-free otherwise: pure fs/JSON + execFileSync of authority scripts in temp dirs;
+        # ci-snapshot-reader writes scripts/.tmp-gate-baseline-* and consumer-candidate writes
+        # scripts/.tmp-gcs-baseline-*, both deleted in-band (zero residue verified locally).
+        run: node --test tests/s2-authority/authority-dual-read.test.mjs tests/s2-authority/authority-snapshot-isolated.test.mjs tests/s2-authority/ci-snapshot-reader.test.mjs tests/s2-authority/consumer-candidate.test.mjs tests/s2-authority/current-authority-pointer.test.mjs tests/s2-authority/probe-candidate.test.mjs tests/s2-authority/sync-candidate-resolver.test.mjs
+
+      - name: "tests/world-factory offline suites (host-free) (arm-verdict, binding-digests, port-probe, registries, u6-arc-d, u7-tbash trio, u7-uileg0)"
+        # a5w-collect (2026-10-31): the nine offline world-factory suites, 84/84 green in one
+        # `node --test` run on a clean checkout, previously collected by nothing. Host-free by
+        # their own headers and the audit's code read: module-load/fixture/temp-dir level —
+        # createWorld builds worlds but never boots one, no pristine host is reached. DISCLOSED
+        # in-band binds (port-probe.test.mjs): it deliberately binds ports inside the approved
+        # 3180+ test band (never 3080/3180 itself) and closes them in the same test — the suite
+        # asserts "bind-no-leak", and ss showed zero 3180+ listeners after. Steps in a job run
+        # sequentially on an isolated runner, so there is no shared-band contention; a future
+        # boot suite must NOT join this step while it can bind concurrently.
+        # NOT here: world-factory.test.mjs and host-sandbox-assets.test.mjs (ENV-DEP, exempt —
+        # see scripts/eb3-node-test-collection.mjs), and poc/poc-native-present.test.mjs (PoC
+        # evidence + needs a provisioned tests/deepseek-harness-test-use runtime on the runner).
+        run: node --test tests/world-factory/arm-verdict.test.mjs tests/world-factory/binding-digests.test.mjs tests/world-factory/port-probe.test.mjs tests/world-factory/registries.test.mjs tests/world-factory/u6-arc-d.test.mjs tests/world-factory/u7-tbash.test.mjs tests/world-factory/u7-tbash-offline-drive.test.mjs tests/world-factory/u7-tbash-seam.test.mjs tests/world-factory/u7-uileg0-answer-drive.test.mjs
 
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness

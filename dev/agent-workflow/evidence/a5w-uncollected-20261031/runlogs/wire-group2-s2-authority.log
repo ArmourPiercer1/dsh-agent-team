@@ -1,0 +1,270 @@
+PASS D0 legacy reader is exported with its old semantics (present:false when no graph, six keys when present)
+{
+  "ok": true,
+  "compared": 6,
+  "verdicts": []
+}
+PASS D1 positive: candidate vs graph six fields agree -> exit 0, compared=6
+{
+  "ok": false,
+  "compared": 6,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_VS_LEGACY_VALUE",
+      "detail": "phase_id: snapshot=\"alpha5-tool-io-governance\" graph=\"alpha6-something\"",
+      "red": true
+    }
+  ]
+}
+PASS D2 REAL divergence: graph phase_id differs -> SNAPSHOT_VS_LEGACY_VALUE red, both values shown
+{
+  "ok": false,
+  "compared": 5,
+  "verdicts": [
+    {
+      "code": "MISSING_LEGACY_FIELD",
+      "detail": "baseline_collected: snapshot=\"2026-10-22T07:20:56Z\" graph=<absent> (not backfilled from anywhere)",
+      "red": true
+    }
+  ]
+}
+PASS D3 legacy field missing in graph -> MISSING_LEGACY_FIELD (not filled from anywhere)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "MISSING_LEGACY_AUTHORITY",
+      "detail": "dev/agent-workflow/graph.yaml#current_contract is absent; the derived mirror is NOT a source of authority and was not consulted for any value",
+      "red": true
+    },
+    {
+      "code": "DERIVED_MIRROR_PRESENT_NOT_CONSULTED",
+      "detail": "dev/engineering/current-state.json exists; read-only mirror, deliberately not used to backfill the missing authority (§7.4: derived views never reverse-decide)",
+      "red": false
+    }
+  ]
+}
+PASS D4 no graph.yaml + mirror present -> MISSING_LEGACY_AUTHORITY; NO backfill from derived mirror
+{
+  "ok": false,
+  "compared": 6,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_INVALID_DIGEST",
+      "detail": "recorded sha256:0000000000000000000000000000000000000000000000000000000000000000 != recomputed sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64 (F0 canonical, content_digest excluded, published_utc covered)",
+      "red": true
+    }
+  ]
+}
+PASS D5 invalid digest in candidate -> SNAPSHOT_INVALID_DIGEST red (fields still compared)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "MISSING_KEY current_contract.matrix",
+      "red": true
+    }
+  ]
+}
+PASS D6 missing snapshot field -> SNAPSHOT_SHAPE red with field name (digest recomputed via snapshotDigest, not ad-hoc stringify)
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+{
+  "ok": false,
+  "compared": 0,
+  "verdicts": [
+    {
+      "code": "SNAPSHOT_SHAPE",
+      "detail": "TYPE $: expected object",
+      "red": true
+    }
+  ]
+}
+PASS D8 successfully-parsed falsy candidates (null/false/0/empty string) must NEVER read green
+{
+  "ok": true,
+  "compared": 6,
+  "verdicts": []
+}
+PASS D7 read-only: zero new files, graph bytes identical after the diagnostic
+ALL GREEN (9 cases, actual count)
+✔ tests/s2-authority/authority-dual-read.test.mjs (244.17252ms)
+PASS W1 docs:sync whitelist verbatim (2 files, unchanged)
+PASS W2 publisher whitelist is authority-snapshots only
+PASS V1 example shape validates against frozen schema
+PASS V2 recomputed digest matches example vector (published_utc covered)
+PASS V3 digest is NOT the raw whole-file byte hash (engineering ruling B)
+PASS V4 canonical bytes: zero 0x0A, compact separators, keys code-point sorted
+PASS V5 published_utc is covered by the digest (mutate -> mismatch)
+PASS V6 digest mismatch detected when content_digest edited
+PASS N1 missing current_contract.matrix rejected
+PASS N2 7th current_contract field rejected
+PASS N3 unknown top-level key rejected
+PASS N4 version placeholder "v3" is not a legal version
+PASS N5 baseline not 40hex rejected
+PASS N6 backlog with space rejected
+PASS N7 active_plan wrong prefix rejected
+PASS N8 bad published_utc grammar rejected
+PASS N9 authored_from without commit anchor rejected
+{"ok":true,"published":"dev/engineering/authority-snapshots/as20261025r1.json","digest":"sha256:67ac0074f5e19bed0c2643afd3c88cd1c11d270f9cd0aea324096bdc4f435d64"}
+PASS P1 publish writes only the whitelisted immutable snapshot (canonical bytes + trailing LF)
+PASS P2 republish refused (immutable); bytes verbatim before/after
+PASS P3 symlinked snapshots dir refused; outside target untouched
+PASS P4 hardlink second-name target refused
+PASS P5 no pointer / registry / other artifact is ever produced
+PASS P6 invalid draft refused at publish (bad version path rejected before any write)
+PASS P7 check CLI exits 0 on example, 2 on digest-corrupted copy
+PASS P8 symlinked dev/engineering ancestor: refused BEFORE any mkdir; external dir gains nothing
+PASS N10 own "constructor" key at root rejected (hasOwn, not in)
+PASS N11 own "__proto__" key: rejected; canonical must not swallow it
+PASS N12 own "toString" key in current_contract rejected
+PASS V7 current_phase_statement digit INCONSISTENT with phase_id refused (frozen Q1 check)
+PASS V8 current_phase_statement digit CONSISTENT positive (ALPHA.5 vs alpha5-*, still optional)
+ALL GREEN (30 cases, actual count)
+✔ tests/s2-authority/authority-snapshot-isolated.test.mjs (151.519843ms)
+PASS S2 bad candidate inputs refuse with named codes and grade nothing (no skip, no fallback)
+PASS S3 snapshot without current_phase_statement: new entry refuses; nothing borrowed from graph
+PASS S4 legal snapshot + real graph: clean; missing target and non-ancestor baseline still graded
+PASS S5 real graph feeds the core: phantom BL-999 in ready[] is graded, never swallowed
+PASS S6 matrix enum red and Q6 single expected ref: snapshot mode fixes current-authority.json
+PASS S7 drift=null is Q7 fail; NEEDS_REVALIDATION with V@B=yes is contradiction (via snapshot path)
+PASS S8 half-given CLI pair: named refusal exit 2 before any leg runs
+PASS S9 correct-digest statement with an embedded revision: shared loader refuses CANDIDATE_STATEMENT_SEMANTICS, grades nothing
+PASS S10 correct-digest statement with PR census: refused the same way (a correct digest is not absolution)
+PASS S11 collision negative: a fixed-name second exclusive create fails; unique names + mkdtemp do not
+PASS S12 CI candidate dual-reads the graph SIX fields vs the real legacy source; divergence is its own red
+PASS S13 state-pointers continuity: the historical current_phase requirement still fires (retirement must be a coordinated later transaction, not silent)
+PASS S1 legacy default: three states first graded honestly, then byte-compared to fixed parent 3d6f
+ALL GREEN (13 cases, actual count)
+✔ tests/s2-authority/ci-snapshot-reader.test.mjs (157.373246ms)
+PASS C0 candidate source helper exists and demands expected digest (no silent use)
+fatal: could not open '.tmp-s2-cw-LSOPMr/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+warning: could not open directory '.tmp-u2-ptr-nTgk2r/': No such file or directory
+fatal: could not open '.tmp-s2-cw-LSOPMr/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C1 default mode unchanged: legacy reader, no source_binding, same rendered view
+warning: could not open directory '.tmp-s2-dr-SsHKRH/': No such file or directory
+warning: could not open directory '.tmp-s2-pc-q40W9T/': No such file or directory
+warning: could not open directory '.tmp-s2-dr-1VpsdV/': No such file or directory
+fatal: could not open '.tmp-s2-cw-FgEPs7/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C2 legal candidate + correct expected digest: view sourced from snapshot, binding recorded
+PASS C3 wrong expected digest: structured refusal, NO fallback to graph
+PASS C4 missing candidate file: CANDIDATE_MISSING, no fallback (mirror present but never consulted)
+PASS C5 corrupt candidates (parse error / falsy value / shape error): refused, no fallback
+fatal: could not open '.tmp-s2-cw-3L1Jut/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C6 old/new divergence: explicit candidate mode keeps candidate (no auto source switch), divergence RECORDED
+fatal: could not open '.tmp-s2-cw-Zyauni/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-KZpQoQ/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C8 explicitly-provided falsy authorityCandidate refuses structured, never silently legacy
+PASS C9 helper with null/array/string options: structured refusal, no TypeError
+fatal: could not open '.tmp-s2-cw-uh4LHz/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-uh4LHz/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C10 default == 5f0d0e58 baseline (structure equal; rendered 1748 bytes byte-identical)
+PASS C10 collision on the REAL staging path: pre-existing sentinel survives (no delete on EEXIST)
+ALL GREEN (11 cases, actual count)
+✔ tests/s2-authority/consumer-candidate.test.mjs (545.678078ms)
+PASS L1 valid pointer → six values + statement + digest, source = snapshot file
+PASS L2 missing pointer → status ABSENT, never values, never the mirror
+PASS L3 digest mismatch (forged snapshot edit after publish) → INVALID, no fallback
+PASS L3b pointer digest edited (pointer↔snapshot disagreement) → INVALID
+PASS L4 wrong version ID grammar (pointer and snapshot-name) → INVALID, never a path traversal
+PASS L5 symlinked pointer → refusal, never followed
+PASS L6 symlinked snapshot → refusal, never followed
+PASS L7 extra pointer key → POINTER_KEYS (a third key is a second authority)
+PASS S1 switch transaction success (absent → pointer created, re-verified via the loader)
+PASS S2 precondition mismatch refusals touch ZERO bytes
+PASS S3 target digest mismatch refusal (wrong --expected-digest) touches ZERO bytes
+PASS S4 symlink target refusal: an existing pointer that is a symlink is never followed or replaced
+PASS S5 hardlink target refusal: an existing pointer sharing its inode is never written through
+PASS S6 injected failure AFTER TEMP WRITE → exact previous bytes restored (real interrupted transaction)
+PASS S6b injected failure after RENAME, pointer was absent → exact ABSENCE restored
+PASS S7 repoint under precondition: old digest supplied → switched; a stale expectation → refused
+PASS S8 pointer bytes are deterministic (canonical two-key + one LF)
+PASS G1 two-current guard: pointer + graph block → named RED; pointer alone green; block alone is not the guard's business
+PASS G1b the ci-pr-gate pointer entry itself grades the two-current state RED
+PASS C1 gen-current-state build() DEFAULT reads the pointer-resolved snapshot (source binding recorded)
+PASS C1b clean switch tree: pointer default, no two-current finding, mirror from snapshot
+PASS C2 invalid pointer FAILS THE BUILD — no fallback to graph or mirror
+PASS C3 missing pointer + missing block = RED in the pointer entry (no graph fallback exists)
+PASS C4 pointer entry runs the SAME core: a valid pointer tree grades green with all six values surfaced
+PASS C5 pointer entry red on carriers still citing the retired block (Q6 moved with the source)
+u2-current-authority: 25/25 passed
+✔ tests/s2-authority/current-authority-pointer.test.mjs (312.484235ms)
+PASS P0 legal explicit candidate: binding recorded, dual-read compared=6, no DUAL_READ blocking
+PASS P1 old/new divergence: named DUAL_READ blocking, exit 1, candidate kept (no auto source switch)
+PASS P2 missing one of path/digest and empty values: structured refusal, no legacy fallback
+PASS P3 corrupt candidate: named DUAL_READ/CANDIDATE blocking, no fallback view from graph
+PASS P4 default mode CLI equals fixed parent 09fd39464 closure, bounded re-anchor 2026-10-26: cited-paths rule added (FIX-D D4)
+PASS P5 candidate success feeds R8 mirror: plan phase_id != snapshot phase_id -> PLAN_CITATION_CONFLICT (blocking)
+PASS P6 candidate success, plan phase_id == snapshot phase_id: no PLAN_CITATION_CONFLICT (rule wired, not inverted)
+ALL GREEN (7 cases, actual count)
+✔ tests/s2-authority/probe-candidate.test.mjs (1093.824488ms)
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T2 candidate --check on candidate-rendered mirror: binding recorded, no STALE/DUAL_READ/PLAN conflict
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T3 candidate mirror feeds the existing plan-citation rule: divergent phase_id gets PLAN_CITATION_CONFLICT
+PASS T4 missing digest flag and empty values: named refusal, never a silent legacy --check
+PASS T5 candidate + --write: refused exit 2 with zero filesystem side effects
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: git cat-file: could not get object info
+fatal: Not a valid commit name 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+fatal: Not a valid object name origin/master
+fatal: Not a valid object name origin/master
+PASS T6 dual-read divergence blocks candidate --check (graph vs snapshot, named, no auto-pick)
+PASS T7 plain --write unchanged: creates then byte no-ops on the same fixture (legacy chain)
+PASS T8 baseline resolver: exact one-line stdout on success; named stderr + empty stdout on every failure; no fallback
+PASS T1 default --check byte-identical to fixed parent 61df closure on same fixture
+ALL GREEN (8 cases, actual count)
+✔ tests/s2-authority/sync-candidate-resolver.test.mjs (1245.924355ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1263.130432
