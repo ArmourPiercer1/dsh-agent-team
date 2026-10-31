@@ -1,0 +1,12 @@
+# binding-law unit face — the refusal is testable with NO World and NO spawn
+# written 2026-10-30T21:24:28Z
+# node -e "import('./tests/world-factory/suites/140-u7r3-bootwave.mjs').then(m => …preRegistrationVerdict…)"
+unset              ok=false  BOOTWAVE_PRE_REG_SHA is not set: this lane boots only on the sha the coordinator pinned at spawn (pre-registra
+short-sha          ok=false  BOOTWAVE_PRE_REG_SHA="bff1bf206…" is not a full 40-hex commit sha
+other-head         ok=false  pinned 0000000000000000000000000000000000000000 != boot head bff1bf206cd2ec9b388824fefe8c609eeb0c477a — eviden
+exact              ok=true   boot head equals the registered sha bff1bf206cd2ec9b388824fefe8c609eeb0c477a
+whitespace-padded  ok=true   boot head equals the registered sha bff1bf206cd2ec9b388824fefe8c609eeb0c477a
+boot head used for the exact case: bff1bf206cd2ec9b388824fefe8c609eeb0c477a
+exit code: 0
+
+Expected: unset / short-sha / other-head refuse (ok=false); exact and whitespace-padded accept. The refusal path adds FAIL to the 8 leg cells with rcaClass SOURCE_SHA_MISMATCH and leaves bw:leak-check to cleanup(), which reports PASS with 'no World was ever created'.

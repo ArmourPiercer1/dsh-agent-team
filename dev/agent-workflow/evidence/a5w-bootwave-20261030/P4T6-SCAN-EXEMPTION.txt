@@ -1,0 +1,54 @@
+# p4t6 scan-scope proof — two independent faces (regenerated against the final suite file)
+# written 2026-10-30T21:27:19Z
+
+## face 1 — the scanner API + the booking ledger law, invoked directly
+# node dev/agent-workflow/evidence/a5w-bootwave-20261030/p4t6-scope-proof.mjs  (re-runnable, committed here; cwd = the worktree)
+{
+  "scannedRoots": [
+    "packages/client",
+    "packages/contracts",
+    "packages/domain",
+    "packages/legacy",
+    "packages/remote",
+    "packages/runtime",
+    "packages/storage",
+    "packages/testkit",
+    "packages/tools"
+  ],
+  "filesScanned": 1393,
+  "scanHitsTotal": 15,
+  "scannedPathsUnderTests": 0,
+  "newFileInsideScanScope": false,
+  "ledgerBase": 983,
+  "bookingsLoaded": 93,
+  "bookingSchemaViolations": [],
+  "ledgerViolations": [],
+  "scannerCountVsLedger": {
+    "scanned": 1393,
+    "expected": 1393,
+    "summed": 410,
+    "ties": true
+  },
+  "preexistingHitFiles": [
+    "packages/contracts/src/legacy-vocabulary.ts",
+    "packages/contracts/test/negative.test.ts"
+  ],
+  "denyListHitsInNewFile": []
+}
+BOOKING EXEMPTION PROVEN: tests/world-factory/suites/140-u7r3-bootwave.mjs is OUTSIDE the p4t6 scan scope (roots = packages/<dir> only); the ledger still ties (1393 === base 983 + Σ bookings) with ZERO new booking.
+exit code: 0
+
+## face 2 — the committed p4t6 test itself, run from this worktree
+# node ../../node_modules/vitest/vitest.mjs run packages/testkit/test/p4t6-session-event-scan.test.ts
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 9ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  05:27:19
+   Duration  443ms (transform 62ms, setup 0ms, import 340ms, tests 9ms, environment 0ms)
+
+exit code: 0
+
+## conclusion: NO new booking json is added by this lane — the new file is out of scan scope and the ledger still ties.

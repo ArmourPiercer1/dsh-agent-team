@@ -62,3 +62,78 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 
 ## 更正（dated 2026-10-30T15:47Z 真实 UTC，append-only，原文照留）— lane=u7r3-xval 池归类勘误
 本 lane 预登记与本册已用登记行将 3 starts 记入 **C1**，但本册 C1 用途=「Agent Control 真实 Host 复证」，本试验（并行基础设施验证）用途应为 **C4「机动与故障归因」**（含探针崩溃 RCA 的归因属性）。**勘误：3 starts 由 C1 划转 C4，C4 计 3/4，C1 回到 0/8。** 本更正不改变任何收据（budget jsonl 三行原样、RUN Records 原样、零验收格不变），只更正池归属；协调者裁决依据=池表用途列原文。
+
+## 预登记（registeredAt 2026-10-30T21:34Z，真实 UTC，协调者并入草稿）— lane=a5w-bootwave，池 **C2** 申请 3 starts（bw1 主跑 / bw2 同类修复重试 / bw3 ENV 备用）
+
+- 目标 = 单 World 双腿一次 boot：read_image 治理行正腿（ask-approve→typed grant→RAN→恰一附件对象）+ 两条拒绝臂（answered-deny 零副作用；store 像素法零 commit）+ UI f4 公开应答面复跑（#489 waitReady 修复后）+ leak-check；套件 tests/world-factory/suites/140-u7r3-bootwave.mjs（9 格）。
+- 绑定律 = 套件内置自拒：BOOTWAVE_PRE_REG_SHA 必须 == 运行 HEAD，spawn 前校验（SOURCE_SHA_MISMATCH 全格 FAIL）；产品树 = 本分支 HEAD（fmerge master@3e7fd25e0b 后，产品码与 master 恒等，diff 零产品文件）；宿主 = tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84（porcelain 0，主树只读回退）。
+- 停线律 = 同类失败 ×2 停线进入 RCA（rcaClass 逐格落记录），禁 boot 探索未证接口；效率门 = 每 start ≥1 有效格，否则记 WASTED 并停止续耗。
+- 全量腿清单/判定律/审批序 = dev/agent-workflow/evidence/a5w-bootwave-20261030/PRE-REGISTRATION-DRAFT.md + PRE-REGISTRATION.json（同 commit 在册）。本 lane boot 前实耗 = 0（dry-run + 预算门拒启收据在案）。
+
+## C2 池使用回执（lane=a5w-bootwave，dated 2026-10-30T23:54Z）
+- bw1/bw2：ENV 类（旧探针误判），spawn 前死，真实启动 0，池计数不动（RCA-1）。
+- bw3 +1（5/8）：真实启动 1，首绿 placement/ui:f4/leak（RCA-2）。
+- bw4 +1（6/8）：真实启动 1，trace 定根因主链（RCA-3）。
+- bw5 +1（7/8）：真实启动 1，捕获 fault 全文，裁决=产品装配缺口（RCA-4）。
+- 预登记池 3/3 耗尽；复跑需新预登记。
+
+## 用户裁决增补（dated 2026-10-31T00:06Z，原文入账，协调者逐字转录）
+「现行 C 册各用途池及其已发生实耗不变。允许在完成新 WSL 环境离线预检、且具名故障归因证明现有 C4 余额不足时，额外启用最多 2 次 C4 机动 Host starts。每次仍须预登记、计数、RCA 和收据绑定。不得挪用 C3 G5 预算，不得以新增额度代替测试脚本修复。其他用途暂不增额；C2 用至 6/8 时，结合明确待验收任务报告下一批需求。」
+- 生效解释（协调者记录，不改语义）：现有实耗定格 C1 0/8、C2 7/8、C3 0/4（FROZEN，G5 专用不可挪用）、C4 3/4。C4 机动额度=条件性 +2：前置①新 WSL 环境离线预检完成（--dry 全链 + 探针/租约离线复测，零 boot）；前置②具名故障归因证明 C4 现有余额 1 不足（引用具体失败格与 RCA，不得预防性套额度）。每格仍走预登记/计数/RCA/收据绑定四件套。「以新增额度代替测试脚本修复」= 禁止——套件/装配缺陷一律先修复再烧格。
+- 下一批 C2 需求：C2 已过 6/8 线（现 7/8），按裁决随下一次预登记捆绑报告：待验收任务=read_image L3/L4 六格（ri:ask-approved-ran / ri:attachment-commit-one / ri:tool-output-two-blocks / ri:answered-deny-zero-effect / ri:store-law-zero-commit + deny 零副作用）与 present/ask 补充腿，依赖 bindseam 装配修复入 master。
+
+## bw6 预登记（lane=a5w-bootwave，dated 2026-10-31T01:31Z，协调者=唯一 Integrator）
+- 格：C2 第 8/8 格（本 lane 池最后一格）。max-host-starts=1。
+- boot head（预登记 sha）：task/a5w-bootwave-20261030 本条目 commit 后 HEAD；前向合并条款适用（boot head=分支 HEAD，含 master@e93a546325 = PR #508 SubtreeContains seam 装配修复）。
+- 任务（具名）：bw3/bw4 失败根因（成员子会话 mount 被拒→target-stale）已由 #508 修复入 master 并在本 boot head 上；bw6=完整链复跑——ri:ask-approved-ran / ri:attachment-commit-one / ri:tool-output-two-blocks / ri:answered-deny-zero-effect / ri:store-law-zero-commit 五格 + ri:placement 维持 + ui 全腿。判绿即台账翻 L4。
+- 离线预检（用户裁决前置，已完成，零 boot）：registries 12/12；140-suite --dry PASS；port-probe 5/5（#504 修复探针）；bindseam C1 7/7（在 fmerge 后 boot head 亲跑）；test-use pristine@639ed01539 porcelain=0；dist tracked 且 drift=0（#508 CI 门亲验）。
+- C4 机动 +2：**本波不动用**（无具名失败证明 C4 余额不足；若 bw6 出现新具名失败且归因证明余额 1 不足，另行逐格启用）。
+- 有效格判据：五目标格任一绿=有效；全红但产生具名新故障+trace=有效 RCA 格；无新信息重跑=自 bw6 起停线并升级用户。
+- 同类×2 停线状态：装配缺口类已由 #508 闭合（产品 PR 全门合入），bw6 属修复后首轮，不构成同类第三跑。
+
+## 协调者失误披露 + bw6 重发射更正（dated 2026-10-31T01:31Z）
+- 事实①：bw6 首跑 REFUSED（--max-host-starts 1 与账本总行数 3 的计数器语义冲突）= **零启动，账本无行，成本 0**。
+- 事实②：bw6x 探针=协调者误操作（用 --line bw6x + /tmp 账本想快读 REFUSED 文本；head -6 SIGPIPE 杀死 runner，但主机已真实 spawn）。**未入账真实 Host start +1**；world 残留已手工回收（rm -rf tests/homes/u5bw6x-…，与 §7 先例同法）。**记销：本 start 计 C2 第 8/8 格（有效格=否，WASTED，责任=协调者，非 ENV 非产品）**。C2 池 8/8 耗尽。不 launder、不隐藏。
+- 事实③：bw6 正式重发射=更正参数（max-host-starts 4 ≥ 账本 4 行）消耗 **C4 第 4/4 格**（用户 2026-10-31 裁决现行余额，预登记四件套照走）。C4 机动 +2 仍未动用（无具名失败证明其必要；bw6 若成且无新具名失败=不需要）。
+- 下一批需求（捆绑报告，per 用户 6/8 触发条款）：C2 已尽。bw7（若 bw6 出修复后可再验）需用户批新 C2 格（建议 2）；C4 余额用尽后若 read_image L4 五格仍未闭合且具名归因成立，届时申请启用机动 +2。
+
+## bw7 机动预登记（lane=a5w-bootwave，dated 2026-10-31T01:34Z；C4 机动 1/2，用户 2026-10-31 裁决启用）
+- 前置①离线预检完成（boot head 全套，本 commit 后复跑 --dry+registries 在册）；前置②=RCA-6 具名归因（套件双行决策缺陷，C4 余额 0 证不足）。
+- boot head=本 commit 后 HEAD（含 RCA-6 修复）；max-host-starts=5（账本现 4 行，计数器语义=总行数上限）。
+- 有效格判据：五目标格任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=停线升级。
+- 收据：run-bw7.json + oracle + host-starts.jsonl 行 + 本册回执，缺一即违规。
+- 机动格回执 1/2（dated 2026-10-31T01:35Z）：bw7 真实启动 1（账本第 5 行），有效格=是（RCA-6 修正证实 + B 行 deny 新具名失败+判别子）。机动 2/2 **冻结中**：待 LEG-SEMANTICS 调查定甲/乙后按需启用（甲=套件契约修正后再烧；乙=产品缺口立项，不烧）。
+
+## bw8 机动预登记（lane=a5w-bootwave，dated 2026-10-31T04:18Z；C4 机动 2/2=最后一格，用户 2026-10-31 裁决）
+- 前置①离线预检：本 head 全套 PASS（140 --dry exit0；registries 12/12；test-use pristine @639ed01539 porcelain=0；#510 已入 master 并被本 head forward-merge 携带=修复在 boot 树内）。
+- 前置②具名归因：RCA-7+LEG-SEMANTICS-INVESTIGATION=乙级产品缺陷定案（pa-control-bridge 三处纯核调用不传 seam → B 行 allow 被记 deny）；该修复只能真机验证（C1 已绿但 L4 判据=真实 Host 正向效果读回），C4 常规余额 0/4、机动 1/2 已烧，证明确有本格之需。
+- boot head=968ecc895f 系（本预登记 commit 后 HEAD）；max-host-starts=6（账本 5 行+本格）。
+- 有效格判据：ri:ask-approved-ran/ri:attachment-commit-one/ri:tool-output-two-blocks/ri:store-law-zero-commit 任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=**停线升级用户**（机动池见底，不再自行动格）。
+- 收据：run-bw8.json + oracle + logs + host-starts.jsonl 行 + 本册回执，缺一即违规。
+
+## 机动格回执 2/2 + 池见底停线（lane=a5w-bootwave，dated 2026-10-31T04:21Z）
+- bw8 真实启动 1（账本第 6 行）=机动 2/2。**有效格=是**：首绿×2（ri:attachment-commit-one、ri:store-law-zero-commit），RAN 实例日志首现（#510 修复真机证实），objects=1 真对象入仓。
+- 残根三件全部离线可修（vobs 装配席在途 + 套件两修正已提交，见 RCA-8），**下一次真实启动（bw9，判据=read_image L4 三格收口）需用户新批预算**——机动池 2/2 用尽，预登记硬停线条款生效：不自行动格，升级用户裁决（具名验收任务=read_image L4 收口跑，预计 1 格，另含 L4 收据独立复现 1 格=共 2 格，见协调报告 J-4）。
+- 收据齐：run-bw8.json + oracle + bootwave-evidence + logs + host-starts.jsonl 第 6 行 + 本回执。
+
+## 用户裁决入账（dated 2026-10-31T04:45Z，直接指令）
+1. **C2 新批 ×2 批准**：具名用途=（a）bw9 read_image L4 三格收口跑（grantAudit 接线修复合并后；判据=ask-approved-ran/two-blocks/deny 臂三格+既有五格保持）；（b）L4 收据独立复现跑（翻台账前的独立复现格）。逐格仍需预登记+RCA+收据；机动池 2/2 已尽不复活。
+2. **web_search 接受「可信服务 assurance 边界」**：Host/可信 Provider 能保证的行为按其真实边界登记 assurance；逐目的地强制不可证部分不得声称等价，维持 fail-closed 或登记边界——具体格位由 PR-C PoC 决策表落字。此项为产品范围+安全主张裁决，非验收判据放宽。
+
+## bw9 预登记（用户新批 C2 批 1/2，dated 2026-10-31T05:28Z）
+- 授权来源：用户 2026-10-31 直接指令「批准 C2 boot 预算 x2」，具名用途 (a)=read_image L4 三格收口跑（本条）；(b)=L4 收据独立复现（待 bw9 结果，另条预登记）。
+- boot tree=task/a5w-bootwave-20261030 @ PRE_REG_SHA=e8b17eb183ea（含 origin/master@4229bd5605=#511 vobs 观测接线 fmerge；离线预检 dry+registries 绿）。
+- 判据目标：grantAudit 行首现（a5-admission 白名单行）→ ri:ask-approved-ran 收口；ri:tool-output-two-blocks（套件 RCA-8 修正后）；ri:answered-deny-zero-effect（kernel-admission 臂）；既有六格保持+leak+stable-instance。
+- 预算账：host-starts.jsonl 现有 6 行 → --max-host-starts 7；失败=具名 RCA 后决定是否用 (b) 额度，不自动追加。
+
+## bw10 预登记（用户新批 C2 批 2/2，dated 2026-10-31T05:38Z）
+- 授权来源：同上批 (b)=read_image L4 收据独立复现跑（bw9 已九绿：u5-u7r3-bootwave-bw9-2026-10-31T05-38-21-670Z；本跑=独立复现格，收据翻台账前置）。
+- boot tree=同 bw9（task/a5w-bootwave-20261030 当前 head，含 bw9 证据 commit；套件与产品码零变）。判据=九绿复现（允许 ui:live-root-law NOT_REACHED）；任何 FAIL=具名 RCA，不自动追加。
+- 预算账：账本现 7 行 → --max-host-starts 8。本批 2/2 用尽后池=0，再启动需用户新裁。
+
+## bw9/bw10 回执（批 2/2 用尽，dated 2026-10-31T05:39Z）
+- bw9=1 start（账本行 7）：九绿，L4 三格收口首跑。bw10=1 start（行 8）：九绿精确复现（同对象 sha，异 world/ids）。批 2/2 用尽，**池=0**；L4 收据=c2/L4-RECEIPT-read-image.md。
+- 两跑零 FAIL 零 RCA 追加；泄漏检查双绿。再启动（含任何复验）需用户新裁。
+
+## 预算终账更正（dated 2026-10-31T06:04Z，独立审查发现，追加式不改原文）
+本波次 lane 真实 host starts = **9**（账本 8 行 + 已披露 bw6x misfire 1）。分池：C2 本 lane 消耗 4（bw3/bw4/bw5 + bw6x WASTED；C2 池级 8/8 中另 4 格属 u7r3-shomev2/u7r3-uif4 他 lane）、C4 常规 1（formal bw6=C4 4/4）、机动 2/2（bw7/bw8）、用户新批 2/2（bw9/bw10）。上方「波次终账：C2 8/8+机动 2/2+新批 2/2=10」行误把他 lane 计入且漏 C4 格，以本条为准。池=0 结论不变。

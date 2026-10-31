@@ -1,0 +1,41 @@
+# host-start budget gate smoke — the suite is wired into the runner and the budget refuses BEFORE any spawn
+# written 2026-10-30T21:23:16Z
+# printf '{"probe":"pre-filled line so the ledger already holds 1 start"}\n' > .artifacts/tmp-bootwave/host-starts-smoke.jsonl
+# node tests/world-factory/u5-canary-runner.mjs --suite u7r3-bootwave --line smk --evidence <gitignored scratch> --run-record <gitignored scratch>/run-smoke.json --budget-ledger <that jsonl> --max-host-starts 1
+RUN-SUMMARY run=u5-u7r3-bootwave-smk-2026-10-30T21-23-16-761Z suite=u7r3-bootwave overall=REFUSED cases=9 REFUSED:9 worlds=none
+exit code: 1 (1 = the refusal is a non-success outcome; no spawn happened either way)
+
+## the RUN record it wrote (proof the suite resolves through the runner + oracle binding)
+{
+  "runId": "u5-u7r3-bootwave-smk-2026-10-30T21-23-16-761Z",
+  "suite": "u7r3-bootwave",
+  "overall": "REFUSED",
+  "cases": [
+    "ri:placement-one-row:REFUSED",
+    "ri:ask-approved-ran:REFUSED",
+    "ri:attachment-commit-one:REFUSED",
+    "ri:tool-output-two-blocks:REFUSED",
+    "ri:answered-deny-zero-effect:REFUSED",
+    "ri:store-law-zero-commit:REFUSED",
+    "ui:ask-approved-ran:REFUSED",
+    "ui:live-root-law:REFUSED",
+    "bw:leak-check:REFUSED"
+  ],
+  "bindings": {
+    "teamSha": "bff1bf206cd2ec9b388824fefe8c609eeb0c477a",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "worldIds": [],
+    "oracle": null
+  },
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp-bootwave/host-starts-smoke.jsonl",
+    "thisRunCount": 0,
+    "thisRunEntries": []
+  }
+}
+# re-run of the oracle line with the right binding keys
+{
+  "oracleArtifactPath": "/home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp-bootwave/smoke-ev/u5-u7r3-bootwave-smk-2026-10-30T21-23-16-761Z.oracle.json",
+  "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+  "worldOracleDigest": "a25dff9351095c098d9c8f10c10d36abd9924f7a17cd1e645ba1ba1889dd9e28"
+}

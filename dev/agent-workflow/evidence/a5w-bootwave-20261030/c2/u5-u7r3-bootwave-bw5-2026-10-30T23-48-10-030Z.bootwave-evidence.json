@@ -1,0 +1,851 @@
+{
+  "run": {
+    "suite": "u7r3-bootwave",
+    "runId": "u5-u7r3-bootwave-bw5-2026-10-30T23-48-10-030Z",
+    "productHead": "edecfeb5d675f0e148a19491136a1980c3240a03",
+    "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainLines": 0,
+    "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw5-20261030T23-48-10Z",
+    "dateUtc": "2026-10-30T23:48:13.293Z",
+    "ports": {
+      "host": 3181,
+      "mock": 3491,
+      "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+    },
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw5-20261030T23-48-10Z/instance-port3181.log"
+  },
+  "asks": {
+    "requestRows": [],
+    "decisions": [],
+    "consumed": [],
+    "resolutions": [],
+    "errors": []
+  },
+  "wire": {
+    "muxPath": "/api/remote.mux",
+    "endpoint": "$events",
+    "resultEndpoint": "$events/result",
+    "readySeen": true,
+    "waterfallSeen": false,
+    "resultAccepted": false,
+    "openError": null,
+    "readyFrame": {
+      "clientId": "0cccd545-590f-4d7f-916a-77ab8c657733",
+      "host": {
+        "home": "/home/armourpiercer"
+      },
+      "transport": "item"
+    },
+    "answered": [],
+    "frames": 40,
+    "waterfallFrames": []
+  },
+  "lanes": {
+    "imgov": false,
+    "uigov": false,
+    "leader": false
+  },
+  "digest": {
+    "header": {
+      "suite": "u7r3-bootwave",
+      "runId": "u5-u7r3-bootwave-bw5-2026-10-30T23-48-10-030Z",
+      "productHead": "edecfeb5d675f0e148a19491136a1980c3240a03",
+      "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+      "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostPorcelainLines": 0,
+      "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw5-20261030T23-48-10Z",
+      "dateUtc": "2026-10-30T23:48:13.293Z",
+      "ports": {
+        "host": 3181,
+        "mock": 3491,
+        "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+      },
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw5-20261030T23-48-10Z/instance-port3181.log"
+    },
+    "surface": {
+      "names": [
+        "ask_user_question",
+        "bash",
+        "edit",
+        "present",
+        "pwsh",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_glob",
+        "team_grep",
+        "team_list_members",
+        "write"
+      ],
+      "readImageCount": 1,
+      "readImageIsGoverned": true,
+      "readImageDescriptions": [
+        "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to "
+      ],
+      "placementLines": [
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw5-20261030t23-48-10z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw5-20261030t23-48-10z"
+      ],
+      "placementHasReadImage": true,
+      "surfaceRequestFound": true
+    },
+    "store": {
+      "storeRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw5-20261030T23-48-10Z/attachments/v1",
+      "objects": [],
+      "maxObjectsSeen": 0,
+      "samples": [
+        {
+          "at": 1793404417355,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404417705,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404418055,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404418404,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404418755,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404419106,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404419457,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404419806,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404420157,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404420520,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404420870,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404421220,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404421570,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404421920,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404422270,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404422619,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404422969,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404423320,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404423677,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404424028,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404424378,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404424729,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404425080,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404425431,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404425781,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404426131,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404426482,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404426846,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404427196,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404427547,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404427897,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404428247,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404428597,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404428948,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404429299,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404429650,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404430012,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404430363,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404430714,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793404430964,
+          "objects": 0,
+          "names": []
+        }
+      ],
+      "zeroNewObjectsAfterDeny": false,
+      "workspaceNewFiles": [],
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ]
+    },
+    "attachment": {
+      "twoBlocks": false,
+      "envelopeHead": null,
+      "blockTypes": [],
+      "imageBlockShape": null,
+      "attachmentIds": [],
+      "modelImageParts": [],
+      "modelImageSha256": [],
+      "identityMatch": false,
+      "imageRequestFound": true
+    },
+    "oracle": {
+      "pngShas": {
+        "good": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+        "deny": "f701c76ac7fb684490c5c2fc887c4414ee56d4a071f9ab2418ab5b3fa7c4f3ef",
+        "huge": "a137059ed805cb18aff2c7e754144dea10ff62d1e42d42357f889d0cf03058b3"
+      },
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ],
+      "storeCensusAfter": []
+    },
+    "logHits": {
+      "imageLines": [],
+      "askLines": [],
+      "audit": [],
+      "planeRefusals": [],
+      "noProvider": []
+    },
+    "journal": [
+      {
+        "seq": 695,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-12-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 696,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_z\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 697,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-1-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 698,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-2-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 699,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-3-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 700,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-4-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 701,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-5-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 702,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-6-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 703,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-7-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 704,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-8-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 705,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-9-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 706,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-10-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 707,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-11-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 708,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-12-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 709,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_z\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 710,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-1-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 711,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-2-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 712,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-3-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 713,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-4-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 714,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-5-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 715,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-6-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 716,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-7-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 717,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-8-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 718,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-9-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 719,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-10-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 720,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-11-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 721,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-12-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 722,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_z\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 723,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-1-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 724,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-2-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 725,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-3-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 726,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-4-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 727,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-5-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 728,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-6-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 729,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-7-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 730,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-8-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 731,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-9-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 732,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-10-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 733,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-11-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 734,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw5-20261030t23-48-10z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw5-20261030t23-48-10z\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TOKEN_UNKNOWN\",\"message\":\"no work-unit facts for token 'bootwave-d1-u5bw5-20261030t23-48-10z' in this root (never admitted, or a Root initial-work fact this read does not own)\"}}]},\"requestToken\":\"bootwave-fd1-12-u5bw5-20261030t23-48-10z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      }
+    ]
+  }
+}

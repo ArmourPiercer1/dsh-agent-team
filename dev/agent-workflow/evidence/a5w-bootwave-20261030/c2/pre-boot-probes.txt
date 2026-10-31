@@ -1,0 +1,16 @@
+== pre-boot probes (lane a5w-bootwave-20261030, registration moment) ==
+probedAt: 2026-10-30T21:24:36.597Z
+stable :3080 GET / (no token) => 401  [read-only probe; never written, never signalled]
+hostTree: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+hostTree HEAD: 639ed015397290b3745d163aafe02ffee4aa3f84  (pinned TEST_USE_BASELINE_SHA = 639ed015397290b3745d163aafe02ffee4aa3f84)
+hostTree porcelain lines: 0
+native sandbox pre-flight (provision:false — probe only, never copies): {"schema":"u7-sbx-sandbox-preflight/1","at":"2026-10-30T21:24:36.441Z","probed":true,"runtimeTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","baseline":{"version":"0.2.0-rc.2","sha":"639ed015397290b3745d163aafe02ffee4aa3f84"},"platform":"linux-x64","libc":"glibc","backend":"full","usable":true,"launcherPath":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run","launcherPresent":true,"launcherSha256":"a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31","verdicts":[{"phase":"before-provision","backend":"full","launcherPresent":true},{"phase":"after-provision","backend":"full","launcherPresent":true}],"asset":null,"provisionError":null,"probeError":null,"porcelainEmpty":true,"porcelain":{"available":true,"empty":true,"lines":[]}}
+port 3193 free: true
+port 3194 free: true
+port 3195 free: true
+port 3491 free: true
+port 3492 free: true
+port 13000 free: true
+port 13050 free: true
+~/.dsh: never touched (no command in this lane addresses $HOME/.dsh)
+spawn count during these probes: 0
