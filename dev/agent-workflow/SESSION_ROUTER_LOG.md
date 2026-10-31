@@ -7614,3 +7614,63 @@ docs-sync `docs=106 plans=69 findings=0`、settlement `BLOCKED-BY-MARKER`；宣�
   改用结构性替代论证（off 团队不生成 gate 对象 + 全树零 importer + `ALLOWED_CONSUMERS==[]`）；
   字节不变是**要量的**，不是"默认关"的同义词。
 - 独立评审进行中（攻拒绝分支是否真拒、DORMANCY 论证是否成立、镜像能否被静默改歪、普查算术与封闭词表不重不漏）。
+
+## 2026-10-31 — PR #520（PR-I2）运行时可行性测量入册：那次 ENV-REFUSED 拒的是一条路径，不是一种能力；L-1a/L-1b 真跑过了，floor-delayed 仍阻塞但已是量出来的
+
+run 正本与全部逐字行在 pri2 分支 commit `054f1a44c`（`6f5a3de3c..054f1a44c` 已推）：证据目录
+`dev/agent-workflow/evidence/alpha6-pri-i2-runtime/`（`feasibility-report.md` 主记录 + `probe-out.json`、
+`preflight-check.txt` 原样捕获 + `MEASURED-LINES.txt` 命令/输出逐字行），memo 侧收束在同 commit 的
+`timedwake-port-contract-20261031.md` §12。本条目做索引 + **按行向前退役三句话**（历史不改写）。
+
+- **量到了什么（一）**：pristine 测试运行时在本机**可以**物化，且物化了——
+  `git clone --local --no-hardlinks /home/armourpiercer/deepseek-harness tests/deepseek-harness-test-use` +
+  detached checkout `639ed01539…`（许可依据 = TEST_METHODS §1 第 16 行把源写成泛称「只读 baseline 树」），clone
+  exit 0（`real 0m1.862s`）、`INSTALL_EXIT=0`、`BUILD_EXIT=0`；宿主真实启动于 3181，`DSH_HOME` 在工作区
+  `tests/homes/a6pri2-20261031T11-33-49Z`，无 token `401` / 带 token `303`，用毕按 §7 拆除，:3080 全程未触碰
+  （`stable_3080_status=401` 原样）。⇒ **本 lane 此前以「缺运行时」为由记 `ENV-REFUSED` 的一切腿，量的结论是拒绝于
+  缺路径，不是拒绝于缺能力**——lane 把"目录不在"当科学限制用了几个钟头，这次不是措辞修正，是跑出来的。
+- **量到了什么（二）**：§9 的 host-sandbox 资产**仍然供不上**（`provision-host-sandbox.mjs --check` exit 1：
+  `launcher: ABSENT`、`landlock-run` 本机不存在、本地编译 `system.node` 17352 B/sha `75450f92…` ≠ pinned 17360 B/
+  `54a9c25c…`），**而宿主照常启动、服务、挂载、应答**——两个事实并记，谁也不许抹掉谁。
+- **量到了什么（三）**：L-1a/L-1b 在活宿主上阳性。只经 `profiles/web/cordis.patch.yml` 挂载的探针插件、经注入的
+  `ctx.storageDomain` 开自己的域，**两条订阅都收到同一条 put 事件**；l1b **不带** `{global:true}` 也收到
+  ⇒ memo §8.2 V-2b 关闭，`{global:true}` 在本 SHA 不是必需（机制佐证 `vendor/cordis/src/events.ts:114-116`、
+  `:171-173`）。边界：L-2/L-3/L-4/L-5 **没跑**，阳性结果不得回溯成"§8.5 齐了"。
+- **量到了什么（四）**：floor-delayed 载体仍不存在，**这次是测量不是推断**——默认 profile `inject:['schedule']`
+  永不激活；实验 bundle 下 `ctx.schedule` 只有 `catalog/create/delete/…` 无 callback 注册面；活体 `create` 落了
+  due time 而 due 时刻插件侧什么都没有（只有 CREATE 时一条无 payload 的 `schedule/changed`）；due 动作 =
+  `resolveAgent → createUserMessage → agent.followup`（`packages/schedule/schedule/src/runtime.ts:101-123`）；
+  162 个 `interface Context` 成员普查无 delayed-start 面。⇒ floor-delayed 子集 `CORE_SEAM_BLOCKER` 维持，
+  #509 继续 DORMANT，负断言仍不是对全宿主的穷尽证明。
+- **量到了什么（五）**：生产 ControlService 的 resolve 路径端到端执行了——本 lane 构建的 `host.js` 只经 patch
+  seam 挂载：`team.getLedgerPage` v1 → `ok:true`；`team.resolveControl` v4（bogus id）→ `CONTROL_REQUEST_NOT_FOUND`
+  配 durable-storage 措辞。⇒ **PR-I1b 真机腿从今天起是"可实现"**；这个区分要说成原样：**挡它的是规则（只读探针
+  不得编辑 tracked 测试），不是环境**。真实 pending request 未造（需 mock-model fixture），S-7 字节差未跑。
+- **事故披露**：一次后台 boot 未显式设 `DSH_HOME`，继承 `/home/armourpiercer/.dsh` 并试图写其
+  `profiles/web/cordis.yml` → `EROFS`，exit 1，**写入零字节**；此后每次 boot 都显式把工作区内路径设为 `DSH_HOME`。
+  发这条不是因为有损害，是读者需要它才谈得上信任其余记录。
+
+**向前退役（引原句，原句不删不改）**：
+
+- 「PR-I1b 的 V-1 有了权威答案」条目（:7527–:7529）写：「本机 `tests/deepseek-harness-test-use`、`tests/homes`、
+  `/srv/workspace/dsh-stable-3-0.2.0-rc.2` 三者均不存在 ⇒ 这两腿只能记 `ENV-REFUSED`，**记 ENV-REFUSED 不是通过**，
+  PR-I2 本轮只做 (a) 纯判定核 + 单测（不需宿主进程），(b) 接线等能跑 L-1a/L-1b 的环境。」——三个"不存在"里前两个
+  当天就补上了，第三个从来不是唯一来源（§1 第 16 行是泛称）；退役的是**「接线等能跑 L-1a/L-1b 的环境」所暗示的
+  能力局限**：环境就是本机，且已经跑过。保留的是「记 ENV-REFUSED 不是通过」——被退役的是把它当"本机不行"的用法，
+  不是这条纪律本身。
+- 「PR-I2 第一次落代码」条目（:7539）写：「`host.ts` 未动，无人 import —— §10 的接线前置条件（L-1a/L-1b 真跑过）
+  在本机是 ENV-REFUSED，接线因此不做。」——「在本机是 ENV-REFUSED」退役：前置已由当日测量满足（memo §12.3）；
+  `host.ts` 仍未动，理由换成"本轮只交 docs/evidence，接线归实现轮"。
+- 「PR #522（PR-I1b）实现落地」条目（:7613）写：「真机腿（真 Host ControlService、S-7 真实世界字节差）记
+  **ENV-REFUSED**」——该 ENV-REFUSED 的环境理由退役：ControlService resolve 路径已在本机端到端执行（上第五点）。
+  **腿本身仍未跑**：挡它的已换成规则，结构性替代论证不得回溯成真机结果。
+
+**门禁（当日实量，各自 worktree）**：pri2 `docs-sync --check` →
+`docs=105 notes=4 plans=68(0 declaring) findings=0 blocking=0 contracts=20 pairs compared`；pri2
+`eb3-evidence-guard --new-since HEAD~1` → `pass added=4 bound=1048576 exempted=0 findings=0 base=HEAD~1`；
+gov `docs-sync --check` → `docs=106 notes=4 plans=69(0 declaring) findings=0 blocking=0 contracts=20 pairs compared`；
+gov `eb3-evidence-guard --new-since HEAD~1` → `pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`；
+gov `verify-verbatim-quotes.mjs` → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok` +
+`DSH-SCRATCH-POINTER-VERDICT found=3 pinned=6 window=80 findings=0 verdict=ok`（本条目自身不含被指认路径，
+证据只入 tracked 目录）。CORE PATCH BUDGET 0；`/home/armourpiercer/deepseek-harness` porcelain BEFORE/AFTER 均 0。
+**授权边界**：开发授权，非合并授权，非启用，非放宽门禁。
