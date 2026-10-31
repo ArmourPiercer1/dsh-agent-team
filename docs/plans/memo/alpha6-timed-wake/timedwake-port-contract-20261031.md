@@ -269,3 +269,29 @@ No such file or directory
 
 谁在别的机器上补齐这六条腿，请连同**它跑在哪个检出、哪个 DSH_HOME、哪个 commit** 一起交；`ENV-REFUSED` 不是
 PASS，"我本地能跑"也不是答案（同一份 memo 就是为这个区别写的）。
+
+## 10. dated 2026-10-31：接线位置**不需要猜**——本仓的宿主胶水已经在注入 `storageDomain`
+
+写 §9 那条分解时留了个未决问题：立即唤醒的订阅到底接在哪。实测把它关掉了：
+
+- `packages/runtime/src/plugin/host.ts` **是本仓 tracked 文件**（`git ls-files --error-unmatch` 命中），不是宿主文件；
+- 它的 `inject` 数组第 1104 行原文：`export const inject = ['agents', 'storageDomain', 'sessions',
+  'sessionPersistence', 'workspaceRegistry']` —— 也就是说**本仓的插件宿主已经拿到 `storageDomain` 这条 facility**，
+  §8.4 那条"V-1 机制"在本仓的落点不是假设；
+- 同一文件 `:1171` 起就是这个形状：`if (typeof ctx.on === 'function') { ctx.on('agent/created', …`，
+  即"有总线就订、没有就不订"的守卫写法在本仓已是既有先例（§8.5 L-6 引的就是它）。
+- 卫生屏侧：`a6-pr2-lane-hygiene.test.ts:63-69` 的 `PROTECTED_PREFIXES` 里与 `src/plugin` 有关的只有
+  `src/plugin/live/pa-mount-registry.mjs` 与 `src/plugin/live/agent-bindings.mjs` 两个具名文件；
+  `host.ts` 本身不在保护前缀内。
+
+**因此本次实现的位置决定（先写后码，免得实现时随手挑一个目录）**：
+
+1. **判定核放新模块**，不塞进 `host.ts`：纯函数、可单测、不需要宿主进程——正是 §9 分解里的 (a)。
+   `host.ts` 已经够大，把"该不该醒"的判定埋进宿主胶水，等于让唯一能测它的地方变成 boot 世界。
+2. **接线只在 `host.ts` 里加一处调用**，写在既有 `typeof ctx.on === 'function'` 守卫之内，与
+   `agent/created`/`approval/request` 同一形状；默认关，关时不注册任何订阅、既有事件序列字节等价。
+3. **不新建受保护前缀下的文件，也不碰那两个具名 live 文件。** 若卫生屏要求新增模块入册，走
+   `EXTRA_MODULES_ALLOWED` 那条例（PR-I1a 已在里面留了先例与理由），并在 PR 描述里点名。
+4. **接线的前置条件仍是 L-1a/L-1b 真跑过**（§9：本机跑不了 ⇒ 本 lane 只交 (a) + "拒绝接线并点名缺口"）。
+   `storageDomain` 已经在 inject 里，只证明"拿得到域"，**不**证明"`domain/changed` 会送到我这里"——
+   这两件事之间隔着子 ctx 与 `global` 语义，正是 L-1 的两条腿。
