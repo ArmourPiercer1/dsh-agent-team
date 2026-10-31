@@ -390,3 +390,31 @@ evidence for it"）。实现模块头 `packages/runtime/review-assignment/assign
   （`capture.answers`）与活体腿独立反驳——门序不是宿主行为的替身，是它的其中一道旁证。② 模块的 `measured` 句子在
   `ok:false` 时仍写作 "closure check :N precedes … :M"（例如 `:3 precedes … :2`），措辞与结论相反；本轮只披露不改
   （改文案 = 动仪器 = 必须重跑 kit = 绑定集移动，收益不值）。
+
+## 11. dated 2026-11-01（round 5 更正，F-I1b5-1/2/3/4/5）：P-1 的仪器换成 AST，句子缩回仪器实力
+
+前轮正文（spec 腿题与腿注、commit、PR 文本）声称 P-1 逐行词法扫描"完备"、批准"不可能 NAME 到可达集内的
+配置写/约束 API"。round 5 五枚实种（S1 拆行动态 import 进子目录、S2 字符串里的注释起止符致盲剥注释器、
+S3 `process.binding`、S4 `process.dlopen`、S5 dist 孤儿模块）全部 `75 passed rc=0` 穿过——句子大于仪器。
+本轮不扩禁词表（那是同一个错误的下一周版本），改规则本身：
+
+- **解析代替匹配**：P-1 用工作区已装的 `typescript`（typecheck 同一依赖）`ts.createSourceFile` 解析每个被扫
+  文件，走 AST 取真实边——ImportDeclaration / ExportDeclaration（含 `export * from`）/ `import()` /
+  `require` / `createRequire`；非字面量 specifier、`import.meta`、`createRequire` 一律**点名文件:行:节点拒绝**，
+  绝不静默跳过。注释由编译器 scanner（`ts.createScanner`，trivia on）按位抹除：字符串里的注释起止两串字符
+  不再能圈出一段假注释区。S1/S2/S3/S4/S5 与新边类成为仪器自评腿的合成夹具——regex 走回头路的那天，红的是腿。
+- **两个 allow-list，不是禁词表**：外部模块闭集 = `node:crypto`；`process` 成员 allow-list 由今天全图**实测
+  导出 = 空集**（42 src + 41 built + 22 emitted lane 文件零引用），任何 `process.<member>`、计算下标、解构、
+  按值引用一律点名拒绝——`binding`/`dlopen`/`mainModule`/`chdir` 不需要被点名，不在表上就是拒绝，未来出现
+  的新能力默认也被拒。第三张网是全局能力名单（fetch/eval/Worker…），其边界如实披露：名单证明不了"没有别的
+  名字"，所以它是第二张网不是规则。
+- **覆盖面**：lane 目录**递归**列出（独立文件系统行走=期望值，不用行走器自己的算术），子目录模块要么在闭包
+  里要么腿红；dist 侧新增 install-surface 腿——两条 lane 的 dist 输出递归枚举，**每个被 build 发出的文件**
+  （含 barrel 走不到的孤儿）都过同一分析器；可达性与覆盖面保持两条独立断言。symlink 出现在任一界面直接红。
+- **仍是静态/单元级，out-of-reach 如实写**：被 allow 的内建（node:crypto）自己的行为、loader hook/import
+  map 对 specifier 的重写、build 不发出的字节——静态扫描看不见就是看不见，句子不再替它们担保。
+- **P-2 两处补真**：拒绝闭集从"1 条活腿"改为**AST 枚举两扇门全部 refusal 返回路径**（19 条实测）逐条按闭集
+  与标量值定级（F-I1b5-4，种在 ADMISSION_REQUEST_MALFORMED 上必须红）；新增解析↔输入保真腿——parsed plan 的
+  `effectScopes` 必须逐条等于输入（F-I1b5-5，validation 后注入 scope 的装配改动能红）。
+- **开放测量（不猜）**：symlink 指向干净目标、以及 `tsc` 对 symlink 源文件的 dist 行为，本轮无构建许可未测，
+  记 OPEN（F-I1b5-7）；界面律先按"拒绝 symlink"执行，不等测量结果。
