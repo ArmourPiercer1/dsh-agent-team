@@ -137,4 +137,33 @@ export type TimedWakeRefusal =
 - 不给模型可见面新增任何工具或字段；不启用任何 flag；不改 ARC-A  protected centre；
 - 不把"契约已写好"当作"载体已解决"：§1 的缺口仍在，`CORE_SEAM_BLOCKER` 仍 OPEN（范围仅 floor-delayed 载体）。
 
+## 7. 追加实测（同日晚些，只读 pristine host `/home/armourpiercer/deepseek-harness`）：immediate-wake 一侧的载体**存在且公开**
+
+裁决一把 `CORE_SEAM_BLOCKER` 限定在 **floor-delayed** 载体上。§5 当时写下"immediate-wake 子集不需要 port"，但只给了
+推理；本节把它换成 file:line 实测（宿主版本 `0.2.0-rc.2` @ `639ed01539…`）。
+
+| 实测事实 | 位置 |
+| --- | --- |
+| `DomainChangedBase { domain: string; table: string; key: string }`，且 `table`/`key` 在全局单例写时为 `''` | `packages/storage/storage-domain/src/events.ts:11-18` |
+| `operation:'put'` 携 `value`，注释明写"**inserted or overwritten**"；`operation:'deleted'` 的 tombstone 不带 value | `events.ts:21-25`、`:28-31` |
+| `DomainChanged = DomainChangedPut | DomainChangedDeleted` 是**闭合 union**（"switch on `operation`"） | `events.ts:33` |
+| 事件名通过 `declare module '@deepseek-ai/cordis' { interface Events { 'domain/changed'(change: DomainChanged): void } }` 声明，注释两条语义：**"emitted once per write strictly after the backend acknowledged durability"** 与 **"Events of one domain arrive in its write-chain order"**，`@mode emit` | `events.ts:35-48` |
+| 宿主自己也用 `ctx.on('domain/changed', (change: DomainChanged) => …)` 实现不变量 ⇒ 这是插件可见的事件总线，不是宿主内部私有回调 | `packages/workspace/workspace/src/invariant.ts:29-35` |
+
+**由此可以写成事实的句子（只写它保证的）**：`ReviewAssignment` 落账之后的即时唤醒**不需要新 port、不需要计时器、
+不需要核心补丁**——存在一个公开 emit-mode 事件，语义是"后端确认耐久之后、每次写一次、同域按写链顺序到达"，正是
+wake-at-append 需要的形状。
+
+**由此不可以写的句子**：它不保证跨域顺序；不保证同一 key 只发一次（`put` 覆盖 insert 与 overwrite 两种）；不保证
+对"插件自己 `storageDomain.open(defineDomain(...))` 打开的域"同样发（上表最后一行证明的是宿主自己的 workspace 域）。
+因此即时唤醒的 handler 必须：按 `(domain, table, key)` 过滤、按 `operation` 分派、并且**幂等**——把"顺序与唯一性"
+当成宿主的承诺来写，就是本 lane 这一整轮在反对的那类越 claim。
+
+**floor-delayed 载体仍然阻塞（裁决一范围不变）**：这条事件只在写发生之后到达，没有任何公开面能把一个动作安排到
+未来某个时刻自己发生。缺的还是那件事，`CORE_SEAM_BLOCKER` 对该子集仍 OPEN；#509 继续 DORMANT。
+
+**实现前必测（不测即不得当事实引用）**：V-1 本 lane writer 实际落的 `domain`/`table` 字符串是什么（取
+`defineDomain(...)` 的名字与表名，逐字钉进测试）；V-2 该事件对插件自开的域是否同样发（造一个最小插件域，写一行，
+断言收到 `put`）；V-3 两个 TeamDomain 并行写时顺序是否按域独立（同域有序即可，跨域不得依赖）。
+
 **授权边界**：开发授权，非合并授权，非生产启用，非放宽门禁。

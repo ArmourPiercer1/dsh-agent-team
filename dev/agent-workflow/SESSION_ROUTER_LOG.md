@@ -7327,3 +7327,15 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   rc=1——同一条老规矩：**测退出码不要经过管道**。
 - 度量：`docs-sync --check` findings=0（docs=105 notes=4 plans=68 contracts=20）。本 PR 无 `packages/**` 路径、
   无生产文件、核心补丁消耗 0。开发授权 ≠ 合并授权 ≠ 生产启用 ≠ 放宽门禁。
+## 2026-10-31 — PR-I2 immediate-wake 一侧的载体由推理换成实测：`domain/changed` 是公开 emit-mode 事件，语义写在宿主源码注释里
+
+- memo §7 追加（`timedwake-port-contract-20261031.md`）：只读 pristine host 测得 `DomainChangedBase{domain,table,key}`
+  （`packages/storage/storage-domain/src/events.ts:11-18`）、`operation:'put'` 覆盖 insert **与** overwrite
+  （`:21-25`）、闭合 union（`:33`）、经 `declare module '@deepseek-ai/cordis' { interface Events … }` 声明且明写
+  "strictly after the backend acknowledged durability" 与 "in its write-chain order"、`@mode emit`（`:35-48`）；
+  宿主自身亦以 `ctx.on('domain/changed', …)` 实现不变量（`packages/workspace/workspace/src/invariant.ts:29-35`）。
+- 允许写成的结论：即时唤醒（wake-at-append）不需要 port、不需要计时器、不需要核心补丁。不允许写成的：跨域顺序、
+  同 key 唯一一次、以及"对插件自开的域同样发"——这三条本会话**未**证明，已作为 V-1/V-2/V-3 记在 memo 里待测。
+- floor-delayed 载体不受影响：事件只在写之后到达，公开面里没有任何"在未来时刻自己发生"的东西；裁决一的
+  `CORE_SEAM_BLOCKER` 对该子集仍 OPEN，#509 仍 DORMANT，也不新建第二套持久化计时器。
+- 只读纪律：宿主树零写入；CORE PATCH BUDGET 0；本条只追加日志与 memo，生产路径未动。
