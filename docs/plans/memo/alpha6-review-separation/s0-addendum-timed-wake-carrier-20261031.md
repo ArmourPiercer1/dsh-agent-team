@@ -6,10 +6,12 @@
 
 ## 1. S0 说了什么（S0 第 75、79 行逐字引用；§0/§6 条目是**摘要**，非逐字）
 
-- S0 结论 §0 与 §6（**摘要**，非逐字；正本见 `s0-revalidation-20261030.md:115`）：**PR3（单飞调度器内核）与
-  PR0（**可信** ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；PR1/PR2 的决策与路由入口改造是具名
-  Center-Interface PR，**排在 C1 条件落地之后**；真实 Host 腿（PR4/PR5 的验收形态）在 C2 条件落地之前全部
-  ENV_BLOCK，不冒充。（本条压缩自 S0 的一句话结论，删去连接词但保留全部三个限定：可信、C1 之后、C2 前 ENV_BLOCK。）
+- S0 结论 §0 与 §6（**摘要**，非逐字；正本见 `s0-revalidation-20261030.md:115`）：
+  **PR3（单飞调度器内核）与 PR0（可信 ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；
+  PR1/PR2 的决策与路由入口改造是具名 Center-Interface PR，**排在 C1 条件落地之后**；
+  真实 Host 腿（PR4/PR5 的验收形态）在 C2 条件落地之前全部 ENV_BLOCK，不冒充。
+  （本条压缩自 S0 的一句话结论：只删去「见同目录…」与「一句话：」两处连接文字，三个限定全部保留——
+  可信、排在 C1 条件落地之后、C2 条件落地之前 ENV_BLOCK。）
 - S0 §3 能力表第 75 行：`调度器持久状态 | storageDomain.open(defineDomain(...)) KvTable（CAS/条件写）+
   domain/changed | packages/storage/storage-domain/src/index.ts`。
 - S0 §3 硬约束第 79 行（逐字）：
