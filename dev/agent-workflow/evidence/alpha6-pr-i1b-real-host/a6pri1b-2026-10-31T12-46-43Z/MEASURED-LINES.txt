@@ -1,0 +1,31 @@
+lane head=b56eed25f00da5c271733e9b55dae8ff40242b21; host head=639ed015397290b3745d163aafe02ffee4aa3f84 (pin 639ed015397290b3745d163aafe02ffee4aa3f84); host porcelain before=0
+PASS host-is-the-pinned-baseline — host HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 vs pin 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0
+matrix: spawned marker=a6pri1ba6pri1b-2026-10-31T12-46-43Zmatrixhost3182 port=3182 DSH_HOME=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T12-46-43Z-matrix
+PASS boot-line-shape — dsh web line at port 3182 (token redacted)
+PASS gate-401-without-token — GET / with no token -> 401
+PASS gate-303-and-cookie — GET /?token=<REDACTED> -> 303, cookie issued
+PASS real-resolver-refuses-unknown-caller — TEAM_RUNTIME_CALLER_NOT_FOUND — TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T12-46-43Z' — the caller is unknown
+PASS create-request-leader-approval-leader-arm — 200 requestId=ctrl-14wl7ae0uzhgld0ol6utg1th
+LEADER resolve leader-approval -> 200 TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS [not-refused-by-closure] :: TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed
+PASS create-request-leader-approval-human-arm — 200 requestId=ctrl-1vdmqf4125xha310ponxq1pj
+HUMAN  resolve leader-approval -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS create-request-user-approval-leader-arm — 200 requestId=ctrl-0g97lm019ff5l31r0t4de012
+LEADER resolve user-approval -> 200 CONTROL_RESOLVER_NOT_AUTHORIZED [refused-by-closure] :: ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])
+PASS create-request-user-approval-human-arm — 200 requestId=ctrl-0wr8kra1myuajl119h1oo06t
+HUMAN  resolve user-approval -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS create-request-envelope-mutation-leader-arm — 200 requestId=ctrl-10olshd1b4nwna11ih8bf0n6
+LEADER resolve envelope-mutation -> 200 TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS [not-refused-by-closure] :: TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed
+PASS create-request-envelope-mutation-human-arm — 200 requestId=ctrl-0xy028x1m7fuqe0dsh6nv02u
+HUMAN  resolve envelope-mutation -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS closure-splits-by-role-on-user-approval — leader -> CONTROL_RESOLVER_NOT_AUTHORIZED "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])"; human -> CONTROL_RESOLVED
+PASS leader-cell-recorded-leader-approval — leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=not-refused-by-closure "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun" — an earlier gate answered, so this cell is NOT evidence about the closure
+PASS human-allowed-by-host-leader-approval — human -> CONTROL_RESOLVED "the durable decision was written"
+PASS leader-cell-recorded-envelope-mutation — leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=not-refused-by-closure "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun" — an earlier gate answered, so this cell is NOT evidence about the closure
+PASS human-allowed-by-host-envelope-mutation — human -> CONTROL_RESOLVED "the durable decision was written"
+PASS member-role-has-no-ingress — no public carrier presents a MEMBER caller to the closure: /team-remote carries no identity (U3) and every team_* tool needs a live member agent. Recorded so the spec refuses to read the matrix as complete.
+PASS durable-ledger-census-nonempty — getLedgerPage 200 entries=9 factTypes=[control-decision-recorded, control-request-recorded]
+PASS teardown-process-and-port — child alive=false, port 3182 free=true
+PASS host-tree-stayed-clean — git status --porcelain in the pristine runtime: before=0, after=0
+enable: spawned marker=a6pri1ba6pri1b-2026-10-31T12-46-43Zenablehost3282 port=3282 DSH_HOME=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T12-46-43Z-enable
+PASS enable-surface-is-not-a-switch — row config with feature:'on' + assignmentFeature:'on' -> row ready=true, durable write accepted=true, census=[control-request-recorded] — nothing was refused and no admission behaviour appeared
+PASS enable-world-cleaned — enable world alive=false, port 3282 free=true

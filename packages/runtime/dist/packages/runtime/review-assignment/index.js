@@ -7,11 +7,13 @@
  *  - **Nothing here grants anything.** `facts.ts` refuses a payload key that claims authority, and the
  *    family books its frozen ledger category as `team` and never `control`.
  *  - **Nothing here is wired.** PR-I1a supplied the durable writer `writer.ts` promised by A-8 — one module,
- *    one entry point, no second approval ledger — and NOTHING calls it: `ALLOWED_CONSUMERS` is still empty and
- *    the hygiene spec proves no production file imports any of this lane. A writer with no caller cannot write;
- *    the sentence above it, written when the lane had no writer at all, is kept here in its amended form rather
- *    than silently rewritten, because "the durable append arrives with the named Center-Interface PR" is still
- *    the plan for the caller. The ARC-A center is untouched.
+ *    one entry point, no second approval ledger — and PR-I1b added the entry-admission layer
+ *    `assignment-admission.ts` — and NOTHING calls either: `ALLOWED_CONSUMERS` is still empty and
+ *    the hygiene spec proves no production file imports any of this lane. A writer with no caller cannot write and
+ *    an admission with no gate open admits nothing; the sentence above it, written when the lane had no writer at
+ *    all, is kept here in its amended form rather than silently rewritten, because "the durable append arrives with
+ *    the named Center-Interface PR" is still the plan for the caller — and PR-I1b's own header records why its
+ *    wiring is BLOCKED on that act rather than skipped. The ARC-A center is untouched.
  *  - **Nothing here is wider than PR0.** The router routes a case only when PR0's admission gate admits
  *    the same instance for the same case, plan and mandate, and it fails closed to the Leader — the
  *    pre-Alpha.6 behaviour — whenever a plan, a mandate, a leg, a lifecycle or a snapshot is missing.
@@ -29,4 +31,5 @@ export * from './facts.js';
 export * from './router.js';
 export * from './handoff.js';
 export * from './writer.js';
+export * from './assignment-admission.js';
 //# sourceMappingURL=index.js.map

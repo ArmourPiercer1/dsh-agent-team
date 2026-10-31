@@ -12,7 +12,15 @@
  *     so the writer is the named Center-Interface PR (PR-I1) and the importer set stays empty until then.
  *     A dark lane is only safe while it stays dark, so the importer set is walked from disk every run —
  *     with the per-package non-empty floor that PR3′'s round-5 review had to add after a walk reading
- *     zero files passed.
+ *     zero files passed. The walk is LEXICAL and its claim stops where the instrument stops (round 1 of #522,
+ *     F-I1b1-2, 2026-10-31, which is the round that wrote this sentence instead of "walks the tree for
+ *     importers"): it reads files whose extension it names, it matches literal specifiers, it convicts a
+ *     production file that reaches into a package `test/` tree (the one hop that a planted re-export glue
+ *     needs), and it exempts `test`-component paths and `SKIPPED_DIRECTORIES` from being offenders. It does
+ *     NOT follow an import chain, and it cannot see a specifier that is not a literal. The precise claim this
+ *     file can pay for is: *no tracked production file, reached by a literal specifier under a named extension
+ *     and without passing through an exempt directory, imports the lane* — and the two shapes that sentence
+ *     excludes are named in the legs, not hidden by the word "walks".
  *  2. **No reverse dependency on the protected centre, and no dependency on PR3′.** The router will
  *     eventually be driven from the live plugin plane; that direction is allowed. What is not allowed is
  *     this lane importing the ARC-A digest-pinned decision core, nor importing `review-wake`: PR2′ and
@@ -49,8 +57,18 @@ const ALLOWED_CONSUMERS: readonly string[] = []
 
 const FOUNDING_MODULES = ['facts.ts', 'handoff.ts', 'index.ts', 'router.ts', 'types.ts']
 
-/** A new module in this lane is a deliberate amendment, named in the PR that adds it. */
+/** A new module in this lane is a deliberate amendment, named in the PR that adds it. Sorted, because the leg
+ *  below compares against the on-disk list. */
 const EXTRA_MODULES_ALLOWED: readonly string[] = [
+  // Alpha.6 PR-I1b (2026-10-31, memo `pri1b-admission-design-20261031.md` D-1 as amended by §9): the entry
+  // admission for assignment DECISIONS. In-lane for the same reason as the writer, with the direction reversed:
+  // the kernel's pure rules (`checkAssignmentMutation`, `foldReviewAssignmentRows`) are the things admission must
+  // consult rather than paraphrase, and the memo chose this name precisely because `packages/runtime/admission/`
+  // and the protected `tool-admission/` already exist — a third bare "admission" in the tree is a planted
+  // misunderstanding. The module is READ-ONLY by construction (its ports carry no write handle) and its wiring is
+  // BLOCKED on the named Center-Interface act — its header says why, and `ALLOWED_CONSUMERS` staying empty below
+  // is that blocked state measured, not forgotten.
+  'assignment-admission.ts',
   // Alpha.6 PR-I1a (2026-10-31): the durable writer whose absence `types.ts` A-8 recorded out loud. It sits
   // INSIDE the lane rather than beside it for one reason: the row shape, the CAS pre-flight and the authority
   // denylist are the three things a writer must not be able to bypass, and an `import` is not a boundary —
@@ -85,8 +103,25 @@ const PROTECTED_PREFIXES = [
  * `scripts/check-artifacts-at-head.mjs` rebuilds it and compares the bytes at every head (`drift=0`), so a
  * writer cannot be hand-planted in it without that gate going red. What a source-level name/verb scan would do
  * there is convict the bundle for containing what its lawful inputs contain.
+ *
+ * `.jsx` was added in round 1 of #522 (F-I1b1-2, 2026-10-31) after a plant at `packages/legacy/src/plant5.jsx`
+ * sat inside the walk's own roots and was not read. It was added with the extension question MEASURED rather than
+ * guessed, in both directions:
+ *  - what a build here can PRODUCE: `tsconfig.base.json` sets `module: NodeNext` and NO tsconfig in the repo sets
+ *    `allowJs` (measured: the only `jsx`-related setting anywhere is `"jsx": "react-jsx"` in
+ *    `packages/client/tsconfig.build.json`), so tsc reads `.ts/.tsx/.mts/.cts/.d.*` and emits `.js/.mjs/.cjs` plus
+ *    declarations — and tsc refuses a `.jsx` input outright (measured at this head: `error TS18003: No inputs were
+ *    found` for a lone `.jsx`). So `.jsx` is not a build output and cannot reach `dist`;
+ *  - what a runner here can IMPORT: the repo's own vitest (vite 8 / esbuild) resolves and EXECUTES a `.jsx` —
+ *    measured with a scratch probe at this head, `import { planted } from './plant.jsx'` ran green. Same probe:
+ *    `.cjsx` and a `.vue` holding plain ESM also loaded. That is the disclosure that goes with the widening —
+ *    an extension list is a FLOOR, never a ceiling: the resolver will load spellings this array has never heard
+ *    of, so "walked" means "walked under these names", and the residual is named in the DORMANCY leg rather than
+ *    hidden by a longer list.
+ * 0 tracked `.jsx` files exist under the repo at this head (`git ls-files '*.jsx'`), so this widening convicts
+ * nobody today; the leg that re-measures that vacancy is the one that walks the widened extensions.
  */
-const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js']
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js', '.jsx']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
 /** Sibling suites (f3a/f3b/f3c, po-notify) create and destroy scratch under
@@ -179,6 +214,14 @@ function readIfPresent(file: string): string | null {
  * That limit is STATED rather than papered over, and pinned by its own leg, because a dormancy claim that
  * quietly exceeds the instrument backing it is the same class of defect as a doc block that says
  * "no production caller" when there is one.
+ *
+ * The same floor also OVER-reads, measured in the round it was widened (round 1 of #522, 2026-10-31): a sentence
+ * in the admission module's doc block ending `… not reachable from \`admit\` …` was collected as an import of a
+ * module named `admit` and turned three purity legs red, this lane's own included. The sentence was reworded and
+ * the detector was left as it is, because the cure for a lexical floor is not a cleverer regex — it would have to
+ * know which bytes are comments to stop guessing. Recorded so the next reader who writes a sentence inside a lane
+ * module and watches a purity leg go red finds the cause in one look: this instrument reads the file as bytes, in
+ * both directions of error, and that is disclosed instead of being tuned away.
  */
 const SPECIFIER_PATTERN =
   /(?:\bcreateRequire\s*\([^)]*\)\s*\(\s*|\bfrom\s*|\bimport\s*\(\s*|\bimport\s*|\brequire\s*\(\s*)['"`]([^'"`\n]+)['"`]/g
@@ -205,6 +248,35 @@ function specifierEntersLane(fromFile: string, specifier: string): boolean {
 
 function sourceEntersLane(fromFile: string, source: string): boolean {
   return specifiersOf(source).some((specifier) => specifierEntersLane(fromFile, specifier))
+}
+
+/**
+ * Round-1 review of #522 (F-I1b1-2, 2026-10-31): the ONE hop of the import chain this lane's law closes, chosen so
+ * that no module graph is needed.
+ *
+ * The walk exempts a file from being an OFFENDER when its path carries a `test`/`tests` component — the lane's own
+ * suites import the lane and must not convict the law that permits them. The reviewer measured the cost of that
+ * exemption: glue under `packages/runtime/test/` that re-exports the lane, plus one production importer of the
+ * glue, was invisible to every leg (plants P8/P8b). The rule below convicts the IMPORTER for the shape of its own
+ * literal specifier — "production code reaches into a package's test tree" — which is exactly the hop the plant
+ * needs, and which is independently true as hygiene: test-tree glue is never emitted by `tsc` and never lands in
+ * the shipped output, so production code that names it is broken by construction.
+ *
+ * It reads no target file, resolves no barrel, and never asks what an import imports. Specifiers that resolve
+ * OUTSIDE `packages/` are not this rule's business (the repo-root `tests/` infrastructure is imported by harness
+ * scripts lawfully — 33 such specifiers at this head), and a specifier that is not a literal is invisible to
+ * every rule in this file, as `SPECIFIER_PATTERN`'s comment says.
+ */
+function productionImportsTestGlue(fromFile: string, source: string): string[] {
+  const hops: string[] = []
+  for (const specifier of specifiersOf(source)) {
+    if (!specifier.startsWith('.')) continue
+    const rel = relative(PACKAGES_ROOT, resolve(dirname(fromFile), specifier))
+    if (rel === '' || rel.startsWith('..')) continue
+    const parts = rel.split(sep)
+    if (parts.includes('test') || parts.includes('tests')) hops.push(specifier)
+  }
+  return hops
 }
 
 describe('a6-pr2 lane hygiene', () => {
@@ -433,6 +505,7 @@ describe('a6-pr2 lane hygiene', () => {
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {
     const offenders: string[] = []
+    const testGlueHops: string[] = []
     const packages = readdirSync(PACKAGES_ROOT, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -449,10 +522,17 @@ describe('a6-pr2 lane hygiene', () => {
         const rel = relative(PACKAGES_ROOT, file)
         if (rel.startsWith(join('runtime', 'review-assignment') + sep)) continue
         if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`) || rel.includes('.spec.')) continue
-        if (sourceEntersLane(file, readIfPresent(file) ?? '')) offenders.push(rel)
+        const text = readIfPresent(file) ?? ''
+        if (sourceEntersLane(file, text)) offenders.push(rel)
+        // Round 1 of #522 (F-I1b1-2, 2026-10-31): the exemption two lines above is what let a plant hide one hop
+        // away — glue under `test/` re-exporting the lane, with a production importer that never names the lane.
+        // The hop is convicted here, in the flagship leg, not only in its own describe, so the sentence "no
+        // production file outside the lane imports it" is backed by the walk that states it.
+        for (const hop of productionImportsTestGlue(file, text)) testGlueHops.push(`${rel} -> ${hop}`)
       }
     }
     expect(offenders).toEqual([...ALLOWED_CONSUMERS])
+    expect(testGlueHops, 'a production file reaches into a package test tree — the exempt directory a two-hop importer needs').toEqual([])
   })
 
   // Every control below is fed to `sourceEntersLane`, the SAME function the dormancy walk uses — a
@@ -718,20 +798,28 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
     try {
       writeFileSync(join(dir, 'widened.mts'), 'export const widened = 1\n')
       writeFileSync(join(dir, 'widened.cts'), 'export const widened = 1\n')
+      // Round 1 of #522 (F-I1b1-2, 2026-10-31): the `.jsx` entry gets the same treatment as the two above — a plant
+      // at `packages/legacy/src/plant5.jsx` sat in the walk's roots unread, so the entry is driven here rather than
+      // trusted from the comment.
+      writeFileSync(join(dir, 'widened.jsx'), 'export const widened = 1\n')
       writeFileSync(join(dir, 'declaration.d.mts'), 'export declare const widened: number\n')
       writeFileSync(join(dir, 'declaration.d.ts'), 'export declare const widened: number\n')
       writeFileSync(join(dir, 'notes.md'), 'not a source file\n')
       const found = sourceFiles(dir)
         .map((file) => relative(dir, file))
         .sort()
-      expect(found, 'the walk must see `.mts`/`.cts` and must keep `.d.*` declarations out').toEqual(['widened.cts', 'widened.mts'])
+      expect(found, 'the walk must see `.mts`/`.cts`/`.jsx` and must keep `.d.*` declarations out').toEqual([
+        'widened.cts',
+        'widened.jsx',
+        'widened.mts',
+      ])
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
 
     // The list itself, pinned as data: the behavioural half above proves the two entries do something, this half
     // proves nobody quietly narrows the walk back down while the comment still claims otherwise.
-    expect([...SOURCE_EXTENSIONS]).toEqual(['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js'])
+    expect([...SOURCE_EXTENSIONS]).toEqual(['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js', '.jsx'])
 
     // And the numbers the header comment carries are re-measured, not trusted. They are the disclosure that the
     // widening is prospective: today it convicts no file, and if that ever stops being true this leg says so.
@@ -739,9 +827,91 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
     const tracked = execFileSync('git', ['ls-files', '--', 'packages'], { cwd: repoRoot, encoding: 'utf8' })
       .trim()
       .split('\n')
-    const widened = tracked.filter((file) => /\.(?:mts|cts)$/.test(file))
+    const widened = tracked.filter((file) => /\.(?:mts|cts|jsx)$/.test(file))
     expect(widened.length, 'the tree is expected to carry `.mts`/`.cts` files, or this leg has stopped measuring').toBeGreaterThan(0)
     const convictable = widened.filter((file) => !/\.d\.(?:ts|mts|cts)$/.test(file) && !file.includes('/test/'))
-    expect(convictable, 'these `.mts`/`.cts` files are newly inside the walk — the header comment must be re-read').toEqual([])
+    expect(convictable, 'these widened-extension files are newly inside the walk — the header comment must be re-read').toEqual([])
+    // The `.jsx` half, measured separately because it is the newest entry and its vacancy is the whole reason the
+    // entry is safe to add: 0 tracked `.jsx` at this head means the widening convicts nobody, which is what the
+    // comment above claims. The moment that stops being true this leg names the files.
+    expect(
+      tracked.filter((file) => file.endsWith('.jsx')),
+      'a tracked `.jsx` has appeared — re-read the F-I1b1-2 comment: the `.jsx` widening is no longer prospective',
+    ).toEqual([])
   })
 })
+
+describe('the walk does not follow import chains, and says which hop it does close', () => {
+  /**
+   * Round-1 review of #522, F-I1b1-2, second half. The walk skips a file as an OFFENDER when its path carries a
+   * `test`/`tests` component — legitimately, because the lane's own suites import it and must not convict the law
+   * that lets them exist. The reviewer measured what that exemption costs (plants P8/P8b): a re-export glue file
+   * under `packages/runtime/test/` plus ONE production importer of it stayed invisible to every leg, because the
+   * offender lives in the exempt directory and the importer's own specifier never names the lane.
+   *
+   * That one hop is closed here, cheaply and without a module graph: **a production file may not import a path
+   * that lands inside a `test`/`tests` component of any package at all.** The rule is a shape test on the
+   * importer — the same class of check as "the specifier names the lane as a path segment" — and it reads no other
+   * file, resolves no barrel, and follows no chain. It is sound as a dormancy law because test-tree glue is not a
+   * lawful production dependency: `tsc` never emits it and the shipped output never contains it (see the
+   * `SOURCE_EXTENSIONS` note), so the only way to reach it from production is to break that rule on purpose.
+   *
+   * What this leg therefore does NOT claim, stated because the claim is the defect and not the tree:
+   *  - it does not resolve where a specifier points when the specifier is not a literal (the escape named in
+   *    `SPECIFIER_PATTERN`'s comment above: a variable, a concatenation, a bundler rewrite);
+   *  - it does not follow a chain whose hops are all production files that individually name nothing — no file
+   *    here reads an import target and asks what IT imports;
+   *  - it does not see a hop whose target sits in `SKIPPED_DIRECTORIES` (`dist`, `composition-shim`, `coverage`,
+   *    `node_modules`) or in a file extension this walk does not name — the shipped halves of the first two are
+   *    covered by the build-output assertions and `check-artifacts-at-head.mjs`, the rest is a lexical floor.
+   */
+  const PRODUCTION_IMPORTER = join(PACKAGES_ROOT, 'runtime', 'src', 'attic.ts')
+
+  it('convicts a production importer of test-tree glue — the exact two-hop the reviewer planted', () => {
+    // P8's shape: `packages/runtime/src/attic.ts` → `../test/pr1b-glue.js`.
+    expect(
+      productionImportsTestGlue(PRODUCTION_IMPORTER, "import * as glue from '../test/pr1b-glue.js'\n"),
+      'a same-package hop into `test/` must be named').toEqual(["../test/pr1b-glue.js"])
+    // P8b's shape: the live-plane `.mjs` two levels down, reaching the same directory.
+    expect(
+      productionImportsTestGlue(join(PACKAGES_ROOT, 'runtime', 'src', 'plugin', 'live', 'attic.mjs'), "const glue = await import('../../test/pr1b-glue.js')\n"),
+      'a deeper production file must not be a shorter hop').toEqual(["../../test/pr1b-glue.js"])
+    // The cross-package variant: `packages/remote/src/x.ts` → `../../runtime/test/glue.js`.
+    expect(
+      productionImportsTestGlue(join(PACKAGES_ROOT, 'remote', 'src', 'x.ts'), "export { openAssignmentAdmission } from '../../runtime/test/glue.js'\n").length,
+    ).toBe(1)
+  })
+
+  it('does not convict the component-boundary near-misses, or the harness hop OUTSIDE packages', () => {
+    // `test` as a substring is not `test` as a directory component.
+    expect(productionImportsTestGlue(PRODUCTION_IMPORTER, "import { latest } from './latest/index.js'\n")).toEqual([])
+    expect(productionImportsTestGlue(PRODUCTION_IMPORTER, "import { x } from './testbed.js'\n")).toEqual([])
+    expect(productionImportsTestGlue(PRODUCTION_IMPORTER, "import { lane } from '../review-assignment/index.js'\n")).toEqual([])
+    // The measured real case: 33 production specifiers point at the REPO-ROOT `tests/` world (`tests/paths.mjs`,
+    // `tests/characterization/lib/*.mjs`) from harness scripts. That tree is outside `packages/`, is this repo's
+    // test infrastructure rather than a package's exempt test tree, and must stay lawful — a detector that
+    // convicts the harness is a detector the next person switches off.
+    expect(
+      productionImportsTestGlue(join(PACKAGES_ROOT, 'tools', 'harness', 'run.mjs'), "import { DSH_BASELINE_VERSION } from '../../../tests/paths.mjs'\n"),
+    ).toEqual([])
+  })
+
+  it('walks the real tree with that rule and convicts nobody — the tree is clean, measured not asserted', () => {
+    const offenders: string[] = []
+    let productionFiles = 0
+    for (const pkg of readdirSync(PACKAGES_ROOT, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort()) {
+      for (const file of sourceFiles(join(PACKAGES_ROOT, pkg))) {
+        const rel = relative(PACKAGES_ROOT, file)
+        if (rel.startsWith(join('runtime', 'review-assignment') + sep)) continue
+        if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`) || rel.includes('.spec.')) continue
+        productionFiles += 1
+        const hops = productionImportsTestGlue(file, readIfPresent(file) ?? '')
+        for (const hop of hops) offenders.push(`${rel} -> ${hop}`)
+      }
+    }
+    // 661 production files at this head — measured with the same walk, so "clean" cannot mean "looked at nothing".
+    expect(productionFiles, 'the two-hop walk must see the production tree').toBeGreaterThan(600)
+    expect(offenders).toEqual([])
+  })
+})
+

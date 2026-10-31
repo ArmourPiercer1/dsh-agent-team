@@ -7403,3 +7403,20 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   ⇒ 锚定失配，只命中 title，故同一脚本两 PR 的 token 不同，且与源码规则完全一致。我先前想写的"早先几轮归因不同是
   因为当时正文首行不含 marker"是**未经证实的推断**（我保留了当时的正文首行，它同样以 marker 开头，故该推断不成立），
   按律不写进正本；此处只留可由源码与两次实测复现的部分。
+## 2026-10-31 — PR-I1b 设计正本落地（design-first，未实现）：准入的角色判定**导入**权威而不是抄表
+
+- 新分支 `alpha6/lane2-pri1b-admission-20261031` @ base `a2bc18d78`（PR-I1a 三轮复核后），新 memo
+  `docs/plans/memo/alpha6-review-separation/pri1b-admission-design-20261031.md`。本轮只落设计与实测引用，**不动任何生产路径**。
+- 本会话实测（不是转述）：`CONTROL_RESOLVER_ROLES` 三 kind 闭集 `control/types.ts:193-197`；角色闭合在 envelope 之前、
+  两处独立抄表 `control/service.ts:2619-2634` 与 `:4852-4864`；`ActionCaller` 无 role `service.ts:1033-1042`；
+  `ResolvedCaller` instance 臂 `role:'leader'|'member'` `control/types.ts:1567`；关案只可能写 deny
+  `control/types.ts:2580-2589`；主体身份 kind 前缀互斥 `service.ts:1044-1060`；写端口把 adapter 作者点名成 PR-I1b 并要求
+  全量未截断 ledger `review-assignment/writer.ts:170-201`；消费方闭集 `a6-pr2-lane-hygiene.test.ts:48/:53-61/:443-456`。
+- **一条把设计从"抄表"升级为"导入权威"的实测**：`CONTROL_REQUEST_KINDS` 与 `CONTROL_RESOLVER_ROLES` 在公开出口
+  `control/index.ts:140-141` 的值导出块里 ⇒ 受保护中心一行不改即可复用其闭集（V-2 结案）。
+- **一条把安全设计逼到实处的实测**：remote 参数层接受调用方自报 actor kind
+  `['human','leader','member']`（`packages/remote/src/contracts/params.ts:111`、`:998-1036`）⇒ 请求里的 kind 是**声明**
+  不是权威；故 D-3 定为"声明必须与 TeamDomain 里该案真正 Leader 实例逐字段比过才算"，并在输入闭集里禁 `role` 键。
+  推导本体仍未定位（V-1 已收窄到三个事实 + plugin 侧仅 `root.ts:2196` 一处 human caller），实现前必测。
+- 纪律：CORE PATCH BUDGET 0；不进受保护中心；PR-I1b 自己不写耐久行（不新增第二扇门）；docs-sync
+  `docs=106 plans=69 findings=0`。
