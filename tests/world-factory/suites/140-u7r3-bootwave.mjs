@@ -702,7 +702,7 @@ export function judgeBootwave({ facts, log, journal, laneDone, hostAlive, health
     zeroNewObjectsAfterDeny: facts.store?.zeroNewObjectsAfterDeny ?? false,
     workspaceNewFiles: facts.store?.workspaceNewFiles ?? [],
     ranCount: ranLines.length,
-    law: 'PASS needs: the second durable read_image row answered deny over the public seam, a typed refusal visible on a live arm — the family executor naming code=APPROVAL_DENIED OR the member transcript carrying the durable approval refusal text (kernel admission refuses before the executor runs: RCA-7 erratum, bw8 record denialArm=kernel-admission) — and a store census that never exceeds the ONE object R1 committed: zero new objects, zero new files in the governed workspace.',
+    law: 'PASS needs: the second durable read_image row answered deny over the public seam, a typed refusal visible on a live arm — the family executor naming code=APPROVAL_DENIED OR the member transcript carrying the durable approval refusal text (kernel admission refuses before the executor runs: RCA-7 erratum, bw8 record denialArm=kernel-admission; dated correction — the arm fact for bw8 rests on RCA-8 section 2 via trace entry 74, the denialArm field itself was introduced with the bw9/bw10 records) — and a store census that never exceeds the ONE object R1 committed: zero new objects, zero new files in the governed workspace.',
     ...rca('control-bridge',
       'the deny arm produced a side effect or no typed refusal: compare the store/workspace census before/after the second call with the governed-image pa-refused line; a store object appearing after a deny is a product blocker.',
       ['evidence json store.samples', 'host log grep pa-refused', 'tests/homes/<world>/workspace']),

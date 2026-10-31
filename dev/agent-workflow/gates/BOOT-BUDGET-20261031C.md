@@ -134,3 +134,6 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 ## bw9/bw10 回执（批 2/2 用尽，dated 2026-10-31T05:39Z）
 - bw9=1 start（账本行 7）：九绿，L4 三格收口首跑。bw10=1 start（行 8）：九绿精确复现（同对象 sha，异 world/ids）。批 2/2 用尽，**池=0**；L4 收据=c2/L4-RECEIPT-read-image.md。
 - 两跑零 FAIL 零 RCA 追加；泄漏检查双绿。再启动（含任何复验）需用户新裁。
+
+## 预算终账更正（dated 2026-10-31T06:04Z，独立审查发现，追加式不改原文）
+本波次 lane 真实 host starts = **9**（账本 8 行 + 已披露 bw6x misfire 1）。分池：C2 本 lane 消耗 4（bw3/bw4/bw5 + bw6x WASTED；C2 池级 8/8 中另 4 格属 u7r3-shomev2/u7r3-uif4 他 lane）、C4 常规 1（formal bw6=C4 4/4）、机动 2/2（bw7/bw8）、用户新批 2/2（bw9/bw10）。上方「波次终账：C2 8/8+机动 2/2+新批 2/2=10」行误把他 lane 计入且漏 C4 格，以本条为准。池=0 结论不变。
