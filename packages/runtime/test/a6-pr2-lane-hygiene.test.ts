@@ -49,7 +49,15 @@ const ALLOWED_CONSUMERS: readonly string[] = []
 const FOUNDING_MODULES = ['facts.ts', 'handoff.ts', 'index.ts', 'router.ts', 'types.ts']
 
 /** A new module in this lane is a deliberate amendment, named in the PR that adds it. */
-const EXTRA_MODULES_ALLOWED: readonly string[] = []
+const EXTRA_MODULES_ALLOWED: readonly string[] = [
+  // Alpha.6 PR-I1a (2026-10-31): the durable writer whose absence `types.ts` A-8 recorded out loud. It sits
+  // INSIDE the lane rather than beside it for one reason: the row shape, the CAS pre-flight and the authority
+  // denylist are the three things a writer must not be able to bypass, and an `import` is not a boundary —
+  // a writer in a sibling directory would satisfy every leg in this file while being free to build a payload
+  // by hand. Amending this list is therefore the same act as admitting a second door, which is why the
+  // export census below now counts the writer's exports too instead of only the kernel's.
+  'writer.ts',
+]
 
 const PROTECTED_PREFIXES = [
   `control${sep}`,
@@ -218,6 +226,60 @@ describe('a6-pr2 lane hygiene', () => {
       'planHandoff',
       'planRetirement',
     ])
+
+    // PR-I1a put a writer in this lane, so "no second writer" can no longer be a claim about encoders alone.
+    // What it means now is narrower and checkable: exactly ONE exported function appends, exactly one call site
+    // reaches the ledger's write half, and the writer builds payloads only through the kernel encoder — never
+    // an epoch it picked itself, because a hand-picked epoch is a CAS that was never compared to anything.
+    const writer = readFileSync(join(LANE_DIR, 'writer.ts'), 'utf8')
+    const writerExports = [...writer.matchAll(/^export (?:async function|function|const) (\w+)/gm)]
+      .map((match) => match[1] as string)
+      .sort()
+    expect(writerExports).toEqual([
+      'REVIEW_ASSIGNMENT_WRITE_REFUSALS',
+      'applyReviewAssignment',
+    ].sort())
+    expect([...writer.matchAll(/\.allocateSequence\(\)/g)]).toHaveLength(1)
+    expect([...writer.matchAll(/\.put\(/g)]).toHaveLength(1)
+    expect([...writer.matchAll(/encodeAssignmentFact\(/g)]).toHaveLength(2) // the write, and the replay rebuild
+    expect(writer).not.toMatch(/assignmentEpoch:\s*\d/)
+    expect(writer).not.toMatch(/previousEpoch:\s*\d/)
+  })
+
+  it('is the only module in the repository that can append a review-assignment row', () => {
+    // D-1, the law the other two depend on. The lock this writer takes is NOT the control plane's lock
+    // (`control/service.ts:1656` keeps that one in a private closure, and reaching for it means editing the
+    // protected centre), so the safety of that fact rests entirely on the CAS domain being `assignmentEpoch`
+    // and on nothing else appending rows of this family. Two of those rows appearing from two modules turns
+    // "two locks over disjoint state" into "two locks over one state", which no epoch check survives.
+    // The scan is a NAME + VERB test rather than an import test: a module that imports the kernel and builds
+    // its own `put` call is precisely the offender an import-based scan describes as a lawful reader.
+    const writeVerbs = /\.put\(|\.putEntry\(|allocateSequence\s*\(/
+    const namesFamily = /review-assignment-(?:created|transferred|retired)|REVIEW_ASSIGNMENT_FACT_TYPES/
+    // Comments are stripped and test sources are skipped, and both exclusions are load-bearing rather than
+    // convenient: A-8 in `types.ts` NAMES `allocateSequence()` while explaining that no writer existed, so a
+    // scan over prose convicts the law for stating itself; and a spec that plants an offender to prove its own
+    // detector works must be allowed to write the shape of one. What is not excluded is any module that could
+    // run in production, which is the only kind of module that can append a row.
+    const codeOnly = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    const offenders: string[] = []
+    for (const file of sourceFiles(PACKAGES_ROOT)) {
+      if (/[\\/]test[\\/]/.test(file) || /\.test\.[cm]?ts$/.test(file)) continue
+      const inLane = file.startsWith(LANE_DIR + sep)
+      const text = codeOnly(readFileSync(file, 'utf8'))
+      if (!namesFamily.test(text) || !writeVerbs.test(text)) continue
+      if (inLane && relative(LANE_DIR, file) !== 'writer.ts') offenders.push(relative(RUNTIME_ROOT, file))
+      if (!inLane) offenders.push(relative(PACKAGES_ROOT, file))
+    }
+    expect(offenders, `modules appending rows of this family besides the writer: ${offenders.join(', ')}`).toEqual([])
+    // Anti-vacuity: the scan must fire on the shape it describes. Written as a string so this file is not
+    // itself an offender — the scan reads sources, and it does not care who wrote them.
+    const planted = "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n"
+    expect(/review-assignment-(?:created|transferred|retired)|REVIEW_ASSIGNMENT_FACT_TYPES/.test(planted)).toBe(true)
+    expect(writeVerbs.test(planted)).toBe(true)
+    // And it must not fire on a lawful reader of the same family: reading rows is what PR5′ will do.
+    const reader = "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n"
+    expect(writeVerbs.test(reader)).toBe(false)
   })
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {
@@ -366,8 +428,13 @@ describe('a6-pr2 lane hygiene', () => {
       for (const specifier of specifiers) {
         expect(allowed.test(specifier), `${relative(RUNTIME_ROOT, file)} imports ${specifier}, outside the pure-lane allow-list`).toBe(true)
       }
-      expect(text).not.toMatch(/Date\.now\(/)
-      expect(text).not.toMatch(/new Date\(\s*\)/)
+      // The PR4 lane's round-4 review earned this widening: its needle list missed a bare `Date()`, which is
+      // the same spelling a reader would write first. Here the law is stronger than "do not read the current
+      // time" — a lane that takes its clock as injected data must not touch the Date object in ANY form,
+      // including the two static parse/UTC forms that look harmless and would let a caller's string be
+      // interpreted by a global the lane is claiming not to know. What this list still cannot see is an alias
+      // (`const D = Date; new D()`), and saying so here is cheaper than a review finding later.
+      expect(text).not.toMatch(/Date\.now|Date\.parse|Date\.UTC|new Date|\bDate\(|Intl\.DateTimeFormat/)
       expect(text).not.toMatch(/performance\.now|process\.hrtime/)
       expect(text).not.toMatch(/setTimeout|setInterval|setImmediate/)
       expect(text).not.toMatch(/\brequire\s*\(/)

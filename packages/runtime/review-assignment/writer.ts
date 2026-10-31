@@ -1,0 +1,496 @@
+/**
+ * Alpha.6 PR-I1a (Lane 2) — the one durable writer of `ReviewAssignment` facts.
+ *
+ * WHAT THIS FILE ADDS, AND WHY IT WAS MISSING. PR2′ shipped the vocabulary (`types.ts`), the payload gate
+ * (`facts.ts`), the fold and the CAS pre-flight — and, as `types.ts` A-8 said out loud, NO writer: "Durable writes
+ * go through a port that PR-I1 wires (`allocateSequence()` + `put`, precedent `ArtifactLedgerPort.appendGranted`);
+ * no writer exists in this PR, which is what 'dormant' means here". This is that writer. It reuses the Team
+ * ledger that already exists — its sequence counter, its row shape, its write chain, its fold — and it does not
+ * create a second approval ledger: the three fact types below are the only thing this module can append, they are
+ * already booked into the frozen `team` category on BOTH projection surfaces (see
+ * `REVIEW_ASSIGNMENT_FROZEN_CATEGORY`), and A-1 still holds: nothing this module writes can carry authority.
+ *
+ * THE THREE LAWS THAT DECIDE EVERY OTHER CHOICE HERE:
+ *
+ *  - **ONE WRITER (D-1).** Exactly one module in this repository appends `review-assignment-*` rows, and it is
+ *    this one. A hygiene leg scans for a second (`a6-pr2-lane-hygiene.test.ts`), because two of the laws below
+ *    are only sound under that assumption. The consequence for whoever wires this up next — PR-I1b, whose
+ *    decision entry point lives INSIDE the protected centre — is a precondition, not a suggestion: route through
+ *    this function. Re-implementing the write inside `control/service.ts` would put two locks on the same state,
+ *    which is precisely the thing A-2's CAS cannot survive.
+ *
+ *  - **THE LOCK IS INJECTED, NOT IMPORTED (D-2).** ControlService serialises its writes with a `teamLocks` map
+ *    that is a private closure (`control/service.ts:1656`), and reaching into it means editing the protected
+ *    centre — which belongs to PR-I1b, not here. So this module takes a lock port. That means the writer's lock
+ *    and the control plane's lock are, today, different objects, and the honest question is whether that is safe.
+ *    It is, for a specific reason worth stating instead of assuming: the CAS domain of A-2 is this family's
+ *    `assignmentEpoch`, and by the law above nothing but this writer appends these rows. A concurrent ControlService
+ *    write can only append rows of OTHER families, which moves `sequence` (monotonic, allocated atomically on the
+ *    host's single per-domain write chain) and cannot move `epochApplied`, cannot reorder two rows of this family,
+ *    and cannot make this fold see an epoch it has not written. Two locks protecting disjoint mutable state is not
+ *    a race; two locks protecting one state would be.
+ *
+ *  - **A REFUSAL IS AN ANSWER, AND NOTHING IS EVER HALF-CLAIMED (D-4/D-5).** There is no rollback anywhere in this
+ *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
+ *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
+ *    failure path here says which of three things happened: nothing was allocated, a sequence was allocated and
+ *    nothing was written, or a row IS durable and here is its sequence. A write is only reported as applied after
+ *    it has been read back out of the ledger, and a read-back disagreement is reported as one rather than
+ *    presented as a retraction — the row stays, because the honest sentence about an append-only ledger is that
+ *    you cannot un-write it.
+ *
+ * WHAT THIS MODULE IS NOT: it is not an authority check (A-1, and a row it writes cannot become one — the payload
+ * gate refuses authority-bearing keys before anything durable happens), it is not a router (that is `router.ts`,
+ * and the caller passes the target it decided), and it is not wired to anything yet: production imports of this
+ * lane remain empty and pinned so (`a6-pr2-lane-hygiene.test.ts`, `ALLOWED_CONSUMERS = []`).
+ *
+ * @module @dsh-agent-team/runtime/review-assignment/writer
+ */
+
+import { parseRootSessionId } from '../../contracts/src/index.js'
+
+import {
+  REVIEW_ASSIGNMENT_PAYLOAD_FIELDS,
+  decodeAssignmentPayload,
+  encodeAssignmentFact,
+  foldReviewAssignmentRows,
+  isReviewAssignmentFactType,
+  checkAssignmentMutation,
+} from './facts.js'
+import type { ReviewAssignmentPayload } from './facts.js'
+import { REVIEW_ASSIGNMENT_FACT_TYPES } from './types.js'
+import type {
+  ReviewAssignment,
+  ReviewAssignmentFactKind,
+  ReviewAssignmentRefusal,
+  ReviewAssignmentState,
+  ReviewAssignmentTarget,
+} from './types.js'
+
+/**
+ * The writer's own refusal codes, in the order a reader meets them in the flow below. The kernel's refusals
+ * (`REVIEW_ASSIGNMENT_*` in `types.ts`) pass through unchanged when the refusal came from the kernel; these are
+ * the ones that only exist once a durable write is on the table, so they are a separate closed set rather than
+ * an addition to the frozen kernel vocabulary.
+ */
+export const REVIEW_ASSIGNMENT_WRITE_REFUSALS = [
+  'REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED',
+  'REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE',
+  'REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW',
+  'REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED',
+  'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
+  'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+  'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+] as const
+
+export type ReviewAssignmentWriteRefusal = (typeof REVIEW_ASSIGNMENT_WRITE_REFUSALS)[number]
+
+/**
+ * What a refusal result may name. The kernel's refusals pass through **unchanged** rather than being re-labelled:
+ * a `REVIEW_ASSIGNMENT_LEG_MISMATCH` returned by `checkAssignmentMutation` means exactly what it means when the
+ * caller called the kernel itself, and inventing a durable wrapper code for it would make the durable path
+ * report a different fact than the pure path about the same state. (The wording here is not incidental: the
+ * lane's import screen reads the preposition that introduces a module specifier followed by any quoted token,
+ * comments included, and two earlier drafts of this paragraph began that phrase with the preposition and then
+ * named the kernel function in backticks — which the screen, correctly, read as an import of a module named
+ * after a function. A screen that is literal is a screen; a screen that gets worked around is not, so the
+ * sentence moved instead.)
+ */
+export type ReviewAssignmentRefusalCode = ReviewAssignmentWriteRefusal | ReviewAssignmentRefusal
+
+/** A row of the ledger as the ports see it: the fields this module reads, with the payload left unknown. */
+export interface ReviewAssignmentLedgerRow {
+  readonly sequence: number
+  readonly rootSessionId: string
+  readonly factType: string
+  readonly payload: unknown
+}
+
+/**
+ * The row this module hands to `put`. `schemaVersion` is deliberately NOT here: it belongs to the storage schema,
+ * which this lane does not import — the import-closure leg in `a6-pr2-lane-hygiene.test.ts` is the reason. The adapter that
+ * satisfies this port is the place that knows the schema version, and it is exactly the kind of thin adapter the
+ * `ArtifactLedgerPort` precedent puts at the composition root.
+ */
+export interface ReviewAssignmentRowDraft {
+  readonly sequence: number
+  readonly rootSessionId: string
+  readonly factType: string
+  readonly payload: ReviewAssignmentPayload
+  readonly createdAt: string
+}
+
+/** The write half. `allocateSequence` then `put`, in that order, because the ledger rejects an unallocated one. */
+export interface ReviewAssignmentLedgerWriterPort {
+  allocateSequence(): Promise<number>
+  put(row: ReviewAssignmentRowDraft): Promise<unknown>
+}
+
+/** The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job. */
+export interface ReviewAssignmentLedgerReaderPort {
+  list(): readonly ReviewAssignmentLedgerRow[]
+}
+
+/**
+ * Per-root serialisation. `withLock` must be non-reentrant from this module's point of view: this writer holds it
+ * exactly once per call and never calls back into itself.
+ */
+export interface ReviewAssignmentLockPort {
+  withLock<T>(rootSessionId: string, critical: () => Promise<T>): Promise<T>
+}
+
+/** Everything the writer needs. No optional port: an half-wired writer is the dormant half this lane forbids. */
+export interface ReviewAssignmentStoreDeps {
+  readonly ledger: ReviewAssignmentLedgerWriterPort & ReviewAssignmentLedgerReaderPort
+  readonly lock: ReviewAssignmentLockPort
+  /** The store's clock (ISO-8601). Precedent: `GovernanceProposalStoreDeps.now` — the durable stamp is the
+   *  store's, not the caller's, so a caller cannot date its own fact. */
+  readonly now: () => string
+}
+
+/** The command shape. `kind` is the operation the caller decided; legality is decided by `checkAssignmentMutation`. */
+export interface ReviewAssignmentCommand {
+  readonly kind: ReviewAssignmentFactKind
+  readonly rootSessionId: string
+  readonly approvalCaseId: string
+  readonly currentLegRequestId: string
+  /** The target the row will name: the new handler for `created`/`transferred`, the outgoing one for `retired`. */
+  readonly target: ReviewAssignmentTarget
+  readonly reasonCode: string
+  readonly basedOnCaseVersion: string
+  readonly actorCallerRef: string
+}
+
+/** A durable write, or a faithful report of a replay that needed no write. */
+export interface ReviewAssignmentWriteApplied {
+  readonly ok: true
+  /** `'already'` is the idempotent-replay answer of D-4: this exact row is already durable at this sequence. */
+  readonly applied: 'written' | 'already'
+  readonly sequence: number
+  readonly factType: string
+  readonly assignmentEpoch: number
+  readonly payload: ReviewAssignmentPayload
+  /** The fold as it stands after the write, so the caller can act without a second read. */
+  readonly state: ReviewAssignmentState
+}
+
+export type ReviewAssignmentWriteResult =
+  | ReviewAssignmentWriteApplied
+  | { readonly ok: false; readonly refusal: ReviewAssignmentRefusalCode; readonly detail: string }
+
+function refuseWrite(refusal: ReviewAssignmentWriteRefusal, detail: string): ReviewAssignmentWriteResult {
+  return { ok: false, refusal, detail }
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+/**
+ * The shape the durable layer will accept in `createdAt`, spelled here rather than imported.
+ *
+ * `contracts/src/dto/common.ts` owns this rule as `ISO_8601_TIMESTAMP_PATTERN`, and this lane may not import it:
+ * the contracts barrel does not re-export the pattern, adding it to a frozen v1 surface is a decision this PR is
+ * not authorised to make, and widening the lane's import allow-list to a deep contracts path to reach one regex
+ * would weaken the very leg that makes the lane's purity claim mean something. So the rule is duplicated, and
+ * `a6-pri1a-writer.test.ts` reads the contract source and asserts the two patterns are the same expression —
+ * which turns the duplication from a drift risk into a pinned fact.
+ */
+const CREATED_AT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/
+
+/** The first handful of `factType@sequence` handles, with the remainder counted rather than listed. */
+function rowHandles(diagnostics: readonly { factType: string; ledgerSequence: number }[]): string {
+  const shown = diagnostics.slice(0, 8).map((diagnostic) => `${diagnostic.factType}@${String(diagnostic.ledgerSequence)}`)
+  const rest = diagnostics.length - shown.length
+  return rest > 0 ? `${shown.join(', ')}, +${String(rest)} more` : shown.join(', ')
+}
+
+/**
+ * Does the calendar date in an ISO instant exist?
+ *
+ * The contract's pattern is structural: `2026-13-45T99:99:99Z` matches it. That is not a flaw in the contract —
+ * a DTO pattern is a shape test — but this writer hands the stamp to a ledger that validates harder, and the
+ * measured consequence of relying on the shape alone was a bad clock producing
+ * `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED` with a sequence already spent, when the truthful answer is "your clock
+ * is unreadable and I allocated nothing". So the ranges are checked here, with the day-of-month table and the
+ * leap rule spelled out, because the lane reads no clock and therefore cannot ask one.
+ */
+function instantIsReal(iso: string): boolean {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/.exec(iso)
+  if (parts === null) return false
+  const [y, m, d, hour, minute, second] = parts.slice(1, 7).map(Number)
+  if ([y, m, d, hour, minute, second].some((part) => part === undefined || !Number.isSafeInteger(part))) return false
+  if (y === undefined || m === undefined || d === undefined || hour === undefined || minute === undefined || second === undefined) return false
+  if (m < 1 || m > 12) return false
+  if (hour > 23 || minute > 59 || second > 59) return false
+  const daysInMonth = [31, y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  const max = daysInMonth[m - 1]
+  if (max === undefined) return false
+  return d >= 1 && d <= max
+}
+
+/** Field-wise equality over the CLOSED payload field set — the same list the encoder writes from. */
+function samePayload(a: ReviewAssignmentPayload, b: ReviewAssignmentPayload): boolean {
+  for (const field of REVIEW_ASSIGNMENT_PAYLOAD_FIELDS) {
+    if ((a as unknown as Record<string, unknown>)[field] !== (b as unknown as Record<string, unknown>)[field]) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * The one entry point: fold the family, decide legality, write, read back.
+ *
+ * Everything happens inside one `withLock` hold, and the fold is done FROM THE LEDGER inside that hold rather than
+ * taken from a cache — the same discipline `loadControlState` uses (`control/service.ts:1766`: re-fold inside the
+ * lock, never trust a cached view), and the reason the epoch CAS in A-2 means anything.
+ */
+export async function applyReviewAssignment(
+  deps: ReviewAssignmentStoreDeps,
+  command: ReviewAssignmentCommand,
+): Promise<ReviewAssignmentWriteResult> {
+  if (
+    typeof command !== 'object' ||
+    command === null ||
+    // `kind` is the KEY of the fact-type table ('created'), not its value ('review-assignment-created').
+    // The first version of this line compared against `Object.values`, so every valid command was refused as
+    // malformed — which is the survivable direction (a writer that cannot write fails loudly), and it is also
+    // the confusion a caller will make, so `a6-pri1a-writer.test.ts` has a leg that feeds the value as the key
+    // and requires the refusal to name the shape rather than accept the row.
+    !(Object.keys(REVIEW_ASSIGNMENT_FACT_TYPES) as readonly string[]).includes(command.kind) ||
+    !isNonEmptyString(command.rootSessionId) ||
+    !isNonEmptyString(command.approvalCaseId) ||
+    !isNonEmptyString(command.currentLegRequestId) ||
+    typeof command.target !== 'object' ||
+    command.target === null
+  ) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED',
+      '`kind` must be one of the three fact-type KEYS (created | transferred | retired), not a fact-type ' +
+        'value, and the ids must be non-empty strings',
+    )
+  }
+  // The root is not just any string: it is the ledger's team key, and this lane is not allowed to invent a team
+  // id that the host would reject at read time. Minting through the contract parser is the cheapest proof that
+  // what lands in `rootSessionId` is a root session id at all.
+  let mintedRoot: string
+  try {
+    mintedRoot = parseRootSessionId(command.rootSessionId)
+  } catch {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE',
+      `${JSON.stringify(command.rootSessionId)} is not a root session id, so it cannot own a ledger row`,
+    )
+  }
+
+  return deps.lock.withLock(mintedRoot, () => writeLocked(deps, command, mintedRoot))
+}
+
+async function writeLocked(
+  deps: ReviewAssignmentStoreDeps,
+  command: ReviewAssignmentCommand,
+  root: string,
+): Promise<ReviewAssignmentWriteResult> {
+  const all = deps.ledger.list()
+  const family = all.filter((row) => isReviewAssignmentFactType(row.factType))
+  const mine = family.filter((row) => row.rootSessionId === root)
+
+  // Ownership before anything is trusted (D-7). A row filed under THIS root whose payload names a different team
+  // is the cross-team shape the kernel already has a code for, and it must stop the write: folding it would let
+  // another team's row move this case's epoch, and skipping it silently would be the clean-slate lie A-7 forbids.
+  const foreign: string[] = []
+  for (const row of mine) {
+    const decoded = decodeAssignmentPayload(row.factType, row.payload)
+    if (decoded.ok && decoded.value.rootSessionId !== row.rootSessionId) {
+      foreign.push(`${row.factType}@${String(row.sequence)}`)
+    }
+  }
+  if (foreign.length > 0) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW',
+      `${String(foreign.length)} row(s) filed under this root name another team: ${foreign.join(', ')}`,
+    )
+  }
+
+  const state = foldReviewAssignmentRows(
+    mine.map((row) => ({ ledgerSequence: row.sequence, factType: row.factType, payload: row.payload })),
+    root,
+    command.approvalCaseId,
+  )
+  if (state.unreconciled) {
+    // Named rather than lumped: "some row of this family could not be applied" is the same sentence for a row
+    // another team wrote, a payload with an authority key in it, and a sequence that went backwards, and those
+    // three want three different repairs.
+    const codes = [...new Set(state.diagnostics.map((diagnostic) => diagnostic.refusal))].join(', ')
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED',
+      // The row handles are the point of this message. A caller told only "the fold is unreconciled" has to
+      // re-read and re-diagnose the whole ledger to find the row to repair, and the first draft of this line
+      // named the codes alone — a leg about a broken lock caught that, because the handle it asked for was a
+      // sequence and no sequence was in the text. Capped at eight because a ledger with five thousand
+      // unreadable rows must not produce a five-thousand-row refusal string.
+      `${String(state.diagnostics.length)} row(s) of this family could not be applied (${codes}) ` +
+      `[${rowHandles(state.diagnostics)}]; the fold may be missing an assignment that exists, so no mutation is safe`,
+    )
+  }
+
+  const legality = checkAssignmentMutation(state, command.kind, command.target, command.currentLegRequestId)
+  if (!legality.ok) {
+    // A replay of a command that already landed is not a conflict, and pretending otherwise teaches the caller to
+    // retry until it gets a different answer. D-4: equality is decided against the kernel's own encoder, over the
+    // closed field set, for the epoch the durable row actually carries.
+    const replay = findAppliedReplay(mine, command)
+    if (replay !== null) {
+      return {
+        ok: true,
+        applied: 'already',
+        sequence: replay.sequence,
+        factType: replay.factType,
+        assignmentEpoch: replay.payload.assignmentEpoch,
+        payload: replay.payload,
+        state,
+      }
+    }
+    return { ok: false, refusal: legality.refusal, detail: legality.detail }
+  }
+
+  const assignment: ReviewAssignment = {
+    rootSessionId: root,
+    approvalCaseId: command.approvalCaseId,
+    currentLegRequestId: command.currentLegRequestId,
+    target: command.target,
+    assignmentEpoch: legality.value.assignmentEpoch,
+    reasonCode: command.reasonCode,
+    basedOnCaseVersion: command.basedOnCaseVersion,
+    actorCallerRef: command.actorCallerRef,
+  }
+  const encoded = encodeAssignmentFact(command.kind, assignment, legality.value.expectedPreviousEpoch)
+  if (!encoded.ok) {
+    return { ok: false, refusal: encoded.refusal, detail: encoded.detail }
+  }
+
+  const createdAt = deps.now()
+  if (typeof createdAt !== 'string' || !CREATED_AT_PATTERN.test(createdAt) || !instantIsReal(createdAt)) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
+      `the store's clock returned ${typeof createdAt === 'string' ? JSON.stringify(createdAt) : typeof createdAt}, ` +
+        'which cannot be a durable timestamp; nothing was allocated',
+    )
+  }
+
+  const factType = REVIEW_ASSIGNMENT_FACT_TYPES[command.kind]
+  let sequence: number
+  try {
+    sequence = await deps.ledger.allocateSequence()
+  } catch (error) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      `the ledger refused to allocate a sequence (${describe(error)}); nothing was written`,
+    )
+  }
+  if (!Number.isSafeInteger(sequence) || sequence < 1) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      `the ledger allocated ${String(sequence)}, which is not a usable sequence; nothing was written`,
+    )
+  }
+
+  try {
+    await deps.ledger.put({ sequence, rootSessionId: root, factType, payload: encoded.value, createdAt })
+  } catch (error) {
+    // The gap this leaves is real and is reported as such: the ledger allows a gap to be filled later, and the
+    // honest statement of this state is "a sequence was spent, no row exists at it".
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}); ` +
+        'no assignment row exists at that sequence',
+    )
+  }
+
+  // Read-back, because "the write did not throw" is not the same claim as "the row is in the ledger" — the
+  // precedent is `writeLegRowLocked`'s read-back refusal (control/service.ts:4628-4641), and the failure mode it
+  // protects against is a durable layer that reports success on a partial apply.
+  const reread = deps.ledger.list().find((row) => row.sequence === sequence)
+  if (reread === undefined) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+      `sequence ${String(sequence)} was written and is not present when the ledger is read again`,
+    )
+  }
+  const rereadPayload = decodeAssignmentPayload(reread.factType, reread.payload)
+  if (
+    !rereadPayload.ok ||
+    reread.factType !== factType ||
+    reread.rootSessionId !== root ||
+    !samePayload(rereadPayload.value, encoded.value)
+  ) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+      `sequence ${String(sequence)} came back as something other than the row written there` +
+        (rereadPayload.ok ? '' : ' (the stored payload does not decode)'),
+    )
+  }
+
+  return {
+    ok: true,
+    applied: 'written',
+    sequence: reread.sequence,
+    factType: reread.factType,
+    assignmentEpoch: rereadPayload.value.assignmentEpoch,
+    payload: rereadPayload.value,
+    state: foldReviewAssignmentRows(
+      deps.ledger
+        .list()
+        .filter((row) => isReviewAssignmentFactType(row.factType) && row.rootSessionId === root)
+        .map((row) => ({ ledgerSequence: row.sequence, factType: row.factType, payload: row.payload })),
+      root,
+      command.approvalCaseId,
+    ),
+  }
+}
+
+/**
+ * The durable row this command already produced, if there is one.
+ *
+ * Reconstructing the payload the encoder WOULD have written for a row's own epoch and comparing field-for-field is
+ * the only honest replay test available here, because `createdAt` is the store's clock and is deliberately not
+ * part of the payload — a faithful replay across two processes is therefore not byte-identical, and the storage
+ * layer's identical-bytes no-op rule cannot be what makes a retry safe. Epoch-scoped equality is what makes a
+ * retry safe; byte identity stays as the backstop underneath it.
+ */
+function findAppliedReplay(
+  rows: readonly ReviewAssignmentLedgerRow[],
+  command: ReviewAssignmentCommand,
+): { readonly sequence: number; readonly factType: string; readonly payload: ReviewAssignmentPayload } | null {
+  for (const row of rows) {
+    if (row.factType !== REVIEW_ASSIGNMENT_FACT_TYPES[command.kind]) continue
+    const stored = decodeAssignmentPayload(row.factType, row.payload)
+    if (!stored.ok) continue
+    if (stored.value.approvalCaseId !== command.approvalCaseId) continue
+    const rebuilt = encodeAssignmentFact(
+      command.kind,
+      {
+        rootSessionId: command.rootSessionId,
+        approvalCaseId: command.approvalCaseId,
+        currentLegRequestId: command.currentLegRequestId,
+        target: command.target,
+        assignmentEpoch: stored.value.assignmentEpoch,
+        reasonCode: command.reasonCode,
+        basedOnCaseVersion: command.basedOnCaseVersion,
+        actorCallerRef: command.actorCallerRef,
+      },
+      stored.value.previousEpoch,
+    )
+    if (rebuilt.ok && samePayload(rebuilt.value, stored.value)) {
+      return { sequence: row.sequence, factType: row.factType, payload: stored.value }
+    }
+  }
+  return null
+}
+
+/** An error's identity, kept out of a refusal detail by construction: never a caller object, only its message. */
+function describe(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return typeof error
+}
