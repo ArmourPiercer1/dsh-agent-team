@@ -9,17 +9,23 @@
  * byte-for-byte against the source document, pinned by content hash; (2) list every log line that designates a
  * scratch path, pinned by raw content hash with a written reason.
  *
- * READ THIS BEFORE TRUSTING A GREEN RUN. Five consecutive rounds, the closure claim in this header has been false
- * on arrival, each time for a different reason, each time found by the next reviewer:
+ * READ THIS BEFORE TRUSTING A GREEN RUN. Six consecutive rounds, the closure claim in this header has been false on
+ * arrival, each time for a different reason, each time found by the next reviewer. That is the actual finding, and
+ * it is stated before any closure list: this file reads **raw lines**, and every one of its guarantees has been
+ * written as though it read **what a renderer emits**. The two are not the same document. What closes a hole here
+ * is not a wider pattern but a rule of a different kind — a prohibition on the source text appearing elsewhere, or a
+ * refusal to run at all when the structure cannot be trusted:
  *   round 4 — the check compared a rendering that no longer matched its source (fixed: `source-moved`);
  *   round 5 — a designation copied byte-for-byte, and a whitespace edit slipping past (fixed: duplicates red,
  *             pins hash raw lines);
  *   round 6 — uniqueness of the anchor was not the fix. The check read the first block *after* the anchor, so a
  *             correct copy planted beside the published one read clean over a corrupted quote (fixed: accounting);
+ *   round 6 — uniqueness of the anchor was not the fix. The check read the first block *after* the anchor, so a
+ *             correct copy planted beside the published one read clean over a corrupted quote (fixed: accounting);
  *   round 7 — accounting only counted blocks this scanner *spells* the way it spells them. Publish the corrupted
  *             quote as `~~~text`, a bare `` ``` ``, four backticks, or `>text`, and hide the correct bytes in a
  *             ```text fence inside an HTML comment, and the run prints `verdict=byte-equal` over a rendering no
- *             reader has ever seen — or over no published quote at all (fixed here).
+ *             reader has ever seen — or over no published quote at all(fixed for the plant, not for the quote: round 8 F-R8-3 wrapped the labelled fence itself in `<!-- -->`, so the pinned bytes existed only inside a raw comment, invisible in a browser, and the run still printed byte-equal — there is now a verdict named for that, `labelled-block-inside-html-comment`; and F-R8-2 showed the closer's indentation was read more loosely than CommonMark writes it, since a closing fence at four or more spaces is CONTENT, which let a fake closer end the block here while the renderer kept publishing past it)
  * The pattern is not carelessness. Every one of these bound to a **shape in the raw text** and then spoke about
  * **what the document publishes**. Those are different things, and the gap between them is where all five rounds died.
  *
@@ -30,11 +36,17 @@
  *     to the pinned source line. Delete the quote and the label goes with it ⇒ `designated-missing`. Duplicate the
  *     label ⇒ `label-duplicated`. The round-7 attacks all relied on the check reading a block other than the one it
  *     was told to read; there is no longer such a read.
- *   - Every block in the document, in **every** marker spelling this file can see — `` ``` ``, `~~~`, longer runs,
- *     with or without an info string, plus every `>`-prefixed run — must be accounted for: the designated quote, or
- *     byte-equal to a pinned source line, or named in `ACCOUNTED_BLOCKS` with a reason. HTML comments are NOT
- *     skipped: a fence inside a comment is still a block that exists, so the hiding place became a finding instead
- *     of an invisibility cloak.
+ *   - Every block in the document, in every marker spelling this file can see — fences of either character and any
+ *     length, plus every `>`-prefixed run — must be accounted for: the designated quote, a pinned source line, or an
+ *     `ACCOUNTED_BLOCKS` entry with a reason. Round 8 showed this bullet was NOT the guarantee it read like: a block
+ *     taxonomy only covers what the line regex recognises, and a corrupted copy of the pinned row needs no block at
+ *     all — a plain paragraph, a CommonMark **lazy continuation** of an already-accounted blockquote, or a fence
+ *     whose opener and closer end in a lone `\r` (invisible to a `$`-anchored regex, still a code block to a
+ *     renderer) each published a corrupt row with `verdict=ok`. The closing rule is therefore not "every block is
+ *     accounted" but **"no long run of the pinned text may exist outside the labelled block"**: every line outside
+ *     the labelled and accounted blocks is compared to the source line by longest common substring, threshold 24.
+ *     A CR anywhere in the document now fails the run closed, because at that point the structure being read is not
+ *     the structure on screen and this file will not pretend otherwise.
  *   - Restyling is probed, not assumed away. Two 30-character probes from the head and tail of the source line are
  *     searched for on every line outside the labelled block, after folding (NFKC, invisible marks removed, whitespace
  *     collapsed). Publish the row as an indented code block, a table cell or a paragraph and something still
@@ -56,9 +68,7 @@
  *     therefore closable, and what protects history is that it was audited once, not that the pattern is unescapable.
  *   - Nothing runs this file. `grep -rn verify-verbatim-quotes` finds only this file and the log entries about it.
  *     It is "re-run by hand before publishing a quote", not a gate.
- *   - Ordinary edits cost pins, undisclosed before round 7, measured rather than guessed: re-saving the log CRLF
- *     prints `found=0 findings=6 verdict=regression` — every pin's raw-line hash changes, so the repair is re-pinning
- *     all six, with no forward fix short of that. A formatter adding a trailing space reddens any pin it touches.
+ *   - Ordinary edits cost pins, undisclosed before round 7, measured rather than guessed: re-saving the log CRLF prints `found=3 findings=9 verdict=regression` at this commit — all six pins reddened (every raw-line hash changes) plus the mentions the fold still sees; the exact `found` count moves as the log grows, so the cost is the class, not the number, and the repair is re-pinning all six with no forward fix. The number this header published before round 8, `found=0 findings=6`, came from a harness that wrote zero CR bytes — `io.open().read()` had already translated them, so the file measured was an LF file and the claim was never tested. Round 8 (F-R8-6) found the number would not reproduce; the real defect is that it had never been measured. A formatter adding a trailing space reddens any pin it touches.
  *     Adding any block anywhere in the publishing document costs an `ACCOUNTED_BLOCKS` entry naming it.
  *   - Round 6's section rule (`a quote must be the only block in its own section`) is GONE, and that is deliberate:
  *     it drew sections from raw `^#` lines, so a `#` inside a fenced sample re-drew the map and reddened both quotes
@@ -81,7 +91,7 @@ const ADDENDUM = 'docs/plans/memo/alpha6-review-separation/s0-addendum-timed-wak
 const LOG = 'dev/agent-workflow/SESSION_ROUTER_LOG.md'
 
 /** Format/line-separator/unassigned characters, plus a look-alike table (round 7 F-R7-2: 11 code points were not a set). */
-const INVISIBLE = /[\p{Cf}\p{Zl}\p{Zp}\p{Cs}⁠﻿￼￠]/gu
+const INVISIBLE = /[\p{Cf}\p{Zl}\p{Zp}\p{Cs}\p{Mn}\p{Me}\p{Mc}⁠﻿￼￠]/gu
 const HOMOGLYPHS = new Map([
   ['а', 'a'], ['е', 'e'], ['о', 'o'], ['с', 'c'], ['р', 'p'],
   ['у', 'y'], ['х', 'x'], ['і', 'i'], ['ѕ', 's'], ['ј', 'j'],
@@ -89,7 +99,7 @@ const HOMOGLYPHS = new Map([
 ])
 
 function fold(value) {
-  const normalised = value.normalize('NFKC').replace(INVISIBLE, '')
+  const normalised = value.normalize('NFC').normalize('NFKC').replace(INVISIBLE, '')
   let out = ''
   for (const char of normalised) out += HOMOGLYPHS.get(char) ?? char
   return out.replace(/\s+/g, ' ')
@@ -159,6 +169,10 @@ const QUOTE_LINE = /^\s*>/
  * comments are deliberately not skipped — a fence hidden in a comment is still a block that exists.
  */
 function allBlocks(document) {
+  if (document.includes('\r')) {
+    throw new Error('document contains a CR: a CR-terminated fence line is invisible to a $-anchored line regex while a '
+      + 'renderer still opens a code block there, so the structure this file reads would not be the structure on screen')
+  }
   const lines = document.split('\n')
   const blocks = []
   for (let index = 0; index < lines.length; index += 1) {
@@ -166,7 +180,9 @@ function allBlocks(document) {
     if (fence !== null) {
       const marker = fence[1]
       const indent = lines[index].slice(0, lines[index].trimStart().length)
-      const closer = new RegExp('^\\s*' + (marker[0] === '`' ? '`' : '~') + '{' + marker.length + ',}\\s*$')
+      // CommonMark: a closing fence may be indented up to three spaces. Four or more is paragraph/code CONTENT, so
+      // accepting it would let a fake closer end the block here while the renderer keeps the block open past it.
+      const closer = new RegExp('^ {0,3}' + (marker[0] === '`' ? '`' : '~') + '{' + marker.length + ',} *$')
       const body = []
       let cursor = index + 1
       for (; cursor < lines.length && !closer.test(lines[cursor]); cursor += 1) {
@@ -229,6 +245,17 @@ function checkQuote(document, source, one) {
       ' — the quote is the block carrying this label, so zero or two of them publish nothing verifiable'
   }
   const designated = labelled[0]
+  const commentRanges = []
+  let openAt = -1
+  lines.forEach((line, index) => {
+    if (openAt < 0 && line.includes('<!--')) openAt = index
+    if (openAt >= 0 && line.includes('-->') && index > openAt) { commentRanges.push([openAt + 1, index + 1]); openAt = -1 }
+  })
+  if (commentRanges.some(([from, to]) => designated.start >= from && designated.end <= to)) {
+    return 'DSH-VERBATIM name=' + one.name + ' verdict=labelled-block-inside-html-comment block=' + designated.start +
+      ' comment=' + commentRanges.map(([f, t]) => f + '-' + t).join(',') +
+      ' — the labelled quote is inside a raw comment, so a reader is not shown the bytes this file just certified'
+  }
   if (designated.start <= anchor) {
     return 'DSH-VERBATIM name=' + one.name + ' verdict=block-before-anchor block=' + designated.start +
       ' anchor=' + (anchor + 1)
@@ -250,17 +277,43 @@ function checkQuote(document, source, one) {
       ' lines=' + [designated.start, ...copies.map((block) => block.start)].join(',') + ' — a verbatim quote occurs once'
   }
 
-  // Restyle probe: publishing the row somewhere else still has to reproduce 30 consecutive characters of it.
-  const probes = [sourceLine.slice(0, 30), sourceLine.slice(-30)].map((probe) => fold(probe))
+  // Source text may not live outside the labelled block in ANY form. Fixed 30-character probes were beaten (round 8
+  // F-R8-1: corrupt the row inside both probe windows and the row between them is byte-identical, so a paragraph, a
+  // lazy continuation, or a second code block publishes a near-copy of the pinned row and no probe fires). The rule is
+  // therefore per-line longest-common-substring against the folded source, with a threshold well below the length of
+  // any sentence that could plausibly quote this row by accident.
+  const foldedSource = fold(sourceLine)
+  const longestSharedRun = (a, b) => {
+    let best = 0
+    const widths = new Array(b.length + 1).fill(0)
+    for (let i = 1; i <= a.length; i += 1) {
+      let diagonal = 0
+      for (let j = 1; j <= b.length; j += 1) {
+        const saved = widths[j]
+        widths[j] = a[i - 1] === b[j - 1] ? diagonal + 1 : 0
+        if (widths[j] > best) best = widths[j]
+        diagonal = saved
+      }
+    }
+    return best
+  }
+  const QUOTE_LCS_MIN = 24
+  const accountedLines = new Set()
+  for (const block of blocks) {
+    if (accounted.has(sha256(block.text)) || pinnedTexts.has(block.text) || block === designated) {
+      for (let at = block.start; at <= block.end; at += 1) accountedLines.add(at)
+    }
+  }
   const restyled = lines.reduce((hits, line, index) => {
-    const inside = index + 1 >= designated.start && index + 1 <= designated.end
-    if (inside) return hits
+    if (accountedLines.has(index + 1)) return hits
     const folded = fold(line)
-    return probes.some((probe) => folded.includes(probe)) ? [...hits, index + 1] : hits
+    return folded.length >= QUOTE_LCS_MIN && longestSharedRun(folded, foldedSource) >= QUOTE_LCS_MIN
+      ? [...hits, index + 1] : hits
   }, [])
   if (restyled.length > 0) {
     return 'DSH-VERBATIM name=' + one.name + ' verdict=quote-restyled lines=' + restyled.join(',') +
-      ' — the source text appears outside the labelled block, so something other than the labelled block publishes it'
+      ' threshold=' + QUOTE_LCS_MIN + ' — text sharing a long run with the pinned source line appears outside the' +
+      ' labelled block, so something other than the labelled block publishes it'
   }
 
   const equal = designated.text === sourceLine
@@ -292,11 +345,18 @@ function checkScratchPointers(log) {
     output.push('DSH-SCRATCH-POINTER line=- accepted=false reason=pinned-line-absent-from-file scope=' + pin.scope +
       ' sha256=' + pin.sha256)
   }
-  for (const pin of PINNED_SCRATCH_POINTERS.filter((item) => found.filter((one) => one.sha256 === item.sha256).length > 1)) {
+  // Round 8 F-R8-5: counting duplicates inside `found` missed a copy outside the window and outside the word list,
+  // i.e. exactly where a copy would be planted. Count occurrences in the FILE.
+  const occurrences = new Map()
+  for (const line of lines) occurrences.set(sha256(line), (occurrences.get(sha256(line)) ?? 0) + 1)
+  for (const pin of PINNED_SCRATCH_POINTERS.filter((item) => (occurrences.get(item.sha256) ?? 0) > 1)) {
     output.push('DSH-SCRATCH-POINTER accepted=false reason=pinned-designation-duplicated sha256=' + pin.sha256)
   }
-  return { output, findings: unaccepted.length + PINNED_SCRATCH_POINTERS.filter((pin) => !present.has(pin.sha256)).length,
-    found: found.length }
+  const absentCount = PINNED_SCRATCH_POINTERS.filter((pin) => !present.has(pin.sha256)).length
+  const duplicateCount = PINNED_SCRATCH_POINTERS.filter((pin) => (occurrences.get(pin.sha256) ?? 0) > 1).length
+  // Round 8 F-R8-5 taught this line: the duplicate check printed a finding line and then left the TOTAL alone, so the
+  // run still exited 0. A printed finding that is not counted is worse than no check, because the token looks scary.
+  return { output, findings: unaccepted.length + absentCount + duplicateCount, found: found.length }
 }
 
 try {
