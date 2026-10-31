@@ -16,14 +16,17 @@
  * Determinism (A-4): the plan binds exactly one officer (`ReviewPlan.reviewerInstanceId` — "Exactly one
  * in Alpha.6"), so there is never a choice between candidates to be clever about. Same inputs in, same
  * decision out, byte for byte; no clock read here, no scoring, no recency, no load. Where the router
- * cannot proceed it says which of its twelve reasons applies, so a mis-routed team is diagnosable from
+ * cannot proceed it says which of its reasons applies (the closed list is `REVIEW_ROUTER_REASON_CODES`; the count is deliberately not restated here — restating it was wrong once already, review F-4), so a mis-routed team is diagnosable from
  * the reason code alone.
  *
  * THE LAW ABOUT HANDOFFS, which is this file's most important non-obvious branch: once a case has been
  * handed off to the Leader, a later wake does NOT pull it back to the Officer. A handoff is a decision
  * that the Leader's global information is needed (PR #319 §7); the router has no basis to overrule it,
  * and re-stealing the case on the next event would silently reverse a coordination decision the Leader
- * made. `LEADER_TOOK_OVER` keeps it.
+ * made. The answer is `ROUTER_ALREADY_ASSIGNED` with `leaderAlreadyTarget: true`, and it is a leave-with-
+ * the-Leader decision, not a failure: the code named here is the one the router actually emits (`LEADER_
+ * TOOK_OVER` was a name this file used to advertise and no path ever produced — a reason code that cannot
+ * be produced is the same lie A-9 refuses in the closed lists).
  */
 import { type ReviewCaseView, type ReviewMandate, type ReviewPlan } from '../review-mandate/index.js';
 import { type ReviewAssignmentResult, type ReviewAssignmentState, type ReviewRoutingDecision, type ReviewerCandidate } from './types.js';

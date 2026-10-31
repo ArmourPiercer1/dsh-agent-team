@@ -32,7 +32,7 @@
 
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, relative, sep } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
@@ -127,10 +127,51 @@ function readIfPresent(file: string): string | null {
   }
 }
 
-/** Any mention of an assignment-lane module in a quoted specifier, extensionless, bare-directory or
- *  dynamic. */
-const LANE_IMPORT_PATTERN =
-  /['"][^'"]*review-assignment\/(?:index|types|facts|router|handoff)(?:\.js)?['"]|['"][^'"]*\/review-assignment\/?['"]|import\(\s*['"][^'"]*review-assignment/
+/**
+ * Which specifiers count as "imports the lane", and how that question is answered.
+ *
+ * The first version was ONE regex that enumerated the five lane module names inside a quoted string. The
+ * review of #507 (F-9) showed four ways past it, all real and none of them exploited at head:
+ *  - capture was single-quoted, so `from "…"` and ``import(`…`)`` were invisible;
+ *  - a query-suffixed specifier (`'…index.js?v=2'`, what a bundler or a cache-buster emits) did not match
+ *    the `.js'?` tail;
+ *  - a specifier naming a module the regex did not enumerate — `'../review-assignment/ports.js'`, the
+ *    shape a 6th lane module would have — escaped completely, so `EXTRA_MODULES_ALLOWED` could grow
+ *    without this detector ever learning the new name;
+ *  - an alias or absolute specifier (`'@lane/review-assignment/index.js'`) matched nothing because the
+ *    pattern demanded a quote immediately before the path.
+ * So: extract every specifier first (three quote styles, static and dynamic), strip the query/hash, then
+ * ask TWO independent questions about it — does it name the lane as a path segment anywhere in its text
+ * (this is what closes the 6th-module hole: no enumeration), and does it RESOLVE into the lane directory
+ * from the importing file (this is what catches a specifier that reaches the lane without naming it in one
+ * piece). Either answer is enough to be an offender. The enumeration is gone, so there is nothing here to
+ * forget to amend when the module list changes.
+ */
+const SPECIFIER_PATTERN = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*|\brequire\s*\(\s*)['"`]([^'"`\n]+)['"`]/g
+
+/** Every module name the lane may contain, as specifier stems — derived, never restated. */
+const LANE_MODULE_STEMS = [...FOUNDING_MODULES, ...EXTRA_MODULES_ALLOWED].map((module) => module.replace(/\.ts$/, ''))
+
+function specifiersOf(source: string): string[] {
+  const out: string[] = []
+  for (const match of source.matchAll(SPECIFIER_PATTERN)) {
+    const raw = match[1]
+    if (raw === undefined) continue
+    out.push(raw.split(/[?#]/)[0] as string)
+  }
+  return out
+}
+
+function specifierEntersLane(fromFile: string, specifier: string): boolean {
+  if (/(^|[/\\])review-assignment([/\\]|$)/.test(specifier)) return true
+  if (!specifier.startsWith('.')) return false
+  const target = resolve(dirname(fromFile), specifier)
+  return target === LANE_DIR || target.startsWith(LANE_DIR + sep)
+}
+
+function sourceEntersLane(fromFile: string, source: string): boolean {
+  return specifiersOf(source).some((specifier) => specifierEntersLane(fromFile, specifier))
+}
 
 describe('a6-pr2 lane hygiene', () => {
   it('the lane is a real module set, not a vocabulary dump', () => {
@@ -186,11 +227,15 @@ describe('a6-pr2 lane hygiene', () => {
         const rel = relative(PACKAGES_ROOT, file)
         if (rel.startsWith(join('runtime', 'review-assignment') + sep)) continue
         if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`) || rel.includes('.spec.')) continue
-        if (LANE_IMPORT_PATTERN.test(readIfPresent(file) ?? '')) offenders.push(rel)
+        if (sourceEntersLane(file, readIfPresent(file) ?? '')) offenders.push(rel)
       }
     }
     expect(offenders).toEqual([...ALLOWED_CONSUMERS])
   })
+
+  // Every control below is fed to `sourceEntersLane`, the SAME function the dormancy walk uses — a
+  // detector tested through a different code path than production is a detector tested in pretend.
+  const IMPORTER = join(PACKAGES_ROOT, 'runtime', 'src', 'importer.ts')
 
   it.each<[string, string]>([
     ['a plain TypeScript importer', `import { routeReviewCase } from '../review-assignment/index.js'`],
@@ -200,13 +245,27 @@ describe('a6-pr2 lane hygiene', () => {
     ['a sibling-module import', `import { encodeAssignmentFact } from './review-assignment/facts.js'`],
     ['a dynamic import', `const lane = await import('../review-assignment/router.js')`],
     ['a contracts-package importer', `import { planHandoff } from '../../runtime/review-assignment/handoff.js'`],
+    // The four forms review F-9 measured as escapes:
+    ['a double-quoted importer', `import { routeReviewCase } from "../review-assignment/index.js"`],
+    ['a backticked dynamic import', 'const lane = await import(`../review-assignment/index.js`)'],
+    ['a query-suffixed specifier', `import { routeReviewCase } from '../review-assignment/index.js?v=2'`],
+    ['an aliased or absolute specifier', `import { planHandoff } from '@dsh/runtime/review-assignment/handoff.js'`],
+    // A 6th lane module. Nothing in the detector enumerates module names any more, so this needs no
+    // amendment when `EXTRA_MODULES_ALLOWED` grows — which is the whole point of deriving it.
+    ['a module that does not exist yet', `import { openAssignment } from '../review-assignment/ports.js'`],
+    ['every founding module, by stem', LANE_MODULE_STEMS.map((stem) => `import * as m from '../review-assignment/${stem}.js'`).join('\n')],
   ])('the dormancy detector catches %s (positive control)', (_label, sample) => {
-    expect(LANE_IMPORT_PATTERN.test(sample)).toBe(true)
+    expect(sourceEntersLane(IMPORTER, sample)).toBe(true)
   })
 
   it('the dormancy detector does not fire on unrelated text (negative control)', () => {
-    expect(LANE_IMPORT_PATTERN.test("import { evaluateReviewAdmission } from '../review-mandate/index.js'")).toBe(false)
-    expect(LANE_IMPORT_PATTERN.test('// review-assignment is dormant until PR-I1')).toBe(false)
+    expect(sourceEntersLane(IMPORTER, "import { evaluateReviewAdmission } from '../review-mandate/index.js'")).toBe(false)
+    expect(sourceEntersLane(IMPORTER, '// review-assignment is dormant until PR-I1')).toBe(false)
+    // Prose, a doc path, and a near-miss directory must not be enough — otherwise "no offenders" is
+    // simply a detector that gave up.
+    expect(sourceEntersLane(IMPORTER, "const doc = 'packages/runtime/review-assignment/README.md'")).toBe(false)
+    expect(sourceEntersLane(IMPORTER, "import { x } from '../review-assignments/index.js'")).toBe(false)
+    expect(sourceEntersLane(IMPORTER, "import { x } from '../review-mandate/facts.js'")).toBe(false)
   })
 
   it('imports NOTHING from the ARC-A protected centre, and NOTHING from PR3′', () => {
@@ -257,11 +316,17 @@ describe('a6-pr2 lane hygiene', () => {
   })
 
   it('performs no I/O and reads no clock: only contracts, PR0 and itself', () => {
-    const allowed = /^(?:\.\.\/\.\.\/contracts\/src\/index\.js|\.\.\/review-mandate\/index\.js|\.\/(?:types|facts|router|handoff)\.js)$/
+    // Sibling specifiers are DERIVED from the module list, so the closed set lives in exactly one place
+    // (`FOUNDING_MODULES` + `EXTRA_MODULES_ALLOWED`, leg 1) and this floor cannot drift behind it.
+    const allowed = new RegExp(
+      `^(?:\\.\\./\\.\\./contracts/src/index\\.js|\\.\\./review-mandate/index\\.js|\\./(?:${LANE_MODULE_STEMS.join('|')})\\.js)$`,
+    )
     let laneSpecifiers = 0
     for (const file of sourceFiles(LANE_DIR)) {
       const text = readFileSync(file, 'utf8')
-      const specifiers = [...text.matchAll(/^\s*(?:import|export)[^;]*?from '([^']+)'/gm)].map((match) => match[1] as string)
+      // `specifiersOf`, not a single-quoted regex: review F-9 measured that `from "node:os"` escaped the
+      // first version of this leg entirely, so the floor it advertised did not exist for double quotes.
+      const specifiers = specifiersOf(text)
       laneSpecifiers += specifiers.length
       for (const specifier of specifiers) {
         expect(allowed.test(specifier), `${relative(RUNTIME_ROOT, file)} imports ${specifier}, outside the pure-lane allow-list`).toBe(true)
@@ -272,13 +337,78 @@ describe('a6-pr2 lane hygiene', () => {
       expect(text).not.toMatch(/setTimeout|setInterval|setImmediate/)
       expect(text).not.toMatch(/\brequire\s*\(/)
       expect(text).not.toMatch(/\bimport\s*\(/)
-      expect(text).not.toMatch(/readFileSync|writeFileSync|process\.env|fetch\(|node:fs|node:net|node:http|child_process/)
+      // A word floor, deliberately redundant with the allow-list above: an entropy source, a clock, a
+      // filesystem or a network handle must be refused even by a reader who never worked out that the
+      // string around it was a specifier (`node:crypto` was in PR3′'s allow-list because ITS lane derives
+      // wake ids; PR2′ has no such need and does not get its neighbour's permission by inheritance).
+      expect(text).not.toMatch(
+        /readFileSync|writeFileSync|process\.env|process\.argv|fetch\(|node:fs|node:net|node:http|node:os|node:crypto|node:vm|node:dgram|node:tls|node:dns|node:worker_threads|child_process|randomUUID|crypto\.getRandomValues/,
+      )
     }
     // Anti-vacuity, and the two dependencies the lane is allowed to have: the frozen lifecycle
     // vocabulary comes from contracts, and the admission gate comes from PR0.
     expect(laneSpecifiers).toBeGreaterThanOrEqual(8)
     expect(readFileSync(join(LANE_DIR, 'types.ts'), 'utf8')).toContain("from '../../contracts/src/index.js'")
     expect(readFileSync(join(LANE_DIR, 'router.ts'), 'utf8')).toContain("from '../review-mandate/index.js'")
+    // The capture is not silently blind to the quote style it did not use: a double-quoted import inside
+    // the lane must be SEEN by this leg (and therefore judged by `allowed`), or the floor is a single
+    // quote style deep. Measured: the lane writes single quotes today, so this control feeds the
+    // detector a double-quoted line of the lane's own shape and requires it to be captured.
+    expect(specifiersOf(`import { x } from "../review-mandate/index.js"`)).toEqual(['../review-mandate/index.js'])
+    expect(specifiersOf('const p = await import(`./facts.js?v=2`)')).toEqual(['./facts.js'])
+  })
+
+  it('the trees OUTSIDE packages/ are watched too, and the shipped build outputs import nothing', () => {
+    // Review F-9(d): the dormancy walk's roots were `packages/*`, so a repo-root `scripts/` glue file — the
+    // exact place a "temporary" wiring tends to appear — was outside the law. F-9(c): the same walk skips
+    // `dist/` and `composition-shim/` at any depth, which is correct for a SOURCE walk but meant nobody
+    // had ever asked what the tracked build outputs import. Both gaps are closed as assertions, not as
+    // comment promises.
+    const repoRoot = join(PACKAGES_ROOT, '..')
+    const roots: readonly (readonly [string, boolean])[] = [
+      [join(repoRoot, 'scripts'), true],
+      // `tests/` is walked at its top level only: `tests/deepseek-harness-test-use` is a pristine upstream
+      // runtime checkout and `tests/homes` is a forest of live worlds, both gitignored, both enormous, and
+      // neither is a place this plugin's consumers can live. Top-level `tests/*.mjs` is infrastructure glue
+      // and is watched.
+      [join(repoRoot, 'tests'), false],
+    ]
+    for (const [root, recursive] of roots) {
+      const files = recursive ? sourceFiles(root) : readdirSync(root).map((entry) => join(root, entry)).filter((entry) => SOURCE_EXTENSIONS.some((extension) => entry.endsWith(extension)))
+      expect(files, `the outside walk found no file under ${relative(repoRoot, root)}`).not.toHaveLength(0)
+      for (const file of files) {
+        expect(sourceEntersLane(file, readIfPresent(file) ?? ''), `${relative(repoRoot, file)} imports the assignment lane`).toBe(false)
+      }
+    }
+
+    // The shipped lane: exactly the founding modules, and nothing in the rest of the tracked output reaches
+    // it. This is the install-surface counterpart of the source walk.
+    const shippedLane = join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'review-assignment')
+    const shipped = readdirSync(shippedLane).filter((entry) => entry.endsWith('.js')).sort()
+    expect(shipped).toEqual([...LANE_MODULE_STEMS.map((stem) => `${stem}.js`)].sort())
+    const shippedFiles: string[] = []
+    const collectAll = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name)
+        if (entry.isDirectory()) collectAll(full)
+        else if (entry.name.endsWith('.js')) shippedFiles.push(full)
+      }
+    }
+    collectAll(join(RUNTIME_ROOT, 'dist'))
+    const outside = shippedFiles.filter((file) => !file.startsWith(shippedLane + sep))
+    expect(outside.length, 'the tracked runtime build output is where the law is being applied').toBeGreaterThan(100)
+    for (const file of outside) {
+      const text = readIfPresent(file) ?? ''
+      expect(sourceEntersLane(file, text), `${relative(RUNTIME_ROOT, file)} imports the assignment lane`).toBe(false)
+    }
+
+    // The client bundle carries the ledger CATEGORY literals for the three fact types — that is a mapping
+    // the host's own ledger contract demands — and no import of the lane.
+    const bundle = readFileSync(join(PACKAGES_ROOT, 'client', 'composition-shim', 'client-bundle.js'), 'utf8')
+    for (const factType of ['review-assignment-created', 'review-assignment-transferred', 'review-assignment-retired']) {
+      expect(bundle, `the client mirror lost ${factType}`).toContain(factType)
+    }
+    expect(/from\s*['"`][^'"`]*review-assignment\/|import\(\s*['"`][^'"`]*review-assignment\//.test(bundle)).toBe(false)
   })
 
   it('says plainly, in its own source, that it authorizes nothing and writes nothing yet', () => {
@@ -310,7 +440,7 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
       expect(files).toContain(keeper)
       expect(files).not.toContain(join(dir, 'pkg', 'src', 'dangling.ts'))
       expect(VANISHED.count, 'the vanished entry must be counted, not swallowed').toBeGreaterThan(before)
-      expect(LANE_IMPORT_PATTERN.test(readFileSync(keeper, 'utf8'))).toBe(true)
+      expect(sourceEntersLane(keeper, readFileSync(keeper, 'utf8'))).toBe(true)
       expect(
         sourceFiles(join(dir, 'already-deleted')),
         'a directory that vanished mid-walk yields no files and no throw',

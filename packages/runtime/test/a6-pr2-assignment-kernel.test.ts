@@ -268,6 +268,49 @@ describe('A-1 the assignment fact cannot carry authority', () => {
     // Not one of them is reported as a generic unknown field: an attempt to grant authority is
     // reported as what it is.
     expect(produced).toEqual(new Set(['REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT']))
+
+    // THE PART THAT MAKES THE LIST ABOVE HONEST (review F-11). The keys above are the spellings the lane's
+    // author thought of, which is exactly the set a marker list tends to match and no wider — the review
+    // found `approvedBy`, `escalatedTo`, `signoffInstance`, `scope` and `role` landing on the generic
+    // `FIELD_UNKNOWN` instead, bending the lane's promise that an authority attempt is named AS SUCH
+    // (nothing was ever smuggled either way: every undeclared key is refused). So this second half does not
+    // trust the list above or the list in `facts.ts`: it reads the marker array out of the source and
+    // demands that EVERY marker inside it be reachable through a real decode. A marker nobody can hit, or a
+    // marker added without a shape to prove it, fails here instead of in someone's head at review time.
+    const factsSource = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'facts.ts'), 'utf8')
+    const markerBlock = /const AUTHORITY_BEARING_KEY_MARKERS: readonly string\[\] = \[([\s\S]*?)\]/.exec(factsSource)
+    expect(markerBlock, 'the marker list is no longer a literal array this leg can read').not.toBeNull()
+    // Strip comments BEFORE pairing quotes: the block's own prose contains apostrophes ("the lane's
+    // author"), and a naive quote pairing pairs one of those with a real quote and reads nonsense. This
+    // bit the leg on its first run, which is a good argument for deriving the list at all.
+    const markerBody = (markerBlock?.[1] ?? '').replace(/^[ \t]*\/\/[^\n]*$/gm, '')
+    const markers = [...markerBody.matchAll(/'([^']+)'/g)].map((match) => match[1] as string)
+    expect(markers.length).toBeGreaterThanOrEqual(17)
+    // The eight words the review named, required by name so a future tidy-up cannot delete a guard by
+    // deleting its entry.
+    for (const word of ['approv', 'escalat', 'authoriz', 'permit', 'veto', 'signoff', 'scope', 'role']) {
+      expect(markers, `the marker ${word} disappeared from the guard`).toContain(word)
+    }
+    const reached = new Set<string>()
+    for (const marker of markers) {
+      const base = encodeAssignmentFact('created', assignmentFor(1), 0)
+      if (!base.ok) throw new Error('fixture broken')
+      const decoded = decodeAssignmentPayload(REVIEW_ASSIGNMENT_FACT_TYPES.created, { ...base.value, [`x${marker}Y`]: true })
+      expect(decoded.ok, `a payload key containing "${marker}" was accepted`).toBe(false)
+      if (!decoded.ok) reached.add(decoded.refusal)
+      expect(
+        decoded.ok ? '' : decoded.refusal,
+        `a key containing "${marker}" answered ${decoded.ok ? 'nothing' : decoded.refusal} instead of the authority code`,
+      ).toBe('REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT')
+    }
+    expect(reached).toEqual(new Set(['REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT']))
+    // The exemption that makes the above possible, pinned so it cannot widen: a DECLARED field whose name
+    // contains a marker is legal, because it is a closed typed identifier and not a capability.
+    const legal = encodeAssignmentFact('created', assignmentFor(1), 0)
+    expect(legal.ok).toBe(true)
+    if (legal.ok) {
+      expect(decodeAssignmentPayload(REVIEW_ASSIGNMENT_FACT_TYPES.created, legal.value).ok, 'approvalCaseId is a declared field, not an authority claim').toBe(true)
+    }
   })
 
   it('still refuses an ordinary unknown field, with the unknown-field code', () => {
@@ -441,14 +484,68 @@ describe('A-2 exactly one current handler per case, changed only by CAS', () => 
     expect(state.epochApplied).toBe(1)
   })
 
-  it('reports a row for another case rather than treating it as silence', () => {
+  it('ignores a row of ANOTHER case without a diagnostic, because the honest reader folds one ledger per case', () => {
+    // Review F-3 changed this law, so the reason belongs next to the assertion. A durable reader has one
+    // shape available to it: read the OPENED team's ledger once (`repositories.ledger.list()`), then fold
+    // it once per case — there is no per-case index, and inventing one is the mistake PR3′ §2 refuses for
+    // wake slots. The first version of the fold answered `CASE_MISMATCH` for every foreign-case row of this
+    // family, so that reader marked EVERY case `unreconciled`, and since every consumer refuses an
+    // unreconciled view the whole feature would have been dead on arrival — refusing every wake in every
+    // team that turned it on. Nothing crosses case boundaries here anyway: the epoch chain, the target and
+    // the leg all come from rows of the case being folded. So silence is correct for a foreign CASE, while
+    // a foreign TEAM stays loud (the next-but-one leg): the opened repository cannot contain one by accident.
     const base = encodeAssignmentFact('created', assignmentFor(1), 0)
     if (!base.ok) throw new Error('fixture broken')
-    const state = fold([
+    const otherOpen = encodeAssignmentFact('created', { ...assignmentFor(1), approvalCaseId: 'case-OTHER' }, 0)
+    if (!otherOpen.ok) throw new Error('fixture broken')
+    // One team ledger, two cases interleaved, exactly as `repositories.ledger.list()` would hand it over.
+    const ledger: ReviewAssignmentRow[] = [
       row('created', 1, 0),
-      { ledgerSequence: 2, factType: REVIEW_ASSIGNMENT_FACT_TYPES.transferred, payload: { ...base.value, approvalCaseId: 'case-OTHER', assignmentEpoch: 2, previousEpoch: 1 } },
-    ])
-    expect(state.diagnostics[0]?.refusal).toBe('REVIEW_ASSIGNMENT_CASE_MISMATCH')
+      { ledgerSequence: 2, factType: REVIEW_ASSIGNMENT_FACT_TYPES.created, payload: otherOpen.value },
+      {
+        ledgerSequence: 3,
+        factType: REVIEW_ASSIGNMENT_FACT_TYPES.transferred,
+        // A transfer to the LEADER: transferring to the same target the other case's row already names
+        // would be refused as `TARGET_UNCHANGED`, and this fixture is about cross-case silence, not about
+        // that law (which has its own leg).
+        payload: {
+          ...base.value,
+          approvalCaseId: 'case-OTHER',
+          targetKind: 'leader',
+          targetInstanceId: null,
+          assignmentEpoch: 2,
+          previousEpoch: 1,
+        },
+      },
+    ]
+
+    const mine = foldReviewAssignmentRows(ledger, ROOT, CASE_ID)
+    expect(mine.diagnostics).toEqual([])
+    expect(mine.unreconciled).toBe(false)
+    expect(mine.epochApplied).toBe(1)
+
+    // And nothing is lost, only elsewhere: the same three rows folded for the case the other two name
+    // reach epoch 2 cleanly. A-7 forbids losing a row of this family; it never promised that each case's
+    // fold reports every row of every case.
+    const theirs = foldReviewAssignmentRows(ledger, ROOT, 'case-OTHER')
+    expect(theirs.diagnostics).toEqual([])
+    expect(theirs.unreconciled).toBe(false)
+    expect(theirs.epochApplied).toBe(2)
+
+    // The ordering rule that makes the two views above possible, in both directions. FOREIGN rows do not
+    // move this family's sequence watermark — so reading the ledger back to front still folds this case
+    // correctly, because the only row of ours is untouched. And our OWN rows fed out of order ARE
+    // diagnosed: the protection is about this family's order, which is the only order the fold claims.
+    expect(foldReviewAssignmentRows([...ledger].reverse(), ROOT, CASE_ID).diagnostics).toEqual([])
+    expect(
+      foldReviewAssignmentRows(
+        // Same two rows, same epoch chain, ledger order inverted: created at sequence 2, the transfer
+        // that must follow it at sequence 1.
+        [row('created', 1, 0, { kind: 'instance', instanceId: OFFICER }, 2), row('transferred', 2, 1, { kind: 'leader' }, 1)],
+        ROOT,
+        CASE_ID,
+      ).diagnostics.map((d) => d.refusal),
+    ).toEqual(['REVIEW_ASSIGNMENT_SEQUENCE_INVALID'])
   })
 
   it('ignores every other fact family without a diagnostic — the fold needs no second index', () => {
@@ -768,29 +865,68 @@ describe('A-4 the router routes one bound officer or leaves the case with the Le
     }
   })
 
-  it('reassigns when the plan moved to a different officer, at the next epoch', () => {
+  it('reassigns when the plan binds a different officer, at the next epoch', () => {
+    // The reason code used to claim the old target had become INELIGIBLE; the router never evaluates the
+    // old target at all, it only compares the plan's bound officer with the current target (review F-7).
+    // A reason code may state what the code checked, and this phase has already deleted vocabulary for less.
     const current = fold([row('created', 1, 0, { kind: 'instance', instanceId: 'inst-old-officer' })])
     const answer = routeReviewCase(routingInput({ current }))
     expect(answer.ok && answer.value).toEqual({
       kind: 'assign',
       target: { kind: 'instance', instanceId: OFFICER },
-      reasonCode: 'ROUTER_TARGET_INELIGIBLE_NOW_REASSIGNED',
+      reasonCode: 'ROUTER_PLAN_BINDS_DIFFERENT_OFFICER',
       expectedPreviousEpoch: 1,
       assignmentEpoch: 2,
     })
   })
 
-  it('routes afresh when the case has moved to a new leg', () => {
+  it('leaves the case with the Leader when the case has moved to a new leg — a router cannot order what its writer cannot write', () => {
+    // REVIEW F-1, and this is the leg that used to PIN the bug: it asserted `assign` at epoch 2 for a
+    // family standing on an old leg. Three row kinds is all this lane has, and none can express "assign
+    // this case's NEW leg": `created` may only replace epoch 0, `transferred` and `retired` both need a
+    // LIVE assignment standing on the SAME leg. The decision the old leg demanded was one PR-I1 could not
+    // execute, and executing it by force produces a permanent diagnostic, a permanently `unreconciled`
+    // view, and a case whose wakes and submissions are refused forever — the router would have manufactured
+    // a wedged case out of a routine leg escalation. The Leader keeps the case, which is the pre-Alpha.6
+    // answer. If PR-I1 wants cross-leg assignment it must ADD the row kind that carries it, in the open,
+    // and then this leg may be inverted on purpose — with a writer that proves it.
     const current = fold([row('created', 1, 0, { kind: 'instance', instanceId: OFFICER }, 1, 'req-OLD-leg')])
     // A new leg means a new mandate: without it the router correctly refuses for the mandate law and the
     // leg-transition law never gets exercised.
     const answer = routeReviewCase(
       routingInput({ current, caseView: caseView({ legOrdinal: 2, currentLegOrdinal: 2 }), mandate: mandate({ legOrdinal: 2 }) }),
     )
-    expect(answer.ok && answer.value.kind).toBe('assign')
-    if (!answer.ok || answer.value.kind !== 'assign') return
-    expect(answer.value.assignmentEpoch).toBe(2)
-    expect(answer.value.expectedPreviousEpoch).toBe(1)
+    expect(answer.ok && answer.value.kind).toBe('leaveWithLeader')
+    if (!answer.ok || answer.value.kind !== 'leaveWithLeader') return
+    expect(answer.value.reasonCode).toBe('LEADER_LEG_MOVED')
+    // The second half of the law, and the half that would have caught the bug the day it was written: on a
+    // state the router refuses on this ground, EVERY row kind the lane owns is refused by the lane's own
+    // pre-flight. Router `assign` and writer refusal may never both be true of the same state.
+    for (const kind of ['created', 'transferred', 'retired'] as const) {
+      const door = checkAssignmentMutation(
+        current,
+        kind,
+        kind === 'created' ? { kind: 'instance', instanceId: OFFICER } : { kind: 'leader' },
+        'req-NEW-leg',
+      )
+      expect(door.ok, `the pre-flight would let a ${kind} row through for a leg the family cannot express`).toBe(false)
+    }
+  })
+
+  it('leaves a retired case with the Leader instead of resurrecting it, and the pre-flight agrees', () => {
+    // Review F-1's second shape, which had no leg at all before the review. Retirement is a fact in the
+    // ledger: re-opening the case would need a `created` row replacing epoch 0, which the epoch law forbids
+    // once the family has advanced. A wake is not an argument with the ledger.
+    const current = fold([row('created', 1, 0), row('retired', 2, 1, { kind: 'leader' }, 2)])
+    expect(current.live).toBe(false)
+    const answer = routeReviewCase(routingInput({ current }))
+    expect(answer.ok && answer.value.kind).toBe('leaveWithLeader')
+    if (!answer.ok || answer.value.kind !== 'leaveWithLeader') return
+    expect(answer.value.reasonCode).toBe('LEADER_ASSIGNMENT_RETIRED')
+    for (const kind of ['created', 'transferred', 'retired'] as const) {
+      const door = checkAssignmentMutation(current, kind, { kind: 'instance', instanceId: OFFICER }, LEG)
+      expect(door.ok, `a retired case accepted a ${kind} row`).toBe(false)
+    }
   })
 
   it('never routes a case the admission gate would refuse, for any widening tried here', () => {
@@ -832,10 +968,27 @@ describe('A-4 the router routes one bound officer or leaves the case with the Le
       if (!admitted) {
         expect(routed.ok && routed.value.kind !== 'assign', `the router assigned "${name}"`).toBe(true)
       }
+
+      // THE SAME INPUT, ONE STATE APART (review F-8). The case is already assigned to the officer this
+      // plan binds, so the answer the router wants to give is `keep`. `keep` is a routing decision like any
+      // other — it leaves the case parked on the member PR0 has just refused, and a parked case is a case
+      // whose wakes keep arriving at a door that cannot open — so it is gated by the same law, not by the
+      // accident of which line of the router runs first. In the first version of this file the ordering
+      // happened to be right and nothing said so; a refactor that lifted the existing-assignment block
+      // above the admission call kept all 64 legs green.
+      const rerouted = routeReviewCase(routingInput({ ...overrides, current: fold([row('created', 1, 0)]) }))
+      if (!admitted) {
+        expect(
+          rerouted.ok && rerouted.value.kind !== 'assign' && rerouted.value.kind !== 'keep',
+          `the router parked "${name}" on an officer PR0 refuses (answered ${rerouted.ok ? rerouted.value.kind : 'refusal'})`,
+        ).toBe(true)
+      }
     }
-    // Positive control, so the loop above cannot pass by refusing everything.
+    // Positive controls, so neither loop can pass by refusing everything.
     const control = routeReviewCase(routingInput())
     expect(control.ok && control.value.kind).toBe('assign')
+    const kept = routeReviewCase(routingInput({ current: fold([row('created', 1, 0)]) }))
+    expect(kept.ok && kept.value.kind, 'a live assignment bound to the officer this plan binds must still answer keep').toBe('keep')
   })
 })
 
@@ -928,7 +1081,7 @@ describe('A-6 a handoff moves the target and nothing else', () => {
     const answer = planHandoff(state, request)
     expect(answer.ok).toBe(false)
     if (answer.ok) return
-    expect(answer.refusal).toBe('REVIEW_ASSIGNMENT_CASE_MISMATCH')
+    expect(answer.refusal).toBe('REVIEW_ASSIGNMENT_LEG_MISMATCH')
   })
 
   it('retires a case, and the retirement carries the same emptiness', () => {
@@ -982,10 +1135,39 @@ describe('A-7 an unreadable row is reported forever, never treated as an empty q
   })
 
   it('does not invent diagnostics for rows of a case it was not asked about', () => {
+    // The companion of the A-2 leg above, at the other end of the same law: folding a ledger for a case it
+    // does not belong to yields an EMPTY, CLEAN view — no diagnostic, no `unreconciled` flag.
+    // `assignment === null` with `unreconciled === false` is the state "this case has no assignment", which
+    // is exactly what the Leader needs to hear, and it is the state every team that never enabled Alpha.6
+    // stands in forever.
     const state = foldReviewAssignmentRows([row('created', 1, 0)], ROOT, 'case-NOT-THIS-ONE')
-    expect(state.diagnostics).toHaveLength(1)
-    expect(state.diagnostics[0]?.refusal).toBe('REVIEW_ASSIGNMENT_CASE_MISMATCH')
+    expect(state.diagnostics).toEqual([])
+    expect(state.unreconciled).toBe(false)
     expect(state.assignment).toBeNull()
+  })
+
+  it('diagnoses a row of THIS family whose ledgerSequence is not a safe integer — A-7 has no silent hole', () => {
+    // Review F-2, reproduced before it was fixed: the fold used to `continue` on a malformed sequence
+    // BEFORE asking whether the row belonged to this family, so the rows A-7 exists to protect were the
+    // ones that vanished quietly — `diagnostics: []`, `unreconciled: false`, `epochApplied: 0`, as if the
+    // assignment had never been written. A case whose handler row cannot be read must LOOK broken, because
+    // the alternative is a queue that looks empty.
+    const encoded = encodeAssignmentFact('created', assignmentFor(1), 0)
+    if (!encoded.ok) throw new Error('fixture broken')
+    for (const broken of [Number.NaN, Number.POSITIVE_INFINITY, 2.5, '7', null, undefined]) {
+      const state = fold([
+        { ledgerSequence: broken as unknown as number, factType: REVIEW_ASSIGNMENT_FACT_TYPES.created, payload: encoded.value },
+      ])
+      expect(state.diagnostics.map((d) => d.refusal), `sequence ${String(broken)}`).toEqual([
+        'REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED',
+      ])
+      expect(state.unreconciled, `sequence ${String(broken)}`).toBe(true)
+      expect(state.assignment).toBeNull()
+    }
+    // A foreign family with the same broken sequence stays silent: this fold answers for its own rows.
+    const foreign = fold([{ ledgerSequence: Number.NaN, factType: 'control-request-recorded', payload: {} }])
+    expect(foreign.diagnostics).toEqual([])
+    expect(foreign.unreconciled).toBe(false)
   })
 })
 
@@ -1003,15 +1185,32 @@ describe('A-8 the lane computes and refuses, and touches nothing', () => {
     }
   })
 
-  it('imports only contracts, PR0 and itself', () => {
-    const allowed = /^(?:node:crypto|\.\.\/\.\.\/contracts\/src\/index\.js|\.\.\/review-mandate\/index\.js|\.\/(?:types|facts|router|handoff)\.js)$/
-    for (const file of ['types.ts', 'facts.ts', 'router.ts', 'handoff.ts', 'index.ts']) {
+  it('imports only contracts, PR0 and itself — and no node: builtin of any kind', () => {
+    // `node:crypto` used to be in this allow-list. It belonged to PR3′'s lane, which derives wake ids and
+    // genuinely needs entropy; this lane derives nothing, and a lane must not acquire its neighbour's
+    // permissions by inheritance (review F-9a). Sibling names are DERIVED from the module list so the
+    // closed set exists once.
+    const laneModules = ['types', 'facts', 'router', 'handoff']
+    const allowed = new RegExp(
+      `^(?:\\.\\./\\.\\./contracts/src/index\\.js|\\.\\./review-mandate/index\\.js|\\./(?:${laneModules.join('|')})\\.js)$`,
+    )
+    for (const file of [...laneModules.map((module) => `${module}.ts`), 'index.ts']) {
       const source = readFileSync(join(RUNTIME_ROOT, 'review-assignment', file), 'utf8')
-      for (const match of source.matchAll(/from\s+'([^']+)'/g)) {
-        const specifier = match[1] as string
+      // All three quote styles, plus dynamic forms. The first version captured `from '…'` only, which made
+      // the whole floor invisible to `import os from "node:os"` — a leg that cannot see the thing it
+      // forbids is worse than no leg, because it is reported as a pass.
+      const specifiers = [...source.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*)['"`]([^'"`\n]+)['"`]/g)]
+        .map((match) => match[1] as string)
+      if (file !== 'index.ts') {
+        expect(specifiers.length, `${file} declares no imports at all — the capture is blind, not clean`).toBeGreaterThan(0)
+      }
+      for (const specifier of specifiers) {
         expect(allowed.test(specifier), `${file} imports ${specifier}`).toBe(true)
       }
+      expect(source, `${file} reaches for a node: builtin`).not.toMatch(/node:/)
     }
+    // The capture is demonstrated on the shape that escaped it, so it cannot rot back to one quote style.
+    expect([...'import os from "node:os"'.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*)['"`]([^'"`\n]+)['"`]/g)].map((m) => m[1])).toEqual(['node:os'])
   })
 })
 
@@ -1049,6 +1248,9 @@ describe('A-9 every refusal code is reachable and every produced code is declare
       { ledgerSequence: 2, factType: REVIEW_ASSIGNMENT_FACT_TYPES.transferred, payload: { ...foreignRoot.value, approvalCaseId: CASE_ID } },
     ]))
     record(foldFirstDiagnostic([row('created', 1, 0), row('transferred', 2, 1, { kind: 'instance', instanceId: OFFICER }, 2)]))
+    // The hole review F-2 found, kept shut from the vocabulary side too: SEQUENCE_MALFORMED must have a
+    // producer, or the closed list is lying again in the other direction.
+    record(foldFirstDiagnostic([{ ledgerSequence: Number.NaN, factType: REVIEW_ASSIGNMENT_FACT_TYPES.created, payload: encodedGood.value }]))
     record(foldFirstDiagnostic([row('created', 1, 0, { kind: 'instance', instanceId: OFFICER }, 9), row('transferred', 2, 1, { kind: 'leader' }, 8)]))
     record(routeReviewCase(routingInput({ rootSessionId: 'bad root' })))
     record(routeReviewCase(routingInput({ candidates: [candidate(), candidate()] })))
@@ -1082,6 +1284,10 @@ describe('A-9 every refusal code is reachable and every produced code is declare
     collect(routeReviewCase(routingInput({ mandate: mandate({ actionName: 'fs:read' }) })))
     collect(routeReviewCase(routingInput({ candidates: [] })))
     collect(routeReviewCase(routingInput({ candidates: [candidate({ lifecycle: MEMBER_LIFECYCLE_STATES.DISPOSED })] })))
+    // F-1's two new refusals, produced through the public entry point rather than by poking an internal.
+    const movedLeg = fold([row('created', 1, 0, { kind: 'instance', instanceId: OFFICER }, 1, 'req-OLD-leg')])
+    collect(routeReviewCase(routingInput({ current: movedLeg, caseView: caseView({ legOrdinal: 2, currentLegOrdinal: 2 }), mandate: mandate({ legOrdinal: 2 }) })))
+    collect(routeReviewCase(routingInput({ current: fold([row('created', 1, 0), row('retired', 2, 1, { kind: 'leader' }, 2)]) })))
 
     for (const code of REVIEW_ROUTER_REASON_CODES) {
       expect(produced.has(code), `reason code ${code} is declared but unreachable`).toBe(true)

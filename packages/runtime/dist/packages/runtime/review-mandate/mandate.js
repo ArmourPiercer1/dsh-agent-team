@@ -8,9 +8,16 @@
  * proceeds exactly as it does today (case law, envelope, staleness, external
  * hard policy, PA gate, commit). Composing it into that entrance is Lane-plan
  * PR-I1, a named Center-Interface PR inside the ARC-A protected center, and
- * until that PR lands this function has no production caller: PR0 deliberately
- * ships the law and its negative controls WITHOUT wiring a reviewer decision
- * to `allow` anywhere (execution-plan G-5).
+ * until that PR lands nothing ACTS on the answer this function gives: PR0
+ * deliberately ships the law and its negative controls WITHOUT wiring a
+ * reviewer decision to `allow` anywhere (execution-plan G-5).
+ *
+ * As of Alpha.6 PR2′ (#507) this vocabulary has its first consumer — `review-assignment/router.ts`,
+ * which calls `evaluateReviewAdmission` so that a router can never be wider than this gate. That
+ * consumer is itself dormant (no importer, no writer; `a6-pr2-lane-hygiene.test.ts` pins it), so the
+ * paragraph above still holds in the only sense that matters: there is no path from a reviewer decision
+ * to `allow` yet. "No production caller" was the sentence before #507; it was true then and is not true
+ * now, which is why it is amended here rather than left to mislead a reader of the dark lane.
  *
  * THE ORDERING IS THE SECURITY PROPERTY, so it lives in one function, in one
  * order, with the first failure winning:

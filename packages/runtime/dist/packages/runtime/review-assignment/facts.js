@@ -57,6 +57,19 @@ const AUTHORITY_BEARING_KEY_MARKERS = [
     'decision',
     'mandate',
     'effect',
+    // Added on review (F-11). The nine above were the words the lane's author thought of first; the
+    // reviewer pointed out that the lane promises authority attempts are named AS SUCH, and `approvedBy`,
+    // `escalatedTo`, `canPermit`, `signoffInstance`, `scope` or `role` were being refused with the generic
+    // `FIELD_UNKNOWN` instead. Nothing was smuggled either way — the closed field set refuses every
+    // undeclared key — so this widens a NAME, not a permission.
+    'approv',
+    'escalat',
+    'authoriz',
+    'permit',
+    'veto',
+    'signoff',
+    'scope',
+    'role',
 ];
 function isId(value) {
     return typeof value === 'string' && ID_PATTERN.test(value);
@@ -140,7 +153,16 @@ export function decodeAssignmentPayload(factType, payload) {
     // A-1 as a machine check. Runs BEFORE the closed-set check so an authority-bearing key is reported
     // as what it is — someone trying to make an assignment grant something — instead of the generic
     // "unknown field" the writer would otherwise get.
+    //
+    // The declared fields are exempt, and one of them is why the exemption is not a hole:
+    // `approvalCaseId` contains the marker `approv`. It is a declared, closed, typed field naming the case
+    // the assignment is ABOUT — an identifier, not a capability — and the marker pass exists to catch
+    // UNDECLARED keys. Widening the exemption is impossible: `keys` outside
+    // `REVIEW_ASSIGNMENT_PAYLOAD_FIELDS` are refused below whatever they are called, so the marker pass can
+    // only ever change WHICH refusal an undeclared key gets, never whether one is refused at all.
     for (const key of keys) {
+        if (REVIEW_ASSIGNMENT_PAYLOAD_FIELDS.includes(key))
+            continue;
         const lowered = key.toLowerCase();
         if (AUTHORITY_BEARING_KEY_MARKERS.some((marker) => lowered.includes(marker))) {
             return refuse('REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT', `key ${JSON.stringify(key)} claims authority an assignment may never carry`);
@@ -241,12 +263,30 @@ export function isReviewAssignmentFactType(factType) {
 /**
  * Fold one case's assignment rows into a state view.
  *
- * The input is the case's ledger rows in durable sequence order, interleaved with every other family's
- * rows — exactly what `repositories.ledger.list()` yields — because that is the shape a caller can
- * produce without inventing a second index (the mistake PR3′'s §2 documents for wake slots). Rows of
- * other families, of other Teams and of other cases are ignored WITHOUT a diagnostic; a row of THIS
- * case's family that cannot be applied is a diagnostic, and any diagnostic marks the view
- * `unreconciled`.
+ * INPUT CONTRACT, rewritten after review (F-3) because the previous wording was false in both of its
+ * halves and the false half was the dangerous one. The fold is scoped by `(rootSessionId, approvalCaseId)`
+ * and it owns ONE fact family, so:
+ *
+ *  - Rows of OTHER FAMILIES are ignored without a diagnostic and do not participate in sequence ordering.
+ *    The ledger interleaves every family; a fold that reported the shape of the ledger it was handed
+ *    would report noise instead of its own state.
+ *  - Rows of THIS family belonging to ANOTHER CASE are also ignored without a diagnostic, and they do not
+ *    advance the sequence watermark either — order is a property of the rows a view is made of. Their epoch
+ *    chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they cannot corrupt
+ *    this view, and refusing them made the obvious reader fail closed: the natural durable reader is
+ *    "read `repositories.ledger.list()` for this opened team once, then fold per case", and the old
+ *    behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
+ *    `unreconciled` and therefore refusing every wake and every submit, everywhere, forever. A contract
+ *    that punishes the correct caller is not a safety property.
+ *  - Rows of THIS family belonging to ANOTHER TEAM are a diagnostic (`CROSS_TEAM_ROW`). This one cannot
+ *    happen by writing the reader correctly: `repositories.ledger` is the opened team's own ledger, so a
+ *    foreign root inside it means the caller folded a team's rows under another team's id — a scoping bug
+ *    that is worth a loud noise, not silence.
+ *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic
+ *    marks the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` on a
+ *    row of this family counts: it is diagnosed, not dropped (F-2 — the previous code `continue`d on a
+ *    broken sequence BEFORE the family check, so exactly the rows A-7 exists to protect were the ones that
+ *    vanished quietly).
  */
 export function foldReviewAssignmentRows(rows, rootSessionId, approvalCaseId) {
     const diagnostics = [];
@@ -258,18 +298,21 @@ export function foldReviewAssignmentRows(rows, rootSessionId, approvalCaseId) {
         diagnostics.push({ ledgerSequence: row.ledgerSequence, factType: row.factType, refusal, detail });
     };
     for (const row of rows) {
-        if (typeof row.ledgerSequence !== 'number' || !Number.isSafeInteger(row.ledgerSequence)) {
-            continue;
-        }
-        if (row.ledgerSequence < lastSequence) {
-            // Out-of-order input is a broken caller, not a broken ledger. Say so once per row rather than
-            // folding a family in the wrong order and calling the result a state.
-            note(row, 'REVIEW_ASSIGNMENT_SEQUENCE_INVALID', `sequence ${String(row.ledgerSequence)} follows ${String(lastSequence)}`);
-            continue;
-        }
-        lastSequence = row.ledgerSequence;
+        // Family first, ALWAYS (review F-2). The two checks below used to run before this one, which meant a
+        // row of this family carrying a broken `ledgerSequence` disappeared with `diagnostics = []` and
+        // `unreconciled = false` — a silent loss of exactly the rows whose loss A-7 forbids, while foreign
+        // rows that are none of this fold's business were diagnosed instead. Ownership decides who gets a
+        // noise: this fold answers for its own family and stays quiet about everybody else's.
         if (!isReviewAssignmentFactType(row.factType))
             continue;
+        if (typeof row.ledgerSequence !== 'number' || !Number.isSafeInteger(row.ledgerSequence)) {
+            note(row, 'REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED', `a ${row.factType} row names sequence ${String(row.ledgerSequence)}, which is not a safe integer`);
+            continue;
+        }
+        // NOT yet the sequence watermark: it advances only on rows this fold actually considers, i.e. rows of
+        // this family AND this case. Advancing it on another case's row was the first draft's shape, and it is
+        // the same F-3 mistake one level down — one out-of-order row of an unrelated case would then diagnose
+        // every row of the case being folded. Order is a property of the rows a view is made of.
         const decoded = decodeAssignmentPayload(row.factType, row.payload);
         if (!decoded.ok) {
             note(row, decoded.refusal, decoded.detail);
@@ -281,11 +324,18 @@ export function foldReviewAssignmentRows(rows, rootSessionId, approvalCaseId) {
             continue;
         }
         if (payload.approvalCaseId !== approvalCaseId) {
-            // A family row for another case is not this case's business, and the fold is parameterised by
-            // case id — so this is a caller bug or a corrupt row. Either way it is reported, not dropped.
-            note(row, 'REVIEW_ASSIGNMENT_CASE_MISMATCH', `row belongs to case ${payload.approvalCaseId}`);
+            // Another case's row: skip in silence, by the input contract above. Nothing can leak across — the
+            // epoch chain, the target and the leg all come from rows of THIS case — and the caller has no
+            // cheaper way to read the ledger than one pass per team.
             continue;
         }
+        if (row.ledgerSequence < lastSequence) {
+            // Out-of-order input is a broken caller, not a broken ledger. Say so once per row rather than
+            // folding a family in the wrong order and calling the result a state.
+            note(row, 'REVIEW_ASSIGNMENT_SEQUENCE_INVALID', `sequence ${String(row.ledgerSequence)} follows ${String(lastSequence)}`);
+            continue;
+        }
+        lastSequence = row.ledgerSequence;
         // Check ordering, stated because the order of refusal checks IS part of the law: a `created` row that
         // arrives while a handler is live is reported as `ALREADY_ACTIVE` even when its epoch is also wrong.
         // "there is already a current handler" is the fact the operator needs, it is what makes the row
@@ -314,7 +364,7 @@ export function foldReviewAssignmentRows(rows, rootSessionId, approvalCaseId) {
             continue;
         }
         if (payload.currentLegRequestId !== assignment.currentLegRequestId) {
-            note(row, 'REVIEW_ASSIGNMENT_CASE_MISMATCH', `row is under leg ${payload.currentLegRequestId}, family stands at ${assignment.currentLegRequestId}`);
+            note(row, 'REVIEW_ASSIGNMENT_LEG_MISMATCH', `row is under leg ${payload.currentLegRequestId}, family stands at ${assignment.currentLegRequestId}`);
             continue;
         }
         if (row.factType === REVIEW_ASSIGNMENT_FACT_TYPES.transferred) {
@@ -416,7 +466,7 @@ export function checkAssignmentMutation(state, kind, target, currentLegRequestId
         return refuse('REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT', `a ${kind} fact needs a live assignment`);
     }
     if (state.assignment.currentLegRequestId !== currentLegRequestId) {
-        return refuse('REVIEW_ASSIGNMENT_CASE_MISMATCH', `the family stands at leg ${state.assignment.currentLegRequestId}, the request names ${currentLegRequestId}`);
+        return refuse('REVIEW_ASSIGNMENT_LEG_MISMATCH', `the family stands at leg ${state.assignment.currentLegRequestId}, the request names ${currentLegRequestId}`);
     }
     if (kind === 'transferred' && sameTarget(state.assignment.target, target)) {
         return refuse('REVIEW_ASSIGNMENT_TARGET_UNCHANGED', 'the case is already assigned to that target');

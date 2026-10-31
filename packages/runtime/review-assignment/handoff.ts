@@ -125,11 +125,17 @@ export function planRetirement(
   state: ReviewAssignmentState,
   request: ReviewHandoffRequest,
 ): ReviewAssignmentResult<ReviewPreparedFact> {
-  const checked = checkAssignmentMutation(state, 'retired', state.assignment?.target ?? { kind: 'leader' }, request.currentLegRequestId)
-  if (!checked.ok) return checked
-  if (state.assignment === null) {
+  // The null check comes FIRST, before the pre-flight, so that it is a real door rather than unreachable
+  // code (review F-10): the second version of this function asked the pre-flight first and then tested the
+  // same shape, which no input could ever reach. Both doors answer the same refusal code
+  // (`NO_ACTIVE_ASSIGNMENT`) either way, so reordering changes no behaviour — only the honesty of the
+  // control flow, and the fact that the closed export set has no unreachable branch in it.
+  const assignment = state.assignment
+  if (assignment === null) {
     return no('REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT', 'nothing to retire')
   }
+  const checked = checkAssignmentMutation(state, 'retired', assignment.target, request.currentLegRequestId)
+  if (!checked.ok) return checked
 
   const assignmentEpoch = state.epochApplied + 1
   const encoded = encodeAssignmentFact(
@@ -138,7 +144,7 @@ export function planRetirement(
       rootSessionId: request.rootSessionId,
       approvalCaseId: request.approvalCaseId,
       currentLegRequestId: request.currentLegRequestId,
-      target: state.assignment.target,
+      target: assignment.target,
       assignmentEpoch,
       reasonCode: request.reasonCode,
       basedOnCaseVersion: request.basedOnCaseVersion,

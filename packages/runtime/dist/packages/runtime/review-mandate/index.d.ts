@@ -10,7 +10,11 @@
  *
  * Production consumers as of PR0: NONE (declared dormant — see
  * `docs/plans/memo/alpha6-review-separation/alpha6-lane2-execution-plan-20261030.md`
- * §1 PR0/PR-I1 and gate G-5). No reviewer decision is wired to `allow` until
+ * §1 PR0/PR-I1 and gate G-5). As of PR2′ (#507) there is exactly ONE, and it
+ * is dark: `review-assignment/router.ts` asks this gate for admission so it
+ * can never be wider than it, and that lane has no consumer of its own. The
+ * machine-checked list is `ALLOWED_CONSUMERS` in `a6-pr0-lane-hygiene.test.ts`.
+ * No reviewer decision is wired to `allow` until
  * the Center-Interface PR and its safety gate pass. The lane is shipped dark so
  * the law and its negative controls can be reviewed before anything can act on
  * them.

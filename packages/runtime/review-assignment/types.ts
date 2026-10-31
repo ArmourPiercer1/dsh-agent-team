@@ -123,7 +123,11 @@ export interface ReviewAssignment {
 export const REVIEW_ROUTER_REASON_CODES = [
   'ROUTER_PLAN_COVERS_ACTION',
   'ROUTER_ALREADY_ASSIGNED',
-  'ROUTER_TARGET_INELIGIBLE_NOW_REASSIGNED',
+  // Renamed on review (F-7): it used to read `ROUTER_TARGET_INELIGIBLE_NOW_REASSIGNED` and asserted that
+  // the previous target had become ineligible, which the router never evaluates — it compares the plan's
+  // bound officer with the current target and nothing more. A reason code may only state what the code
+  // checked.
+  'ROUTER_PLAN_BINDS_DIFFERENT_OFFICER',
   'LEADER_NO_APPROVAL_CASE_ID',
   'LEADER_PLAN_ABSENT',
   'LEADER_PLAN_EPOCH_STALE',
@@ -132,6 +136,15 @@ export const REVIEW_ROUTER_REASON_CODES = [
   'LEADER_MANDATE_NOT_COVERING',
   'LEADER_NO_ELIGIBLE_REVIEWER',
   'LEADER_LEG_NOT_CURRENT',
+  // Both added by review F-1. The lane ships three row kinds and none of them can express "assign this
+  // case's NEW leg" (`created` may only replace epoch 0; `transferred`/`retired` need a live assignment on
+  // the same leg). A router that answered `assign` for those shapes was handing PR-I1 an order it could
+  // not execute — and executing it anyway produces a permanent diagnostic, an `unreconciled` view and a
+  // case nobody can wake or submit. So the router now says the truth instead: the Leader keeps the case,
+  // which is exactly the pre-Alpha.6 behaviour. If PR-I1 wants cross-leg assignment it must ADD the row
+  // kind that can carry it, in the open, and then these two codes can go away.
+  'LEADER_LEG_MOVED',
+  'LEADER_ASSIGNMENT_RETIRED',
 ] as const
 
 export type ReviewRouterReasonCode = (typeof REVIEW_ROUTER_REASON_CODES)[number]
@@ -175,8 +188,19 @@ export interface ReviewAssignmentState {
 
 /**
  * Every refusal this lane can answer with. Closed: no free-form reason, and every one is reachable —
- * `a6-pr3-wake-kernel.test.ts`'s sibling leg enumerates the produced set against this list in both
+ * `a6-pr2-assignment-kernel.test.ts`'s A-9 leg enumerates the produced set against this list in BOTH
  * directions, because a vocabulary with a member no path can produce is a lie about the machine.
+ *
+ * The review round on PR #507 renamed one member and added two, and the reason for each is the reason
+ * the law changed rather than the spelling:
+ * - `REVIEW_ASSIGNMENT_CASE_MISMATCH` is GONE. It was used for two different facts — a row naming another
+ *   case, and a row naming another LEG — and the reviewer's F-1 showed the second use hid what actually
+ *   went wrong. It is now `REVIEW_ASSIGNMENT_LEG_MISMATCH`, which says what the check compares. A row
+ *   naming another case is no longer a refusal at all: see `foldReviewAssignmentRows`' input contract,
+ *   whose old wording made the obvious reader (fold the whole team ledger, once per case) fail closed.
+ * - `REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED` is new, and it exists because a row of THIS family whose
+ *   `ledgerSequence` is not a safe integer used to be dropped before the family check, i.e. A-7's promise
+ *   that no row of this family is lost silently had a one-line hole (reviewer F-2, reproduced).
  */
 export const REVIEW_ASSIGNMENT_REFUSALS = [
   'REVIEW_ASSIGNMENT_INPUT_MALFORMED',
@@ -184,8 +208,9 @@ export const REVIEW_ASSIGNMENT_REFUSALS = [
   'REVIEW_ASSIGNMENT_FIELD_UNKNOWN',
   'REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT',
   'REVIEW_ASSIGNMENT_CROSS_TEAM_ROW',
-  'REVIEW_ASSIGNMENT_CASE_MISMATCH',
+  'REVIEW_ASSIGNMENT_LEG_MISMATCH',
   'REVIEW_ASSIGNMENT_SEQUENCE_INVALID',
+  'REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED',
   'REVIEW_ASSIGNMENT_EPOCH_CONFLICT',
   'REVIEW_ASSIGNMENT_ALREADY_ACTIVE',
   'REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT',

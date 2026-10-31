@@ -16,14 +16,17 @@
  * Determinism (A-4): the plan binds exactly one officer (`ReviewPlan.reviewerInstanceId` — "Exactly one
  * in Alpha.6"), so there is never a choice between candidates to be clever about. Same inputs in, same
  * decision out, byte for byte; no clock read here, no scoring, no recency, no load. Where the router
- * cannot proceed it says which of its twelve reasons applies, so a mis-routed team is diagnosable from
+ * cannot proceed it says which of its reasons applies (the closed list is `REVIEW_ROUTER_REASON_CODES`; the count is deliberately not restated here — restating it was wrong once already, review F-4), so a mis-routed team is diagnosable from
  * the reason code alone.
  *
  * THE LAW ABOUT HANDOFFS, which is this file's most important non-obvious branch: once a case has been
  * handed off to the Leader, a later wake does NOT pull it back to the Officer. A handoff is a decision
  * that the Leader's global information is needed (PR #319 §7); the router has no basis to overrule it,
  * and re-stealing the case on the next event would silently reverse a coordination decision the Leader
- * made. `LEADER_TOOK_OVER` keeps it.
+ * made. The answer is `ROUTER_ALREADY_ASSIGNED` with `leaderAlreadyTarget: true`, and it is a leave-with-
+ * the-Leader decision, not a failure: the code named here is the one the router actually emits (`LEADER_
+ * TOOK_OVER` was a name this file used to advertise and no path ever produced — a reason code that cannot
+ * be produced is the same lie A-9 refuses in the closed lists).
  */
 import { evaluateReviewAdmission, isParsedReviewPlan, } from '../review-mandate/index.js';
 import { REVIEW_MEMBER_LIFECYCLE_STATE_VALUES, REVIEW_ROUTER_ELIGIBLE_LIFECYCLES, } from './types.js';
@@ -239,13 +242,27 @@ export function routeReviewCase(input) {
             return decision({
                 kind: 'assign',
                 target: { kind: 'instance', instanceId: officer.instanceId },
-                reasonCode: 'ROUTER_TARGET_INELIGIBLE_NOW_REASSIGNED',
+                reasonCode: 'ROUTER_PLAN_BINDS_DIFFERENT_OFFICER',
                 expectedPreviousEpoch: current.epochApplied,
                 assignmentEpoch: nextEpoch,
             });
         }
-        // The case moved to a new leg since the assignment was made: the old assignment describes an old
-        // leg and the new one needs its own decision. Fall through to a fresh assignment at the next epoch.
+        // The case moved to a NEW LEG since the assignment was made, and the lane cannot answer that with a
+        // decision (review F-1). Three row kinds is all this family has: `created` may only replace epoch 0,
+        // `transferred` and `retired` both require a LIVE assignment standing on the SAME leg. So there is no
+        // row a writer may append for a new leg, and the decision the previous code returned — `assign` at
+        // `epochApplied + 1` — was an order PR-I1 could not execute: its pre-flight refuses every kind on this
+        // state, and forcing the row through anyway yields a permanent diagnostic, a permanently
+        // `unreconciled` view, and a case whose wakes and submissions are then refused forever. A router must
+        // not order what its own writer cannot write.
+        return decision(leaderLeaves('LEADER_LEG_MOVED', current, `the family stands under leg ${existing.currentLegRequestId}, this wake is under ${input.currentLegRequestId}`));
+    }
+    if (current !== null && current.assignment !== null && !current.live) {
+        // The assignment for this case was RETIRED. A wake is not a reason to resurrect it: retirement is a
+        // fact in the ledger, and re-opening it would need a `created` row replacing epoch 0, which the epoch
+        // law forbids on a family that has already advanced. The Leader holds the case — same answer as if
+        // Alpha.6 had never been switched on, which is the right answer for a state the lane cannot express.
+        return decision(leaderLeaves('LEADER_ASSIGNMENT_RETIRED', current, `epoch ${String(current.epochApplied)} was retired; only the Leader re-drives a retired case`));
     }
     return decision({
         kind: 'assign',

@@ -109,7 +109,7 @@ export interface ReviewAssignment {
     readonly actorCallerRef: string;
 }
 /** The reason codes the router itself emits. Closed: a router decision is reproducible from this set. */
-export declare const REVIEW_ROUTER_REASON_CODES: readonly ["ROUTER_PLAN_COVERS_ACTION", "ROUTER_ALREADY_ASSIGNED", "ROUTER_TARGET_INELIGIBLE_NOW_REASSIGNED", "LEADER_NO_APPROVAL_CASE_ID", "LEADER_PLAN_ABSENT", "LEADER_PLAN_EPOCH_STALE", "LEADER_MANDATE_ABSENT", "LEADER_MANDATE_REVOKED", "LEADER_MANDATE_NOT_COVERING", "LEADER_NO_ELIGIBLE_REVIEWER", "LEADER_LEG_NOT_CURRENT"];
+export declare const REVIEW_ROUTER_REASON_CODES: readonly ["ROUTER_PLAN_COVERS_ACTION", "ROUTER_ALREADY_ASSIGNED", "ROUTER_PLAN_BINDS_DIFFERENT_OFFICER", "LEADER_NO_APPROVAL_CASE_ID", "LEADER_PLAN_ABSENT", "LEADER_PLAN_EPOCH_STALE", "LEADER_MANDATE_ABSENT", "LEADER_MANDATE_REVOKED", "LEADER_MANDATE_NOT_COVERING", "LEADER_NO_ELIGIBLE_REVIEWER", "LEADER_LEG_NOT_CURRENT", "LEADER_LEG_MOVED", "LEADER_ASSIGNMENT_RETIRED"];
 export type ReviewRouterReasonCode = (typeof REVIEW_ROUTER_REASON_CODES)[number];
 /** Why a row was skipped, with enough identity to find it again. */
 export interface ReviewAssignmentDiagnostic {
@@ -144,10 +144,21 @@ export interface ReviewAssignmentState {
 }
 /**
  * Every refusal this lane can answer with. Closed: no free-form reason, and every one is reachable —
- * `a6-pr3-wake-kernel.test.ts`'s sibling leg enumerates the produced set against this list in both
+ * `a6-pr2-assignment-kernel.test.ts`'s A-9 leg enumerates the produced set against this list in BOTH
  * directions, because a vocabulary with a member no path can produce is a lie about the machine.
+ *
+ * The review round on PR #507 renamed one member and added two, and the reason for each is the reason
+ * the law changed rather than the spelling:
+ * - `REVIEW_ASSIGNMENT_CASE_MISMATCH` is GONE. It was used for two different facts — a row naming another
+ *   case, and a row naming another LEG — and the reviewer's F-1 showed the second use hid what actually
+ *   went wrong. It is now `REVIEW_ASSIGNMENT_LEG_MISMATCH`, which says what the check compares. A row
+ *   naming another case is no longer a refusal at all: see `foldReviewAssignmentRows`' input contract,
+ *   whose old wording made the obvious reader (fold the whole team ledger, once per case) fail closed.
+ * - `REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED` is new, and it exists because a row of THIS family whose
+ *   `ledgerSequence` is not a safe integer used to be dropped before the family check, i.e. A-7's promise
+ *   that no row of this family is lost silently had a one-line hole (reviewer F-2, reproduced).
  */
-export declare const REVIEW_ASSIGNMENT_REFUSALS: readonly ["REVIEW_ASSIGNMENT_INPUT_MALFORMED", "REVIEW_ASSIGNMENT_ROW_UNPARSEABLE", "REVIEW_ASSIGNMENT_FIELD_UNKNOWN", "REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT", "REVIEW_ASSIGNMENT_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_CASE_MISMATCH", "REVIEW_ASSIGNMENT_SEQUENCE_INVALID", "REVIEW_ASSIGNMENT_EPOCH_CONFLICT", "REVIEW_ASSIGNMENT_ALREADY_ACTIVE", "REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT", "REVIEW_ASSIGNMENT_TARGET_UNCHANGED", "REVIEW_ASSIGNMENT_TARGET_IS_LEADER_INSTANCE", "REVIEW_ASSIGNMENT_STALE_TARGET", "REVIEW_ASSIGNMENT_REASON_CODE_INVALID", "REVIEW_ASSIGNMENT_ROUTER_INPUT_INCOMPLETE", "REVIEW_ASSIGNMENT_ROUTER_CANDIDATE_MALFORMED"];
+export declare const REVIEW_ASSIGNMENT_REFUSALS: readonly ["REVIEW_ASSIGNMENT_INPUT_MALFORMED", "REVIEW_ASSIGNMENT_ROW_UNPARSEABLE", "REVIEW_ASSIGNMENT_FIELD_UNKNOWN", "REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT", "REVIEW_ASSIGNMENT_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_LEG_MISMATCH", "REVIEW_ASSIGNMENT_SEQUENCE_INVALID", "REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED", "REVIEW_ASSIGNMENT_EPOCH_CONFLICT", "REVIEW_ASSIGNMENT_ALREADY_ACTIVE", "REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT", "REVIEW_ASSIGNMENT_TARGET_UNCHANGED", "REVIEW_ASSIGNMENT_TARGET_IS_LEADER_INSTANCE", "REVIEW_ASSIGNMENT_STALE_TARGET", "REVIEW_ASSIGNMENT_REASON_CODE_INVALID", "REVIEW_ASSIGNMENT_ROUTER_INPUT_INCOMPLETE", "REVIEW_ASSIGNMENT_ROUTER_CANDIDATE_MALFORMED"];
 /**
  * Two codes were deleted here while this file was being written, and the reason belongs in the open
  * because deleting vocabulary is the sort of edit a reviewer should not have to reverse-engineer: the

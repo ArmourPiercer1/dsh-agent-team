@@ -59,12 +59,30 @@ export declare function isReviewAssignmentFactType(factType: string): boolean;
 /**
  * Fold one case's assignment rows into a state view.
  *
- * The input is the case's ledger rows in durable sequence order, interleaved with every other family's
- * rows — exactly what `repositories.ledger.list()` yields — because that is the shape a caller can
- * produce without inventing a second index (the mistake PR3′'s §2 documents for wake slots). Rows of
- * other families, of other Teams and of other cases are ignored WITHOUT a diagnostic; a row of THIS
- * case's family that cannot be applied is a diagnostic, and any diagnostic marks the view
- * `unreconciled`.
+ * INPUT CONTRACT, rewritten after review (F-3) because the previous wording was false in both of its
+ * halves and the false half was the dangerous one. The fold is scoped by `(rootSessionId, approvalCaseId)`
+ * and it owns ONE fact family, so:
+ *
+ *  - Rows of OTHER FAMILIES are ignored without a diagnostic and do not participate in sequence ordering.
+ *    The ledger interleaves every family; a fold that reported the shape of the ledger it was handed
+ *    would report noise instead of its own state.
+ *  - Rows of THIS family belonging to ANOTHER CASE are also ignored without a diagnostic, and they do not
+ *    advance the sequence watermark either — order is a property of the rows a view is made of. Their epoch
+ *    chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they cannot corrupt
+ *    this view, and refusing them made the obvious reader fail closed: the natural durable reader is
+ *    "read `repositories.ledger.list()` for this opened team once, then fold per case", and the old
+ *    behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
+ *    `unreconciled` and therefore refusing every wake and every submit, everywhere, forever. A contract
+ *    that punishes the correct caller is not a safety property.
+ *  - Rows of THIS family belonging to ANOTHER TEAM are a diagnostic (`CROSS_TEAM_ROW`). This one cannot
+ *    happen by writing the reader correctly: `repositories.ledger` is the opened team's own ledger, so a
+ *    foreign root inside it means the caller folded a team's rows under another team's id — a scoping bug
+ *    that is worth a loud noise, not silence.
+ *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic
+ *    marks the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` on a
+ *    row of this family counts: it is diagnosed, not dropped (F-2 — the previous code `continue`d on a
+ *    broken sequence BEFORE the family check, so exactly the rows A-7 exists to protect were the ones that
+ *    vanished quietly).
  */
 export declare function foldReviewAssignmentRows(rows: Iterable<ReviewAssignmentRow>, rootSessionId: string, approvalCaseId: string): ReviewAssignmentState;
 /**
