@@ -42,12 +42,21 @@
  *     for the human on every kind, and `TeamRuntime: no member instance 'inst-nobody' … the caller is unknown` for
  *     an unknown one. The spec compares the allowed list the host PRINTED against both tables, so this module's
  *     mirror, the center's table, and the host must now move together or a leg reddens.
- *     Residual, at its real size: on that host the leader's mutation envelope does not admit `resolve-control`, so
- *     `leader-approval` and `envelope-mutation` were answered by the envelope gate BEFORE the closure and are
- *     recorded as not-reached; the closure is measured on one (kind × role) cell and mirrored on the others. A
- *     member caller has no public ingress on a host with no model. And a host that keeps the phrase in
- *     `service.ts` while moving the composition elsewhere still passes the WORDS pin — the LIVE pin covers the
- *     cells it ran, not the file layout.
+ *     Residual, at its real size (corrected 2026-10-31 by round 2 of #522, F-I1b2-2 — the sentence this one
+ *     replaces claimed the envelope gate "answered BEFORE the closure" and the two leader cells were recorded
+ *     not-reached, which the host source cited two lines above refutes): inside `resolveControl` the role
+ *     closure runs FIRST — `packages/runtime/control/service.ts:2619` "Role closure (BEFORE the envelope —
+ *     invariant 37: a member is never a resolver, even with the resolve-control op …)", closure check
+ *     :2622-2635, `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)` :2654 — so on `leader-approval` and
+ *     `envelope-mutation` the leader cells DID reach the closure and the closure AGREED with them; their
+ *     visible refusal (`TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS` on `resolve-control`) is thrown at the envelope
+ *     gate that runs after it, and the kit measures that order on every run rather than reciting it. Those two
+ *     cells are therefore positive live evidence of the closure's agreement, the refusal side of the closure is
+ *     measured on `user-approval|leader`, and the rest is mirrored. A member caller has no public ingress that
+ *     reaches the closure on a host with no model — measured, not asserted: the kit presents a member session
+ *     through the session-addressed carrier and records its `no live agent` refusal. And a host that keeps the
+ *     phrase in `service.ts` while moving the composition elsewhere still passes the WORDS pin — the LIVE pin
+ *     covers the cells it ran and the order it measured, not the file layout.
  *   - What this door does NOT do about the objects it is handed (round 1 of #522, F-I1b1-6/F-I1b1-7; each pinned
  *     by a leg, so a floor that moves has to be argued with): the `caller` argument is forwarded to
  *     `resolveCaller` EXACTLY as received — this module shape-checks nothing, while the screen that would

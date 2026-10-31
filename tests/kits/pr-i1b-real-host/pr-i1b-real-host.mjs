@@ -22,8 +22,10 @@
  *    REAL `resolveCaller` against REAL durable rows. PR-I2's feasibility report recorded the resolver-role
  *    matrix as "needs a member ask-lane tool use under a model"; for a LEADER caller that is not true — the
  *    boot root session is live with no model in the loop, which is why this arm runs here. A MEMBER caller has
- *    no ingress at all (no remote carrier accepts an identity; a `team_*` tool needs a live member agent), so
- *    the member row of the matrix stays unmeasured and the capture says so.
+ *    no ingress that reaches the closure — and the kit does not merely assert that (round 2, F-I1b2-3): it
+ *    ATTEMPTS the presentation through the only carrier on this host that can express an identity at all (the
+ *    session-addressed `/__p6t6/tool`, under a member session that has no live agent) and records the host's
+ *    verbatim refusal. The member row stays unmeasured at the closure; the refusal is measured.
  *  - `POST /__p6t6/control/mutate` — the creator of the durable requests both ingresses act on (the only
  *    public creator of a subject/coupling-bearing request on this host), and the seam that presents an EXPLICIT
  *    caller to the real `resolveCaller` for the arms no ingress reaches.
@@ -33,10 +35,17 @@
  *
  * WHAT LANDS IN EVIDENCE. `dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/`: a stamped directory
  * (verdict.json + the host's own log + MEASURED-LINES.txt) and a stable `capture.json`, which the spec reads.
- * Every cell records the host's verbatim code and message plus `reachedClosure` — whether that answer came
- * FROM the resolver-role closure or from an earlier gate. A cell that never reached the closure is recorded as
- * such and the spec refuses to read it as agreement, because a check that passes on a cell the host never
- * evaluated is the same mistake as a mutation that never ran.
+ * Every cell records the host's verbatim code and message plus `reachedClosure` and `closure`. `closure` is
+ * `refused-by-closure` when the closure's own words answered, `allowed` when a durable decision was written,
+ * `agreed-then-envelope-refused` when the VISIBLE refusal is the envelope gate's on `resolve-control`, and
+ * `unclassified` when no known gate spoke. Round 2 of #522 (F-I1b2-2) caught this lane publishing the reverse
+ * order for those envelope cells; the order is no longer asserted from prose — it is MEASURED on every run:
+ * the kit reads `packages/runtime/control/service.ts`, the source that was built into the row this run boots,
+ * and locates the role-closure check and `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)` inside `resolveControl`
+ * (the host's own comment calls it invariant 37). An envelope refusal that is visible there can only be thrown
+ * AFTER the closure ran and agreed with the caller, so `agreed-then-envelope-refused` is positive live evidence
+ * of the closure's agreement, not a missing measurement. An `unclassified` cell is evidence about nothing and
+ * the spec refuses to read it as anything.
  *
  * ENVIRONMENT. World = `tests/homes/<line>-<UTC>` (workspace-internal, TEST_METHODS §7), deleted at teardown
  * unless `--keep-world`. Port from the 318x family: 3080 and 3180 are never touched, every candidate is probed
@@ -112,6 +121,46 @@ const check = (id, ok, measured) => {
 }
 const gitOut = (args, cwd) => execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8' }).trim()
 const porcelainCount = (tree) => gitOut(['status', '--porcelain'], tree).split('\n').filter((l) => l !== '').length
+
+const SERVICE_TS = join(WORKTREE, 'packages', 'runtime', 'control', 'service.ts')
+/**
+ * THE GATE ORDER, measured every run (round 2 of #522, F-I1b2-2 — the lane may no longer state it either way
+ * from prose). Inside `resolveControl`, in the source that was built into the row this run boots:
+ *   - `const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]` + the CONTROL_RESOLVER_NOT_AUTHORIZED
+ *     throw  →  the role closure (host's own comment: "Role closure (BEFORE the envelope — invariant 37 …)");
+ *   - `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)`  →  the envelope gate (its refusal is the
+ *     `TeamRuntime: operation 'resolve-control' … outside the caller's mutation envelope` message from
+ *     admission/envelope.ts).
+ * This function reads the file, scopes to the `resolveControl` body, and MEASURES: exactly one closure marker,
+ * exactly one envelope call, the envelope call after the closure check, nothing envelope-shaped before it. When
+ * this holds, a cell whose visible refusal is the envelope gate's proves the closure RAN FIRST and AGREED.
+ * When it does not hold, envelope cells classify as `unclassified` and the run says so — fail-closed.
+ */
+function measureResolvePathGateOrder() {
+  const src = readFileSync(SERVICE_TS, 'utf8')
+  const fnStart = src.indexOf('async function resolveControl(')
+  const fnEnd = src.indexOf('async function commitAbandonmentFact(', fnStart + 1)
+  const body = fnStart >= 0 && fnEnd > fnStart ? src.slice(fnStart, fnEnd) : ''
+  const closureMarker = 'const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]'
+  const closureCount = body.split(closureMarker).length - 1
+  const envCalls = [...body.matchAll(/enforceEnvelope\(\s*RESOLVE_CONTROL_SPEC/g)].length
+  const anyEnforce = body.split('enforceEnvelope(').length - 1
+  const closureAt = body.indexOf(closureMarker)
+  const envAt = body.search(/enforceEnvelope\(\s*RESOLVE_CONTROL_SPEC/)
+  const ok = closureCount === 1 && envCalls === 1 && anyEnforce === 1
+    && closureAt >= 0 && envAt > closureAt
+    && !body.slice(0, closureAt).includes('enforceEnvelope(')
+  const lineOf = (idx) => src.slice(0, fnStart + idx).split('\n').length
+  return {
+    ok,
+    closureLine: closureAt >= 0 ? lineOf(closureAt) : null,
+    envelopeLine: envAt >= 0 ? lineOf(envAt) : null,
+    measured: `resolveControl in packages/runtime/control/service.ts: closure check :${closureAt >= 0 ? lineOf(closureAt) : '?'} `
+      + `precedes enforceEnvelope(RESOLVE_CONTROL_SPEC) :${envAt >= 0 ? lineOf(envAt) : '?'}, `
+      + `exactly one envelope call in the function and none before the closure check `
+      + `(closure markers=${closureCount}, envelope calls=${anyEnforce})`,
+  }
+}
 
 /**
  * Boot one world with the lane's built row and hand back its call seams. `extraConfig` is spliced into the row
@@ -250,6 +299,11 @@ async function main() {
   check('gate-303-and-cookie', host.authStatus === 303 && host.hasCookie,
     `GET /?token= -> ${host.authStatus}, cookie ${host.hasCookie ? 'issued' : 'ABSENT'}`)
 
+  // F-I1b2-2: the gate order this kit's cell classification depends on, measured from the row's own source
+  // before any cell is read. If this check fails, envelope-shaped answers classify as `unclassified` below.
+  const gateOrder = measureResolvePathGateOrder()
+  check('role-closure-precedes-envelope-on-resolve-path', gateOrder.ok, gateOrder.measured)
+
   // 1. The real `resolveCaller`, driven with an EXPLICIT caller against REAL durable rows. An unknown instance
   //    is refused by the host's own resolver, in the host's own words. Those words are what the injected port of
   //    `openAssignmentAdmission` is allowed to throw, and the spec compares them with what the SAME function
@@ -277,8 +331,19 @@ async function main() {
     }
   }
 
-  // 3. THE MEASUREMENT: every kind, resolved by every caller role this host can present.
-  const closureOf = (message) => String(message).includes('is not a resolver for kind') ? 'refused-by-closure' : 'not-refused-by-closure'
+  // 3. THE MEASUREMENT: every kind, resolved by every caller role this host can present. The visible answer
+  //    says WHICH gate spoke — the closure's own words, or the envelope gate's on `resolve-control` — and the
+  //    order measured above decides whether an envelope answer therefore PROVES the closure agreed.
+  const closureSaid = (message) => (String(message).includes('is not a resolver for kind') ? 'refused-by-closure' : null)
+  const envelopeOnResolveControl = (message) => /is outside the caller's mutation envelope/.test(String(message))
+    && String(message).includes("'resolve-control'")
+  const classifyCell = (message, resolved) => {
+    const byClosure = closureSaid(message)
+    if (byClosure !== null) return byClosure
+    if (resolved) return 'allowed'
+    if (envelopeOnResolveControl(message)) return gateOrder.ok ? 'agreed-then-envelope-refused' : 'unclassified'
+    return 'unclassified'
+  }
   const answers = {}
   const created = {}
   for (const kind of KINDS) {
@@ -300,12 +365,13 @@ async function main() {
     const leaderBody = leader.body?.value ?? leader.body ?? {}
     const leaderCode = leaderBody.code ?? (leaderBody.status === 'control-resolved' ? 'CONTROL_RESOLVED' : 'UNKNOWN')
     const leaderMessage = leaderBody.message ?? JSON.stringify(leaderBody).slice(0, 220)
+    const leaderClosure = classifyCell(leaderMessage, leaderCode === 'CONTROL_RESOLVED')
     answers[`${kind}|leader`] = {
       ingress: 'p6t6-tool:team_resolve_control', requestId: leaderRequest.requestId, status: leader.status,
       code: leaderCode, message: scrub(leaderMessage), sawRequestInPendingList: seenRow !== null,
-      reachedClosure: closureOf(leaderMessage) === 'refused-by-closure', closure: closureOf(leaderMessage),
+      reachedClosure: leaderClosure !== 'unclassified', closure: leaderClosure,
     }
-    log(`LEADER resolve ${kind} -> ${leader.status} ${leaderCode} [${closureOf(leaderMessage)}] :: ${scrub(leaderMessage).slice(0, 200)}`)
+    log(`LEADER resolve ${kind} -> ${leader.status} ${leaderCode} [${leaderClosure}] :: ${scrub(leaderMessage).slice(0, 200)}`)
 
     // (b) the HUMAN ingress — the frozen v4 wire, host-derived human principal.
     const humanRequest = await createRequest(kind, 'human')
@@ -318,10 +384,11 @@ async function main() {
     const humanError = human.body?.result?.ok === true ? null : (human.body?.result?.error ?? null)
     const humanCode = humanError?.code ?? 'CONTROL_RESOLVED'
     const humanMessage = humanError?.message ?? 'the durable decision was written'
+    const humanClosure = humanError === null ? 'allowed' : classifyCell(humanMessage, false)
     answers[`${kind}|human`] = {
       ingress: 'team-remote:team.resolveControl.v4', requestId: humanRequest.requestId, status: human.status,
-      code: humanCode, message: scrub(humanMessage), reachedClosure: closureOf(humanMessage) === 'refused-by-closure',
-      closure: humanError === null ? 'allowed' : closureOf(humanMessage),
+      code: humanCode, message: scrub(humanMessage), reachedClosure: humanClosure !== 'unclassified',
+      closure: humanClosure,
     }
     log(`HUMAN  resolve ${kind} -> ${human.status} ${humanCode} :: ${scrub(humanMessage).slice(0, 200)}`)
   }
@@ -337,13 +404,38 @@ async function main() {
     `leader -> ${ul?.code} "${String(ul?.message).slice(0, 150)}"; human -> ${uh?.code}`)
   for (const kind of ['leader-approval', 'envelope-mutation']) {
     const cell = answers[`${kind}|leader`]
-    check(`leader-cell-recorded-${kind}`, typeof cell?.code === 'string',
-      `leader -> ${cell?.code} closure=${cell?.closure} "${String(cell?.message).slice(0, 120)}" — ${cell?.reachedClosure ? 'the closure answered' : 'an earlier gate answered, so this cell is NOT evidence about the closure'}`)
+    const reading = cell?.closure === 'agreed-then-envelope-refused'
+      ? 'the closure ran FIRST and AGREED with the leader (invariant 37: closure before envelope, order measured this run) — the visible refusal is the envelope gate behind it; positive evidence, not a discarded cell'
+      : cell?.closure === 'allowed'
+        ? 'the closure let the leader resolve and the durable decision was written'
+        : cell?.closure === 'refused-by-closure'
+          ? 'the closure refused in its own words'
+          : 'UNCLASSIFIED — no known gate spoke, so this cell is evidence about nothing'
+    check(`leader-cell-recorded-${kind}`, typeof cell?.code === 'string' && cell?.closure !== 'unclassified',
+      `leader -> ${cell?.code} closure=${cell?.closure} "${String(cell?.message).slice(0, 120)}" — ${reading}`)
     check(`human-allowed-by-host-${kind}`, answers[`${kind}|human`]?.closure === 'allowed',
       `human -> ${answers[`${kind}|human`]?.code} "${String(answers[`${kind}|human`]?.message).slice(0, 120)}"`)
   }
-  check('member-role-has-no-ingress', true,
-    'no public carrier presents a MEMBER caller to the closure: /team-remote carries no identity (U3) and every team_* tool needs a live member agent. Recorded so the spec refuses to read the matrix as complete.')
+  // F-I1b2-3 (round 2 of #522): the member row used to be `check('member-role-has-no-ingress', true, …)` — a
+  // literal that cannot fail, counted inside a published verdict. The attempt is made for real now: the only
+  // carrier on this host that can express an identity at all is session-addressed (`/__p6t6/tool` resolves a
+  // LIVE agent for `as`); a member caller by definition needs a live member agent, and with no model in the
+  // loop there is none. Present the member session, measure the refusal, record it verbatim.
+  const MEMBER_SESSION = `session-a6pri1b-member-never-${RUN_STAMP}`
+  const memberAttempt = await host.tool('team_resolve_control', MEMBER_SESSION, {
+    rootSessionId: ROOT, requestId: answers['user-approval|leader']?.requestId ?? 'control-a6pri1b-never-created',
+    decision: 'allow', requestToken: 'a6pri1b-i1b-member-attempt', note: 'a6pri1b-i1b-member',
+  })
+  const memberAttemptRecord = {
+    ingress: 'p6t6-tool:team_resolve_control', as: MEMBER_SESSION, status: memberAttempt.status,
+    error: scrub(memberAttempt.body?.error ?? String(memberAttempt.text).slice(0, 200)),
+  }
+  log(`MEMBER attempt through the session-addressed carrier -> ${memberAttempt.status} ${scrub(memberAttemptRecord.error).slice(0, 170)}`)
+  const memberAbsentFromMatrix = !Object.keys(answers).some((key) => key.endsWith('|member'))
+  check('member-role-has-no-ingress',
+    memberAttempt.status === 422 && String(memberAttemptRecord.error).includes(`no live agent for '${MEMBER_SESSION}'`)
+      && memberAbsentFromMatrix,
+    `${memberAttempt.status} "${String(memberAttemptRecord.error).slice(0, 150)}" — the session-addressed carrier refuses the member session before the service is reached, and no member cell entered the matrix`)
 
   // 4. S-7 on a real host: what a NON-ENABLING team's durable world actually holds, after real durable writes.
   //    The census is taken with real rows in the ledger, so "zero review-assignment factTypes" is a measurement
@@ -366,6 +458,12 @@ async function main() {
   //    host directly: boot a SECOND world whose row config carries the feature under two plausible names, and
   //    see whether the host honours it. Honoured = the enabled arm is real and this lane's dormancy story needs
   //    re-reading. Ignored = the enabled arm has no host surface at all, which is what the lane claims.
+  //    F-I1b2-8 states the surface this probe actually walks: exactly the two field names `feature` and
+  //    `assignmentFeature`, plus the spec's regex over the 14 fields the row reports reading. A field named
+  //    otherwise that gated only assignment writes would be invisible here. The load-bearing claim is NOT
+  //    "the probe saw nothing" — it is structural and census-backed: `openAssignmentAdmission` has ZERO
+  //    callers in source and built dist, so no route exists from any host surface to the gate. The probe is
+  //    corroboration on the one channel a row gets; the census is the confirmation.
   const enableRoot = `session-a6pri1b-enable-root-${RUN_STAMP}`
   const enablePort = port + 100
   if (FORBIDDEN_PORTS.has(enablePort) || await portInUse(enablePort)) {
@@ -395,12 +493,14 @@ async function main() {
     kit: 'pr-i1b-real-host', runStamp: RUN_STAMP,
     laneHead, hostHead, hostBaselineSha: TEST_USE_BASELINE_SHA, clientCommitHash: CLIENT_COMMIT_HASH,
     hostPorcelainBefore, hostPorcelainAfter,
+    resolvePathOrder: gateOrder,
     row: ROW, p6t6Row: P6T6_ROW,
     worlds: KEEP_WORLD
       ? [teardown.home, enableTeardown.home]
       : [`${teardown.home} (deleted at teardown)`, `${enableTeardown.home} (deleted at teardown)`],
     ports: [port, enablePort], markers: [teardown.marker, enableTeardown.marker],
     rootSessionId: ROOT, unknownCaller: { code: unknownCode, message: scrub(unknownMessage) },
+    memberAttempt: memberAttemptRecord,
     rowConfigFields: Object.keys(host.rowConfig), created, answers,
     durableCensus: { entries: entries.length, factTypes },
     enableCensus: { entries: enableEntries.length, factTypes: enableFactTypes },

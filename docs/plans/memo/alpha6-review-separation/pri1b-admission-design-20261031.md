@@ -245,3 +245,38 @@ evidence for it"）。实现模块头 `packages/runtime/review-assignment/assign
 "The byte-identity of non-enabling teams is bound by DORMANCY"（§1 处，round 1 F-I1b1-2 的更正）与 ships dark =
 "the correct default-off"（BLOCKED-WIRING 处）；它**没有**逐字写"宿主无启用字段"。两句加一起语义完整，改不改代码
 归实现轮裁决，本 memo 只登记位置。
+
+**8）dated 2026-10-31（round 2 更正登记，本节第 6 点被其引用的宿主源反驳；旧句按只追加惯例保留，本条为准）。**
+
+- **F-I1b2-2（门序写反）。** 第 6 点「信封门先答…`reachedClosure:false`」与 `assignment-admission.ts` 旧 :46
+  「answered by the envelope gate BEFORE the closure」把顺序说反了。`control/service.ts` 的 `resolveControl`
+  实测：:2619 注释「Role closure (BEFORE the envelope — invariant 37: a member is never a resolver, even with
+  the resolve-control op …)」，闭包检查 :2622-2635（抛 `ControlService: role … is not a resolver for kind …`），
+  `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)` :2654-2656（函数内唯一一处 enforceEnvelope；其拒绝语
+  `TeamRuntime: operation 'resolve-control' … outside the caller's mutation envelope` 出自
+  `admission/envelope.ts:237`）；:2588 的 `resolveTeamAndTarget`（`admission/resolve.ts`）无信封门。捕获里
+  `user-approval|leader` 得到 `ControlService:` 前缀的闭包拒绝，证明同一 ingress 能走到达闭包——于是
+  `leader-approval|leader` 与 `envelope-mutation|leader` 两格**到达且被闭包放行**（闭包若拒绝会先用自己的话
+  回答），信封拒绝在其后，两格由「丢弃的下限声明」变为闭包**同意**的正向实测证据。仪器每轮量这个顺序
+  （check `role-closure-precedes-envelope-on-resolve-path`，行号入捕获 `resolvePathOrder`），两格改记
+  `closure:agreed-then-envelope-refused`、`reachedClosure:true`；spec 三处措辞与断言同轮翻转。
+- **F-I1b2-3（verdict 计数里第二个 cannot-fail 检查）。** `check('member-role-has-no-ingress', true, …)` 的字面
+  `true` 改为真实尝试：kit 经唯一带身份的载体（session-addressed `/__p6t6/tool`）呈报一个无 live agent 的
+  member 会话，量得宿主 `422 no live agent for 'session-a6pri1b-member-never-<stamp>'` 并逐字入捕获
+  （`memberAttempt`）。判决 token 由 `checks=22 failed=0` 变为 **`checks=23 failed=0`**（+1 = 门序测量检查；
+  member 检查从不可能失败变为可以失败）。本节第 5 点引用的旧 token 是其当时的真实值，其中一个成员不可能
+  失败——该事实由本条登记。
+- **F-I1b2-4/-5（降级臂重新划分）。** 规则改为：runtime 存在而捕获缺失 → 红并点名 kit 命令（此臂不变）；
+  runtime 缺失（捕获在与不在皆然）→ **记名、计数的拒绝**：7 条读捕获腿 `skipIf` 跳过、块标题携带
+  `REFUSED — pristine runtime absent` 状态、run 摘要打印
+  `real-host: 7 refused — pristine runtime absent; run … to materialize`——既不红也不绿；ENV-REFUSED 首腿只
+  断 `/srv` 基线缺失并逐路径打印状态（旧断言把 runtime/捕获在场钉死，使每个 fresh clone 的合法拒绝态读成
+  2 红）。`testHomes` 路径补了真断言（runtime 在场 ⇒ tests/homes 必在场）。
+- **F-I1b2-7（家族构成）。** 「a6 runtime 家族 12 文件」= 11 个 `packages/runtime/test/a6-*.test.ts` **加**
+  `packages/testkit/test/p4t6-session-event-scan.test.ts`（testkit，不是 runtime）；449 = 429（11 个 runtime
+  文件）+ 20。数字对，名目须按此写。
+- **F-I1b2-8（S-7 探针面）。** 第 2 点的「宿主侧不存在一个能把这个门打开的字段」按探测面收窄：探针只试了
+  `feature` 与 `assignmentFeature` 两个字段名，spec 的正则只扫 row 实读的 14 个字段；换名且只 gate 装配写的
+  字段对该探针不可见。承重事实是结构性的：**`openAssignmentAdmission` 在源码与 dist 里零 caller**（S-7 的
+  confirmed negative），故任何宿主表面都到不了这个门；探针是所驱动通道的佐证，普查才是确认。第 7 点引用的
+  spec 文件头逐字句同轮改写为按面陈述，不再是无条件全称句。

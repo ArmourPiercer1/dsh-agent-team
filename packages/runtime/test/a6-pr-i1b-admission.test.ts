@@ -35,21 +35,33 @@
  *    no review-assignment row. The REAL-HOST block below compares the allowed list the host PRINTED against both
  *    tables — `CONTROL_RESOLVER_ROLES` and this lane's mirror — so round 1's two-instrument sentence (VALUES plus
  *    the presence of two strings in `service.ts`, F-I1b1-3) is no longer the size of this file.
- *  - what that run still does not reach, stated at the size it has: two of the six cells never arrived at the
- *    closure, because the boot blueprint's leader envelope does not admit `resolve-control` and
- *    `TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS` answers first — the capture records those cells as not-reached and the
- *    leg refuses to read them as agreement, so the closure is MEASURED on one (kind × role) cell and mirrored on
- *    the rest; the MEMBER row has no ingress on a host with no model (no public carrier accepts an identity, and
- *    every `team_*` tool needs a live member agent — PR-I2's report says the same); and the door's own kind is
+ *  - what the run proved about the TWO GATES on the resolve path, corrected 2026-10-31 by round 2 of #522
+ *    (F-I1b2-2 — the sentence this one replaces claimed the envelope answered first and the two leader cells
+ *    "never arrived at the closure", which the module's own cited source refutes): the role closure runs
+ *    BEFORE the envelope inside `resolveControl` — `control/service.ts:2619` says "Role closure (BEFORE the
+ *    envelope — invariant 37 …)", the closure check is :2622-2635, `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)`
+ *    is :2654 — so the two leader cells `leader-approval|leader` and `envelope-mutation|leader` DID reach the
+ *    closure and the closure AGREED with them: their visible refusal (`TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS`
+ *    on `resolve-control`) is thrown after the closure, and the kit measures that order on every run
+ *    (check `role-closure-precedes-envelope-on-resolve-path`); the capture records those cells as
+ *    `closure: agreed-then-envelope-refused` and the leg reads them as the positive evidence they are;
+ *  - the MEMBER row has no ingress that reaches the closure — and that is measured, not asserted (round 2,
+ *    F-I1b2-3): the kit presents a member session through the only identity-expressing carrier the host has
+ *    (the session-addressed `/__p6t6/tool`) and records the host's `no live agent` refusal verbatim; no model
+ *    on this machine means no live member agent (PR-I2's report says the same); and the door's own kind is
  *    fixed to `leader-approval` by `ASSIGNMENT_DECISION_CONTROL_KIND`, so the cell where the host proved the
- *    closure bites is pinned host↔table, never host↔door. The D-10 mutation of the closure VALUES is measured
- *    here by running the mirror mutation (it reddens both the VALUES leg and the host-comparison leg) rather than
- *    by a file-mutation loop the memo assigns to the reviewer.
- *  - S-7's non-enabling half is on the same capture, including its enable surface: a SECOND world booted with
- *    `feature: 'on'` and `assignmentFeature: 'on'` in the row config accepted both keys, wrote durable rows, and
- *    produced the same fact types as the control world — there is no host field that turns this gate on, so the
- *    enabled arm S-7 asks about has no host surface to be measured on, and the dormancy legs are the binding
- *    evidence for it.
+ *    closure BITES (`user-approval|leader`) is pinned host↔table, never host↔door. The D-10 mutation of the
+ *    closure VALUES is measured here by running the mirror mutation (it reddens both the VALUES leg and the
+ *    host-comparison leg) rather than by a file-mutation loop the memo assigns to the reviewer.
+ *  - S-7's non-enabling half is on the same capture, including its enable surface — stated at the size of the
+ *    surface probed, not beyond it (round 2, F-I1b2-8): the probe put exactly two plausible names (`feature`,
+ *    `assignmentFeature`) into the row config, and this file's regex sweeps the 14 fields the row reports
+ *    reading; the host accepted both keys, wrote durable rows, and produced the same fact types as the control
+ *    world. A field named otherwise that gated only assignment writes would be invisible to that probe. The
+ *    conclusion does not rest on the probe: it is structural and census-backed — `openAssignmentAdmission`
+ *    has ZERO callers in source and built dist (S-7's confirmed negative), so no host surface reaches this
+ *    gate, the enabled arm S-7 asks about has no host surface to be measured on, and the dormancy legs are
+ *    the binding evidence for the disabled arm.
  *  - still refused, and refused by name below: anything that needs the shared read-only baseline
  *    `/srv/workspace/dsh-stable-3-0.2.0-rc.2`, which is absent on this machine (the pristine runtime and
  *    `tests/homes/` are NOT absent — the ENV-REFUSED leg measures each path separately, because asserting the old
@@ -62,10 +74,11 @@
  * passes for any `ADMISSION_*` code is a leg about a prefix, not about a refusal.
  */
 
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 
 import { LEADER_INSTANCE_ID, parseRootSessionId } from '../../contracts/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../storage/schema/stores.js'
@@ -1223,14 +1236,20 @@ describe('the disclosed floors of the injected ports, pinned as they ARE and not
  * `service.ts`, "not what the resolve path returns when a host actually runs it". These legs are that missing
  * sentence, read off a host that ran.
  *
- * Degradation is part of the design (lane rule: a leg that cannot run is refused by name, never skipped into
- * green and never a false red): every leg below first measures the environment it needs. If the pristine runtime
- * is absent, the block states its refusal and asserts the absence is real. If the runtime IS present and no
- * capture sits next to it, the leg is RED and names the command to run — a materialized runtime with no capture
- * is a gap, not an absence.
+ * Degradation is part of the design, and round 2 of #522 (F-I1b2-4) put each arm on its own footing:
+ *  - runtime materialized, capture absent → every capture-reading leg is RED and names the command to run: a
+ *    runnable instrument that was not run is a lane failure, not an absence (this arm was always right);
+ *  - runtime absent, capture present or not → a NAMED REFUSAL: the capture-reading legs SKIP, the block title
+ *    carries the refused state (a reader of the report never sees "measured" beside a leg that measured
+ *    nothing), and the run prints `real-host: N refused — pristine runtime absent; run … to materialize`.
+ *    A refusal is neither red nor green — this lane's law is ENV-REFUSED ≠ PASS — and a fresh clone without
+ *    the materialized runtime must not read as a failure either: round 1 had this arm right (a named, counted
+ *    refusal), the round-1 fix redened it, and round 2 put it back.
+ * The environment paths themselves stay measured per path, never assumed.
  */
 const REPO_ROOT = join(RUNTIME_ROOT, '..', '..')
-const CAPTURE_PATH = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'alpha6-pr-i1b-real-host', 'capture.json')
+const EVIDENCE_ROOT = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'alpha6-pr-i1b-real-host')
+const CAPTURE_PATH = join(EVIDENCE_ROOT, 'capture.json')
 const PRISTINE_HOST = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
 const TEST_HOMES = join(REPO_ROOT, 'tests', 'homes')
 const SHARED_BASELINE = '/srv/workspace/dsh-stable-3-0.2.0-rc.2'
@@ -1240,19 +1259,27 @@ interface RealHostCell {
   readonly code: string
   readonly message: string
   readonly reachedClosure: boolean
+  /**
+   * Which gate spoke: `refused-by-closure` (the closure's own words), `allowed` (durable decision written),
+   * `agreed-then-envelope-refused` (the closure ran first and agreed — the kit measured that order in the
+   * row's own source — and the envelope gate behind it threw the visible refusal), or `unclassified`.
+   */
   readonly closure: string
 }
 
 interface RealHostCapture {
   readonly kit: string
   readonly runStamp: string
+  readonly laneHead: string
   readonly hostHead: string
   readonly hostBaselineSha: string
   readonly hostPorcelainBefore: number
   readonly hostPorcelainAfter: number
+  readonly resolvePathOrder: { readonly ok: boolean; readonly closureLine: number | null; readonly envelopeLine: number | null; readonly measured: string }
   readonly rootSessionId: string
   readonly rowConfigFields: readonly string[]
   readonly unknownCaller: { readonly code: string; readonly message: string }
+  readonly memberAttempt: { readonly ingress: string; readonly as: string; readonly status: number; readonly error: string }
   readonly answers: Record<string, RealHostCell>
   readonly durableCensus: { readonly entries: number; readonly factTypes: readonly string[] }
   readonly enableCensus: { readonly entries: number; readonly factTypes: readonly string[] }
@@ -1266,44 +1293,109 @@ const hostEnvironment = {
   capture: existsSync(CAPTURE_PATH),
 }
 
+// The three arms (F-I1b2-4): refused (no runtime — capture or not), unrun instrument (runtime, no capture),
+// measured. The block title carries the state so a leg that measures nothing can never read as a measurement.
+const REAL_HOST_REFUSED = !hostEnvironment.pristineRuntime
+const REAL_HOST_STATE = !hostEnvironment.pristineRuntime
+  ? 'REFUSED — pristine runtime absent; the capture legs below are SKIPPED, not passed'
+  : !hostEnvironment.capture
+    ? 'UNRUN INSTRUMENT — runtime materialized, capture missing; every capture leg is RED'
+    : 'measured'
+
+const gitIn = (dir: string, args: readonly string[]): string => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' }).trim()
+const gitOkIn = (dir: string, args: readonly string[]): boolean => {
+  try {
+    gitIn(dir, args)
+    return true
+  } catch {
+    return false
+  }
+}
+const porcelainCount = (tree: string): number => gitIn(tree, ['status', '--porcelain']).split('\n').filter((line) => line !== '').length
+
 /**
- * Read the capture, or return null AFTER the leg has stated its refusal. Two states are legal and one is a
- * failure: (a) no pristine runtime — the host cannot run here, so the legs below are refused by name; (b) a
- * capture exists — the legs measure it; (c) a runtime with no capture — RED, because the instrument exists and
- * has not been run.
+ * Read the capture and bind it to the host that produced it, or return null AFTER the leg has stated its
+ * refusal. The arms: (a) no pristine runtime — unreachable from here, the capture legs skip and the block
+ * prints its counted refusal (a capture sitting in a clone with no runtime proves nothing and measures
+ * nothing — F-I1b2-1 refuses to read it as evidence); (b) runtime present, no capture — RED naming the kit
+ * command; (c) runtime + capture — the legs measure it, and reading it RE-MEASURES the machine: the runtime's
+ * live HEAD and porcelain must equal what the capture recorded, the stamped evidence directory it names must
+ * exist with its `verdict.json` and `MEASURED-LINES.txt`, and its `laneHead` must be a real ancestor commit
+ * of this repository. A whole-file fabrication (right shape, no host behind it) reddens here by name.
  */
 function readRealHostCapture(): RealHostCapture | null {
-  if (hostEnvironment.capture) {
-    const capture = JSON.parse(readFileSync(CAPTURE_PATH, 'utf8')) as RealHostCapture
-    expect(capture.kit, 'the capture next to this file was not written by the PR-I1b real-host instrument').toBe('pr-i1b-real-host')
-    // A capture off the pinned baseline measures a different host; the comparison below would be a lie.
-    expect(capture.hostBaselineSha, 'the capture was taken against a host baseline other than the pin this lane tests').toBe(TEST_USE_BASELINE_SHA)
-    expect(capture.hostPorcelainBefore, 'the capture was taken with a dirty pristine host tree — CORE PATCH BUDGET = 0').toBe(0)
-    expect(capture.hostPorcelainAfter, 'the real-host run left bytes in the pristine host tree').toBe(0)
-    expect(capture.checks.filter((c) => !c.ok).map((c) => c.id), 'the capture records failed checks').toEqual([])
-    return capture
-  }
+  expect(REAL_HOST_REFUSED, 'a real-host capture leg ran with no pristine runtime — the refusal gate is broken').toBe(false)
   expect(
-    hostEnvironment.pristineRuntime,
-    'ENV-REFUSED only where the environment is truly absent: the pristine runtime IS materialized at '
+    hostEnvironment.capture,
+    'the pristine runtime IS materialized at '
       + `${PRISTINE_HOST} but no real-host capture exists — run \`node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs\` `
       + 'and commit the capture it writes. A runtime with no capture is an unrun instrument, not a refused leg.',
-  ).toBe(false)
-  return null
+  ).toBe(true)
+  const capture = JSON.parse(readFileSync(CAPTURE_PATH, 'utf8')) as RealHostCapture
+  expect(capture.kit, 'the capture next to this file was not written by the PR-I1b real-host instrument').toBe('pr-i1b-real-host')
+  // A capture off the pinned baseline measures a different host; the comparison below would be a lie.
+  expect(capture.hostBaselineSha, 'the capture was taken against a host baseline other than the pin this lane tests').toBe(TEST_USE_BASELINE_SHA)
+  expect(capture.hostPorcelainBefore, 'the capture was taken with a dirty pristine host tree — CORE PATCH BUDGET = 0').toBe(0)
+  expect(capture.hostPorcelainAfter, 'the real-host run left bytes in the pristine host tree').toBe(0)
+  expect(capture.checks.filter((c) => !c.ok).map((c) => c.id), 'the capture records failed checks').toEqual([])
+  // F-I1b2-1: the runtime is HERE, so bind the capture to it instead of trusting a file. Re-measure HEAD and
+  // porcelain of the very tree the kit booted; require the stamped evidence directory the capture names to
+  // exist with the two files that make the verdict; and bind `laneHead` to this repository's real history.
+  expect(gitIn(PRISTINE_HOST, ['rev-parse', 'HEAD']),
+    'the pristine runtime is no longer at the HEAD this capture recorded — the capture describes a different tree than the one that exists').toBe(capture.hostHead)
+  expect(porcelainCount(PRISTINE_HOST),
+    'the pristine runtime tree is dirty NOW — whatever this capture measured, the tree it measured has been written to since').toBe(capture.hostPorcelainBefore)
+  expect(existsSync(join(EVIDENCE_ROOT, capture.runStamp, 'verdict.json')),
+    `the stamped evidence directory the capture names (${EVIDENCE_ROOT}/${capture.runStamp}) has no verdict.json — this capture is not bound to an evidence set that exists`).toBe(true)
+  expect(existsSync(join(EVIDENCE_ROOT, capture.runStamp, 'MEASURED-LINES.txt')),
+    `the stamped evidence directory the capture names (${capture.runStamp}) has no MEASURED-LINES.txt — the verdict has no measured lines behind it`).toBe(true)
+  expect(gitOkIn(REPO_ROOT, ['cat-file', '-e', `${capture.laneHead}^{commit}`]),
+    `capture.laneHead (${capture.laneHead}) is not a commit in this repository — a capture must name a lane head that existed`).toBe(true)
+  expect(gitOkIn(REPO_ROOT, ['merge-base', '--is-ancestor', capture.laneHead, 'HEAD']),
+    `capture.laneHead (${capture.laneHead}) is not an ancestor of this checkout — the capture claims a commit outside this branch's history`).toBe(true)
+  // The kit measured the gate order in the row's source; a cell recorded as agreed-then-envelope-refused
+  // carries the envelope gate's code, whatever else a fabrication might write into it (F-I1b2-1's C12).
+  expect(capture.resolvePathOrder?.ok, 'the capture did not measure the gate order — the agreement reading in the legs below would rest on prose').toBe(true)
+  for (const [key, cell] of Object.entries(capture.answers)) {
+    if (cell.closure === 'agreed-then-envelope-refused') {
+      expect(cell.code, `cell ${key} is recorded as envelope-refused but carries ${cell.code}`).toBe('TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS')
+    }
+  }
+  return capture
 }
 
-describe('REAL-HOST (measured): the resolve path answers the closure the way this lane mirrors it', () => {
+/** Counted by the refusal line the block prints when the runtime is absent — the count is measured, not typed. */
+let realHostCaptureLegs = 0
+const itRealHost = (title: string, fn: () => void | Promise<void>): void => {
+  realHostCaptureLegs += 1
+  it.skipIf(REAL_HOST_REFUSED)(title, fn)
+}
+
+describe(`REAL-HOST (${REAL_HOST_STATE}): the resolve path answers the closure the way this lane mirrors it`, () => {
+  afterAll(() => {
+    if (REAL_HOST_REFUSED) {
+      console.info(`real-host: ${realHostCaptureLegs} refused — pristine runtime absent; run the TEST_METHODS §2 recipe `
+        + `(clone tests/deepseek-harness-test-use --local --no-hardlinks, detach ${TEST_USE_BASELINE_SHA}, install, build) to materialize it. `
+        + 'Refused is not passed; this line is the refusal, printed and counted.')
+    }
+  })
+
   it('the environment each real-host leg needs is measured per path, not assumed', () => {
-    // The block above this one used to assert all three absences as the reason the legs could not run. That
-    // sentence is now false on this machine and saying it would launder a runnable leg into a refused one, so
-    // each path is measured on its own and the capture, not this file, decides which legs speak.
-    expect(hostEnvironment.pristineRuntime || !hostEnvironment.capture, 'a capture exists with no pristine runtime beside it').toBe(true)
+    // The block above this one used to assert all three absences as the reason the legs could not run. Two of
+    // them are false on this machine and asserting them would launder the arms into each other, so each path
+    // is measured on its own and printed; the arm (refused / unrun / measured) is in the block title.
+    console.info(`real-host environment: pristineRuntime=${hostEnvironment.pristineRuntime} testHomes=${hostEnvironment.testHomes} `
+      + `capture=${hostEnvironment.capture} sharedBaseline=${hostEnvironment.sharedBaseline}`)
+    // F-I1b2-5: the homes path is COMPUTED and CHECKED here — where the runtime exists, the kit's worlds live
+    // in tests/homes (workspace-internal, TEST_METHODS §7); where it does not, the path is reported above.
+    expect(!hostEnvironment.pristineRuntime || hostEnvironment.testHomes,
+      'the pristine runtime is materialized but tests/homes/ is not — every kit world is workspace-internal (TEST_METHODS §7); re-read the recipe before trusting a capture').toBe(true)
     // The shared read-only baseline is still absent here — recorded because the §2 recipe clones from it when
     // present and from the local checkout when not, and the capture does not care which.
     expect(hostEnvironment.sharedBaseline, '/srv/workspace/dsh-stable-3-0.2.0-rc.2 reappeared: re-read TEST_METHODS §2 before trusting the clone recipe').toBe(false)
   })
 
-  it('the host refused an unknown caller through the real resolver, and the SAME function says the SAME sentence in-process', async () => {
+  itRealHost('the host refused an unknown caller through the real resolver, and the SAME function says the SAME sentence in-process', async () => {
     const capture = readRealHostCapture()
     if (capture === null) return
     expect(capture.unknownCaller.code, `the host answered the unknown caller with ${capture.unknownCaller.code}`).toBe('TEAM_RUNTIME_CALLER_NOT_FOUND')
@@ -1322,16 +1414,17 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
       'the host\'s refusal sentence and the sentence the injected port\'s own function produces are no longer the same sentence').toBe(inProcess)
   })
 
-  it('every cell where the host reached the closure prints the allowed list this mirror carries — both directions', () => {
+  itRealHost('every cell that reached the closure speaks for it — refusals print the allowed list, agreements prove the role is in it', () => {
     const capture = readRealHostCapture()
     if (capture === null) return
-    const reached = Object.entries(capture.answers).filter(([, cell]) => cell.reachedClosure)
-    const allowed = Object.entries(capture.answers).filter(([, cell]) => cell.closure === 'allowed')
+    const refusedCells = Object.entries(capture.answers).filter(([, cell]) => cell.closure === 'refused-by-closure')
+    const allowedCells = Object.entries(capture.answers).filter(([, cell]) => cell.closure === 'allowed')
+    const agreedCells = Object.entries(capture.answers).filter(([, cell]) => cell.closure === 'agreed-then-envelope-refused')
     // Anti-vacuity first: a comparison over zero cells would pass and mean nothing. Round 1's weak pin was weak
     // precisely because it could not fail, so the count is part of the assertion.
-    expect(reached.length, 'no captured cell reached the resolver-role closure — this comparison would be vacuous').toBeGreaterThan(0)
-    expect(allowed.length, 'no captured cell shows a role the host let resolve — the mirror\'s positive half is unmeasured').toBeGreaterThan(0)
-    for (const [key, cell] of reached) {
+    expect(refusedCells.length, 'no captured cell shows the closure refusing — this comparison would be vacuous').toBeGreaterThan(0)
+    expect(allowedCells.length, 'no captured cell shows a role the host let resolve — the mirror\'s positive half is unmeasured').toBeGreaterThan(0)
+    for (const [key, cell] of refusedCells) {
       const kind = key.split('|')[0] as string
       const role = key.split('|')[1] as string
       const printed = /allowed: \[([^\]]*)\]/.exec(cell.message)?.[1] ?? null
@@ -1346,7 +1439,7 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
       expect(seen, `the live host and this lane's ASSIGNMENT_ADMISSION_ROLE_CLOSURE disagree about who resolves '${kind}'`).toEqual(mirror)
       expect(mirror, `the host refused role '${role}' for '${kind}' while this lane lists it as a resolver`).not.toContain(role)
     }
-    for (const [key, cell] of allowed) {
+    for (const [key, cell] of allowedCells) {
       const kind = key.split('|')[0] as string
       const role = key.split('|')[1] as string
       const control = (CONTROL_RESOLVER_ROLES as Record<string, readonly string[]>)[kind] ?? []
@@ -1355,27 +1448,53 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
       expect(mirror, `the live host let role '${role}' resolve '${kind}', which this lane's mirror does not name`).toContain(role)
       expect(cell.code).toBe('CONTROL_RESOLVED')
     }
-    // The cells that never reached the closure are counted, not counted as agreement: on this host the boot
-    // blueprint's leader envelope does not admit `resolve-control`, so an earlier gate answers for the leader on
-    // two of the three kinds and the capture says so in its own words.
-    const gated = Object.entries(capture.answers).filter(([, cell]) => !cell.reachedClosure && cell.closure !== 'allowed')
-    for (const [, cell] of gated) {
-      expect(cell.message, 'a cell recorded as not reaching the closure is worded like a closure refusal').not.toContain('is not a resolver for kind')
+    // The agreement half, MEASURED (F-I1b2-2, 2026-10-31). These cells show the closure AGREEING with a leader
+    // caller: the kit measured (check `role-closure-precedes-envelope-on-resolve-path`, recorded in
+    // `resolvePathOrder`) that inside `resolveControl` the closure check runs before
+    // `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)`, so a visible envelope refusal — thrown at the envelope gate,
+    // the ONLY envelope call in the function — is only reachable if the closure let that caller through. If a
+    // table dropped this role the closure would have refused in its own words and this cell would read
+    // `refused-by-closure`; the tables and the live agreement therefore pin each other from both sides.
+    expect(capture.resolvePathOrder?.measured, 'the capture did not record the measured gate order').toBeTruthy()
+    for (const [key, cell] of agreedCells) {
+      const kind = key.split('|')[0] as string
+      const role = key.split('|')[1] as string
+      expect(cell.code, `cell ${key} is recorded as envelope-refused but carries ${cell.code}`).toBe('TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS')
+      expect(cell.message, `cell ${key}'s envelope refusal does not name the resolve-control action: ${cell.message}`).toContain('resolve-control')
+      const control = (CONTROL_RESOLVER_ROLES as Record<string, readonly string[]>)[kind] ?? []
+      const mirror = ASSIGNMENT_ADMISSION_ROLE_CLOSURE[kind] ?? []
+      expect(control, `the live closure agreed with role '${role}' for '${kind}' while CONTROL_RESOLVER_ROLES does not name it — the table contradicts the host's agreement`).toContain(role)
+      expect(mirror, `the live closure agreed with role '${role}' for '${kind}' while this lane's mirror does not name it — the mirror contradicts the host's agreement`).toContain(role)
     }
-    expect(gated.map(([key]) => key).sort(), 'which leader cells the envelope gate answered is part of the record').toEqual(['envelope-mutation|leader', 'leader-approval|leader'])
+    expect(agreedCells.map(([key]) => key).sort(), 'which leader cells the closure AGREED with is part of the record').toEqual(['envelope-mutation|leader', 'leader-approval|leader'])
+    // No cell may hide outside the three shapes: the resolve path runs the closure first for every caller, so
+    // a cell recorded as never reaching it means the capture predates the F-I1b2-2 fix — or was fabricated.
+    const unclassified = Object.entries(capture.answers).filter(([, cell]) => !cell.reachedClosure)
+    expect(unclassified.map(([key]) => key).sort(), 'a captured cell is recorded as never reaching the closure — the resolve path runs the closure first, so this capture is stale or fabricated').toEqual([])
   })
 
-  it('the member row of the matrix has no ingress on this host, and the capture does not pretend otherwise', () => {
+  itRealHost('the member row of the matrix has no ingress on this host — the kit attempted it and the host refused, verbatim', () => {
     const capture = readRealHostCapture()
     if (capture === null) return
     const roles = new Set(Object.keys(capture.answers).map((key) => key.split('|')[1] as string))
     expect([...roles].sort(), 'a caller role appeared that this instrument cannot present — re-read its header before trusting the matrix').toEqual(['human', 'leader'])
-    const memberCellIds = capture.checks.filter((c) => c.id === 'member-role-has-no-ingress')
-    expect(memberCellIds.length, 'the instrument stopped recording why the member row is unmeasured').toBe(1)
-    expect(memberCellIds[0]?.ok).toBe(true)
+    expect(Object.keys(capture.answers).filter((key) => key.endsWith('|member')),
+      'a member caller appeared on a host with no model — re-read what this instrument can present').toEqual([])
+    // F-I1b2-3: the check this leg reads is a measurement now, not a literal. The kit PRESENTED a member
+    // session through the only carrier on this host that expresses an identity (session-addressed
+    // `/__p6t6/tool`) and recorded the refusal; if the carrier ever honours a session with no live agent, or
+    // the capture stops recording the attempt, this leg reddens.
+    const attempt = capture.memberAttempt
+    expect(attempt, 'the capture stopped recording the member attempt — the member row would be an assertion again, not a measurement').not.toBeNull()
+    expect(attempt.as, `the member attempt addressed ${attempt.as}, not a never-created member session`).toMatch(/^session-a6pri1b-member-never/)
+    expect(attempt.status, `the session-addressed carrier did not refuse the member session (${attempt.status} ${attempt.error})`).toBe(422)
+    expect(attempt.error, `the member refusal is no longer the carrier's own "no live agent" sentence: ${attempt.error}`).toContain('no live agent for')
+    const memberCheck = capture.checks.filter((c) => c.id === 'member-role-has-no-ingress')
+    expect(memberCheck.length, 'the instrument stopped recording the member attempt as a check').toBe(1)
+    expect(memberCheck[0]?.ok, `the member attempt itself failed: ${memberCheck[0]?.measured ?? ''}`).toBe(true)
   })
 
-  it('the host\'s own refusal sentence, thrown through the injected port, arrives verbatim at the door', async () => {
+  itRealHost('the host\'s own refusal sentence, thrown through the injected port, arrives verbatim at the door', async () => {
     const capture = readRealHostCapture()
     if (capture === null) return
     const w = await world()
@@ -1399,23 +1518,25 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
     expect(outcome.detail, 'the door dropped the host\'s own code from the words it carries').toContain(capture.unknownCaller.code)
   })
 
-  it('the door and the live host answer the cell both of them can reach the same way', async () => {
+  itRealHost('the door and the live host answer the cell both of them can reach the same way', async () => {
     const capture = readRealHostCapture()
     if (capture === null) return
     const w = await world()
-    // Every assignment decision resolves under `leader-approval` (ASSIGNMENT_DECISION_CONTROL_KIND), and the only
-    // caller role the host presented that this kind admits is the human. On that cell both systems speak: the
-    // host wrote a durable decision, the door admits. The leader cell of the same kind is NOT comparable — the
-    // host's envelope gate answered before the closure — and this leg says so instead of inheriting a pass.
+    // Every assignment decision resolves under `leader-approval` (ASSIGNMENT_DECISION_CONTROL_KIND), and the
+    // human cell is one both systems answer end-to-end: the host wrote a durable decision, the door admits.
+    // The leader cell of the same kind is comparable at the CLOSURE and not beyond it — the host's envelope
+    // gate runs AFTER the closure (invariant 37, order measured by the kit) and refuses the visible answer,
+    // and the door owns no envelope; the closure halves agree, which is what this leg reads.
     const hostCell = capture.answers['leader-approval|human']
     expect(hostCell?.code, `the host answered leader-approval|human with ${hostCell?.code}`).toBe('CONTROL_RESOLVED')
     const door = await w.admit(w.request({}), HUMAN_CALLER)
     expect(door.ok, `the door refused the caller the live host accepted: ${door.ok ? '' : `${door.refusal} ${door.detail}`}`).toBe(true)
     const leaderCell = capture.answers['leader-approval|leader']
-    expect(leaderCell?.reachedClosure, 'the leader cell reached the closure on this host — this leg\'s stated asymmetry is stale, re-read the capture').toBe(false)
+    expect(leaderCell?.reachedClosure, 'the leader cell did NOT reach the closure on this host — the resolve path runs the closure first; re-read the capture and the kit').toBe(true)
+    expect(leaderCell?.closure, 'the leader cell is no longer recorded as agreed-then-envelope-refused — re-read this leg and the kit\'s classification before trusting the door↔host story').toBe('agreed-then-envelope-refused')
   })
 
-  it('S-7 on a real host: a real Team with real durable writes carries zero review-assignment bytes', () => {
+  itRealHost('S-7 on a real host: a real Team with real durable writes carries zero review-assignment bytes', () => {
     const capture = readRealHostCapture()
     if (capture === null) return
     // The census is taken AFTER six durable control writes landed, so "zero" is a measurement over a populated
@@ -1428,9 +1549,13 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
       'the enable-probe world wrote review-assignment rows').toEqual([])
   })
 
-  it('the enable arm of S-7 has no host surface: the row config names no such field and the host ignored the ones the probe sent', () => {
+  itRealHost('the enable arm of S-7 has no surface on the probed channel: the row config names no such field and the host ignored the two the probe sent', () => {
     const capture = readRealHostCapture()
     if (capture === null) return
+    // F-I1b2-8 at its size: this leg sweeps the 14 fields the row reports reading with /feature|admission|
+    // assignment/i and re-boots with exactly the two names `feature` and `assignmentFeature`. The load-
+    // bearing fact is elsewhere and it is census-backed: `openAssignmentAdmission` has zero callers in source
+    // and built dist, so there is no route from any host surface to this gate (S-7's confirmed negative).
     const named = capture.rowConfigFields.filter((field) => /feature|admission|assignment/i.test(field))
     expect(named, `the row config now carries a field that could enable this lane's gate: ${named.join(', ')}`).toEqual([])
     // The probe put `feature: 'on'` and `assignmentFeature: 'on'` into the config anyway. The row booted, took a
@@ -1444,26 +1569,24 @@ describe('REAL-HOST (measured): the resolve path answers the closure the way thi
 // --- ENV-REFUSED (measured absences; nothing below is offered as a pass) ------------------------------------------
 
 describe('ENV-REFUSED: the host-side legs still refused on this machine, recorded as refused', () => {
-  it('the shared read-only baseline is absent — measured; the pristine runtime and the test homes are NOT', () => {
-    // Round 1 refused the real-host pair on three absences. Two of the three are now false here: the pristine
-    // runtime is materialized at `tests/deepseek-harness-test-use` (detached at the pin, gitignored, its own git
-    // tree) and `tests/homes/` exists, because `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` ran and the
-    // REAL-HOST block above reads what it measured. Asserting those absences would have hidden the legs that now
-    // run, so they are measured individually and only the true absence is kept.
-    expect(hostEnvironment.pristineRuntime, 'the pristine runtime disappeared — re-run the §2 recipe before reading the REAL-HOST block as passed').toBe(true)
-    expect(hostEnvironment.capture, 'the runtime is here but its capture is not: run node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs').toBe(true)
+  it('the shared read-only baseline is absent — measured; the runtime, the homes and the capture are printed per path, not assumed', () => {
+    // Round 1 refused the real-host pair on three absences. Two of the three became false on this machine
+    // (the kit ran here), and round 2 (F-I1b2-4) found that asserting "runtime present, capture present"
+    // here made the FRESH-CLONE state — where refusing is the correct behaviour — read as a failure. So this
+    // leg keeps the one true machine-wide absence and PRINTS the per-path state; the REAL-HOST block's own
+    // arm (refused / unrun / measured) decides what those paths mean, and this leg says the same sentence in
+    // every arm.
+    console.info(`env paths: pristineRuntime=${hostEnvironment.pristineRuntime} testHomes=${hostEnvironment.testHomes} `
+      + `capture=${hostEnvironment.capture} sharedBaseline=${hostEnvironment.sharedBaseline}`)
     expect(hostEnvironment.sharedBaseline, '/srv/workspace/dsh-stable-3-0.2.0-rc.2 appeared on this machine').toBe(false)
   })
 
   it('the legs no host on this machine can evidence stay refused, by name', () => {
-    // The member row of `CONTROL_RESOLVER_ROLES`: presenting a MEMBER caller needs a live member agent, i.e. a
+    // The member row of `CONTROL_RESOLVER_ROLES`: acting as a MEMBER caller needs a live member agent, i.e. a
     // model turn (PR-I2's feasibility report says the same: "needs a member ask-lane tool use under a model").
-    // No public seam accepts an identity, so no instrument in this lane can put a member in front of the
-    // closure. This sentence is the record; the capture's `member-role-has-no-ingress` check is its twin.
-    const capture = readRealHostCapture()
-    if (capture === null) return
-    const memberKeys = Object.keys(capture.answers).filter((key) => key.endsWith('|member'))
-    expect(memberKeys, 'a member caller appeared on a host with no model — re-read what this instrument can present').toEqual([])
+    // The instrument attempts the presentation and the session-addressed carrier refuses it — that measured
+    // twin lives in the REAL-HOST member leg (`member-role-has-no-ingress` + the recorded 422), so this
+    // sentence stays true in every arm: hidden runtime, present runtime, or unrun instrument.
     // The second one: the door's own kind is fixed by ASSIGNMENT_DECISION_CONTROL_KIND to `leader-approval` for
     // every decision, so the door can never be asked about `user-approval` — the cell where the host proved the
     // closure bites is a cell the door cannot be walked to on purpose. It is pinned mirror↔host, not door↔host.
