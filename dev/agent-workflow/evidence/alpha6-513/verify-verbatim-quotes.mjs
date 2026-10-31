@@ -130,6 +130,13 @@ const PINNED_SCRATCH_POINTERS = [
     sha256: '165093eb9530101562352128cf0bc620d837e2de7a289c17b703849c7d118251', scope: 'window',
     reason: 'the round-5 entry describing the detector pattern it just widened; a mention, not a designation',
   },
+  {
+    // The round-6 entry describing this detector's own normalisation rule. The window rule caught it the moment it
+    // was written, and the honest answer to that is a pin with a reason — not rewording the sentence so the
+    // detector stops seeing it. Accepted while in the window; a mention of the directory, not a designation.
+    sha256: '0a6f721b763941538c89f8725fcd51eded420a60bafba24394cf1ea9a202e728', scope: 'window',
+    reason: 'the round-6 entry explaining zero-width normalisation; naming the directory is the subject, not a store',
+  },
 ]
 
 /** Read a tracked file relative to the repo root, failing closed. */
