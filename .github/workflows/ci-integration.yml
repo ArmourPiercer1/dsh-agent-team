@@ -209,23 +209,28 @@ jobs:
         # CI_LAYER_LEG_WEAKENED. New files in this family join this step AND the manifest leg.
         run: node --test packages/runtime/root-binding/harness/bounded-run.regression.test.mjs scripts/sanitize-evidence.regression.test.mjs tests/evidence-store/evidence-store.test.mjs
 
-      - name: "Fetch master as refs/remotes/origin/master (history pins below resolve through it)"
-        # a5w-collect CI-reality correction (2026-10-31, dated): the FIRST real CI run of the
-        # s2-authority step failed C10 — `git show 5f0d0e58…` and origin/master were
-        # unresolvable DESPITE fetch-depth: 0. Ground truth: for pull_request events the
-        # checkout lands on refs/pull/N/merge and does NOT create refs/remotes/origin/master,
-        # and the fetched closure lacked the older pinned blobs (reproduced exactly on a
-        # throwaway clone of the merge ref: same 'FAIL C10: Command failed: git show
-        # 5f0d0e58…'; after the fetch below: green). This step guarantees both halves the
-        # suites assume: full master history AND the remote-tracking ref itself. Single
-        # simple command (eb3-ci-required rejects ||-grouping): --unshallow is right for the
-        # merge-ref checkout, which IS shallow (a fetch-depth: 0 PR-merge checkout still
-        # lacked ancestor commits — cat-file 'could not get object info' on reachable
-        # ancestors is the shallow symptom; the local reproduction is shallow the same way).
-        # Should GitHub ever ship a complete merge checkout, this step fails LOUD and gets
-        # the --unshallow dropped — no silent wrong grading. Dropping the step is
-        # CI_LAYER_LEG_MISSING and re-reds the s2 step — self-enforcing either way.
-        run: git fetch --no-tags --unshallow origin master:refs/remotes/origin/master
+      - name: "Fetch master (history pins below resolve through it; shape-agnostic)"
+        # a5w-collect CI-reality correction, TWO corrections deep (dated): run 1 (head
+        # c1c47652c) failed exactly s2 C10 with structure_same=false, and its log shows the
+        # NEW-code cited-paths/merged-claim legs seeing cat-file failures on history objects
+        # (9b2ee57 / 5f0d0e58 / origin/master unresolvable) — a checkout MISSING history;
+        # the 5f0d0e58 baseline predates those legs, so OLD vs NEW diverge exactly there
+        # while rendered bytes stay equal. Run 2 (head e03dc212b) proved the opposite shape:
+        # the same fetch-depth: 0 job reported 'fatal: --unshallow on a complete repository
+        # does not make sense' — a checkout with FULL history and no step needed. Same
+        # workflow, two GitHub runs, two shapes: the fetch must be shape-agnostic. Guard
+        # form (undeclared helper like the event/two-parent guards above): shallow ⇒
+        # --unshallow fetch (refspec also creates the ref); complete ⇒ plain fetch creates
+        # refs/remotes/origin/master; the || fallback also covers a failed unshallow.
+        # Removing this helper re-exposes whichever shape CI ships that day — s2 then fails
+        # LOUD (measured, run 1), so enforcement survives without a manifest token
+        # (||/&& grouping cannot be graded as a leg: CI_LAYER_LEG_UNPROVEN seen verbatim).
+        # Local evidence closing the old misreading: probe-candidate on a complete repo
+        # prints ZERO 9b2ee57 fatals, and 5x7-file parallel local runs show no C10 flip —
+        # the run-1 fatals were real missing-history symptoms, not noise, and there is no
+        # measurable cross-file race; scheduling was NOT touched.
+        run: >-
+          [ "$(git rev-parse --is-shallow-repository)" = "true" ] && git fetch --no-tags --unshallow origin master:refs/remotes/origin/master || git fetch --no-tags origin master:refs/remotes/origin/master
 
       - name: "tests/s2-authority suites (node:test; needs the master fetch step above)"
         # a5w-collect (2026-10-31): the seven s2-authority authority-governance suites, green

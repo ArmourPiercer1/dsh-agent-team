@@ -202,18 +202,6 @@
           "why": "a5w-collect (2026-10-31): the a5w-uncollected audit (dev/agent-workflow/evidence/a5w-uncollected-20261031/AUDIT.md rows 1-3) measured these three tracked suites green on a clean checkout — bounded-run.regression 6/6, sanitize-evidence.regression 25/25, evidence-store.test 10/10 — while NO collection source named them. All host-free: they spawn only local node stubs and sanitize/evidence-store tool copies in scratch dirs; no ports, no DSH_HOME, no pristine host. Same law as tests/checks: new suites in this family join this check list AND the ci-integration step; dropping one is CI_LAYER_LEG_WEAKENED, and scripts/eb3-node-test-collection.mjs refuses any tracked .test.mjs that is collected nowhere and unexempted."
         },
         {
-          "id": "Fetch master as refs/remotes/origin/master (s2-authority history pins)",
-          "cmd": [
-            "git",
-            "fetch",
-            "--no-tags",
-            "--unshallow",
-            "origin",
-            "master:refs/remotes/origin/master"
-          ],
-          "why": "a5w-collect CI-reality correction (2026-10-31): the first real CI run of the s2-authority step failed consumer-candidate C10 — the pull_request merge-ref checkout does not create refs/remotes/origin/master and its closure lacked the pinned baseline blobs, despite fetch-depth: 0 (reproduced exactly on a throwaway merge-ref clone: 'FAIL C10: Command failed: git show 5f0d0e58…'; green after this fetch). Single simple command: --unshallow matches the measured PR-merge checkout (shallow despite fetch-depth: 0; ancestor commits unresolvable), and eb3-ci-required only proves single-command legs; dropping the step is CI_LAYER_LEG_MISSING and re-reds the s2 step regardless."
-        },
-        {
           "id": "tests/s2-authority node:test suites",
           "cmd": [
             "node",

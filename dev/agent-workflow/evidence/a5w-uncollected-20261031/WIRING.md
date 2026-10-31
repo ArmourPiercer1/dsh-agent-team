@@ -128,3 +128,36 @@ node --test tests/world-factory/registries.test.mjs   # 12/12 绿 (222ms)
   24/24; consumer-candidate 1/1 in the lane worktree; faithful-CI seven-file suite 7/7 (above).
 - **Disclosure**: this correction commit is authored by the coordinator directly (integrator
   fix to the PR's own CI files after CI-measured failure), reviewable as the third commit.
+
+## 6. correction² (dated 2026-10-31T15:19Z): section 5's shallow diagnosis was itself wrong — the real fact is SHAPE DRIFT between CI runs
+
+- **Run 2 measured the opposite shape**: the same fetch-depth: 0 job, head e03dc212b, died in the
+  §5 fetch step with `fatal: --unshallow on a complete repository does not make sense`
+  (raw log job of run 41212415646, line ~1174) — that day GitHub shipped a COMPLETE merge-ref
+  checkout. Same workflow, two runs, two shapes. §5's sentence "the PR-merge checkout IS shallow"
+  is falsified by run 2 and stands corrected here; original text kept (append-only).
+- **Why run 1 reds the way it does (corrected mechanism)**: run 1's C10 failure string was
+  `structure_same=false bytes_same=true` — NOT `Command failed` (that string only exists in my
+  §5 depth-1 repro, a DIFFERENT failure mode I wrongly accepted as identical because the case
+  name matched). On a history-missing checkout the NEW gen-current-state's cited-paths /
+  merged-claim legs see cat-file/merge-base failures (the run-1 fatals on 9b2ee57/5f0d0e58/
+  origin/master were those probes) and emit findings the 5f0d0e58 baseline cannot (those legs
+  postdate it) → structure diverges exactly there; rendered view bytes stay equal. Local proof
+  the fatals are missing-history symptoms, not noise: probe-candidate on a COMPLETE repo prints
+  ZERO 9b2ee57 fatals. Race theory considered and rejected: 5× full-file parallel runs, zero
+  flips — scheduling untouched (no --test-concurrency added; no assertions touched).
+- **Lesson booked**: matching a failure by CASE NAME + locally constructing a repro that shares
+  the symptom label but not the failure STRING let a misdiagnosis through one review seat (the
+  seat reviewed the fix against the §5 story, not against run 2 — run 2 did not exist yet).
+  Correction commits must quote failure STRINGS verbatim side by side, and "reproduced exactly"
+  requires the same string, not the same test id.
+- **Fix (2nd)**: fetch step rewritten shape-agnostic, guard form, UNDECLARED (||/&& cannot be
+  graded; the s2 step itself goes LOUD-red if the helper is dropped on a history-missing day —
+  measured as run 1): shallow ⇒ --unshallow fetch (creates the ref too); complete ⇒ plain fetch
+  creates refs/remotes/origin/master; §5's declared manifest leg withdrawn (17 legs again).
+- **Both shapes verified locally, single bash call each, clones deleted**: shallow(depth-1 of
+  the real merge ref refs/pull/530/merge) + guard + full seven-file s2 command = tests 7 / pass 7
+  / fail 0; complete(file:// full fetch) + guard = ok, origin/master resolves to the real tip.
+- Gates at this head: eb3-ci-required pass workflows=9 findings=0 · collection pass 38/13/0 ·
+  negative controls 24/24 · YAML parses (block scalar; a bare run starting with [ was parsed as
+  a flow sequence — caught locally by the same yaml gate family before push).
