@@ -23,9 +23,10 @@
  * reaper. There is no reaper, and there must not be one: a timer that wakes cases is the second scheduler this
  * phase already refused.
  *
- * NO CLOCK, NO I/O. Every function takes the instant it needs. `Date.parse` and `new Date(n).toISOString()`
- * appear below; both are pure arithmetic on a supplied value, which is the same distinction `review-wake/slot.ts`
- * draws when it floors a backoff from `ctx.nowIso`.
+ * NO CLOCK, NO I/O. Every function takes the instant it needs; the only time operation below is `Date.parse` on a
+ * value the caller supplied, which is the same distinction `review-wake/slot.ts` draws when it floors a backoff
+ * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock can enter through this file (a
+ * hygiene leg greps for it).
  */
 import { type ReviewDeferEntry, type ReviewDeferKey, type ReviewDeferLimits, type ReviewDeferReasonCode, type ReviewDeferResult, type ReviewWakeCandidate } from './types.js';
 export interface ReviewDeferStore {

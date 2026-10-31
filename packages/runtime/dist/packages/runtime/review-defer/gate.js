@@ -30,6 +30,23 @@
  */
 import { cancelReviewDefer, floorStateOf, listReviewDefers, reviewDeferEntryId, reviewDeferKeyOf, setReviewDefer, } from './store.js';
 import {} from './types.js';
+/**
+ * Which fact a failed attribution actually reported (round-2 finding R2-3 on #509).
+ *
+ * Three of the nine refusals can reach a wake decision — the six write-side ones cannot, because no wake calls
+ * `setReviewDefer` — and reporting all three as "the record carries no readable case" is a lie
+ * about the two cases where the case IS readable: a `requestId` or a `rootSessionId` the platform would not mint
+ * makes the SLOT unaddressable while leaving the case perfectly legible, and a row that names a case and no leg is
+ * a third fact again. Each gets its own reason so no reader ever infers "pre-Alpha.4 row" from a hygiene failure
+ * in the identity half.
+ */
+function wakeReasonOfRefusal(refusal) {
+    if (refusal === 'REVIEW_DEFER_LEG_MALFORMED')
+        return 'WAKE_LEG_UNIDENTIFIED';
+    if (refusal === 'REVIEW_DEFER_ID_MALFORMED')
+        return 'WAKE_KEY_UNADDRESSABLE';
+    return 'WAKE_CASE_UNIDENTIFIED';
+}
 function deliverNow(key, notBeforeIso, reason) {
     return Object.freeze({ decision: 'deliver', reason, notBeforeIso, key });
 }
@@ -45,7 +62,7 @@ export function decideReviewWake(store, rootSessionId, record, nowIso) {
         // The only refusals that reach a wake decision, told apart because they are different facts: a pre-Alpha.4
         // row names no case at all, while a row that names a case and no leg is attributable enough to notice and
         // not attributable enough to mute. Neither may be muted on a guess.
-        return deliverNow(null, null, identified.refusal === 'REVIEW_DEFER_LEG_MALFORMED' ? 'WAKE_LEG_UNIDENTIFIED' : 'WAKE_CASE_UNIDENTIFIED');
+        return deliverNow(null, null, wakeReasonOfRefusal(identified.refusal));
     }
     const key = identified.value;
     const id = reviewDeferEntryId(key);

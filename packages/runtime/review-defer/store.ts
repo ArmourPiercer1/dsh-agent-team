@@ -23,9 +23,10 @@
  * reaper. There is no reaper, and there must not be one: a timer that wakes cases is the second scheduler this
  * phase already refused.
  *
- * NO CLOCK, NO I/O. Every function takes the instant it needs. `Date.parse` and `new Date(n).toISOString()`
- * appear below; both are pure arithmetic on a supplied value, which is the same distinction `review-wake/slot.ts`
- * draws when it floors a backoff from `ctx.nowIso`.
+ * NO CLOCK, NO I/O. Every function takes the instant it needs; the only time operation below is `Date.parse` on a
+ * value the caller supplied, which is the same distinction `review-wake/slot.ts` draws when it floors a backoff
+ * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock can enter through this file (a
+ * hygiene leg greps for it).
  */
 
 import {
@@ -156,7 +157,26 @@ export function reviewDeferKeyOf(
  * team root, handed by reference to both the gate and the tool port.
  */
 export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_DEFAULT_LIMITS): ReviewDeferStore {
-  return { limits, entries: new Map<string, ReviewDeferEntry>() }
+  return { limits: usableLimits(limits), entries: new Map<string, ReviewDeferEntry>() }
+}
+
+/**
+ * A limit that cannot bound anything is not a limit (round-2 finding R2-1 on #509).
+ *
+ * `NaN` and `Infinity` both disarm this lane's two stated bounds by arithmetic rather than by malice:
+ * `remaining > NaN` is false, so every floor fits the horizon, and `size >= NaN` is false, so the capacity never
+ * refuses — a probe against the shipped lane filed a ten-year floor and 300 entries into a store declared at one
+ * hour and sixty-four. Nothing can reach that today, because nothing constructs a store; `createReviewDeferStore`
+ * takes caller limits, and PR-I2 is exactly the change that will feed plane config into it. So the constructor
+ * treats a non-finite, non-positive, or non-integer bound as "no usable limit supplied" and keeps the frozen
+ * default, which is the bounded answer. It is a substitution rather than a throw on purpose: this lane's posture
+ * is that confusion produces an EXTRA wake, and a store that refuses to exist is a store somebody will wrap in a
+ * `try` and then build unbounded. A leg pins both halves.
+ */
+function usableLimits(limits: ReviewDeferLimits): ReviewDeferLimits {
+  const horizonUsable = Number.isFinite(limits.horizonMs) && limits.horizonMs > 0
+  const capUsable = Number.isInteger(limits.maxEntries) && limits.maxEntries >= 1
+  return horizonUsable && capUsable ? limits : REVIEW_DEFER_DEFAULT_LIMITS
 }
 
 /**
@@ -164,6 +184,13 @@ export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_
  * here is bookkeeping for the caller's telemetry rather than a housekeeping chore somebody must remember.
  */
 export function sweepReviewDefers(store: ReviewDeferStore, nowIso: string): number {
+  // An unreadable CALLER clock retires nothing (round-2 finding R2-2 on #509). The law is about an entry whose
+  // FLOOR cannot be read — that one is deleted, because it can never be honoured. A clock that cannot be read is
+  // the opposite case: deleting on it throws away every standing quiet on the strength of a value nobody can
+  // verify, which is a read that destroys state. The wake path does not need this sweep to fail open —
+  // `decideReviewWake` retires an illegible floor itself — so returning 0 here costs nothing and keeps `list`
+  // honest: it reports what the store holds instead of emptying it.
+  if (!Number.isFinite(Date.parse(nowIso))) return 0
   let swept = 0
   for (const [id, entry] of store.entries) {
     // An entry whose floor cannot be read is swept, not kept: keeping it would defer a wake on a value that
@@ -282,6 +309,10 @@ export function cancelReviewDefer(
 
 /** What is standing right now, in filing order. Read-only, and it sweeps on the way past. */
 export function listReviewDefers(store: ReviewDeferStore, nowIso: string): readonly ReviewDeferEntry[] {
+  // With a readable clock this returns exactly the standing quiets, because the sweep has just retired the rest.
+  // With an unreadable clock it returns what the store holds, expired-looking entries included, and retires
+  // nothing: "I cannot tell you which of these have passed" is a different answer from "you have none", and a
+  // caller that gets the second one from a broken clock will conclude nobody asked for a quiet.
   sweepReviewDefers(store, nowIso)
   return [...store.entries.values()]
 }

@@ -92,18 +92,33 @@ export const REVIEW_DEFER_WAKE_REASONS = [
     /** The decision itself could not be computed. Deliver, and say so: a fail-open path nobody can see is a
      *  fail-open path nobody fixes. */
     'WAKE_DECISION_FAILED',
-    /** The record carries no readable case. Deliver — the old path — because an unattributable wake is nobody's
-     *  to mute. "No readable case" rather than "names no case": a case id that is present but not an id the
-     *  platform would mint lands here too, and the sentence has to cover that. */
+    /** The record carries no readable case — absent, or present as an empty string. Deliver — the old path —
+     *  because an unattributable wake is nobody's to mute. This is the pre-Alpha.4 row and nothing else. */
     'WAKE_CASE_UNIDENTIFIED',
+    /**
+     * A case IS readable but the slot cannot be addressed, because the root session id or the request id is not an
+     * id this platform would mint (round-2 finding R2-3 on #509: reporting this as `WAKE_CASE_UNIDENTIFIED` was a
+     * lie about the case, which was perfectly legible). Delivered, like everything unattributable — and distinguish
+     * able in a log from a row that simply predates Alpha.4.
+     */
+    'WAKE_KEY_UNADDRESSABLE',
     /** A case IS named and the leg is not. Attributable enough to notice, not attributable enough to mute. */
     'WAKE_LEG_UNIDENTIFIED',
 ];
 // --- refusals -----------------------------------------------------------------------------------------
 /**
- * Every refusal this lane can answer with. A refusal refuses an *operation on a defer* — setting one,
- * cancelling one, reading one. It never refuses a review, a wake, or a decision, and nothing in this list
- * is a permission denial: the only enforcement in this lane is the enforcement of its own input contract.
+ * Every refusal this lane can answer with. A refusal refuses an *attempt to derive or change a defer* — set one,
+ * cancel one, address one. It never refuses a review, never refuses a wake (every wake this lane cannot act on is
+ * DELIVERED, with its own reason in `REVIEW_DEFER_WAKE_REASONS`), and nothing in this list is a permission denial:
+ * the only enforcement here is the enforcement of its own input contract.
+ *
+ * ONE MEMBER LIVES ON THE DERIVATION PATH, NOT ON A WRITE (round-2 finding R2-4 on #509):
+ * `REVIEW_DEFER_CASE_UNIDENTIFIED` is answered when something tries to derive a key from a record that names no
+ * case, which is what the wake path attempts; `setReviewDefer` and `cancelReviewDefer` answer
+ * `REVIEW_DEFER_ID_MALFORMED` for an empty case id, because a caller that supplies the field itself is failing
+ * the write contract, not discovering a pre-Alpha.4 row. Both directions are pinned by legs — this lane's own
+ * both-directions law applies to the list as a whole, and a member produced by one entry point is stated as such
+ * rather than quietly held to a claim it cannot meet.
  */
 export const REVIEW_DEFER_REFUSALS = [
     /** A root session id, case id or request id that is not the shape the platform uses. */
@@ -137,8 +152,9 @@ export const REVIEW_DEFER_REFUSALS = [
      */
     'REVIEW_DEFER_STORE_SATURATED',
     /**
-     * A wake with no `approvalCaseId`: not an error, but not deferrable either. Reported so a caller never
-     * concludes "deferred" from the absence of a delivered notification.
+     * A key cannot be derived because the record names no case. Produced by key *derivation* — the wake path's
+     * attempt — and not by set/cancel, which answer `REVIEW_DEFER_ID_MALFORMED` for the same empty string. Not an
+     * error, and never a suppression: the wake is delivered and the reason is `WAKE_CASE_UNIDENTIFIED`.
      */
     'REVIEW_DEFER_CASE_UNIDENTIFIED',
 ];

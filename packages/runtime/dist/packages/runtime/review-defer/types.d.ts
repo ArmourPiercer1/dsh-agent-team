@@ -95,7 +95,7 @@ export type ReviewDeferDecisionKind = (typeof REVIEW_DEFER_DECISIONS)[number];
  * `a6-pr4-review-defer.test.ts` checks both directions, because a code no path can produce is a lie about
  * the machine and a produced code that is undeclared is the same lie sideways.
  */
-export declare const REVIEW_DEFER_WAKE_REASONS: readonly ["WAKE_NOT_DEFERRED", "WAKE_DEFER_FLOOR_PASSED", "WAKE_DEFER_PENDING", "WAKE_DEFER_UNREADABLE", "WAKE_DECISION_FAILED", "WAKE_CASE_UNIDENTIFIED", "WAKE_LEG_UNIDENTIFIED"];
+export declare const REVIEW_DEFER_WAKE_REASONS: readonly ["WAKE_NOT_DEFERRED", "WAKE_DEFER_FLOOR_PASSED", "WAKE_DEFER_PENDING", "WAKE_DEFER_UNREADABLE", "WAKE_DECISION_FAILED", "WAKE_CASE_UNIDENTIFIED", "WAKE_KEY_UNADDRESSABLE", "WAKE_LEG_UNIDENTIFIED"];
 export type ReviewDeferWakeReason = (typeof REVIEW_DEFER_WAKE_REASONS)[number];
 export interface ReviewDeferWakeDecision {
     readonly decision: ReviewDeferDecisionKind;
@@ -106,9 +106,18 @@ export interface ReviewDeferWakeDecision {
     readonly key: ReviewDeferKey | null;
 }
 /**
- * Every refusal this lane can answer with. A refusal refuses an *operation on a defer* — setting one,
- * cancelling one, reading one. It never refuses a review, a wake, or a decision, and nothing in this list
- * is a permission denial: the only enforcement in this lane is the enforcement of its own input contract.
+ * Every refusal this lane can answer with. A refusal refuses an *attempt to derive or change a defer* — set one,
+ * cancel one, address one. It never refuses a review, never refuses a wake (every wake this lane cannot act on is
+ * DELIVERED, with its own reason in `REVIEW_DEFER_WAKE_REASONS`), and nothing in this list is a permission denial:
+ * the only enforcement here is the enforcement of its own input contract.
+ *
+ * ONE MEMBER LIVES ON THE DERIVATION PATH, NOT ON A WRITE (round-2 finding R2-4 on #509):
+ * `REVIEW_DEFER_CASE_UNIDENTIFIED` is answered when something tries to derive a key from a record that names no
+ * case, which is what the wake path attempts; `setReviewDefer` and `cancelReviewDefer` answer
+ * `REVIEW_DEFER_ID_MALFORMED` for an empty case id, because a caller that supplies the field itself is failing
+ * the write contract, not discovering a pre-Alpha.4 row. Both directions are pinned by legs — this lane's own
+ * both-directions law applies to the list as a whole, and a member produced by one entry point is stated as such
+ * rather than quietly held to a claim it cannot meet.
  */
 export declare const REVIEW_DEFER_REFUSALS: readonly ["REVIEW_DEFER_ID_MALFORMED", "REVIEW_DEFER_LEG_MALFORMED", "REVIEW_DEFER_INSTANT_MALFORMED", "REVIEW_DEFER_REASON_UNKNOWN", "REVIEW_DEFER_NOT_IN_FUTURE", "REVIEW_DEFER_HORIZON_EXCEEDED", "REVIEW_DEFER_NO_ACTIVE_DEFER", "REVIEW_DEFER_STORE_SATURATED", "REVIEW_DEFER_CASE_UNIDENTIFIED"];
 export type ReviewDeferRefusal = (typeof REVIEW_DEFER_REFUSALS)[number];

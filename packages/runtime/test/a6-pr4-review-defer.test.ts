@@ -147,13 +147,19 @@ describe('A6-PR4/D — a defer is addressed to one leg of one case of one team s
     }
   })
 
-  it('refuses identifiers that are not identifiers, before any state is touched', () => {
+  it('refuses identifiers that are not identifiers, on both paths that accept them', () => {
     const store = createReviewDeferStore()
     for (const approvalCaseId of ['case with spaces', '../elsewhere', 'é', 'x'.repeat(200)]) {
       const result = reviewDeferKeyOf(ROOT, record({ approvalCaseId }))
       expect(result.ok, approvalCaseId).toBe(false)
       if (result.ok) continue
       expect(result.refusal, approvalCaseId).toBe('REVIEW_DEFER_ID_MALFORMED')
+      // The write path is driven with the same garbage so the "no state touched" claim is something the store
+      // is asked rather than something asserted about a call that never reached it (round-2 finding R2-10 on
+      // #509: the earlier version asserted `store.entries.size === 0` after calls that take no store).
+      const filed = setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+      expect(filed.ok, `write path accepted ${approvalCaseId}`).toBe(false)
+      if (!filed.ok) expect(filed.refusal, approvalCaseId).toBe('REVIEW_DEFER_ID_MALFORMED')
     }
     expect(store.entries.size).toBe(0)
   })
@@ -330,6 +336,52 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
     const listed = listReviewDefers(store, NOW)
     ;(listed as unknown as unknown[]).length = 0
     expect(store.entries.size).toBe(1)
+  })
+
+  it('keeps its bounds when handed limits that cannot bound anything', () => {
+    // Round-2 finding R2-1 on #509, reproduced against the shipped output before it was fixed: `NaN` disarms both
+    // stated bounds by arithmetic alone — `remaining > NaN` is false so every floor fits the horizon, and
+    // `size >= NaN` is false so the capacity never refuses. A store declared at one hour and sixty-four entries
+    // filed a ten-year quiet and 300 keys. Nothing could reach that while the lane is dark, but PR-I2 feeds plane
+    // config through this exact constructor, so the bound has to survive a caller that hands it garbage.
+    for (const limits of [
+      { horizonMs: Number.NaN, maxEntries: Number.NaN },
+      { horizonMs: Number.POSITIVE_INFINITY, maxEntries: 64 },
+      { horizonMs: 3_600_000, maxEntries: 0 },
+      { horizonMs: -1, maxEntries: 64 },
+      { horizonMs: 3_600_000, maxEntries: 2.5 },
+    ]) {
+      const store = createReviewDeferStore(limits)
+      expect(store.limits, JSON.stringify(limits)).toEqual(REVIEW_DEFER_DEFAULT_LIMITS)
+      const tenYears = setReviewDefer(
+        store,
+        { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(10 * 365 * 24 * 60 * 60 * 1000), reasonCode: 'AWAITING_EVIDENCE' },
+        NOW,
+      )
+      expect(tenYears.ok, `a ten-year floor was accepted under ${JSON.stringify(limits)}`).toBe(false)
+      if (!tenYears.ok) expect(tenYears.refusal).toBe('REVIEW_DEFER_HORIZON_EXCEEDED')
+    }
+    // The usable case is still usable — a substitution that also rejected good limits would be a different bug.
+    const narrowed = createReviewDeferStore({ horizonMs: 10 * 60 * 1000, maxEntries: 1 })
+    expect(narrowed.limits).toEqual({ horizonMs: 10 * 60 * 1000, maxEntries: 1 })
+  })
+
+  it('does not let a read destroy state when the caller\'s clock cannot be read', () => {
+    // Round-2 finding R2-2 on #509: the sweep is justified for an entry whose FLOOR is illegible (it can never be
+    // honoured, so it goes), and it was deleting everything on an illegible CALLER clock instead — a `list()`
+    // that answered "you have no quiets" while emptying the map. A read reports; the wake path fails open on its
+    // own account (the G and T legs prove it), so this sweep is not what keeps a case alive.
+    const store = createReviewDeferStore()
+    defer(store, { approvalCaseId: 'case-one' })
+    defer(store, { approvalCaseId: 'case-two' })
+    const listed = listReviewDefers(store, 'yesterday')
+    expect(listed).toHaveLength(2)
+    expect(store.entries.size).toBe(2)
+    expect(sweepReviewDefers(store, '{ now: () => 1 }')).toBe(0)
+    expect(store.entries.size).toBe(2)
+    // A readable clock still sweeps exactly as the law says.
+    expect(listReviewDefers(store, later(120 * 60 * 1000))).toEqual([])
+    expect(store.entries.size).toBe(0)
   })
 })
 
@@ -530,7 +582,10 @@ describe('A6-PR4/T — the gate hands the notification to the real notifier or n
 
 // --- P — the injected port: the switch and the gate read one state ------------------------------------
 
-describe('A6-PR4/P — the tool port and the gate share one store, by construction', () => {
+// The port is a SEAM, not a mounted control: PR-I2 injects a tool into it (law 6 in `types.ts`), and what this
+// block pins is the property that makes that wiring safe — one store by construction, so a filed quiet and the
+// gate's decision cannot drift apart the way two stores would.
+describe('A6-PR4/P — the seam a tool is injected with, and the gate, share one store by construction', () => {
   it('a defer filed through the port holds the gate, which is the only thing that makes it a switch', async () => {
     const store = createReviewDeferStore()
     const port = createReviewDeferPort({ store, nowIso: () => NOW })
@@ -609,6 +664,10 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     produced.add(decideReviewWake(expiring, ROOT, record(), later(61 * 1000)).reason)
     // A case named and a leg missing: attributable enough to notice, not attributable enough to mute.
     produced.add(decideReviewWake(empty, ROOT, record({ legOrdinal: undefined }), NOW).reason)
+    // A case readable, the identity half not: the slot cannot be addressed, which is not the same fact as a
+    // pre-Alpha.4 row (round-2 finding R2-3 on #509 — this shape used to answer WAKE_CASE_UNIDENTIFIED).
+    produced.add(decideReviewWake(empty, ROOT, record({ requestId: 'not an id' }), NOW).reason)
+    produced.add(decideReviewWake(empty, 'root id with spaces', record(), NOW).reason)
     // The two fail-open states, produced without a notifier in sight.
     const unreadable = createReviewDeferStore()
     defer(unreadable, { notBeforeIso: later(60 * 1000) })
@@ -643,11 +702,23 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
       if (!result.ok) produced.add(result.refusal)
     }
     note(reviewDeferKeyOf(ROOT, record({ approvalCaseId: undefined })))
+    // The one refusal that belongs to derivation rather than to a write, pinned from BOTH sides so the doc
+    // sentence about it can never rot silently (round-2 finding R2-4 on #509): deriving a key from a record that
+    // names no case answers CASE_UNIDENTIFIED, while a write that supplies an empty case id answers ID_MALFORMED.
+    const derived = reviewDeferKeyOf(ROOT, record({ approvalCaseId: '' }))
+    note(derived)
+    if (derived.ok) throw new Error('an empty case id must not derive a key')
+    expect(derived.refusal).toBe('REVIEW_DEFER_CASE_UNIDENTIFIED')
     note(reviewDeferKeyOf(ROOT, record({ legOrdinal: 0 })))
     note(reviewDeferKeyOf(ROOT, record({ approvalCaseId: 'not an id' })))
     const store = createReviewDeferStore({ horizonMs: 10 * 60 * 1000, maxEntries: 1 })
     const base = { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, reasonCode: 'LEADER_REQUESTED' } as const
     note(setReviewDefer(store, { ...base, notBeforeIso: NOW }, NOW))
+    const written = setReviewDefer(store, { ...base, approvalCaseId: '', notBeforeIso: later(30 * 1000) }, NOW)
+    note(written)
+    if (written.ok) throw new Error('an empty case id must not file a defer')
+    expect(written.refusal).toBe('REVIEW_DEFER_ID_MALFORMED')
+    note(cancelReviewDefer(store, key({ approvalCaseId: '' }), NOW))
     note(setReviewDefer(store, { ...base, notBeforeIso: later(2 * 60 * 1000) }, NOW))
     note(setReviewDefer(store, { ...base, notBeforeIso: 'someday' }, NOW))
     note(setReviewDefer(store, { ...base, notBeforeIso: later(10 * 60 * 1000 + 1) }, NOW))

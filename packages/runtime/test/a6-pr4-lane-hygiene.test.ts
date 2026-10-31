@@ -51,7 +51,10 @@ const PROTECTED_PREFIXES = [
   join('src', 'plugin', 'live', 'pa-mount-registry.mjs'),
 ]
 
-const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.js']
+// `.mts`/`.cts` are in the set because a live glue seam is typed in a `.d.mts` long before anything imports it:
+// an option named `reviewDeferGate?:` arriving in a declaration file is exactly the drift this walk should catch,
+// and skipping declarations would make the screen blind to the earliest form of a wiring.
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.mjs', '.cjs', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
 /**
@@ -155,7 +158,7 @@ describe('A6-PR4/H — the lane is what it says it is', () => {
 })
 
 describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => {
-  it('has exactly one production consumer, measured rather than declared', () => {
+  it('has no production consumer at all, measured rather than declared', () => {
     const offenders: string[] = []
     for (const file of walk(PACKAGES_ROOT)) {
       if (file.startsWith(LANE_DIR)) continue
@@ -240,7 +243,7 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
 })
 
 describe('A6-PR4/H — the shipped surface matches the source surface', () => {
-  it('is referenced in the built output by the lane and by root, and by nothing else', () => {
+  it('is referenced by nobody in the built output, and the screen can see a reference if one appeared', () => {
     const distRoot = join(RUNTIME_ROOT, 'dist')
     let stat
     try {
@@ -256,6 +259,12 @@ describe('A6-PR4/H — the shipped surface matches the source surface', () => {
     // own result vocabulary, and a screen that called that a dependency on the lane would be wrong in a way
     // that eventually gets deleted.
     const moduleReference = /['"`][^'"`\n]*review-defer\/[A-Za-z-]+\.js['"`]/
+    // Positive control (round-2 finding R2-9 on #509): the assertion below passes on an EMPTY list, so without
+    // this it would pass just as loudly if the pattern matched nothing at all. The lane's own compiled imports
+    // are relative (`./types.js`) and do NOT match — that is why the exclusion filter below exists — so the
+    // sample has to be the shape a real wiring takes.
+    expect(moduleReference.test(`import { createReviewDeferGate } from '../../review-defer/index.js'`)).toBe(true)
+    expect(moduleReference.test(`const p = './types.js'`)).toBe(false)
     // Dark lane: the shipped output of the lane exists, and NOTHING in the built surface references it. This
     // is the shipped-surface twin of the source walk above, and it is the leg that fails the day somebody
     // wires the gate without amending this file's allow-list.
