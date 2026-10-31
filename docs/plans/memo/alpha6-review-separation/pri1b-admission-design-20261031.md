@@ -418,3 +418,49 @@ S3 `process.binding`、S4 `process.dlopen`、S5 dist 孤儿模块）全部 `75 p
   `effectScopes` 必须逐条等于输入（F-I1b5-5，validation 后注入 scope 的装配改动能红）。
 - **开放测量（不猜）**：symlink 指向干净目标、以及 `tsc` 对 symlink 源文件的 dist 行为，本轮无构建许可未测，
   记 OPEN（F-I1b5-7）；界面律先按"拒绝 symlink"执行，不等测量结果。
+
+## 12. dated 2026-11-01（round 6 更正，F-I1b6-1/2/3/4/5/6/7/10）：把规则补到的地方补上，补不到的地方把边界句子撤下来
+
+round 6 用四枚活种量到：`export const r6Compile = Function` + `r6Compile('return process')()`（拿到活
+`process.chdir`/`process.binding`）、`globalThis['process'].chdir` 与 `globalThis['proc' + 'ess'].binding(...)`、
+`Error.prepareStackTrace` 取帧后 `.constructor('return process')()`——spec/family/typecheck/eslint 全 `rc=0`。
+另量到 `import x = require('node:fs')` 不在边表上（把禁词表清空后，该实种对树**零新增红**）、`.cts`/`.cjs`
+两侧界面都点名不到（`.cts` 确在 build program 内，`tsc --listFiles` 实测）、P-2 普查只定级直接 return 字面量
+（把拒绝路由进 `const` 后 19→18 条，`widenedEffectScopes: ['*']` 全绿穿过，anti-vacuity 下限 12 留有 7 条余量）。
+
+本轮裁决（写进句子，不只写进代码）：**规则补得到的逃逸就把规则补上；规则补不到的地方不再发布边界。**
+按名字的 AST 规则不是能力边界——名字往后一跳、能力按成员带走，都还在名字规则之外。于是 P-1 发布的身份是
+**对本 lane 自己源码的 review-time tripwire**；这条边界的真实承重是三件实测事实：`ALLOWED_CONSUMERS = []`
+（S-9，零调用方）、不发布任何入口、外加代码评审。文件里凡需要写 every/all/at all/cannot 谈能力的句子，
+要么有腿兜着，要么删掉——本轮按此逐句改，改前改后成对进报告。
+
+- **F-I1b6-1（BLOCKER）**：新增按值定罪闭集 `INTRINSIC_ESCAPE_HATCH_NAMES = [Function, eval, globalThis,
+  Reflect, process]`——引用即拒（callee/`new` 之外，赋值/别名/成员头/计算下标一律），全局对象成员读一律拒：
+  key 可静态折叠（含 `+` 串接与模板）就点名它到达的名字，折不动就"折不动 key 所以清不掉它"拒绝；
+  `.constructor(...)` 成员调用按形状拒绝。E2/E1/E8/E9 逐枚成为夹具。E9 保留评审自己的诚实纪律：他实测该
+  表达式在 vitest 下返回 `undefined`，本轮只定形状（review-time 拒），既不声称漏也没声称安全。
+- **F-I1b6-2（MAJOR）**：`ImportEqualsDeclaration`+`ExternalModuleReference` 成为边（TS6 里 specifier 在
+  `moduleReference.expression`），清空禁词表重跑三臂对照（净表清空=仅净表自己的 2 条夹具腿红；净表清空+实种
+  =allow-list 腿独立红；净表在场+实种=三条红）。边表不再靠禁词表承重。
+- **F-I1b6-3（MAJOR）**：两侧界面从"按扩展名过滤"改为"按目录内容枚举 + 逐文件归类"：script（进分析器）、
+  `.map`（唯一排除类，排除条件每轮实测——`sourcesContent` 非空即红；本轮实测 22/22 为空，故句子只声明实测
+  条件，不照抄"map 里嵌源码"）、unclassified（直接红，仪器的想象力缺口不许长得像通过）。`.cts`/`.cjs` 进
+  `scriptKindFor` 与闭包扩展集，`.ts`/`.cts`、`.js`/`.cjs` 同字节双生夹具复现。
+- **F-I1b6-4（MAJOR）**：普查改按"`refusal:` 字面量在不在"定级（不看返回形式），graded 计数钉在第二条 key
+  计数与实测下限（assignment 19、mandate 3）上；`ports.teamRootExists` 抛异常那条分支加活腿（纯测试侧注入
+  ports，未动生产源）。同时把"两条枚举互相独立"这句撤回到它真实的样子：同一 AST 同一谓词，它防的是普查
+  日后变窄，不是对源码的独立见证。
+- **F-I1b6-5/6（MINOR）**：`require.resolve(...)` 与非 callee 的按值 `require` 记为 nonStatic；类型位置
+  `import('node:fs')` 记为边（闭包不跟它走——声明不是加载边，这句话写在行走器上而不是藏起来）。
+- **F-I1b6-7（MINOR）**：真实字节清洁对照从 2 个文件**加宽**到两侧界面枚举出的全部 script 字节（≥33），
+  标题与注释都写明是加宽不是改名。
+- **盲区不再靠句子担保**：仪器自评腿新增 residual 探针——七枚"名字规则大概看不见"的写法逐枚过分析器并打印，
+  看见/看不见各自钉成清单（看不见的那条一改成本轮实测的 `[]`：`module.require(...)` 这类成员调用加载器本轮
+  直接补成边规则 `member-require`，其余 `(0, require)`/`require?.()`/`import.meta.resolve`/eval 字符串/
+  成员读 require/Worker/descriptor 读都有记录）。真正的残余写在腿注里而不是被说没：`eval('require(...)')`
+  定的是 `eval` 这个引用，字符串里要被引擎执行的模块名没有任何 AST 读得到——这就是名字规则的边界。
+- **F-I1b6-10（INFO，记在仪器注释与本 memo）**：任何 scratch 文件落进 `packages/**` 会红掉 family 五条腿
+  （`p4t6-session-event-scan.test.ts` 数的是那里每一个可扫文件）；scratch 一律留在 `packages/**` 之外。
+- **实测事实（本轮新量，供后轮引用）**：新规则对现有字节零命中（hatch/`.constructor`/按值 require/
+  import-equals/import-type 在 42+41+22 个被扫文件里全为 0）；lane src 11 个 `.ts`，lane dist 44 个文件
+  （11 js + 11 d.ts + 22 map）；22/22 map 的 `sourcesContent` 为空。P-2 两扇门实测 19 / 3 条 verdict 字面量。

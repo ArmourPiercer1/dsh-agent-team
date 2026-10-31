@@ -678,6 +678,49 @@ describe('S-5: a decision addressed to no team is refused before anyone is asked
     expect(ports.calls.resolve).toBe(0)
   })
 
+  it('a team-existence read that THROWS answers with ADMISSION_TEAM_UNKNOWN and the thrown words — the branch is driven, not just enumerated (F-I1b6-4)', async () => {
+    // Round 6 named this as a refusal path the AST census graded but NO leg drove: the census proves the
+    // literal's field set, and this proves the branch is reachable and answers the way the literal says it
+    // does. Test-side only — the ports are the door's own injection seam, so production source is untouched.
+    const calls = { team: 0, resolve: 0, ledger: 0 }
+    const thrown = 'R6BRANCH the existence read exploded'
+    const ports: AssignmentAdmissionPorts & { readonly calls: typeof calls } = {
+      calls,
+      teamRootExists: () => {
+        calls.team += 1
+        throw new Error(thrown)
+      },
+      resolveCaller: () => {
+        calls.resolve += 1
+        throw new Error('must not be reached')
+      },
+      ledger: { list: () => { calls.ledger += 1; return [] } },
+    }
+    const opened = openAssignmentAdmission({ feature: 'on' }, ports)
+    expect(opened.ok).toBe(true)
+    if (!opened.ok) return
+    const outcome = await opened.gate.admit(
+      {
+        rootSessionId: ROOT_A,
+        approvalCaseId: CASE_ID,
+        currentLegRequestId: 'leg-request-1',
+        decisionKind: 'created',
+        targetKind: 'instance',
+        targetInstanceId: 'inst-alpha',
+        reasonCode: 'ROUTER_PLAN_COVERS_ACTION',
+        basedOnCaseVersion: 'case-version-1',
+      },
+      MEMBER_CALLER,
+    )
+    expect(outcome.ok, 'a throwing existence read must refuse, not sail on to the resolver with an assumed answer').toBe(false)
+    if (outcome.ok) return
+    observedRefusals.add(outcome.refusal)
+    expect(outcome.refusal).toBe('ADMISSION_TEAM_UNKNOWN')
+    expect(outcome.detail, 'the thrown words travel — an answer this module cannot get is named with the reason it could not get (F-I1b1-5 transport law)').toContain(thrown)
+    expect(calls.resolve, 'the throw must stop the door before the resolver, exactly as the false answer does').toBe(0)
+    expect(calls.ledger, 'and before the ledger').toBe(0)
+  })
+
   it('the existence port is boolean because the TeamSession record has no lifecycle column, and says so', () => {
     // V-3, measured rather than remembered: `missing` vs `corrupt` vs `archived` cannot be separated because the
     // record has no such field; the module discloses the merged state in the port doc instead of pretending.
@@ -1967,27 +2010,44 @@ describe('ENV-REFUSED: the host-side legs still refused on this machine, recorde
 //    literals containing `/*` or `//` cannot blind a stripper around live code — the exact region the
 //    round-5 reviewer hid a real `node:fs` import behind (F-I1b5-1, plant S2). Line numbers survive blanking.
 //  • ENFORCES ALLOW-LISTS, not deny-lists: the only module specifier the plane may name is `node:crypto`;
-//    the `process` object may not be touched at all (the measured allow-list of its members is EMPTY, see
-//    PROCESS_MEMBER_ALLOW_LIST). `process.binding`, `process.dlopen`, `process.mainModule`, `process.chdir`
-//    are refused because they are not ON the list, not because anyone thought to name them — that is the
-//    whole reason the rule is an allow-list: a new OS capability, in the compiler's or Node's own future
-//    vocabulary, is refused by default the day it appears.
-//  • COVERS the install surface: the lane directories are listed RECURSIVELY (a subdirectory module is in
-//    the set or the leg fails, F-I1b5-1/S1), and so is the lanes' dist output — every file the build emitted
-//    is scanned for capabilities even if the barrel graph never reaches it (F-I1b5-3/S5). Reachability and
-//    surface stay SEPARATE claims in SEPARATE legs.
+//    every reference to a closed set of intrinsic escape hatches (`Function`, `eval`, `globalThis`,
+//    `Reflect`, `process` — INTRINSIC_ESCAPE_HATCH_NAMES) is refused: in callee and `new` position, BY VALUE
+//    (F-I1b6-1's E2 plant handed `Function` to a const and every gate stayed green), as a member head, and
+//    through the global object — a member of `globalThis` is refused whether the key folds statically
+//    (`globalThis['proc' + 'ess']`, E1/E8's spelling) or not. The `process` member allow-list is EMPTY
+//    (measured, see PROCESS_MEMBER_ALLOW_LIST), so `process.binding`, `process.dlopen`, `process.mainModule`,
+//    `process.chdir` are refused for being OFF the list, not because anyone thought to name them. THE SIZE
+//    OF THIS RULE, said once and meant: it convicts NAMES in the scanned text; a determined author can still
+//    route around a name-based rule (one binding hop further, a member carried by value), and no AST walk of
+//    source text is a capability boundary. It is a review-time tripwire over the lane's own source; the
+//    boundary's real backing is that the module has ZERO callers (`ALLOWED_CONSUMERS = []`, S-9), ships no
+//    entry point, and sits behind code review.
+//  • COVERS CONTENT, not extensions (F-I1b6-3): every file carried under the two lane source directories and
+//    their dist outputs is enumerated by directory listing — a `.cts` lane file (which `tsconfig.build.json`
+//    compiles into the build program, `tsc --listFiles` measured) and a `.cjs` orphan in lane dist are ON a
+//    surface, not between extension filters. Each enumerated file is CLASSIFIED: script (parsed by the AST
+//    scanner + vocabulary net), explicitly excluded data (`.map` only, justified at the exclusion), or
+//    unclassified — and unclassified is itself a red. Reachability and surface stay SEPARATE claims in
+//    SEPARATE legs.
 // What remains OUT of reach of any static scan, stated rather than claimed away: what an ALLOWED builtin
 // does (node:crypto's own behaviour is graded by what it is, not by scanning); loader hooks, import maps or
-// any runtime resolution that rewrites specifiers between parse and load; bytes the build never emits (the
-// install surface is what `dist` carries — this lane does not re-run `tsc` here, so a build that emits more
-// than source would have to be caught by the next rebuild + these legs, and F-I1b5-7's symlink-into-dist
-// question is recorded OPEN, unmeasured, with symlinks inside either surface refused outright); and the
+// any runtime resolution that rewrites specifiers between parse and load; bytes outside the enumerated
+// directories (this lane does not re-run `tsc` here — a build that emitted to a path outside the lane dist
+// directories would have to be caught by the next rebuild + these legs, and F-I1b5-7's symlink-into-dist
+// question is recorded OPEN, unmeasured, with symlinks inside either surface refused outright); the
 // semantics of names the vocabulary never heard of — which is precisely why the vocabulary net is the
-// SECOND net and the allow-lists are the rule.
+// SECOND net and the allow-lists are the rule; and, conceded by round 6's F-I1b6-1 in plain words: a
+// capability reached under a name this scan does not know. A name-based tripwire fires when review misses;
+// it is not a wall review can stand behind. House note (F-I1b6-10): any scratch file dropped under
+// `packages/**` reddens five family legs because `p4t6-session-event-scan.test.ts` counts every scannable
+// file there — keep scratch outside `packages/**`.
 // P-2 measures the verdict objects the live gates actually produce (measured, not remembered) and grades the
 // closed-set check itself with a planted widening field, so a closed list that can no longer fail is caught
-// in the same file that carries it; since round 5 it also enumerates EVERY refusal-returning path of both
-// doors from the AST (F-I1b5-4) and pins parsed plans to their input's effect scopes (F-I1b5-5).
+// in the same file that carries it; since round 5 it enumerates the refusal literals of both doors from the
+// AST, and since round 6 it grades them WHEREVER THEY SIT (F-I1b6-4: a refusal routed through a binding is
+// graded by its `refusal:` key), pins the graded count to a second key-count pass and to the measured floor
+// (what that guard can and cannot prove is said at the leg, not here), drives the throwing existence branch
+// live, and pins parsed plans to their input's effect scopes (F-I1b5-5).
 //
 // WHAT THESE LEGS DO NOT DO (register discipline, #502): they change no closed scope form, they add no
 // adapter, they invent no behaviour the interface does not already freeze. Where the interface carries an
@@ -2051,6 +2111,56 @@ interface SourceScan {
  *  problem the lint owns, not a capability. */
 const GLOBAL_CAPABILITY_NAMES = ['fetch', 'eval', 'WebSocket', 'XMLHttpRequest', 'EventSource', 'Worker', 'SharedWorker', 'navigator', 'WebAssembly'] as const
 
+/** The CLOSED set of intrinsic escape hatches — values from which every other capability is one property
+ *  lookup away: `Function('return process')()` builds the process object from a string, `globalThis` IS the
+ *  global object, `Reflect.get` reads any property of any object, `process` carries the OS surface. The rule
+ *  convicts any reference to these names — identifier, by-value alias (round 6's E2: `export const r6Compile
+ *  = Function` passed every gate at `f773d1603`), callee, `new`, member head — plus member access on the
+ *  global object whose key folds statically (`globalThis['proc' + 'ess']`, E1/E8's spelling) and computed
+ *  global-object access that does NOT fold (the scan may not certify what it cannot name). Names bound in
+ *  the file are not the ambient intrinsic (same shadowing law as GLOBAL_CAPABILITY_NAMES). THE HONEST SIZE,
+ *  in the one sentence the round-6 ruling demands: this is a NAME-based tripwire over the lane's own source,
+ *  and a determined author can route around a name-based rule — the module's real backing is that it has
+ *  zero callers (`ALLOWED_CONSUMERS = []`), ships no entry point, and sits behind code review. */
+const INTRINSIC_ESCAPE_HATCH_NAMES = ['Function', 'eval', 'globalThis', 'Reflect', 'process'] as const
+
+/** Fold a string-valued expression to its literal value when the compiler can see it statically: string
+ *  literals, no-substitution templates, parenthesised and `as`/`satisfies`-wrapped expressions, `+`
+ *  concatenation of foldables, and template expressions whose substitutions all fold. E8's `'proc' + 'ess'`
+ *  is this function's reason to exist (F-I1b6-1); anything else returns null — and a null at a computed
+ *  global-object member is a REFUSAL, never a silent pass. */
+function staticallyFoldedString(node: ts.Node): string | null {
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) return staticallyFoldedString(node.expression)
+  if (ts.isTemplateExpression(node)) {
+    let folded = node.head.text
+    for (const span of node.templateSpans) {
+      const part = staticallyFoldedString(span.expression)
+      if (part === null) return null
+      folded += part + span.literal.text
+    }
+    return folded
+  }
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    const left = staticallyFoldedString(node.left)
+    const right = staticallyFoldedString(node.right)
+    return left === null || right === null ? null : left + right
+  }
+  return null
+}
+
+/** The global-object identifier at the head of a possibly parenthesised / `as`- / `satisfies`-wrapped
+ *  expression — E8 reached the global object as `(globalThis as unknown as Record<…>)[…]`, and a cast
+ *  around a name does not un-name it. Null when the head is anything else. */
+function globalObjectHead(expression: ts.Expression): ts.Identifier | null {
+  let node: ts.Expression = expression
+  for (;;) {
+    if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) { node = node.expression; continue }
+    break
+  }
+  return ts.isIdentifier(node) && node.text === 'globalThis' ? node : null
+}
+
 /** Parse one source TEXT (the bytes a file or a planted fixture carries) and answer with its edges, its
  *  non-static refusals and its allow-list violations. This is THE scanner — real files and synthetic
  *  fixtures go through the same function, so the instrument-self leg below grades exactly what the P-1 legs
@@ -2089,15 +2199,44 @@ function analyzeSource(label: string, text: string, scriptKind: ts.ScriptKind): 
     nonStatic.push(`${label}:${lineOf(specifierNode.pos)} ${kind} with a NON-LITERAL specifier — cannot be resolved statically: ${cut(context ?? specifierNode)}`)
   }
   const scan = (node: ts.Node): void => {
-    // Identifiers in type positions name types, not runtime values; capability cannot execute from there.
+    // Type-position `import('node:fs')` (F-I1b6-6): an ImportTypeNode NAMES a module the same way a static
+    // import does — `type R6Fs = import('node:fs')` walked blind at `f773d1603` while the statement form
+    // `import type … from 'node:fs'` was convicted. It is recorded as an edge, so the external allow-list
+    // grades it; the closure walk does not FOLLOW import-type edges (declarations do not ship as load edges),
+    // which is stated at walkStaticClosure, not hidden here.
+    if (ts.isImportTypeNode(node)) {
+      // TS 6 keeps the specifier as a LiteralTypeNode wrapping the StringLiteral — unwrap to grade the
+      // string, anything else stays non-static and is refused.
+      const specifierNode = ts.isLiteralTypeNode(node.argument) ? node.argument.literal : node.argument
+      addEdge('import-type', specifierNode, node)
+      return
+    }
+    // Identifiers in type positions name types, not runtime values; capability cannot execute from there —
+    // except the module reference just handled above, which names a module even in type position.
     if (ts.isTypeNode(node) || ts.isJSDoc(node)) return
     if (ts.isImportDeclaration(node)) addEdge('import-declaration', node.moduleSpecifier, node)
     if (ts.isExportDeclaration(node)) addEdge(node.exportClause === undefined ? 'export-star' : 'named-reexport', node.moduleSpecifier, node)
+    // `import x = require('node:fs')` (F-I1b6-2): an ImportEqualsDeclaration over an ExternalModuleReference
+    // is a module edge the compiler emits a real require() for. At `f773d1603` this file had no case for it
+    // at all, so with the vocabulary net emptied the plant added ZERO tree-facing reds — the demoted deny-
+    // list was still load-bearing for exactly this shape. It is an edge now; the allow-list convicts it.
+    // (TS 6 keeps the specifier at `moduleReference.expression`; the `require` keyword is a token, not an
+    // identifier node, which is why the aliased-require rule below does not fire on this form.)
+    if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) {
+      addEdge('import-equals', node.moduleReference.expression, node.moduleReference)
+    }
     if (ts.isCallExpression(node)) {
       const callee = node.expression
       if (callee.kind === ts.SyntaxKind.ImportKeyword) addEdge('dynamic-import', node.arguments[0], node)
       else if (ts.isIdentifier(callee) && callee.text === 'require') addEdge('require', node.arguments[0], node)
       else if (ts.isIdentifier(callee) && callee.text === 'createRequire') nonStatic.push(`${label}:${lineOf(node.pos)} createRequire builds a loader at runtime — the closure may not claim what it will reach: ${cut(node)}`)
+      else if (ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && callee.expression.text === 'require' && callee.name.text === 'resolve') nonStatic.push(`${label}:${lineOf(node.pos)} require.resolve locates a module without loading it — no edge is recorded for what that path becomes, so the closure may not pass it silently (F-I1b6-5): ${cut(node)}`)
+      // `module.require(…)` / `anything.require(…)`: a member-call loader. The rule is that a call whose
+      // CALLEE IS A MEMBER NAMED `require` loads a module, whoever the receiver is — measured zero hits on
+      // existing lane bytes, so this closes the last require spelling the residual probe found blind rather
+      // than pinning it as a known gap.
+      else if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'require') addEdge('member-require', node.arguments[0], node)
+      else if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'constructor') capabilityViolations.push(`${label}:${lineOf(node.pos)} calls .constructor(...) — the route round 6's E9 plant used (Error.prepareStackTrace → CallSite.getFunction() → .constructor('return process')) to reach the Function constructor off a live object without ever spelling the name: ${cut(node)}`)
       else if (ts.isIdentifier(callee) && (callee.text === 'Function' || callee.text === 'eval')) capabilityViolations.push(`${label}:${lineOf(node.pos)} ${callee.text} executes a string as code — a capability surface the decision plane must not hold: ${cut(node)}`)
     }
     if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'Function') capabilityViolations.push(`${label}:${lineOf(node.pos)} Function constructor executes a string as code: ${cut(node)}`)
@@ -2119,16 +2258,40 @@ function analyzeSource(label: string, text: string, scriptKind: ts.ScriptKind): 
         || (ts.isShorthandPropertyAssignment(parent) && parent.name === node)
         || (ts.isImportSpecifier(parent) && parent.name === node)
         || (ts.isExportSpecifier(parent) && parent.name === node)
+        || (ts.isMethodSignature(parent) && parent.name === node)
+        || (ts.isPropertySignature(parent) && parent.name === node)
         || ts.isImportAttribute(parent)
       )
+      // The by-value hatch rule (F-I1b6-1): convict a REFERENCE to an intrinsic escape hatch wherever it
+      // sits, not only in callee/`new` position — E2 convicted nothing because `export const r6Compile =
+      // Function` puts `Function` in initializer position, and `globalThis` was never convicted at all.
+      // `process` keeps its dedicated rule above (its message names the member allow-list); as a member
+      // head it is convicted by the two process-member rules. A name bound in this file is not the ambient
+      // intrinsic — same shadowing law, same reason (X8 proves the scanner is not always-red theatre).
+      const isHatchReference = !isNotAReference && !boundNames.has(node.text)
+        && (INTRINSIC_ESCAPE_HATCH_NAMES as readonly string[]).includes(node.text)
+        && !(node.text === 'process' && isMemberHead)
+      if (isHatchReference) capabilityViolations.push(`${label}:${lineOf(node.pos)} references the intrinsic escape hatch '${node.text}' by value — a handle to it is every capability one lookup away (Function('return process')() needs no other name spelled), and name-based tripwire or not, the decision plane may not hold it: ${cut(parent ?? node)}`)
+      // A require that is not the callee is a require that can be called under any name (F-I1b6-5): the
+      // closure records no edges for `const r = require; r('./x.js')`, so the alias itself is refused as
+      // non-static rather than walked past. The `require` INSIDE `import x = require('…')` is the syntax
+      // form, recorded as an import-equals edge above — not an alias.
+      if (node.text === 'require' && !isNotAReference && !boundNames.has('require') && !isMemberHead && parent !== undefined && parent.kind !== ts.SyntaxKind.ExternalModuleReference && !(ts.isCallExpression(parent) && parent.expression === node)) {
+        nonStatic.push(`${label}:${lineOf(node.pos)} require is referenced by value, not called — any name it is assigned to can load a module the closure never records (F-I1b6-5): ${cut(parent)}`)
+      }
       if (!isNotAReference && GLOBAL_CAPABILITY_NAMES.includes(node.text as (typeof GLOBAL_CAPABILITY_NAMES)[number]) && !boundNames.has(node.text)) {
         capabilityViolations.push(`${label}:${lineOf(node.pos)} uses the ambient capability name '${node.text}' (it is neither declared nor imported in this file): ${cut(parent ?? node)}`)
       }
     }
-    // globalThis['fetch'] / globalThis.navigator — the same names behind the global object.
-    if ((ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) && ts.isIdentifier(node.expression) && node.expression.text === 'globalThis') {
-      const accessed = ts.isPropertyAccessExpression(node) ? node.name.text : ts.isStringLiteral(node.argumentExpression) || ts.isNoSubstitutionTemplateLiteral(node.argumentExpression) ? node.argumentExpression.text : '<computed>'
-      if (GLOBAL_CAPABILITY_NAMES.includes(accessed as (typeof GLOBAL_CAPABILITY_NAMES)[number])) capabilityViolations.push(`${label}:${lineOf(node.pos)} reaches the ambient capability name '${accessed}' through globalThis: ${cut(node)}`)
+    // Any member access on the global object is refused (round 6, F-I1b6-1/E1/E8): if the key folds
+    // statically — literal, no-substitution template, or concatenation like 'proc' + 'ess' — the refusal
+    // NAMES the capability it reaches; if it does not fold, the refusal says the scan cannot name what it
+    // reaches. Either way, `globalThis` is not a door the decision plane walks through; the head may hide
+    // behind parentheses and `as` casts, so the unwrap goes through those.
+    if ((ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) && globalObjectHead(node.expression) !== null) {
+      const folded = ts.isPropertyAccessExpression(node) ? node.name.text : staticallyFoldedString(node.argumentExpression)
+      if (folded !== null) capabilityViolations.push(`${label}:${lineOf(node.pos)} reaches '${folded}' through globalThis${(GLOBAL_CAPABILITY_NAMES as readonly string[]).includes(folded) || (INTRINSIC_ESCAPE_HATCH_NAMES as readonly string[]).includes(folded) ? ` — a convicted capability name${ts.isPropertyAccessExpression(node) ? '' : ' assembled from a folded non-literal key'}` : ''}; the global object may not be indexed at all in the decision plane: ${cut(node)}`)
+      else capabilityViolations.push(`${label}:${lineOf(node.pos)} computed member access on the global object — the scan cannot fold the key, so it cannot clear it; refusal, not silent pass: ${cut(node)}`)
     }
     ts.forEachChild(node, (child) => {
       scan(child)
@@ -2148,6 +2311,10 @@ function allowListViolations(scan: SourceScan): string[] {
 }
 
 function scriptKindFor(file: string): ts.ScriptKind {
+  // Parsed as WHAT IT IS (F-I1b6-3): `.cjs`/`.cts` were once unlistable by any filter, so the question of
+  // how they parse had never come up; the CJS forms in a `.cjs` orphan must not be mis-parsed, and `.cts`
+  // is TypeScript with CommonJS emit — TS parse is correct for it. `.map` never reaches here: the surface
+  // classifier routes data files to the vocabulary net, not the analyzer.
   return /\.(?:js|mjs|cjs)$/.test(file) ? ts.ScriptKind.JS : ts.ScriptKind.TS
 }
 
@@ -2194,6 +2361,11 @@ function walkStaticClosure(entries: readonly string[], extensions: readonly stri
         external.add(edge.specifier)
         continue
       }
+      // A type-position `import('./x.js')` NAMES a module (and its external cousins are graded by the
+      // allow-list above) but it is not a LOAD edge: nothing the shipped graph executes travels it. The
+      // closure is a claim about what runs, so the edge is recorded and not followed — stated here because
+      // the alternative (following it) would let a declaration drag a file into "what the runtime reaches".
+      if (edge.kind === 'import-type') continue
       const [bareSpecifier = edge.specifier] = edge.specifier.split(/[?#]/)
       const base = resolve(dirname(file), bareSpecifier)
       const candidates = [...extensions.map((ext) => base.replace(/\.js$/, ext)), ...extensions.map((ext) => join(base, `index${ext}`))]
@@ -2205,13 +2377,17 @@ function walkStaticClosure(entries: readonly string[], extensions: readonly stri
   return { files: [...seen].sort(), unresolved, external: [...external].sort(), nonStatic }
 }
 
-/** A recursive directory listing, computed by the FILESYSTEM, independent of any walk over edges — this is
- *  the expectation the coverage legs compare against, per the round-5 law that the expectation must not be
- *  produced by the walker's own arithmetic. Symlinks are REFUSED outright (listed, then convicted): a
- *  symlinked module is not a file of this directory, and what it points at is outside the listing's claim —
- *  round 5's R3 plant showed a symlink alias passing text scans when its target is clean, so the surface
- *  does not tolerate aliases inside itself. */
-function listFilesRecursively(dir: string, extensions: readonly string[]): { files: string[]; symlinks: string[] } {
+/** Enumerate the CONTENT of a directory recursively — every file, unfiltered (F-I1b6-3). The previous
+ *  version took an extension list, and that list WAS the boundary: a `.cts` lane source (which
+ *  `tsc -p tsconfig.build.json --listFiles` proves the build program compiles) and a `.cjs` orphan in lane
+ *  dist were scanned by nothing while identical bytes named `.ts`/`.js` reddened — the extension had become
+ *  the variable the instrument graded. Now the listing is the filesystem's, and the categories below decide
+ *  what analysis a byte gets, with a red for anything that fits no category. Symlinks are REFUSED outright
+ *  (listed, then convicted): a symlinked file is not a file of this directory, and what it points at is
+ *  outside the listing's claim — round 5's R3 plant showed a symlink alias passing text scans when its
+ *  target is clean, and F-I1b5-7's `tsc` symlink behaviour is still unmeasured, so neither surface tolerates
+ *  aliases inside itself. */
+function listDirectoryContentRecursively(dir: string): { files: string[]; symlinks: string[] } {
   const files: string[] = []
   const symlinks: string[] = []
   const step = (at: string): void => {
@@ -2219,11 +2395,46 @@ function listFilesRecursively(dir: string, extensions: readonly string[]): { fil
       const full = join(at, entry.name)
       if (entry.isSymbolicLink()) symlinks.push(relToRepo(full))
       else if (entry.isDirectory()) step(full)
-      else if (extensions.some((extension) => entry.name.endsWith(extension))) files.push(relToRepo(full))
+      else files.push(relToRepo(full))
     }
   }
   step(dir)
   return { files: files.sort(), symlinks: symlinks.sort() }
+}
+
+/** The two CLOSED content categories a lane-surface file may fall in, plus the red category. Script bytes
+ *  go through the AST analyzer and the vocabulary net; excluded-data bytes are JSON build artifacts that
+ *  carry no module code and are graded by the embedded-source check below; anything else is unclassified
+ *  and is a red, because "we did not think of that file kind" must never again be the same colour as
+ *  "nothing needs to look at this". */
+const LANE_SCRIPT_SUFFIXES = ['.ts', '.mts', '.cts', '.js', '.mjs', '.cjs'] as const
+const LANE_EXCLUDED_DATA_SUFFIXES = ['.map'] as const
+type LaneSurfaceCategory = 'script' | 'excluded-data' | 'unclassified'
+function laneSurfaceCategory(file: string): LaneSurfaceCategory {
+  if (LANE_SCRIPT_SUFFIXES.some((suffix) => file.endsWith(suffix))) return 'script'
+  if (LANE_EXCLUDED_DATA_SUFFIXES.some((suffix) => file.endsWith(suffix))) return 'excluded-data'
+  return 'unclassified'
+}
+/** Source maps are the one excluded category, and the exclusion is separately justified and MEASURED, not
+ *  assumed (F-I1b6-3): `tsconfig.base.json` turns on `sourceMap` + `declarationMap`, so 22 of the 44
+ *  tracked files in the two lane dist directories are `.map` files. They are base-64 mapping tables the
+ *  platform's debugger consumes — not module bytes, never loaded by any graph — but they CAN carry the
+ *  lane's source text inside `sourcesContent`, and source text is exactly what the prohibition grades. So
+ *  the exclusion holds only while that field is empty, and the leg measures the field: at `f773d1603` 0 of
+ *  the 22 maps embed source text, and a map that ever starts to is a red leg, not a silent hole. */
+function embeddedSourceTextInMap(file: string): string | null {
+  const raw = readFileSync(join(REPO_ROOT, file), 'utf8')
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return `${file} is not parseable JSON — a .map file the scan cannot read cannot be cleared either`
+  }
+  const sourcesContent = (parsed as { sourcesContent?: unknown }).sourcesContent
+  if (Array.isArray(sourcesContent) && sourcesContent.some((entry) => typeof entry === 'string' && entry.trim().length > 0)) {
+    return `${file} embeds source text in sourcesContent — a source-carrying artifact is source to this scan, and the exclusion is void for it`
+  }
+  return null
 }
 
 /** The CLOSED forbidden vocabulary for the decision plane (P-1). Every token names an API or a configuration
@@ -2292,9 +2503,12 @@ const ALLOWED_EXTERNAL_MODULES = ['node:crypto'] as const
  *  rule can take: any `process.<member>`, any computed `process[…]`, any binding or by-value reference
  *  named `process` reddens by name. `process.binding`, `process.dlopen`, `process.mainModule`,
  *  `process.chdir` are not special — they are simply not on the list, and neither is any future member:
- *  a capability that must be ADDED to an allow-list to exist is a capability that is refused until a
- *  reviewer adds it on purpose. If the lane ever genuinely needs `process.env`-class non-capability data,
- *  the member joins this list through review and this comment says where it was measured. */
+ *  a capability that must be ADDED to an allow-list to exist is a capability this rule refuses until a
+ *  reviewer adds it on purpose — PROVIDED the capability spells one of the convicted names; a handle
+ *  obtained under a name the scan does not know sits outside this rule's reach, which is spelled out at
+ *  INTRINSIC_ESCAPE_HATCH_NAMES and in the scope block above. If the lane ever genuinely needs
+ *  `process.env`-class non-capability data, the member joins this list through review and this comment says
+ *  where it was measured. */
 const PROCESS_MEMBER_ALLOW_LIST: readonly string[] = []
 
 const DECISION_ENTRIES_SRC = [join(RUNTIME_ROOT, 'review-assignment', 'index.ts'), join(RUNTIME_ROOT, 'review-mandate', 'index.ts')]
@@ -2302,9 +2516,15 @@ const DECISION_ENTRIES_DIST = [
   join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'review-assignment', 'index.js'),
   join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'review-mandate', 'index.js'),
 ]
+// Resolution candidate lists for the closure walk — the extensions a `./x.js` specifier may RESOLVE to, a
+// different question from which files sit on a surface (that question belongs to the directory content,
+// listDirectoryContentRecursively). `.cts`/`.cjs` are in (F-I1b6-3): a lane module written in either flavour
+// must resolve when the barrel names it, exactly as its `.ts`/`.js` twin does.
+const LANE_SRC_CLOSURE_EXTENSIONS = ['.ts', '.mts', '.cts']
+const LANE_DIST_CLOSURE_EXTENSIONS = ['.js', '.mjs', '.cjs']
 
 describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach policy or sandbox configuration', () => {
-  it('the reachable set is DERIVED from real import edges by an AST walk, and the derivation is complete', () => {
+  it('the reachable set is DERIVED from real import edges by an AST walk — no unfollowable edge, no unresolved edge, and the walk is checked against the directories it must cover', () => {
     // No hand-maintained file list: BFS follows the specifiers the compiler itself would follow, from the two
     // lane barrels (which re-export the whole lane surface, `export * from './assignment-admission.js'`), by
     // PARSING each file — an edge split across a line break, a `from` behind string-literal comment markers,
@@ -2317,28 +2537,38 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     // an independent filesystem walk, subdirectories included — is in the set, and nothing the walk found in
     // a lane directory is outside the listing. The expectation is the listing's arithmetic, never the
     // walker's: a walker that stopped at a subdirectory cannot make the expectation stop there too.
-    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
     expect(walk.nonStatic, `the decision plane grew an edge the walk cannot resolve to a literal specifier, so a static closure can no longer name what it reaches:\n${walk.nonStatic.join('\n')}`).toEqual([])
     expect(walk.unresolved, `a relative import resolves to no file (or a file no longer parses) — the closure would silently stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
     for (const laneDir of ['review-assignment', 'review-mandate']) {
-      const listing = listFilesRecursively(join(RUNTIME_ROOT, laneDir), ['.ts', '.mts'])
+      // The expectation is directory CONTENT, unfiltered (F-I1b6-3): a `.cts` module dropped next to the
+      // others must be reached by the walk or this leg reddens — under the old `['.ts','.mts']` filter it
+      // was invisible to both measurements at once, which is the exact pair-blindness round 6 planted.
+      const listing = listDirectoryContentRecursively(join(RUNTIME_ROOT, laneDir))
       expect(listing.symlinks, `${laneDir} carries symlinks — an aliased module is not a file of this directory, and its target is outside what a listing can attest to (F-I1b5-7 leaves tsc's symlink behaviour unmeasured, so the surface refuses aliases rather than trusting them):\n${listing.symlinks.join('\n')}`).toEqual([])
-      expect(listing.files.length, `${laneDir} has no modules — the walk is measuring an empty lane`).toBeGreaterThan(0)
+      const scripts = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'script')
+      const nonScripts = listing.files.filter((rel) => laneSurfaceCategory(rel) !== 'script')
+      expect(nonScripts, `${laneDir} (a SOURCE directory) carries files that are not lane modules — a source lane holds scripts; anything else is either a build artifact in the wrong place or a file kind this instrument has not been told about, and neither may be skipped silently:\n${nonScripts.join('\n')}`).toEqual([])
+      expect(scripts.length, `${laneDir} has no modules — the walk is measuring an empty lane`).toBeGreaterThan(0)
       const laneInWalk = walk.files.map(relToRepo).filter((rel) => rel.startsWith(`packages/runtime/${laneDir}/`)).sort()
-      expect(laneInWalk, `the closure found modules in ${laneDir} that the recursive listing does not — the two measurements disagree about what this directory is:\n${laneInWalk.filter((rel) => !listing.files.includes(rel)).join('\n')}`).toEqual(listing.files)
+      expect(laneInWalk, `the closure and the unfiltered listing disagree about what ${laneDir} holds — every module the directory carries must be reachable from the barrel, and nothing the walk found may sit outside the listing:\nonly-in-walk: ${laneInWalk.filter((rel) => !scripts.includes(rel)).join('\n')}\nonly-on-disk: ${scripts.filter((rel) => !laneInWalk.includes(rel)).join('\n')}`).toEqual(scripts)
     }
     expect(walk.files.map(relToRepo).some((rel) => rel.startsWith('packages/contracts/')), 'the closure never crossed into the frozen contracts vocabulary — the walk stopped inside the lane').toBe(true)
   })
 
-  it('everything it reaches sits in the decision lanes or the frozen vocabulary, and every module edge names the closed allow-list', () => {
+  it('everything the walk reaches sits in the decision lanes or the frozen vocabulary, and every module edge it records names the closed allow-list', () => {
     // This is the closure form of the prohibition: not "we hope no one imports the control center", but the
     // statement "every file the decision path can transitively touch is one of these planes, and no edge in
     // any of them names a module outside the allow-list or the process object outside its allow-list".
+    // Scope of the sentence, stated: the edges are the ones THIS analyzer records — import/export forms,
+    // dynamic import, require, import-equals (F-I1b6-2), type-position import() (F-I1b6-6) — and a construct
+    // the analyzer has never heard of is not an edge it can grade. That residual is the one the header
+    // concedes in one sentence: names the scan does not know are review's to catch, not this leg's.
     // The edge check runs PER FILE, over the parse tree — not over a string set assembled from the text —
     // so `import\n  ('node:fs')` and `require('node:fs')` and a re-export are the same kind of named edge.
     // A future import of any other plane — sandbox-provider, control, blueprint/policy writers, or a builtin
     // with I/O — reddens THIS leg by name, which is the point of freezing it now.
-    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
     expect(outsideReachablePlanes(walk.files), `the decision path now reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])
     expect(walk.external, `the decision plane imports external modules beyond the closed allow-list ${ALLOWED_EXTERNAL_MODULES.join(', ')}:\n${walk.external.join(', ')}`).toEqual([...ALLOWED_EXTERNAL_MODULES])
     const scans = walk.files.map(scanFile)
@@ -2349,11 +2579,13 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     // The second, independent net. Its claim is exactly its reach: it NAMES forbidden tokens that appear in
     // code text (comments blanked by the compiler's scanner, so string-quoted `/*` cannot shield a region —
     // round 5, plant S2 — and line numbers are the real ones, so a hit is locatable with one `cd`). A word
-    // list cannot prove that no other name exists, and this leg does not claim it: the CONSTRUCTIVE rule
-    // is the allow-list leg above — a capability cannot even arrive inside the reachable set unless it
-    // rides `node:crypto` or a member of the (empty) process list. What this net independently catches is
+    // list cannot prove that no other name exists, and this leg does not claim it: the constructive rules
+    // are the allow-list legs above — a module edge outside `node:crypto`, a `process` member off the empty
+    // list, or a convicted global/hatch name reddens there whether or not this net knows the token — and
+    // what both instruments share as their limit is the tripwire sentence in the scope block: names they do
+    // not know are not caught by either. What this net independently catches is
     // a forbidden surface spelled in code WITHOUT being imported as an edge: a call, a string, an alias.
-    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
     const hits = vocabularyHitsOfFiles(walk.files, FORBIDDEN_DECISION_PLANE_VOCABULARY)
     expect(hits, `the reachable decision-plane source names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
   })
@@ -2367,7 +2599,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     for (const entry of DECISION_ENTRIES_DIST) {
       expect(existsSync(entry), `the built counterpart ${relToRepo(entry)} is missing — this leg measures the SHIPPED graph, so a missing mirror is a red leg, not a skipped one`).toBe(true)
     }
-    const walk = walkStaticClosure(DECISION_ENTRIES_DIST, ['.js', '.mjs'])
+    const walk = walkStaticClosure(DECISION_ENTRIES_DIST, LANE_DIST_CLOSURE_EXTENSIONS)
     expect(walk.nonStatic, `the built decision plane grew an edge no static walk can resolve:\n${walk.nonStatic.join('\n')}`).toEqual([])
     expect(walk.unresolved, `a built relative import resolves to no built file (or a built file no longer parses) — the dist closure would stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
     expect(outsideReachablePlanes(walk.files), `the BUILT decision path reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])
@@ -2378,32 +2610,44 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     expect(hits, `the built decision-plane source names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
   })
 
-  it('every file the build emitted for the two lanes is on the scanned install surface — reachability is not the boundary of what ships', () => {
+  it('the install surface enumerates the lane dist directories by CONTENT and classifies every file: scripts scanned, the one exclusion held to its measured condition, unclassified is a red', () => {
     // F-I1b5-3, plant S5: an orphan module in `dist` — emitted, shipped, never reached by the barrel graph —
-    // sat outside every P-1 leg while carrying `require('node:fs')`. The install surface is what the build
-    // OUTPUT is, measured by listing the lanes' dist directories recursively; this leg scans EVERY file in
-    // that listing with the same analyzer, whether or not the graph reaches it, and separately states the
-    // reachability agreement (listing vs barrel walk) as its own assertion — two claims, two messages, so a
-    // future red says which one broke.
+    // sat outside every P-1 leg while carrying `require('node:fs')`. F-I1b6-3, plants E5/E5b: the listing this
+    // leg compares against used to be an EXTENSION FILTER, so the same bytes named `.cjs` instead of `.js`
+    // were scanned by nothing while the `.js` twin reddened. The listing is now the directory's content and
+    // every file is classified: script bytes get the analyzer + the vocabulary net; `.map` bytes are the one
+    // excluded category, held to the measured condition in embeddedSourceTextInMap (a map that ever embeds
+    // source text is source to this scan and reddens); an unclassifiable file is a red, because a gap in the
+    // instrument's imagination must not be the same colour as a pass. Reachability (barrel graph vs listing)
+    // stays its own assertion with its own message — two claims, two messages, so a future red says which
+    // one broke.
     for (const laneDir of ['review-assignment', 'review-mandate']) {
       const distDir = join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', laneDir)
       expect(existsSync(distDir), `the built lane directory ${relToRepo(distDir)} is missing — there is no install surface to scan`).toBe(true)
-      const listing = listFilesRecursively(distDir, ['.js', '.mjs', '.d.ts', '.d.mts'])
+      const listing = listDirectoryContentRecursively(distDir)
       expect(listing.symlinks, `${relToRepo(distDir)} carries symlinks — tsc's symlink behaviour is an OPEN unmeasured question (F-I1b5-7), so the install surface refuses aliases instead of scanning through them:\n${listing.symlinks.join('\n')}`).toEqual([])
-      expect(listing.files.length, `${relToRepo(distDir)} lists no emitted files — this leg would be scanning nothing`).toBeGreaterThan(0)
-      const scans = listing.files.map((rel) => scanFile(join(REPO_ROOT, rel)))
+      expect(listing.files.length, `${relToRepo(distDir)} lists no files at all — this leg would be scanning nothing`).toBeGreaterThan(0)
+      const scripts = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'script')
+      const maps = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'excluded-data')
+      const unclassified = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'unclassified')
+      expect(unclassified, `${relToRepo(distDir)} holds files in no category — add the category with a justification, or remove the bytes; do not let the surface quietly stop covering them (F-I1b6-3):\n${unclassified.join('\n')}`).toEqual([])
+      // The exclusion earns its keep by measurement every run: an embedded-source map is a shipped copy of
+      // the source, and source is what the prohibition grades.
+      const embedding = maps.map(embeddedSourceTextInMap).filter((note): note is string => note !== null)
+      expect(embedding, `a .map in the install surface breaks the only condition its exclusion rests on:\n${embedding.join('\n')}`).toEqual([])
+      const scans = scripts.map((rel) => scanFile(join(REPO_ROOT, rel)))
       expect(scanBucket(scans, 'parseErrors'), `a file the build emitted does not parse — nothing may be claimed clean about bytes no compiler can read:\n${scanBucket(scans, 'parseErrors').join('\n')}`).toEqual([])
       expect(scanBucket(scans, 'nonStatic'), `a file the build emitted carries a loader construct the closure cannot complete:\n${scanBucket(scans, 'nonStatic').join('\n')}`).toEqual([])
       expect(scanBucket(scans, 'capabilityViolations'), `a file the build emitted breaches an allow-list — it SHIPS, reachability or not (F-I1b5-3):\n${scanBucket(scans, 'capabilityViolations').join('\n')}`).toEqual([])
-      const hits = vocabularyHitsOfFiles(listing.files.map((rel) => join(REPO_ROOT, rel)), FORBIDDEN_DECISION_PLANE_VOCABULARY)
+      const hits = vocabularyHitsOfFiles(scripts.map((rel) => join(REPO_ROOT, rel)), FORBIDDEN_DECISION_PLANE_VOCABULARY)
       expect(hits, `a file the build emitted names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
-      // The separate reachability claim: the graph the built barrels reach and the listing of what was
-      // emitted agree file-for-file. When they diverge, something shipped that no barrel loads — which is
-      // exactly how S5's orphan escaped the graph legs; the scan above already covers it either way.
-      const walk = walkStaticClosure(DECISION_ENTRIES_DIST, ['.js', '.mjs'])
+      // The separate reachability claim: the graph the built barrels reach and the code bytes on disk agree
+      // file-for-file. When they diverge, something shipped that no barrel loads — which is exactly how S5's
+      // orphan escaped the graph legs; the scan above already covers it either way.
+      const walk = walkStaticClosure(DECISION_ENTRIES_DIST, LANE_DIST_CLOSURE_EXTENSIONS)
       const laneBuilt = new Set(walk.files.map(relToRepo).filter((rel) => rel.startsWith(`packages/runtime/dist/packages/runtime/${laneDir}/`)))
-      const listedCode = listing.files.filter((rel) => /\.(?:js|mjs)$/.test(rel))
-      expect([...laneBuilt].sort(), `the barrel graph and the recursive listing of ${relToRepo(distDir)} disagree file-for-file — either a module shipped that no barrel loads (S5's escape; scanned above either way) or the graph loads what the listing does not carry:\nreceived=[graph reaches] expected=[listing holds], diff: ${JSON.stringify({ onlyInGraph: [...laneBuilt].filter((rel) => !listedCode.includes(rel)), onlyInListing: listedCode.filter((rel) => !laneBuilt.has(rel)) })}`).toEqual(listedCode)
+      const listedCode = scripts.filter((rel) => /\.(?:js|mjs|cjs)$/.test(rel))
+      expect([...laneBuilt].sort(), `the barrel graph and the unfiltered listing of ${relToRepo(distDir)} disagree file-for-file — either a module shipped that no barrel loads (S5's escape; scanned above either way) or the graph loads what the listing does not carry:\nreceived=[graph reaches] expected=[listing holds], diff: ${JSON.stringify({ onlyInGraph: [...laneBuilt].filter((rel) => !listedCode.includes(rel)), onlyInListing: listedCode.filter((rel) => !laneBuilt.has(rel)) })}`).toEqual(listedCode)
     }
   })
 
@@ -2505,10 +2749,118 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     expect(scanText('X8.ts', "const fetch = (u: string): string => u\nexport default fetch('x')\n").capabilityViolations, 'a local named fetch is not the global fetch — the scanner must not be always-red theatre').toEqual([])
     // unprefixed builtins and bare packages are outside the allow-list — the closed set is the rule.
     expect(violationTexts(scanText('X9.ts', "import fs from 'fs'\nimport { z } from 'zod'\nexport default [fs, z]\n"))).toContain("names external module 'fs'")
+
+    // ROUND 6 (F-I1b6-1) — the exact planted bytes, every spelling the reviewer landed with. Each redds on
+    // its own rule: by-value hatch reference, global-object member access folded out of a concatenation,
+    // and the `.constructor(...)` member call that never spells a name at all.
+    const r6e2 = scanText('E2.ts', "export const r6Compile = Function\nexport const r6Leak = (): unknown => r6Compile('return process')()\n")
+    expect(violationTexts(r6e2), 'F-I1b6-1/E2: Function handed out as a VALUE must convict — at `f773d1603` these two lines reached live process with every gate green').toContain("intrinsic escape hatch 'Function'")
+    const r6e1 = scanText('E1.ts', "export const r6E1ProcessViaGlobalObject = (): unknown => globalThis['process'].chdir\n")
+    expect(violationTexts(r6e1), 'F-I1b6-1/E1: the global object indexed by a literal must convict').toContain("reaches 'process' through globalThis")
+    const r6e8 = scanText('E8.ts', "export const r6E8Binding = (): unknown => (globalThis as unknown as Record<string, Record<string, (...a: unknown[]) => unknown>>)['proc' + 'ess'].binding('spawn_sync')\n")
+    expect(violationTexts(r6e8), "F-I1b6-1/E8: 'proc' + 'ess' folds statically — the scanner folds it too, and names what it reaches").toContain("reaches 'process' through globalThis")
+    expect(violationTexts(r6e8)).toContain("intrinsic escape hatch 'globalThis'")
+    const r6e9 = scanText('E9.ts', "type R6Site = { readonly getFunction: () => R6Ctor | undefined }\ntype R6Ctor = (...args: string[]) => unknown\nexport const r6E9Process = (): unknown => { const prior = Error.prepareStackTrace; let found: unknown; Error.prepareStackTrace = (_error, sites) => { found = sites[1]; return 'r6' }; void new Error().stack; Error.prepareStackTrace = prior; const ctor = found === undefined ? undefined : (found as R6Site).getFunction(); return ctor === undefined ? undefined : ctor.constructor('return process')() }\n")
+    expect(violationTexts(r6e9), 'F-I1b6-1/E9: a call to .constructor(...) convicts by shape — this plant spells none of Function/eval/globalThis/Reflect/process as a reference').toContain('calls .constructor(...)')
+    // The E9 honesty discipline, kept because it is the reviewer's own: the fixture above proves the SHAPE
+    // is convicted, and NOTHING more. Measured at `f773d1603` (round-6 report + logs/E9-live.log), the live
+    // payload of this exact expression returned `undefined` under vitest — this file does not claim it
+    // landed `process`, and after the fix it does not need to: the shape is refused at review time, which
+    // is all a tripwire ever promised.
+    expect(violationTexts(scanText('E9b.ts', "export const r6CallSiteRead = (sites: unknown): unknown => (sites as { 1: { getFunction: () => unknown } })[1].getFunction\n"))).not.toContain('.constructor')
+    // F-I1b6-2 — `import x = require('node:fs')`: an edge the AST walk now records, so the ALLOW-LIST
+    // convicts it and the conviction does not depend on the vocabulary net being alive.
+    const eq = scanText('EQ.ts', "import fsx = require('node:fs')\nexport const r6rd = (): unknown => fsx.readFileSync\n")
+    expect(eq.edges.map((edge) => `${edge.kind}:${edge.specifier}`), 'F-I1b6-2: ImportEqualsDeclaration over an ExternalModuleReference is a module edge').toEqual(['import-equals:node:fs'])
+    expect(violationTexts(eq)).toContain("names external module 'node:fs'")
+    // F-I1b6-5 — a require that locates without loading, and a require handed around by value: neither may
+    // pass unrecorded, because the closure cannot name the bytes either one can pull in.
+    const p4a = scanText('P4a.ts', "const where = require.resolve('./hidden/index.js')\nexport default where\n")
+    expect(p4a.nonStatic.join('\n'), 'F-I1b6-5: require.resolve must be refused as a non-static locational construct').toContain('require.resolve locates a module without loading it')
+    const p4b = scanText('P4b.ts', "const r = require\nconst m = r('./x.js')\nexport default m\n")
+    expect([...p4b.nonStatic, ...p4b.capabilityViolations].join('\n'), 'F-I1b6-5: require by value escapes edge recording and must convict on the alias itself').toContain('require is referenced by value')
+    expect(scanText('P4c.ts', "import fsx = require('node:fs')\nexport const r6rd = (): unknown => fsx.readFileSync\n").nonStatic.join('\n'), 'the require INSIDE an import-equals is syntax, not an aliased require — the edge records it').not.toContain('referenced by value')
+    // F-I1b6-6 — the type-position import(): invisible at `f773d1603` while the statement form convicted.
+    const p8 = scanText('P8.ts', "type R6Fs = import('node:fs')\nexport type R6Maybe = R6Fs | undefined\n")
+    expect(p8.edges.map((edge) => `${edge.kind}:${edge.specifier}`), 'F-I1b6-6: import(...) in type position names a module and must be recorded').toEqual(['import-type:node:fs'])
+    expect(violationTexts(p8)).toContain("names external module 'node:fs'")
+
+    // A few more shapes in the same family, asserted because "it would convict" is not a measurement:
+    // the plain member form of the global object, the reflector used as a door to it, and a destructure
+    // through it. All three carry a hatch name as a reference, so the by-value rule fires regardless of
+    // what the author does with the value next.
+    for (const [name, planted] of [
+      ['GLOBAL-MEMBER.ts', 'export const r6 = globalThis.process.chdir'],
+      ['GLOBAL-REFLECT.ts', "export const r6 = Reflect.get(globalThis, 'process')"],
+      ['GLOBAL-DESTRUCTURE.ts', 'const { process: r6p } = globalThis as unknown as { process: unknown }\nexport default r6p'],
+    ] as const) {
+      expect(violationTexts(scanText(name, planted)), `${name}: a hatch name reached as a value must convict even when nothing is called`).toContain('intrinsic escape hatch')
+    }
+
+    // RESIDUAL MEASUREMENT, not a claim: the spellings a name-based AST rule plausibly does NOT see. Each is
+    // run through the analyzer and PRINTED, and the leg pins the set that comes back empty — so the blind
+    // spots are a measured list in the repo, not a paragraph of optimism. If a future rule catches one, the
+    // pin breaks and the list has to shrink; if a new blind spot appears, the pin breaks the other way and
+    // someone writes the rule or discloses the gap HERE, in the file that has to stay honest.
+    const residualSpellings: ReadonlyArray<readonly [string, string]> = [
+      ['RES-module-require.ts', "const r6 = module.require('node:fs')\nexport default r6\n"],
+      ['RES-comma-require.ts', "const r6 = (0, require)('node:fs')\nexport default r6\n"],
+      ['RES-optional-require.ts', "const r6 = require?.('node:fs')\nexport default r6\n"],
+      ['RES-eval-string.ts', "const r6 = eval('require(\\'node:fs\\')')\nexport default r6\n"],
+      ['RES-ctypes.ts', "const r6 = (globalThis as Record<string, any>).require\nexport default r6\n"],
+      ['RES-worker-data.ts', "export const r6 = new Worker('./w.js', { workerData: 1 })\n"],
+      ['RES-descriptor-read.ts', "export const r6 = Object.getOwnPropertyDescriptor(globalThis, 'process')\n"],
+      ['RES-meta-resolve.ts', "export const r6 = import.meta.resolve('node:fs')\n"],
+    ]
+    const residualSeen: string[] = []
+    const residualBlind: string[] = []
+    for (const [name, planted] of residualSpellings) {
+      const scan = scanText(name, planted)
+      const seen = scan.edges.length + scan.nonStatic.length + scan.capabilityViolations.length
+      ;(seen > 0 ? residualSeen : residualBlind).push(name)
+      console.info(`residual probe ${name}: seen=${seen} edges=${scan.edges.map((e) => e.specifier).join('|')} nonStatic=${scan.nonStatic.length} capability=${scan.capabilityViolations.length}`)
+    }
+    // Measured at this commit: every spelling but one comes back with something recorded — `(0, require)`
+    // lands as nonStatic (the comma expression defeats the callee test, and the argument's string is not an
+    // edge on its own), `require?.()` records the edge, `module.require(…)` records a member-require edge,
+    // and the eval string / member-read require / Worker / descriptor-read / `import.meta.resolve` trip a
+    // capability or loader rule. The one that stays blind is the eval STRING's CONTENT: `eval('require(...)')`
+    // convicts the `eval` reference, but nothing in an AST can read a module name out of a string the engine
+    // will execute — that is the name-based rule's real boundary, and it is written here instead of argued
+    // away. (The pin below lists what is blind by RECORDING an edge; the eval case is in the seen list
+    // because `eval` itself convicts — which is exactly the distinction this probe exists to keep honest.)
+    expect(residualSeen.sort(), 'the analyzer sees a different set of these spellings than it did at this commit — if a rule got stronger, shrink the blind pin below to match; do not delete the leg').toEqual(['RES-comma-require.ts', 'RES-ctypes.ts', 'RES-descriptor-read.ts', 'RES-eval-string.ts', 'RES-meta-resolve.ts', 'RES-module-require.ts', 'RES-optional-require.ts', 'RES-worker-data.ts'])
+    expect(residualBlind.sort(), 'the blind set is not what this commit measured — either a rule lost a case or a spelling joined the blind list from outside; re-measure and update BOTH pins in the same edit, never one of them').toEqual([])
+
+    // F-I1b6-3 — the extension may never again be the variable: identical bytes, every spelling the surface
+    // classifies as a script, convicted identically through the script-kind the classifier routes them to.
+    expect(scriptKindFor('r6orphan.cjs'), 'a .cjs orphan parses as JavaScript, not as TypeScript').toBe(ts.ScriptKind.JS)
+    expect(scriptKindFor('r6evil.cts'), 'a .cts lane module parses as TypeScript').toBe(ts.ScriptKind.TS)
+    const cjsBytes = "'use strict'\nconst r6fs = require('node:fs')\nmodule.exports.r6Read = (p) => r6fs.readFileSync(p, 'utf8')\n"
+    for (const twin of ['r6orphan.js', 'r6orphan.cjs', 'r6orphan.mjs']) {
+      const scan = analyzeSource(twin, cjsBytes, scriptKindFor(twin))
+      expect(violationTexts(scan), `F-I1b6-3: identical CJS bytes named ${twin} must convict identically — at head the .cjs twin was scanned by nothing`).toContain("names external module 'node:fs'")
+    }
+    const ctsBytes = "import fsx = require('node:fs')\nconst r6ReadEvil = (p: string): string => fsx.readFileSync(p, 'utf8')\nexport = { r6ReadEvil }\n"
+    for (const twin of ['r6evil.ts', 'r6evil.cts', 'r6evil.mts']) {
+      const scan = analyzeSource(twin, ctsBytes, scriptKindFor(twin))
+      expect(scan.edges.map((edge) => edge.specifier), `${twin}: the import-equals edge survives the extension`).toEqual(['node:fs'])
+      expect(violationTexts(scan), `F-I1b6-3: identical import-equals bytes named ${twin} must convict identically`).toContain("names external module 'node:fs'")
+    }
+
     // clean lane bytes must come out clean through the full analyzer, or every red above is theatre.
-    for (const cleanFile of [join(RUNTIME_ROOT, 'review-mandate', 'plan.ts'), join(RUNTIME_ROOT, 'review-assignment', 'assignment-admission.ts')]) {
-      const clean = scanFile(cleanFile)
-      expect([...clean.parseErrors, ...clean.nonStatic, ...scanBucket([clean], 'capabilityViolations')], `real lane bytes ${relToRepo(cleanFile)} must analyze clean — if this is red, every conviction above is meaningless`).toEqual([])
+    // F-I1b6-7: the control used to run on 2 of the 22 scanned files, and round 6 rightly called the title
+    // bigger than the fixture. WIDENED, not retitled: every script file the two lane surfaces enumerate —
+    // source dirs and dist dirs, every extension the classifier knows — runs the control now. The count
+    // floor keeps the control from silently narrowing to nothing.
+    const cleanScripts = ['review-assignment', 'review-mandate'].flatMap((laneDir) => [
+      ...listDirectoryContentRecursively(join(RUNTIME_ROOT, laneDir)).files.filter((rel) => laneSurfaceCategory(rel) === 'script'),
+      ...listDirectoryContentRecursively(join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', laneDir)).files.filter((rel) => laneSurfaceCategory(rel) === 'script'),
+    ])
+    expect(cleanScripts.length, 'the widened clean control would scan nothing — the surfaces enumerated no scripts').toBeGreaterThanOrEqual(33)
+    for (const relFile of cleanScripts) {
+      const clean = scanFile(join(REPO_ROOT, relFile))
+      expect([...clean.parseErrors, ...clean.nonStatic, ...scanBucket([clean], 'capabilityViolations')], `real lane bytes ${relFile} must analyze clean — if this is red, every conviction above is meaningless`).toEqual([])
     }
   })
 })
@@ -2668,6 +3020,27 @@ function objectLiteralFieldShapes(sourceText: string, label: string, requireKey:
   return shapes
 }
 
+/** The independent second count for the F-I1b6-4 census: how many `key:` fields the file's object literals
+ *  carry in total, from a pass that asks NOTHING about return statements, bindings or control flow. The
+ *  round-5 census had one enumeration and a slack floor; two enumerations that must agree is the check that
+ *  cannot be dodged by moving a verdict into a `const` — the literal stays, so the two counts stay equal or
+ *  the leg reddens naming both numbers. */
+function countObjectLiteralKeys(sourceText: string, label: string, key: string): number {
+  const sourceFile = ts.createSourceFile(label, sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  let count = 0
+  const visit = (node: ts.Node): void => {
+    if (ts.isObjectLiteralExpression(node)) {
+      for (const property of node.properties) {
+        if (ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name) && property.name.getText(sourceFile).replace(/^['"]|['"]$/g, '') === key) count += 1
+        else if (ts.isShorthandPropertyAssignment(property) && property.name.text === key) count += 1
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return count
+}
+
 describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope — closed verdict shapes, graded coverage', () => {
   it('the assignment door answers in closed field sets, measured on live results, and the check convicts a planted widening field', async () => {
     // The keys are read off the objects the gate ACTUALLY returned — not off the interface, which a future
@@ -2824,31 +3197,44 @@ describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope �
     }
   })
 
-  it('both doors answer in closed field sets at EVERY refusal-returning path, enumerated from the AST (F-I1b5-4)', () => {
-    // The round-5 finding: the previous leg grades the live objects a test happens to reach, and the
-    // assignment door has nineteen refusal-returning paths — a `widenedEffectScopes: ['*']` planted on the
-    // ADMISSION_REQUEST_MALFORMED return, a DIFFERENT branch than the graded one, kept all 75 legs green.
-    // From this round the closed field set is graded at every site the AST finds, and the site list is
-    // ENUMERATED, not hand-listed: a new refusal path joins the census the day it is written, and the
-    // anti-vacuity floor below makes "the enumeration found nothing" impossible to mistake for "nothing is
-    // wrong". The mandate door's refusals share one structural choke (`refuse()`), but its literals are
-    // graded the same way — including the two frozen ADMITTED constants, which a live-object leg sees only
-    // when it reaches them.
-    const assignmentShapes = objectLiteralFieldShapes(readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'assignment-admission.ts'), 'utf8'), 'review-assignment/assignment-admission.ts', 'refusal', true)
-    expect(assignmentShapes.length, 'the AST found fewer than 12 refusal-returning paths in the assignment door — the door was restructured and this census was not re-graded with it (round 5 measured 19)').toBeGreaterThanOrEqual(12)
+  it('both doors answer in closed field sets at EVERY refusal literal, wherever it is returned — census count pinned to the file (F-I1b5-4, F-I1b6-4)', () => {
+    // Round 5 (F-I1b5-4) put the census here; round 6 (F-I1b6-4) escaped it twice over. The round-5 leg
+    // walked `return { … }` statements, and a refusal routed through a binding —
+    // `const answer = { ok: false, refusal: 'ADMISSION_REQUEST_MALFORMED', …, widenedEffectScopes: ['*'] };
+    // return answer` — is not a return-literal, so the site dropped out of the census entirely: 19 graded
+    // sites became 18, the widened field rode through spec, family, typecheck and eslint, and the anti-vacuity
+    // floor of 12 left seven sites of slack to absorb the loss. The rule now: grade every object literal that
+    // CARRIES a refusal, whatever returns it (the helper's `onlyReturns=false` mode, which round 5 shipped
+    // and left switched off), and pin the graded count to an independent count of the `refusal:` keys the
+    // file holds — so a site cannot leave the census by changing shape, only by leaving the file. The floor
+    // is the measured value, not a round number with slack.
+    const assignmentSource = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'assignment-admission.ts'), 'utf8')
+    const assignmentShapes = objectLiteralFieldShapes(assignmentSource, 'review-assignment/assignment-admission.ts', 'refusal', false)
+    // The second enumeration: every `refusal:` KEY the file holds, from a pass that asks nothing about
+    // returns, bindings or control flow. What this guard IS, stated plainly instead of oversold: it walks the
+    // same AST with the same predicate, so it is NOT an independent witness over the source — it is the guard
+    // that stops the CENSUS from narrowing later. If `grade` ever learns to skip nested literals, or
+    // `onlyReturns` comes back, or a duplicate-key literal appears, the two counts split and this reddens.
+    // The anti-erasure weight rests on the next line: the floor is the MEASURED count, so a site cannot leave
+    // the census by changing shape and leave no trace.
+    const refusalKeysInFile = countObjectLiteralKeys(assignmentSource, 'review-assignment/assignment-admission.ts', 'refusal')
+    expect(assignmentShapes.length, `the graded refusal sites (${assignmentShapes.length}) do not equal the refusal-carrying literals the file holds (${refusalKeysInFile}) — a verdict routed through a helper, a ternary branch or a named const is the F-I1b6-4 escape, and it must redden HERE rather than shrink a count somewhere a floor can absorb it`).toBe(refusalKeysInFile)
+    expect(refusalKeysInFile, 'the assignment door no longer holds the 19 refusal literals measured at f773d1603 — the census and the door have drifted apart and this floor must be re-measured on purpose, never slid under').toBeGreaterThanOrEqual(19)
     const assignmentViolations = assignmentShapes.flatMap((shape) => shape.violations)
     for (const shape of assignmentShapes) {
-      if (JSON.stringify([...shape.keys].sort()) !== JSON.stringify([...ASSIGNMENT_REFUSAL_KEYS].sort())) assignmentViolations.push(`line ${shape.line}: a refusal-returning object carries fields [${shape.keys.join(', ')}] — the closed set is [${ASSIGNMENT_REFUSAL_KEYS.join(', ')}], and EVERY branch must answer in it, not just the branch a test reached`)
+      if (JSON.stringify([...shape.keys].sort()) !== JSON.stringify([...ASSIGNMENT_REFUSAL_KEYS].sort())) assignmentViolations.push(`line ${shape.line}: a refusal-carrying literal carries fields [${shape.keys.join(', ')}] — the closed set is [${ASSIGNMENT_REFUSAL_KEYS.join(', ')}], and EVERY branch must answer in it, not just the branch a test reached`)
     }
-    expect(assignmentViolations, `a refusal-returning path of the assignment door leaves the closed field set or carries a non-scalar value:\n${assignmentViolations.join('\n')}`).toEqual([])
+    expect(assignmentViolations, `a refusal-carrying literal of the assignment door leaves the closed field set or carries a non-scalar value:\n${assignmentViolations.join('\n')}`).toEqual([])
     // The census cross-check: every declared own code must still be a literal on some graded refusal site
     // (the pass-through site is the only non-literal `refusal:` in the file, graded above as a named pass-through).
     const emittedLiterals = assignmentShapes.flatMap((shape) => shape.refusalLiterals)
     for (const code of ASSIGNMENT_ADMISSION_REFUSAL_CODES) {
       expect(emittedLiterals, `${code} no longer appears as a literal on any graded refusal site — either the door stopped emitting it (then the declared list must lose the line, F-I1b1-1's law) or the census stopped seeing its producer`).toContain(code)
     }
-    const mandateShapes = objectLiteralFieldShapes(readFileSync(join(RUNTIME_ROOT, 'review-mandate', 'mandate.ts'), 'utf8'), 'review-mandate/mandate.ts', 'admitted', false)
+    const mandateSource = readFileSync(join(RUNTIME_ROOT, 'review-mandate', 'mandate.ts'), 'utf8')
+    const mandateShapes = objectLiteralFieldShapes(mandateSource, 'review-mandate/mandate.ts', 'admitted', false)
     expect(mandateShapes.length, 'the mandate door no longer carries the verdict literals this census grades — re-establish the census against the new shape, do not let it go vacuous').toBeGreaterThanOrEqual(2)
+    expect(mandateShapes.length, `the graded mandate verdicts (${mandateShapes.length}) do not equal the admitted-carrying literals the file holds (${countObjectLiteralKeys(mandateSource, 'review-mandate/mandate.ts', 'admitted')}) — same escape, same door (F-I1b6-4)`).toBe(countObjectLiteralKeys(mandateSource, 'review-mandate/mandate.ts', 'admitted'))
     const mandateViolations = mandateShapes.flatMap((shape) => shape.violations)
     for (const shape of mandateShapes) {
       if (JSON.stringify([...shape.keys].sort()) !== JSON.stringify([...REVIEW_VERDICT_KEYS].sort())) mandateViolations.push(`line ${shape.line}: a verdict literal carries fields [${shape.keys.join(', ')}] — the closed triple is [${REVIEW_VERDICT_KEYS.join(', ')}]`)
