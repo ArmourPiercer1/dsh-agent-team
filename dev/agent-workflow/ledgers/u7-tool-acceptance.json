@@ -118,10 +118,10 @@
       },
       "L4-positive": {
         "status": "DISCLOSED",
-        "reason": "R1 law: the attachment commit rides the fingerprinted effect set as domain-ref(attachment-store); the closed admission grammar has NO grantable rung for it (admission-kernel RESOURCE_EFFECT_KINDS, protected center), so the Kernel MUST refuse the set and the row commits NOTHING — a row-level typed refusal is the honest arm, pinned in C1 I-12/I-13; the commit mechanics are pinned admitted-state in C1 I-2/I-3",
+        "reason": "dated 2026-10-31 refresh: the stale R1-rung cause of the #390 disclosure — the closed admission grammar has NO grantable rung for domain-ref(attachment-store), so the Kernel MUST refuse the fingerprinted effect set and the row commits NOTHING — is overtaken by the boot-wave facts: the live positive arms are proven on a real Host (grant-audit lines observable; exactly one self-named attachment object at 69 B; envelope + image delivered as two blocks; the kernel-admission arm denies with zero effect), so the refusal narrative no longer says why this level is not PROVEN; the machine keeps DISCLOSED because the honest ruleset refuses RUN_PROVEN on a non-PASS-overall record (both boot-wave runs carry overall=NOT_REACHED solely on the ui:live-root-law cell) and refuses CASE proof on L4-positive — no escape is attempted; tool-capability reading = evidence-complete on the real host, machine classification = DISCLOSED pending a future all-PASS overall record",
         "pr": "#390",
-        "source": "dev/agent-workflow/evidence/u7-w0b-20261026/c2/fs-mut/run-record.json",
-        "note": "fsm:image-lane-honest is the typed-refusal arm (PASS); no live image read was ever authorized"
+        "source": "dev/agent-workflow/evidence/a5w-ledgerfix-20261031/DISCLOSURE-REFRESH-read-image-L4.md",
+        "note": "fsm:image-lane-honest is the typed-refusal arm (PASS) — kept as the 2026-10-26 witness, append never rewrites; refresh dated 2026-10-31: the positive-arm facts live in dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/run-bw9.json + run-bw10.json (all six ri:* cells PASS twice on the real host; sole non-green = ui:live-root-law NOT_REACHED, the L2-as-is disclosure cell), receipt dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/L4-RECEIPT-read-image.md, and the tool-capability ledger flip is the dated 2026-10-31T05:39Z entry in dev/agent-workflow/gates/U7-R3-GAP-MATRIX-20261029.md"
       }
     },
     {
