@@ -7339,3 +7339,21 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - floor-delayed 载体不受影响：事件只在写之后到达，公开面里没有任何"在未来时刻自己发生"的东西；裁决一的
   `CORE_SEAM_BLOCKER` 对该子集仍 OPEN，#509 仍 DORMANT，也不新建第二套持久化计时器。
 - 只读纪律：宿主树零写入；CORE PATCH BUDGET 0；本条只追加日志与 memo，生产路径未动。
+## 2026-10-31 — PR-I2 即时唤醒：§7 三个待测收束为"两个源码级已定、一个必须运行时答"，并挖出两条钉死 handler 形状的宿主语义
+
+- **V-3 跨域/同域顺序**：四条写路径（`storage-domain/src/domain.ts:307-313` put、`:315-332` delete、`:334-348`
+  update、`:197` 全局单例）全部在 `host.enqueue(...)` 的 job 内 emit ⇒ 同域有序是结构性的；每域各一条链 ⇒
+  **跨域交错合法**，handler 只可依赖同域有序。
+- **V-2 机制**：发射键取自 `this.host.domainName`/`tableName`，与"谁开的域"无关；公开访问子
+  `storageDomain`（`storage-domain/src/index.ts:37`、`:236` 装在子 ctx 上），宿主三处消费者含
+  `schedule/src/index.ts:101,126`（裁决一排除的那个服务正坐在这条 seam 上）。
+  **V-2b 未证**：插件 `ctx.on` 与域发射是否同总线——设施装在 `domainCtx`，读源码判不了，留给 L-1 运行时腿。
+- **两条硬语义（写进 memo §8.3）**：`emitChanged`（`:251-258`）链内同步派发 ⇒ **handler 只能入队**，内联工作会拖
+  同域写链；监听器异常被 containment 吞掉（"the commit point has passed"）⇒ writer 永远看不见 wake 侧失败，
+  即时唤醒必须自带失败计数与存在性腿。
+- **V-1 形态**：本仓已在这条 seam 上（`plugin/host.ts:1104` 注入、`:1753-1777` 经位置导出动态 import 造 seam；
+  `root-binding/harness/seam.mjs:33,55-58` 把 `{name,version,tables[]}` 翻成 `defineDomain`+`domainTable`）；
+  但 spec 跨动态 import，**字面量交给 L-1 在真实世界断言**，不把某文件里的字符串当凭据。
+- 验收腿 L-1…L-6 已写进 memo §8.5（红先行；L-4 用刻意忙等把"内联派发"钉成回归门，L-6 无 `ctx.on` 时**拒绝并点名**
+  而非静默不装——依据是本仓 `host.ts:1171/2248` 自己的 `typeof ctx.on === 'function'` 守卫先例）。
+- 宿主树零写入；CORE PATCH BUDGET 0；未动生产路径（本轮只写 memo 与本日志）；#509 仍 DORMANT，floor-delayed 阻塞不变。

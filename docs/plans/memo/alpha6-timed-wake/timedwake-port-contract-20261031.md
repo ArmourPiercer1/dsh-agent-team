@@ -166,4 +166,65 @@ wake-at-append 需要的形状。
 `defineDomain(...)` 的名字与表名，逐字钉进测试）；V-2 该事件对插件自开的域是否同样发（造一个最小插件域，写一行，
 断言收到 `put`）；V-3 两个 TeamDomain 并行写时顺序是否按域独立（同域有序即可，跨域不得依赖）。
 
+## 8. §7 的 V-1/V-2/V-3 实测收束（同夜，只读宿主 + 读本仓）+ 两条把设计钉死的宿主语义
+
+§7 留下三个待测。两个在源码层面就答了，一个**没有**，写清楚差别比三个都打勾有用。
+
+### 8.1 发射点：四条写路径全部在写链内发（V-3 结构级已定）
+
+| 路径 | 位置 | 形态 |
+| --- | --- | --- |
+| `KvTable.put` | `packages/storage/storage-domain/src/domain.ts:307-313` | `host.enqueue(async () => { await unit.putRecord(...); records.set(...); emitPut(key,value) })` |
+| `KvTable.delete` | `:315-332` | 同一 `enqueue` 内，存在性在本 job 的链位决定，然后 `emitChanged{operation:'deleted'}` |
+| `KvTable.update` | `:334-348` | 同一 `enqueue` 内 `emitPut(key,next)` |
+| 全局单例写 | `:197` | `emitChanged({domain:this.name, table:'', key:'', operation:'put', value})` |
+
+⇒ **每域有序是结构性的**：emit 就发生在该域写链的那个 job 里，链串行 ⇒ 同域通知顺序=写顺序（宿主注释"Events of one
+domain arrive in its write-chain order"与代码一致）。**跨域没有任何顺序可依赖**——每个域各有一条链，交错是合法行为。
+wake handler 只能按"本域内有序"写，任何跨 TeamDomain 的先后假设都是我们这一轮在反的那类越 claim。
+
+### 8.2 发射是通用的，不是宿主自用（V-2 机制已定；V-2b 未定，不打勾）
+
+`emitChanged` 用的键是 `this.host.domainName` / `this.tableName`，不看谁开的域。公开访问子是设施提供的
+`storageDomain`（`storage-domain/src/index.ts:37` 类型面、`:236` `domainCtx.provide('storageDomain', facility)`），
+消费方式 `static inject = ['storageDomain', …]` + `await ctx.storageDomain.open(spec)`——宿主自己三处：
+`workspace/src/index.ts:171,198`、**`schedule/src/index.ts:101,126`**（裁决一判定"不是我们的载体"的那个服务，
+恰好坐在我们正要用的这条 seam 上）、`session/session-projection-cache/src/index.ts:105,118`。
+
+**仍未证明（V-2b）**：插件自己的 `ctx.on('domain/changed')` 是否与域发射所在的 ctx 在同一条总线上——设施把域装在
+**子 ctx**（`domainCtx`）上，这一点读源码判不了，必须由 L-1 那条运行时腿回答。在此之前"插件收得到自己域的写事件"
+是待验证，不是事实。
+
+### 8.3 两条硬语义，直接把 wake handler 的形状钉死
+
+1. **发射是链内同步派发**：`emitChanged`（`:251-258`）的注释明写 "emit dispatches listeners inline and nothing
+   else runs in the try"，而它跑在 `enqueue` 的 job 里 ⇒ 监听器的**同步前缀占用该域的写链**。
+   ⇒ wake handler **只能入队**（把自己的 work 丢进自有队列/微任务后立即返回）；内联做任何实际工作都会拖慢同域后续写。
+2. **监听器异常被吞**：同一个 `emitChanged` 注释——"the write is already committed … containment (with a log) is
+   the only correct outcome"。⇒ writer **永远看不见** wake 侧失败，重试也不会发生。
+   ⇒ 即时唤醒面必须自带可观测性（自己的失败计数 + 一条断言它存在的腿），不得假设异常会传到写入方或被外层捕获。
+
+### 8.4 V-1 的答案形态：机制到底，字面量交给运行时腿
+
+本仓已经坐在这条 seam 上：`packages/runtime/src/plugin/host.ts:1104` 注入 `storageDomain`，`:1753-1777` 用
+`ctx.get('storageDomain')` 造 seam，模块路径是 `rowConfig.seamUrl ?? resolveDefaultSeamUrl(import.meta.url)`
+（**位置导出的动态 import**）；`packages/runtime/root-binding/harness/seam.mjs:33,55-58` 把
+`StorageDomainSpec {name, version, tables: string[]}` 翻成 `defineDomain` + 每表 `domainTable(z.string())`。
+⇒ 事件里的 `domain` = `spec.name`，`table` = 仓库的表名。但 spec 跨动态 import 边界，**静态读不是权威**：
+字面量必须由 L-1 在真实世界里断言（写一行，看收到的四元组），不许把某个文件里的字符串当凭据抄进实现。
+
+### 8.5 立即唤醒面的验收腿（红先行）
+
+| 腿 | 断言 | 为什么要它 |
+| --- | --- | --- |
+| L-1 | 在本域写一行 ⇒ handler 收到恰好一次 `{domain,table,key,operation:'put'}`，四元组逐字等于实测字面量 | 同时回答 V-2b 与 V-1 |
+| L-2 | 同 key 覆盖写两次 ⇒ 两次 `put` ⇒ handler 结果幂等（按 value 版本去重） | `put` 覆盖 insert 与 overwrite（`events.ts:21-25`） |
+| L-3 | handler 抛 ⇒ 写仍 `ok`（宿主 containment），且**我们自己的失败计数 +1** | 8.3-2：不自带观测就是隐身失败 |
+| L-4 | 造一个刻意忙等的 handler ⇒ 同域下一次 `put` 的完成时间被推迟（可测差值） | 把 8.3-1 的"内联派发"钉成回归门，防未来重构悄悄把 wake 工作内联回去 |
+| L-5 | 两个域并发写 ⇒ 每域内部有序，跨域交错合法 ⇒ 断言只写前者 | 8.1：跨域无序是结构事实 |
+| L-6 | 世界里没有 `ctx.on` ⇒ 接线**拒绝并点名**（不静默不装），且默认关闭世界里字节不变 | 本仓自身先例：`host.ts:1171/2248` 全部有 `typeof ctx.on === 'function'` 守卫；静默不装=永远不醒=最难查的活锁 |
+
+floor-delayed 载体不受本节任何影响：以上全部发生在"写已经发生之后"，没有哪个面能把动作安排到未来自己发生。
+`CORE_SEAM_BLOCKER` 对该子集仍 OPEN，#509 仍 DORMANT，仍不新建第二套持久化计时器。
+
 **授权边界**：开发授权，非合并授权，非生产启用，非放宽门禁。
