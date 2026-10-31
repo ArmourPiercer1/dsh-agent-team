@@ -1929,6 +1929,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** The mounted model-facing names — the own-layer bind list. */
       ownNames: Object.freeze(allDefs.map((d) => d.name)),
       decide,
+      /** a5w-vseam (2026-10-31, real UTC; bw7): the plane's containment
+       *  predicate rides on the MOUNT FACE so the Control-side PA verifier
+       *  re-derives subtree coverage through it — the very function the
+       *  assembly was given at construction, passed through unchanged (no
+       *  second law, ever). A mount assembled WITHOUT a seam declares NO
+       *  member (omitted, not `undefined`): the absent seam keeps the
+       *  fail-closed envelope law exactly as it stands. This is a mount
+       *  face, never a fact — the 12-field `PaCallFacts` contract is
+       *  untouched (the seam answers the coverage question; it is not
+       *  call-level evidence). */
+      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,

@@ -125,6 +125,7 @@ import type {
 } from '../control/types.js'
 import { authorityRank, mayReview } from '../governance/authority-ceiling.js'
 import { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval } from '../tool-admission/approval-case.js'
+import type { SubtreeContains } from '../../domain/authority-envelope/src/index.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js'
 
@@ -654,6 +655,27 @@ export interface PaEffectsVerifierDeps {
     readonly decider: ControlCallerRef
     readonly stage: PaEffectsVerifierStage
   }) => Promise<PaCallFacts | undefined>
+  /** a5w-vseam (2026-10-31, real UTC; bw7 finding, LEG-SEMANTICS §6 ①): the
+   *  subtree CONTAINMENT seam, resolved PER CALL from the mount that
+   *  published this row. The pure-core seam parameter has existed since the
+   *  envelope law landed; the bw7 incident proved that a verifier
+   *  re-deriving WITHOUT it answers every subtree-scoped rule as
+   *  `undeterminable` → undetermined set → DRIFT → a durable DENY over a
+   *  genuinely granted allow (`ok:true` at the surface). The resolver
+   *  answers the mounted plane's own predicate — the SAME function the mint
+   *  side was assembled with (#508) — or `undefined` when the mount carries
+   *  none, in which case the fail-closed law runs EXACTLY as before:
+   *  undetermined coverage is never guessed, never defaulted. This is not a
+   *  fact (the 12-field `PaCallFacts` contract is untouched) and not a
+   *  waiver: it is the mount's containment question, asked with the mount's
+   *  own answer. Absent ⇒ the verifier behaves exactly as it did before. */
+  readonly resolveSubtreeContains?: (input: {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly manifest: PaControlManifest
+    readonly decider: ControlCallerRef
+    readonly stage: PaEffectsVerifierStage
+  }) => SubtreeContains | undefined
   /** TEST-only seam (CENTER↔AUTH ruling, CCR-358a follow-up). The
    *  `PaEffectsVerifierInput.facts` member is a caller-held facts
    *  pre-answer; in PRODUCTION no caller ever supplies it (the control
@@ -670,7 +692,18 @@ export interface PaEffectsVerifierDeps {
 }
 
 export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsVerifier {
-  const observe = deps.onObserve ?? (((): void => {}) as NonNullable<PaEffectsVerifierDeps['onObserve']>)
+  // a5w-vseam (2026-10-31): every row the verifier emits carries WHERE it
+  // was observed (root session + member instance) so the composition can
+  // route it into that instance's observations channel — in the bw7 world
+  // the drift verdict was invisible in the instance log that would have
+  // shown it (observability gap, investigation §4).
+  const observe = (source: PaEffectsVerifierInput, row: Readonly<Record<string, unknown>> & { readonly stage: string }): void => {
+    deps.onObserve?.({
+      ...row,
+      rootSessionId: source.rootSessionId,
+      instanceId: source.manifest.member.instanceId,
+    })
+  }
   const nonEmpty = (value: unknown): value is string => typeof value === 'string' && value.length > 0
   /** The manifest carries its rungs as STRINGS (durable JSON); the closed
    *  ladder is re-admitted only through its own stated table — a rung
@@ -680,11 +713,11 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
   return async (input: PaEffectsVerifierInput): Promise<PaEffectsVerifierVerdict> => {
     const { manifest, decider } = input
     const undetermined = (detail: string): PaEffectsVerifierVerdict => {
-      observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId })
+      observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId })
       return { ok: false, reason: 'authority-undetermined', detail }
     }
     const drifted = (detail: string): PaEffectsVerifierVerdict => {
-      observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId })
+      observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId })
       return { ok: false, reason: 'pa-authority-drift', detail }
     }
     const deciderRung = deciderAuthority(decider)
@@ -767,10 +800,33 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     // (the ceiling pair's slot members assign STRUCTURALLY — no cast: an
     // `unavailable` slot is unrepresentable in the facts contract, a read
     // that faulted is undefined FACTS, decided above as undetermined).
+    //
+    // a5w-vseam (2026-10-31, bw7): the containment seam is resolved ONCE
+    // per verifier call, BEFORE any pure-core walk, so all three walks
+    // below answer subtree coverage with the SAME predicate the mint side
+    // used — or with NONE at all. A resolver that throws answers `undefined`
+    // (a broken seam is NO seam, never a guessed one); with no seam the
+    // envelope law keeps its fail-closed arm: subtree coverage stays
+    // undeterminable and the set drifts. The fix threads the question, it
+    // never softens the answer.
+    let subtreeContains: SubtreeContains | undefined
+    if (deps.resolveSubtreeContains !== undefined) {
+      try {
+        subtreeContains = deps.resolveSubtreeContains({
+          rootSessionId: input.rootSessionId,
+          requestId: input.requestId,
+          manifest,
+          decider,
+          stage: input.stage,
+        })
+      } catch {
+        subtreeContains = undefined
+      }
+    }
     const documents = facts.ceiling
     let expansion
     try {
-      expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+      expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, subtreeContains)
     } catch (error: unknown) {
       return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`)
     }
@@ -791,6 +847,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       authorityGeneration: facts.authorityGeneration,
       teamSessionId: facts.member.teamSessionId,
       instanceId: facts.member.instanceId,
+      ...(subtreeContains === undefined ? {} : { subtreeContains }),
     })
     if (!planned.ok) {
       return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`)
@@ -848,6 +905,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
       },
       currentAuthorityGeneration: facts.authorityGeneration,
       documents,
+      ...(subtreeContains === undefined ? {} : { subtreeContains }),
     })
     if (!presented.ok) {
       return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`)
@@ -862,7 +920,7 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
         return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${facts.beneficiaryAuthority}'`)
       }
     }
-    observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) })
+    observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) })
     return { ok: true }
   }
 }

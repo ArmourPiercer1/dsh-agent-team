@@ -3227,6 +3227,15 @@ export function createAgentBindings(deps) {
           guard: a5p1Guard,
           plane: a5PlaneValue,
           beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
+          // a5w-vseam (2026-10-31, real UTC; bw7): the Control-side PA
+          // verifier re-derives subtree coverage through the SAME seam this
+          // plane was assembled with (a MOUNT FACE, never a fact — the
+          // 12-field PaCallFacts contract is untouched), and its
+          // pa-verifier verdict rows ride into THIS instance's observations
+          // channel, same channel and string form as the a5-pa-bridge leg
+          // rows. In the bw7 world the drift deny was invisible in this log.
+          ...(a5PlaneValue?.subtreeContains === undefined ? {} : { subtreeContains: a5PlaneValue.subtreeContains }),
+          onObserve: (o) => observations.push(`a5-pa-verifier: ${String(o?.gate ?? '?')}/${String(o?.outcome ?? '?')} ${String(o?.detail ?? '')}`),
           readers: {
             permissionPlane: () => permissionPlaneRef?.current,
             // 9e fix-3: the durable overlay generation for the assembly's
