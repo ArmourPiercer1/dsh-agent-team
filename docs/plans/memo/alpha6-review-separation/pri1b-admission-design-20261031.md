@@ -186,3 +186,62 @@ settlement gate 的 `BLOCKED-BY-MARKER` 是它应有的样子。
 （`EXTRA_MODULES_ALLOWED` 里也写这个名字）。同时记一条事实免得日后误判：`admission/` **不在**
 `PROTECTED_PREFIXES` 里（受保护的是 `tool-admission/`），所以"我 import 得到它"绝不等于"我可以绕过它"——
 上面那条"复用或拒绝接线"的纪律就是为这个缺口写的。
+
+## 10. dated 2026-10-31（同夜更晚）：真实宿主实测落地——S-7 的"启用"臂**没有宿主表面**，A/B 按实测撤回，只有 disabled 臂可写
+
+仪器是 `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs`，随 `a45ed19ea`（父 `b56eed25f`）落在本分支。捕获全部
+tracked：`dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/a6pri1b-2026-10-31T12-46-43Z/` 下的 `verdict.json`、
+`MEASURED-LINES.txt`、`host.log`，同目录另存一份逐字节的 `capture.json`。判决 token：
+`VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T12-46-43Z checks=22 failed=0`（宿主 = 钉住的
+`639ed01539…`，porcelain 前后都 = 0；row 只经公开 profile-patch seam 挂载，CORE PATCH BUDGET = 0）。本轮复跑：
+四个本 lane 撰写文件 `179 passed`（58+32+69+20），a6 runtime 家族 `449 passed`。以下只写捕获量到的东西。
+
+**1）本节退役的验收（引原句，原句不删不改）。** §4 表里 S-7 整行：
+
+```text
+| S-7 | 未启用 Team 上装配 | 逐字节零改动；未知开关值 ⇒ 装配失败 |
+```
+
+以及正文里同一声明的两句更早的话——§1.3「**默认关闭**：未启用的 Team 一个字节都不变（§3 D-8），且这条要用字节差分
+证明，不是用"应该没走到"。」；§3 D-8「启用开关是 Team 侧的封闭配置（值集封闭、未知值 ⇒ 拒绝装配）。」。
+
+**2）量到了什么。** 仪器把钉住的宿主起了两个世界。第二个世界把 `feature:'on'` 与 `assignmentFeature:'on'` 写进行
+配置，捕获（check `enable-surface-is-not-a-switch`）逐字：「row config with feature:'on' + assignmentFeature:'on' ->
+row ready=true, durable write accepted=true, census=[control-request-recorded] — nothing was refused and no admission
+behaviour appeared」。且捕获的 `rowConfigFields`（row 实际读到的 14 个字段：`rootSessionId`…`seamUrl`）里没有属于
+本门的任何字段。⇒ **宿主侧不存在一个能把这个门打开的字段**。"启用"不是宿主可观测状态，S-7 的 A/B 因此缺了 enabled
+臂：§1.3 的"要用字节差分证明"作为 disabled-vs-enabled 的真实宿主对照，**写不出被测对象**。
+
+**3）存量的（还活着的，逐条点名仪器）。**
+- **disabled 臂可表达，且在满账本上量过**：第一个世界 6 条控制请求 + 3 条 human 决议落耐久后，`getLedgerPage` 给
+  `entries=9`、`factTypes=[control-decision-recorded, control-request-recorded]`，review-assignment 行数为零
+  （`durable-ledger-census-nonempty`）。这是耐久世界里的普查，不是空仓库的沉默。
+- **S-7 的"未知开关值 ⇒ 装配失败"腿原样存活，但它测的是本模块自己的配置**：值集 `['off','on']` 封闭，未知值 ⇒
+  `ADMISSION_FEATURE_VALUE_UNKNOWN`，`'off'` ⇒ `ADMISSION_DISABLED_FOR_TEAM`，字段缺失同样拒（无默认方向）——
+  `a6-pr-i1b-admission.test.ts` §S-7 三条腿钉着。D-8 的"默认关闭"自此只描述**本模块的配置态**，不描述宿主可切换的
+  状态；这句话是说给将来真的接线的人的。
+- "一个字节都不变"的绑定仪器 = DORMANCY 论证（`ALLOWED_CONSUMERS==[]` + 全树 importer 普查）加上面那条满账本普查，
+  不是宿主 A/B。
+
+**4）不存量（退役的）。** 把 S-7 读成"同一宿主上 disabled 与 enabled 逐字节相同"的 A/B 验收：enabled 臂在宿主上没有
+对照物，该比较**不能按原文执行**。§1.3 与 §3 D-8 中依赖"Team 侧存在启用开关"的部分按第 2 点退役。
+
+**5）哪些当初是推断。** §1.3 的"要用字节差分证明"、D-8 的"启用开关是 Team 侧的封闭配置"、§4 S-7 的期望列——都是
+设计意图的外推，当时无一实测（§2 那张表才是实测，其中没有 enable 开关这一行）。§7 的「真实宿主端到端仍是
+`ENV_BLOCK`，不是 PASS。」是设计定稿当日的预测，已被本节落地替代：真实宿主跑起来了（`checks=22 failed=0`），剩余的
+拒绝改为逐路径测量并按名点名（见 spec 文件头）。
+
+**6）两个没被洗白的格子与一格缺席。** `leader-approval|leader` 与 `envelope-mutation|leader` 没有到达闭包——信封门
+先答（`TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS`），捕获里记 `reachedClosure:false`（`closure=not-refused-by-closure`），
+spec 拒绝把这两格当闭包一致的证据。member 角色无公开 ingress，记名 `member-role-has-no-ingress`（/team-remote 不
+带身份；每个 `team_*` 工具都需要 live member agent，本机无模型）。闭包的**拒绝**只在 `user-approval|leader` 一格上
+被活宿主量到（`CONTROL_RESOLVER_NOT_AUTHORIZED`，消息自带 allowed 列表）；human 臂三种 kind 全部由宿主答
+`CONTROL_RESOLVED`。其余格子是镜像，不是实测。
+
+**7）更正句现在各写在哪里（登记，不改代码）。** "没有宿主字段"这句更正已逐字落在
+`packages/runtime/test/a6-pr-i1b-admission.test.ts` 的文件头（"there is no host field that turns this gate on, so
+the enabled arm S-7 asks about has no host surface to be measured on, and the dormancy legs are the binding
+evidence for it"）。实现模块头 `packages/runtime/review-assignment/assignment-admission.ts` 携带的是另外两句——
+"The byte-identity of non-enabling teams is bound by DORMANCY"（§1 处，round 1 F-I1b1-2 的更正）与 ships dark =
+"the correct default-off"（BLOCKED-WIRING 处）；它**没有**逐字写"宿主无启用字段"。两句加一起语义完整，改不改代码
+归实现轮裁决，本 memo 只登记位置。
