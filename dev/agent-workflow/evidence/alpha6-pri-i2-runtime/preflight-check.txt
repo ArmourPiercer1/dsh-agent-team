@@ -1,0 +1,7 @@
+runtime tree : /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri2/tests/deepseek-harness-test-use
+baseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+probe        : before-provision=unusable -> after-provision=unusable
+backend      : unusable (usable: false)
+launcher     : ABSENT 
+porcelain    : empty (assets are gitignored)

@@ -1,0 +1,44 @@
+{
+  "plugin": "a6pri2-wake-probe",
+  "applyEnteredAt": "2026-10-31T11:38:53.400Z",
+  "ctxOnPresent": true,
+  "storageDomainPresent": true,
+  "ctxKeys": [
+    "fiber"
+  ],
+  "ctxWakeCandidates": {},
+  "l1a": {
+    "subscribed": true,
+    "received": [
+      {
+        "domain": "a6pri2wakeuprobe",
+        "table": "rows",
+        "key": "probe-key-1",
+        "operation": "put"
+      }
+    ],
+    "error": null
+  },
+  "l1b": {
+    "subscribed": true,
+    "received": [
+      {
+        "domain": "a6pri2wakeuprobe",
+        "table": "rows",
+        "key": "probe-key-1",
+        "operation": "put"
+      }
+    ],
+    "error": null
+  },
+  "write": {
+    "ok": true,
+    "error": null
+  },
+  "floorDelayedCarrier": {
+    "scheduleFacilityPresent": false,
+    "scheduleType": "absent",
+    "notes": [],
+    "ctxKeysMatching": []
+  }
+}

@@ -1,0 +1,137 @@
+MEASURED-LINES — the verbatim command/output lines behind feasibility-report.md sections 1-7
+============================================================================================
+Dated 2026-10-31. Every line below is copied byte-for-byte out of a capture taken during the 2026-10-31 run in
+.worktrees/alpha6-pri2 (branch alpha6/lane2-pri2-timed-wake-20261031, baseline 0.2.0-rc.2 @
+639ed015397290b3745d163aafe02ffee4aa3f84). Attribution after "#" names the run capture a line came from; captures
+kept whole are beside this file, the rest (boot*.log bodies, probe-v2..v5.json, install/build logs) were dropped on
+purpose and exist nowhere a durable record depends on. Lines elided for size are marked [...]; nothing quoted is
+edited. Boot lines carry real launch tokens of the world that was torn down the same day (see section 7) — the
+tokens are dead with the world; they are kept because deleting them would edit a capture.
+
+[1] THE PRISTINE TEST RUNTIME COULD BE MATERIALIZED ON THIS MACHINE, AND WAS
+--------------------------------------------------------------------------------
+$ git clone --local --no-hardlinks /home/armourpiercer/deepseek-harness tests/deepseek-harness-test-use
+  # command as executed; TEST_METHODS.md SS1 line 16 names the source generically:
+  # "全新 worktree 尚无 checkout 时 = `git clone --local --no-hardlinks <只读 baseline 树> tests/deepseek-harness-test-use`"
+Cloning into 'tests/deepseek-harness-test-use'...
+done.
+real 0m1.862s
+# clone.log (head/tail of the capture)
+HOST_REPO_HEAD_BEFORE=639ed015397290b3745d163aafe02ffee4aa3f84
+HOST_REPO_PORCELAIN_BEFORE=0
+# host-before.txt; README SS7: "host repo /home/armourpiercer/deepseek-harness: BEFORE HEAD=639ed01539… PORCELAIN=0, AFTER identical"
+# checkout landed detached @ 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0 (README SS2 table)
+Done in 17.5s using pnpm v11.7.0
+# install.log tail; README SS2: "INSTALL_EXIT=0"
+build: built linux-x64/bin/glibc/system.node
+# build.log:3
+build: recorded 347 client artifact(s) with 2 public value(s)
+# build.log:5049; README SS2: "BUILD_EXIT=0"
+=> So every leg this lane had recorded as ENV-REFUSED for want of a runtime was refused about an absent path,
+   not about a capability. (Re-labelling stated in full in memo SS12 and the SESSION_ROUTER_LOG entry of the
+   same day; the earlier sentences themselves are retired forward there, not rewritten.)
+
+[2] SS9 HOST-SANDBOX ASSETS STILL CANNOT BE SUPPLIED HERE — AND THAT DID NOT STOP THE BOOT
+------------------------------------------------------------------------------------------
+runtime tree : /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri2/tests/deepseek-harness-test-use
+baseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+probe        : before-provision=unusable -> after-provision=unusable
+backend      : unusable (usable: false)
+launcher     : ABSENT
+porcelain    : empty (assets are gitignored)
+# preflight-check.txt, verbatim (node tests/world-factory/provision-host-sandbox.mjs --check, exit 1)
+README SS2: "`landlock-run` exists nowhere on this machine; the locally compiled `system.node` is `17352` bytes /
+sha `75450f92…`, not the pinned `17360` bytes / `54a9c25c…`, so §9 assets cannot be self-provisioned here.
+**This did not block boot** — the host served HTTP, mounted plugin rows, and answered remote calls."
+# feasibility-report.md SS2, verbatim — both facts stand together; neither erases the other.
+
+[3] BOOT CHAIN — PORT 3181, DSH_HOME INSIDE THE WORKSPACE, :3080 NEVER TOUCHED
+------------------------------------------------------------------------------
+dsh web: http://127.0.0.1:3181/?token=Tt1axKXncul__Gqs9aY3G_w6mCekz50xdAOHptA1kKo
+# boot.log (boot 1, bare world)
+dsh web: http://127.0.0.1:3181/?token=xSu-oYZqvUfsF84nFaV522KS9O1o5M1JUPks6TIl69Y
+# schedule bundle on (README SS3)
+dsh: warning: 1 entry did not activate
+a6pri2-wake-probe-v3 (file:///…/a6pri2-wake-probe-v3.mjs): pending (waiting for service: schedule)
+# boot5-defaultprofile.log — inject:['schedule'] never activates on the DEFAULT profile. The probe script's URL is
+# shown in the abbreviated form the report's SS3 uses; the raw capture spelled it under the run-scratch, which is
+# deleted-with-no-record territory, and a durable line may not designate a scratch path (G-R3-8).
+dsh web: http://127.0.0.1:3181/?token=dZhVclGqchLLfg31IZxM7WWOqEq7nP9Zs2hsR0RUsSQ
+# boot5-defaultprofile.log (default profile)
+no_token_status=401
+token_status=303
+stable_3080_status=401
+# README SS3 (HTTP probe; :3080 untouched, still the stable instance)
+
+[4] L-1a / L-1b — IMMEDIATE-WAKE CARRIER, RECEIVED ON BOTH LEGS
+----------------------------------------------------------------
+l1a {subscribed:true, received:[{domain:"a6pri2wakeuprobe",table:"rows",key:"probe-key-1",operation:"put"}], error:null}
+l1b {subscribed:true, received:[{domain:"a6pri2wakeuprobe",table:"rows",key:"probe-key-1",operation:"put"}], error:null}
+write {ok:true}
+# README SS4 rendering of probe-out.json (kept whole in this directory): l1a subscribed with {global:true},
+# l1b with NO third argument — identical event. Plugin mounted only through profiles/web/cordis.patch.yml,
+# domain opened through the injected ctx.storageDomain.
+README SS4: "`on()`'s third argument is documented there — `vendor/cordis/src/events.ts:114-116` `global?: boolean` =
+\"Receive the event regardless of context filter checks\", applied at `:171-173`
+`.filter(hook => hook.global || !filter || filter.call(thisArg, hook.ctx))`. With no filter on the emitting context, a
+non-global listener receives. So `global: true` is not required for this event at this SHA."
+# feasibility-report.md SS4, verbatim. Corroboration is in the cloned baseline tree (gitignored runtime checkout,
+# detached at the pinned SHA); the claim that stands in durable records is the LIVE DELIVERY measured above, with
+# the source lines as mechanism, at this SHA only.
+
+[5] FLOOR-DELAYED CARRIER — STILL ABSENT, NOW MEASURED RATHER THAN INFERRED
+----------------------------------------------------------------------------
+ctxKeysMatching=[] / scheduleFacilityPresent=false / scheduleType="absent"
+# probe-out.json floorDelayedCarrier (default profile, no schedule facility)
+"ctorName": "ScheduleService"
+"catalog, create, delete, emitChanged, getDomain, history, initialized, list, serialize, stopSessionTasks, update"
+# probe-v3.json (methods of ctx.schedule with the experimental schedule bundle ON — no callback/handler registration)
+"create": { "outcome": "resolved", "record": { "id": "schedule-eee44769-c977-41cf-b580-90ec34f64bdc", "kind": "after", "title": "a6pri2 probe", "prompt": "probe wake", "afterSeconds": 3, "scheduledAt": "2026-10-31T11:45:17.987Z" } }
+"eventsSeen": [ { "at": "2026-10-31T11:45:15.016Z", "payloadArgCount": 2 } ]
+"pluginReceivedWakeCallback": false
+"conclusion": "the plugin observed 1 payload-less \"schedule/changed\" event(s) and NO wake callback carrying a wakeId/reason/firedAt"
+# probe-v5.json (live ctx.schedule.create(sessionId, {after_seconds: 3}) — the event is at CREATE time 11:45:15.016,
+# nothing at the due instant 11:45:17.987; JSON re-flowed to fewer lines, bytes of every value verbatim)
+README SS5: "Source of the due action: `packages/schedule/schedule/src/runtime.ts:101-123` —
+`ctx.sessionController.resolveAgent(task.sessionId)` → `createUserMessage({source:{kind:'schedule'}})` →
+`resolved.agent.followup(message)`. Session-bound user-role turn, not a plugin callback."
+README SS5: "Context census over the baseline tree (162 `interface Context` members): the only time-shaped names are
+`schedule, jobs, jobController, ptcRuntime, webhookRuntime, vmTimeoutMs`; `ctx.jobs` = `LocalJobRegistry`
+(`start/wait/kill/…`, no delayed start — no `scheduledAt|notBefore|startAt|delayMs|runAt` in `packages/jobs/jobs/src`)."
+=> CORE_SEAM_BLOCKER for the floor-delayed subset stands, upgraded from source-reading to live-host measurement.
+
+[6] PRODUCTION ControlService RESOLVE PATH EXECUTES END TO END (PR-I1b REAL-HOST LEGS: NOW IMPLEMENTABLE)
+-----------------------------------------------------------------------------------------------------------
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri2/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3181/?token=4VD1jjc45J6U2TyELroDaqlX1sH22qwZegnslYlWQ90
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 106ms — the connection service appeared after the mount step)
+# boot13.log — the lane's OWN built row packages/runtime/dist/packages/runtime/src/plugin/host.js mounted through
+# the patch seam only; config discovery refusals (boot8..boot11.log, verbatim, one per boot):
+dsh-agent-team row config: must be a plain object
+dsh-agent-team row config: generation must be a positive integer
+dsh-agent-team row config: deniedSelection must be a plain object or null
+dsh-agent-team row config: mcpServer must be { name, port: number|null } or null
+POST /team-remote/team.getLedgerPage v1 {teamSessionId, afterSequence:0, limit:20}
+HTTP 200 {"result":{"ok":true,"value":{"data":{"entries":[],"nextAfterSequence":null,"total":0}, [... "contractVersion":1 ...]}}}
+POST /team-remote/team.resolveControl v4 {teamSessionId, requestId:"control-a6pri2-does-not-exist", decision:"allow", note:[...]}
+HTTP 200 {"result":{"ok":false,"error":{"code":"CONTROL_REQUEST_NOT_FOUND",
+  "message":"ControlService: no durable control request 'control-a6pri2-does-not-exist' in team 'session-a6pri2-probe-root' (a decision without a request)",
+  "details":{"method":"team.resolveControl","endpoint":"team.resolveControl","contractVersion":4,"reason":"domain-error",
+  "cause":{"code":"CONTROL_REQUEST_NOT_FOUND","details":{"rootSessionId":"session-a6pri2-probe-root","requestId":"control-a6pri2-does-not-exist"}}}}}}
+# README SS6, verbatim. NOT driven: creating a real pending request (needs the kit's mock-model fixture); the
+# PR-I1b real-host legs were shown reachable/implementable, not executed. What blocked executing them was a RULE
+# (a read-only probe may not edit a tracked test), not the environment.
+
+[7] TEARDOWN AND THE ONE INCIDENT (DISCLOSED ALTHOUGH NOTHING WAS HARMED)
+---------------------------------------------------------------------------
+world a6pri2-20261031T11-33-49Z deleted at 2026-10-31T11:57:20Z per TEST_METHODS §7 (temporary world, teardown); contents: profiles/ storages/ sessions/ blueprints/ .credentials.yaml (launch token) — all world-local, nothing outside tests/homes/
+# world-deleted.txt, verbatim
+pkill -f 'a6pri2[…]' → no live a6pri2*, NO_TEST_USE_PROCESSES
+ss -ltn | grep :3181 → PORT_3181_FREE=yes; :3080 still listening, untouched
+worktree: git status --porcelain | wc -l = 0; clone retained (gitignored), 2.6G, detached @ pin, porcelain 0
+# README SS7, verbatim summary lines
+README SS7 (incident): "One incident, disclosed: a background boot started without an explicit `DSH_HOME` inherited
+`/home/armourpiercer/.dsh` and attempted `writeFileSync('/home/armourpiercer/.dsh/profiles/web/cordis.yml')` →
+`EROFS` + workspace-write sandbox denial, exit 1. Zero bytes were written; every subsequent boot set `DSH_HOME`
+explicitly." (inside the workspace, at tests/homes/a6pri2-20261031T11-33-49Z.)

@@ -7303,3 +7303,57 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+## 2026-10-31 — PR-I2 前置契约 `TimedWakePort` 草案落库（新分支 `alpha6/lane2-pri2-timed-wake-20261031`，base = #507 `7b906b432`）；载体仍然 CORE_SEAM_BLOCKER
+
+- 交付物 = `docs/plans/memo/alpha6-timed-wake/timedwake-port-contract-20261031.md`（契约先行，零实现、零挂载、零启用）。
+  裁决一的边界原样保持：ScheduleService 不是 Alpha.6 的定时唤醒载体；`CORE_SEAM_BLOCKER` 只覆盖 PR-I2 的
+  **floor-delayed** 载体；#509 继续 DORMANT；不建第二套持久化 timer；缺时间触发源 ⇒ 显式拒绝
+  `TIMED_WAKE_UNAVAILABLE`，**永不**报告 `accepted: true`，**永不**静默丢弃唤醒保证。
+- 与既往记录不同的一点：本 memo 的宿主证据由**本会话**在宿主 `639ed01539`（pristine，读取前后 porcelain 均空）逐行打开
+  核对，不再是转抄：`packages/boot/app-boot/src/profile.ts:209`（"offered switched off" 注释）/`:213-218`
+  （OPTIONAL_BUNDLES）/`:217`（schedule bundle 条目）；`packages/schedule/schedule/src/runtime.ts:101`/`:118`/
+  `:119-121`/`:123`（到期 = user-role 提醒轮）；`index.ts:396`（`emit('schedule/changed')`）与 `types.ts:468-471`
+  （`@mode emit`、`(): void`、注释要求客户端 refetch）；`index.ts:27`/`index.ts:100`（模型可见 tools + Remote Service，
+  非插件可注册唤醒）。另实测 `registerWake|scheduleWake|onWake|wakeAt|notBefore` 在宿主 `packages/extensions`、
+  `packages/api`、`packages/hooks` 三组内零命中。
+- 负全称限定（#513 round-3 G-R3-10 的教训写进正文，不再事后补）：上述排查**非穷尽证明**；结论范围 = 已排查包组 +
+  两轮 spot-check，upstream 判据以契约 §2 的语义要求为准，而不是以某次 grep 为准。
+- 引用诚实性修正：memo 引用的裁决正本与 blocker 文件在 #513 分支上，**在本 PR base 上不存在**，因此按 PR 号引用，
+  不假装本树可见（同类错误 G-R3-9 是 #502 预告里我写了一个仓库中从未存在的路径）。
+- 环境事实更正（供后续 lane 复用）：本仓 worktree **不需要**各自 `pnpm install`——worktree 位于主 clone 内，Node 解析
+  直接继承主 clone 的 `node_modules`（新 worktree 内 `typescript` 解析到主 clone 的 `.pnpm`，`docs-sync` 可直接跑）。
+  在新 worktree 里跑 `pnpm install` 会以 `[ERR_SQLITE_ERROR] unable to open database file` 失败：pnpm 全局 store 索引
+  在工作区之外，被 workspace-write 沙箱拒绝。首次尝试时我把命令接了管道，`rc` 取到的是管道末端状态，掩盖了真实
+  rc=1——同一条老规矩：**测退出码不要经过管道**。
+- 度量：`docs-sync --check` findings=0（docs=105 notes=4 plans=68 contracts=20）。本 PR 无 `packages/**` 路径、
+  无生产文件、核心补丁消耗 0。开发授权 ≠ 合并授权 ≠ 生产启用 ≠ 放宽门禁。
+## 2026-10-31 — PR-I2 immediate-wake 一侧的载体由推理换成实测：`domain/changed` 是公开 emit-mode 事件，语义写在宿主源码注释里
+
+- memo §7 追加（`timedwake-port-contract-20261031.md`）：只读 pristine host 测得 `DomainChangedBase{domain,table,key}`
+  （`packages/storage/storage-domain/src/events.ts:11-18`）、`operation:'put'` 覆盖 insert **与** overwrite
+  （`:21-25`）、闭合 union（`:33`）、经 `declare module '@deepseek-ai/cordis' { interface Events … }` 声明且明写
+  "strictly after the backend acknowledged durability" 与 "in its write-chain order"、`@mode emit`（`:35-48`）；
+  宿主自身亦以 `ctx.on('domain/changed', …)` 实现不变量（`packages/workspace/workspace/src/invariant.ts:29-35`）。
+- 允许写成的结论：即时唤醒（wake-at-append）不需要 port、不需要计时器、不需要核心补丁。不允许写成的：跨域顺序、
+  同 key 唯一一次、以及"对插件自开的域同样发"——这三条本会话**未**证明，已作为 V-1/V-2/V-3 记在 memo 里待测。
+- floor-delayed 载体不受影响：事件只在写之后到达，公开面里没有任何"在未来时刻自己发生"的东西；裁决一的
+  `CORE_SEAM_BLOCKER` 对该子集仍 OPEN，#509 仍 DORMANT，也不新建第二套持久化计时器。
+- 只读纪律：宿主树零写入；CORE PATCH BUDGET 0；本条只追加日志与 memo，生产路径未动。
+## 2026-10-31 — PR-I2 即时唤醒：§7 三个待测收束为"两个源码级已定、一个必须运行时答"，并挖出两条钉死 handler 形状的宿主语义
+
+- **V-3 跨域/同域顺序**：四条写路径（`storage-domain/src/domain.ts:307-313` put、`:315-332` delete、`:334-348`
+  update、`:197` 全局单例）全部在 `host.enqueue(...)` 的 job 内 emit ⇒ 同域有序是结构性的；每域各一条链 ⇒
+  **跨域交错合法**，handler 只可依赖同域有序。
+- **V-2 机制**：发射键取自 `this.host.domainName`/`tableName`，与"谁开的域"无关；公开访问子
+  `storageDomain`（`storage-domain/src/index.ts:37`、`:236` 装在子 ctx 上），宿主三处消费者含
+  `schedule/src/index.ts:101,126`（裁决一排除的那个服务正坐在这条 seam 上）。
+  **V-2b 未证**：插件 `ctx.on` 与域发射是否同总线——设施装在 `domainCtx`，读源码判不了，留给 L-1 运行时腿。
+- **两条硬语义（写进 memo §8.3）**：`emitChanged`（`:251-258`）链内同步派发 ⇒ **handler 只能入队**，内联工作会拖
+  同域写链；监听器异常被 containment 吞掉（"the commit point has passed"）⇒ writer 永远看不见 wake 侧失败，
+  即时唤醒必须自带失败计数与存在性腿。
+- **V-1 形态**：本仓已在这条 seam 上（`plugin/host.ts:1104` 注入、`:1753-1777` 经位置导出动态 import 造 seam；
+  `root-binding/harness/seam.mjs:33,55-58` 把 `{name,version,tables[]}` 翻成 `defineDomain`+`domainTable`）；
+  但 spec 跨动态 import，**字面量交给 L-1 在真实世界断言**，不把某文件里的字符串当凭据。
+- 验收腿 L-1…L-6 已写进 memo §8.5（红先行；L-4 用刻意忙等把"内联派发"钉成回归门，L-6 无 `ctx.on` 时**拒绝并点名**
+  而非静默不装——依据是本仓 `host.ts:1171/2248` 自己的 `typeof ctx.on === 'function'` 守卫先例）。
+- 宿主树零写入；CORE PATCH BUDGET 0；未动生产路径（本轮只写 memo 与本日志）；#509 仍 DORMANT，floor-delayed 阻塞不变。
