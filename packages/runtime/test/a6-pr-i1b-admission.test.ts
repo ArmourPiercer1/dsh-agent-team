@@ -45,6 +45,16 @@
  *    on `resolve-control`) is thrown after the closure, and the kit measures that order on every run
  *    (check `role-closure-precedes-envelope-on-resolve-path`); the capture records those cells as
  *    `closure: agreed-then-envelope-refused` and the leg reads them as the positive evidence they are;
+ *  - the capture is READ-TIME BOUND, not trusted as a file (round 3 of #522): the stamped `verdict.json` of
+ *    the run it names must be BYTE-IDENTICAL to `capture.json` — an honest run writes both from one object,
+ *    so the evidence-set pin is an identity pin, and pointing the capture at a stale stamped directory
+ *    reddens (F-I1b3-2); the kit's gate-order function (`tests/kits/pr-i1b-real-host/gate-order.mjs`, ONE
+ *    implementation, imported not copied) re-runs at read time against this tree's `control/service.ts` and
+ *    must equal the recorded `resolvePathOrder` field for field, dead line numbers included (F-I1b3-3/-4);
+ *    and the recorded ports must sit inside the imported `TEST_PORT_RANGES` — the pre-fix instrument booted
+ *    its enable world at `port + 100`, outside the sanctioned bands, which is why the round-1/2 captures
+ *    read [3292, 3392]; an off-band capture is refused as evidence (F-I1b3-1/-4). The counted refusal line
+ *    prints vitest's OWN skip count, asserted equal to the tally before printing (F-I1b3-6);
  *  - the MEMBER row has no ingress that reaches the closure — and that is measured, not asserted (round 2,
  *    F-I1b2-3): the kit presents a member session through the only identity-expressing carrier the host has
  *    (the session-addressed `/__p6t6/tool`) and records the host's `no live agent` refusal verbatim; no model
@@ -93,8 +103,13 @@ import { REVIEW_ASSIGNMENT_WRITE_REFUSALS, applyReviewAssignment } from '../revi
 import type { ReviewAssignmentCommand, ReviewAssignmentLedgerRow, ReviewAssignmentLockPort, ReviewAssignmentRowDraft } from '../review-assignment/writer.js'
 import { REVIEW_ASSIGNMENT_FACT_TYPES, REVIEW_ASSIGNMENT_FACT_TYPE_VALUES, REVIEW_ASSIGNMENT_REFUSALS } from '../review-assignment/types.js'
 // The baseline pin, read where every kit and spec in this repo reads it. Imported, never copied: a copied SHA is
-// the drift the hygiene walk hunts.
-import { TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
+// the drift the hygiene walk hunts. Same law for the port policy: TEST_PORT_RANGES is imported, so this spec
+// checks the SAME bands the instrument must obey (round 3 of #522, F-I1b3-1/-4) — a copied band list would
+// drift the moment the user widened the real one. `measureResolvePathGateOrder` is the kit's own gate-order
+// measurement (ONE implementation in the repo, F-I1b3-3): the kit runs it at capture time, this file re-runs
+// it at read time against the same bytes.
+import { TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
+import { measureResolvePathGateOrder } from '../../../tests/kits/pr-i1b-real-host/gate-order.mjs'
 import {
   ASSIGNMENT_ADMISSION_CALLER_ROLES,
   ASSIGNMENT_ADMISSION_CLAIMABLE_ACTOR_KINDS,
@@ -1276,6 +1291,9 @@ interface RealHostCapture {
   readonly hostPorcelainBefore: number
   readonly hostPorcelainAfter: number
   readonly resolvePathOrder: { readonly ok: boolean; readonly closureLine: number | null; readonly envelopeLine: number | null; readonly measured: string }
+  /** The two ports the run booted (matrix, enable) — re-checked against TEST_PORT_RANGES at read time. */
+  readonly ports: readonly number[]
+  readonly markers: readonly string[]
   readonly rootSessionId: string
   readonly rowConfigFields: readonly string[]
   readonly unknownCaller: { readonly code: string; readonly message: string }
@@ -1319,9 +1337,13 @@ const porcelainCount = (tree: string): number => gitIn(tree, ['status', '--porce
  * prints its counted refusal (a capture sitting in a clone with no runtime proves nothing and measures
  * nothing — F-I1b2-1 refuses to read it as evidence); (b) runtime present, no capture — RED naming the kit
  * command; (c) runtime + capture — the legs measure it, and reading it RE-MEASURES the machine: the runtime's
- * live HEAD and porcelain must equal what the capture recorded, the stamped evidence directory it names must
- * exist with its `verdict.json` and `MEASURED-LINES.txt`, and its `laneHead` must be a real ancestor commit
- * of this repository. A whole-file fabrication (right shape, no host behind it) reddens here by name.
+ * live HEAD and porcelain must equal what the capture recorded; the stamped evidence directory it names must
+ * exist AND its `verdict.json` must be byte-identical to this file (F-I1b3-2 — an identity pin, not an
+ * existence pin); the recorded ports must sit inside the imported `TEST_PORT_RANGES` and agree with the
+ * process markers (F-I1b3-1/-4); the kit's gate-order measurement must re-run HERE against this tree's
+ * `control/service.ts` and equal `resolvePathOrder` field for field (F-I1b3-3/-4); and `laneHead` must be a
+ * real ancestor commit of this repository. A whole-file fabrication (right shape, no host behind it) reddens
+ * here by name — and so does every drift of the tree under a still-committed capture.
  */
 function readRealHostCapture(): RealHostCapture | null {
   expect(REAL_HOST_REFUSED, 'a real-host capture leg ran with no pristine runtime — the refusal gate is broken').toBe(false)
@@ -1331,7 +1353,8 @@ function readRealHostCapture(): RealHostCapture | null {
       + `${PRISTINE_HOST} but no real-host capture exists — run \`node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs\` `
       + 'and commit the capture it writes. A runtime with no capture is an unrun instrument, not a refused leg.',
   ).toBe(true)
-  const capture = JSON.parse(readFileSync(CAPTURE_PATH, 'utf8')) as RealHostCapture
+  const captureBytes = readFileSync(CAPTURE_PATH)
+  const capture = JSON.parse(captureBytes.toString('utf8')) as RealHostCapture
   expect(capture.kit, 'the capture next to this file was not written by the PR-I1b real-host instrument').toBe('pr-i1b-real-host')
   // A capture off the pinned baseline measures a different host; the comparison below would be a lie.
   expect(capture.hostBaselineSha, 'the capture was taken against a host baseline other than the pin this lane tests').toBe(TEST_USE_BASELINE_SHA)
@@ -1349,13 +1372,51 @@ function readRealHostCapture(): RealHostCapture | null {
     `the stamped evidence directory the capture names (${EVIDENCE_ROOT}/${capture.runStamp}) has no verdict.json — this capture is not bound to an evidence set that exists`).toBe(true)
   expect(existsSync(join(EVIDENCE_ROOT, capture.runStamp, 'MEASURED-LINES.txt')),
     `the stamped evidence directory the capture names (${capture.runStamp}) has no MEASURED-LINES.txt — the verdict has no measured lines behind it`).toBe(true)
+  // F-I1b3-2: existence was never agreement. The kit writes `capture.json` and `<runStamp>/verdict.json`
+  // from ONE object in ONE run, so an honest pair is BYTE-IDENTICAL; a capture repointed at some other
+  // real evidence set (round 3's MUT M1: the stale round-2 directory, whose verdict says 22 checks and
+  // knows neither resolvePathOrder nor memberAttempt) survives an existence pin and dies here. This turns
+  // the existence pin into an identity pin — the capture and the evidence set it names must be the same
+  // bytes, or the run names two runs at once.
+  const stampedVerdict = readFileSync(join(EVIDENCE_ROOT, capture.runStamp, 'verdict.json'))
+  expect(stampedVerdict.equals(captureBytes),
+    `capture.json and ${capture.runStamp}/verdict.json are not byte-identical — the capture names an evidence set that CONTRADICTS it `
+    + '(an honest run writes both files from one object; a stamped verdict.json that differs is a different run, and this capture is pointing at it)').toBe(true)
   expect(gitOkIn(REPO_ROOT, ['cat-file', '-e', `${capture.laneHead}^{commit}`]),
     `capture.laneHead (${capture.laneHead}) is not a commit in this repository — a capture must name a lane head that existed`).toBe(true)
   expect(gitOkIn(REPO_ROOT, ['merge-base', '--is-ancestor', capture.laneHead, 'HEAD']),
     `capture.laneHead (${capture.laneHead}) is not an ancestor of this checkout — the capture claims a commit outside this branch's history`).toBe(true)
+  // F-I1b3-1 / F-I1b3-4: the recorded ports stop being prose. The kit booted BOTH worlds inside the bands
+  // it reads from tests/paths.mjs and recorded its own `ports-inside-test-port-ranges` measurement; this
+  // leg re-derives the band membership from the SAME imported constant, binds the kit's check to exist,
+  // and cross-reads each port against the process marker that names it (markers end `host<port>`). A
+  // capture recording the old off-band shape — [3292, 3392], or any port + 100 — reddens here.
+  const portChecks = capture.checks.filter((c) => c.id === 'ports-inside-test-port-ranges')
+  expect(portChecks.length, 'the instrument stopped recording the in-band port measurement as a check — the ports would be an assertion again, not a measurement').toBe(1)
+  expect(portChecks[0]?.ok, `the kit's own in-band port measurement failed in the recorded run: ${portChecks[0]?.measured ?? ''}`).toBe(true)
+  expect(capture.ports?.length, `the capture must record exactly two boot ports (matrix, enable), got ${JSON.stringify(capture.ports)}`).toBe(2)
+  expect(new Set(capture.ports).size, `both worlds cannot have booted on one port — captured ports ${JSON.stringify(capture.ports)}`).toBe(2)
+  const bandLabel = TEST_PORT_RANGES.map(([lo, hi]) => `${lo}-${hi}`).join(' / ')
+  const outOfBand = capture.ports.filter((p) => !TEST_PORT_RANGES.some(([lo, hi]) => p >= lo && p <= hi) || p === 3080 || p === 3180)
+  expect(outOfBand,
+    `the capture records boot port(s) ${JSON.stringify(outOfBand)} outside TEST_PORT_RANGES [${bandLabel}] (tests/paths.mjs) — `
+    + 'only an in-band run is evidence; re-run `node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs`, which since F-I1b3-1 boots both worlds in band and refuses out-of-band ports').toEqual([])
+  expect(capture.markers?.[0]?.endsWith(`matrixhost${capture.ports[0]}`) === true && capture.markers?.[1]?.endsWith(`enablehost${capture.ports[1]}`) === true,
+    `the recorded ports ${JSON.stringify(capture.ports)} do not agree with the process markers ${JSON.stringify(capture.markers)} — each marker ends host<port>, so ports and markers must tell the same story`).toBe(true)
   // The kit measured the gate order in the row's source; a cell recorded as agreed-then-envelope-refused
   // carries the envelope gate's code, whatever else a fabrication might write into it (F-I1b2-1's C12).
   expect(capture.resolvePathOrder?.ok, 'the capture did not measure the gate order — the agreement reading in the legs below would rest on prose').toBe(true)
+  // F-I1b3-3 / F-I1b3-4: the order is no longer only asserted FROM the capture at read time — the kit's own
+  // measurement function (`gate-order.mjs`, the repo's single implementation, imported not copied) re-runs
+  // HERE against the very `control/service.ts` this file already opens for its other pins, and the result
+  // must equal the capture field for field — ok, BOTH line numbers, and the measured sentence. A reorder of
+  // the closure/envelope statements that skips a kit re-run reddens every capture-reading leg (round 3's
+  // order-stale repro shipped 58 green; here it reddens seven), and `closureLine`/`envelopeLine` stop being
+  // dead fields: they are compared, not just stored.
+  const liveOrder = measureResolvePathGateOrder(readFileSync(CONTROL_SERVICE_PATH, 'utf8'))
+  expect(liveOrder,
+    'the kit\'s gate-order measurement, re-run at read time against this tree\'s packages/runtime/control/service.ts, disagrees with what the capture recorded — '
+    + 'the resolve path was reordered (or edited) since the kit ran, or the capture was fabricated: re-run `node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` and commit the capture it writes').toEqual(capture.resolvePathOrder)
   for (const [key, cell] of Object.entries(capture.answers)) {
     if (cell.closure === 'agreed-then-envelope-refused') {
       expect(cell.code, `cell ${key} is recorded as envelope-refused but carries ${cell.code}`).toBe('TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS')
@@ -1372,12 +1433,23 @@ const itRealHost = (title: string, fn: () => void | Promise<void>): void => {
 }
 
 describe(`REAL-HOST (${REAL_HOST_STATE}): the resolve path answers the closure the way this lane mirrors it`, () => {
-  afterAll(() => {
-    if (REAL_HOST_REFUSED) {
-      console.info(`real-host: ${realHostCaptureLegs} refused — pristine runtime absent; run the TEST_METHODS §2 recipe `
-        + `(clone tests/deepseek-harness-test-use --local --no-hardlinks, detach ${TEST_USE_BASELINE_SHA}, install, build) to materialize it. `
-        + 'Refused is not passed; this line is the refusal, printed and counted.')
-    }
+  // vitest 4 requires the first hook argument to be an object destructure (a named param throws
+  // FixtureParseError); the SUITE task tree — the runner's own skip view that F-I1b3-6 reads — arrives as
+  // the second argument, so the empty pattern binds nothing on purpose.
+  // eslint-disable-next-line no-empty-pattern -- the empty destructure is required by vitest 4, not avoidance
+  afterAll(({}, suite) => {
+    if (!REAL_HOST_REFUSED) return
+    // F-I1b3-6: the counter used to be self-tallied and decorative — `realHostCaptureLegs += 0` changed the
+    // printed sentence and reddened nothing. The fix keeps the number but binds it to vitest's OWN view of
+    // this suite: under REFUSED every capture leg is skipped, so the skipped-test count of this suite IS the
+    // refusal count, read off the runner's task tree at teardown. A tampered tally (or a leg registered
+    // without itRealHost) fails this expect — the refusal line may only print a count the runner confirms.
+    const vitestSkipped = suite.tasks.filter((t) => t.type === 'test' && (t.mode === 'skip' || t.mode === 'todo')).length
+    expect(vitestSkipped,
+      `the block is about to print "${realHostCaptureLegs} refused" but vitest itself recorded ${vitestSkipped} skipped legs in this suite — the refusal count must be the runner's count (F-I1b3-6)`).toBe(realHostCaptureLegs)
+    console.info(`real-host: ${realHostCaptureLegs} refused — pristine runtime absent; run the TEST_METHODS §2 recipe `
+      + `(clone tests/deepseek-harness-test-use --local --no-hardlinks, detach ${TEST_USE_BASELINE_SHA}, install, build) to materialize it. `
+      + 'Refused is not passed; this line is the refusal, printed and counted.')
   })
 
   it('the environment each real-host leg needs is measured per path, not assumed', () => {

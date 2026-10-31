@@ -42,19 +42,30 @@
  * order for those envelope cells; the order is no longer asserted from prose — it is MEASURED on every run:
  * the kit reads `packages/runtime/control/service.ts`, the source that was built into the row this run boots,
  * and locates the role-closure check and `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)` inside `resolveControl`
- * (the host's own comment calls it invariant 37). An envelope refusal that is visible there can only be thrown
- * AFTER the closure ran and agreed with the caller, so `agreed-then-envelope-refused` is positive live evidence
- * of the closure's agreement, not a missing measurement. An `unclassified` cell is evidence about nothing and
- * the spec refuses to read it as anything.
+ * (the host's own comment calls it invariant 37). The measurement lives in `gate-order.mjs` beside this file,
+ * and round 3 of #522 (F-I1b3-3) put the SAME function at read time in the merge-gate spec, so a source
+ * reorder that skips a kit re-run reddens there instead of shipping green. An envelope refusal that is
+ * visible there can only be thrown AFTER the closure ran and agreed with the caller, so
+ * `agreed-then-envelope-refused` is positive live evidence of the closure's agreement, not a missing
+ * measurement. An `unclassified` cell is evidence about nothing and the spec refuses to read it as anything.
  *
  * ENVIRONMENT. World = `tests/homes/<line>-<UTC>` (workspace-internal, TEST_METHODS §7), deleted at teardown
- * unless `--keep-world`. Port from the 318x family: 3080 and 3180 are never touched, every candidate is probed
- * before use and proven free after teardown. Process marker `a6pri1b<stamp><label>host<port>` — unique to this
- * run, so teardown kills only what this run started. `DSH_HOME` is set explicitly on every spawn; never
- * inherited (an inherited `DSH_HOME` once put a world in `/home/armourpiercer/.dsh`, where the boot failed
- * read-only with zero bytes written).
+ * unless `--keep-world`. EVERY port this kit binds — BOTH worlds — is probed free inside `TEST_PORT_RANGES`
+ * imported from `tests/paths.mjs` (the repo's only port-policy source; the candidate scan is DERIVED from
+ * the bands, never hard-coded), and the run asserts both ports in-band before anything boots. 3080 (stable
+ * instance) and 3180 (hand-run default) are never touched; every candidate is probed before use and proven
+ * free after teardown. `--port` / `--enable-port` override within the bands; an out-of-band value is
+ * REFUSED, with the bands named in the refusal. Attribution, corrected 2026-10-31 by round 3 of #522
+ * (F-I1b3-1): the earlier header line "Port from the 318x family" described one of the two worlds and
+ * silently mis-described the other, and the round-2 disclosure blamed the runner's brief — both were wrong
+ * about the committed code: the deviation was THIS instrument's `enablePort = port + 100`, which booted the
+ * enable world off-band on every run (the round-1/2 captures recorded [3292, 3392] for exactly that
+ * reason). The `+100` formula is gone; no primary-plus-offset remains. Process marker
+ * `a6pri1b<stamp><label>host<port>` — unique to this run, so teardown kills only what this run started.
+ * `DSH_HOME` is set explicitly on every spawn; never inherited (an inherited `DSH_HOME` once put a world in
+ * `/home/armourpiercer/.dsh`, where the boot failed read-only with zero bytes written).
  *
- * Usage: node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs [--port 3182] [--keep-world]
+ * Usage: node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs [--port 3182] [--enable-port 3183] [--keep-world]
  * Exit 0 only when every check below passed; exit 1 naming the failures otherwise.
  */
 
@@ -62,7 +73,8 @@ import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { join } from 'node:path'
-import { CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA } from '../../paths.mjs'
+import { CLIENT_COMMIT_HASH, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../../paths.mjs'
+import { measureResolvePathGateOrder } from './gate-order.mjs'
 
 // The worktree root, computed from THIS file's location — deliberately NOT tests/paths.mjs#findTestRepoRoot,
 // which walks upward looking for a materialized runtime and can land on a DIFFERENT tree (the lane-2 main
@@ -72,13 +84,42 @@ const RUNTIME = join(WORKTREE, 'tests', 'deepseek-harness-test-use')
 
 const argv = process.argv.slice(2)
 const KEEP_WORLD = argv.includes('--keep-world')
-const PORT_OVERRIDE = (() => {
-  const i = argv.indexOf('--port')
-  return i >= 0 ? Number(argv[i + 1]) : null
-})()
 
-const PORT_CANDIDATES = [3182, 3183, 3184, 3185, 3186, 3187, 3188, 3189]
+/**
+ * PORT POLICY (round 3 of #522, F-I1b3-1). Until `256410456` this kit booted the enable world at
+ * `port + 100` — for every primary port that lands OUTSIDE `TEST_PORT_RANGES`, so no run of the old
+ * instrument was policy-compliant (the committed captures record [3292, 3392]). Now: the bands are
+ * IMPORTED from `tests/paths.mjs` (the repo's only port-policy source), the candidate list is derived
+ * from them, overrides are validated against them and an out-of-band value is refused with the bands
+ * named, and `assertPortsInBand` runs before anything boots — a future edit cannot silently leave the
+ * band again, because the boot itself reddens rather than a comment decaying.
+ */
 const FORBIDDEN_PORTS = new Set([3080, 3180])
+const BANDS_LABEL = TEST_PORT_RANGES.map(([lo, hi]) => `${lo}-${hi}`).join(' / ')
+const inBand = (port) => Number.isInteger(port) && TEST_PORT_RANGES.some(([lo, hi]) => port >= lo && port <= hi)
+const assertPortsInBand = (stage, ...ports) => {
+  const bad = ports.filter((p) => !inBand(p) || FORBIDDEN_PORTS.has(p))
+  if (bad.length > 0) {
+    throw new Error(`${stage}: port(s) ${bad.join(', ')} outside TEST_PORT_RANGES [${BANDS_LABEL}] (tests/paths.mjs)`
+      + ' — this kit may only bind ports inside those bands, and 3080/3180 are never touched')
+  }
+}
+const readPortFlag = (flag) => {
+  const i = argv.indexOf(flag)
+  if (i < 0) return null
+  const value = Number(argv[i + 1])
+  if (!Number.isInteger(value)) throw new Error(`${flag} needs an integer port, got ${JSON.stringify(argv[i + 1])}`)
+  if (!inBand(value) || FORBIDDEN_PORTS.has(value)) {
+    throw new Error(`${flag} ${value} REFUSED: ports must sit inside TEST_PORT_RANGES [${BANDS_LABEL}] from tests/paths.mjs`
+      + ' — and 3080 (stable instance) / 3180 (hand-run default) are never touched')
+  }
+  return value
+}
+const PORT_OVERRIDE = readPortFlag('--port')
+const ENABLE_PORT_OVERRIDE = readPortFlag('--enable-port')
+const PORT_CANDIDATES = TEST_PORT_RANGES
+  .flatMap(([lo, hi]) => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i))
+  .filter((p) => !FORBIDDEN_PORTS.has(p))
 const RUN_STAMP = `a6pri1b-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}Z`
 const EVIDENCE_ROOT = join(WORKTREE, 'dev', 'agent-workflow', 'evidence', 'alpha6-pr-i1b-real-host')
 const CAPTURE_DIR = join(EVIDENCE_ROOT, RUN_STAMP)
@@ -125,42 +166,12 @@ const porcelainCount = (tree) => gitOut(['status', '--porcelain'], tree).split('
 const SERVICE_TS = join(WORKTREE, 'packages', 'runtime', 'control', 'service.ts')
 /**
  * THE GATE ORDER, measured every run (round 2 of #522, F-I1b2-2 — the lane may no longer state it either way
- * from prose). Inside `resolveControl`, in the source that was built into the row this run boots:
- *   - `const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]` + the CONTROL_RESOLVER_NOT_AUTHORIZED
- *     throw  →  the role closure (host's own comment: "Role closure (BEFORE the envelope — invariant 37 …)");
- *   - `enforceEnvelope(RESOLVE_CONTROL_SPEC, …)`  →  the envelope gate (its refusal is the
- *     `TeamRuntime: operation 'resolve-control' … outside the caller's mutation envelope` message from
- *     admission/envelope.ts).
- * This function reads the file, scopes to the `resolveControl` body, and MEASURES: exactly one closure marker,
- * exactly one envelope call, the envelope call after the closure check, nothing envelope-shaped before it. When
- * this holds, a cell whose visible refusal is the envelope gate's proves the closure RAN FIRST and AGREED.
- * When it does not hold, envelope cells classify as `unclassified` and the run says so — fail-closed.
+ * from prose) by the shared `gate-order.mjs`, whose own comment states what it measures and why an envelope
+ * refusal visible after the closure proves the closure agreed. The merge-gate spec re-runs the SAME function
+ * at read time (round 3, F-I1b3-3); there is exactly ONE implementation of this measurement in the repo.
+ * If the check below fails, envelope-shaped answers classify as `unclassified` and the run says so —
+ * fail-closed.
  */
-function measureResolvePathGateOrder() {
-  const src = readFileSync(SERVICE_TS, 'utf8')
-  const fnStart = src.indexOf('async function resolveControl(')
-  const fnEnd = src.indexOf('async function commitAbandonmentFact(', fnStart + 1)
-  const body = fnStart >= 0 && fnEnd > fnStart ? src.slice(fnStart, fnEnd) : ''
-  const closureMarker = 'const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]'
-  const closureCount = body.split(closureMarker).length - 1
-  const envCalls = [...body.matchAll(/enforceEnvelope\(\s*RESOLVE_CONTROL_SPEC/g)].length
-  const anyEnforce = body.split('enforceEnvelope(').length - 1
-  const closureAt = body.indexOf(closureMarker)
-  const envAt = body.search(/enforceEnvelope\(\s*RESOLVE_CONTROL_SPEC/)
-  const ok = closureCount === 1 && envCalls === 1 && anyEnforce === 1
-    && closureAt >= 0 && envAt > closureAt
-    && !body.slice(0, closureAt).includes('enforceEnvelope(')
-  const lineOf = (idx) => src.slice(0, fnStart + idx).split('\n').length
-  return {
-    ok,
-    closureLine: closureAt >= 0 ? lineOf(closureAt) : null,
-    envelopeLine: envAt >= 0 ? lineOf(envAt) : null,
-    measured: `resolveControl in packages/runtime/control/service.ts: closure check :${closureAt >= 0 ? lineOf(closureAt) : '?'} `
-      + `precedes enforceEnvelope(RESOLVE_CONTROL_SPEC) :${envAt >= 0 ? lineOf(envAt) : '?'}, `
-      + `exactly one envelope call in the function and none before the closure check `
-      + `(closure markers=${closureCount}, envelope calls=${anyEnforce})`,
-  }
-}
 
 /**
  * Boot one world with the lane's built row and hand back its call seams. `extraConfig` is spliced into the row
@@ -277,19 +288,44 @@ async function main() {
   check('host-is-the-pinned-baseline', hostHead === TEST_USE_BASELINE_SHA && hostPorcelainBefore === 0,
     `host HEAD ${hostHead} vs pin ${TEST_USE_BASELINE_SHA}, porcelain ${hostPorcelainBefore}`)
 
+  // BOTH worlds' ports are chosen and asserted before anything boots (F-I1b3-1): the old formula
+  // `enablePort = port + 100` was outside TEST_PORT_RANGES for every primary port, so every old run —
+  // including the two that produced committed evidence — bound an off-band port. Selection scans the
+  // bands derived from tests/paths.mjs and probes each candidate free.
   let port = PORT_OVERRIDE
-  if (port !== null && (FORBIDDEN_PORTS.has(port) || await portInUse(port))) {
-    log(`requested port ${port} unusable; falling back to the candidate list`)
+  if (port !== null && await portInUse(port)) {
+    log(`requested port ${port} is busy; falling back to the band scan`)
     port = null
   }
   if (port === null) {
     for (const p of PORT_CANDIDATES) {
-      if (FORBIDDEN_PORTS.has(p)) continue
       if (!(await portInUse(p))) { port = p; break }
       log(`port ${p} busy, trying next`)
     }
   }
-  if (port === null) throw new Error(`no free port in ${PORT_CANDIDATES.join(', ')} (3080 and 3180 are never used)`)
+  if (port === null) throw new Error(`no free port inside TEST_PORT_RANGES [${BANDS_LABEL}] (3080 and 3180 are never used)`)
+  let enablePort = ENABLE_PORT_OVERRIDE
+  if (enablePort !== null && enablePort === port) {
+    throw new Error(`--enable-port ${enablePort} collides with the primary port ${port} — two worlds cannot share a port`)
+  }
+  if (enablePort !== null && await portInUse(enablePort)) {
+    log(`requested enable port ${enablePort} is busy; falling back to the band scan`)
+    enablePort = null
+  }
+  if (enablePort === null) {
+    for (const p of PORT_CANDIDATES) {
+      if (p === port) continue
+      if (!(await portInUse(p))) { enablePort = p; break }
+    }
+  }
+  if (enablePort === null) throw new Error(`no second free port inside TEST_PORT_RANGES [${BANDS_LABEL}] for the enable world`)
+  const portsInBand = [port, enablePort].every((p) => inBand(p) && !FORBIDDEN_PORTS.has(p)) && port !== enablePort
+  check('ports-inside-test-port-ranges', portsInBand,
+    `matrix=${port}, enable=${enablePort} — distinct, both inside TEST_PORT_RANGES [${BANDS_LABEL}] from tests/paths.mjs, both probed free (3080/3180 never touched)`)
+  // Runtime assertion, not a comment: a future edit cannot silently leave the band, because the boot dies here.
+  assertPortsInBand('pre-boot', port, enablePort)
+  if (port === enablePort) throw new Error(`selected ports collide (${port}) — two worlds cannot share a port`)
+  log(`ports ${port} (matrix) + ${enablePort} (enable) are inside TEST_PORT_RANGES [${BANDS_LABEL}], both probed free`)
 
   const ROOT = `session-a6pri1b-i1b-root-${RUN_STAMP}`
   const host = await bootWorld({ label: 'matrix', port, rootSessionId: ROOT })
@@ -301,7 +337,7 @@ async function main() {
 
   // F-I1b2-2: the gate order this kit's cell classification depends on, measured from the row's own source
   // before any cell is read. If this check fails, envelope-shaped answers classify as `unclassified` below.
-  const gateOrder = measureResolvePathGateOrder()
+  const gateOrder = measureResolvePathGateOrder(readFileSync(SERVICE_TS, 'utf8'))
   check('role-closure-precedes-envelope-on-resolve-path', gateOrder.ok, gateOrder.measured)
 
   // 1. The real `resolveCaller`, driven with an EXPLICIT caller against REAL durable rows. An unknown instance
@@ -465,9 +501,11 @@ async function main() {
   //    callers in source and built dist, so no route exists from any host surface to the gate. The probe is
   //    corroboration on the one channel a row gets; the census is the confirmation.
   const enableRoot = `session-a6pri1b-enable-root-${RUN_STAMP}`
-  const enablePort = port + 100
-  if (FORBIDDEN_PORTS.has(enablePort) || await portInUse(enablePort)) {
-    throw new Error(`enable-probe port ${enablePort} is not usable`)
+  // The enable world's port was chosen and asserted in-band at selection time, before the first boot
+  // (F-I1b3-1 — no `port + 100`); this is only the still-free re-probe for the window the run opened.
+  assertPortsInBand('enable-boot', enablePort)
+  if (await portInUse(enablePort)) {
+    throw new Error(`enable-probe port ${enablePort} was taken between selection and boot`)
   }
   const enableHost = await bootWorld({
     label: 'enable', port: enablePort, rootSessionId: enableRoot,
@@ -514,7 +552,7 @@ async function main() {
   log(`evidence: ${CAPTURE_DIR}`)
 
   const failed = results.filter((r) => !r.ok)
-  log(`VERDICT kit=pr-i1b-real-host run=${RUN_STAMP} head=${laneHead} checks=${results.length} failed=${failed.length}`)
+  log(`VERDICT kit=pr-i1b-real-host run=${RUN_STAMP} head=${laneHead} ports=${port}+${enablePort} checks=${results.length} failed=${failed.length}`)
   if (failed.length > 0) {
     log('FAILED: ' + failed.map((f) => f.id).join(', '))
     process.exitCode = 1

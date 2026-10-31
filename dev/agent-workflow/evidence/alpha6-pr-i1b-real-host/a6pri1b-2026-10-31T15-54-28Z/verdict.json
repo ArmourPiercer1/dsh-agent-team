@@ -1,7 +1,7 @@
 {
   "kit": "pr-i1b-real-host",
-  "runStamp": "a6pri1b-2026-10-31T13-51-12Z",
-  "laneHead": "7def32fc11e1c30598bed87324100f046d568270",
+  "runStamp": "a6pri1b-2026-10-31T15-54-28Z",
+  "laneHead": "25641045687b6788e593e7471b3dd24b1fa3531a",
   "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "clientCommitHash": "639ed01539",
@@ -16,27 +16,27 @@
   "row": "file:///home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/packages/runtime/dist/packages/runtime/src/plugin/host.js",
   "p6t6Row": "file:///home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/packages/tools/harness/plugin.mjs",
   "worlds": [
-    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-matrix (deleted at teardown)",
-    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-enable (deleted at teardown)"
+    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T15-54-28Z-matrix (deleted at teardown)",
+    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T15-54-28Z-enable (deleted at teardown)"
   ],
   "ports": [
-    3292,
-    3392
+    3181,
+    3182
   ],
   "markers": [
-    "a6pri1ba6pri1b-2026-10-31T13-51-12Zmatrixhost3292",
-    "a6pri1ba6pri1b-2026-10-31T13-51-12Zenablehost3392"
+    "a6pri1ba6pri1b-2026-10-31T15-54-28Zmatrixhost3181",
+    "a6pri1ba6pri1b-2026-10-31T15-54-28Zenablehost3182"
   ],
-  "rootSessionId": "session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z",
+  "rootSessionId": "session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z",
   "unknownCaller": {
     "code": "TEAM_RUNTIME_CALLER_NOT_FOUND",
-    "message": "TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z' — the caller is unknown"
+    "message": "TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z' — the caller is unknown"
   },
   "memberAttempt": {
     "ingress": "p6t6-tool:team_resolve_control",
-    "as": "session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z",
+    "as": "session-a6pri1b-member-never-a6pri1b-2026-10-31T15-54-28Z",
     "status": 422,
-    "error": "no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z' is neither live nor durable — no agent to execute a tool on"
+    "error": "no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T15-54-28Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T15-54-28Z' is neither live nor durable — no agent to execute a tool on"
   },
   "rowConfigFields": [
     "rootSessionId",
@@ -57,45 +57,45 @@
   "created": {
     "leader-approval|leader": {
       "status": 200,
-      "requestId": "ctrl-1kv0o8t0pqko5i01tylav1d2",
+      "requestId": "ctrl-0r5mb1j17zpsug031ujn90ga",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-1kv0o8t0pqko5i01tylav1d2\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0r5mb1j17zpsug031ujn90ga\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
     },
     "leader-approval|human": {
       "status": 200,
-      "requestId": "ctrl-0x41hjb09bmo2o0ak8b0p111",
+      "requestId": "ctrl-0yaf02h1bstgtu0634m8v0kf",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0x41hjb09bmo2o0ak8b0p111\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0yaf02h1bstgtu0634m8v0kf\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
     },
     "user-approval|leader": {
       "status": 200,
-      "requestId": "ctrl-12g5tdv1g7a79k1bf1mv50su",
+      "requestId": "ctrl-113ik7l1fc5g8m0nsgbzf0if",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-12g5tdv1g7a79k1bf1mv50su\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-113ik7l1fc5g8m0nsgbzf0if\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
     },
     "user-approval|human": {
       "status": 200,
-      "requestId": "ctrl-1q8w4jx1yexxyu0h57f431kk",
+      "requestId": "ctrl-0tkc11v0bt3wfg17cbwqd1u6",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-1q8w4jx1yexxyu0h57f431kk\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0tkc11v0bt3wfg17cbwqd1u6\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
     },
     "envelope-mutation|leader": {
       "status": 200,
-      "requestId": "ctrl-03t1jsi15qnaq90xj2niw181",
+      "requestId": "ctrl-0j4rz3c0dnkq6n1av024q18g",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-03t1jsi15qnaq90xj2niw181\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0j4rz3c0dnkq6n1av024q18g\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
     },
     "envelope-mutation|human": {
       "status": 200,
-      "requestId": "ctrl-0lausjm1mokx351d1fpxk1d3",
+      "requestId": "ctrl-1cj09200a5fwq7161b13u0va",
       "code": null,
-      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0lausjm1mokx351d1fpxk1d3\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-1cj09200a5fwq7161b13u0va\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
     }
   },
   "answers": {
     "leader-approval|leader": {
       "ingress": "p6t6-tool:team_resolve_control",
-      "requestId": "ctrl-1kv0o8t0pqko5i01tylav1d2",
+      "requestId": "ctrl-0r5mb1j17zpsug031ujn90ga",
       "status": 200,
       "code": "TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS",
       "message": "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed",
@@ -105,7 +105,7 @@
     },
     "leader-approval|human": {
       "ingress": "team-remote:team.resolveControl.v4",
-      "requestId": "ctrl-0x41hjb09bmo2o0ak8b0p111",
+      "requestId": "ctrl-0yaf02h1bstgtu0634m8v0kf",
       "status": 200,
       "code": "CONTROL_RESOLVED",
       "message": "the durable decision was written",
@@ -114,7 +114,7 @@
     },
     "user-approval|leader": {
       "ingress": "p6t6-tool:team_resolve_control",
-      "requestId": "ctrl-12g5tdv1g7a79k1bf1mv50su",
+      "requestId": "ctrl-113ik7l1fc5g8m0nsgbzf0if",
       "status": 200,
       "code": "CONTROL_RESOLVER_NOT_AUTHORIZED",
       "message": "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
@@ -124,7 +124,7 @@
     },
     "user-approval|human": {
       "ingress": "team-remote:team.resolveControl.v4",
-      "requestId": "ctrl-1q8w4jx1yexxyu0h57f431kk",
+      "requestId": "ctrl-0tkc11v0bt3wfg17cbwqd1u6",
       "status": 200,
       "code": "CONTROL_RESOLVED",
       "message": "the durable decision was written",
@@ -133,7 +133,7 @@
     },
     "envelope-mutation|leader": {
       "ingress": "p6t6-tool:team_resolve_control",
-      "requestId": "ctrl-03t1jsi15qnaq90xj2niw181",
+      "requestId": "ctrl-0j4rz3c0dnkq6n1av024q18g",
       "status": 200,
       "code": "TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS",
       "message": "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed",
@@ -143,7 +143,7 @@
     },
     "envelope-mutation|human": {
       "ingress": "team-remote:team.resolveControl.v4",
-      "requestId": "ctrl-0lausjm1mokx351d1fpxk1d3",
+      "requestId": "ctrl-1cj09200a5fwq7161b13u0va",
       "status": 200,
       "code": "CONTROL_RESOLVED",
       "message": "the durable decision was written",
@@ -171,9 +171,14 @@
       "measured": "host HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 vs pin 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0"
     },
     {
+      "id": "ports-inside-test-port-ranges",
+      "ok": true,
+      "measured": "matrix=3181, enable=3182 — distinct, both inside TEST_PORT_RANGES [3180-3199 / 3491-3500 / 13000-13099] from tests/paths.mjs, both probed free (3080/3180 never touched)"
+    },
+    {
       "id": "boot-line-shape",
       "ok": true,
-      "measured": "dsh web line at port 3292 (token redacted)"
+      "measured": "dsh web line at port 3181 (token redacted)"
     },
     {
       "id": "gate-401-without-token",
@@ -193,37 +198,37 @@
     {
       "id": "real-resolver-refuses-unknown-caller",
       "ok": true,
-      "measured": "TEAM_RUNTIME_CALLER_NOT_FOUND — TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z' — the caller is unknown"
+      "measured": "TEAM_RUNTIME_CALLER_NOT_FOUND — TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T15-54-28Z' — the caller is unknown"
     },
     {
       "id": "create-request-leader-approval-leader-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-1kv0o8t0pqko5i01tylav1d2"
+      "measured": "200 requestId=ctrl-0r5mb1j17zpsug031ujn90ga"
     },
     {
       "id": "create-request-leader-approval-human-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-0x41hjb09bmo2o0ak8b0p111"
+      "measured": "200 requestId=ctrl-0yaf02h1bstgtu0634m8v0kf"
     },
     {
       "id": "create-request-user-approval-leader-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-12g5tdv1g7a79k1bf1mv50su"
+      "measured": "200 requestId=ctrl-113ik7l1fc5g8m0nsgbzf0if"
     },
     {
       "id": "create-request-user-approval-human-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-1q8w4jx1yexxyu0h57f431kk"
+      "measured": "200 requestId=ctrl-0tkc11v0bt3wfg17cbwqd1u6"
     },
     {
       "id": "create-request-envelope-mutation-leader-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-03t1jsi15qnaq90xj2niw181"
+      "measured": "200 requestId=ctrl-0j4rz3c0dnkq6n1av024q18g"
     },
     {
       "id": "create-request-envelope-mutation-human-arm",
       "ok": true,
-      "measured": "200 requestId=ctrl-0lausjm1mokx351d1fpxk1d3"
+      "measured": "200 requestId=ctrl-1cj09200a5fwq7161b13u0va"
     },
     {
       "id": "closure-splits-by-role-on-user-approval",
@@ -253,7 +258,7 @@
     {
       "id": "member-role-has-no-ingress",
       "ok": true,
-      "measured": "422 \"no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12\" — the session-addressed carrier refuses the member session before the service is reached, and no member cell entered the matrix"
+      "measured": "422 \"no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T15-54-28Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T15-54-28\" — the session-addressed carrier refuses the member session before the service is reached, and no member cell entered the matrix"
     },
     {
       "id": "durable-ledger-census-nonempty",
@@ -263,7 +268,7 @@
     {
       "id": "teardown-process-and-port",
       "ok": true,
-      "measured": "child alive=false, port 3292 free=true"
+      "measured": "child alive=false, port 3181 free=true"
     },
     {
       "id": "host-tree-stayed-clean",
@@ -278,7 +283,7 @@
     {
       "id": "enable-world-cleaned",
       "ok": true,
-      "measured": "enable world alive=false, port 3392 free=true"
+      "measured": "enable world alive=false, port 3182 free=true"
     }
   ]
 }

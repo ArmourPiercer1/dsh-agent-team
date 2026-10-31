@@ -280,3 +280,40 @@ evidence for it"）。实现模块头 `packages/runtime/review-assignment/assign
   字段对该探针不可见。承重事实是结构性的：**`openAssignmentAdmission` 在源码与 dist 里零 caller**（S-7 的
   confirmed negative），故任何宿主表面都到不了这个门；探针是所驱动通道的佐证，普查才是确认。第 7 点引用的
   spec 文件头逐字句同轮改写为按面陈述，不再是无条件全称句。
+
+**9）dated 2026-10-31（round 3 更正登记；接受 round 3 全部 4 条：1 MAJOR / 2 MINOR / 1 INFO 合并处理）。**
+
+- **F-I1b3-1（端口结构性越界，MAJOR）。** 原仪器把 enable world 定在 `port + 100`：对任何在带 primary 都必然
+  落在 `TEST_PORT_RANGES`（3180-3199 / 3491-3500 / 13000-13099，`tests/paths.mjs`）之外——已提交捕获里的
+  [3292, 3392] 就是这么来的。**归因更正**：这是仪器自身的偏差，不是 runner brief 的端口选择（brief 的端口在
+  带内；round 2 披露把责任记给 brief 是错的），更正句已写进 kit 头。修复后两个 world 的端口都从导入的带内
+  候选扫得（不硬编码），`--port`/`--enable-port` 只许带内、越界即点名带区间拒收，且 boot 前对两端口做运行时
+  断言（新增可失败 check `ports-inside-test-port-ranges`，checks 23→**24**）。带内重跑落地
+  `VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T15-54-28Z ports=3181+3182 checks=24 failed=0`；
+  **与 off-band 旧捕获逐格对照，变化的只有随 run 天然不同的格**（laneHead、runStamp/rootSessionId/requestId/
+  markers/worlds），全部语义格（answer 分类、两种 census、门序、rowConfigFields）逐字一致——带内化没有翻转
+  任何被测事实，这本身是本轮的测量答案。
+- **F-I1b3-2（stamp 绑定只查存在）。** `readRealHostCapture` 现把 `capture.json` 与被指名的
+  `<runStamp>/verdict.json` 按**字节**比较并要求相等（诚实 run 由同一对象同轮写两份，必字节一致）。MUT：
+  runStamp 指向另一个真实已提交目录（12-46-43Z）→ 7 条读捕获腿全红，消息点名 "not byte-identical"。
+- **F-I1b3-3（门序只在 kit 时量）。** 量序函数提为仓内唯一实现 `tests/kits/pr-i1b-real-host/gate-order.mjs`
+  （kit 与 spec import 同一份，`.d.mts` 给类型；禁拷贝）。spec 在读时对本树 `control/service.ts` **重跑**该
+  函数，结果须与捕获 `resolvePathOrder` 逐字段相等（`toEqual`）。MUT：把 `enforceEnvelope(RESOLVE_CONTROL_SPEC…)`
+  四行语句纯上移到闭包之前（字节多重集不变、marker 仍 1+1、括号平衡不变）不重跑 kit → 7 腿红（round 3 报告里
+  这个序陈旧 repro 曾 58 全绿）。
+- **F-I1b3-4（死字段与装饰性端口格）。** `closureLine`/`envelopeLine` 进入上条的逐字段比较（MUT：捕获里互换
+  两个行号 → 7 腿红）；捕获 `ports` 用导入的 `TEST_PORT_RANGES` 重新验带、与进程 marker（`…matrixhost<port>` /
+  `…enablehost<port>`）互读，并要求 kit 自己的带内 check 存在于捕获且 ok。MUT：ports 改成修复前形状 [3182, 3282]
+  且 marker 同改、**连同 stamp verdict 一起打字节一致的补丁**（让攻击者连 identity pin 一起骗过）→ 仍 7 腿红，
+  点名越界端口与带区间。
+- **F-I1b3-6（自计拒绝计数装饰性）。** 裁决取「对 vitest 自身 skip 数做断言」而非删数：afterAll 读 runner 的
+  task 树（本 suite mode=skip|todo 的 test 数），打印拒绝句之前先断言其等于 `realHostCaptureLegs`。MUT：
+  `realHostCaptureLegs += 0` 在 runtime 缺失臂下红（"0 refused" vs runner 记 7），rc=1。
+- **降级臂重测**：runtime 在场 + 捕获缺失 → 7 failed、rc=1、逐腿点名 kit 命令；runtime 缺失 → **51 passed |
+  7 skipped**、rc=0、拒绝句逐字打印。家族门重测：四文件 **179 passed**、12 文件 a6 家族 **449 passed**（构成
+  按第 8 条 F-I1b2-7 名目）。
+- **证据处置**：13-51-12Z stamp 目录（off-band [3292, 3392]）随本轮提交删除——identity pin 使它永远不可能再被
+  认证，留着 = 留一套 spec 见一次红一次的矛盾集；12-46-43Z 因本节第 8 点逐字引用而**保留**为 dated 历史（identity
+  pin 使其对绑定 inert）；一次未落地的失败 run（15-53-57Z，双 kit 并跑互相干扰）只披露不落地。台账见
+  `dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/SUPERSEDED-RUNS.md`。第 5/8 点引用的 `checks=22`/`checks=23`
+  是其当时真实值；当前绑定 token 为 `run=a6pri1b-2026-10-31T15-54-28Z checks=24 failed=0`。
