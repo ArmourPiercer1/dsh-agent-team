@@ -103,7 +103,7 @@ dormancy 扫描继续成立，`ALLOWED_CONSUMERS=[]` 不变；lane 模块集合�
 **本 PR 不声称**：真实 Host 上的并发对账、跨代重启后的投影呈现、以及与 control 路径在同一把锁下的 interleaving
 ——这些需要 PR-I1b 的接线与单所有者 C2 运行。
 
-## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-14 round-1 独立复核后，R-15..R-21 round-2 独立复核后：每条给证据）
+## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-14 round-1 独立复核后，R-15..R-21 round-2 独立复核后，R-22..R-27 round-3 独立复核后：每条给证据）
 
 裁决要求「不允许静默重定义」，因此每条都写明：原状态、被什么推翻、现在的法律、钉住它的腿。
 
@@ -262,10 +262,74 @@ writer 里那段注释改成说真话（哪个读者让残留要紧），并把�
 （一把尺用在一处、一条规则用在一处），而它们看起来像已经修好了；把修好的东西逐句改写成"它在每种状态下会怎么
 回答"，缺口就自己开口说话。
 
+**R-22 round-2 的读保护包住的是"调用"，不是"读"（F-R3-1，MAJOR）。** 第一处读 `list()` 的 try 只到赋值那一行为
+止，随后两处 `filter`（即真正逐行访问元素的代码）在 try 外面；另外三处读把 `find`/`filter` 连同折叠一起包住了。
+后果：一个正常返回、但**返回内容不可遍历**的适配器（数组里有一个 null 行；元素取属性即抛；返回的不是数组而是
+惰性对象）在第一处仍然把异常抛给调用方，而同一个行在第二/三处会被正常判成拒绝 —— 腿当时看不见，因为四条腿全部
+是让 `list()` **调用**抛异常，那恰是第一处唯一处理得好的形状。修法：try 覆盖"读"与其产物（迭代 + 逐行取属性），
+下游不再碰原始返回值；补三条形状腿（null 元素 / getter 抛 / 惰性对象 `filter` 抛）。
+**"保护了调用"不等于"保护了读"** —— 一次读的成本几乎全在消费它的那一刻。
+
+**R-23 一句"两个分支产生它"被实测成三个分支，而第三个分支的断言它自己撑不住（F-R3-2，MAJOR）。**
+`READBACK_MISMATCH` 在 :521/:567/:579 三处产生；:567 的状态是"append 报成功、按 sequence 再读**什么都没有**"，
+而该代码的语义被写成"那个 sequence 上的东西不是本命令写的行"——那里没有"东西"可供比较。更糟的是它是十一处耐久
+回答中**唯一没有腿钉住代码**的一处：把它换成 `DURABLE_WRITE_FAILED` 或 `DURABLE_STATE_UNKNOWN`，73 条腿全绿
+（复核者用 mutate+restore+sha256 实测）。修法：断言改写为三个分支共同成立的那个否定命题（"再读没找到本命令的
+行：要么被别的行占着，要么什么都没有；本模块不声称看见了别人的行"），头注释把三个分支逐个点名，并补一条腿把
+代码**对着三个邻居各否定一次**。方法：**一条声称只有在把它的代码换掉之后才知道有没有腿**。
+
+**R-23b 复核者的一处引用也需要重开。** 它给 F-R3-2 的修法建议是"降级到 claim 1 或 claim 4，或改正分支计数"；
+前两条会把"append 已报成功"这一已知事实说成"什么都没耐久"（claim 1 的反面）或"完全无从判断"（claim 4 忽视了
+确实读到过一次），都会引入新的过度声称。最终取"改正语义 + 钉住"这一支 —— 同一律：**复核者的定位要重开原文再
+接受，不接受其处方前先证明处方不更诚实**。
+
+**R-24 分配失败处的"nothing was written"言过其实（F-R3-3，MINOR）。** `allocateSequence` 可以先推进真实计数器
+再抛，或被拒绝的调用留下一个已消费的序号：下一命令实测落在 `consumed + 1` 之后。披露文字在文件别处（:543-545、
+:296-298），但运维真正读到的那句没有它。修法：两处 detail 都补"该预留已花费、后来的行不得复用、本命令未被
+应用"，并用行为钉住（比较下一行的 sequence 与被消费的 sequence），不是钉字符串。
+
+**R-25 时钟与锁两个端口不在任何"不抛异常"承诺之下（F-R3-6，MINOR）。** 抛出的 `now()` 与拒绝获取的 `withLock`
+都作为裸异常逃出，而词表里本来就有时钟代码。修法：时钟 try 与既有"值不可读"分支同码；锁的**获取**失败答第一条
+耐久claim（获取发生在任何分配之前，故此claim 在此为真）。关键细节：用一个 `enteredCriticalSection` 标志把
+"临界区内部抛出的拒绝"原样重抛 —— 内部各分支已各自回答，把它重贴成"锁获取失败"就是本模块声称一个自己没观察到的
+状态，正是本轮在修的那类谎。两处各一条腿，且"内部拒绝必须重抛"本身也是腿。
+
+**R-26 round-2 的 `.mts`/`.cts` 加宽与 `.d.*` 跳过都是可回退且当前不判人的（F-R3-4，MINOR）。**
+`SOURCE_EXTENSIONS` 写一次读两次、无腿钉；删掉跳过行、退回 round-1 列表，28 条腿全绿；且今天 `packages` 下所有
+被跟踪的 `.mts`/`.cts` 要么是声明文件要么在 `test/` 下（实测 0 个可判文件），所以这条加宽只对**未来**文件起作用。
+修法不是假装它有现案：把加宽**行为化**（指向一棵 scratch 目录：`.mts`/`.cts` 必须被看见、`.d.mts`/`.d.ts` 必须不
+被看见）＋把列表本身钉成数据＋把注释里那两个数字（30 个跟踪文件、14 个 `.d.mts`）就地重测。空转要写在明处，
+不能藏在一个"两边都绿"的腿后面。
+
+**R-27 闭集守卫可以"把一个文件判成 writer"然后既不断言也不命名任何东西（F-R3-5，MINOR + INFO-2）。**
+实测 18 个被判为 writer 的文件里 4 个完全静默；并且**掩蔽不对称**：只要同文件里还有一处可读的 `ledger.put(...)`，
+`(0, commitDurableFact)(…, 'x', …)`、`{ ['factType']: 'x' }`、`{ factType /* t */: 'x' }` 三种写法就既不被派生
+也不被命名（别名回退只在 `sites.length === 0` 触发）。修法是**推广**而非打三个补丁：一个共享的 call 识别
+（`\bf\b\s*(?:\)\s*)*\(`，同时喂给 harvest 与分类臂，使两者不可能各说各话）、一个共享的 label 头（任意引号、
+计算键、括号两侧注释），再加**两条覆盖率 census**（每一处非注释非 import 的 funnel 提及都必须成为 call site；
+每一个 label 位 `factType` 都必须被读到），否则一律**命名**。别名规则去掉 `sites.length === 0` 门。
+四个静默文件改为 C8 腿下的**枚举 pass-through 账目**（逐文件给形状与被机械复核的理由）。
+**复核者对这 4 个文件的理由给错了**：它说 `mutation/types.ts` 是匹配到 `factType:` 类型声明；实测这四个文件里
+`factType` 出现次数为 0（`packages/runtime/mutation` 非测试代码 0 次，本会话复验），真实形状分别是
+`activity/ledger.ts:368`（entry 在 `activity/facts.ts:187` 由 `OP_TO_FACT_TYPE` 造出，本身是 harvest 到的 writer）、
+`mutation/internal/mutation-service.ts:243/295/338/385/504/511`（P7 mutation provenance 账本，`MutationLedgerEntry`
+没有 factType 字段）、`mutation/types.ts:400`（同一方法的端口声明）、`storage/repositories/ledger.ts:140/163/167`
+（`putEntry(entry: unknown, …)` 泛型下沉）。
+INFO-2（把 detector+plant+alternative+三条 pin 一起删掉仍全绿）改由**派生耦合**关闭：分类半边的 alternative 表
+由 `WRITE_SHAPES` 生成、`driven` 与 alternative 键双向集合相等、每个 plant 必须自带期望、read-credit 由名字挣得
+——复核者原来那套四连删现在单独被 C5 判红；只剩"把 census 机制本身也删掉"的七连删仍然绿（披露于 §7：一个不
+import 生产代码的测试文件无法判定自己阅读机构被删，再收需要第二个独立读者/解析器，不是在本文件里再加技巧）。
+**顺带发现并修掉一个真实缺陷**：平衡括号扫描从 `depth = 0` 起算（正则已吃掉左括号），于是遇到**第一个嵌套调用**
+的右括号就收尾，`commitDurableFact(repos, pick(p), now, 'x', payload)` 的第 4 参落在区域外。实测 5 个真实文件命中
+（`effects.ts`、`root-initial-work.ts`、`work-execution.ts`、`plugin/host.ts`、`plugin/root.ts`），但这些文件的嵌套
+调用都在 payload 位、arg4 两种算法**逐字节相同**，所以今天不移动任何结论，会移动下一个写者。改 `depth = 1` 并用
+plant 钉住。**度量而非假设**：本轮所有 harvest 改动都先证明 census 零漂移（分类 18→18、unresolved 15→15、
+per-file diff 0）再合入。
+
 
 ## 3. 覆盖映射（用户裁决六条 → 测试腿）
 
-| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，45 条，全部走**真实** `LedgerRepository`） |
+| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，49 条，全部走**真实** `LedgerRepository`；round-3 新增 4 条：读的可Walk性 3 形 + 自写未获证 1 条，另有 4 条文字/端口腿并入下表） |
 | --- | --- | --- |
 | 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9）；㉟那一行不是本命令写的（改写载荷 / 别队的 `control-leg-decided`）⇒ `READBACK_MISMATCH` 点名现场，且 `ROW_DURABLE` 与「必被判为 already」的许诺**都不出现**（R-15）；㊀四处读取逐点驱动 ⇒ **没有任何异常逃到调用方**（R-17）；㊁四个耐久声明各由一个代码产生、四码互不相同，头部四句法律被 readFileSync 钉住（R-16） |
 | Epoch/CAS、幂等、并发冲突、写失败 | D-3/D-4/D-5 + R-7/R-8 | ⑥同命令立即重放：`already` 且 `writeCount` 不变、行数不变；⑦换 reason ⇒ 不是重放（`ALREADY_ACTIVE`），行数不变；⑧两条并发同命令 ⇒ 一写一 already、同一 sequence、只一行；⑨两条并发 mutation ⇒ epoch [2,3]、sequence 互不相同、对「已当前」的 target 重发是 `already`、换 reason 是 `TARGET_UNCHANGED`；⑩四种非法 sequence（0/-1/1.5/MAX+1）各自拒且零行；⑪分配失败腿 detail 含 allocate；⑫坏 root/坏命令 ⇒ `writeCount` 不变 |

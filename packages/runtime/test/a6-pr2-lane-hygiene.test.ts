@@ -30,6 +30,7 @@
  * rewritten afterwards.
  */
 
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -703,5 +704,44 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+
+  it('walks the widened extensions and keeps declaration files out, driven rather than declared', () => {
+    // Round 3 of #517 (F-R3-4): round 2 widened `SOURCE_EXTENSIONS` with `.mts`/`.cts` and added the declaration-file
+    // skip, and BOTH halves were revertable with all 28 legs green — the list is written once and read twice, and
+    // nothing pinned it. It also convicts nobody today: every tracked `.mts`/`.cts` under `packages` is either a
+    // declaration file or a file under a `test/` directory, which is exactly why deleting the widening was
+    // invisible. So the pin is behavioural, over a scratch tree the walk is pointed at — an `.mts` and a `.cts` that
+    // must be SEEN and a `.d.mts` that must NOT be — and the vacuity of the widening against today's tree is
+    // disclosed here instead of hiding behind a leg that passes either way.
+    const dir = mkdtempSync(join(tmpdir(), 'a6-hygiene-scan-'))
+    try {
+      writeFileSync(join(dir, 'widened.mts'), 'export const widened = 1\n')
+      writeFileSync(join(dir, 'widened.cts'), 'export const widened = 1\n')
+      writeFileSync(join(dir, 'declaration.d.mts'), 'export declare const widened: number\n')
+      writeFileSync(join(dir, 'declaration.d.ts'), 'export declare const widened: number\n')
+      writeFileSync(join(dir, 'notes.md'), 'not a source file\n')
+      const found = sourceFiles(dir)
+        .map((file) => relative(dir, file))
+        .sort()
+      expect(found, 'the walk must see `.mts`/`.cts` and must keep `.d.*` declarations out').toEqual(['widened.cts', 'widened.mts'])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+
+    // The list itself, pinned as data: the behavioural half above proves the two entries do something, this half
+    // proves nobody quietly narrows the walk back down while the comment still claims otherwise.
+    expect([...SOURCE_EXTENSIONS]).toEqual(['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js'])
+
+    // And the numbers the header comment carries are re-measured, not trusted. They are the disclosure that the
+    // widening is prospective: today it convicts no file, and if that ever stops being true this leg says so.
+    const repoRoot = join(PACKAGES_ROOT, '..')
+    const tracked = execFileSync('git', ['ls-files', '--', 'packages'], { cwd: repoRoot, encoding: 'utf8' })
+      .trim()
+      .split('\n')
+    const widened = tracked.filter((file) => /\.(?:mts|cts)$/.test(file))
+    expect(widened.length, 'the tree is expected to carry `.mts`/`.cts` files, or this leg has stopped measuring').toBeGreaterThan(0)
+    const convictable = widened.filter((file) => !/\.d\.(?:ts|mts|cts)$/.test(file) && !file.includes('/test/'))
+    expect(convictable, 'these `.mts`/`.cts` files are newly inside the walk — the header comment must be re-read').toEqual([])
   })
 })

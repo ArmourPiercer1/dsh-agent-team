@@ -41,7 +41,7 @@
  *      2. **the row this command wrote IS durable at that sequence** — `REVIEW_ASSIGNMENT_ROW_DURABLE`, produced
  *         only by a branch that re-reads the ledger and identifies the row as this command's (family, root and
  *         payload), never by inference out of an exception;
- *      3. **what is at that sequence is not the row this command wrote** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`;
+ *      3. **the read-back did not find this command's row at that sequence** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`: either a different row holds it, or nothing does — round 3 of #517 (F-R3-2) caught this claim worded as an identity judgement about a row the module had not found, which the empty case cannot support;
  *      4. **it cannot be told** — `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`: the ledger could not be read far
  *         enough to answer, so the row MAY be durable at that sequence and it MAY be absent.
  *    Round 1 of #517 caught this module withholding claim 2 while the row sat durable at that sequence, because
@@ -126,13 +126,21 @@ export interface ReviewAssignmentLedgerWriterPort {
  * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
  * whoever writes the adapter (PR-I1b) and not to a defensive check here.
  *
- * The shape above is silent about what `list()` may do besides return, so the promise is written here: the
- * answer is that it may throw, and this module treats that as an answer rather than a crash.
- * All four places that read the ledger are guarded, and a reader that throws is met with a refusal naming the state the module is really in — nothing this
- * command did is durable, or durable but unreadable, or durable and identified — never with an exception reaching
- * the caller (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`).
- * An adapter may therefore hand this writer a ledger that fails and the contract still answers; what it must not
- * hand it is a ledger that lies by omission.
+ * The shape above is silent about what a returned ledger answer may do besides be read, so the promise is written
+ * here: a reader may throw, it may return something that throws when it is walked, and this module treats either as
+ * an answer rather than a crash. All four places that read the ledger are guarded over the WHOLE read — the call,
+ * the iteration and the per-row property access — and a reader that fails in any of those ways is met with a
+ * refusal naming the state the module is really in: nothing this command did is durable, or durable but unreadable,
+ * or durable and identified, or not corroborated at its own sequence — never with an exception reaching the caller
+ * (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`, plus the
+ * round-3 legs for a null element and for a cursor that throws on iteration).
+ * The two other injected ports answer under the same law: a clock that throws is met beside the branch that screens
+ * an unreadable clock VALUE, and a lock that refuses the acquisition is met with the first durability claim,
+ * because the acquisition is taken before anything is allocated. A rejection raised from INSIDE the critical
+ * section is not relabelled as a lock failure — inside, the branches above already answer for themselves, and a
+ * guard that swallowed them would be the same lie in a new place.
+ * An adapter may therefore hand this writer a ledger, a clock or a lock that fails and the contract still answers;
+ * what it must not hand it is a ledger that lies by omission.
  */
 export interface ReviewAssignmentLedgerReaderPort {
     list(): readonly ReviewAssignmentLedgerRow[];

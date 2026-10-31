@@ -830,7 +830,178 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     // caller reads it — on the port — and is pinned here, because a documented guarantee that nothing runs is a
     // guarantee nobody owns.
     const portDoc = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'writer.ts'), 'utf8')
-    expect(portDoc).toMatch(/it may throw, and this module treats that as an answer rather than a crash/)
+    expect(portDoc).toMatch(/a reader may throw, it may return something that throws when it is walked/)
+    expect(portDoc).toMatch(/guarded over the WHOLE read/)
+  })
+
+  it('refuses instead of throwing when the ledger answer itself cannot be walked', async () => {
+    // Round 3 of #517 (F-R3-1): round 2's guard at the FIRST read wrapped the call, so a reader that returned
+    // normally and then yielded something undecodable escaped the module as an exception — while the very same row
+    // was answered at the other three reads, whose try covers the walk. The shapes below are what a normal adapter
+    // hands back: the first needs no Proxy and no getter, it is simply an array with a row that is not a row.
+    const root = 'session-root-31'
+    // A reader that hands back a lazy answer: the walk is where it fails, not the call. (A real array cannot throw
+    // on the walk except through an element, which the first two shapes cover.)
+    const cursor = (): unknown[] =>
+      ({
+        filter: () => {
+          throw new Error('lazy cursor failed on materialisation')
+        },
+      }) as unknown as unknown[]
+    const shapes: { readonly name: string; readonly rows: () => readonly unknown[]; readonly marker: string }[] = [
+      { name: 'an element that is not a row', rows: () => [null], marker: 'Cannot read properties of null' },
+      {
+        name: 'an element whose fact type throws when read',
+        rows: () => [
+          {
+            get factType(): string {
+              throw new Error('row decode failed at property access')
+            },
+            sequence: 1,
+            rootSessionId: root,
+            payload: {},
+          },
+        ],
+        marker: 'row decode failed at property access',
+      },
+      { name: 'an answer that is not an array and throws when materialised', rows: cursor, marker: 'lazy cursor failed on materialisation' },
+    ]
+    for (const shape of shapes) {
+      const world = await harness({ root, seedSession: false })
+      const inner = ledgerPort(world.domain)
+      const before = inner.list().length
+      const deps: ReviewAssignmentStoreDeps = {
+        ...world.deps,
+        ledger: { ...inner, list: () => shape.rows() as unknown as ReturnType<typeof inner.list> },
+      }
+      let thrown: unknown = null
+      let result: ReviewAssignmentWriteResult | undefined
+      try {
+        result = await run(deps, { rootSessionId: root })
+      } catch (error) {
+        thrown = error
+      }
+      expect(thrown, `${shape.name} let an exception escape the module`).toBeNull()
+      expect(result, `${shape.name} produced no answer`).toBeDefined()
+      if (result === undefined || result.ok) throw new Error(`${shape.name} did not answer with a refusal`)
+      expect(result.refusal, `${shape.name} answered ${result.refusal}`).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+      expect(result.detail).toContain(shape.marker)
+      // The refusal is the whole story: this read happens before anything is allocated, so the medium is untouched.
+      expect(inner.list(), `${shape.name} wrote to the ledger on the way out`).toHaveLength(before)
+    }
+  })
+
+  it('answers that its own write was not corroborated when a successful append leaves nothing at the sequence', async () => {
+    // Round 3 of #517 (F-R2-4's shape at a different code): the append resolves successfully and writes nothing, so
+    // the read-back finds NO row at the sequence it allocated. The module's answer must be the read-back code, and
+    // it must be that code and no other — round 3 measured that this was the one durability answer of eleven that
+    // no leg pinned, which is how it came to carry a claim its state cannot support. Pinned against all three
+    // neighbours on purpose: swapping it for any of them turns this leg red.
+    const root = 'session-root-32'
+    const world = await harness({ root, seedSession: false })
+    const inner = ledgerPort(world.domain)
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: { ...inner, put: async () => undefined },
+    }
+    const result = await run(deps, { rootSessionId: root })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.refusal).toBe('REVIEW_ASSIGNMENT_READBACK_MISMATCH')
+    expect(result.refusal).not.toBe('REVIEW_ASSIGNMENT_ROW_DURABLE')
+    expect(result.refusal).not.toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+    expect(result.refusal).not.toBe('REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN')
+    expect(result.detail).toContain('is not present when the ledger is read again')
+    // It does not claim to have seen a foreign row there, because it saw nothing.
+    expect(result.detail).not.toMatch(/something other than the row written/)
+  })
+
+  it('answers the clock and the lock as refusals naming the state, not as exceptions', async () => {
+    // Round 3 of #517 (F-R3-6): the no-escape law was written about ledger reads, and the two OTHER injected ports
+    // escaped — a throwing clock and a lock that refused the acquisition both left the module as raw exceptions even
+    // though the closed set already owns a clock code and the acquisition happens before anything is allocated.
+    const root = 'session-root-33'
+    const clockWorld = await harness({ root, seedSession: false })
+    const clockDeps: ReviewAssignmentStoreDeps = {
+      ...clockWorld.deps,
+      now: () => {
+        throw new Error('the store clock is unreadable')
+      },
+    }
+    const clockResult = await run(clockDeps, { rootSessionId: root })
+    expect(clockResult.ok).toBe(false)
+    if (clockResult.ok) return
+    expect(clockResult.refusal).toBe('REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE')
+    expect(clockResult.detail).toContain('the store clock is unreadable')
+    expect(clockResult.detail).toContain('nothing was allocated')
+
+    const lockWorld = await harness({ root, seedSession: false })
+    const lockInner = ledgerPort(lockWorld.domain)
+    const lockBefore = lockInner.list().length
+    const lockDeps: ReviewAssignmentStoreDeps = {
+      ...lockWorld.deps,
+      lock: {
+        withLock<T>(_root: string, _critical: () => Promise<T>): Promise<T> {
+          return Promise.reject(new Error('the team lock is unavailable')) as Promise<T>
+        },
+      },
+    }
+    const lockResult = await run(lockDeps, { rootSessionId: root })
+    expect(lockResult.ok).toBe(false)
+    if (lockResult.ok) return
+    expect(lockResult.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+    expect(lockResult.detail).toContain('the team lock could not be acquired')
+    expect(lockInner.list()).toHaveLength(lockBefore)
+
+    // The other half, and the reason the lock guard carries a flag: a rejection raised AFTER the critical section
+    // ran is not an acquisition failure, and relabelling it would be this module claiming a durability state it
+    // never observed. It is rethrown, which is what the port doc says.
+    const afterWorld = await harness({ root, seedSession: false })
+    const afterDeps: ReviewAssignmentStoreDeps = {
+      ...afterWorld.deps,
+      lock: {
+        withLock<T>(_root: string, critical: () => Promise<T>): Promise<T> {
+          return critical().then(() => {
+            throw new Error('lock rejected after the section completed')
+          }) as Promise<T>
+        },
+      },
+    }
+    await expect(run(afterDeps, { rootSessionId: root })).rejects.toThrow('lock rejected after the section completed')
+  })
+
+  it('says the reservation is spent when the ledger refuses to allocate a sequence', async () => {
+    // Round 3 of #517 (F-R3-3): the refusal ended "nothing was written" at both allocation sites, which over-claims
+    // — the counter can move while the call fails, and the next accepted command demonstrably lands later. The
+    // disclosure existed elsewhere in the file and the sentence in front of the operator did not carry it.
+    const root = 'session-root-34'
+    const world = await harness({ root, seedSession: true })
+    const inner = ledgerPort(world.domain)
+    let consumed = 0
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: {
+        ...inner,
+        allocateSequence: async () => {
+          consumed = await inner.allocateSequence()
+          throw new Error('generation stamp failed after allocating')
+        },
+      },
+    }
+    const refused = await run(deps, { rootSessionId: root })
+    expect(refused.ok).toBe(false)
+    if (refused.ok) return
+    expect(refused.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+    expect(refused.detail).toContain('nothing was written')
+    expect(refused.detail).toContain('spent')
+
+    const next = await run(world.deps, { rootSessionId: root })
+    if (!next.ok) throw new Error(`the follow-up command was refused: ${next.refusal} :: ${next.detail}`)
+    expect(next.ok).toBe(true)
+    const rows = inner.list()
+    const last = rows[rows.length - 1]
+    if (last === undefined) throw new Error('the accepted command wrote no row at all')
+    expect(last.sequence, 'the refused command reservation was reused by the next row').toBeGreaterThan(consumed)
   })
 
   it('carries the medium code into the refusal instead of the word "object"', async () => {

@@ -41,7 +41,7 @@
  *      2. **the row this command wrote IS durable at that sequence** — `REVIEW_ASSIGNMENT_ROW_DURABLE`, produced
  *         only by a branch that re-reads the ledger and identifies the row as this command's (family, root and
  *         payload), never by inference out of an exception;
- *      3. **what is at that sequence is not the row this command wrote** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`;
+ *      3. **the read-back did not find this command's row at that sequence** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`: either a different row holds it, or nothing does — round 3 of #517 (F-R3-2) caught this claim worded as an identity judgement about a row the module had not found, which the empty case cannot support;
  *      4. **it cannot be told** — `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`: the ledger could not be read far
  *         enough to answer, so the row MAY be durable at that sequence and it MAY be absent.
  *    Round 1 of #517 caught this module withholding claim 2 while the row sat durable at that sequence, because
@@ -105,9 +105,15 @@ export const REVIEW_ASSIGNMENT_WRITE_REFUSALS = [
    *  name — the trap this file's own header already warns about, which I walked into again. */
   'REVIEW_ASSIGNMENT_ROW_DURABLE',
   /**
-   *  What is at the allocated sequence is not the row this command wrote. Two branches produce it and they make
-   *  the same claim: the append reported a failure and a DIFFERENT row holds that sequence, or the append
-   *  succeeded and the row that came back is not the one that went in.
+   *  The read-back did not find the row this command wrote at the sequence it allocated. THREE branches produce it,
+   *  and the claim is the negative one they share — this module could not confirm its own row at that sequence:
+   *  (a) the append reported a failure and a DIFFERENT row holds that sequence;
+   *  (b) the append succeeded and the row that came back is a different one, or does not decode;
+   *  (c) the append succeeded and NOTHING is at that sequence on the next read.
+   *  Branch (c) is why the name must not be read as "a foreign row is there": the append already reported success
+   *  and this storage layer has no rollback, so this module will not say nothing was written (claim 1), will not
+   *  say the row is durable (claim 2), and did manage to read, so it does not answer the unknown code either
+   *  (claim 4). What it says is that its own write was not corroborated at that sequence.
    */
   'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
   /** The ledger could not be read far enough to answer a durability question, so this module refuses to guess in
@@ -176,13 +182,21 @@ export interface ReviewAssignmentLedgerWriterPort {
  * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
  * whoever writes the adapter (PR-I1b) and not to a defensive check here.
  *
- * The shape above is silent about what `list()` may do besides return, so the promise is written here: the
- * answer is that it may throw, and this module treats that as an answer rather than a crash.
- * All four places that read the ledger are guarded, and a reader that throws is met with a refusal naming the state the module is really in — nothing this
- * command did is durable, or durable but unreadable, or durable and identified — never with an exception reaching
- * the caller (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`).
- * An adapter may therefore hand this writer a ledger that fails and the contract still answers; what it must not
- * hand it is a ledger that lies by omission.
+ * The shape above is silent about what a returned ledger answer may do besides be read, so the promise is written
+ * here: a reader may throw, it may return something that throws when it is walked, and this module treats either as
+ * an answer rather than a crash. All four places that read the ledger are guarded over the WHOLE read — the call,
+ * the iteration and the per-row property access — and a reader that fails in any of those ways is met with a
+ * refusal naming the state the module is really in: nothing this command did is durable, or durable but unreadable,
+ * or durable and identified, or not corroborated at its own sequence — never with an exception reaching the caller
+ * (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`, plus the
+ * round-3 legs for a null element and for a cursor that throws on iteration).
+ * The two other injected ports answer under the same law: a clock that throws is met beside the branch that screens
+ * an unreadable clock VALUE, and a lock that refuses the acquisition is met with the first durability claim,
+ * because the acquisition is taken before anything is allocated. A rejection raised from INSIDE the critical
+ * section is not relabelled as a lock failure — inside, the branches above already answer for themselves, and a
+ * guard that swallowed them would be the same lie in a new place.
+ * An adapter may therefore hand this writer a ledger, a clock or a lock that fails and the contract still answers;
+ * what it must not hand it is a ledger that lies by omission.
  */
 export interface ReviewAssignmentLedgerReaderPort {
   list(): readonly ReviewAssignmentLedgerRow[]
@@ -341,7 +355,24 @@ export async function applyReviewAssignment(
     )
   }
 
-  return deps.lock.withLock(mintedRoot, () => writeLocked(deps, command, mintedRoot))
+  // Round 3 of #517 (F-R3-6): a lock that refuses the acquisition is a refusal, not a crash. The acquisition is
+  // taken before this module allocates anything, so the first durability claim is the honest one here. The flag is
+  // what keeps that claim true: a rejection raised AFTER the critical section was entered came from a branch that
+  // already answers for itself, and relabelling it would be this module claiming a state it never observed.
+  let enteredCriticalSection = false
+  try {
+    return await deps.lock.withLock(mintedRoot, () => {
+      enteredCriticalSection = true
+      return writeLocked(deps, command, mintedRoot)
+    })
+  } catch (lockError) {
+    if (enteredCriticalSection) throw lockError
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      `the team lock could not be acquired for this root (${describe(lockError)}); nothing was allocated and nothing ` +
+        'this command did is durable',
+    )
+  }
 }
 
 async function writeLocked(
@@ -350,12 +381,20 @@ async function writeLocked(
   root: string,
 ): Promise<ReviewAssignmentWriteResult> {
   // Round 2 of #517 (F-R2-3): the rule round 1 stated for the re-read — a read of an injected port must not
-  // escape as an exception, because then the question has no answer at all — applies to EVERY read, and this one
-  // had no branch. A corrupt row in the medium threw straight out of `applyReviewAssignment`. This read happens
+  // escape as an exception, because then the question has no answer at all — applies to EVERY read. Round 3
+  // (F-R3-1) caught that this site guarded the CALL only: the list call was inside the try and the two filters over
+  // its answer were outside, so a reader that returned normally but yielded an undecodable element (a null row, an
+  // array whose iteration throws) still threw straight out of `applyReviewAssignment`, while the same row was
+  // answered at the other three sites. The try therefore covers the read AND what the read produced — iteration and
+  // per-row property access — and nothing downstream of this block touches the raw answer again. This read happens
   // before anything is allocated, so the honest code is the "nothing is durable" one rather than the unknown one.
   let all: readonly ReviewAssignmentLedgerRow[]
+  let family: readonly ReviewAssignmentLedgerRow[]
+  let mine: readonly ReviewAssignmentLedgerRow[]
   try {
     all = deps.ledger.list()
+    family = all.filter((row) => isReviewAssignmentFactType(row.factType))
+    mine = family.filter((row) => row.rootSessionId === root)
   } catch (error) {
     return refuseWrite(
       'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
@@ -363,8 +402,6 @@ async function writeLocked(
         'nothing this command did is durable',
     )
   }
-  const family = all.filter((row) => isReviewAssignmentFactType(row.factType))
-  const mine = family.filter((row) => row.rootSessionId === root)
 
   // Ownership before anything is trusted (D-7). A row filed under THIS root whose payload names a different team
   // is the cross-team shape the kernel already has a code for, and it must stop the write: folding it would let
@@ -440,7 +477,17 @@ async function writeLocked(
     return { ok: false, refusal: encoded.refusal, detail: encoded.detail }
   }
 
-  const createdAt = deps.now()
+  // Round 3 of #517 (F-R3-6): the value screen below answered an unreadable clock; a clock that THREW escaped as an
+  // exception. Same question, same answer, and the closed set already owns the code.
+  let createdAt: unknown
+  try {
+    createdAt = deps.now()
+  } catch (clockError) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
+      `the store's clock threw instead of answering (${describe(clockError)}); nothing was allocated`,
+    )
+  }
   if (typeof createdAt !== 'string' || !CREATED_AT_PATTERN.test(createdAt) || !instantIsReal(createdAt)) {
     return refuseWrite(
       'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
@@ -456,13 +503,16 @@ async function writeLocked(
   } catch (error) {
     return refuseWrite(
       'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
-      `the ledger refused to allocate a sequence (${describe(error)}); nothing was written`,
+      `the ledger refused to allocate a sequence (${describe(error)}); nothing was written, and if the ledger moved` +
+        ' its counter while trying, that reservation is spent — no later row may reuse it, and this command is not applied`,'
     )
   }
   if (!Number.isSafeInteger(sequence) || sequence < 1) {
     return refuseWrite(
       'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
-      `the ledger allocated ${String(sequence)}, which is not a usable sequence; nothing was written`,
+      `the ledger allocated ${String(sequence)}, which is not a usable sequence; nothing was written, and if the` +
+        ' ledger moved its counter while producing it, that reservation is spent too — no later row may reuse it, and' +
+        ' this command is not applied`,'
     )
   }
 
