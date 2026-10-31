@@ -1,0 +1,33 @@
+{
+  "transport": {
+    "plainRoundTripMs": 38,
+    "confinedRoundTripMs": 41,
+    "calls": 2
+  },
+  "plainChild": {
+    "p1": {
+      "ok": true,
+      "text": "INSIDE-OK member-readable content\n"
+    },
+    "p2": {
+      "ok": true,
+      "text": "OUTSIDE-SECRET must never be reachable by the member\n"
+    }
+  },
+  "confinedChild": {
+    "p1": {
+      "ok": true,
+      "text": "INSIDE-OK member-readable content\n"
+    },
+    "p2": {
+      "ok": false,
+      "err": "ENOENT"
+    }
+  },
+  "verdicts": {
+    "ipcRoundTripViable": true,
+    "evilReadDeniedUnderOsBoundary": true,
+    "inScopeStillWorks": true,
+    "plainChildProvesBypass": true
+  }
+}
