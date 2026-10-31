@@ -1,4 +1,4 @@
-# PR-I1a — real-Host durability evidence (rounds 15–19, 2026-10-31)
+# PR-I1a — real-Host durability evidence (rounds 15–20, 2026-10-31)
 
 Produced by `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs` (driver) with
 `tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs` (probe row, mounted only through the public
@@ -9,6 +9,103 @@ Host: `tests/deepseek-harness-test-use`, pristine, detached @ `639ed015397290b37
 ports 3182 / 3183 (validated against `TEST_PORT_RANGES` immediately before boot — see round 16), one
 unique process marker per boot. Both worlds deleted at teardown; both ports free; host porcelain 0
 before and after (each run records it in `capture.json`).
+
+# Round 20 (fix round for review round 5: MINOR F-I1a5-1 + INFOs F-I1a5-2/3 + the closure ruling recorded as scope)
+
+Round 5 came back **0 BLOCKER / 0 MAJOR / 1 MINOR / 3 INFO** at `64f005cde` and declared the quoting
+instrument **closed for this PR, as instrument-plus-honest-disclosure**. This round is wording-only: two
+comment passages in the driver, three exemplar clauses in prose, one stale "now". No rule, check,
+descriptor, or header line moved — the FAIL header is byte-identical at line 129 and `--self-test` stays
+`checks=55`, which is what a comment-only diff must do. F-I1a5-4 (a misquoted token index in a GitHub
+disposition comment) lives on GitHub, read-only from this tree; it is recorded here so it is not lost,
+and is not fixable from this side.
+
+## F-I1a5-1 — the driver's `check()` comment still asserted the retired confidence
+
+The comment above `check()` closed with "ARM bytes, and only arm bytes (F-I1a3-4): **the predicate this
+conjunct computed is quoted**…" — the claim-shape round 4 retired everywhere else, and round 5's N1
+plant is exactly the case that comment ignored: the printed span can include a line that computes
+nothing for the conjunct. It now carries the declared-region wording the rest of the file already uses:
+what is quoted is the arm's **DECLARED region**, containment over the certified span, not a
+statement-boundary proof. The F-I1a3-4 *scope* it encoded survives unchanged inside that scope — an
+arm's own inputs are not quoted, so an input mutation reddens the leg with the quoted bytes pristine
+(plant C keeps proving that) — only the certainty about *which* live line the region computes changed,
+which is what the finding asked for. The rewrite kept the comment's line count, so the FAIL header
+stayed at line 129: the line this README quotes verbatim, verified byte-identical against `64f005cde`.
+
+## F-I1a5-3 — the publish-outcome names its measured class, not one exemplar
+
+Every disclosure of the third outcome exemplified it as string content (the reviewer's A6). Round 5
+measured the wider class at `64f005cde`: **comment content** (N3, planted-file sha `09637367…`) and
+**regex-literal content** (N2, planted-file sha `77884683…`) certify `verdict=pass checks=55
+problems=0` the same way A6 did. The clause now reads "string, comment or regex-literal content" in all
+three places that said otherwise — the driver's registry comment, this README's three-outcomes bullet
+(round 19), and the harness README's plant-B bullet — and each member of the class names its measured
+plant instead of the class being asserted in prose. The N2/N3 plants were measured by the round-5
+review; this round re-ran none of them — a comment-only round boots exactly once, for the pin (below),
+and says so.
+
+## F-I1a5-2 — "now says" corrected to past tense
+
+The round-18 F-I1a3-4 section quoted the old FAIL header with "The FAIL header **now says** it…", a
+sentence true only while those bytes were current — and the dated note two lines below, written at the
+round-19 fix, is exactly what made the unqualified present tense false at every later read. Past tense
+now; the dated note keeps doing what it always did — recording both wordings for readers of old
+transcripts.
+
+## Closure ruling — recorded as scope, not as a victory lap (round-5 review, Duty 3)
+
+The ruling, stated where a future reader of this instrument will hit it: the quoting instrument at
+`64f005cde` is **closed for this PR as instrument-plus-honest-disclosure** — the byte-level rules and
+their honest disclosure together, never the rules alone.
+
+* **What it guarantees** (each item exercised against a round-5 plant): a printed region is
+  builder-seated and frozen (`Object.freeze` + `WeakSet` seat; post-seating mutation is literally
+  impossible — N4a), anchor-unique, span-contained line by line, span-wide signature-unique, on code
+  (blank and comment-only span lines refuse — plant D), registry/source parity in **both** directions
+  (N4b), over bytes re-read from disk at grade time.
+* **What it merely detects and does not certify**: that the published region **is the arm's statement**
+  — a wider, shifted, or content-only-signature live region publishes (A6, N1, N2, N3, N6 all publish;
+  the prose says so in present tense, which is the disclosure half of the closure); file-wide signature
+  distinctness **at grade time** (the stricter reading is layered into `--self-test` only, proven
+  load-bearing by A2 and N1, and boot quotes are legal under it); and the meaningfulness of
+  `--self-test`'s own assertions — **F-I1a3-3, the measured meta-ceiling, stays OPEN**, a property of
+  self-grading instruments in general, left open by design and no text in this repository may claim it
+  closed.
+* **The four re-open triggers**, verbatim from the round-5 report: *"(1) any leg's descriptor set is
+  edited (spans/signatures change — the per-plant disclosures are plant-scoped, exactly as the
+  disposition insists); (2) quoted bytes are ever used as **evidence for a product claim** rather than a
+  diagnostic — containment certifies liveness and locality, never semantics; (3) the grade path absorbs
+  file-wide uniqueness into the span rule (it would refuse the byte-correct A2 quote) or the sweep is
+  weakened back into the span rule; (4) any quote path ever renders a stored line number instead of
+  bytes read at grade time."*
+
+## Round-20 measurement and pin state
+
+Comments live inside the pinned driver, so the driver sha moved, and only a green run may re-establish
+it: this round ran **exactly one kit boot run**, `a6pri1a-2026-10-31T22-14-43Z` —
+`DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`, rc=0 — clone-free in this worktree,
+ports 3182/3183 (in band, free before, proven free in the transcript after), one unique marker per boot,
+`DSH_HOME=tests/homes/a6pri1a-2026-10-31T22-14-43Z-write` deleted at teardown with `tests/homes/`
+proven empty, host porcelain 0 before and after (`capture.json`). Its 27 PASS lines are **byte-identical
+to the round-19 green run's** (`…T21-29-40Z`) under the normalization round 19 used
+(`MARKER-W`/`MARKER-R`, `pid PID`, `nonce NONCE`, `reported=N`/`spawned=N`) — same ports, 27 lines out,
+27 lines out, `diff` empty. Pins at these bytes: `pr-i1a-real-host.mjs`
+`16887de54cbc13225cbecebeaa8586ec852b37bdacbf4050d41edb434c2519b7` (1055 lines; comment-only diff
+against `0e2073e04672…` — the F-I1a5-1 rewrite and the F-I1a5-3 clause; nothing else), and
+`pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd` —
+**byte-identical since round 15, untouched this round**. `--self-test`
+`DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=55 problems=0` (`a6pri1a-selftest-round20/`) — the
+count did not move, as required above. Gates at these bytes: writer spec `Tests 49 passed (49)`; runtime
+typecheck exit 0; the named nine-file battery `Tests 2 failed | 317 passed (319)` with the red legs
+named, never counted: `refuses the leg, by name, when the host module closure cannot be traversed`
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1137`) and `the client lane runs, and no failure appears
+outside the disclosed baseline` (`packages/testkit/test/a4p7-merge-gate.test.ts:1694`). `packages/**`
+untouched: porcelain over `packages/` empty. `node scripts/docs-sync.mjs --check`,
+`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1`, and `node scripts/pr-settlement-gate.mjs
+--pr 517 --expected-head <this commit>` (expecting `BLOCKED-BY-MARKER` — the DO-NOT-MERGE marker is a
+statement, not a malfunction) run after the commit that carries this section, as in rounds 15–19; they
+are quoted in the round-20 fix report.
 
 # Round 19 (fix round for review round 4: MINOR F-I1a4-1/2 + INFOs F-I1a4-3/4/5)
 
@@ -57,8 +154,11 @@ code. Both layers are demonstrated below by the same plant (A2).
 The three outcomes, stated wherever they were previously two (this README :74 bullet, harness README
 plant-B bullet, driver registry comment): a span whose every line passes the grade-time rules
 **prints**, as its descriptor's DECLARED region — but containment is not a statement-boundary proof, so
-what prints is not certified to be the arm's statement (and a signature surviving only as string content
-still prints: A6); anything the rules can see — blank token, unbuilt descriptor, repeated token in the
+what prints is not certified to be the arm's statement (and a signature surviving only as string, comment
+or regex-literal content still prints: A6 is string content, and round 5 measured comment content (N3,
+planted-file sha `09637367…`) and regex-literal content (N2, planted-file sha `77884683…`) certify the
+same way — clause widened in place at round 20, F-I1a5-3); anything the rules can see — blank token,
+unbuilt descriptor, repeated token in the
 span, comment or blank span line, moved or ambiguous anchor, drift — is **refused**, with the reason
 where the bytes would have been; and a descriptor declaring a wider or shifted region of live,
 span-unique code **publishes as declared** — the outcome the two-outcome sentence denied.
@@ -246,7 +346,9 @@ behaviour, and it is not a re-transcription of the offsets:
 
 ## F-I1a3-4 — "the bytes it was graded from" means ARM bytes, and only arm bytes
 
-The FAIL header now says it in the transcript rather than in prose: `each quotes the ARM bytes it was
+The FAIL header then said it in the transcript rather than in prose — past tense fixed at round 20
+(F-I1a5-2: this section describes the round-18 bytes, and the dated note two lines below records the
+wording that replaced it, so the sentence is true at every future read): `each quotes the ARM bytes it was
 graded from (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the
 leg with these bytes pristine)`. **Dated note 2026-10-31 (round-4 fix, F-I1a4-1):** "the ARM bytes it
 was graded from" overstated what containment proves; the header now reads

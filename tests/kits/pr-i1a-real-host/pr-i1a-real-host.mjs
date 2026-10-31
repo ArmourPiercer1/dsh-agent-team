@@ -117,9 +117,9 @@ const results = []
  * value each side produced — and the SOURCE BYTES of each conjunct's ARM are quoted from the kit files as
  * they sit on disk during this run. Round 2's committed reds were self-consistent and could only be
  * explained by trusting the README, which is what a falsifiability transcript must never need; a mutated
- * arm now shows its own mutated bytes in the transcript. ARM bytes, and only arm bytes (F-I1a3-4): the
- * predicate this conjunct computed is quoted, the values that predicate consumed are not, so a mutation
- * applied to an input line legitimately reddens the leg while the quoted bytes stay pristine.
+ * arm now shows its own mutated bytes in the transcript. What is quoted is the arm's DECLARED region —
+ * containment over the certified span, not a statement-boundary proof — and the arm's own inputs are
+ * not quoted (F-I1a3-4), so a mutation of an input line reddens the leg with the quoted bytes pristine.
  */
 const check = (id, ok, measured, graded = null) => {
   const rendered = ok === true || graded === null ? null : graded.map(renderConjunct)
@@ -188,10 +188,13 @@ const PROBE_REL = relative(WORKTREE, join(import.meta.dirname, 'pri1a-probe-row.
  *
  * What that does NOT buy, stated here because the FAIL header states it too (F-I1a4-1, round 4): none of it
  * is a statement-boundary proof, and byte containment cannot tell a token executing as code from the same
- * bytes inside a string literal. So a graded quote has THREE outcomes, not two: (1) every check above
- * passes and the span prints — as the region the descriptor DECLARES, which may still be a wider or
- * narrower cut of correct code than the statement the arm names, and may still contain a signature that
- * survives there only as string content (the reviewer's A6); (2) a check above fails and the arm is
+ * bytes inside a string, a comment or a regex literal. So a graded quote has THREE outcomes, not two: (1)
+ * every check above passes and the span prints — as the region the descriptor DECLARES, which may still be
+ * a wider or narrower cut of correct code than the statement the arm names, and may still contain a
+ * signature that survives there only as string, comment or regex-literal content — measured instances,
+ * not a prose class: the reviewer's A6 is string content, and round 5 measured comment content (N3,
+ * planted-file sha 09637367…) and regex-literal content (N2, planted-file sha 77884683…) certify
+ * `verdict=pass checks=55 problems=0` the same way at 64f005cde; (2) a check above fails and the arm is
  * REFUSED, with the reason printed where the bytes would have been; (3) — the case round 4 named — a
  * descriptor whose declared region is live, signature-distinct code but is NOT the arm's statement is
  * published confidently as declared. The honest scope: the instrument guarantees every quoted line is a

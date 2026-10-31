@@ -128,7 +128,10 @@ above used 3185 / 3187 / 3190 (+ derived restart ports), each proven free again 
   DECLARED region — signature-uniqueness WITHIN THE SPAN and code-landing are containment, and
   containment cannot prove
   the region is the arm's statement (the FAIL header says exactly that, and a signature that survives
-  only as string content still prints: the reviewer's A6); anything the rules can see — blank or
+  only as string, comment or regex-literal content still prints — A6 is string content, and round 5
+  measured N3 comment content (planted-file sha `09637367…`) and N2 regex-literal content (planted-file
+  sha `77884683…`) certify `verdict=pass checks=55 problems=0` the same way; clause widened at round 20,
+  F-I1a5-3); anything the rules can see — blank or
   repeated token, moved or ambiguous anchor, a descriptor the builder never returned, a comment line in
   the span — is REFUSED with its reason where the bytes would have been; and a descriptor that declares
   a wider or shifted region of live code whose signature is distinct within that span is published as
