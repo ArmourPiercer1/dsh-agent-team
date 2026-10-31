@@ -16,7 +16,7 @@
   ```text
   | 调度器持久状态 | `storageDomain.open(defineDomain(...))` KvTable（CAS/条件写）+ `domain/changed` | `packages/storage/storage-domain/src/index.ts` |
   ```
-  （2026-10-31 round-3 修正：此处原先是一段去格式的重排——四根管道去掉三根（行首、`KvTable` 之后与行尾那三根列边界没了，内嵌的「调度器持久状态 | storageDomain…」那根存活；round-4 F-R4-7 实测：`git show 6937dd32b:…` 该行 `tr -cd '|' | wc -c` = 1，源行 = 4，所以 round-3 写的「管道被去掉」是过度描述，准确说法是**去掉了四分之三**）、内嵌反引号被去掉、并且在源文件有空格的位置断行，按本 lane 的 unwrap 方法复原后会得到 `` `…（CAS/条件写）+domain/changed…` ``，与源文件的 `` `…+ `domain/changed`…` `` 不等；在「逐字引用」标题下这是错的，见 PR #513 round-3 G-R3-1。）
+  （2026-10-31 round-3 修正：此处原先是一段去格式的重排——**四根管道去掉两根**：去掉的是**表行首尾那两根边界**，存活的是**两根单元格分隔符**——「调度器持久状态 | storageDomain…」与「domain/changed | packages/…」；实测 `git show 6937dd32b:…` 的**整段旧渲染**（它折成两行，:15 与 :16 各 1 根，合计 2）对比源行 75 的 4 根。**本括号本身被更正过两次**：round-3 写「管道被去掉」（全没了），round-4 改成「四去三」，两次都只数了旧渲染的**第一行**就下结论；round-5 F-R5-1 把 `git show` 的整个对象读出来才发现 :16 还留着一根。**律**：数一段被折行的渲染，必须数整段，不能数承载它的第一行）内嵌反引号被去掉、并且在源文件有空格的位置断行，按本 lane 的 unwrap 方法复原后会得到 `` `…（CAS/条件写）+domain/changed…` ``，与源文件的 `` `…+ `domain/changed`…` `` 不等；在「逐字引用」标题下这是错的，见 PR #513 round-3 G-R3-1。）
 - S0 §3 硬约束第 79 行（逐字）：
   > **硬约束**：`whenIdle()` 等待整个队列抽干（`agent.ts:237-241`），今日控制通知正因此成为多余轮次的放大器
   > （`agent-bindings.mjs:5033`）；`agent/created` / `pre-step` / `turn-stopping` 是**被 await 的**钩子

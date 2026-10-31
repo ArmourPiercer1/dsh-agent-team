@@ -25,6 +25,10 @@
  *     diff — which is the point: the instrument makes the act visible and expensive, it does not make it
  *     impossible, and this comment says so out loud rather than claiming a guarantee it cannot give.
  *
+ * Round 5 attacked this file instead of my prose, which is the right target: five limits were proven by mutation.
+ * Four are closed here (anchor ambiguity, an un-pinned source, duplicated designations, trim-hashed lines); the
+ * line-scoped one below is structural and stays disclosed.
+ *
  * Its boundary, learned the hard way in the very commit that adds it (round 4): the detector is **line-scoped** —
  * a path on one line and 落盘/正本 on the next is not a designation as far as this check is concerned. The log entry
  * documenting F-R4-1 does exactly that, and passed. Evading it needs no malice, only ordinary line wrapping. It
@@ -46,7 +50,20 @@ const SOURCE_DOC = 'docs/plans/memo/alpha6-review-separation/s0-revalidation-202
 const ADDENDUM = 'docs/plans/memo/alpha6-review-separation/s0-addendum-timed-wake-carrier-20261031.md'
 const LOG = 'dev/agent-workflow/SESSION_ROUTER_LOG.md'
 
-/** Designations accepted as of head `59f1f8132` (measured 3), each with why it stays. */
+/**
+ * The two source lines the quotes must equal, pinned by content hash. Without this the check proves only that the
+ * rendering matches whatever the source says *now*, so editing `s0-revalidation-20261030.md:75` together with the
+ * addendum's rendering keeps it green — round-5 F-R5-7, proven by mutation. With it, a coordinated edit has to
+ * move a hash and write a reason in the open, in the same diff.
+ */
+const PINNED_SOURCE_LINES = [
+  { name: 'S0:75', line: 75, sha256: '8ba2ab061ffb557639cb6b397c1eb0392294cd33f109a629ea35a70ebd47e8ca',
+    reason: 'the host-capability row S0 published; the addendum quotes it as the authority for "no timed wake"' },
+  { name: 'S0:79', line: 79, sha256: '8021a192438cc566cf6d4a5819e3ee41ac913220b007076d9e979ea097166149',
+    reason: 'the wake-source enumeration S0 published; quoted unwrapped in the same section' },
+]
+
+/** Designations accepted as of head `59f1f8132` (measured 3), each with why it stays. Hashed raw — see below. */
 const PINNED_SCRATCH_POINTERS = [
   {
     // A 2026-10 line about PR #385's lint leg over `.artifacts/**`. The path is the SUBJECT of that sentence, not
@@ -58,12 +75,12 @@ const PINNED_SCRATCH_POINTERS = [
   {
     // Round-4 finding F-R4-1's own target line. The log is append-only, so the sentence cannot be edited out;
     // it is pinned and retired by a dated forward note instead.
-    sha256: '1cf193b2bfbf1e5ea4aed81512d1149a4baca428550c291f3f9904317b9bde1f',
+    sha256: 'a188a93e42a9822b296ac5451fb02cdabcb989507f3c0f800c59a5517c82f1f6',
     reason: 'the round-3 entry whose disk clause F-R4-1 named; retired forward by line, history not rewritten',
   },
   {
     // The G-R3-8 disposition line, which necessarily quotes the dangling path it is retiring.
-    sha256: '376b36ce0b8b7bf3c9492773e60c09909ceb033ab9c32f582af9b5e6fd7f0118',
+    sha256: '298fbcc6dd92fcd6c2c2b4b271f8b03507a1bb1703e9cb95897c6a863a13daf1',
     reason: 'the G-R3-8 disposition line: quoting the path it retires is the point of the sentence',
   },
 ]
@@ -93,8 +110,16 @@ function lineOf(text, oneBased) {
  */
 function renderingOf(document, anchorText, mode) {
   const lines = document.split('\n')
-  const anchor = lines.findIndex((line) => line.includes(anchorText))
-  if (anchor === -1) throw new Error(`anchor ${JSON.stringify(anchorText)} not found in ${ADDENDUM}`)
+  const hits = lines.reduce((all, line, index) => (line.includes(anchorText) ? [...all, index] : all), [])
+  if (hits.length === 0) throw new Error(`anchor ${JSON.stringify(anchorText)} not found in ${ADDENDUM}`)
+  // First-match-wins was attackable: plant an earlier line carrying the anchor text with a correct body and the
+  // real (corrupted) rendering further down is never read — round-5 F-R5-6, proven by mutation. Uniqueness is the
+  // whole fix: a second occurrence is ambiguous, and this refuses ambiguity instead of resolving it by ordering.
+  if (hits.length > 1) {
+    throw new Error(`anchor ${JSON.stringify(anchorText)} is ambiguous: ${hits.length} occurrences at line(s) ` +
+      hits.map((one) => one + 1).join(','))
+  }
+  const anchor = hits[0]
   if (mode === 'fence') {
     const open = lines.findIndex((line, index) => index > anchor && line.trim() === '```text')
     if (open === -1) throw new Error(`no \`\`\`text fence after ${JSON.stringify(anchorText)}`)
@@ -131,6 +156,15 @@ const CASES = [
 
 for (const one of CASES) {
   const sourceLine = lineOf(source, one.line)
+  const pin = PINNED_SOURCE_LINES.find((one2) => one2.name === one.name)
+  const sourceSha = createHash('sha256').update(sourceLine).digest('hex')
+  if (pin !== undefined && pin.sha256 !== sourceSha) {
+    drift += 1
+    report.push(
+      `DSH-VERBATIM name=${one.name} verdict=source-moved pinned=${pin.sha256.slice(0, 12)} actual=${sourceSha.slice(0, 12)}`,
+    )
+    continue
+  }
   let rendering
   try {
     rendering = renderingOf(addendum, one.anchor, one.mode)
@@ -160,9 +194,11 @@ const found = []
 const lines = log.split('\n')
 for (let index = 0; index < lines.length; index += 1) {
   const line = lines[index]
-  if (!/\.artifacts\/\S/.test(line)) continue
+  // `\.artifacts\b`, not `\.artifacts\/`: the narrow form missed 「`.artifacts` 目录下」 prose (round-5 INFO), and
+  // hashing the line raw (no trim) keeps a whitespace-only edit of a pinned line visible (also round-5 INFO).
+  if (!/\.artifacts\b/.test(line)) continue
   if (!line.includes('落盘') && !line.includes('正本')) continue
-  found.push({ line: index + 1, sha256: createHash('sha256').update(line.trim()).digest('hex'), text: line.trim().slice(0, 90) })
+  found.push({ line: index + 1, sha256: createHash('sha256').update(line).digest('hex'), text: line.trim().slice(0, 90) })
 }
 const pinned = new Set(PINNED_SCRATCH_POINTERS.map((one) => one.sha256))
 const unaccepted = found.filter((one) => !pinned.has(one.sha256))
@@ -173,7 +209,16 @@ for (const one of found) {
 for (const one of vanished) {
   console.log(`DSH-SCRATCH-POINTER line=- accepted=false reason=pinned-line-no-longer-present sha256=${one.sha256.slice(0, 12)}`)
 }
-const scratchFindings = unaccepted.length + vanished.length
+// The pin list is a set, so copying a pinned line byte-for-byte smuggles a second designation past it —
+// round-5 F-R5-8, proven by mutation. A designation is accepted once, at one place.
+const duplicates = PINNED_SCRATCH_POINTERS.map((one) => ({
+  sha256: one.sha256,
+  lines: found.filter((one2) => one2.sha256 === one.sha256).map((one2) => one2.line),
+})).filter((one) => one.lines.length > 1)
+for (const one of duplicates) {
+  console.log(`DSH-SCRATCH-POINTER line=${one.lines.join(',')} accepted=false reason=pinned-designation-duplicated sha256=${one.sha256.slice(0, 12)}`)
+}
+const scratchFindings = unaccepted.length + vanished.length + duplicates.length
 console.log(
   `DSH-SCRATCH-POINTER-VERDICT found=${found.length} pinned=${PINNED_SCRATCH_POINTERS.length} ` +
     `findings=${scratchFindings} verdict=${scratchFindings === 0 ? 'ok' : 'regression'} log=${LOG}`,
