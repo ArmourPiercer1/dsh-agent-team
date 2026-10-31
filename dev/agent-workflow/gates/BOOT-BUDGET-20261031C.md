@@ -119,3 +119,9 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 ## 用户裁决入账（dated 2026-10-31T04:45Z，直接指令）
 1. **C2 新批 ×2 批准**：具名用途=（a）bw9 read_image L4 三格收口跑（grantAudit 接线修复合并后；判据=ask-approved-ran/two-blocks/deny 臂三格+既有五格保持）；（b）L4 收据独立复现跑（翻台账前的独立复现格）。逐格仍需预登记+RCA+收据；机动池 2/2 已尽不复活。
 2. **web_search 接受「可信服务 assurance 边界」**：Host/可信 Provider 能保证的行为按其真实边界登记 assurance；逐目的地强制不可证部分不得声称等价，维持 fail-closed 或登记边界——具体格位由 PR-C PoC 决策表落字。此项为产品范围+安全主张裁决，非验收判据放宽。
+
+## bw9 预登记（用户新批 C2 批 1/2，dated 2026-10-31T05:28Z）
+- 授权来源：用户 2026-10-31 直接指令「批准 C2 boot 预算 x2」，具名用途 (a)=read_image L4 三格收口跑（本条）；(b)=L4 收据独立复现（待 bw9 结果，另条预登记）。
+- boot tree=task/a5w-bootwave-20261030 @ PRE_REG_SHA=e8b17eb183ea（含 origin/master@4229bd5605=#511 vobs 观测接线 fmerge；离线预检 dry+registries 绿）。
+- 判据目标：grantAudit 行首现（a5-admission 白名单行）→ ri:ask-approved-ran 收口；ri:tool-output-two-blocks（套件 RCA-8 修正后）；ri:answered-deny-zero-effect（kernel-admission 臂）；既有六格保持+leak+stable-instance。
+- 预算账：host-starts.jsonl 现有 6 行 → --max-host-starts 7；失败=具名 RCA 后决定是否用 (b) 额度，不自动追加。
