@@ -82,3 +82,21 @@ mutant findings: []
   honest-half 语义（真实台账必须绿）未被触碰，24/24 复核在案。
 - 负控副本落 `os.tmpdir()`（TEST_METHODS §7 之外的纯内存级临时物，用毕 `rmSync`，
   不登记 tests/homes/——无 launch token、无世界状态，非 DSH_HOME 世界）。
+
+## 6. dated 更正（#529 独立审查席 S1，2026-10-31T13:11Z 起笔，第二 commit 落实）
+
+- 上文 :81 行「CI 调用 `scripts/*.test.mjs` 惯例」在**第一 commit 时刻为假**——审查席穷举
+  `dev/ci/eb3-ci-manifest.json` 四层全部腿、全部 workflow 的 `node --test` 调用点、vitest
+  include 与 `run-tests.mjs` 收集面，证明当时**没有任何 CI 腿运行本测试文件**；且其决定性
+  实证：把 `containsVerbatim` 削弱恒真后对真实台账跑 CI 同款命令，findings 仍 =0（真实
+  台账 11 个 DISCLOSED 层、9 个带 source 全合法）——「CI 仍全绿」在第一 commit 状态成立。
+  原行照留（append-only），本段为唯一在册更正。
+- 处置 = 审席给出的最强选项 **S1a**：本 PR 第二 commit 在 `.github/workflows/ci-integration.yml`
+  新增 `node --test scripts/eb3-tool-acceptance.test.mjs` 腿，并在 `dev/ci/eb3-ci-manifest.json`
+  ci-integration 层登记同名 required-token leg（先例 = tests/checks 腿，u7-fixfwd 同款，
+  丢腿即 CI_LAYER_LEG_WEAKENED）。合并后 :81 所述覆盖由本 PR 自身建立，审席的「恒真削弱
+  CI 仍绿」命题随该腿落地失效。
+- 同源误解登记：`pr-gate.yml` 注释「precedent: eb3-tool-acceptance.test.mjs」传播过该
+  文件在 CI 内的假象；本腿落地后注释与事实一致，无需改 pr-gate。
+- 残余如实：:434 source-absent 分支的独立变异执法仍未补（见上，非在册缺口不硬凑）；
+  审席可选 S2（锚点再锁调用点 :435）未做，记为后续候选。
