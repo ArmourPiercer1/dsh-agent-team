@@ -12,13 +12,14 @@
   真实 Host 腿（PR4/PR5 的验收形态）在 C2 条件落地之前全部 ENV_BLOCK，不冒充。
   （本条压缩自 S0 的一句话结论：只删去「见同目录…」与「一句话：」两处连接文字，三个限定全部保留——
   可信、排在 C1 条件落地之后、C2 条件落地之前 ENV_BLOCK。）
-- S0 §3 能力表第 75 行，逐字（围栏内为源文件该行的原始字节，未去反引号、未改换行）：
-```text dsh-quote:S0:75
+- S0 §3 能力表第 75 行，逐字（围栏内为源文件该行的原始字节，未去反引号、未改换行；标签置于 info 首位，
+  CommonMark 把 info 首词渲染进 `class="language-dsh-quote:S0:75"`，核对绑定的是渲染面而非源行）：
+```dsh-quote:S0:75
 | 调度器持久状态 | `storageDomain.open(defineDomain(...))` KvTable（CAS/条件写）+ `domain/changed` | `packages/storage/storage-domain/src/index.ts` |
   ```
   （2026-10-31 round-3 修正：此处原先是一段去格式的重排——**四根管道去掉两根**：去掉的是**表行首尾那两根边界**，存活的是**两根单元格分隔符**——「调度器持久状态 | storageDomain…」与「domain/changed | packages/…」；实测 `git show 6937dd32b:…` 的**整段旧渲染**（它折成两行，:15 与 :16 各 1 根，合计 2）对比源行 75 的 4 根。**本括号本身被更正过两次**：round-3 写「管道被去掉」（全没了），round-4 改成「四去三」，两次都只数了旧渲染的**第一行**就下结论；round-5 F-R5-1 把 `git show` 的整个对象读出来才发现 :16 还留着一根。**律**：数一段被折行的渲染，必须数整段，不能数承载它的第一行）内嵌反引号被去掉、并且在源文件有空格的位置断行，按本 lane 的 unwrap 方法复原后会得到 `` `…（CAS/条件写）+domain/changed…` ``，与源文件的 `` `…+ `domain/changed`…` `` 不等；在「逐字引用」标题下这是错的，见 PR #513 round-3 G-R3-1。）
-- S0 §3 硬约束第 79 行（逐字）：
-```text dsh-quote:S0:79
+- S0 §3 硬约束第 79 行（逐字；标签同置于 info 首位）：
+```dsh-quote:S0:79
 **硬约束**：`whenIdle()` 等待整个队列抽干（`agent.ts:237-241`），今日控制通知正因此成为多余轮次的放大器（`agent-bindings.mjs:5033`）；`agent/created` / `pre-step` / `turn-stopping` 是**被 await 的**钩子（`runtime-types.ts:252-254` 明文禁止在钩子里 `whenIdle()`）⇒ 调度器只订阅 emit-mode 事件。
   ```
 - 执行计划 §2 记录 S0-B 判定：**无需 host patch**（CORE PATCH BUDGET = 0 未被触碰）。
