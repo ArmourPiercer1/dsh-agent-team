@@ -46,7 +46,7 @@
  *    (`IO_POLICY_UNSUPPORTED`) — against the WHOLE-directory digest, an
  *    entry-identical WORLD, an attachment-store seam that was never CALLED,
  *    a ledger carrying only the typed denial and the KERNEL'S OWN admission
- *    rows (the `a5p2prod:` channel), each with a flip leg that moves every
+ *    rows (the `a5-admission:` channel), each with a flip leg that moves every
  *    witness a READ can move (the store seam and the row ledger; the root
  *    digest is immovable for a read by law and is pinned on its own). The
  *    IP arms pin the TWO public faces of one
@@ -899,8 +899,8 @@ describe('u7-9a C1 read_image — native gate ORDER, positive through the mount-
 //    whether a Control request was born at all, AND by the kernel's OWN
 //    handwriting on the plane's observe channel: the production admission
 //    assembly writes through the sink the trusted mount hands it
-//    (packages/runtime/src/plugin/live/team-tool-plane.mjs:859 wraps every
-//    row as `a5p2prod: <event>`), so a leg reads the CENTER's ledger instead
+//    (packages/runtime/src/plugin/live/team-tool-plane.mjs renders every row
+//    as `a5-admission: event=<event> …`), so a leg reads the CENTER's ledger instead
 //    of inferring from the row's self-report. A lane-denied call leaves NO
 //    call-bearing kernel row; a PA-denied call leaves exactly ONE
 //    `admission-requires-approval` and NO grant row; the deny-default call
@@ -1027,8 +1027,10 @@ const valueOrRefusal = (r: { ok: true; value: ImageRowValue } | { ok: false; msg
 }
 /** Count the PRODUCTION ADMISSION KERNEL's own rows on the plane's observe
  *  channel. The mount hands the center its sink
- *  (packages/runtime/src/plugin/live/team-tool-plane.mjs:859) and every row
- *  arrives as `a5p2prod: <event>`, the events being the kernel's own
+ *  (packages/runtime/src/plugin/live/team-tool-plane.mjs, the a5w-vobs
+ *  whitelist renderer) and every row arrives as
+ *  `a5-admission: event=<event> …` (the kernel's own identity fields ride
+ *  as `field=value` pairs), the events being the kernel's own
  *  (packages/runtime/tool-admission/admission-kernel.ts — :1191 the
  *  default-deny coverage gate, :450 requires-approval, :307 grant-minted,
  *  :578 approved-grant-issued). This is what lets a refusal leg say "no
@@ -1037,8 +1039,8 @@ const valueOrRefusal = (r: { ok: true; value: ImageRowValue } | { ok: false; msg
  *  (`production-admission-note`, `production-admission-constructed`) ride
  *  every mount, so a leg claiming NOTHING happened also pins the total. */
 const kernelRows = (observe: string[], event: string): number =>
-  observe.filter((l) => l.includes(`a5p2prod: ${event}`)).length
-const kernelRowTotal = (observe: string[]): number => observe.filter((l) => l.includes('a5p2prod: ')).length
+  observe.filter((l) => l.includes(`a5-admission: event=${event} `) || l.endsWith(`a5-admission: event=${event}`)).length
+const kernelRowTotal = (observe: string[]): number => observe.filter((l) => l.startsWith('a5-admission: event=')).length
 
 const laneDenyImage = { default: 'deny', allow: [], ask: [], deny: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }] }
 const askDefaultAllowImage = { default: 'ask', allow: [{ tool: 'read_image', resource: { kind: 'subtree', path: ROOT_DIR } }], ask: [], deny: [] }
@@ -1081,7 +1083,7 @@ describe('u7-9a C1 IR — read_image refusal zero-effect arms (lane-deny, PA-den
     // THE CENTER'S OWN LEDGER: the lane refused BEFORE the admission edge, so
     // the kernel wrote NOTHING for these two calls — not the default-deny
     // coverage note, not an approval request, not a grant. The only
-    // `a5p2prod:` rows on the channel are the two the mount itself writes at
+    // `a5-admission:` rows on the channel are the two the mount itself writes at
     // construction, which is what makes the four zeros a CLOSED statement: a
     // future call-bearing kernel event cannot slip through uncounted.
     for (const event of ['production-admission-default-deny', 'admission-requires-approval', 'admission-grant-minted', 'admission-approved-grant-issued']) {
