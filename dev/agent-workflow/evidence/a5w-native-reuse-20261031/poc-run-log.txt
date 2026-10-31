@@ -1,0 +1,49 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-wspoc
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-1 positive on the loopback stub (trusted loopback-http mount opt): bytes delivered
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=12 hops=0 dest=http://127.0.0.1:3491
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-2 cross-origin redirect → WEB_REDIRECT_DENIED and the victim is NEVER contacted (same law as H-2, own code)
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-denied reason=off-destination dest=http://127.0.0.1:3491
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-3 redirect loop → WEB_REDIRECT_LIMIT
+[dsh-agent-team] web-fetch: governed-web-fetch redirect-limit dest=http://127.0.0.1:3491
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-4 body over the row byte bound (512 KiB default) is refused WHOLE — nothing is delivered (diverges from H-4/H-6 truncate semantics)
+[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-5 application/octet-stream is NOT refused for being opaque (transport is content-type agnostic) — the contrast to H-9
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=12 hops=0 dest=http://127.0.0.1:3491
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — the SAME arms on the Team governed row / transport (real plane, ask+approve) > T-8 plain https-only law: an http url that is NOT loopback is refused by the mechanics gate (zero wire) even on the opted-in mount
+[dsh-agent-team] web-fetch: governed-web-fetch gate-refused code=WEB_SCHEME_NOT_ALLOWED dest=none
+
+stdout | tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts > P-W3 — headers/cookies surface (what the two fetchers put on the wire) > X-2 the Team transport sends accept:*/* and nothing else (no UA, no cookie) — observed at the stub
+[dsh-agent-team] web-fetch: governed-web-fetch RAN seq=1 status=200 bytes=12 hops=0 dest=http://127.0.0.1:3491
+
+ ✓ tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts (22 tests) 720ms
+     ✓ H-7 wall-time bound → WEB_FETCH_TIMEOUT (300ms instance against a never-answering stub)  304ms
+stdout | tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts > P-W2 — the Team row over the adapter (governed PA chain + host seam, zero new client) > A-1 approve: adapter rides the placement feed, approval saw EXACTLY [tool-invoke(web_search), connect@declared-origin], one seam call per query
+[dsh-agent-team] web-search: governed-web-search RAN seq=1 sources=2 provider=poc-ctx-web-adapter
+
+stdout | tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts > P-W2 — the Team row over the adapter (governed PA chain + host seam, zero new client) > A-2 refused approval: typed refusal, the adapter never touches the seam, ZERO host-provider hits
+[dsh-agent-team] web-search: governed-web-search pa-refused code=APPROVAL_DENIED provider=poc-ctx-web-adapter
+
+stdout | tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts > P-W2 — the Team row over the adapter (governed PA chain + host seam, zero new client) > A-3 host seam has NO provider behind the adapter: typed WEB_PROVIDER_UNAVAILABLE refusal through the row, zero wire
+[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_SEARCH_FAILED provider=poc-ctx-web-adapter
+
+stdout | tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts > P-W2 — the Team row over the adapter (governed PA chain + host seam, zero new client) > A-4 cancellation: a pre-aborted signal answers cancelled, the seam is never reached after abort
+[dsh-agent-team] web-search: governed-web-search cancelled-at-pa-edge provider=poc-ctx-web-adapter
+
+ ✓ tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts (17 tests) 138ms
+stdout | tests/poc-web-native-reuse/poc-w1-native-shape.test.ts > P-W1 — native web tools under the closed-world Guard (real registry, real seam, mock providers) > N-7 TAKEOVER (the shipped shape): a plane-mounted governed row with webEnabled ABSENT mounts NOTHING — and with webEnabled TRUE the row shadows the native name; default-deny refuses with ZERO seam hits and the row binds VERIFIED through the placement feed (no global face needed)
+[dsh-agent-team] web-search: governed-web-search refused-no-provider
+
+ ✓ tests/poc-web-native-reuse/poc-w1-native-shape.test.ts (8 tests) 62ms
+
+ Test Files  3 passed (3)
+      Tests  47 passed (47)
+   Start at  13:07:14
+   Duration  2.71s (transform 939ms, setup 0ms, import 1.51s, tests 920ms, environment 0ms)
+
