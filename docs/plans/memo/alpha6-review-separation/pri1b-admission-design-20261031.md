@@ -454,13 +454,46 @@ round 6 用四枚活种量到：`export const r6Compile = Function` + `r6Compile
   `import('node:fs')` 记为边（闭包不跟它走——声明不是加载边，这句话写在行走器上而不是藏起来）。
 - **F-I1b6-7（MINOR）**：真实字节清洁对照从 2 个文件**加宽**到两侧界面枚举出的全部 script 字节（≥33），
   标题与注释都写明是加宽不是改名。
-- **盲区不再靠句子担保**：仪器自评腿新增 residual 探针——七枚"名字规则大概看不见"的写法逐枚过分析器并打印，
-  看见/看不见各自钉成清单（看不见的那条一改成本轮实测的 `[]`：`module.require(...)` 这类成员调用加载器本轮
-  直接补成边规则 `member-require`，其余 `(0, require)`/`require?.()`/`import.meta.resolve`/eval 字符串/
-  成员读 require/Worker/descriptor 读都有记录）。真正的残余写在腿注里而不是被说没：`eval('require(...)')`
+- **盲区不再靠句子担保**（枚数于 round 7 更正，F-I1b7-2：committed `residualSpellings` 实测为**八枚**，上一版
+  句子写"七枚…六枚有记录"是数字滞后）：仪器自评腿新增 residual 探针——八枚"名字规则大概看不见"的写法逐枚过
+  分析器并打印，看见/看不见各自钉成清单；`module.require(...)` 这类成员调用加载器补成边规则 `member-require`
+  之后**八枚全部**有记录，blind 实测 `[]`（`(0, require)`/`require?.()`/`import.meta.resolve`/eval 字符串/
+  成员读 require/Worker/descriptor 读各有记录）。真正的残余写在腿注里而不是被说没：`eval('require(...)')`
   定的是 `eval` 这个引用，字符串里要被引擎执行的模块名没有任何 AST 读得到——这就是名字规则的边界。
 - **F-I1b6-10（INFO，记在仪器注释与本 memo）**：任何 scratch 文件落进 `packages/**` 会红掉 family 五条腿
   （`p4t6-session-event-scan.test.ts` 数的是那里每一个可扫文件）；scratch 一律留在 `packages/**` 之外。
 - **实测事实（本轮新量，供后轮引用）**：新规则对现有字节零命中（hatch/`.constructor`/按值 require/
   import-equals/import-type 在 42+41+22 个被扫文件里全为 0）；lane src 11 个 `.ts`，lane dist 44 个文件
   （11 js + 11 d.ts + 22 map）；22/22 map 的 `sourcesContent` 为空。P-2 两扇门实测 19 / 3 条 verdict 字面量。
+
+### 12.1 dated 2026-11-02（round 7 更正与**循环终点裁决**，F-I1b7-1/2/3；rev7 = 0 BLOCKER / 1 MAJOR / 2 MINOR / 4 INFO）
+
+round 7 把 round-6 全部实种在 `afc17dd63` 重放：无一枚静默通过；能力类残留（构造器按值读一族 V2b、
+shipped-dist 原位种 V4，实测 `process.chdir` 成功）逐枚落在已披露的句子之内——披露按实测尺寸说，句子与
+机制平价成为常设测试。本轮按同一裁决 (A)（规则补得到的就补规则，补不到的收窄句子、不追）关闭唯一实质
+发现，并把"pin 会双向断裂"这句撤成它真正编码的人类纪律：
+
+- **F-I1b7-1（MAJOR，本轮唯一实质工作）**：round-6 规则把普查从"return 字面量"改为"带 `refusal:` 键的
+  字面量"后，逃逸从键的拼法再来一次——V7 实种把 catch 分支的拒绝写成计算键 `['refusal']: … as const`
+  并携带 `widenedEffectScopes: ['*']`，另加一枚标识符键诱饵把两条计数钉回 19/19：两条枚举对计算键**同盲**，
+  等式与下限都活着， widened 字段骑在 S-5 驱动的活分支上，spec 80/80、family 471/471、typecheck/eslint
+  rc=0。本轮两半都补：**规则**——`ts.isComputedPropertyName` + 扫描器同一个 `staticallyFoldedString`，
+  能静态折叠成字符串的计算键在**两条枚举里都算**那个键（折叠逻辑两边复用，同盲不再可能）；**句子**——
+  撤去 "cannot be dodged" 与 "only by leaving the file"，收窄到真实被定级的键语法（标识符 / 字符串字面量 /
+  可静态折叠计算键），并写明两条枚举共同证明什么（移动与改拼不出普查、删除会动实测下限）与共同漏掉什么
+  （折不动的计算键、无字面量的运行期组装 verdict——后者连同"活 verdict 逐路径闭形"一起归 #502 门的运行
+  契约）。V7 字节成为普查腿常驻夹具（含非折叠键的盲点夹具：两边计数 0/0，钉死句子不得越权）。实种复红
+  （METHOD LAW 全套，恢复 sha256 校验）：census 腿点名 widenedEffectScopes 三条违规，**且** S-5 腿新增的
+  `Object.keys` 精确闭形断言在活对象上点名第四个字段——计数不变（夹具与断言都在既有条目内，80/201/471
+  不动）。活形闭包按现状说死：精确键集只在 S-5 驱动的分支上按运行期断言，P-2 首条活腿用
+  `fieldSetViolations` 查它驱动的两枚 verdict 的多余字段，其余路径的活形只有静态普查、没有逐路径运行期
+  断言——任何句子不得暗示更多。
+- **F-I1b7-3（MINOR）**：spec「若新盲区出现，pin 会往反方向断」高估了机制——pin 只对清单上这八枚的
+  看见/看不见状态敏感；不在清单上的盲区（构造器按值读一族就是实例）什么都不弄断，当时全套仪器对它全绿。
+  改写为它真正编码的人类纪律：发现新盲区者负责把写法加进清单、重跑探针、同一编辑移动两枚 pin——在这个
+  必须保持诚实的文件里，然后再结案。
+- **循环终点状态（评审 §3 与本轮修复一致，落纸为终态）**：这条轴不再购买新规则。P-1 的身份是 review-time
+  tripwire，承重 = `ALLOWED_CONSUMERS = []`（S-9 实测）+ 不发布入口 + 代码评审；**重新展开的条件**是这三件
+  事实中任何一件改变——那时 P-1 重新定标为 boundary，行为性检查（活 verdict 逐路径 `Object.keys` 精确闭形、
+  判别联合穷尽性）写进 #502 接口契约，而不是继续往名字规则上加条款。不可折叠的成员/键拼写保持披露原样：
+  不为它们写规则，不写任何声称抓住它们的句子，也不维护无限清单。

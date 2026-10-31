@@ -717,6 +717,18 @@ describe('S-5: a decision addressed to no team is refused before anyone is asked
     observedRefusals.add(outcome.refusal)
     expect(outcome.refusal).toBe('ADMISSION_TEAM_UNKNOWN')
     expect(outcome.detail, 'the thrown words travel — an answer this module cannot get is named with the reason it could not get (F-I1b1-5 transport law)').toContain(thrown)
+    // F-I1b7-1 — what this leg graded BEFORE is exactly what the round-7 V7 plant walked past: it read
+    // `ok`, `refusal` and `detail` off the live verdict and asserted nothing about the rest of the object,
+    // so the plant's fourth field rode out with the answer (`Object.keys` of the live rejection measured
+    // ok, refusal, detail, widenedEffectScopes — spec still 80/80 over it). The door's contract on this
+    // branch is the CLOSED SHAPE of the object it returns, so the leg now pins that shape: Object.keys
+    // EXACT against ASSIGNMENT_REFUSAL_KEYS, test-side, no production byte moved. Coverage stated plainly
+    // so no sentence leans on more than is graded: exact live key sets are asserted HERE, on the branch
+    // this leg drives, and the first live leg of P-2 grades its admitted/refused verdicts against extra
+    // fields via fieldSetViolations — every OTHER path's live shape is graded statically by the census, per
+    // literal, but NOT asserted at runtime on its own path. Grading the exact closed shape on EVERY path
+    // is the door's runtime contract in the #502 interface — it belongs there, once a consumer exists.
+    expect(Object.keys(outcome).sort()).toEqual([...ASSIGNMENT_REFUSAL_KEYS].sort())
     expect(calls.resolve, 'the throw must stop the door before the resolver, exactly as the false answer does').toBe(0)
     expect(calls.ledger, 'and before the ledger').toBe(0)
   })
@@ -2045,9 +2057,12 @@ describe('ENV-REFUSED: the host-side legs still refused on this machine, recorde
 // closed-set check itself with a planted widening field, so a closed list that can no longer fail is caught
 // in the same file that carries it; since round 5 it enumerates the refusal literals of both doors from the
 // AST, and since round 6 it grades them WHEREVER THEY SIT (F-I1b6-4: a refusal routed through a binding is
-// graded by its `refusal:` key), pins the graded count to a second key-count pass and to the measured floor
-// (what that guard can and cannot prove is said at the leg, not here), drives the throwing existence branch
-// live, and pins parsed plans to their input's effect scopes (F-I1b5-5).
+// graded by its `refusal:` key; round 7, F-I1b7-1: a computed `refusal` key counts too when it statically
+// folds — the key grammar actually graded, and the gaps that grammar leaves, are said at the leg), pins the
+// graded count to a second key-count pass and to the measured floor (what that guard can and cannot prove
+// is said at the leg, not here), drives the throwing existence branch live — since round 7 pinning that
+// verdict's EXACT live key set, the one path where a live shape is closed against widening — and pins
+// parsed plans to their input's effect scopes (F-I1b5-5).
 //
 // WHAT THESE LEGS DO NOT DO (register discipline, #502): they change no closed scope form, they add no
 // adapter, they invent no behaviour the interface does not already freeze. Where the interface carries an
@@ -2799,9 +2814,14 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
 
     // RESIDUAL MEASUREMENT, not a claim: the spellings a name-based AST rule plausibly does NOT see. Each is
     // run through the analyzer and PRINTED, and the leg pins the set that comes back empty — so the blind
-    // spots are a measured list in the repo, not a paragraph of optimism. If a future rule catches one, the
-    // pin breaks and the list has to shrink; if a new blind spot appears, the pin breaks the other way and
-    // someone writes the rule or discloses the gap HERE, in the file that has to stay honest.
+    // spots are a measured list in the repo, not a paragraph of optimism. What the pin MECHANICALLY delivers,
+    // stated at its size (round 7, F-I1b7-3 — the sentence this replaces claimed more): the two pins below
+    // break when one of THESE enumerated spellings starts or stops being seen by the analyzer. A blind spot
+    // that is not on this list breaks NOTHING here — round 7's constructor value-read family is exactly
+    // that: unlisted, every gate green around it. So this block encodes a human discipline, not a
+    // mechanism: when a plant or a review turns up a new blind spot, someone adds the spelling to the list
+    // below, re-runs the probe, and moves the two pins in the same edit — HERE, in the file that has to
+    // stay honest — before the finding is written up as closed.
     const residualSpellings: ReadonlyArray<readonly [string, string]> = [
       ['RES-module-require.ts', "const r6 = module.require('node:fs')\nexport default r6\n"],
       ['RES-comma-require.ts', "const r6 = (0, require)('node:fs')\nexport default r6\n"],
@@ -2820,11 +2840,11 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
       ;(seen > 0 ? residualSeen : residualBlind).push(name)
       console.info(`residual probe ${name}: seen=${seen} edges=${scan.edges.map((e) => e.specifier).join('|')} nonStatic=${scan.nonStatic.length} capability=${scan.capabilityViolations.length}`)
     }
-    // Measured at this commit: every spelling but one comes back with something recorded — `(0, require)`
+    // Measured at this commit: all EIGHT spellings come back with something recorded — `(0, require)`
     // lands as nonStatic (the comma expression defeats the callee test, and the argument's string is not an
     // edge on its own), `require?.()` records the edge, `module.require(…)` records a member-require edge,
     // and the eval string / member-read require / Worker / descriptor-read / `import.meta.resolve` trip a
-    // capability or loader rule. The one that stays blind is the eval STRING's CONTENT: `eval('require(...)')`
+    // capability or loader rule. The one CONCEPTUAL blindness sits inside a seen entry: `eval('require(...)')`
     // convicts the `eval` reference, but nothing in an AST can read a module name out of a string the engine
     // will execute — that is the name-based rule's real boundary, and it is written here instead of argued
     // away. (The pin below lists what is blind by RECORDING an edge; the eval case is in the seen list
@@ -2998,7 +3018,11 @@ function objectLiteralFieldShapes(sourceText: string, label: string, requireKey:
         keys.push(property.name.text)
         continue
       }
-      const keyText = ts.isComputedPropertyName(property.name) ? '<computed>' : property.name.getText(sourceFile).replace(/^['"]|['"]$/g, '')
+      // F-I1b7-1: a computed key whose expression statically folds to a string IS that key — round 7's V7
+      // plant wrote `['refusal']: 'ADMISSION_TEAM_UNKNOWN' as const` and this census, which called EVERY
+      // computed key '<computed>', graded nothing there while the widened field rode through green. A key
+      // that does NOT fold stays '<computed>': no enumeration can name it — the gap is disclosed at the leg.
+      const keyText = ts.isComputedPropertyName(property.name) ? staticallyFoldedString(property.name.expression) ?? '<computed>' : property.name.getText(sourceFile).replace(/^['"]|['"]$/g, '')
       keys.push(keyText)
       if (ts.isPropertyAssignment(property)) {
         if (!isScalarValue(property.initializer)) violations.push(`${label}:${line} field '${keyText}' carries a ${ts.SyntaxKind[unwrapAsExpr(property.initializer).kind]} — a structure in a verdict field is a channel`)
@@ -3020,19 +3044,30 @@ function objectLiteralFieldShapes(sourceText: string, label: string, requireKey:
   return shapes
 }
 
-/** The independent second count for the F-I1b6-4 census: how many `key:` fields the file's object literals
- *  carry in total, from a pass that asks NOTHING about return statements, bindings or control flow. The
- *  round-5 census had one enumeration and a slack floor; two enumerations that must agree is the check that
- *  cannot be dodged by moving a verdict into a `const` — the literal stays, so the two counts stay equal or
- *  the leg reddens naming both numbers. */
+/** The second enumeration for the F-I1b6-4 census: how many `key:` fields the file's object literals carry
+ *  in total, from a pass that asks NOTHING about return statements, bindings or control flow. The key
+ *  grammar is said exactly, because round 7 (F-I1b7-1) found this pair blind to a fourth spelling: it
+ *  counts an identifier (`refusal:`), a string literal (`'refusal':`) and a computed key that statically
+ *  folds to a string (`['refusal']:`, `['ref' + 'usal']:` — folded by the SAME `staticallyFoldedString`
+ *  the capability scanner folds with). What the two enumerations jointly prove is bounded by that grammar:
+ *  a refusal literal cannot leave the census by MOVING (into a `const`, a ternary, a nested position) or by
+ *  RE-SPELLING its key inside the grammar — the literal stays, both passes count it, and the graded count
+ *  must equal the file's count or the leg reddens naming both numbers. What they jointly miss — a computed
+ *  key that does not fold, and a verdict assembled at runtime that holds no literal at all — is disclosed
+ *  at the leg, not claimed away. */
 function countObjectLiteralKeys(sourceText: string, label: string, key: string): number {
   const sourceFile = ts.createSourceFile(label, sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
   let count = 0
   const visit = (node: ts.Node): void => {
     if (ts.isObjectLiteralExpression(node)) {
       for (const property of node.properties) {
-        if (ts.isPropertyAssignment(property) && !ts.isComputedPropertyName(property.name) && property.name.getText(sourceFile).replace(/^['"]|['"]$/g, '') === key) count += 1
-        else if (ts.isShorthandPropertyAssignment(property) && property.name.text === key) count += 1
+        if (ts.isPropertyAssignment(property)) {
+          // F-I1b7-1: the census and this count must fold computed keys IDENTICALLY — V7 passed precisely
+          // because both passes skipped every computed key identically, so the equality survived V7's
+          // shrinkage. Folded-to-string counts here exactly as in the census; null (unfoldable) counts nowhere.
+          const keyText = ts.isComputedPropertyName(property.name) ? staticallyFoldedString(property.name.expression) : property.name.getText(sourceFile).replace(/^['"]|['"]$/g, '')
+          if (keyText === key) count += 1
+        } else if (ts.isShorthandPropertyAssignment(property) && property.name.text === key) count += 1
       }
     }
     ts.forEachChild(node, visit)
@@ -3197,17 +3232,33 @@ describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope �
     }
   })
 
-  it('both doors answer in closed field sets at EVERY refusal literal, wherever it is returned — census count pinned to the file (F-I1b5-4, F-I1b6-4)', () => {
-    // Round 5 (F-I1b5-4) put the census here; round 6 (F-I1b6-4) escaped it twice over. The round-5 leg
-    // walked `return { … }` statements, and a refusal routed through a binding —
-    // `const answer = { ok: false, refusal: 'ADMISSION_REQUEST_MALFORMED', …, widenedEffectScopes: ['*'] };
-    // return answer` — is not a return-literal, so the site dropped out of the census entirely: 19 graded
-    // sites became 18, the widened field rode through spec, family, typecheck and eslint, and the anti-vacuity
-    // floor of 12 left seven sites of slack to absorb the loss. The rule now: grade every object literal that
-    // CARRIES a refusal, whatever returns it (the helper's `onlyReturns=false` mode, which round 5 shipped
-    // and left switched off), and pin the graded count to an independent count of the `refusal:` keys the
-    // file holds — so a site cannot leave the census by changing shape, only by leaving the file. The floor
-    // is the measured value, not a round number with slack.
+  it('both doors answer in closed field sets at every refusal literal the key grammar names — identifier, string, folded computed (F-I1b5-4, F-I1b6-4, F-I1b7-1)', () => {
+    // Round 5 (F-I1b5-4) put the census here; round 6 (F-I1b6-4) escaped it twice over; round 7 (F-I1b7-1)
+    // escaped it once more. Round 5 walked `return { … }` statements, and a refusal routed through a binding
+    // — `const answer = { ok: false, refusal: 'ADMISSION_REQUEST_MALFORMED', …, widenedEffectScopes: ['*'] };
+    // return answer` — is not a return-literal: 19 graded sites became 18, the widened field rode through
+    // spec, family, typecheck and eslint, and the anti-vacuity floor of 12 left seven sites of slack. Round
+    // 6's rule — grade every object literal that CARRIES a refusal, whatever returns it (the helper's
+    // `onlyReturns=false` mode, which round 5 shipped and left switched off) — then escaped through the KEY,
+    // not the site: `['refusal']: 'ADMISSION_TEAM_UNKNOWN' as const` on a const-routed verdict carrying
+    // `widenedEffectScopes: ['*']`, with one identifier-keyed decoy holding both counts at 19, passed every
+    // gate, because BOTH enumerations skipped every computed key identically and the equality survived the
+    // shrinkage (plant V7: spec 80/80, family 471/471, typecheck and eslint rc=0, widened field live on the
+    // branch the S-5 leg drives). The rule now: a computed key whose expression statically folds to a
+    // string IS a `refusal:` key in BOTH enumerations, so re-spelling the key inside the foldable grammar
+    // moves nothing. WHAT THE TWO ENUMERATIONS JOINTLY PROVE, sized to the mechanism, over the key grammar
+    // both read — identifier, string literal, statically-foldable computed key: a refusal literal cannot
+    // leave the census by MOVING (binding, ternary, nested position) or by RE-SPELLING its key inside that
+    // grammar — the literal stays, both passes count it, and the graded count must equal the file's count
+    // or this leg reddens naming both numbers; and it cannot be erased quietly, because the floor below is
+    // the MEASURED count, not a round number with slack. WHAT THEY JOINTLY MISS, written here instead of
+    // hidden: a computed key that does NOT fold (`[k]:` for a mutable `k`, `[f()]:`) is nobody's `refusal:`
+    // key to either pass — such a site is in neither count, so equality and floor survive while it goes
+    // ungraded, and holding the floor while doing it costs a REAL extra refusal literal, itself graded into
+    // the closed set; and a verdict assembled at runtime by a call carries no literal to count at all.
+    // Both sit inside this file's published limit — a review-time tripwire over the lane's own source, not
+    // a capability boundary — and both belong to the door's RUNTIME contract in the #502 interface, where
+    // verdict shapes are graded on every path; what is graded LIVE today is stated at the S-5 leg.
     const assignmentSource = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'assignment-admission.ts'), 'utf8')
     const assignmentShapes = objectLiteralFieldShapes(assignmentSource, 'review-assignment/assignment-admission.ts', 'refusal', false)
     // The second enumeration: every `refusal:` KEY the file holds, from a pass that asks nothing about
@@ -3215,8 +3266,10 @@ describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope �
     // same AST with the same predicate, so it is NOT an independent witness over the source — it is the guard
     // that stops the CENSUS from narrowing later. If `grade` ever learns to skip nested literals, or
     // `onlyReturns` comes back, or a duplicate-key literal appears, the two counts split and this reddens.
-    // The anti-erasure weight rests on the next line: the floor is the MEASURED count, so a site cannot leave
-    // the census by changing shape and leave no trace.
+    // The anti-erasure weight rests on the next line: the floor is the MEASURED count, so a site that leaves
+    // the census takes the count with it and this floor reddens — unless the author pays for the hole with
+    // another refusal literal, and every real refusal literal is graded into the closed set (round 7's V7
+    // decoy is exactly that payment, now pinned as the fixture at the bottom of this leg).
     const refusalKeysInFile = countObjectLiteralKeys(assignmentSource, 'review-assignment/assignment-admission.ts', 'refusal')
     expect(assignmentShapes.length, `the graded refusal sites (${assignmentShapes.length}) do not equal the refusal-carrying literals the file holds (${refusalKeysInFile}) — a verdict routed through a helper, a ternary branch or a named const is the F-I1b6-4 escape, and it must redden HERE rather than shrink a count somewhere a floor can absorb it`).toBe(refusalKeysInFile)
     expect(refusalKeysInFile, 'the assignment door no longer holds the 19 refusal literals measured at f773d1603 — the census and the door have drifted apart and this floor must be re-measured on purpose, never slid under').toBeGreaterThanOrEqual(19)
@@ -3240,6 +3293,41 @@ describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope �
       if (JSON.stringify([...shape.keys].sort()) !== JSON.stringify([...REVIEW_VERDICT_KEYS].sort())) mandateViolations.push(`line ${shape.line}: a verdict literal carries fields [${shape.keys.join(', ')}] — the closed triple is [${REVIEW_VERDICT_KEYS.join(', ')}]`)
     }
     expect(mandateViolations, `a verdict literal of the mandate door leaves the closed triple or carries a non-scalar value:\n${mandateViolations.join('\n')}`).toEqual([])
+    // F-I1b7-1 — the round-7 V7 plant, as a standing fixture (the plant's bytes, wrapped so they parse on
+    // their own): the computed refusal key must count in BOTH enumerations and the widened field must
+    // convict for the stated reason. At afc17dd63 both passes skipped this literal identically, the counts
+    // stayed 19/19 around a decoy, and every gate passed over the widened field; the door holds no computed
+    // key today, and this fixture keeps the escape pinned if one ever appears or a helper edit unlearns
+    // the fold.
+    const v7Bytes = [
+      'function r7catch(error: unknown) {',
+      '  const r7answer = {',
+      '    ok: false as const,',
+      "    ['refusal']: 'ADMISSION_TEAM_UNKNOWN' as const,",
+      '    detail: `the team-existence read refused, and an answer this module cannot get is not an answer it may assume: ${String(error)}`,',
+      "    widenedEffectScopes: ['*'],",
+      '  }',
+      '  return r7answer',
+      '}',
+      "const r7decoy: { readonly ok: false; readonly refusal: 'ADMISSION_TEAM_UNKNOWN'; readonly detail: string } = { ok: false, refusal: 'ADMISSION_TEAM_UNKNOWN', detail: 'R7 plant decoy keeps the identifier-key count stable (fixture)' }",
+      'void r7catch; void r7decoy',
+    ].join('\n')
+    const v7Label = 'V7-census-computed-key.fixture.ts'
+    const v7Shapes = objectLiteralFieldShapes(v7Bytes, v7Label, 'refusal', false)
+    const v7Count = countObjectLiteralKeys(v7Bytes, v7Label, 'refusal')
+    expect(v7Shapes.length, 'F-I1b7-1: the computed-key verdict and the identifier decoy are TWO refusal-carrying literals; a pass that skips computed keys sees one or none').toBe(2)
+    expect(v7Count, 'F-I1b7-1: the second enumeration must fold `[' + "refusal']` to the key `refusal` and count it too — both enumerations fold identically or the pair proves nothing").toBe(2)
+    const v7Widened = v7Shapes.find((shape) => shape.keys.includes('widenedEffectScopes'))
+    expect(v7Widened, 'F-I1b7-1: the widened site is not in the census at all — the round-7 escape is back').toBeDefined()
+    expect(v7Widened?.keys, 'the folded computed key must be graded as `refusal`, not `<computed>`').toEqual(['ok', 'refusal', 'detail', 'widenedEffectScopes'])
+    expect(v7Widened?.violations.join('\n'), 'the widened field must convict: a structure in a verdict field is a channel, and the field is outside the closed set').toContain('widenedEffectScopes')
+    // The DISCLOSED gap, pinned as a measurement so no future sentence can claim more than the rule does:
+    // a computed key that does not fold is nobody's `refusal:` key — in neither enumeration. The census
+    // misses such a site; that blindness is the tripwire's published size (header + this leg), not a
+    // check that was passed, and it belongs to the #502 runtime contract, not to a name-based rule.
+    const v7Unfoldable = "let r7key = 'refusal'\nconst r7answer = { ok: false as const, [r7key]: 'ADMISSION_TEAM_UNKNOWN' as const, detail: 'x' }\nexport default r7answer\n"
+    expect(objectLiteralFieldShapes(v7Unfoldable, 'V7b-unfoldable-key.fixture.ts', 'refusal', false).length, 'a non-folding computed key is NOT a refusal key to the census — disclosed blind spot; if a rule ever learns to fold this, update this pin AND the sentence above in the same edit').toBe(0)
+    expect(countObjectLiteralKeys(v7Unfoldable, 'V7b-unfoldable-key.fixture.ts', 'refusal'), 'a non-folding computed key is NOT a refusal key to the count either — same disclosed blind spot, same rule: pin and sentence move together').toBe(0)
   })
 
   it('a parsed plan carries EXACTLY the effect scopes its input declared — parse↔input fidelity (F-I1b5-5)', () => {
