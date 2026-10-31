@@ -81,3 +81,12 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 「现行 C 册各用途池及其已发生实耗不变。允许在完成新 WSL 环境离线预检、且具名故障归因证明现有 C4 余额不足时，额外启用最多 2 次 C4 机动 Host starts。每次仍须预登记、计数、RCA 和收据绑定。不得挪用 C3 G5 预算，不得以新增额度代替测试脚本修复。其他用途暂不增额；C2 用至 6/8 时，结合明确待验收任务报告下一批需求。」
 - 生效解释（协调者记录，不改语义）：现有实耗定格 C1 0/8、C2 7/8、C3 0/4（FROZEN，G5 专用不可挪用）、C4 3/4。C4 机动额度=条件性 +2：前置①新 WSL 环境离线预检完成（--dry 全链 + 探针/租约离线复测，零 boot）；前置②具名故障归因证明 C4 现有余额 1 不足（引用具体失败格与 RCA，不得预防性套额度）。每格仍走预登记/计数/RCA/收据绑定四件套。「以新增额度代替测试脚本修复」= 禁止——套件/装配缺陷一律先修复再烧格。
 - 下一批 C2 需求：C2 已过 6/8 线（现 7/8），按裁决随下一次预登记捆绑报告：待验收任务=read_image L3/L4 六格（ri:ask-approved-ran / ri:attachment-commit-one / ri:tool-output-two-blocks / ri:answered-deny-zero-effect / ri:store-law-zero-commit + deny 零副作用）与 present/ask 补充腿，依赖 bindseam 装配修复入 master。
+
+## bw6 预登记（lane=a5w-bootwave，dated 2026-10-31T01:31Z，协调者=唯一 Integrator）
+- 格：C2 第 8/8 格（本 lane 池最后一格）。max-host-starts=1。
+- boot head（预登记 sha）：task/a5w-bootwave-20261030 本条目 commit 后 HEAD；前向合并条款适用（boot head=分支 HEAD，含 master@e93a546325 = PR #508 SubtreeContains seam 装配修复）。
+- 任务（具名）：bw3/bw4 失败根因（成员子会话 mount 被拒→target-stale）已由 #508 修复入 master 并在本 boot head 上；bw6=完整链复跑——ri:ask-approved-ran / ri:attachment-commit-one / ri:tool-output-two-blocks / ri:answered-deny-zero-effect / ri:store-law-zero-commit 五格 + ri:placement 维持 + ui 全腿。判绿即台账翻 L4。
+- 离线预检（用户裁决前置，已完成，零 boot）：registries 12/12；140-suite --dry PASS；port-probe 5/5（#504 修复探针）；bindseam C1 7/7（在 fmerge 后 boot head 亲跑）；test-use pristine@639ed01539 porcelain=0；dist tracked 且 drift=0（#508 CI 门亲验）。
+- C4 机动 +2：**本波不动用**（无具名失败证明 C4 余额不足；若 bw6 出现新具名失败且归因证明余额 1 不足，另行逐格启用）。
+- 有效格判据：五目标格任一绿=有效；全红但产生具名新故障+trace=有效 RCA 格；无新信息重跑=自 bw6 起停线并升级用户。
+- 同类×2 停线状态：装配缺口类已由 #508 闭合（产品 PR 全门合入），bw6 属修复后首轮，不构成同类第三跑。
