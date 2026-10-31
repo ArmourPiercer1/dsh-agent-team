@@ -176,6 +176,17 @@
             "tests/checks/eslint-node-globals.test.mjs"
           ],
           "why": "u7-fixfwd (2026-10-27): `tests/checks/dist-placements.test.mjs` stood at 4 pass / 5 fail on a CLEAN origin/master and nothing ever ran it, so nobody saw — it pinned the #397 38-placement/5-file snapshot while the ledger had grown to 82 placements in 9 files, and its mirror filter (mjs|py) read a legitimately placed manifest.json as untracked. The test now DERIVES its totals from the files on disk (mutation cases assert deltas from the measured N; the filter covers the measured shipped extensions) and THIS leg makes that regression undroppable. `tests/checks/eslint-node-globals.test.mjs` is the sibling suite in the same directory (the collected eslint-globals parity pin) and had the same exposure. Both are node:test, host-free: no ports, no DSH_HOME, no pristine host, so they cannot ride a vitest suiteList. Adding a suite to tests/checks means adding it to this leg's check list — dropping one is CI_LAYER_LEG_WEAKENED."
+        },
+        {
+          "id": "scripts node:test suite (eb3-tool-acceptance law fixtures — host-free)",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "scripts/eb3-tool-acceptance.test.mjs"
+          ],
+          "why": "a5w-law1 (2026-10-31): the eb3 checker's law fixtures were seat-only until this PR gave law 1 (ACCEPT_DISCLOSED_UNSOURCED verbatim-in-source) real mutation enforcement ((m) red leg, (n) whitespace-normalized green leg, (o) self-proving copy-tree control). The #529 review seat proved by exhaustion that NO existing CI leg collected this file, so weakening containsVerbatim to always-true kept every layer green. This leg puts the suite inside ci-integration; its three legs are host-free node:test (synthetic ledgers, injected readFile, os.tmpdir() copy tree — no ports, no DSH_HOME, no pristine host). Dropping this file from the step or the check list is CI_LAYER_LEG_WEAKENED."
         }
       ],
       "hostFree": true
