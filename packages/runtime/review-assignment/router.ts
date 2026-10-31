@@ -250,6 +250,21 @@ export function routeReviewCase(input: ReviewRoutingInput): ReviewAssignmentResu
     // whole for every Team Alpha.6 has not been enabled for.
     return decision(leaderLeaves('LEADER_NO_APPROVAL_CASE_ID', current))
   }
+  if (current !== null && current.approvalCaseId !== caseId) {
+    // Round-2 review NF-6. F-1's law is "a router must not order what its own writer cannot write", and
+    // neither half of it survives routing a view of some OTHER case of the same team: such a view is
+    // well-formed, same-team and internally consistent, but its `epochApplied` belongs to a different
+    // epoch chain, so the decision is computed from another case's history and the row it orders conflicts
+    // in THIS case's fold forever. The writer cannot catch this one either — `checkAssignmentMutation`
+    // receives a state, not a case id — so the fold's `(team, case)` scope has to be honoured at the one
+    // door that can see both sides of it. Placed after the `caseId === undefined` branch above on purpose:
+    // that branch is the one that keeps the old path whole for teams Alpha.6 has not been enabled for, and
+    // nothing may take precedence over it.
+    return refused(
+      'REVIEW_ASSIGNMENT_ROUTER_INPUT_INCOMPLETE',
+      `the current assignment view is folded for ${current.approvalCaseId}, not for ${caseId}`,
+    )
+  }
   if (input.caseView.legOrdinal !== input.caseView.currentLegOrdinal) {
     return decision(leaderLeaves('LEADER_LEG_NOT_CURRENT', current))
   }

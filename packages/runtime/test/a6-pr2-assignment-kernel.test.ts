@@ -929,6 +929,38 @@ describe('A-4 the router routes one bound officer or leaves the case with the Le
     }
   })
 
+  it('refuses to route a case from a view folded for a different case of the same team', () => {
+    // Round-2 review NF-6. F-1's law — a router may not order what its own writer cannot write — is
+    // worthless if the state being routed is somebody else's history. A view folded for another case of the
+    // SAME team passes the team check, is well-formed, and carries an `epochApplied` from a different epoch
+    // chain, so the decision would be computed from another case's assignment and the row it orders would
+    // conflict in this case's fold forever. The writer cannot catch it: `checkAssignmentMutation` receives a
+    // state and no case id, so the fold's (team, case) scope must be honoured at the one door that can see
+    // both sides. Pre-existing, and closed here rather than deferred, because one comparison is cheaper than
+    // a contract note nobody reads.
+    const otherRow = encodeAssignmentFact(
+      'created',
+      { ...assignmentFor(1), approvalCaseId: 'case-OTHER-IN-TEAM' },
+      0,
+    )
+    if (!otherRow.ok) throw new Error('fixture broken')
+    const otherCase = foldReviewAssignmentRows(
+      [{ ledgerSequence: 1, factType: REVIEW_ASSIGNMENT_FACT_TYPES.created, payload: otherRow.value }],
+      ROOT,
+      'case-OTHER-IN-TEAM',
+    )
+    expect(otherCase.assignment).not.toBeNull() // a perfectly well-formed view of a real case
+    expect(otherCase.unreconciled).toBe(false)
+    const answer = routeReviewCase(routingInput({ current: otherCase }))
+    expect(answer.ok).toBe(false)
+    if (answer.ok) return
+    expect(answer.refusal).toBe('REVIEW_ASSIGNMENT_ROUTER_INPUT_INCOMPLETE')
+    expect(answer.detail).toContain('case-OTHER-IN-TEAM')
+    // And the honest shape still routes: the same input with the view folded for THIS case.
+    const mine = routeReviewCase(routingInput({ current: fold([row('created', 1, 0)]) }))
+    expect(mine.ok).toBe(true)
+  })
+
   it('never routes a case the admission gate would refuse, for any widening tried here', () => {
     // THE pin of this lane: router ⊆ PR0's admission. For each input below, PR0 is asked whether the
     // officer may decide, and if it refuses every decision value the router must not assign either.
@@ -1076,6 +1108,50 @@ describe('A-6 a handoff moves the target and nothing else', () => {
     if (!already.ok) expect(already.refusal).toBe('REVIEW_ASSIGNMENT_TARGET_UNCHANGED')
   })
 
+  it('answers both plan functions the same way when the ledger cannot be read, and never "nothing to do"', () => {
+    // Round-2 review NF-4, against the F-10 fix. The null door in `planRetirement` used to answer
+    // `NO_ACTIVE_ASSIGNMENT` for an UNRECONCILED view with no assignment, while `planHandoff` answered
+    // `ROW_UNPARSEABLE` for the same input — and the shape is reachable on its own: one created row that
+    // fails to apply leaves exactly `assignment === null, unreconciled === true`. The two answers are not
+    // interchangeable. "Nothing to retire" is a fact about the case; "re-read the ledger" is a fact about
+    // the reading; A-7 exists because conflating them turns a broken read into a case nobody handles.
+    // The shape is a created row that cannot even be ordered (the F-2 shape): nothing applies, so
+    // `assignment === null`, and the family is broken, so `unreconciled === true`. That combination is the
+    // whole question, and it is reachable without a broken encoder — the row above is legal output of the
+    // only writer this lane has, and it is the ledger, not the writer, that arrived unreadable.
+    const brokenCreated = encodeAssignmentFact('created', assignmentFor(1), 0)
+    if (!brokenCreated.ok) throw new Error('fixture broken')
+    const unreadable = fold([
+      {
+        ledgerSequence: '7' as unknown as number,
+        factType: REVIEW_ASSIGNMENT_FACT_TYPES.created,
+        payload: brokenCreated.value,
+      },
+    ])
+    expect(unreadable.assignment).toBeNull()
+    expect(unreadable.unreconciled).toBe(true)
+    const unreadableAnswers = [
+      ['handoff', planHandoff(unreadable, request)] as const,
+      ['retirement', planRetirement(unreadable, { ...request, reasonCode: 'CASE_CLOSED' })] as const,
+    ]
+    for (const [name, answer] of unreadableAnswers) {
+      expect(answer.ok, name).toBe(false)
+      if (answer.ok) continue
+      expect(answer.refusal, name).toBe('REVIEW_ASSIGNMENT_ROW_UNPARSEABLE')
+    }
+
+    // The clean empty view still says the boring true thing, in both doors.
+    const emptyAnswers = [
+      ['handoff', planHandoff(EMPTY_STATE, request)] as const,
+      ['retirement', planRetirement(EMPTY_STATE, { ...request, reasonCode: 'CASE_CLOSED' })] as const,
+    ]
+    for (const [name, answer] of emptyAnswers) {
+      expect(answer.ok, name).toBe(false)
+      if (answer.ok) continue
+      expect(answer.refusal, name).toBe('REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT')
+    }
+  })
+
   it('refuses a handoff written against a leg the family has moved past', () => {
     const state = fold([row('created', 1, 0, { kind: 'instance', instanceId: OFFICER }, 1, 'req-OLD')])
     const answer = planHandoff(state, request)
@@ -1168,6 +1244,61 @@ describe('A-7 an unreadable row is reported forever, never treated as an empty q
     const foreign = fold([{ ledgerSequence: Number.NaN, factType: 'control-request-recorded', payload: {} }])
     expect(foreign.diagnostics).toEqual([])
     expect(foreign.unreconciled).toBe(false)
+  })
+
+  it("keeps another case's broken sequence out of this view, and keeps an unreadable row loud", () => {
+    // Round-2 review NF-1, against the fix for F-2. The malformed-sequence test used to run BEFORE case
+    // scope, so one unreadable row anywhere in the team's ledger marked EVERY case of that team
+    // `unreconciled` — and every consumer refuses an unreconciled view, which is the refuse-every-wake-in-
+    // every-team shape F-3 was about, reached through a different door. The sequence check now runs after
+    // ownership is settled. What is NOT allowed to go quiet is a row that does not decode: an undecodable
+    // payload has no readable owner, so the fold cannot prove it is not this case's row, and A-7 forbids
+    // losing a row it cannot rule out. Silence is for rows positively identified as somebody else's.
+    const own = encodeAssignmentFact('created', assignmentFor(1), 0)
+    const other = encodeAssignmentFact(
+      'created',
+      { ...assignmentFor(1), approvalCaseId: 'case-OTHER-IN-TEAM' },
+      0,
+    )
+    if (!own.ok || !other.ok) throw new Error('fixture broken')
+
+    const foreignCaseBrokenSequence: readonly ReviewAssignmentRow[] = [
+      { ledgerSequence: 1, factType: REVIEW_ASSIGNMENT_FACT_TYPES.created, payload: own.value },
+      {
+        ledgerSequence: '7' as unknown as number,
+        factType: REVIEW_ASSIGNMENT_FACT_TYPES.created,
+        payload: other.value,
+      },
+    ]
+    const clean = fold(foreignCaseBrokenSequence)
+    expect(clean.diagnostics).toEqual([])
+    expect(clean.unreconciled).toBe(false)
+    expect(clean.epochApplied).toBe(1)
+
+    // Same row, this case: ownership is settled, so the broken sequence is this view's problem (F-2).
+    const ownCaseBrokenSequence: readonly ReviewAssignmentRow[] = [
+      {
+        ledgerSequence: '7' as unknown as number,
+        factType: REVIEW_ASSIGNMENT_FACT_TYPES.created,
+        payload: own.value,
+      },
+    ]
+    const mine = fold(ownCaseBrokenSequence)
+    expect(mine.diagnostics.map((d) => d.refusal)).toEqual(['REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED'])
+    expect(mine.unreconciled).toBe(true)
+
+    // A row naming another case that cannot be decoded stays loud, because "another case" is a claim this
+    // row cannot make.
+    const unreadableOwner: readonly ReviewAssignmentRow[] = [
+      {
+        ledgerSequence: 2,
+        factType: REVIEW_ASSIGNMENT_FACT_TYPES.created,
+        payload: { ...assignmentFor(1), approvalCaseId: 'case-OTHER-IN-TEAM', smuggled: 'x' },
+      },
+    ]
+    const loud = fold(unreadableOwner)
+    expect(loud.diagnostics.length).toBe(1)
+    expect(loud.unreconciled).toBe(true)
   })
 })
 

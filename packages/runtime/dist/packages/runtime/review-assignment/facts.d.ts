@@ -66,23 +66,30 @@ export declare function isReviewAssignmentFactType(factType: string): boolean;
  *  - Rows of OTHER FAMILIES are ignored without a diagnostic and do not participate in sequence ordering.
  *    The ledger interleaves every family; a fold that reported the shape of the ledger it was handed
  *    would report noise instead of its own state.
- *  - Rows of THIS family belonging to ANOTHER CASE are also ignored without a diagnostic, and they do not
- *    advance the sequence watermark either — order is a property of the rows a view is made of. Their epoch
- *    chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they cannot corrupt
- *    this view, and refusing them made the obvious reader fail closed: the natural durable reader is
- *    "read `repositories.ledger.list()` for this opened team once, then fold per case", and the old
- *    behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
+ *  - Rows of THIS family that DECODE and belong to ANOTHER CASE are ignored without a diagnostic, and they
+ *    do not advance the sequence watermark either — order is a property of the rows a view is made of.
+ *    Their epoch chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they
+ *    cannot corrupt this view, and refusing them made the obvious reader fail closed: the natural durable
+ *    reader is "read `repositories.ledger.list()` for this opened team once, then fold per case", and the
+ *    old behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
  *    `unreconciled` and therefore refusing every wake and every submit, everywhere, forever. A contract
  *    that punishes the correct caller is not a safety property.
  *  - Rows of THIS family belonging to ANOTHER TEAM are a diagnostic (`CROSS_TEAM_ROW`). This one cannot
  *    happen by writing the reader correctly: `repositories.ledger` is the opened team's own ledger, so a
  *    foreign root inside it means the caller folded a team's rows under another team's id — a scoping bug
  *    that is worth a loud noise, not silence.
- *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic
- *    marks the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` on a
- *    row of this family counts: it is diagnosed, not dropped (F-2 — the previous code `continue`d on a
- *    broken sequence BEFORE the family check, so exactly the rows A-7 exists to protect were the ones that
- *    vanished quietly).
+ *  - A row of THIS family that DOES NOT DECODE is a diagnostic whatever case it turns out to belong to,
+ *    and it is diagnosed BEFORE case scope is consulted. This is the exception that keeps the bullet above
+ *    honest: an undecodable payload has no readable owner, so the fold cannot prove it is not this case's
+ *    row, and A-7 forbids losing a row it cannot rule out. Silence is reserved for rows this fold has
+ *    positively identified as somebody else's.
+ *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic marks
+ *    the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` counts: it
+ *    is diagnosed, not dropped (F-2 — the previous code tested the sequence BEFORE the family check, so
+ *    exactly the rows A-7 exists to protect were the ones that vanished quietly). It is tested AFTER
+ *    ownership, and round-2 review (NF-1) is why the position matters: diagnosed before case scope, one
+ *    corrupt row of ANY case marked EVERY case of that team `unreconciled` — the same refuse-everything
+ *    shape as the mistake above, reached by a different door.
  */
 export declare function foldReviewAssignmentRows(rows: Iterable<ReviewAssignmentRow>, rootSessionId: string, approvalCaseId: string): ReviewAssignmentState;
 /**

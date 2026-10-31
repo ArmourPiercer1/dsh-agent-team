@@ -344,23 +344,30 @@ export function isReviewAssignmentFactType(factType: string): boolean {
  *  - Rows of OTHER FAMILIES are ignored without a diagnostic and do not participate in sequence ordering.
  *    The ledger interleaves every family; a fold that reported the shape of the ledger it was handed
  *    would report noise instead of its own state.
- *  - Rows of THIS family belonging to ANOTHER CASE are also ignored without a diagnostic, and they do not
- *    advance the sequence watermark either — order is a property of the rows a view is made of. Their epoch
- *    chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they cannot corrupt
- *    this view, and refusing them made the obvious reader fail closed: the natural durable reader is
- *    "read `repositories.ledger.list()` for this opened team once, then fold per case", and the old
- *    behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
+ *  - Rows of THIS family that DECODE and belong to ANOTHER CASE are ignored without a diagnostic, and they
+ *    do not advance the sequence watermark either — order is a property of the rows a view is made of.
+ *    Their epoch chain is a different chain — `assignmentEpoch`/`previousEpoch` are per case — so they
+ *    cannot corrupt this view, and refusing them made the obvious reader fail closed: the natural durable
+ *    reader is "read `repositories.ledger.list()` for this opened team once, then fold per case", and the
+ *    old behaviour diagnosed a mismatch on every one of those rows, marking EVERY case's view
  *    `unreconciled` and therefore refusing every wake and every submit, everywhere, forever. A contract
  *    that punishes the correct caller is not a safety property.
  *  - Rows of THIS family belonging to ANOTHER TEAM are a diagnostic (`CROSS_TEAM_ROW`). This one cannot
  *    happen by writing the reader correctly: `repositories.ledger` is the opened team's own ledger, so a
  *    foreign root inside it means the caller folded a team's rows under another team's id — a scoping bug
  *    that is worth a loud noise, not silence.
- *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic
- *    marks the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` on a
- *    row of this family counts: it is diagnosed, not dropped (F-2 — the previous code `continue`d on a
- *    broken sequence BEFORE the family check, so exactly the rows A-7 exists to protect were the ones that
- *    vanished quietly).
+ *  - A row of THIS family that DOES NOT DECODE is a diagnostic whatever case it turns out to belong to,
+ *    and it is diagnosed BEFORE case scope is consulted. This is the exception that keeps the bullet above
+ *    honest: an undecodable payload has no readable owner, so the fold cannot prove it is not this case's
+ *    row, and A-7 forbids losing a row it cannot rule out. Silence is reserved for rows this fold has
+ *    positively identified as somebody else's.
+ *  - Any row of THIS family for THIS case that cannot be applied is a diagnostic, and any diagnostic marks
+ *    the view `unreconciled`, which every consumer refuses (A-7). A malformed `ledgerSequence` counts: it
+ *    is diagnosed, not dropped (F-2 — the previous code tested the sequence BEFORE the family check, so
+ *    exactly the rows A-7 exists to protect were the ones that vanished quietly). It is tested AFTER
+ *    ownership, and round-2 review (NF-1) is why the position matters: diagnosed before case scope, one
+ *    corrupt row of ANY case marked EVERY case of that team `unreconciled` — the same refuse-everything
+ *    shape as the mistake above, reached by a different door.
  */
 export function foldReviewAssignmentRows(
   rows: Iterable<ReviewAssignmentRow>,
@@ -384,14 +391,6 @@ export function foldReviewAssignmentRows(
     // rows that are none of this fold's business were diagnosed instead. Ownership decides who gets a
     // noise: this fold answers for its own family and stays quiet about everybody else's.
     if (!isReviewAssignmentFactType(row.factType)) continue
-    if (typeof row.ledgerSequence !== 'number' || !Number.isSafeInteger(row.ledgerSequence)) {
-      note(
-        row,
-        'REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED',
-        `a ${row.factType} row names sequence ${String(row.ledgerSequence)}, which is not a safe integer`,
-      )
-      continue
-    }
     // NOT yet the sequence watermark: it advances only on rows this fold actually considers, i.e. rows of
     // this family AND this case. Advancing it on another case's row was the first draft's shape, and it is
     // the same F-3 mistake one level down — one out-of-order row of an unrelated case would then diagnose
@@ -407,9 +406,22 @@ export function foldReviewAssignmentRows(
       continue
     }
     if (payload.approvalCaseId !== approvalCaseId) {
-      // Another case's row: skip in silence, by the input contract above. Nothing can leak across — the
-      // epoch chain, the target and the leg all come from rows of THIS case — and the caller has no
-      // cheaper way to read the ledger than one pass per team.
+      // Another case's row, positively identified as such by a payload that decoded: skip in silence, by
+      // the input contract above. Nothing can leak across — the epoch chain, the target and the leg all
+      // come from rows of THIS case — and the caller has no cheaper way to read the ledger than one pass
+      // per team.
+      continue
+    }
+    // Ownership is settled (this family, this team, this case), so a sequence that is not a safe integer
+    // is now this view's problem and says so (F-2). Position is the law (round-2 NF-1): before the case
+    // check above it poisoned every case of the team, after it a broken row of somebody else's case stays
+    // somebody else's problem — which is what "scoped by (team, case)" has to mean to be usable at all.
+    if (typeof row.ledgerSequence !== 'number' || !Number.isSafeInteger(row.ledgerSequence)) {
+      note(
+        row,
+        'REVIEW_ASSIGNMENT_SEQUENCE_MALFORMED',
+        `a ${row.factType} row names sequence ${String(row.ledgerSequence)}, which is not a safe integer`,
+      )
       continue
     }
     if (row.ledgerSequence < lastSequence) {

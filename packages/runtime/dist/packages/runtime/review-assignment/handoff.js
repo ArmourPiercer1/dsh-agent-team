@@ -81,14 +81,34 @@ export function planHandoff(state, request) {
  * retired target is refused by `maySubmitFor` — A-3, the same law a handoff relies on.
  */
 export function planRetirement(state, request) {
-    // The null check comes FIRST, before the pre-flight, so that it is a real door rather than unreachable
-    // code (review F-10): the second version of this function asked the pre-flight first and then tested the
-    // same shape, which no input could ever reach. Both doors answer the same refusal code
-    // (`NO_ACTIVE_ASSIGNMENT`) either way, so reordering changes no behaviour — only the honesty of the
-    // control flow, and the fact that the closed export set has no unreachable branch in it.
+    // The null check comes FIRST, before the pre-flight, so that this is a real door rather than
+    // unreachable code (review F-10): the second version of this function asked the pre-flight first and
+    // then tested the same shape, which no input could ever reach.
+    //
+    // What the door ANSWERS was wrong once already, and round-2 review (NF-4) is what caught it: the first
+    // version of this door claimed both doors answer `NO_ACTIVE_ASSIGNMENT` either way, and that was false.
+    // An `unreconciled` view with no assignment — reachable on its own, e.g. one created row that failed to
+    // apply — needs the A-7 answer (`ROW_UNPARSEABLE`: re-read, do not conclude "nothing to retire"), and
+    // `planHandoff` already answered it that way, so the two plan functions disagreed about the same input
+    // and the more informative refusal was the one that got lost.
+    //
+    // So the null door asks the pre-flight instead of stating its own answer. That is safe rather than
+    // circular: for a `retired` fact the pre-flight refuses a null or retired assignment unconditionally, so
+    // this branch cannot accept anything, and it borrows the wording of the one door that owns refusals —
+    // which makes the symmetry a property of the code rather than of a comment.
     const assignment = state.assignment;
     if (assignment === null) {
-        return no('REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT', 'nothing to retire');
+        const unreadable = checkAssignmentMutation(state, 'retired', { kind: 'leader' }, request.currentLegRequestId);
+        if (unreadable.ok) {
+            // The pre-flight cannot accept a `retired` fact with no live assignment, so this line is the type
+            // system asking for a branch it cannot rule out — not a decision door with an input behind it. It is
+            // written as a refusal anyway: if some future pre-flight ever did accept this shape, the honest
+            // answer to "retire nothing" is still a refusal, and a refusal cannot grant anything. (Distinct from
+            // the F-10 dead branch above, which was a semantic door no input could reach and whose shape the
+            // function itself claimed to handle; this one exists to talk about another function's invariant.)
+            return no('REVIEW_ASSIGNMENT_NO_ACTIVE_ASSIGNMENT', 'nothing to retire');
+        }
+        return unreadable;
     }
     const checked = checkAssignmentMutation(state, 'retired', assignment.target, request.currentLegRequestId);
     if (!checked.ok)

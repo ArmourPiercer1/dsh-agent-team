@@ -146,8 +146,19 @@ function readIfPresent(file: string): string | null {
  * from the importing file (this is what catches a specifier that reaches the lane without naming it in one
  * piece). Either answer is enough to be an offender. The enumeration is gone, so there is nothing here to
  * forget to amend when the module list changes.
+ *
+ * Round-2 review (NF-2) added a fifth form and, more usefully, named the limit this detector cannot cross.
+ * `createRequire(import.meta.url)('../review-assignment/index.js')` is a full literal path to the lane and
+ * the first pattern did not see it, because every alternative demanded a module-keyword immediately before
+ * the quote; the `createRequire` alternative below is what closes that one. What no lexical floor can see
+ * is a specifier that is not a literal at the call site — `const p = '../review-assignment/index.js'`
+ * called through a variable, a concatenated or interpolated path, or a re-export rewritten by a bundler.
+ * That limit is STATED rather than papered over, and pinned by its own leg, because a dormancy claim that
+ * quietly exceeds the instrument backing it is the same class of defect as a doc block that says
+ * "no production caller" when there is one.
  */
-const SPECIFIER_PATTERN = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*|\brequire\s*\(\s*)['"`]([^'"`\n]+)['"`]/g
+const SPECIFIER_PATTERN =
+  /(?:\bcreateRequire\s*\([^)]*\)\s*\(\s*|\bfrom\s*|\bimport\s*\(\s*|\bimport\s*|\brequire\s*\(\s*)['"`]([^'"`\n]+)['"`]/g
 
 /** Every module name the lane may contain, as specifier stems — derived, never restated. */
 const LANE_MODULE_STEMS = [...FOUNDING_MODULES, ...EXTRA_MODULES_ALLOWED].map((module) => module.replace(/\.ts$/, ''))
@@ -253,6 +264,10 @@ describe('a6-pr2 lane hygiene', () => {
     // A 6th lane module. Nothing in the detector enumerates module names any more, so this needs no
     // amendment when `EXTRA_MODULES_ALLOWED` grows — which is the whole point of deriving it.
     ['a module that does not exist yet', `import { openAssignment } from '../review-assignment/ports.js'`],
+    // Round-2 review NF-2: a full literal lane path through CommonJS interop, with no keyword adjacent to
+    // the quote at all.
+    ['a createRequire importer', `const lane = createRequire(import.meta.url)('../review-assignment/index.js')`],
+    ['a require via a local alias', `const lane = require('../review-assignment/index.js')`],
     ['every founding module, by stem', LANE_MODULE_STEMS.map((stem) => `import * as m from '../review-assignment/${stem}.js'`).join('\n')],
   ])('the dormancy detector catches %s (positive control)', (_label, sample) => {
     expect(sourceEntersLane(IMPORTER, sample)).toBe(true)
@@ -266,6 +281,26 @@ describe('a6-pr2 lane hygiene', () => {
     expect(sourceEntersLane(IMPORTER, "const doc = 'packages/runtime/review-assignment/README.md'")).toBe(false)
     expect(sourceEntersLane(IMPORTER, "import { x } from '../review-assignments/index.js'")).toBe(false)
     expect(sourceEntersLane(IMPORTER, "import { x } from '../review-mandate/facts.js'")).toBe(false)
+  })
+
+  it('states the escape its own detector cannot see, instead of claiming a floor it is not', () => {
+    // Round-2 review NF-2, second half. `createRequire(import.meta.url)('../review-assignment/index.js')`
+    // is catchable because the path is a literal next to a call. This is not:
+    //
+    //     const p = '../review-assignment/index.js'
+    //     const lane = createRequire(import.meta.url)(p)
+    //
+    // No pattern over source text can prove what a variable holds, so the detector is a FLOOR for literal
+    // specifiers, not a proof of dormancy. The proof of dormancy is the walk finding no offender together
+    // with the two `ALLOWED_CONSUMERS` lists being honest about what is allowed; this leg exists so a
+    // reader is not misled by the word "every", and so the boundary cannot silently drift into a promise.
+    expect(sourceEntersLane(IMPORTER, "const p = '../review-assignment/index.js'\nconst lane = createRequire(import.meta.url)(p)")).toBe(false)
+    // The limit is written down where a maintainer meets the detector, not only here.
+    expect(readFileSync(join(RUNTIME_ROOT, 'test', 'a6-pr2-lane-hygiene.test.ts'), 'utf8')).toMatch(
+      /no lexical floor|STATED rather than papered over/,
+    )
+    // And the literal form next to the call IS caught, so the floor holds where it can.
+    expect(sourceEntersLane(IMPORTER, "const lane = createRequire(import.meta.url)('../review-assignment/index.js')")).toBe(true)
   })
 
   it('imports NOTHING from the ARC-A protected centre, and NOTHING from PR3′', () => {
@@ -391,7 +426,11 @@ describe('a6-pr2 lane hygiene', () => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const full = join(dir, entry.name)
         if (entry.isDirectory()) collectAll(full)
-        else if (entry.name.endsWith('.js')) shippedFiles.push(full)
+        // Round-2 review NF-3: the first version filtered `.js` only, which silently excluded the
+        // `.mjs` glue placements — the exact files `place-dist-glue.mjs` writes and the exact files a
+        // "temporary" live-plane wiring would be edited into. Both halves of the install surface are
+        // scanned, so "the shipped output imports nothing" covers what is actually shipped.
+        else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) shippedFiles.push(full)
       }
     }
     collectAll(join(RUNTIME_ROOT, 'dist'))
