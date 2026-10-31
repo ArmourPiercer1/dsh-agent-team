@@ -1,0 +1,33 @@
+lane head=7def32fc11e1c30598bed87324100f046d568270; host head=639ed015397290b3745d163aafe02ffee4aa3f84 (pin 639ed015397290b3745d163aafe02ffee4aa3f84); host porcelain before=0
+PASS host-is-the-pinned-baseline — host HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 vs pin 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0
+matrix: spawned marker=a6pri1ba6pri1b-2026-10-31T13-51-12Zmatrixhost3292 port=3292 DSH_HOME=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-matrix
+PASS boot-line-shape — dsh web line at port 3292 (token redacted)
+PASS gate-401-without-token — GET / with no token -> 401
+PASS gate-303-and-cookie — GET /?token=<REDACTED> -> 303, cookie issued
+PASS role-closure-precedes-envelope-on-resolve-path — resolveControl in packages/runtime/control/service.ts: closure check :2622 precedes enforceEnvelope(RESOLVE_CONTROL_SPEC) :2654, exactly one envelope call in the function and none before the closure check (closure markers=1, envelope calls=1)
+PASS real-resolver-refuses-unknown-caller — TEAM_RUNTIME_CALLER_NOT_FOUND — TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z' — the caller is unknown
+PASS create-request-leader-approval-leader-arm — 200 requestId=ctrl-1kv0o8t0pqko5i01tylav1d2
+LEADER resolve leader-approval -> 200 TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS [agreed-then-envelope-refused] :: TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed
+PASS create-request-leader-approval-human-arm — 200 requestId=ctrl-0x41hjb09bmo2o0ak8b0p111
+HUMAN  resolve leader-approval -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS create-request-user-approval-leader-arm — 200 requestId=ctrl-12g5tdv1g7a79k1bf1mv50su
+LEADER resolve user-approval -> 200 CONTROL_RESOLVER_NOT_AUTHORIZED [refused-by-closure] :: ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])
+PASS create-request-user-approval-human-arm — 200 requestId=ctrl-1q8w4jx1yexxyu0h57f431kk
+HUMAN  resolve user-approval -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS create-request-envelope-mutation-leader-arm — 200 requestId=ctrl-03t1jsi15qnaq90xj2niw181
+LEADER resolve envelope-mutation -> 200 TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS [agreed-then-envelope-refused] :: TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed
+PASS create-request-envelope-mutation-human-arm — 200 requestId=ctrl-0lausjm1mokx351d1fpxk1d3
+HUMAN  resolve envelope-mutation -> 200 CONTROL_RESOLVED :: the durable decision was written
+PASS closure-splits-by-role-on-user-approval — leader -> CONTROL_RESOLVER_NOT_AUTHORIZED "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])"; human -> CONTROL_RESOLVED
+PASS leader-cell-recorded-leader-approval — leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=agreed-then-envelope-refused "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun" — the closure ran FIRST and AGREED with the leader (invariant 37: closure before envelope, order measured this run) — the visible refusal is the envelope gate behind it; positive evidence, not a discarded cell
+PASS human-allowed-by-host-leader-approval — human -> CONTROL_RESOLVED "the durable decision was written"
+PASS leader-cell-recorded-envelope-mutation — leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=agreed-then-envelope-refused "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun" — the closure ran FIRST and AGREED with the leader (invariant 37: closure before envelope, order measured this run) — the visible refusal is the envelope gate behind it; positive evidence, not a discarded cell
+PASS human-allowed-by-host-envelope-mutation — human -> CONTROL_RESOLVED "the durable decision was written"
+MEMBER attempt through the session-addressed carrier -> 422 no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z' is neither live n
+PASS member-role-has-no-ingress — 422 "no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12" — the session-addressed carrier refuses the member session before the service is reached, and no member cell entered the matrix
+PASS durable-ledger-census-nonempty — getLedgerPage 200 entries=9 factTypes=[control-decision-recorded, control-request-recorded]
+PASS teardown-process-and-port — child alive=false, port 3292 free=true
+PASS host-tree-stayed-clean — git status --porcelain in the pristine runtime: before=0, after=0
+enable: spawned marker=a6pri1ba6pri1b-2026-10-31T13-51-12Zenablehost3392 port=3392 DSH_HOME=/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-enable
+PASS enable-surface-is-not-a-switch — row config with feature:'on' + assignmentFeature:'on' -> row ready=true, durable write accepted=true, census=[control-request-recorded] — nothing was refused and no admission behaviour appeared
+PASS enable-world-cleaned — enable world alive=false, port 3392 free=true

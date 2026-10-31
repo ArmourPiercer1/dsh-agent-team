@@ -1,0 +1,284 @@
+{
+  "kit": "pr-i1b-real-host",
+  "runStamp": "a6pri1b-2026-10-31T13-51-12Z",
+  "laneHead": "7def32fc11e1c30598bed87324100f046d568270",
+  "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "clientCommitHash": "639ed01539",
+  "hostPorcelainBefore": 0,
+  "hostPorcelainAfter": 0,
+  "resolvePathOrder": {
+    "ok": true,
+    "closureLine": 2622,
+    "envelopeLine": 2654,
+    "measured": "resolveControl in packages/runtime/control/service.ts: closure check :2622 precedes enforceEnvelope(RESOLVE_CONTROL_SPEC) :2654, exactly one envelope call in the function and none before the closure check (closure markers=1, envelope calls=1)"
+  },
+  "row": "file:///home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+  "p6t6Row": "file:///home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/packages/tools/harness/plugin.mjs",
+  "worlds": [
+    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-matrix (deleted at teardown)",
+    "/home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-pri1b/tests/homes/a6pri1b-2026-10-31T13-51-12Z-enable (deleted at teardown)"
+  ],
+  "ports": [
+    3292,
+    3392
+  ],
+  "markers": [
+    "a6pri1ba6pri1b-2026-10-31T13-51-12Zmatrixhost3292",
+    "a6pri1ba6pri1b-2026-10-31T13-51-12Zenablehost3392"
+  ],
+  "rootSessionId": "session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z",
+  "unknownCaller": {
+    "code": "TEAM_RUNTIME_CALLER_NOT_FOUND",
+    "message": "TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z' — the caller is unknown"
+  },
+  "memberAttempt": {
+    "ingress": "p6t6-tool:team_resolve_control",
+    "as": "session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z",
+    "status": 422,
+    "error": "no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z' is neither live nor durable — no agent to execute a tool on"
+  },
+  "rowConfigFields": [
+    "rootSessionId",
+    "bootPhase",
+    "blueprintSource",
+    "blueprintDir",
+    "seedMembers",
+    "generation",
+    "staticModel",
+    "deniedSelection",
+    "mcpServers",
+    "mcpServer",
+    "environmentFacts",
+    "externalPolicyFacts",
+    "glueUrl",
+    "seamUrl"
+  ],
+  "created": {
+    "leader-approval|leader": {
+      "status": 200,
+      "requestId": "ctrl-1kv0o8t0pqko5i01tylav1d2",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-1kv0o8t0pqko5i01tylav1d2\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
+    },
+    "leader-approval|human": {
+      "status": 200,
+      "requestId": "ctrl-0x41hjb09bmo2o0ak8b0p111",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0x41hjb09bmo2o0ak8b0p111\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":"
+    },
+    "user-approval|leader": {
+      "status": 200,
+      "requestId": "ctrl-12g5tdv1g7a79k1bf1mv50su",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-12g5tdv1g7a79k1bf1mv50su\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
+    },
+    "user-approval|human": {
+      "status": 200,
+      "requestId": "ctrl-1q8w4jx1yexxyu0h57f431kk",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-1q8w4jx1yexxyu0h57f431kk\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"user-approval\",\"requester\":{\"kind\":\"h"
+    },
+    "envelope-mutation|leader": {
+      "status": 200,
+      "requestId": "ctrl-03t1jsi15qnaq90xj2niw181",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-03t1jsi15qnaq90xj2niw181\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
+    },
+    "envelope-mutation|human": {
+      "status": 200,
+      "requestId": "ctrl-0lausjm1mokx351d1fpxk1d3",
+      "code": null,
+      "message": "{\"ok\":true,\"action\":\"request\",\"value\":{\"requestId\":\"ctrl-0lausjm1mokx351d1fpxk1d3\",\"rootSessionId\":\"session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z\",\"kind\":\"envelope-mutation\",\"requester\":{\"kind"
+    }
+  },
+  "answers": {
+    "leader-approval|leader": {
+      "ingress": "p6t6-tool:team_resolve_control",
+      "requestId": "ctrl-1kv0o8t0pqko5i01tylav1d2",
+      "status": 200,
+      "code": "TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS",
+      "message": "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed",
+      "sawRequestInPendingList": true,
+      "reachedClosure": true,
+      "closure": "agreed-then-envelope-refused"
+    },
+    "leader-approval|human": {
+      "ingress": "team-remote:team.resolveControl.v4",
+      "requestId": "ctrl-0x41hjb09bmo2o0ak8b0p111",
+      "status": 200,
+      "code": "CONTROL_RESOLVED",
+      "message": "the durable decision was written",
+      "reachedClosure": true,
+      "closure": "allowed"
+    },
+    "user-approval|leader": {
+      "ingress": "p6t6-tool:team_resolve_control",
+      "requestId": "ctrl-12g5tdv1g7a79k1bf1mv50su",
+      "status": 200,
+      "code": "CONTROL_RESOLVER_NOT_AUTHORIZED",
+      "message": "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
+      "sawRequestInPendingList": true,
+      "reachedClosure": true,
+      "closure": "refused-by-closure"
+    },
+    "user-approval|human": {
+      "ingress": "team-remote:team.resolveControl.v4",
+      "requestId": "ctrl-1q8w4jx1yexxyu0h57f431kk",
+      "status": 200,
+      "code": "CONTROL_RESOLVED",
+      "message": "the durable decision was written",
+      "reachedClosure": true,
+      "closure": "allowed"
+    },
+    "envelope-mutation|leader": {
+      "ingress": "p6t6-tool:team_resolve_control",
+      "requestId": "ctrl-03t1jsi15qnaq90xj2niw181",
+      "status": 200,
+      "code": "TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS",
+      "message": "TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boundary fails closed",
+      "sawRequestInPendingList": true,
+      "reachedClosure": true,
+      "closure": "agreed-then-envelope-refused"
+    },
+    "envelope-mutation|human": {
+      "ingress": "team-remote:team.resolveControl.v4",
+      "requestId": "ctrl-0lausjm1mokx351d1fpxk1d3",
+      "status": 200,
+      "code": "CONTROL_RESOLVED",
+      "message": "the durable decision was written",
+      "reachedClosure": true,
+      "closure": "allowed"
+    }
+  },
+  "durableCensus": {
+    "entries": 9,
+    "factTypes": [
+      "control-decision-recorded",
+      "control-request-recorded"
+    ]
+  },
+  "enableCensus": {
+    "entries": 1,
+    "factTypes": [
+      "control-request-recorded"
+    ]
+  },
+  "checks": [
+    {
+      "id": "host-is-the-pinned-baseline",
+      "ok": true,
+      "measured": "host HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 vs pin 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0"
+    },
+    {
+      "id": "boot-line-shape",
+      "ok": true,
+      "measured": "dsh web line at port 3292 (token redacted)"
+    },
+    {
+      "id": "gate-401-without-token",
+      "ok": true,
+      "measured": "GET / with no token -> 401"
+    },
+    {
+      "id": "gate-303-and-cookie",
+      "ok": true,
+      "measured": "GET /?token= -> 303, cookie issued"
+    },
+    {
+      "id": "role-closure-precedes-envelope-on-resolve-path",
+      "ok": true,
+      "measured": "resolveControl in packages/runtime/control/service.ts: closure check :2622 precedes enforceEnvelope(RESOLVE_CONTROL_SPEC) :2654, exactly one envelope call in the function and none before the closure check (closure markers=1, envelope calls=1)"
+    },
+    {
+      "id": "real-resolver-refuses-unknown-caller",
+      "ok": true,
+      "measured": "TEAM_RUNTIME_CALLER_NOT_FOUND — TeamRuntime: no member instance 'inst-nobody' in team 'session-a6pri1b-i1b-root-a6pri1b-2026-10-31T13-51-12Z' — the caller is unknown"
+    },
+    {
+      "id": "create-request-leader-approval-leader-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-1kv0o8t0pqko5i01tylav1d2"
+    },
+    {
+      "id": "create-request-leader-approval-human-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-0x41hjb09bmo2o0ak8b0p111"
+    },
+    {
+      "id": "create-request-user-approval-leader-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-12g5tdv1g7a79k1bf1mv50su"
+    },
+    {
+      "id": "create-request-user-approval-human-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-1q8w4jx1yexxyu0h57f431kk"
+    },
+    {
+      "id": "create-request-envelope-mutation-leader-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-03t1jsi15qnaq90xj2niw181"
+    },
+    {
+      "id": "create-request-envelope-mutation-human-arm",
+      "ok": true,
+      "measured": "200 requestId=ctrl-0lausjm1mokx351d1fpxk1d3"
+    },
+    {
+      "id": "closure-splits-by-role-on-user-approval",
+      "ok": true,
+      "measured": "leader -> CONTROL_RESOLVER_NOT_AUTHORIZED \"ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])\"; human -> CONTROL_RESOLVED"
+    },
+    {
+      "id": "leader-cell-recorded-leader-approval",
+      "ok": true,
+      "measured": "leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=agreed-then-envelope-refused \"TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun\" — the closure ran FIRST and AGREED with the leader (invariant 37: closure before envelope, order measured this run) — the visible refusal is the envelope gate behind it; positive evidence, not a discarded cell"
+    },
+    {
+      "id": "human-allowed-by-host-leader-approval",
+      "ok": true,
+      "measured": "human -> CONTROL_RESOLVED \"the durable decision was written\""
+    },
+    {
+      "id": "leader-cell-recorded-envelope-mutation",
+      "ok": true,
+      "measured": "leader -> TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS closure=agreed-then-envelope-refused \"TeamRuntime: operation 'resolve-control' (action 'resolve-control') is outside the caller's mutation envelope — the boun\" — the closure ran FIRST and AGREED with the leader (invariant 37: closure before envelope, order measured this run) — the visible refusal is the envelope gate behind it; positive evidence, not a discarded cell"
+    },
+    {
+      "id": "human-allowed-by-host-envelope-mutation",
+      "ok": true,
+      "measured": "human -> CONTROL_RESOLVED \"the durable decision was written\""
+    },
+    {
+      "id": "member-role-has-no-ingress",
+      "ok": true,
+      "measured": "422 \"no live agent for 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12Z': p6t6: session 'session-a6pri1b-member-never-a6pri1b-2026-10-31T13-51-12\" — the session-addressed carrier refuses the member session before the service is reached, and no member cell entered the matrix"
+    },
+    {
+      "id": "durable-ledger-census-nonempty",
+      "ok": true,
+      "measured": "getLedgerPage 200 entries=9 factTypes=[control-decision-recorded, control-request-recorded]"
+    },
+    {
+      "id": "teardown-process-and-port",
+      "ok": true,
+      "measured": "child alive=false, port 3292 free=true"
+    },
+    {
+      "id": "host-tree-stayed-clean",
+      "ok": true,
+      "measured": "git status --porcelain in the pristine runtime: before=0, after=0"
+    },
+    {
+      "id": "enable-surface-is-not-a-switch",
+      "ok": true,
+      "measured": "row config with feature:'on' + assignmentFeature:'on' -> row ready=true, durable write accepted=true, census=[control-request-recorded] — nothing was refused and no admission behaviour appeared"
+    },
+    {
+      "id": "enable-world-cleaned",
+      "ok": true,
+      "measured": "enable world alive=false, port 3392 free=true"
+    }
+  ]
+}

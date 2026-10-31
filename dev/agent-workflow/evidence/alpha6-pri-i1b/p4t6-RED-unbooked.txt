@@ -1,0 +1,19 @@
+ALPHA6-PR-I1B — p4t6 census measured RED before booking (new paths on disk, no booking file yet).
+branch alpha6/lane2-pri1b-admission-20261031; HEAD at capture 50be43c57bcd7526fe65306421a3c033ce30020b (pre-commit).
+command: npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts   (run in the worktree root)
+measured: 2026-10-31T11:22:49Z
+verbatim vitest summary follows (the coverage-leg title is omitted: it restates the whole booking chain and is 14KB;
+its assertion line is the third AssertionError below, unchanged):
+---------------------------------------------------------------------------
+     × coverage: all nine package dirs discovered, nine carry source, 980 files scanned, runtime carries the P7-T2 mutation files and the P8-T2 projection servi
+       × control: the real ledger is green (the baseline every plant below is read against) 1ms
+       × control: an UNBOOKED new path on disk turns the exact total RED 1ms
+       × control: a path booked TWICE (two lanes) is RED even when the arithmetic is fixed up 1ms
+       × control: a tie that no longer matches its list is RED 1ms
+AssertionError: expected [ { kind: 'total', …(1) } ] to deeply equal []
+AssertionError: expected [ { kind: 'total', …(1) } ] to deeply equal []
+AssertionError: expected 1418 to be 1420 // Object.is equality
+AssertionError: expected [ 'double-booked', 'total' ] to deeply equal [ 'double-booked' ]
+AssertionError: expected [ 'tie', 'total' ] to deeply equal [ 'tie' ]
+ Test Files  1 failed (1)
+      Tests  5 failed | 15 passed (20)
