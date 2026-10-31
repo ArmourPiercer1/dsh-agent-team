@@ -125,6 +125,14 @@ export interface ReviewAssignmentLedgerWriterPort {
  * cache or a filtered adapter behind this port is an adapter bug with
  * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
  * whoever writes the adapter (PR-I1b) and not to a defensive check here.
+ *
+ * The shape above is silent about what `list()` may do besides return, so the promise is written here: the
+ * answer is that it may throw, and this module treats that as an answer rather than a crash.
+ * All four places that read the ledger are guarded, and a reader that throws is met with a refusal naming the state the module is really in — nothing this
+ * command did is durable, or durable but unreadable, or durable and identified — never with an exception reaching
+ * the caller (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`).
+ * An adapter may therefore hand this writer a ledger that fails and the contract still answers; what it must not
+ * hand it is a ledger that lies by omission.
  */
 export interface ReviewAssignmentLedgerReaderPort {
     list(): readonly ReviewAssignmentLedgerRow[];

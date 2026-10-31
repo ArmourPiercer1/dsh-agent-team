@@ -825,6 +825,12 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
       expect(result.refusal, `${one.name} answered ${result.refusal}`).toBe(one.code)
       expect(result.detail).toContain(`reader corrupt at read ${String(one.failAt)}`)
     }
+    // The sentence these four guards exist to keep honest. The port's TYPE says nothing about throwing, and the
+    // reviewer's first undecidable question was which behaviour a caller may rely on; the promise lives where a
+    // caller reads it — on the port — and is pinned here, because a documented guarantee that nothing runs is a
+    // guarantee nobody owns.
+    const portDoc = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'writer.ts'), 'utf8')
+    expect(portDoc).toMatch(/it may throw, and this module treats that as an answer rather than a crash/)
   })
 
   it('carries the medium code into the refusal instead of the word "object"', async () => {
