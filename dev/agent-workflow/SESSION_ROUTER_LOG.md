@@ -7674,3 +7674,42 @@ gov `verify-verbatim-quotes.mjs` → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verd
 `DSH-SCRATCH-POINTER-VERDICT found=3 pinned=6 window=80 findings=0 verdict=ok`（本条目自身不含被指认路径，
 证据只入 tracked 目录）。CORE PATCH BUDGET 0；`/home/armourpiercer/deepseek-harness` porcelain BEFORE/AFTER 均 0。
 **授权边界**：开发授权，非合并授权，非启用，非放宽门禁。
+
+## 2026-10-31 — PR #522（PR-I1b）round-1 关闭：一次调查里叠了三次没跑到的实验，第三次变成了公开发表的假结论
+
+fix `b56eed25f`（父 `4e9b20a62`，不 amend、不推）；评审报告在**评审者侧**、未入册（本条不点名其路径）；处置评论
+`6543249274`，其标题结论由同一作者 11 分钟后的 dated 更正 `6543353404` 撤回；裁决
+**0 BLOCKER / 1 MAJOR / 3 MINOR / 4 INFO**，五条全部接受。
+
+- **三次实验，一次都没跑到被测的那条声明**：处置评论写"评审者量到 `158 passed` + 'Zero legs see it'，而活 head
+  `4e9b20a62` 上跑红了：`Tests 1 failed | 157 passed (158)`"。三次都在同一棵树上量的，逐一把编辑钉回去：
+  **①** 脚本按"标识符之后第一个 `]`"定位插入点，命中的是 `readonly string[]` 里的那个 `]`，跑出来
+  `Error: Transform failed with 1 error`、`Test Files 2 failed | 2 passed (4)`、`Tests 49 passed (49)`——量的是一段
+  语法错误，没有一条声明在里面；**②** 换一次插入，字面看着合法，却接在本就以逗号结尾的元素后面，源码成了
+  `'REVIEW_ASSIGNMENT_TARGET_UNCHANGED',,` 紧跟 `'REVIEW_ASSIGNMENT_INPUT_MALFORMED'`——**稀疏数组字面量**；那个
+  空洞就是被引作证据的 token 里的 `undefined`（`expected [ …(17) ] to include undefined`），量到的是一个数据缺陷，
+  不是那条声明；**③** 由 ①② 推出"评审者的测量没有复现"并公开发布——**这是假的，已由 `6543353404` 撤回**。这棵树
+  实际给的是：同一 head 上把 `REVIEW_ASSIGNMENT_TARGET_UNCHANGED` 整行换成 `REVIEW_ASSIGNMENT_INPUT_MALFORMED` 得
+  `Tests 158 passed (158)`，在闭合 `]` 之前追加一个格式正确的第六成员同样 `158 passed`——**评审者的绿色就是这棵树
+  给的东西**，而这正是 F-I1b1-1 的实质：子集钉看不见一个合法却发不出的成员。失败模式还是这七轮反复在写的那一个：
+  **一个看起来跑了、其实没跑到的实验**；本轮的加重情节是错误消息自己把机制念出来了（`to include undefined`），而
+  发布之前没有人去读它。
+- **由此立一条形状规则，适用于本 lane 一切"改一下再跑"的变异实验**：变异脚本必须先把它改动的字节原样打印出来，再
+  断言结果解析成预期的结构——**无空洞、无重复、无丢元素**——然后它的测试结果才被允许当证据。期望值里出现
+  `undefined` 不是"腿红了"，是编辑根本没构造出被测对象；这类运行的正确处置是扔掉重跑，不是把数字抄进记录。
+- **五条被接受的发现里有三条是靠缩小 CLAIM 关掉的，不是靠改代码**：F-I1b1-2 那句"walks the tree for importers on
+  every run"、F-I1b1-3 把 `service.ts` 四个行号说成 pin 的那句等价声明、F-I1b1-5 那句"its words travel verbatim"
+  ——代码本来就对，错的是句子比仪器能看见的范围更大。（F-I1b1-2 的仪器也确实加宽了：`.jsx` 进 `SOURCE_EXTENSIONS`、
+  生产码经 `test/` 的两跳单独成腿；但关掉那句"每次运行走全树"的仍然是句子。）新加的普查腿把这条界线写在自己的失败
+  消息里：**"The subset pin is not evidence for this line"**——子集钉只回答"这个词是不是内核词表里的"，从不回答
+  "这个词有没有真的从 `admit` 出来过"。它的牙齿我也量了：格式正确的第六成员在 `4e9b20a62` 是绿的，同一处编辑在
+  `b56eed25f` 给 `Tests 1 failed | 169 passed (170)`，红的正是这条腿。
+- **`b56eed25f` 上我自己复跑的量，逐条钉树**：四份署名文件 `Tests 170 passed (170)`（基线 `4e9b20a62` 同命令
+  `Tests 158 passed (158)`；逐文件 49/32/69/20 ← 40/29/69/20）；runtime 的 a6 家族 11 文件 `Tests 420 passed (420)`
+  （基线 `Tests 408 passed (408)`）；`tsc -p tsconfig.json` rc=0；
+  `DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1947 drift=0`；
+  docs-sync `docs=106 notes=4 plans=69(0 declaring) findings=0 blocking=0 contracts=20`；settlement
+  `DSH-SETTLEMENT-VERDICT BLOCKED-BY-MARKER marker=title-prefix matches=0 candidates=0`。eb3 那条要按树分开，
+  否则又是一次"数字没钉编辑"：`4e9b20a62` 上 `--new-since HEAD~1` 给 `pass added=1 … findings=0`（那个 added 是
+  基线提交自己新增的证据文件），`b56eed25f` 上同一命令给 `pass added=0 … findings=0`——这次修复只改文件，不新增
+  证据。
