@@ -7858,3 +7858,58 @@ booking、p4t6 文件或 `scripts/**` `packages/**` `tests/**`**——那些归 
   :3080 全程未触碰；`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1 均零写入。
   **授权边界**：开发授权，非合并授权，非启用，非放宽门禁；对基线正本与 `--self-test` 钉是
   "上报不动手"。
+
+## 2026-10-31 — Alpha.5 sandbox-first ↔ Alpha.6 接口 memo 入册：PR #531 是 DRAFT·零代码且未动机器权威；两条跨项目契约从隐含依赖升格为具名决策；大真实执行轮由用户暂停——暂停不是停摆
+
+本条目是**入册**，不是新决策。用户 2026-11-01（Alpha.5 侧记录日期；本条目头行按 §8.5.8 取书写时真实
+UTC）转发外部设计裁决并下达：Alpha.6 **不必重建**，但两份契约必须重审——**审批对象的身份与作用域**、
+**审批结果如何与新的 `MemberPolicy` I/O 执法复合**；另四条保留律：`ControlService` 保持唯一裁决权威；
+`ControlService`/`TeamDomain`/耐久事实在受信 Host 侧、绝不进 Member 的受限执行环境；Member 只能经严格
+受限的 Host 接口提交审批请求；Review Officer 自身是普通 Member，须在自己的权限下取证。裁决同时下达：
+Alpha.6 继续，但**在两个项目的授权/执行接口合同重新确认之前，不得把新的审阅者审批能力接进生产执行
+路径**；现行体制下的大真实执行轮**暂停**，等接口复核。
+
+- **改了什么**：两份契约从"隐含依赖"升格为**具名决策**，当前行为逐行实测、选项在案（memo §3 =
+  fingerprint 身份：`plan.ts:209-210` 只认两形式无通配、`planCoversEffectScope`（`plan.ts:333-344`）令
+  `by-action-name` 覆盖该动作全部 fingerprint——EffectSet 模型下是有界作用域，MemberPolicy 模型下可能
+  静默过宽（一次 `fs:write` 授权变空白授权）或静默失配；任何未来 I/O 扩权请求必须是**独立的、带版本的
+  请求类型，带自己的身份与 policy delta，绝不复用既有 mandate 的 fingerprint 空间**；薄适配器留给后
+  期差分审查，不在本轮）。memo §4 = 版本绑定：`ReviewPlan` 绑 `blueprintDigest`+`epoch`，要求是**策略
+  一变，既有 mandate 与未执行的审批都不得免验证存活**；待决 = `blueprintDigest`/`epoch` 与未来
+  `MemberPolicy.revision` 的对应关系、不一致时由哪个组件拒绝。§1 冻结跨项目不变式
+  `EffectivePermission = OperationAuthorization ∩ EnforcedI/OAuthority`——∩ 是**两边都必须成立**，不是
+  两套数据模型必须一致——并派生两条禁令：审批**永不**改 OS 沙箱/Blueprint 策略配置；`allow` **永不**被
+  解读为绕过 Blueprint 文件/网络限制。§5 = 能力分级启用门三律（Alpha.4 授权环不全的操作不得进受限
+  审批集成验证；审阅者能批 ≠ 执行面清关；`MemberPolicy` 扩权未冻结前不自动批准任何 I/O 扩权请求类型）。
+- **没改什么**：机器权威未动——#531 的 diff 实测只有 4 份文档（head `32b81fcd8b3b5ab8d2c2089d743425438edf3ad8`，
+  DRAFT/OPEN/base master/+406−0/零代码），`current-authority.json` 未被其触碰，本机实测指针仍是
+  `as20261026r1` → `alpha5-tool-io-governance`，PR #364 线仍是机器现行合同。**本轮零代码改动**，理由与
+  决策一起入册：机器权威未变，对未冻结契约发明适配器只会让两个项目各拿半套假接口。既有 dark-lane 交付
+  （mandate/层级、router、单飞唤醒核、PR-I1a 耐久写者——它自身不做任何文件或网络操作、PR-I2 即时唤醒
+  子集）按裁决继续。
+- **持住清单**：审批接入执行路径的生产接线（#522 head `f1f19277b` 保持 Draft + DO-NOT-MERGE，其 diff 不含
+  `control/service.ts`、`ALLOWED_CONSUMERS` 仍 `[]`，**什么都不启用**）；PR-I2 floor-delayed 定时唤醒载体
+  （`CORE_SEAM_BLOCKER` 状态不变 OPEN，外部裁决点已入册：**bwrap 或新 OS runner 消不掉它**——缺的是时间
+  触发公开面，不是 I/O 沙箱能补的）；新执行链过 PoC 前不跑任何对旧链的跨系统 C2 回归。
+- **向前退役检索（如实说明，不制造退役）**：对全 log 检索"本 lane 的审批作用域对未来 Alpha.5 是终局"式
+  句子（审批范围/裁决范围/终局/frozen、冻结×Alpha.5 交叉，命中逐条读回），**没有这样的句子**——alpha.6
+  时段的"冻结"全部指 ARC-A 受保护中心与宿主 seam，没有一处宣称审批作用域对未来 Alpha.5 封顶。故本轮
+  无引原句可退役；若将来发现，按其发生时的原句引退。
+- **证据指针**：PR #531 head `32b81fcd8b3b5ab8d2c2089d743425438edf3ad8`（四文档在
+  `docs/plans/memo/alpha5-sandbox-first-20261101/`，用 fetch + `git show FETCH_HEAD:<path>` 读，测量方
+  HEAD/porcelain 未动）；memo = `docs/plans/memo/alpha6-review-separation/alpha5-sandbox-first-interface-20261101.md`
+  （banner 披露文件名日期与书写真实 UTC 的分离）；测量基准 commit：gov 分支 head `991faacc4`、PR #517
+  head `3d06d52a9`（PR-I1a 写者 mid-work，引用一律点名 sha）、PR #522 head `f1f19277b`；风险台账
+  **R-7** 已追加于执行计划 memo。
+
+- 门禁（gov worktree，docs-only，书写轮实测）：`verify-verbatim-quotes.mjs` →
+  `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok … tracked=ok`（两份被钉 s0 文档未触碰）；
+  `docs-sync --check` → `docs=107 notes=4 plans=70(0 declaring) findings=0 blocking=0 contracts=20
+  pairs compared`（+1 doc/+1 plan 即本 memo，零 finding）；`eb3-evidence-guard --new-since HEAD~1`
+  对前一 commit 基跑 → `EB3-EVIDENCE-GUARD pass added=6 bound=1048576 exempted=0 findings=0 base=HEAD~1`，
+  本 commit 只新增一份证据根之外的 markdown、只改两份既有 md，对本 commit 复测预期并实测为
+  `pass added=0 findings=0`（守卫只评证据根下新增文件）。CORE PATCH BUDGET 0；
+  `/home/armourpiercer/deepseek-harness` porcelain BEFORE = 0 / AFTER = 0；:3080 全程未触碰；
+  `alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1 均零写入；本轮零 boot、零 kit
+  跑、零大型测试战役——遵用户暂停令。**授权边界**：开发授权，非合并授权，非启用，**不是**接口合同复核
+  本身；§3/§4 两契约的裁决权在后续差分审查与人手上。

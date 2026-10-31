@@ -137,3 +137,26 @@ client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变�
 - **当时判定"可控"的理由**：拒绝态从不算 pass、披露纪律在位（PR body 的 environment-refusal 句
   只对其 authoring world 为真，已由日志条目加框）、托管 CI 不受此影响（对这些分支不触发）；本行
   实际拥有的控制是**不让"重跑/补环境"被误当修复**——变绿的唯一路径在 owner 手里，不在本 lane。
+
+### R-7 风险台账（ROUTER_RULES §6）：审批作用域语义在 Alpha.5 执行侧重设计后可能静默变宽或静默失配——2026-11-01（真实 UTC 2026-10-31 书写）登记
+
+- **Gate**：**后续的差分审查（differential review）**——Alpha.5 sandbox-first 执行链与 Alpha.6 审批集成
+  的接口差分审查，发生在任何审批→执行路径接线授权之前；本行风险在该 Gate 上有名有据之前不解除。
+- **风险点**（源自用户 2026-11-01 转发的外部设计裁决之两契约之一，代码侧实测成立）：审批作用域语义的
+  两类静默失效。①**`by-action-name` 过度委托**：`ReviewPlan.effectScopes` 只认
+  `exact-fingerprint`/`by-action-name` 两种形式且无通配（`packages/runtime/review-mandate/plan.ts:209-210`），
+  而 `planCoversEffectScope` 令 `by-action-name` 覆盖该动作的**每一个** fingerprint
+  （`plan.ts:333-344`）——在逐工具 EffectSet 执行模型下这是一个有界作用域；在 MemberPolicy 驱动的 I/O
+  执行模型下，若未来 I/O 扩权请求复用既有 mandate 的 fingerprint 空间，一次 `fs:write` 授权可能静默
+  变成对任意写入的空白授权。②**fingerprint 身份漂移**：若执行侧改变了 fingerprint 的推导语义，原本
+  匹配的 scope 会静默不再匹配（字符串全等对调用方折叠进来的任何值），失效不报错、只是永远拒绝或永远
+  放行不了该拒的东西。
+- **相关文件 / 证据位置**：`docs/plans/memo/alpha6-review-separation/alpha5-sandbox-first-interface-20261101.md`
+  （§3 fingerprint 身份、§4 版本绑定 = 两个具名待决契约；§2 = 在 `991faacc4` 与 PR #517/#522 heads 逐名
+  实测的冻结契约面；§5 = 能力分级启用门三律）。
+- **当时判定"可控"的理由**：①整条分支栈是 Draft（PR #531 亦 DRAFT·DO-NOT-MERGE，零代码、不动
+  `dev/engineering/current-authority.json`，机器现行合同仍是 PR #364 线）；②`ALLOWED_CONSUMERS = []`
+  （`packages/runtime/test/a6-pr2-lane-hygiene.test.ts:47`，`991faacc4` 实测）= 本 lane 今日**零生产调用者**，
+  语义漂移无处泄露——没有任何生产路径消费审批作用域判断；③两个开放契约已被写成**具名决策**（各自的
+  选项、当前行为、以及"本轮不改代码，因为对未冻结契约发明适配器只会造出假接口"的记录在案），不是被
+  默认吞掉的假设。控制的实际内容 = 差分审查到来时读者不必重新考古。
