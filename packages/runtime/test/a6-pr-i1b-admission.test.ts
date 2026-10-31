@@ -85,8 +85,8 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
 
@@ -127,6 +127,16 @@ import type {
   AssignmentAdmissionRequest,
   AssignmentCallerAuthority,
 } from '../review-assignment/assignment-admission.js'
+// P-2 (the A5↔A6 cross-project prohibitions, 2026-11-01) measures the mandate gate beside the assignment door:
+// the same ruling binds both verdict shapes. The green fixture is RE-ESTABLISHED below from the pr0 shapes,
+// not imported from the pr0 spec — a fixture a leg cannot see is a fixture a leg cannot grade.
+import {
+  REVIEW_ADMISSION_REFUSALS,
+  evaluateReviewAdmission,
+  parseReviewPlan,
+  planCoversEffectScope,
+} from '../review-mandate/index.js'
+import type { ReviewAdmission, ReviewCaseView, ReviewMandate, ReviewPlan, ReviewerIdentity } from '../review-mandate/index.js'
 
 const RUNTIME_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const MODULE_PATH = join(RUNTIME_ROOT, 'review-assignment', 'assignment-admission.ts')
@@ -1930,6 +1940,492 @@ describe('ENV-REFUSED: the host-side legs still refused on this machine, recorde
   })
 })
 
+
+
+// --- A5↔A6 P-1 / P-2 (2026-11-01): the two frozen cross-project prohibitions, measured at static/unit level ------
+//
+// THE RULING THESE LEGS ENCODE. The Alpha.5 Sandbox-First redesign review (PR #531) froze the invariant
+// `EffectivePermission = OperationAuthorization ∩ Enforced I/O Authority` — BOTH terms must hold. An approval
+// decision that can reach the policy/sandbox configuration plane collapses the intersection to its first term;
+// an approval that widens the enforced I/O set collapses it to the second. The lane law on the Alpha.5↔Alpha.6
+// register (Issue #502; memo `docs/plans/memo/alpha6-review-separation/pri1b-admission-design-20261031.md` §6):
+// a prohibition stated only in prose is a prohibition nobody can break. So both halves are legs here, not
+// sentences: P-1 measures the import graph, P-2 measures the result shapes and the coverage oracle.
+//
+// SCOPE OF THESE LEGS, stated so nobody mistakes their size: they are static/unit-level only — no boot, no kit
+// run, no campaign. P-1 reads the module graph as TEXT (lexical edges, comments stripped, line numbers kept)
+// and the built dist as its built counterpart; it cannot see an edge assembled from runtime data — which is why
+// the walk first proves the closure has NO dynamic edge at all, and any computed specifier that appeared would
+// land in the unresolved bucket and redden the completeness leg. P-2 measures the verdict objects the live
+// gates actually produce (measured, not remembered) and grades the closed-set check itself with a planted
+// widening field, so a closed list that can no longer fail is caught in the same file that carries it.
+//
+// WHAT THESE LEGS DO NOT DO (register discipline, #502): they change no closed scope form, they add no
+// adapter, they invent no behaviour the interface does not already freeze. Where the interface carries an
+// OPEN question — the fingerprint semantics of `by-action-name` (plan.ts:333-343) — the leg grades the CURRENT
+// behaviour exactly, so that any silent change of that semantics reddens a leg instead of sliding through.
+
+// REPO_ROOT is declared above by the REAL-HOST block — same value (`join(RUNTIME_ROOT, '..', '..')`), reused, not redeclared.
+const relToRepo = (file: string): string => (file.startsWith(REPO_ROOT + '/') ? file.slice(REPO_ROOT.length + 1) : file)
+
+/** Blank comments out but keep every line number, so a refusal names the line a reader finds in the file.
+ *  `//` only starts a comment where it is not part of `://` — the same lexical law the a6-pr2 hygiene walk
+ *  lives with, disclosed there and here. Comments are stripped because the module headers of THIS lane cite
+ *  the protected paths they must not import (`control/service.ts:2622` as evidence); prose that names a path
+ *  is documentation, code that imports one is the prohibition. */
+function stripModuleComments(text: string): string {
+  const withoutBlock = text.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '))
+  return withoutBlock.replace(/(^|[^:])\/\/[^\n]*/g, (whole, lead: string) => lead + ' '.repeat(whole.length - lead.length))
+}
+
+/** The a6-pr2 lane idiom, re-established here rather than imported from a test file: static import/export
+ *  edges, dynamic `import(...)`, `require(...)`, and `createRequire()` forms all match, so an edge cannot
+ *  hide by changing syntax between the two. */
+const IMPORT_EDGE_SOURCE = "(?:\\bcreateRequire\\s*\\([^)]*\\)\\s*\\(\\s*|\\bfrom\\s*|\\bimport\\s*\\(\\s*|\\bimport\\s*|\\brequire\\s*\\(\\s*)['\"`]([^'\"`\\n]+)['\"`]"
+function lineSpecifiers(line: string): string[] {
+  return [...line.matchAll(new RegExp(IMPORT_EDGE_SOURCE, 'g'))].map((match) => match[1] as string)
+}
+
+interface ClosureWalk {
+  readonly files: readonly string[]
+  /** `${file}:${line} …` for every relative edge the walk could not follow — a walk with an unfollowed edge
+   *  has no right to claim "nothing reachable", so completeness is asserted, not assumed. */
+  readonly unresolved: readonly string[]
+  readonly external: readonly string[]
+  /** `${file}:${line} …` for every dynamic/computed import edge — the walk's completeness precondition. */
+  readonly dynamicEdges: readonly string[]
+}
+
+/** BFS over REAL import specifiers (the `scanModuleClosure` idiom from `scripts/composition-smoke-closure.mjs`,
+ *  re-established on the test side): nothing here is a hand-maintained file list — the reachable set is
+ *  derived from the edges the compiler itself would follow. */
+function walkStaticClosure(entries: readonly string[], extensions: readonly string[]): ClosureWalk {
+  const seen = new Set<string>()
+  const unresolved: string[] = []
+  const external = new Set<string>()
+  const dynamicEdges: string[] = []
+  const queue = [...entries]
+  while (queue.length > 0) {
+    const file = queue.shift() as string
+    if (seen.has(file)) continue
+    seen.add(file)
+    stripModuleComments(readFileSync(file, 'utf8')).split('\n').forEach((line, index) => {
+      for (const specifier of lineSpecifiers(line)) {
+        if (!specifier.startsWith('.')) {
+          external.add(specifier)
+          continue
+        }
+        const [bareSpecifier = specifier] = specifier.split(/[?#]/)
+        const base = resolve(dirname(file), bareSpecifier)
+        const candidates = [...extensions.map((ext) => base.replace(/\.js$/, ext)), ...extensions.map((ext) => join(base, `index${ext}`))]
+        const hit = candidates.find((candidate) => existsSync(candidate))
+        if (hit !== undefined) queue.push(hit)
+        else unresolved.push(`${relToRepo(file)}:${index + 1} imports '${specifier}', which resolves to no file`)
+      }
+      const dynamic = (line.match(/\bimport\s*\(/g) ?? []).length + (line.match(/\brequire\s*\(/g) ?? []).length + (line.match(/\bcreateRequire\b/g) ?? []).length
+      if (dynamic > 0) dynamicEdges.push(`${relToRepo(file)}:${index + 1} carries a dynamic or computed import edge`)
+    })
+  }
+  return { files: [...seen].sort(), unresolved, external: [...external].sort(), dynamicEdges }
+}
+
+/** The CLOSED forbidden vocabulary for the decision plane (P-1). Every token names an API or a configuration
+ *  surface that WRITES policy/sandbox configuration or names an OS-confinement mechanism — measured
+ *  zero-hit, code text only, over the whole reachable closure at HEAD (src and dist). The bare word
+ *  "blueprint" or "policy" is deliberately NOT in this list: the frozen contracts vocabulary carries
+ *  read-only blueprint/policy DTOs the lane must keep importing, and a prohibition that convicts the frozen
+ *  contract it stands on is a prohibition against the wrong thing. */
+const FORBIDDEN_DECISION_PLANE_VOCABULARY = [
+  // OS-confinement providers and mechanisms (names a sandbox API, whether imported or constructed)
+  'sandbox-provider', 'sandboxConfig', 'SandboxConfig', 'sandbox_config', 'bypassSandbox',
+  'seatbelt', 'bubblewrap', 'bwrap', 'seccomp', 'landlock', 'unshare', 'chroot', 'setrlimit',
+  // OS I/O, process and network primitives (the door an approval must never hold)
+  'node:fs', 'fs/promises', 'node:child_process', 'child_process', 'node:net', 'node:http', 'node:https',
+  'node:http2', 'node:dgram', 'node:worker_threads', 'node:vm', 'node:inspector', 'node:sqlite',
+  'writeFileSync', 'appendFileSync', 'createWriteStream', 'execSync', 'execFileSync', 'spawnSync',
+  // configuration-WRITING verbs (Blueprint / policy / config / permission mutation surfaces)
+  'writeBlueprint', 'saveBlueprint', 'updateBlueprint', 'patchBlueprint', 'commitBlueprint',
+  'writePolicy', 'setPolicy', 'updatePolicy', 'patchPolicy',
+  'writeConfig', 'setConfig', 'updateConfig', 'patchConfig',
+  'grantPermission', 'revokePermission', 'setPermission',
+  // the policy-plane subtrees themselves (convicted even behind an aliased re-export)
+  'runtime/control', 'governance-center', 'operation-permission', 'effective-policy', 'permission-governance',
+  'tool-admission', 'tool-dispatch', 'controlled-fs', 'domain/blueprint', 'domain/policy',
+] as const
+
+/** A hit names `file:line token` — a refusal that cannot be located is a refusal that cannot be fixed. */
+function vocabularyHitsOfText(codeText: string, label: string, vocabulary: readonly string[]): string[] {
+  const hits: string[] = []
+  codeText.split('\n').forEach((line, index) => {
+    for (const token of vocabulary) {
+      if (line.includes(token)) hits.push(`${label}:${index + 1} names '${token}' in code — ${line.trim().slice(0, 120)}`)
+    }
+  })
+  return hits
+}
+
+function vocabularyHitsOfFiles(files: readonly string[], vocabulary: readonly string[]): string[] {
+  return files.flatMap((file) => vocabularyHitsOfText(stripModuleComments(readFileSync(file, 'utf8')), relToRepo(file), vocabulary))
+}
+
+/** The planes the decision path may reach: its two lane directories and the frozen contracts vocabulary
+ *  (read-only DTOs and parsers). `packages/runtime/dist/` is the built mirror, normalised away below so the
+ *  same claim is checked over source and over what actually ships. */
+const REACHABLE_PLANES = ['packages/runtime/review-assignment/', 'packages/runtime/review-mandate/', 'packages/contracts/'] as const
+function outsideReachablePlanes(files: readonly string[]): string[] {
+  return files.map(relToRepo).map((rel) => (rel.startsWith('packages/runtime/dist/') ? rel.slice('packages/runtime/dist/'.length) : rel)).filter((rel) => !REACHABLE_PLANES.some((plane) => rel.startsWith(plane)))
+}
+/** The only external module the decision plane imports today: entropy for digests. Closed, measured — adding
+ *  any other builtin (or a package) is a change to what the decision plane can reach, and must be reviewed
+ *  as one. The same law S-9 pins for assignment-admission.ts, now over the whole closure. */
+const ALLOWED_EXTERNAL_MODULES = ['node:crypto']
+
+const DECISION_ENTRIES_SRC = [join(RUNTIME_ROOT, 'review-assignment', 'index.ts'), join(RUNTIME_ROOT, 'review-mandate', 'index.ts')]
+const DECISION_ENTRIES_DIST = [
+  join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'review-assignment', 'index.js'),
+  join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', 'review-mandate', 'index.js'),
+]
+
+describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach policy or sandbox configuration', () => {
+  it('the reachable set is DERIVED from real import edges, and the derivation is complete', () => {
+    // No hand-maintained file list: BFS follows the specifiers the compiler itself would follow, from the two
+    // lane barrels (which re-export the whole lane surface, `export * from './assignment-admission.js'`).
+    // Completeness is asserted before anything is claimed over the set: an unfollowable relative edge or a
+    // dynamic/computed import means the walk cannot know what it reaches, so both are empty — measured, not
+    // assumed. The lane-coverage lines prove the walk actually walked: every module of each lane directory is
+    // in the set, discovered by listing the directory, not by trusting the barrel's prose.
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    expect(walk.dynamicEdges, `the decision plane grew a dynamic edge, so a static closure can no longer name what it reaches:\n${walk.dynamicEdges.join('\n')}`).toEqual([])
+    expect(walk.unresolved, `a relative import resolves to no file — the closure would silently stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
+    for (const laneDir of ['review-assignment', 'review-mandate']) {
+      const everyModule = readdirSync(join(RUNTIME_ROOT, laneDir)).filter((name) => name.endsWith('.ts')).map((name) => relToRepo(join(RUNTIME_ROOT, laneDir, name))).sort()
+      expect(everyModule.length, `${laneDir} has no modules — the walk is measuring an empty lane`).toBeGreaterThan(0)
+      for (const module of everyModule) {
+        expect(walk.files.map(relToRepo), `${module} is a lane module the closure walk from the barrels did not reach — the walk is not following the edges`).toContain(module)
+      }
+    }
+    expect(walk.files.map(relToRepo).some((rel) => rel.startsWith('packages/contracts/')), 'the closure never crossed into the frozen contracts vocabulary — the walk stopped inside the lane').toBe(true)
+  })
+
+  it('everything it reaches sits in the decision lanes or the frozen vocabulary, and the only external module is node:crypto', () => {
+    // This is the closure form of the prohibition: not "we hope no one imports the control center", but the
+    // statement "every file the decision path can transitively touch is one of these planes, and the only
+    // module outside the workspace it names is entropy". True today because it is measured today; a future
+    // import of any other plane — sandbox-provider, control, blueprint/policy writers, or a builtin with I/O —
+    // reddens THIS leg by name, which is the point of freezing it now.
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    expect(outsideReachablePlanes(walk.files), `the decision path now reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])
+    expect(walk.external, `the decision plane imports external modules beyond the closed allow-list ${ALLOWED_EXTERNAL_MODULES.join(', ')}:\n${walk.external.join(', ')}`).toEqual([...ALLOWED_EXTERNAL_MODULES])
+  })
+
+  it('the forbidden vocabulary appears nowhere in the reachable source — refusal names file and line', () => {
+    // The second, independent net: even a rewrite that routes an import through an allowed plane must not be
+    // able to NAME a configuration-writing or confinement API inside the reachable set. Line numbers are the
+    // real ones (comments are blanked in place, never re-flowed), so a hit is locatable with one `cd`.
+    const walk = walkStaticClosure(DECISION_ENTRIES_SRC, ['.ts', '.mts'])
+    const hits = vocabularyHitsOfFiles(walk.files, FORBIDDEN_DECISION_PLANE_VOCABULARY)
+    expect(hits, `the reachable decision-plane source names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
+  })
+
+  it('and nowhere in its built dist counterpart — the install surface is the same graph', () => {
+    // The dist mirror is what gets shipped and consumed (the a6-pr2 hygiene walk already treats it as a
+    // tracked install surface). Source purity that the compiler did not carry is a purity nobody installed,
+    // so the same closure walk runs from the built barrels with the same closed lists.
+    for (const entry of DECISION_ENTRIES_DIST) {
+      expect(existsSync(entry), `the built counterpart ${relToRepo(entry)} is missing — this leg measures the SHIPPED graph, so a missing mirror is a red leg, not a skipped one`).toBe(true)
+    }
+    const walk = walkStaticClosure(DECISION_ENTRIES_DIST, ['.js', '.mjs'])
+    expect(walk.dynamicEdges, `the built decision plane grew a dynamic edge:\n${walk.dynamicEdges.join('\n')}`).toEqual([])
+    expect(walk.unresolved, `a built relative import resolves to no built file — the dist closure would stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
+    expect(outsideReachablePlanes(walk.files), `the BUILT decision path reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])
+    expect(walk.external, `the BUILT decision plane imports beyond the closed allow-list:\n${walk.external.join(', ')}`).toEqual([...ALLOWED_EXTERNAL_MODULES])
+    const hits = vocabularyHitsOfFiles(walk.files, FORBIDDEN_DECISION_PLANE_VOCABULARY)
+    expect(hits, `the built decision-plane source names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
+  })
+
+  it('the instrument bites: planted violating lines are convicted by name, and clean code is cleared', () => {
+    // THE INSTRUMENT ITSELF, in the F-I1b4-1 tradition: a scan that convicts nothing is a scan that prohibits
+    // nothing. Each planted snippet is the exact byte string a future diff could carry; the scan must name
+    // the token AND the line, including when the violation sits on line 2. The clean snippet proves the scan
+    // is not just always-red theatre.
+    const convictions: ReadonlyArray<readonly [string, string]> = [
+      ["import { compileFdPlan } from '../sandbox-provider/index.js'", 'sandbox-provider'],
+      ["import { readFileSync } from 'node:fs'", 'node:fs'],
+      ["const proc = require('child_process')", 'child_process'],
+      ["export const touch = (): void => { writeFileSync('/tmp/x', 'x') }", 'writeFileSync'],
+      ["export const raise = (): void => { setPolicy({ ceiling: 99 }) }", 'setPolicy'],
+    ]
+    for (const [planted, token] of convictions) {
+      const hits = vocabularyHitsOfText(planted, 'PLANTED.ts', FORBIDDEN_DECISION_PLANE_VOCABULARY)
+      const [first] = hits
+      expect(first, `the scanner cleared planted code that names '${token}': ${planted}`).toBeDefined()
+      expect(first, `the hit for '${token}' must name the token and the line it was found on`).toContain(`names '${token}' in code`)
+      expect(first).toContain('PLANTED.ts:1')
+    }
+    const deepLine = vocabularyHitsOfText("export const fine = 1\nexport const bad = () => grantPermission('everything')", 'PLANTED.ts', FORBIDDEN_DECISION_PLANE_VOCABULARY)
+    expect(deepLine.some((hit) => hit.includes('PLANTED.ts:2') && hit.includes("'grantPermission'")), 'a violation on line 2 was not reported on line 2').toBe(true)
+    expect(vocabularyHitsOfText("import { createHash } from 'node:crypto'\nexport const digest = (input: string): string => createHash('sha256').update(input).digest('hex')", 'CLEAN.ts', FORBIDDEN_DECISION_PLANE_VOCABULARY)).toEqual([])
+  })
+})
+
+// --- P-2 harness: the verdict shapes, measured live, with the pr0 green fixture re-established here -------------
+// The shapes below are copied field-for-field from the PR0 positive fixture (a6-pr0-mandate-admission.test.ts)
+// and RE-ESTABLISHED in this file rather than imported from another spec — a fixture a leg cannot see is a
+// fixture a leg cannot grade.
+
+const P2_ROOT = 'team-root-01'
+const P2_DIGEST = 'd4e5f6a7b8c90123456789abcdef0123456789abcdef0123456789abcdef0123'
+const P2_FP_COVERED = 'ab12cd34ef560718293a4b5c6d7e8f90'
+const P2_FP_UNCOVERED = '0f9e8d7c6b5a43210fedcba987654321'
+
+function p2Plan(overrides: Record<string, unknown> = {}): ReviewPlan {
+  // Overrides go into the RAW DOCUMENT and through the parser (the pr0 law): a spread copy never met the
+  // parser, and admission refuses an unbranded plan — a fixture that spread would grade the wrong door.
+  const result = parseReviewPlan({
+    rootSessionId: P2_ROOT,
+    blueprintDigest: P2_DIGEST,
+    epoch: 7,
+    reviewerInstanceId: 'inst-officer-1',
+    delegatedRung: 'leader',
+    actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }],
+    effectScopes: [{ form: 'exact-fingerprint', value: P2_FP_COVERED }],
+    expiresAtIso: null,
+    ...overrides,
+  })
+  if (!result.ok) throw new Error(`P-2 fixture plan refused at parse: ${result.failure.code} ${result.failure.field ?? ''}`)
+  return result.plan
+}
+
+function p2Verdict(overrides: {
+  readonly caller?: Partial<ReviewerIdentity>
+  readonly attempt?: Partial<{ decision: 'allow' | 'deny'; actionName: string; effectScopeFingerprint: string }>
+  readonly caseView?: Partial<ReviewCaseView>
+  readonly mandate?: Partial<ReviewMandate> | null
+  readonly plan?: ReviewPlan | null
+} = {}): ReviewAdmission {
+  const caller: ReviewerIdentity = { role: 'member', instanceId: 'inst-officer-1', callerRef: 'instance:inst-officer-1', rootSessionId: P2_ROOT, isLeaderInstance: false, ...overrides.caller }
+  const caseView: ReviewCaseView = {
+    approvalCaseId: 'case-1f2e3d4c',
+    requestKind: 'leader-approval',
+    legReviewAuthority: 'leader',
+    legOrdinal: 1,
+    currentLegOrdinal: 1,
+    actedCallerRefs: [],
+    requesterCallerRef: 'instance:inst-worker-9',
+    beneficiaryCallerRef: null,
+    subjectCallerRef: null,
+    actionName: 'fs:write',
+    effectScopeFingerprint: P2_FP_COVERED,
+    ...overrides.caseView,
+  }
+  const mandate: ReviewMandate | undefined = overrides.mandate === null ? undefined : {
+    approvalCaseId: 'case-1f2e3d4c',
+    legOrdinal: 1,
+    reviewerInstanceId: 'inst-officer-1',
+    planEpoch: 7,
+    actionName: 'fs:write',
+    decisions: ['allow', 'deny'],
+    effectScopeFingerprint: P2_FP_COVERED,
+    revoked: false,
+    generation: 1,
+    ...overrides.mandate,
+  }
+  return evaluateReviewAdmission({
+    caller,
+    attempt: { decision: 'allow', actionName: 'fs:write', effectScopeFingerprint: P2_FP_COVERED, ...overrides.attempt },
+    caseView,
+    plan: overrides.plan === null ? undefined : (overrides.plan ?? p2Plan()),
+    mandate,
+    currentEpoch: 7,
+    nowIso: '2026-10-30T12:00:00Z',
+    planRevoked: false,
+  })
+}
+
+/** The closed result field sets. `measured, not remembered` means BOTH directions are graded at run time: the
+ *  live object's keys must equal the closed list (extra or missing reddens), and the equality check itself is
+ *  proved to bite with a planted widening field inside each leg. */
+const ASSIGNMENT_ANSWER_KEYS = ['controlRequestKind', 'nextAssignmentEpoch', 'ok', 'resolvedRole'] as const
+const ASSIGNMENT_REFUSAL_KEYS = ['detail', 'ok', 'refusal'] as const
+const REVIEW_VERDICT_KEYS = ['admitted', 'basis', 'refusal'] as const
+const REVIEW_PLAN_KEYS = ['actions', 'blueprintDigest', 'delegatedRung', 'effectScopes', 'epoch', 'expiresAtIso', 'rootSessionId', 'reviewerInstanceId'] as const
+const REVIEW_PLAN_ACTION_KEYS = ['actionName', 'decisions'] as const
+const REVIEW_PLAN_SCOPE_KEYS = ['form', 'value'] as const
+/** A widening would have to ride a FIELD. No admitted key of either door may even be NAMEABLE as a scope,
+ *  ceiling, or plan handle — the names are checked because a field renamed to `note` that carries an effect
+ *  set is exactly the kind of move a closed key-set check alone is made to catch. */
+const WIDENING_FIELD_PATTERN = /(scope|effect|fingerprint|polic|ceiling|blueprint|sandbox|mutat|widen|grant|delegat|plan)/i
+
+function fieldSetViolations(actual: readonly string[], closed: readonly string[]): string[] {
+  const extra = actual.filter((key) => !(closed as readonly string[]).includes(key)).map((key) => `field '${key}' is not in the closed result vocabulary`)
+  const missing = closed.filter((key) => !actual.includes(key)).map((key) => `closed field '${key}' left the result shape`)
+  return [...extra, ...missing]
+}
+
+function collectObjectGraph(value: unknown, into: unknown[] = []): unknown[] {
+  if (value !== null && typeof value === 'object') {
+    into.push(value)
+    for (const key of Object.keys(value)) collectObjectGraph((value as Record<string, unknown>)[key], into)
+  }
+  return into
+}
+
+describe('P-2 (A5↔A6, PR #531 invariant): an approval never widens I/O scope — closed verdict shapes, graded coverage', () => {
+  it('the assignment door answers in closed field sets, measured on live results, and the check convicts a planted widening field', async () => {
+    // The keys are read off the objects the gate ACTUALLY returned — not off the interface, which a future
+    // edit can change while this leg still passes only if the objects changed with it. A value may also never
+    // BE a structure: every admitted field is scalar, because an object or array field is a handle, and a
+    // handle is a channel.
+    const w = await world()
+    const admitted = await w.admit(w.request({}), HUMAN_CALLER)
+    expect(admitted.ok).toBe(true)
+    if (!admitted.ok) return
+    expect(fieldSetViolations(Object.keys(admitted), ASSIGNMENT_ANSWER_KEYS)).toEqual([])
+    for (const [key, value] of Object.entries(admitted)) {
+      expect(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean', `admitted field '${key}' carries a ${typeof value === 'object' ? 'structure' : typeof value} — a non-scalar field is a channel`).toBe(true)
+    }
+    const refused = await w.admit(w.request({}), MEMBER_CALLER)
+    expect(refused.ok).toBe(false)
+    if (refused.ok) return
+    expect(fieldSetViolations(Object.keys(refused), ASSIGNMENT_REFUSAL_KEYS)).toEqual([])
+    // Not one admitted or refused field name is widening-shaped…
+    for (const key of [...ASSIGNMENT_ANSWER_KEYS, ...ASSIGNMENT_REFUSAL_KEYS]) {
+      expect(WIDENING_FIELD_PATTERN.test(key), `field '${key}' names a scope/ceiling/plan surface — an approval answer must not own a word like that`).toBe(false)
+    }
+    // …and the closed-set check is proved to bite: the SAME answer plus one hypothetical widening field must
+    // fail the SAME check. A closed list that cannot fail is the theatre this leg exists to refuse.
+    const widened: Record<string, unknown> = { ...(admitted as unknown as Record<string, unknown>), widenEffectScope: ['*'] }
+    expect(fieldSetViolations(Object.keys(widened), ASSIGNMENT_ANSWER_KEYS)).toEqual([expect.stringContaining('widenEffectScope')])
+    expect(WIDENING_FIELD_PATTERN.test('widenEffectScope')).toBe(true)
+  })
+
+  it('the mandate coverage verdict is three fields and one boolean oracle — no field, and no return, can carry scope', () => {
+    // Three live verdicts, three shapes: role-table admit, case-mandate admit, scope refusal. All must be
+    // exactly {admitted, basis, refusal}; `basis` values are MEASURED across them against the closed trio;
+    // the coverage oracle's return must be a boolean at every grid point — a boolean cannot smuggle a scope.
+    const roleTable = p2Verdict({ caller: { role: 'human', instanceId: null, callerRef: 'human:h-1', isLeaderInstance: false }, mandate: null })
+    expect(roleTable.admitted).toBe(true)
+    const caseMandate = p2Verdict()
+    expect(caseMandate.admitted).toBe(true)
+    const refused = p2Verdict({
+      attempt: { effectScopeFingerprint: P2_FP_UNCOVERED },
+      caseView: { effectScopeFingerprint: P2_FP_UNCOVERED },
+      mandate: { effectScopeFingerprint: P2_FP_UNCOVERED },
+    })
+    expect(refused.admitted).toBe(false)
+    for (const verdict of [roleTable, caseMandate, refused]) {
+      expect(fieldSetViolations(Object.keys(verdict), REVIEW_VERDICT_KEYS)).toEqual([])
+    }
+    expect([roleTable.basis, caseMandate.basis, refused.basis]).toEqual(['role-table', 'case-mandate', null])
+    expect((REVIEW_ADMISSION_REFUSALS as readonly string[]).includes(refused.refusal as string)).toBe(true)
+    const widened: Record<string, unknown> = { ...(caseMandate as unknown as Record<string, unknown>), raisePolicyCeiling: 9001 }
+    expect(fieldSetViolations(Object.keys(widened), REVIEW_VERDICT_KEYS)).toEqual([expect.stringContaining('raisePolicyCeiling')])
+    // The oracle answers in booleans at every grid point (listed/unlisted action × exact/by-name × match/no
+    // match). `planCoversEffectScope` returning anything else would be a verdict with a payload.
+    const plan = p2Plan({ actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }, { actionName: 'net:fetch', decisions: ['allow', 'deny'] }], effectScopes: [{ form: 'by-action-name', value: 'fs:write' }] })
+    for (const actionName of ['fs:write', 'net:fetch', 'unlisted:action']) {
+      for (const fingerprint of [P2_FP_COVERED, P2_FP_UNCOVERED]) {
+        expect(typeof planCoversEffectScope(plan, actionName, fingerprint), `coverage for '${actionName}' did not answer in a boolean`).toBe('boolean')
+      }
+    }
+  })
+
+  it('the plan is immutable at every node and closed at every level — a verdict cannot mutate it, nor carry it', () => {
+    // "No field through which a decision could mutate a plan" has a structural second half: the plan the
+    // check consults is frozen down the whole object graph (measured: every node of the parsed plan is
+    // frozen, arrays included), and its key sets are closed at all three levels. The verdict's own closed
+    // field set (previous leg) is what keeps it from carrying a plan or scope out the back.
+    const plan = p2Plan()
+    const graph = collectObjectGraph(plan)
+    expect(graph.length, 'the parsed plan graph is empty — the walk is not measuring the plan').toBeGreaterThan(3)
+    for (const node of graph) {
+      expect(Object.isFrozen(node), 'a node of the parsed plan is mutable — an approval-adjacent value could edit the trusted plan in place').toBe(true)
+    }
+    expect(fieldSetViolations(Object.keys(plan), REVIEW_PLAN_KEYS)).toEqual([])
+    expect(fieldSetViolations(Object.keys(plan.actions[0] as unknown as object), REVIEW_PLAN_ACTION_KEYS)).toEqual([])
+    expect(fieldSetViolations(Object.keys(plan.effectScopes[0] as unknown as object), REVIEW_PLAN_SCOPE_KEYS)).toEqual([])
+    // Graded: an extra scope-carrying field on the plan shape fails the same closed check.
+    const widened: Record<string, unknown> = { ...(plan as unknown as Record<string, unknown>), extraEffectScopes: [{ form: 'exact-fingerprint', value: P2_FP_UNCOVERED }] }
+    expect(fieldSetViolations(Object.keys(widened), REVIEW_PLAN_KEYS)).toEqual([expect.stringContaining('extraEffectScopes')])
+  })
+
+  it('an approval whose effect-scope fingerprint matches no plan-covered scope is refused — by scope, proved with its positive control', () => {
+    // attempt, caseView and grant all carry the SAME foreign fingerprint, so the agreement checks pass and
+    // the only gate that can fire is plan coverage — the refusal is about the scope, not about broken wiring.
+    // The positive control is the same fixture with the covered fingerprint and must ADMIT, otherwise the
+    // refusal leg would pass on a fixture that admits nothing.
+    const refused = p2Verdict({
+      attempt: { effectScopeFingerprint: P2_FP_UNCOVERED },
+      caseView: { effectScopeFingerprint: P2_FP_UNCOVERED },
+      mandate: { effectScopeFingerprint: P2_FP_UNCOVERED },
+    })
+    expect(refused.refusal).toBe('REVIEW_MANDATE_SCOPE_NOT_DELEGATED')
+    const control = p2Verdict()
+    expect(control.admitted, 'the positive control of the scope-refusal fixture does not admit — the refusal leg above would be vacuous').toBe(true)
+  })
+
+  it('by-action-name covers EVERY fingerprint of the named action and nothing beside it — graded exactly as it stands (issue #502)', () => {
+    // THE RECORDED OPEN CONTRACT, Alpha.5↔Alpha.6 register (Issue #502; see the #502 加补编 obligations cited
+    // in `docs/plans/memo/alpha6-review-separation/pri1b-admission-design-20261031.md` §6): the fingerprint
+    // semantics of `by-action-name` are an OPEN question, and this leg exists to make any silent change to
+    // them impossible, not to solve it. What the interface freezes TODAY (`plan.ts:333-343`): the action must
+    // be LISTED, and a `by-action-name` scope then covers EVERY fingerprint of that named action — it is
+    // never authority over any policy object the plan does not name. Exactly that, and only that, is graded:
+    // every-fingerprint of the named action (two synthetic fingerprints and a third never written anywhere in
+    // the plan text), false for a listed-but-unnamed action, false for an unlisted action even with the
+    // covered fingerprint; end-to-end an approval with a fingerprint the plan text never mentions ADMITS
+    // under by-action-name (today's semantics, pinned) and the sibling exact-fingerprint plan refuses the
+    // same fingerprint. The parse-time doors the semantics lean on are graded too: a by-action-name scope
+    // naming an unlisted action, and any third form, refuse. Narrow or widen the semantics later — through
+    // the interface, with a leg rewritten — not silently.
+    const plan = p2Plan({
+      actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }, { actionName: 'net:fetch', decisions: ['allow', 'deny'] }],
+      effectScopes: [{ form: 'by-action-name', value: 'fs:write' }],
+    })
+    const THIRD_FP = '5f4e3d2c1b0a99887766554433221100'
+    expect(planCoversEffectScope(plan, 'fs:write', P2_FP_COVERED)).toBe(true)
+    expect(planCoversEffectScope(plan, 'fs:write', P2_FP_UNCOVERED)).toBe(true)
+    expect(planCoversEffectScope(plan, 'fs:write', THIRD_FP)).toBe(true)
+    expect(planCoversEffectScope(plan, 'net:fetch', P2_FP_COVERED)).toBe(false)
+    expect(planCoversEffectScope(plan, 'net:fetch', THIRD_FP)).toBe(false)
+    expect(planCoversEffectScope(plan, 'unlisted:action', P2_FP_COVERED)).toBe(false)
+    // End-to-end, both readings pinned: by-action-name admits a fingerprint the plan text never mentions…
+    const byName = p2Verdict({
+      plan,
+      attempt: { effectScopeFingerprint: THIRD_FP },
+      caseView: { effectScopeFingerprint: THIRD_FP },
+      mandate: { effectScopeFingerprint: THIRD_FP },
+    })
+    expect(byName.admitted, 'a by-action-name plan refused a fingerprint of its named action — the frozen semantics changed; this is the leg that says so').toBe(true)
+    // …while the exact-fingerprint sibling plan refuses the same approval. The pair pins both halves, so a
+    // change to the fingerprint semantics reddens one of them no matter which direction it moves.
+    const exactOnly = p2Verdict({
+      attempt: { effectScopeFingerprint: THIRD_FP },
+      caseView: { effectScopeFingerprint: THIRD_FP },
+      mandate: { effectScopeFingerprint: THIRD_FP },
+    })
+    expect(exactOnly.refusal).toBe('REVIEW_MANDATE_SCOPE_NOT_DELEGATED')
+    // The parse-time doors the by-action-name semantics lean on, graded at this file's own level too:
+    const unlistedScope = parseReviewPlan({
+      rootSessionId: P2_ROOT, blueprintDigest: P2_DIGEST, epoch: 7, reviewerInstanceId: 'inst-officer-1', delegatedRung: 'leader',
+      actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }],
+      effectScopes: [{ form: 'by-action-name', value: 'net:delete' }],
+      expiresAtIso: null,
+    })
+    expect(unlistedScope.ok).toBe(false)
+    if (!unlistedScope.ok) expect(unlistedScope.failure.code).toBe('SCOPE_NAMES_UNLISTED_ACTION')
+    for (const form of ['any', 'exact-fingerprint-prefix', 'prefix', '*']) {
+      const wild = parseReviewPlan({
+        rootSessionId: P2_ROOT, blueprintDigest: P2_DIGEST, epoch: 7, reviewerInstanceId: 'inst-officer-1', delegatedRung: 'leader',
+        actions: [{ actionName: 'fs:write', decisions: ['allow', 'deny'] }],
+        effectScopes: [{ form, value: 'fs:write' }],
+        expiresAtIso: null,
+      })
+      expect(wild.ok, `scope form '${form}' parsed — there is no wildcard door`).toBe(false)
+      if (!wild.ok) expect(wild.failure.code, `scope form '${form}' refused with a code other than SCOPE_FORM_UNKNOWN`).toBe('SCOPE_FORM_UNKNOWN')
+    }
+  })
+})
 
 // --- the census, LAST: it reads what the legs above actually produced --------------------------------------
 
