@@ -315,3 +315,101 @@ PASS，"我本地能跑"也不是答案（同一份 memo 就是为这个区别�
 
 仍然没有解决、也仍然不许被这份实现冒充的东西：§1 的公开面缺口、floor-delayed 载体的 `CORE_SEAM_BLOCKER`、
 §8.5 的宿主端到端腿。这份实现证明的是"拒绝面可测"，不是"到点会醒"。
+
+## 12. dated 2026-10-31（同日晚些）：§9 缺的是一条路径，不是一种能力——运行时今天在本机物化了，L-1a/L-1b 真跑过了（V-2b 关闭），floor-delayed 的阻塞从推断升级为测量
+
+证据正本已入 tracked：`dev/agent-workflow/evidence/alpha6-pri-i2-runtime/`（`feasibility-report.md` 是本轮 run 的
+主记录，`probe-out.json`、`preflight-check.txt` 是两张原样捕获，`MEASURED-LINES.txt` 收着本节所有被引用命令/输出
+行的逐字文本）。本节不复述记录，只回答：这次测量把本 memo 的哪些话**从推断换成了事实**，哪些话**没被换成**。
+
+### 12.1 运行时在本机**可以**物化，而且今天物化了
+
+`docs/TEST_METHODS.md` §1 第 16 行把 fresh-worktree 落位写的是泛称：`git clone --local --no-hardlinks <只读 baseline 树>
+tests/deepseek-harness-test-use` + `checkout --detach <TEST_USE_BASELINE_SHA>`——那一行把源写作"**只读 baseline 树**"，
+没有把它限定为 `/srv/workspace/…`（该路径只出现在 §9 的资产来源里）。所以从本机同 SHA 只读树
+`/home/armourpiercer/deepseek-harness` 克隆是**被允许的**，不是绕行。实测（逐字见 `MEASURED-LINES.txt`）：clone exit 0
+（`real 0m1.862s`），detached @ `639ed01539…`、porcelain 0；`INSTALL_EXIT=0`；`BUILD_EXIT=0`
+（`build: recorded 347 client artifact(s) with 2 public value(s)`）；宿主真实启动于 **3181**（`HOST_PORT_BANDS` 段；
+:3080 全程未触碰，探测记 `stable_3080_status=401` (untouched)）；`DSH_HOME=tests/homes/a6pri2-20261031T11-33-49Z` 在工作区
+内；无 token `401` / 带 token `303`；世界用毕按 §7 拆除。宿主仓 BEFORE/AFTER porcelain 均 0，CORE PATCH BUDGET 消耗 0。
+
+**重分类，直说**：本 lane 此前以"缺运行时"为由记 `ENV-REFUSED` 的一切腿（§9 那批、PR-I1b 的真机腿），今天量出来的
+结论是——**那是拒绝于一条不存在的路径，不是拒绝于一种不存在的能力**。lane 把"目录不在"当科学限制用了几个钟头，
+这个错不是靠措辞改掉的，是靠跑出来的。不变的纪律是"ENV-REFUSED 不是通过、跑过才写 PASS"；变掉的是"缺运行时"
+这三个字在本机不再是拒绝理由。
+
+### 12.2 §9 的 host-sandbox 资产**仍然供不上**——两个事实并记，谁也不许抹掉谁
+
+`node tests/world-factory/provision-host-sandbox.mjs --check` 依旧 exit 1：`probe: before-provision=unusable ->
+after-provision=unusable`、`backend: unusable (usable: false)`、`launcher: ABSENT`；`landlock-run` 本机不存在，本地编译的
+`system.node` 是 17352 B / sha `75450f92…`，不等于 pinned 的 17360 B / `54a9c25c…`。**而这没有阻止宿主启动并服务**：
+本轮用到的 HTTP 应答、插件行挂载、remote 调用应答全部发生（`backend unusable` 的完整影响面本轮**没有**测，本 memo
+不说它只挡什么）。§9 的资产缺口成立；12.1 不抹掉它，它也不抹掉 12.1。
+
+### 12.3 L-1a/L-1b 已实测：两条都收到，V-2b 关闭，`{global:true}` 在本 SHA 不是必需
+
+探针插件只经世界的 `profiles/web/cordis.patch.yml` 挂载，经注入的 `ctx.storageDomain` 开自己的域，写一行，看两条订阅
+（l1a 带 `{global:true}`、l1b 无第三参）——两条都收到 `{domain:"a6pri2wakeuprobe",table:"rows",key:"probe-key-1",
+operation:"put"}`，事件逐字相同。
+
+- §8.2 那句"**仍未证明（V-2b）**：插件自己的 `ctx.on('domain/changed')` 是否与域发射所在的 ctx 在同一条总线上"
+  ——**已证：同一条总线，插件收得到自己域的写**。L-1b 按定义记录的是实际行为：收到了。
+- 机制侧：克隆内 `vendor/cordis/src/events.ts:114-116` 的 `global?: boolean` = "Receive the event regardless of
+  context filter checks"，`:171-173` `.filter(hook => hook.global || !filter || filter.call(thisArg, hook.ctx))`——发射侧
+  无 filter 时非 global 监听者收到。故 `{global:true}` **不是**本事件在本 SHA 的必要条件。§8.5 的"本会话没能从可读的
+  宿主源里读到 `on()` 第三个参数的语义"当时为真（它的范围是那台可读宿主树），今天按测量重新贴标：cordis 运行时源
+  在 baseline 树的 `vendor/cordis/` 里，克隆即读到。
+- **这次测量的边界**：它只回答"收得到吗、第三参改变什么"。L-2（覆盖去重）、L-3（containment 与自有失败计数）、
+  L-4（内联忙等回归）、L-5（跨域交错）**本轮没跑**，不得由本节的阳性结果回溯成已完成；"本 SHA 不必需"也不等于
+  "任何 SHA、任何 filter 下都不必需"。§10.4 的接线前置（L-1a/L-1b 真跑过）由本次测量满足——但本轮只交 docs/evidence，
+  接线在后续实现轮做；接线代码怎么写 `{global:true}`，由那一轮拿着本节证据裁决。
+
+### 12.4 floor-delayed 载体：从读源推断升级为活宿主测量，阻塞分毫不动
+
+五项测量（逐字见 `MEASURED-LINES.txt` §5）：
+
+1. 默认 profile 里 `inject: ['schedule']` 永不激活：`pending (waiting for service: schedule)`；
+2. 开上 experimental schedule bundle 后 `ctx.schedule`（ctorName `ScheduleService`）方法面为 `catalog, create, delete,
+   emitChanged, getDomain, history, initialized, list, serialize, stopSessionTasks, update`——**没有 callback/handler
+   注册面**；
+3. 活体 `ctx.schedule.create(sessionId, {after_seconds: 3})` 持久落了 due time（`scheduledAt:"2026-10-31T11:45:17.987Z"`），
+   插件可见的事件只有 **CREATE 时刻（11:45:15.016）一条无 payload 的 `schedule/changed`**，due 时刻什么都没有，
+   `pluginReceivedWakeCallback:false`；
+4. due 动作的来源：`packages/schedule/schedule/src/runtime.ts:101-123` — `resolveAgent → createUserMessage →
+   agent.followup`，一个 session-bound 的 user-role turn，不是插件 callback；
+5. 对 baseline 树 162 个 `interface Context` 成员的普查：时间形状的只有 `schedule, jobs, jobController, ptcRuntime,
+   webhookRuntime, vmTimeoutMs`；`ctx.jobs`（`LocalJobRegistry`）无任何 delayed-start 面。
+
+⇒ PR-I2 floor-delayed 子集的 `CORE_SEAM_BLOCKER` **维持 OPEN**，性质升级：§1/§2 的负断言现在坐在活宿主测量上，
+不再只坐在 grep 上。负断言的范围声明不变——"no primitive exists"仍**不是**对全宿主的穷尽证明，这条升级不把它变成
+穷尽证明。#509 继续 DORMANT；不新建第二套持久化计时器。
+
+### 12.5 生产 ControlService 的 resolve 路径端到端执行了——PR-I1b 的真机腿从今天起是"可实现"
+
+本 lane 自己构建的 `packages/runtime/dist/packages/runtime/src/plugin/host.js` 只经 patch seam 挂载：
+`team.getLedgerPage` v1 → `ok:true`；`team.resolveControl` v4（bogus id）→ `CONTROL_REQUEST_NOT_FOUND` 配 durable-storage
+措辞（`"ControlService: no durable control request … (a decision without a request)"`）。**必须原样保留的区分**：挡 PR-I1b
+真机腿的是**规则**（只读探针不得编辑 tracked 测试），**不是环境**——那条腿从今天起是可实现的（implementable），
+不是已跑完的。边界：真实 pending request 没有造出来（需要 mock-model fixture 走 member ask-lane），S-7 真实世界字节差
+没跑。
+
+### 12.6 事故披露：一次 boot 把家指向了工作区外（零字节写入）
+
+一次后台 boot 未显式设 `DSH_HOME`，继承了 `/home/armourpiercer/.dsh`，尝试写
+`/home/armourpiercer/.dsh/profiles/web/cordis.yml` → `EROFS` + 沙箱拒绝，exit 1，**写入零字节**；此后每一次 boot 都显式
+把工作区内路径设为 `DSH_HOME`。发布这条不是因为有损害，是因为"lane 起过宿主，且其中一次 boot 的家指过工作区外"
+是读者信任其余记录所需要的事实。
+
+### 12.7 重新贴标清单（旧语句一字不删，此处只换性质标签）
+
+| 本 memo 的语句（未改写） | 当时的性质 | 现在的状态 |
+| --- | --- | --- |
+| §9 "§8.5 那六条腿**在本机跑不了**……环境入口缺口" | 缺路径的事实 + "本机跑不了"的推断 | 路径可补、运行时已物化（12.1）；L-1a/L-1b 已跑（12.3），L-2…L-5 仍未跑 |
+| §8.2 "V-2b 未定，不打勾" | 待验证（正确的克制） | 关闭——两条腿均收到，活测量（12.3） |
+| §8.5 "on() 第三个参数的语义读不到" | 当时可读范围的陈述（当时为真） | 被 12.3 替代：`vendor/cordis/src/events.ts:114-116,171-173` 可读，且与实测一致 |
+| §8.5/§10.4 "接线前置 = L-1a/L-1b 真跑过" | 纪律 | 前置已由测量满足；接线不在本轮 |
+| §1/§2、§8.5 末段 floor-delayed `CORE_SEAM_BLOCKER` | 读源推断 | 维持，升级为活宿主测量（12.4） |
+
+**仍未证明（不得由本节回溯）**：L-2/L-3/L-4/L-5；一条真实 pending control request 的端到端（需 mock-model fixture）；
+S-7 真实世界字节差；任何"到点会醒"的能力。§9 的资产缺口未修复。
+**授权边界**：开发授权，非合并授权，非启用，非放宽门禁。
