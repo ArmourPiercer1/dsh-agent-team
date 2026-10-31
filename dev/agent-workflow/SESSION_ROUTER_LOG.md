@@ -7303,3 +7303,27 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+## 2026-10-31 — PR-I2 前置契约 `TimedWakePort` 草案落库（新分支 `alpha6/lane2-pri2-timed-wake-20261031`，base = #507 `7b906b432`）；载体仍然 CORE_SEAM_BLOCKER
+
+- 交付物 = `docs/plans/memo/alpha6-timed-wake/timedwake-port-contract-20261031.md`（契约先行，零实现、零挂载、零启用）。
+  裁决一的边界原样保持：ScheduleService 不是 Alpha.6 的定时唤醒载体；`CORE_SEAM_BLOCKER` 只覆盖 PR-I2 的
+  **floor-delayed** 载体；#509 继续 DORMANT；不建第二套持久化 timer；缺时间触发源 ⇒ 显式拒绝
+  `TIMED_WAKE_UNAVAILABLE`，**永不**报告 `accepted: true`，**永不**静默丢弃唤醒保证。
+- 与既往记录不同的一点：本 memo 的宿主证据由**本会话**在宿主 `639ed01539`（pristine，读取前后 porcelain 均空）逐行打开
+  核对，不再是转抄：`packages/boot/app-boot/src/profile.ts:209`（"offered switched off" 注释）/`:213-218`
+  （OPTIONAL_BUNDLES）/`:217`（schedule bundle 条目）；`packages/schedule/schedule/src/runtime.ts:101`/`:118`/
+  `:119-121`/`:123`（到期 = user-role 提醒轮）；`index.ts:396`（`emit('schedule/changed')`）与 `types.ts:468-471`
+  （`@mode emit`、`(): void`、注释要求客户端 refetch）；`index.ts:27`/`index.ts:100`（模型可见 tools + Remote Service，
+  非插件可注册唤醒）。另实测 `registerWake|scheduleWake|onWake|wakeAt|notBefore` 在宿主 `packages/extensions`、
+  `packages/api`、`packages/hooks` 三组内零命中。
+- 负全称限定（#513 round-3 G-R3-10 的教训写进正文，不再事后补）：上述排查**非穷尽证明**；结论范围 = 已排查包组 +
+  两轮 spot-check，upstream 判据以契约 §2 的语义要求为准，而不是以某次 grep 为准。
+- 引用诚实性修正：memo 引用的裁决正本与 blocker 文件在 #513 分支上，**在本 PR base 上不存在**，因此按 PR 号引用，
+  不假装本树可见（同类错误 G-R3-9 是 #502 预告里我写了一个仓库中从未存在的路径）。
+- 环境事实更正（供后续 lane 复用）：本仓 worktree **不需要**各自 `pnpm install`——worktree 位于主 clone 内，Node 解析
+  直接继承主 clone 的 `node_modules`（新 worktree 内 `typescript` 解析到主 clone 的 `.pnpm`，`docs-sync` 可直接跑）。
+  在新 worktree 里跑 `pnpm install` 会以 `[ERR_SQLITE_ERROR] unable to open database file` 失败：pnpm 全局 store 索引
+  在工作区之外，被 workspace-write 沙箱拒绝。首次尝试时我把命令接了管道，`rc` 取到的是管道末端状态，掩盖了真实
+  rc=1——同一条老规矩：**测退出码不要经过管道**。
+- 度量：`docs-sync --check` findings=0（docs=105 notes=4 plans=68 contracts=20）。本 PR 无 `packages/**` 路径、
+  无生产文件、核心补丁消耗 0。开发授权 ≠ 合并授权 ≠ 生产启用 ≠ 放宽门禁。
