@@ -4,6 +4,51 @@
 写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
 scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
 
+> **Dated banner（2026-10-31，round-15 真实宿主复测）——本文件四条 ENV_BLOCK 句里有三条的「环境不给」前提被推翻，全部 forward 更正。**
+> 本轮第一次在**本 worktree** 里物化出可启动的真实宿主（`tests/deepseek-harness-test-use`，pristine，detached
+> @ `639ed015397290b3745d163aafe02ffee4aa3f84`，porcelain 前/后都 = 0），经**公开 profile-patch seam** 挂上本 worktree 的
+> BUILT 产物，跑 `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`（探针行 `pri1a-probe-row.mjs`；CORE PATCH BUDGET = 0，
+> 宿主树零改动）：`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`，测于 head `a2bc18d78`（kit 文件由本轮
+> commit 携带），证据 `dev/agent-workflow/evidence/alpha6-pri1a-real-host/a6pri1a-2026-10-31T15-46-00Z/`。
+> 可失败性同样被证明：把期望字节 `1,2,3` 改成 `1,2,4`（单字节）⇒ `verdict=fail pass=23 fail=1 failed=boot-1-sequence-chain-is-1-2-3`；
+> 改回后与备份 `diff -q` 相同（红的那一次留在 `a6pri1a-2026-10-31T15-46-27Z/`）。
+> 逐条旧话与原话位置：
+> 1. 「**C2（真 Host 世界写读回）仍 ENV_BLOCK，不记 PASS**」（§2a 末）→ 已跑，处置 **RAN**。两进程、同一 world、宿主自己的
+>    `storageDomain` 介质：created/transferred/retired 落在序列 1/2/3、epoch 1/2/3；进程内重放答 `already`；
+>    `team_sessions.generation` 1→4（三次耐久写各推进一次，重放不推进）；宿主进程退出**之后**由驱动进程在盘上读到
+>    `storages/team_domain.json` 中三个 factType 字面量各一次；新进程 reopen 折叠出逐字段相同的三行；
+>    重启后重放仍在**原序列**答 `already` 且零新行；同 root 的新 case 取到序列 4（链继续，不重启）。
+> 2. 「**真实宿主投影的重启呈现仍是 C2/ENV_BLOCK，不记 PASS**」（§3 表行末）→ 半推翻：**耐久半边**（新进程 reopen +
+>    三行相同 + generation 跨重启）已测；**投影呈现**仍未测，但原因不再是「没有宿主」，而是「没有调用者」——
+>    dormancy 法律（`ALLOWED_CONSUMERS=[]`）使生产组合里根本不会长出 assignment 行。呈现归 PR-I1b。
+> 3. 「**未在本 PR 测量（不假装）**：真实宿主世界上的并发对账与重启后的客户端呈现（C2 = ENV_BLOCK）」（§3 表后段）→
+>    其中「重启后的读回」的**耐久**部分已测；**并发对账**仍未测（本 kit 是单写者；跨进程怎么给锁属注入端口，是
+>    PR-I1b 的 adapter 决定——在此测它只能测到我自己的选择，故不假装测了）；**客户端呈现**仍未测（同上）。
+> 4. 「**真实 Host 的并发/重启形态**：需 PR-I1b 接线后单所有者 C2」（§4）→ 拆两半：**重启形态的耐久半边已由本 kit 测掉**；
+>    并发半边仍等 PR-I1b，且等的是**接线**而不是**环境**。
+>
+> 另有两句只出现在 PR 正文里，同一轮被实测改动（此处记录，正文由有写权的一方改）：
+> - §9.6 的「default-off, and non-enabling teams byte-identical」把「开/关」画成宿主可切换的状态。实测：**宿主没有这个开关** ——
+>   对本 worktree 的 BUILT 行直接调 `validateTeamPluginConfig`，它**接受并原样交回** `feature:'on'` 与 `assignmentFeature:'on'`
+>   （既不 honour 也不 refusal），而 `packages/**`（dist 之外）**0 个文件**提到该键；dormancy 扫描再给出零 importer。
+>   故「默认关」不是一种宿主状态，而是「没有调用者」这个组合事实；能保留的说法是「没有 caller 的组合里一行 assignment 都不会出现」，
+>   它可被 dormancy 扫描与本 kit 钉住。
+> - §8 的「`ci-pr-gate --full` … 唯一失败是 census 腿的**环境**拒绝」在本 worktree（runtime 已物化）不再成立：census 腿现在
+>   **参与评分**并红 —— `DSH-CI-VERDICT fail pass=8 fail=1 skip=0 skipped=none legs=9 refused=0 refusedlegs=none`，
+>   红因 `captured 661f/8947l vs baseline-declared 626 / 7936`。**同一 head 跑两次，被点名的新红集合不一样**：
+>   `…T152318Z-4.json` 那次 3 条（`alpha5-search-backend` 的 Spill-class 腿 + `a4p7-merge-gate` 两条），
+>   `…T155846Z-65.json` 那次 4 条（`a5g6-install-face-render` 的 GLUE-6 LEG B、`a5p4-lane-hygiene` 的 self-typecheck,
+>   加上**同样的** `a4p7-merge-gate` 两条）；两次的 `files/legs` 计数相同（661/8947）。所以这里点名的是**会轮换的残留**，
+>   稳定出现的只有已披露的那两条 a4p7 腿 —— 与日志里既有的"根套件同 head 两次全量结果不同"一致，不是本 PR 引入。
+>   门禁因此**变强**；而在没有 runtime 的干净检出里该腿仍是 `refused missing-test-use-checkout`，两种世界必须分开陈述
+>   （两次对照 JSON 由门禁写在 `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`，但其内含 `.artifacts` 绝对路径，
+>   按本轮"提交物里不得出现 `.artifacts` 路径"的纪律**不提交**；同目录已提交的历史对照（如
+>   `census-comparison-20261027T125022Z-40.json`）是同一形状，可在那里核对字段）。
+>
+> **本轮没有放松任何封闭集、卫生规则或 pin**：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+> p4t6 booking（`1416 → 1418`，total 1418）全部未动；kit 在 `tests/**`、证据在 `dev/**`，二者都在 dormancy 扫描（`packages/*`）
+> 与 p4t6 扫描（`packages/**`）的宇宙之外——这是披露，不是夹带。
+
 ## 0. 一句话
 
 PR2′ 交付了"归属事实"的**词汇、编码、折叠与 CAS 前置**，但没有写入者——`types.ts` A-8 明写"Durable writes go
@@ -99,9 +144,8 @@ dormancy 扫描继续成立，`ALLOWED_CONSUMERS=[]` 不变；lane 模块集合�
 `EXTRA_MODULES_ALLOWED` 并写明理由——该常数是设计好的修订点，spec 自己提到"a 6th lane module"）。
 证据等级：C1 = 用 `packages/storage/test/p4-helpers.ts` 里**与公开 StorageDomain 合同逐条同形**的 seam fake
 （含 per-domain 写链、`setCrashAfterWrites` 崩溃模拟、close+re-open 持久态）驱动**真实的
-`LedgerRepository`**；不是手写假对象。C2（真 Host 世界写读回）仍 ENV_BLOCK，不记 PASS。
-**本 PR 不声称**：真实 Host 上的并发对账、跨代重启后的投影呈现、以及与 control 路径在同一把锁下的 interleaving
-——这些需要 PR-I1b 的接线与单所有者 C2 运行。
+`LedgerRepository`**；不是手写假对象。C2（真 Host 世界写读回）在 `256410456` 及其前的一切 head 上确为 ENV_BLOCK（当时本 worktree 没有可启动的宿主，记为拒绝而非绿）；**2026-10-31 round-15 已把它跑掉**：真实宿主 `0.2.0-rc.2 @ 639ed01539…`，两个进程、同一 world，写→读回→盘上字节→重启→折叠→重放全绿（`verdict=pass pass=24 fail=0 refused=0 legs=24`，见顶部 banner 与 §2b R-28）。
+**本 PR 不声称**（2026-10-31 round-15 收窄一次：原因从「环境不给」改成「没有调用者」）：真实 Host 上的**并发对账**（本 kit 单写者；跨进程怎么给锁是注入端口的事实，归 PR-I1b 的 adapter）、**跨代重启后的客户端投影呈现**、以及与 control 路径在同一把锁下的 interleaving——这三样需要 PR-I1b 的**接线**，不再需要环境。耐久半边的真实宿主重启已在 PR-I1a 内测掉。
 
 ## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-14 round-1 独立复核后，R-15..R-21 round-2 独立复核后，R-22..R-27 round-3 独立复核后：每条给证据）
 
@@ -327,6 +371,37 @@ plant 钉住。**度量而非假设**：本轮所有 harvest 改动都先证明 
 per-file diff 0）再合入。
 
 
+**R-28 「C2 需要环境」这句话本身是没测过的假设（round-15 真实宿主复测，2026-10-31）。** 本文件与 PR 正文把
+真实宿主一栏记成 ENV_BLOCK，理由写的是"没有宿主进程可启动"。本轮把宿主真的物化出来（`tests/deepseek-harness-test-use`
+pristine @ `639ed01539…`，porcelain 前/后 = 0），写了 `tests/kits/pr-i1a-real-host/`（探针行 + 驱动，公开
+profile-patch seam，CORE PATCH BUDGET = 0），跑出的判决是
+`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`。**测到的具体字节级事实**：
+created/transferred/retired 由 BUILT 的 `applyReviewAssignment` 写在序列 1/2/3、epoch 1/2/3；进程内重放
+`{"applied":"already","sequence":1}`；`team_sessions.generation` 1→4（三次写各一次，重放零次）——R-20 说的
+"盖章要跟着走"第一次落在真实介质上；**驱动进程在宿主退出之后**扫 world 文件，在 `storages/team_domain.json` 里
+读到三个 factType 字面量各一次（探针自己的报告与宿主日志按名字排除，否则这条腿会被探针自己的话喂绿）；第二个宿主
+进程 `openTeamDomain` 重开同一 world，读回三行与首进程逐字段相同、generation 仍 4；原命令在**原序列**答 `already`
+且零新行；同 root 的另一 case 拿到序列 4。**没测的仍然没测**（命名而非含糊）：并发对账（本 kit 单写者，跨进程给锁
+是注入端口——在这里测并发只能测我自己写的 adapter）、客户端投影呈现（零调用者 ⇒ 生产组合里没有这些行）、
+与 control 路径同锁 interleaving（等 PR-I1b 接线）。可失败性按同一轮证明：期望 `1,2,3` 改单字节成 `1,2,4` ⇒
+`verdict=fail pass=23 fail=1 failed=boot-1-sequence-chain-is-1-2-3`，改回与备份 `diff -q` 相同。
+**度量学条目：一句"环境不给"如果能在同一台机器上用二十分钟变成测量，它就必须先被测量再被记录。**
+
+**R-29 「default-off」不是宿主状态，是一个没有主人的开关（round-15，同一个 kit 的两条腿）。** PR 正文 §9.6 把
+PR-I1b 的义务写成 "default-off, and non-enabling teams byte-identical"，这句话预设了一个可以在宿主上拨的开关。
+实测两问：①对本 worktree 的 **BUILT** 行直接调 `validateTeamPluginConfig`，带 `feature:'on'` +
+`assignmentFeature:'on'` 的行配置被**接受并原样交回**（`feature="on", assignmentFeature="on"`）——既不 honour 也不
+refusal；②`packages/**` 里（dist 之外）**0 个文件**提到这个键，dormancy 扫描又给出零 importer。所以"默认关"不是
+一种宿主状态，而是"没有调用者"这个组合事实；**能保留**的说法是"没有 caller 的组合里一行 assignment 都不会出现"，
+它由 dormancy 扫描钉住，而不是由一个不存在的开关钉住。同 §8 的另一句也在本轮失配：`ci-pr-gate --full` 的 census 腿
+在物化出 runtime 的本 worktree 里**不再拒绝而是评分并红**
+（`DSH-CI-VERDICT fail pass=8 fail=1 skip=0 skipped=none legs=9 refused=0 refusedlegs=none`，
+红因 `captured 661f/8947l vs baseline-declared 626 / 7936`；两次复跑（同 head）点名的新红集合**不同** —— 3 条
+（`alpha5-search-backend` + `a4p7-merge-gate` ×2）与 4 条（`a5g6-install-face-render`、`a5p4-lane-hygiene`、
+`a4p7-merge-gate` ×2），两次计数都是 661f/8947l ⇒ 被点名的是**会轮换的残留**，稳定的只有那两条已披露 a4p7 腿
+（对照 JSON 由门禁写在 `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`，本轮两份含 `.artifacts` 绝对路径故未提交，
+同目录已提交的历史对照是同形状）
+
 ## 3. 覆盖映射（用户裁决六条 → 测试腿）
 
 | 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，49 条，全部走**真实** `LedgerRepository`；round-3 新增 4 条：读的可Walk性 3 形 + 自写未获证 1 条，另有 4 条文字/端口腿并入下表） |
@@ -334,13 +409,15 @@ per-file diff 0）再合入。
 | 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9）；㉟那一行不是本命令写的（改写载荷 / 别队的 `control-leg-decided`）⇒ `READBACK_MISMATCH` 点名现场，且 `ROW_DURABLE` 与「必被判为 already」的许诺**都不出现**（R-15）；㊀四处读取逐点驱动 ⇒ **没有任何异常逃到调用方**（R-17）；㊁四个耐久声明各由一个代码产生、四码互不相同，头部四句法律被 readFileSync 钉住（R-16） |
 | Epoch/CAS、幂等、并发冲突、写失败 | D-3/D-4/D-5 + R-7/R-8 | ⑥同命令立即重放：`already` 且 `writeCount` 不变、行数不变；⑦换 reason ⇒ 不是重放（`ALREADY_ACTIVE`），行数不变；⑧两条并发同命令 ⇒ 一写一 already、同一 sequence、只一行；⑨两条并发 mutation ⇒ epoch [2,3]、sequence 互不相同、对「已当前」的 target 重发是 `already`、换 reason 是 `TARGET_UNCHANGED`；⑩四种非法 sequence（0/-1/1.5/MAX+1）各自拒且零行；⑪分配失败腿 detail 含 allocate；⑫坏 root/坏命令 ⇒ `writeCount` 不变 |
 | Ledger 所有权校验、跨 Case/Team 隔离、损坏诊断 | D-7 + R-3/R-5 | ⑬两支队伍共用同一 caseId 各自独立折叠与独立 epoch；⑭挂本 root 但载荷指向他队的行 ⇒ `WRITE_CROSS_TEAM_ROW` + 点名 `factType@sequence`，坏行**留在原地**不隐藏；⑮未知字段/授权键行 ⇒ `WRITE_FOLD_UNRECONCILED` 且 detail 点名诊断码（与 `control/service.ts:1801-1812` 的静默丢弃**正相反**，有专门一条腿钉这点）；⑯10 条坏行 ⇒ 列 8 个句柄 + `+2 more` + detail < 1200 字符；⑰同队两 case 独立 epoch 链；⑱契约解析拒绝的 4 种 root ⇒ 先对**解析器本身**断言抛错，再要求 `WRITE_ROOT_UNMINTABLE` 且零锁零写；⑲`session/../../etc` 能 mint、被 lane 语法拒（R-5 的披露） |
-| host/client factType-category 一致 + 重启后 Projection 重建 | §1 的双侧图 + 本 PR 的耐久半边 | ⑳写入的字符串与 `projection-source.ts` 里那三个字面量逐字节相同（腿直接读该文件要求三个字面量都在）；㉑`createdAt` 与 contracts 的 `ISO_8601_TIMESTAMP_PATTERN` **字面同源**（读回 contracts 源码比对）。**category 两侧各自的钉法不在本文件重复**：host 侧 = `a6-pr2-assignment-kernel.test.ts` 的 mirror pin（沿 factType 字面量走到 `FACT_TYPE_CATEGORY` 条目并要求 `team`），client 侧 = `packages/client/test/ledger-adapter.test.ts` 的行为腿（三行进 `team`、badge 不亮）；本 PR 补的正是此前不存在的那一半 —— **耐久行里真的是这三个字符串**。**真实宿主投影的重启呈现仍是 C2/ENV_BLOCK，不记 PASS** |
+| host/client factType-category 一致 + 重启后 Projection 重建 | §1 的双侧图 + 本 PR 的耐久半边 | ⑳写入的字符串与 `projection-source.ts` 里那三个字面量逐字节相同（腿直接读该文件要求三个字面量都在）；㉑`createdAt` 与 contracts 的 `ISO_8601_TIMESTAMP_PATTERN` **字面同源**（读回 contracts 源码比对）。**category 两侧各自的钉法不在本文件重复**：host 侧 = `a6-pr2-assignment-kernel.test.ts` 的 mirror pin（沿 factType 字面量走到 `FACT_TYPE_CATEGORY` 条目并要求 `team`），client 侧 = `packages/client/test/ledger-adapter.test.ts` 的行为腿（三行进 `team`、badge 不亮）；本 PR 补的正是此前不存在的那一半 —— **耐久行里真的是这三个字符串**。**真实宿主的重启呈现分两半（2026-10-31 round-15 实测）**：**耐久半边已测** —— 新宿主进程 `openTeamDomain` 重开同一world，读回三行与首进程写出的逐字段相同、`team_sessions.generation` 仍 = 4、原命令重放在**原序列**答 `already` 且零新行（`tests/kits/pr-i1a-real-host`，`verdict=pass pass=24`）；**投影呈现仍未测**，原因不再是缺宿主，而是本 lane 零调用者⇒ 生产组合里不会长出 assignment 行 —— 这一半归 PR-I1b，不记 PASS |
 | Assignment 非授权凭据 | D-9 | ㉒耐久载荷键集合 == `REVIEW_ASSIGNMENT_PAYLOAD_FIELDS`（最强形式：封闭集之外无键），且其中无 authorit/permission/grant/credential/token/allowed 命中；㉓绕过 Writer、在编码之后往 `put` 载荷里塞 `authority` ⇒ 被**读回**抓为 `READBACK_MISMATCH`（不是被接受） |
 | 无法证明即退回 Leader，禁止由空/缺失记录推导允许 | D-8 + `checkAssignmentMutation` + R-4 | ㉔空 case 上 `transferred` ⇒ `NO_ACTIVE_ASSIGNMENT` 且零行（不会顺手创建 assignment）；㉕空状态对三种 caller × 三个 epoch 一律不允（`maySubmitFor` 全拒）；㉖退休后三种命令全拒且零新行，同队另一 case 不受影响（R-4） |
 | （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 8 个自有代码**全部被产生过**（期望列表手写，见 R-13）、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿；㉞reader 藏行 ⇒ 两条活行同 epoch 的后果被测量 + 端口合同的文档句被钉住（R-12）；㊂藏**中间**行被 epoch CAS 判出、藏**后缀**看不见且使该案永久不可写 —— 两边都测（R-21）；㊃介质 reject 一个 `{code, problem}` 时 refusal 带上它自己的代码而不是 "(object)"（R-21） |
 
-**未在本 PR 测量（不假装）**：真实宿主世界上的并发对账与重启后的客户端呈现（C2 = ENV_BLOCK）；与 control 路径共享
-同一把锁时的 interleaving（需 PR-I1b 接线）；投影在真实客户端 store 里跨代的重建（PR-I1a 只承诺写进去的字节与两侧图一致）。
+**未在本 PR 测量（不假装；2026-10-31 round-15 收窄）**：真实宿主世界上的并发对账与重启后的客户端呈现（原记 C2 = ENV_BLOCK）——其中的**耐久**部分已测（两进程、同一 world、真实介质：三行 + generation + 原序列重放，见 §2a 与 R-28）。
+仍未测的是：①真实宿主上的**并发对账**（本 kit 单写者，跨进程给锁是 PR-I1b 的 adapter 决定，在此测只能测我自己的选择）；
+②**客户端呈现**与投影在真实客户端 store 里跨代的重建（零调用者 ⇒ 生产组合里没有这些行可呈现）；
+③与 control 路径共享同一把锁时的 interleaving（需 PR-I1b 接线）。PR-I1a 只承诺写进去的字节与两侧图一致。
 
 ## 4. 已知不可从本树决定（留给后续，不假装解决）
 
@@ -349,7 +426,7 @@ per-file diff 0）再合入。
   并把"唯一写入者"钉成可扫的法律。
 - **`basedOnCaseVersion` 没有版本代数**（`facts.ts:145-146` 只要求 hygienic id）：Writer 只能等值比较，不能判
   新旧；将来若需要"版本必须前进"，那是一个新法律，需要新裁决。
-- **真实 Host 的并发/重启形态**：需 PR-I1b 接线后单所有者 C2。
+- **真实 Host 的并发/重启形态**（2026-10-31 round-15 拆开）：**重启形态的耐久半边已由 `tests/kits/pr-i1a-real-host` 测掉**（C2，24/24 绿，含盘上字节与新进程折叠）；**并发形态**仍等 PR-I1b —— 等的是**接线**（谁在真实宿主里调用这个 writer、跨进程怎么给锁），不再等环境。
 - **退休后的 case 无法再获得 assignment（R-4）**：树能证明的是 `checkAssignmentMutation` 的三条规则与由此产生的终点性；
   要不要给「重新指派一条新 leg」一个公开的行种类，是 D-8 那条公开变更的决策，需要新裁决 + host/client 两张 category
   图同步，本 PR 不替它选。

@@ -7403,3 +7403,67 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   ⇒ 锚定失配，只命中 title，故同一脚本两 PR 的 token 不同，且与源码规则完全一致。我先前想写的"早先几轮归因不同是
   因为当时正文首行不含 marker"是**未经证实的推断**（我保留了当时的正文首行，它同样以 marker 开头，故该推断不成立），
   按律不写进正本；此处只留可由源码与两次实测复现的部分。
+
+## 2026-10-31 — #517 round-15：真实宿主在本 worktree 真的起来了；四条 ENV_BLOCK 的「环境」前提被本 PR 自己的证据推翻；「default-off」开关被证明不存在；ci-pr-gate 的 census 腿从「环境拒绝」变成「参与评分并红」
+
+- **本轮的起点是一个没测过的前提**：PR-I1a 把真实宿主一栏记成 `C2 = ENV_BLOCK`，理由写的是"没有可启动的宿主"。
+  本轮按 TEST_METHODS §2 在本 worktree 物化：`git clone --local --no-hardlinks /home/armourpiercer/deepseek-harness
+  tests/deepseek-harness-test-use` → `checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84` → 工作区 store
+  `--offline` 安装 → `DSH_CLIENT_COMMIT_HASH=639ed01539 pnpm run build`。物化后 `RUNTIME_PORCELAIN=0`；
+  **宿主 clone `/home/armourpiercer/deepseek-harness` 的 `git status --porcelain | wc -l` = 0（本轮开始与结束各测一次）**。
+  结论：那句 ENV_BLOCK 从来不是环境事实，是**没人去跑**。
+- **新仪器**（tracked，`tests/kits/pr-i1a-real-host/`）：`pr-i1a-real-host.mjs`（驱动）+ `pri1a-probe-row.mjs`
+  （探针行，**只经公开 `profiles/web/cordis.patch.yml` seam 挂载**，CORE PATCH BUDGET = 0，宿主树零改动）。
+  探针行经 `packages/runtime/root-binding/harness/seam.mjs` 取宿主自己的 `storageDomain`，驱动 **BUILT** 的
+  `applyReviewAssignment`；`DSH_HOME` 在本 worktree 内 `tests/homes/<world>`，端口 3182/3183（3080/3180 全程未碰），
+  每 boot 一个唯一 marker。判决：`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`。
+- **C2 现在测到了什么**（两进程、同一 world、真实介质；证据 `dev/agent-workflow/evidence/alpha6-pri1a-real-host/a6pri1a-2026-10-31T15-46-00Z/`）：
+  created/transferred/retired 落在序列 **1/2/3** 与 epoch **1/2/3**；进程内重放 `{"applied":"already","sequence":1}` 零新行；
+  `team_sessions.generation` **1→4**（三次耐久写各推进一次，重放零次——R-20 那条"盖章要跟着走"第一次落在真实介质上）；
+  **宿主进程退出之后**由驱动进程在盘上扫到 `storages/team_domain.json` 里三个 factType 字面量各 1 次（扫描按名字排除探针自己的
+  报告与宿主日志，否则这条腿会被探针自己的话喂绿）；第二个宿主进程 `openTeamDomain` 重开同一 world，读回三行与首进程
+  **逐字段相同**、generation 仍 = 4；原命令在**原序列**答 `already` 且零新行；同 root 的另一 case 取到序列 **4**（链继续，不重启）；
+  注入锁 `acquires=4 peak depth=1`。
+- **可失败性按同一轮证明**（不是口头保证）：把期望字节 `1,2,3` 改成 `1,2,4`（单字节）重跑 ⇒
+  `DSH-PRI1A-REALHOST verdict=fail pass=23 fail=1 refused=0 legs=24 failed=boot-1-sequence-chain-is-1-2-3`、exit=1；
+  恢复后 `diff -q` 与改动前备份相同。红的这一份**故意留在** `…/a6pri1a-2026-10-31T15-46-27Z/`，并由该目录 `README.md`
+  标明它是变异证明、不是回归。
+- **仍未测的三样被点名，不并入绿**：真实宿主上的**并发对账**（本 kit 单写者；跨进程怎么给锁是注入端口的事实，
+  归 PR-I1b 的 adapter——在这里测并发只能测我自己写的 adapter）；**客户端投影呈现**（零调用者 ⇒ 生产组合里根本不会长出
+  assignment 行）；与 control 路径同锁的 **interleaving**（等 PR-I1b **接线**，不再等环境）。§2a/§3/§4 四处旧 ENV_BLOCK 句
+  已在 memo 顶部 dated banner 里**逐条引用原话**并 forward 更正，另加 §2b **R-28/R-29**。
+- **§9.6 那个「default-off」开关不存在**（两条腿，同一 kit）：对本 worktree 的 **BUILT** 行直接调
+  `validateTeamPluginConfig`，带 `feature:'on'` + `assignmentFeature:'on'` 的行配置被**接受并原样交回**
+  （`feature="on", assignmentFeature="on"`——既不 honour 也不 refusal）；`packages/**`（dist 之外）**0 个文件**提到该键；
+  dormancy 扫描再给出零 importer。⇒ "默认关/非启用团队 byte-identical" 不是宿主可切换的 A/B，"默认关"就是"没有调用者"；
+  能保留、且能被钉住的说法是"没有 caller 的组合里一行 assignment 都不会出现"。**PR 正文 §9 第 6 条需按此改写**（本轮无 GitHub 写权）。
+- **ci-pr-gate 在本 worktree 变强了**：runtime 物化后 census 腿不再走 `missing-test-use-checkout` 拒绝，而是**评分并红**——
+  `DSH-CI-VERDICT ... pass=8 fail=1 skip=0 skipped=none legs=9 refused=0 refusedlegs=none`，红因
+  `captured 661f/8947l vs baseline-declared 626 / 7936`；**同一 head 复跑两次，被点名的新红集合不同**——
+  第一次 3 条（`alpha5-search-backend` Spill-class 腿 + `a4p7-merge-gate` ×2），第二次 4 条
+  （`a5g6-install-face-render` GLUE-6 LEG B、`a5p4-lane-hygiene` self-typecheck + **同样的** `a4p7-merge-gate` ×2），
+  两次计数都是 661f/8947l ⇒ **点名的是会轮换的残留**，稳定出现的只有已披露那两条；与日志既有的"同 head 两次全量不同"一致。
+  **PR 正文 §8 那句"唯一失败是 census 腿的环境拒绝"在物化世界不再成立**，两世界须分开陈述（干净检出里它仍 `refused`）。
+  两次对照 JSON 内含 `.artifacts` 绝对路径，按本轮纪律未提交（同目录已提交的历史对照是同形状，字段可在处核对）。
+- **同一轮复测的其他门禁**（测于本 commit 的工作树；tracked 生产源码与 `a2bc18d78` 逐字节相同，见
+  `DSH-ARTIFACT-VERDICT script=check-artifacts-committed ... verdict=ok compared=1943 glue=100`）：
+  `pnpm --filter ./packages/runtime run typecheck` = 0；`pnpm build` = 0（重建后 `check-artifacts-committed`
+  报 `verdict=ok compared=1943 glue=100`，即未改动的生产源码重建出的字节与 INDEX 相同）；`pnpm build:composition` = 0；
+  九文件套件 `Test Files 1 failed | 8 passed (9)`、`Tests 2 failed | 317 passed (319)`（这一遍跑在两条 prose 更正**之前**），
+  两条红**就是已披露的那两条**
+  （`refuses the leg, by name, when the host module closure cannot be traversed`、
+  `the client lane runs, and no failure appears outside the disclosed baseline`）——**物化 runtime 没有替它们买单**；
+  `p4t6-session-event-scan` **20/20 无 skip**（正文"16 pass / 4 env-skip"是错的，本轮实测更正）；
+  两条 prose 更正之后单独复跑被改到的两个文件：`Tests 69 passed (69)`（49 writer + 20 census，无 skip，booking 的
+  `1416 → 1418` 算术仍绿；扫描器数的是**文件**，改散文不动总数——这是测出来的，不是推的）；
+  本轮另把两处 tracked 里的过期句子 forward 更正：spec 头 `It is NOT a real Host run — C2 stays ENV_BLOCK`（改为引用
+  本 kit 的 24/24 与三项仍未声称之事）、booking `reason` 里 `C2 real-Host stays ENV_BLOCK and is not claimed` 与
+  `45 legs`（现读 49，原文保留并标日期）；
+  census 总数与 booking（`1416 → 1418`，total 1418）**未动**——kit 在 `tests/**`、证据在 `dev/**`，
+  都在扫描宇宙之外，**这是披露不是夹带**。`check-artifacts-at-head` / `docs-sync --check` / `eb3-evidence-guard --new-since HEAD~1`
+  三条只能在 commit 之后跑，token 记入本轮 PR comment。
+- **清理证明**：两个 world 全部在 teardown 删除（`tests/homes/` 目录条目数 = 0）；`ss -ltn` 复核 3182/3183 均 free；
+  本会话无遗留 marker 进程；宿主 clone porcelain 前/后 = 0/0。
+- **纪律自查**：CORE PATCH BUDGET = 0（宿主树与 lane 树零生产改动，本轮只加 `tests/kits/**`、`dev/agent-workflow/evidence/**`、
+  memo 与本日志）；未放松任何封闭集、卫生规则或 pin；`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、
+  九个自有拒绝码全部未动；端口只用 318x，:3080 未触碰；未 push、未 GitHub 写、未 amend。

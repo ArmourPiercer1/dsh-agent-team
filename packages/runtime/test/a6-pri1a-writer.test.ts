@@ -8,7 +8,15 @@
  * `LedgerRepository`, opened through `createTeamDomain`/`openTeamDomain` over `p4-helpers`'
  * `InMemoryStorageSeam` — the fake that implements the public `StorageDomainSeam` contract exactly, per-domain,
  * with committed-byte inspection and write-count crash injection. That is C1: real durable code, contract-exact
- * medium, deterministic. It is NOT a real Host run — C2 stays ENV_BLOCK, and nothing below is offered as one.
+ * medium, deterministic. It is NOT itself a real Host run, and nothing below is offered as one. What THIS line
+ * said until 2026-10-31 (round 15) was "C2 stays ENV_BLOCK" — that premise was measured and is now narrower: a
+ * bootable host was materialised in this worktree and the real-Host durability legs RAN in
+ * `tests/kits/pr-i1a-real-host/` (`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`: two host
+ * processes over one world, sequences 1/2/3, generation 1 to 4, the fact-type bytes found on disk after the host
+ * exited, the reopen folding identical rows, replay still answering at the original sequence). What still lives
+ * OUTSIDE this file — and stays unclaimed — is the client-projection rendering over a real store, real-host
+ * CONCURRENT reconciliation, and interleaving with the control path under one lock: all three wait on a caller
+ * (PR-I1b wiring), not on an environment. See the memo §2b R-28.
  *
  * The legs are grouped by the six things the ruling requires this PR to cover, in that order: persistence and
  * recovery; epoch/CAS/idempotency/conflict/write-failure; ownership, isolation and corruption; identity and
