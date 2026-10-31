@@ -317,3 +317,76 @@ evidence for it"）。实现模块头 `packages/runtime/review-assignment/assign
   pin 使其对绑定 inert）；一次未落地的失败 run（15-53-57Z，双 kit 并跑互相干扰）只披露不落地。台账见
   `dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/SUPERSEDED-RUNS.md`。第 5/8 点引用的 `checks=22`/`checks=23`
   是其当时真实值；当前绑定 token 为 `run=a6pri1b-2026-10-31T15-54-28Z checks=24 failed=0`。
+
+**10）dated 2026-10-31（round 4 更正登记；接受 round 4 全部 2 MINOR，另落 2 INFO；本轮 0 BLOCKER / 0 MAJOR）。**
+
+修复面只有文书与 merge-gate spec：`packages/runtime/test/a6-pr-i1b-admission.test.ts`、本 memo、证据台账
+`SUPERSEDED-RUNS.md` 的 dated addendum。kit、`gate-order.mjs`、`gate-order.d.mts`、`capture.json` 与 stamp 目录、
+生产源码与 dist **零字节改动**（per-file numstat 见修复报告），所以**不重跑 kit**：仪器没变，重跑只会换一套 stamp
+和另一套 38 个叶格答案（run-varying），把绑定指向新集而无证据增益。
+
+- **F-I1b4-1（共享量序函数 = 无人评分的单点）。** 新增 `describe('THE INSTRUMENT ITSELF (F-I1b4-1)…')`：7 条**普通
+  `it`**（不走 `itRealHost`，故三条降级臂都跑它们；读捕获腿计数仍为 7，第 9 点里 "7 skipped / 7 RED" 的语义不动），
+  量的是本文件当场写出的**合成源**（不碰宿主、运行时、捕获）。合成源带 3 个**体外**诱饵（函数上方注释、另一函数里的
+  字符串、`commitAbandonmentFact` 体内的同名调用），照抄真实文件形状：实测 `enforceEnvelope(` + 空白 +
+  `RESOLVE_CONTROL_SPEC` 在真实 `service.ts` 全文件 4 次、`resolveControl` 体内 1 次——round 4 的变异尝试正是死在
+  这个计数上（拿全文件计数去改一个干净树）。断言面：① 闭包先于信封 ⇒ `ok:true` 且行号 = 那个 20 行合成源自己的行号
+  （期望值由 `findIndex` 从行数组导出，刻意不走模块的 `slice+split` 算术，免得把模块的算法抄一遍当验收）；② 同八行
+  纯换位 ⇒ `ok:false` 且两个行号各留在原位（先断言两体 `sort()` 相等、两源字符多重集相等，"纯移动"是断言不是叙述）；
+  ③ 体内无闭包 marker ⇒ 拒绝、`closureLine=null`、`measured` 里写 `closure markers=0`；④ 删尽体内 marker 而体外诱饵
+  原样在场 ⇒ 仍拒绝且 `closureLine/envelopeLine = null/null`（此时全文件计数 = 3）——**体外计数不计入，是被量出来的，
+  不是被假设的**；⑤ 体内多一条信封形状的注释 ⇒ 拒绝且 `envelope calls=2`：文本量的极限写死在腿里（体内注释算数），
+  但其方向只会是拒绝，永远不可能把错的序读成对的序。比较侧同批量：逐字段比较提为唯一具名函数
+  `assertGateOrderAgreesWithCapture`（`readRealHostCapture` 与 fixtures 调**同一份**，发布消息逐字节不变，`subject`
+  只说"这次量的是谁"），合成源自比 `.not.toThrow()`，`ok` / `closureLine` / `envelopeLine` / `measured` 单字段漂移
+  各自 `.toThrow()`；再加一条腿守"唯一实现"前提（kit 与本 spec 都 import、两边都不许出现第二份定义；needle 拼装
+  而出，避免断言文本自指）。**变异复现（在修复提交的 clone 上，全部先打结构断言再跑）：G1 `const ok = true`（3526→3369
+  字节、花括号 delta 0、`node --check` rc=0、真实树仍 2622/2654）→ 4 条具名腿红、rc=1，首条
+  "the envelope call sits BEFORE the role closure in this source and the module still certified it — the conjunction
+  is gone"；G3 `return 捕获那四个字段`（3526→3351 字节、`node --check` rc=0、三种源一律 2622/2654）→ 6 条具名腿红、
+  rc=1，首条 "the module put the closure on the wrong line… :2622… :2654"——一个 20 行合成源不可能报出 5602 行文件的
+  行号；G3 + 纯换位（round 3 的发布态组合）→ 6 条红、rc=1；纯换位单独 → 仍 7 条读捕获腿红、消息与第 9 点逐字节相同
+  （第 9 点的真话原样保留）。**
+- **F-I1b4-2（docstring 过度声称）。** 原句 "A whole-file fabrication (right shape, no host behind it) reddens
+  here by name" 声称了仪器产不出的红，已就地改写为按边界陈述：pin 绑（i）`capture.json` ≡ 它自己指名的
+  `<runStamp>/verdict.json` **字节**；（ii）二者与当下树的绑定（门序对本树 `control/service.ts` 重跑、运行时 live
+  HEAD 与 porcelain、`laneHead` 祖先、信封格 code）。**改后每一句都可由具名腿反证，本轮逐条实测（结构断言先过、成对
+  文件一律字节一致重写以隔离被测 pin、跑完 restore 且 tracked diffs=0）**：只改 `capture.json`（runStamp →
+  12-46-43Z，该目录真实存在，存在性 pin 会过）→ 7 腿红，点名 "not byte-identical"；`hostHead` → 运行时里真实存在但
+  不在场的 commit → 7 腿红，点名 runtime HEAD；`laneHead` → 本仓真实存在但非祖先的
+  `refs/remotes/origin/alpha6/lane2-governance-20261031`(`991faacc4f37…`) → 7 腿红，点名 ancestry；ports →
+  `[3182, 3282]` 连 marker 连 stamp verdict 字节一致 → 7 腿红，点名 `TEST_PORT_RANGES` 区间；`leader-approval|leader`
+  的 code → `CONTROL_RESOLVED`（closure 仍写 `agreed-then-envelope-refused`）→ 7 腿红，点名该格。**同时复现
+  M-PAIR 以证明新边界属实**：`capture.json` 与 `<runStamp>/verdict.json` **一起**伪造（stamp `a6pri1b-2099-01-01T00-00-00Z`、
+  ports `3185/3186` 带内互异、marker 与 ports 互读一致、`hostHead` 与 live 运行时 HEAD 相等、porcelain 0/0、`laneHead`
+  仍是真祖先、`resolvePathOrder` 由真实源重导、24 条 checks 全 ok——九条结构断言先过再跑）→ **`Tests 65 passed (65)`、
+  rc=0**。即：这套 pin 绑不到"真起过一个宿主"，只有重跑 kit 能做；对成对伪造，防线是证据文件前面的 git review——这句
+  现在写在 docstring 里，不再被说成一条会红的腿。kit 头注释（`pr-i1b-real-host.mjs:35-51`）**不含**被推翻的那句声称
+  （它只说"源码重排而跳过 kit 复跑，会在 spec 处红"），故本轮不动 kit；本 memo 第 9 点也未写过该声称，无需更正旧句，
+  边界按只追加惯例落在本条。
+- **F-I1b4-3（记了但不读的字段）。** `RealHostCapture` 只声明本文件真读的 18 个键；kit 还记 `clientCommitHash`、
+  `row`、`p6t6Row`、`worlds`、`created` 五个键，本文件一个都不读；stamp 目录里 `verdict.json` 按字节钉、
+  `MEASURED-LINES.txt` 只按存在钉，`host.log` 与 `MEASURED-LINES.txt` 的**内容**无人读。这些都不承载发布声称
+  （`created` 的实质由活体腿独立重推）。披露从散文升级为 census：`CAPTURE_FIELDS_READ` + `CAPTURE_FIELDS_UNREAD`
+  在 `readRealHostCapture` 里双向对表——kit 新增而本文件既不读不列 → 红；字段从捕获消失而清单未更新 → 也红。
+- **F-I1b4-4（VERDICT token 与独立复现）。** kit 打印格式是
+  `VERDICT kit=pr-i1b-real-host run=${RUN_STAMP} head=${laneHead} ports=${port}+${enablePort} checks=${results.length} failed=${failed.length}`
+  （`pr-i1b-real-host.mjs:554`，含 `head=`；此前各处引用的 token 都把它省了）。**绑定集**的完整形式为
+  `VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T15-54-28Z head=25641045687b6788e593e7471b3dd24b1fa3531a ports=3181+3182 checks=24 failed=0`——
+  标注清楚：这一条是**按 kit 格式 + 捕获字段重建**（`run`/`head`/`ports`/`checks` 全取自已提交的 `capture.json`），
+  因为修复轮的完整 token 当时没有逐字落进任何 tracked 文件；**reviewer 的带内复跑**才是逐字观测到的第一份独立复现：
+  `VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T17-30-04Z head=58a89b3909248d4385275c364d686e40d3b9de78 ports=3181+3182 checks=24 failed=0`（rc=0，
+  24 条 checks 全 ok，porcelain 前后 0，homes 清 0）。与绑定集的差异只有 `runStamp`、`laneHead` 与 38 个叶格的
+  run-varying 答案，端口、检查数、宿主基线全同。**这关闭 round 3 那条 MAJOR**（"捕获除 fixer 外无人能复现"）：复现
+  者是 round 4 reviewer 的独立会话，不是 fixer 自己。
+- **计数与降级臂（本轮重测，按移动文件而非改代码）。** spec 58 腿 → **65 腿**（+7 条 F-I1b4-1 腿）；四文件
+  **186 passed**（原 179）、12 文件 a6 家族 **456 passed**（原 449）、`pnpm --filter ./packages/runtime run typecheck`
+  rc=0、eslint rc=0、`docs-sync --check` `docs=106 … findings=0` rc=0、`eb3-evidence-guard --new-since HEAD~1` rc=0。
+  降级臂：runtime 在场 + 捕获缺失 → **7 failed | 58 passed (65)**、rc=1、逐腿点名 kit 命令；runtime 缺失 →
+  **58 passed | 7 skipped (65)**、rc=0、拒绝标题逐字为 `REAL-HOST (REFUSED — pristine runtime absent; the capture legs
+  below are SKIPPED, not passed)`——新增 7 条腿在这一臂也跑，正是不走 `itRealHost` 的理由。
+- **本轮不洗白的两处。** ① `gate-order.mjs` 仍是文本量：体外 marker 不算（④ 已量），但**体内**注释里的 marker 算数
+  （⑤ 已量并披露）；伪造成 `ok:true` 需要往 `resolveControl` 体内塞一条闭包 marker，而那会被 kit 的真实宿主答案
+  （`capture.answers`）与活体腿独立反驳——门序不是宿主行为的替身，是它的其中一道旁证。② 模块的 `measured` 句子在
+  `ok:false` 时仍写作 "closure check :N precedes … :M"（例如 `:3 precedes … :2`），措辞与结论相反；本轮只披露不改
+  （改文案 = 动仪器 = 必须重跑 kit = 绑定集移动，收益不值）。

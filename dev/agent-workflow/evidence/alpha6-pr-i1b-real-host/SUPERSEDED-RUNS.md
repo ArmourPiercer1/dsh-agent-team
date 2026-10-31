@@ -41,3 +41,26 @@ attributed the choice to the runner brief; that was wrong — the brief's ports 
 band-legal `--enable-port` under the old arithmetic still produced an off-band enable boot. The kit now
 derives both ports from the imported bands, refuses out-of-band `--port`/`--enable-port` by name, and
 asserts both ports in-band before booting anything.
+
+## Addendum (dated 2026-10-31, round 4 of PR-I1b / #522) — the VERDICT tokens in full
+
+Line 12 above quotes the binding run's verdict **abridged**: the kit prints `head=` too. Its format is
+`pr-i1b-real-host.mjs:554` — `VERDICT kit=pr-i1b-real-host run=${RUN_STAMP} head=${laneHead} ports=${port}+${enablePort}
+checks=${results.length} failed=${failed.length}` — so the full forms of the two tokens that matter are:
+
+- **Binding set** (reconstructed from that format plus the committed `capture.json` fields — the run's own stdout was
+  never captured verbatim into a tracked file, which is exactly what this addendum fixes going forward):
+  `VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T15-54-28Z head=25641045687b6788e593e7471b3dd24b1fa3531a ports=3181+3182 checks=24 failed=0`
+  (`run`/`head`/`ports`/`checks` are all read off the committed capture; `hostHead` of that run is the pinned baseline
+  `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain 0 before and after).
+- **First independent in-band re-run**, observed verbatim by the round-4 reviewer session (a different session from the
+  fixer's, in a `git clone --local --no-hardlinks` copy at `58a89b3909248d4385275c364d686e40d3b9de78`; rc=0, all 24
+  checks ok, host tree porcelain 0 before and after, `tests/homes` empty afterwards):
+  `VERDICT kit=pr-i1b-real-host run=a6pri1b-2026-10-31T17-30-04Z head=58a89b3909248d4385275c364d686e40d3b9de78 ports=3181+3182 checks=24 failed=0`
+  It differs from the binding set only in `runStamp`, `laneHead` (that clone stood on the fix commit, not on
+  `256410456`) and the 38 leaf-cell answers, which are run-varying by construction (request ids and timestamps);
+  ports, check count and host baseline are identical. **This is the reproduction round 3 asked for** — the capture is
+  reproducible by someone other than whoever ran it — and it is why `17-30-04Z` is listed here as *disclosed*, not as
+  binding: the merge gate stays bound to the committed `15-54-28Z` set (identity pin F-I1b3-2), and that directory was
+  not landed because landing a second self-consistent set would hand a future reader two captures the spec cannot
+  bind at once. Nothing else in this ledger changes.

@@ -1282,6 +1282,16 @@ interface RealHostCell {
   readonly closure: string
 }
 
+/**
+ * The capture's shape AS THIS FILE READS IT — and the file is honest about being narrower than the record.
+ * The kit writes MORE than this interface declares: `clientCommitHash`, `row`, `p6t6Row`, `worlds` and
+ * `created` are recorded and read by nobody here, and inside the stamped directory `verdict.json` is pinned by
+ * bytes and `MEASURED-LINES.txt` by existence only — the CONTENT of `host.log` and of `MEASURED-LINES.txt` is
+ * read by nobody either (F-I1b4-3, 2026-10-31, re-inventoried after round 3 asked for exactly that). None of
+ * them carries a published claim; `created`'s substance is independently re-derived by the live in-process
+ * legs. `CAPTURE_FIELDS_UNREAD` is that inventory as a machine check, so the disclosure refreshes itself:
+ * a field the kit starts recording and this file neither reads nor lists reddens inside `readRealHostCapture`.
+ */
 interface RealHostCapture {
   readonly kit: string
   readonly runStamp: string
@@ -1303,6 +1313,22 @@ interface RealHostCapture {
   readonly enableCensus: { readonly entries: number; readonly factTypes: readonly string[] }
   readonly checks: readonly { readonly id: string; readonly ok: boolean; readonly measured: string }[]
 }
+
+/** Every field of the capture this file actually reads, in the record's own order. F-I1b4-3, other half. */
+const CAPTURE_FIELDS_READ = [
+  'kit', 'runStamp', 'laneHead', 'hostHead', 'hostBaselineSha', 'hostPorcelainBefore', 'hostPorcelainAfter',
+  'resolvePathOrder', 'ports', 'markers', 'rootSessionId', 'rowConfigFields', 'unknownCaller', 'memberAttempt',
+  'answers', 'durableCensus', 'enableCensus', 'checks',
+] as const
+
+/**
+ * F-I1b4-3: recorded by the kit, unread here — the inventory, as a census rather than a sentence. Anything the
+ * kit adds that is not in one of the two lists reddens the read, by name, until it is either read or disclosed
+ * with the claim it does not carry. (The stamped directory's `host.log` content and `MEASURED-LINES.txt`
+ * content belong to the same class and are named in the interface comment above; they are not object keys, so
+ * the census cannot enumerate them.)
+ */
+const CAPTURE_FIELDS_UNREAD = ['clientCommitHash', 'row', 'p6t6Row', 'worlds', 'created'] as const
 
 const hostEnvironment = {
   pristineRuntime: existsSync(join(PRISTINE_HOST, 'apps', 'cli', 'lib', 'bin.js')),
@@ -1342,8 +1368,20 @@ const porcelainCount = (tree: string): number => gitIn(tree, ['status', '--porce
  * existence pin); the recorded ports must sit inside the imported `TEST_PORT_RANGES` and agree with the
  * process markers (F-I1b3-1/-4); the kit's gate-order measurement must re-run HERE against this tree's
  * `control/service.ts` and equal `resolvePathOrder` field for field (F-I1b3-3/-4); and `laneHead` must be a
- * real ancestor commit of this repository. A whole-file fabrication (right shape, no host behind it) reddens
- * here by name — and so does every drift of the tree under a still-committed capture.
+ * real ancestor commit of this repository.
+ *
+ * WHAT THAT BINDS, at its exact size (round 4 of #522, F-I1b4-2 — the sentence this replaced claimed a red the
+ * instrument cannot produce). The pins bind the capture to its own stamped evidence set (byte identity), and
+ * bind both of them to the tree that exists now: gate order re-derived from THIS `service.ts`, the runtime's
+ * live HEAD and porcelain, `laneHead` ancestry, the code each envelope cell carries. So a fabrication of
+ * `capture.json` ALONE reddens here by name — one edited file cannot satisfy an identity pin over two — and
+ * every drift of the tree under a still-committed capture reddens, seven legs deep. What no pin below can do
+ * is bind the pair to "a host actually booted": a `capture.json` and a `<runStamp>/verdict.json` written
+ * TOGETHER, with the live-re-measured fields kept honest and the ports merely in band, passes every assertion
+ * here while naming a run that never happened on ports nothing ever bound (round 4's M-PAIR, reproduced again
+ * at this commit: exit 0 with every leg of this file green — the counts are in memo §10.10). Only re-running
+ * the kit turns this read into a measurement of a host; against a pair fabricated together the defence is git
+ * review in front of the evidence files, and that is stated here rather than claimed away.
  */
 function readRealHostCapture(): RealHostCapture | null {
   expect(REAL_HOST_REFUSED, 'a real-host capture leg ran with no pristine runtime — the refusal gate is broken').toBe(false)
@@ -1355,6 +1393,16 @@ function readRealHostCapture(): RealHostCapture | null {
   ).toBe(true)
   const captureBytes = readFileSync(CAPTURE_PATH)
   const capture = JSON.parse(captureBytes.toString('utf8')) as RealHostCapture
+  // F-I1b4-3: the unread-field disclosure is a census, not a paragraph. Everything the kit records must be
+  // either read by this file or named in CAPTURE_FIELDS_UNREAD; a third state — recorded, unread, and
+  // undisclosed — is how a capture quietly becomes prose again. Both directions, so a field that LEaves the
+  // capture reddens this too: a stale list is the same rot on the other side.
+  const captureKeys: readonly string[] = Object.keys(capture).sort()
+  const disclosedKeys: readonly string[] = [...CAPTURE_FIELDS_READ, ...CAPTURE_FIELDS_UNREAD].sort()
+  expect(captureKeys.filter((key) => !disclosedKeys.includes(key)),
+    'the capture records fields this file neither reads nor discloses (F-I1b4-3): read them, or add them to CAPTURE_FIELDS_UNREAD with the claim they do not carry').toEqual([])
+  expect(disclosedKeys.filter((key) => !captureKeys.includes(key)),
+    'a field this file says it reads or leaves unread is no longer recorded by the kit — the two lists are stale on the other side, refresh them (F-I1b4-3)').toEqual([])
   expect(capture.kit, 'the capture next to this file was not written by the PR-I1b real-host instrument').toBe('pr-i1b-real-host')
   // A capture off the pinned baseline measures a different host; the comparison below would be a lie.
   expect(capture.hostBaselineSha, 'the capture was taken against a host baseline other than the pin this lane tests').toBe(TEST_USE_BASELINE_SHA)
@@ -1414,9 +1462,7 @@ function readRealHostCapture(): RealHostCapture | null {
   // order-stale repro shipped 58 green; here it reddens seven), and `closureLine`/`envelopeLine` stop being
   // dead fields: they are compared, not just stored.
   const liveOrder = measureResolvePathGateOrder(readFileSync(CONTROL_SERVICE_PATH, 'utf8'))
-  expect(liveOrder,
-    'the kit\'s gate-order measurement, re-run at read time against this tree\'s packages/runtime/control/service.ts, disagrees with what the capture recorded — '
-    + 'the resolve path was reordered (or edited) since the kit ran, or the capture was fabricated: re-run `node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` and commit the capture it writes').toEqual(capture.resolvePathOrder)
+  assertGateOrderAgreesWithCapture(liveOrder, capture.resolvePathOrder, 'this tree\'s packages/runtime/control/service.ts')
   for (const [key, cell] of Object.entries(capture.answers)) {
     if (cell.closure === 'agreed-then-envelope-refused') {
       expect(cell.code, `cell ${key} is recorded as envelope-refused but carries ${cell.code}`).toBe('TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS')
@@ -1424,6 +1470,224 @@ function readRealHostCapture(): RealHostCapture | null {
   }
   return capture
 }
+
+// --- THE INSTRUMENT ITSELF (round 4 of #522, F-I1b4-1): the shared measurement, measured -------------------
+
+/**
+ * The four fields the read-time agreement is about, spelled from the CAPTURE's own type on purpose: the shape
+ * `gate-order.d.mts` declares has to stay assignable to it, so drift between the module's declared output and
+ * the field the capture records became a TYPE error here in addition to a red leg.
+ */
+type GateOrderRecord = RealHostCapture['resolvePathOrder']
+
+/**
+ * THE read-time agreement check, as ONE named function (F-I1b4-1). `readRealHostCapture` calls it for every
+ * capture-reading leg and the fixture block below calls it directly, so the fixtures grade the check that
+ * actually runs rather than a copy of it — a second copy is the round-2 drift class this file has spent three
+ * rounds removing. `subject` is the only variable: it names what `live` was measured against, so the message
+ * a synthetic-source leg prints cannot be mistaken for the message the real tree prints.
+ */
+function assertGateOrderAgreesWithCapture(live: GateOrderRecord, recorded: GateOrderRecord, subject: string): void {
+  expect(live,
+    `the kit's gate-order measurement, re-run at read time against ${subject}, disagrees with what the capture recorded — `
+    + 'the resolve path was reordered (or edited) since the kit ran, or the capture was fabricated: re-run `node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` and commit the capture it writes').toEqual(recorded)
+}
+
+const GATE_ORDER_CLOSURE_MARKER = 'const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]'
+const GATE_ORDER_ENVELOPE_CALL = 'enforceEnvelope(RESOLVE_CONTROL_SPEC, request, caller)'
+
+/**
+ * A SYNTHETIC `packages/runtime/control/service.ts` for the legs below — no host, no runtime, no capture, so
+ * these legs run in every arm, the runtime-absent one included. It carries the two anchors the measurement
+ * scopes by, the body the caller hands in, and three decoy occurrences of the envelope marker OUTSIDE that
+ * body: one in a comment above the function, one inside a string in another function, one in the sibling path
+ * below it. That is the shape the real file has — measured at this commit: 4 whole-file matches of
+ * `enforceEnvelope(` + whitespace + `RESOLVE_CONTROL_SPEC`, exactly 1 inside `resolveControl` — and it is the
+ * shape that aborted round 4's own mutation attempt, because a whole-file count reads 4 and calls a clean tree
+ * reordered. The expected line numbers are derived from the LINES by `findIndex`, a different route than the
+ * module's `src.slice(0, fnStart + idx).split('\n').length`, so an expectation here is not the module's own
+ * arithmetic quoted back to it.
+ */
+function synthControlSource(body: readonly string[]): { readonly src: string; readonly closureLine: number | null; readonly envelopeLine: number | null } {
+  const lines = [
+    '// Decoy 1 of 3, outside the body — a whole-file count sees it; the measurement must not.',
+    '//   The resolve path calls enforceEnvelope(RESOLVE_CONTROL_SPEC, …) AFTER the role closure.',
+    'function describeResolvePath(): string {',
+    '  // Decoy 2: the same words inside a string, in a function that resolves nothing.',
+    '  return \'resolveControl: enforceEnvelope(RESOLVE_CONTROL_SPEC, …) is the second gate\'',
+    '}',
+    'async function resolveControl(request: ResolveControlCommand, caller: Caller) {',
+    ...body,
+    '}',
+    '',
+    'async function commitAbandonmentFact(fact: AbandonmentFactCommand) {',
+    '  // Decoy 3: the sibling path has its own envelope call, below the body the measurement scopes to.',
+    '  enforceEnvelope(RESOLVE_CONTROL_SPEC, fact, caller)',
+    '}',
+    '',
+  ]
+  const at = (marker: string): number | null => {
+    const index = lines.findIndex((line) => line.includes(marker))
+    return index >= 0 ? index + 1 : null
+  }
+  return { src: lines.join('\n'), closureLine: at(GATE_ORDER_CLOSURE_MARKER), envelopeLine: at(GATE_ORDER_ENVELOPE_CALL) }
+}
+
+// The body, line by line under names: the two fixtures are then two literal orderings of the SAME eight
+// lines, and the permutation assertion below proves it — "pure move" is an assertion, not a description.
+const LINE_READ_TARGET = '  const target = await readTarget(request)'
+const LINE_CLOSURE_COMMENT = '  // Role closure (BEFORE the envelope — invariant 37).'
+const LINE_CLOSURE_CHECK = `  ${GATE_ORDER_CLOSURE_MARKER}`
+const LINE_GUARD_OPEN = '  if (!allowedRoles.includes(caller.role)) {'
+const LINE_GUARD_THROW = '    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, \'role is not a resolver\')'
+const LINE_GUARD_CLOSE = '  }'
+const LINE_ENVELOPE_CALL = `  ${GATE_ORDER_ENVELOPE_CALL}`
+const LINE_RECORD = '  return record(target)'
+
+/** The honest order: read the target, close the roles, then the envelope, then record. */
+const GATE_ORDER_BODY_HONEST: readonly string[] = [
+  LINE_READ_TARGET, LINE_CLOSURE_COMMENT, LINE_CLOSURE_CHECK, LINE_GUARD_OPEN, LINE_GUARD_THROW, LINE_GUARD_CLOSE,
+  LINE_ENVELOPE_CALL, LINE_RECORD,
+]
+/** The SAME eight lines with the envelope call moved above the closure — a pure move, nothing added or lost. */
+const GATE_ORDER_BODY_MOVED: readonly string[] = [
+  LINE_READ_TARGET, LINE_ENVELOPE_CALL, LINE_CLOSURE_COMMENT, LINE_CLOSURE_CHECK, LINE_GUARD_OPEN, LINE_GUARD_THROW,
+  LINE_GUARD_CLOSE, LINE_RECORD,
+]
+const GATE_ORDER_HONEST = synthControlSource(GATE_ORDER_BODY_HONEST)
+const GATE_ORDER_MOVED = synthControlSource(GATE_ORDER_BODY_MOVED)
+
+describe('THE INSTRUMENT ITSELF (F-I1b4-1): the gate-order measurement is measured, on sources this file writes', () => {
+  // Round 3 put ONE function behind BOTH instruments — the kit measures the gate order when it captures, this
+  // file re-measures it when it reads. Sharing killed round 2's drift bug (two texts that could disagree) and
+  // concentrated everything that remained into one 23-line body with no test of its own (round 4, F-I1b4-1).
+  // Two mutations produced that body in minutes: `const ok = true` printed `Tests 58 passed (58)` and exit 0,
+  // and `return CAPTURED` — the committed capture's four fields, returned for every source — did the same even
+  // with the resolve path actually reordered. Both are reproduced in this session's report. They die here
+  // because a constant cannot produce the line numbers of a source that has twenty of them, and cannot produce
+  // `false` for a source the constant was never read from.
+  //
+  // THE LIMIT, stated where a reader meets it rather than three files away: the module is TEXTUAL. It scopes
+  // to the `resolveControl` body, and the legs below GRADE that scoping instead of assuming it — three markers
+  // outside the body do not count, and a body with no closure marker is refused even when the file is full of
+  // the words. INSIDE the body it counts text, so a marker inside a comment counts too; the direction of that
+  // error is refusal (`ok:false`), never a green this file would publish, and the thing a comment cannot forge
+  // is the host's own answers in `capture.answers`, which the real-host legs read independently.
+
+  it('measures a synthetic closure-before-envelope source as ok, at the lines THAT source has', () => {
+    // The structure of the fixture is asserted before the module's answer is trusted — the same method law the
+    // mutations follow: prove the input is the input you think you built.
+    expect(GATE_ORDER_HONEST.src.split('enforceEnvelope(').length - 1,
+      'the synthetic source stopped carrying the decoys that make this a body-scoping test').toBe(4)
+    expect(GATE_ORDER_HONEST.closureLine, 'the synthetic honest source has no closure marker — the fixture broke').not.toBeNull()
+    expect(GATE_ORDER_HONEST.envelopeLine, 'the synthetic honest source has no envelope call — the fixture broke').not.toBeNull()
+    const order = measureResolvePathGateOrder(GATE_ORDER_HONEST.src)
+    expect(order.ok, `the honest source did not measure honest: ${order.measured}`).toBe(true)
+    expect(order.closureLine, `the module put the closure on the wrong line: ${order.measured}`).toBe(GATE_ORDER_HONEST.closureLine)
+    expect(order.envelopeLine, `the module put the envelope on the wrong line: ${order.measured}`).toBe(GATE_ORDER_HONEST.envelopeLine)
+    expect((order.envelopeLine ?? 0) > (order.closureLine ?? 0), 'the fixture built an envelope call BEFORE its closure — re-read the body').toBe(true)
+    // The whole point for G3: a module that returns the committed capture's fields cannot answer 10 and 14.
+    expect([order.closureLine, order.envelopeLine],
+      'the module reported the COMMITTED CAPTURE’s line numbers for a synthetic twenty-line source — it is returning a constant, not measuring').toEqual([GATE_ORDER_HONEST.closureLine, GATE_ORDER_HONEST.envelopeLine])
+    expect(order.measured, `the measured sentence stopped naming what it counted: ${order.measured}`).toContain('(closure markers=1, envelope calls=1)')
+  })
+
+  it('measures the SAME statements moved the other way as not ok — the reorder the instrument exists to catch', () => {
+    // A pure move: same statements, same bytes, only the order swapped. Asserted, not asserted-about.
+    expect([...GATE_ORDER_BODY_MOVED].sort(), 'the moved body is not the honest body permuted — this is an edit, not a move').toEqual([...GATE_ORDER_BODY_HONEST].sort())
+    expect([...GATE_ORDER_MOVED.src].sort().join(''), 'the moved source is not a permutation of the honest source').toEqual([...GATE_ORDER_HONEST.src].sort().join(''))
+    const order = measureResolvePathGateOrder(GATE_ORDER_MOVED.src)
+    expect(order.ok, 'the envelope call sits BEFORE the role closure in this source and the module still certified it — the conjunction is gone').toBe(false)
+    // Both line numbers are still reported, and still reported WHERE THEY ARE: the disagreement the read-time
+    // leg publishes is field-for-field, not a bare boolean that could be faked by an `ok` alone.
+    expect([order.closureLine, order.envelopeLine], `the module stopped reporting the moved lines: ${order.measured}`).toEqual([GATE_ORDER_MOVED.closureLine, GATE_ORDER_MOVED.envelopeLine])
+    expect((order.envelopeLine ?? 0) < (order.closureLine ?? 0), 'the moved source does not actually have the envelope first — the fixture broke').toBe(true)
+  })
+
+  it('refuses a source with no role-closure marker at all, and says why in the sentence it returns', () => {
+    const source = synthControlSource([LINE_READ_TARGET, LINE_ENVELOPE_CALL, LINE_RECORD])
+    expect(source.closureLine, 'the fixture lost its own negative: the closure marker is still in the body').toBeNull()
+    const order = measureResolvePathGateOrder(source.src)
+    expect(order.ok, 'a resolveControl with no role closure at all measured as a closed resolve path').toBe(false)
+    expect(order.closureLine, 'the module invented a closure line for a source that has none').toBeNull()
+    expect(order.envelopeLine, `the envelope call is in this source at line ${source.envelopeLine}; the module lost it`).toBe(source.envelopeLine)
+    expect(order.measured, `the measured sentence does not name the missing marker: ${order.measured}`).toContain('closure markers=0')
+  })
+
+  it('scopes to the resolveControl body: three markers outside it do not count, and a body with none is refused', () => {
+    // The reviewer's own mutation attempt died on exactly this count — `enforceEnvelope(RESOLVE_CONTROL_SPEC`
+    // appears 4 times in the real 5602-line file and once inside `resolveControl`. Here that shape is graded:
+    // the honest body plus three out-of-body decoys must still read as ONE envelope call at ONE line.
+    const wholeFile = GATE_ORDER_HONEST.src.split('enforceEnvelope(RESOLVE_CONTROL_SPEC').length - 1
+    expect(wholeFile, 'the synthetic source no longer has the decoy shape of the real file (whole-file 4, body 1)').toBe(4)
+    const honest = measureResolvePathGateOrder(GATE_ORDER_HONEST.src)
+    expect(honest.measured, 'out-of-body decoys leaked into the count — the measurement is file-scoped again').toContain('(closure markers=1, envelope calls=1)')
+    expect(honest.envelopeLine, 'a decoy outside the body was taken for the envelope call').toBe(GATE_ORDER_HONEST.envelopeLine)
+    // And the other half: strip the markers from the BODY and the same file must be refused, whole-file noise
+    // and all. A whole-file count would have found three of them and certified a resolve path with no gates.
+    const bare = synthControlSource(['  return record(request)'])
+    expect(bare.src.split('enforceEnvelope(RESOLVE_CONTROL_SPEC').length - 1, 'the decoys vanished with the body — the fixture no longer tests scoping').toBe(3)
+    const refused = measureResolvePathGateOrder(bare.src)
+    expect(refused.ok, 'a resolveControl with neither gate inside it measured as a closed resolve path because the words appear elsewhere in the file').toBe(false)
+    expect([refused.closureLine, refused.envelopeLine], 'the module reported lines outside the body it claims to scope to').toEqual([null, null])
+  })
+
+  it('counts what is inside the body as written: a second envelope-shaped line in the body refuses to certify', () => {
+    // The disclosed textual limit, graded rather than waved at. The module reads text, so a marker inside a
+    // comment inside the body counts as if it were code. What matters is the DIRECTION: counting text can only
+    // ever make this refuse, and a refusal sends the envelope cells to `unclassified` in the kit and turns the
+    // read-time legs RED — it cannot make a wrong order read as a right one.
+    const commented = synthControlSource([
+      LINE_READ_TARGET,
+      '  // The envelope (the resolve-control op) is written down here before it is called:',
+      `  //   ${GATE_ORDER_ENVELOPE_CALL}`,
+      LINE_CLOSURE_COMMENT, LINE_CLOSURE_CHECK, LINE_GUARD_OPEN, LINE_GUARD_THROW, LINE_GUARD_CLOSE,
+      LINE_ENVELOPE_CALL, LINE_RECORD,
+    ])
+    const order = measureResolvePathGateOrder(commented.src)
+    expect(order.ok, 'two envelope-shaped lines inside the body and the module still certified one').toBe(false)
+    expect(order.measured, `the measured sentence hid the second call: ${order.measured}`).toContain('envelope calls=2')
+    expect(order.envelopeLine, 'the module reports the FIRST envelope-shaped line, which here is the comment — the line it publishes is the line it read').toBe(commented.envelopeLine)
+  })
+
+  it('grades the comparison too: agreement passes, and a disagreement in any ONE field reddens', () => {
+    // The module and the comparison are two instruments and round 4 found the second ungraded as well. This
+    // leg calls the SAME function the capture legs call, so "the spec reddens when the measurement disagrees
+    // with the capture" is a measured claim about this file, not a description of `toEqual`.
+    const honest = measureResolvePathGateOrder(GATE_ORDER_HONEST.src)
+    const moved = measureResolvePathGateOrder(GATE_ORDER_MOVED.src)
+    expect(() => assertGateOrderAgreesWithCapture(honest, honest, 'the honest synthetic source')).not.toThrow()
+    expect(moved, 'a pure move left the measurement untouched — the module is not reading the order, so nothing downstream of it is').not.toEqual(honest)
+    const drifts: readonly (readonly [string, GateOrderRecord])[] = [
+      ['ok', { ...honest, ok: !honest.ok }],
+      ['closureLine', { ...honest, closureLine: (honest.closureLine ?? 0) + 5 }],
+      ['envelopeLine', { ...honest, envelopeLine: moved.envelopeLine }],
+      ['measured', { ...honest, measured: `${honest.measured} — words no run wrote` }],
+    ]
+    for (const [field, drifted] of drifts) {
+      expect(() => assertGateOrderAgreesWithCapture(drifted, honest, `the synthetic source with ${field} replaced`),
+        `a disagreement in ${field} alone passed the read-time agreement — the comparison is not field-for-field any more`).toThrow()
+    }
+  })
+
+  it('is ONE implementation: the kit and this spec import gate-order.mjs and neither carries a copy', () => {
+    // The sharing is what makes the read-time leg a measurement, and it is also the thing F-I1b4-1 indicts as an
+    // ungraded single point. The grade is above; this leg keeps the premise true — round 2's bug was two copies
+    // that could drift, and the day someone pastes the body back into a reader, agreement stops being evidence.
+    const kitSource = readFileSync(join(REPO_ROOT, 'tests', 'kits', 'pr-i1b-real-host', 'pr-i1b-real-host.mjs'), 'utf8')
+    const moduleSource = readFileSync(join(REPO_ROOT, 'tests', 'kits', 'pr-i1b-real-host', 'gate-order.mjs'), 'utf8')
+    const selfSource = readFileSync(fileURLToPath(import.meta.url), 'utf8')
+    expect(kitSource, 'the kit no longer imports the shared measurement — the two instruments are reading by different rules again').toContain('./gate-order.mjs')
+    expect(selfSource, 'this spec no longer imports the shared measurement — the read-time leg is prose again').toContain('pr-i1b-real-host/gate-order.mjs')
+    // The needle is assembled, not written out: spelled inline, this very line would be the second
+    // definition the leg is hunting for, and a self-referential assertion is the shape F-I1b4-1 is about.
+    const definition = ['function', 'measureResolve' + 'PathGateOrder'].join(' ')
+    expect(kitSource.split(definition).length - 1, 'the kit carries a second definition of the measurement; agreement between copies proves nothing').toBe(0)
+    expect(selfSource.split(definition).length - 1, 'this spec carries a second definition of the measurement; agreement between copies proves nothing').toBe(0)
+    expect(moduleSource.split(['export', definition].join(' ')).length - 1,
+      'the repo now has more than one definition of the gate-order measurement').toBe(1)
+  })
+})
 
 /** Counted by the refusal line the block prints when the runtime is absent — the count is measured, not typed. */
 let realHostCaptureLegs = 0
