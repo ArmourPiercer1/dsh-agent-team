@@ -7467,3 +7467,60 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **纪律自查**：CORE PATCH BUDGET = 0（宿主树与 lane 树零生产改动，本轮只加 `tests/kits/**`、`dev/agent-workflow/evidence/**`、
   memo 与本日志）；未放松任何封闭集、卫生规则或 pin；`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、
   九个自有拒绝码全部未动；端口只用 318x，:3080 未触碰；未 push、未 GitHub 写、未 amend。
+
+## 2026-10-31 — #517 round-16 修复轮：三条 MINOR 与四条 INFO 全接受；reopen 腿的 `true` 换成 pid/argv0/nonce 测量并被两个独立面各证明会红；端口从「只挡 3080/3180」改为全源带校验；跨 boot 比较从六字段投影换成含 payload 整行
+
+- **输入**：round-1 评审（对象 `9dd6ff48c`，0 BLOCKER / 0 MAJOR / 3 MINOR / 5 INFO）中已接受的三条 MINOR
+  （F-I1a1-1 探针以 `step(id, true, …)` 给结论、F-I1a1-2 `--port` 接受带外值、F-I1a1-3 "byte-identical" 只覆盖
+  六字段投影）与四条廉价 INFO（磁盘腿点名扫描文件、continue 腿精确期望值、九文件 319 套件构成公开、三个常量步骤
+  处置）全部落地；未放松任何封闭集、卫生规则或 pin。
+- **F-I1a1-1 落地**：探针在两份报告里都记录自身内核身份（`process.pid` / `process.argv0` / 每 boot 一个 UUID
+  nonce）；驱动把**自己 spawn** boot 1 时得到的 pid 与 argv0 marker 交给重启探针，探针断言自身身份与之不同，驱动
+  再把两侧自报身份与自己的 spawn 记录交叉评分（自报 pid 必须等于驱动 spawn pid、argv0 必须等于该 boot 的 marker、
+  两个 pid 互异、两个 nonce 互异——没有任何一个参数是字面量）。三个原常量步骤改为观测谓词并各得一条驱动腿
+  （`boot-1-real-seam-built` / `boot-1-domain-created-on-real-medium` / `boot-1-domain-closed-clean`），legs 24→27。
+- **可失败性四次实测**（每次先把改动逐字节 `diff -u` 打在变异前备份上、断言结构后运行；跑完恢复并用 `diff -q` +
+  sha256 与备份核验）：
+  mut-pid（探针里把 pid 与**自身**比较）⇒ `DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27
+  failed=boot-2-reopened-in-a-fresh-process`（`a6pri1a-2026-10-31T16-52-50Z`）；
+  mut-driver-pid（驱动交叉腿 `host2`→`host1` 单字节，`cmp -l` 记录 offset 28957）⇒ 同一条腿红、而探针自己的步骤
+  仍 PASS——驱动侧评分是独立受力的（`16-54-26Z`）；
+  mut-payload（boot 2 报告行的 `assignmentEpoch` 改 99）⇒ 只有 `boot-2-rows-are-boot-1-rows` 红，计数腿与耐久
+  重放/折叠全绿（`16-54-55Z`）；mut-seq（期望值 `+ 1`→`+ 2`）⇒ `boot-2-new-family-continues-the-chain` 红、
+  驱动侧独立重推仍成立（`16-55-23Z`）。四个红 run 目录与绿 run 目录一起提交，字节级 diff 与还原哈希在证据 README。
+- **F-I1a1-2**：默认候选、显式 `--port`、推导的 restart 端口，全部在任何 world 存在之前按 `tests/paths.mjs` 的
+  `TEST_PORT_RANGES`（3180-3199 / 3491-3500 / 13000-13099）校验，`bootWorld` 在每次 spawn 前再断言一次；六个带外值
+  （45678 / 3080 / 3180 / `abc` / 3179 / 13200）全部 exit 2 `verdict=port-refused` 并点名波段，`tests/homes/`
+  保持空——转写提交在 `a6pri1a-port-band-refusals/port-refusals.txt`。绿 run 用带内 3182/3183。
+- **F-I1a1-3**：跨 boot 比较改为 `ledger.list()` 交回的**整行**（含 `payload` 全部字段），PASS 措辞改写并引
+  `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`（`packages/runtime/review-assignment/writer.ts` 折叠拒绝）为 payload
+  一致性的传递保证；mut-payload 证明该腿真的咬 payload。
+- **INFO 落地**：磁盘腿在 verdict 与 `capture.json` 点名扫描文件（本轮 4 个：`.anonymous-user-id`、
+  `.credentials.yaml`、`storages/team_domain.json`、`storages/workspace.json`；命中仅 `storages/team_domain.json`）；
+  continue 腿收紧为精确 `previousMax + 1`（探针断言 + 驱动从 boot 1 的行独立重推）；套件构成表见本条末、证据
+  README 与 spec 头注。
+- **新树复测**（kit 绿 run 即 commit 内 kit 字节的被测值，两个 kit 文件 sha256 记录在 README；`capture.json` 的
+  `laneHead` 仍是 commit 前的 `9dd6ff48c`——单 commit 不含自身 sha，与 round-15 同一披露）：
+  kit `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（boot pid 36→48、marker 唯一、
+  world 删除、两端口 free、宿主 porcelain 前/后 0/0、宿主 HEAD = pin）；`a6-pri1a-writer` **49/49**；
+  `pnpm --filter ./packages/runtime run typecheck` = 0；`npx eslint` 对被改 spec = 0；`pnpm build` = 0、
+  `pnpm build:composition` = 0（生产源码本轮零改动）。
+- **九文件套件构成**（根 vitest 逐文件计数；`Test Files 1 failed | 8 passed (9)`、
+  `Tests 2 failed | 317 passed (319)`，两条红就是已披露的 a4p7 两条：
+  `refuses the leg, by name, when the host module closure cannot be traversed`、
+  `the client lane runs, and no failure appears outside the disclosed baseline`）：
+  `packages/runtime/test/a6-pri1a-writer.test.ts` 49；`packages/testkit/test/a4p7-merge-gate.test.ts` 35；
+  `packages/runtime/test/a6-pr2-assignment-kernel.test.ts` 69；`packages/runtime/test/a6-pr3-wake-kernel.test.ts` 76；
+  `packages/runtime/test/a6-pr2-lane-hygiene.test.ts` 29；`packages/testkit/test/p4t6-session-event-scan.test.ts` 20；
+  `packages/runtime/test/a6-pr3-lane-hygiene.test.ts` 16；`packages/runtime/test/a6-pr0-lane-hygiene.test.ts` 14；
+  `packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts` 11 —— 合计 319。
+  **一次自己抓住的测量教训**：本轮第一次跑套件时把第九个文件记成了 `packages/testkit/test/…`（不存在的路径），
+  vitest 对不存在的显式路径**静默跳过**，跑出 `8 files / 308` 而退出码仍非零不足以暴露它；按「9 个文件、319 条」
+  双断言才发现并改正（正确路径在上表）。今后引用本套件必须核对文件数。
+- **顺序披露**：套件与各门禁测于最终树（kit、memo、README、spec 头注都已定稿；本日志条目在其后追加，九个套件文件
+  均不读 `SESSION_ROUTER_LOG.md`，追加不改变被测面）。`check-artifacts-at-head` / `docs-sync --check` /
+  `eb3-evidence-guard --new-since HEAD~1` 只能在 commit 之后跑，token 记入本轮 PR comment。
+- **纪律自查**：本轮 tracked 改动 = `tests/kits/pr-i1a-real-host/` 两文件 + 证据目录 + memo + spec 头注（comment-only）
+  + 本日志；`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking
+  （total 1418）全部未动；:3080 未触碰（本会话对 3080 零连接，端口占用核查仅监听 enumeration）；
+  宿主 clone `/home/armourpiercer/deepseek-harness` porcelain 会话开始/结束各测一次；未 push、未 GitHub 写、未 amend。

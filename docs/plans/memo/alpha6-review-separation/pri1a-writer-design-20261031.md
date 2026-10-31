@@ -4,6 +4,33 @@
 写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
 scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
 
+> **Dated banner（2026-10-31，round-16 修复轮）——处理评审 round 1 的 3 条 MINOR 与 4 条廉价 INFO（评审对象 `9dd6ff48c`），不改动上一轮 round-15 banner 的任何历史陈述。**
+> - **F-I1a1-1（`step(id, true, …)` 假谓词）**：reopen 腿现在是真测量——探针在两份报告里都记录自身内核身份
+>   （`process.pid` / `process.argv0` / 每 boot 一个 UUID nonce），驱动把**自己 spawn** boot 1 时得到的 pid 与
+>   argv0 marker 交给重启探针，探针断言自身身份与之不同，驱动再把两侧自报身份与自己的 spawn 记录交叉评分；
+>   三个原本常量的步骤（`real-seam-built`、`domain-created-real-medium`、`domain-closed`）改为观测谓词并各得一条
+>   驱动腿（legs 24→27）。可失败性四次被证明：mut-pid（探针里把 pid 与自身比较）、mut-driver-pid（驱动交叉腿
+>   `host2`→`host1` 单字节，探针腿自己仍 PASS 也被驱动腿单独拉红）、mut-payload、mut-seq——四个红 run 目录连同
+>   字节级 diff 与还原 sha256 记录在 `dev/agent-workflow/evidence/alpha6-pri1a-real-host/README.md`。
+> - **F-I1a1-2（端口只挡 3080/3180）**：默认候选、显式 `--port`、推导的 restart 端口，全部在任何 world 存在之前
+>   按 `tests/paths.mjs` 的 `TEST_PORT_RANGES`（3180-3199 / 3491-3500 / 13000-13099）校验，`bootWorld` 在每次 spawn
+>   前再断言一次；带外值以 `verdict=port-refused`（exit 2）拒绝并点名波段，六个带外值（45678/3080/3180/abc/3179/13200）
+>   全部拒绝且 `tests/homes/` 保持空（转写 `a6pri1a-port-band-refusals/port-refusals.txt`）。
+> - **F-I1a1-3（"byte-identical" 只覆盖六字段投影）**：跨 boot 比较改为 `ledger.list()` 交回的**整行**（含 `payload`
+>   的全部字段），PASS 措辞同步改写，并引 `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`
+>   （`packages/runtime/review-assignment/writer.ts` 折叠拒绝）为 payload 一致性的传递保证；mut-payload 证明该腿真的咬 payload。
+> - **INFO**：磁盘腿在 verdict 输出与 `capture.json` 里点名扫描到的文件（本轮扫 4 个：`.anonymous-user-id`、
+>   `.credentials.yaml`、`storages/team_domain.json`、`storages/workspace.json`，命中仅 `storages/team_domain.json`）；
+>   continue 腿从 `> previousMax` 收紧为精确 `previousMax + 1`（探针断言 + 驱动从 boot 1 的行独立重推）；
+>   凡宣称 319 之处发布九文件构成（本 memo、证据 README、spec 头注与 router log 同表）。
+> - 新测值（九文件套件在新 commit 复测，token 见 router log）：kit `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`
+>   （ports 3182/3183、boot pid 36→48、world 删除、宿主 porcelain 前/后 0）；写者规格 49/49；套件 `Tests 2 failed | 317 passed (319)`、
+>   `Test Files 1 failed | 8 passed (9)`（仍是已披露的两条 a4p7 红）。绿 run 目录 `a6pri1a-2026-10-31T16-51-03Z`，
+>   `capture.json` 的 `laneHead` 仍是 commit 前的 `9dd6ff48c`——单 commit 不含自身 sha，与 round-15 同一披露；
+>   commit 内的 kit 字节与被测字节 sha256 一致（README 记录两个哈希）。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（total 1418）全部未动；本轮生产源码零改动（仅 `tests/kits/**`、`dev/**` 证据、memo、spec 头注）。
+
 > **Dated banner（2026-10-31，round-15 真实宿主复测）——本文件四条 ENV_BLOCK 句里有三条的「环境不给」前提被推翻，全部 forward 更正。**
 > 本轮第一次在**本 worktree** 里物化出可启动的真实宿主（`tests/deepseek-harness-test-use`，pristine，detached
 > @ `639ed015397290b3745d163aafe02ffee4aa3f84`，porcelain 前/后都 = 0），经**公开 profile-patch seam** 挂上本 worktree 的

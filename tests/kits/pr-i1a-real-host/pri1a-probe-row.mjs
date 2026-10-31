@@ -20,17 +20,31 @@
  *
  * Two modes, one per boot, so the restart crosses a real process boundary:
  *   `write`   — create the domain, seed one TeamSession row, write created/transferred/retired through the
- *               writer, replay the last command, read everything back in the same process.
- *   `restart` — open the SAME domain in a NEW host process, list the rows, fold them, replay the FIRST
- *               command, and compare against the first boot's report byte-for-byte in the driver.
+ *               writer, replay the last command, read everything back in the same process. The report
+ *               carries this process's kernel identity (`process.pid`, the `exec -a` marker in argv0, and a
+ *               per-module nonce) so the reopen leg has something to assert against.
+ *   `restart` — open the SAME domain in a NEW host process, list the FULL rows (payload included), replay
+ *               the FIRST command, and write one fresh family. The driver hands this mode the boot-1
+ *               pid/marker (`previousBootPid` / `previousBootArgv0`); the reopen step asserts THIS
+ *               process's identity differs from both, and the driver re-grades the two reported pids
+ *               against the two child pids it spawned itself.
  */
 
+import { randomUUID } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 
 export const name = 'a6pri1a-probe'
 export const inject = ['storageDomain', 'webServer']
 
 const BOOT = process.hrtime.bigint()
+
+/**
+ * Per-process identity (F-I1a1-1, round 2). This module is evaluated once per host process, so `nonce`
+ * is a fresh-module-instance marker; `process.pid` is the kernel's process identity; `process.argv0` is
+ * the per-boot exec marker the driver passed through `exec -a`. The reopen leg asserts against all three
+ * — none of them is a constant the probe could hand out without actually being a different process.
+ */
+const PROCESS_IDENTITY = Object.freeze({ pid: process.pid, argv0: process.argv0 ?? null, nonce: randomUUID() })
 
 /** @type {{state:string, detail:string, report?:object}} */
 let progress = { state: 'starting', detail: 'apply entered' }
@@ -90,7 +104,10 @@ export async function apply(ctx, config) {
       return
     }
     const seam = seamModule.createRealStorageDomainSeam(storageDomain)
-    step('real-seam-built', true, `createRealStorageDomainSeam over the injected storageDomain service (open: ${typeof seam.open}, closeAll: ${typeof seam.closeAll})`)
+    // F-I1a1-1 round 2: a real predicate over the observed seam surface, not the literal `true`.
+    const seamSurface = { open: typeof seam?.open, closeAll: typeof seam?.closeAll }
+    step('real-seam-built', seamSurface.open === 'function' && seamSurface.closeAll === 'function',
+      `createRealStorageDomainSeam over the injected storageDomain service (open: ${seamSurface.open}, closeAll: ${seamSurface.closeAll})`)
 
     const rootSessionId = config.rootSessionId
     const root = contracts.parseRootSessionId(rootSessionId)
@@ -151,7 +168,10 @@ export async function apply(ctx, config) {
 
     if (config.mode === 'write') {
       const domain = await teamDomainModule.createTeamDomain(seam)
-      step('domain-created-real-medium', true, `createTeamDomain opened "${domain.name}" over the host storageDomain service`)
+      // F-I1a1-1 round 2: real predicate — the name comes back from the host's own opened handle, and the
+      // process identity is recorded so the driver can grade boot 1 vs boot 2 across the restart.
+      step('domain-created-real-medium', domain.name === 'team_domain',
+        `createTeamDomain opened "${domain.name}" over the host storageDomain service (pid ${PROCESS_IDENTITY.pid}, argv0 ${String(PROCESS_IDENTITY.argv0)})`)
 
       const blueprint = contracts.createBlueprintSnapshotRef({
         blueprintId: contracts.parseBlueprintId('A6PRI1A-PROBE'),
@@ -200,23 +220,29 @@ export async function apply(ctx, config) {
       step('generation-advanced-per-write', generationAfter === generationBefore + expectedWrites,
         `generation ${String(generationBefore)} -> ${String(generationAfter)} across ${String(expectedWrites)} durable write(s); the replay added none`)
 
-      const rows = domain.repositories.ledger.list().map((entry) => ({
-        sequence: entry.sequence, factType: entry.factType, rootSessionId: entry.rootSessionId,
-        assignmentEpoch: entry.payload?.assignmentEpoch ?? null,
-        actorCallerRef: entry.payload?.actorCallerRef ?? null,
-        createdAt: entry.createdAt,
-      }))
-      step('rows-in-real-ledger', rows.length === 3, `${String(rows.length)} row(s): ${rows.map((r) => `${String(r.sequence)}:${r.factType}@${String(r.assignmentEpoch)}`).join(', ')}`)
+      // F-I1a1-3 round 2: report the FULL ledger rows (schemaVersion, sequence, rootSessionId, factType,
+      // payload, createdAt — whatever `list()` hands back), not a six-field projection. The cross-boot
+      // "byte-identical" leg then compares the payload too, instead of only naming it.
+      const rows = domain.repositories.ledger.list().map((entry) => ({ ...entry }))
+      step('rows-in-real-ledger', rows.length === 3, `${String(rows.length)} row(s): ${rows.map((r) => `${String(r.sequence)}:${r.factType}@${String(r.payload?.assignmentEpoch)}`).join(', ')}`)
       step('foreign-roots-absent', rows.every((r) => r.rootSessionId === rootSessionId),
         `every row carries the written root (${rows.length === 0 ? 'no rows' : 'one root'})`)
 
       const owned = await domain.repositories.ledger.list().length
-      await domain.close()
-      step('domain-closed', true, `domain closed cleanly after ${String(owned)} durable row(s); the report is the handoff to boot 2`)
+      // F-I1a1-1 round 2: the close step reports what close() actually did, not a constant `true`.
+      let closeError = null
+      try {
+        await domain.close()
+      } catch (error) {
+        closeError = `${error?.name ?? 'Error'}: ${error?.message ?? String(error)}`
+      }
+      step('domain-closed', closeError === null, closeError === null
+        ? `domain closed cleanly after ${String(owned)} durable row(s); the report is the handoff to boot 2`
+        : `domain.close() THREW after ${String(owned)} durable row(s): ${closeError}`)
 
       emit(ctx, config, {
         state: 'done', mode: 'write', detail: 'wrote the family through the shipped writer over the real medium',
-        rootSessionId, lock: held, steps,
+        rootSessionId, lock: held, steps, process: PROCESS_IDENTITY,
         writes: { created, replay, transferred, retired }, rows,
         generation: { before: generationBefore, after: generationAfter },
       })
@@ -224,16 +250,23 @@ export async function apply(ctx, config) {
     }
 
     if (config.mode === 'restart') {
+      // F-I1a1-1 round 2: `domain-reopened-fresh-process` was `step(id, true, …)` — a check that could
+      // only go red if the probe died. It is now a real predicate: the driver hands this boot the pid
+      // and argv0 marker of the boot-1 process (which the boot-1 probe itself recorded), and the step
+      // asserts THIS process's kernel identity differs from both. The driver independently re-grades
+      // the two reported pids against the two pids it spawned, so neither end can fake the other.
+      const previousBootPid = Number(config.previousBootPid)
+      const previousBootArgv0 = typeof config.previousBootArgv0 === 'string' ? config.previousBootArgv0 : null
+      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid
+        && previousBootArgv0 !== null && previousBootArgv0 !== process.argv0
       const domain = await teamDomainModule.openTeamDomain(seam)
-      step('domain-reopened-fresh-process', true, `openTeamDomain reopened "${domain.name}" in a NEW host process (pid ${process.pid})`)
+      step('domain-reopened-fresh-process', freshProcess,
+        `openTeamDomain reopened "${domain.name}" in THIS process (pid ${PROCESS_IDENTITY.pid}, argv0 ${String(PROCESS_IDENTITY.argv0)}, nonce ${PROCESS_IDENTITY.nonce}); ` +
+        `boot 1 ran as pid ${String(config.previousBootPid)}, argv0 ${String(config.previousBootArgv0)} — different process: ${String(freshProcess)}`)
 
-      const rows = domain.repositories.ledger.list().map((entry) => ({
-        sequence: entry.sequence, factType: entry.factType, rootSessionId: entry.rootSessionId,
-        assignmentEpoch: entry.payload?.assignmentEpoch ?? null,
-        actorCallerRef: entry.payload?.actorCallerRef ?? null,
-        createdAt: entry.createdAt,
-      }))
-      step('rows-survived-restart', rows.length === 3, `${String(rows.length)} row(s) read back after the restart: ${rows.map((r) => `${String(r.sequence)}:${r.factType}@${String(r.assignmentEpoch)}`).join(', ')}`)
+      // Full rows again (F-I1a1-3): the cross-boot comparison covers payload bytes, not a projection.
+      const rows = domain.repositories.ledger.list().map((entry) => ({ ...entry }))
+      step('rows-survived-restart', rows.length === 3, `${String(rows.length)} row(s) read back after the restart: ${rows.map((r) => `${String(r.sequence)}:${r.factType}@${String(r.payload?.assignmentEpoch)}`).join(', ')}`)
 
       const generation = domain.repositories.teamSessions.get(root)?.generation ?? null
       step('generation-durable', typeof generation === 'number', `team_sessions.generation in the fresh process = ${String(generation)}`)
@@ -249,18 +282,21 @@ export async function apply(ctx, config) {
       step('replay-wrote-nothing', rowsAfterReplay === rows.length, `ledger holds ${String(rowsAfterReplay)} row(s) after the replay (was ${String(rows.length)})`)
 
       // A real second live process now writes: the sequence must continue the chain, not restart it.
+      // Round 2 (F-I1a1-7): `> previousMax` passed a jump to 9; the expected value is exact now.
+      const previousMax = rows.length > 0 ? Math.max(...rows.map((r) => r.sequence)) : 0
       const fresh = await writer.applyReviewAssignment(deps, command({
         kind: 'created', approvalCaseId: `${config.approvalCaseId ?? 'approval-case-a6pri1a'}-second`,
       }))
-      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence > Math.max(...rows.map((r) => r.sequence)),
+      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 1,
         JSON.stringify(fresh.ok
-          ? { applied: fresh.applied, sequence: fresh.sequence, epoch: fresh.assignmentEpoch, previousMax: Math.max(...rows.map((r) => r.sequence)) }
+          ? { applied: fresh.applied, sequence: fresh.sequence, epoch: fresh.assignmentEpoch, previousMax, expected: previousMax + 1 }
           : { refusal: fresh.refusal, detail: fresh.detail }))
 
       await domain.close()
       emit(ctx, config, {
         state: 'done', mode: 'restart', detail: 'reopened the medium in a fresh process and folded it',
-        rootSessionId, lock: held, steps, rows, generation, replayFirst, fresh,
+        rootSessionId, lock: held, steps, process: PROCESS_IDENTITY,
+        rows, generation, replayFirst, fresh,
       })
       return
     }

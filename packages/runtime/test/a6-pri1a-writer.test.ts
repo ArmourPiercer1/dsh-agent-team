@@ -11,12 +11,24 @@
  * medium, deterministic. It is NOT itself a real Host run, and nothing below is offered as one. What THIS line
  * said until 2026-10-31 (round 15) was "C2 stays ENV_BLOCK" — that premise was measured and is now narrower: a
  * bootable host was materialised in this worktree and the real-Host durability legs RAN in
- * `tests/kits/pr-i1a-real-host/` (`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`: two host
- * processes over one world, sequences 1/2/3, generation 1 to 4, the fact-type bytes found on disk after the host
- * exited, the reopen folding identical rows, replay still answering at the original sequence). What still lives
+ * `tests/kits/pr-i1a-real-host/` (round-16 re-measure at the fix commit:
+ * `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27` — two host processes over one world,
+ * sequences 1/2/3, generation 1 to 4, the fact-type bytes found on disk after the host exited (the scanned
+ * files are now NAMED in the verdict), the reopen folding the FULL rows (payload included — a payload the
+ * shipped fold cannot reconcile answers `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`, writer.ts) in a process
+ * whose pid/argv0/nonce the driver cross-grades against the two pids it spawned, replay still answering at the
+ * original sequence, and the fresh family landing on EXACTLY previousMax+1). What still lives
  * OUTSIDE this file — and stays unclaimed — is the client-projection rendering over a real store, real-host
  * CONCURRENT reconciliation, and interleaving with the control path under one lock: all three wait on a caller
  * (PR-I1b wiring), not on an environment. See the memo §2b R-28.
+ *
+ * THE 319 NUMBER, whenever this round's regression claim is quoted, means this nine-file battery run with the
+ * root vitest — `a6-pri1a-writer.test.ts` (49, this file), `packages/testkit/test/a4p7-merge-gate.test.ts` (35),
+ * `a6-pr2-assignment-kernel.test.ts` (69), `a6-pr3-wake-kernel.test.ts` (76), `a6-pr2-lane-hygiene.test.ts` (29),
+ * `packages/testkit/test/p4t6-session-event-scan.test.ts` (20), `a6-pr3-lane-hygiene.test.ts` (16),
+ * `a6-pr0-lane-hygiene.test.ts` (14), `packages/runtime/test/a4pr0a-fact-type-closed-set.test.ts` (11) —
+ * `Tests 2 failed | 317 passed (319)`, `Test Files 1 failed | 8 passed (9)`; the two failures are the disclosed
+ * a4p7 legs, unchanged from the branch baseline (composition table also in the kit's evidence README).
  *
  * The legs are grouped by the six things the ruling requires this PR to cover, in that order: persistence and
  * recovery; epoch/CAS/idempotency/conflict/write-failure; ownership, isolation and corruption; identity and

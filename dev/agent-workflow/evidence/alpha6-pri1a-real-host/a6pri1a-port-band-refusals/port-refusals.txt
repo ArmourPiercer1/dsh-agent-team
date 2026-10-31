@@ -1,0 +1,30 @@
+# F-I1a1-2 port-band refusal proof (2026-10-31T16:56:42Z)
+# Command: for p in 45678 3080 3180 abc 3179 13200: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port $p
+# Every refusal exits 2 with verdict=port-refused; tests/homes stayed empty (no world was created by any refusal).
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 45678
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=45678 detail="45678 is outside the sanctioned test bands 3180-3199 / 3491-3500 / 13000-13099 (tests/paths.mjs TEST_PORT_RANGES)" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3080
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=3080 detail="3080 is the stable development instance — a test may never bind it" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3180
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=3180 detail="3180 is never bound by this kit (3080 = stable instance; 3180 = never rented to worlds, TEST_METHODS §1)" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port abc
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=abc detail="not an integer: NaN" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3179
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=3179 detail="3179 is outside the sanctioned test bands 3180-3199 / 3491-3500 / 13000-13099 (tests/paths.mjs TEST_PORT_RANGES)" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 13200
+DSH-PRI1A-REALHOST verdict=port-refused reason=port-out-of-band requested=13200 detail="13200 is outside the sanctioned test bands 3180-3199 / 3491-3500 / 13000-13099 (tests/paths.mjs TEST_PORT_RANGES)" sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099 never_bound=3080/3180 — nothing was created, nothing was booted
+rc=2
+
+$ ls tests/homes | wc -l
+0
