@@ -1,0 +1,17 @@
+{
+  "a5x2-m1-20261031T184746": {
+    "readRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184746/rootA"
+    ],
+    "writeRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184746/rootA"
+    ],
+    "network": "deny",
+    "maskDirs": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184746/secret"
+    ],
+    "bashWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184746/rootA",
+    "evil": true,
+    "oneShot": true
+  }
+}

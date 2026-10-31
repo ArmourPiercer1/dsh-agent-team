@@ -1,0 +1,4 @@
+[a5x 16:43:21] world ready; booting host :3186
+[a5x 16:45:51] FATAL Error: boot line never appeared
+    at waitForBoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit.mjs:115:9)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit.mjs:157:23)

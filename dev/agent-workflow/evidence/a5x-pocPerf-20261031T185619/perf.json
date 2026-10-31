@@ -1,0 +1,123 @@
+{
+  "axis-bwrap-setup-noop": {
+    "n": 50,
+    "p50": 10.081275,
+    "p95": 11.021054,
+    "p99": 20.103047,
+    "min": 7.864158,
+    "max": 20.103047
+  },
+  "axis-tool-process-rg-1000files-direct": {
+    "n": 30,
+    "p50": 9.254982,
+    "p95": 10.25318,
+    "p99": 10.266076,
+    "min": 8.857791,
+    "max": 10.266076
+  },
+  "axis-tool-process-rg-1000files-bwrap": {
+    "n": 30,
+    "p50": 14.046954,
+    "p95": 15.536585,
+    "p99": 15.836863,
+    "min": 12.598333,
+    "max": 15.836863
+  },
+  "axis-tool-process-rg-big200MiB-direct": {
+    "n": 10,
+    "p50": 12.102882,
+    "p95": 14.248586,
+    "p99": 14.248586,
+    "min": 10.123357,
+    "max": 14.248586
+  },
+  "axis-tool-process-rg-big200MiB-bwrap": {
+    "n": 10,
+    "p50": 17.962878,
+    "p95": 21.184928,
+    "p99": 21.184928,
+    "min": 15.444621,
+    "max": 21.184928
+  },
+  "floor-bwrap-node-eval": {
+    "n": 25,
+    "p50": 42.710262,
+    "p95": 46.057919,
+    "p99": 47.041222,
+    "min": 39.582135,
+    "max": 47.041222
+  },
+  "axis-policy-check-small-read": {
+    "raw": {
+      "n": 300,
+      "p50": 0.000161,
+      "p95": 0.000682,
+      "p99": 0.001563,
+      "min": 0.000121,
+      "max": 0.013396
+    },
+    "guarded": {
+      "n": 300,
+      "p50": 0.019146,
+      "p95": 0.051628,
+      "p99": 0.139535,
+      "min": 0.018154,
+      "max": 0.358804
+    },
+    "guardedNoRecompute": {
+      "n": 300,
+      "p50": 0.000491,
+      "p95": 0.002174,
+      "p99": 0.008055,
+      "min": 0.0003,
+      "max": 0.025368
+    },
+    "guardedNoLedger": {
+      "n": 300,
+      "p50": 0.018675,
+      "p95": 0.039455,
+      "p99": 0.071184,
+      "min": 0.018314,
+      "max": 0.187274
+    }
+  },
+  "axis-policy-check-8MiB-offset-read": {
+    "raw": {
+      "n": 30,
+      "p50": 0.043402,
+      "p95": 0.125588,
+      "p99": 0.127782,
+      "min": 0.035497,
+      "max": 0.127782
+    },
+    "guarded": {
+      "n": 30,
+      "p50": 0.065244,
+      "p95": 0.149392,
+      "p99": 0.151798,
+      "min": 0.054523,
+      "max": 0.151798
+    }
+  },
+  "axis-ipc-warm-confined-toolhost-rtt": {
+    "n": 100,
+    "p50": 0.133533,
+    "p95": 0.234185,
+    "p99": 37.928828,
+    "min": 0.103155,
+    "max": 37.928828
+  },
+  "axis-toolhost-startup-cold-confined-child": {
+    "n": 25,
+    "p50": 43,
+    "p95": 46,
+    "p99": 46,
+    "min": 38,
+    "max": 46
+  },
+  "disclosures": {
+    "coldCache": "page-cache drop needs root; cold legs here = fresh spawn with untouched working set only",
+    "bigTree": "planned 1 GB/1000-file tree reduced to 200 MiB/200 files (in-workspace evidence budget); disclosed",
+    "baselineRg": "rg binary = @vscode/ripgrep-linux-x64@1.18.0 as installed by the pinned pristine runtime"
+  }
+}

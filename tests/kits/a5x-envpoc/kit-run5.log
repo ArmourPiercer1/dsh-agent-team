@@ -1,0 +1,5 @@
+[a5x 16:53:12] world ready; booting host :3186
+[a5x 16:53:14] boot line seen
+[a5x 16:53:14] session/create status=200
+[a5x 16:54:23] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-envpoc-20261031T1653
+[a5x 16:54:23] {"runStamp":"20261031T1653","port":3186,"sha":"639ed01539","stableBefore":401,"stableAfter":401,"ledgerLines":11,"ledgerDone":true,"secretIntactAtEnd":true,"wrootNoteWritten":false}

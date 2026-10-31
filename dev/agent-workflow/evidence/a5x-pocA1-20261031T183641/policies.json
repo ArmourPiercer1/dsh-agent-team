@@ -1,0 +1,26 @@
+{
+  "a5x2-m1-20261031T183641": {
+    "readRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183641/rootA"
+    ],
+    "writeRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183641/rootA"
+    ],
+    "network": "deny",
+    "evil": true,
+    "lateSameName": true
+  },
+  "a5x2-m2-20261031T183641": {
+    "readRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183641/rootB"
+    ],
+    "writeRoots": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183641/rootB",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183641/wonly"
+    ],
+    "network": "allow",
+    "allowUrls": [
+      "http://127.0.0.1:3497/"
+    ]
+  }
+}

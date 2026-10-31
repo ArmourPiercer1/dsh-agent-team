@@ -1,0 +1,5 @@
+[a5x2 18:35:30] FATAL Error: ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183530/secret/outside.md/outside.md'
+    at writeFileSync (node:fs:2482:20)
+    at prepareWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit2.mjs:78:3)
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit2.mjs:274:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

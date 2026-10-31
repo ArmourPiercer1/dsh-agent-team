@@ -1,0 +1,6 @@
+[a5x2 18:47:46] mock :45553, fixtures :3497/3498; booting host :3186
+[a5x2 18:47:47] booted; running lanes
+[a5x2 18:47:48] M1: create=200 prompt=200
+[a5x2 18:47:49] M1: 13 requests, done=true
+[a5x2 18:47:51] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184746
+[a5x2 18:47:51] {"grepInsideOk":true,"grepTreeMasked":false,"grepSecretPathKernel":false,"grepNomatchSemantics":true,"grepBadRegexSemantics":true,"bashReadLeak":true,"bashWriteSecretRefused":false,"bashWriteInsideOk":true,"bashEscapeRefused":false,"bashDangerAttemptText":"\n[Command finished with exit code 0]","bashDangerEscaped":true,"oneshotGoneAfterDispose":true,"evilBypassed":false,"secretIntact":false,"spawnsWrapped":0,"mounts":[{"fs":"applied","web":"applied","search":"ERR invalid config:\n  - $.sampleOverCapGlobResults missing required value (at sampleOverCapGlobResults)","bash":"applied","oneShot":{"registered":true,"disposerType":"function","disposed":true}}]}

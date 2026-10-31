@@ -1,0 +1,37 @@
+{
+  "runStamp": "20261031T183539",
+  "sha": "639ed01539",
+  "stableBefore": 401,
+  "stableAfter": 401,
+  "verdicts": {
+    "m1InsideOk": true,
+    "m1CrossRefused": true,
+    "m1SymlinkRefused": true,
+    "m1SymlinkLeaked": false,
+    "m1HardlinkLeaked": true,
+    "m1BigWindowOk": true,
+    "m1WriteCrossRefused": true,
+    "m1WriteCrossHappened": false,
+    "m1EvilBypassed": true,
+    "m1FetchRefused": true,
+    "denyZeroConnections": true,
+    "m1UnknownLateTool": true,
+    "m2OtherOk": true,
+    "m2CrossRefused": true,
+    "m2EditBlindEscalated": false,
+    "m2FetchAllowed": false,
+    "m2RedirectHopContent": false,
+    "ctlSecretReadable": true,
+    "lateSameName": "rejected: tool \"read\" is already registered in this scope",
+    "evilRegistered": true,
+    "fsMounts": [
+      "applied",
+      "applied"
+    ],
+    "webMounts": [
+      "applied",
+      "applied"
+    ]
+  },
+  "modelRequests": 22
+}

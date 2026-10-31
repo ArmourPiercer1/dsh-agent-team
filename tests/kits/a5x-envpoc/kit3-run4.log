@@ -1,0 +1,3 @@
+[a5x2 18:51:49] FATAL ReferenceError: startFixtures is not defined
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit3.mjs:235:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

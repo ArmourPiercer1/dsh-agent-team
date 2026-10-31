@@ -1,0 +1,12 @@
+{
+  "runs": [
+    {
+      "lane": "M1",
+      "sid": "a5x2-m1-20261031T184115",
+      "createStatus": 200,
+      "promptStatus": 200,
+      "snaps": []
+    }
+  ],
+  "fixtureHits": []
+}

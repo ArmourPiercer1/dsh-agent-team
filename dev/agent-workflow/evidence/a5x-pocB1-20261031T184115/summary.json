@@ -1,0 +1,25 @@
+{
+  "runStamp": "20261031T184115",
+  "sha": "639ed01539",
+  "stableBefore": 401,
+  "stableAfter": 401,
+  "verdicts": {
+    "grepInsideOk": false,
+    "grepTreeMasked": true,
+    "grepSecretPathKernel": true,
+    "grepNomatchSemantics": false,
+    "grepBadRegexSemantics": false,
+    "bashReadLeak": false,
+    "bashWriteSecretRefused": false,
+    "bashWriteInsideOk": false,
+    "bashEscapeRefused": true,
+    "bashDangerAttemptText": "",
+    "bashDangerEscaped": false,
+    "oneshotGoneAfterDispose": true,
+    "evilBypassed": false,
+    "secretIntact": true,
+    "spawnsWrapped": 0,
+    "mounts": []
+  },
+  "modelRequests": 0
+}

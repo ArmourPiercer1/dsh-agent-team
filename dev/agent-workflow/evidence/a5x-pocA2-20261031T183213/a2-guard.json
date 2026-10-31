@@ -1,0 +1,86 @@
+{
+  "ran": "2026-10-31T18:32:13.836Z",
+  "ev": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA2-20261031T183213",
+  "results": [
+    {
+      "id": "T1-in-scope-read",
+      "ok": true
+    },
+    {
+      "id": "T2-outside-read",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T3-symlink-escape-targetKey",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T3b-symlink-escape-displayPath-mode",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T4-hardlink-targetKey",
+      "leaked": true,
+      "head": "OUTSIDE-SECRET"
+    },
+    {
+      "id": "T4b-hardlink-displayPath",
+      "leaked": true,
+      "head": "OUTSIDE-SECRET"
+    },
+    {
+      "id": "T5-toctou-swap-to-symlink",
+      "leaked": false
+    },
+    {
+      "id": "T6-dotdot-traversal",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T7-case-variant",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T8-relative-path-cwd",
+      "leaked": false,
+      "err": "A5X-ENFORCE-REFUSE: resolve '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv"
+    },
+    {
+      "id": "T9-write-only-root",
+      "readRefused": true,
+      "writeOk": true,
+      "editOldReadEscalation": "YES-READ-WITHOUT-READ-ROOT"
+    },
+    {
+      "id": "T10-watch-outside",
+      "refused": true
+    },
+    {
+      "id": "T11-10MiB-window",
+      "sizeOk": true,
+      "marker": true,
+      "guardedReadMs": 8,
+      "guardRangeMs": 6
+    },
+    {
+      "id": "T12-lstat-outside-metadata",
+      "refused": true
+    },
+    {
+      "id": "T13-listdir",
+      "insideOk": true,
+      "outsideRefused": true
+    },
+    {
+      "id": "T14-resolve-existence-sidechannel",
+      "secretResolveRefused": true,
+      "writeOnlyRootResolveAllowed": true,
+      "note": "write-only roots keep an existence signal by design (disclosed)"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[a5x2 18:35:39] mock :46007, fixtures :3497/3498; booting host :3186
+[a5x2 18:35:40] booted; running lanes
+[a5x2 18:35:40] M1: create=200 prompt=200
+[a5x2 18:35:41] M1: 10 requests, done=true
+[a5x2 18:35:41] M2: create=200 prompt=200
+[a5x2 18:35:42] M2: 6 requests, done=true
+[a5x2 18:35:42] CTL: create=200 prompt=200
+[a5x2 18:35:42] CTL: 3 requests, done=true
+[a5x2 18:35:44] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183539
+[a5x2 18:35:44] {"m1InsideOk":true,"m1CrossRefused":true,"m1SymlinkRefused":true,"m1SymlinkLeaked":false,"m1HardlinkLeaked":true,"m1BigWindowOk":true,"m1WriteCrossRefused":true,"m1WriteCrossHappened":false,"m1EvilBypassed":true,"m1FetchRefused":true,"denyZeroConnections":true,"m1UnknownLateTool":true,"m2OtherOk":true,"m2CrossRefused":true,"m2EditBlindEscalated":false,"m2FetchAllowed":false,"m2RedirectHopContent":false,"ctlSecretReadable":true,"lateSameName":"rejected: tool \"read\" is already registered in this scope","evilRegistered":true,"fsMounts":["applied","applied"],"webMounts":["applied","applied"]}

@@ -1,0 +1,6 @@
+[a5x 17:01:02] mock model up :46401; booting host :3186
+[a5x 17:01:03] boot line seen
+[a5x 17:01:03] session/create status=200
+[a5x 17:01:03] prompt status=200; driving real dispatch via mock
+[a5x 17:01:06] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-envpoc-20261031T1701
+[a5x 17:01:06] {"readInsideOk":false,"readSecretRefused":true,"readSecretLeaked":false,"writeInScopeRefused":true,"writeInScopeWritten":false,"writeEscapeRefused":true,"writeEscapeHappened":false,"evilBypassed":true,"webFetchRefused":true,"webFetchAttempted":false}

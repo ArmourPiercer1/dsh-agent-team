@@ -1,0 +1,38 @@
+{
+  "runStamp": "20261031T185429",
+  "sha": "639ed01539",
+  "stableBefore": 401,
+  "stableAfter": 401,
+  "verdicts": {
+    "grepInsideOk": true,
+    "grepTreeMasked": true,
+    "grepSecretPathKernel": true,
+    "grepNomatchSemantics": true,
+    "grepBadRegexSemantics": true,
+    "bashSpillOverCap": false,
+    "bashReadLeak": true,
+    "bashWriteSecretRefused": false,
+    "bashWriteInsideOk": true,
+    "bashEscapeRefused": false,
+    "bashDangerAttemptText": "\n[Command finished with exit code 0]",
+    "bashDangerEscaped": true,
+    "oneshotGoneAfterDispose": true,
+    "evilBypassed": true,
+    "secretIntact": false,
+    "spawnsWrapped": 6,
+    "mounts": [
+      {
+        "fs": "applied",
+        "web": "applied",
+        "search": "applied",
+        "bash": "ERR service \"sandboxPolicy\" has been registered at <SandboxPolicyService>",
+        "oneShot": {
+          "registered": true,
+          "disposerType": "function",
+          "disposed": true
+        }
+      }
+    ]
+  },
+  "modelRequests": 15
+}

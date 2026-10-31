@@ -1,0 +1,6 @@
+[a5x2 18:54:29] mock :45695, fixtures :3497/3498; booting host :3186
+[a5x2 18:54:30] booted; running lanes
+[a5x2 18:54:30] M1: create=200 prompt=200
+[a5x2 18:54:31] M1: 14 requests, done=true
+[a5x2 18:54:33] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T185429
+[a5x2 18:54:33] {"grepInsideOk":true,"grepTreeMasked":true,"grepSecretPathKernel":true,"grepNomatchSemantics":true,"grepBadRegexSemantics":true,"bashSpillOverCap":false,"bashReadLeak":true,"bashWriteSecretRefused":false,"bashWriteInsideOk":true,"bashEscapeRefused":false,"bashDangerAttemptText":"\n[Command finished with exit code 0]","bashDangerEscaped":true,"oneshotGoneAfterDispose":true,"evilBypassed":true,"secretIntact":false,"spawnsWrapped":6,"mounts":[{"fs":"applied","web":"applied","search":"applied","bash":"ERR service \"sandboxPolicy\" has been registered at <SandboxPolicyService>","oneShot":{"registered":true,"disposerType":"function","disposed":true}}]}

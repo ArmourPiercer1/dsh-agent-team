@@ -1,0 +1,6 @@
+[a5x2 18:51:54] mock :45361, fixtures :3497/3498; booting host :3186
+[a5x2 18:51:55] booted; running lanes
+[a5x2 18:51:55] M1: create=200 prompt=200
+[a5x2 18:51:57] M1: 13 requests, done=true
+[a5x2 18:51:57] FATAL ReferenceError: fixtureHits is not defined
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit3.mjs:255:80)

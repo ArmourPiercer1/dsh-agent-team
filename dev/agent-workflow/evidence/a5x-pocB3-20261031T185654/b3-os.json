@@ -1,0 +1,24 @@
+{
+  "persistentOwnRoot": {
+    "id": "p1",
+    "out": "wrote:/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB3-20261031T185654/rootA/own.txt"
+  },
+  "persistentCrossBefore": {
+    "id": "p2",
+    "err": "EROFS"
+  },
+  "newDomainWrite": {
+    "id": "n1",
+    "out": "wrote:/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB3-20261031T185654/rootB/via-new.txt"
+  },
+  "persistentCrossAfter": {
+    "id": "p3",
+    "err": "EROFS"
+  },
+  "verdicts": {
+    "ownRootOk": true,
+    "crossRefusedInPersistent": true,
+    "newDomainWiderGrantOk": true,
+    "existingDomainNeverWidened": true
+  }
+}

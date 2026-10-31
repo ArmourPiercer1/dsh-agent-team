@@ -1,0 +1,1 @@
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocA1-20261031T183659/secret/outside.md

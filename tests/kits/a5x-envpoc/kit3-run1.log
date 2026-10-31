@@ -1,0 +1,6 @@
+[a5x2 18:41:15] mock :45471, fixtures :3497/3498; booting host :3186
+[a5x2 18:41:16] booted; running lanes
+[a5x2 18:41:17] M1: create=200 prompt=200
+[a5x2 18:43:47] M1: 0 requests, done=false
+[a5x2 18:43:48] done; evidence at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB1-20261031T184115
+[a5x2 18:43:48] {"grepInsideOk":false,"grepTreeMasked":true,"grepSecretPathKernel":true,"grepNomatchSemantics":false,"grepBadRegexSemantics":false,"bashReadLeak":false,"bashWriteSecretRefused":false,"bashWriteInsideOk":false,"bashEscapeRefused":true,"bashDangerAttemptText":"","bashDangerEscaped":false,"oneshotGoneAfterDispose":true,"evilBypassed":false,"secretIntact":true,"spawnsWrapped":0,"mounts":[]}

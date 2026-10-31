@@ -1,0 +1,61 @@
+{
+  "transport": {
+    "plainMs": 52,
+    "confinedMs": 57
+  },
+  "plain": {
+    "c1": {
+      "id": "c1",
+      "out": {
+        "text": "C-SECRET"
+      }
+    },
+    "c6": {
+      "id": "c6",
+      "out": {
+        "text": "C-RW-OK"
+      }
+    },
+    "c4": {
+      "id": "c4",
+      "out": {
+        "text": "C-NET-OK"
+      }
+    }
+  },
+  "confined": {
+    "c2": {
+      "id": "c2",
+      "err": "ENOENT"
+    },
+    "c6b": {
+      "id": "c6b",
+      "out": {
+        "text": "C-RW-OK+c6"
+      }
+    },
+    "c7": {
+      "id": "c7",
+      "err": "ctx.fs service required — cannot run outside a service realm"
+    },
+    "c3": {
+      "id": "c3",
+      "err": "fetch failed"
+    }
+  },
+  "cancel": {
+    "cancelToKillMs": 502,
+    "grandChildPid": null,
+    "grandChildAliveAfterKill": false
+  },
+  "sameToolFileHashUnchanged": true,
+  "verdicts": {
+    "c1_plainDirectReadWorked": true,
+    "c2_confinedDirectReadDenied": true,
+    "c3_confinedNetDenied": true,
+    "c4_plainNetWorked": true,
+    "c6_sameDefinitionRunsBothSides": true,
+    "c7_ctxDependentToolUnsupported": true,
+    "c5_treeKilledOnCancel": true
+  }
+}

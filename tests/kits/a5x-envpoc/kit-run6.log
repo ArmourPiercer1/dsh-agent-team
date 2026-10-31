@@ -1,0 +1,7 @@
+[a5x 16:58:35] mock model up :45979; booting host :3186
+[a5x 16:58:37] boot line seen
+[a5x 16:58:37] session/create status=200
+[a5x 16:58:37] prompt status=200; driving real dispatch via mock
+[a5x 16:58:39] FATAL Error: mock storm fuse (97 requests)
+    at waitForTurn (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit.mjs:219:42)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-kit.mjs:262:21)
