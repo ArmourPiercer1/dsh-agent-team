@@ -90,3 +90,21 @@ Case/Team 隔离 + 损坏记录诊断；host/client factType-category 一致 + �
 处理者归属事实，绝不是授权凭据**；条件无法证明时**退回 Leader**，禁止由空 Assignment 或缺失记录推导出允许执行。
 硬约束：复用 TeamDomain Ledger / 写入序列 / Team 锁 / 投影；**不建第二套审批 Ledger**；factType 新增必须 host +
 client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变。
+
+### R-5 风险台账（ROUTER_RULES §6）：#513 pinned-quote 校验器可被同 commit 关掉——2026-10-31 接受为已知残差
+
+- **Gate**：ci-pr-gate leg `verbatim-quotes`（必需 leg，非 OPTIONAL_BY_DEFAULT）+ 其校验器
+  `dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs`。
+- **风险点**（round-11 F-R11-3 MAJOR，作者已接受；round-14 复现）：**被打分的那份 checker 与被它打分的
+  内容在同一个 commit 里可编辑**。把 `NEAR` 从 56 抬到 124、把 leg 从 LEG_ORDER 摘掉、或把校验器换成一个
+  只打印 `quotes=2 drift=0 verdict=ok` 的桩，都能让本应红的文档变绿；汇总行的 `verifier_sha256=`
+  **不验证任何东西**——它哈希的是"当前正在跑的那份字节"，因此钉住的是结论，不是判断。
+- **相关文件 / 证据位置**：校验器头部 RESIDUAL RISK 段（同一措辞三处：本 memo、leg 注释
+  `scripts/ci-pr-gate.mjs`、校验器头部）；复现在 round-11 攻击集与 round-14 攻击集的
+  `x_stub_verifier` / `x_near_switch` 两例（各自打印被改字节与 rc 翻转；按 lane 约定证据留在 scratch，
+  不入 tracked 内容，结论与可复跑用例名登记在此行与校验器头部）。
+- **当时判定"可控"的理由**：round 11 的结论成立且被接受——**仓库内不存在防线**（PR 内的任何检查都可被该
+  PR 编辑，自指即无穷回归；自哈希或由同一文件校验签名只是掩盖回归，不是消除）。唯一真实的控制是带外动作：
+  对 `scripts/ci-pr-gate.mjs` 与 `dev/agent-workflow/evidence/alpha6-513/` 施加 branch protection +
+  `CODEOWNERS` 审查。**这是托管远端上的运维者动作，本 lane 尚未执行，也不得宣称已经就位。**本控制真正
+  拥有的是确定性：同一字节必得同一结论，任何人可复跑，所以绿可被核查——但不可被伪造这一点，它没有。

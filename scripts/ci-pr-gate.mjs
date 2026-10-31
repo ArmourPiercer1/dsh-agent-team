@@ -1520,6 +1520,20 @@ const LEGS = {
   // disagree with the exit status. Missing parser dependency is REFUSED with the recovery named
   // (an unrunnable tool must not blame the product, and must not pass): --full fails undeclared
   // refusals, so CI cannot switch it off by forgetting an env.
+  // RESIDUAL RISK, ACCEPTED AND NAMED (F-R11-3, round 11 MAJOR; also in the verifier header and in
+  // 修订记录 R-5 of docs/plans/memo/alpha6-review-separation/alpha6-lane2-execution-plan-20261030.md):
+  // THIS LEG GRADES A CHECKER THE SAME COMMIT MAY EDIT. Raising the tool's NEAR, dropping this leg
+  // from LEG_ORDER/OPTIONAL_BY_DEFAULT, or replacing the file with a stub that prints
+  // `quotes=2 drift=0 verdict=ok` all pass, and the summary's `verifier_sha256=` verifies against
+  // nothing — it hashes whatever bytes are running, pinning a verdict rather than a judgment. Round
+  // 11 proved both shapes (519-byte stub; NEAR 56→116) and round 14 re-proved them; round 11's
+  // conclusion is accepted: no in-repo defence exists, since any check inside a PR is editable by
+  // that PR, and self-hashing or a signature checked by this same file would hide the regress, not
+  // remove it. The only real controls are OUT OF BAND — branch protection plus CODEOWNERS review on
+  // `scripts/ci-pr-gate.mjs` and on `dev/agent-workflow/evidence/alpha6-513/` — which are OPERATOR
+  // ACTIONS ON THE HOSTED REMOTE THAT THIS LANE HAS NOT TAKEN; nobody may read a green here as
+  // evidence that they are in place. What the control does own is determinism: same bytes, same
+  // verdict, re-runnable by anyone, so a green is checkable even though it is not unforgeable.
   'verbatim-quotes'() {
     const abs = resolve(REPO_ROOT, 'dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs')
     if (!existsSync(abs)) {
