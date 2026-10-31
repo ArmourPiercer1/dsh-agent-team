@@ -55,3 +55,13 @@ PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDIN
 **合并纪律（自本条生效）**：census-runtime=failure 时即使 required pr-gate=success 也须先诊断身份再合并——本分支新增红=阻断；继承红=登记随台账 PR 收口。
 
 - 事件缺口注记（G-f）：20:25–22:06Z 本仓库 pull_request 类事件未产生任何 run（只读核对：workflow active、非 draft、base/paths 无限制、actions 权限正常、触发/未触发 head 的作者与 verified 形态相同——原因未定位，不称全局停摆）；受影响 #258/#267 恢复后各做一次常规重试（267 close/reopen、258 常规文档推送），run 出现在最终 head 前不合。
+
+## Alpha.6 定时唤醒载体递延（2026-10-31，Lane 2）
+
+用户裁决（2026-10-31）：Alpha.6 PR-I2 的 **floor-delayed 定时唤醒**子能力**递延**，登记为具名
+`CORE_SEAM_BLOCKER`，scope 严格限定为该子能力本身。理由与证据见
+`docs/plans/memo/alpha6-review-separation/rulings-20261031-timed-wake-and-pr-i1.md` §1.1 与
+`docs/plans/memo/alpha6-review-separation/s0-addendum-timed-wake-carrier-20261031.md`（S0 补遗命题 N-1）；台账条目
+`dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`。**项目内递延，不构成对 upstream 的
+任何请求**（对外提交需另行授权）。递延期间硬要求：缺时间触发源的 floor-delayed 请求必须显式拒绝（不得
+`accepted: true`、不得静默丢弃），不得自建第二套持久化 timer/scheduler，PR #509 defer 面保持 DORMANT。
