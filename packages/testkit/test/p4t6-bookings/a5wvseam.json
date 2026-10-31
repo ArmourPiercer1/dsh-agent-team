@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5WVSEAM",
+  "paths": [
+    "packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1394,
+    "to": 1395
+  },
+  "reason": "A5WVSEAM (this round, branch task/a5w-vseam-20261031) adds its ONE scannable spec (packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts - the Control-side PA-verifier subtree-seam assembly C1: the bw7 incident world (subtree ask rule + tool-invoke/read/domain-ref set) resolves allow and STAYS allow with the consumption fact at both gates; the seam-less deps world still commits the durable pa-authority-drift DENY with zero consumption (fail-closed law undimmed); the seam lost between the gates blocks at the guard gate and restores to consume ONCE; an envelope subtree rule discriminates the plan/verify threading; the ask path never consults the seam; source pins hold the mount-face arrival end to end; zero new denylist vocabulary; dist rides outside the scan). The production edits (pa-control-bridge.ts, root.ts, team-tool-plane.mjs, agent-bindings.mjs) are in-place edits on ALREADY-COUNTED files - an edit is not an increment (pa-mount-registry.mjs is byte-frozen by u6-pr4 E1 and stays UNTOUCHED - the seam is mount face, never a contract change).",
+  "tieNote": "MEASURED on THIS tree at booking time (base origin/master e93a54632 with the fix + the new spec on disk and this clause unbooked): the coverage leg read `scanner counts 1395, ledger derives 983 + 411 = 1394` (vitest run of test/p4t6-session-event-scan.test.ts in the worktree, 2026-10-31T02:21Z, real UTC). Exactly this one path; the measured value equals 1395; no chain value copied. The same run measured zero new denylist vocabulary with the quarantine hits unchanged (the denylist legs pass with the file on disk)."
+}

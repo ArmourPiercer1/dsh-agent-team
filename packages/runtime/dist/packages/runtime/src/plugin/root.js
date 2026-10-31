@@ -1628,6 +1628,24 @@ export function createTeamProductionRoot(params) {
             // (manifest.member.instanceId); there is no `request` wrapper.
             mount: resolvePaMountPort(rootSessionId, String(manifest?.member?.instanceId ?? '')),
         }),
+        // a5w-vseam (2026-10-31, real UTC; bw7 fix): the Control-side verifier
+        // re-derives subtree coverage through the SAME seam the mounted plane
+        // was assembled with, read PER CALL from the publishing mount — no
+        // mount, or a mount that carries no seam, answers `undefined`, which
+        // keeps the fail-closed envelope law exactly as it stands (undetermined
+        // coverage still denies). And the verifier's observation rows
+        // (pa-verifier gate/outcome/detail, enriched with rootSessionId +
+        // instanceId) ride to that instance's OWN observations channel — the
+        // bw7 drift was invisible in the one log that needed it.
+        resolveSubtreeContains: ({ rootSessionId, manifest }) => resolvePaMountPort(rootSessionId, String(manifest.member.instanceId))?.subtreeContains,
+        onObserve: (row) => {
+            const rowRoot = row['rootSessionId'];
+            const rowInstance = row['instanceId'];
+            if (typeof rowRoot !== 'string' || typeof rowInstance !== 'string')
+                return;
+            const mount = resolvePaMountPort(rowRoot, rowInstance);
+            mount?.onObserve?.(row);
+        },
     });
     // 9e-3: the SAME adapter the verifier consults is published as a shared
     // ref (the controlServiceRef pattern) so the PLANE's final edge awaits the

@@ -439,7 +439,18 @@ export function createPaControlLeg(deps) {
     }
 }
 export function createPaEffectsVerifier(deps) {
-    const observe = deps.onObserve ?? (() => { });
+    // a5w-vseam (2026-10-31): every row the verifier emits carries WHERE it
+    // was observed (root session + member instance) so the composition can
+    // route it into that instance's observations channel — in the bw7 world
+    // the drift verdict was invisible in the instance log that would have
+    // shown it (observability gap, investigation §4).
+    const observe = (source, row) => {
+        deps.onObserve?.({
+            ...row,
+            rootSessionId: source.rootSessionId,
+            instanceId: source.manifest.member.instanceId,
+        });
+    };
     const nonEmpty = (value) => typeof value === 'string' && value.length > 0;
     /** The manifest carries its rungs as STRINGS (durable JSON); the closed
      *  ladder is re-admitted only through its own stated table — a rung
@@ -448,11 +459,11 @@ export function createPaEffectsVerifier(deps) {
     return async (input) => {
         const { manifest, decider } = input;
         const undetermined = (detail) => {
-            observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId });
+            observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId });
             return { ok: false, reason: 'authority-undetermined', detail };
         };
         const drifted = (detail) => {
-            observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId });
+            observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId });
             return { ok: false, reason: 'pa-authority-drift', detail };
         };
         const deciderRung = deciderAuthority(decider);
@@ -533,10 +544,34 @@ export function createPaEffectsVerifier(deps) {
         // (the ceiling pair's slot members assign STRUCTURALLY — no cast: an
         // `unavailable` slot is unrepresentable in the facts contract, a read
         // that faulted is undefined FACTS, decided above as undetermined).
+        //
+        // a5w-vseam (2026-10-31, bw7): the containment seam is resolved ONCE
+        // per verifier call, BEFORE any pure-core walk, so all three walks
+        // below answer subtree coverage with the SAME predicate the mint side
+        // used — or with NONE at all. A resolver that throws answers `undefined`
+        // (a broken seam is NO seam, never a guessed one); with no seam the
+        // envelope law keeps its fail-closed arm: subtree coverage stays
+        // undeterminable and the set drifts. The fix threads the question, it
+        // never softens the answer.
+        let subtreeContains;
+        if (deps.resolveSubtreeContains !== undefined) {
+            try {
+                subtreeContains = deps.resolveSubtreeContains({
+                    rootSessionId: input.rootSessionId,
+                    requestId: input.requestId,
+                    manifest,
+                    decider,
+                    stage: input.stage,
+                });
+            }
+            catch {
+                subtreeContains = undefined;
+            }
+        }
         const documents = facts.ceiling;
         let expansion;
         try {
-            expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument);
+            expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, subtreeContains);
         }
         catch (error) {
             return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`);
@@ -558,6 +593,7 @@ export function createPaEffectsVerifier(deps) {
             authorityGeneration: facts.authorityGeneration,
             teamSessionId: facts.member.teamSessionId,
             instanceId: facts.member.instanceId,
+            ...(subtreeContains === undefined ? {} : { subtreeContains }),
         });
         if (!planned.ok) {
             return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`);
@@ -614,6 +650,7 @@ export function createPaEffectsVerifier(deps) {
             },
             currentAuthorityGeneration: facts.authorityGeneration,
             documents,
+            ...(subtreeContains === undefined ? {} : { subtreeContains }),
         });
         if (!presented.ok) {
             return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`);
@@ -628,7 +665,7 @@ export function createPaEffectsVerifier(deps) {
                 return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${facts.beneficiaryAuthority}'`);
             }
         }
-        observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) });
+        observe(input, { stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) });
         return { ok: true };
     };
 }
