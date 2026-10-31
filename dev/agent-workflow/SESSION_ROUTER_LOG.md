@@ -7524,3 +7524,71 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   + 本日志；`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking
   （total 1418）全部未动；:3080 未触碰（本会话对 3080 零连接，端口占用核查仅监听 enumeration）；
   宿主 clone `/home/armourpiercer/deepseek-harness` porcelain 会话开始/结束各测一次；未 push、未 GitHub 写、未 amend。
+
+## 2026-10-31 — #517 round-17 修复轮：round-2 评审的 1 条 MINOR（F-I1a2-1）与 4 条廉价 INFO（F-I1a2-2/4/5/6）全接受；FAIL 现在打印它评过的每一条合取及其源码字节，四个红转写带着自己的 `MUTATION.diff` 重跑；一句不能复现的 mut-seq 说法被删除而非保留
+
+- **输入**：round-2 评审中已接受的 **F-I1a2-1（MINOR：已提交的红转写不能自证其变异；README 的 mut-seq 句与它自己的
+  转写矛盾）**，以及 **F-I1a2-2**（rows FAIL 把每侧截到 400 字符）、**F-I1a2-4**（lock 腿的信任形状没有写明）、
+  **F-I1a2-5**（kit 文件命中 eslint ignore 模式，任何"lint 覆盖了仪器"的说法为假）、**F-I1a2-6**（docs-sync 应引其
+  自身输出行；且聚合计数不是那两条已披露红腿的指纹）。
+- **F-I1a2-1 的持久修法（三件）**：
+  1. **仪器打印它评了什么**——`check(id, ok, measured, graded)` 第四参数是这条腿评过的合取列表；FAIL 分支逐条打印
+     评测侧（`[probe]`/`[driver]`）、依据的 `file:line`、两侧各自的值，以及**运行时从磁盘读回的源码行**。
+     reopen-identity 9 条、rows 2 条、continue-chain 2 条；其余腿保持三参数，腿数仍 27，三条腿的 PASS 文本与
+     round-16 除 pid/argv0 marker/nonce 外逐字节相同（与 `16-51-03Z` 做过逐行 diff）。定位不靠抄写：`locate()`
+     在评分时刻在 kit 字节里找该 arm，命中数≠1 就打印 `<anchor matched N lines, not 1 — this quote is NOT the graded arm>`。
+     写这条时抓出两个真 bug：跨行写的 anchor 字面量会同时匹配两行；self-test 复用真实 label 会毁掉 anchor 唯一性。
+  2. **hunk 与转写并置提交**，四个红全部重跑（每个 run 目录内附 `MUTATION.diff` + `MUTATION-METHOD-LAW.txt`，
+     方法学日志含 FROM 唯一性/行号、分隔符与标记计数相对被替换文本 delta 的期望、`node --check`、kit verdict、
+     还原 sha256 + `cmp`）：`a6pri1a-2026-10-31T18-39-14Z` mut-pid（`pri1a-probe-row.mjs:260` 谓词侧，port 3184）、
+     `18-39-38Z` mut-driver-pid（`pr-i1a-real-host.mjs:663` 驱动侧 `host2`→`host1`，port 3186）、
+     `18-40-00Z` mut-payload（`pri1a-probe-row.mjs:299` boot 2 handoff 行，port 3188）、
+     `18-40-22Z` mut-seq（`pri1a-probe-row.mjs:290` step **谓词** `+ 1`→`+ 2`，port 3190）；四条 verdict 行都是
+     `verdict=fail pass=26 fail=1 refused=0 legs=27 failed=<各自那一条>`，mut-driver-pid 里探针腿自己打印 `ok`
+     被驱动侧单独拉红这一点，现在由被引的字节直接可见。
+  3. **不能复现的说法删除并说明**：round-16 把 mut-seq 描述为"探针 expected 值被改"，其转写的 measured JSON 却报
+     `"expected":4`——真实变异是 `pri1a-probe-row.mjs:290` 的**谓词侧**（与被打印的 `expected:` 相隔两行）。旧句作废；
+     同一轮 README 里"字节级 diff 已记录"的说法一并更正：round-16 的 `diff -u` 只存在于修复会话，从未进仓，
+     故四个 round-16 红目录状态改为 **undemonstrated**（为日志引用而留，不再充当可失败性的凭据）。
+- **F-I1a2-2**：rows FAIL 先给定位器再截断——`FIELD PATH rows[0].payload.assignmentEpoch: boot 1 1 vs boot 2 99`
+  / 行数不等 / 字段仅单侧存在 / 键顺序（本腿按 `JSON.stringify` 评分，会咬顺序）；什么都不差就明说这是仪器自己的
+  故障，不编造差异。400 字符截断保留。
+- **F-I1a2-4**：证据 README "What it does NOT claim" 增句——`boot-1-lock-was-serialised` 评的是探针对**自己注入的**
+  per-root lock 的自报计数（`acquires=4`、峰值深度 1），boot 2 的计数未被评分；探针之外无第二来源，故它不是锁行为的
+  佐证，跨进程锁仍是 PR-I1b 的决定。没有伪称已相互印证。
+- **F-I1a2-5**：本轮实测 `npx eslint` 对两个 kit 文件各报 `0:0 warning File ignored because of a matching ignore
+  pattern`（rc=0，`✖ 2 problems (0 errors, 2 warnings)`）——lint 从未读过仪器；本轮所有文字都不主张 lint 覆盖仪器，
+  覆盖它的是 `node --check`（仅语法）、`--self-test` 与真实运行。
+- **F-I1a2-6**：docs-sync 引自身输出行原文（见证据 README），不再转写成散文数字；并实测记录聚合计数不是指纹——把
+  gitignored 的 `packages/client/dist`（`.gitignore:34 dist/`，404 文件）挪开后同两个文件仍 `2 failed`，但红的腿换成
+  `is green, asserted by arm name and by absence of a skip — never by the exit code`（全新 clone 天然如此）；
+  **承重的是名字**：`refuses the leg, by name, when the host module closure cannot be traversed`
+  （`packages/testkit/test/a4p7-merge-gate.test.ts`）与 `the client lane runs, and no failure appears outside the
+  disclosed baseline`（`packages/testkit/test/p4t6-session-event-scan.test.ts`）。挪开后按文件清单指纹原样还原
+  （`a5f7ce362aa291e19df99c92dfcfa59b3e302a94802e2d710b6de0683e88ebd0`），`git status --porcelain` 对 `packages/` 空。
+- **新仪器模式的自测**：`node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test` =
+  `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=30 problems=0`（转写 `a6pri1a-selftest-round17/selftest.txt`）；
+  它不开世界、不占端口、不计入腿数，只测"FAIL 打印的是它评过的那一行"这一新能力（含 anchor 唯一性全量清扫）。
+- **本轮测值**：绿 run `a6pri1a-2026-10-31T18-32-44Z` = `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0
+  legs=27`（写 3182 / 重启 3183、boot pid 37→49、两 world 删除、`tests/homes/` 空、宿主 porcelain 前/后 0/0）；
+  六个带外端口在这套字节上重测仍全部 `verdict=port-refused`、每个 `rc=2`、`tests/homes` 保持空
+  （`a6pri1a-port-band-refusals-round17/port-refusals.txt`）；写者规格 `Tests 49 passed (49)`；九文件套件
+  `Test Files 1 failed | 8 passed (9)`、`Tests 2 failed | 317 passed (319)`，两条红即上条点名的两条（**按名字引，不按计数**）；
+  `pnpm --filter ./packages/runtime run typecheck` = 0。kit 发布 pin：`pr-i1a-real-host.mjs`
+  `5376fd21dde5b8ae0b3d8f85a10604cd879cbb67eea28b92a7095d1b9ee380b4`（本轮唯一改动的仪器文件）、
+  `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（与 round 15/16 逐字节相同）。
+- **方法学事故（披露，因为它改变过被测量的东西）**：本轮变异脚手架第一版算错期望字节增量，触发自家断言后**带着已
+  变异的探针文件退出**，随后两次运行继承了污染（一次报 3 条红腿）。这两个 run 目录 `18-34-06Z`、`18-34-30Z` 不可引用、
+  未提交，**已在本 commit 之前删除**，本仓任何文字不引用它们。脚手架改为：动手前 sha256 必须等于 pin（不等就拒绝），
+  任何退出路径（含断言失败）都还原并验证，链条 `set -e` 首错即停；上面四个 hunk 全部出自新版，每个都在下一个变异
+  开始前验证了自己的还原。
+- **顺序与只能后置的门禁**：本轮 tracked 改动 = `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`（仅 FAIL 分支 +
+  `--self-test`，PASS 文本不变）、`dev/agent-workflow/evidence/alpha6-pri1a-real-host/**`（新 run 目录 + README）、
+  本 memo 的 round-17 banner 与本条日志；`packages/**` 零 tracked diff（写者规格只引 verdict token，未动）。
+  `docs-sync --check` / `eb3-evidence-guard --new-since HEAD~1` / `check-artifacts-at-head` 只能在 commit 之后跑，
+  token 记入本轮 PR comment；绿 run 的 `capture.json.laneHead` 仍是 commit 前的 head（单 commit 不含自身 sha，
+  与 round 15/16 同一披露）。
+- **纪律自查**：CORE PATCH BUDGET = 0；未放松任何封闭集、卫生规则或 pin（`ALLOWED_CONSUMERS=[]`、
+  `EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking total 1418 全部未动）；端口只用带内 318x，
+  :3080 零连接；其他 worktree（`alpha6-pri1b`/`alpha6-gov`/`alpha6-pri2`）、Lane 1 与只读宿主 clone 未触碰
+  （宿主 porcelain 会话首尾各测一次）；未 push、未 GitHub 写、未 amend。

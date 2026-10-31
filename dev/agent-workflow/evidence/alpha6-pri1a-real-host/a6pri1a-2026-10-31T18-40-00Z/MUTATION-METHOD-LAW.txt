@@ -1,0 +1,38 @@
+=== METHOD LAW — mut-payload ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        :         rows, generation, replayFirst, fresh,
+replaced by       :         rows: rows.map((row) => ({ ...row, payload: { ...row.payload, assignmentEpoch: 99 } })), generation, replayFirst, fresh,
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+FROM occurrences before the edit: 1
+FROM occurs on line(s): [299]
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+counts after  : {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 17943, 'lines': 313}
+expected after: {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 17943, 'lines': 313}
+structure assertion: every delimiter, quote, marker, line and byte count moved exactly by the delta of the replaced text — nothing else changed
+application confirmed: FROM occurrences after = 0, TO occurrences after = 1
+NUL byte scan: none
+node --check on the mutated bytes: OK
+sha256 mutated    : 8f77899c82970f0f9f3354d20b1f440eafd81eeb21d0987b34bc2f46f485a529
+--- exact bytes changed (diff -u, worktree-relative labels) ---
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -296,7 +296,7 @@
+       emit(ctx, config, {
+         state: 'done', mode: 'restart', detail: 'reopened the medium in a fresh process and folded it',
+         rootSessionId, lock: held, steps, process: PROCESS_IDENTITY,
+-        rows, generation, replayFirst, fresh,
++        rows: rows.map((row) => ({ ...row, payload: { ...row.payload, assignmentEpoch: 99 } })), generation, replayFirst, fresh,
+       })
+       return
+     }
+--- running the kit on the mutated bytes (port 3188) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-rows-are-boot-1-rows
+run directory created by this run: a6pri1a-2026-10-31T18-40-00Z
+--- restore (exit path) ---
+restored from <scratch:pri1a-fix2>/base/mut-payload.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything

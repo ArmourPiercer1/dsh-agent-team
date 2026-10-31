@@ -1,0 +1,41 @@
+# F-I1a2-1 round-17: the instrument grading its own FAIL rendering (no world, no port).
+$ node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+SELFTEST ok driver-conjunct-resolves-to-a-line
+SELFTEST ok driver-conjunct-quotes-its-own-bytes
+SELFTEST ok missing-anchor-says-so
+SELFTEST ok missing-anchor-refuses-to-quote
+FAIL selftest-renders-a-graded-fail — synthetic leg — nothing about the writer was measured here
+FAIL-GRADED selftest-renders-a-graded-fail — 1 conjunct(s) this leg evaluated; each quotes the bytes it was graded from:
+FAIL-GRADED   RED  [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:305 — selftest graded arm: spawned boot 1=1 boot 2=1
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:305 const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', { file: DRIVER_REL, anchor: 'const selfTestArm =', lines: 1 })
+SELFTEST ok fail-prints-a-graded-block
+SELFTEST ok graded-block-marks-the-red-arm
+SELFTEST ok equal-rows-claim-no-difference
+SELFTEST ok third-row-payload-difference-is-located
+SELFTEST ok row-count-difference-is-located
+SELFTEST ok key-order-difference-is-named
+SELFTEST ok missing-field-is-named
+SELFTEST ok driver-conjuncts-are-present
+SELFTEST ok label-locates-uniquely "selftest graded arm"
+SELFTEST ok label-locates-uniquely "both boots reported a process identity"
+SELFTEST ok label-locates-uniquely "boot-1 self-reported pid equals the pid this driver spawned"
+SELFTEST ok label-locates-uniquely "boot-1 self-reported argv0 equals the marker this driver stamped"
+SELFTEST ok label-locates-uniquely "boot-2 self-reported pid equals the pid this driver spawned"
+SELFTEST ok label-locates-uniquely "boot-2 self-reported argv0 equals the marker this driver stamped"
+SELFTEST ok label-locates-uniquely "the two pids this driver spawned differ"
+SELFTEST ok label-locates-uniquely "the two self-reported pids differ"
+SELFTEST ok label-locates-uniquely "the two module nonces differ"
+SELFTEST ok label-locates-uniquely "boot 1 produced a report whose rows can be compared at all"
+SELFTEST ok label-locates-uniquely "every field of every row is byte-identical across the two boots"
+SELFTEST ok label-locates-uniquely "the driver re-derives the same expected sequence from boot 1 rows"
+SELFTEST ok explicit-quotes-are-present
+SELFTEST ok quote-locates-uniquely DRIVER_REL "const selfTestArm ="
+SELFTEST ok quote-locates-uniquely PROBE_REL "const freshProcess ="
+SELFTEST ok quote-locates-uniquely PROBE_REL "state: 'done', mode: 'write'"
+SELFTEST ok quote-locates-uniquely PROBE_REL "state: 'done', mode: 'restart'"
+SELFTEST ok quote-locates-uniquely PROBE_REL "step('new-family-writes-after-restart'"
+DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=30 problems=0
+rc=0
+$ sha256sum tests/kits/pr-i1a-real-host/*.mjs
+5376fd21dde5b8ae0b3d8f85a10604cd879cbb67eea28b92a7095d1b9ee380b4  tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
+40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd  tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs

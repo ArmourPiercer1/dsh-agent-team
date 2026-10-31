@@ -48,7 +48,9 @@
  * teardown kills only what this run started. `DSH_HOME` is set explicitly on every spawn and never inherited.
  * The launch token never reaches evidence: every string that can carry a boot URL passes `scrub()`.
  *
- * Usage: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs [--port 3182] [--keep-world]
+ * Usage: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs [--port 3182] [--keep-world] [--self-test]
+ * `--self-test` grades this instrument's own FAIL rendering (graded conjuncts, source quotes, the row
+ * locator) without creating a world or binding a port, and prints `DSH-PRI1A-REALHOST-SELFTEST verdict=…`.
  * Exit 0 only when every check passed; exit 1 naming the failures; exit 2 with `verdict=port-refused` when a
  * requested port is out of the sanctioned bands (input refusal — nothing was created or booted); exit 3 with
  * `verdict=env-refused` when the environment cannot answer at all (that is a refusal, not a pass and not a red).
@@ -68,6 +70,7 @@ const HOMES = join(WORKTREE, 'tests', 'homes')
 
 const argv = process.argv.slice(2)
 const KEEP_WORLD = argv.includes('--keep-world')
+const SELF_TEST = argv.includes('--self-test')
 const PORT_OVERRIDE = (() => {
   const i = argv.indexOf('--port')
   return i >= 0 ? Number(argv[i + 1]) : null
@@ -106,10 +109,27 @@ const log = (s) => { lines.push(String(s)); console.log(String(s)) }
 const scrub = (s) => String(s).replace(/([?&]token=)[^&#\s]*/g, '$1<REDACTED>')
 
 const results = []
-/** PASS/FAIL only for legs that RAN. `refuse()` records a leg that could not run — never green, never red. */
-const check = (id, ok, measured) => {
-  results.push({ id, verdict: ok === true ? 'PASS' : 'FAIL', measured: String(measured) })
+/**
+ * PASS/FAIL only for legs that RAN. `refuse()` records a leg that could not run — never green, never red.
+ *
+ * `graded` (F-I1a2-1, review round 2) is the list of CONJUNCTS a leg actually evaluated. On FAIL every one
+ * of them is printed — which side of the instrument computed it, the `file:line` it was graded from, the
+ * value each side produced — and the SOURCE BYTES of each RED conjunct's line are quoted from the kit files
+ * as they sit on disk during this run. Round 2's committed reds were self-consistent and could only be
+ * explained by trusting the README, which is what a falsifiability transcript must never need; a mutated
+ * arm now shows its own mutated bytes in the transcript.
+ */
+const check = (id, ok, measured, graded = null) => {
+  const rendered = ok === true || graded === null ? null : graded.map(renderConjunct)
+  results.push({ id, verdict: ok === true ? 'PASS' : 'FAIL', measured: String(measured), ...(rendered === null ? {} : { graded: rendered }) })
   log(`${ok === true ? 'PASS' : 'FAIL'} ${id} — ${scrub(measured)}`)
+  if (rendered !== null) {
+    log(`FAIL-GRADED ${id} — ${String(rendered.length)} conjunct(s) this leg evaluated; each quotes the bytes it was graded from:`)
+    for (const c of rendered) {
+      log(`FAIL-GRADED   ${c.ok ? 'ok  ' : 'RED '} [${c.side}] ${c.at} — ${c.what}: ${scrub(c.values)}`)
+      for (const s of c.source ?? []) log(`FAIL-GRADED     ${scrub(s)}`)
+    }
+  }
 }
 const refuse = (id, cause) => {
   results.push({ id, verdict: 'REFUSED', measured: String(cause) })
@@ -136,6 +156,195 @@ function filesUnder(dir, depth = 0, out = []) {
     else if (entry.isFile()) out.push(abs)
   }
   return out
+}
+
+// ── F-I1a2-1 (round 3): a FAIL prints WHAT IT GRADED ────────────────────────────────────────────────────
+// Worktree-relative, so a transcript can carry a source quote without ever carrying an absolute path.
+const DRIVER_REL = relative(WORKTREE, join(import.meta.dirname, 'pr-i1a-real-host.mjs'))
+const PROBE_REL = relative(WORKTREE, join(import.meta.dirname, 'pri1a-probe-row.mjs'))
+
+/**
+ * One conjunct of a graded leg: which SIDE of the instrument computed it (the in-host probe or this driver),
+ * what it asserts, the values it saw, and where its bytes live. A driver conjunct with no explicit `quote`
+ * is located by its own label, which must therefore be unique in this file — that is what makes the printed
+ * `file:line` a measurement of the running bytes rather than a transcription that can drift.
+ */
+const conjunct = (side, what, ok, values, quote = null) => ({
+  side,
+  what,
+  ok: ok === true,
+  values: String(values),
+  quote: quote ?? { file: DRIVER_REL, anchor: what, lines: 1 },
+})
+
+/** Locate one `{file, anchor, from, lines}` descriptor in the bytes actually on disk at grade time. */
+function locate(quote) {
+  const file = quote.file
+  let text = null
+  try { text = readFileSync(join(WORKTREE, file), 'utf8') } catch { text = null }
+  if (text === null) return { at: `${file}:<unreadable>`, lines: [`${file}:<the file that declares this conjunct could not be read>`] }
+  const all = text.split('\n')
+  const hits = []
+  all.forEach((l, i) => { if (l.includes(quote.anchor)) hits.push(i) })
+  if (hits.length !== 1) {
+    return {
+      at: `${file}:<anchor matched ${String(hits.length)} lines>`,
+      lines: [`${file}:<anchor ${JSON.stringify(quote.anchor)} matched ${String(hits.length)} lines, not 1 — this quote is NOT the graded arm>`],
+    }
+  }
+  const from = hits[0] + (quote.from ?? 0)
+  const lines = []
+  for (let i = from; i < Math.min(all.length, from + (quote.lines ?? 1)); i += 1) {
+    lines.push(`${file}:${String(i + 1)} ${all[i].replace(/\s+/g, ' ').trim()}`)
+  }
+  return { at: `${file}:${String(from + 1)}`, lines }
+}
+
+/** Resolve a conjunct into the record a FAIL transcript prints: side, file:line, values, source bytes. */
+function renderConjunct(c) {
+  const quotes = Array.isArray(c.quote) ? c.quote : [c.quote]
+  const located = quotes.map(locate)
+  return {
+    side: c.side,
+    what: c.what,
+    ok: c.ok,
+    values: c.values,
+    at: located.map((l) => l.at).join(' + '),
+    source: located.flatMap((l) => l.lines),
+  }
+}
+
+const brief = (v) => String(typeof v === 'string' ? JSON.stringify(v.slice(0, 80)) : JSON.stringify(v) ?? String(v)).slice(0, 120)
+
+/**
+ * F-I1a2-2: the rows leg compares two JSON strings and its FAIL line truncates each side to 400 chars, so a
+ * payload difference in the third row was invisible. The truncation stays — the transcript has to stay
+ * readable — and this adds the LOCATOR: the first row that differs, the dotted field path inside it, and what
+ * each side reported. When every leaf matches but the strings still differ, the honest answer is that the
+ * comparison is `JSON.stringify` equality, which grades key ORDER too, and that is what gets said.
+ */
+function firstRowDifference(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) {
+    return `row COUNT/CAPTURE: boot 1 side is ${a === null ? 'null (no boot-1 report)' : typeof a}, boot 2 side is ${b === null ? 'null (no rows reported)' : typeof b}`
+  }
+  if (a.length !== b.length) return `row COUNT: boot 1 handed back ${String(a.length)} row(s), boot 2 ${String(b.length)} row(s)`
+  for (let i = 0; i < a.length; i += 1) {
+    const d = firstValueDifference(a[i], b[i], `rows[${String(i)}]`)
+    if (d !== null) return d
+  }
+  const order = firstKeyOrderDifference(a, b)
+  if (order !== null) return order
+  return 'FIELD PATH: nothing differs — the two captures are equal, so a difference reported here would be a fault in this instrument, not in the writer'
+}
+
+/** The leg grades a JSON-string equality, which grades key ORDER too; this names that case explicitly. */
+function firstKeyOrderDifference(a, b, path = 'rows') {
+  for (let i = 0; i < a.length; i += 1) {
+    const d = keyOrderOf(a[i], b[i], `${path}[${String(i)}]`)
+    if (d !== null) return d
+  }
+  return null
+}
+
+function keyOrderOf(x, y, path) {
+  if (typeof x !== 'object' || typeof y !== 'object' || x === null || y === null) return null
+  const kx = Object.keys(x)
+  const ky = Object.keys(y)
+  if (kx.length === ky.length && JSON.stringify(kx) !== JSON.stringify(ky) && JSON.stringify(kx.slice().sort()) === JSON.stringify(ky.slice().sort())) {
+    return `FIELD PATH ${path}: every value matches and the KEY ORDER differs (boot 1 ${kx.join(',')} vs boot 2 ${ky.join(',')}), and the leg grades a JSON.stringify equality, which grades order`
+  }
+  for (const k of kx) {
+    const d = keyOrderOf(x[k], y[k], `${path}.${k}`)
+    if (d !== null) return d
+  }
+  return null
+}
+
+/** Depth-first, first difference wins; arrays and objects are both walked by their own keys. */
+function firstValueDifference(x, y, path) {
+  if (x === y) return null
+  const objX = typeof x === 'object' && x !== null
+  const objY = typeof y === 'object' && y !== null
+  if (!objX || !objY) return `FIELD PATH ${path}: boot 1 ${brief(x)} vs boot 2 ${brief(y)}`
+  if (Array.isArray(x) !== Array.isArray(y)) return `FIELD PATH ${path}: one side is an array, the other is not`
+  if (Array.isArray(x) && x.length !== y.length) return `FIELD PATH ${path}: ${String(x.length)} item(s) in boot 1 vs ${String(y.length)} in boot 2`
+  const kx = Object.keys(x)
+  const ky = Object.keys(y)
+  const lonely = [...new Set([...kx, ...ky])].find((k) => !Object.prototype.hasOwnProperty.call(x, k) || !Object.prototype.hasOwnProperty.call(y, k))
+  if (lonely !== undefined) {
+    const inBoot1 = Object.prototype.hasOwnProperty.call(x, lonely)
+    return `FIELD PATH ${path}.${lonely}: ${inBoot1 ? 'absent in boot 2' : 'absent in boot 1'} (present side ${brief(inBoot1 ? x[lonely] : y[lonely])})`
+  }
+  for (const k of kx) {
+    const d = firstValueDifference(x[k], y[k], `${path}.${k}`)
+    if (d !== null) return d
+  }
+  return null
+}
+
+/**
+ * `--self-test` grades the round-3 FAIL-rendering machinery WITHOUT booting anything, so the claim "a FAIL
+ * prints what it graded" is itself measured and not just asserted in prose: every driver conjunct label and
+ * every explicit probe/driver quote must resolve to exactly one line of the kit bytes on disk (a drifted
+ * anchor is a problem, not a silent fallback), a missing anchor must refuse to quote, a synthetic red leg
+ * must render its graded block, and the row locator must name the row/field that differs. Exit 0 only when
+ * every assertion holds.
+ */
+function selfTest() {
+  const problems = []
+  let assertions = 0
+  const expect = (name, ok, detail) => {
+    assertions += 1
+    if (ok === true) log(`SELFTEST ok ${name}`)
+    else { problems.push(name); log(`SELFTEST PROBLEM ${name} — ${String(detail)}`) }
+  }
+
+  // One rule the sweep below enforces, learned the hard way: an anchor literal written on a DIFFERENT line
+  // than its arm matches both lines, so a cross-line quote must anchor on the arm's unique label instead.
+  // This arm puts its descriptor on its own line, which is why it resolves.
+  const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', { file: DRIVER_REL, anchor: 'const selfTestArm =', lines: 1 })
+  const renderedRed = renderConjunct(selfTestArm)
+  expect('driver-conjunct-resolves-to-a-line', /pr-i1a-real-host\.mjs:\d+$/.test(renderedRed.at), renderedRed.at)
+  expect('driver-conjunct-quotes-its-own-bytes', (renderedRed.source[0] ?? '').includes('selfTestArm'), JSON.stringify(renderedRed.source))
+
+  const absentQuote = { file: DRIVER_REL, anchor: ['this', 'anchor', 'is', 'deliberately', 'absent'].join(' '), lines: 1 }
+  const absentLabel = ['selftest', 'absent', 'anchor', 'case'].join(' ')
+  const missing = renderConjunct(conjunct('driver', absentLabel, false, 'x', absentQuote))
+  expect('missing-anchor-says-so', missing.at.includes('<anchor matched 0 lines>'), missing.at)
+  expect('missing-anchor-refuses-to-quote', missing.source.length === 1 && missing.source[0].includes('NOT the graded arm'), JSON.stringify(missing.source))
+
+  const before = lines.length
+  check('selftest-renders-a-graded-fail', false, 'synthetic leg — nothing about the writer was measured here', [selfTestArm])
+  const block = lines.slice(before)
+  expect('fail-prints-a-graded-block', block.some((l) => l.startsWith('FAIL-GRADED selftest-renders-a-graded-fail')), block.join(' | '))
+  expect('graded-block-marks-the-red-arm', block.some((l) => l.includes('RED ') && /pr-i1a-real-host\.mjs:\d+/.test(l)), block.join(' | '))
+  results.length = 0
+
+  const baseRows = [1, 2, 3].map((s) => ({ schemaVersion: 2, sequence: s, factType: `f${String(s)}`, payload: { assignmentEpoch: 1, legRequestId: `leg-${String(s)}` }, createdAt: 't' }))
+  const copy = (rows) => rows.map((r) => ({ ...r, payload: { ...r.payload } }))
+  expect('equal-rows-claim-no-difference', firstRowDifference(baseRows, copy(baseRows)).includes('nothing differs'), firstRowDifference(baseRows, copy(baseRows)))
+  expect('third-row-payload-difference-is-located', firstRowDifference(baseRows, baseRows.map((r, i) => (i === 2 ? { ...r, payload: { ...r.payload, assignmentEpoch: 99 } } : r))) === 'FIELD PATH rows[2].payload.assignmentEpoch: boot 1 1 vs boot 2 99', firstRowDifference(baseRows, baseRows.map((r, i) => (i === 2 ? { ...r, payload: { ...r.payload, assignmentEpoch: 99 } } : r))))
+  expect('row-count-difference-is-located', firstRowDifference(baseRows, baseRows.slice(0, 2)).startsWith('row COUNT:'), firstRowDifference(baseRows, baseRows.slice(0, 2)))
+  expect('key-order-difference-is-named', firstRowDifference(baseRows, baseRows.map((r) => Object.fromEntries(Object.keys(r).reverse().map((k) => [k, r[k]])))).includes('KEY ORDER'), firstRowDifference(baseRows, baseRows.map((r) => Object.fromEntries(Object.keys(r).reverse().map((k) => [k, r[k]])))))
+  expect('missing-field-is-named', firstRowDifference(baseRows, baseRows.map(({ createdAt, ...r }, i) => (i === 1 ? r : { createdAt, ...r }))).includes('rows[1].createdAt: absent in boot 2'), firstRowDifference(baseRows, baseRows.map(({ createdAt, ...r }, i) => (i === 1 ? r : { createdAt, ...r }))))
+
+  const source = readFileSync(join(WORKTREE, DRIVER_REL), 'utf8')
+  const labels = [...source.matchAll(/conjunct\('driver', '([^']+)'/g)].map((m) => m[1])
+  expect('driver-conjuncts-are-present', labels.length >= 9, `found ${String(labels.length)}`)
+  for (const label of labels) {
+    const located = locate({ file: DRIVER_REL, anchor: label, lines: 1 })
+    expect(`label-locates-uniquely "${label}"`, !located.at.includes('<'), located.at)
+  }
+  const quotes = [...source.matchAll(/file: (DRIVER_REL|PROBE_REL), anchor: (['"])(.*?)\2/g)]
+  expect('explicit-quotes-are-present', quotes.length >= 5, `found ${String(quotes.length)}`)
+  for (const q of quotes) {
+    const file = q[1] === 'DRIVER_REL' ? DRIVER_REL : PROBE_REL
+    const located = locate({ file, anchor: q[3], lines: 1 })
+    expect(`quote-locates-uniquely ${q[1]} "${q[3]}"`, !located.at.includes('<'), located.at)
+  }
+
+  log(`DSH-PRI1A-REALHOST-SELFTEST verdict=${problems.length === 0 ? 'pass' : 'fail'} checks=${String(assertions)} problems=${String(problems.length)}${problems.length === 0 ? '' : ` failed=${problems.join(',')}`}`)
+  return problems.length === 0 ? 0 : 1
 }
 
 /**
@@ -438,20 +647,60 @@ async function main() {
       // must differ. No argument to this check is a literal.
       const p1 = r1?.process ?? null
       const p2 = r2.process ?? null
-      check('boot-2-reopened-in-a-fresh-process', step2('domain-reopened-fresh-process')?.ok === true
-        && p1 !== null && p2 !== null
-        && p1.pid === host1.spawnPid && p1.argv0 === host1.marker
-        && p2.pid === host2.spawnPid && p2.argv0 === host2.marker
-        && host1.spawnPid !== host2.spawnPid && p1.pid !== p2.pid
-        && p1.nonce !== p2.nonce,
+      // F-I1a2-1 (round 3): the conjuncts below ARE this leg's predicate — `check` grades `every(ok)`, so the
+      // FAIL transcript cannot describe anything other than what was actually evaluated. Each carries its
+      // side (in-host probe vs this driver), the file:line of its own bytes, and the values both sides had.
+      const reopenConjuncts = [
+        conjunct('probe', 'the probe concluded it is not the boot-1 process', step2('domain-reopened-fresh-process')?.ok === true,
+          `step.ok=${String(step2('domain-reopened-fresh-process')?.ok)} — ${String(step2('domain-reopened-fresh-process')?.measured)}`,
+          { file: PROBE_REL, anchor: 'const freshProcess =', lines: 2 }),
+        conjunct('driver', 'both boots reported a process identity', p1 !== null && p2 !== null,
+          `boot 1 report ${p1 === null ? 'ABSENT' : 'present'}; boot 2 report ${p2 === null ? 'ABSENT' : 'present'}`),
+        conjunct('driver', 'boot-1 self-reported pid equals the pid this driver spawned', p1?.pid === host1.spawnPid,
+          `reported=${String(p1?.pid)} spawned=${String(host1.spawnPid)}`),
+        conjunct('driver', 'boot-1 self-reported argv0 equals the marker this driver stamped', p1?.argv0 === host1.marker,
+          `reported=${String(p1?.argv0)} stamped=${host1.marker}`),
+        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,
+          `reported=${String(p2?.pid)} spawned=${String(host2.spawnPid)}`),
+        conjunct('driver', 'boot-2 self-reported argv0 equals the marker this driver stamped', p2?.argv0 === host2.marker,
+          `reported=${String(p2?.argv0)} stamped=${host2.marker}`),
+        conjunct('driver', 'the two pids this driver spawned differ', host1.spawnPid !== host2.spawnPid,
+          `spawned boot 1=${String(host1.spawnPid)} boot 2=${String(host2.spawnPid)}`),
+        conjunct('driver', 'the two self-reported pids differ', p1?.pid !== p2?.pid,
+          `reported boot 1=${String(p1?.pid)} boot 2=${String(p2?.pid)}`),
+        conjunct('driver', 'the two module nonces differ', p1?.nonce !== p2?.nonce,
+          `nonce boot 1=${String(p1?.nonce)} boot 2=${String(p2?.nonce)}`),
+      ]
+      check('boot-2-reopened-in-a-fresh-process', reopenConjuncts.every((c) => c.ok),
         `boot 1: pid ${String(p1?.pid)} argv0 ${String(p1?.argv0)} (driver spawned pid ${String(host1.spawnPid)} marker ${host1.marker}); ` +
         `boot 2: pid ${String(p2?.pid)} argv0 ${String(p2?.argv0)} (driver spawned pid ${String(host2.spawnPid)} marker ${host2.marker}); ` +
-        `pids differ: ${String(p1?.pid !== p2?.pid)}, nonces differ: ${String(p1?.nonce !== p2?.nonce)}; ${String(step2('domain-reopened-fresh-process')?.measured)}`)
+        `pids differ: ${String(p1?.pid !== p2?.pid)}, nonces differ: ${String(p1?.nonce !== p2?.nonce)}; ${String(step2('domain-reopened-fresh-process')?.measured)}`,
+        reopenConjuncts)
       check('boot-2-rows-survived-the-restart', step2('rows-survived-restart')?.ok === true, String(step2('rows-survived-restart')?.measured))
-      const same = JSON.stringify(r1?.rows ?? null) === JSON.stringify((r2.rows ?? []).slice(0, 3))
-      check('boot-2-rows-are-boot-1-rows', r1 !== null && same,
+      // F-I1a1-3 + F-I1a2-2: the comparison is FULL-row JSON equality; the FAIL line keeps its 400-char
+      // truncation and adds the FIRST DIFFERING ROW INDEX and FIELD PATH, so a payload difference in the
+      // third row is locatable without unrolling the transcript.
+      const boot1Rows = r1?.rows ?? null
+      const boot2Rows = (r2.rows ?? []).slice(0, 3)
+      const same = JSON.stringify(boot1Rows) === JSON.stringify(boot2Rows)
+      // Only the DRIVER quotes its own arm by its own label, because that label sits on the same line as the
+      // arm. A quote whose anchor is written literally on a DIFFERENT line matches both lines, so cross-file
+      // quotes (the probe) are the only ones carrying an explicit anchor here — `--self-test` enforces both.
+      const rowsConjuncts = [
+        conjunct('driver', 'boot 1 produced a report whose rows can be compared at all', r1 !== null,
+          `boot 1 reported ${String(boot1Rows?.length ?? 0)} row(s), boot 2 reported ${String(boot2Rows.length)} row(s); the two handoff lines quoted below are the only sources of these two arrays`,
+          [
+            { file: PROBE_REL, anchor: "state: 'done', mode: 'write'", from: 2, lines: 1 },
+            { file: PROBE_REL, anchor: "state: 'done', mode: 'restart'", from: 2, lines: 1 },
+          ]),
+        conjunct('driver', 'every field of every row is byte-identical across the two boots', same,
+          same ? 'FULL-row JSON equality holds'
+            : `${firstRowDifference(boot1Rows, boot2Rows)}; boot1=${JSON.stringify(boot1Rows).slice(0, 400)} boot2=${JSON.stringify(boot2Rows).slice(0, 400)}`),
+      ]
+      check('boot-2-rows-are-boot-1-rows', rowsConjuncts.every((c) => c.ok),
         same ? 'the three FULL rows (schemaVersion, sequence, rootSessionId, factType, PAYLOAD, createdAt — every field `list()` hands back) read in the fresh process are byte-identical to the three boot 1 wrote; payload identity is ALSO enforced transitively: a payload the shipped fold cannot reconcile answers REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED (packages/runtime/review-assignment/writer.ts, the fold-unreconciled refusal) instead of replaying'
-          : `boot1=${JSON.stringify(r1?.rows ?? null).slice(0, 400)} boot2=${JSON.stringify((r2.rows ?? []).slice(0, 3)).slice(0, 400)}`)
+          : `${firstRowDifference(boot1Rows, boot2Rows)}; boot1=${JSON.stringify(boot1Rows).slice(0, 400)} boot2=${JSON.stringify(boot2Rows).slice(0, 400)}`,
+        rowsConjuncts)
       check('boot-2-generation-is-durable', step2('generation-durable')?.ok === true
         && r2.generation === r1?.generation?.after,
         `generation ${String(r2.generation)} in the fresh process vs ${String(r1?.generation?.after)} at the end of boot 1`)
@@ -463,9 +712,21 @@ async function main() {
       // both sides: the probe asserts `sequence === previousMax + 1` and the driver re-derives the
       // previous max from BOOT 1's rows, so a fresh row that skips a value reddens this leg.
       const r1Max = (r1?.rows ?? []).reduce((m, row) => (typeof row.sequence === 'number' && row.sequence > m ? row.sequence : m), 0)
-      check('boot-2-new-family-continues-the-chain', step2('new-family-writes-after-restart')?.ok === true
-        && r2.fresh?.sequence === r1Max + 1,
-        `${String(step2('new-family-writes-after-restart')?.measured)}; driver-side expected exactly ${String(r1Max)} + 1 = ${String(r1Max + 1)} (not merely "> ${String(r1Max)}")`)
+      // F-I1a2-1 (round 3): two arms, printed as such on FAIL. The probe's arm is its OWN predicate at its own
+      // file:line (quoted below, which is where a mutated expected/predicate shows its bytes); the driver's
+      // arm re-derives the expected value from boot 1's rows independently. When the values are self-
+      // consistent but the leg is red, the quoted predicate line is the only remaining explanation — which is
+      // precisely the case round 2 could not see.
+      const continueConjuncts = [
+        conjunct('probe', 'the probe asserted its own fresh write continued the chain exactly', step2('new-family-writes-after-restart')?.ok === true,
+          `step.ok=${String(step2('new-family-writes-after-restart')?.ok)} — ${String(step2('new-family-writes-after-restart')?.measured)}`,
+          { file: PROBE_REL, anchor: "step('new-family-writes-after-restart'", lines: 4 }),
+        conjunct('driver', 'the driver re-derives the same expected sequence from boot 1 rows', r2.fresh?.sequence === r1Max + 1,
+          `boot 1 rows carry max sequence ${String(r1Max)}, so the next write must be ${String(r1Max + 1)}; boot 2 reported sequence ${String(r2.fresh?.sequence)}`),
+      ]
+      check('boot-2-new-family-continues-the-chain', continueConjuncts.every((c) => c.ok),
+        `${String(step2('new-family-writes-after-restart')?.measured)}; driver-side expected exactly ${String(r1Max)} + 1 = ${String(r1Max + 1)} (not merely "> ${String(r1Max)}")`,
+        continueConjuncts)
     }
     const s2 = await host2.stop()
     boot2Log = s2.logText
@@ -533,7 +794,12 @@ async function main() {
   process.exitCode = verdict === 'pass' ? 0 : 1
 }
 
-main().catch((error) => {
-  log(`DSH-PRI1A-REALHOST verdict=crash ${scrub(error?.stack ?? String(error))}`)
-  process.exitCode = 1
-})
+if (SELF_TEST) {
+  // No world, no port, no host: this path grades the instrument's own FAIL rendering and nothing else.
+  process.exitCode = selfTest()
+} else {
+  main().catch((error) => {
+    log(`DSH-PRI1A-REALHOST verdict=crash ${scrub(error?.stack ?? String(error))}`)
+    process.exitCode = 1
+  })
+}

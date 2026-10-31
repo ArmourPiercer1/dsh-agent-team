@@ -4,6 +4,57 @@
 写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
 scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
 
+> **Dated banner（2026-10-31，round-17 修复轮）——处理评审 round 2 的 1 条 MINOR（F-I1a2-1）与 4 条廉价 INFO（F-I1a2-2/4/5/6）；不改动上一轮 banner 的历史叙述，但点名更正其中一句（见第一条末）与证据 README 的一句。**
+> - **F-I1a2-1（红转写不能自证其变异；README 的 mut-seq 句与自家转写矛盾）**：本轮做三件事。
+>   1. **让仪器打印它到底评了什么**：`check()` 增加第四参数（该腿评过的 CONJUNCT 列表）。FAIL 时逐条打印
+>      哪一侧算的（`[probe]`/`[driver]`）、评分依据的 `file:line`、两侧各自算出的值，以及**运行时从磁盘读回的该行源码字节**。
+>      reopen-identity 腿 9 条、rows 腿 2 条、continue-chain 腿 2 条；其余腿仍是三参数调用，故腿数不动（27），三条腿的
+>      PASS 文本与 round-16 除 pid/marker/nonce 外逐字节相同。`file:line` 不靠抄：`locate()` 在评分时刻在 kit 字节里
+>      定位该 arm，要求**恰好一处**命中；0 处或多处就打印 `<anchor matched N lines, not 1 — this quote is NOT the graded arm>`，
+>      绝不引「看着像」的邻居。「FAIL 会打印它评了什么」这条断言本身也被测：`--self-test`（30 条，
+>      `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=30 problems=0`，转写 `a6pri1a-selftest-round17/`；不开世界、
+>      不占端口、不是第 28 条腿）——写它的时候抓出两个 anchor bug。
+>   2. **把变异 hunk 与转写一起提交**，四个红腿重跑：`18-39-14Z`=mut-pid（`pri1a-probe-row.mjs:260`，probe 侧谓词
+>      `previousBootPid !== process.pid`→`process.pid !== process.pid`）、`18-39-38Z`=mut-driver-pid
+>      （`pr-i1a-real-host.mjs:663`，驱动侧 `p2?.pid === host2.spawnPid`→`host1.spawnPid`）、`18-40-00Z`=mut-payload
+>      （`pri1a-probe-row.mjs:299` boot 2 handoff 行塞入 `assignmentEpoch: 99`）、`18-40-22Z`=mut-seq
+>      （`pri1a-probe-row.mjs:290`，step **谓词** `previousMax + 1`→`+ 2`）。每个红目录里现在并置
+>      `MUTATION.diff`（`diff -u`，工作区相对标签）+ `MUTATION-METHOD-LAW.txt`（FROM 唯一性与行号、分隔符/引号/标记/行/字节
+>      计数与「只按被替换文本的 delta 变化」的期望、`node --check`、kit verdict、还原 sha256 与 `cmp`）。
+>   3. **删掉不能复现的说法而不是留着**：round-16 把 mut-seq 写成「探针 expected 值被改」，但它的转写里 measured JSON
+>      仍写 `"expected":4`——被改的从来不是 expected 值，是**同一条 step 的谓词**（`:290`，与被打印的 `expected:` 相隔两行）。
+>      旧话作废，本轮以「`pri1a-probe-row.mjs:290`，谓词侧」重跑并提交 hunk。同理，**本 memo 下一段（round-16 banner）
+>      里「四个红 run 目录连同字节级 diff 与还原 sha256 记录在 … README.md」这句不成立**：那些 `diff -u` 只打印在修复会话里、
+>      从未进入仓库，只拿本轮 commit 的 reviewer 无法复现任何一个 round-16 红。四个 round-16 红目录为 append-only 日志的
+>      引用而保留，但状态改为 **undemonstrated**（不可复现，亦未被证伪），本 PR 的可失败性现在由 round-17 四个目录承担。
+> - **F-I1a2-2**：rows 腿 FAIL 保留每侧 400 字符截断，但先打印定位器——行号 + 字段路径
+>   （`FIELD PATH rows[0].payload.assignmentEpoch: boot 1 1 vs boot 2 99`）、行数不等、字段只在一侧存在、以及本腿
+>   确实按 `JSON.stringify` 评分因而会咬的 **键顺序**；什么都不差就说「什么都不差 = 仪器自己的故障」，不编差异。
+> - **F-I1a2-4**：证据 README 的「What it does NOT claim」新增一句：`boot-1-lock-was-serialised` 评的是**探针对自己注入的
+>   per-root lock 的自报计数**（`acquires=4`、峰值深度 1），boot 2 的计数根本没被评；探针之外没有任何来源观测那把锁，
+>   本轮明确它**不是**对锁行为的佐证（跨进程锁语义仍是 PR-I1b 的决定）。
+> - **F-I1a2-5**：本轮实测 `npx eslint tests/kits/pr-i1a-real-host/*.mjs` 对两个文件各打印
+>   `0:0 warning File ignored because of a matching ignore pattern` 且 rc=0 ——**kit 两个文件都命中 eslint ignore 模式，lint 从未读过仪器**；
+>   本轮任何位置都不宣称 lint 覆盖了仪器（覆盖它的是 `node --check`（仅语法）、`--self-test` 与上述运行）。
+> - **F-I1a2-6**：docs-sync 引它自己那行原文（不转写成散文数字）；并记录 `Tests 2 failed | 317 passed (319)` **不是**
+>   那两条已披露红腿的指纹：本轮实测把 gitignored 的 `packages/client/dist`（`.gitignore:34 dist/`，404 文件，测完按
+>   文件清单指纹原样还原、`git status --porcelain` 对 `packages/` 空）挪开，同样两个文件仍是 2 failed，但红的**换了一条腿**
+>   （`is green, asserted by arm name and by absence of a skip — never by the exit code` 顶替了 closure 那条）——
+>   全新 clone 天然落在后者。所以**承重的是两条腿的名字，不是计数**。
+> - 新测值（全部在 round-17 字节上）：绿 run `a6pri1a-2026-10-31T18-32-44Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（ports 3182/3183、boot pid 37→49、world 删除、
+>   宿主 porcelain 前/后 0）；kit sha256 `pr-i1a-real-host.mjs` `5376fd21dde5b8ae0b3d8f85a10604cd879cbb67eea28b92a7095d1b9ee380b4`
+>   （本轮唯一改动的仪器文件）、`pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`
+>   （**与 round 15/16 逐字节相同**，pin 一并发布以证明这点）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；
+>   九文件套件 `Tests 2 failed | 317 passed (319)`（两条红就是证据 README 点名的那两条）。
+> - **方法学事故，主动披露**：本轮变异脚手架的第一版算错「期望字节增量」，触发自家断言后**带着已被变异的探针文件退出**，
+>   紧接的两次运行继承了它（一次报了 3 条红腿）；这两个 run 目录 `18-34-06Z`/`18-34-30Z` 不可引用、未提交，
+>   **已在本 commit 之前删除**，README/memo/日志都不引用它们。脚手架已改成：sha256 不等于 pin 就拒绝动手，
+>   任何退出路径（含断言失败）都还原并验证；上面四个 hunk 全部出自新版，且每个都在下一个变异开始前验证了自己的还原。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（total 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；仅 `tests/kits/**` 一个文件、
+>   `dev/**` 证据、本 memo）。
+
 > **Dated banner（2026-10-31，round-16 修复轮）——处理评审 round 1 的 3 条 MINOR 与 4 条廉价 INFO（评审对象 `9dd6ff48c`），不改动上一轮 round-15 banner 的任何历史陈述。**
 > - **F-I1a1-1（`step(id, true, …)` 假谓词）**：reopen 腿现在是真测量——探针在两份报告里都记录自身内核身份
 >   （`process.pid` / `process.argv0` / 每 boot 一个 UUID nonce），驱动把**自己 spawn** boot 1 时得到的 pid 与
