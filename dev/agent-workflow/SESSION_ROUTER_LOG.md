@@ -7713,3 +7713,58 @@ fix `b56eed25f`（父 `4e9b20a62`，不 amend、不推）；评审报告在**评
   否则又是一次"数字没钉编辑"：`4e9b20a62` 上 `--new-since HEAD~1` 给 `pass added=1 … findings=0`（那个 added 是
   基线提交自己新增的证据文件），`b56eed25f` 上同一命令给 `pass added=0 … findings=0`——这次修复只改文件，不新增
   证据。
+
+## 2026-10-31 — PR #522（PR-I1b）真实宿主腿落地：S-7 的"启用"臂没有宿主表面；退役两句"未跑"（引原句），字节同一的宿主 A/B 按实测撤回
+
+真实宿主入册 `a45ed19ea`（父 `b56eed25f`，已推 `alpha6/lane2-pri1b-admission-20261031`；发布记录 = #522 评论
+`6543637045`）；仪器 `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs`，捕获正本 tracked：
+`dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/`（`a6pri1b-2026-10-31T12-46-43Z/` 的 `verdict.json`、
+`MEASURED-LINES.txt`、`host.log` + 同目录逐字 `capture.json`）。**判决 token：`run=a6pri1b-2026-10-31T12-46-43Z
+checks=22 failed=0`**（宿主 = 钉住的 `639ed01539…`，porcelain 前后 = 0；row 只经公开 profile-patch seam 挂载，
+CORE PATCH BUDGET 0）。**四个署名文件 `179 passed`**（58+32+69+20），**a6 runtime 家族 12 文件
+`449 passed`**。退役验收的正本与逐字引文在 memo §10（同分支 `7def32fc1`）；本条目是日志侧索引 + 向前退役
+（历史不改写）。
+
+- **量到了什么**：第二个世界把 `feature:'on'` + `assignmentFeature:'on'` 写进行配置，捕获逐字：「row config with
+  feature:'on' + assignmentFeature:'on' -> row ready=true, durable write accepted=true,
+  census=[control-request-recorded] — nothing was refused and no admission behaviour appeared」；row 实读的
+  `rowConfigFields`（14 个字段）无一属于本门 ⇒ **宿主侧不存在打开这个门的字段**，S-7 的 enabled 臂没有宿主表面。
+  disabled 臂可表达且在满账本上量过（`entries=9`、`factTypes=[control-decision-recorded,
+  control-request-recorded]`，review-assignment 零条）。"未知开关值 ⇒ 装配失败"腿存活，但测的是**本模块自己的
+  配置**（`['off','on']` 封闭、缺失无默认方向）——D-8 的"默认关闭"自此只描述模块配置态，不是宿主可切换态。两个
+  格子 `leader-approval|leader`、`envelope-mutation|leader` 由信封门先答（`TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS`）
+  记 `reachedClosure:false`，spec 拒收为闭包一致证据；member 行无公开 ingress，记名
+  `member-role-has-no-ingress`。
+
+**向前退役（引原句，原句不删不改）**：
+
+- 「PR #520（PR-I2）运行时可行性测量入册」条目（:7648）写：「真实 pending request 未造（需 mock-model
+  fixture），S-7 字节差未跑。」——**两个半句都由本轮退役**：真实 pending request 已在活宿主上经公开 seam 造出
+  （6 格 `create-request-*` 全 200 带 requestId，3 条决议 `CONTROL_RESOLVED` 落耐久）；S-7 真实世界腿也已跑
+  （disabled 臂在满账本上普查，enabled 臂由第二个世界实测为"宿主无此字段"）。被退役的是「未造/未跑」暗示的
+  待办状态；那句对"规则 vs 环境"的区分本身保留——只是主语换了：enabled 臂连"等一次跑"都不成立，因为它没有
+  可跑的表面。
+- 同一条目退役段（:7666）写：「**腿本身仍未跑**：挡它的已换成规则，结构性替代论证不得回溯成真机结果。」——
+  **「腿本身仍未跑」退役**：本轮真机腿跑了（上面 token）。**后半句继续生效**：结构性替代论证（off 团队不生成
+  gate 对象 + 全树零 importer + `ALLOWED_CONSUMERS==[]`）仍不得回溯成真机结果，真机结果也不回头改写它——二者
+  各管各的：dormancy 绑"非启用零改动"，捕获绑"宿主答了什么"。
+- 「PR #522（PR-I1b）实现落地」条目（:7613）「真机腿（真 Host ControlService、S-7 真实世界字节差）记
+  **ENV-REFUSED**」——其 ENV-REFUSED 的环境理由**已被前一条目（:7664）退役，本条目不重复退役**；只登记现状：
+  该腿（真 Host ControlService 闭包 + S-7 disabled 臂）已于同日实测，"记 ENV-REFUSED"作为现状自本条目起失效。
+- "字节同一 A/B 待跑"的旧句**没有需要退役的**：查过最近两条与其点名的行——「字节不变是**要量的**，不是"默认关"
+  的同义词」（:7615）不退役，它说的是义务不是待办，量法现换成 DORMANCY 论证 + 满账本普查；需要退役的是把它读成
+  "同一宿主上 disabled 与 enabled 对照"的那条验收本身，其逐字退役在 memo §10（§4 表 S-7 行）。
+- **A/B 本体**：memo §4 S-7 行期望列「逐字节零改动；未知开关值 ⇒ 装配失败」中，前者作为宿主 A/B 不能按原文
+  执行（enabled 臂无对照物），后者原样存活（模块自身配置，三条腿钉住）。
+
+- 门禁（本轮实测，各自 worktree，docs-only）：pri1b `docs-sync --check` →
+  `docs=106 notes=4 plans=69(0 declaring) findings=0 blocking=0 contracts=20 pairs compared`；pri1b
+  `eb3-evidence-guard --new-since HEAD~1` → `pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`
+  （`a45ed19ea` 上同一命令为 `added=4`——那四个是捕获文件；memo §10 提交只改一个 md）；pri1b settlement →
+  `DSH-SETTLEMENT-VERDICT BLOCKED-BY-MARKER marker=title-prefix matches=0 candidates=0`（head `7def32fc1`）；gov
+  `docs-sync --check` → `docs=106 notes=4 plans=69(0 declaring) findings=0 blocking=0 contracts=20 pairs compared`；gov
+  `eb3-evidence-guard --new-since HEAD~1` → `pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`；gov
+  `verify-verbatim-quotes.mjs` → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok` +
+  `DSH-SCRATCH-POINTER-VERDICT found=3 pinned=6 window=80 findings=0 verdict=ok`（本条目不含任何 scratch 路径，
+  证据只入 tracked 目录）。CORE PATCH BUDGET 0；`/home/armourpiercer/deepseek-harness` porcelain BEFORE/AFTER
+  均 0；:3080 全程未触碰。**授权边界**：开发授权，非合并授权，非启用，非放宽门禁。
