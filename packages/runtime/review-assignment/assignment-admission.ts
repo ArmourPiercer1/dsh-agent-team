@@ -5,8 +5,12 @@
  * PR #513) named the other half of the split PR-I1: a ControlService-side ADMISSION that decides WHO may make a
  * decision enter that writer, while deciding NOTHING else. This module is that admission. It is not a second
  * resolution authority (memo §0): the role closure it applies is the existing `CONTROL_RESOLVER_ROLES` (its kind →
- * role lists live in `packages/runtime/control/types.ts:193-197`; the resolve path reads them at
- * `packages/runtime/control/service.ts:2622` and `:4852`, `:5228`, `:5495`), the identity it trusts is whatever the
+ * role lists live in `packages/runtime/control/types.ts:193-197`; and at this head the resolve path reads them at
+ * `packages/runtime/control/service.ts:2622` and `:4852`, `:5228`, `:5495` — those four numbers are a dated MAP for
+ * a reader (measured 2026-10-31), not a pin: no leg of this lane can distinguish a site from a file, and round 1 of
+ * #522 (F-I1b1-3) measured exactly that gap — replacing the site at :2622 with a hand-copied `['leader', 'human']`
+ * keeps every leg green because the other three sites still match the file-level pattern. What the pins DO pay for
+ * is in the block below), the identity it trusts is whatever the
  * existing caller-resolution entry point resolved, and the persistence it triggers is entirely
  * `applyReviewAssignment`'s. It reads the ledger read-only and appends nothing (D-5); `control/**` is untouched.
  *
@@ -17,10 +21,38 @@
  *  injected resolver is the only source of a role, and a resolution that did not happen (or names another team)
  *  cannot act (S-1); claims that contradict the resolved role or the frozen kind mapping are refused with both
  *  compared terms in the message (D-3/§9); the kernel pre-flight answers with its own codes VERBATIM (D-9).
- *  STATED ONLY here (bound elsewhere, or not at all): the byte-identity of non-enabling teams is bound by DORMANCY —
- *  `ALLOWED_CONSUMERS` is empty and `a6-pr2-lane-hygiene.test.ts` walks the tree for importers on every run — not by
- *  anything this file can observe; the equivalence with the real ControlService resolve path (a real host process)
- *  is pinned only to source text, and the real-host legs are ENV-REFUSED in `a6-pr-i1b-admission.test.ts`.
+ *  STATED ONLY here (bound elsewhere, or not at all):
+ *   - The byte-identity of non-enabling teams is bound by DORMANCY: `ALLOWED_CONSUMERS` is empty and
+ *     `a6-pr2-lane-hygiene.test.ts` walks `packages/**` for importers on every run. The walk is LEXICAL and its
+ *     claim stops where the instrument stops — corrected 2026-10-31, round 1 of #522 (F-I1b1-2), which found this
+ *     header claiming more than the walk pays for. Precisely: it reads the file extensions it names, it matches
+ *     LITERAL specifiers, and it convicts a production file whose literal relative specifier lands inside a
+ *     package `test`/`tests` tree (the one hop a re-export glue needs — the shape the review planted and this
+ *     file used to miss). It does NOT follow an import chain, and it cannot see a specifier held in a variable,
+ *     concatenated, or rewritten by a bundler. The residual is named in the legs, not by this sentence.
+ *   - The equivalence with the real ControlService resolve path is pinned in TWO specific ways, neither of them
+ *     the one a reader may assume (round 1 of #522, F-I1b1-3). VALUES: the mirror's kind → role tables are
+ *     compared EQUAL to `CONTROL_RESOLVER_ROLES`, both directions, every kind — that pin is bidirectional and it
+ *     is the strong half. WORDS: the host's refusal message is pinned only to the PRESENCE of the phrase
+ *     `is not a resolver for kind` somewhere in `service.ts`, plus the presence of a `CONTROL_RESOLVER_ROLES [`
+ *     read — NOT to the site that composes the sentence, NOT to its format, and NOT to what
+ *     `resolveControlRequest` actually returns at runtime. Nothing in this lane runs the host: the real-host legs
+ *     are ENV-REFUSED in `a6-pr-i1b-admission.test.ts` (measured there: no pristine host checkout, no test homes,
+ *     no shared baseline on this machine). A host that keeps the phrase and changes the surrounding sentence, or
+ *     moves the composition to another file, keeps this lane green — that is the size of the instrument.
+ *   - What this door does NOT do about the objects it is handed (round 1 of #522, F-I1b1-6/F-I1b1-7; each pinned
+ *     by a leg, so a floor that moves has to be argued with): the `caller` argument is forwarded to
+ *     `resolveCaller` EXACTLY as received — this module shape-checks nothing, while the screen that would
+ *     (`isActionCaller`, `packages/runtime/control/service.ts:1033`) is module-private, upstream, and not on this
+ *     path. And from the resolver's ANSWER the door reads a role and, when the member row carries one, its root:
+ *     a `callerMember.instanceId` is never compared against the caller, a `humanId` echo is never compared against
+ *     anything. Both belong to the wiring owner, who is the party that knows what a caller means on this host;
+ *     the port doc below repeats it where the wiring gets written.
+ *   - "Verbatim" is about words a thrown value CARRIES (round 1 of #522, F-I1b1-5). `describeFailure` renders an
+ *     `Error` (with its `code` property when it has one), or a plain record carrying `code`/`problem`/`message`,
+ *     and otherwise falls back to `typeof error` — so a resolver that throws a bare string has its words replaced
+ *     by the word `string` in the detail, and the detail sentence's promise cannot be kept for a value that has
+ *     no message. The leg pins the floor as it is, because the floor is a documented limit and not an aspiration.
  *
  * BLOCKED-WIRING — the two authority imports this lane cannot reach, and what that changed (dated 2026-10-31,
  * memo §9: 「复用 resolveCaller 或其等价公开面；接不上就拒绝接线并点名原因」):
@@ -137,9 +169,21 @@ export const ASSIGNMENT_ADMISSION_REFUSAL_CODES = [
 export type AssignmentAdmissionRefusalCode = (typeof ASSIGNMENT_ADMISSION_REFUSAL_CODES)[number]
 
 /** Kernel codes this module may return VERBATIM (D-9 pass-through): never rewritten, never wrapped. The list is
- *  exactly what `checkAssignmentMutation` can answer — the pre-flight's own vocabulary, not the kernel's whole
- *  (a code listed here that no path produces is a named-but-never-produced bug; the census leg proved this
- *  line by red on the draft's sixth entry, which the pre-flight cannot emit). */
+ *  exactly what `checkAssignmentMutation` can answer — the pre-flight's own vocabulary, not the kernel's whole.
+ *
+ *  Dated correction, round 1 of #522 (F-I1b1-1 + F-I1b1-4, 2026-10-31). This block used to say "the census leg
+ *  proved this line by red on the draft's sixth entry, which the pre-flight cannot emit". Re-measured at head
+ *  4e9b20a62, that is not what the file does: adding `REVIEW_ASSIGNMENT_INPUT_MALFORMED` — a real kernel code the
+ *  pre-flight never returns — as a sixth member leaves the whole file green (`Tests 158 passed (158)`), because
+ *  the subset pin only asks whether a member is one of the kernel's, and the census only asks whether OBSERVED
+ *  codes belong to a declared vocabulary. Declaring a code has no obligation attached, so nothing proved the
+ *  sentence, and the sentence was load-bearing for exactly the bug class it named.
+ *
+ *  What backs the sentence now, in `a6-pr-i1b-admission.test.ts`: one leg per member below, each moving the real
+ *  family through the real writer and reading the answer through `admit` (code by `toBe`, the kernel's own
+ *  sentence as the tail of the detail), plus a census leg comparing this list with what those call sites were
+ *  observed to produce AND with the codes `checkAssignmentMutation` is written to refuse, in both directions. A
+ *  seventh member with no leg is red on the census, naming the code and both possible causes. */
 export const ASSIGNMENT_ADMISSION_PASSTHROUGH_CODES: readonly string[] = [
   'REVIEW_ASSIGNMENT_ROW_UNPARSEABLE',
   'REVIEW_ASSIGNMENT_ALREADY_ACTIVE',
@@ -263,7 +307,28 @@ export interface AssignmentAdmissionPorts {
    *  closure. The wiring supplies THAT function — not a reconstruction, not a memoised answer, and not anything
    *  that consults the blueprint leader-template equality (D-3 fallback, withdrawn by §9). It receives the
    *  freshly-minted root string and must forward it verbatim. Its throws are admission's `ADMISSION_CALLER_UNRESOLVED`
-   *  with the thrown reason carried verbatim. */
+   *  with the thrown reason carried verbatim.
+   *
+   *  HOW FAR "verbatim" REACHES, measured rather than promised (round 1 of #522, F-I1b1-5, 2026-10-31): an `Error`
+   *  contributes its message, plus its `code` property when it has one (which is how `TeamRuntimeError` carries its
+   *  diagnosis); a plain record contributes `code`/`problem`/`message`; ANYTHING ELSE contributes only its `typeof`
+   *  — a resolver that throws `'no route'` is reported as `… verbatim: string`, and the words are gone. Throw
+   *  Errors from this port, or accept that the diagnosis becomes a type name. `a6-pr-i1b-admission.test.ts` pins
+   *  all of that as behaviour, including the primitive case, as a floor and not as a wish.
+   *
+   *  WHAT THE WIRING OWNS AND THIS DOOR DELIBERATELY DOES NOT CHECK (same round, F-I1b1-6 + F-I1b1-7). The door
+   *  forwards the `caller` object to this function EXACTLY as it received it: it shape-checks nothing, because the
+   *  validator for that (`isActionCaller`, `packages/runtime/control/service.ts:1033`) is module-private, sits
+   *  upstream of the resolver, and no path out of this door reaches it. Measured consequence, pinned by its
+   *  own leg: `{ kind: 'alien', instanceId: LEADER_INSTANCE_ID }` and `{ kind: 'human' }` with no `humanId` both
+   *  resolve to a role through the real resolver, and this door admits them on the strength of the role. So the
+   *  wiring MUST apply the transport's caller screen before it calls, or hand over a caller it built from a typed
+   *  source — nobody downstream will notice. Symmetrically, from the ANSWER the door reads `role` (against the
+   *  closed three), and `callerMember.rootSessionId` against the minted root when the row carries one, and nothing
+   *  else: a `callerMember.instanceId` is not compared with the caller, a `humanId` echo is not compared with
+   *  anything. Those comparisons need facts this lane does not have (what the caller claimed, what a member row
+   *  means on this host), so they are the wiring's. If a floor below moves, move this paragraph with it and name
+   *  the party that now owns the check. */
   readonly resolveCaller: (rootSessionId: string, caller: AssignmentCallerIdentity) => AssignmentCallerAuthority
   /** The full-ledger read. This is the WRITER's reader-port type, one contract for both doors (D-6): full,
    *  untruncated, un-filtered, or this fold and the writer's see different worlds and neither can tell. */
@@ -607,6 +672,12 @@ function foldHandles(diagnostics: readonly { factType: string; ledgerSequence: n
  * `error.message` alone prints "(object)" for the composed adapters that refuse with a `code` and a `problem`
  * rather than an `Error`, and the verbatim-transport promise this module makes is worth nothing at the one moment
  * a human is reading the string.
+ *
+ * The last line is the floor, and it is stated as a floor (round 1 of #522, F-I1b1-5, 2026-10-31): a thrown value
+ * with no message, no code and no problem — a bare string, a number, `null` — renders as its `typeof`, so the
+ * detail carries the WORDS `string` or `object` instead of whatever the port tried to say. There is nothing to
+ * extract from a primitive, and inventing a diagnosis for somebody else's throw is not this layer's to do; the
+ * `resolveCaller` port doc tells the wiring to throw Errors, and the spec pins this behaviour as it is.
  */
 function describeFailure(error: unknown): string {
   if (error instanceof Error) {
