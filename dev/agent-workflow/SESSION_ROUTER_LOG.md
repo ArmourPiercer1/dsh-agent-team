@@ -7768,3 +7768,93 @@ CORE PATCH BUDGET 0）。**四个署名文件 `179 passed`**（58+32+69+20），
   `DSH-SCRATCH-POINTER-VERDICT found=3 pinned=6 window=80 findings=0 verdict=ok`（本条目不含任何 scratch 路径，
   证据只入 tracked 目录）。CORE PATCH BUDGET 0；`/home/armourpiercer/deepseek-harness` porcelain BEFORE/AFTER
   均 0；:3080 全程未触碰。**授权边界**：开发授权，非合并授权，非启用，非放宽门禁。
+
+## 2026-10-31 — census leg 诊断入册：拒绝不是环境事故、物化也不是解药——同一 commit 实测 661f/8416l vs 661f/8947l，裁决是身份集对空容差集不是计数；(c) 入账 + (a) 上报 Alpha.5
+
+本条目是**入册**，不是新决策：诊断轮（真实 UTC 2026-10-31，在 PR-I1a 分支 head `9dd6ff48c` 及其
+父 `a2bc18d78` 上测量，两枚 scratch clone 逐腿隔离）的 recorder 死在中途，只留下一份矩阵 JSON
+未提交在证据目录；本轮逐值复核（文件数/腿数/零腿文件数从原始 capture JSON 重算、46 文件 531 腿
+求和、红身份逐条对 sidecar、universe 计数从 commit 重新导出、`--self-test` 与 `compareCensus`
+对源码核对）后**原样入册该 JSON，未改一个字节**，并补齐正本其余部分。登记正本 =
+`dev/agent-workflow/evidence/alpha6-census-baseline/`：诊断正文
+`census-leg-diagnosis-20261031.md` + 机器矩阵 `census-capture-matrix.json` + 四份可复跑 universe
+清单。原始 captures/sidecars/日志留在 tracked 之外（证据尺寸守卫 1 MiB + capture 身份按机器绝对
+路径键控），正本已逐项摘要并如此声明。**诊断轮与本入册轮都没有、也不会去动任何 baseline 数字、
+booking、p4t6 文件或 `scripts/**` `packages/**` `tests/**`**——那些归 Alpha.5 phase authority，
+本条目记录的恰是"升级上报、原地不动"。
+
+- **根因（一段）**：census 腿的拒绝开关绑在一个 **optional gitignored 目录**上——
+  `tests/deepseek-harness-test-use` 缺席时腿在 spawn vitest 之前就答
+  `REFUSED before spawning vitest …is absent from this checkout`（exit 1，`seconds=0`，压根没测）；
+  物化该目录把同一 commit 从"拒绝"翻成"给裁决"，因为 **46 个文件共 531 条腿只在该目录存在时登记**
+  （test-support 的 provisioning 探针在 module-load 期 throw，缺席时这些文件收集即死、零条腿）。
+  翻出来的不是病灶而是测量本身：这棵 head 的红人口自 declares commit 以来**任何一次捕获都没有全绿
+  过**——两条 build 态的 `a4p7` 状态红 + 一个负载 race 池，而容差集为空。
+- **同一 commit 实测对**（scratch clone 把 runtime `mv` 出/回，两个 commit 各测）：`9dd6ff48c`
+  absent **661f/8416l**（46 个零腿文件）/ present **661f/8947l**（0 个）；父 `a2bc18d78` 同一对。
+  文件集世界不变（恒 661），**腿人口随一个 gitignored 目录而变**。
+- **626/7936 的出处**：在 `27a818456`（2026-10-26 12:13:33Z，U7-1/EB2-C 重述，**Alpha.5 阶段的
+  master 号码**）declared，落点 = 基线正本
+  `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md` 的 CURRENT
+  CORPUS 行；declared 捕获条件是**物化且构建过**的树（pristine host 在树内 provision+build、
+  `pnpm build`+`pnpm build:composition` 跑到 composition 臂"RUN 而非 refuse"、`--testTimeout=90000`、
+  两抓）。该对还被 gate 自己的 `--self-test` 钉住（`live.declaredTotals.files === 626 &&
+  live.declaredTotals.legs === 7936`）。⇒ 干净检出连算术上都复现不了这对数。
+- **不是 lane 造成**（universe = 根 vitest include glob 逐 commit 枚举，四份清单已入册可复跑）：
+  `27a818456` **626** → 栈基 `7b906b432` **660** → `a2bc18d78` **661** → `9dd6ff48c` **661**；
+  最后两份清单 `comm` 为空——**the lane's real-host commit adds zero universe files**（其 11 个文件
+  全在 `tests/kits/**` 与 `dev/**`，无一落进 include glob）。+34 文件入于栈基之前（跨 744 commits：
+  Alpha.5 u7 主线推进 + 本栈更早轮次），+1（`packages/runtime/test/a6-pri1a-writer.test.ts`）入于
+  栈基之后、今晨之前；**把今天的 lane 改动全删也落在 661f/8947l，不是 626/7936**。
+- **裁决是身份集，不是计数**：`compareCensus()` 只在"红身份集相对容差集出现新成员"时 fail；容差集
+  依法为空（正本机器行 `# RETIRED-TO-EMPTY: 9 titled reds retired against predecessor 2b1099d7`，
+  tolerated=0）。计数只进上下文句子，仪器自己说——"the set, not the counts, is what this verdict is
+  drawn from"。**重定基线救不了这条腿**：`661f/8947l vs 626 / 7936` 那半句是 context，re-baseline
+  改变不了身份集对空容差集这一判决来源。
+- **红的分类**（5 次 graded 捕获：built 树 A/B 红集 3/4 条，unbuilt 树 R1/R2/F 红集 5/1/1 条；
+  solo 各 ×3）：三条 `a4p7-merge-gate` 腿**状态决定**——composition-smoke 腿在未构建树 red 3/3、
+  在那个状态**永远不会绿**；closure 腿与 client-lane 腿在构建树 red 2/2（这两条本 lane 在诊断之前
+  已于分支 memo §8 横幅披露）。其余五条（P11 / X3 / GLUE-6 / AC-1 / a5p4-self-typechecks）是
+  负载/期限 race，**solo 3/3 全绿**。结论：在本分支拓扑上这条腿**没有任何可达世界能绿**——未物化
+  =拒绝（refused ≠ passed）；物化未构建 = composition-smoke 红；物化已构建 = closure+client-lane
+  红；外加 race 池让任何假想全绿捕获全凭运气。**托管 CI 对这些分支根本不触发**：四个 workflow
+  （`pr-gate` / `ci-required` / `candidate-protection` / `census-runtime`）的触发全部
+  `branches: [master]`，而 PR 的 base 是栈分支——本地这条腿就是全部叙事。
+- **决策（记录，非本 lane 的裁决权）**：**现在就取 (c)**——定性为**继承的 Alpha.5 时代
+  baseline/仪器缺陷**，什么都不改，证据指针即上面的入册目录；**并把 (a)（重定基线）升级上报给
+  Alpha.5 phase authority**（基线正本 + `--self-test` 钉都在其名下，必须同批移动；重采必须在
+  current master 上按正本声明的捕获纪律做，绝不拿栈 head 入册）。给裁决者的注记照诊断原文：
+  **(a) 只动上下文句子，不能让本 lane 变绿**——空容差集下一条红即致命，(a) 必须与修复两条 a4p7
+  构建树腿（或驯服 race 池）配套。(b)（让 46 个宿主绑定文件两世界登记同数）同属该 owner 的仪器
+  语义变更，本轮未选，且同样消不掉状态决定红。风险已登记执行计划风险台账 **R-6**
+  （owner = Alpha.5 phase authority）。
+
+**向前退役（引原句，原句不删不改）**：
+
+- 「#509 第三轮结案 + 两项裁决落地」条目（:7307 起，今日晨间入册）在 :7320–7321 写
+  「`ci-pr-gate --full pass=8 fail=1`（census 腿**环境拒绝**：本 clone 无
+  `tests/deepseek-harness-test-use`，坚持不用 `--allow-refused`）」——其中把这次 census 拒绝定性为
+  **"环境状态（缺 runtime），runtime 物化后此项即消、`--full` 即无此 fail"** 的含义，**自本条目退役**
+  （两个片段各 `grep -F` 命中 1 次，逐字核对；源行在「本 clone 无」处换行）。保留的事实：拒绝当时
+  真实发生、ENV-REFUSED 从不计 pass、"坚持不用 `--allow-refused`"合规。退役的是那个可被读成
+  "补上 runtime 就过关"的"环境"框定：实测同一 head 物化后转为 graded，红集非空——未构建树
+  composition-smoke 红 3/3，构建树 closure+client-lane 红 2/2——本拓扑无绿色可达世界（见上）。
+  该句在其 authoring world（未物化 integrator clone）为真，与 PR body #501/#507/#517 的
+  environment-refusal 句同批继续"对其撰写世界为真"；自本条目起，任何后续报告不得再把它当
+  "待物化"事项——诚实披露行是上面的无可达绿色陈述。
+- **除此之外没有别的退役对象**：全 log grep `REFUSED before spawning` / `环境拒绝` /
+  census+ENV-REFUSED 组合，其余命中全是不同主语——:7613/:7664/:7717 的 ENV-REFUSED 属 PR-I1b
+  真机腿（其退役已由当日条目做过，本条目不重复）；:6630 的"11 红环境性归零"是 rc2 套件的收集死亡，
+  恰是物化真会治好那一类，与 census 腿裁决无关；:7730 的 `census=[…]` 是 S-7 普查词表，不是本腿。
+  没有需要新增退役的其它 census 拒绝句——也就不制造退役。
+
+- 门禁（gov worktree，docs/evidence-only）：`verify-verbatim-quotes.mjs` →
+  `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok`（`tracked=ok`，被钉两份 s0 文档未触碰）；
+  `docs-sync --check` → `docs=106 notes=4 plans=69(0 declaring) findings=0 blocking=0 contracts=20
+  pairs compared`；`eb3-evidence-guard --new-since HEAD~1` 对本 commit 实测 →
+  `EB3-EVIDENCE-GUARD pass added=6 bound=1048576 exempted=0 findings=0 base=HEAD~1`（6 个新增全在
+  证据目录：无 raw-capture 命名、全部 < 1 MiB，命令在本 commit 上可复跑）。
+  CORE PATCH BUDGET 0；`/home/armourpiercer/deepseek-harness` porcelain BEFORE = 0 / AFTER = 0；
+  :3080 全程未触碰；`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1 均零写入。
+  **授权边界**：开发授权，非合并授权，非启用，非放宽门禁；对基线正本与 `--self-test` 钉是
+  "上报不动手"。

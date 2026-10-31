@@ -108,3 +108,32 @@ client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变�
   对 `scripts/ci-pr-gate.mjs` 与 `dev/agent-workflow/evidence/alpha6-513/` 施加 branch protection +
   `CODEOWNERS` 审查。**这是托管远端上的运维者动作，本 lane 尚未执行，也不得宣称已经就位。**本控制真正
   拥有的是确定性：同一字节必得同一结论，任何人可复跑，所以绿可被核查——但不可被伪造这一点，它没有。
+
+### R-6 风险台账（ROUTER_RULES §6）：census 腿在本 lane 分支拓扑上没有任何可达绿色世界——2026-10-31 登记为继承的 Alpha.5 baseline/仪器缺陷；owner = Alpha.5 phase authority
+
+- **Gate**：`scripts/ci-pr-gate.mjs` 的 `census` leg（`--full` 下唯一非绿腿）；基线正本
+  `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md`（CURRENT
+  CORPUS `626 / 7936`，declared @ `27a818456`，2026-10-26，Alpha.5 阶段）+ gate 自身
+  `--self-test` 对 `626/7936` 的钉。**裁决语义 = 红身份集对新成员的空容差集比较**
+  （`RETIRED-TO-EMPTY: 9 titled reds retired against predecessor 2b1099d7`），计数只是上下文。
+- **风险点**：该 leg 的**可测人口绑在一个 optional gitignored 目录上**——
+  `tests/deepseek-harness-test-use` 缺席 ⇒ `REFUSED before spawning vitest`（拒绝不是 pass）；存在
+  ⇒ 同一 commit 从 661f/8416l（46 文件零腿，收集即死）翻成 661f/8947l，graded 红集非空。可达世界
+  逐一为红：未物化=拒绝；物化未构建=`a4p7` composition-smoke 红 3/3（该状态永不绿）；物化已构建
+  =`a4p7` closure + client-lane 红 2/2（已在分支 memo §8 披露）；外加负载 race 池（P11/X3/GLUE-6/
+  AC-1/a5p4，solo 3/3 绿）。托管 CI 对这些分支不触发（四个 workflow 全部 `branches: [master]`），
+  PR 门禁叙事只剩这条本地腿，而它**无法通过本 lane 的任何合规动作变绿**。
+- **非本 lane 造成**：universe 626→660（栈基 `7b906b432`）→661（`a2bc18d78`）→661（head
+  `9dd6ff48c`）；lane 的 real-host commit 向 census universe **贡献 0 文件 0 腿**（两 commit × 两
+  世界 2×2 实测 + `comm` 空集）。
+- **处置（2026-10-31 记录）**：诊断/入册不改任何东西——基线正本、booking、p4t6、gate 脚本一概不动
+  （owner 不在本 lane）。**决策 = (c) 现在就记为继承缺陷 + (a) 重定基线升级上报 Alpha.5 phase
+  authority**；上报注记：re-baseline 只改上下文句子，不能让本 lane 绿（空容差集一条红即致命），须
+  与修两条 a4p7 构建树腿/驯服 race 池配套；(b)（两世界登记同数）同为 owner 的仪器语义变更，未选。
+- **证据位置**：`dev/agent-workflow/evidence/alpha6-census-baseline/`（诊断正本
+  `census-leg-diagnosis-20261031.md`、机器矩阵 `census-capture-matrix.json`、四份 universe 清单）
+  + 执行日志同日「census leg 诊断入册」条目（含对该条目内 :7320「环境拒绝」框定的向前退役引文）。
+  原始捕获按证据尺寸守卫与路径键控约束留在 tracked 之外，正本已摘要并声明。
+- **当时判定"可控"的理由**：拒绝态从不算 pass、披露纪律在位（PR body 的 environment-refusal 句
+  只对其 authoring world 为真，已由日志条目加框）、托管 CI 不受此影响（对这些分支不触发）；本行
+  实际拥有的控制是**不让"重跑/补环境"被误当修复**——变绿的唯一路径在 owner 手里，不在本 lane。

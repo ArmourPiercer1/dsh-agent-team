@@ -1,0 +1,332 @@
+{
+  "schema": "alpha6.census-baseline.evidence/1",
+  "what": "Derived, path-scrubbed machine-readable summary of the r16 census-leg diagnosis. A diagnosis record: no baseline, booking, p4t6 booking or gate script was changed by it, and none is changed by committing this file.",
+  "recorded_at_utc": "2026-10-31",
+  "instrument": "scripts/ci-pr-gate.mjs census leg; counters shapeFromReport(): files = report.testResults.length, legs = Sum assertionResults.length",
+  "path_scrub_note": "The census identity is path-keyed: the instrument prints TEST <absolute path of the checked-out file>::<leg title>. Every path here is normalized to the repository-relative path, so these identities are NOT byte-equal to what the leg prints; the leg-title half after :: is byte-preserved.",
+  "capture_matrix_2x2": {
+    "head_absent": {
+      "commit": "9dd6ff48c26e91931c70bab7535e3adae56486af",
+      "runtime": "absent",
+      "tree": "clean local clone of the measured commit, unbuilt",
+      "files": 661,
+      "legs": 8416,
+      "filesWithZeroRegisteredLegs": 46
+    },
+    "head_present": {
+      "commit": "9dd6ff48c26e91931c70bab7535e3adae56486af",
+      "runtime": "present",
+      "tree": "same clone, pristine runtime copied in, unbuilt",
+      "files": 661,
+      "legs": 8947,
+      "filesWithZeroRegisteredLegs": 0
+    },
+    "a2bc_absent": {
+      "commit": "a2bc18d783046c62db3f9db41a8d22dc716e5fa0",
+      "runtime": "absent",
+      "tree": "clean local clone of the parent commit, unbuilt",
+      "files": 661,
+      "legs": 8416,
+      "filesWithZeroRegisteredLegs": 46
+    },
+    "a2bc_present": {
+      "commit": "a2bc18d783046c62db3f9db41a8d22dc716e5fa0",
+      "runtime": "present",
+      "tree": "same clone, pristine runtime copied in, unbuilt",
+      "files": 661,
+      "legs": 8947,
+      "filesWithZeroRegisteredLegs": 0
+    }
+  },
+  "runtime_absent_to_present": {
+    "files_with_zero_registered_legs_when_absent": 46,
+    "files_with_zero_registered_legs_when_present": 0,
+    "legs_absent": 8416,
+    "legs_present": 8947,
+    "delta_legs": 531,
+    "files_zero_to_registered": 46,
+    "per_file_registration": [
+      {
+        "file": "packages/runtime/test/a6a-production-wiring.test.ts",
+        "legsGained": 59
+      },
+      {
+        "file": "packages/runtime/test/multi-mcp-wiring.test.ts",
+        "legsGained": 49
+      },
+      {
+        "file": "packages/runtime/test/mcp-blueprint-initial-grant.test.ts",
+        "legsGained": 32
+      },
+      {
+        "file": "packages/runtime/test/t4a-capability-wiring.test.ts",
+        "legsGained": 28
+      },
+      {
+        "file": "packages/runtime/test/model-blueprint-initial-routing.test.ts",
+        "legsGained": 23
+      },
+      {
+        "file": "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
+        "legsGained": 20
+      },
+      {
+        "file": "packages/runtime/test/team-session-activation-glue.test.ts",
+        "legsGained": 18
+      },
+      {
+        "file": "packages/runtime/test/p8s3b-result-effects.test.ts",
+        "legsGained": 17
+      },
+      {
+        "file": "packages/runtime/test/a5p4-provider.test.ts",
+        "legsGained": 16
+      },
+      {
+        "file": "packages/runtime/test/mcp-target-materialization.test.ts",
+        "legsGained": 16
+      },
+      {
+        "file": "packages/testkit/test/rc2-kit-preset-seam.test.ts",
+        "legsGained": 15
+      },
+      {
+        "file": "packages/runtime/test/a5lsp2-streaming.test.ts",
+        "legsGained": 15
+      },
+      {
+        "file": "packages/testkit/test/plugin-dsh-compat.test.ts",
+        "legsGained": 13
+      },
+      {
+        "file": "packages/runtime/test/rc2-persona-probe.test.ts",
+        "legsGained": 13
+      },
+      {
+        "file": "packages/runtime/test/t12a-glue-handoff-ports.test.ts",
+        "legsGained": 12
+      },
+      {
+        "file": "packages/runtime/test/a3p5-glue-permission-receipt.test.ts",
+        "legsGained": 11
+      },
+      {
+        "file": "packages/runtime/test/a5p4-assembly-config.test.ts",
+        "legsGained": 10
+      },
+      {
+        "file": "packages/runtime/test/f15-mcp-live-loss.test.ts",
+        "legsGained": 10
+      },
+      {
+        "file": "packages/runtime/test/tcm-m3-root-work-glue.test.ts",
+        "legsGained": 9
+      },
+      {
+        "file": "packages/runtime/test/bp1-dual-team-gate.test.ts",
+        "legsGained": 8
+      },
+      {
+        "file": "packages/runtime/test/t12a-m2-persona.test.ts",
+        "legsGained": 8
+      },
+      {
+        "file": "packages/runtime/test/work-completion-notification-glue.test.ts",
+        "legsGained": 8
+      },
+      {
+        "file": "packages/testkit/test/rc2-kit-pin-hygiene.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/a5lsp2-assembly.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/a5p4-fd-inheritance.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/a5p4-poc4-probe.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/d1-member-base-tools.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/t12a-h1-nullable-mcp.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/tcm-d4-root-context.test.ts",
+        "legsGained": 7
+      },
+      {
+        "file": "packages/runtime/test/d3-member-identity-context.test.ts",
+        "legsGained": 6
+      },
+      {
+        "file": "packages/runtime/test/rc2a1-fs-containment.test.ts",
+        "legsGained": 6
+      },
+      {
+        "file": "packages/runtime/test/alpha2-explicit-agent-setup.test.ts",
+        "legsGained": 5
+      },
+      {
+        "file": "packages/runtime/test/c1-leader-notification-glue.test.ts",
+        "legsGained": 5
+      },
+      {
+        "file": "packages/runtime/test/c1-production-wiring.test.ts",
+        "legsGained": 5
+      },
+      {
+        "file": "packages/runtime/test/t12a-m1-effective-cwd.test.ts",
+        "legsGained": 5
+      },
+      {
+        "file": "packages/runtime/test/t12a-m3-recursive-drain.test.ts",
+        "legsGained": 5
+      },
+      {
+        "file": "packages/runtime/test/bound-blueprint-persona-live.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/send-message-liveness.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/t12a-b2-child-identity.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/t12a-b3-external-deny.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/team-session-durability.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts",
+        "legsGained": 4
+      },
+      {
+        "file": "packages/runtime/test/t12a-team-tools-registration.test.ts",
+        "legsGained": 3
+      },
+      {
+        "file": "packages/runtime/test/bp1-red-glue-probe.test.ts",
+        "legsGained": 2
+      },
+      {
+        "file": "packages/runtime/test/f15-mcp-live-loss-characterization.test.ts",
+        "legsGained": 2
+      }
+    ]
+  },
+  "graded_captures": {
+    "unbuilt_tree": [
+      {
+        "label": "capture R1 (unbuilt clone)",
+        "files": 661,
+        "legs": 8947,
+        "titledReds": 5,
+        "redIdentities": [
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code",
+          "TEST packages/runtime/test/a5g6-install-face-render.test.ts::GLUE-6 LEG B — the plane renders ContentBlock[], not a String the four definitions all carry a render that returns an array of typed text blocks",
+          "TEST packages/runtime/test/alpha5-glob-backend.test.ts::A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict X3 the timeout arm settles cancelled and spills nothing",
+          "TEST packages/runtime/test/alpha5-search-backend.test.ts::P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row",
+          "TEST packages/runtime/test/u7-f-agent-control-c1.test.ts::u7-f C1 mount gate — the zero-flip law and the seven claims AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)"
+        ]
+      },
+      {
+        "label": "capture R2 (unbuilt clone)",
+        "files": 661,
+        "legs": 8947,
+        "titledReds": 1,
+        "redIdentities": [
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code"
+        ]
+      },
+      {
+        "label": "capture F (unbuilt clone, inside ci-pr-gate --full)",
+        "files": 661,
+        "legs": 8947,
+        "titledReds": 1,
+        "redIdentities": [
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) is green, asserted by arm name and by absence of a skip — never by the exit code"
+        ]
+      }
+    ],
+    "built_tree": [
+      {
+        "label": "capture A (built lane worktree)",
+        "files": 661,
+        "legs": 8947,
+        "titledReds": 3,
+        "redIdentities": [
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed",
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the client lane (the root suite cannot see it, and this gate says why) the client lane runs, and no failure appears outside the disclosed baseline",
+          "TEST packages/runtime/test/alpha5-search-backend.test.ts::P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row"
+        ]
+      },
+      {
+        "label": "capture B (built lane worktree)",
+        "files": 661,
+        "legs": 8947,
+        "titledReds": 4,
+        "redIdentities": [
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) refuses the leg, by name, when the host module closure cannot be traversed",
+          "TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the client lane (the root suite cannot see it, and this gate says why) the client lane runs, and no failure appears outside the disclosed baseline",
+          "TEST packages/runtime/test/a5g6-install-face-render.test.ts::GLUE-6 LEG B — the plane renders ContentBlock[], not a String the four definitions all carry a render that returns an array of typed text blocks",
+          "TEST packages/runtime/test/a5p4-lane-hygiene.test.ts::a5p4 lane purity and dormancy self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)"
+        ]
+      }
+    ]
+  },
+  "universe": {
+    "command": "git ls-tree -r --name-only <commit> | grep -E '^packages/[^/]+/test/.*\\.test\\.ts$|^packages/runtime/controlled-fs/test/.*\\.test\\.ts$|^packages/tools/a5p5-tools/test/.*\\.test\\.ts$' | grep -vE '(^|/)dist/|\\.scratch\\.test\\.ts$|s3-client-generation-spike'",
+    "exclusions_applied": "vitest.config.ts exclude: **/node_modules/**, **/dist/**, packages/client/test/s3-client-generation-spike.test.ts, **/*.scratch.test.ts",
+    "counts": {
+      "27a818456": 626,
+      "7b906b432": 660,
+      "a2bc18d78": 661,
+      "9dd6ff48c": 661
+    },
+    "added_27a818456_to_7b906b432": 34,
+    "removed_27a818456_to_7b906b432": 0,
+    "added_7b906b432_to_9dd6ff48c": [
+      "packages/runtime/test/a6-pri1a-writer.test.ts"
+    ],
+    "removed_7b906b432_to_9dd6ff48c": [],
+    "added_a2bc18d78_to_9dd6ff48c": [],
+    "removed_a2bc18d78_to_9dd6ff48c": [],
+    "lists_committed": [
+      "universe-27a818456.txt",
+      "universe-7b906b432.txt",
+      "universe-a2bc18d78.txt",
+      "universe-9dd6ff48c.txt"
+    ]
+  },
+  "declared_pair": {
+    "files": 626,
+    "legs": 7936,
+    "declared_at": "27a818456",
+    "declared_date": "2026-10-26",
+    "pinned_by": "scripts/ci-pr-gate.mjs --self-test: live.declaredTotals.files === 626 && live.declaredTotals.legs === 7936"
+  },
+  "tolerance_set": {
+    "file": "dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md",
+    "machine_line": "# RETIRED-TO-EMPTY: 9 titled reds retired against predecessor 2b1099d7",
+    "tolerated_ids": 0
+  },
+  "verdict_rule": "compareCensus(): verdict = added.length > 0 ? fail : pass, where added = current identity set minus the baseline tolerated set. Counts never draw the verdict."
+}
