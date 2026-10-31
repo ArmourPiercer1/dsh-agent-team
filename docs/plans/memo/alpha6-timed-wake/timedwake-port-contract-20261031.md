@@ -217,7 +217,7 @@ wake handler 只能按"本域内有序"写，任何跨 TeamDomain 的先后假�
 
 | 腿 | 断言 | 为什么要它 |
 | --- | --- | --- |
-| L-1 | 在本域写一行 ⇒ handler 收到恰好一次 `{domain,table,key,operation:'put'}`，四元组逐字等于实测字面量 | 同时回答 V-2b 与 V-1 |
+| L-1a | 在本域写一行 ⇒ handler（注册时带 `{ global: true }`）收到恰好一次 `{domain,table,key,operation:'put'}`，四元组逐字等于实测字面量 | 同时回答 V-2b 与 V-1 |
 | L-2 | 同 key 覆盖写两次 ⇒ 两次 `put` ⇒ handler 结果幂等（按 value 版本去重） | `put` 覆盖 insert 与 overwrite（`events.ts:21-25`） |
 | L-3 | handler 抛 ⇒ 写仍 `ok`（宿主 containment），且**我们自己的失败计数 +1** | 8.3-2：不自带观测就是隐身失败 |
 | L-4 | 造一个刻意忙等的 handler ⇒ 同域下一次 `put` 的完成时间被推迟（可测差值） | 把 8.3-1 的"内联派发"钉成回归门，防未来重构悄悄把 wake 工作内联回去 |
@@ -226,5 +226,15 @@ wake handler 只能按"本域内有序"写，任何跨 TeamDomain 的先后假�
 
 floor-delayed 载体不受本节任何影响：以上全部发生在"写已经发生之后"，没有哪个面能把动作安排到未来自己发生。
 `CORE_SEAM_BLOCKER` 对该子集仍 OPEN，#509 仍 DORMANT，仍不新建第二套持久化计时器。
+
+**L-1 的必测变体（本会话实测所得，别凭想象接线）**：本插件里**每一条跨切订阅**都带第三个参数 `{ global: true }`
+——`packages/runtime/src/plugin/host.ts:1171-1183`（`agent/created`、`agent/disposed`）与 `:2251-2256`
+（`approval/request` 还加了 `prepend: true`），且全部包在 `typeof ctx.on === 'function'` 守卫里。宿主 storage-domain
+把域装在**子 ctx**（`domainCtx`）上，所以"要不要 `global`"不是风格问题而是能否收到的问题。**但本会话没能从可读的
+宿主源里读到 `on()` 第三个参数的语义**（`packages/*/src` 内查不到 `global?: boolean` 的声明；`@deepseek-ai/cordis`
+运行时包不在这台机器的宿主树里）——这是 ENV 缺口，不是结论。故 L-1 拆成两条腿：
+- **L-1a**：订阅带 `{ global: true }` ⇒ 必须收到；
+- **L-1b**：订阅不带 ⇒ 记录实际行为（收到 / 收不到都写进证据，不许把"没测"写成"需要 global"或"不需要"）。
+两条都跑完之前，接线代码里按本仓先例写 `{ global: true }`，并把这条理由写在注释里指向本 memo，而不是指向我的记忆。
 
 **授权边界**：开发授权，非合并授权，非生产启用，非放宽门禁。
