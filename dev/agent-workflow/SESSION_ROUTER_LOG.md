@@ -7596,3 +7596,21 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   顺带把"复制的行落在窗口外且不含词表词 ⇒ 永远不可见"这个构造性盲点也堵了（改为全文件计数）。
 - 控制项复跑：干净文档 rc=0（`quotes=2 drift=0` / `found=3 pinned=6 findings=0`）、"老化出窗口但仍在文件里" rc=0、
   round-7 全部攻击仍红。**下一轮该攻我本轮新加的三条规则**：LCS 阈值 24、注释区间扫描、遇 CR 拒绝判定——都还没被审过。
+
+## 2026-10-31 — PR #522（PR-I1b）实现落地：dark、拒绝接线、两条红线都走了"拒绝"分支
+
+commit `4e9b20a62`（父 `50be43c57`=设计），已推。`assignment-admission.ts` 626 行 + 测试 972 行；11 个封闭
+`ADMISSION_*` 码，内核预飞的 5 个码原样透传（D-9）。我自己复跑：四文件 **158/158**、`tsc` rc=0、eslint rc=0、
+docs-sync `docs=106 plans=69 findings=0`、settlement `BLOCKED-BY-MARKER`；宣布评论 `6542752462`。
+
+- **裁决二的红线量出来是两次拒绝，不是一次遵守**：`CONTROL_RESOLVER_ROLES` 明明从中心公开 barrel 导出（可达），
+  但本 lane 卫生法判"含 `control/` 相对 specifier"有罪，于是它成为 **reachable-but-forbidden**，改用带双向钉的冻结镜像；
+  `resolveCaller` 因 purity 白名单接不上，身份改由注入 port 提供，**接线文件根本不存在**、`ALLOWED_CONSUMERS` 仍为空。
+  "接不上就拒绝接线并点名原因"这条如果被遵守成"顺手 import 了中心内部"，那才是事故。
+- 一处设计稿里的自查码被**删掉**而不是改名：外行行的判定本来想新造 `ADMISSION_LEDGER_FOREIGN_ROW`，但那会把 fold
+  自己的 `REVIEW_ASSIGNMENT_CROSS_TEAM_ROW` 诊断重新贴标签，违反 D-9；普查同时证明预飞发不出草稿写的第 6 个透传码，
+  清单因此缩到 5 个。**被测试杀掉的枚举值，比多加一个枚举值更有价值。**
+- 诚实边界写进测试而不是留给我复述：真机腿（真 Host ControlService、S-7 真实世界字节差）记 **ENV-REFUSED**，
+  改用结构性替代论证（off 团队不生成 gate 对象 + 全树零 importer + `ALLOWED_CONSUMERS==[]`）；
+  字节不变是**要量的**，不是"默认关"的同义词。
+- 独立评审进行中（攻拒绝分支是否真拒、DORMANCY 论证是否成立、镜像能否被静默改歪、普查算术与封闭词表不重不漏）。
