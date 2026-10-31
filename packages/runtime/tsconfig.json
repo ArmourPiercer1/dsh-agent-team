@@ -39,6 +39,18 @@
     // lane in front of a compiler at all — measured, not assumed: with the entry missing,
     // `tsc --listFilesOnly` listed every file of the two lanes above and none of this one.
     "review-assignment",
+    // Alpha.6 PR4' (Lane 2): the review-wake defer lane — a pre-kernel gate on the Leader notification port
+    // plus the process-local floor it reads. Consumed by no production file and gated by no flag of any kind;
+    // both halves are measured by `a6-pr4-lane-hygiene.test.ts` — a walk for a module import of the lane, and a
+    // screen of every production file for ANY spelling of the name: kebab (`review-defer`), screaming
+    // (`REVIEW_DEFER`) or camel (`reviewDefer`), so an option like `reviewDeferEnabled` cannot appear in the
+    // product without failing a leg. Round 3 caught the first version of this sentence crediting a screen that
+    // read only two of those three spellings. (The round-2 review caught this comment
+    // advertising a `config.teamToolPlane.reviewDeferEnabled` switch that exists nowhere in the tree — a comment
+    // naming a control that does not exist is the same species of defect as a tool that controls nothing.)
+    // Named here for the same measured reason as the two lanes above: without the entry no repo-wide tsc reads
+    // the directory at all.
+    "review-defer",
     "test",
     "vitest.config.ts"
   ]
