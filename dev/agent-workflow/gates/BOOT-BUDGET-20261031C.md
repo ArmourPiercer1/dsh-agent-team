@@ -102,3 +102,4 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - boot head=本 commit 后 HEAD（含 RCA-6 修复）；max-host-starts=5（账本现 4 行，计数器语义=总行数上限）。
 - 有效格判据：五目标格任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=停线升级。
 - 收据：run-bw7.json + oracle + host-starts.jsonl 行 + 本册回执，缺一即违规。
+- 机动格回执 1/2（dated 2026-10-31T01:35Z）：bw7 真实启动 1（账本第 5 行），有效格=是（RCA-6 修正证实 + B 行 deny 新具名失败+判别子）。机动 2/2 **冻结中**：待 LEG-SEMANTICS 调查定甲/乙后按需启用（甲=套件契约修正后再烧；乙=产品缺口立项，不烧）。
