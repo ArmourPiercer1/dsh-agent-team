@@ -25,8 +25,10 @@
  *
  * NO CLOCK, NO I/O. Every function takes the instant it needs; the only time operation below is `Date.parse` on a
  * value the caller supplied, which is the same distinction `review-wake/slot.ts` draws when it floors a backoff
- * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock can enter through this file (a
- * hygiene leg greps for it).
+ * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock enters through this file. A
+ * hygiene leg greps the lane for the direct spellings of that clock and of timers and I/O; it is a token screen,
+ * so an alias would walk past it, and the leg's own comment says that out loud instead of letting this sentence
+ * claim the screen is a proof (round-4 finding R4-4 on #509).
  */
 
 import {
@@ -144,7 +146,7 @@ export function reviewDeferKeyOf(
   }
   const leg = candidate.legOrdinal
   if (typeof leg !== 'number' || !Number.isSafeInteger(leg) || leg < 1) {
-    return refuse('REVIEW_DEFER_LEG_MALFORMED', `a case-scoped defer needs legOrdinal >= 1, got ${String(leg)}`)
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `a case-scoped defer needs legOrdinal >= 1, got ${displayValue(leg)}`)
   }
   return accept(Object.freeze({ rootSessionId, approvalCaseId: caseId, legOrdinal: leg }))
 }
@@ -157,7 +159,16 @@ export function reviewDeferKeyOf(
  * team root, handed by reference to both the gate and the tool port.
  */
 export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_DEFAULT_LIMITS): ReviewDeferStore {
-  return { limits: Object.freeze({ ...usableLimits(limits) }), entries: new Map<string, ReviewDeferEntry>() }
+  // Round-4 finding R4-1 on #509: freezing the limits and handing out a live store object closed the value and
+  // left the slot. `store.limits = { horizonMs: Infinity, maxEntries: Infinity }` did not throw, and because
+  // every bound is read through `store.limits` at call time (see `setReviewDefer`), the replacement re-armed
+  // R2-1 exactly — a probe against the built lane accepted a ten-year floor and filed 300 entries into a store
+  // declared at one hour and sixty-four. Freezing the store closes that slot; the Map stays mutable, because
+  // hydration and sweep mutate it and `Object.freeze` freezes references, not contents.
+  return Object.freeze({
+    limits: Object.freeze({ ...usableLimits(limits) }),
+    entries: new Map<string, ReviewDeferEntry>(),
+  })
 }
 
 /**
@@ -188,16 +199,58 @@ export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_
  * choices. What is NOT trusted, after R3-1, is the caller's object: the store keeps a frozen COPY, because a
  * config object that is read, mutated and re-read is the normal shape of plane config, and validating at
  * construction while holding the caller's reference meant `myLimits.horizonMs = NaN` re-armed the exact bug this
- * function was written to close. Legs pin all of it: per-field preservation, zero semantics, and immutability
- * after construction.
+ * function was written to close. Legs pin all of it, measured: per-field preservation, zero semantics, one read
+ * per bound (a getter that changes its answer cannot diverge validation from capture), and — after R4-1 — a frozen
+ * store object, because a frozen limit inside an unfrozen store is a bound somebody can swap out.
  */
 function usableLimits(limits: ReviewDeferLimits): ReviewDeferLimits {
-  const horizonUsable = Number.isFinite(limits.horizonMs) && limits.horizonMs >= 0
-  const capUsable = Number.isInteger(limits.maxEntries) && limits.maxEntries >= 0
+  // Round-4 finding R4-2 on #509: each bound was read THREE times — twice to validate, once to capture — so a
+  // caller whose property is a getter could answer honestly on the validation reads and hand over `NaN` on the
+  // capture read. The frozen copy then carried garbage INTO the disarmed state (a probe filed a ten-year floor
+  // and 63 further entries), which inverts the rule this function exists for: honest garbage gets substituted,
+  // lying garbage gets captured. Reading once and judging the captured value closes the divergence; a getter
+  // that throws while being read is the same shape as a value this lane cannot read, so it substitutes too —
+  // otherwise the sentence below about substitution rather than throwing is false for that shape.
+  //
+  // What no reading discipline can defend against is a getter that lies on the FIRST read; that is an active
+  // attacker holding the config object, not confusion, and this lane has already decided (see the paragraph
+  // above) that it arbitrates garbage rather than choices.
+  const horizonMs = readBound(limits, 'horizonMs')
+  const maxEntries = readBound(limits, 'maxEntries')
   return {
-    horizonMs: horizonUsable ? limits.horizonMs : REVIEW_DEFER_DEFAULT_LIMITS.horizonMs,
-    maxEntries: capUsable ? limits.maxEntries : REVIEW_DEFER_DEFAULT_LIMITS.maxEntries,
+    horizonMs:
+      typeof horizonMs === 'number' && Number.isFinite(horizonMs) && horizonMs >= 0
+        ? horizonMs
+        : REVIEW_DEFER_DEFAULT_LIMITS.horizonMs,
+    maxEntries:
+      typeof maxEntries === 'number' && Number.isInteger(maxEntries) && maxEntries >= 0
+        ? maxEntries
+        : REVIEW_DEFER_DEFAULT_LIMITS.maxEntries,
   }
+}
+
+/** One read of one configured bound; a throwing getter is an unreadable value, not an exception to forward. */
+function readBound(limits: ReviewDeferLimits, field: keyof ReviewDeferLimits): unknown {
+  try {
+    return limits[field]
+  } catch {
+    return Number.NaN
+  }
+}
+
+/**
+ * What a caller handed over, safe to put inside a refusal.
+ *
+ * Round-4 finding R4-3 on #509: the R3-7 family survived in the one place R3-7 did not look — the refusal
+ * MESSAGES. `${String(nowIso)}` on a value with a throwing `toString` turned the act of refusing into a thrown
+ * `Error`, which is the same broken promise as R3-7 in a different sentence: a function whose whole contract is
+ * "answers a refusal with the refusal, not with a thrown surprise" must not evaluate a caller-controlled
+ * `toString` on the way out. Measured before the fix: `set`/`cancel` with such a clock both threw raw, leaving
+ * the store intact but the caller with an exception. A non-string is named by its type instead, which is the
+ * useful information anyway — nobody debugs a refuse-by-clock from a megabyte of interpolated object.
+ */
+function displayValue(value: unknown): string {
+  return typeof value === 'string' ? value : `a ${typeof value}`
 }
 
 /**
@@ -268,16 +321,16 @@ export function setReviewDefer(
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
   }
   if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
-    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${String(input.legOrdinal)}`)
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${displayValue(input.legOrdinal)}`)
   }
   if (typeof nowIso !== 'string' || Number.isNaN(Date.parse(nowIso))) {
-    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${String(nowIso)} does not parse`)
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${displayValue(nowIso)} does not parse`)
   }
   if (typeof input.notBeforeIso !== 'string' || Number.isNaN(Date.parse(input.notBeforeIso))) {
-    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `notBeforeIso ${String(input.notBeforeIso)} does not parse`)
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `notBeforeIso ${displayValue(input.notBeforeIso)} does not parse`)
   }
   if (!REVIEW_DEFER_REASON_CODES.includes(input.reasonCode)) {
-    return refuse('REVIEW_DEFER_REASON_UNKNOWN', `unknown reason code ${String(input.reasonCode)}`)
+    return refuse('REVIEW_DEFER_REASON_UNKNOWN', `unknown reason code ${displayValue(input.reasonCode)}`)
   }
   const remaining = deltaMs(nowIso, input.notBeforeIso)
   if (remaining <= 0) {
@@ -324,10 +377,10 @@ export function cancelReviewDefer(
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
   }
   if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
-    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${String(key.legOrdinal)}`)
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${displayValue(key.legOrdinal)}`)
   }
   if (typeof nowIso !== 'string' || Number.isNaN(Date.parse(nowIso))) {
-    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${String(nowIso)} does not parse`)
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${displayValue(nowIso)} does not parse`)
   }
   const had = store.entries.get(keyOf(key))
   sweepReviewDefers(store, nowIso)

@@ -38,6 +38,7 @@ import {
   setReviewDefer,
   sweepReviewDefers,
   type ReviewDeferGate,
+  type ReviewDeferLimits,
   type ReviewDeferKey,
   type ReviewDeferRefusal,
   type ReviewDeferResult,
@@ -412,6 +413,85 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
     if (!after.ok) expect(after.refusal).toBe('REVIEW_DEFER_HORIZON_EXCEEDED')
   })
 
+  it('holds its bounds and its refusals to itself, even against the object it was built from', () => {
+    // Round-4 findings R4-1, R4-2 and R4-3 on #509. All three are the same lesson wearing different clothes: the
+    // round-3 fix closed a value and left the reference next to it, and the refusal path closed the value and
+    // left the sentence that prints it.
+    const store = createReviewDeferStore({ horizonMs: 60_000, maxEntries: 2 })
+
+    // (R4-1) Freezing `limits` inside an unfrozen store is a bound somebody can swap. Every bound is read
+    // THROUGH `store.limits` at call time, so replacing that property re-armed R2-1 in one statement: a probe
+    // against the built lane accepted a ten-year floor and filed 300 entries into a store declared 60s/2.
+    expect(Object.isFrozen(store), 'the store object itself is part of the boundary').toBe(true)
+    const swapped: ReviewDeferStore = store
+    expect(() => {
+      ;(swapped as unknown as { limits: unknown }).limits = {
+        horizonMs: Number.POSITIVE_INFINITY,
+        maxEntries: Number.POSITIVE_INFINITY,
+      }
+    }, 'assigning over a frozen store\'s limits must not be silently ignored').toThrow(TypeError)
+    expect(store.limits).toEqual({ horizonMs: 60_000, maxEntries: 2 })
+    const tenYears = setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(10 * 365 * 24 * 60 * 60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+    expect(tenYears.ok, 'a swapped limits object admitted a ten-year floor').toBe(false)
+    if (!tenYears.ok) expect(tenYears.refusal).toBe('REVIEW_DEFER_HORIZON_EXCEEDED')
+
+    // (R4-2) Validation and capture were separate reads of one property, so a getter could answer honestly twice
+    // and hand over NaN on the read that stuck — a frozen copy BORN disarmed, which inverts the rule: honest
+    // garbage gets substituted, lying garbage gets captured. One read per bound; the first answer is the answer.
+    let horizonReads = 0
+    const flipFlop = {
+      get horizonMs(): number {
+        horizonReads += 1
+        return horizonReads === 1 ? 60_000 : Number.NaN
+      },
+      maxEntries: 2,
+    }
+    const captured = createReviewDeferStore(flipFlop as unknown as ReviewDeferLimits)
+    expect(horizonReads, 'a configured bound is read once, not once per validation plus once per capture').toBe(1)
+    expect(captured.limits.horizonMs).toBe(60_000)
+    expect(
+      setReviewDefer(captured, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(10 * 365 * 24 * 60 * 60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW).ok,
+      'a getter that changed its answer re-armed the horizon',
+    ).toBe(false)
+    // A getter that throws is a bound nobody can read, which is what "substitution rather than a throw" already
+    // promised; before this it escaped the constructor as a raw Error and made that sentence false.
+    const thrower = {
+      get horizonMs(): number {
+        throw new Error('getter exploded')
+      },
+      get maxEntries(): number {
+        throw new Error('getter exploded')
+      },
+    }
+    const guarded = createReviewDeferStore(thrower as unknown as ReviewDeferLimits)
+    expect(guarded.limits).toEqual({ ...REVIEW_DEFER_DEFAULT_LIMITS })
+
+    // (R4-3) Every refusal message interpolated its caller value with `String(...)`, so a value carrying a
+    // throwing `toString` made the ACT OF REFUSING throw — the same broken promise as R3-7 one line further on.
+    // A non-string is now named by its type, which is the useful half of the information anyway.
+    const hostile = {
+      toString(): string {
+        throw new Error('toString exploded')
+      },
+    }
+    const refusals: readonly (() => unknown)[] = [
+      () => setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: hostile as never, reasonCode: 'AWAITING_EVIDENCE' }, NOW),
+      () => setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, hostile as never),
+      () => cancelReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG }, hostile as never),
+      () => setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: hostile as never }, NOW),
+      () => setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: hostile as never, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW),
+      () => reviewDeferKeyOf(ROOT, record({ legOrdinal: hostile as never })),
+    ]
+    refusals.forEach((answer, index) => {
+      let outcome: unknown
+      expect(() => {
+        outcome = answer()
+      }, `refusal ${index} threw instead of refusing`).not.toThrow()
+      expect((outcome as { ok: boolean }).ok, `refusal ${index} admitted a value it exists to refuse`).toBe(false)
+    })
+    expect(store.entries.size, 'a refused write files nothing, however the refusal is worded').toBe(0)
+  })
+
   it('refuses identifiers that are not strings, instead of throwing or inventing a slot', () => {
     // Round-3 finding R3-7 on #509: `ID_PATTERN.test` COERCES. `test(undefined)` tests the string "undefined"
     // (which passes the pattern) and the value then reaches the length prefix and throws a TypeError out of a
@@ -431,6 +511,12 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
       if (!derived.ok) expect(derived.refusal).toBe(notAString === undefined ? 'REVIEW_DEFER_CASE_UNIDENTIFIED' : 'REVIEW_DEFER_ID_MALFORMED')
       const woken = decideReviewWake(store, ROOT, record({ approvalCaseId: notAString as never }), NOW)
       expect(woken.decision, `a ${typeof notAString} case id suppressed a wake`).toBe('deliver')
+      // Round-4 finding R4-5 on #509: the round-3 fix for this shape wrote the doc and pinned the DECISION, and
+      // the reason — the only part that says WHY the wake survived — appeared in no assertion at all. Swapping
+      // the two reason mappings in the gate left 67/67 green. `deliver` is the direction; the reason is the law.
+      expect(woken.reason, `a ${typeof notAString} case id delivered for the wrong reason`).toBe(
+        notAString === undefined ? 'WAKE_CASE_UNIDENTIFIED' : 'WAKE_KEY_UNADDRESSABLE',
+      )
     }
     expect(store.entries.size).toBe(0)
   })
@@ -722,28 +808,44 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
 
   it('produces every wake reason, in both directions', async () => {
     const produced = new Set<ReviewDeferWakeReason>()
+    // Round-4 finding R4-5 on #509: this leg used to collect reasons into a SET and compare membership, which
+    // any two producers could satisfy for each other — the set was reachable without the fourth
+    // WAKE_KEY_UNADDRESSABLE producer ever being driven, and a gate that answered LEG where it meant ID stayed
+    // green (mutation-proven). Every producer is now named, because a reason that is only ever CHECKED FOR is
+    // not a reason anybody owns.
+    const emits = (label: string, actual: ReviewDeferWakeReason, expected: ReviewDeferWakeReason): void => {
+      produced.add(actual)
+      expect(actual, label).toBe(expected)
+    }
     const empty = createReviewDeferStore()
-    produced.add(decideReviewWake(empty, ROOT, record(), NOW).reason)
-    produced.add(decideReviewWake(empty, ROOT, record({ approvalCaseId: undefined }), NOW).reason)
+    emits('a wake nothing ever deferred', decideReviewWake(empty, ROOT, record(), NOW).reason, 'WAKE_NOT_DEFERRED')
+    emits('a wake with no case to attribute', decideReviewWake(empty, ROOT, record({ approvalCaseId: undefined }), NOW).reason, 'WAKE_CASE_UNIDENTIFIED')
     const standing = createReviewDeferStore()
     defer(standing, { notBeforeIso: later(60 * 1000) })
-    produced.add(decideReviewWake(standing, ROOT, record(), NOW).reason)
+    emits('a wake inside a standing floor', decideReviewWake(standing, ROOT, record(), NOW).reason, 'WAKE_DEFER_PENDING')
     const expiring = createReviewDeferStore()
     defer(expiring, { notBeforeIso: later(60 * 1000) })
-    produced.add(decideReviewWake(expiring, ROOT, record(), later(61 * 1000)).reason)
+    emits('a wake whose floor has passed', decideReviewWake(expiring, ROOT, record(), later(61 * 1000)).reason, 'WAKE_DEFER_FLOOR_PASSED')
     // A case named and a leg missing: attributable enough to notice, not attributable enough to mute.
-    produced.add(decideReviewWake(empty, ROOT, record({ legOrdinal: undefined }), NOW).reason)
+    emits('a wake with no leg ordinal', decideReviewWake(empty, ROOT, record({ legOrdinal: undefined }), NOW).reason, 'WAKE_LEG_UNIDENTIFIED')
     // A case readable, the identity half not: the slot cannot be addressed, which is not the same fact as a
     // pre-Alpha.4 row (round-2 finding R2-3 on #509 — this shape used to answer WAKE_CASE_UNIDENTIFIED).
-    produced.add(decideReviewWake(empty, ROOT, record({ requestId: 'not an id' }), NOW).reason)
-    produced.add(decideReviewWake(empty, 'root id with spaces', record(), NOW).reason)
+    emits('a request id that cannot name a slot', decideReviewWake(empty, ROOT, record({ requestId: 'not an id' }), NOW).reason, 'WAKE_KEY_UNADDRESSABLE')
+    emits('a root id that cannot name a slot', decideReviewWake(empty, 'root id with spaces', record(), NOW).reason, 'WAKE_KEY_UNADDRESSABLE')
     // A case id that is present and non-empty but malformed is the fourth shape that cannot address a slot, and
     // the reason doc has to cover it (round-3 finding R3-6 on #509: the doc claimed "a case IS readable").
-    produced.add(decideReviewWake(empty, ROOT, record({ approvalCaseId: 'case with spaces' }), NOW).reason)
+    emits('a case id present, non-empty, malformed', decideReviewWake(empty, ROOT, record({ approvalCaseId: 'case with spaces' }), NOW).reason, 'WAKE_KEY_UNADDRESSABLE')
+    // The fourth producer of WAKE_KEY_UNADDRESSABLE, driven on its own: an identifier that is not a string at
+    // all (round-3 finding R3-7 found the coercion, round-4 finding R4-5 found that nothing asserted the answer).
+    emits(
+      'a case id that is not a string',
+      decideReviewWake(empty, ROOT, record({ approvalCaseId: 42 as never }), NOW).reason,
+      'WAKE_KEY_UNADDRESSABLE',
+    )
     // The two fail-open states, produced without a notifier in sight.
     const unreadable = createReviewDeferStore()
     defer(unreadable, { notBeforeIso: later(60 * 1000) })
-    produced.add(decideReviewWake(unreadable, ROOT, record(), 'not-a-time').reason)
+    emits('a caller clock that cannot be read', decideReviewWake(unreadable, ROOT, record(), 'not-a-time').reason, 'WAKE_DEFER_UNREADABLE')
     // The panic reason is produced by the GATE's catch, not by the pure decision — the decision has no catch,
     // because a pure function that swallows is not pure any more. Driving it through the gate is the only
     // honest way to reach it, and the same drive proves the wake was still delivered.

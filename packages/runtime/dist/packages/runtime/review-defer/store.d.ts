@@ -25,8 +25,10 @@
  *
  * NO CLOCK, NO I/O. Every function takes the instant it needs; the only time operation below is `Date.parse` on a
  * value the caller supplied, which is the same distinction `review-wake/slot.ts` draws when it floors a backoff
- * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock can enter through this file (a
- * hygiene leg greps for it).
+ * from `ctx.nowIso`. No `Date` is constructed here, so no read of the wall clock enters through this file. A
+ * hygiene leg greps the lane for the direct spellings of that clock and of timers and I/O; it is a token screen,
+ * so an alias would walk past it, and the leg's own comment says that out loud instead of letting this sentence
+ * claim the screen is a proof (round-4 finding R4-4 on #509).
  */
 import { type ReviewDeferEntry, type ReviewDeferKey, type ReviewDeferLimits, type ReviewDeferReasonCode, type ReviewDeferResult, type ReviewWakeCandidate } from './types.js';
 export interface ReviewDeferStore {

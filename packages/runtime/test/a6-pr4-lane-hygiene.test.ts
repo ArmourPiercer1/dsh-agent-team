@@ -227,7 +227,15 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     // depend on which process asked. Both are laws, so both are grep-able.
     // `new Date` and friends are needles because the store's doc claims a leg greps for them (round-3 finding
     // R3-3 on #509 — it did not: the list stopped at `Date.now`, and a planted wall-clock read passed the leg).
-    const forbidden = ['Date.now', 'new Date', 'Date.UTC', 'performance.now', 'setTimeout', 'setInterval', 'process.', 'readFileSync', 'writeFileSync', 'Math.random']
+    // `Date(` is here for the same reason one round later (round-4 finding R4-4): bare `const t = Date()` is a
+    // direct call of the wall clock that none of the three `Date.…` spellings match, and it measured as passing
+    // this leg. `Intl.DateTimeFormat` is the other clock-shaped API a plugin could reach for.
+    // WHAT THIS SCREEN DOES NOT CLAIM, stated instead of implied: it reads tokens, not bindings. An alias
+    // (`const D = Date; new D()`) or a computed member (`globalThis['Date']`, `globalThis['setInterval']`) walks
+    // past any needle list, and the two reviews that widened this list each found a shape the previous sentence
+    // had over-claimed. The claim is exactly: no direct spelling of the wall clock, the timer APIs, process
+    // access, filesystem access or RNG appears anywhere in the lane's own files.
+    const forbidden = ['Date.now', 'new Date', 'Date.UTC', 'Date(', 'performance.now', 'Intl.DateTimeFormat', 'setTimeout', 'setInterval', 'process.', 'readFileSync', 'writeFileSync', 'Math.random']
     for (const file of walk(LANE_DIR)) {
       const source = readFileSync(file, 'utf8')
       for (const needle of forbidden) {
