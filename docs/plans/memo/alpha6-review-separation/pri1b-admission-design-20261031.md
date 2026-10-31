@@ -154,3 +154,35 @@ census 腿预期"undeclared refusal"（不得 `--allow-refused`、不得记为�
 
 开发授权，仅此：不是合并授权、不是启用授权、不是门禁放宽。本 memo 所属 PR 以 draft + `DO-NOT-MERGE` 标题存在，
 settlement gate 的 `BLOCKED-BY-MARKER` 是它应有的样子。
+
+## 9. dated 2026-10-31（同夜稍后）：V-1 定位成功，而它**推翻**了 D-3 的写法与 §5 的退路
+
+实现前的最后一次定位成功了：`resolveCaller` 的本体在 **`packages/runtime/admission/resolve.ts`**（控制面在
+`packages/runtime/control/service.ts:2333` 与 `:2578` 调它）。Leader 分支实测（`resolve.ts:240-268`）：
+
+- 注释先把最直觉的做法当场堵死："The Leader caller resolves from the durable Root/Team identity (P8-S2,
+  Architecture §9.2, invariants 14/15): **NOT from a member row**"；成员行只是 best-effort
+  （"its lifecycle never governs the Leader — the Leader's liveness follows the Root Session"）；
+- 判据是**三件套**：哨兵 `instanceId === LEADER_INSTANCE_ID`（`:247`）+ root 上存在 TeamSession 记录
+  （`:248-256`，缺 ⇒ `CALLER_NOT_FOUND`）+ root 上存在 `kind === 'team-root'` 的 sessionBinding
+  （`:257-264`，缺 ⇒ `CALLER_NOT_FOUND`）；
+- 成员行缺失**照常**返回 `{ role: 'leader' }`（`:265-268`，有行才附 `callerMember`）。
+
+本 memo 有两处因此算错，按只追加规矩就地更正，并点名被更正的原句：
+
+1. **D-3 的"逐字段比对耐久 Leader"形状作废。** 耐久世界里没有一个权威的"Leader 行"可比——那一行可以合法不存在。
+   正确形状是比对那三件套。准入侧要问的不是"这个 instance 的档案像不像 Leader"，而是"这个 root 的耐久绑定是否
+   把它指为 Leader"。
+2. **§5 的 V-1 退路撤回，不是收窄。** 原句"找不到可复用的公开推导，就按 D-3(b) 从 TeamDomain 成员记录自行推导"
+   会造出**第二套 Leader 判据**——正是本 lane 四轮审查一直在别人身上处置的那种缺陷；而且它会在单元测试里全绿：
+   成员行存在时两套推导答案相同，只在"行不存在"这个真实故障模式下分道。新退路只有一条：
+   **复用 `resolveCaller` 或其等价公开面；接不上就拒绝接线并点名原因。** PR-I1b 不落地是可接受的结局，
+   系统里出现两个互相矛盾的"谁算 Leader"不是。
+
+**D-1 的模块名一并更正**：原计划在本 lane 加 `admission.ts`。runtime 树里已有 `packages/runtime/admission/`
+（就是这次的耐久 caller 解析）与受保护的 `packages/runtime/tool-admission/`
+（`packages/runtime/test/a6-pr2-lane-hygiene.test.ts:63-68` 的 `PROTECTED_PREFIXES` 含 `tool-admission/`）。
+一棵树里三个 "admission" 是送给未来 reviewer 的误会，故模块名定为 **`assignment-admission.ts`**
+（`EXTRA_MODULES_ALLOWED` 里也写这个名字）。同时记一条事实免得日后误判：`admission/` **不在**
+`PROTECTED_PREFIXES` 里（受保护的是 `tool-admission/`），所以"我 import 得到它"绝不等于"我可以绕过它"——
+上面那条"复用或拒绝接线"的纪律就是为这个缺口写的。
