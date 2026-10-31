@@ -1,0 +1,68 @@
+▶ E0 native baseline (measurement ground truth)
+  ✔ E0.1 native present publishes exactly one durable event with turn+callId+files (22.950297ms)
+  ✔ E0.2 native body reads zero content bytes (existence/stat metadata only) (7.012606ms)
+✔ E0 native baseline (measurement ground truth) (30.74866ms)
+▶ E1 P-P1 registration scope + provenance surface (special verification)
+  ✔ E1.1 the ToolRuntime public surface offers NO scope-complete enumeration (4.070006ms)
+  ✔ E1.2 a second GLOBAL present registration is refused (single global occupant) (4.201593ms)
+  ✔ E1.3 agent-scope shadow is invisible to the global view (global enumeration != scoped truth) (5.141664ms)
+  ✔ E1.4 a PRESET (ancestor) scope shadow is invisible to global enumeration too (5.451731ms)
+  ✔ E1.5 definition fingerprint: stable within the pinned build, distinguishing for decoys (7.117303ms)
+  ✔ E1.7 per-preset instantiations: NO shared object identity, equal fingerprint, per-layer publication (8.93233ms)
+  ✔ E1.6 tools/change fires on scoped registration/disposal (epoch signal for governance) (4.678858ms)
+✔ E1 P-P1 registration scope + provenance surface (special verification) (40.472271ms)
+▶ E2 P-P2#1 denial lanes keep the native body unexecuted
+  ✔ E2.1 pre-execute deny: zero fs calls, typed error, no event (5.322746ms)
+  ✔ E2.2 monotonic guard deny: body never runs regardless of listener order (4.681623ms)
+  ✔ E2.3 ask → approval service REJECTS: body never runs (4.464622ms)
+  ✔ E2.4 ask with NO approval service degrades to deny (fail-closed) (6.120949ms)
+  ✔ E2.5 ask → allowed-once: body runs, event publishes (the grant lane) (5.041765ms)
+✔ E2 P-P2#1 denial lanes keep the native body unexecuted (25.927854ms)
+▶ E3 P-P2#2 combined file permission vs the native body alone
+  ✔ E3.1 native body ALONE presents paths outside any authorized subtree (by host design) (8.282249ms)
+  ✔ E3.2 Team pre-execute containment denies the same call the native body would accept (10.935191ms)
+✔ E3 P-P2#2 combined file permission vs the native body alone (19.389717ms)
+▶ E4 P-P2#3 pre-execute → body drift window
+  ✔ E4.1 drift to a SYMLINK is caught by the native body: no publication, no content read (7.994826ms)
+  ✔ E4.2 drift to ANOTHER REGULAR FILE publishes an event for an object the pre-check never saw (8.232684ms)
+✔ E4 P-P2#3 pre-execute → body drift window (16.419925ms)
+▶ E5 P-P2#4 post-execute rejection suppresses publication
+  ✔ E5.1 body succeeds but post-execute block → isError, zero publications, body effects already executed (5.162864ms)
+  ✔ E5.2 the tools/result observer sees the BLOCKED outcome, never a fake success (6.683623ms)
+  ✔ E5.3 post-execute VALUE replacement cannot smuggle different files into the durable event (4.439204ms)
+✔ E5 P-P2#4 post-execute rejection suppresses publication (16.517049ms)
+▶ E6 P-P2#5 cancellation, swap, replay publication discipline
+  ✔ E6.1 pre-dispatch cancellation: ABORTED_BEFORE_DISPATCH, zero fs, no event (4.665914ms)
+  ✔ E6.2 cancellation after body success replaces the result BEFORE observers see it: no event (5.059557ms)
+  ✔ E6.3 tools/result fires exactly once per dispatched call (publication is commit-point, not observer count) (4.974759ms)
+  ✔ E6.4 mid-call definition swap: guard-time identity recheck catches it; post-guard swap runs the decoy but publishes NOTHING (5.772738ms)
+  ✔ E6.5 same-callId replay double-publishes natively: single-consumption is a Team-side duty (6.695177ms)
+  ✔ E6.6 no re-publication on session re-read (in-memory scope; true cold restore is boot territory) (5.054457ms)
+✔ E6 P-P2#5 cancellation, swap, replay publication discipline (32.586682ms)
+▶ E7 P-P2#6 session attribution
+  ✔ E7.1 present on A lands on A session only; B sees nothing (7.16826ms)
+  ✔ E7.2 a B-scoped decoy publishes NOTHING anywhere; Team identity check denies it (3.967561ms)
+✔ E7 P-P2#6 session attribution (11.296255ms)
+▶ E8 P-P2#7 PTC inner / shadow / non-Team baselines
+  ✔ E8.1 under ptc mode a model-direct present is denied BEFORE the policy pipeline (no governance burn) (4.58945ms)
+  ✔ E8.2 a PTC nested sub-dispatch (parent token) DOES traverse governance (5.951044ms)
+  ✔ E8.3 Team deny of an inner PTC call keeps the body unexecuted (4.97063ms)
+  ✔ E8.4 non-Team baseline matches the host spec (adding Team changes nothing when absent) (6.836212ms)
+✔ E8 P-P2#7 PTC inner / shadow / non-Team baselines (22.583744ms)
+▶ E9 P-P4 in-process positive arm (Team authorize → native execute → durable event)
+  ✔ E9.1 full chain with per-member identity, effect-set derivation, PA grant, publication proof (8.742711ms)
+  ✔ E9.2 mitigation: post-execute identity recheck BLOCKS an E4.2-class regular-file swap (no publication) (8.025374ms)
+✔ E9 P-P4 in-process positive arm (Team authorize → native execute → durable event) (17.002839ms)
+▶ E10 static source facts for P-P1
+  ✔ E10.1 the built d.ts declares scope layering PRIVATE (no public scope-complete read) (0.866452ms)
+  ✔ E10.2 ToolDefinition carries NO provenance/registrant field (0.729441ms)
+  ✔ E10.3 host baseline pin holds for this run (0.164231ms)
+✔ E10 static source facts for P-P1 (1.881544ms)
+ℹ tests 38
+ℹ suites 11
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 347.874956
