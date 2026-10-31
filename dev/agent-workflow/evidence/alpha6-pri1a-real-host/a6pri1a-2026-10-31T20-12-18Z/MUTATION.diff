@@ -1,0 +1,11 @@
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -287,7 +287,7 @@
+       const fresh = await writer.applyReviewAssignment(deps, command({
+         kind: 'created', approvalCaseId: `${config.approvalCaseId ?? 'approval-case-a6pri1a'}-second`,
+       }))
+-      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 1,
++      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 2,
+         JSON.stringify(fresh.ok
+           ? { applied: fresh.applied, sequence: fresh.sequence, epoch: fresh.assignmentEpoch, previousMax, expected: previousMax + 1 }
+           : { refusal: fresh.refusal, detail: fresh.detail }))

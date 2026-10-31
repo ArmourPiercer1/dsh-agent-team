@@ -1,0 +1,11 @@
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -296,7 +296,7 @@
+       emit(ctx, config, {
+         state: 'done', mode: 'restart', detail: 'reopened the medium in a fresh process and folded it',
+         rootSessionId, lock: held, steps, process: PROCESS_IDENTITY,
+-        rows, generation, replayFirst, fresh,
++        rows: rows.map((row) => ({ ...row, payload: { ...row.payload, assignmentEpoch: 99 } })), generation, replayFirst, fresh,
+       })
+       return
+     }

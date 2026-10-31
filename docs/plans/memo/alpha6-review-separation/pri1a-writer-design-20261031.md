@@ -1,0 +1,609 @@
+# Alpha.6 PR-I1a 设计（2026-10-31）：`ReviewAssignment` 的唯一受治理持久化 Writer
+
+依据：用户 2026-10-31 裁决（正本 `rulings-20261031-timed-wake-and-pr-i1.md` §2.2，PR #513）。
+写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
+scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
+
+> **Dated banner（2026-10-31，round-20 修复轮——收官轮，只改文案）——处理评审 round 5 的 1 条 MINOR（F-I1a5-1）与 3 条 INFO（F-I1a5-2/3/4），并把 round-5 的封闭裁决按 scope 口径记录在案；不改写前四轮 banner 的历史叙述。本轮没有任何规则、检查、描述符或 FAIL 头行变化。**
+> - **F-I1a5-1（驱动 `check()` 注释残留旧断言）**：原句「ARM bytes, and only arm bytes (F-I1a3-4): the predicate this conjunct computed is quoted…」把 round 4 已在别处退役的把握留在最后一处；N1 植物正演示了打印 span 可以含一行什么也不为该 conjunct 计算。改为全文件已统一的 declared-region 措辞（引用的是 arm 的 **DECLARED region**——对已证明 span 的 containment，不是语句边界证明）；其编码的 F-I1a3-4 **scope** 原样保留在该区域内（arm 自身的 inputs 不被引用，改 input 行照样红 leg 而引用字节不变——plant C 持续证明），改变的只是「引用的一定是该 conjunct 算过的那个谓词」这份确定性。注释按原行数重写，FAIL 头保持 129 行，与 `64f005cde` 逐字节相同。
+> - **F-I1a5-3（第三结局只举 string content 一例）**：三处示例（驱动注册表注释、证据 README 三结局条目、harness README plant-B 条）全部扩为 **string, comment or regex-literal content**，并点名测量实例而非散文断言：A6=string content；N3=注释内容（植入文件 sha `09637367…`）、N2=正则字面量内容（植入文件 sha `77884683…`），三者在 `64f005cde` 各以 `verdict=pass checks=55 problems=0` 认证（round-5 评审所测；本轮未重跑——文案轮只 boot 一次，为 pin 而跑，如实写明）。
+> - **F-I1a5-2（证据 README「now says」）**：改为过去时（"The FAIL header **then said** it…"），让句子在任何未来阅读时刻为真；下方 dated note 继续为旧转写记录两代措辞。
+> - **F-I1a5-4（GitHub 处置评论里引用错 token 下标）**：载体是 GitHub 评论，不在本树、只读不可改；已记入本轮修复报告，不在此处假装修掉。
+> - **封闭裁决（round-5 评审 Duty 3，按 scope 记录，不是庆祝）**：引文仪器在本 PR **以「仪器+诚实披露」的形态封闭**。它保证的（每条都被 round-5 植物打过）：builder 入座并冻结（`Object.freeze`+`WeakSet`，入座后再改物理不可能——N4a）、锚点唯一、逐行 span containment、span 内签名唯一、落码（空行/注释行 span 被拒——D）、注册表与源码**双向** parity（N4b）、评分时字节从磁盘重读。它不认证、只是检测的：打印区域就是 arm 的**语句**（更宽、平移、或签名只活在内容里的活代码区域照样发表——A6/N1/N2/N3/N6 发表，文案现在用现在时明说这一点，这就是封闭的披露半边）；grade 时的**文件级**签名独特性（更严读数只分层进 `--self-test`，A2/N1 证明其吃重，boot 引用在它下面合法）；以及 `--self-test` 自身断言的**意义**（F-I1a3-3 元上限**保持开放**，那是自评仪器的普遍性质，本仓库任何文案不得声称已闭合）。四个 re-open 触发器（round-5 报告逐字）："(1) any leg's descriptor set is edited (spans/signatures change — the per-plant disclosures are plant-scoped, exactly as the disposition insists); (2) quoted bytes are ever used as **evidence for a product claim** rather than a diagnostic — containment certifies liveness and locality, never semantics; (3) the grade path absorbs file-wide uniqueness into the span rule (it would refuse the byte-correct A2 quote) or the sweep is weakened back into the span rule; (4) any quote path ever renders a stored line number instead of bytes read at grade time."
+> - 新测值（round-20 字节）：本轮唯一一次 kit boot run `a6pri1a-2026-10-31T22-14-43Z` `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（无 clone、就地 worktree 运行；ports 3182/3183 在带内、用前空闲、转写证明用后 free；每 boot 唯一 marker；`DSH_HOME=tests/homes/a6pri1a-2026-10-31T22-14-43Z-write` teardown 删除、`tests/homes/` 复空；宿主 porcelain 前/后 0）；marker/pid/nonce/计数按 round-19 同一归一约定归一后，27 条 PASS 与 round-19 绿转写（`…T21-29-40Z`）**逐字节相同、diff 空**。`--self-test verdict=pass checks=55 problems=0`（`a6pri1a-selftest-round20/`）——计数未动，纯注释 diff 必须如此。驱动 `pr-i1a-real-host.mjs` `16887de54cbc13225cbecebeaa8586ec852b37bdacbf4050d41edb434c2519b7`（1055 行；对 `0e2073e04672…` 是 comment-only diff：F-I1a5-1 重写 + F-I1a5-3 从句，别无其他）、probe `40528066b6508473…` **与 round 15–19 逐字节相同**；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件 `Tests 2 failed | 317 passed (319)`（两条红照旧按名字引：`a4p7-merge-gate.test.ts:1137`/`:1694`）；`docs-sync --check`、`eb3-evidence-guard --new-since HEAD~1`、`pr-settlement-gate --pr 517`（答案 `BLOCKED-BY-MARKER`，DO-NOT-MERGE 标记是声明不是故障）在携带本节的 commit 之后运行、在 round-20 修复报告里引用。
+> - `packages/**` 零改动（tracked diff 为空）；未放松任何封闭集、卫生规则或 pin。
+> **Dated banner（2026-10-31，round-19 修复轮）——处理评审 round 4 的 2 条 MINOR（F-I1a4-1/2）与 3 条 INFO（F-I1a4-3/4/5）；不改写前三轮 banner 的历史叙述；本轮更正的是证据 README、变异脚手架 README 与驱动注释里三处同一句断言（不在本 memo 的 banner 叙述里）。**
+> - **F-I1a4-1（「只有两种结局」为假；第三结局「自信发表」）**：三种结局从此处处如实陈述——按规则通过的 span **打印**（打印的是描述符**声明的区域**，containment 证明不了它是语句边界）；规则能看见的（空 token、非 builder 构造的描述符、span 内重复 token、注释/空行 span、锚点移动或歧义、漂移）**拒绝**并打印原因；声明了更宽或平移的、活代码且 span 内签名唯一的区域的描述符**按声明发表**——第二结局正是那句话否认过的。修法是规则不是文案：注册时空白 token 直接 throw（`refusing to register`），描述符由 builder 以 `WeakSet` 入座（`{ ...ARM_SELFTEST }` 这类展开不可引用）；评分时按序检查（不可读 → 缺 `from` → 未入座 → 形状 → 锚点唯一 → 漂移 → **span 内唯一性** → **落码检查**）。**「唯一」取 span 内读数并在驱动注释里写明理由**：文件级唯一会拒绝 plant A2 那种在紧邻处逐字复制签名行的**正确引用**——「拒绝正确答案」不是拒绝的目的；更严的读数分层保留：`--self-test` 对**每条注册 arm** 扫「签名 token 在全文件只出现一次」+「声明 span 落在代码上」，A2 类复制会把 sweep 扫红而 boot 引用仍然合法（两层各由同一株植物演示）。FAIL 头同步改写（旧：`each quotes the ARM bytes it was graded from`；新：`each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — …)`）。reviewer 五株植物按固定字节复现并逐株报告：**D 拒绝**（`<span not on code>`，注释零引用）、**A5b/A12 注册即拒**（空 token throw，走不到 boot）、**S5 拒绝**（未入座）、**A2 boot 正确引用 + sweep 红**（`occurrences: 2`）、**A6 仍然发表**（该行是活代码、span 内签名唯一，只有声明错——字节级规则看不见，这条限制从此写在文案里而不是被否认）。`--self-test` 41 → 55 条（4 条合成拒绝检查 + 5 条 arm × 2 条逐 arm 检查；注册对账改从源码数 `= armDescriptor(`，加 arm 不扫即红）。
+> - **F-I1a4-2（README 的重跑命令按其字面跑不起来）**：`mutrun.sh` 现在入口处把调用方给的每个路径解析成绝对路径（`abspath`：原样 → 树根相对），脚手架 README 的「Re-running one」改写为 round-19 **实际执行过的命令与其输出尾部**（`r19-mut-seq`、`r19-plant-A-from-drift`，均 `METHOD LAW VERDICT: pass`、rc=0）。
+> - **F-I1a4-3/4（扫描器管拼写，不管纪律；元上限仍未关闭）**：两条结构扫描在驱动注释里降级为**拼写绊线**（原话如此），纪律改由**构造时**执行——arm 只能经 `armDescriptor` 存在并被对账清扫；一处合法的拼接构造点就地注明。元上限保持开放（F-I1a3-3）：清空五条断言的内容、round-18 sweep 仍 41/41 全绿的事实如实记录，round-19 的逐 arm 扫描把「self-test 评自己」推进为「评每条注册 arm 的签名区分度与落码」，但一般形式未闭合，本目录任何文案不得声称已闭合。
+> - **F-I1a4-5（陈旧 hunk 头）**：`a6pri1a-2026-10-31T20-13-24Z/MUTATION.diff` 的 `@@ -660,7 +660,7 @@` 相对可重放的树漂移 102 行——已提交字节不改写，旁边的 `HUNK-HEADER-NOTE.md` 带日期说明（补丁生成于 `74014ee12`；此后新增补丁的 hunk 头**只能由 `git diff` 生成、不得手写**），README 的 run 目录表加指向运行顺序披露的指针。
+> - 新测值（全部在 round-19 字节上）：绿 run `a6pri1a-2026-10-31T21-29-40Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`；把 marker/pid/nonce/计数按 reviewer 自己的归一约定
+>   （`MARKER-W`/`MARKER-R`、`pid PID`、`reported=N`/`spawned=N`、`nonce NONCE`）归一后，27 条 PASS 与其 round-18 绿转写**逐字节相同**；
+>   `--self-test` `verdict=pass checks=55 problems=0`（`a6pri1a-selftest-round19/`）；四个 boot 级复现
+>   `…T21-33-32Z`/`…T21-33-55Z`/`…T21-34-22Z`/`…T21-34-44Z`、四个 self-test 级复现 `a6pri1a-selftest-plants-round19/`；kit 字节
+>   `pr-i1a-real-host.mjs` `0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5`（1052 行，本轮唯一改动的仪器文件）、
+>   `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（**与 round 15/16/17/18 逐字节相同**，
+>   每次变异还原之后重测）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件
+>   `Tests 2 failed | 317 passed (319)`（两条红仍按名字引：`a4p7-merge-gate.test.ts:1137`/`:1694`）。
+> - 披露：本轮一个在中间驱动 sha（`c8e6fdb4…`）上产出的绿 run（`…T21-27-21Z`）在 commit **之前**移入 gitignored scratch
+>   （`.artifacts/alpha6-s0/pri1a-fix4/superseded-run-21-27-21Z`），不入库；除此之外已提交内容零改写、零删除。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（1416 → 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；改动只有 `tests/kits/**` 一个仪器文件、
+>   脚手架与其 README、`dev/**` 证据、本 memo 与本日志）。
+
+> **Dated banner（2026-10-31，round-18 修复轮）——处理评审 round 3 的 2 条 MINOR（F-I1a3-1/2）与本轮接受的 3 条 INFO（F-I1a3-4/5/6）；不改写前两轮 banner 的历史叙述，但点名更正 round-17 banner 末段的一句（见 F-I1a3-5 条）。**
+> - **F-I1a3-1（graded conjunct 的 `from`/`lines` 偏移是抄来的，不是测出来的）——按类别修，不按实例修**：round-17 的
+>   `locate()` 只保证 anchor 在评分时刻命中一处，而跨文件描述符写的是 `{ anchor, from: 2, lines: 4 }`——`from` 是对「昨天
+>   那份文件的排布」的转写。reviewer 种一行注释就能让 FAIL 块把**那行注释**当作「评分依据的字节」打印出来，同时
+>   `--self-test` 仍报 `verdict=pass checks=30 problems=0`。本轮先把 reviewer 的种植**逐字节复现**（`a6pri1a-2026-10-31T20-18-20Z`：
+>   在 mut-payload hunk 之上、`pri1a-probe-row.mjs:246` 插入 `        // plant-A comment line that shifts the graded arm by one`，
+>   种完的文件 sha256 `7b242c4eadfec9f707dab607043ec1a582f76a689e3c83f7c21021d66256902e` 与 round 3 测到的同一个哈希），
+>   再让修好的仪器在同样的字节上给出正确答案：FAIL 引 **`pri1a-probe-row.mjs:247 writes: { created, replay, transferred, retired }, rows,`**
+>   （被位移后的真 arm 行），且那行注释在转写里**一处也不出现**（运行同时断言 presence 与 absence）。机制：
+>   ①每条 graded arm 在驱动顶部由 `bareQuote()`/`armDescriptor()` 注册一次（anchor + 跨度长度 + **跨度内每行一个 signature**）；
+>   ②`locate()` 解析描述符时**连同偏移一起验证**——跨度第 k 行必须含第 k 个 signature，否则打印 `<span drifted>` 与
+>   `line N of this arm's L-line span does not contain its signature "…" … REFUSING to quote bytes it did not grade` 且**一行也不引**；
+>   带 `from` 偏移的描述符在评分时刻直接拒绝。③`--self-test` 从 30 条增到 **41 条**：逐条解析每个注册 arm 并校验它确实引到自己
+>   的跨度、种植式 shifted-span 的两条拒绝、以及对驱动**代码行**（不是注释行，这条限制写在定义处）的两次结构扫描——手写描述符
+>   (`file: DRIVER_REL|PROBE_REL`) 或带 `from:` 偏移都会让退出码变红。④无法吸收的漂移也提交为证据：`…T20-18-42Z` 把注释种进
+>   跨度**内部**，FAIL 只打印拒绝、不打印任何字节。**本轮不宣称关闭 F-I1a3-3**：`--self-test` 只测自己的机制不测自己的意义，
+>   把断言掏空成常量 `true` 依旧 pass——41 条收窄这一类，没有关掉它。
+> - **F-I1a3-2（腿名→文件的归因错了三次；模式才是发现）**：本轮把本 PR 三处文档里每一条被引用的腿名重新 grep 到
+>   `packages/*/test/*.ts`。结果：`the client lane runs, and no failure appears outside the disclosed baseline`
+>   实际在 `packages/testkit/test/a4p7-merge-gate.test.ts:1694`，而证据 README 与 round-17 日志条目（`SESSION_ROUTER_LOG.md:7567`）
+>   把它归到 `packages/testkit/test/p4t6-session-event-scan.test.ts`——那个文件通篇不提 client lane，归因在它点名的文件里毫无依据；
+>   README 已就地改正并给出行号，日志是 append-only，更正以本轮新条目写入。两条已披露红腿现分别为
+>   `a4p7-merge-gate.test.ts:1137`（`refuses the leg, by name, when the host module closure cannot be traversed`，原归因正确）与
+>   `:1694`（上面那条）；第三条被点名的腿 `is green, asserted by arm name and by absence of a skip — never by the exit code`
+>   在 `:837`（原文只说「另一条 a4p7 腿」，未指错文件）。**不是错误、故不改**的三处：九文件套件表里
+>   `packages/testkit/test/p4t6-session-event-scan.test.ts | 20` 是**套件成员文件**（它确有 20 条）而非腿归属；本 memo 只写过
+>   「两条 a4p7 腿」；`boot-1-lock-was-serialised` 是 **kit 腿** id（`tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:696`），
+>   没有任何文档把它当 vitest 测试。自本轮起：写归因必须带上 grep 返回的 `file:line`，不凭记忆写路径。
+> - **F-I1a3-4（「quotes the bytes it was graded from」的范围）**：FAIL 头部现在把范围写进转写本身——
+>   `each quotes the ARM bytes it was graded from (arm bytes only — an arm's own inputs are not quoted, …)`，并且用种植演示而不只是声明：
+>   `…T20-19-04Z` 只改 arm 的**输入**（`const previousBootPid = Number(config.previousBootPid)`→`Number(0)`），腿红而引出的 arm 字节
+>   原样不变。因此 FAIL 的引文是「决定这条判决的那一行」的证据，不是「判决所依赖的一切」的转储。
+> - **F-I1a3-5（更正 round-17 banner 末段的一句）**：那句写的是两个不可引用的 run 目录「已在本 commit 之前删除，
+>   **README/memo/日志都不引用它们**」——这句话本身就是引用，且 round-17 日志条目点名了这两个目录，属自相矛盾。
+>   成立且可检验的是更弱的说法：它们**未被任何主张当作证据引用**（本 PR、本 memo、日志里没有一条结论依赖这两个转写）。
+>   证据 README 就地改成该弱说法并附原文；本 banner 只点名更正，不改写 round-17 banner 原文。
+> - **F-I1a3-6（把变异脚手架连同其输出格式一起提交）**：`dev/agent-workflow/evidence/alpha6-pri1a-real-host/mutation-harness/`
+>   = 本轮实际跑过这些转写的**那一版**（`mutrun.sh` + `law.mjs` + `diff-lines.mjs` + `plants/*.mjs` + 自己的 README：METHOD LAW 的
+>   可执行步骤、各拒绝码的退出码、重跑命令、明确写出的天花板）。round-17 只用散文描述这套纪律、工具留在 scratch 里——那正是
+>   本轮那次自伤事故的成因，散文不是交付物。脚手架现在也**先验 pin 再动手**（不等于 pin 就 exit 88，等于「上一次还原已验证」），
+>   任何退出路径（含断言失败、SIGINT/SIGTERM）都还原并按 sha256 + 逐字节 `cmp` + `node --check` 三重验证后才允许 exit 0，
+>   并且继续输出与既有红目录同形的 `MUTATION-METHOD-LAW.txt`（committed hunk 额外并置 `MUTATION.diff`），新旧转写可比。
+>   本轮另把 round-17 四个 hunk 在新字节上由这套脚手架重跑一遍（`…T20-12-18Z`/`…T20-12-40Z`/`…T20-13-02Z`/`…T20-13-24Z`，
+>   各自点名自己的红腿与自己的理由）。**披露**：本轮早些时候由尚在修补中的脚手架/种植脚本产出的**八个**目录——四条 hunk 的第一遍
+>   （`…T20-06-52Z`/`…T20-07-26Z`/`…T20-07-48Z`/`…T20-08-15Z`，被上面四条重跑取代）、plant-A 的一次失败尝试
+>   （`…T20-09-57Z`，当时 `--expect-absent` 这类断言还不存在，运行按自己的规则判为 rc=85 失败）、以及三个种植目录的第一版
+>   （`…T20-10-56Z`/`…T20-11-23Z`/`…T20-11-49Z`：脚本回显了自己的 `planted:` 行，与法则的声明行重复、可能被读成「种了两行」，
+>   改成从磁盘读回被种那一行并逐字核对，读回不符即退出码变红）——全部在本 commit **之前**移出证据目录，
+>   放进本 worktree 的 gitignored scratch（`.artifacts/alpha6-s0/pri1a-fix3/superseded-run-dirs/`）；它们从未进入任何 commit，
+>   已提交内容没有被改写或删除。
+> - 新测值（全部在 round-18 字节上）：绿 run `a6pri1a-2026-10-31T20-01-31Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（ports 3182/3183、boot pid 37→49、marker 唯一、world 删除、
+>   `tests/homes/` 空、宿主 porcelain 前/后 0）；把 pid/marker/nonce/时间戳归一后，这份转写与 round-17 的绿转写只差 `lane head` 一行；
+>   `--self-test` `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=41 problems=0`（`a6pri1a-selftest-round18/`）；端口带拒绝重测
+>   六条全部 `verdict=port-refused`、每条 `rc=2`、`tests/homes` 仍空（`a6pri1a-port-band-refusals-round18/`）；kit 字节
+>   `pr-i1a-real-host.mjs` `ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d`（905 行，本轮唯一改动的仪器文件）、
+>   `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（**与 round 15/16/17 逐字节相同**：
+>   313 行 + 末尾换行，最后一次变异还原之后重测）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件
+>   `Tests 2 failed | 317 passed (319)`，两条红**按名字引、不按计数**（`a4p7-merge-gate.test.ts:1137` 与 `:1694`，见 F-I1a3-2）。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（1416 → 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；改动只有 `tests/kits/**` 一个仪器文件、
+>   `dev/**` 证据与脚手架、本 memo 与本日志）。
+
+> **Dated banner（2026-10-31，round-17 修复轮）——处理评审 round 2 的 1 条 MINOR（F-I1a2-1）与 4 条廉价 INFO（F-I1a2-2/4/5/6）；不改动上一轮 banner 的历史叙述，但点名更正其中一句（见第一条末）与证据 README 的一句。**
+> - **F-I1a2-1（红转写不能自证其变异；README 的 mut-seq 句与自家转写矛盾）**：本轮做三件事。
+>   1. **让仪器打印它到底评了什么**：`check()` 增加第四参数（该腿评过的 CONJUNCT 列表）。FAIL 时逐条打印
+>      哪一侧算的（`[probe]`/`[driver]`）、评分依据的 `file:line`、两侧各自算出的值，以及**运行时从磁盘读回的该行源码字节**。
+>      reopen-identity 腿 9 条、rows 腿 2 条、continue-chain 腿 2 条；其余腿仍是三参数调用，故腿数不动（27），三条腿的
+>      PASS 文本与 round-16 除 pid/marker/nonce 外逐字节相同。`file:line` 不靠抄：`locate()` 在评分时刻在 kit 字节里
+>      定位该 arm，要求**恰好一处**命中；0 处或多处就打印 `<anchor matched N lines, not 1 — this quote is NOT the graded arm>`，
+>      绝不引「看着像」的邻居。「FAIL 会打印它评了什么」这条断言本身也被测：`--self-test`（30 条，
+>      `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=30 problems=0`，转写 `a6pri1a-selftest-round17/`；不开世界、
+>      不占端口、不是第 28 条腿）——写它的时候抓出两个 anchor bug。
+>   2. **把变异 hunk 与转写一起提交**，四个红腿重跑：`18-39-14Z`=mut-pid（`pri1a-probe-row.mjs:260`，probe 侧谓词
+>      `previousBootPid !== process.pid`→`process.pid !== process.pid`）、`18-39-38Z`=mut-driver-pid
+>      （`pr-i1a-real-host.mjs:663`，驱动侧 `p2?.pid === host2.spawnPid`→`host1.spawnPid`）、`18-40-00Z`=mut-payload
+>      （`pri1a-probe-row.mjs:299` boot 2 handoff 行塞入 `assignmentEpoch: 99`）、`18-40-22Z`=mut-seq
+>      （`pri1a-probe-row.mjs:290`，step **谓词** `previousMax + 1`→`+ 2`）。每个红目录里现在并置
+>      `MUTATION.diff`（`diff -u`，工作区相对标签）+ `MUTATION-METHOD-LAW.txt`（FROM 唯一性与行号、分隔符/引号/标记/行/字节
+>      计数与「只按被替换文本的 delta 变化」的期望、`node --check`、kit verdict、还原 sha256 与 `cmp`）。
+>   3. **删掉不能复现的说法而不是留着**：round-16 把 mut-seq 写成「探针 expected 值被改」，但它的转写里 measured JSON
+>      仍写 `"expected":4`——被改的从来不是 expected 值，是**同一条 step 的谓词**（`:290`，与被打印的 `expected:` 相隔两行）。
+>      旧话作废，本轮以「`pri1a-probe-row.mjs:290`，谓词侧」重跑并提交 hunk。同理，**本 memo 下一段（round-16 banner）
+>      里「四个红 run 目录连同字节级 diff 与还原 sha256 记录在 … README.md」这句不成立**：那些 `diff -u` 只打印在修复会话里、
+>      从未进入仓库，只拿本轮 commit 的 reviewer 无法复现任何一个 round-16 红。四个 round-16 红目录为 append-only 日志的
+>      引用而保留，但状态改为 **undemonstrated**（不可复现，亦未被证伪），本 PR 的可失败性现在由 round-17 四个目录承担。
+> - **F-I1a2-2**：rows 腿 FAIL 保留每侧 400 字符截断，但先打印定位器——行号 + 字段路径
+>   （`FIELD PATH rows[0].payload.assignmentEpoch: boot 1 1 vs boot 2 99`）、行数不等、字段只在一侧存在、以及本腿
+>   确实按 `JSON.stringify` 评分因而会咬的 **键顺序**；什么都不差就说「什么都不差 = 仪器自己的故障」，不编差异。
+> - **F-I1a2-4**：证据 README 的「What it does NOT claim」新增一句：`boot-1-lock-was-serialised` 评的是**探针对自己注入的
+>   per-root lock 的自报计数**（`acquires=4`、峰值深度 1），boot 2 的计数根本没被评；探针之外没有任何来源观测那把锁，
+>   本轮明确它**不是**对锁行为的佐证（跨进程锁语义仍是 PR-I1b 的决定）。
+> - **F-I1a2-5**：本轮实测 `npx eslint tests/kits/pr-i1a-real-host/*.mjs` 对两个文件各打印
+>   `0:0 warning File ignored because of a matching ignore pattern` 且 rc=0 ——**kit 两个文件都命中 eslint ignore 模式，lint 从未读过仪器**；
+>   本轮任何位置都不宣称 lint 覆盖了仪器（覆盖它的是 `node --check`（仅语法）、`--self-test` 与上述运行）。
+> - **F-I1a2-6**：docs-sync 引它自己那行原文（不转写成散文数字）；并记录 `Tests 2 failed | 317 passed (319)` **不是**
+>   那两条已披露红腿的指纹：本轮实测把 gitignored 的 `packages/client/dist`（`.gitignore:34 dist/`，404 文件，测完按
+>   文件清单指纹原样还原、`git status --porcelain` 对 `packages/` 空）挪开，同样两个文件仍是 2 failed，但红的**换了一条腿**
+>   （`is green, asserted by arm name and by absence of a skip — never by the exit code` 顶替了 closure 那条）——
+>   全新 clone 天然落在后者。所以**承重的是两条腿的名字，不是计数**。
+> - 新测值（全部在 round-17 字节上）：绿 run `a6pri1a-2026-10-31T18-32-44Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（ports 3182/3183、boot pid 37→49、world 删除、
+>   宿主 porcelain 前/后 0）；kit sha256 `pr-i1a-real-host.mjs` `5376fd21dde5b8ae0b3d8f85a10604cd879cbb67eea28b92a7095d1b9ee380b4`
+>   （本轮唯一改动的仪器文件）、`pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`
+>   （**与 round 15/16 逐字节相同**，pin 一并发布以证明这点）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；
+>   九文件套件 `Tests 2 failed | 317 passed (319)`（两条红就是证据 README 点名的那两条）。
+> - **方法学事故，主动披露**：本轮变异脚手架的第一版算错「期望字节增量」，触发自家断言后**带着已被变异的探针文件退出**，
+>   紧接的两次运行继承了它（一次报了 3 条红腿）；这两个 run 目录 `18-34-06Z`/`18-34-30Z` 不可引用、未提交，
+>   **已在本 commit 之前删除**，README/memo/日志都不引用它们。脚手架已改成：sha256 不等于 pin 就拒绝动手，
+>   任何退出路径（含断言失败）都还原并验证；上面四个 hunk 全部出自新版，且每个都在下一个变异开始前验证了自己的还原。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（total 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；仅 `tests/kits/**` 一个文件、
+>   `dev/**` 证据、本 memo）。
+
+> **Dated banner（2026-10-31，round-16 修复轮）——处理评审 round 1 的 3 条 MINOR 与 4 条廉价 INFO（评审对象 `9dd6ff48c`），不改动上一轮 round-15 banner 的任何历史陈述。**
+> - **F-I1a1-1（`step(id, true, …)` 假谓词）**：reopen 腿现在是真测量——探针在两份报告里都记录自身内核身份
+>   （`process.pid` / `process.argv0` / 每 boot 一个 UUID nonce），驱动把**自己 spawn** boot 1 时得到的 pid 与
+>   argv0 marker 交给重启探针，探针断言自身身份与之不同，驱动再把两侧自报身份与自己的 spawn 记录交叉评分；
+>   三个原本常量的步骤（`real-seam-built`、`domain-created-real-medium`、`domain-closed`）改为观测谓词并各得一条
+>   驱动腿（legs 24→27）。可失败性四次被证明：mut-pid（探针里把 pid 与自身比较）、mut-driver-pid（驱动交叉腿
+>   `host2`→`host1` 单字节，探针腿自己仍 PASS 也被驱动腿单独拉红）、mut-payload、mut-seq——四个红 run 目录连同
+>   字节级 diff 与还原 sha256 记录在 `dev/agent-workflow/evidence/alpha6-pri1a-real-host/README.md`。
+> - **F-I1a1-2（端口只挡 3080/3180）**：默认候选、显式 `--port`、推导的 restart 端口，全部在任何 world 存在之前
+>   按 `tests/paths.mjs` 的 `TEST_PORT_RANGES`（3180-3199 / 3491-3500 / 13000-13099）校验，`bootWorld` 在每次 spawn
+>   前再断言一次；带外值以 `verdict=port-refused`（exit 2）拒绝并点名波段，六个带外值（45678/3080/3180/abc/3179/13200）
+>   全部拒绝且 `tests/homes/` 保持空（转写 `a6pri1a-port-band-refusals/port-refusals.txt`）。
+> - **F-I1a1-3（"byte-identical" 只覆盖六字段投影）**：跨 boot 比较改为 `ledger.list()` 交回的**整行**（含 `payload`
+>   的全部字段），PASS 措辞同步改写，并引 `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`
+>   （`packages/runtime/review-assignment/writer.ts` 折叠拒绝）为 payload 一致性的传递保证；mut-payload 证明该腿真的咬 payload。
+> - **INFO**：磁盘腿在 verdict 输出与 `capture.json` 里点名扫描到的文件（本轮扫 4 个：`.anonymous-user-id`、
+>   `.credentials.yaml`、`storages/team_domain.json`、`storages/workspace.json`，命中仅 `storages/team_domain.json`）；
+>   continue 腿从 `> previousMax` 收紧为精确 `previousMax + 1`（探针断言 + 驱动从 boot 1 的行独立重推）；
+>   凡宣称 319 之处发布九文件构成（本 memo、证据 README、spec 头注与 router log 同表）。
+> - 新测值（九文件套件在新 commit 复测，token 见 router log）：kit `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`
+>   （ports 3182/3183、boot pid 36→48、world 删除、宿主 porcelain 前/后 0）；写者规格 49/49；套件 `Tests 2 failed | 317 passed (319)`、
+>   `Test Files 1 failed | 8 passed (9)`（仍是已披露的两条 a4p7 红）。绿 run 目录 `a6pri1a-2026-10-31T16-51-03Z`，
+>   `capture.json` 的 `laneHead` 仍是 commit 前的 `9dd6ff48c`——单 commit 不含自身 sha，与 round-15 同一披露；
+>   commit 内的 kit 字节与被测字节 sha256 一致（README 记录两个哈希）。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（total 1418）全部未动；本轮生产源码零改动（仅 `tests/kits/**`、`dev/**` 证据、memo、spec 头注）。
+
+> **Dated banner（2026-10-31，round-15 真实宿主复测）——本文件四条 ENV_BLOCK 句里有三条的「环境不给」前提被推翻，全部 forward 更正。**
+> 本轮第一次在**本 worktree** 里物化出可启动的真实宿主（`tests/deepseek-harness-test-use`，pristine，detached
+> @ `639ed015397290b3745d163aafe02ffee4aa3f84`，porcelain 前/后都 = 0），经**公开 profile-patch seam** 挂上本 worktree 的
+> BUILT 产物，跑 `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`（探针行 `pri1a-probe-row.mjs`；CORE PATCH BUDGET = 0，
+> 宿主树零改动）：`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`，测于 head `a2bc18d78`（kit 文件由本轮
+> commit 携带），证据 `dev/agent-workflow/evidence/alpha6-pri1a-real-host/a6pri1a-2026-10-31T15-46-00Z/`。
+> 可失败性同样被证明：把期望字节 `1,2,3` 改成 `1,2,4`（单字节）⇒ `verdict=fail pass=23 fail=1 failed=boot-1-sequence-chain-is-1-2-3`；
+> 改回后与备份 `diff -q` 相同（红的那一次留在 `a6pri1a-2026-10-31T15-46-27Z/`）。
+> 逐条旧话与原话位置：
+> 1. 「**C2（真 Host 世界写读回）仍 ENV_BLOCK，不记 PASS**」（§2a 末）→ 已跑，处置 **RAN**。两进程、同一 world、宿主自己的
+>    `storageDomain` 介质：created/transferred/retired 落在序列 1/2/3、epoch 1/2/3；进程内重放答 `already`；
+>    `team_sessions.generation` 1→4（三次耐久写各推进一次，重放不推进）；宿主进程退出**之后**由驱动进程在盘上读到
+>    `storages/team_domain.json` 中三个 factType 字面量各一次；新进程 reopen 折叠出逐字段相同的三行；
+>    重启后重放仍在**原序列**答 `already` 且零新行；同 root 的新 case 取到序列 4（链继续，不重启）。
+> 2. 「**真实宿主投影的重启呈现仍是 C2/ENV_BLOCK，不记 PASS**」（§3 表行末）→ 半推翻：**耐久半边**（新进程 reopen +
+>    三行相同 + generation 跨重启）已测；**投影呈现**仍未测，但原因不再是「没有宿主」，而是「没有调用者」——
+>    dormancy 法律（`ALLOWED_CONSUMERS=[]`）使生产组合里根本不会长出 assignment 行。呈现归 PR-I1b。
+> 3. 「**未在本 PR 测量（不假装）**：真实宿主世界上的并发对账与重启后的客户端呈现（C2 = ENV_BLOCK）」（§3 表后段）→
+>    其中「重启后的读回」的**耐久**部分已测；**并发对账**仍未测（本 kit 是单写者；跨进程怎么给锁属注入端口，是
+>    PR-I1b 的 adapter 决定——在此测它只能测到我自己的选择，故不假装测了）；**客户端呈现**仍未测（同上）。
+> 4. 「**真实 Host 的并发/重启形态**：需 PR-I1b 接线后单所有者 C2」（§4）→ 拆两半：**重启形态的耐久半边已由本 kit 测掉**；
+>    并发半边仍等 PR-I1b，且等的是**接线**而不是**环境**。
+>
+> 另有两句只出现在 PR 正文里，同一轮被实测改动（此处记录，正文由有写权的一方改）：
+> - §9.6 的「default-off, and non-enabling teams byte-identical」把「开/关」画成宿主可切换的状态。实测：**宿主没有这个开关** ——
+>   对本 worktree 的 BUILT 行直接调 `validateTeamPluginConfig`，它**接受并原样交回** `feature:'on'` 与 `assignmentFeature:'on'`
+>   （既不 honour 也不 refusal），而 `packages/**`（dist 之外）**0 个文件**提到该键；dormancy 扫描再给出零 importer。
+>   故「默认关」不是一种宿主状态，而是「没有调用者」这个组合事实；能保留的说法是「没有 caller 的组合里一行 assignment 都不会出现」，
+>   它可被 dormancy 扫描与本 kit 钉住。
+> - §8 的「`ci-pr-gate --full` … 唯一失败是 census 腿的**环境**拒绝」在本 worktree（runtime 已物化）不再成立：census 腿现在
+>   **参与评分**并红 —— `DSH-CI-VERDICT fail pass=8 fail=1 skip=0 skipped=none legs=9 refused=0 refusedlegs=none`，
+>   红因 `captured 661f/8947l vs baseline-declared 626 / 7936`。**同一 head 跑两次，被点名的新红集合不一样**：
+>   `…T152318Z-4.json` 那次 3 条（`alpha5-search-backend` 的 Spill-class 腿 + `a4p7-merge-gate` 两条），
+>   `…T155846Z-65.json` 那次 4 条（`a5g6-install-face-render` 的 GLUE-6 LEG B、`a5p4-lane-hygiene` 的 self-typecheck,
+>   加上**同样的** `a4p7-merge-gate` 两条）；两次的 `files/legs` 计数相同（661/8947）。所以这里点名的是**会轮换的残留**，
+>   稳定出现的只有已披露的那两条 a4p7 腿 —— 与日志里既有的"根套件同 head 两次全量结果不同"一致，不是本 PR 引入。
+>   门禁因此**变强**；而在没有 runtime 的干净检出里该腿仍是 `refused missing-test-use-checkout`，两种世界必须分开陈述
+>   （两次对照 JSON 由门禁写在 `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`，但其内含 `.artifacts` 绝对路径，
+>   按本轮"提交物里不得出现 `.artifacts` 路径"的纪律**不提交**；同目录已提交的历史对照（如
+>   `census-comparison-20261027T125022Z-40.json`）是同一形状，可在那里核对字段）。
+>
+> **本轮没有放松任何封闭集、卫生规则或 pin**：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+> p4t6 booking（`1416 → 1418`，total 1418）全部未动；kit 在 `tests/**`、证据在 `dev/**`，二者都在 dormancy 扫描（`packages/*`）
+> 与 p4t6 扫描（`packages/**`）的宇宙之外——这是披露，不是夹带。
+
+## 0. 一句话
+
+PR2′ 交付了"归属事实"的**词汇、编码、折叠与 CAS 前置**，但没有写入者——`types.ts` A-8 明写"Durable writes go
+through a port that PR-I1 wires (`allocateSequence()` + `put`, precedent `ArtifactLedgerPort.appendGranted`);
+no writer exists in this PR"。PR-I1a 就是那个写入者：它把 PR2′ 的四条纯函数接到**既有 TeamDomain ledger 的唯一
+耐久写入序列**上，不新建第二套账本，不进入受保护中心，不接 `allow`，默认无任何生产调用者。
+
+## 1. 复用哪条写入路径（逐条引用，普查已 verified）
+
+```
+command → withTeamLock(root)                        // 与 control 同一把锁族：action-router/effects.ts:316
+        → port.list() → foldReviewAssignmentRows    // 锁内新折叠，等价 loadControlState（control/service.ts:1766）
+        → checkAssignmentMutation(state, ...)       // PR2′ 已有：epoch CAS 前置（facts.ts:574）
+        → encodeAssignmentFact(kind, a, prev)       // PR2′ 已有：封闭载荷 + 授权字段拒绝（facts.ts:134）
+        → port.allocateSequence()                   // storage/repositories/ledger.ts:89（宿主单链原子自增）
+        → port.put(row)                             // ledger.ts:139 → putEntry :167（RECORD_DUPLICATE/no-op）
+        → 读回比对                                   // 先例 control/service.ts:4628-4641 writeLegRowLocked
+        → release lock
+```
+
+不新建：domain/table（`team_domain` sidecar，`schema/stores.ts:98/141` + `root-binding/harness/seam.mjs:31`）、
+序列计数器（`ledger.ts:89-124` 的 `__ledger_sequence_counter`）、generation 戳（`ledger.ts:204-206` 写后同链
++1）、factType→category 图（host `projection-source.ts:300-318/363-367` 与 client `ledger-adapter.ts:97-106`
+**三个 factType 双侧均已入账**，本 PR 无需改这两张图，只需新增一条腿把这条共提交法律钉住）。
+
+## 2. 十条设计决定（reviewer 按此核对）
+
+**D-1 唯一写入者法律（本 PR 的核心承诺）。** 本 lane 之外不得存在 `review-assignment-*` 的第二个写入者。
+本 PR 用一条 hygiene 腿扫全树：除本模块外，任何生产文件出现这三个 factType 的写入即失败。
+
+**D-2 与 ControlService 的锁不是同一把 map，为什么仍然 sound。** control 的 `teamLocks` 是服务私有闭包
+（`control/service.ts:1656`），外部拿不到；进入 `control/**` 是受保护中心改动 ⇒ 属 PR-I1b 的具名接口 PR，裁决
+明令不得混入 I1a。因此本 Writer 自带一把 per-root 锁。**soundness 论证（不是"应该没问题"）**：CAS 的域是本
+family 的 `assignmentEpoch`，而按 D-1 只有本 Writer 会追加这三个 factType；ControlService 并发追加的是别的
+family 的行，它会改变 `sequence`（单调，宿主单链原子分配，永不撕裂、永不重号）但不会改变 `assignmentEpoch`，
+也不会改变本 family 折叠出的 `epochApplied`。⇒ 两把锁保护的是**不相交的可变状态**。
+**该论证给 PR-I1b 留下一个硬前置条件**（写进本文件与代码 doc）：将来若把 assignment 写入接进 control 路径，
+必须**路由到本 Writer**，不得在中心内重写一遍；否则两条锁保护同一状态 = CAS 失效。
+
+**D-3 CAS 两层。** 载荷里携带 `expectedPreviousEpoch`（A-2），写前由 `checkAssignmentMutation` 判，写后由
+`foldReviewAssignmentRows` 复核（不匹配 ⇒ diagnostic + `unreconciled`）；两者之间是同一把锁内的一次读写。
+
+**D-4 幂等 = 锁内 epoch 短路，不是靠字节相同。** `createdAt` 由调用方提供（见 D-6），因此同一条命令的两次重放
+不会字节相同，宿主的 byte-identical no-op 规则（`ledger.ts:162-208`）只是兜底。真正的幂等是：折叠后若该 case
+已处于目标 epoch 且载荷与本次将要写入的**逐字段相等**，返回 `applied: 'already'` + 既有行，不再分配序列。
+（先例：`requestControl` 的 deterministic requestId + 既有行短路 `control/service.ts:2403-2430`。）
+**实现期补一句被测量改写的措辞（见 §2b R-8）**：幂等的身份就是**载荷本身**（epoch 作用域下逐字段相等）。
+因此「把当前已经是目标的那个 target 再指派一次」会得到 `applied:'already'` + 原行序列号，而**不是**
+`TARGET_UNCHANGED` —— 因为除 reason 外没有任何事实能区分两者；把 reason 换掉，它立刻变成一条新决定，
+被 kernel 拒为 `TARGET_UNCHANGED`。两条腿分别钉住这两种诚实答案。
+
+**D-5 无回滚，只有 roll-forward。** 全仓没有 rollback 原语（普查 §1）；失败一律 typed refusal，写失败 ⇒
+`REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED` 且未追加任何行；读回与提交不一致 ⇒ `REVIEW_ASSIGNMENT_READBACK_MISMATCH`
+（行仍在账本里——诚实报告，不假装撤回）。重试补全半成品是既有模型（`closeZeroReviewCaseTransactionally`
+`service.ts:5288-5390`），本 Writer 的每个命令都可安全重试（D-4）。
+
+**D-6 Writer 不读时钟、不做 I/O（A-8 延伸）；时钟是注入端口。** 时间戳、序列号、行写入全部经端口：
+`ReviewAssignmentStoreDeps.now(): string`（先例 = `governance/proposal-store.ts` 的 `GovernanceProposalStoreDeps`，
+本仓已有的「耐久 store 由调用方给时间」形状）。因此 Writer 的测试是确定性的，重启测试靠 close+re-open 而不是靠等时间。
+**本节原稿写的校验方式已被本 PR 自己的 hygiene 腿推翻并替换**（见 §2b R-2）：原稿要求
+`!Number.isFinite(Date.parse(createdAt))`，而 `Date.parse` 正是 `a6-pr2-lane-hygiene` 的 clock needle 之一 ——
+即「用被禁的时钟去校验别人的时钟」。现改为两层纯字符串/算术判断：形状 = 抄自 contracts 的
+`ISO_8601_TIMESTAMP_PATTERN`（`contracts/src/dto/common.ts:25`；该 barrel **不** re-export 它，且本 lane 的 import
+allow-list 不含 deep path，故采取「复制 + 一条腿读回 contracts 源码要求两者字面相同」，而不是拓宽 allow-list 或改冻结 barrel），
+外加一层日历范围（月 1..12、按月的日上限、闰年规则、时分秒上限）。范围层的理由是被测出来的：结构模式接受
+`2026-13-45T99:99:99Z`，而真实账本会拒收它 —— 于是坏时钟的表现变成「序列号已花掉、行写失败」，
+而诚实的答案是「你的时钟读不懂，且我什么都没分配」。
+
+**D-7 所有权与隔离用既有权威，不自造。** `rootSessionId` 是 Team key；写入前校验：命令的 root、账本行的
+root、以及既有 assignment 行载荷里的 root（**round-1 更正措辞**：命令 root 对行 root 是**过滤**——别队的行被排除出
+本次折叠，这正是隔离机制本身；真正**拒绝**写入的是载荷 root 与所在行 root 不一致，即一条挂错队伍的行。代码注释
+写对了，是这句话此前把它压缩成了「三者一致」：不一致 ⇒ `REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW`，
+并在 detail 里点名那条 `factType@sequence`；**原稿这里写的是一个不存在的代码名 `REVIEW_ASSIGNMENT_TEAM_MISMATCH`，
+已按实现更正**）；跨 Case 写入 ⇒（同一队两 case 的隔离由 kernel 三态负责，见下）
+`checkAssignmentMutation` 的 `LEG_MISMATCH` / `ALREADY_ACTIVE` / `NO_ACTIVE_ASSIGNMENT` 三态拒绝；corrupt 行 ⇒
+折叠 diagnostics + `ROW_UNPARSEABLE` **拒绝写入**，绝不"当没有这行"继续。
+**明确拒绝复制的既有缺陷**：control 折叠对已知类型的 decision/abandon/escalation 载荷损坏是**静默丢弃**
+（`service.ts:1801-1812`，普查标为不对称），本 lane 采 A-7"读不懂的行是诊断，不是干净白板"。
+
+**D-8 不加第四种 factType。** PR2′ 的 `REVIEW_ROUTER_REASON_CODES` 里有 `LEADER_LEG_MOVED` /
+`LEADER_ASSIGNMENT_RETIRED`，因为没有任何一种行可以指派"新 leg"（`facts.ts` 附近注释明写：若 PR-I1 需要跨 leg
+指派，必须**公开新增行种类**）。本 PR 选择**不新增**：跨 leg 场景照旧由 Leader 承接（= Alpha.6 之前的行为），
+限制显式写在代码 doc 与本文件；将来若要，动作是"同时改 host+client 两张 category 图 + 增 factType + 增折叠分支"
+的公开变更，不是偷偷多写一个字段。
+
+**D-9 授权字段防线在编码处，Writer 不放宽。** `facts.ts` 的 denylist（授权键出现 ⇒
+`REVIEW_ASSIGNMENT_AUTHORITY_FIELD_PRESENT`，`facts.ts:66-89/216-240`）保持不变；Writer 在写回后解码自己写入的
+行（`decodeAssignmentPayload`）再比对，等于把"我写的确实是封闭载荷"再证一次。A-1 的机器形态由此覆盖到耐久面：
+账本里的 assignment 行**结构上不可能**携带授权语义。
+
+**D-10 本轮 dormancy 与证据边界（不许夸大）。** 本 PR 交付 Writer + 端口 + 测试；**零生产调用者**（PR2′ 的
+dormancy 扫描继续成立，`ALLOWED_CONSUMERS=[]` 不变；lane 模块集合按规范新增一项 `writer.ts` 到
+`EXTRA_MODULES_ALLOWED` 并写明理由——该常数是设计好的修订点，spec 自己提到"a 6th lane module"）。
+证据等级：C1 = 用 `packages/storage/test/p4-helpers.ts` 里**与公开 StorageDomain 合同逐条同形**的 seam fake
+（含 per-domain 写链、`setCrashAfterWrites` 崩溃模拟、close+re-open 持久态）驱动**真实的
+`LedgerRepository`**；不是手写假对象。C2（真 Host 世界写读回）在 `256410456` 及其前的一切 head 上确为 ENV_BLOCK（当时本 worktree 没有可启动的宿主，记为拒绝而非绿）；**2026-10-31 round-15 已把它跑掉**：真实宿主 `0.2.0-rc.2 @ 639ed01539…`，两个进程、同一 world，写→读回→盘上字节→重启→折叠→重放全绿（`verdict=pass pass=24 fail=0 refused=0 legs=24`，见顶部 banner 与 §2b R-28）。
+**本 PR 不声称**（2026-10-31 round-15 收窄一次：原因从「环境不给」改成「没有调用者」）：真实 Host 上的**并发对账**（本 kit 单写者；跨进程怎么给锁是注入端口的事实，归 PR-I1b 的 adapter）、**跨代重启后的客户端投影呈现**、以及与 control 路径在同一把锁下的 interleaving——这三样需要 PR-I1b 的**接线**，不再需要环境。耐久半边的真实宿主重启已在 PR-I1a 内测掉。
+
+## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-14 round-1 独立复核后，R-15..R-21 round-2 独立复核后，R-22..R-27 round-3 独立复核后：每条给证据）
+
+裁决要求「不允许静默重定义」，因此每条都写明：原状态、被什么推翻、现在的法律、钉住它的腿。
+
+**R-1 `kind` 是 factType 表的**键**，不是它的**值**。** 第一版 Writer 的门禁写成
+`Object.values(REVIEW_ASSIGNMENT_FACT_TYPES).includes(command.kind)`，于是**每一条合法命令都被拒为 malformed**
+（`created` 是键，`review-assignment-created` 是值）。失败的**方向**是安全的（写不出来的写入者比写错的好），
+但这正是调用方会犯的混淆，所以 `a6-pri1a-writer.test.ts` 增加一条腿：把**值**当 `kind` 传进来，必须被拒，
+且 detail 说明要的是三个键。测试第一次跑红的原因就是这条，写在 `writer.ts` 的注释里而不是藏起来。
+
+**R-2 时钟校验换成「形状 + 日历范围」两层**：见 D-6。钉住它的腿喂 8 种坏形状（含月 13、45 日、2026-02-30、
+second=60），并要求 `writeCount` 纹丝不动 —— 即「分配之前就把坏时钟挡掉」是可测的，不是承诺。
+
+**R-3 折叠不可调和的 refusal detail 必须点名行。** 原稿只列诊断**代码**；是一条关于锁的腿（R-6）在断言
+「detail 里要有 sequence」时把它抓出来的。现在 detail 里带前 8 个 `factType@sequence` 句柄，其余以 `+N more` 计数，
+并有一条腿用 10 条坏行钉住「列 8 条 + 计 2 条 + 整串 < 1200 字符」：refusal 不是日志倾倒。
+
+**R-4 退休在当前行词汇里是该 Case 的**终点**。** 本意写「退休后再写一条 created」，Writer 拒了，于是去读 kernel
+而不是改代码：`checkAssignmentMutation` 只在**从未产生过 assignment** 时接受 `created`，只在 assignment **live** 时
+接受 `transferred`/`retired`。⇒ 同一 case 退休后三种行**都**写不进去（`ALREADY_ACTIVE` / `NO_ACTIVE_ASSIGNMENT`），
+这是 PR2′ kernel 的可见限制，不是本 Writer 的缺陷，也**不在本 PR 里靠加第四种行种类糊过去**（那要走 D-8 的公开变更）。
+腿同时钉住「终点性是按 case、不是按 team」：同队另一个 case 完全不受影响。
+**后果写清楚，别让 reviewer 猜**：跨 leg / 退休之后的案子照 D-8 由 Leader 承接，行为与 Alpha.6 之前一致；
+本 Writer 不新增能力，只是**不假装**它有这个能力。
+
+**R-5 Writer 证明的是「这串 id 是个 id」，永远不是「这支队伍存在」。** `session/../../etc` 能通过契约的 root 解析
+（`assertSessionIdValue` 只查：是字符串、无空白/控制字符、有长度上限），但被本 lane 自己的 id 语法
+（`facts.ts:41`，不含 `/`）拒为 `INPUT_MALFORMED`。三层屏幕（契约解析 → lane 载荷语法 → 耐久层）各自点名自己那层，
+不合并成一个代码。**由此给 PR-I1b 留一条硬前置**：确认 root 是「宿主真的开过的那支 Team」只能在 admission 层做
+（只有它见过 TeamSession）；写入者若自造这项检查，就是在发明事实。
+
+**R-6 注入锁是承重的，本 PR 用一条腿把不承重的后果写进耐久字节。** 该腿交一个只记录调用、不串行的 `withLock`，
+两条并发 transfer 于是都写下 `assignmentEpoch: 2, previousEpoch: 1`（两行同 epoch），下一次折叠以
+`REVIEW_ASSIGNMENT_EPOCH_CONFLICT` 拒绝成状态。这不是 Writer 的 bug —— 插件层无法把 append-only 账本变原子 ——
+而是 D-2 的**证据**，也是「PR-I1b 必须路由到本 Writer、不得在中心里重写序列号」的实证理由。
+
+**R-7 epoch 唯一性依赖调用方的锁，而不依赖 Writer 的读后写。** 同一把 per-root FIFO 锁下，两条并发 mutation 得到
+epoch 2 与 3（腿钉住 `[2,3]` 与 sequence 互不相同）；换掉锁就退化成 R-6。因此 `ReviewAssignmentLockPort` 是合同的一部分，
+不是可选优化；注入点必须在与 control 相同的那支 Team 的锁上（D-2 不相交状态论证的前提）。
+
+**R-8 幂等身份 = 载荷**：见 D-4 的补充。两条腿分别钉 `already`（同决定重发）与 `TARGET_UNCHANGED`（换 reason）。
+
+### round-1 独立复核（#517，head `1a60b9e26`）之后的修订
+
+**R-9 三种答案的第三种必须有生产者。** 模块顶上的法律写着每条失败路径都要说清三件事之一：什么都没分配 /
+分配了但没写进去 / **有一行是耐久的，它的 sequence 在此**。round-1 用一个「合法 root 但不存在 TeamSession 行」
+的世界把它打通：`LedgerRepository.putEntry` 先落账本行、**再**推进 session generation
+（`storage/repositories/ledger.ts:201`/`:214`，缺行时 `team-sessions.ts:119` 抛 `missing-key`），
+于是 put 抛出**之后**行已经耐久，而 catch 无条件说「该 sequence 上不存在 assignment 行」，重试又回答 `already`
+—— 同一条命令给出两个互斥断言。修法不是改措辞而是**先看再说**：catch 里重读 ledger，命中 ⇒ 新代码
+`REVIEW_ASSIGNMENT_ROW_DURABLE` + detail 点名 `factType@sequence`；未命中 ⇒ 保留原句子，但加上「已重读」。
+钉住它的腿是 `says the truth about what is durable when the append lands and the stamp fails`，它同时断言旧句子
+**不出现**、耐久行集合 == [1]、重试 `already` 且 sequence 1；harness 新增 `seedSession:false` 才第一次能表达这个
+状态（此前唯一的无队伍腿用 `session/../../etc`，在本 lane 的 id 语法上就死了，永远到不了 put）。
+复核者的 A3-LIE / A3b 两条攻击在本头现在**失败**（断言旧谎言），这是修复生效的可复现证据。
+
+**R-10 「扫描全仓库找任何写入者」在动词表上漏掉了本仓库自己的漏斗。** 探测器的动词集合原本只有
+`.put(` / `.putEntry(` / `allocateSequence(`，而 `action-router/effects.ts:1306` 的
+`commitDurableFact(repositories, root, now, factType, payload)` **内部**就会分配 sequence 并 put：一个用位置参数
+传族名、自己不写 `.put(` 的模块能造出本族的耐久行而 28 条 hygiene 腿全绿。现在 `commitDurableFact\s*\(` 是第四个
+动词，且探测器重写成纯函数 `convicts(path, text, inLane)`，仓库扫描与 plant 走**同一段代码**；每个 alternative
+一个 plant，plant 的键集合用 `toEqual` 钉在 alternative 表上（少一个 alternative 或多一个 plant 都红），另有两条
+负控制（合法读取者、以及在注释里**提到**被禁调用的法律文字）。披露残余：这是文本扫描，跨多跳别名的族名、以及它
+不读的文件（测试源、未跟踪文件）在它视野之外 —— 所以这条腿真正支持的说法是「除 Writer 外没有任何被跟踪的生产源
+同时含有族名与通往账本的路径」，PR 正文按这句话写。
+
+**R-11 closed-set 的「封闭」曾经只封闭一种拼写。** 派生只认 `factType: '<字面量>'`（单引号），既不认双引号也不认
+`'a' + 'b'`；后者是编译期完全确定的值，却被丢进 unresolved 名单里无人阅读 —— 于是未注册的拼法可以一路绿过去。
+现在两种拼法都解析（`stringLiteralText` / `resolvedLiteralText`），拼出来的值直接进入 closed-set 判定（C2 会要求它
+有 host category）；真正静态不可解的（例如两个常量相加）仍然**点名**进 unresolved，由 C5 钉住。分类集合也加宽到
+任何引号与计算式标签 —— 在本树实测**不新增任何文件**，即加宽不带来新的噪声。新增 `C1d` 腿把五种 plant 直接喂给
+上述真函数：四种写入形状都被分类、族名都能被派生、`sneaky-fact-x` 成为**值**且 `HOST.has(...)` 为假（即 C2 会在
+真实树上判它红），只有常量拼接留在 unresolved。为什么在这里跑 plant 而不是往复制树里丢文件：本 guard 读
+`git ls-files`， planted 文件可不可见是 checkout 的性质，不是探测器的性质。
+
+**R-12 折叠诚实的前提是 reader 诚实，这一点现在是合同文字并被测量。** 文档写「折叠取自账本」，但端口是注入的：
+round-1 用一层过滤 wrapper 藏掉 sequence 1 的那一行，第二次 `created` 被接受，家族最终有**两条活行同处 epoch 1**
+（CAS 并非失败，而是无可冲突）。Writer 在自己的座位上无法检测「看不见的那一行」，所以这条不是可关闭的缺陷而是
+适配器的义务：`ReviewAssignmentLedgerReaderPort` 的文档明确「未过滤、不截断、不陈旧的读属于端口合同，本模块无法
+检测遗漏」，并由 `cannot see a reader that hides a row...` 一条腿测量后果（两行、epoch 集合 [1]、同命令在诚实读下
+被拒），同时用 readFileSync 钉住那句文档**存在** —— 没人跑的文档句就是没人负责的文档句。
+
+**R-13 一条静态恒真的断言被换成手写名单。** census 腿里原本写着 `expect([...SET].sort()).toEqual([...SET].sort())`：
+自我比较，任何取值都为真，是当时那 38 条里唯一装饰性的一条（同一腿的其余断言在 M2/M3/M6/M7 变异下会红）。现在改为
+手写八个代码的期望列表 + 唯一性 + 前缀约定；也正因为它，本 PR 的自有代码从 7 个变成 8 个（R-9 的新代码），census
+依然要求「声明的都被产生过」。
+
+**R-14 R-9 的修复自己引入了一个新的异常出口，是本人在写结案说明时自己发现并先写腿再修的。** R-9 让 catch
+去重读账本，但 `deps.ledger.list()` 同样是注入端口：一个第二次读就抛的 reader 会让「我这行落了吗」这个问题
+以异常形式逃出模块 —— 恰是本模块开头唯一那条法律（refusal 是回答，异常不是回答）禁止的事。现在重读被自己的
+try 包住，读不动时给第三种诚实答案：`REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED` + detail 明说**既可能耐久也可能
+不存在**，并说明重发同一命令会如何把问题答出来（在 ⇒ `already`，不在 ⇒ 下一个 sequence 落账）。
+钉住它的腿是 `answers with a refusal rather than an exception when even the re-read fails`（先跑红，确认
+异常确实从 `writer.ts` 的重读处逃出，再加保护）。法律不是"修完就完"：**修完的东西是新的攻击面**，这条就是。
+（round 2 的更正：本条当时给出的第三种诚实答案后来被拆成两个代码 —— 见 R-16；本条的叙述保留原文，因为
+「这一轮当时怎么做到的」也是证据。）
+
+**R-15 `ROW_DURABLE` 说出的是它没有验证的东西：只看 sequence 的"重读"。** R-9 让 catch 去看，但只看了
+`find(row => row.sequence === sequence)` —— 成功路径四十行之下问的是「这是不是我写的那行」（family ∧ root ∧
+payload），失败路径成了本模块唯一一处不问「这是谁的行」就回答耐久性的地方。round 2 用本 lane 自己承认的介质
+（`a6-pri1a-writer.test.ts` 里那条改写载荷的 `put`）配上盖章失败，测出：同一处载荷差异在健康会话上答
+`READBACK_MISMATCH`，加上盖章失败就答 `ROW_DURABLE` 并许诺「重发同一命令必被判为 already」，而重发实际得到
+`ALREADY_ACTIVE`（第三种状态：一个诚实的 reader 返回整个账本，那一行是别队的 `control-leg-decided`，于是本模块
+把别人的行说成这条命令的耐久行，且永远重复同一 refusal）。修法是复用成功路径那同一把尺，并把「重发会怎样」的
+许诺删掉 —— **只有折叠知道那个答案**（R-16）。钉住它的腿：`will not certify a row it did not write…` 与
+`will not name a row of another family on another root as this durable row`；变异 M-I（把尺退回 sequence 单键）
+使这三条腿点名变红。
+
+**R-16 头部的「三个答案」法律被 R-9 的修法变成假话，而且没人跑它。** round 1 之后多出来的那条分支既不属于
+「什么都没分配」也不属于「什么都没写」更不属于「有一行耐久」，可头部仍写着三件事，`grep` 只有头部与一条注释，
+没有任何腿 —— 一条没人跑的文档句就是把法律放在没人守的地方。现在改成**四个耐久声明、一码一义**：
+`DURABLE_WRITE_FAILED`＝本命令什么都没留下；`ROW_DURABLE`＝本命令写的那一行确实落在那個 sequence（两条产生分支
+都说同一件事：追加后失败，或写成功但末尾那次状态读失败 —— 后者不报 `written`，因为「已应用」的答案要带状态，
+而模块不肯交出没读过的状态）；`READBACK_MISMATCH`＝那个 sequence 上的不是本命令写的行；新增的
+`REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`＝读不动，说不了（自有代码 8 → 9 个，census 腿跟着改）。钉住它的腿
+`produces four different durability claims from four different codes…`：驱动四态、断言四码互不相同，再用
+readFileSync 要求头部同时说到这四句、且不再出现 "which of three things happened"。
+
+**R-17 R-14 的"不逃逸"规则只作用在四次读取里的一次。** 规则说「问『我这行落了吗』的那次调用不得以异常逃出」，
+但 `deps.ledger.list()` 在本模块被调用四次：分配前的折叠读、catch 里的重读、写成功后的 read-back、以及末尾算
+状态那次。round 2 用一字节损坏的行测出 ①与③ 直接把异常抛给调用方 —— ③ 正是被保护的那个问题在隔壁站点没有
+任何分支。四处现在各有分支，且都由一条腿逐个点名驱动（`answers with a refusal instead of an exception at
+EVERY read of the injected ledger`，四种 fail-at 组合，断言"没有任何东西抛到调用方"而不是"某处不抛"）。 端口的 TYPE 对 `list()` 能否抛只字未提 —— 复核者「本树不可决定」第一条正是这一点；现在这句话写在端口文档上，并由那条腿用 readFileSync 钉住：**适配器可以递来一个会失败的账本，合同照样给出回答**，不许的是递来一个靠隐瞒说谎的账本。
+
+**R-18 「只有 writer.ts 能追加这一族」的扫描，被三行代码绕开过。** `const append = ledger.put.bind(ledger)`
+＋ `ledger['put'](row)` 都不写 `.put(`；`SOURCE_EXTENSIONS` 里缺 `.mts`/`.cts`（本树 30 个受跟踪文件带这两个
+后缀），而 `.d.mts` 会被当生产文件读（原本只跳 `.d.ts`）。round 2 还证明「植物与备择一一对应」的绑法看不见
+**成对删除**：删掉一个动词连同它的植物，两套 key 仍然相等（M-F 变异四行删除即可重开 round 1 的漏斗洞）。修法：
+动词形状补 `.bind`/计算成员，扩展表补 `.mts`/`.cts` 并把 `.d.{ts,mts,cts}` 一起跳；植物改为**按植物命名、各自
+声明驱动哪条备择**（一条备择可被驱动两次），动词表的 key 名单照 refusal census 的写法手写。合成树上五个额外
+追加者仍在的场景，改前该腿 PASS，改后 M-E/M-F 点名变红。
+
+**R-19 closed-set 还能写下它从不判断的事实类型：三处形状。** ①简写标签 `put({ factType, payload })`——文件被
+判为 writer（`.put(` 命中），却不判断任何东西，也不被强制命名任何东西（这是最坏组合：清点报告"干净"）；
+②`commitDurableFact (…)`（一个空格）——分类器认 `\s*(`，漏斗采集的 needle 是字面量 `commitDurableFact(`，
+两处对「什么算一次调用」看法不一致，于是漏的那一半把自己的洞报成干净；③`import { commitDurableFact as commit }`
+——连分类都进不去。修法：简写标签强制进入 unresolved；needle 改正则 `\bFUN\s*\(`；导入漏斗的文件被分类，
+且「导入了漏斗却没有可辨认调用点」被强制命名（别名跟不下去，就不假装推导出）。真实树因此多出三条 unresolved
+站点（`action-router/effects.ts`、`requirements/facts.ts`、本 writer）：**钉文件不钉字节偏移**，因为偏移会随
+无关排版漂移，而"哪个文件藏着简写标签"才是可复核事实。M-G/M-H/M-J 三个变异分别使 C1d/C5 点名变红。
+
+**R-20 我上一轮结案说明里的"读者清单"漏掉了让残留变静默的那个读者。** 上一轮写「没有东西按 generation 读账本，
+所以漏盖章不会少报变化」—— 那句对 delta-read API 成立，对**投影帧**不成立：帧里带 `team_sessions.generation`，
+客户端见相等判 `duplicate` 并丢弃（`pull-v6.ts:147-150` 明说那一格是唯一的刷新触发器）。带着真实
+`team_sessions` 行、用 `setCrashAfterWrites` 精确打断第三次写入（计数→落账→盖章）实测：账本两行、generation
+仍为 2、writer 答 `ROW_DURABLE`，而携带新行的帧被丢弃。方向是**误导（静默少报）不是拒答**。本轮更正记录、把
+writer 里那段注释改成说真话（哪个读者让残留要紧），并把「谁写盖章、何时写」的处置作为 PR-I1b 义务登在 #502；
+本模块行为不改 —— 修法在接线端，不在一个本模块不拥有的读者里。
+
+**R-21 两条 INFO 各改一处文字，也各钉一处。** ①`describe()` 过去把非 `Error` 的抛出渲染成 `typeof`，于是组合
+适配器 reject 一个 `{ code, problem }` 时，运维读到的字符串是 "(object)" —— 恰恰在最需要它的时刻丢掉信息；现在
+带上介质自己的 `code`/`problem`。②端口合同写「writer 看不见任何遗漏」过于普遍：藏中间行会被 epoch CAS 判出
+（`EPOCH_CONFLICT` ⇒ `WRITE_FOLD_UNRECONCILED`，实测），真正看不见的是**后缀**，而它的代价比此前披露的"两条活行
+同 epoch"更重 —— writer 会铸出一个已被占用的 epoch，此后该案**永久不可写**（腿把这条后果也钉住）。
+
+方法条目（进 SESSION_ROUTER_LOG）：**"看了"不等于"看对了地方"** —— R-15 与 R-17 都是 R-9/R-14 的修法本身缺一块
+（一把尺用在一处、一条规则用在一处），而它们看起来像已经修好了；把修好的东西逐句改写成"它在每种状态下会怎么
+回答"，缺口就自己开口说话。
+
+**R-22 round-2 的读保护包住的是"调用"，不是"读"（F-R3-1，MAJOR）。** 第一处读 `list()` 的 try 只到赋值那一行为
+止，随后两处 `filter`（即真正逐行访问元素的代码）在 try 外面；另外三处读把 `find`/`filter` 连同折叠一起包住了。
+后果：一个正常返回、但**返回内容不可遍历**的适配器（数组里有一个 null 行；元素取属性即抛；返回的不是数组而是
+惰性对象）在第一处仍然把异常抛给调用方，而同一个行在第二/三处会被正常判成拒绝 —— 腿当时看不见，因为四条腿全部
+是让 `list()` **调用**抛异常，那恰是第一处唯一处理得好的形状。修法：try 覆盖"读"与其产物（迭代 + 逐行取属性），
+下游不再碰原始返回值；补三条形状腿（null 元素 / getter 抛 / 惰性对象 `filter` 抛）。
+**"保护了调用"不等于"保护了读"** —— 一次读的成本几乎全在消费它的那一刻。
+
+**R-23 一句"两个分支产生它"被实测成三个分支，而第三个分支的断言它自己撑不住（F-R3-2，MAJOR）。**
+`READBACK_MISMATCH` 在 :521/:567/:579 三处产生；:567 的状态是"append 报成功、按 sequence 再读**什么都没有**"，
+而该代码的语义被写成"那个 sequence 上的东西不是本命令写的行"——那里没有"东西"可供比较。更糟的是它是十一处耐久
+回答中**唯一没有腿钉住代码**的一处：把它换成 `DURABLE_WRITE_FAILED` 或 `DURABLE_STATE_UNKNOWN`，73 条腿全绿
+（复核者用 mutate+restore+sha256 实测）。修法：断言改写为三个分支共同成立的那个否定命题（"再读没找到本命令的
+行：要么被别的行占着，要么什么都没有；本模块不声称看见了别人的行"），头注释把三个分支逐个点名，并补一条腿把
+代码**对着三个邻居各否定一次**。方法：**一条声称只有在把它的代码换掉之后才知道有没有腿**。
+
+**R-23b 复核者的一处引用也需要重开。** 它给 F-R3-2 的修法建议是"降级到 claim 1 或 claim 4，或改正分支计数"；
+前两条会把"append 已报成功"这一已知事实说成"什么都没耐久"（claim 1 的反面）或"完全无从判断"（claim 4 忽视了
+确实读到过一次），都会引入新的过度声称。最终取"改正语义 + 钉住"这一支 —— 同一律：**复核者的定位要重开原文再
+接受，不接受其处方前先证明处方不更诚实**。
+
+**R-24 分配失败处的"nothing was written"言过其实（F-R3-3，MINOR）。** `allocateSequence` 可以先推进真实计数器
+再抛，或被拒绝的调用留下一个已消费的序号：下一命令实测落在 `consumed + 1` 之后。披露文字在文件别处（:543-545、
+:296-298），但运维真正读到的那句没有它。修法：两处 detail 都补"该预留已花费、后来的行不得复用、本命令未被
+应用"，并用行为钉住（比较下一行的 sequence 与被消费的 sequence），不是钉字符串。
+
+**R-25 时钟与锁两个端口不在任何"不抛异常"承诺之下（F-R3-6，MINOR）。** 抛出的 `now()` 与拒绝获取的 `withLock`
+都作为裸异常逃出，而词表里本来就有时钟代码。修法：时钟 try 与既有"值不可读"分支同码；锁的**获取**失败答第一条
+耐久claim（获取发生在任何分配之前，故此claim 在此为真）。关键细节：用一个 `enteredCriticalSection` 标志把
+"临界区内部抛出的拒绝"原样重抛 —— 内部各分支已各自回答，把它重贴成"锁获取失败"就是本模块声称一个自己没观察到的
+状态，正是本轮在修的那类谎。两处各一条腿，且"内部拒绝必须重抛"本身也是腿。
+
+**R-26 round-2 的 `.mts`/`.cts` 加宽与 `.d.*` 跳过都是可回退且当前不判人的（F-R3-4，MINOR）。**
+`SOURCE_EXTENSIONS` 写一次读两次、无腿钉；删掉跳过行、退回 round-1 列表，28 条腿全绿；且今天 `packages` 下所有
+被跟踪的 `.mts`/`.cts` 要么是声明文件要么在 `test/` 下（实测 0 个可判文件），所以这条加宽只对**未来**文件起作用。
+修法不是假装它有现案：把加宽**行为化**（指向一棵 scratch 目录：`.mts`/`.cts` 必须被看见、`.d.mts`/`.d.ts` 必须不
+被看见）＋把列表本身钉成数据＋把注释里那两个数字（30 个跟踪文件、14 个 `.d.mts`）就地重测。空转要写在明处，
+不能藏在一个"两边都绿"的腿后面。
+
+**R-27 闭集守卫可以"把一个文件判成 writer"然后既不断言也不命名任何东西（F-R3-5，MINOR + INFO-2）。**
+实测 18 个被判为 writer 的文件里 4 个完全静默；并且**掩蔽不对称**：只要同文件里还有一处可读的 `ledger.put(...)`，
+`(0, commitDurableFact)(…, 'x', …)`、`{ ['factType']: 'x' }`、`{ factType /* t */: 'x' }` 三种写法就既不被派生
+也不被命名（别名回退只在 `sites.length === 0` 触发）。修法是**推广**而非打三个补丁：一个共享的 call 识别
+（`\bf\b\s*(?:\)\s*)*\(`，同时喂给 harvest 与分类臂，使两者不可能各说各话）、一个共享的 label 头（任意引号、
+计算键、括号两侧注释），再加**两条覆盖率 census**（每一处非注释非 import 的 funnel 提及都必须成为 call site；
+每一个 label 位 `factType` 都必须被读到），否则一律**命名**。别名规则去掉 `sites.length === 0` 门。
+四个静默文件改为 C8 腿下的**枚举 pass-through 账目**（逐文件给形状与被机械复核的理由）。
+**复核者对这 4 个文件的理由给错了**：它说 `mutation/types.ts` 是匹配到 `factType:` 类型声明；实测这四个文件里
+`factType` 出现次数为 0（`packages/runtime/mutation` 非测试代码 0 次，本会话复验），真实形状分别是
+`activity/ledger.ts:368`（entry 在 `activity/facts.ts:187` 由 `OP_TO_FACT_TYPE` 造出，本身是 harvest 到的 writer）、
+`mutation/internal/mutation-service.ts:243/295/338/385/504/511`（P7 mutation provenance 账本，`MutationLedgerEntry`
+没有 factType 字段）、`mutation/types.ts:400`（同一方法的端口声明）、`storage/repositories/ledger.ts:140/163/167`
+（`putEntry(entry: unknown, …)` 泛型下沉）。
+INFO-2（把 detector+plant+alternative+三条 pin 一起删掉仍全绿）改由**派生耦合**关闭：分类半边的 alternative 表
+由 `WRITE_SHAPES` 生成、`driven` 与 alternative 键双向集合相等、每个 plant 必须自带期望、read-credit 由名字挣得
+——复核者原来那套四连删现在单独被 C5 判红；只剩"把 census 机制本身也删掉"的七连删仍然绿（披露于 §7：一个不
+import 生产代码的测试文件无法判定自己阅读机构被删，再收需要第二个独立读者/解析器，不是在本文件里再加技巧）。
+**顺带发现并修掉一个真实缺陷**：平衡括号扫描从 `depth = 0` 起算（正则已吃掉左括号），于是遇到**第一个嵌套调用**
+的右括号就收尾，`commitDurableFact(repos, pick(p), now, 'x', payload)` 的第 4 参落在区域外。实测 5 个真实文件命中
+（`effects.ts`、`root-initial-work.ts`、`work-execution.ts`、`plugin/host.ts`、`plugin/root.ts`），但这些文件的嵌套
+调用都在 payload 位、arg4 两种算法**逐字节相同**，所以今天不移动任何结论，会移动下一个写者。改 `depth = 1` 并用
+plant 钉住。**度量而非假设**：本轮所有 harvest 改动都先证明 census 零漂移（分类 18→18、unresolved 15→15、
+per-file diff 0）再合入。
+
+
+**R-28 「C2 需要环境」这句话本身是没测过的假设（round-15 真实宿主复测，2026-10-31）。** 本文件与 PR 正文把
+真实宿主一栏记成 ENV_BLOCK，理由写的是"没有宿主进程可启动"。本轮把宿主真的物化出来（`tests/deepseek-harness-test-use`
+pristine @ `639ed01539…`，porcelain 前/后 = 0），写了 `tests/kits/pr-i1a-real-host/`（探针行 + 驱动，公开
+profile-patch seam，CORE PATCH BUDGET = 0），跑出的判决是
+`DSH-PRI1A-REALHOST verdict=pass pass=24 fail=0 refused=0 legs=24`。**测到的具体字节级事实**：
+created/transferred/retired 由 BUILT 的 `applyReviewAssignment` 写在序列 1/2/3、epoch 1/2/3；进程内重放
+`{"applied":"already","sequence":1}`；`team_sessions.generation` 1→4（三次写各一次，重放零次）——R-20 说的
+"盖章要跟着走"第一次落在真实介质上；**驱动进程在宿主退出之后**扫 world 文件，在 `storages/team_domain.json` 里
+读到三个 factType 字面量各一次（探针自己的报告与宿主日志按名字排除，否则这条腿会被探针自己的话喂绿）；第二个宿主
+进程 `openTeamDomain` 重开同一 world，读回三行与首进程逐字段相同、generation 仍 4；原命令在**原序列**答 `already`
+且零新行；同 root 的另一 case 拿到序列 4。**没测的仍然没测**（命名而非含糊）：并发对账（本 kit 单写者，跨进程给锁
+是注入端口——在这里测并发只能测我自己写的 adapter）、客户端投影呈现（零调用者 ⇒ 生产组合里没有这些行）、
+与 control 路径同锁 interleaving（等 PR-I1b 接线）。可失败性按同一轮证明：期望 `1,2,3` 改单字节成 `1,2,4` ⇒
+`verdict=fail pass=23 fail=1 failed=boot-1-sequence-chain-is-1-2-3`，改回与备份 `diff -q` 相同。
+**度量学条目：一句"环境不给"如果能在同一台机器上用二十分钟变成测量，它就必须先被测量再被记录。**
+
+**R-29 「default-off」不是宿主状态，是一个没有主人的开关（round-15，同一个 kit 的两条腿）。** PR 正文 §9.6 把
+PR-I1b 的义务写成 "default-off, and non-enabling teams byte-identical"，这句话预设了一个可以在宿主上拨的开关。
+实测两问：①对本 worktree 的 **BUILT** 行直接调 `validateTeamPluginConfig`，带 `feature:'on'` +
+`assignmentFeature:'on'` 的行配置被**接受并原样交回**（`feature="on", assignmentFeature="on"`）——既不 honour 也不
+refusal；②`packages/**` 里（dist 之外）**0 个文件**提到这个键，dormancy 扫描又给出零 importer。所以"默认关"不是
+一种宿主状态，而是"没有调用者"这个组合事实；**能保留**的说法是"没有 caller 的组合里一行 assignment 都不会出现"，
+它由 dormancy 扫描钉住，而不是由一个不存在的开关钉住。同 §8 的另一句也在本轮失配：`ci-pr-gate --full` 的 census 腿
+在物化出 runtime 的本 worktree 里**不再拒绝而是评分并红**
+（`DSH-CI-VERDICT fail pass=8 fail=1 skip=0 skipped=none legs=9 refused=0 refusedlegs=none`，
+红因 `captured 661f/8947l vs baseline-declared 626 / 7936`；两次复跑（同 head）点名的新红集合**不同** —— 3 条
+（`alpha5-search-backend` + `a4p7-merge-gate` ×2）与 4 条（`a5g6-install-face-render`、`a5p4-lane-hygiene`、
+`a4p7-merge-gate` ×2），两次计数都是 661f/8947l ⇒ 被点名的是**会轮换的残留**，稳定的只有那两条已披露 a4p7 腿
+（对照 JSON 由门禁写在 `dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/`，本轮两份含 `.artifacts` 绝对路径故未提交，
+同目录已提交的历史对照是同形状）
+
+## 3. 覆盖映射（用户裁决六条 → 测试腿）
+
+| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，49 条，全部走**真实** `LedgerRepository`；round-3 新增 4 条：读的可Walk性 3 形 + 自写未获证 1 条，另有 4 条文字/端口腿并入下表） |
+| --- | --- | --- |
+| 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9）；㉟那一行不是本命令写的（改写载荷 / 别队的 `control-leg-decided`）⇒ `READBACK_MISMATCH` 点名现场，且 `ROW_DURABLE` 与「必被判为 already」的许诺**都不出现**（R-15）；㊀四处读取逐点驱动 ⇒ **没有任何异常逃到调用方**（R-17）；㊁四个耐久声明各由一个代码产生、四码互不相同，头部四句法律被 readFileSync 钉住（R-16） |
+| Epoch/CAS、幂等、并发冲突、写失败 | D-3/D-4/D-5 + R-7/R-8 | ⑥同命令立即重放：`already` 且 `writeCount` 不变、行数不变；⑦换 reason ⇒ 不是重放（`ALREADY_ACTIVE`），行数不变；⑧两条并发同命令 ⇒ 一写一 already、同一 sequence、只一行；⑨两条并发 mutation ⇒ epoch [2,3]、sequence 互不相同、对「已当前」的 target 重发是 `already`、换 reason 是 `TARGET_UNCHANGED`；⑩四种非法 sequence（0/-1/1.5/MAX+1）各自拒且零行；⑪分配失败腿 detail 含 allocate；⑫坏 root/坏命令 ⇒ `writeCount` 不变 |
+| Ledger 所有权校验、跨 Case/Team 隔离、损坏诊断 | D-7 + R-3/R-5 | ⑬两支队伍共用同一 caseId 各自独立折叠与独立 epoch；⑭挂本 root 但载荷指向他队的行 ⇒ `WRITE_CROSS_TEAM_ROW` + 点名 `factType@sequence`，坏行**留在原地**不隐藏；⑮未知字段/授权键行 ⇒ `WRITE_FOLD_UNRECONCILED` 且 detail 点名诊断码（与 `control/service.ts:1801-1812` 的静默丢弃**正相反**，有专门一条腿钉这点）；⑯10 条坏行 ⇒ 列 8 个句柄 + `+2 more` + detail < 1200 字符；⑰同队两 case 独立 epoch 链；⑱契约解析拒绝的 4 种 root ⇒ 先对**解析器本身**断言抛错，再要求 `WRITE_ROOT_UNMINTABLE` 且零锁零写；⑲`session/../../etc` 能 mint、被 lane 语法拒（R-5 的披露） |
+| host/client factType-category 一致 + 重启后 Projection 重建 | §1 的双侧图 + 本 PR 的耐久半边 | ⑳写入的字符串与 `projection-source.ts` 里那三个字面量逐字节相同（腿直接读该文件要求三个字面量都在）；㉑`createdAt` 与 contracts 的 `ISO_8601_TIMESTAMP_PATTERN` **字面同源**（读回 contracts 源码比对）。**category 两侧各自的钉法不在本文件重复**：host 侧 = `a6-pr2-assignment-kernel.test.ts` 的 mirror pin（沿 factType 字面量走到 `FACT_TYPE_CATEGORY` 条目并要求 `team`），client 侧 = `packages/client/test/ledger-adapter.test.ts` 的行为腿（三行进 `team`、badge 不亮）；本 PR 补的正是此前不存在的那一半 —— **耐久行里真的是这三个字符串**。**真实宿主的重启呈现分两半（2026-10-31 round-15 实测）**：**耐久半边已测** —— 新宿主进程 `openTeamDomain` 重开同一world，读回三行与首进程写出的逐字段相同、`team_sessions.generation` 仍 = 4、原命令重放在**原序列**答 `already` 且零新行（`tests/kits/pr-i1a-real-host`，`verdict=pass pass=24`）；**投影呈现仍未测**，原因不再是缺宿主，而是本 lane 零调用者⇒ 生产组合里不会长出 assignment 行 —— 这一半归 PR-I1b，不记 PASS |
+| Assignment 非授权凭据 | D-9 | ㉒耐久载荷键集合 == `REVIEW_ASSIGNMENT_PAYLOAD_FIELDS`（最强形式：封闭集之外无键），且其中无 authorit/permission/grant/credential/token/allowed 命中；㉓绕过 Writer、在编码之后往 `put` 载荷里塞 `authority` ⇒ 被**读回**抓为 `READBACK_MISMATCH`（不是被接受） |
+| 无法证明即退回 Leader，禁止由空/缺失记录推导允许 | D-8 + `checkAssignmentMutation` + R-4 | ㉔空 case 上 `transferred` ⇒ `NO_ACTIVE_ASSIGNMENT` 且零行（不会顺手创建 assignment）；㉕空状态对三种 caller × 三个 epoch 一律不允（`maySubmitFor` 全拒）；㉖退休后三种命令全拒且零新行，同队另一 case 不受影响（R-4） |
+| （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 8 个自有代码**全部被产生过**（期望列表手写，见 R-13）、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿；㉞reader 藏行 ⇒ 两条活行同 epoch 的后果被测量 + 端口合同的文档句被钉住（R-12）；㊂藏**中间**行被 epoch CAS 判出、藏**后缀**看不见且使该案永久不可写 —— 两边都测（R-21）；㊃介质 reject 一个 `{code, problem}` 时 refusal 带上它自己的代码而不是 "(object)"（R-21） |
+
+**未在本 PR 测量（不假装；2026-10-31 round-15 收窄）**：真实宿主世界上的并发对账与重启后的客户端呈现（原记 C2 = ENV_BLOCK）——其中的**耐久**部分已测（两进程、同一 world、真实介质：三行 + generation + 原序列重放，见 §2a 与 R-28）。
+仍未测的是：①真实宿主上的**并发对账**（本 kit 单写者，跨进程给锁是 PR-I1b 的 adapter 决定，在此测只能测我自己的选择）；
+②**客户端呈现**与投影在真实客户端 store 里跨代的重建（零调用者 ⇒ 生产组合里没有这些行可呈现）；
+③与 control 路径共享同一把锁时的 interleaving（需 PR-I1b 接线）。PR-I1a 只承诺写进去的字节与两侧图一致。
+
+## 4. 已知不可从本树决定（留给后续，不假装解决）
+
+- **teamLock 共享的治理选择**：把 Writer 接进生产路径时，是用注入的共享锁 map（需宿主侧注入）还是保持两把锁
+  （D-2 的论证成立但前提是 D-1）；普查明确"树能定价选项，不替我们选"。本 PR 把两把锁方案连同论证一起交付，
+  并把"唯一写入者"钉成可扫的法律。
+- **`basedOnCaseVersion` 没有版本代数**（`facts.ts:145-146` 只要求 hygienic id）：Writer 只能等值比较，不能判
+  新旧；将来若需要"版本必须前进"，那是一个新法律，需要新裁决。
+- **真实 Host 的并发/重启形态**（2026-10-31 round-15 拆开）：**重启形态的耐久半边已由 `tests/kits/pr-i1a-real-host` 测掉**（C2，24/24 绿，含盘上字节与新进程折叠）；**并发形态**仍等 PR-I1b —— 等的是**接线**（谁在真实宿主里调用这个 writer、跨进程怎么给锁），不再等环境。
+- **退休后的 case 无法再获得 assignment（R-4）**：树能证明的是 `checkAssignmentMutation` 的三条规则与由此产生的终点性；
+  要不要给「重新指派一条新 leg」一个公开的行种类，是 D-8 那条公开变更的决策，需要新裁决 + host/client 两张 category
+  图同步，本 PR 不替它选。
+- **目标可以是 Leader 实例，而路由面拒绝它**（round-1 A4a）：`checkAssignmentMutation` 不校验
+  `target.instanceId` 是否等于 `LEADER_INSTANCE_ID`，于是 Writer 会把「把某条 leg 指派给 Leader 自己」写成耐久行，
+  而 `router.ts:1795` 的 `TARGET_IS_LEADER_INSTANCE` 在路由面拒绝同一形状；`maySubmitFor` 之后还会承认一个
+  **自称**该实例、`isLeaderInstance:false` 的 caller。A-1 未被破坏（行不授予任何权限），但「受治理的耐久路径比
+  未接线的路由面更宽」是反向的。决定：**不在本 PR 偷偷加第四条校验**（那会改变 kernel 语义，属新法律），
+  而是把「admission 必须拒绝 Leader 实例作为 assignment 目标，或明确解释为何允许」写成 PR-I1b 的具名义务。
+- **确认「这支队伍真的存在」不在本层**（R-5）：树能定价的是三幕屏幕各挡什么、`session/../../etc` 停在哪一幕；
+  把存在性检查放到哪里属 PR-I1b 的 admission 设计。

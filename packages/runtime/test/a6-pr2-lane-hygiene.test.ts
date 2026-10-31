@@ -30,6 +30,7 @@
  * rewritten afterwards.
  */
 
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -49,7 +50,15 @@ const ALLOWED_CONSUMERS: readonly string[] = []
 const FOUNDING_MODULES = ['facts.ts', 'handoff.ts', 'index.ts', 'router.ts', 'types.ts']
 
 /** A new module in this lane is a deliberate amendment, named in the PR that adds it. */
-const EXTRA_MODULES_ALLOWED: readonly string[] = []
+const EXTRA_MODULES_ALLOWED: readonly string[] = [
+  // Alpha.6 PR-I1a (2026-10-31): the durable writer whose absence `types.ts` A-8 recorded out loud. It sits
+  // INSIDE the lane rather than beside it for one reason: the row shape, the CAS pre-flight and the authority
+  // denylist are the three things a writer must not be able to bypass, and an `import` is not a boundary —
+  // a writer in a sibling directory would satisfy every leg in this file while being free to build a payload
+  // by hand. Amending this list is therefore the same act as admitting a second door, which is why the
+  // export census below now counts the writer's exports too instead of only the kernel's.
+  'writer.ts',
+]
 
 const PROTECTED_PREFIXES = [
   `control${sep}`,
@@ -61,9 +70,23 @@ const PROTECTED_PREFIXES = [
   `governance-center${sep}`,
 ]
 
-/** `.tsx` and the per-package floor exist because PR3′'s round-5 review planted an importer in
- *  `alpha/src/offender.tsx` and in an empty package directory, and the leg stayed green both times. */
-const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.js']
+/**
+ * `.tsx` and the per-package floor exist because PR3′'s round-5 review planted an importer in
+ * `alpha/src/offender.tsx` and in an empty package directory, and the leg stayed green both times.
+ *
+ * `.mts` and `.cts` were added in round 2 of #517 (F-R2-6) after a plant in `second-writer.mts` — byte-identical
+ * to a plant in `.cjs` beside it — was walked by one extension and not the other. They are not exotic here: 30
+ * tracked files under `packages` carry them today. Declaration files are the one thing in that set no module can
+ * execute, so the skip that already existed for `.d.ts` now covers all three spellings, otherwise widening the
+ * extensions would have made 14 `.d.mts` declarations count as production source.
+ *
+ * `composition-shim` is skipped because it is GENERATED, not because it is inconvenient: it is rebuilt from
+ * `packages/client` sources by `scripts/build-client-composition.mjs`, and
+ * `scripts/check-artifacts-at-head.mjs` rebuilds it and compares the bytes at every head (`drift=0`), so a
+ * writer cannot be hand-planted in it without that gate going red. What a source-level name/verb scan would do
+ * there is convict the bundle for containing what its lawful inputs contain.
+ */
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
 /** Sibling suites (f3a/f3b/f3c, po-notify) create and destroy scratch under
@@ -106,7 +129,7 @@ function sourceFiles(root: string): string[] {
       out.push(...sourceFiles(full))
       continue
     }
-    if (entry.endsWith('.d.ts')) continue
+    if (/\.d\.(?:ts|mts|cts)$/.test(entry)) continue
     if (SOURCE_EXTENSIONS.some((extension) => entry.endsWith(extension))) out.push(full)
   }
   return out
@@ -218,6 +241,194 @@ describe('a6-pr2 lane hygiene', () => {
       'planHandoff',
       'planRetirement',
     ])
+
+    // PR-I1a put a writer in this lane, so "no second writer" can no longer be a claim about encoders alone.
+    // What it means now is narrower and checkable: exactly ONE exported function appends, exactly one call site
+    // reaches the ledger's write half, and the writer builds payloads only through the kernel encoder — never
+    // an epoch it picked itself, because a hand-picked epoch is a CAS that was never compared to anything.
+    const writer = readFileSync(join(LANE_DIR, 'writer.ts'), 'utf8')
+    const writerExports = [...writer.matchAll(/^export (?:async function|function|const) (\w+)/gm)]
+      .map((match) => match[1] as string)
+      .sort()
+    expect(writerExports).toEqual([
+      'REVIEW_ASSIGNMENT_WRITE_REFUSALS',
+      'applyReviewAssignment',
+    ].sort())
+    expect([...writer.matchAll(/\.allocateSequence\(\)/g)]).toHaveLength(1)
+    expect([...writer.matchAll(/\.put\(/g)]).toHaveLength(1)
+    expect([...writer.matchAll(/encodeAssignmentFact\(/g)]).toHaveLength(2) // the write, and the replay rebuild
+    expect(writer).not.toMatch(/assignmentEpoch:\s*\d/)
+    expect(writer).not.toMatch(/previousEpoch:\s*\d/)
+  })
+
+  it('is the only module in the repository that can append a review-assignment row', () => {
+    // D-1, the law the other two depend on. The lock this writer takes is NOT the control plane's lock
+    // (`control/service.ts:1656` keeps that one in a private closure, and reaching for it means editing the
+    // protected centre), so the safety of that fact rests entirely on the CAS domain being `assignmentEpoch`
+    // and on nothing else appending rows of this family. Two of those rows appearing from two modules turns
+    // "two locks over disjoint state" into "two locks over one state", which no epoch check survives.
+    // The scan is a NAME + VERB test rather than an import test: a module that imports the kernel and builds
+    // its own `put` call is precisely the offender an import-based scan describes as a lawful reader.
+    // Both halves of the test are named tables rather than one regex each, because round 1 of #517 showed what
+    // an unnamed union costs: the verb list held `.put(`, `.putEntry(` and `allocateSequence(`, while a module
+    // appending through this repository's OWN durable-fact funnel — `action-router/effects.ts:1306`
+    // `commitDurableFact(repositories, root, now, factType, payload)`, which allocates the sequence and puts the
+    // row internally — names the family in a positional argument and matched none of them. The funnel is a verb
+    // now, and every alternative below carries its own plant, tied to the table by key equality.
+    const nameAlternatives: Readonly<Record<string, RegExp>> = {
+      literal: /review-assignment-(?:created|transferred|retired)/,
+      registry: /REVIEW_ASSIGNMENT_FACT_TYPES/,
+    }
+    const verbAlternatives: Readonly<Record<string, RegExp>> = {
+      // A method reached through a computed member, or handed out by `.bind` to be called somewhere else, is the
+      // same write with the `(` moved off the name. Round 2 of #517 planted both (`const append =
+      // ledger.put.bind(ledger)` and `ledger['put'](row)`) and the detector saw neither, while a reviewer
+      // grepping for `.put(` saw neither either (F-R2-6).
+      put: /\.put\s*(?:\(|\.\s*\bbind\b)|\[\s*['"`]put['"`]\s*\]\s*\(/,
+      putEntry: /\.putEntry\s*(?:\(|\.\s*\bbind\b)|\[\s*['"`]putEntry['"`]\s*\]\s*\(/,
+      allocateSequence: /allocateSequence\s*\(/,
+      // `\s*(` here, matching the classifier in `a4pr0a-fact-type-closed-set.test.ts`: one space before the
+      // parenthesis is the same call to TypeScript, and two detectors on two different needles is how one of
+      // them goes blind while the other stays honest (F-R2-5).
+      commitDurableFact: /commitDurableFact\s*\(/,
+    }
+    // The table itself, written out. The plant↔alternative tie below cannot see a PAIR being deleted: drop this
+    // verb and its plant together and the two key sets stay equal, which is exactly how round 2 re-opened round
+    // 1's funnel hole with four lines removed (F-R2-7). A literal key list is the check that survives being the
+    // thing under test, the same way the refusal census on the writer is written out rather than compared to itself.
+    expect(Object.keys(verbAlternatives).sort()).toEqual([
+      'allocateSequence',
+      'commitDurableFact',
+      'put',
+      'putEntry',
+    ])
+    expect(Object.keys(nameAlternatives).sort()).toEqual(['literal', 'registry'])
+    const union = (table: Readonly<Record<string, RegExp>>): RegExp =>
+      new RegExp(Object.values(table).map((pattern) => pattern.source).join('|'))
+    const namesFamily = union(nameAlternatives)
+    const writeVerbs = union(verbAlternatives)
+    // Comments are stripped and test sources are skipped, and both exclusions are load-bearing rather than
+    // convenient: A-8 in `types.ts` NAMES `allocateSequence()` while explaining that no writer existed, so a
+    // scan over prose convicts the law for stating itself; and a spec that plants an offender to prove its own
+    // detector works must be allowed to write the shape of one. What is not excluded is any module that could
+    // run in production, which is the only kind of module that can append a row.
+    const codeOnly = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    // The detector as a pure function of (path, text), so the plants below drive the SAME code the repository is
+    // scanned with instead of a paraphrase of it — which is the difference between a control and a decoration.
+    const convicts = (rel: string, rawText: string, inLane: boolean): boolean => {
+      const text = codeOnly(rawText)
+      if (!namesFamily.test(text) || !writeVerbs.test(text)) return false
+      return inLane ? rel !== 'writer.ts' : true
+    }
+    const offenders: string[] = []
+    for (const file of sourceFiles(PACKAGES_ROOT)) {
+      if (/[\\/]test[\\/]/.test(file) || /\.test\.[cm]?ts$/.test(file)) continue
+      const inLane = file.startsWith(LANE_DIR + sep)
+      const rawText = readFileSync(file, 'utf8')
+      const rel = inLane ? relative(LANE_DIR, file) : relative(PACKAGES_ROOT, file)
+      if (convicts(rel, rawText, inLane)) offenders.push(inLane ? relative(RUNTIME_ROOT, file) : rel)
+    }
+    expect(offenders, `modules appending rows of this family besides the writer: ${offenders.join(', ')}`).toEqual([])
+
+    // Anti-vacuity over EVERY alternative, which is what round 1's F4 said the old control did not do: it pinned
+    // one intersection (literal name ∧ `.put(`), so three of the four verbs and one of the two naming shapes
+    // could be deleted from the detector and this leg would have stayed green.
+    //
+    // Round 2 changed the shape of the tie rather than adding to it. Keying plants BY alternative (the previous
+    // form) made "exactly one plant per alternative" an assertion, so a second shape for the same verb had
+    // nowhere to live — which is why `.put.bind(` had never been planted — and pair-deleting an alternative with
+    // its plant kept the two key sets equal (F-R2-7). Plants are now keyed by plant and each declares which
+    // alternative it drives: every alternative must still be driven, an alternative may be driven more than once,
+    // and a plant that names an alternative the detector does not have is a red leg.
+    const plants: Readonly<Record<string, { readonly drives: string; readonly text: string }>> = {
+      'name:literal': {
+        drives: 'name:literal',
+        text: "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n",
+      },
+      'name:registry': {
+        drives: 'name:registry',
+        text: "import { REVIEW_ASSIGNMENT_FACT_TYPES } from '../review-assignment/types.js'\nawait ledger.put(row)\n",
+      },
+      'verb:put': {
+        drives: 'verb:put',
+        text: "const F = 'review-assignment-transferred'\nawait ledger.put(row)\n",
+      },
+      'verb:put-bound': {
+        drives: 'verb:put',
+        // The three-line module round 2 measured as invisible to BOTH this scan and the closed-set census: the
+        // name is there, the method is reached through `bind`, and nothing writes `.put(` anywhere.
+        text:
+          "const factType = 'review-assignment-created'\n" +
+          "const append = ledger.put.bind(ledger)\n" +
+          'await append({ factType, payload })\n',
+      },
+      'verb:put-computed': {
+        drives: 'verb:put',
+        text: "const F = 'review-assignment-retired'\nawait ledger['put'](row)\n",
+      },
+      'verb:putEntry': {
+        drives: 'verb:putEntry',
+        text: "const F = 'review-assignment-retired'\nawait store.putEntry(row)\n",
+      },
+      'verb:allocateSequence': {
+        drives: 'verb:allocateSequence',
+        text: "const F = 'review-assignment-created'\nconst s = await ledger.allocateSequence()\n",
+      },
+      'verb:commitDurableFact': {
+        drives: 'verb:commitDurableFact',
+        text:
+          "await commitDurableFact(repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-created', payload)\n",
+      },
+      'verb:commitDurableFact-spaced': {
+        drives: 'verb:commitDurableFact',
+        text:
+          "await commitDurableFact (repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-transferred', p)\n",
+      },
+    }
+    const alternativeOf = (key: string): RegExp | undefined =>
+      key.startsWith('name:')
+        ? nameAlternatives[key.slice('name:'.length)]
+        : verbAlternatives[key.slice('verb:'.length)]
+    const driven = [...new Set(Object.values(plants).map((plant) => plant.drives))].sort()
+    expect(driven, 'an alternative of the detector has no plant driving it').toEqual(
+      [...Object.keys(nameAlternatives).map((name) => `name:${name}`),
+        ...Object.keys(verbAlternatives).map((name) => `verb:${name}`)].sort(),
+    )
+    for (const [id, plant] of Object.entries(plants)) {
+      const alternative = alternativeOf(plant.drives)
+      expect(alternative, `${id} drives an alternative the detector does not have`).toBeDefined()
+      expect(alternative!.test(codeOnly(plant.text)), `${id} does not exercise ${plant.drives}`).toBe(true)
+      expect(convicts('second-writer/impl.ts', plant.text, false), `${id} plant was not convicted`).toBe(true)
+    }
+
+    // The lane's own writer is the only in-lane exception, and a lane module that is not the writer is convicted
+    // exactly like an outside one: the exception is a filename, not a directory.
+    expect(convicts('router.ts', (plants['verb:commitDurableFact'] as { text: string }).text, true)).toBe(true)
+    expect(convicts('writer.ts', (plants['verb:put'] as { text: string }).text, true)).toBe(false)
+    // Two exclusions that are load-bearing rather than convenient: reading rows is what PR5′ will do, and prose
+    // that NAMES the forbidden calls while forbidding them must not convict the law for stating itself (the
+    // `types.ts` A-8 comment is that case in the real tree).
+    const reader =
+      "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n"
+    expect(convicts('pr5-reader/impl.ts', reader, false)).toBe(false)
+    expect(convicts('types.ts', '/* no module may call allocateSequence() for review-assignment-created */\n', false))
+      .toBe(false)
+    // Disclosed residual, named rather than gestured at, because "scans the whole repository" is only as wide as
+    // a text scan can be. What this walk does NOT see, each verified by a plant in round 2 of #517:
+    //  • the SPLIT PAIR — a helper file holding the verb with no family name, and a caller file holding the
+    //    family name with no verb. Each file is lawful on its own and the two together append a row; catching
+    //    that needs a call graph, which is `a4pr0a`'s funnel harvest and, past it, a human reading the diff.
+    //  • a name built at runtime: a template literal that interpolates, `'review-assignment-' + 'created'`, or
+    //    `'REVIEW_ASSIGNMENT_FACT_' + 'TYPES'`. The closed-set census forces the concatenation it can parse into
+    //    being named; this scan simply does not see it.
+    //  • test sources and untracked files, by construction.
+    //  • `dist` and `composition-shim`, both generated — which is not a hole, because
+    //    `check-artifacts-at-head.mjs` rebuilds both and compares bytes at every head, so neither can hold a
+    //    hand-planted writer while the artifacts gate is green.
+    // So the claim this leg actually supports is the one the PR body makes: "no tracked production source outside
+    // the writer contains both a family name and a route to the ledger in one file". It is not "no other module
+    // can append a row", and a reviewer should read the two guards together — this one and the closed-set census
+    // — as a net with named holes, not as a proof.
   })
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {
@@ -366,8 +577,13 @@ describe('a6-pr2 lane hygiene', () => {
       for (const specifier of specifiers) {
         expect(allowed.test(specifier), `${relative(RUNTIME_ROOT, file)} imports ${specifier}, outside the pure-lane allow-list`).toBe(true)
       }
-      expect(text).not.toMatch(/Date\.now\(/)
-      expect(text).not.toMatch(/new Date\(\s*\)/)
+      // The PR4 lane's round-4 review earned this widening: its needle list missed a bare `Date()`, which is
+      // the same spelling a reader would write first. Here the law is stronger than "do not read the current
+      // time" — a lane that takes its clock as injected data must not touch the Date object in ANY form,
+      // including the two static parse/UTC forms that look harmless and would let a caller's string be
+      // interpreted by a global the lane is claiming not to know. What this list still cannot see is an alias
+      // (`const D = Date; new D()`), and saying so here is cheaper than a review finding later.
+      expect(text).not.toMatch(/Date\.now|Date\.parse|Date\.UTC|new Date|\bDate\(|Intl\.DateTimeFormat/)
       expect(text).not.toMatch(/performance\.now|process\.hrtime/)
       expect(text).not.toMatch(/setTimeout|setInterval|setImmediate/)
       expect(text).not.toMatch(/\brequire\s*\(/)
@@ -488,5 +704,44 @@ describe('the tree walk survives a concurrent suite\'s scratch cleanup', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+
+  it('walks the widened extensions and keeps declaration files out, driven rather than declared', () => {
+    // Round 3 of #517 (F-R3-4): round 2 widened `SOURCE_EXTENSIONS` with `.mts`/`.cts` and added the declaration-file
+    // skip, and BOTH halves were revertable with all 28 legs green — the list is written once and read twice, and
+    // nothing pinned it. It also convicts nobody today: every tracked `.mts`/`.cts` under `packages` is either a
+    // declaration file or a file under a `test/` directory, which is exactly why deleting the widening was
+    // invisible. So the pin is behavioural, over a scratch tree the walk is pointed at — an `.mts` and a `.cts` that
+    // must be SEEN and a `.d.mts` that must NOT be — and the vacuity of the widening against today's tree is
+    // disclosed here instead of hiding behind a leg that passes either way.
+    const dir = mkdtempSync(join(tmpdir(), 'a6-hygiene-scan-'))
+    try {
+      writeFileSync(join(dir, 'widened.mts'), 'export const widened = 1\n')
+      writeFileSync(join(dir, 'widened.cts'), 'export const widened = 1\n')
+      writeFileSync(join(dir, 'declaration.d.mts'), 'export declare const widened: number\n')
+      writeFileSync(join(dir, 'declaration.d.ts'), 'export declare const widened: number\n')
+      writeFileSync(join(dir, 'notes.md'), 'not a source file\n')
+      const found = sourceFiles(dir)
+        .map((file) => relative(dir, file))
+        .sort()
+      expect(found, 'the walk must see `.mts`/`.cts` and must keep `.d.*` declarations out').toEqual(['widened.cts', 'widened.mts'])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+
+    // The list itself, pinned as data: the behavioural half above proves the two entries do something, this half
+    // proves nobody quietly narrows the walk back down while the comment still claims otherwise.
+    expect([...SOURCE_EXTENSIONS]).toEqual(['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js'])
+
+    // And the numbers the header comment carries are re-measured, not trusted. They are the disclosure that the
+    // widening is prospective: today it convicts no file, and if that ever stops being true this leg says so.
+    const repoRoot = join(PACKAGES_ROOT, '..')
+    const tracked = execFileSync('git', ['ls-files', '--', 'packages'], { cwd: repoRoot, encoding: 'utf8' })
+      .trim()
+      .split('\n')
+    const widened = tracked.filter((file) => /\.(?:mts|cts)$/.test(file))
+    expect(widened.length, 'the tree is expected to carry `.mts`/`.cts` files, or this leg has stopped measuring').toBeGreaterThan(0)
+    const convictable = widened.filter((file) => !/\.d\.(?:ts|mts|cts)$/.test(file) && !file.includes('/test/'))
+    expect(convictable, 'these `.mts`/`.cts` files are newly inside the walk — the header comment must be re-read').toEqual([])
   })
 })

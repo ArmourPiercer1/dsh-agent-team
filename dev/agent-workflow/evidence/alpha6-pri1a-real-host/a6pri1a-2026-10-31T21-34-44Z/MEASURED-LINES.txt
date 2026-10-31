@@ -1,0 +1,55 @@
+lane head=3ac9fd52e102720413c1105b2f78debf3f018af7; host head=639ed015397290b3745d163aafe02ffee4aa3f84 (pin 639ed015397290b3745d163aafe02ffee4aa3f84); host porcelain before=0
+PASS host-is-the-pinned-baseline — host HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 vs pin 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0
+PASS enable-surface-is-not-a-host-switch — C1+C0: validateTeamPluginConfig ACCEPTED the enable keys and handed them through unchanged (feature="on", assignmentFeature="on"); and 0 file(s) under packages/** outside dist name the key → no path from any host surface to the writer, so no default-off/enabled A/B exists to be graded
+INFO enable-surface for the record — validateTeamPluginConfig ACCEPTED the enable keys and handed them through unchanged (feature="on", assignmentFeature="on")
+both worlds' ports in band immediately before any world exists: write=3193 restart=3182 sanctioned_bands=3180-3199 / 3491-3500 / 13000-13099
+write: spawned marker=a6pri1aa6pri1a20261031213444writehost3193 port=3193 DSH_HOME=tests/homes/a6pri1a-2026-10-31T21-34-44Z-write
+PASS boot-1-reached-the-public-gate — GET /?token=<REDACTED> -> 303, cookie issued (token scrubbed)
+PASS boot-1-probe-completed — probe state=done detail=wrote the family through the shipped writer over the real medium
+PASS boot-1-real-seam-built — createRealStorageDomainSeam over the injected storageDomain service (open: function, closeAll: function)
+PASS boot-1-domain-created-on-real-medium — createTeamDomain opened "team_domain" over the host storageDomain service (pid 413, argv0 a6pri1aa6pri1a20261031213444writehost3193)
+PASS boot-1-domain-closed-clean — domain closed cleanly after 3 durable row(s); the report is the handoff to boot 2
+PASS boot-1-writer-wrote-created — {"applied":"written","sequence":1,"epoch":1}
+PASS boot-1-replay-answers-already-in-process — {"applied":"already","sequence":1,"epoch":1}
+PASS boot-1-writer-wrote-transferred-and-retired — {"applied":"written","sequence":2,"epoch":2} ;; {"applied":"written","sequence":3,"epoch":3}
+PASS boot-1-generation-advanced-per-write — generation 1 -> 4 across 3 durable write(s); the replay added none
+PASS boot-1-three-rows-in-real-ledger — 3 row(s): 1:review-assignment-created@1, 2:review-assignment-transferred@2, 3:review-assignment-retired@3
+PASS boot-1-lock-was-serialised — lock acquires=4 peak depth=1 (one critical section at a time)
+PASS boot-1-sequence-chain-is-1-2-3 — sequences created=1 transferred=2 retired=3
+PASS boot-1-stopped-and-port-free — process stopped, port 3193 free
+PASS durable-bytes-exist-in-world-files — 3 occurrence(s) of the three fact types in host-written files (storages/team_domain.json=1, storages/team_domain.json=1, storages/team_domain.json=1); 4 host file(s) scanned after the host process exited (.anonymous-user-id, .credentials.yaml, storages/team_domain.json, storages/workspace.json)
+restart: spawned marker=a6pri1aa6pri1a20261031213444restarthost3182 port=3182 DSH_HOME=tests/homes/a6pri1a-2026-10-31T21-34-44Z-write
+PASS boot-2-probe-completed — probe state=done detail=reopened the medium in a fresh process and folded it
+FAIL boot-2-reopened-in-a-fresh-process — boot 1: pid 413 argv0 a6pri1aa6pri1a20261031213444writehost3193 (driver spawned pid 413 marker a6pri1aa6pri1a20261031213444writehost3193); boot 2: pid 425 argv0 a6pri1aa6pri1a20261031213444restarthost3182 (driver spawned pid 425 marker a6pri1aa6pri1a20261031213444restarthost3182); pids differ: true, nonces differ: true; openTeamDomain reopened "team_domain" in THIS process (pid 425, argv0 a6pri1aa6pri1a20261031213444restarthost3182, nonce 77d32099-40f0-4272-8744-975202a1b41d); boot 1 ran as pid 413, argv0 a6pri1aa6pri1a20261031213444writehost3193 — different process: false
+FAIL-GRADED boot-2-reopened-in-a-fresh-process — 9 conjunct(s) this leg evaluated; each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine):
+FAIL-GRADED   RED  [probe] tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:260 — the probe concluded it is not the boot-1 process: step.ok=false — openTeamDomain reopened "team_domain" in THIS process (pid 425, argv0 a6pri1aa6pri1a20261031213444restarthost3182, nonce 77d32099-40f0-4272-8744-975202a1b41d); boot 1 ran as pid 413, argv0 a6pri1aa6pri1a20261031213444writehost3193 — different process: false
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:260 const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:261 && previousBootArgv0 !== null && previousBootArgv0 !== process.argv0 // round-4 duplicate of the signature line
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:906 — both boots reported a process identity: boot 1 report present; boot 2 report present
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:906 conjunct('driver', 'both boots reported a process identity', p1 !== null && p2 !== null,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:908 — boot-1 self-reported pid equals the pid this driver spawned: reported=413 spawned=413
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:908 conjunct('driver', 'boot-1 self-reported pid equals the pid this driver spawned', p1?.pid === host1.spawnPid,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:910 — boot-1 self-reported argv0 equals the marker this driver stamped: reported=a6pri1aa6pri1a20261031213444writehost3193 stamped=a6pri1aa6pri1a20261031213444writehost3193
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:910 conjunct('driver', 'boot-1 self-reported argv0 equals the marker this driver stamped', p1?.argv0 === host1.marker,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:912 — boot-2 self-reported pid equals the pid this driver spawned: reported=425 spawned=425
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:912 conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:914 — boot-2 self-reported argv0 equals the marker this driver stamped: reported=a6pri1aa6pri1a20261031213444restarthost3182 stamped=a6pri1aa6pri1a20261031213444restarthost3182
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:914 conjunct('driver', 'boot-2 self-reported argv0 equals the marker this driver stamped', p2?.argv0 === host2.marker,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:916 — the two pids this driver spawned differ: spawned boot 1=413 boot 2=425
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:916 conjunct('driver', 'the two pids this driver spawned differ', host1.spawnPid !== host2.spawnPid,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:918 — the two self-reported pids differ: reported boot 1=413 boot 2=425
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:918 conjunct('driver', 'the two self-reported pids differ', p1?.pid !== p2?.pid,
+FAIL-GRADED   ok   [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:920 — the two module nonces differ: nonce boot 1=0d45f371-7350-48df-98a2-a10134d7b046 boot 2=77d32099-40f0-4272-8744-975202a1b41d
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:920 conjunct('driver', 'the two module nonces differ', p1?.nonce !== p2?.nonce,
+PASS boot-2-rows-survived-the-restart — 3 row(s) read back after the restart: 1:review-assignment-created@1, 2:review-assignment-transferred@2, 3:review-assignment-retired@3
+PASS boot-2-rows-are-boot-1-rows — the three FULL rows (schemaVersion, sequence, rootSessionId, factType, PAYLOAD, createdAt — every field `list()` hands back) read in the fresh process are byte-identical to the three boot 1 wrote; payload identity is ALSO enforced transitively: a payload the shipped fold cannot reconcile answers REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED (packages/runtime/review-assignment/writer.ts, the fold-unreconciled refusal) instead of replaying
+PASS boot-2-generation-is-durable — generation 4 in the fresh process vs 4 at the end of boot 1
+PASS boot-2-replay-after-restart-answers-already-at-original-sequence — {"applied":"already","sequence":1,"epoch":1}; original sequence 1
+PASS boot-2-replay-wrote-nothing — ledger holds 3 row(s) after the replay (was 3)
+PASS boot-2-new-family-continues-the-chain — {"applied":"written","sequence":4,"epoch":1,"previousMax":3,"expected":4}; driver-side expected exactly 3 + 1 = 4 (not merely "> 3")
+PASS boot-2-stopped-and-port-free — process stopped, port 3182 free
+port-check 3193 free
+port-check 3182 free
+PASS worlds-torn-down — tests/homes/ is empty again
+PASS host-tree-stayed-pristine — host porcelain after=0
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-reopened-in-a-fresh-process

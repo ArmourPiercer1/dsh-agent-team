@@ -1,0 +1,200 @@
+/**
+ * Alpha.6 PR-I1a (Lane 2) — the one durable writer of `ReviewAssignment` facts.
+ *
+ * WHAT THIS FILE ADDS, AND WHY IT WAS MISSING. PR2′ shipped the vocabulary (`types.ts`), the payload gate
+ * (`facts.ts`), the fold and the CAS pre-flight — and, as `types.ts` A-8 said out loud, NO writer: "Durable writes
+ * go through a port that PR-I1 wires (`allocateSequence()` + `put`, precedent `ArtifactLedgerPort.appendGranted`);
+ * no writer exists in this PR, which is what 'dormant' means here". This is that writer. It reuses the Team
+ * ledger that already exists — its sequence counter, its row shape, its write chain, its fold — and it does not
+ * create a second approval ledger: the three fact types below are the only thing this module can append, they are
+ * already booked into the frozen `team` category on BOTH projection surfaces (see
+ * `REVIEW_ASSIGNMENT_FROZEN_CATEGORY`), and A-1 still holds: nothing this module writes can carry authority.
+ *
+ * THE THREE LAWS THAT DECIDE EVERY OTHER CHOICE HERE:
+ *
+ *  - **ONE WRITER (D-1).** Exactly one module in this repository appends `review-assignment-*` rows, and it is
+ *    this one. A hygiene leg scans for a second (`a6-pr2-lane-hygiene.test.ts`), because two of the laws below
+ *    are only sound under that assumption. The consequence for whoever wires this up next — PR-I1b, whose
+ *    decision entry point lives INSIDE the protected centre — is a precondition, not a suggestion: route through
+ *    this function. Re-implementing the write inside `control/service.ts` would put two locks on the same state,
+ *    which is precisely the thing A-2's CAS cannot survive.
+ *
+ *  - **THE LOCK IS INJECTED, NOT IMPORTED (D-2).** ControlService serialises its writes with a `teamLocks` map
+ *    that is a private closure (`control/service.ts:1656`), and reaching into it means editing the protected
+ *    centre — which belongs to PR-I1b, not here. So this module takes a lock port. That means the writer's lock
+ *    and the control plane's lock are, today, different objects, and the honest question is whether that is safe.
+ *    It is, for a specific reason worth stating instead of assuming: the CAS domain of A-2 is this family's
+ *    `assignmentEpoch`, and by the law above nothing but this writer appends these rows. A concurrent ControlService
+ *    write can only append rows of OTHER families, which moves `sequence` (monotonic, allocated atomically on the
+ *    host's single per-domain write chain) and cannot move `epochApplied`, cannot reorder two rows of this family,
+ *    and cannot make this fold see an epoch it has not written. Two locks protecting disjoint mutable state is not
+ *    a race; two locks protecting one state would be.
+ *
+ *  - **A REFUSAL IS AN ANSWER, AND NOTHING IS EVER HALF-CLAIMED (D-4/D-5).** There is no rollback anywhere in this
+ *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
+ *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
+ *    failure path that reached the ledger names exactly one of FOUR DURABILITY CLAIMS, and each claim is carried
+ *    by its own code, because a caller switch-ing on the closed set is reading the NAME. Stated as four durability claims:
+ *      1. **nothing this command did is durable** — `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED`: allocation refused,
+ *         allocation unusable, the ledger unreadable before anything was allocated, or the append refused and the
+ *         re-read confirms nothing is at that sequence;
+ *      2. **the row this command wrote IS durable at that sequence** — `REVIEW_ASSIGNMENT_ROW_DURABLE`, produced
+ *         only by a branch that re-reads the ledger and identifies the row as this command's (family, root and
+ *         payload), never by inference out of an exception;
+ *      3. **the read-back did not find this command's row at that sequence** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`: either a different row holds it, or nothing does — round 3 of #517 (F-R3-2) caught this claim worded as an identity judgement about a row the module had not found, which the empty case cannot support;
+ *      4. **it cannot be told** — `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`: the ledger could not be read far
+ *         enough to answer, so the row MAY be durable at that sequence and it MAY be absent.
+ *    Round 1 of #517 caught this module withholding claim 2 while the row sat durable at that sequence, because
+ *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming no
+ *    TeamSession row makes the append succeed and the stamp throw. Round 2 caught the same branch MAKING claim 2
+ *    about a row it had not identified: the re-read matched on sequence alone, where the success path matches
+ *    family and root and payload, so a `control-leg-decided` row filed under another team's root was reported as
+ *    this command's durable row — with a promise about the retry that the same module then refused. Both
+ *    directions are pinned by legs that produce each code and assert no two claims share one. No answer here
+ *    predicts what a retry answers; only the fold knows.
+ *    A refusal is never a retraction either: a write is only reported as applied after it has been read back out
+ *    of the ledger, and a read-back disagreement is reported as one rather than presented as a take-back — the row
+ *    stays, because the honest sentence about an append-only ledger is that you cannot un-write it.
+ *
+ * WHAT THIS MODULE IS NOT: it is not an authority check (A-1, and a row it writes cannot become one — the payload
+ * gate refuses authority-bearing keys before anything durable happens), it is not a router (that is `router.ts`,
+ * and the caller passes the target it decided), and it is not wired to anything yet: production imports of this
+ * lane remain empty and pinned so (`a6-pr2-lane-hygiene.test.ts`, `ALLOWED_CONSUMERS = []`).
+ *
+ * @module @dsh-agent-team/runtime/review-assignment/writer
+ */
+import type { ReviewAssignmentPayload } from './facts.js';
+import type { ReviewAssignmentFactKind, ReviewAssignmentRefusal, ReviewAssignmentState, ReviewAssignmentTarget } from './types.js';
+/**
+ * The writer's own refusal codes, in the order a reader meets them in the flow below. The kernel's refusals
+ * (`REVIEW_ASSIGNMENT_*` in `types.ts`) pass through unchanged when the refusal came from the kernel; these are
+ * the ones that only exist once a durable write is on the table, so they are a separate closed set rather than
+ * an addition to the frozen kernel vocabulary.
+ */
+export declare const REVIEW_ASSIGNMENT_WRITE_REFUSALS: readonly ["REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED", "REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE", "REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED", "REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE", "REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED", "REVIEW_ASSIGNMENT_ROW_DURABLE", "REVIEW_ASSIGNMENT_READBACK_MISMATCH", "REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN"];
+export type ReviewAssignmentWriteRefusal = (typeof REVIEW_ASSIGNMENT_WRITE_REFUSALS)[number];
+/**
+ * What a refusal result may name. The kernel's refusals pass through **unchanged** rather than being re-labelled:
+ * a `REVIEW_ASSIGNMENT_LEG_MISMATCH` returned by `checkAssignmentMutation` means exactly what it means when the
+ * caller called the kernel itself, and inventing a durable wrapper code for it would make the durable path
+ * report a different fact than the pure path about the same state. (The wording here is not incidental: the
+ * lane's import screen reads the preposition that introduces a module specifier followed by any quoted token,
+ * comments included, and two earlier drafts of this paragraph began that phrase with the preposition and then
+ * named the kernel function in backticks — which the screen, correctly, read as an import of a module named
+ * after a function. A screen that is literal is a screen; a screen that gets worked around is not, so the
+ * sentence moved instead.)
+ */
+export type ReviewAssignmentRefusalCode = ReviewAssignmentWriteRefusal | ReviewAssignmentRefusal;
+/** A row of the ledger as the ports see it: the fields this module reads, with the payload left unknown. */
+export interface ReviewAssignmentLedgerRow {
+    readonly sequence: number;
+    readonly rootSessionId: string;
+    readonly factType: string;
+    readonly payload: unknown;
+}
+/**
+ * The row this module hands to `put`. `schemaVersion` is deliberately NOT here: it belongs to the storage schema,
+ * which this lane does not import — the import-closure leg in `a6-pr2-lane-hygiene.test.ts` is the reason. The adapter that
+ * satisfies this port is the place that knows the schema version, and it is exactly the kind of thin adapter the
+ * `ArtifactLedgerPort` precedent puts at the composition root.
+ */
+export interface ReviewAssignmentRowDraft {
+    readonly sequence: number;
+    readonly rootSessionId: string;
+    readonly factType: string;
+    readonly payload: ReviewAssignmentPayload;
+    readonly createdAt: string;
+}
+/** The write half. `allocateSequence` then `put`, in that order, because the ledger rejects an unallocated one. */
+export interface ReviewAssignmentLedgerWriterPort {
+    allocateSequence(): Promise<number>;
+    put(row: ReviewAssignmentRowDraft): Promise<unknown>;
+}
+/**
+ * The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job.
+ *
+ * **An unfiltered, un-truncated, non-stale read is part of this port's contract.** The writer re-reads inside
+ * the lock rather than trusting a cached view, and it refuses when a row it can see does not reconcile. What it
+ * cannot do is see a row it was not shown, so it is blind to a suffix it is never shown — a fold over a shorter
+ * ledger is just a fold over a shorter ledger. That asymmetry is measured in both directions, not asserted: hide
+ * a MIDDLE row of a real chain and the epoch CAS convicts the reader (`REVIEW_ASSIGNMENT_EPOCH_CONFLICT`, folded
+ * into `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`); hide the NEWEST row and the command is accepted.
+ * The consequence of that second shape is worse than "two live rows in one epoch", and the leg pins it: the
+ * writer mints the next sequence claiming an epoch an earlier row already claimed, and from that moment the case
+ * is permanently unwritable — every later command reads both rows and refuses to fold them. A `slice`, a stale
+ * cache or a filtered adapter behind this port is an adapter bug with
+ * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
+ * whoever writes the adapter (PR-I1b) and not to a defensive check here.
+ *
+ * The shape above is silent about what a returned ledger answer may do besides be read, so the promise is written
+ * here: a reader may throw, it may return something that throws when it is walked, and this module treats either as
+ * an answer rather than a crash. All four places that read the ledger are guarded over the WHOLE read — the call,
+ * the iteration and the per-row property access — and a reader that fails in any of those ways is met with a
+ * refusal naming the state the module is really in: nothing this command did is durable, or durable but unreadable,
+ * or durable and identified, or not corroborated at its own sequence — never with an exception reaching the caller
+ * (measured: `answers with a refusal instead of an exception at EVERY read of the injected ledger`, plus the
+ * round-3 legs for a null element and for a cursor that throws on iteration).
+ * The two other injected ports answer under the same law: a clock that throws is met beside the branch that screens
+ * an unreadable clock VALUE, and a lock that refuses the acquisition is met with the first durability claim,
+ * because the acquisition is taken before anything is allocated. A rejection raised from INSIDE the critical
+ * section is not relabelled as a lock failure — inside, the branches above already answer for themselves, and a
+ * guard that swallowed them would be the same lie in a new place.
+ * An adapter may therefore hand this writer a ledger, a clock or a lock that fails and the contract still answers;
+ * what it must not hand it is a ledger that lies by omission.
+ */
+export interface ReviewAssignmentLedgerReaderPort {
+    list(): readonly ReviewAssignmentLedgerRow[];
+}
+/**
+ * Per-root serialisation. `withLock` must be non-reentrant from this module's point of view: this writer holds it
+ * exactly once per call and never calls back into itself.
+ */
+export interface ReviewAssignmentLockPort {
+    withLock<T>(rootSessionId: string, critical: () => Promise<T>): Promise<T>;
+}
+/** Everything the writer needs. No optional port: an half-wired writer is the dormant half this lane forbids. */
+export interface ReviewAssignmentStoreDeps {
+    readonly ledger: ReviewAssignmentLedgerWriterPort & ReviewAssignmentLedgerReaderPort;
+    readonly lock: ReviewAssignmentLockPort;
+    /** The store's clock (ISO-8601). Precedent: `GovernanceProposalStoreDeps.now` — the durable stamp is the
+     *  store's, not the caller's, so a caller cannot date its own fact. */
+    readonly now: () => string;
+}
+/** The command shape. `kind` is the operation the caller decided; legality is decided by `checkAssignmentMutation`. */
+export interface ReviewAssignmentCommand {
+    readonly kind: ReviewAssignmentFactKind;
+    readonly rootSessionId: string;
+    readonly approvalCaseId: string;
+    readonly currentLegRequestId: string;
+    /** The target the row will name: the new handler for `created`/`transferred`, the outgoing one for `retired`. */
+    readonly target: ReviewAssignmentTarget;
+    readonly reasonCode: string;
+    readonly basedOnCaseVersion: string;
+    readonly actorCallerRef: string;
+}
+/** A durable write, or a faithful report of a replay that needed no write. */
+export interface ReviewAssignmentWriteApplied {
+    readonly ok: true;
+    /** `'already'` is the idempotent-replay answer of D-4: this exact row is already durable at this sequence. */
+    readonly applied: 'written' | 'already';
+    readonly sequence: number;
+    readonly factType: string;
+    readonly assignmentEpoch: number;
+    readonly payload: ReviewAssignmentPayload;
+    /** The fold as it stands after the write, so the caller can act without a second read. */
+    readonly state: ReviewAssignmentState;
+}
+export type ReviewAssignmentWriteResult = ReviewAssignmentWriteApplied | {
+    readonly ok: false;
+    readonly refusal: ReviewAssignmentRefusalCode;
+    readonly detail: string;
+};
+/**
+ * The one entry point: fold the family, decide legality, write, read back.
+ *
+ * Everything happens inside one `withLock` hold, and the fold is done FROM THE LEDGER inside that hold rather than
+ * taken from a cache — the same discipline `loadControlState` uses (`control/service.ts:1766`: re-fold inside the
+ * lock, never trust a cached view), and the reason the epoch CAS in A-2 means anything.
+ */
+export declare function applyReviewAssignment(deps: ReviewAssignmentStoreDeps, command: ReviewAssignmentCommand): Promise<ReviewAssignmentWriteResult>;
+//# sourceMappingURL=writer.d.ts.map

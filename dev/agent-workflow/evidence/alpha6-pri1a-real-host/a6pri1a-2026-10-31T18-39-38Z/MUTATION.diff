@@ -1,0 +1,11 @@
+--- a/tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
++++ b/tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
+@@ -660,7 +660,7 @@
+           `reported=${String(p1?.pid)} spawned=${String(host1.spawnPid)}`),
+         conjunct('driver', 'boot-1 self-reported argv0 equals the marker this driver stamped', p1?.argv0 === host1.marker,
+           `reported=${String(p1?.argv0)} stamped=${host1.marker}`),
+-        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,
++        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host1.spawnPid,
+           `reported=${String(p2?.pid)} spawned=${String(host2.spawnPid)}`),
+         conjunct('driver', 'boot-2 self-reported argv0 equals the marker this driver stamped', p2?.argv0 === host2.marker,
+           `reported=${String(p2?.argv0)} stamped=${host2.marker}`),

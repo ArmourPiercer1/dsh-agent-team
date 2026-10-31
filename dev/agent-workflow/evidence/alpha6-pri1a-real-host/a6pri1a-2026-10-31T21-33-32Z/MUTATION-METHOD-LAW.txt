@@ -1,0 +1,45 @@
+=== METHOD LAW — r19-mut-seq ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        : step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 1,
+replaced by       : step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 2,
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the same file at HEAD of this tree hashes to the same sha256 — the pinned bytes are the committed bytes
+--- exact bytes planted ---
+planted: <      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 1,>
+planted: <      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 2,>
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+counts after  : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+expected after: {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 290; TO occurs once on the mutated line
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : 9a3341f9d3978ceb5fcc36ff454094814a6e2079b9817906bf0ed5c11318a023
+--- exact bytes changed (the committed diff, verbatim) ---
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -287,7 +287,7 @@
+       const fresh = await writer.applyReviewAssignment(deps, command({
+         kind: 'created', approvalCaseId: `${config.approvalCaseId ?? 'approval-case-a6pri1a'}-second`,
+       }))
+-      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 1,
++      step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 2,
+         JSON.stringify(fresh.ok
+           ? { applied: fresh.applied, sequence: fresh.sequence, epoch: fresh.assignmentEpoch, previousMax, expected: previousMax + 1 }
+           : { refusal: fresh.refusal, detail: fresh.detail }))
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3185) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-new-family-continues-the-chain
+named red leg as stated: boot-2-new-family-continues-the-chain
+stated reason present in the transcript: pri1a-probe-row\.mjs:290 step\(.new-family-writes-after-restart.
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:290 step('new-family-writes-after-restart', fresh.ok === true && fresh.sequence === previousMax + 2,
+run directory created by this run: a6pri1a-2026-10-31T21-33-32Z
+--- restore (exit path) ---
+restored from <scratch>/base/r19-mut-seq.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass

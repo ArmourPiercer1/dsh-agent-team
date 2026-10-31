@@ -1,0 +1,13 @@
+# self-test-level method law — A6-string-content (2026-10-31, round-4 fix round; reviewer plant reproduced at fixed bytes)
+# target: tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs · pinned sha256: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+# pre-flight: the target hashes to the pin
+# planted bytes (printed from the file itself — the changed line; < planted, > pinned baseline):
+261c261
+<         && String.raw`previousBootArgv0 !== process.argv0`.length === 35 && previousBootArgv0 !== null
+---
+>         && previousBootArgv0 !== null && previousBootArgv0 !== process.argv0
+# sha256 mutated: 133057531ec362862ca55df36a46deb3752c58e66f85355d1ca31db865631b13
+# command: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+# command exit code: 0
+# DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=55 problems=0
+# restore verified: sha256 == pin, node --check ok

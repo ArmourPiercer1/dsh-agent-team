@@ -1321,7 +1321,24 @@ describe('A-8 the lane computes and refuses, and touches nothing', () => {
     // genuinely needs entropy; this lane derives nothing, and a lane must not acquire its neighbour's
     // permissions by inheritance (review F-9a). Sibling names are DERIVED from the module list so the
     // closed set exists once.
-    const laneModules = ['types', 'facts', 'router', 'handoff']
+    const laneModules = ['types', 'facts', 'router', 'handoff', 'writer']
+    // Two lists of the same closed set is a drift hazard, and this file just paid for it: PR-I1a added
+    // `writer.ts` to the hygiene spec's module list and this leg failed, which is the loud direction. The
+    // quiet direction is someone adding a module HERE and letting the hygiene spec's floor go stale, so the
+    // lists are now compared rather than trusted — the hygiene spec's own declarations are read out of its
+    // source, comments stripped, and required to name exactly what this leg allows.
+    const hygiene = readFileSync(join(RUNTIME_ROOT, 'test', 'a6-pr2-lane-hygiene.test.ts'), 'utf8')
+    const declared = (name: string): string[] => {
+      const block = new RegExp(`const ${name}(?::[^=]+)?\\s*=\\s*\\[([\\s\\S]*?)\\]`).exec(hygiene)
+      expect(block, `${name} moved out of the hygiene spec — re-read it, do not guess`).not.toBeNull()
+      // Quoted names only, on any layout: `FOUNDING_MODULES` is written on one line and
+      // `EXTRA_MODULES_ALLOWED` one per line with a rationale comment, and both shapes must keep working.
+      return [...(block?.[1] ?? '').matchAll(/'([\w.]+)'/g)].map((match) => match[1] as string)
+    }
+    // The hygiene list names the barrel too; this leg walks the barrel separately below, so the comparison
+    // adds it rather than dropping the check.
+    expect([...declared('FOUNDING_MODULES'), ...declared('EXTRA_MODULES_ALLOWED')].map((file) => file.replace(/\.ts$/, '')).sort())
+      .toEqual([...laneModules, 'index'].sort())
     const allowed = new RegExp(
       `^(?:\\.\\./\\.\\./contracts/src/index\\.js|\\.\\./review-mandate/index\\.js|\\./(?:${laneModules.join('|')})\\.js)$`,
     )

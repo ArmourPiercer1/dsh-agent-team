@@ -1,0 +1,16 @@
+# self-test-level method law — S5-spread-copy (2026-10-31, round-4 fix round; reviewer plant reproduced at fixed bytes)
+# target: tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs · pinned sha256: 0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5
+# pre-flight: the target hashes to the pin
+# planted bytes (printed from the file itself — the changed line; < planted, > pinned baseline):
+463c463
+<   const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', { ...ARM_SELFTEST, lines: 4 })
+---
+>   const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', ARM_SELFTEST)
+# sha256 mutated: 5fa1ad68819f2895c73db0fd4829c4bd35f025b9fe6425ffe3bfb105632048b8
+# command: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+# command exit code: 1
+# SELFTEST PROBLEM driver-conjunct-resolves-to-a-line — tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:<descriptor was not built by the builder>
+# SELFTEST PROBLEM driver-conjunct-quotes-its-own-bytes — ["tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:<only a descriptor returned by bareQuote/armDescriptor may be quoted — a spread copy or an object literal skipped every registration rule this instrument relies on; REFUSING to quote>"]
+# SELFTEST PROBLEM graded-block-marks-the-red-arm — FAIL selftest-renders-a-graded-fail — synthetic leg — nothing about the writer was measured here | FAIL-GRADED selftest-renders-a-graded-fail — 1 conjunct(s) this leg evaluated; each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine): | FAIL-GRADED   RED  [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:<descriptor was not built by the builder> — selftest graded arm: spawned boot 1=1 boot 2=1 | FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:<only a descriptor returned by bareQuote/armDescriptor may be quoted — a spread copy or an object literal skipped every registration rule this instrument relies on; REFUSING to quote>
+# DSH-PRI1A-REALHOST-SELFTEST verdict=fail checks=55 problems=3 failed=driver-conjunct-resolves-to-a-line,driver-conjunct-quotes-its-own-bytes,graded-block-marks-the-red-arm
+# restore verified: sha256 == pin, node --check ok

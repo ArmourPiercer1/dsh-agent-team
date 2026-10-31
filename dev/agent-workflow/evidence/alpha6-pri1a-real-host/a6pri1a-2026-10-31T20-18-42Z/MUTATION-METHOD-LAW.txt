@@ -1,0 +1,43 @@
+=== METHOD LAW — plant-b-span-drift ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        : 
+replaced by       : // plant-B comment line planted inside the graded two-line span
+plant             : a pure insertion — one line added, nothing removed
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the same file at HEAD of this tree hashes to the same sha256 — the pinned bytes are the committed bytes
+--- exact bytes planted by the pre-diff (a committed mutation this plant sits on top of) ---
+planted: <      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid>
+planted: <      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid>
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 260; TO occurs once on the mutated line
+pre-diff counts : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17856, 'lines': 313} (predicted from its own -/+ lines: match)
+pre-diff confirmed: one line replaced, exactly its own bytes, nothing else in the file moved
+plant baseline    : the plant below is graded against the bytes the pre-diff produced; the restore at the end still returns the pinned bytes
+--- exact bytes planted ---
+planted: <      // plant-B comment line planted inside the graded two-line span>
+plant-b: read back from disk — line 261 = <      // plant-B comment line planted inside the graded two-line span>, INSIDE the graded span that starts on line 260; the arm's second line is now line 262
+plant-b: inserted as line 261, INSIDE the graded span that starts on line 260 — the arm's second line is now line 262
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17856, 'lines': 313}
+counts after  : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 314, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17926, 'lines': 314}
+expected after: {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 314, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17926, 'lines': 314}
+structure assertion: exactly one line was ADDED and it is the declared line, at line 261 — nothing else moved
+added on line(s): [261]
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : 8d43b5b611eecb6da30042800fbf45a3bf7762b541bc622843fbc94b1d5e398f
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3189) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-reopened-in-a-fresh-process
+named red leg as stated: boot-2-reopened-in-a-fresh-process
+stated reason present in the transcript: REFUSING to quote bytes it did not grade
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:<line 261 of this arm's 2-line span does not contain its signature "previousBootArgv0 !== process.argv0" — the arm moved or was rewritten; REFUSING to quote bytes it did not grade>
+run directory created by this run: a6pri1a-2026-10-31T20-18-42Z
+--- restore (exit path) ---
+restored from <scratch>/base/plant-b-span-drift.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass

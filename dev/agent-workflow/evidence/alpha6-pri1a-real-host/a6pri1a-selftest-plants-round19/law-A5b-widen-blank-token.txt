@@ -1,0 +1,14 @@
+# self-test-level method law — A5b-widen-blank-token (2026-10-31, round-4 fix round; reviewer plant reproduced at fixed bytes)
+# target: tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs · pinned sha256: 0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5
+# pre-flight: the target hashes to the pin
+# planted bytes (printed from the file itself — the changed line; < planted, > pinned baseline):
+270c270
+< const ARM_NEW_FAMILY_STEP = armDescriptor(PROBE_REL, "step('new-family-writes-after-restart'", 6, ['JSON.stringify(fresh.ok', 'applied: fresh.applied', 'refusal: fresh.refusal', '', 'await domain.close()'])
+---
+> const ARM_NEW_FAMILY_STEP = armDescriptor(PROBE_REL, "step('new-family-writes-after-restart'", 4, ['JSON.stringify(fresh.ok', 'applied: fresh.applied', 'refusal: fresh.refusal'])
+# sha256 mutated: 1a9f45fe79c489662d057d2ae8f3d2b831998e202b54199a8848cb6be06d8018
+# command: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+# command exit code: 1
+#     if (blankToken(token)) throw new Error(`arm descriptor ${JSON.stringify(anchor)}: signature token ${String(k + 2)} is ${JSON.stringify(token)} — a blank token is contained in every line and certifies no line; refusing to register`)
+# Error: arm descriptor "step('new-family-writes-after-restart'": signature token 5 is "" — a blank token is contained in every line and certifies no line; refusing to register
+# restore verified: sha256 == pin, node --check ok

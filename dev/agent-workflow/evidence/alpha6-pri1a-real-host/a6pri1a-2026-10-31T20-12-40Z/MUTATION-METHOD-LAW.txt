@@ -1,0 +1,45 @@
+=== METHOD LAW — mut-pid ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        : const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid
+replaced by       : const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the same file at HEAD of this tree hashes to the same sha256 — the pinned bytes are the committed bytes
+--- exact bytes planted ---
+planted: <      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid>
+planted: <      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid>
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+counts after  : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17856, 'lines': 313}
+expected after: {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17856, 'lines': 313}
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 260; TO occurs once on the mutated line
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : 900b40151fe07b3e7d7da49927a20ada5931e514cc47c5db27bae446e5f765b4
+--- exact bytes changed (the committed diff, verbatim) ---
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -257,7 +257,7 @@
+       // the two reported pids against the two pids it spawned, so neither end can fake the other.
+       const previousBootPid = Number(config.previousBootPid)
+       const previousBootArgv0 = typeof config.previousBootArgv0 === 'string' ? config.previousBootArgv0 : null
+-      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid
++      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid
+         && previousBootArgv0 !== null && previousBootArgv0 !== process.argv0
+       const domain = await teamDomainModule.openTeamDomain(seam)
+       step('domain-reopened-fresh-process', freshProcess,
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3186) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-reopened-in-a-fresh-process
+named red leg as stated: boot-2-reopened-in-a-fresh-process
+stated reason present in the transcript: process\.pid !== process\.pid
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:260 const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid
+run directory created by this run: a6pri1a-2026-10-31T20-12-40Z
+--- restore (exit path) ---
+restored from <scratch>/base/mut-pid.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass
