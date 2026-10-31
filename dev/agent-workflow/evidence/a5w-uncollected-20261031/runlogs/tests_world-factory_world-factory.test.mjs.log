@@ -1,0 +1,34 @@
+SURVIVOR-PROBE 1793455826347 health-effect ok=true
+U5-SURVIVOR-READY fake-survivor 1793455826347 health-effect
+SURVIVOR-PROBE 1793455826598 after-reclaim ok=true
+SURVIVOR-PROBE 1793455829326 health-effect ok=true
+SURVIVOR-PROBE 1793455829577 after-reclaim ok=true
+✔ C1 dry-run uses supervisor path without starts and proves hold ordering (4444.818563ms)
+✔ C1 team-tree provenance is independent and fail-closed on dirty tracked paths (0.846593ms)
+✔ C1 survivor sequencing is fail-closed with real successful probes and identity continuity (0.291552ms)
+✔ C1 kill handshake: kill fires ONLY after HELD + authenticated READY receipt; knob without receipt is NOT_REACHED (0.258078ms)
+✔ C1 survivor sequencing: window and held-until-reclaim are independent facts (no aliased boolean) (0.185612ms)
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (51.622381ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (0.85568ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.567344ms)
+
+Interrupted while running:
+
+⚠ tests/world-factory/world-factory.test.mjs (tests/world-factory/world-factory.test.mjs:1:1)
+✖ tests/world-factory/world-factory.test.mjs (59958.381361ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59963.378392
+
+✖ failing tests:
+
+test at tests/world-factory/world-factory.test.mjs:1:1
+✖ tests/world-factory/world-factory.test.mjs (59958.381361ms)
+  'Promise resolution is still pending but the event loop has already resolved'
+Command exited with non-zero status 124
+   wall=60.01s

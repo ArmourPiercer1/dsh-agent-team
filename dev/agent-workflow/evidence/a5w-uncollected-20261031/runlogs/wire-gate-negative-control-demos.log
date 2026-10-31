@@ -1,0 +1,49 @@
+# a5w-uncollected 挂腿+防复发门实施 —— 负控与形状记录（dated 2026-10-31，wire 席亲跑捕获）
+
+## 1. 负控演示 1 —— EXEMPT 表去掉 world-factory.test.mjs 豁免 → 门必红
+
+方法：把 `scripts/eb3-node-test-collection.mjs` 整文件复制为临时件
+`scripts/.tmp-ntc-negctl.mjs`（未跟踪；脚本内 ROOT 由自身位置解析，故放 scripts/ 下
+可原样运行），从复制件的 EXEMPT 数组删除 `tests/world-factory/world-factory.test.mjs`
+条目后运行复制件。**真实脚本零改动**，演示后复制件即删。输出逐字：
+
+```
+$ node scripts/.tmp-ntc-negctl.mjs
+  CI_NODE_TEST_UNCOLLECTED tests/world-factory/world-factory.test.mjs — tracked, collected by no manifest leg and no explicit node --test line, and absent from the EXEMPT table: add it to a step+leg, or add a dated exemption with a re-review trigger
+EB3-NODE-TEST-COLLECTION fail files=38 exempt=12 findings=1 warnings=0
+exit=1
+```
+
+## 2. 负控演示 2 —— 已收集文件被豁免 → 警告不红（提示删豁免）
+
+方法：复制件 `scripts/.tmp-ntc-warndemo.mjs` 在 EXEMPT 表头部加一条指向已被
+ci-integration 收集的 `scripts/sanitize-evidence.regression.test.mjs` 的演示豁免。输出逐字：
+
+```
+$ node scripts/.tmp-ntc-warndemo.mjs
+  WARNING CI_NODE_TEST_EXEMPT_NOW_COLLECTED scripts/sanitize-evidence.regression.test.mjs — collected by CI while still exempt; delete the EXEMPT entry (DEMO)
+EB3-NODE-TEST-COLLECTION pass files=38 exempt=14 findings=0 warnings=1
+exit=0
+```
+
+## 3. 注册形状实测红 —— 「cmd 完整命令 + check=脚本自身路径」按 eb3-ci-required 语法不可判
+
+brief 要求新 leg「cmd 完整命令，check 含脚本自身路径」。按字面注册
+（cmd=["node","scripts/eb3-node-test-collection.mjs"] 且 check=["scripts/eb3-node-test-collection.mjs"]）
+后 `node scripts/eb3-ci-required.mjs` 当场红，逐字：
+
+```
+  CI_LAYER_LEG_WEAKENED layer ci-integration: leg "eb3-node-test-collection" — `node scripts/eb3-node-test-collection.mjs` runs but weakened — EB3-NODE-TEST-COLLECTION: every tracked *.test.mjs is collected or exempted: missing scripts/eb3-node-test-collection.mjs (.github/workflows/ci-integration.yml#ci-integration)
+EB3-CI-REQUIRED fail workflows=9 findings=1
+exit=1
+```
+
+根因（代码判读 = scripts/eb3-ci-required.mjs gradeLeg()）：check 令牌逐条对照
+`rest = hit.argv.slice(leg.cmd.length)`，即 **cmd 前缀之后**的 argv；脚本腿的命令行在
+完整 cmd 之后没有任何 argv，故 check 里的自身路径永不可能被满足——「完整 cmd + 自身
+路径 check」是构造上不可判的形状。处置：leg 改为仓内治理脚本先例形状
+（eb3-ci-required / eb3-trusted-sources / eb3-negative-controls 全部 = cmd 完整命令、
+无 check），脚本路径仍是该 leg 的钉死令牌——从步骤删除/改名 = CI_LAYER_LEG_MISSING
+（比 WEAKENED 更早点名）。改后 `EB3-CI-REQUIRED pass workflows=9 findings=0`。
+两全替代（cmd=["node"]+check=[脚本路径]）会放宽行匹配（任何 `node X` 行都成候选），
+未采用。差异只在报哪条 finding code，收集强度不变；此段即披露。

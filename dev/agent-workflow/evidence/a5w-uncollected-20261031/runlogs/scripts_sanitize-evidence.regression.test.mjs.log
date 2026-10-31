@@ -1,0 +1,33 @@
+✔ refuses destination symlink before altering raw or another destination (41.152467ms)
+✔ refuses default-manifest symlink before altering raw or another destination (34.257225ms)
+✔ refuses explicit-manifest symlink before altering raw or another destination (34.283253ms)
+✔ refuses store symlink before altering raw or another destination (41.372373ms)
+✔ refuses destination hardlink before altering raw or another destination (46.584831ms)
+✔ refuses default-manifest hardlink before altering raw or another destination (40.27093ms)
+✔ refuses explicit-manifest hardlink before altering raw or another destination (40.347271ms)
+✔ refuses store hardlink before altering raw or another destination (38.022994ms)
+✔ refuses a nested destination directory symlink before writing (35.494326ms)
+✔ refuses a nested store directory symlink before writing (42.061999ms)
+✔ refuses source file symlinks before writes (40.93712ms)
+✔ refuses source directory symlinks before writes (36.950113ms)
+✔ rejects a manifest path that collides with a captured file (36.794857ms)
+✔ redacts double-quoted YAML, verifies dirty input and clean output, preserves raw (118.845622ms)
+✔ redacts single-quoted YAML, verifies dirty input and clean output, preserves raw (119.347092ms)
+✔ redacts escaped double-quoted YAML, verifies dirty input and clean output, preserves raw (116.257091ms)
+✔ redacts escaped single-quoted YAML, verifies dirty input and clean output, preserves raw (111.38098ms)
+✔ redacts YAML list entry, verifies dirty input and clean output, preserves raw (118.850642ms)
+✔ redacts escaped JSON, verifies dirty input and clean output, preserves raw (105.920163ms)
+✔ redacts pretty JSON, verifies dirty input and clean output, preserves raw (105.373788ms)
+✔ redacts JSONL, verifies dirty input and clean output, preserves raw (113.868357ms)
+✔ redacts NDJSON, verifies dirty input and clean output, preserves raw (115.134339ms)
+✔ redacts extensionless, verifies dirty input and clean output, preserves raw (106.031893ms)
+✔ does not bless an unredacted value merely containing the marker word (34.628708ms)
+✔ forced replacement preserves raw and backup hashes, including extensionless (79.035283ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1815.224985

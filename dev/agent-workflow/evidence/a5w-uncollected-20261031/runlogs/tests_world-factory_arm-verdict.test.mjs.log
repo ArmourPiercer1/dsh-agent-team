@@ -1,0 +1,25 @@
+✔ T1 reached the step and the witness is absent → FAIL, never an environment verdict (0.751673ms)
+✔ T2 never reached + no signal → NOT_REACHED, and it states it is not an environment claim (0.164321ms)
+✔ T3 a bare in-test reason is NOT a signal — prose-only writers get NOT_REACHED (0.111832ms)
+✔ T4 a paraphrased signal (not verbatim in the captured channel) is rejected (0.117342ms)
+✔ T5 a signal from a channel outside the closed set is rejected (0.118975ms)
+✔ T6 a PRODUCT refusal quote never buys ENV_BLOCK (the laundering case) (0.13229ms)
+✔ T7 a verbatim host-log plane-admission refusal IS a signal → ENV_BLOCK quoting it (0.296431ms)
+✔ T8 the kit-provision channel is the second sanctioned environment wall (0.187946ms)
+✔ T9 the sandbox channel needs the pre-flight conjunction, same law as nativeConfinementEnvBlock (0.273909ms)
+✔ T10 gateEnvBlock: the suite-level door demotes a signal-less ENV_BLOCK to NOT_REACHED (0.254903ms)
+✔ T11 an empty / whitespace-only observed corpus can never produce a signal (0.138773ms)
+✔ T12 a shape-identical FORGED signal buys nothing at either door (0.127461ms)
+✔ T13 a JSON round-trip copy of a GENUINE signal is not a signal (0.512901ms)
+✔ T14 the gate re-derives CAUSALLY: a quote its corpus no longer contains loses ENV_BLOCK (0.082196ms)
+✔ T15 the suite wire (envSignal → classify → add()/gate) honors a genuine wall, nothing else (0.229705ms)
+✔ T17 (R-ENVBLOCK-2 F-2) the channel is bound at MINT: a post-mutated sig.channel buys nothing (0.24337ms)
+✔ synth:T18 injected never-reached drive → NOT_REACHED through the suite door (SYNTHETIC — never real-host C2, USER-RULING-20261031 §3) (0.154142ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.01301

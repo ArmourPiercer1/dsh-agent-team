@@ -1,0 +1,288 @@
+✔ T1 the pinned asset manifest is committed and keyed by the pinned host baseline (1.437832ms)
+✖ T2 a tree whose assets are present and match the manifest reports present and writes nothing (23.595419ms)
+✖ T3 a fresh-clone shaped tree is unusable, gets provisioned, and the host probe then works (42.923951ms)
+✖ T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue (40.773411ms)
+✔ T5 a destination whose existing bytes mismatch the manifest fails closed and is never overwritten (22.826444ms)
+✔ T6 an unmanifested host baseline fails closed instead of copying anything (15.776516ms)
+✔ T7 a source tree without the asset fails closed with a typed error (38.368328ms)
+✖ T8 the source tree is never the destination, and the env override is honoured (62.390736ms)
+✖ T9 provisioning keeps the destination runtime tree git status --porcelain EMPTY (51.810845ms)
+✔ T10 the provisioner has no network path (local copy only) (0.804994ms)
+✖ T11 the pre-flight record binds probe verdict + launcher digest + provenance (84.081088ms)
+✔ T12 an unprovisionable tree records unusable + the provision error and never throws (70.808401ms)
+✔ T13 a supply-chain digest mismatch is a THROWN pre-flight error, never a recorded backend (50.851009ms)
+✔ T14 only the host typed unavailable signal matches (0.262126ms)
+✔ u74a deny-leg: typed APPROVAL_DENIED + honest zero, each flip FAIL (0.960999ms)
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (119.45293ms)
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (111.809033ms)
+✖ T17 the pre-flight is visible on the RUN record and in the summary line (119.590001ms)
+✔ T18 (F8) the advertised CLI flag works, and a manifest problem exits 2 through the FAIL-CLOSED printer (244.305165ms)
+✖ T19 (F5) the provisioning source must be a real directory inside a trusted tree — the source tree's JS is imported, so its path is a code-supply decision (0.520526ms)
+✔ T20 (F6) a manifest path outside the platform bin/ is refused before ANY filesystem mutation (91.956117ms)
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (30.886963ms)
+✖ T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight record; a structurally perfect forgery stays FAIL (97.666868ms)
+✖ T23 (R-ASSET-MODE-1) a present asset whose MODE drifted from the pin is refused, never reported present (13.389348ms)
+✖ T24 (R-ASSET-MODE-1) a present asset at the pinned mode still reports present (mode re-verified) (13.156557ms)
+✖ T25 (R-MODEBITS) a present asset at 0o4600 (SETUID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT (22.79251ms)
+✖ T26 (R-MODEBITS) a present asset at 0o2644 (SETGID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT (22.097765ms)
+✖ T27 (R451 O-1) setuid on LOW BITS THAT MATCH THE PIN (0o4755 vs 0o755) is drift, not a silent present — the true bug class (15.36083ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 11
+ℹ fail 17
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1491.177785
+
+✖ failing tests:
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:200:1
+✖ T2 a tree whose assets are present and match the manifest reports present and writes nothing (23.595419ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/present-GvmrVz hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the runner never overwrites bytes it did not create
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:406:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:207:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'DESTINATION_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:220:1
+✖ T3 a fresh-clone shaped tree is unusable, gets provisioned, and the host probe then works (42.923951ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/fresh-src-MilpwU hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/fresh-VR80HQ
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:231:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:247:1
+✖ T4 a wrong-hash source binary NEVER lands: typed error, both digests, zero residue (40.773411ms)
+  AssertionError [ERR_ASSERTION]: the message names the EXPECTED digest
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:258:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:251:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:310:1
+✖ T8 the source tree is never the destination, and the env override is honoured (62.390736ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/envsrc-AdKih3 hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/selfsrc-woQgfb
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:320:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:330:1
+✖ T9 provisioning keeps the destination runtime tree git status --porcelain EMPTY (51.810845ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/porcelain-src-sRErEg hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/porcelain-dZ6wvC
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:335:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:363:1
+✖ T11 the pre-flight record binds probe verdict + launcher digest + provenance (84.081088ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/pre-src-h1TwSJ hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/pre-Lk3EaM
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async preflightHostSandbox (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:620:20)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:368:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:504:1
+✖ T15 u74a native leg: ENV_BLOCK only for the probe+typed-message conjunction (119.45293ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-src-pVO6YR hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-w4GKGw
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async preflightHostSandbox (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:620:20)
+      at async realPreflightRecords (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:729:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:506:32)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:582:1
+✖ T16 ARC-D native parity shares the conjunction: ENV_BLOCK only when probe+typed message agree (111.809033ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-src-PEbt63 hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-tTDRwB
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async preflightHostSandbox (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:620:20)
+      at async realPreflightRecords (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:729:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:583:32)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:610:1
+✖ T17 the pre-flight is visible on the RUN record and in the summary line (119.590001ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-src-EkAMSN hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-fPIyAP
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async preflightHostSandbox (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:620:20)
+      at async realPreflightRecords (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:729:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:611:32)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:737:1
+✖ T19 (F5) the provisioning source must be a real directory inside a trusted tree — the source tree's JS is imported, so its path is a code-supply decision (0.520526ms)
+  Error: ENOENT: no such file or directory, lstat '/srv/workspace'
+      at realpathSync (node:fs:2862:29)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:749:30)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'lstat',
+    path: '/srv/workspace'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:928:1
+✖ T21 (F7) the pinned mode is parsed, applied and verified — not a hardcoded 0o755 (30.886963ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/mode-src-OBwib5 hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/mode-3VzEgt
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:935:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:974:1
+✖ T22 (F1) only a record MINTED by preflightHostSandbox() is a pre-flight record; a structurally perfect forgery stays FAIL (97.666868ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: SOURCE_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-src-iuIZDB hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84) says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the copy was refused and nothing was written to /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/real-usable-QsK2uR
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:457:13)
+      at async preflightHostSandbox (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:620:20)
+      at async realPreflightRecords (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:729:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:975:32)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SOURCE_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:997:1
+✖ T23 (R-ASSET-MODE-1) a present asset whose MODE drifted from the pin is refused, never reported present (13.389348ms)
+  AssertionError [ERR_ASSERTION]: expected ASSET_MODE_DRIFT, got DESTINATION_DIGEST_MISMATCH
+  + actual - expected
+  
+  + 'DESTINATION_DIGEST_MISMATCH'
+  - 'ASSET_MODE_DRIFT'
+  
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1010:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1006:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'DESTINATION_DIGEST_MISMATCH',
+    expected: 'ASSET_MODE_DRIFT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:1027:1
+✖ T24 (R-ASSET-MODE-1) a present asset at the pinned mode still reports present (mode re-verified) (13.156557ms)
+  Error [HostSandboxAssetError]: host-sandbox-assets: DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node in /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/.artifacts/tmp/host-sbx-assets/mode-present-ok-kiMGFN hashes 75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd, the pinned manifest says 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc — the runner never overwrites bytes it did not create
+      at provisionHostSandboxAssets (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/lib/host-sandbox-assets.mjs:406:13)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1030:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'DESTINATION_DIGEST_MISMATCH'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:1079:1
+✖ T25 (R-MODEBITS) a present asset at 0o4600 (SETUID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT (22.79251ms)
+  AssertionError [ERR_ASSERTION]: expected ASSET_MODE_DRIFT, got DESTINATION_DIGEST_MISMATCH
+  + actual - expected
+  
+  + 'DESTINATION_DIGEST_MISMATCH'
+  - 'ASSET_MODE_DRIFT'
+  
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1065:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertSpecialBitDrift (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1061:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1080:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'DESTINATION_DIGEST_MISMATCH',
+    expected: 'ASSET_MODE_DRIFT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:1083:1
+✖ T26 (R-MODEBITS) a present asset at 0o2644 (SETGID on top of the pin) aborts the pre-flight with ASSET_MODE_DRIFT (22.097765ms)
+  AssertionError [ERR_ASSERTION]: expected ASSET_MODE_DRIFT, got DESTINATION_DIGEST_MISMATCH
+  + actual - expected
+  
+  + 'DESTINATION_DIGEST_MISMATCH'
+  - 'ASSET_MODE_DRIFT'
+  
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1065:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertSpecialBitDrift (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1061:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1084:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'DESTINATION_DIGEST_MISMATCH',
+    expected: 'ASSET_MODE_DRIFT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/host-sandbox-assets.test.mjs:1087:1
+✖ T27 (R451 O-1) setuid on LOW BITS THAT MATCH THE PIN (0o4755 vs 0o755) is drift, not a silent present — the true bug class (15.36083ms)
+  AssertionError [ERR_ASSERTION]: expected ASSET_MODE_DRIFT, got DESTINATION_DIGEST_MISMATCH
+  + actual - expected
+  
+  + 'DESTINATION_DIGEST_MISMATCH'
+  - 'ASSET_MODE_DRIFT'
+  
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1107:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-uncollected/tests/world-factory/host-sandbox-assets.test.mjs:1103:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'DESTINATION_DIGEST_MISMATCH',
+    expected: 'ASSET_MODE_DRIFT',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+Command exited with non-zero status 1
+   wall=1.54s
