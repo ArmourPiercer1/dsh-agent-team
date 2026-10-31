@@ -347,8 +347,10 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
     for (const limits of [
       { horizonMs: Number.NaN, maxEntries: Number.NaN },
       { horizonMs: Number.POSITIVE_INFINITY, maxEntries: 64 },
-      { horizonMs: 3_600_000, maxEntries: 0 },
-      { horizonMs: -1, maxEntries: 64 },
+      // `maxEntries: 0` is deliberately NOT in this list any more: round 3 showed that a zero cap is the safest
+      // thing an operator can ask for (it refuses every new key), so honouring it replaced substituting 64.
+      // A negative cap is still garbage, and so is a fractional one.
+      { horizonMs: 3_600_000, maxEntries: -1 },
       { horizonMs: 3_600_000, maxEntries: 2.5 },
     ]) {
       const store = createReviewDeferStore(limits)
@@ -364,6 +366,73 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
     // The usable case is still usable — a substitution that also rejected good limits would be a different bug.
     const narrowed = createReviewDeferStore({ horizonMs: 10 * 60 * 1000, maxEntries: 1 })
     expect(narrowed.limits).toEqual({ horizonMs: 10 * 60 * 1000, maxEntries: 1 })
+  })
+
+  it('judges each bound on its own and keeps the one that suppresses', () => {
+    // Round-3 finding R3-2 on #509, against my own first fix: replacing the WHOLE object when one field is
+    // unusable LOOSENS the suppressive bound. `{horizonMs: 60_000, maxEntries: 2.5}` became a one-hour horizon
+    // because a *different* field was garbage — a 60× longer silence than configured, in the one direction this
+    // lane forbids. Per-field substitution is the fix, and it is measured here rather than asserted in prose.
+    expect(createReviewDeferStore({ horizonMs: 60_000, maxEntries: 2.5 }).limits)
+      .toEqual({ horizonMs: 60_000, maxEntries: REVIEW_DEFER_DEFAULT_LIMITS.maxEntries })
+    expect(createReviewDeferStore({ horizonMs: Number.NaN, maxEntries: 1 }).limits)
+      .toEqual({ horizonMs: REVIEW_DEFER_DEFAULT_LIMITS.horizonMs, maxEntries: 1 })
+
+    // Zero is not garbage, it is the safest thing an operator can ask for: a zero horizon refuses every floor and
+    // a zero cap refuses every new key, so both mean "no quiets, ever" — pure fail-open. The first version
+    // silently turned that into a live 64-entry suppressing plane.
+    const zeroHorizon = createReviewDeferStore({ horizonMs: 0, maxEntries: 64 })
+    expect(zeroHorizon.limits.horizonMs).toBe(0)
+    const refused = setReviewDefer(zeroHorizon, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+    expect(refused.ok).toBe(false)
+    if (!refused.ok) expect(refused.refusal).toBe('REVIEW_DEFER_HORIZON_EXCEEDED')
+    const zeroCap = createReviewDeferStore({ horizonMs: 3_600_000, maxEntries: 0 })
+    expect(zeroCap.limits.maxEntries).toBe(0)
+    const capped = setReviewDefer(zeroCap, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+    expect(capped.ok).toBe(false)
+    if (!capped.ok) expect(capped.refusal).toBe('REVIEW_DEFER_STORE_SATURATED')
+  })
+
+  it('owns its limits: the caller mutating its config object re-arms nothing', () => {
+    // Round-3 finding R3-1 on #509 — the defect was inside the fix for round 2's R2-1. Validating at
+    // construction while holding the CALLER'S reference meant one more line of ordinary config code re-opened the
+    // exact hole: refuse a ten-year floor, `myLimits.horizonMs = NaN`, then file 200 of them. Plane config is the
+    // most likely object in the tree to be read, mutated and re-read, so the store keeps a frozen copy.
+    const myLimits = { horizonMs: 3_600_000, maxEntries: 4 }
+    const store = createReviewDeferStore(myLimits)
+    expect(Object.isFrozen(store.limits)).toBe(true)
+    expect(store.limits === myLimits).toBe(false)
+    const first = setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, notBeforeIso: later(10 * 365 * 24 * 60 * 60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+    expect(first.ok).toBe(false)
+    myLimits.horizonMs = Number.NaN
+    myLimits.maxEntries = Number.NaN
+    expect(store.limits).toEqual({ horizonMs: 3_600_000, maxEntries: 4 })
+    const after = setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: 'case-second', legOrdinal: LEG, notBeforeIso: later(10 * 365 * 24 * 60 * 60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+    expect(after.ok, 'a ten-year floor became filable after the caller mutated its own limits').toBe(false)
+    if (!after.ok) expect(after.refusal).toBe('REVIEW_DEFER_HORIZON_EXCEEDED')
+  })
+
+  it('refuses identifiers that are not strings, instead of throwing or inventing a slot', () => {
+    // Round-3 finding R3-7 on #509: `ID_PATTERN.test` COERCES. `test(undefined)` tests the string "undefined"
+    // (which passes the pattern) and the value then reaches the length prefix and throws a TypeError out of a
+    // function whose whole contract is a refusal; `test(42)` passes and files a quiet under `…|2:42#1`, a slot no
+    // legal string id can ever address. Types forbid both, and the gate's catch kept every wake flowing, but a
+    // PR-I2 tool receives its arguments from JSON, which produces exactly these shapes.
+    const store = createReviewDeferStore()
+    for (const notAString of [undefined, null, 42, true, {}, [], Symbol('x') as unknown]) {
+      const filed = setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: notAString as never, legOrdinal: LEG, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' }, NOW)
+      expect(filed.ok, `set accepted a ${typeof notAString} case id`).toBe(false)
+      if (!filed.ok) expect(filed.refusal).toBe('REVIEW_DEFER_ID_MALFORMED')
+      const cancelled = cancelReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: notAString as never, legOrdinal: LEG }, NOW)
+      expect(cancelled.ok, `cancel accepted a ${typeof notAString} case id`).toBe(false)
+      if (!cancelled.ok) expect(cancelled.refusal).toBe('REVIEW_DEFER_ID_MALFORMED')
+      const derived = reviewDeferKeyOf(ROOT, record({ approvalCaseId: notAString as never }))
+      expect(derived.ok, `keyOf accepted a ${typeof notAString} case id`).toBe(false)
+      if (!derived.ok) expect(derived.refusal).toBe(notAString === undefined ? 'REVIEW_DEFER_CASE_UNIDENTIFIED' : 'REVIEW_DEFER_ID_MALFORMED')
+      const woken = decideReviewWake(store, ROOT, record({ approvalCaseId: notAString as never }), NOW)
+      expect(woken.decision, `a ${typeof notAString} case id suppressed a wake`).toBe('deliver')
+    }
+    expect(store.entries.size).toBe(0)
   })
 
   it('does not let a read destroy state when the caller\'s clock cannot be read', () => {
@@ -668,6 +737,9 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     // pre-Alpha.4 row (round-2 finding R2-3 on #509 — this shape used to answer WAKE_CASE_UNIDENTIFIED).
     produced.add(decideReviewWake(empty, ROOT, record({ requestId: 'not an id' }), NOW).reason)
     produced.add(decideReviewWake(empty, 'root id with spaces', record(), NOW).reason)
+    // A case id that is present and non-empty but malformed is the fourth shape that cannot address a slot, and
+    // the reason doc has to cover it (round-3 finding R3-6 on #509: the doc claimed "a case IS readable").
+    produced.add(decideReviewWake(empty, ROOT, record({ approvalCaseId: 'case with spaces' }), NOW).reason)
     // The two fail-open states, produced without a notifier in sight.
     const unreadable = createReviewDeferStore()
     defer(unreadable, { notBeforeIso: later(60 * 1000) })
@@ -718,7 +790,10 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     note(written)
     if (written.ok) throw new Error('an empty case id must not file a defer')
     expect(written.refusal).toBe('REVIEW_DEFER_ID_MALFORMED')
-    note(cancelReviewDefer(store, key({ approvalCaseId: '' }), NOW))
+    const cancelled = cancelReviewDefer(store, key({ approvalCaseId: '' }), NOW)
+    note(cancelled)
+    if (cancelled.ok) throw new Error('an empty case id must not cancel a defer')
+    expect(cancelled.refusal).toBe('REVIEW_DEFER_ID_MALFORMED')
     note(setReviewDefer(store, { ...base, notBeforeIso: later(2 * 60 * 1000) }, NOW))
     note(setReviewDefer(store, { ...base, notBeforeIso: 'someday' }, NOW))
     note(setReviewDefer(store, { ...base, notBeforeIso: later(10 * 60 * 1000 + 1) }, NOW))
@@ -747,6 +822,10 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
   it('states its limits instead of inheriting an implicit one', () => {
     expect(REVIEW_DEFER_DEFAULT_LIMITS.horizonMs).toBe(60 * 60 * 1000)
     expect(REVIEW_DEFER_DEFAULT_LIMITS.maxEntries).toBe(64)
-    expect(createReviewDeferStore().limits).toBe(REVIEW_DEFER_DEFAULT_LIMITS)
+    // `toEqual`, not `toBe`: after round-3 finding R3-1 the store holds a frozen COPY of whatever limits it was
+    // given, including the defaults, because sharing the caller's object is what let a mutation re-arm the bug.
+    const defaults = createReviewDeferStore().limits
+    expect(defaults).toEqual(REVIEW_DEFER_DEFAULT_LIMITS)
+    expect(Object.isFrozen(defaults)).toBe(true)
   })
 })

@@ -35,10 +35,13 @@ import {} from './types.js';
  *
  * Three of the nine refusals can reach a wake decision — the six write-side ones cannot, because no wake calls
  * `setReviewDefer` — and reporting all three as "the record carries no readable case" is a lie
- * about the two cases where the case IS readable: a `requestId` or a `rootSessionId` the platform would not mint
- * makes the SLOT unaddressable while leaving the case perfectly legible, and a row that names a case and no leg is
- * a third fact again. Each gets its own reason so no reader ever infers "pre-Alpha.4 row" from a hygiene failure
- * in the identity half.
+ * about two of them: an unmintable `requestId` or `rootSessionId` leaves the case perfectly legible and breaks only
+ * the address, and a row that names a case and no leg is a third fact again. `REVIEW_DEFER_ID_MALFORMED` itself
+ * covers four shapes (root, request, and a case id that is present but malformed — round-3 finding R3-6 on #509
+ * caught the first version of this paragraph claiming the case was always readable), and this mapping does not
+ * split them further: they share one consequence — nothing can be looked up — so they share
+ * `WAKE_KEY_UNADDRESSABLE`, which says exactly that and nothing about which field failed. Each reason still means
+ * one fact, and no reader can infer "pre-Alpha.4 row" from a hygiene failure.
  */
 function wakeReasonOfRefusal(refusal) {
     if (refusal === 'REVIEW_DEFER_LEG_MALFORMED')

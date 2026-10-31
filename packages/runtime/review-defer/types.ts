@@ -124,10 +124,12 @@ export const REVIEW_DEFER_WAKE_REASONS = [
    *  because an unattributable wake is nobody's to mute. This is the pre-Alpha.4 row and nothing else. */
   'WAKE_CASE_UNIDENTIFIED',
   /**
-   * A case IS readable but the slot cannot be addressed, because the root session id or the request id is not an
-   * id this platform would mint (round-2 finding R2-3 on #509: reporting this as `WAKE_CASE_UNIDENTIFIED` was a
-   * lie about the case, which was perfectly legible). Delivered, like everything unattributable — and distinguish
-   * able in a log from a row that simply predates Alpha.4.
+   * The record names identifiers, but at least one of them is not an id this platform would mint, so the slot
+   * cannot be addressed. Which field is not part of the meaning: it can be the root session id, the request id,
+   * or a case id that is present and non-empty yet malformed (round-3 finding R3-6 on #509 caught the first
+   * version of this sentence claiming "a case IS readable", which is false for that fourth producer). What all
+   * four shapes share is that nothing can be looked up, so the wake is delivered — and this stays distinguishable
+   * in a log from `WAKE_CASE_UNIDENTIFIED`, which means the field was simply absent.
    */
   'WAKE_KEY_UNADDRESSABLE',
   /** A case IS named and the leg is not. Attributable enough to notice, not attributable enough to mute. */

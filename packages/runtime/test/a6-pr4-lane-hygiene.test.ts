@@ -52,8 +52,9 @@ const PROTECTED_PREFIXES = [
 ]
 
 // `.mts`/`.cts` are in the set because a live glue seam is typed in a `.d.mts` long before anything imports it:
-// an option named `reviewDeferGate?:` arriving in a declaration file is exactly the drift this walk should catch,
-// and skipping declarations would make the screen blind to the earliest form of a wiring.
+// a declaration adding `reviewDeferGate?:` (camelCase, caught by the vocabulary screen below, which reads
+// `.mts`/`.cts` since this widening and since the camel spelling landed in that pattern) is the earliest form a
+// wiring takes, and skipping declarations would leave the screen blind to it.
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.mjs', '.cjs', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
@@ -200,13 +201,16 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     expect(count('createReviewDeferGate(')).toBe(0)
     expect(count('createReviewDeferStore(')).toBe(0)
     expect(count('createReviewDeferPort(')).toBe(0)
-    // And the same absence across the whole production surface, so the withdrawal is not undone by an import
-    // added somewhere a reviewer would not think to look.
+    // And the same absence across the whole production surface, so the withdrawal is not undone by a name added
+    // somewhere a reviewer would not think to look. CamelCase is in the pattern on purpose (round-3 findings
+    // R3-4/R3-5 on #509): the plane's config keys would be spelled `reviewDeferEnabled` / `reviewDeferGate`, and a
+    // screen reading only `review-defer|REVIEW_DEFER` is blind to the exact shape a flag arrives in — which made
+    // the tsconfig sentence it credits ("gated by no flag of any kind") untrue for the flag half.
     for (const file of walk(PACKAGES_ROOT)) {
       if (file.startsWith(LANE_DIR)) continue
       const rel = relative(PACKAGES_ROOT, file)
       if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`)) continue
-      expect(readFileSync(file, 'utf8'), `${rel} references the defer plane`).not.toMatch(/review-defer|REVIEW_DEFER/)
+      expect(readFileSync(file, 'utf8'), `${rel} references the defer plane`).not.toMatch(/review-defer|REVIEW_DEFER|reviewDefer/iu)
     }
   })
 
@@ -221,7 +225,9 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
   it('holds no clock, no timer, and no I/O of its own', () => {
     // A timer here would be a second scheduler driving review wakes; a clock read would make a floor
     // depend on which process asked. Both are laws, so both are grep-able.
-    const forbidden = ['Date.now', 'setTimeout', 'setInterval', 'process.', 'readFileSync', 'writeFileSync', 'Math.random']
+    // `new Date` and friends are needles because the store's doc claims a leg greps for them (round-3 finding
+    // R3-3 on #509 — it did not: the list stopped at `Date.now`, and a planted wall-clock read passed the leg).
+    const forbidden = ['Date.now', 'new Date', 'Date.UTC', 'performance.now', 'setTimeout', 'setInterval', 'process.', 'readFileSync', 'writeFileSync', 'Math.random']
     for (const file of walk(LANE_DIR)) {
       const source = readFileSync(file, 'utf8')
       for (const needle of forbidden) {

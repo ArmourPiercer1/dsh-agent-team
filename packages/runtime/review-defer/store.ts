@@ -132,14 +132,14 @@ export function reviewDeferKeyOf(
   rootSessionId: string,
   candidate: ReviewWakeCandidate,
 ): ReviewDeferResult<ReviewDeferKey> {
-  if (!ID_PATTERN.test(rootSessionId) || !ID_PATTERN.test(candidate.requestId)) {
+  if (!isMintedId(rootSessionId) || !isMintedId(candidate.requestId)) {
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / requestId failed hygiene')
   }
   const caseId = candidate.approvalCaseId
   if (caseId === undefined || caseId === '') {
     return refuse('REVIEW_DEFER_CASE_UNIDENTIFIED', 'the record carries no approvalCaseId (pre-Alpha.4 row)')
   }
-  if (!ID_PATTERN.test(caseId)) {
+  if (!isMintedId(caseId)) {
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'approvalCaseId failed hygiene')
   }
   const leg = candidate.legOrdinal
@@ -157,7 +157,7 @@ export function reviewDeferKeyOf(
  * team root, handed by reference to both the gate and the tool port.
  */
 export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_DEFAULT_LIMITS): ReviewDeferStore {
-  return { limits: usableLimits(limits), entries: new Map<string, ReviewDeferEntry>() }
+  return { limits: Object.freeze({ ...usableLimits(limits) }), entries: new Map<string, ReviewDeferEntry>() }
 }
 
 /**
@@ -167,16 +167,52 @@ export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_
  * `remaining > NaN` is false, so every floor fits the horizon, and `size >= NaN` is false, so the capacity never
  * refuses — a probe against the shipped lane filed a ten-year floor and 300 entries into a store declared at one
  * hour and sixty-four. Nothing can reach that today, because nothing constructs a store; `createReviewDeferStore`
- * takes caller limits, and PR-I2 is exactly the change that will feed plane config into it. So the constructor
- * treats a non-finite, non-positive, or non-integer bound as "no usable limit supplied" and keeps the frozen
- * default, which is the bounded answer. It is a substitution rather than a throw on purpose: this lane's posture
- * is that confusion produces an EXTRA wake, and a store that refuses to exist is a store somebody will wrap in a
- * `try` and then build unbounded. A leg pins both halves.
+ * takes caller limits, and PR-I2 is exactly the change that will feed plane config into it. So each bound is
+ * judged on its own and an unusable one falls back to the default FOR THAT FIELD. It is a substitution rather
+ * than a throw on purpose: this lane's posture is that confusion produces an EXTRA wake, and a store that refuses
+ * to exist is a store somebody will wrap in a `try` and then build unbounded.
+ *
+ * TWO CORRECTIONS FROM ROUND-3 REVIEW OF THIS FUNCTION ITSELF:
+ *
+ * (1) Per field, not per object. The first version replaced the WHOLE object, which silently LOOSENS the bound
+ * that suppresses — `{horizonMs: 60_000, maxEntries: 2.5}` became a one-hour horizon because a *different* field
+ * was unusable, a 60× longer silence than the operator configured, in the one direction this lane forbids.
+ *
+ * (2) `>= 0`, not `> 0`. Zero on either bound is not garbage, it is the safest configuration this lane can be
+ * given: a zero horizon refuses every floor (`HORIZON_EXCEEDED`) and a zero cap refuses every new key
+ * (`STORE_SATURATED`), so both mean "no quiets, ever" — pure fail-open. Rejecting it turned the safest setting
+ * into a live 64-entry suppressing plane.
+ *
+ * A finite-but-absurd value (`horizonMs: 100 years`) is TRUSTED, and that is deliberate: it is a limit somebody
+ * wrote down, and this lane has no authority to overrule plane policy — its authority is over garbage, not
+ * choices. What is NOT trusted, after R3-1, is the caller's object: the store keeps a frozen COPY, because a
+ * config object that is read, mutated and re-read is the normal shape of plane config, and validating at
+ * construction while holding the caller's reference meant `myLimits.horizonMs = NaN` re-armed the exact bug this
+ * function was written to close. Legs pin all of it: per-field preservation, zero semantics, and immutability
+ * after construction.
  */
 function usableLimits(limits: ReviewDeferLimits): ReviewDeferLimits {
-  const horizonUsable = Number.isFinite(limits.horizonMs) && limits.horizonMs > 0
-  const capUsable = Number.isInteger(limits.maxEntries) && limits.maxEntries >= 1
-  return horizonUsable && capUsable ? limits : REVIEW_DEFER_DEFAULT_LIMITS
+  const horizonUsable = Number.isFinite(limits.horizonMs) && limits.horizonMs >= 0
+  const capUsable = Number.isInteger(limits.maxEntries) && limits.maxEntries >= 0
+  return {
+    horizonMs: horizonUsable ? limits.horizonMs : REVIEW_DEFER_DEFAULT_LIMITS.horizonMs,
+    maxEntries: capUsable ? limits.maxEntries : REVIEW_DEFER_DEFAULT_LIMITS.maxEntries,
+  }
+}
+
+/**
+ * A minted identifier, or nothing that resembles one.
+ *
+ * `ID_PATTERN.test` COERCES, and that is a defect rather than a subtlety (round-3 finding R3-7 on #509):
+ * `test(undefined)` tests the string "undefined", which passes the pattern, and the value then reaches
+ * `reviewDeferEntryId`'s length prefix and throws a `TypeError` out of a function whose whole contract is a
+ * refusal; `test(42)` passes too, filing a quiet under a slot no legal string id can ever address. Both need a
+ * value the types forbid, and the gate's catch kept every wake flowing — but PR-I2's tool arguments arrive from
+ * JSON, which produces exactly these shapes. The instant validation below already does this correctly; the ids
+ * were the last place in the lane that tested a pattern without testing the type.
+ */
+function isMintedId(value: unknown): value is string {
+  return typeof value === 'string' && ID_PATTERN.test(value)
 }
 
 /**
@@ -190,7 +226,7 @@ export function sweepReviewDefers(store: ReviewDeferStore, nowIso: string): numb
   // verify, which is a read that destroys state. The wake path does not need this sweep to fail open —
   // `decideReviewWake` retires an illegible floor itself — so returning 0 here costs nothing and keeps `list`
   // honest: it reports what the store holds instead of emptying it.
-  if (!Number.isFinite(Date.parse(nowIso))) return 0
+  if (typeof nowIso !== 'string' || !Number.isFinite(Date.parse(nowIso))) return 0
   let swept = 0
   for (const [id, entry] of store.entries) {
     // An entry whose floor cannot be read is swept, not kept: keeping it would defer a wake on a value that
@@ -228,7 +264,7 @@ export function setReviewDefer(
     approvalCaseId: input.approvalCaseId,
     legOrdinal: input.legOrdinal,
   }
-  if (!ID_PATTERN.test(input.rootSessionId) || !ID_PATTERN.test(input.approvalCaseId)) {
+  if (!isMintedId(input.rootSessionId) || !isMintedId(input.approvalCaseId)) {
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
   }
   if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
@@ -284,7 +320,7 @@ export function cancelReviewDefer(
   key: ReviewDeferKey,
   nowIso: string,
 ): ReviewDeferResult<ReviewDeferEntry> {
-  if (!ID_PATTERN.test(key.rootSessionId) || !ID_PATTERN.test(key.approvalCaseId)) {
+  if (!isMintedId(key.rootSessionId) || !isMintedId(key.approvalCaseId)) {
     return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
   }
   if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
@@ -313,6 +349,13 @@ export function listReviewDefers(store: ReviewDeferStore, nowIso: string): reado
   // With an unreadable clock it returns what the store holds, expired-looking entries included, and retires
   // nothing: "I cannot tell you which of these have passed" is a different answer from "you have none", and a
   // caller that gets the second one from a broken clock will conclude nobody asked for a quiet.
+  //
+  // THE ASYMMETRY THAT REMAINS, stated rather than left to be rediscovered (round-3 finding R3-9 on #509): under
+  // an unreadable clock `list` reports an expired quiet as standing while `decideReviewWake` delivers and retires
+  // it, so the two disagree — over-reporting a silence, never inventing one, and both sides fail open. Removing
+  // it properly means giving `list` a `ReviewDeferResult` so it can say "unreadable clock" instead of picking an
+  // answer; that is an API change for the PR that has a caller, so it is booked with PR-I2 rather than made here
+  // in the dark. A tool reading this list must not conclude "your quiet stands" without a readable clock.
   sweepReviewDefers(store, nowIso)
   return [...store.entries.values()]
 }
