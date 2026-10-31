@@ -1,0 +1,11 @@
+# PR-I2 p4t6 census RED measure — captured at head 86a6817c4a46b8a78cd4383059720d8c071f5c63 2026-10-31T10:51:33Z
+# command: npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+# with packages/testkit/test/p4t6-bookings/alpha6-prii2.json ABSENT and the three booked paths present
+         × control: an UNBOOKED new path on disk turns the exact total RED 1ms
+         × control: a path booked TWICE (two lanes) is RED even when the arithmetic is fixed up 1ms
+         × control: a tie that no longer matches its list is RED 1ms
+   FAIL  packages/testkit/test/p4t6-session-event-scan.test.ts > p4t6 frozen Team SessionEvent denylist scan > ledger sensitivity (u7-w0 RED-first controls) > control: an UNBOOKED new path on disk turns the exact total RED
+  AssertionError: expected 1416 to be 1419 // Object.is equality
+   FAIL  packages/testkit/test/p4t6-session-event-scan.test.ts > p4t6 frozen Team SessionEvent denylist scan > ledger sensitivity (u7-w0 RED-first controls) > control: a path booked TWICE (two lanes) is RED even when the arithmetic is fixed up
+   FAIL  packages/testkit/test/p4t6-session-event-scan.test.ts > p4t6 frozen Team SessionEvent denylist scan > ledger sensitivity (u7-w0 RED-first controls) > control: a tie that no longer matches its list is RED
+   Test Files  1 failed (1)
