@@ -6,14 +6,17 @@
 
 ## 1. S0 说了什么（S0 第 75、79 行逐字引用；§0/§6 条目是**摘要**，非逐字）
 
-- S0 结论 §0 与 §6（**摘要**，非逐字；正本见 `s0-revalidation-20261030.md:115`）：
+- S0 结论 §0 与 §6（**摘要**，非逐字。§6 那句的原文是 `s0-revalidation-20261030.md:115`；§0 是 :8-20 的 CONDITIONAL PASS + C1/C2/C3 条件表，其中「无 `CORE_SEAM_BLOCKER`」这条字面结论不在 :115，而本补遗 §4 正是给它划范围的——round-3 G-R3-12 之前这里只指了 :115）：
   **PR3（单飞调度器内核）与 PR0（可信 ReviewPlan/Identity/Mandate 派生）不碰受保护文件，先做**；
   PR1/PR2 的决策与路由入口改造是具名 Center-Interface PR，**排在 C1 条件落地之后**；
   真实 Host 腿（PR4/PR5 的验收形态）在 C2 条件落地之前全部 ENV_BLOCK，不冒充。
   （本条压缩自 S0 的一句话结论：只删去「见同目录…」与「一句话：」两处连接文字，三个限定全部保留——
   可信、排在 C1 条件落地之后、C2 条件落地之前 ENV_BLOCK。）
-- S0 §3 能力表第 75 行：`调度器持久状态 | storageDomain.open(defineDomain(...)) KvTable（CAS/条件写）+
-  domain/changed | packages/storage/storage-domain/src/index.ts`。
+- S0 §3 能力表第 75 行，逐字（围栏内为源文件该行的原始字节，未去反引号、未改换行）：
+  ```text
+  | 调度器持久状态 | `storageDomain.open(defineDomain(...))` KvTable（CAS/条件写）+ `domain/changed` | `packages/storage/storage-domain/src/index.ts` |
+  ```
+  （2026-10-31 round-3 修正：此处原先是一段去格式的重排——管道被去掉、内嵌反引号被去掉、并且在源文件有空格的位置断行，按本 lane 的 unwrap 方法复原后会得到 `` `…（CAS/条件写）+domain/changed…` ``，与源文件的 `` `…+ `domain/changed`…` `` 不等；在「逐字引用」标题下这是错的，见 PR #513 round-3 G-R3-1。）
 - S0 §3 硬约束第 79 行（逐字）：
   > **硬约束**：`whenIdle()` 等待整个队列抽干（`agent.ts:237-241`），今日控制通知正因此成为多余轮次的放大器
   > （`agent-bindings.mjs:5033`）；`agent/created` / `pre-step` / `turn-stopping` 是**被 await 的**钩子
@@ -46,7 +49,7 @@ S0 §3 枚举的是**状态与事件面**（KvTable 持久状态、`domain/chang
    （行号经 round-1 records review 复核修正），即**一条用户可见的提醒轮**，且 `index.ts:396` 只发
    payload-less 的 `schedule/changed`（`types.ts:471` 声明为 `(): void`）⇒ 唤醒归属、来源语义、取消、去重、恢复
    都无法由该通道承担。
-4. 宿主 `setInterval` 全集中不存在插件注册点；jobs 需先存在 job；goal round 驱动不可注册；插件自建
+4. 在两轮独立复核对宿主 `setInterval`/timer 出现集的逐点排查中不存在插件注册点（**非穷尽证明**，宿主`639ed01539`；round-3 G-R3-10 之前此处写成无条件断言）；jobs 需先存在 job；goal round 驱动不可注册；插件自建
    `setInterval/setTimeout` 属本阶段红线（S0 自身 P-4：不建第二套调度器）。
 
 ## 3. 由 N-1 产生的边界修订（只此一条，scope 严格）

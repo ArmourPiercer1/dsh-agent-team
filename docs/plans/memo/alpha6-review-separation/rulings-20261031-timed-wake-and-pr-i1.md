@@ -43,8 +43,8 @@ Observed public behavior：
   始终存在的公开面上不存在该能力。宿主唯一可达的墙钟原语是可选 ScheduleService，其到期路径
   （runtime.ts:101-145）把唤醒实现为一条 user-role 提醒消息（source.kind='schedule'），并且只发
   payload-less 的 `schedule/changed`；`domain/changed` 严格是写后事件（storage-domain
-  events.ts / domain.ts），只能在 append 时刻触发，不能在任意未来时刻触发；宿主 `setInterval` 全集中
-  不存在插件注册点；jobs 需先存在 job；goal round 驱动不可注册。插件自建 setInterval/setTimeout 被本
+  events.ts / domain.ts），只能在 append 时刻触发，不能在任意未来时刻触发；在两轮独立复核对宿主
+  `setInterval`/timer 出现集的逐点排查中不存在插件注册点（非穷尽证明，宿主 `639ed01539`）；jobs 需先存在 job；goal round 驱动不可注册。插件自建 setInterval/setTimeout 被本
   阶段红线禁止（P-4：不建第二套调度器）。
 Minimal reproduction：
   dsh-agent-team-lane-2 @ 98c25a091（PR #509 defer 面）：对一个已登记 floor 的 quiet，写路径与读路径均

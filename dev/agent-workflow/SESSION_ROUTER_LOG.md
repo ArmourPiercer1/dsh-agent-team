@@ -7383,3 +7383,27 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   只能由新条目作废，本轮即按此执行（不回改 7355）。
 - 本轮性质：records-only。零 `packages/**` 改动，零 build/test 依赖，CORE PATCH BUDGET 仍为 0；#513 维持
   Draft + `DO-NOT-MERGE`，settlement gate 的 `BLOCKED-BY-MARKER` 是预期红。开发授权 ≠ 合并/启用/放宽门禁。
+## 2026-10-31 — PR #513 round-3 independent records review closed (0 BLOCKER / 3 MAJOR / 7 MINOR / 2 INFO); fixes shipped as a new commit on `alpha6/lane2-governance-20261031`
+
+- 独立复核在 `.worktrees/alpha6-gov`（head `6937dd32b`）完成，零 tracked 写入、零 git 写命令、`gh` 只读；报告正本
+  = PR #513 评论区 round-3 全文（同时落盘 `.artifacts/alpha6-s0/rev3-513/round3-report.md`，gitignored）。
+- 三条 MAJOR 全部为"关于上一轮修复的句子在本 head 上为假"，逐条复测确认：G-R3-1（§1 标题宣称 S0:75/79 逐字，
+  75 行按本 lane 的 unwrap 复原后与源不等——空格在断行处丢失、内嵌反引号被去；round-2 只把它记为"格式问题"且从未
+  unwrap）；G-R3-2（正文 `git diff --name-only HEAD~1` → "four paths" 在其钉住的 head 上实测 **1 path**，
+  "four" 属于 `dc6f14f5e`）；G-R3-3（正文聚合 `+352 −0` 在本 head 实测 `+354 −0`；`+290`/`+326` 复测精确）。
+- MINOR/INFO 处置：G-R3-4 round-2 报告两处判决行写 "3 MINOR" 而正文含 MINOR-1..4，全部下游记录改为 4；
+  G-R3-5 撤回「26 文件 / 零生产文件」（与 #509 同日撤回的同一句子同源，改按 #509 更正文案）；G-R3-6 前向退役本 PR
+  第一条日志条目（:7326）的宿主行号（`profile.ts:212-218` / `runtime.ts:117-121` 为修正前引用，绑定位置见 :7350-7353）；
+  G-R3-7 R-1 归因改为「2026-10-31 同批裁决 §3」；G-R3-8 :7345 指认的 `.artifacts/…/review-513-r1-report.md` 正本不存在，
+  以评论 `6539962144` 为正本；G-R3-10 负全称断言加"非穷尽证明"限定；G-R3-11 前向退役 :7319 的「17 文件 / 442 通过」
+  （#509 正文已披露该数字来自 glob 扫入两个非本分支 spec 且漏 `u6-arc-a-probe-family`）；G-R3-12 §0/§6 摘要的正本指向补齐。
+- 对复核自身的两处纠正（同一套纪律）：G-R3-10 把第三个位置写成 `blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md:12-13`
+  含「宿主 `setInterval` 全集中不存在插件注册点」——该文件通篇没有 `setInterval` 一词（grep 空）；缺陷类别在 :12 成立
+  （「没有任何原语」同样是未加限定的负全称），已按实际句子修正后处理，但引用位置是错的。
+- 我自己记录的一处更严重问题（G-R3-9，落在 #502 而非 #513）：PR-I1b 预告评论 `6540179594` 把扫描侧写成
+  `dev/agent-workflow/ledgers/scan.mjs:42-55`，而该路径在本仓任何分支都不存在（`git log --all --diff-filter=A` 空）；
+  真实扫描侧 = `packages/testkit/test/arc-a-fitness/scan.mjs`（被 `scripts/eb3-family-definitions.mjs:55` 导入）。
+  这不是文件移动，是我在写评论时无中生有的路径引用；已在 #502 以日期前向更正评论公开，并在此登记。
+- 纪律重申：两条 2026-10-31 裁决的结论未被本轮任何发现触动（复核逐条核对：blocker scope 仍严格限于 PR-I2 的
+  floor-delayed 定时唤醒载体；#509 继续 DORMANT；无第二套持久化 timer；无静默改号；#501/#503/#505/#507/#509/#513/#517
+  全部仍 OPEN + Draft + `DO-NOT-MERGE`，无一合并）。开发授权 ≠ 合并授权 ≠ 生产启用 ≠ 放宽门禁。

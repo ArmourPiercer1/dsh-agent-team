@@ -61,7 +61,7 @@
 
 ```
 新增：CORE_SEAM_BLOCKER(alpha6-pr-i2-timed-wake-carrier) --阻塞--> PR-I2 的 floor-delayed 定时唤醒子集
-重述（既有裁决，非本阶段新增边）：BL-01(OPEN RELEASE BLOCKER, Alpha.5) --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
+重述 **2026-10-31 同批裁决 §3**（round-3 G-R3-7 修正归因：BL-01 的 OPEN RELEASE BLOCKER 状态与「阻塞发布」是既有记录 `ALPHA5-EFFECTIVE-BACKLOG.md:13`；**PR1-allow 这条边**与「开发/审查不受阻」豁免出自本轮裁决——此前计划把 PR1 的 allow 门记在 G-5、把 BL-01 指向 PR-I1/PR-I2）：BL-01(OPEN RELEASE BLOCKER, Alpha.5) --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
 不变：PR-I1a --无前置--> 可开工（本轮已开始）
 不变：PR-I1b --前置--> 具名 Center-Interface PR + ARC-A override + 与 Alpha.5 的文件所有权协调；可与 I1a 并行开发
 不变：PR5′  --前置--> 仅读现有真实事实；优先级低于 PR-I1
@@ -79,7 +79,7 @@
 
 ### R-3 本轮实际交付（替换 §1 末行"本轮实际交付"的时点陈述，原文保留）
 
-已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 文件 / 零生产文件；三轮独立审查
+已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 路径 / 无消费者无接线（`ALLOWED_CONSUMERS=[]`）/ 四个新增休眠 lane 模块 `packages/runtime/review-defer/**`——「零生产文件」的旧说法已于 2026-10-31 在 #509 正文撤回，见其评论 `6540728163`，round-3 G-R3-5；三轮独立审查
 闭合中）。进行中：**PR-I1a**（受治理的 `ReviewAssignment` 唯一持久化 Writer）。并行允许：PR-I1b 的接口设计与
 安全负控（其受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权）。受阻：PR-I2 定时唤醒子集（R-1）。
 

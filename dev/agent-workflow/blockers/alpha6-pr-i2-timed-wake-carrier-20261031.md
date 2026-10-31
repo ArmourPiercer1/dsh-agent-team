@@ -9,7 +9,7 @@
 - **正本记录**（固定格式全文、最小复现、受影响不变量、可能的 upstream 通用 seam 提案）：
   `docs/plans/memo/alpha6-review-separation/rulings-20261031-timed-wake-and-pr-i1.md` §1.1
 - **能力边界补遗**：`docs/plans/memo/alpha6-review-separation/s0-addendum-timed-wake-carrier-20261031.md`（N-1）
-- **公开面缺口一句话**：始终存在的公开面上没有任何原语能让插件在"指定的未来时刻"发起唤醒；唯一墙钟可达项是
+- **公开面缺口一句话**：在两轮独立复核（round-1/round-2 records review）对宿主 `0.2.0-rc.2 @ 639ed01539` 公开面与 timer 出现集的逐点排查中，始终存在的公开面上没有发现任何能让插件在"指定的未来时刻"发起唤醒的原语（**非穷尽证明**：负全称命题未被穷尽验证，两轮均记录为 spot-check）；唯一墙钟可达项是
   可选、默认关闭的 ScheduleService，且其到期动作是用户可见的 user-role 提醒轮 + payload-less 事件。
 - **停止动作（ROUTER_RULES §5 要求）**：该子能力停止推进；不为其自建第二套持久化 timer/scheduler；不 patch
   upstream；缺时间触发源时相关请求必须显式拒绝，不得报告 `accepted: true`，不得静默丢弃唤醒保证。
