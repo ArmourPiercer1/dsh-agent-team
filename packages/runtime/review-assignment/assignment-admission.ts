@@ -30,16 +30,24 @@
  *     package `test`/`tests` tree (the one hop a re-export glue needs — the shape the review planted and this
  *     file used to miss). It does NOT follow an import chain, and it cannot see a specifier held in a variable,
  *     concatenated, or rewritten by a bundler. The residual is named in the legs, not by this sentence.
- *   - The equivalence with the real ControlService resolve path is pinned in TWO specific ways, neither of them
- *     the one a reader may assume (round 1 of #522, F-I1b1-3). VALUES: the mirror's kind → role tables are
- *     compared EQUAL to `CONTROL_RESOLVER_ROLES`, both directions, every kind — that pin is bidirectional and it
- *     is the strong half. WORDS: the host's refusal message is pinned only to the PRESENCE of the phrase
- *     `is not a resolver for kind` somewhere in `service.ts`, plus the presence of a `CONTROL_RESOLVER_ROLES [`
- *     read — NOT to the site that composes the sentence, NOT to its format, and NOT to what
- *     `resolveControlRequest` actually returns at runtime. Nothing in this lane runs the host: the real-host legs
- *     are ENV-REFUSED in `a6-pr-i1b-admission.test.ts` (measured there: no pristine host checkout, no test homes,
- *     no shared baseline on this machine). A host that keeps the phrase and changes the surrounding sentence, or
- *     moves the composition to another file, keeps this lane green — that is the size of the instrument.
+ *   - The equivalence with the real ControlService resolve path is pinned in THREE ways now, and the third is a
+ *     measurement rather than a comparison (round 1 of #522, F-I1b1-3, closed by the real-host run). VALUES: the
+ *     mirror's kind → role tables are compared EQUAL to `CONTROL_RESOLVER_ROLES`, both directions, every kind.
+ *     WORDS: the host's refusal message is pinned to the PRESENCE of the phrase `is not a resolver for kind` in
+ *     `service.ts`, plus a `CONTROL_RESOLVER_ROLES [` read — not to the site that composes it, not to its format.
+ *     LIVE: `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` boots the pinned host with this row through the
+ *     public profile-patch seam and records, in `dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/capture.json`,
+ *     what a running host answered — `ControlService: role 'leader' is not a resolver for kind 'user-approval'
+ *     (allowed: [human])` for a leader caller its own `resolveCaller` derived from durable rows, a durable decision
+ *     for the human on every kind, and `TeamRuntime: no member instance 'inst-nobody' … the caller is unknown` for
+ *     an unknown one. The spec compares the allowed list the host PRINTED against both tables, so this module's
+ *     mirror, the center's table, and the host must now move together or a leg reddens.
+ *     Residual, at its real size: on that host the leader's mutation envelope does not admit `resolve-control`, so
+ *     `leader-approval` and `envelope-mutation` were answered by the envelope gate BEFORE the closure and are
+ *     recorded as not-reached; the closure is measured on one (kind × role) cell and mirrored on the others. A
+ *     member caller has no public ingress on a host with no model. And a host that keeps the phrase in
+ *     `service.ts` while moving the composition elsewhere still passes the WORDS pin — the LIVE pin covers the
+ *     cells it ran, not the file layout.
  *   - What this door does NOT do about the objects it is handed (round 1 of #522, F-I1b1-6/F-I1b1-7; each pinned
  *     by a leg, so a floor that moves has to be argued with): the `caller` argument is forwarded to
  *     `resolveCaller` EXACTLY as received — this module shape-checks nothing, while the screen that would

@@ -21,20 +21,39 @@
  *    emit stayed green, which is the finding those legs exist to make impossible;
  *  - the cross-team, mixed-ledger and other-team-member rows are REAL repository writes in a REAL second team.
  *
- * WHAT IS ENV-REFUSED ON THIS MACHINE (recorded as refused, never as passed):
- *  - the real-Host ControlService execution loop: `tests/deepseek-harness-test-use` and `tests/homes/` are absent
- *    and `/srv/workspace/dsh-stable-3-0.2.0-rc.2` is absent (the ENV-REFUSED describe below measures all three).
- *    The equivalence between this lane's closure check and the control resolve path is therefore pinned in TWO
- *    named ways and no further (wording corrected round 1 of #522, F-I1b1-3, 2026-10-31 — "pinned to SOURCE TEXT"
- *    named one instrument where there are two of different strengths): the VALUES, which is the strong half
- *    (`CONTROL_RESOLVER_ROLES` compared against the lane's mirror, both directions, every kind), and the PRESENCE
- *    of two strings in `service.ts` — a `CONTROL_RESOLVER_ROLES [` read site and the phrase `is not a resolver for
- *    kind`. Not the composition site, not the message format, not which function composes it, and not what the
- *    resolve path returns when a host actually runs it: a host that keeps those two strings and rewrites
- *    everything around them keeps this file green, and that is the size of the instrument — said here so the leg
- *    is not read as a behavioural equivalence proof. The real-world byte-identity of a non-enabling team (S-7's
- *    first half) has no world to diff — its structural stand-in (dormancy: no gate object, no importer,
- *    `ALLOWED_CONSUMERS` empty) is what binds here;
+ * WHAT A REAL HOST MEASURED (added after round 1 of #522; the legs read the capture, they do not quote it):
+ *  - the real-Host execution loop RAN on this machine. `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` boots the
+ *    pinned pristine host (`tests/deepseek-harness-test-use`, detached at the pin, porcelain 0 before AND after —
+ *    CORE PATCH BUDGET = 0) with THIS worktree's built row mounted through the public profile-patch seam, asks it
+ *    who may resolve each kind over public seams only, and lands the answers in
+ *    `dev/agent-workflow/evidence/alpha6-pr-i1b-real-host/capture.json`. Measured on that host: the leader ingress
+ *    — a caller its own `resolveCaller` read off durable rows — got
+ *    `ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])`; the human
+ *    ingress (frozen v4 wire, no identity on the wire) resolved all three kinds; an unknown instance got
+ *    `TeamRuntime: no member instance 'inst-nobody' in team '<root>' — the caller is unknown`; and the ledger that
+ *    those six durable writes landed in holds fact types [control-decision-recorded, control-request-recorded] and
+ *    no review-assignment row. The REAL-HOST block below compares the allowed list the host PRINTED against both
+ *    tables — `CONTROL_RESOLVER_ROLES` and this lane's mirror — so round 1's two-instrument sentence (VALUES plus
+ *    the presence of two strings in `service.ts`, F-I1b1-3) is no longer the size of this file.
+ *  - what that run still does not reach, stated at the size it has: two of the six cells never arrived at the
+ *    closure, because the boot blueprint's leader envelope does not admit `resolve-control` and
+ *    `TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS` answers first — the capture records those cells as not-reached and the
+ *    leg refuses to read them as agreement, so the closure is MEASURED on one (kind × role) cell and mirrored on
+ *    the rest; the MEMBER row has no ingress on a host with no model (no public carrier accepts an identity, and
+ *    every `team_*` tool needs a live member agent — PR-I2's report says the same); and the door's own kind is
+ *    fixed to `leader-approval` by `ASSIGNMENT_DECISION_CONTROL_KIND`, so the cell where the host proved the
+ *    closure bites is pinned host↔table, never host↔door. The D-10 mutation of the closure VALUES is measured
+ *    here by running the mirror mutation (it reddens both the VALUES leg and the host-comparison leg) rather than
+ *    by a file-mutation loop the memo assigns to the reviewer.
+ *  - S-7's non-enabling half is on the same capture, including its enable surface: a SECOND world booted with
+ *    `feature: 'on'` and `assignmentFeature: 'on'` in the row config accepted both keys, wrote durable rows, and
+ *    produced the same fact types as the control world — there is no host field that turns this gate on, so the
+ *    enabled arm S-7 asks about has no host surface to be measured on, and the dormancy legs are the binding
+ *    evidence for it.
+ *  - still refused, and refused by name below: anything that needs the shared read-only baseline
+ *    `/srv/workspace/dsh-stable-3-0.2.0-rc.2`, which is absent on this machine (the pristine runtime and
+ *    `tests/homes/` are NOT absent — the ENV-REFUSED leg measures each path separately, because asserting the old
+ *    three absences together would hide the legs that now run).
  *  - the D-10 "swap every refusal code for its neighbour and watch a leg redden" mutation is executed here as
  *    exact-code assertions plus a produced-vs-declared census; the file-mutation loop itself is the reviewer
  *    step named in the memo (加补编 3 第 2 条), not something a leg on this tree can run against its own source.
@@ -59,7 +78,10 @@ import { CONTROL_RESOLVER_ROLES } from '../control/types.js'
 import { REMOTE_MUTATION_ACTOR_KINDS } from '../../remote/src/contracts/params.js'
 import { REVIEW_ASSIGNMENT_WRITE_REFUSALS, applyReviewAssignment } from '../review-assignment/writer.js'
 import type { ReviewAssignmentCommand, ReviewAssignmentLedgerRow, ReviewAssignmentLockPort, ReviewAssignmentRowDraft } from '../review-assignment/writer.js'
-import { REVIEW_ASSIGNMENT_FACT_TYPES, REVIEW_ASSIGNMENT_REFUSALS } from '../review-assignment/types.js'
+import { REVIEW_ASSIGNMENT_FACT_TYPES, REVIEW_ASSIGNMENT_FACT_TYPE_VALUES, REVIEW_ASSIGNMENT_REFUSALS } from '../review-assignment/types.js'
+// The baseline pin, read where every kit and spec in this repo reads it. Imported, never copied: a copied SHA is
+// the drift the hygiene walk hunts.
+import { TEST_USE_BASELINE_SHA } from '../../../tests/paths.mjs'
 import {
   ASSIGNMENT_ADMISSION_CALLER_ROLES,
   ASSIGNMENT_ADMISSION_CLAIMABLE_ACTOR_KINDS,
@@ -1189,18 +1211,266 @@ describe('the disclosed floors of the injected ports, pinned as they ARE and not
 
 // --- ENV-REFUSED (measured absences; nothing below is offered as a pass) ------------------------------------------
 
-describe('ENV-REFUSED: the host-side legs this machine cannot run, recorded as refused', () => {
-  it('the pristine host checkout, the test homes, and the shared baseline are all absent — measured', () => {
-    // The three environment facts the report must carry: they are WHY the legs below stay refused. If this
-    // ever runs on a machine that HAS them, this leg going red is the prompt to run the real-host pair
-    // (ControlService resolve execution against this predicate, and the non-enabling-team byte diff of S-7),
-    // which are the only legs not standing anywhere else in this file.
-    const repoRoot = join(RUNTIME_ROOT, '..', '..')
-    expect(existsSync(join(repoRoot, 'tests', 'deepseek-harness-test-use'))).toBe(false)
-    expect(existsSync(join(repoRoot, 'tests', 'homes'))).toBe(false)
-    expect(existsSync('/srv/workspace/dsh-stable-3-0.2.0-rc.2')).toBe(false)
+// --- REAL-HOST EVIDENCE: the legs round 1 left ENV-REFUSED, now measured on a booted host -----------------------
+
+/**
+ * `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` boots the pinned pristine host (`tests/deepseek-harness-test-use`
+ * @ `TEST_USE_BASELINE_SHA`) with THIS worktree's built row mounted through the public profile-patch seam —
+ * CORE PATCH BUDGET = 0, nothing writes into the host tree, and the run asserts that tree's `git status
+ * --porcelain` is empty before and after — and asks the live host, over public seams only, who may resolve each
+ * kind of control request. Its answer lands in `capture.json` beside this file's package. Round-1 finding
+ * F-I1b1-3 said the lane pinned its closure against the production resolve path by VALUES and by two strings in
+ * `service.ts`, "not what the resolve path returns when a host actually runs it". These legs are that missing
+ * sentence, read off a host that ran.
+ *
+ * Degradation is part of the design (lane rule: a leg that cannot run is refused by name, never skipped into
+ * green and never a false red): every leg below first measures the environment it needs. If the pristine runtime
+ * is absent, the block states its refusal and asserts the absence is real. If the runtime IS present and no
+ * capture sits next to it, the leg is RED and names the command to run — a materialized runtime with no capture
+ * is a gap, not an absence.
+ */
+const REPO_ROOT = join(RUNTIME_ROOT, '..', '..')
+const CAPTURE_PATH = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'alpha6-pr-i1b-real-host', 'capture.json')
+const PRISTINE_HOST = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
+const TEST_HOMES = join(REPO_ROOT, 'tests', 'homes')
+const SHARED_BASELINE = '/srv/workspace/dsh-stable-3-0.2.0-rc.2'
+
+interface RealHostCell {
+  readonly ingress: string
+  readonly code: string
+  readonly message: string
+  readonly reachedClosure: boolean
+  readonly closure: string
+}
+
+interface RealHostCapture {
+  readonly kit: string
+  readonly runStamp: string
+  readonly hostHead: string
+  readonly hostBaselineSha: string
+  readonly hostPorcelainBefore: number
+  readonly hostPorcelainAfter: number
+  readonly rootSessionId: string
+  readonly rowConfigFields: readonly string[]
+  readonly unknownCaller: { readonly code: string; readonly message: string }
+  readonly answers: Record<string, RealHostCell>
+  readonly durableCensus: { readonly entries: number; readonly factTypes: readonly string[] }
+  readonly enableCensus: { readonly entries: number; readonly factTypes: readonly string[] }
+  readonly checks: readonly { readonly id: string; readonly ok: boolean; readonly measured: string }[]
+}
+
+const hostEnvironment = {
+  pristineRuntime: existsSync(join(PRISTINE_HOST, 'apps', 'cli', 'lib', 'bin.js')),
+  testHomes: existsSync(TEST_HOMES),
+  sharedBaseline: existsSync(SHARED_BASELINE),
+  capture: existsSync(CAPTURE_PATH),
+}
+
+/**
+ * Read the capture, or return null AFTER the leg has stated its refusal. Two states are legal and one is a
+ * failure: (a) no pristine runtime — the host cannot run here, so the legs below are refused by name; (b) a
+ * capture exists — the legs measure it; (c) a runtime with no capture — RED, because the instrument exists and
+ * has not been run.
+ */
+function readRealHostCapture(): RealHostCapture | null {
+  if (hostEnvironment.capture) {
+    const capture = JSON.parse(readFileSync(CAPTURE_PATH, 'utf8')) as RealHostCapture
+    expect(capture.kit, 'the capture next to this file was not written by the PR-I1b real-host instrument').toBe('pr-i1b-real-host')
+    // A capture off the pinned baseline measures a different host; the comparison below would be a lie.
+    expect(capture.hostBaselineSha, 'the capture was taken against a host baseline other than the pin this lane tests').toBe(TEST_USE_BASELINE_SHA)
+    expect(capture.hostPorcelainBefore, 'the capture was taken with a dirty pristine host tree — CORE PATCH BUDGET = 0').toBe(0)
+    expect(capture.hostPorcelainAfter, 'the real-host run left bytes in the pristine host tree').toBe(0)
+    expect(capture.checks.filter((c) => !c.ok).map((c) => c.id), 'the capture records failed checks').toEqual([])
+    return capture
+  }
+  expect(
+    hostEnvironment.pristineRuntime,
+    'ENV-REFUSED only where the environment is truly absent: the pristine runtime IS materialized at '
+      + `${PRISTINE_HOST} but no real-host capture exists — run \`node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs\` `
+      + 'and commit the capture it writes. A runtime with no capture is an unrun instrument, not a refused leg.',
+  ).toBe(false)
+  return null
+}
+
+describe('REAL-HOST (measured): the resolve path answers the closure the way this lane mirrors it', () => {
+  it('the environment each real-host leg needs is measured per path, not assumed', () => {
+    // The block above this one used to assert all three absences as the reason the legs could not run. That
+    // sentence is now false on this machine and saying it would launder a runnable leg into a refused one, so
+    // each path is measured on its own and the capture, not this file, decides which legs speak.
+    expect(hostEnvironment.pristineRuntime || !hostEnvironment.capture, 'a capture exists with no pristine runtime beside it').toBe(true)
+    // The shared read-only baseline is still absent here — recorded because the §2 recipe clones from it when
+    // present and from the local checkout when not, and the capture does not care which.
+    expect(hostEnvironment.sharedBaseline, '/srv/workspace/dsh-stable-3-0.2.0-rc.2 reappeared: re-read TEST_METHODS §2 before trusting the clone recipe').toBe(false)
+  })
+
+  it('the host refused an unknown caller through the real resolver, and the SAME function says the SAME sentence in-process', async () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    expect(capture.unknownCaller.code, `the host answered the unknown caller with ${capture.unknownCaller.code}`).toBe('TEAM_RUNTIME_CALLER_NOT_FOUND')
+    // The port this lane injects is `resolveCaller(repositories, root, caller)` — the same exported function the
+    // host calls. Feed it the caller shape the host was fed and compare the sentences with only the team root
+    // substituted: same function, same refusal, same words. If either side's wording moves, this is red.
+    const w = await world({ seedMember: false })
+    let inProcess = ''
+    try {
+      resolveCaller(w.domain.repositories, parseRootSessionId(ROOT_A), { kind: 'instance', instanceId: 'inst-nobody' })
+    } catch (error) {
+      inProcess = (error as Error).message
+    }
+    expect(inProcess, 'the in-process resolver accepted the caller the host refused').not.toBe('')
+    expect(capture.unknownCaller.message.replace(capture.rootSessionId, ROOT_A),
+      'the host\'s refusal sentence and the sentence the injected port\'s own function produces are no longer the same sentence').toBe(inProcess)
+  })
+
+  it('every cell where the host reached the closure prints the allowed list this mirror carries — both directions', () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const reached = Object.entries(capture.answers).filter(([, cell]) => cell.reachedClosure)
+    const allowed = Object.entries(capture.answers).filter(([, cell]) => cell.closure === 'allowed')
+    // Anti-vacuity first: a comparison over zero cells would pass and mean nothing. Round 1's weak pin was weak
+    // precisely because it could not fail, so the count is part of the assertion.
+    expect(reached.length, 'no captured cell reached the resolver-role closure — this comparison would be vacuous').toBeGreaterThan(0)
+    expect(allowed.length, 'no captured cell shows a role the host let resolve — the mirror\'s positive half is unmeasured').toBeGreaterThan(0)
+    for (const [key, cell] of reached) {
+      const kind = key.split('|')[0] as string
+      const role = key.split('|')[1] as string
+      const printed = /allowed: \[([^\]]*)\]/.exec(cell.message)?.[1] ?? null
+      expect(printed, `the refusal for ${key} does not print its allowed list: ${cell.message}`).not.toBeNull()
+      // The triangle, closed in ONE leg: what the host printed, what the center's table says, and what THIS lane
+      // mirrors. Checking only the first two would leave the lane's own table free to drift while the live
+      // comparison stayed green — which is the exact shape of the weak pin round 1 found.
+      const control = [...((CONTROL_RESOLVER_ROLES as Record<string, readonly string[]>)[kind] ?? [])].sort()
+      const mirror = [...(ASSIGNMENT_ADMISSION_ROLE_CLOSURE[kind] ?? [])].sort()
+      const seen = (printed as string).split(',').map((r) => r.trim()).sort()
+      expect(seen, `the live host and CONTROL_RESOLVER_ROLES disagree about who resolves '${kind}'`).toEqual(control)
+      expect(seen, `the live host and this lane's ASSIGNMENT_ADMISSION_ROLE_CLOSURE disagree about who resolves '${kind}'`).toEqual(mirror)
+      expect(mirror, `the host refused role '${role}' for '${kind}' while this lane lists it as a resolver`).not.toContain(role)
+    }
+    for (const [key, cell] of allowed) {
+      const kind = key.split('|')[0] as string
+      const role = key.split('|')[1] as string
+      const control = (CONTROL_RESOLVER_ROLES as Record<string, readonly string[]>)[kind] ?? []
+      const mirror = ASSIGNMENT_ADMISSION_ROLE_CLOSURE[kind] ?? []
+      expect(control, `the live host let role '${role}' resolve '${kind}', which CONTROL_RESOLVER_ROLES does not name`).toContain(role)
+      expect(mirror, `the live host let role '${role}' resolve '${kind}', which this lane's mirror does not name`).toContain(role)
+      expect(cell.code).toBe('CONTROL_RESOLVED')
+    }
+    // The cells that never reached the closure are counted, not counted as agreement: on this host the boot
+    // blueprint's leader envelope does not admit `resolve-control`, so an earlier gate answers for the leader on
+    // two of the three kinds and the capture says so in its own words.
+    const gated = Object.entries(capture.answers).filter(([, cell]) => !cell.reachedClosure && cell.closure !== 'allowed')
+    for (const [, cell] of gated) {
+      expect(cell.message, 'a cell recorded as not reaching the closure is worded like a closure refusal').not.toContain('is not a resolver for kind')
+    }
+    expect(gated.map(([key]) => key).sort(), 'which leader cells the envelope gate answered is part of the record').toEqual(['envelope-mutation|leader', 'leader-approval|leader'])
+  })
+
+  it('the member row of the matrix has no ingress on this host, and the capture does not pretend otherwise', () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const roles = new Set(Object.keys(capture.answers).map((key) => key.split('|')[1] as string))
+    expect([...roles].sort(), 'a caller role appeared that this instrument cannot present — re-read its header before trusting the matrix').toEqual(['human', 'leader'])
+    const memberCellIds = capture.checks.filter((c) => c.id === 'member-role-has-no-ingress')
+    expect(memberCellIds.length, 'the instrument stopped recording why the member row is unmeasured').toBe(1)
+    expect(memberCellIds[0]?.ok).toBe(true)
+  })
+
+  it('the host\'s own refusal sentence, thrown through the injected port, arrives verbatim at the door', async () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const w = await world()
+    // F-I1b1-5 is the law that the door never rewrites a resolver's words. Round 1 proved it with a sentence
+    // this file invented. Here the sentence is one a running host produced, which is the version a reader of the
+    // ledger will actually meet.
+    const ports: AssignmentAdmissionPorts = {
+      teamRootExists: () => true,
+      resolveCaller: () => {
+        const error = new Error(capture.unknownCaller.message) as Error & { code: string }
+        error.code = capture.unknownCaller.code
+        throw error
+      },
+      ledger: { list: () => [] },
+    }
+    const outcome = await w.admit(w.request({}), LEADER_CALLER, ports)
+    expect(outcome.ok).toBe(false)
+    if (outcome.ok) return
+    expect(outcome.refusal).toBe('ADMISSION_CALLER_UNRESOLVED')
+    expect(outcome.detail, 'the door reworded the host\'s refusal').toContain(capture.unknownCaller.message)
+    expect(outcome.detail, 'the door dropped the host\'s own code from the words it carries').toContain(capture.unknownCaller.code)
+  })
+
+  it('the door and the live host answer the cell both of them can reach the same way', async () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const w = await world()
+    // Every assignment decision resolves under `leader-approval` (ASSIGNMENT_DECISION_CONTROL_KIND), and the only
+    // caller role the host presented that this kind admits is the human. On that cell both systems speak: the
+    // host wrote a durable decision, the door admits. The leader cell of the same kind is NOT comparable — the
+    // host's envelope gate answered before the closure — and this leg says so instead of inheriting a pass.
+    const hostCell = capture.answers['leader-approval|human']
+    expect(hostCell?.code, `the host answered leader-approval|human with ${hostCell?.code}`).toBe('CONTROL_RESOLVED')
+    const door = await w.admit(w.request({}), HUMAN_CALLER)
+    expect(door.ok, `the door refused the caller the live host accepted: ${door.ok ? '' : `${door.refusal} ${door.detail}`}`).toBe(true)
+    const leaderCell = capture.answers['leader-approval|leader']
+    expect(leaderCell?.reachedClosure, 'the leader cell reached the closure on this host — this leg\'s stated asymmetry is stale, re-read the capture').toBe(false)
+  })
+
+  it('S-7 on a real host: a real Team with real durable writes carries zero review-assignment bytes', () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    // The census is taken AFTER six durable control writes landed, so "zero" is a measurement over a populated
+    // ledger and not the silence of a store nothing touched.
+    expect(capture.durableCensus.entries, 'the real-host ledger was empty — the census below would be vacuous').toBeGreaterThan(0)
+    expect(capture.durableCensus.factTypes.length).toBeGreaterThan(0)
+    const assignmentBytes = capture.durableCensus.factTypes.filter((factType) => REVIEW_ASSIGNMENT_FACT_TYPE_VALUES.includes(factType))
+    expect(assignmentBytes, 'a non-enabling Team on a real host wrote review-assignment rows').toEqual([])
+    expect(capture.enableCensus.factTypes.filter((factType) => REVIEW_ASSIGNMENT_FACT_TYPE_VALUES.includes(factType)),
+      'the enable-probe world wrote review-assignment rows').toEqual([])
+  })
+
+  it('the enable arm of S-7 has no host surface: the row config names no such field and the host ignored the ones the probe sent', () => {
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const named = capture.rowConfigFields.filter((field) => /feature|admission|assignment/i.test(field))
+    expect(named, `the row config now carries a field that could enable this lane's gate: ${named.join(', ')}`).toEqual([])
+    // The probe put `feature: 'on'` and `assignmentFeature: 'on'` into the config anyway. The row booted, took a
+    // durable write, and produced the same fact types as the control world — the field is not a switch.
+    expect(capture.enableCensus.entries, 'the enable-probe world produced no durable rows — the probe did not run').toBeGreaterThan(0)
+    const enableCheck = capture.checks.find((c) => c.id === 'enable-surface-is-not-a-switch')
+    expect(enableCheck?.ok, `the enable probe's own verdict changed: ${enableCheck?.measured ?? 'check missing'}`).toBe(true)
   })
 })
+
+// --- ENV-REFUSED (measured absences; nothing below is offered as a pass) ------------------------------------------
+
+describe('ENV-REFUSED: the host-side legs still refused on this machine, recorded as refused', () => {
+  it('the shared read-only baseline is absent — measured; the pristine runtime and the test homes are NOT', () => {
+    // Round 1 refused the real-host pair on three absences. Two of the three are now false here: the pristine
+    // runtime is materialized at `tests/deepseek-harness-test-use` (detached at the pin, gitignored, its own git
+    // tree) and `tests/homes/` exists, because `tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs` ran and the
+    // REAL-HOST block above reads what it measured. Asserting those absences would have hidden the legs that now
+    // run, so they are measured individually and only the true absence is kept.
+    expect(hostEnvironment.pristineRuntime, 'the pristine runtime disappeared — re-run the §2 recipe before reading the REAL-HOST block as passed').toBe(true)
+    expect(hostEnvironment.capture, 'the runtime is here but its capture is not: run node tests/kits/pr-i1b-real-host/pr-i1b-real-host.mjs').toBe(true)
+    expect(hostEnvironment.sharedBaseline, '/srv/workspace/dsh-stable-3-0.2.0-rc.2 appeared on this machine').toBe(false)
+  })
+
+  it('the legs no host on this machine can evidence stay refused, by name', () => {
+    // The member row of `CONTROL_RESOLVER_ROLES`: presenting a MEMBER caller needs a live member agent, i.e. a
+    // model turn (PR-I2's feasibility report says the same: "needs a member ask-lane tool use under a model").
+    // No public seam accepts an identity, so no instrument in this lane can put a member in front of the
+    // closure. This sentence is the record; the capture's `member-role-has-no-ingress` check is its twin.
+    const capture = readRealHostCapture()
+    if (capture === null) return
+    const memberKeys = Object.keys(capture.answers).filter((key) => key.endsWith('|member'))
+    expect(memberKeys, 'a member caller appeared on a host with no model — re-read what this instrument can present').toEqual([])
+    // The second one: the door's own kind is fixed by ASSIGNMENT_DECISION_CONTROL_KIND to `leader-approval` for
+    // every decision, so the door can never be asked about `user-approval` — the cell where the host proved the
+    // closure bites is a cell the door cannot be walked to on purpose. It is pinned mirror↔host, not door↔host.
+    expect(Object.values(ASSIGNMENT_DECISION_CONTROL_KIND).sort()).toEqual(['leader-approval', 'leader-approval', 'leader-approval'])
+  })
+})
+
 
 // --- the census, LAST: it reads what the legs above actually produced --------------------------------------
 
