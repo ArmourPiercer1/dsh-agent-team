@@ -1,8 +1,12 @@
 /**
  * eb3-tool-acceptance.test.mjs — mutation negative controls for the RUN_PROVEN /
- * CASE_PROVEN proof levels of scripts/eb3-tool-acceptance.mjs (remediation
- * R-ACCEPT-RUN-1). Host-free: it calls checkToolAcceptance with synthetic
- * in-memory ledgers and records, never the real ledger or git.
+ * CASE_PROVEN proof levels and the DISCLOSED source-verbatim law (law ①,
+ * ACCEPT_DISCLOSED_UNSOURCED) of scripts/eb3-tool-acceptance.mjs (remediation
+ * R-ACCEPT-RUN-1; the law-① trio below closes the gap booked by sync17 F-1 / #528:
+ * C20(d) in eb3-ci-negative-controls.mjs stages only empty-reason→UNREASONED, so
+ * until (m)–(o) below, weakening containsVerbatim to always-true left CI green).
+ * Host-free: it calls checkToolAcceptance with synthetic in-memory ledgers and
+ * records, never the real ledger or git.
  *
  * Each enforcement axis must be able to FAIL, and the two compliant shapes
  * (RUN_PROVEN and CASE_PROVEN) must stay green:
@@ -18,9 +22,21 @@
  *   (j) CASE_PROVEN with missing failedScope           → ACCEPT_CASE_PROVEN_UNDISCLOSED
  *   (k) CASE_PROVEN with a non-verbatim runOverall     → ACCEPT_CASE_PROVEN_UNDISCLOSED
  *   (l) unknown proof value (proof:'CASEE')            → ACCEPT_SCHEMA
+ *   (m) DISCLOSED whose named source lacks the reason verbatim → ACCEPT_DISCLOSED_UNSOURCED
+ *   (n) DISCLOSED whose reason matches the source only after whitespace normalisation → green
+ *   (o) self-proof for (m): a temp COPY of the checker with containsVerbatim weakened to
+ *       always-true turns (m)'s fixture green while the UNREASONED law next door still
+ *       fires — so (m) really depends on law ①, not on decoration. The real checker file
+ *       is never modified: ESM export bindings are read-only and the checker calls
+ *       containsVerbatim as a local function, so an in-memory monkeypatch cannot reach
+ *       the call site and the checker exposes no injection env — hence the temp copy.
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { checkToolAcceptance } from './eb3-tool-acceptance.mjs'
 
 const SCHEMA = 'u7-tool-acceptance/1'
@@ -55,9 +71,11 @@ function row(overrides = {}) {
 }
 const PROVEN = (record, cas) => ({ status: 'PROVEN', evidence: { record, case: cas } })
 
-/** Grade synthetic rows against in-memory records; optional candidateSha. */
+/** Grade synthetic rows against in-memory records; optional candidateSha.
+ *  String record values are passed through verbatim — a law-① fixture's
+ *  `source` is a prose file, and JSON.stringify would eat its line breaks. */
 function grade(records, rows, candidateSha) {
-  const readFile = (rel) => (rel in records ? JSON.stringify(records[rel]) : null)
+  const readFile = (rel) => (rel in records ? (typeof records[rel] === 'string' ? records[rel] : JSON.stringify(records[rel])) : null)
   const isTracked = (rel) => rel in records
   const claims = new Map([[TOOL, { familyId: FAMILY }]])
   return checkToolAcceptance({
@@ -157,4 +175,72 @@ test('(l) unknown proof value (proof:\'CASEE\') is refused', () => {
   const level = { status: 'PROVEN', proof: 'CASEE', evidence: { record: 'r.json', case: CASE } }
   const out = grade({ 'r.json': runRecord() }, [row({ 'L2-mounted': level })])
   assert.ok(has(out, 'ACCEPT_SCHEMA'), JSON.stringify(out.findings))
+})
+
+// ── Law ① ACCEPT_DISCLOSED_UNSOURCED (checker `source` branch) — sync17 F-1 / #528.
+// A DISCLOSED level may name a `source`; when it does, the reason must be findable
+// in that file word for word (line breaks forgiven). No fixture below touches the
+// real ledger: every source file is a synthetic string in the records map.
+
+const UNSOURCED_REASON = 'the suite refuses every write outside the workspace root'
+const discRow = (reason, source) => row({ 'L3-refusal': { status: 'DISCLOSED', reason, pr: '#528', source } })
+
+test('(m) DISCLOSED whose source does not contain the reason verbatim is refused', () => {
+  const out = grade(
+    { 'disclosure.md': 'The lane was exercised offline; the reviewer accepted the re-grade narration.' },
+    [discRow(UNSOURCED_REASON, 'disclosure.md')],
+  )
+  const hit = out.findings.find((f) => f.code === 'ACCEPT_DISCLOSED_UNSOURCED')
+  assert.ok(hit !== undefined, JSON.stringify(out.findings))
+  assert.ok(hit.detail.includes('does not contain the reason verbatim'), `wrong branch: ${hit.detail}`)
+  assert.equal(out.findings.length, 1, JSON.stringify(out.findings))
+})
+
+test('(n) DISCLOSED with a line-wrapped verbatim reason is green (normalisation branch enforced)', () => {
+  // Direct `includes` CANNOT match here — the sentence is re-wrapped and
+  // re-indented — so this fixture only stays green via the whitespace
+  // normalisation half of containsVerbatim; tightening it would turn (n) red.
+  const out = grade(
+    { 'disclosure.md': 'Booked at review:\n  the suite refuses   every\n    write outside the workspace root, per the transcript.\n' },
+    [discRow(UNSOURCED_REASON, 'disclosure.md')],
+  )
+  assert.equal(out.findings.length, 0, JSON.stringify(out.findings))
+})
+
+test('(o) self-proof: weakening containsVerbatim to always-true breaks (m) — the red really depends on law ①', async () => {
+  // Injection is impossible in-place (see file header), so the mutation runs on a
+  // temp copy of the checker; the real scripts/eb3-tool-acceptance.mjs is read
+  // only, never modified. Fail-closed on the anchor: if the checker is refactored
+  // away from this spelling, the control goes RED and must move with it — a
+  // silently vacuous negative control is exactly what (o) exists to prevent.
+  const real = readFileSync(new URL('./eb3-tool-acceptance.mjs', import.meta.url), 'utf8')
+  const ANCHOR = 'export function containsVerbatim(haystack, needle) {'
+  assert.ok(real.includes(ANCHOR), 'mutation anchor is gone — update this control WITH the checker, never drop it silently')
+  const mutantSrc = real.replace(ANCHOR, `${ANCHOR}\n  return true // MUTANT: law ① verifier weakened`)
+  assert.notEqual(mutantSrc, real, 'mutation was a no-op')
+  const dir = mkdtempSync(join(tmpdir(), 'eb3-law1-mutant-'))
+  try {
+    const file = join(dir, 'eb3-tool-acceptance-mutant.mjs')
+    writeFileSync(file, mutantSrc)
+    const mod = await import(pathToFileURL(file).href)
+    const records = { 'disclosure.md': 'The lane was exercised offline; the reviewer accepted the re-grade narration.' }
+    const mutantGrade = (rows) => mod.checkToolAcceptance({
+      ledger: { schema: SCHEMA, rows },
+      claims: new Map([[TOOL, { familyId: FAMILY }]]),
+      readFile: (rel) => (rel in records ? records[rel] : null),
+      isTracked: (rel) => rel in records,
+    })
+    // (m)'s exact fixture goes green under the mutant — the assertion in (m)
+    // fails there, which is what proves (m) is law-① enforcement, not prose.
+    const underMutant = mutantGrade([discRow(UNSOURCED_REASON, 'disclosure.md')])
+    assert.deepEqual(underMutant.findings, [], 'the mutant still refused the unsourced reason — (m) is not grading the branch it claims to')
+    // Canary: the mutant is alive, not inert — the UNREASONED law next door still fires.
+    const canary = mutantGrade([discRow('   ', 'disclosure.md')])
+    assert.ok(canary.findings.some((f) => f.code === 'ACCEPT_DISCLOSED_UNREASONED'), JSON.stringify(canary.findings))
+    // Differential in one place: the REAL module still refuses the same fixture.
+    const underReal = grade(records, [discRow(UNSOURCED_REASON, 'disclosure.md')])
+    assert.ok(underReal.findings.some((f) => f.code === 'ACCEPT_DISCLOSED_UNSOURCED'), JSON.stringify(underReal.findings))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
