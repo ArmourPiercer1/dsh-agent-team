@@ -125,3 +125,8 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - boot tree=task/a5w-bootwave-20261030 @ PRE_REG_SHA=e8b17eb183ea（含 origin/master@4229bd5605=#511 vobs 观测接线 fmerge；离线预检 dry+registries 绿）。
 - 判据目标：grantAudit 行首现（a5-admission 白名单行）→ ri:ask-approved-ran 收口；ri:tool-output-two-blocks（套件 RCA-8 修正后）；ri:answered-deny-zero-effect（kernel-admission 臂）；既有六格保持+leak+stable-instance。
 - 预算账：host-starts.jsonl 现有 6 行 → --max-host-starts 7；失败=具名 RCA 后决定是否用 (b) 额度，不自动追加。
+
+## bw10 预登记（用户新批 C2 批 2/2，dated 2026-10-31T05:38Z）
+- 授权来源：同上批 (b)=read_image L4 收据独立复现跑（bw9 已九绿：u5-u7r3-bootwave-bw9-2026-10-31T05-38-21-670Z；本跑=独立复现格，收据翻台账前置）。
+- boot tree=同 bw9（task/a5w-bootwave-20261030 当前 head，含 bw9 证据 commit；套件与产品码零变）。判据=九绿复现（允许 ui:live-root-law NOT_REACHED）；任何 FAIL=具名 RCA，不自动追加。
+- 预算账：账本现 7 行 → --max-host-starts 8。本批 2/2 用尽后池=0，再启动需用户新裁。
