@@ -110,3 +110,8 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - boot head=968ecc895f 系（本预登记 commit 后 HEAD）；max-host-starts=6（账本 5 行+本格）。
 - 有效格判据：ri:ask-approved-ran/ri:attachment-commit-one/ri:tool-output-two-blocks/ri:store-law-zero-commit 任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=**停线升级用户**（机动池见底，不再自行动格）。
 - 收据：run-bw8.json + oracle + logs + host-starts.jsonl 行 + 本册回执，缺一即违规。
+
+## 机动格回执 2/2 + 池见底停线（lane=a5w-bootwave，dated 2026-10-31T04:21Z）
+- bw8 真实启动 1（账本第 6 行）=机动 2/2。**有效格=是**：首绿×2（ri:attachment-commit-one、ri:store-law-zero-commit），RAN 实例日志首现（#510 修复真机证实），objects=1 真对象入仓。
+- 残根三件全部离线可修（vobs 装配席在途 + 套件两修正已提交，见 RCA-8），**下一次真实启动（bw9，判据=read_image L4 三格收口）需用户新批预算**——机动池 2/2 用尽，预登记硬停线条款生效：不自行动格，升级用户裁决（具名验收任务=read_image L4 收口跑，预计 1 格，另含 L4 收据独立复现 1 格=共 2 格，见协调报告 J-4）。
+- 收据齐：run-bw8.json + oracle + bootwave-evidence + logs + host-starts.jsonl 第 6 行 + 本回执。

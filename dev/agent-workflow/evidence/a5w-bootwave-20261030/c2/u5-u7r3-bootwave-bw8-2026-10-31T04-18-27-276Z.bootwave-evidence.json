@@ -1,0 +1,961 @@
+{
+  "run": {
+    "suite": "u7r3-bootwave",
+    "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+    "productHead": "405191114e7f00275958abc364328bd961d6558b",
+    "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainLines": 0,
+    "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z",
+    "dateUtc": "2026-10-31T04:18:31.304Z",
+    "ports": {
+      "host": 3181,
+      "mock": 3491,
+      "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+    },
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/instance-port3181.log"
+  },
+  "asks": {
+    "requestRows": [
+      {
+        "requestId": "ctrl-11bi8001ex9",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:565b5022d0ef55c949eda214a3036eb"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbw",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:3ead65bca85d07bed45c3db1f21e3ea"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd",
+        "toolName": "ask_user_question",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-0ys34n412xae:sha256:ac507b38861492b1fb11b7caec9306f"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-11bi8001ex9",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbw",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd",
+        "decision": "allow"
+      }
+    ],
+    "consumed": [
+      {
+        "requestId": "ctrl-11bi8001ex9"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd"
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-11bi8001ex9vs91rvjat21tr",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-7pzs1o8rpt\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-11bi8001ex9vs91rvjat21tr\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9o7s1pl3z3l0wi",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "case-after-call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-i81nswj7a1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0rxcn9v1ym9o7s1pl3z3l0wi\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbwu901o9an9z171",
+        "ordinal": 2,
+        "decision": "deny",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-hvfacrnt5j\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1hzol591xbwu901o9an9z171\",\"decision\":\"deny\",\"decider\":{\"kind\":\"human"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8phm1drufvd0xz",
+        "ordinal": 3,
+        "decision": "allow",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-r293x8tqok\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-03cx5p31ne8phm1drufvd0xz\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ymwap1ylc0tk1tf",
+        "ordinal": 3,
+        "decision": "allow",
+        "ok": true,
+        "via": "case-after-call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-kw5qxdcl3y\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0l4jyp611ymwap1ylc0tk1tf\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd5sp0mky5si1x4",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "tool-ordinal",
+        "toolName": "ask_user_question",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-dzq6k68z9l\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-18ucjts0kjd5sp0mky5si1x4\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      }
+    ],
+    "errors": []
+  },
+  "wire": {
+    "muxPath": "/api/remote.mux",
+    "endpoint": "$events",
+    "resultEndpoint": "$events/result",
+    "readySeen": true,
+    "waterfallSeen": true,
+    "resultAccepted": true,
+    "openError": null,
+    "readyFrame": {
+      "clientId": "49c69348-671e-4044-8c8c-7e94e487715c",
+      "host": {
+        "home": "/home/armourpiercer"
+      },
+      "transport": "item"
+    },
+    "answered": [
+      {
+        "eventId": "8fb8bd26-d0cd-422d-8af3-1dc8f3623c7a",
+        "agentId": "session-team-child-1d009832a3287c8de5690227df615bbd",
+        "answers": [
+          {
+            "id": "bootwave-q1",
+            "selected": [
+              "Option A"
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "responseHead": "{\"type\":\"server-response\",\"rpcId\":\"uif4-ans-8fb8bd26\",\"result\":{\"ok\":true}}",
+        "envelope": {
+          "url": "/api/$events/result",
+          "method": "$events/result",
+          "argKeys": [
+            "clientId",
+            "eventId",
+            "outcome"
+          ]
+        }
+      }
+    ],
+    "frames": 34,
+    "waterfallFrames": [
+      {
+        "event": "user-questions/request",
+        "eventId": "8fb8bd26-d0cd-422d-8af3-1dc8f3623c7a",
+        "agentId": "session-team-child-1d009832a3287c8de5690227df615bbd",
+        "questions": [
+          {
+            "id": "bootwave-q1",
+            "question": "BOOTWAVE_UI_u5bw8-20261031t04-18-27z which option should the governed lane take?",
+            "options": [
+              {
+                "label": "Option A"
+              },
+              {
+                "label": "Option B"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "lanes": {
+    "imgov": true,
+    "uigov": true,
+    "leader": true
+  },
+  "digest": {
+    "header": {
+      "suite": "u7r3-bootwave",
+      "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+      "productHead": "405191114e7f00275958abc364328bd961d6558b",
+      "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+      "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostPorcelainLines": 0,
+      "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z",
+      "dateUtc": "2026-10-31T04:18:31.304Z",
+      "ports": {
+        "host": 3181,
+        "mock": 3491,
+        "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+      },
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/instance-port3181.log"
+    },
+    "surface": {
+      "names": [
+        "ask_user_question",
+        "bash",
+        "edit",
+        "present",
+        "pwsh",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_glob",
+        "team_grep",
+        "team_list_members",
+        "write"
+      ],
+      "readImageCount": 1,
+      "readImageIsGoverned": true,
+      "readImageDescriptions": [
+        "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to "
+      ],
+      "placementLines": [
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z"
+      ],
+      "placementHasReadImage": true,
+      "surfaceRequestFound": true
+    },
+    "store": {
+      "storeRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/attachments/v1",
+      "objects": [
+        {
+          "rel": "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "bytes": 69,
+          "sha": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "nameIsSelfSha": true
+        }
+      ],
+      "maxObjectsSeen": 1,
+      "samples": [
+        {
+          "at": 1793420313665,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314024,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314374,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314724,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315074,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315424,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316136,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316487,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316851,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317201,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317201,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317531,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        }
+      ],
+      "zeroNewObjectsAfterDeny": true,
+      "workspaceNewFiles": [],
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ]
+    },
+    "attachment": {
+      "twoBlocks": false,
+      "envelopeHead": null,
+      "blockTypes": [
+        "text"
+      ],
+      "imageBlockShape": null,
+      "attachmentIds": [
+        "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+      ],
+      "modelImageParts": [
+        {
+          "base64Length": 92
+        }
+      ],
+      "modelImageSha256": [
+        "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+      ],
+      "identityMatch": true,
+      "imageRequestFound": true
+    },
+    "oracle": {
+      "pngShas": {
+        "good": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+        "deny": "f701c76ac7fb684490c5c2fc887c4414ee56d4a071f9ab2418ab5b3fa7c4f3ef",
+        "huge": "a137059ed805cb18aff2c7e754144dea10ff62d1e42d42357f889d0cf03058b3"
+      },
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ],
+      "storeCensusAfter": [
+        {
+          "rel": "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "bytes": 69,
+          "sha": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "nameIsSelfSha": true
+        }
+      ]
+    },
+    "logHits": {
+      "imageLines": [
+        "[dsh-agent-team] a5g7-image: governed-image RAN bytes=69 mediaType=image/png path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-good.png",
+        "[dsh-agent-team] a5g7-image: governed-image store-law-refused code=IMAGE_TOO_MANY_PIXELS path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootw"
+      ],
+      "askLines": [
+        "[dsh-agent-team] u7f-ask: governed-ask RAN answers=1"
+      ],
+      "audit": [],
+      "planeRefusals": [],
+      "noProvider": []
+    },
+    "journal": [
+      {
+        "seq": 103,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 104,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"settledSequence\":22,\"memberResult\":{\"body\":\"BOOTWAVE_IMG_DONE\",\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 105,
+        "lastCall": "team_delegate",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0ys34n412xae\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":23,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result",
+          "text"
+        ]
+      },
+      {
+        "seq": 106,
+        "lastCall": null,
+        "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\"}",
+        "blockTypes": [
+          "text",
+          "text"
+        ]
+      },
+      {
+        "seq": 107,
+        "lastCall": null,
+        "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\\\"}]\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 108,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"settledSequence\":22,\"memberResult\":{\"body\":\"BOOTWAVE_IMG_DONE\",\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-1\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 109,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 110,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 111,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 112,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 113,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 114,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 115,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 116,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 117,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 118,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 119,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 120,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 121,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_u\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 122,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 123,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 124,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 125,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 126,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 127,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 128,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 129,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 130,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 131,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 132,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 133,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 134,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-18ucjts0kjd5sp0mky5si1x4]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-18ucjts0kjd5sp0mky5si1x4\\nrequester: inst-0ys34n412xae\\nsubject: instance inst-0ys34n412xae\\ntarget: inst-0ys34n412xae\\ntool: ask_user_question\\nsummary: PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-0ys34n412xae:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 rung=leader tool=ask_user_question ",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 135,
+        "lastCall": "ask_user_question",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"answers\":[{\"id\":\"bootwave-q1\",\"selected\":[\"Option A\"]}]}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 136,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 137,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 138,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 139,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 140,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 141,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"settledSequence\":29,\"memberResult\":{\"body\":\"BOOTWAVE_UI_DONE\",\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result",
+          "text"
+        ]
+      },
+      {
+        "seq": 142,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"settledSequence\":29,\"memberResult\":{\"body\":\"BOOTWAVE_UI_DONE\",\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-2\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      }
+    ]
+  }
+}

@@ -691,15 +691,18 @@ export function judgeBootwave({ facts, log, journal, laneDone, hostAlive, health
   // R2 — the answered-deny arm: typed refusal, zero side effect.
   const imgDeny = resOf('read_image').find((r) => r.decision === 'deny') ?? null
   out.push(['ri:answered-deny-zero-effect',
-    imgDeny?.ok === true && paDenied.length >= 1 && maxObjects <= 1 && facts.store?.zeroNewObjectsAfterDeny === true
+    imgDeny?.ok === true && (paDenied.length >= 1 || facts.denialTranscript?.kernelDeniedSeen === true) && maxObjects <= 1 && facts.store?.zeroNewObjectsAfterDeny === true
       ? 'PASS' : 'FAIL', {
     denyResolution: imgDeny,
     paDeniedLines: paDenied.map((l) => l.slice(0, 220)),
+    denialArm: paDenied.length >= 1 ? 'executor-pa-refused'
+      : (facts.denialTranscript?.kernelDeniedSeen === true ? 'kernel-admission' : 'none'),
+    denialTranscript: facts.denialTranscript ?? { kernelDeniedSeen: false },
     maxObjectsSeen: maxObjects,
     zeroNewObjectsAfterDeny: facts.store?.zeroNewObjectsAfterDeny ?? false,
     workspaceNewFiles: facts.store?.workspaceNewFiles ?? [],
     ranCount: ranLines.length,
-    law: 'PASS needs: the second durable read_image row answered deny over the public seam, the executor naming code=APPROVAL_DENIED, and a store census that never exceeds the ONE object R1 committed — zero new objects, zero new files in the governed workspace.',
+    law: 'PASS needs: the second durable read_image row answered deny over the public seam, a typed refusal visible on a live arm — the family executor naming code=APPROVAL_DENIED OR the member transcript carrying the durable approval refusal text (kernel admission refuses before the executor runs: RCA-7 erratum, bw8 record denialArm=kernel-admission) — and a store census that never exceeds the ONE object R1 committed: zero new objects, zero new files in the governed workspace.',
     ...rca('control-bridge',
       'the deny arm produced a side effect or no typed refusal: compare the store/workspace census before/after the second call with the governed-image pa-refused line; a store object appearing after a deny is a product blocker.',
       ['evidence json store.samples', 'host log grep pa-refused', 'tests/homes/<world>/workspace']),
@@ -1190,24 +1193,30 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
     // carries its payload INSIDE it (string or block array), so the inner
     // blocks are flattened — the two-block law is about what the model
     // receives, not about which wrapper the harness chose.
+    // RCA-8: flatten the WHOLE request, not one message — bw7/bw8 showed the
+    // harness may place the projected image part in a message of its own, and
+    // picking only the last tool_result message made both blocks invisible
+    // while the same request still carried them. The law is about what the
+    // model received in the request that follows the RAN call: envelope text
+    // block AND an image part, wherever the wrapper placed them.
     const blocksOf = (r) => {
       const msgs = r?.body?.messages ?? []
-      const lastUser = [...msgs].reverse().find((m) => Array.isArray(m?.content)
-        && m.content.some((b) => b?.type === 'tool_result' || b?.type === 'image' || b?.type === 'image_url'))
       const out = []
-      for (const b of Array.isArray(lastUser?.content) ? lastUser.content : []) {
-        if (b?.type === 'tool_result') {
-          if (typeof b.content === 'string') out.push({ type: 'text', text: b.content })
-          else if (Array.isArray(b.content)) out.push(...b.content)
-        } else {
-          out.push(b)
+      for (const m of msgs) {
+        for (const b of Array.isArray(m?.content) ? m.content : []) {
+          if (b?.type === 'tool_result') {
+            if (typeof b.content === 'string') out.push({ type: 'text', text: b.content })
+            else if (Array.isArray(b.content)) out.push(...b.content)
+          } else {
+            out.push(b)
+          }
         }
       }
       return out
     }
     const blocks = blocksOf(imageResultReq ?? null)
-    const envelope = blocks.find((b) => b?.type === 'text' && String(b?.text ?? '').includes('<type>image</type>')) ?? null
-    const imageBlock = blocks.find((b) => b?.type === 'image' || b?.type === 'image_url' || b?.type === 'input_image') ?? null
+    const envelope = [...blocks].reverse().find((b) => b?.type === 'text' && String(b?.text ?? '').includes('<type>image</type>')) ?? null
+    const imageBlock = [...blocks].reverse().find((b) => b?.type === 'image' || b?.type === 'image_url' || b?.type === 'input_image') ?? null
     const blob = JSON.stringify(imageResultReq?.body?.messages ?? [])
     const attachmentIds = [...new Set([...blob.matchAll(/sha256:([0-9a-f]{64})/g)].map((m) => m[1]))]
     // Every inline image payload shape the projection may take (a `data:` URL
@@ -1226,6 +1235,21 @@ async function runBootwave({ factory, record, rc, log, line, worlds, keepHome, e
       modelImageSha256: b64Shas,
       identityMatch: objectShas.length === 1 && (attachmentIds.includes(objectShas[0]) || b64Shas.includes(objectShas[0])),
       imageRequestFound: imageResultReq !== null,
+    }
+
+    // RCA-8 — the kernel-side denial arm. When the call-fingerprint row (kernel
+    // admission) is answered deny, the call never reaches the family executor,
+    // so an executor `pa-refused` observe line CANNOT exist. The typed refusal
+    // is still live and recorded where the model sees it: the member's mock
+    // transcript carries the tool_result refusal text. Both arms are legal
+    // "live typed refusal" evidence under the ledger law; which one carried
+    // the fact is recorded, and every zero-effect census stays required.
+    const denialTurn = [...requests].reverse().find((r) => JSON.stringify(r.body?.messages ?? [])
+      .includes('approval was denied'))
+    facts.denialTranscript = {
+      kernelDeniedSeen: denialTurn !== undefined,
+      sample: denialTurn === undefined ? null
+        : (JSON.stringify(denialTurn.body?.messages ?? '').match(/Error: the approval was denied[^"]*/) ?? ['present'])[0].slice(0, 120),
     }
 
     const oracle = assembly.readOracleFacts()

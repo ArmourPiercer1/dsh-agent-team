@@ -1,0 +1,3086 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+  "suite": "u7r3-bootwave",
+  "startedAt": "2026-10-31T04:18:27.337Z",
+  "selectedCases": [
+    "ri:placement-one-row",
+    "ri:ask-approved-ran",
+    "ri:attachment-commit-one",
+    "ri:tool-output-two-blocks",
+    "ri:answered-deny-zero-effect",
+    "ri:store-law-zero-commit",
+    "ui:ask-approved-ran",
+    "ui:live-root-law",
+    "bw:leak-check"
+  ],
+  "bindings": {
+    "teamSha": "405191114e7f00275958abc364328bd961d6558b",
+    "teamTreeClean": true,
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTreeSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "composedProfileDigest": {
+      "u5bw8-20261031T04-18-27Z": [
+        "b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23"
+      ]
+    },
+    "trustedSourcesDigest": "2dfeb901b214946abd71b577e3c1a755a60b8b9d1fcf4eb2be43af65923450f3",
+    "trustedSources": {
+      "schema": "u7r3-g4r1a/plane-trusted-sources/1",
+      "hashLaw": "sha256(concat(for each entry in trustedSources.sources order: utf8(role) + 0x00 + utf8(repo-relative posix path) + 0x00 + utf8(per-source sha256 hex) + 0x00))",
+      "order": "sources listed in lexically ascending role + 0x00 + path (JS string order); the digest consumes them in exactly that order, insertion order never affects it",
+      "admissionDocument": {
+        "available": false,
+        "reason": "The runner public World/HTTP surface exposes no plane TrustedSources/admission source document or digest. authoritative-tool-sources.v1.json is census inventory, not the plane admission document; it cannot substitute."
+      },
+      "substituteAdoption": "none",
+      "recompute": "recomputeTrustedSources(record, repoRoot): family sha256 re-hashed from the tracked bytes; the union digest re-derived from the entry list; profile/oracle entries are covered by their own cells (launched-profile re-hash / recomputeWorldOracle)",
+      "digest": "2dfeb901b214946abd71b577e3c1a755a60b8b9d1fcf4eb2be43af65923450f3",
+      "unavailableReason": null,
+      "sources": [
+        {
+          "role": "authoritative-tool-sources",
+          "path": "dev/engineering/tool-obligations/authoritative-tool-sources.v1.json",
+          "sha256": "abc825d2a93773339eb3ca831f99d3f15bf7726c41ac59947b77724c166cb30c"
+        },
+        {
+          "role": "composed-profile/u5bw8-20261031T04-18-27Z#1",
+          "path": "",
+          "sha256": "b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23"
+        },
+        {
+          "role": "expected-tool-obligations",
+          "path": "dev/engineering/tool-obligations/expected-tool-obligations.v1.json",
+          "sha256": "6ae2a52150a487bfedb80eefda3e51e0fecb807ad2d017c394420efbe2860a56"
+        },
+        {
+          "role": "tool-obligations-manifest",
+          "path": "dev/engineering/tool-obligations/manifest.json",
+          "sha256": "0cc26e9897ec3a9c6cb86ea938bcaedd218b098c0a78a7f829b07613f212a8fd"
+        },
+        {
+          "role": "world-oracle",
+          "path": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.oracle.json",
+          "sha256": "bb471a448f9e8f635d2a1fd413b1b3c8d97f3324834b498aef310d9191810f52"
+        }
+      ],
+      "missingSources": []
+    },
+    "worldOracleDigest": "bb471a448f9e8f635d2a1fd413b1b3c8d97f3324834b498aef310d9191810f52",
+    "worldOracle": {
+      "suite": "u7r3-bootwave",
+      "digest": "bb471a448f9e8f635d2a1fd413b1b3c8d97f3324834b498aef310d9191810f52",
+      "complete": false,
+      "entry": "tests/world-factory/suites/140-u7r3-bootwave.mjs",
+      "sources": [
+        "tests/kits/_shared/preset-seam.mjs",
+        "tests/paths.mjs",
+        "tests/world-factory/lib/arm-verdict.mjs",
+        "tests/world-factory/lib/u6-fs-assembly.mjs",
+        "tests/world-factory/lib/u7r3-uif4-answer.mjs",
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs"
+      ],
+      "order": "sources listed in lexically ascending repo-relative posix path (JS string order); the digest consumes them in exactly that order",
+      "hashLaw": "sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00))",
+      "excludedHelpers": [
+        "tests/world-factory/lib/world-factory.mjs"
+      ],
+      "externalSpecifiers": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:http",
+        "node:net",
+        "node:path",
+        "node:url",
+        "node:zlib"
+      ],
+      "unfollowedPaths": [],
+      "unresolvedDynamicImports": [
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs:1435",
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs:1449"
+      ],
+      "unresolvedLiteralReads": [
+        "tests/world-factory/suites/140-u7r3-bootwave.mjs:1458"
+      ],
+      "literalReadsComplete": false,
+      "missingSources": [],
+      "artifactPath": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.oracle.json",
+      "artifactSha256": "3140d8a06695e6fc2976dcf0e8d1ba55e52d7e75fe3a14624e680ba7d9604679",
+      "evidence": [
+        {
+          "path": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.oracle.json",
+          "sha256": "3140d8a06695e6fc2976dcf0e8d1ba55e52d7e75fe3a14624e680ba7d9604679",
+          "kind": "world-oracle-source-artifact"
+        }
+      ]
+    },
+    "oracleArtifactPath": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.oracle.json",
+    "oracleCoverage": "suite entry plus every literal import/re-export/dynamic-import/read edge reachable inside the repo root (product files included), byte copies retained base64 in the cited artifact under sha256(concat(for each source in worldOracle.sources order: utf8(repo-relative posix path) + 0x00 + raw file bytes + 0x00)); launcher/registry helpers listed in excludedHelpers define no expected answers; bare specifiers in externalSpecifiers stay host-bound; paths resolving outside the repo root in unfollowedPaths; a literal read whose path is computed at runtime is disclosed in unresolvedLiteralReads (runtime input, literalReadsComplete=false); an unresolvable dynamic import or an unreadable closure file sets complete=false",
+    "hostPorcelainEmptyAtStartup": true,
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4",
+        "snapshot_version": "as20261026r1"
+      },
+      "pointerSha256": "42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae",
+      "snapshotDigest": "198228706489ecd8d0d15d231681eb82991b8c2b633ac370dc569b321afcde8d"
+    },
+    "canaryPluginSha256": "037cfbea364a803146232b1740bcdb939343a29a59142e69e4201e44c3bc6135",
+    "worldIds": [
+      "u5bw8-20261031T04-18-27Z"
+    ],
+    "leaseRoot": "/home/armourpiercer/projects/dsh-agent-team/.artifacts/tmp/port-leases",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "provider": {
+      "kind": "mock-deepseek",
+      "base": "injected http://127.0.0.1:<leased-port>"
+    },
+    "profileDisclosure": "World profiles disable ONLY the two deepseekLlmApiExtensions metadata contributors (session-log-deepseek, plugin-package-inventory-deepseek) through their own public config.enabled flag — s1-h0-m1 noext precedent; on fresh unauthenticated homes they fail every model request with REQUEST_EXTENSION before dispatch (measured u5dbg run; reported as a product observation, not hidden). Tools, Guard, dispatch, registry rows otherwise untouched.",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-10-31T04:18:27.454Z",
+      "probed": true,
+      "runtimeTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "full",
+      "usable": true,
+      "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "full",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "full",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "full",
+    "profileArtifacts": [
+      {
+        "worldId": "u5bw8-20261031T04-18-27Z",
+        "composedProfileDigest": "b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23",
+        "artifactPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/composed-profile-b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23.patch.yml",
+        "artifactDigest": "b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23",
+        "launchPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/profiles/web/cordis.patch.yml",
+        "launchedBytes": 5239,
+        "coverage": "exact materialized web profile patch bytes, including comments and final newline; hashed BEFORE spawn and re-hashed from the launched file AFTER it (composedProfileDigestMismatch); not a flattened upstream base bundle",
+        "launchedDigest": "b5bb94d3d3bccc25adb100fa42c1e580b27c64b7601b60f2857dbd41e5723f23",
+        "composedProfileDigestMismatch": false
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "ri:placement-one-row",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.550Z",
+      "readImageCount": 1,
+      "readImageIsGoverned": true,
+      "readImageDescriptions": [
+        "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to "
+      ],
+      "placementLines": [
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z"
+      ],
+      "placementHasReadImage": true,
+      "surfaceRequestFound": true,
+      "surfaceNames": [
+        "ask_user_question",
+        "bash",
+        "edit",
+        "present",
+        "pwsh",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_glob",
+        "team_grep",
+        "team_list_members",
+        "write"
+      ],
+      "law": "PASS needs the imgov lane model request to carry exactly one tool named read_image, its description to be the governed row text (fs-family/src/image-row.mjs: \"Read one governed image file inside this member's admitted file root…\", never the native \"Read a PNG/JPEG/WebP/GIF file…\"), AND a mount-time placement line naming read_image. A second row or the native description is a FAIL naming the live shape.",
+      "rcaClass": "plane-placement",
+      "rcaSummary": "no exactly-one governed read_image row on the live model surface: read the imgov lane request (body.tools[]) against the mount lines in the host log (grep placement-feed / \"a5-plane: placed\"); a native-shape row means the governed mount never took the name, two rows means a placement conflict that did not fail closed, and no line at all means the fs family never mounted in this session.",
+      "rcaEvidence": [
+        "host log (boot.logPath) grep placement-feed|a5-plane",
+        "evidence json digest.surface",
+        "packages/tools/fs-family/src/image-row.mjs"
+      ]
+    },
+    {
+      "id": "ri:ask-approved-ran",
+      "verdict": "FAIL",
+      "at": "2026-10-31T04:18:37.550Z",
+      "durableRows": 5,
+      "allowResolution": {
+        "requestId": "ctrl-11bi8001ex9vs91rvjat21tr",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-7pzs1o8rpt\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-11bi8001ex9vs91rvjat21tr\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      "grantAuditLines": [],
+      "ranLine": "[dsh-agent-team] a5g7-image: governed-image RAN bytes=69 mediaType=image/png path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-good.png",
+      "ranCount": 1,
+      "preGateRefusals": [],
+      "decisions": [
+        {
+          "requestId": "ctrl-11bi8001ex9",
+          "decision": "allow"
+        },
+        {
+          "requestId": "ctrl-0rxcn9v1ym9",
+          "decision": "allow"
+        },
+        {
+          "requestId": "ctrl-1hzol591xbw",
+          "decision": "deny"
+        },
+        {
+          "requestId": "ctrl-03cx5p31ne8",
+          "decision": "allow"
+        },
+        {
+          "requestId": "ctrl-0l4jyp611ym",
+          "decision": "allow"
+        },
+        {
+          "requestId": "ctrl-18ucjts0kjd",
+          "decision": "allow"
+        }
+      ],
+      "consumed": [
+        {
+          "requestId": "ctrl-11bi8001ex9"
+        },
+        {
+          "requestId": "ctrl-0rxcn9v1ym9"
+        },
+        {
+          "requestId": "ctrl-03cx5p31ne8"
+        },
+        {
+          "requestId": "ctrl-0l4jyp611ym"
+        },
+        {
+          "requestId": "ctrl-18ucjts0kjd"
+        }
+      ],
+      "law": "PASS needs ALL of, for the SAME call: a durable control-request-recorded row (toolName=read_image) answered allow through team.resolveControl v4, the kernel audit naming a minted/approved grant, and exactly ONE `governed-image RAN` line. Zero witnesses is FAIL, never a softening; a pre-gate refusal (IMAGE_MODEL_NOT_CAPABLE / attachment-service-unmounted) is disclosed verbatim here.",
+      "rcaClass": "control-bridge",
+      "rcaSummary": "the allow→grant→RAN chain never closed: read the ledger face (control-request-recorded / control-decision-recorded / control-allow-consumed) and the host log governed-image lines; a pre-gate code names the exact gate that stopped it.",
+      "rcaEvidence": [
+        "evidence json asks (resolutions/decisions/consumed)",
+        "host log grep governed-image|admission-",
+        "packages/tools/fs-family/src/image-executor.mjs"
+      ]
+    },
+    {
+      "id": "ri:attachment-commit-one",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.550Z",
+      "storeRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/attachments/v1",
+      "objects": [
+        {
+          "rel": "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "bytes": 69,
+          "sha": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "nameIsSelfSha": true
+        }
+      ],
+      "maxObjectsSeen": 1,
+      "attachmentIdSeen": [
+        "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+      ],
+      "modelImageParts": [
+        {
+          "base64Length": 92
+        }
+      ],
+      "identityMatch": true,
+      "law": "PASS needs: exactly one object under <DSH_HOME>/attachments/v1/objects whose file name IS the sha256 of its own bytes (the store law), and that same sha present in what the model received (attachmentId sha256:<hex> or the inline image part the harness resolved). Zero or two objects is a FAIL naming the census.",
+      "rcaClass": "attachment-store",
+      "rcaSummary": "the store census or the sha identity failed: re-list <DSH_HOME>/attachments/v1/objects, sha256sum the object, and compare with the attachmentId/image part in the mock transcript; two objects means a double commit, zero means the commit never happened despite RAN.",
+      "rcaEvidence": [
+        "evidence json store + attachment",
+        "tests/homes/<world>/attachments/v1/objects (before teardown)"
+      ]
+    },
+    {
+      "id": "ri:tool-output-two-blocks",
+      "verdict": "FAIL",
+      "at": "2026-10-31T04:18:37.550Z",
+      "twoBlocks": false,
+      "envelopeHead": null,
+      "imageBlockShape": null,
+      "law": "PASS needs the tool_result the model received for the RAN call to carry BOTH the envelope text block (`<path>…</path>`, `<type>image</type>`, `<content>`) and an image block (the family renders {type:image, attachment}; the harness may project it to an image content part — either shape is recorded, the absence of either is FAIL).",
+      "rcaClass": "presentation",
+      "rcaSummary": "the two-block render never reached the model: read the mock request whose tool_result names read_image; a text-only result means the attachment block was dropped, an envelope-less result means the row render changed.",
+      "rcaEvidence": [
+        "mock transcript (evidence json journal)",
+        "packages/tools/fs-family/src/image-row.mjs render"
+      ]
+    },
+    {
+      "id": "ri:answered-deny-zero-effect",
+      "verdict": "FAIL",
+      "at": "2026-10-31T04:18:37.550Z",
+      "denyResolution": {
+        "requestId": "ctrl-1hzol591xbwu901o9an9z171",
+        "ordinal": 2,
+        "decision": "deny",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-hvfacrnt5j\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1hzol591xbwu901o9an9z171\",\"decision\":\"deny\",\"decider\":{\"kind\":\"human"
+      },
+      "paDeniedLines": [],
+      "maxObjectsSeen": 1,
+      "zeroNewObjectsAfterDeny": true,
+      "workspaceNewFiles": [],
+      "ranCount": 1,
+      "law": "PASS needs: the second durable read_image row answered deny over the public seam, the executor naming code=APPROVAL_DENIED, and a store census that never exceeds the ONE object R1 committed — zero new objects, zero new files in the governed workspace.",
+      "rcaClass": "control-bridge",
+      "rcaSummary": "the deny arm produced a side effect or no typed refusal: compare the store/workspace census before/after the second call with the governed-image pa-refused line; a store object appearing after a deny is a product blocker.",
+      "rcaEvidence": [
+        "evidence json store.samples",
+        "host log grep pa-refused",
+        "tests/homes/<world>/workspace"
+      ]
+    },
+    {
+      "id": "ri:store-law-zero-commit",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.550Z",
+      "storeLawLines": [
+        "[dsh-agent-team] a5g7-image: governed-image store-law-refused code=IMAGE_TOO_MANY_PIXELS path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootw"
+      ],
+      "ranCount": 1,
+      "maxObjectsSeen": 1,
+      "pngSizes": {
+        "good": 69,
+        "deny": 69,
+        "huge": 62326
+      },
+      "law": "PASS needs the store's OWN law word on the third call (observe line `governed-image store-law-refused code=IMAGE_TOO_MANY_PIXELS|IMAGE_DIMENSION_TOO_LARGE|IMAGE_TOO_LARGE`) with the RAN count still 1 and the object census still 1 — a deterministic law refusal must commit nothing. A pre-gate byte cap instead of the store law is disclosed here, not accepted silently.",
+      "rcaClass": "store-law",
+      "rcaSummary": "the over-pixel PNG either committed (product blocker), never reached the store law (check the pre-gate codes and the byte cap), or the call never ran (lane script). The planted PNG is 8192x7817 = 64,036,864 px against the pinned 64,000,000 limit.",
+      "rcaEvidence": [
+        "host log grep store-law-refused",
+        "evidence json plant.pngSizes",
+        "tests/deepseek-harness-test-use/packages/attachment/attachment-local/src/{image.ts,index.ts}"
+      ]
+    },
+    {
+      "id": "ui:ask-approved-ran",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.550Z",
+      "askRows": 1,
+      "allowResolution": {
+        "requestId": "ctrl-18ucjts0kjd5sp0mky5si1x4",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "tool-ordinal",
+        "toolName": "ask_user_question",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-dzq6k68z9l\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-18ucjts0kjd5sp0mky5si1x4\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      "ranLine": "[dsh-agent-team] u7f-ask: governed-ask RAN answers=1",
+      "answeredCount": 1,
+      "waterfallFrames": 1,
+      "wire": {
+        "muxPath": "/api/remote.mux",
+        "endpoint": "$events",
+        "resultEndpoint": "$events/result",
+        "readySeen": true,
+        "waterfallSeen": true,
+        "resultAccepted": true,
+        "openError": null,
+        "readyFrame": {
+          "clientId": "49c69348-671e-4044-8c8c-7e94e487715c",
+          "host": {
+            "home": "/home/armourpiercer"
+          },
+          "transport": "item"
+        }
+      },
+      "answerBackInToolResult": true,
+      "law": "PASS needs ALL of: the durable ask row allowed over team.resolveControl v4, the $events waterfall settled over POST /api/$events/result, `governed-ask RAN`, and the human answer label present in the tool_result the model saw.",
+      "rcaClass": "ui-answer-wire",
+      "rcaSummary": "the public answering face never closed the loop: read the answerer wire facts (ready frame, waterfall frames, POST result status) and the governed-ask lines; a port-failure code names the family gate that stopped it.",
+      "rcaEvidence": [
+        "evidence json wire + answered",
+        "host log grep governed-ask",
+        "tests/world-factory/lib/u7-uileg0-answer.mjs (pinned shapes)"
+      ]
+    },
+    {
+      "id": "ui:live-root-law",
+      "verdict": "NOT_REACHED",
+      "at": "2026-10-31T04:18:37.550Z",
+      "laneRefusal": false,
+      "assertLiveRootObserved": false,
+      "memberArmReached": true,
+      "askRefusalLines": [],
+      "law": "L2 as-is: assertLiveRoot only runs when the request carries an Agent; the family port binding passes none, so the open ask never reaches the live-root law. Recorded, never retried, NOT_REACHED-safe by lane order."
+    },
+    {
+      "id": "bw:leak-check",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.773Z",
+      "ownedPidsDead": true,
+      "portsReleased": true,
+      "stillBound": [],
+      "homeReleased": true,
+      "leasesReleased": true,
+      "heldLease": [],
+      "notes": []
+    },
+    {
+      "id": "stable-instance-unchanged",
+      "verdict": "PASS",
+      "at": "2026-10-31T04:18:37.809Z",
+      "status": 401,
+      "note": "read-only probe of :3080 before/after (401)"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-10-31T04:18:27.453Z",
+        "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+        "suite": "u7r3-bootwave",
+        "world": "u5bw8-20261031T04-18-27Z",
+        "phase": "bootwave-boot1"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.oracle.json",
+      "sha256": "3140d8a06695e6fc2976dcf0e8d1ba55e52d7e75fe3a14624e680ba7d9604679",
+      "kind": "world-oracle-source-artifact"
+    }
+  ],
+  "bootwavePreRegistration": {
+    "pin": "405191114e7f00275958abc364328bd961d6558b",
+    "headSha": "405191114e7f00275958abc364328bd961d6558b",
+    "envName": "BOOTWAVE_PRE_REG_SHA",
+    "ok": true,
+    "reason": "boot head equals the registered sha 405191114e7f00275958abc364328bd961d6558b"
+  },
+  "bootwaveRun": {
+    "suite": "u7r3-bootwave",
+    "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+    "productHead": "405191114e7f00275958abc364328bd961d6558b",
+    "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelainLines": 0,
+    "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z",
+    "dateUtc": "2026-10-31T04:18:31.304Z",
+    "ports": {
+      "host": 3181,
+      "mock": 3491,
+      "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+    },
+    "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/instance-port3181.log"
+  },
+  "bootwaveLanes": {
+    "imgov": true,
+    "uigov": true,
+    "leader": true
+  },
+  "bootwaveDecideFacts": {
+    "ids": {
+      "imgov": "inst-1mantcj0zeun",
+      "uigov": "inst-0ys34n412xae"
+    },
+    "steps": {
+      "imgov": 4,
+      "uigov": 2
+    },
+    "trace": [
+      {
+        "lane": "title",
+        "lu": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"BOOTWAVE_DISC_u5bw8-20261031t04-18-27z\\\"}]\"}]",
+        "reply": "text:bootwave assembly session",
+        "phase": 0,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": null,
+          "uigov": null
+        }
+      },
+      {
+        "lane": "disc",
+        "lu": "[{\"type\":\"text\",\"text\":\"BOOTWAVE_DISC_u5bw8-20261031t04-18-27z\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\"}]",
+        "reply": "text:BOOTWAVE_NOOP_DONE",
+        "phase": 0,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": null,
+          "uigov": null
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:3eca0f0d0076bfb83caf75cd9fc8b90db454c9e8da492fc5bcc16588b6c2158d] BOOTWAVE_L1_u5bw8-20261031t04-18-27z\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\"}]",
+        "reply": "tool:team_create_member",
+        "phase": 1,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": null,
+          "uigov": null
+        }
+      },
+      {
+        "lane": "title",
+        "lu": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:3eca0f0d0076bfb83caf75cd9fc8b90db454c9e8da492fc5bcc16588b6c2158d] BOOTWAVE_L1_u5bw8-20261031t04-18-27z\\\"}]\"}]",
+        "reply": "text:bootwave assembly session",
+        "phase": 1,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": null,
+          "uigov": null
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-cg9fg0uk\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"create-member\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"templateId\\\":\\\"imgov\\\",\\\"childSessionId\\\":\\\"session-team-child-e20d290079dad20c3cc14708b459cc9a\\\",\\\"operationId\\\":\\\"op-1354nmc11iw4750uli4hy01w\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\"},\\\"requestToken\\\":\\\"bootwave-c1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_create_member",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": null
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-wu40utfi\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"create-member\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"templateId\\\":\\\"uigov\\\",\\\"childSessionId\\\":\\\"session-team-child-1d009832a3287c8de5690227df615bbd\\\",\\\"operationId\\\":\\\"op-1khs91o1k0758x05q8zqy0tc\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":3,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\"},\\\"requestToken\\\":\\\"bootwave-c2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_delegate",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qu3lsds7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-admitted\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"fromLifecycle\\\":\\\"CREATED\\\",\\\"lifecycleCommitted\\\":true,\\\"sequence\\\":4,\\\"settled\\\":false,\\\"workStatus\\\":\\\"admitted\\\"},\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "imgov",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=bootwave-d1-u5bw8-20261031t04-18-27z] BOOTWAVE_IMG_u5bw8-20261031t04-18-27z\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\"}]",
+        "reply": "tool:read_image",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "title",
+        "lu": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=bootwave-d1-u5bw8-20261031t04-18-27z] BOOTWAVE_IMG_u5bw8-20261031t04-18-27z\\\"}]\"}]",
+        "reply": "text:bootwave assembly session",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-q7zd144g\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-lpvb2sii\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vxyjnlaf\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qmn98eap\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-2atlboch\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-8jfnasji\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-dylzxy8d\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-16yq9rcs\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qzok3nt2\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-hxrpanl4\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-xblrj41v\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-1lh2j3i5\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-11bi8001ex9vs91rvjat21tr]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-11bi8001ex9vs91rvjat21tr\\nrequester: inst-1mantcj0zeun\\nsubject: instance inst-1mantcj0zeun\\ntarget: inst-1mantcj0zeun\\ntool: read_image\\nsummary: read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-good.png\\napprovalCase: case-159gais0hi9qk11yz1ur20vk\\nleg: 1\\nreviewAuthority: leader\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\\nIf you already decided or escalated an earlier leg of approvalCase case-159gais0hi9qk11yz1ur20vk, you cannot act on this case again.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-6si25w5k\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-2s2lid8d\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qr1g85mc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-r295s463\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-q8z6ur4y\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-6xz69a04\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-s7rumynf\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-epxr4zfh\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ms80jlg7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-kujn61s7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-rjdpirmq\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-hkm2xxwp\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_r\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-z8c6e0w7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-lhu6t37k\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-s0r7gets\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-c69cf8wk\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-axhk5772\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-66j2wzyj\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ka0rvvxq\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-2kc3awe9\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-gcdh1aa1\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ijzrlrrm\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-72xy7mkp\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0m8p94cz\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-0rxcn9v1ym9o7s1pl3z3l0wi]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-0rxcn9v1ym9o7s1pl3z3l0wi\\nrequester: inst-1mantcj0zeun\\nsubject: instance inst-1mantcj0zeun\\ntarget: inst-1mantcj0zeun\\ntool: read_image\\nsummary: PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:565b5022d0ef55c949eda214a3036ebaf22b18ca9cdb7d34a77ff283432f7f55:g0 rung=leader tool=read_image effects=3\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0w0zyc9f\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-v350qykq\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vq3ds1hq\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-wmclyajj\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-e0dnceu2\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-sqdkfmwh\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-dwalgda1\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ehzsdczc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-8a38rxva\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-gsxjvnu6\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-q021upao\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-jbmm2ozc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "imgov",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-uv4u5gep\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-good.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 4x4 px, 69 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"Image \\\"bootwave-good.png\\\" (sha256:d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3); request preview 4x4px. Normalized copy (read-only; may be resized or re-encoded): \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/attachments/v1/objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3\\\" (4x4px, image/png). Source dimensions, format, and byte size may differ. Copy to a writable path ending in .png before editing.\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAADElEQVR4nGNgIB0AAAA0AAF2Xq7DAAAAAElFTkSuQmCC\"}}],\"is_error\":false}]",
+        "reply": "tool:read_image",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-1hzol591xbwu901o9an9z171]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-1hzol591xbwu901o9an9z171\\nrequester: inst-1mantcj0zeun\\nsubject: instance inst-1mantcj0zeun\\ntarget: inst-1mantcj0zeun\\ntool: read_image\\nsummary: read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-denied.png\\napprovalCase: case-00srwxj0pwbk361bsrzah1lp\\nleg: 1\\nreviewAuthority: leader\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\\nIf you already decided or escalated an earlier leg of approvalCase case-00srwxj0pwbk361bsrzah1lp, you cannot act on this case again.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vckhbjyd\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-7m07cu8p\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-7vn1vnuc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-borox87q\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-xzbc9wnx\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-afiyp70d\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-7epikfn0\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-87wcz734\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-sa49624y\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-hr34hcb8\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-hrztnmj6\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-45gvb0av\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "imgov",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-2c9ilid8\",\"content\":[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}],\"is_error\":true}]",
+        "reply": "tool:read_image",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-03cx5p31ne8phm1drufvd0xz]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-03cx5p31ne8phm1drufvd0xz\\nrequester: inst-1mantcj0zeun\\nsubject: instance inst-1mantcj0zeun\\ntarget: inst-1mantcj0zeun\\ntool: read_image\\nsummary: read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-huge.png\\napprovalCase: case-01406nc1mhcg85077o00y0ej\\nleg: 1\\nreviewAuthority: leader\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\\nIf you already decided or escalated an earlier leg of approvalCase case-01406nc1mhcg85077o00y0ej, you cannot act on this case again.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-04vfd7jd\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qa7rb3ka\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ieq15yr8\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-yk6pmfx8\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-67eam7m4\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-8drra8dv\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ex5svkbe\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-bugdcy77\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-zir04y4f\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-e4g4z1cm\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0gey46pb\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-41unw4cr\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D1_ROUNDS12",
+        "phase": 2,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-0l4jyp611ymwap1ylc0tk1tf]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-0l4jyp611ymwap1ylc0tk1tf\\nrequester: inst-1mantcj0zeun\\nsubject: instance inst-1mantcj0zeun\\ntarget: inst-1mantcj0zeun\\ntool: read_image\\nsummary: PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:3ead65bca85d07bed45c3db1f21e3ea45bd624835631fe091cb2d45c655f831d:g0 rung=leader tool=read_image effects=3\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-3dfnb6rf\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-49o8ufxw\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-6blgb93p\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0ry8p7bt\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-qav2tz6s\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0jpw249o\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "imgov",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-a2q6oz5n\",\"content\":[{\"type\":\"text\",\"text\":\"Error: refused-io image_too_many_pixels — Image exceeds the configured decoded-pixel limit.\"}],\"is_error\":true}]",
+        "reply": "text:BOOTWAVE_IMG_DONE",
+        "phase": 2,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ywwaoxtg\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-xjci4cmo\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-nx0cszd8\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ylh9hpwg\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 2,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-naxzpbvh\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"settledSequence\\\":22,\\\"memberResult\\\":{\\\"body\\\":\\\"BOOTWAVE_IMG_DONE\\\",\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_delegate",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-5qkugisp\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-admitted\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"fromLifecycle\\\":\\\"CREATED\\\",\\\"lifecycleCommitted\\\":true,\\\"sequence\\\":23,\\\"settled\\\":false,\\\"workStatus\\\":\\\"admitted\\\"},\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false},{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=bootwave-d1-u5bw8-20261031t04-18-27z]\\n\\nAn asynchronous Team work unit has settled.\\ninstanceId: inst-1mantcj0zeun\\nrequestToken: bootwave-d1-u5bw8-20261031t04-18-27z\\n\\nUse team_collect with this requestToken to read the durable result.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "uigov",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\\"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\"}]",
+        "reply": "tool:ask_user_question",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "title",
+        "lu": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\\\"}]\"}]",
+        "reply": "text:bootwave assembly session",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vb0b8uzr\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-1mantcj0zeun\\\",\\\"admittedSequence\\\":4,\\\"settledSequence\\\":22,\\\"memberResult\\\":{\\\"body\\\":\\\"BOOTWAVE_IMG_DONE\\\",\\\"requestToken\\\":\\\"bootwave-d1-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"coll-3-1\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vvp3qiqj\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-sb8flaz2\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-henj85ce\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-iwvhw8la\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-z0kzfltb\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-ao8xwolm\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-km8i68fd\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-pd1mb4iy\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-li13dcgl\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-6j8n9c6z\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-u3fwkmq0\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-fqsb07pk\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D2_ROUNDS12",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_u\"}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-gwcwltte\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-n61gptn9\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-0mlzeijj\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-vz24w56q\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-9dk2peuy\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-m2e88k7r\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 7,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-g5f90now\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 8,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-bhkqhh28\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 9,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-d3omz15t\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 10,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-v22svzyc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 11,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-d37ejp9z\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 12,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-kec6ezf7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_HOLD_D2_ROUNDS12",
+        "phase": 3,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-18ucjts0kjd5sp0mky5si1x4]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-18ucjts0kjd5sp0mky5si1x4\\nrequester: inst-0ys34n412xae\\nsubject: instance inst-0ys34n412xae\\ntarget: inst-0ys34n412xae\\ntool: ask_user_question\\nsummary: PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-0ys34n412xae:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 rung=leader tool=ask_user_question effects=2\\n\\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\\nRecover or inspect pending requests with `team_list_pending_control`.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "uigov",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-on62vb9x\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"answers\\\":[{\\\"id\\\":\\\"bootwave-q1\\\",\\\"selected\\\":[\\\"Option A\\\"]}]}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_UI_DONE",
+        "phase": 3,
+        "fenceRounds": 1,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-4pyqfepd\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 2,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-kw8akwn7\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 3,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-xaqcs9fw\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 4,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-tir1sb8b\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 5,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-md87y9lg\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"running\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"resumePossible\\\":true}]},\\\"requestToken\\\":\\\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-gz6q14tc\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"settledSequence\\\":29,\\\"memberResult\\\":{\\\"body\\\":\\\"BOOTWAVE_UI_DONE\\\",\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\\\"}\"}],\"is_error\":false},{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=bootwave-d2-u5bw8-20261031t04-18-27z]\\n\\nAn asynchronous Team work unit has settled.\\ninstanceId: inst-0ys34n412xae\\nrequestToken: bootwave-d2-u5bw8-20261031t04-18-27z\\n\\nUse team_collect with this requestToken to read the durable result.\"}]",
+        "reply": "tool:team_collect",
+        "phase": 3,
+        "fenceRounds": 6,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      },
+      {
+        "lane": "leader",
+        "lu": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-u6fs-yy6iqrir\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-bootwave-team-u5bw8-20261031t04-18-27z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0ys34n412xae\\\",\\\"admittedSequence\\\":23,\\\"settledSequence\\\":29,\\\"memberResult\\\":{\\\"body\\\":\\\"BOOTWAVE_UI_DONE\\\",\\\"requestToken\\\":\\\"bootwave-d2-u5bw8-20261031t04-18-27z\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"coll-3-2\\\"}\"}],\"is_error\":false}]",
+        "reply": "text:BOOTWAVE_L1_DONE",
+        "phase": 4,
+        "fenceRounds": 0,
+        "ids": {
+          "imgov": "inst-1mantcj0zeun",
+          "uigov": "inst-0ys34n412xae"
+        }
+      }
+    ]
+  },
+  "bootwaveAsks": {
+    "requestRows": [
+      {
+        "requestId": "ctrl-11bi8001ex9",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:565b5022d0ef55c949eda214a3036eb"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbw",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "read_image /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/work"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym",
+        "toolName": "read_image",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-1mantcj0zeun:sha256:3ead65bca85d07bed45c3db1f21e3ea"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd",
+        "toolName": "ask_user_question",
+        "status": "settled",
+        "summary": "PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-0ys34n412xae:sha256:ac507b38861492b1fb11b7caec9306f"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-11bi8001ex9",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbw",
+        "decision": "deny"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd",
+        "decision": "allow"
+      }
+    ],
+    "consumed": [
+      {
+        "requestId": "ctrl-11bi8001ex9"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ym"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd"
+      }
+    ],
+    "resolutions": [
+      {
+        "requestId": "ctrl-11bi8001ex9vs91rvjat21tr",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-7pzs1o8rpt\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-11bi8001ex9vs91rvjat21tr\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-0rxcn9v1ym9o7s1pl3z3l0wi",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "case-after-call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-i81nswj7a1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0rxcn9v1ym9o7s1pl3z3l0wi\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-1hzol591xbwu901o9an9z171",
+        "ordinal": 2,
+        "decision": "deny",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-hvfacrnt5j\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1hzol591xbwu901o9an9z171\",\"decision\":\"deny\",\"decider\":{\"kind\":\"human"
+      },
+      {
+        "requestId": "ctrl-03cx5p31ne8phm1drufvd0xz",
+        "ordinal": 3,
+        "decision": "allow",
+        "ok": true,
+        "via": "call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-r293x8tqok\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-03cx5p31ne8phm1drufvd0xz\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-0l4jyp611ymwap1ylc0tk1tf",
+        "ordinal": 3,
+        "decision": "allow",
+        "ok": true,
+        "via": "case-after-call",
+        "toolName": "read_image",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-kw5qxdcl3y\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0l4jyp611ymwap1ylc0tk1tf\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      },
+      {
+        "requestId": "ctrl-18ucjts0kjd5sp0mky5si1x4",
+        "ordinal": 1,
+        "decision": "allow",
+        "ok": true,
+        "via": "tool-ordinal",
+        "toolName": "ask_user_question",
+        "resolveStatus": 200,
+        "bodyHead": "{\"type\":\"server-response\",\"rpcId\":\"bootwave-approval-dzq6k68z9l\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-18ucjts0kjd5sp0mky5si1x4\",\"decision\":\"allow\",\"decider\":{\"kind\":\"huma"
+      }
+    ],
+    "errors": []
+  },
+  "bootwaveWire": {
+    "muxPath": "/api/remote.mux",
+    "endpoint": "$events",
+    "resultEndpoint": "$events/result",
+    "readySeen": true,
+    "waterfallSeen": true,
+    "resultAccepted": true,
+    "openError": null,
+    "readyFrame": {
+      "clientId": "49c69348-671e-4044-8c8c-7e94e487715c",
+      "host": {
+        "home": "/home/armourpiercer"
+      },
+      "transport": "item"
+    },
+    "answered": [
+      {
+        "eventId": "8fb8bd26-d0cd-422d-8af3-1dc8f3623c7a",
+        "agentId": "session-team-child-1d009832a3287c8de5690227df615bbd",
+        "answers": [
+          {
+            "id": "bootwave-q1",
+            "selected": [
+              "Option A"
+            ]
+          }
+        ],
+        "httpStatus": 200,
+        "responseHead": "{\"type\":\"server-response\",\"rpcId\":\"uif4-ans-8fb8bd26\",\"result\":{\"ok\":true}}",
+        "envelope": {
+          "url": "/api/$events/result",
+          "method": "$events/result",
+          "argKeys": [
+            "clientId",
+            "eventId",
+            "outcome"
+          ]
+        }
+      }
+    ],
+    "frames": 34,
+    "waterfallFrames": [
+      {
+        "event": "user-questions/request",
+        "eventId": "8fb8bd26-d0cd-422d-8af3-1dc8f3623c7a",
+        "agentId": "session-team-child-1d009832a3287c8de5690227df615bbd",
+        "questions": [
+          {
+            "id": "bootwave-q1",
+            "question": "BOOTWAVE_UI_u5bw8-20261031t04-18-27z which option should the governed lane take?",
+            "options": [
+              {
+                "label": "Option A"
+              },
+              {
+                "label": "Option B"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "bootwaveDigest": {
+    "header": {
+      "suite": "u7r3-bootwave",
+      "runId": "u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z",
+      "productHead": "405191114e7f00275958abc364328bd961d6558b",
+      "productPorcelain": "M dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/host-starts.jsonl",
+      "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostPorcelainLines": 0,
+      "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z",
+      "dateUtc": "2026-10-31T04:18:31.304Z",
+      "ports": {
+        "host": 3181,
+        "mock": 3491,
+        "leasedFrom": "HOST_PORT_BANDS 3181-3199→13000-13049 / MOCK_PORT_BANDS 3491-3500→13050-13099 (lib/port-lease.mjs)"
+      },
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/instance-port3181.log"
+    },
+    "surface": {
+      "names": [
+        "ask_user_question",
+        "bash",
+        "edit",
+        "present",
+        "pwsh",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_glob",
+        "team_grep",
+        "team_list_members",
+        "write"
+      ],
+      "readImageCount": 1,
+      "readImageIsGoverned": true,
+      "readImageDescriptions": [
+        "Read one governed image file inside this member's admitted file root and attach it to the conversation. Paths resolve against that root; escaping targets are refused. The file is durably committed to "
+      ],
+      "placementLines": [
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z",
+        "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,pwsh,read,write,edit,read_image,ask_user_question,present] realm=bootwave-realm-u5bw8-20261031t04-18-27z"
+      ],
+      "placementHasReadImage": true,
+      "surfaceRequestFound": true
+    },
+    "store": {
+      "storeRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/attachments/v1",
+      "objects": [
+        {
+          "rel": "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "bytes": 69,
+          "sha": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "nameIsSelfSha": true
+        }
+      ],
+      "maxObjectsSeen": 1,
+      "samples": [
+        {
+          "at": 1793420313665,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314024,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314374,
+          "objects": 0,
+          "names": []
+        },
+        {
+          "at": 1793420314724,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315074,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315424,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420315775,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316136,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316487,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420316851,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317201,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317201,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        },
+        {
+          "at": 1793420317531,
+          "objects": 1,
+          "names": [
+            "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+          ]
+        }
+      ],
+      "zeroNewObjectsAfterDeny": true,
+      "workspaceNewFiles": [],
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ]
+    },
+    "attachment": {
+      "twoBlocks": false,
+      "envelopeHead": null,
+      "blockTypes": [
+        "text"
+      ],
+      "imageBlockShape": null,
+      "attachmentIds": [
+        "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+      ],
+      "modelImageParts": [
+        {
+          "base64Length": 92
+        }
+      ],
+      "modelImageSha256": [
+        "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3"
+      ],
+      "identityMatch": true,
+      "imageRequestFound": true
+    },
+    "oracle": {
+      "pngShas": {
+        "good": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+        "deny": "f701c76ac7fb684490c5c2fc887c4414ee56d4a071f9ab2418ab5b3fa7c4f3ef",
+        "huge": "a137059ed805cb18aff2c7e754144dea10ff62d1e42d42357f889d0cf03058b3"
+      },
+      "workspaceCensusAfter": [
+        "notes/bootwave-denied.png",
+        "notes/bootwave-good.png",
+        "notes/bootwave-huge.png"
+      ],
+      "storeCensusAfter": [
+        {
+          "rel": "objects/d6/d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "bytes": 69,
+          "sha": "d6325bd24a66141e9be518d303852fab10d39cbbf9ed21765cd7e771d51fc5c3",
+          "nameIsSelfSha": true
+        }
+      ]
+    },
+    "logHits": {
+      "imageLines": [
+        "[dsh-agent-team] a5g7-image: governed-image RAN bytes=69 mediaType=image/png path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootwave-good.png",
+        "[dsh-agent-team] a5g7-image: governed-image store-law-refused code=IMAGE_TOO_MANY_PIXELS path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/tests/homes/u5bw8-20261031T04-18-27Z/workspace/notes/bootw"
+      ],
+      "askLines": [
+        "[dsh-agent-team] u7f-ask: governed-ask RAN answers=1"
+      ],
+      "audit": [],
+      "planeRefusals": [],
+      "noProvider": []
+    },
+    "journal": [
+      {
+        "seq": 103,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd1-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 104,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"settledSequence\":22,\"memberResult\":{\"body\":\"BOOTWAVE_IMG_DONE\",\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"bootwave-fd1-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 105,
+        "lastCall": "team_delegate",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-0ys34n412xae\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":23,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result",
+          "text"
+        ]
+      },
+      {
+        "seq": 106,
+        "lastCall": null,
+        "resultHead": "{\"type\":\"text\",\"text\":\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\"}",
+        "blockTypes": [
+          "text",
+          "text"
+        ]
+      },
+      {
+        "seq": 107,
+        "lastCall": null,
+        "resultHead": "{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=bootwave-d2-u5bw8-20261031t04-18-27z] BOOTWAVE_UI_u5bw8-20261031t04-18-27z\\\"}]\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 108,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-1mantcj0zeun\",\"admittedSequence\":4,\"settledSequence\":22,\"memberResult\":{\"body\":\"BOOTWAVE_IMG_DONE\",\"requestToken\":\"bootwave-d1-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-1\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 109,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 110,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 111,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 112,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 113,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 114,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 115,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 116,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 117,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 118,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 119,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 120,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 121,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"BOOTWAVE_PHASE_u\"}",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 122,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 123,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 124,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 125,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 126,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 127,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 128,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-7-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 129,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-8-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 130,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-9-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 131,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-10-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 132,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-11-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 133,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-12-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 134,
+        "lastCall": "team_collect",
+        "resultHead": "{\"type\":\"text\",\"text\":\"[team-control requestId=ctrl-18ucjts0kjd5sp0mky5si1x4]\\nA Team member operation is waiting for Leader approval.\\n\\nrequestId: ctrl-18ucjts0kjd5sp0mky5si1x4\\nrequester: inst-0ys34n412xae\\nsubject: instance inst-0ys34n412xae\\ntarget: inst-0ys34n412xae\\ntool: ask_user_question\\nsummary: PA ask case=tadm:session-bootwave-team-u5bw8-20261031t04-18-27z:inst-0ys34n412xae:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 rung=leader tool=ask_user_question ",
+        "blockTypes": [
+          "text"
+        ]
+      },
+      {
+        "seq": 135,
+        "lastCall": "ask_user_question",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"answers\":[{\"id\":\"bootwave-q1\",\"selected\":[\"Option A\"]}]}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 136,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-1-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 137,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-2-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 138,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-3-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 139,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-4-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 140,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"running\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"resumePossible\":true}]},\"requestToken\":\"bootwave-fd2-5-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      },
+      {
+        "seq": 141,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"settledSequence\":29,\"memberResult\":{\"body\":\"BOOTWAVE_UI_DONE\",\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"bootwave-fd2-6-u5bw8-20261031t04-18-27z\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result",
+          "text"
+        ]
+      },
+      {
+        "seq": 142,
+        "lastCall": "team_collect",
+        "resultHead": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"session-bootwave-team-u5bw8-20261031t04-18-27z\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\",\"instanceId\":\"inst-0ys34n412xae\",\"admittedSequence\":23,\"settledSequence\":29,\"memberResult\":{\"body\":\"BOOTWAVE_UI_DONE\",\"requestToken\":\"bootwave-d2-u5bw8-20261031t04-18-27z\",\"status\":\"succeeded\"}}]},\"requestToken\":\"coll-3-2\"}"
+          }
+        ],
+        "blockTypes": [
+          "tool_result"
+        ]
+      }
+    ]
+  },
+  "bootwaveRca": {
+    "failingCells": [
+      {
+        "cell": "ri:ask-approved-ran",
+        "verdict": "FAIL",
+        "rcaClass": "control-bridge",
+        "rcaSummary": "the allow→grant→RAN chain never closed: read the ledger face (control-request-recorded / control-decision-recorded / control-allow-consumed) and the host log governed-image lines; a pre-gate code names the exact gate that stopped it.",
+        "rcaEvidence": [
+          "evidence json asks (resolutions/decisions/consumed)",
+          "host log grep governed-image|admission-",
+          "packages/tools/fs-family/src/image-executor.mjs"
+        ]
+      },
+      {
+        "cell": "ri:tool-output-two-blocks",
+        "verdict": "FAIL",
+        "rcaClass": "presentation",
+        "rcaSummary": "the two-block render never reached the model: read the mock request whose tool_result names read_image; a text-only result means the attachment block was dropped, an envelope-less result means the row render changed.",
+        "rcaEvidence": [
+          "mock transcript (evidence json journal)",
+          "packages/tools/fs-family/src/image-row.mjs render"
+        ]
+      },
+      {
+        "cell": "ri:answered-deny-zero-effect",
+        "verdict": "FAIL",
+        "rcaClass": "control-bridge",
+        "rcaSummary": "the deny arm produced a side effect or no typed refusal: compare the store/workspace census before/after the second call with the governed-image pa-refused line; a store object appearing after a deny is a product blocker.",
+        "rcaEvidence": [
+          "evidence json store.samples",
+          "host log grep pa-refused",
+          "tests/homes/<world>/workspace"
+        ]
+      },
+      {
+        "cell": "ui:live-root-law",
+        "verdict": "NOT_REACHED",
+        "rcaClass": "unreached-or-env",
+        "rcaSummary": "step not reached; see the RUN record",
+        "rcaEvidence": []
+      }
+    ],
+    "laneDone": {
+      "imgov": true,
+      "uigov": true,
+      "leader": true
+    },
+    "sameClassFailureStopLineInput": [
+      "control-bridge",
+      "presentation",
+      "control-bridge",
+      "unreached-or-env"
+    ],
+    "evidencePaths": [
+      "dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/u5-u7r3-bootwave-bw8-2026-10-31T04-18-27-276Z.bootwave-evidence.json",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-bootwave/dev/agent-workflow/evidence/a5w-bootwave-20261030/c2/logs/u5bw8-20261031T04-18-27Z/instance-port3181.log"
+    ]
+  },
+  "globalPostChecks": {
+    "hostBasePost": {
+      "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "porcelainEmpty": true,
+      "phase": "post"
+    },
+    "stableInstance": {
+      "pre": {
+        "reachable": true,
+        "status": 401
+      },
+      "post": {
+        "reachable": true,
+        "status": 401
+      },
+      "unchanged": true
+    },
+    "envScrubbedKeys": [],
+    "homesCensusChanges": []
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-10-31T04:18:37.809Z"
+}
