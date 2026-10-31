@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A5WBINDSEAM",
+  "paths": [
+    "packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1393,
+    "to": 1394
+  },
+  "reason": "A5WBINDSEAM (this round, branch task/a5w-bindseam-20261030) adds its ONE scannable spec (packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts - the GLUE subtree-containment-seam assembly C1: the incident member policy mounts with the glue seam, the subtree law answers through the mounted lane decide, the seam-less kernel faces stay TOOL_BINDING_UNVERIFIED fail-closed, sibling-prefix spoofing never matches; zero denylist vocabulary; dist rides outside the scan). The src edit (packages/runtime/src/plugin/live/agent-bindings.mjs) is an in-place edit on an ALREADY-COUNTED file - an edit is not an increment.",
+  "tieNote": "MEASURED on THIS tree at booking time (base origin/master 7d221cf17 with the fix + the new spec on disk and this clause unbooked): the coverage leg read `scanner counts 1394, ledger derives 983 + 410 = 1393` (vitest run of test/p4t6-session-event-scan.test.ts in the worktree, 2026-10-31T00:02Z, real UTC). Exactly this one path; the measured value equals 1394; no chain value copied. The same run measured zero new denylist vocabulary with the quarantine hits unchanged (the denylist legs pass with the file on disk)."
+}
