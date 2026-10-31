@@ -1,4 +1,4 @@
-# PR-I1a — real-Host durability evidence (rounds 15–18, 2026-10-31)
+# PR-I1a — real-Host durability evidence (rounds 15–19, 2026-10-31)
 
 Produced by `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs` (driver) with
 `tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs` (probe row, mounted only through the public
@@ -9,6 +9,166 @@ Host: `tests/deepseek-harness-test-use`, pristine, detached @ `639ed015397290b37
 ports 3182 / 3183 (validated against `TEST_PORT_RANGES` immediately before boot — see round 16), one
 unique process marker per boot. Both worlds deleted at teardown; both ports free; host porcelain 0
 before and after (each run records it in `capture.json`).
+
+# Round 19 (fix round for review round 4: MINOR F-I1a4-1/2 + INFOs F-I1a4-3/4/5)
+
+Round 4 came back 0 BLOCKER / 0 MAJOR: the durability measurement itself was accepted. What had to
+change was a **claim** (F-I1a4-1 — the instrument had been described as allowing two outcomes when it
+allows three), a **harness that could not be re-run as documented** (F-I1a4-2), two disclosures
+(F-I1a4-3/4: scans enforce spellings, not the rule; and the meta-ceiling that the round-18 self-test
+could not close), and one stale hunk header (F-I1a4-5). The measurement run at the round-19 bytes is
+`a6pri1a-2026-10-31T21-29-40Z` — `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`,
+and its 27 PASS lines are **byte-identical to the round-18 run's** once the reviewer's own
+normalization is applied (`a6pri1aa6pri1a<stamp>{write,restart}host<port>` → `MARKER-W`/`MARKER-R`,
+`pid N` → `pid PID`, `reported=N`/`spawned=N`, `nonce …` → `nonce NONCE`): 27 lines out, 27 lines out,
+`diff` empty. The PASS text moved nowhere; only the FAIL path and the self-test changed.
+
+## F-I1a4-1 — the two-outcome sentence was false; the rules now enforce a scope that is honestly stated
+
+The claim under review: three places — this README's plant-B bullet, `mutation-harness/README.md`, and
+a driver comment — closed with *"Quoted correctly, or refused — those are the only two outcomes"*.
+Round 4 showed five plants (D, A5b, A6, A12, S5) that did a **third** thing at the round-18 bytes:
+**published confidently**, with `checks=41 problems=0`, a span whose every line verified live on disk
+while the region printed was not the arm's statement. Root cause: `locate()` certified a span line by
+*containment* — the line carries its signature token — which says nothing about the token being
+**distinctive** (a blank token is contained in every line), nothing about the line being **code** (a
+comment carries anything), and nothing about the object being **a descriptor the builder built** (a
+spread copy carried every checked field).
+
+Fixed by rules, not by prose. At **registration** (`bareQuote`/`armDescriptor`): a blank or
+whitespace-only signature token throws `refusing to register` — such a token is contained in every line
+and certifies none; every quoted descriptor is seated in a `WeakSet` by the builder, so
+`{ ...ARM_SELFTEST, lines: 4 }` — or any object literal — is not quotable at all. At **grade time**
+(`locate()`, checks ordered): unreadable file → missing `from` → not-builder-built → shape (`signatures.length
+=== lines`, none blank) → anchor hits exactly once → span drift → **uniqueness within the certified
+span** → **code-landing** (a span line that is blank or a comment refuses: `containment cannot turn
+bytes into a statement boundary`) → only then the quote.
+
+**Which reading of "unique", and why:** unique *within the certified span*, not file-wide. The reviewer
+asked for the reading to be defined rather than assumed, and named the case that decides it: plant A2
+plants a byte-identical copy of the signature line directly beside the real one — a region in which a
+file-wide reading would **refuse a correct quote**, and refusing a correct answer is not what refusing
+for. The stricter reading is not abandoned, it is **layered**: `--self-test` adds a per-arm sweep in
+which every registered arm's signature token must occur on exactly **one line of its file**
+(`arm-signature-tokens-occur-once-in-file …`). If a token ever gains a second home anywhere in the
+file, the sweep goes red and a human looks at it, while the boot path keeps quoting live, span-verified
+code. Both layers are demonstrated below by the same plant (A2).
+
+The three outcomes, stated wherever they were previously two (this README :74 bullet, harness README
+plant-B bullet, driver registry comment): a span whose every line passes the grade-time rules
+**prints**, as its descriptor's DECLARED region — but containment is not a statement-boundary proof, so
+what prints is not certified to be the arm's statement (and a signature surviving only as string content
+still prints: A6); anything the rules can see — blank token, unbuilt descriptor, repeated token in the
+span, comment or blank span line, moved or ambiguous anchor, drift — is **refused**, with the reason
+where the bytes would have been; and a descriptor declaring a wider or shifted region of live,
+span-unique code **publishes as declared** — the outcome the two-outcome sentence denied.
+
+The FAIL header moved with the claim. Old (round-18 transcripts):
+
+> `FAIL-GRADED … — each quotes the ARM bytes it was graded from (arm bytes only — …)`
+
+New (verbatim from `pr-i1a-real-host.mjs` line 129, printed by every round-19 red below):
+
+> `FAIL-GRADED … — each prints its descriptor's DECLARED region — every printed line verified live on
+> disk, carrying its signature uniquely within the certified span, on code, which is containment, not a
+> statement-boundary proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an
+> input reddens the leg with these bytes pristine):`
+
+The ARM-bytes scoping F-I1a3-4 established survives inside it; the unscoped "quotes the bytes it was
+graded from" is retired.
+
+### The round-4 plants, reproduced at fixed bytes — refused / quoted correctly / still publishes
+
+| plant | what it plants | outcome at the round-19 bytes | where |
+| --- | --- | --- | --- |
+| **D** | comment line INSIDE the 2-line `ARM_REOPEN_PROBE` span carrying the span signature (on the committed mut-pid hunk, so the leg is genuinely red) | **refused** — `<span not on code>` names line 261, no bytes printed for that arm; `--expect-absent 'round-4 plant D'` proves the comment never entered the transcript | `a6pri1a-2026-10-31T21-34-22Z` |
+| **A2** | byte-copy of the signature line with a marker comment, same span | boot path **quoted correctly** (both span lines published, both live code of the widened expression); self-test **red**: `arm-signature-tokens-occur-once-in-file const freshProcess = … occurrences: 2` | `a6pri1a-2026-10-31T21-34-44Z`; sweep transcript quoted in harness README |
+| **A5b** | `ARM_NEW_FAMILY_STEP` widened to 6 lines with a `''` token + `await domain.close()` | **refused at registration** — load throws `signature token 4 is "" … refusing to register`; cannot reach any boot path | `a6pri1a-selftest-plants-round19/law-A5b-widen-blank-token.txt` |
+| **A12** | `ARM_SELFTEST` widened with `''` + a comment line | **refused at registration** (`signature token 2 is ""`) | `…law-A12-blank-and-comment.txt` |
+| **S5** | `{ ...ARM_SELFTEST, lines: 4 }` at the self-test's graded-arm site | **refused** — `<descriptor was not built by the builder>` where the quote would be; three sweep problems, `verdict=fail problems=3` | `…law-S5-spread-copy.txt` |
+| **A6** | line 261 rewritten so the signature survives only as `String.raw` template content | **STILL PUBLISHES** — `verdict=pass checks=55 problems=0`. The planted line is live code carrying its signature uniquely in the span; only the descriptor's declared region is wrong, and no byte-level rule can see that. This is the disclosed limit, now stated instead of denied | `…law-A6-string-content.txt` |
+| **plant A** (round-18 regression) | comment line shifting the rows arm off its span | still **quoted correctly** at the shifted line `:247`, comment absent | `a6pri1a-2026-10-31T21-33-55Z` |
+| **mut-seq** (README example) | `previousMax + 1` → `+ 2` in the new-family step | arm printed mutated at `:290`, leg named | `a6pri1a-2026-10-31T21-33-32Z` |
+
+`--self-test` grows 41 → 55 checks (`a6pri1a-selftest-round19/selftest.txt`,
+`verdict=pass checks=55 problems=0`): four synthetic refusal checks (blank token at registration,
+spread of a built descriptor, span-duplicated signature via the probe's two `const ` lines, comment
+line in a span) and, across all five registered arms, `arm-signature-tokens-occur-once-in-file` and
+`arm-span-lands-on-code`. The registration-parity check no longer hardcodes a number — it counts
+`= armDescriptor(` in the driver's own source, so adding an arm without sweeping it is itself a red.
+
+## F-I1a4-3/4 — what the structural scans do and do not enforce, and the meta-ceiling stays open
+
+Round 4 measured that the two structural scans enforce **spellings, not the rule**: aliases, computed
+keys, spreads and factories all passed them at 41/41. The response moved enforcement to
+**construction time** — arms can only exist through `armDescriptor`, which registers them, and the
+sweep covers every registered arm — and the scans are now labeled in the driver as what they are:
+**tripwires against drift in spelling, not enforcement of the discipline** (the comment says so in
+those words). One construction site is legitimate and says so inline: the offset-anchor key is built
+by concatenation *at the registration site* (`['fr','om'].join('')`-style), which the scan's spellings
+cannot see and no longer needs to.
+
+The **meta-ceiling stays open (F-I1a3-3)** and nothing here claims otherwise: with five assertions
+emptied of content, the round-18 sweep stayed 41/41 green — a self-test grades its own mechanics, not
+its own coverage. Round 19 attacks exactly that, per plant and per arm — the sweep now grades
+**distinctiveness and code-landing of each registered arm**, which is a property of the arms, not of
+the sweep — but the general form ("could a future self-test still be hollowed out without going red?")
+is not closed by this round either, and no text in this directory may claim it is.
+
+## F-I1a4-2 — the README re-run commands now run as written
+
+`mutrun.sh` resolved `diff:` paths against `$TREE` (its own `git -C "$TREE" apply`) and `edit:` paths
+against the caller's cwd, so the documented commands failed exactly as round 4 measured (`can't open
+patch` rc=86; `REFUSE … does not exist` rc=87). Every caller path is now made absolute at entry
+(`abspath`, line 72: exact path → tree-root-relative), and the harness README's "Re-running one"
+section is the literal round-19 re-run from the harness directory — `r19-mut-seq` and
+`r19-plant-A-from-drift`, both `METHOD LAW VERDICT: pass`, rc=0, with the tails they printed.
+
+## F-I1a4-5 — the stale hunk header, disclosed at the point of use
+
+`a6pri1a-2026-10-31T20-13-24Z/MUTATION.diff` carries `@@ -660,7 +660,7 @@` where the line is at 762 at
+the tree the patch replays onto — 102 lines of drift because the patch was generated at `74014ee12`
+and the driver grew afterward. Committed bytes are never rewritten; the disclosure sits beside the
+patch (`HUNK-HEADER-NOTE.md`, dated: `git apply` tolerates the offset by context match, the rule going
+forward is **hunk headers are generated, never typed**), and a pointer from the run-directory table —
+where a reader meets these directories first — names the run-order disclosure in
+`mutation-harness/README.md` §"Order, stated exactly".
+
+## Round-19 run directories
+
+| directory | what it grades | verdict line |
+| --- | --- | --- |
+| `a6pri1a-2026-10-31T21-29-40Z` | **the measurement run at the round-19 kit bytes** | `…verdict=pass pass=27 fail=0 refused=0 legs=27` |
+| `a6pri1a-2026-10-31T21-33-32Z` | **r19-mut-seq** — the README example, run as written | `…failed=boot-2-new-family-continues-the-chain`, arm printed mutated at `:290` |
+| `a6pri1a-2026-10-31T21-33-55Z` | **r19-plant-A-from-drift** — round-18 plant, regression | `…failed=boot-2-rows-are-boot-1-rows`, arm quoted at shifted `:247`, comment absent |
+| `a6pri1a-2026-10-31T21-34-22Z` | **r19-plant-D-selfcert** — F-I1a4-1's plant D | `…failed=boot-2-reopened-in-a-fresh-process`, arm **refused** `<span not on code>` |
+| `a6pri1a-2026-10-31T21-34-44Z` | **r19-plant-A2-byte-copy** — the must-not-refuse case | `…failed=boot-2-reopened-in-a-fresh-process`, span **published** at `:260`–`:261` |
+| `a6pri1a-selftest-round19` | not a run — `--self-test` at these bytes | `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=55 problems=0` |
+| `a6pri1a-selftest-plants-round19/` | not runs — the four self-test-level plants (A5b, A12, S5, A6) each with pin, planted bytes printed from disk, exit code, restore verified by sha256 | four transcripts, §table above |
+
+One earlier green run of this round (`…T21-27-21Z`) was made at an intermediate driver sha
+(`c8e6fdb4…`) that a later same-session refinement superseded; it was moved into gitignored scratch
+(`.artifacts/alpha6-s0/pri1a-fix4/superseded-run-21-27-21Z`) before the commit and is not part of the
+repository — the committed green run above is the one at the shipped bytes. Nothing previously
+committed was rewritten or removed.
+
+## Gate measurements at the round-19 bytes
+
+`pr-i1a-real-host.mjs` `0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5` (1052 lines;
+was `ba03e7d657…`: construction-time registration refusals, builder seating, in-span uniqueness,
+code-landing, the per-arm sweep, the FAIL header, and the registry comment defining the chosen
+reading); `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd` —
+**byte-identical to the round-15 pin** (313 lines + trailing newline; re-measured after every
+mutation restored). `node scripts/docs-sync.mjs --check` and
+`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1`, the writer spec `Tests 49 passed (49)`, the
+runtime typecheck (exit 0), and the named nine-file battery
+`Tests 2 failed | 317 passed (319)` — red legs named, never counted:
+`refuses the leg, by name, when the host module closure cannot be traversed`
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1137`) and
+`the client lane runs, and no failure appears outside the disclosed baseline`
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1694`) — all quoted in the round-19 report; the
+post-commit two run after the commit that carries this section. `packages/**` untouched again:
+porcelain over `packages/` empty.
 
 # Round 18 (fix round for review round 3: MINOR F-I1a3-1/2 + INFOs F-I1a3-4/5/6)
 
@@ -71,7 +231,15 @@ behaviour, and it is not a re-transcription of the offsets:
   two structural scans).
 * The drift that cannot be absorbed is committed too: `a6pri1a-2026-10-31T20-18-42Z` plants a line
   **inside** a graded span, and the FAIL block prints the refusal and no bytes at all for that arm.
-  Quoted correctly, or refused — those are the only two outcomes this instrument allows.
+  **Correction, dated 2026-10-31 (F-I1a4-1, round-4 fix):** this bullet used to close with "Quoted
+  correctly, or refused — those are the only two outcomes this instrument allows." That was **false**.
+  Per-line containment certifies that a line *carries* a signature, never that the signature is
+  *distinctive*, so a descriptor declaring a wider or shifted region of live, correct code can have
+  every line of its span verified while the region is not the arm's statement — the reviewer's plants
+  D, A5b, A6, A12 and S5 all **published confidently** at these bytes with `checks=41 problems=0`.
+  There are three outcomes, and what the instrument guarantees versus what it merely detects is stated
+  in Round 19 below; the matching sentences in the driver's registry comment and in
+  `mutation-harness/README.md` were rewritten in the same commit as this one.
 * **Not claimed (F-I1a3-3, left open on purpose).** `--self-test` grades its own machinery, not its own
   meaningfulness: an assertion emptied to a constant `true` still passes. 41 checks narrow that class and
   do not close it; nothing in this section says otherwise.
@@ -80,7 +248,13 @@ behaviour, and it is not a re-transcription of the offsets:
 
 The FAIL header now says it in the transcript rather than in prose: `each quotes the ARM bytes it was
 graded from (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the
-leg with these bytes pristine)`. That limit is demonstrated, not asserted:
+leg with these bytes pristine)`. **Dated note 2026-10-31 (round-4 fix, F-I1a4-1):** "the ARM bytes it
+was graded from" overstated what containment proves; the header now reads
+`each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its
+signature uniquely within the certified span, on code, which is containment, not a statement-boundary
+proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg
+with these bytes pristine)`. The ARM-bytes scope this section established is kept inside it; the unscoped phrase is
+retired. That limit is demonstrated, not asserted:
 `a6pri1a-2026-10-31T20-19-04Z` mutates the arm's **input** one line above the span
 (`const previousBootPid = Number(config.previousBootPid)` → `Number(0)`) and the leg reddens with the arm
 quoted unchanged — `pri1a-probe-row.mjs:260 const freshProcess = Number.isInteger(previousBootPid) &&
@@ -141,6 +315,14 @@ when the mutation is a committed hunk), so a transcript from 20-06 and one from 
 | `a6pri1a-2026-10-31T20-19-04Z` | **plant C** — arm's input mutated, arm pristine (F-I1a3-4) | `…failed=boot-2-reopened-in-a-fresh-process`, arm quoted pristine |
 | `a6pri1a-selftest-round18` | not a run — `--self-test` at these bytes | `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=41 problems=0` |
 | `a6pri1a-port-band-refusals-round18` | not a run — the six refused ports re-measured | six × `verdict=port-refused`, every `rc=2`, `tests/homes` empty |
+
+**Pointer, added 2026-10-31 (F-I1a4-5), because this is where a reader meets these seven directories
+first:** the run ORDER and harness vintage for them — the four hunks ran before the three plants, with
+two harness fixes (the insertion branch of `law.mjs expected`, and the plant scripts' read-back) landing
+between the batches — is disclosed in `mutation-harness/README.md`, §"Order, stated exactly". What was
+not disclosed there until round 4: the committed `MUTATION.diff`s are stored patches whose hunk headers
+were generated at first authoring, and `…T20-13-24Z` carries a dated note beside it
+(`a6pri1a-2026-10-31T20-13-24Z/HUNK-HEADER-NOTE.md`) explaining its 102-line header offset.
 
 Each red directory carries `MUTATION-METHOD-LAW.txt`: pin refusal, the planted bytes in angle brackets,
 the pre-diff's own bytes when the plant sits on a committed hunk, census before / after / **predicted from

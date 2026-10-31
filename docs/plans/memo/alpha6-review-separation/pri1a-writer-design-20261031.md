@@ -4,6 +4,26 @@
 写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
 scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
 
+> **Dated banner（2026-10-31，round-19 修复轮）——处理评审 round 4 的 2 条 MINOR（F-I1a4-1/2）与 3 条 INFO（F-I1a4-3/4/5）；不改写前三轮 banner 的历史叙述；本轮更正的是证据 README、变异脚手架 README 与驱动注释里三处同一句断言（不在本 memo 的 banner 叙述里）。**
+> - **F-I1a4-1（「只有两种结局」为假；第三结局「自信发表」）**：三种结局从此处处如实陈述——按规则通过的 span **打印**（打印的是描述符**声明的区域**，containment 证明不了它是语句边界）；规则能看见的（空 token、非 builder 构造的描述符、span 内重复 token、注释/空行 span、锚点移动或歧义、漂移）**拒绝**并打印原因；声明了更宽或平移的、活代码且 span 内签名唯一的区域的描述符**按声明发表**——第二结局正是那句话否认过的。修法是规则不是文案：注册时空白 token 直接 throw（`refusing to register`），描述符由 builder 以 `WeakSet` 入座（`{ ...ARM_SELFTEST }` 这类展开不可引用）；评分时按序检查（不可读 → 缺 `from` → 未入座 → 形状 → 锚点唯一 → 漂移 → **span 内唯一性** → **落码检查**）。**「唯一」取 span 内读数并在驱动注释里写明理由**：文件级唯一会拒绝 plant A2 那种在紧邻处逐字复制签名行的**正确引用**——「拒绝正确答案」不是拒绝的目的；更严的读数分层保留：`--self-test` 对**每条注册 arm** 扫「签名 token 在全文件只出现一次」+「声明 span 落在代码上」，A2 类复制会把 sweep 扫红而 boot 引用仍然合法（两层各由同一株植物演示）。FAIL 头同步改写（旧：`each quotes the ARM bytes it was graded from`；新：`each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — …)`）。reviewer 五株植物按固定字节复现并逐株报告：**D 拒绝**（`<span not on code>`，注释零引用）、**A5b/A12 注册即拒**（空 token throw，走不到 boot）、**S5 拒绝**（未入座）、**A2 boot 正确引用 + sweep 红**（`occurrences: 2`）、**A6 仍然发表**（该行是活代码、span 内签名唯一，只有声明错——字节级规则看不见，这条限制从此写在文案里而不是被否认）。`--self-test` 41 → 55 条（4 条合成拒绝检查 + 5 条 arm × 2 条逐 arm 检查；注册对账改从源码数 `= armDescriptor(`，加 arm 不扫即红）。
+> - **F-I1a4-2（README 的重跑命令按其字面跑不起来）**：`mutrun.sh` 现在入口处把调用方给的每个路径解析成绝对路径（`abspath`：原样 → 树根相对），脚手架 README 的「Re-running one」改写为 round-19 **实际执行过的命令与其输出尾部**（`r19-mut-seq`、`r19-plant-A-from-drift`，均 `METHOD LAW VERDICT: pass`、rc=0）。
+> - **F-I1a4-3/4（扫描器管拼写，不管纪律；元上限仍未关闭）**：两条结构扫描在驱动注释里降级为**拼写绊线**（原话如此），纪律改由**构造时**执行——arm 只能经 `armDescriptor` 存在并被对账清扫；一处合法的拼接构造点就地注明。元上限保持开放（F-I1a3-3）：清空五条断言的内容、round-18 sweep 仍 41/41 全绿的事实如实记录，round-19 的逐 arm 扫描把「self-test 评自己」推进为「评每条注册 arm 的签名区分度与落码」，但一般形式未闭合，本目录任何文案不得声称已闭合。
+> - **F-I1a4-5（陈旧 hunk 头）**：`a6pri1a-2026-10-31T20-13-24Z/MUTATION.diff` 的 `@@ -660,7 +660,7 @@` 相对可重放的树漂移 102 行——已提交字节不改写，旁边的 `HUNK-HEADER-NOTE.md` 带日期说明（补丁生成于 `74014ee12`；此后新增补丁的 hunk 头**只能由 `git diff` 生成、不得手写**），README 的 run 目录表加指向运行顺序披露的指针。
+> - 新测值（全部在 round-19 字节上）：绿 run `a6pri1a-2026-10-31T21-29-40Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`；把 marker/pid/nonce/计数按 reviewer 自己的归一约定
+>   （`MARKER-W`/`MARKER-R`、`pid PID`、`reported=N`/`spawned=N`、`nonce NONCE`）归一后，27 条 PASS 与其 round-18 绿转写**逐字节相同**；
+>   `--self-test` `verdict=pass checks=55 problems=0`（`a6pri1a-selftest-round19/`）；四个 boot 级复现
+>   `…T21-33-32Z`/`…T21-33-55Z`/`…T21-34-22Z`/`…T21-34-44Z`、四个 self-test 级复现 `a6pri1a-selftest-plants-round19/`；kit 字节
+>   `pr-i1a-real-host.mjs` `0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5`（1052 行，本轮唯一改动的仪器文件）、
+>   `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（**与 round 15/16/17/18 逐字节相同**，
+>   每次变异还原之后重测）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件
+>   `Tests 2 failed | 317 passed (319)`（两条红仍按名字引：`a4p7-merge-gate.test.ts:1137`/`:1694`）。
+> - 披露：本轮一个在中间驱动 sha（`c8e6fdb4…`）上产出的绿 run（`…T21-27-21Z`）在 commit **之前**移入 gitignored scratch
+>   （`.artifacts/alpha6-s0/pri1a-fix4/superseded-run-21-27-21Z`），不入库；除此之外已提交内容零改写、零删除。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（1416 → 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；改动只有 `tests/kits/**` 一个仪器文件、
+>   脚手架与其 README、`dev/**` 证据、本 memo 与本日志）。
+
 > **Dated banner（2026-10-31，round-18 修复轮）——处理评审 round 3 的 2 条 MINOR（F-I1a3-1/2）与本轮接受的 3 条 INFO（F-I1a3-4/5/6）；不改写前两轮 banner 的历史叙述，但点名更正 round-17 banner 末段的一句（见 F-I1a3-5 条）。**
 > - **F-I1a3-1（graded conjunct 的 `from`/`lines` 偏移是抄来的，不是测出来的）——按类别修，不按实例修**：round-17 的
 >   `locate()` 只保证 anchor 在评分时刻命中一处，而跨文件描述符写的是 `{ anchor, from: 2, lines: 4 }`——`from` 是对「昨天

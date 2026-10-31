@@ -1,0 +1,14 @@
+# self-test-level method law — A12-blank-and-comment (2026-10-31, round-4 fix round; reviewer plant reproduced at fixed bytes)
+# target: tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs · pinned sha256: 0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5
+# pre-flight: the target hashes to the pin
+# planted bytes (printed from the file itself — the changed line; < planted, > pinned baseline):
+272c272
+< const ARM_SELFTEST = armDescriptor(DRIVER_REL, 'const ARM_SELFTEST =', 4, ['', '/** Locate one registered', 'function locate(quote) {'])
+---
+> const ARM_SELFTEST = armDescriptor(DRIVER_REL, 'const ARM_SELFTEST =')
+# sha256 mutated: 46a73b405967aae7c111a92491672b61583ce655dca604ccb04ce50cce3519ad
+# command: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+# command exit code: 1
+#     if (blankToken(token)) throw new Error(`arm descriptor ${JSON.stringify(anchor)}: signature token ${String(k + 2)} is ${JSON.stringify(token)} — a blank token is contained in every line and certifies no line; refusing to register`)
+# Error: arm descriptor "const ARM_SELFTEST =": signature token 2 is "" — a blank token is contained in every line and certifies no line; refusing to register
+# restore verified: sha256 == pin, node --check ok

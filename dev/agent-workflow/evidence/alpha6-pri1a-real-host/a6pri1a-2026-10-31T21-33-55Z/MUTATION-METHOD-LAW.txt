@@ -1,0 +1,44 @@
+=== METHOD LAW — r19-plant-A-from-drift ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        : 
+replaced by       : // plant-A comment line that shifts the graded arm by one
+plant             : a pure insertion — one line added, nothing removed
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the same file at HEAD of this tree hashes to the same sha256 — the pinned bytes are the committed bytes
+--- exact bytes planted by the pre-diff (a committed mutation this plant sits on top of) ---
+planted: <        rows, generation, replayFirst, fresh,>
+planted: <        rows: rows.map((row) => ({ ...row, payload: { ...row.payload, assignmentEpoch: 99 } })), generation, replayFirst, fresh,>
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 299; TO occurs once on the mutated line
+pre-diff counts : {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 17943, 'lines': 313} (predicted from its own -/+ lines: match)
+pre-diff confirmed: one line replaced, exactly its own bytes, nothing else in the file moved
+plant baseline    : the plant below is graded against the bytes the pre-diff produced; the restore at the end still returns the pinned bytes
+--- exact bytes planted ---
+planted: <        // plant-A comment line that shifts the graded arm by one>
+plant-a: read back from disk — line 246 = <        // plant-A comment line that shifts the graded arm by one>, inserted immediately after line 245 (the line after the unique anchor "state: 'done', mode: 'write', detail:")
+plant-a: the graded arm — "writes: { created, replay, transferred, retired }, rows," — is now line 247
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 17943, 'lines': 313}
+counts after  : {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 314, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 18009, 'lines': 314}
+expected after: {'(': 213, ')': 213, '{': 115, '}': 115, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 314, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 23, 'bytes': 18009, 'lines': 314}
+structure assertion: exactly one line was ADDED and it is the declared line, at line 246 — nothing else moved
+added on line(s): [246]
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : 7b242c4eadfec9f707dab607043ec1a582f76a689e3c83f7c21021d66256902e
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3187) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-rows-are-boot-1-rows
+named red leg as stated: boot-2-rows-are-boot-1-rows
+stated reason present in the transcript: pri1a-probe-row\.mjs:247 writes: \{ created, replay, transferred, retired \}, rows,
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:247 writes: { created, replay, transferred, retired }, rows,
+stated absence holds — these bytes appear nowhere in the transcript: plant-A comment line that shifts
+run directory created by this run: a6pri1a-2026-10-31T21-33-55Z
+--- restore (exit path) ---
+restored from <scratch>/base/r19-plant-A-from-drift.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass

@@ -7670,3 +7670,51 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   `EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking 1416 → 1418 全部未动）；端口只用带内 3182–3189，
   `:3080` 零连接（会话首尾各测一次 `ss -ltn`）；其他 worktree（`alpha6-pri1b`/`alpha6-gov`/`alpha6-pri2`）、Lane 1 与
   只读宿主 clone 未触碰（宿主 porcelain 会话首尾各测一次）；未 push、未 GitHub 写、未 amend。
+
+## 2026-10-31 — #517 round-19 修复轮：round-4 评审的 2 条 MINOR（F-I1a4-1/2）与 3 条 INFO（F-I1a4-3/4/5）全接受；「只有两种结局」被更正为三种并处处对齐，签名唯一性取 span 内读数（理由写明），更严的文件级读数下沉为 self-test 逐 arm 清扫；reviewer 五株植物固定字节复现、逐株报告拒绝/正确引用/仍然发表；变异脚手架的 README 命令改成实际跑过的那两条
+
+- **本轮测值（全部在 round-19 字节上）**：绿 run `a6pri1a-2026-10-31T21-29-40Z`
+  `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（ports 3182/3183、marker 唯一、world 删除、
+  `tests/homes/` 空、宿主 porcelain 前/后 0）；按 reviewer 自己的归一约定（marker→`MARKER-W`/`MARKER-R`、`pid PID`、
+  `reported=N`/`spawned=N`、`nonce NONCE`）归一后，27 条 PASS 与其 round-18 绿转写**逐字节相同**（`diff` 为空，
+  scratch 留有 `mine-round19.norm`）——本轮只动 FAIL 路径与 self-test，PASS 文本一字未动，这句话现在可验证而非断言。
+  `--self-test` `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=55 problems=0`（`a6pri1a-selftest-round19/`；
+  41→55 = 4 条合成拒绝检查 + 5 条注册 arm × 2 条逐 arm 检查，注册对账改从源码数 `= armDescriptor(`）。boot 级复现四目录
+  `…T21-33-32Z`（r19-mut-seq，README 示例命令按其字面重跑，rc=0）/`…T21-33-55Z`（plant-A 回归：仍在位移后的 `:247`
+  正确引用、注释零出现）/`…T21-34-22Z`（**plant D：`<span not on code>` 拒绝，注释字节零引用**）/`…T21-34-44Z`
+  （**plant A2：boot 路径正确引用 `:260`–`:261`，同株植物在 self-test 里把 `arm-signature-tokens-occur-once-in-file`
+  扫红 `occurrences: 2`——两层读数的分工由同一株植物演示**）；self-test 级复现四份转写
+  `a6pri1a-selftest-plants-round19/`：**A5b/A12 注册即拒**（空 token `refusing to register`，走不到 boot）、
+  **S5 拒绝**（`<descriptor was not built by the builder>`，`verdict=fail problems=3`）、**A6 仍然发表**
+  （`verdict=pass checks=55 problems=0`——活代码、span 内签名唯一、只有声明的区域错，字节级规则看不见，这条限制写进
+  文案而非否认）。写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件
+  `Tests 2 failed | 317 passed (319)`，两条红**按名字引、不按计数**（`a4p7-merge-gate.test.ts:1137` 与 `:1694`）。
+  kit 发布 pin：`pr-i1a-real-host.mjs`
+  `0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5`（1052 行，本轮唯一改动的仪器文件）、
+  `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（313 行 + 末尾换行，
+  **与 round 15/16/17/18 逐字节相同**，每次变异还原之后重测）。
+- **披露（因为它改变过被测量的东西）**：本轮一个在中间驱动 sha（`c8e6fdb4…`）上产出的绿 run（`…T21-27-21Z`）被同轮后续细化
+  取代，在本 commit **之前**移出证据目录、放进 gitignored scratch `.artifacts/alpha6-s0/pri1a-fix4/superseded-run-21-27-21Z`；
+  它从未进入任何 commit。除此之外已提交内容零改写、零删除——F-I1a4-5 的 102 行 hunk 头漂移不改写 `…T20-13-24Z/MUTATION.diff`
+  的已提交字节，只在其旁放带日期的 `HUNK-HEADER-NOTE.md`（规则：hunk 头只能由 `git diff` 生成，不得手写）。
+- **更正的断言（旧句 → 新句，逐处）**：①②③三处同一句「Quoted correctly, or refused — those are the only two outcomes」
+  （证据 README plant-B 条、脚手架 README plant-B 条、驱动注册注释）→ 三种结局的诚实范围（打印=声明的区域、containment
+  不是语句边界证明；拒绝=规则能在字节里看见的那几类；按声明发表=更宽/平移但活代码且 span 内签名唯一的区域，A6 类字符串
+  内容仍然打印）；④FAIL 头 `each quotes the ARM bytes it was graded from` → `each prints its descriptor's DECLARED
+  region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on
+  code, which is containment, not a statement-boundary proof (arm bytes only — …)`（round-18 转写里的旧头不改写，
+  README 的 dated note 记录新旧两版）；⑤结构扫描在驱动注释里降级为**拼写绊线**，纪律由 `armDescriptor` 构造时执行 +
+  源码计数对账清扫；⑥元上限（F-I1a3-3）保持开放：清空五条断言内容、41/41 仍全绿的事实如实记录，本轮的逐 arm 扫描评的是
+  arm 的性质而非 sweep 的机制，但一般形式未闭合，任何文案不得声称已闭合。
+- **顺序与只能后置的门禁**：本轮 tracked 改动 = `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`（注册/评分规则、FAIL 头、
+  注册注释、self-test 41→55）、`dev/agent-workflow/evidence/alpha6-pri1a-real-host/**`（`mutrun.sh` 的路径入口修复与用法注释、
+  新种植脚本 `plants/plant-insert-after.mjs`、脚手架 README「Re-running one」重写为实际命令+输出、两个新证据目录、五个新 run
+  目录、`HUNK-HEADER-NOTE.md`、README 的 Round-19 段与 F-I1a3-4 dated note）、本 memo 的 round-19 banner 与本条日志；
+  `packages/**` 零 tracked diff；`pri1a-probe-row.mjs` 零改动。
+  `docs-sync --check` / `eb3-evidence-guard --new-since HEAD~1` 只能在 commit 之后跑，token 记入本轮 PR comment；
+  绿 run 的 `capture.json.laneHead` 仍是 commit 前的 head（单 commit 不含自身 sha，与 round 15–18 同一披露）。
+- **纪律自查**：CORE PATCH BUDGET = 0；未放松任何封闭集、卫生规则或 pin（`ALLOWED_CONSUMERS=[]`、
+  `EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking 1416 → 1418 全部未动）；端口只用带内 3182–3193，
+  每次运行后 `ss -ltn` 证明释放，`:3080` 零连接（会话首尾各测一次）；`tests/homes/` 收尾为空；其他 worktree
+  （`alpha6-pri1b`/`alpha6-gov`/`alpha6-pri2`）、Lane 1 与只读宿主 clone 未触碰（宿主 porcelain 会话首尾各测一次）；
+  未 push、未 GitHub 写、未 amend。

@@ -126,7 +126,7 @@ const check = (id, ok, measured, graded = null) => {
   results.push({ id, verdict: ok === true ? 'PASS' : 'FAIL', measured: String(measured), ...(rendered === null ? {} : { graded: rendered }) })
   log(`${ok === true ? 'PASS' : 'FAIL'} ${id} — ${scrub(measured)}`)
   if (rendered !== null) {
-    log(`FAIL-GRADED ${id} — ${String(rendered.length)} conjunct(s) this leg evaluated; each quotes the ARM bytes it was graded from (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine):`)
+    log(`FAIL-GRADED ${id} — ${String(rendered.length)} conjunct(s) this leg evaluated; each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine):`)
     for (const c of rendered) {
       log(`FAIL-GRADED   ${c.ok ? 'ok  ' : 'RED '} [${c.side}] ${c.at} — ${c.what}: ${scrub(c.values)}`)
       for (const s of c.source ?? []) log(`FAIL-GRADED     ${scrub(s)}`)
@@ -167,10 +167,37 @@ const PROBE_REL = relative(WORKTREE, join(import.meta.dirname, 'pri1a-probe-row.
 
 /**
  * Every arm this instrument quotes by ANCHOR, recorded as it is built (F-I1a3-1). `--self-test` walks THIS
- * list and resolves each entry with its own span, so no descriptor can be a transcription of a line number:
- * an anchor that drifted, an anchor that went ambiguous, or a multi-line span that stopped landing on its
- * arm is a REFUSAL at grade time and a PROBLEM in the self-test — never a confident wrong quote. (Driver
- * conjuncts are quoted by their own label instead, and the self-test sweeps those labels separately.)
+ * list and resolves each entry with its own span, so no descriptor can be a transcription of a line number.
+ *
+ * What a quoted span IS guaranteed, checked at registration and again against the bytes on disk at grade
+ * time: the descriptor was returned by `bareQuote`/`armDescriptor` (not spread-copied, not hand-written —
+ * F-I1a4-1/S5, F-I1a4-3/4), its anchor matches exactly one line of its file, every line of its span
+ * contains that line's own signature token, every signature token is carried by EXACTLY ONE line of the
+ * span it certifies, and no span line is blank or comment-only. "Unique" is defined against the span, not
+ * the whole file, and the choice is disclosed: the reviewer's plant A2 inserts a byte-identical copy of a
+ * certified line, so the same token legitimately sits on two file lines while the quoted span line is a
+ * correct, verbatim line of the arm — whole-file uniqueness would REFUSE a quote that is byte-exact and
+ * graded from live code, refusing a correct answer is not what refusing exists for. What no reading
+ * allows, and what the grade-time rules therefore refuse: a token shared by two lines of the span (it
+ * cannot say which line is its line), a blank token (contained in every line), a comment or blank line
+ * certifying (plant D's inserted comment), and any descriptor that skipped the builder. The STRICTER
+ * whole-file distinctness of signature tokens is graded where it is cheap and stable — in `--self-test`,
+ * per registered arm, against the file (`arm-signature-tokens-occur-once-in-file …`) — so a token that
+ * gains a second home anywhere in a kit file turns the self-test red and forces a human to look, even
+ * when boot-time quoting of that arm would remain legal under the span rule.
+ *
+ * What that does NOT buy, stated here because the FAIL header states it too (F-I1a4-1, round 4): none of it
+ * is a statement-boundary proof, and byte containment cannot tell a token executing as code from the same
+ * bytes inside a string literal. So a graded quote has THREE outcomes, not two: (1) every check above
+ * passes and the span prints — as the region the descriptor DECLARES, which may still be a wider or
+ * narrower cut of correct code than the statement the arm names, and may still contain a signature that
+ * survives there only as string content (the reviewer's A6); (2) a check above fails and the arm is
+ * REFUSED, with the reason printed where the bytes would have been; (3) — the case round 4 named — a
+ * descriptor whose declared region is live, signature-distinct code but is NOT the arm's statement is
+ * published confidently as declared. The honest scope: the instrument guarantees every quoted line is a
+ * live, signature-unique line of the file the arm lives in, and it refuses the misquote classes it can see
+ * in bytes; it does not certify that a published region is the statement itself. (Driver conjuncts are
+ * quoted by their own label instead, and the self-test sweeps those labels separately.)
  */
 const ARM_DESCRIPTORS = []
 
@@ -181,13 +208,31 @@ const ARM_DESCRIPTORS = []
  * `--self-test` watched. The span is `lines` long and EVERY line of it must contain its own signature token
  * (`anchor` for the first line, one `armFromLine2` token for each later line) before any byte of it prints.
  * A signature that no longer matches says the arm moved or was rewritten, and the quote is refused.
+ *
+ * Round 4 adds the two construction-time rules (F-I1a4-1 items 1–2, F-I1a4-3/4):
+ * * No signature token may be blank. `''` or whitespace-only is contained in EVERY line, so it certifies
+ *   nothing — the builder refuses to return such a descriptor at all (the reviewer's A5b/A12 widened spans
+ *   were signed with `''`; at these bytes they never reach grade time).
+ * * Whatever this function returns is seated in `BUILT_DESCRIPTORS`, and `locate()` quotes only what is
+ *   seated there. A spread copy (`{ ...ARM_SELFTEST, lines: 4 }`, the reviewer's S5) and an object literal
+ *   (their A10 factory) skip both the registration rules and the seat, so they are refused as shapes, not
+ *   scanned for spellings — round 4 measured aliases, `["fr"+"om"]` computed keys, spreads and factory
+ *   descriptors walking past the source scans at 41/41; none of those spellings changes this rule.
  */
+const BUILT_DESCRIPTORS = new WeakSet()
+const blankToken = (t) => typeof t !== 'string' || t.trim() === ''
 function bareQuote(file, anchor, lines = 1, armFromLine2 = []) {
   if (!Number.isInteger(lines) || lines < 1) throw new Error(`arm descriptor ${JSON.stringify(anchor)}: lines must be an integer >= 1`)
   if (armFromLine2.length !== lines - 1) {
     throw new Error(`arm descriptor ${JSON.stringify(anchor)}: ${String(lines)} quoted line(s) need ${String(lines - 1)} signature token(s), got ${String(armFromLine2.length)}`)
   }
-  return Object.freeze({ file, anchor, lines, signatures: Object.freeze([anchor, ...armFromLine2]) })
+  if (blankToken(anchor)) throw new Error(`arm descriptor: signature token 1 (the anchor) is ${JSON.stringify(anchor)} — a blank token is contained in every line and certifies no line; refusing to register`)
+  armFromLine2.forEach((token, k) => {
+    if (blankToken(token)) throw new Error(`arm descriptor ${JSON.stringify(anchor)}: signature token ${String(k + 2)} is ${JSON.stringify(token)} — a blank token is contained in every line and certifies no line; refusing to register`)
+  })
+  const descriptor = Object.freeze({ file, anchor, lines, signatures: Object.freeze([anchor, ...armFromLine2]) })
+  BUILT_DESCRIPTORS.add(descriptor)
+  return descriptor
 }
 
 /** An arm the self-test must resolve: identical to `bareQuote`, plus a seat in the registry it walks. */
@@ -226,7 +271,19 @@ const ARM_NEW_FAMILY_STEP = armDescriptor(PROBE_REL, "step('new-family-writes-af
 /** The self-test's own arm, so the FAIL-rendering checks quote bytes that exist and are measurable. */
 const ARM_SELFTEST = armDescriptor(DRIVER_REL, 'const ARM_SELFTEST =')
 
-/** Locate one registered `{file, anchor, lines, signatures}` descriptor in the bytes actually on disk NOW. */
+/**
+ * Locate one registered `{file, anchor, lines, signatures}` descriptor in the bytes actually on disk NOW.
+ * Everything the registration rules can re-grade against bytes is re-graded here, at grade time, so the
+ * refusal names what the disk says — shape and seat first (a descriptor that was never built certifies
+ * nothing about any file), then the anchor, then the span's containment, then each token's DISTINCTIVENESS
+ * WITHIN THE SPAN it certifies (round 4: containment proved the line carried the token, never that the
+ * token was the span's own — an inserted line carrying the signature certified itself), then that the span
+ * lands on code. The span-wide (not file-wide) reading of "unique" is defined and defended in the registry
+ * comment above: a byte-identical copy of a certified line elsewhere in the file stays quotable (plant A2);
+ * a comment or blank line never certifies (plant D), and a token shared by two span lines refuses.
+ * A published span is the descriptor's DECLARED region verified by these checks; it is not, and does not
+ * claim to be, a statement-boundary proof (see the registry comment above).
+ */
 function locate(quote) {
   const file = quote.file
   let text = null
@@ -236,6 +293,20 @@ function locate(quote) {
     return {
       at: `${file}:<descriptor carries a from offset>`,
       lines: [`${file}:<a from offset is a transcription, not a measurement — anchor the descriptor on its arm's own line instead; REFUSING to quote>`],
+    }
+  }
+  if (!BUILT_DESCRIPTORS.has(quote)) {
+    return {
+      at: `${file}:<descriptor was not built by the builder>`,
+      lines: [`${file}:<only a descriptor returned by bareQuote/armDescriptor may be quoted — a spread copy or an object literal skipped every registration rule this instrument relies on; REFUSING to quote>`],
+    }
+  }
+  const lines = quote.lines
+  const signatures = quote.signatures
+  if (!Number.isInteger(lines) || lines < 1 || !Array.isArray(signatures) || signatures.length !== lines || signatures.some(blankToken)) {
+    return {
+      at: `${file}:<descriptor shape invalid>`,
+      lines: [`${file}:<${String(lines)} span line(s) with ${Array.isArray(signatures) ? String(signatures.length) : 'no'} signature token(s), some blank — every quoted line must carry its own non-blank signature; REFUSING to quote>`],
     }
   }
   const all = text.split('\n')
@@ -248,8 +319,6 @@ function locate(quote) {
     }
   }
   const from = hits[0]
-  const lines = quote.lines ?? 1
-  const signatures = quote.signatures ?? [quote.anchor]
   const span = []
   for (let i = from; i < from + lines; i += 1) span.push(i < all.length ? all[i] : undefined)
   const drift = signatures.findIndex((token, k) => typeof span[k] !== 'string' || !span[k].includes(token))
@@ -257,6 +326,23 @@ function locate(quote) {
     return {
       at: `${file}:<span drifted>`,
       lines: [`${file}:<line ${String(from + drift + 1)} of this arm's ${String(lines)}-line span does not contain its signature ${JSON.stringify(signatures[drift])} — the arm moved or was rewritten; REFUSING to quote bytes it did not grade>`],
+    }
+  }
+  const repeated = signatures
+    .map((token, k) => ({ token, k, occurrences: span.reduce((n, l) => (typeof l === 'string' && l.includes(token) ? n + 1 : n), 0) }))
+    .filter((d) => d.occurrences !== 1)
+  if (repeated.length > 0) {
+    const d = repeated[0]
+    return {
+      at: `${file}:<signature not unique>`,
+      lines: [`${file}:<signature ${JSON.stringify(d.token)} (span line ${String(d.k + 1)}) is carried by ${String(d.occurrences)} lines of this arm's ${String(lines)}-line span — a token carried by more than one line cannot say which line the arm is on; REFUSING to pick a match>`],
+    }
+  }
+  const offCode = span.map((l, k) => ({ k, t: (l ?? '').trim() })).find(({ t }) => t === '' || t.startsWith('//') || t.startsWith('/*') || t.startsWith('*'))
+  if (offCode !== undefined) {
+    return {
+      at: `${file}:<span not on code>`,
+      lines: [`${file}:<line ${String(from + offCode.k + 1)} of this arm's ${String(lines)}-line span is a blank or comment line — containment cannot turn bytes into a statement boundary, and a declared span must at least land on code; REFUSING to quote>`],
     }
   }
   const quoted = []
@@ -358,8 +444,12 @@ function firstValueDifference(x, y, path) {
  * the row locator must name the row/field that differs, and no descriptor may be hand-written in the source
  * where the sweep cannot reach it. Exit 0 only when every assertion holds.
  *
- * Its ceiling is disclosed rather than argued away (F-I1a3-3): an assertion here that is rewritten to a
- * constant `true` still passes, because nothing grades the assertions themselves. Every round re-runs this.
+ * Its ceiling is disclosed rather than argued away (F-I1a3-3 — LEFT OPEN; nothing here or below closes
+ * it): an assertion here that is rewritten to a constant `true` still passes, because nothing grades the
+ * assertions themselves. Round 4 MEASURED that meta-ceiling, and the count said nothing about it: five
+ * assertions across four families were emptied to constants and `checks=41 problems=0` still printed.
+ * A published count is a count, never a claim of meaningfulness; what a check is worth is shown by the
+ * named plant that moves its exit code. Every round re-runs this.
  */
 function selfTest() {
   const problems = []
@@ -392,12 +482,47 @@ function selfTest() {
   expect('shifted-span-refuses-to-quote', planted.at.includes('<span drifted>'), planted.at)
   expect('shifted-span-quotes-no-pretend-source', planted.lines.length === 1 && planted.lines[0].includes('REFUSING to quote'), JSON.stringify(planted.lines))
   expect('shifted-span-names-the-line-it-could-not-verify', /line \d+ of this arm's 2-line span/.test(planted.lines[0] ?? ''), JSON.stringify(planted.lines))
-  // The offset case is built with a computed key on purpose: writing a literal `from: 2` here would trip
-  // the no-offset rule checked at the end of this function, which is the very rule this case proves bites.
+  // The offset case is built with a computed key: writing a literal `from: 2` here would trip the
+  // tripwire scan at the end of this function, whose whole job is catching that common spelling written
+  // as a descriptor. Since round 4's fix this is a LEGITIMATE construction site, not a hidden exception
+  // (F-I1a4-3): the rule itself is construction- and grade-time — locate() refuses any descriptor that
+  // carries a from offset (checked first, so this shape gets the named from-offset refusal rather than
+  // the unbuilt one) and refuses anything the builder never returned — and no alias, computed key or
+  // spread changes what those checks see. The scan is a tripwire over one spelling; this line exists to
+  // prove the rule behind it bites.
   const offsetKey = ['fr', 'om'].join('')
   const offsetQuote = { ...labelQuote(ARM_SELFTEST.anchor), [offsetKey]: 2 }
   const withOffset = locate(offsetQuote)
   expect('from-offset-is-refused-not-measured', withOffset.at.includes('<descriptor carries a from offset>') && withOffset.lines[0].includes('REFUSING to quote'), `${withOffset.at} ${JSON.stringify(withOffset.lines)}`)
+
+  // F-I1a4-1, items 1–2, as data: the shapes that PUBLISHED CONFIDENTLY at the round-18 bytes — a blank
+  // signature token (the widened A5b/A12 spans were signed with `''` and `''` is contained in every line),
+  // a spread of a built descriptor (S5: `{ ...ARM_SELFTEST, lines: 4 }` printed four lines, one verified),
+  // a signature carried by more than one line of its own span (the general shape of plant D: an inserted
+  // line carrying a signature certified itself; here the token `const ` is carried by BOTH lines of the
+  // two-line span it would certify, so it cannot say which line the arm is on — under the span-wide
+  // reading disclosed in the registry comment, a token duplicated OUTSIDE the span, like plant A2's
+  // byte-identical copy, stays legal and the self-test's per-arm file-wide sweep is what goes red), and a
+  // span line that is a comment (A12's `/** …` line, called the arm's bytes). Every refusal below is the
+  // instrument refusing a SHAPE at construction or grade time — not a scan noticing a spelling: round 4
+  // walked both scans at 41/41 green using aliases, computed keys, spreads and factories (F-I1a4-3/4), so
+  // the scans are a tripwire for the two common spellings and these checks are the rule.
+  let blankRefused = ''
+  try {
+    bareQuote(DRIVER_REL, ARM_SELFTEST.anchor, 2, [''])
+    bareQuote(DRIVER_REL, ARM_SELFTEST.anchor, 2, ['   '])
+  } catch (e) { blankRefused = String(e.message ?? e) }
+  expect('blank-signature-token-refuses-at-registration', blankRefused.includes('refusing to register'), blankRefused === '' ? 'bareQuote RETURNED a descriptor signed with a blank token — the builder no longer refuses it' : blankRefused)
+  const spreadCopy = locate({ ...ARM_SELFTEST })
+  expect('spread-of-a-built-descriptor-refuses-to-quote', spreadCopy.at.includes('<descriptor was not built by the builder>'), `${spreadCopy.at} ${JSON.stringify(spreadCopy.lines)}`)
+  const dupToken = locate(bareQuote(PROBE_REL, 'const previousMax =', 2, ['const ']))
+  expect('span-duplicated-signature-refuses-certification', dupToken.at.includes('<signature not unique>'), `${dupToken.at} ${JSON.stringify(dupToken.lines)}`)
+  // The anchor is assembled, not re-typed: this line would otherwise contain the very string it locates,
+  // which is the duplicate-anchor bug the anchor rule grades (same reason plantedSpan borrows ARM_SELFTEST's
+  // anchor instead of writing it out). The pieces appear on this line only; the full anchor is on one.
+  const commentAnchor = [' * ', 'The four arms ', 'quoted out of the PROBE'].join('')
+  const commentSpan = locate(bareQuote(DRIVER_REL, commentAnchor))
+  expect('comment-line-in-a-span-refuses-to-quote', commentSpan.at.includes('<span not on code>'), `${commentSpan.at} ${JSON.stringify(commentSpan.lines)}`)
 
   const before = lines.length
   check('selftest-renders-a-graded-fail', false, 'synthetic leg — nothing about the writer was measured here', [selfTestArm])
@@ -422,22 +547,44 @@ function selfTest() {
     expect(`label-locates-uniquely "${label}"`, !located.at.includes('<'), located.at)
   }
 
-  // The sweep round 3 asked for: resolve every registered arm WITH its own span and require the resolved
-  // bytes to be the arm. `lines` and `signatures` are taken from the descriptor, never re-typed here, so a
-  // descriptor cannot pass by being shorter than what the leg actually quotes.
-  expect('arms-are-registered-for-the-sweep', ARM_DESCRIPTORS.length >= 5, `found ${String(ARM_DESCRIPTORS.length)}`)
+  // The sweep round 3 asked for, GRADED FOR DISTINCTIVENESS since round 4 (F-I1a4-1 item 4). The round-18
+  // sweep checked a descriptor against its OWN transcription — `arm-quotes-its-own-span` re-derived the
+  // span from the descriptor's `lines`/`signatures`, and `arms-are-registered-for-the-sweep` was a
+  // `length >= 5` — which grades self-consistency, not distinctiveness: the reviewer's plants D/A5b/A6/A12
+  // kept every one of those green. What follows grades each arm against the FILE — a SECOND, STRICTER
+  // layer that runs only here: every signature token must occur on exactly one line of the file the
+  // descriptor points at, and every span line must land on code, not on a blank or a comment line. The
+  // boot-time quote rule stays the span-wide one defined in the registry comment (a byte-identical copy
+  // outside the span, plant A2, remains quotable because what prints is still verbatim live code); a
+  // token that gains a second home anywhere in a kit file turns THIS sweep red and forces a human to
+  // look. `lines`/`signatures` are still taken from the descriptor, never re-typed here, so a descriptor
+  // cannot pass by being shorter than what a leg quotes.
+  const registrationCalls = (source.match(/= armDescriptor\(/g) ?? []).length
+  expect('arms-are-registered-for-the-sweep', ARM_DESCRIPTORS.length === registrationCalls && ARM_DESCRIPTORS.length >= 5, `registered ${String(ARM_DESCRIPTORS.length)} against ${String(registrationCalls)} registration call(s) in the source`)
   for (const d of ARM_DESCRIPTORS) {
     const located = locate(d)
     expect(`arm-resolves ${d.anchor}`, !located.at.includes('<'), located.at)
     const spanOk = located.lines.length === d.lines
       && located.lines.every((printed, k) => printed.includes(`:${String(Number(located.at.split(':')[1]) + k)} `) && printed.includes(d.signatures[k]))
     expect(`arm-quotes-its-own-span ${d.anchor}`, spanOk, JSON.stringify(located.lines))
+    const fileLines = readFileSync(join(WORKTREE, d.file), 'utf8').split('\n')
+    const anchorLines = fileLines.reduce((xs, l, i) => (l.includes(d.anchor) ? [...xs, i] : xs), [])
+    const repeated = d.signatures
+      .map((token, k) => ({ token, spanLine: k + 1, occurrences: fileLines.reduce((n, l) => (l.includes(token) ? n + 1 : n), 0) }))
+      .filter((x) => x.occurrences !== 1)
+    expect(`arm-signature-tokens-occur-once-in-file ${d.anchor}`, repeated.length === 0, JSON.stringify(repeated))
+    const notCode = (anchorLines.length === 1 ? fileLines.slice(anchorLines[0], anchorLines[0] + d.lines) : [])
+      .map((l, k) => ({ spanLine: k + 1, text: l.trim().slice(0, 60) }))
+      .filter(({ text }) => text === '' || text.startsWith('//') || text.startsWith('/*') || text.startsWith('*'))
+    expect(`arm-span-lands-on-code ${d.anchor}`, anchorLines.length === 1 && notCode.length === 0, JSON.stringify(notCode))
   }
-  // …and the rule that keeps the sweep total: a descriptor written as an object literal in this file would
-  // be invisible to it, and an offset descriptor measures nothing. Both are refused structurally, so the
-  // CODE of this file must contain neither. Leading-comment lines are excluded, so this is a rule about
-  // code and not about prose — a comment may explain the rule by naming the shape it forbids; a comment
-  // after code on the same line is still scanned.
+  // …and the tripwire scans for the two common wrong shapes written out in the open: a hand-written
+  // descriptor literal, and a literal `from:` offset. They are a TRIPWIRE, disclosed as one (F-I1a4-3/4):
+  // round 4 passed aliases, `["fr"+"om"]` computed keys, spreads and factory-built descriptors through
+  // them at 41/41, so the RULE is enforced where a descriptor is built (bareQuote's refusals + the seat
+  // in BUILT_DESCRIPTORS) and where it is used (locate's seat/shape/from refusals) — a spelling that
+  // walks past a scan still cannot produce a quote. Leading-comment lines are excluded, so a comment may
+  // explain the rule by naming the shape it forbids; code with a trailing comment is still scanned.
   const code = source.split('\n').filter((l) => {
     const t = l.trimStart()
     return !(t.startsWith('//') || t.startsWith('*') || t.startsWith('/*'))

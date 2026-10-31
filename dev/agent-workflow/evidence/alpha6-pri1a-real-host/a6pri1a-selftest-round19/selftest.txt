@@ -1,0 +1,68 @@
+# --self-test transcript, RE-RUN at the round-19 kit bytes (the bytes this commit ships)
+# Kit bytes measured: pr-i1a-real-host.mjs 0e2073e04672c73d0cd13ff2a89bdd224551d4fec3c2c1b3b400de25699c37d5, pri1a-probe-row.mjs 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+# Command: node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test
+# Round 19 takes the sweep from 41 to 55 checks (F-I1a4-1): four synthetic refusal checks (blank token at
+# registration, spread of a built descriptor, span-duplicated signature, comment line in a span) plus two
+# PER-ARM checks across all five registered arms — the signature token of every arm must occur on exactly
+# ONE line of its file (the stricter second layer; the boot path enforces span-wide uniqueness, this sweep
+# is what turns an A2-style duplicate red), and every declared span must land on code.
+SELFTEST ok driver-conjunct-resolves-to-a-line
+SELFTEST ok driver-conjunct-quotes-its-own-bytes
+SELFTEST ok missing-anchor-says-so
+SELFTEST ok missing-anchor-refuses-to-quote
+SELFTEST ok shifted-span-refuses-to-quote
+SELFTEST ok shifted-span-quotes-no-pretend-source
+SELFTEST ok shifted-span-names-the-line-it-could-not-verify
+SELFTEST ok from-offset-is-refused-not-measured
+SELFTEST ok blank-signature-token-refuses-at-registration
+SELFTEST ok spread-of-a-built-descriptor-refuses-to-quote
+SELFTEST ok span-duplicated-signature-refuses-certification
+SELFTEST ok comment-line-in-a-span-refuses-to-quote
+FAIL selftest-renders-a-graded-fail — synthetic leg — nothing about the writer was measured here
+FAIL-GRADED selftest-renders-a-graded-fail — 1 conjunct(s) this leg evaluated; each prints its descriptor's DECLARED region — every printed line verified live on disk, carrying its signature uniquely within the certified span, on code, which is containment, not a statement-boundary proof (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine):
+FAIL-GRADED   RED  [driver] tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:272 — selftest graded arm: spawned boot 1=1 boot 2=1
+FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:272 const ARM_SELFTEST = armDescriptor(DRIVER_REL, 'const ARM_SELFTEST =')
+SELFTEST ok fail-prints-a-graded-block
+SELFTEST ok graded-block-marks-the-red-arm
+SELFTEST ok equal-rows-claim-no-difference
+SELFTEST ok third-row-payload-difference-is-located
+SELFTEST ok row-count-difference-is-located
+SELFTEST ok key-order-difference-is-named
+SELFTEST ok missing-field-is-named
+SELFTEST ok driver-conjuncts-are-present
+SELFTEST ok label-locates-uniquely "selftest graded arm"
+SELFTEST ok label-locates-uniquely "both boots reported a process identity"
+SELFTEST ok label-locates-uniquely "boot-1 self-reported pid equals the pid this driver spawned"
+SELFTEST ok label-locates-uniquely "boot-1 self-reported argv0 equals the marker this driver stamped"
+SELFTEST ok label-locates-uniquely "boot-2 self-reported pid equals the pid this driver spawned"
+SELFTEST ok label-locates-uniquely "boot-2 self-reported argv0 equals the marker this driver stamped"
+SELFTEST ok label-locates-uniquely "the two pids this driver spawned differ"
+SELFTEST ok label-locates-uniquely "the two self-reported pids differ"
+SELFTEST ok label-locates-uniquely "the two module nonces differ"
+SELFTEST ok label-locates-uniquely "boot 1 produced a report whose rows can be compared at all"
+SELFTEST ok label-locates-uniquely "every field of every row is byte-identical across the two boots"
+SELFTEST ok label-locates-uniquely "the driver re-derives the same expected sequence from boot 1 rows"
+SELFTEST ok arms-are-registered-for-the-sweep
+SELFTEST ok arm-resolves const freshProcess =
+SELFTEST ok arm-quotes-its-own-span const freshProcess =
+SELFTEST ok arm-signature-tokens-occur-once-in-file const freshProcess =
+SELFTEST ok arm-span-lands-on-code const freshProcess =
+SELFTEST ok arm-resolves writes: { created, replay, transferred, retired }, rows,
+SELFTEST ok arm-quotes-its-own-span writes: { created, replay, transferred, retired }, rows,
+SELFTEST ok arm-signature-tokens-occur-once-in-file writes: { created, replay, transferred, retired }, rows,
+SELFTEST ok arm-span-lands-on-code writes: { created, replay, transferred, retired }, rows,
+SELFTEST ok arm-resolves generation, replayFirst, fresh,
+SELFTEST ok arm-quotes-its-own-span generation, replayFirst, fresh,
+SELFTEST ok arm-signature-tokens-occur-once-in-file generation, replayFirst, fresh,
+SELFTEST ok arm-span-lands-on-code generation, replayFirst, fresh,
+SELFTEST ok arm-resolves step('new-family-writes-after-restart'
+SELFTEST ok arm-quotes-its-own-span step('new-family-writes-after-restart'
+SELFTEST ok arm-signature-tokens-occur-once-in-file step('new-family-writes-after-restart'
+SELFTEST ok arm-span-lands-on-code step('new-family-writes-after-restart'
+SELFTEST ok arm-resolves const ARM_SELFTEST =
+SELFTEST ok arm-quotes-its-own-span const ARM_SELFTEST =
+SELFTEST ok arm-signature-tokens-occur-once-in-file const ARM_SELFTEST =
+SELFTEST ok arm-span-lands-on-code const ARM_SELFTEST =
+SELFTEST ok no-descriptor-is-hand-written-in-the-code
+SELFTEST ok no-descriptor-carries-a-from-offset
+DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=55 problems=0

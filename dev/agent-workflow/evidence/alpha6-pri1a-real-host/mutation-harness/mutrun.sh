@@ -43,6 +43,8 @@
 #                              its anchor, a duplicated label, a mutation of an arm's INPUT with the arm
 #                              left pristine. Pass the empty string as <declared-old-line> for a plant that
 #                              only adds a line.
+#                              The script inherits the caller's environment, so extra plant inputs travel as exported
+#                              env (e.g. PRI1A_ANCHOR=<exact line to plant after>, used by plants/plant-insert-after.mjs).
 #   --expect-regex RE    (repeatable) the transcript MUST contain this: the stated reason the leg went red
 #   --expect-absent RE   (repeatable) the transcript MUST NOT contain this — e.g. the comment line a
 #                              drifting plant inserted, which must never be quoted as a graded arm
@@ -64,6 +66,18 @@ SCRATCH=${PRI1A_SCRATCH:-$TREE/.artifacts/pri1a-mutation-scratch}
 HERE=$(cd "$(dirname "$0")" && pwd)
 NL=$'\n'
 
+# F-I1a4-2: every path the caller passes is resolved to an absolute path HERE, before anything consumes
+# it. The diff half reaches git through `git -C "$TREE" apply` (cwd=$TREE) while the edit half and the
+# existence checks run from the caller's cwd, so a path relative to one resolved against the other and
+# the README's own commands could not run as written (diff:../a6pri1a-… → `can't open patch` rc=86;
+# edit:plants/… from the tree root → rc=87). Resolution order: the caller's cwd first, then $TREE.
+abspath() {
+  local p=$1
+  if [ -e "$p" ]; then realpath "$p"
+  elif [ -e "$TREE/$p" ]; then realpath "$TREE/$p"
+  else printf '%s\n' "$p"; fi   # leave unresolvable: the [ -f ] check below refuses with a named reason
+}
+
 if [ "$#" -lt 7 ]; then
   echo 'usage: mutrun.sh <label> <target-rel> <pin> <mode> <old-line> <new-line> <expect-leg> [--expect-regex RE] [--pre-diff D] -- <kit args…>' >&2
   exit 87
@@ -83,6 +97,7 @@ done
 [ "${1:-}" = '--' ] && shift
 if [ "$#" -lt 1 ]; then echo 'a kit command is required after --' >&2; exit 87; fi
 KIT_CMD=("$@")
+if [ -n "$PREDIFF" ]; then PREDIFF=$(abspath "$PREDIFF"); fi   # F-I1a4-2: absolute from the entry point
 
 FILE="$TREE/$RELFILE"
 mkdir -p "$SCRATCH/base"
@@ -216,7 +231,7 @@ emit "planted: <$NEW_LINE>"
 # 2/3/4 ─ plant, then confirm the mutation from the BYTES rather than from an exit code.
 case "$MODE" in
   diff:*)
-    DIFF=${MODE#diff:}
+    DIFF=$(abspath "${MODE#diff:}")
     [ -f "$DIFF" ] || { FAILED=1; emit "REFUSE: $DIFF does not exist"; exit 87; }
     DIFF_OLD=$(grep '^-' "$DIFF" | sed -n '2p' | cut -c2-)
     DIFF_NEW=$(grep '^+' "$DIFF" | sed -n '2p' | cut -c2-)
@@ -226,7 +241,7 @@ case "$MODE" in
     git -C "$TREE" apply "$DIFF" || fail "git apply of $DIFF"
     ;;
   edit:*)
-    SCRIPT=${MODE#edit:}
+    SCRIPT=$(abspath "${MODE#edit:}")
     [ -f "$SCRIPT" ] || { FAILED=1; emit "REFUSE: plant script $SCRIPT does not exist"; exit 87; }
     PRI1A_TARGET="$FILE" PRI1A_NEW_LINE="$NEW_LINE" node "$SCRIPT" >> "$STAGED" 2>&1 \
       || fail "the plant script exited nonzero — see the lines above (bytes restored on the way out)"
