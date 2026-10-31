@@ -683,6 +683,44 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     expect(retry.sequence).toBe(1)
   })
 
+  it('answers with a refusal rather than an exception when even the re-read fails', async () => {
+    // The law this PR is named for is "a refusal is an answer", and the fix for F1 introduced a NEW call that
+    // can fail: the re-read inside the catch. A reader port that throws when asked twice would otherwise turn
+    // the answer to "did my row land?" into an exception escaping the module, which is the one thing the header
+    // forbids. So the re-read is guarded, and what comes back says the thing that is actually true: unknown.
+    const root = 'session-root-9'
+    const world = await harness({ root, seedSession: false })
+    const inner = ledgerPort(world.domain)
+    let lists = 0
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: {
+        ...inner,
+        list: () => {
+          lists += 1
+          if (lists > 1) throw new Error('reader unavailable after the write attempt')
+          return inner.list()
+        },
+      },
+    }
+    // No crash switch needed: the missing TeamSession row makes the write's own generation stamp throw, and
+    // the second read — the one this writer added to answer honestly — is the one this reader refuses.
+    const result = await applyReviewAssignment(deps, command({ rootSessionId: root }))
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+    expect(result.detail).toMatch(/could not be re-read/)
+    expect(result.detail).toContain('reader unavailable after the write attempt')
+    expect(result.detail).toMatch(/MAY be durable/)
+    // The claim is that the module answers, not that it answers correctly-under-ignorance: the row IS there,
+    // and the next command over a working reader finds it as `already`.
+    expect(world.familyRows().map((row) => row.sequence)).toEqual([1])
+    const retry = await run(world.deps, { rootSessionId: root })
+    expect(retry.ok).toBe(true)
+    if (!retry.ok) return
+    expect(retry.applied).toBe('already')
+  })
+
   it('refuses a malformed command before touching the ledger or the lock', async () => {
     const world = await harness()
     // The fourth entry is the confusion this file's first draft actually made in the writer: a fact-type VALUE

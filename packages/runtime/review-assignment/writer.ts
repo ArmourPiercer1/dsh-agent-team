@@ -427,7 +427,23 @@ async function writeLocked(
     // (`repositories/team-sessions.ts:119`) — a root this writer deliberately mints without a team-existence
     // check (§2.2 / memo R-5). So the append can be durable while the call fails, and the only honest way to
     // choose between the two answers is to look.
-    const landed = deps.ledger.list().find((row) => row.sequence === sequence)
+    // The re-read is itself a call into an injected port, and a call that throws while answering "did my row
+    // land?" must not escape as an exception: the question would then have no answer at all, which is worse
+    // than the honest "I cannot tell you". The third answer therefore has a third branch, and it says unknown
+    // rather than guessing in either direction.
+    let landed: ReturnType<ReviewAssignmentLedgerReaderPort['list']>[number] | undefined
+    try {
+      landed = deps.ledger.list().find((row) => row.sequence === sequence)
+    } catch (readError) {
+      return refuseWrite(
+        'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+        `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}), and the ledger ` +
+          `could not be re-read to determine whether the row is durable (${describe(readError)}) — it MAY be ` +
+          'durable at that sequence and it MAY be absent. This command is not accepted; a retry of the identical ' +
+          'command answers the question: it is recognised as already applied if the row is there, and writes at ' +
+          'the next sequence if it is not',
+      )
+    }
     if (landed !== undefined) {
       return refuseWrite(
         'REVIEW_ASSIGNMENT_ROW_DURABLE',
