@@ -7374,3 +7374,32 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   引用与处方都要重开原文再接受；④空转的加宽必须行为化并披露空转；⑤改 harvest 先证明 census 零漂移；
   ⑥往中文正本里写含 `\b` 的正则字面量时，python 普通字符串会把 `\b` 写成退格符 —— 落盘后必须
   `grep -c $'\x08'` 复核（本会话抓到并修好一次，正本无控制字符）。
+## 2026-10-31 — #517 round-3 公开发布完成；我自己重复了一个没测过的数字并被自己抓住（symlink 计数 7→2）；根套件两次全量结果与一处新残留的归属声明
+
+- **发布链**：round-3 复核报告原文 = #517 comment `6541504069`；逐条处置（含我对每条定罪命令的独立复跑与本轮新度
+  量）= `6541534392`；我自己的更正 = `6541555381`；PR 正文按 forward-only 更新（head 行 → `8603f1ae9`、§7 标题 49 条、
+  §8 三行加 round-3 指针与更正、新增 §11；44,403 字符）。#502 的 PR-I1b 继承义务**加补编 3** = `6541556958`（7 条，
+  每条都指明"为什么"是继承：PR-I1b 复用 PR-I1a 的 writer/账本/锁）。
+- **我自己犯的、正好是本轮抓别人的那个错**：处置说明里我照抄复核者的"7 个 `@deepseek-ai` scoped 目录是绝对符号链
+  接"。本会话实测只有 **2 个**（`packages/runtime`、`packages/client`）；其内的包链接是**相对**链接
+  （`../../../../node_modules/.pnpm/…`），因 scoped 目录先解析到父 clone，相对链接遂在父 clone 的 store 里落地——
+  `readlink -f packages/client/node_modules/@deepseek-ai/cordis` →
+  `/home/armourpiercer/projects/dsh-agent-team-lane-2/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_…`，而本 worktree
+  自己也有 `node_modules/.pnpm` 却永远走不到。结论（closure 腿在 linked worktree 里拿不到它的红）不变；**我公布的
+  数字错**。方法条目：**凡不是我亲手测出来的数字，发布前必须自己测一遍**；更正以新 comment 公开，原 comment 保留
+  原文以便日后看清"我当时说过什么、什么时候改的"。
+- **根套件在同一 head 两次全量**：`8603f1ae9` ⇒ 第一次 53 files / 19 tests 失败，第二次 54 / 20；两次都含同一新名
+  `packages/runtime/test/a5-cancel-glob.test.ts` 同一腿（`a5-cancel/glob T`，
+  `a settled timeout was rewritten into a cancel refusal: expected false to be true`），单跑 26/26，且不在本 PR diff
+  内。故 round-2 那句"失败集里没有此前未记录过的名字"只在它那一次样本上成立，已 forward 更正；**归因给 round-3 未
+  确立**（父 head 只跑过一次全量，单样本无法把真实增量与 run 间方差分开）。
+- **门禁（新 head 复测，非引用）**：`check-artifacts-at-head verdict=ok compared=1943 drift=0`；`ci-pr-gate --full`
+  `pass=8 fail=1`（census 为"undeclared refusal"，未用 `--allow-refused`）；`eb3-security-run` 254/254；
+  evidence-guard（HEAD~1）findings=0；docs-sync findings=0；settlement gate
+  `BLOCKED-BY-MARKER marker=body-first-line matches=0 candidates=0`，notes 同时点名 `title-prefix` 与
+  `body-first-line`。**归因规则读源码确立**（`scripts/pr-settlement-gate.mjs:68`
+  `MARKER_RE=/^DO-NOT-MERGE(?![0-9A-Za-z])/` 施加于 body 首行与 title 的 trimStart；verdictToken 优先报
+  `body-first-line`）：#517 正文首行以 `DO-NOT-MERGE ` 开头 ⇒ 命中 body 首行；#520 正文首行以 `**DO-NOT-MERGE` 开头
+  ⇒ 锚定失配，只命中 title，故同一脚本两 PR 的 token 不同，且与源码规则完全一致。我先前想写的"早先几轮归因不同是
+  因为当时正文首行不含 marker"是**未经证实的推断**（我保留了当时的正文首行，它同样以 marker 开头，故该推断不成立），
+  按律不写进正本；此处只留可由源码与两次实测复现的部分。
