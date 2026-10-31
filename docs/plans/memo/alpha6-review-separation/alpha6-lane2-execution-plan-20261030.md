@@ -72,14 +72,14 @@
 
 | 原 §1 行 | 当前编号 | 变更性质 |
 | --- | --- | --- |
-| PR2′（含 `ReviewAssignment` fact + 投影 booking） | **PR2′（#507 已交付）** + **PR-I1a（新名，本轮开工）** | PR-I1a = 原 PR2′ 行中被递延的"持久化 Writer"那一半，正式命名；不是新造历史编号 |
+| PR2′（含 `ReviewAssignment` fact + 投影 booking） | **PR2′（#507 已交付待审，Draft + DO-NOT-MERGE，未合并）** + **PR-I1a（新名，本轮开工）** | PR-I1a = 原 PR2′ 行中被递延的"持久化 Writer"那一半，正式命名；不是新造历史编号 |
 | PR-I1（4 站点 role-closure 的 Mandate 准入 OR 支 + arc-a override） | **PR-I1b** | 仅编号细化以腾出 I1a；内容、受保护面、override 要求一字不改 |
 | PR-I2（`agent-bindings.mjs` 投递面 + 互斥开关） | **PR-I2（不变）**，内部区分「即时唤醒子集」与「定时唤醒子集」 | 后者被 R-1 的 blocker 停掉；**不新建 PR 编号**；PR-I2 的 PR 描述必须显式声明只含即时唤醒子集 |
 | PR1 / PR4 / PR5 / PR6 | 维持原编号；PR5′ = 只读展示收窄版 | BL-01 与 C2 的门槛按裁决重述，语义不变 |
 
 ### R-3 本轮实际交付（替换 §1 末行"本轮实际交付"的时点陈述，原文保留）
 
-已交付：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 文件 / 零生产文件；三轮独立审查
+已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 文件 / 零生产文件；三轮独立审查
 闭合中）。进行中：**PR-I1a**（受治理的 `ReviewAssignment` 唯一持久化 Writer）。并行允许：PR-I1b 的接口设计与
 安全负控（其受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权）。受阻：PR-I2 定时唤醒子集（R-1）。
 

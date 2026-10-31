@@ -14,7 +14,8 @@
   await 的钩子，明文禁止在其中 `whenIdle()`）。
 - 执行计划 §2 记录 S0-B 判定：**无需 host patch**（CORE PATCH BUDGET = 0 未被触碰）。
 
-**以上结论对本补遗而言全部仍然成立**，且已被实际交付复核：PR0（`review-mandate/`）、PR2′（#507）、PR3′
+**以上结论对本补遗而言仍然成立**（唯一例外见 §4：S0-B 的「无需 host patch」判断，对 N-1 这一条
+floor-delayed 载体路径不再成立；其余 Alpha.6 路径不受影响），且已被实际交付复核：PR0（`review-mandate/`）、PR2′（#507）、PR3′
 （`review-wake/`）、PR4′（#509 defer 面）四张 PR 累计**消耗 0 个核心补丁**，无一需要 host 改动。
 
 ## 2. S0 没有问的那一个问题（本补遗的新增边界）
@@ -34,8 +35,9 @@ S0 §3 枚举的是**状态与事件面**（KvTable 持久状态、`domain/chang
 2. 宿主唯一可达的墙钟原语是 **ScheduleService**，而它在 `app-boot/src/profile.ts:212-218` 属
    `OPTIONAL_BUNDLES`（注释明文「offered switched off by the plugin manager」）⇒ 可选、默认关，不能充当始终存在
    的运行时前提。
-3. 该原语的到期动作是 `runtime.ts:103` `resolveAgent(...)` → `:117-121` `createUserMessage({ source:
-   { kind: 'schedule' } })` → `agent.followup(...)`，即**一条用户可见的提醒轮**，且 `index.ts:396` 只发
+3. 该原语的到期动作是 `runtime.ts:101` `resolveAgent(...)` → `:118` `renderReminderFraming(...)` →
+   `:119-121` `createUserMessage({ source: { kind: 'schedule' } })` → `:123` `agent.followup(...)`
+   （行号经 round-1 records review 复核修正），即**一条用户可见的提醒轮**，且 `index.ts:396` 只发
    payload-less 的 `schedule/changed`（`types.ts:471` 声明为 `(): void`）⇒ 唤醒归属、来源语义、取消、去重、恢复
    都无法由该通道承担。
 4. 宿主 `setInterval` 全集中不存在插件注册点；jobs 需先存在 job；goal round 驱动不可注册；插件自建

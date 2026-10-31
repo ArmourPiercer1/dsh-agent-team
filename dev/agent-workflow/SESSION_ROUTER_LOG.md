@@ -7333,3 +7333,31 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   不计 PASS；Alpha.6 开发 PR 一律 Draft + `DO-NOT-MERGE`。
 - 方法结论入账（不是修辞）：**修复本身是新面**；**文档句是没人跑的测试**。第四轮与 PR-I1a 的 review brief 直接沿用
   "攻击修复"这一 brief 形态，不另造。
+
+## 2026-10-31（真实 UTC）— PR #513 records round-1：引用精度修正（append-only 修复走新条目）
+
+- 独立 records-only 复核（未参与撰写本 PR 任何文字）针对 head `2231ef67e63b142257c45b13e7351a421b7c7d65`
+  的 6 文件 / +290 −0 纯追加集执行；裁定 **0 BLOCKER / 0 MAJOR / 2 MINOR / 3 LOW / 4 INFO**。实质结论：两份
+  2026-10-31 用户裁决记录忠实（A 方案、blocker scope 严格锁在 PR-I2 floor-delayed 载体、#509 DORMANT、
+  不建第二套持久化定时器、不提 upstream patch、七项 continue 能力、缺时间源必须拒绝而非 `accepted: true`、
+  TimedWakePort 契约先行、ScheduleService 仅未来独立 PoC 候选适配器、S0 经具名补遗修订且原文未动、
+  PR-I1a/PR-I1b 映射不重编历史编号）；全文无"已启用/已合并/已发布/已放宽门禁"表述。报告正本
+  `.artifacts/alpha6-s0/review-513-r1-report.md`（gitignored，随本轮在 PR #513 评论区全文公开）。
+- 两条 MINOR 都是**引用精度**，不是结论错误，全部按"新条目修，不改写历史"处理：
+  - **MINOR-1**：裁决记录 §1.1 把 hygiene needle 集引到 `98c25a091` 却写了 `new Date`。实测 `98c25a091` 的
+    needle 列表是 `Date.now / setTimeout / setInterval / process. / readFileSync / writeFileSync / Math.random`，
+    `new Date` 当时不在集合内（它是 round-3 finding 之后 `45211aa1f` 才加入——本 log R3-3 行早已记录该事实）。
+    记录已改为引用被引 commit 的**实际**列表，并注明加宽发生在 `45211aa1f`。
+  - **MINOR-2**：host `runtime.ts` 行号偏两行。复核后的真实位置：`resolveAgent` 在 `:101`（`:103` 是 oxlint
+    注释）、`renderReminderFraming` 在 `:118`、`createUserMessage` 在 `:119-121`、`agent.followup` 在 `:123`；
+    `profile.ts` 的「offered switched off by the plugin manager」注释在 `:209`，`OPTIONAL_BUNDLES` 条目在 `:217`。
+    裁决记录 §1.1 / S0 补遗 §2.3 与本轮引用同步修正；结论（可选包、提醒轮、payload-less 事件）不变。
+- 三条 LOW 一并收：补遗 §1 的 S0 §0/§6 条目标为**摘要**（同节 S0:75/79 两行仍是逐字）；§1 的"仍然成立"改为显式
+  前向引用 §4 的唯一例外（S0-B「无需 host patch」对 N-1 路径不再成立）；PR-I1b 默认关条件由"保持原有行为"改回
+  裁决原标准 **未启用面 Team 行为逐字节不变**（与既有 G-6 / 执行计划 R-4 同一口径）。四条 INFO 以限定语收
+  （#507/#509 等一律写"已交付待审：Draft + DO-NOT-MERGE，未合并"；TimedWakePort 契约正本点名
+  `review-wake/types.ts` 导出的 `WAKE_EVENT_KINDS`）。
+- 方法入账：**引用也是一种断言**。行号与 needle 集这类可核对细节，错两处就会让一段正确论证变成下一轮的攻击面；
+  凡写入记录的 file:line，写的时候就要 open 那一行，被引 commit 与后续加宽后的状态必须分开表述。
+- 本轮性质：records-only。零 `packages/**` 改动，零 build/test 依赖，CORE PATCH BUDGET 仍为 0；#513 维持
+  Draft + `DO-NOT-MERGE`，settlement gate 的 `BLOCKED-BY-MARKER` 是预期红。开发授权 ≠ 合并/启用/放宽门禁。

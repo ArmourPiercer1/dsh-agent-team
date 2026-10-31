@@ -18,11 +18,12 @@ floor-delayed timed wake carrier**，明确不扩大为整个 Alpha.6，也不�
 4. 没有充分证据证明把该提醒路径改作审批调度通道仍能保持消息来源、授权边界、取消、去重与恢复语义。
 
 本 lane 对上述四点的独立复核（只读 pristine host `0.2.0-rc.2 @ 639ed01539`，逐条 file:line）：
-`packages/boot/app-boot/src/profile.ts:212-218` 将 `@deepseek-ai/dsh-experimental-schedule-bundle` 列在
-`OPTIONAL_BUNDLES`（注释明文「offered switched off by the plugin manager」）；
-`packages/schedule/schedule/src/runtime.ts:103` `sessionController.resolveAgent(...)` →
-`:117-121` `renderReminderFraming(...)` → `createUserMessage({ source: { kind: 'schedule' } })` →
-`agent.followup(...)`；`src/index.ts:396` `this.ctx.emit('schedule/changed')` 且
+`packages/boot/app-boot/src/profile.ts:209`（注释明文「offered switched off by the plugin manager」）与该注释
+所属的 `OPTIONAL_BUNDLES` 清单 `:213-218`（条目在 `:217`）把
+`@deepseek-ai/dsh-experimental-schedule-bundle` 列为可选包；
+`packages/schedule/schedule/src/runtime.ts:101` `sessionController.resolveAgent(...)` →
+`:118` `renderReminderFraming(...)` → `:119-121` `createUserMessage({ source: { kind: 'schedule' } })` →
+`:123` `agent.followup(...)`（行号经 round-1 records review 复核：原引 `:103` / `:117-121` 偏两行）；`src/index.ts:396` `this.ctx.emit('schedule/changed')` 且
 `src/types.ts:471` `'schedule/changed'(): void`（无 payload）。四点全部成立。
 
 ### 1.1 固定格式的 blocker 记录（ROUTER_RULES §5 / 开发计划 §32）
@@ -40,14 +41,17 @@ Required behavior：
   (e) 允许 at-least-once 投递——去重与恢复属既有 Wake Kernel 的职责，不由该原语承担。
 Observed public behavior：
   始终存在的公开面上不存在该能力。宿主唯一可达的墙钟原语是可选 ScheduleService，其到期路径
-  （runtime.ts:103-145）把唤醒实现为一条 user-role 提醒消息（source.kind='schedule'），并且只发
+  （runtime.ts:101-145）把唤醒实现为一条 user-role 提醒消息（source.kind='schedule'），并且只发
   payload-less 的 `schedule/changed`；`domain/changed` 严格是写后事件（storage-domain
   events.ts / domain.ts），只能在 append 时刻触发，不能在任意未来时刻触发；宿主 `setInterval` 全集中
   不存在插件注册点；jobs 需先存在 job；goal round 驱动不可注册。插件自建 setInterval/setTimeout 被本
   阶段红线禁止（P-4：不建第二套调度器）。
 Minimal reproduction：
   dsh-agent-team-lane-2 @ 98c25a091（PR #509 defer 面）：对一个已登记 floor 的 quiet，写路径与读路径均
-  不持有任何 timer（a6-pr4-lane-hygiene.test.ts 以 needle 扫过 `setTimeout/setInterval/new Date/…`）；
+  不持有任何 timer（a6-pr4-lane-hygiene.test.ts @ 98c25a091 的 needle 集实际为
+  `Date.now / setTimeout / setInterval / process. / readFileSync / writeFileSync / Math.random`；`new Date` 当时
+  **不在**其中，它是 round-3 finding R3-3 之后于 `45211aa1f` 才进入 needle 集——本记录引用的是被引 commit 的实际
+  列表，不是后续加宽后的列表）；
   内核只在 `created:true` 时发一次通知（control/service.ts:2535-2545，幂等重试静默 :2408-2421，
   risen leg 从不通知 :4546-4645），因此不存在任何「floor 到期时」的唤醒来源。结论：quiet 无法到期。
 Affected invariant（受影响能力，逐条）：
@@ -74,7 +78,8 @@ Affected invariant（受影响能力，逐条）：
 - ScheduleService 只能作为**未来独立 PoC 的候选适配器**，本轮不赋生产载体地位，且不作为 PR-I1a 的任何前置。
 - 为未来 TimedWakePort 维护**最小接口契约**（指定时刻唤醒、插件归属、唯一标识、可取消、可恢复、投递回执；
   at-least-once，由 Wake Kernel 去重/恢复）。契约正本 = `packages/runtime/review-wake/types.ts` 的唤醒来源
-  词汇 + 本记录 §1.1；任何实现前必须先有该接口的独立契约 PR。
+  （该文件导出的 `WAKE_EVENT_KINDS` 含 `'timer-elapsed'` 与投递 accepted/refused 词汇）+ 本记录 §1.1；
+  任何实现前必须先有该接口的独立契约 PR。
 
 ## 2. 裁决二：进入 PR-I1 实际实现，但 PR-I1 按职责拆为 I1a / I1b
 
@@ -85,7 +90,7 @@ Affected invariant（受影响能力，逐条）：
 
 | 原始计划节点（`alpha6-lane2-execution-plan-20261030.md` §1） | 本轮实际编号 | 映射说明 |
 | --- | --- | --- |
-| **PR2′**：ReviewRouter 分派 + `ReviewAssignment` ledger fact + 投影 booking + 同级 handoff | **PR2′（已交付 #507）** + **PR-I1a（本轮新开）** | 原计划把"归属事实"整体放在 PR2′。#507 实际交付的是**路由内核 + factType 双侧登记 + 投影 booking**，**持久化 Writer 不在其中**（该面无写入者，保持 dark）。用户裁决把这块缺失的写入者正式命名为 **PR-I1a**，它是原 PR2′ 行中被递延的那一半，不是新造的历史编号。 |
+| **PR2′**：ReviewRouter 分派 + `ReviewAssignment` ledger fact + 投影 booking + 同级 handoff | **PR2′（#507 已交付待审：Draft + DO-NOT-MERGE，未合并）** + **PR-I1a（本轮新开）** | 原计划把"归属事实"整体放在 PR2′。#507 实际交付的是**路由内核 + factType 双侧登记 + 投影 booking**，**持久化 Writer 不在其中**（该面无写入者，保持 dark）。用户裁决把这块缺失的写入者正式命名为 **PR-I1a**，它是原 PR2′ 行中被递延的那一半，不是新造的历史编号。 |
 | **PR-I1**（原计划）：4 个 role-closure 站点的 case-scoped Mandate 准入 OR 支 + arc-a ledger override（具名 Center-Interface PR） | **PR-I1b** | 内容、受保护面、override 要求完全不变，仅编号细化为 **I1b**，以腾出 I1a 给写入者。**不改内容，只消歧编号**。 |
 | **PR-I2**（原计划）：`live/agent-bindings.mjs` 注入 acceptance-only 投递面 + 与旧 notifier 的互斥开关 | **PR-I2（不变）**，内部区分两个能力子集 | 子集 A「事件驱动即时唤醒 + 单飞合并 + 确定性 MessageId + 进度检测 + Stop + Crash Recovery + 授权隔离」：允许继续开发（用户裁决明确不受阻塞）。子集 B「floor-delayed 定时唤醒」：被 §1.1 的具名 blocker 停掉。**不为此新建 PR 编号**，避免历史编号漂移；PR-I2 的 PR 描述必须显式声明只含子集 A。 |
 | **PR4**（真实 Host PoC）、**PR5**（Alpha.4/5 组合回归） | 维持原编号；**PR5′** = 只读展示收窄版 | 用户裁决：PR5′ 仅允许基于**现有真实事实**做只读展示，优先级低于 PR-I1。原 PR5 的组合回归语义不变。 |
@@ -114,7 +119,8 @@ Affected invariant（受影响能力，逐条）：
   语义全部保留；
 - 任何保护中心改动必须是**具名接口 PR**，提前在本 Issue #502 公告文件所有权与和 Alpha.5 的潜在冲突，并附正确
   的 ARC-A override；
-- 严格默认关闭；未启用的 Team 保持原有行为；未经审查不得合并。
+- 严格默认关闭；未启用该面的 Team 行为**逐字节不变**（G-6 / 执行计划 R-4 同一标准，不以"行为一致"弱化）；
+  未经审查不得合并。
 
 ## 3. 发布纪律（同批裁决，逐条生效）
 
