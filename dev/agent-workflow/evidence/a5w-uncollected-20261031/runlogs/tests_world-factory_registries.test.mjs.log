@@ -1,0 +1,20 @@
+✔ world kinds: the TEN lane kinds (seven of 88107ad71 + U7-F u7AgentControl + U7-F u7FsUi + U7-F u7Pwsh), in prefix order, deterministic (3.96673ms)
+✔ world kinds RED-first: a REMOVED kind module turns its option into a typed refusal (was: silently a plain World) (10.057182ms)
+✔ world kinds: mutual exclusion, the {rows} shape and the core-option set are enforced once, for every kind (1.379723ms)
+✔ world kinds: the owned-path guard covers every kind path (a kind path pointed outside the home refuses the boot) (0.958856ms)
+✔ world kinds: env — every kind key is cleared on every boot, only the active kind sets its own (0.859618ms)
+✔ world kinds RED-first: malformed / clashing modules refuse at load time (31.884068ms)
+✔ a new World kind is ONE file: dropping it in registers the option, nothing else is edited (5.35051ms)
+✔ world kinds RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (7.78519ms)
+✔ suites RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (12.483907ms)
+✔ suites: the ELEVEN lane suites (six of 88107ad71 + U7-F u7-pwsh + U7-F u7-agent-control + u7-f u7-f-ui + u7-f u7-f-web + U7-F B u7-fagentb), prefix order, budgets as the old ternary (24.278439ms)
+✔ suites RED-first: a REMOVED suite module makes the loader drop it (and --suite refuse it) (14.672981ms)
+✔ suites RED-first: malformed / clashing suite modules refuse at load time (60.815343ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 265.832265

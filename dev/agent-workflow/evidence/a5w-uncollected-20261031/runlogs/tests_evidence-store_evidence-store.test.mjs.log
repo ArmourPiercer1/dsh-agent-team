@@ -1,0 +1,18 @@
+✔ ingest builds store + manifest, then is idempotent (157.743191ms)
+✔ verify is green after ingest + git rm (132.449476ms)
+✔ verify RED when a store blob is deleted (MISSING) (131.02065ms)
+✔ verify RED when a store blob is tampered (DIGEST_MISMATCH) (133.529041ms)
+✔ verify RED while a manifest path is still tracked (GENERATION_CONFLICT) (123.395516ms)
+✔ restore rebuilds files from the store (modes + symlink) and never overwrites (183.175689ms)
+✔ restore --from-git works when the store blob is gone (133.498542ms)
+✔ restore without a store blob and without --from-git is refused (MISSING) (136.008774ms)
+✔ restore refuses paths that are not manifest entries (132.582278ms)
+✔ verify/restore without a manifest fail MANIFEST_MISSING (79.431385ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1400.365728

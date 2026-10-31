@@ -1,0 +1,35 @@
+PASS L1 valid pointer → six values + statement + digest, source = snapshot file
+PASS L2 missing pointer → status ABSENT, never values, never the mirror
+PASS L3 digest mismatch (forged snapshot edit after publish) → INVALID, no fallback
+PASS L3b pointer digest edited (pointer↔snapshot disagreement) → INVALID
+PASS L4 wrong version ID grammar (pointer and snapshot-name) → INVALID, never a path traversal
+PASS L5 symlinked pointer → refusal, never followed
+PASS L6 symlinked snapshot → refusal, never followed
+PASS L7 extra pointer key → POINTER_KEYS (a third key is a second authority)
+PASS S1 switch transaction success (absent → pointer created, re-verified via the loader)
+PASS S2 precondition mismatch refusals touch ZERO bytes
+PASS S3 target digest mismatch refusal (wrong --expected-digest) touches ZERO bytes
+PASS S4 symlink target refusal: an existing pointer that is a symlink is never followed or replaced
+PASS S5 hardlink target refusal: an existing pointer sharing its inode is never written through
+PASS S6 injected failure AFTER TEMP WRITE → exact previous bytes restored (real interrupted transaction)
+PASS S6b injected failure after RENAME, pointer was absent → exact ABSENCE restored
+PASS S7 repoint under precondition: old digest supplied → switched; a stale expectation → refused
+PASS S8 pointer bytes are deterministic (canonical two-key + one LF)
+PASS G1 two-current guard: pointer + graph block → named RED; pointer alone green; block alone is not the guard's business
+PASS G1b the ci-pr-gate pointer entry itself grades the two-current state RED
+PASS C1 gen-current-state build() DEFAULT reads the pointer-resolved snapshot (source binding recorded)
+PASS C1b clean switch tree: pointer default, no two-current finding, mirror from snapshot
+PASS C2 invalid pointer FAILS THE BUILD — no fallback to graph or mirror
+PASS C3 missing pointer + missing block = RED in the pointer entry (no graph fallback exists)
+PASS C4 pointer entry runs the SAME core: a valid pointer tree grades green with all six values surfaced
+PASS C5 pointer entry red on carriers still citing the retired block (Q6 moved with the source)
+u2-current-authority: 25/25 passed
+✔ tests/s2-authority/current-authority-pointer.test.mjs (276.14067ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 281.324263

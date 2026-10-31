@@ -1,0 +1,14 @@
+✔ a port outside the sanctioned test ranges is refused before anything spawns (37.717113ms)
+✔ the lifetime cap kills the owned group, not a bystander (1568.93232ms)
+✔ a child failure passes its status through and leaves no watchdog behind (101.79819ms)
+✔ every mini-MCP port a live runner can bind is inside the sanctioned ranges (3.123072ms)
+✔ the ledger detects the drift it exists for (negative control) (0.735081ms)
+✔ the harness itself refuses a port outside the sanctioned ranges before binding (52.003118ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1823.224462

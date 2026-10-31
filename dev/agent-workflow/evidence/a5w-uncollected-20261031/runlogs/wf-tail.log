@@ -1,0 +1,41 @@
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (7.473829ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (228.733498ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (1.750975ms)
+✔ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.352477ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (39.287869ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (0.42281ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (0.18516ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (0.962442ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (21.490142ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (0.708251ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (0.316549ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (0.148992ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (47.898702ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (5.335831ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (0.409355ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.204036ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (3.964036ms)
+✔ u7-agent-control: SUITE_CASES entry and parseArgs wiring (0.188958ms)
+✔ u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven (2.929946ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (8.277892ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (1.53198ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (0.99798ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (3.181694ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (1.922669ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (0.225657ms)
+✔ u6-fs: the decide script discriminates lanes by request token (0.60776ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (1.71622ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (0.79259ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (4.193721ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (0.657735ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (0.348099ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (0.172006ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (0.850871ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 483.091459
