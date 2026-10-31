@@ -7529,3 +7529,26 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   PR-I2 本轮只做 (a) 纯判定核 + 单测（不需宿主进程），(b) 接线等能跑 L-1a/L-1b 的环境。
 - 与裁决的一致性：以上都没有松动 2026-10-31 两条裁决——blocker 仍严格锁在 PR-I2 的 floor-delayed 定时唤醒载体上，
   `#509` 继续 DORMANT，缺时间来源 ⇒ 拒绝（`TIMED_WAKE_UNAVAILABLE`），绝不回 `accepted: true`。CORE PATCH BUDGET 0。
+
+## 2026-10-31 — PR-I2 第一次落代码：拒绝面变成 13 条腿，落的是"仍然拒绝"这件事本身
+
+`alpha6/lane2-pri2-timed-wake-20261031` @ `fb4a2f726`（父 `86a6817c4`）。#520 正文 Addendum 3 记录同一件事，本条目只做日志侧索引。
+
+- 落的是什么：`packages/runtime/timed-wake/decision.ts`（+ 桶 + spec + `tsconfig.build.json` 编译面一行 +
+  p4t6 记账 + 红测据）。**零计时器、零存储句柄、零宿主 import**：port / 墙钟 / 耐久 sink / 幂等查询全部注入；
+  `host.ts` 未动，无人 import —— §10 的接线前置条件（L-1a/L-1b 真跑过）在本机是 ENV-REFUSED，接线因此不做。
+  载体仍是 `CORE_SEAM_BLOCKER`，范围仍只锁 PR-I2 的 floor-delayed 唤醒。裁决一未被这份实现松动，也未被它冒充。
+- 值得单独记的一条**契约内部矛盾**：§4.1 说无 port 时"没有任何耐久写入"，§2.6 说拒绝"必须在耐久面留事实"。
+  实现裁决为："没有耐久写入"= 没有任何**授予唤醒保证**的写入（绝不出现 `timed-wake-scheduled`），拒绝留痕是义务；
+  写成 memo §11，免得将来接真 adapter 的人再从两行散文里重裁一次。**散文里互相打架的句子不会自己调解，它只会等下一个人**
+  ——而那个人多半会挑对自己方便的那一句。
+- 另一条形状律：carrier 抛异常**不当成拒绝**（记 `timed-wake-schedule-error` 后原样重抛）。把异常洗成 code，
+  等于把"唤醒丢了"变成"我们按规则拒绝了"，那是这条链上最省事也最危险的撒谎方式。
+- 量到的门禁（`fb4a2f726`）：本 suite 13/13；`p4t6-session-event-scan` 20/20，红测据入库
+  `dev/agent-workflow/evidence/alpha6-pri-i2/p4t6-RED-unbooked.txt`（`expected 1416 to be 1419`，三条新路径）；
+  四条 lane-hygiene 62/62；`pnpm build` + `build:composition` 干净，`check-artifacts-committed`
+  `compared=1947 glue=100`（前一 commit `compared=1939 drift=0` ⇒ 全量构建没动任何已提交产物）；
+  docs-sync `docs=105 notes=4 plans=68 findings=0`；eb3 `pass added=1 … base=HEAD~1`。
+- 本轮另修掉两处我自己的环境事故：一次 `--cache-dir` 传空参在 worktree 根拉出目录 `-dir/`（18:48:45 时间戳核对后删除），
+  以及 pnpm store 的 sqlite 索引在沙箱可写范围外 ⇒ 报 `unable to open database file`；第二次同样的命令直接走通了
+  共享 store。**记下来的不是技巧，是顺序**：先确认失败原因，再决定要不要把状态目录搬进工作区，别一上来就搬。
