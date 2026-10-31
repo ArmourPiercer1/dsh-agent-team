@@ -81,6 +81,14 @@ function refuse<T>(refusal: ReviewDeferRefusal, detail: string): ReviewDeferResu
  * two legitimate ids. Minted ids never contain `:`, so nothing in this tree reaches it, but a claim of
  * "unrepresentable" has to survive the alphabet it states, and a length prefix makes it true for every input
  * the pattern accepts. `a6-pr4-review-defer.test.ts` pins the reviewer's collision pair to two distinct slots.
+ *
+ * INPUT CONTRACT, because round-5 finding R5-3 on #509 named this as the lane's last entry point that
+ * evaluates a caller's `toString`: `key` must already be a key that `reviewDeferKeyOf` or `setReviewDefer`
+ * accepted. A hostile member (an object with a throwing `toString`, an array where an id belongs) makes this
+ * function throw rather than answer, and that is deliberate — a garbage key has NO correct slot, and inventing
+ * one (a fixed sentinel, say) would collide two unrelated cases into one mute. Every in-lane call site passes a
+ * validated key, and the gate's panic path absorbs a direct misuse as `WAKE_DECISION_FAILED` with the store
+ * byte-intact; the leg that pins this contract drives the throw so the sentence is not the only enforcement.
  */
 export function reviewDeferEntryId(key: ReviewDeferKey): string {
   const segment = (value: string): string => `${String(value.length)}:${value}`

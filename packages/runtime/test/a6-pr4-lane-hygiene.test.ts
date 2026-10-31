@@ -230,17 +230,54 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     // `Date(` is here for the same reason one round later (round-4 finding R4-4): bare `const t = Date()` is a
     // direct call of the wall clock that none of the three `Date.…` spellings match, and it measured as passing
     // this leg. `Intl.DateTimeFormat` is the other clock-shaped API a plugin could reach for.
+    // Round-5 finding R5-1 widened this list, and the finding was about the SENTENCE rather than the lane: the
+    // prose named categories ("the timer APIs", "filesystem access", "RNG") while the screen named twelve
+    // tokens, and `setImmediate`, `openSync`, `appendFileSync`, `crypto.getRandomValues` and
+    // `requestAnimationFrame` are each a direct spelling of a category the sentence claimed to cover. The lane
+    // contains none of them — grep-clean at HEAD — so nothing was wrong in the code and everything was wrong in
+    // the claim, which is the same defect class R4-4 closed. Six tokens added; the claim is now the enumeration
+    // below, not a category above it.
     // WHAT THIS SCREEN DOES NOT CLAIM, stated instead of implied: it reads tokens, not bindings. An alias
-    // (`const D = Date; new D()`) or a computed member (`globalThis['Date']`, `globalThis['setInterval']`) walks
-    // past any needle list, and the two reviews that widened this list each found a shape the previous sentence
-    // had over-claimed. The claim is exactly: no direct spelling of the wall clock, the timer APIs, process
-    // access, filesystem access or RNG appears anywhere in the lane's own files.
-    const forbidden = ['Date.now', 'new Date', 'Date.UTC', 'Date(', 'performance.now', 'Intl.DateTimeFormat', 'setTimeout', 'setInterval', 'process.', 'readFileSync', 'writeFileSync', 'Math.random']
+    // (`const D = Date; new D()`) or a computed member whose text is not itself a needle (`globalThis['Date']`)
+    // walks past any needle list. A computed member of a FULL needle token does NOT: the reviewer planted
+    // `globalThis['setInterval']` and it was caught, because the bare token survives inside the quotes. The
+    // first draft of this sentence listed that as an escape, which under-claimed the screen (round-5 R5-2).
+    const forbidden = ['Date.now', 'new Date', 'Date.UTC', 'Date(', 'performance.now', 'Intl.DateTimeFormat', 'setTimeout', 'setInterval', 'setImmediate', 'requestAnimationFrame', 'process.', 'readFileSync', 'writeFileSync', 'openSync', 'appendFileSync', 'unlinkSync', 'Math.random', 'getRandomValues']
     for (const file of walk(LANE_DIR)) {
       const source = readFileSync(file, 'utf8')
       for (const needle of forbidden) {
         expect(source.includes(needle), `${file} contains ${needle}`).toBe(false)
       }
+    }
+    // A needle list is worth exactly as much as the smallest thing it catches, so each token is driven against
+    // a realistic call written out by hand — not generated from the token, which would pass on a typo. The two
+    // lists then have to agree with each other, or the drift turns red (the standing law: a check satisfiable by
+    // something other than the thing it names is not a check of that thing). In memory, never a file: a plant
+    // written into the lane would become one of the sources this leg reads.
+    const plants: Readonly<Record<string, string>> = {
+      'Date.now': 'const t = Date.now()',
+      'new Date': 'const stamp = new Date().toISOString()',
+      'Date.UTC': 'const day = Date.UTC(2026, 9, 31)',
+      'Date(': 'const t = Date()',
+      'performance.now': 'const started = performance.now()',
+      'Intl.DateTimeFormat': 'new Intl.DateTimeFormat("en").format(0)',
+      setTimeout: 'setTimeout(() => {}, 1_000)',
+      setInterval: 'setInterval(() => {}, 1_000)',
+      setImmediate: 'setImmediate(() => {})',
+      requestAnimationFrame: 'requestAnimationFrame(() => {})',
+      'process.': 'const pid = process.pid',
+      readFileSync: 'const text = readFileSync(path, "utf8")',
+      writeFileSync: 'writeFileSync(path, "x")',
+      openSync: 'const fd = openSync(path, "w")',
+      appendFileSync: 'appendFileSync(path, "x")',
+      unlinkSync: 'unlinkSync(path)',
+      'Math.random': 'const r = Math.random()',
+      getRandomValues: 'crypto.getRandomValues(new Uint8Array(8))',
+    }
+    expect(Object.keys(plants).sort()).toEqual([...forbidden].sort())
+    for (const [needle, plant] of Object.entries(plants)) {
+      expect(plant.includes(needle), `the plant for ${needle} no longer contains it`).toBe(true)
+      expect(forbidden.filter((token) => plant.includes(token)), `no needle flags ${plant}`).toContain(needle)
     }
   })
 

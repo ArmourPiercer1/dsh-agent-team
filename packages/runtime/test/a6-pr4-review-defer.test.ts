@@ -806,6 +806,26 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     expect(REVIEW_DEFER_DECISIONS).not.toContain('drop')
   })
 
+  it('refuses to invent a slot for a key nobody validated, by throwing where it stands', () => {
+    // Round-5 finding R5-3 on #509: `reviewDeferEntryId` is the lane's one exported function that evaluates a
+    // caller's `toString`, and the store doc now states its input must be a key `reviewDeferKeyOf` accepted.
+    // A doc sentence is a test nobody runs, so the contract is driven: a member with a throwing `toString`
+    // throws rather than returning a slot, because the alternative — a fixed sentinel for garbage — would
+    // collide two unrelated cases into one mute, which is the one failure this lane exists not to have.
+    const throws = (): never => {
+      throw new Error('hostile')
+    }
+    expect(() => reviewDeferEntryId(key({ legOrdinal: { toString: throws } as never }))).toThrow('hostile')
+    expect(() => reviewDeferEntryId(key({ approvalCaseId: { toString: throws } as never }))).toThrow('hostile')
+    // The boundary is stated on both sides, because "hostile input throws" is only true of a value that
+    // evaluates something. An array stringifies, and the slot it produces is still distinct:
+    const arrayish = reviewDeferEntryId(key({ approvalCaseId: ['a', 'b'] as never }))
+    expect(arrayish).toContain('2:a,b')
+    // And the validated path is a function of its key: stable for the same key, distinct across cases.
+    expect(reviewDeferEntryId(key())).toBe(reviewDeferEntryId(key()))
+    expect(reviewDeferEntryId(key())).not.toBe(reviewDeferEntryId(key({ approvalCaseId: 'case-other' })))
+  })
+
   it('produces every wake reason, in both directions', async () => {
     const produced = new Set<ReviewDeferWakeReason>()
     // Round-4 finding R4-5 on #509: this leg used to collect reasons into a SET and compare membership, which
@@ -813,8 +833,12 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     // WAKE_KEY_UNADDRESSABLE producer ever being driven, and a gate that answered LEG where it meant ID stayed
     // green (mutation-proven). Every producer is now named, because a reason that is only ever CHECKED FOR is
     // not a reason anybody owns.
+    // Round-5 finding R5-6 pushes the same law one notch: the names are now collected per reason, so deleting
+    // a producer from the census fails here instead of being absorbed by its siblings.
+    const named = new Map<ReviewDeferWakeReason, string[]>()
     const emits = (label: string, actual: ReviewDeferWakeReason, expected: ReviewDeferWakeReason): void => {
       produced.add(actual)
+      named.set(actual, [...(named.get(actual) ?? []), label])
       expect(actual, label).toBe(expected)
     }
     const empty = createReviewDeferStore()
@@ -865,9 +889,65 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
       onDecision: (d) => panicSeen.push(d.reason),
     })
     await poisonedGate.notifyLeaderRequest(record())
-    produced.add(panicSeen[0] as ReviewDeferWakeReason)
+    // Named like every other producer, so the loop below has nothing to complain about and the panic reason is
+    // owned by the one drive that can reach it.
+    emits('a store the gate cannot read', panicSeen[0] as ReviewDeferWakeReason, 'WAKE_DECISION_FAILED')
     expect(delivered).toEqual([record().requestId])
     expect([...produced].sort()).toEqual([...REVIEW_DEFER_WAKE_REASONS].sort())
+    // R5-6, the part the set could not express: `WAKE_KEY_UNADDRESSABLE` stands behind four distinguishable
+    // shapes (a malformed request id, a malformed root id, a malformed case id, a case id that is not a string
+    // at all), and all four are driven above. A census that would pass with one of them deleted is a census of
+    // the reason, not of the producers, and the reason is not what a maintainer has to fix.
+    expect(named.get('WAKE_KEY_UNADDRESSABLE')).toHaveLength(4)
+    expect(new Set(named.get('WAKE_KEY_UNADDRESSABLE')).size, 'the four producers are named distinctly').toBe(4)
+    // Every reason this leg produced is owned by at least one named producer, which is the general form.
+    for (const reason of produced) {
+      expect(named.get(reason) ?? [], `${reason} was produced but no producer is named for it`).not.toHaveLength(0)
+    }
+  })
+
+  it('answers an unreadable string and a throwing clock with two different codes, and delivers either way', async () => {
+    // Round-5 finding R5-4 on #509, PINNED rather than smoothed over, and the reason is on the record: with a
+    // defer standing, an unparseable STRING clock answers `WAKE_DEFER_UNREADABLE`, while a clock object whose
+    // `toString` throws answers `WAKE_DECISION_FAILED` — the second throws inside the parse before any reason
+    // exists, so the code that comes back is the gate's catch, not the decision's. Both deliver, so the
+    // asymmetry lives in the REPORT and not in the outcome. Unifying them would mean a typeof guard inside
+    // `floorStateOf`, which moves the panic shape that two other legs (this file's panic pin and the mutex pin)
+    // exist to hold. Kept, disclosed, and now measured from both doors so nobody can collapse one into the
+    // other by accident and call the suite green.
+    const unreadable = createReviewDeferStore()
+    defer(unreadable, { notBeforeIso: later(60 * 1000) })
+    expect(decideReviewWake(unreadable, ROOT, record(), 'not-a-time').reason).toBe('WAKE_DEFER_UNREADABLE')
+    // Both non-pending states retire the entry, so this drive consumed that defer — measured, not assumed: the
+    // first draft of this leg reused the store and the second drive answered `WAKE_NOT_DEFERRED` without ever
+    // reaching the clock, which is the same fact stated from the other side.
+    expect(unreadable.entries.size).toBe(0)
+    const store = createReviewDeferStore()
+    defer(store, { notBeforeIso: later(60 * 1000) })
+    const hostileClock: unknown = {
+      toString(): string {
+        throw new Error('clock exploded')
+      },
+    }
+    expect(() => decideReviewWake(store, ROOT, record(), hostileClock as never)).toThrow('clock exploded')
+    expect(store.entries.size, 'a clock that throws must not have written anything').toBe(1)
+
+    const decisions: ReviewDeferWakeReason[] = []
+    const delivered: string[] = []
+    const gate = createReviewDeferGate({
+      notify: {
+        notifyLeaderRequest: async (r: ReviewWakeCandidate): Promise<void> => {
+          delivered.push(r.requestId)
+        },
+      },
+      store,
+      nowIso: (() => hostileClock) as unknown as () => string,
+      onDecision: (d) => decisions.push(d.reason),
+    })
+    await gate.notifyLeaderRequest(record())
+    expect(delivered).toEqual([record().requestId])
+    expect(decisions).toEqual(['WAKE_DECISION_FAILED'])
+    expect(store.entries.size, 'the panic path consumed the defer it could not read').toBe(1)
   })
 
   it('produces every refusal, in both directions', () => {
