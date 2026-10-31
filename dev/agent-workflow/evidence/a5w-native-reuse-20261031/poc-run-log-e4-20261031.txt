@@ -1,0 +1,20 @@
+# E-4 accept 腿首跑 — 全套 PoC 输出（过滤自终端）  运行 UTC: 2026-10-31T10:21:15Z
+# cmd: ../../node_modules/.bin/vitest run --config tests/poc-web-native-reuse/vitest.poc.config.ts  (cwd .worktrees/a5w-env4 @ task/a5w-env4-20261031, base origin/master 1f3970b58; vitest 4.1.11 / node v24.21.0)
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5w-env4
+ ✓ tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts (22 tests) 745ms
+     ✓ H-7 wall-time bound → WEB_FETCH_TIMEOUT (300ms instance against a never-answering stub)  305ms
+ ✓ tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts (17 tests) 137ms
+ ✓ tests/poc-web-native-reuse/poc-w1-native-shape.test.ts (8 tests) 60ms
+[E4][evidence]
+  example.com: law(17.1ms)=[{"address":"2606:4700:10::ac42:93f3","family":6},{"address":"2606:4700:10::6814:179a","family":6},{"address":"172.66.147.243","family":4},{"address":"104.20.23.154","family":4}] raw=[{"address":"2606:4700:10::6814:179a","family":6},{"address":"2606:4700:10::ac42:93f3","family":6},{"address":"104.20.23.154","family":4},{"address":"172.66.147.243","family":4}] getent=["2606:4700:10::6814:179a","2606:4700:10::ac42:93f3"]
+  api.deepseek.com: law(5.2ms)=[{"address":"119.188.175.46","family":4},{"address":"123.125.246.121","family":4}] raw=[{"address":"119.188.175.46","family":4},{"address":"123.125.246.121","family":4}] getent=["123.125.246.121","119.188.175.46"]
+[E4][PASS] both hostnames accepted with real public unicast answers, corroborated by getent, no interception fingerprint (timings example.com=17.1ms, api.deepseek.com=5.2ms — ms-scale = real upstream resolution, not the 19us cached-proxy hint)
+ ✓ tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts (2 tests) 56ms
+ Test Files  4 passed (4)
+      Tests  49 passed (49)
+   Duration  2.79s (transform 886ms, setup 0ms, import 1.43s, tests 997ms, environment 0ms)
+# ── 旁证（测试外 bash，2026-10-31T10:18Z 前后）:
+getent hosts example.com → 2606:4700:10::ac42:93f3 / 2606:4700:10::6814:179a
+getent hosts api.deepseek.com → 119.188.175.46 123.125.246.121 (CNAME api.deepseek.com.eo.dnse1.com)
+curl -sI https://example.com → http=200 remote_ip=127.0.0.1 time=0.41s ; curl -sI https://api.deepseek.com → http=401 remote_ip=127.0.0.1 time=0.15s (env 代理 http(s)_proxy=http://127.0.0.1:7897 — 连接腿经本地代理；本测试腿零连接、系统解析器不经 env 代理；协调席 curl 同轮实测 HTTP 200)
+resolv.conf nameserver=10.255.255.254 (WSL NAT 网关, DNS 直连真上游); /etc/hosts 无劫持条目

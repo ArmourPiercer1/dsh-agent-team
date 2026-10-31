@@ -148,3 +148,24 @@ web_fetch transport 逐项对照（H=原生 HttpFetchProvider 实测，T=Team �
 - **P-W1 裁决事实**：治理成员继承的全局面原生 web_search 会**无 lane 直通运行**（N-1 实测，零拒绝零 PA）；遮蔽原生名的唯一机制是 plane takeover 行（N-7 实测）；"原生直接治理"作为产品路线 NO-GO。
 - **P-W3 三层结论**：原生 Provider 的传输保证是真实的 ② 层自证（个别强于 Team：loopback 无豁免、字面非公网全拒零 socket），但**不可 per-call 覆写、不可向 ③ 层（代理/上游/DNS）延伸**；凡 per-destination-enforcement-required 的验收位，B 路线封顶 CONDITIONAL，fail-closed 保留。
 - **推荐格值**：web_search 表 = A(NO-GO)/B(CONDITIONAL, 余格 MOCK-PASS)/C(R1…R8 多为 GO 但 R9 NO-GO 无后端)/D(NO-GO 裁决)；web_fetch 表 = A(NO-GO)/B(CONDITIONAL)/C(**GO**，引 U7 既有验收链)/D(N-A)。全表无 MOCK-PASS 升 GO、无 UNKNOWN。
+
+## 9. Dated 追加（2026-10-31T10:21Z，workflow C 证据维护席）— E-4 真机腿首跑结果
+
+> 本节为**追加**，§0–§8 全部历史表与判据原文不改写；§5 表中 E-4 行的 ENV-PENDING 为其书写时刻（判据=「本机禁真网」）的历史事实，保留原样。
+
+**事实登记：判据「本机禁真网」在本环境不再成立。** 本轮实测本环境真网可用：协调席 `curl https://example.com` → HTTP 200；本席实测 OS 解析（`getent hosts`）与 Node `dns/promises` 均得真公网答案，`/etc/resolv.conf` nameserver = 10.255.255.254（WSL NAT 网关，DNS 直连真上游），`/etc/hosts` 无劫持条目。协调席 DNS 19µs 提示 = 缓存命中样本，非全时态（本席直测解析 2.6–17.7ms，真上游往返）。
+
+**E-4 新结果：PASS（环境限定见下）。** 新测试 [poc-w4-e4-public-accept.test.ts](../../../tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts)（ENV 腿，单独文件，vitest 配置零改动——include 已覆盖）：
+
+- **E4-0 seam 见证（零 DNS）**：`resolvePublicAddresses` 在宿主公开声明模块 `@module @deepseek-ai/dsh-web-fetch-http/network`（pristine `packages/web/web-fetch-http/lib/types/network.js`，network.d.ts 公开声明）中导出，**可进程内直调，NOT-RUNNABLE-IN-PROCESS 不成立**；同一性见证 `publicHttpNetwork.resolve === resolvePublicAddresses`（出厂 provider 构造参数默认值来源，index.js 源码级）+ 被测函数经公开构造参数装入 provider 后 loopback 字面量仍 `WEB_BLOCKED_URL` 拒于 socket 前。未读私有字段、未 monkey-patch、宿主树零写入。
+- **E4-1 accept 腿（真 DNS 解析，零 TCP/零凭据/零 boot/零端口）**：`resolvePublicAddresses('example.com')` 接受 `2606:4700:10::ac42:93f3 / 2606:4700:10::6814:179a / 172.66.147.243 / 104.20.23.154`（17.1ms），`resolvePublicAddresses('api.deepseek.com')` 接受 `119.188.175.46 / 123.125.246.121`（5.2ms，CNAME 链 `api.deepseek.com.eo.dnse1.com` = 地理 CDN 常态）。全部为公网 unicast（`isPublicIpAddress` 逐项真），与 OS 层旁证 `getent hosts` 有交集，两主机答案集互不相交（无透明拦截池指纹）。
+
+**环境限定（如实登记，PASS 带此限定）：**
+
+1. **出向 TCP/TLS 走本地 HTTP 代理**：env `http(s)_proxy=http://127.0.0.1:7897`，curl 旁证 `remote_ip=127.0.0.1` 即该代理连接点（example.com→200、api.deepseek.com→401 无凭据），属连接级中介。**E-4 腿零连接**——被测法则是 DNS 答案校验，走系统解析器（`node:dns/promises`→getaddrinfo），不经 env 代理，故代理不污染本腿测量对象。
+2. **DNS 答案可信判据（预写于测试内）**：答案为公网 unicast ∧ 跨主机答案集互异 ∧ getent 旁证相交 → 可信；返回非公网/全同 IP/旁证零交集 → ENV-CONTESTED（显式红，不判 PASS）；解析本身失败 → ENV-BLOCKED（运行时 `ctx.skip()`，E-4 回落 ENV-PENDING，不红不绿）。本轮实测落 PASS 支。
+3. 本环境 DNS 为真上游直连（见上），但**环境限定必须随判定登记**：E-4 的 PASS 语义 = 「出厂法则在真实 DNS 答案集上执行了 accept 路径并接受了真 unicast 公网地址」，不引申为任何端到端/真请求结论（那属 E-1/E-2/E-5 腿）。
+
+**全套运行**：`vitest run --config tests/poc-web-native-reuse/vitest.poc.config.ts` → **4 files / 49 passed（原 47 例零受影响 + 新 2 例）**，日志 [poc-run-log-e4-20261031.txt](poc-run-log-e4-20261031.txt)。运行位 = worktree `.worktrees/a5w-env4` @ branch `task/a5w-env4-20261031`（base origin/master `1f3970b58`）；宿主 = pristine `tests/deepseek-harness-test-use` @ `639ed01539` 只读。
+
+**其余 ENV 腿不动**：E-1（真凭据端到端）、E-2（真 TLS 链/rebinding 对抗，宿主既有验收覆盖语义不变）、E-3（代理环境真机——本环境有代理 env，但该腿测的是原生 provider proxied hop 的 socket/pin 行为，非本腿范围）、E-5（boot 端到端，本轮禁 boot）= **ENV-PENDING 维持不变**。§7 四项中心缺口引用不变。
