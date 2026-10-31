@@ -7506,3 +7506,26 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - 门禁（`091a085bc`）：verifier `verdict=ok` 两半 + `found=5 pinned=5 window=80 findings=0`；docs-sync
   `plans=69 findings=0`；被 mutate 的跟踪文件全部 `sha256sum -c` OK；无 `packages/**` 改动 ⇒ 无安装面共提。
   CORE PATCH BUDGET 0；受保护中心未触碰。
+
+## 2026-10-31 — PR-I1b 的 V-1 有了权威答案（Leader 身份只能从 durable 身份解析），PR-I2 缺的不是 API 而是时间来源的入口
+
+两条挂在别的分支上的决定，正本在各自的 PR；本条目只做索引与语义登记，实现不在此分支。
+
+- **PR-I1b（#522 @ `50be43c57`，memo §9）**：V-1「admission 侧如何拿到 caller 的权威身份」不再是开放问题——
+  `packages/runtime/admission/resolve.ts:236-268` 就是在产答案：人类臂之外，Leader caller 从 durable Root/Team
+  身份解析（`repositories.teamSessions.get(root)` 命中 + `sessionBindings.get(root).kind === 'team-root'`，两处任一
+  不成立即 `CALLER_NOT_FOUND`），**member row 只做 best-effort 附加展示，不参与身份判定**（:240-246 的注释就是这条
+  不变量：NOT from a member row，P8-S2 §9.2 不变量 14/15）。因此 PR-I1b 的 D-3 原设计（用 member row 绑定
+  leader/instance 三元组）**形状作废**，memo §5 的"解析失败退回 member row"回退分支一并撤回：那条回退恰恰是
+  resolve.ts 明令禁止的形状。实现律：要么复用 `resolveCaller`，要么拒绝接线；从 member row 派生 Leader 不许写。
+  模块改名 `assignment-admission.ts`。执行期二次校验、默认关闭、非启用 team 字节不变这三条不变。
+- **PR-I2（#520 @ `86a6817c4`，评论 `6542116085`，memo §7-§10）**：测完宿主公开事件面后，缺的东西说清楚了——不是
+  缺一个定时器 API，是插件侧**没有可信时间来源的入口**（§9 environment ingress gap）：`agent/created` 一类事件不
+  携带可核对的单调时刻，插件自己 `Date.now()` 即自报时钟，正是裁决一拒绝的形状。因此 §8.5 把 L-1 拆成
+  **L-1a**（`{global:true}` 订阅能否收到，必须实测）与 **L-1b**（不带该选项时的行为，无论结果如何都要记录），
+  §10 定了接线位置：判定核放新模块，`host.ts` 里只留一次受守卫的调用，不新增受保护前缀文件，且**接线前置条件 =
+  L-1a/L-1b 真的在有宿主的机器上跑过**。本机 `tests/deepseek-harness-test-use`、`tests/homes`、
+  `/srv/workspace/dsh-stable-3-0.2.0-rc.2` 三者均不存在 ⇒ 这两腿只能记 `ENV-REFUSED`，**记 ENV-REFUSED 不是通过**，
+  PR-I2 本轮只做 (a) 纯判定核 + 单测（不需宿主进程），(b) 接线等能跑 L-1a/L-1b 的环境。
+- 与裁决的一致性：以上都没有松动 2026-10-31 两条裁决——blocker 仍严格锁在 PR-I2 的 floor-delayed 定时唤醒载体上，
+  `#509` 继续 DORMANT，缺时间来源 ⇒ 拒绝（`TIMED_WAKE_UNAVAILABLE`），绝不回 `accepted: true`。CORE PATCH BUDGET 0。
