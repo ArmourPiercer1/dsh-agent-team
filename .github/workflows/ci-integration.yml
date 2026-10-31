@@ -209,19 +209,38 @@ jobs:
         # CI_LAYER_LEG_WEAKENED. New files in this family join this step AND the manifest leg.
         run: node --test packages/runtime/root-binding/harness/bounded-run.regression.test.mjs scripts/sanitize-evidence.regression.test.mjs tests/evidence-store/evidence-store.test.mjs
 
-      - name: "tests/s2-authority suites (node:test; needs the fetch-depth: 0 checkout above)"
+      - name: "Fetch master as refs/remotes/origin/master (history pins below resolve through it)"
+        # a5w-collect CI-reality correction (2026-10-31, dated): the FIRST real CI run of the
+        # s2-authority step failed C10 — `git show 5f0d0e58…` and origin/master were
+        # unresolvable DESPITE fetch-depth: 0. Ground truth: for pull_request events the
+        # checkout lands on refs/pull/N/merge and does NOT create refs/remotes/origin/master,
+        # and the fetched closure lacked the older pinned blobs (reproduced exactly on a
+        # throwaway clone of the merge ref: same 'FAIL C10: Command failed: git show
+        # 5f0d0e58…'; after the fetch below: green). This step guarantees both halves the
+        # suites assume: full master history AND the remote-tracking ref itself. Single
+        # simple command (eb3-ci-required rejects ||-grouping): --unshallow is right for the
+        # merge-ref checkout, which IS shallow (a fetch-depth: 0 PR-merge checkout still
+        # lacked ancestor commits — cat-file 'could not get object info' on reachable
+        # ancestors is the shallow symptom; the local reproduction is shallow the same way).
+        # Should GitHub ever ship a complete merge checkout, this step fails LOUD and gets
+        # the --unshallow dropped — no silent wrong grading. Dropping the step is
+        # CI_LAYER_LEG_MISSING and re-reds the s2 step — self-enforcing either way.
+        run: git fetch --no-tags --unshallow origin master:refs/remotes/origin/master
+
+      - name: "tests/s2-authority suites (node:test; needs the master fetch step above)"
         # a5w-collect (2026-10-31): the seven s2-authority authority-governance suites, green
-        # 7/7 on a clean checkout, previously collected by nothing. WHY THIS JOB'S CHECKOUT MUST
-        # STAY fetch-depth: 0 (Checkout step above, line "fetch-depth: 0"): four of them replay
+        # 7/7 on a clean checkout, previously collected by nothing. WHY THE FETCH STEP ABOVE
+        # EXISTS (dated CI-reality correction, first real CI run): four of these suites replay
         # pinned ancestor blobs at runtime via `git show <SHA>:scripts/…` — 3d6f6aad
         # (ci-snapshot-reader), 5f0d0e58 (consumer-candidate), 09fd3946 (probe-candidate),
         # 61df0b42 (sync-candidate-resolver); authority-snapshot-isolated names 291165d7 only
-        # in a comment (measured, this seat; AUDIT note ① listed it with the four). A shallow
-        # checkout could not resolve those pins and the suites would fail on history the tree
-        # never had. The job already checked out full history (devex E4/E5/D11 need
-        # origin/master the same way); this note exists so no one "optimises" the depth later.
-        # host-free otherwise: pure fs/JSON + execFileSync of authority scripts in temp dirs;
-        # ci-snapshot-reader writes scripts/.tmp-gate-baseline-* and consumer-candidate writes
+        # in a comment (measured; AUDIT note ① listed it with the four, corrected to four
+        # runtime pins). The earlier annotation here claimed the fetch-depth: 0 checkout alone
+        # was sufficient and origin/master existed on runners — CI disproved both for the
+        # merge-ref checkout; the fetch step is the correction, WIRING.md 2026-10-31 section
+        # records the measured failure and green-after-fix. host-free otherwise: pure
+        # fs/JSON + execFileSync of authority scripts in temp dirs; ci-snapshot-reader writes
+        # scripts/.tmp-gate-baseline-* and consumer-candidate writes
         # scripts/.tmp-gcs-baseline-*, both deleted in-band (zero residue verified locally).
         run: node --test tests/s2-authority/authority-dual-read.test.mjs tests/s2-authority/authority-snapshot-isolated.test.mjs tests/s2-authority/ci-snapshot-reader.test.mjs tests/s2-authority/consumer-candidate.test.mjs tests/s2-authority/current-authority-pointer.test.mjs tests/s2-authority/probe-candidate.test.mjs tests/s2-authority/sync-candidate-resolver.test.mjs
 

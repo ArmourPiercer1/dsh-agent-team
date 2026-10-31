@@ -93,3 +93,38 @@ node scripts/eb3-ci-required.mjs && node scripts/eb3-node-test-collection.mjs \
 # registries 双证（组跑 84/84 之外的独走）
 node --test tests/world-factory/registries.test.mjs   # 12/12 绿 (222ms)
 ```
+
+## 5. CI-reality correction (dated 2026-10-31T14:56Z, real UTC at push) — first real CI run went red; this section is the correction record
+
+- **What CI measured**: ci-integration failed exactly one step — tests/s2-authority, one case:
+  `FAIL C10 structure_same=false bytes_same=true` … the C10 block at
+  consumer-candidate.test.mjs:160-185: `git show 5f0d0e58e…:scripts/gen-current-state.mjs`
+  threw (object absent on the runner). Sibling stderr in the same run confirms the machine state:
+  `fatal: Not a valid commit name 9b2ee57bc…`, `fatal: Not a valid object name origin/master`.
+  The other six s2 files passed; no other step failed.
+- **Root cause (measured, not theorized)**: for pull_request, actions/checkout lands on the merge
+  ref and — despite `fetch-depth: 0` in the workflow — the runner repo is effectively shallow at
+  the merge point (reachable ancestor commits return `could not get object info`) AND no
+  `refs/remotes/origin/master` is created. The pre-correction step annotation asserted the
+  opposite ("the job already checked out full history … devex needs origin/master the same
+  way"); devex passes anyway because it tolerates the absence. The lane seat and the review seat
+  both verified that annotation against LOCAL worktrees — locally the repo is complete, so the
+  claim was unfalsifiable there. This is exactly the collected-but-unexercised failure mode this
+  whole PR is about, in the meta direction: even the fix's own CI assumptions were only proven
+  where they had always run.
+- **Reproduction (throwaway clone, single bash call, /tmp disposable)**: `git fetch --depth 1
+  origin refs/pull/530/merge` + checkout ⇒ `FAIL C10: Command failed: git show 5f0d0e58…`
+  (identical to CI). Then `git fetch --no-tags --unshallow origin master:refs/remotes/origin/master`
+  ⇒ `5f0d0e58 = commit`, `origin/master = 8067f631f3`, consumer-candidate PASS, and the FULL
+  seven-file s2 command run after the fetch: **tests 7 / pass 7 / fail 0**.
+- **Fix in-workflow**: new step immediately before the s2 step — single simple command
+  `git fetch --no-tags --unshallow origin master:refs/remotes/origin/master` (eb3-ci-required
+  rejects ||-grouped legs: CI_LAYER_LEG_UNPROVEN was observed verbatim for the || form and the
+  command was rewritten; a complete-checkout future would make the step fail LOUD, not grade
+  wrong), declared as manifest leg `Fetch master as refs/remotes/origin/master` (drop ⇒
+  CI_LAYER_LEG_MISSING). The s2 step's own annotation now records the correction.
+- **Gates at the correction head**: eb3-ci-required pass workflows=9 findings=0;
+  eb3-node-test-collection pass files=38 exempt=13 findings=0 warnings=0; negative controls
+  24/24; consumer-candidate 1/1 in the lane worktree; faithful-CI seven-file suite 7/7 (above).
+- **Disclosure**: this correction commit is authored by the coordinator directly (integrator
+  fix to the PR's own CI files after CI-measured failure), reviewable as the third commit.
