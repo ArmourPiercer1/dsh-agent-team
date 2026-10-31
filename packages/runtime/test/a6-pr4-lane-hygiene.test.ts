@@ -29,11 +29,13 @@ const LANE_DIR = join(RUNTIME_ROOT, 'review-defer')
 const ROOT_TS = join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts')
 
 /**
- * Production consumers of the wake gate. Exactly one, and it is the file that decides what a team root is
- * wired with. A new entry here means a second place in the product can reach the defer state, which is the
- * amendment this leg exists to make loud and rare.
+ * Production consumers of the wake gate. EMPTY, and that is the round-1 blocker on #509 being honoured rather
+ * than argued with: no wake in this tree can arrive for a key that already carries a quiet, so a flag, an
+ * installed gate, or a `team_review_defer` tool shipped today would be a control with nothing on the other end.
+ * The lane ships dark — the same posture as PR0/PR2′/PR3′ — and PR-I2 adds the entry to this list in the same
+ * change that supplies the re-firing wake source, its own tests, and the single `root.ts` chooser.
  */
-const ALLOWED_CONSUMERS: readonly string[] = ['src/plugin/root.ts']
+const ALLOWED_CONSUMERS: readonly string[] = []
 
 const FOUNDING_MODULES = ['gate.ts', 'index.ts', 'store.ts', 'types.ts']
 const EXTRA_MODULES_ALLOWED: readonly string[] = []
@@ -184,19 +186,25 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     expect(specifiersOf(`const p = '../review-def' + 'er/index.js'; await import(p)`).some((s) => s.includes('review-defer'))).toBe(false)
   })
 
-  it('holds exactly one read of the flag, one gate, and one store in the file that wires them', () => {
+  it('ships no plane flag, no installed gate and no store construction anywhere in the product', () => {
+    // The earlier version of this leg counted ONE of each in `root.ts`. The round-1 review proved the wiring
+    // was wired to nothing, so the honest count is zero and the shape it forbids — two stores, two choosers,
+    // a tool whose state the notifier never reads — cannot be reached by adding a second one to a first that
+    // should not exist yet.
     const wired = readFileSync(ROOT_TS, 'utf8')
     const count = (needle: string): number => wired.split(needle).length - 1
-    // One read of the plane key: the gate and the tool both follow from it, so "the switch is on" and "the
-    // switch is connected" cannot drift apart.
-    expect(count('teamToolPlane?.reviewDeferEnabled === true')).toBe(1)
-    // One gate, one store, one port. A second store is the specific shape that makes the tool a lie: the tool
-    // would record quiets in a map the notifier never reads.
-    expect(count('createReviewDeferGate(')).toBe(1)
-    expect(count('createReviewDeferStore(')).toBe(1)
-    expect(count('createReviewDeferPort(')).toBe(1)
-    // The flag is read before it is used on both paths, or the wiring is a race with itself.
-    expect(wired.indexOf('reviewDeferEnabled =')).toBeLessThan(wired.indexOf('createReviewDeferGate('))
+    expect(count('teamToolPlane?.reviewDeferEnabled')).toBe(0)
+    expect(count('createReviewDeferGate(')).toBe(0)
+    expect(count('createReviewDeferStore(')).toBe(0)
+    expect(count('createReviewDeferPort(')).toBe(0)
+    // And the same absence across the whole production surface, so the withdrawal is not undone by an import
+    // added somewhere a reviewer would not think to look.
+    for (const file of walk(PACKAGES_ROOT)) {
+      if (file.startsWith(LANE_DIR)) continue
+      const rel = relative(PACKAGES_ROOT, file)
+      if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`)) continue
+      expect(readFileSync(file, 'utf8'), `${rel} references the defer plane`).not.toMatch(/review-defer|REVIEW_DEFER/)
+    }
   })
 
   it('does not touch the completion wake family, which is not this lane to quiet', () => {
@@ -219,13 +227,14 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     }
   })
 
-  it('is consumed by the tool layer through an injected port, never through an import', () => {
-    // The dependency direction is the design: `packages/tools` is handed its authorities. It already imports
-    // runtime *planes*; it must not start importing review lanes, because a tool that can construct a defer
-    // state is a tool that can build one the notifier will not see.
+  it('leaves the tool layer carrying no defer surface at all, because there is nothing for it to control', () => {
+    // Round-1 finding F-1 on #509 removed a sixteenth tool rather than documenting around it: the tool existed
+    // to file a quiet, and no wake in this tree could ever be held by one. The dependency direction stays as
+    // the lane intends it (an injected port, never an import), and the leg now pins the stronger present fact:
+    // the tool layer contains no defer vocabulary, so the withdrawal is visible from the tool surface too.
     for (const file of [join(PACKAGES_ROOT, 'tools', 'src', 'tools.ts'), join(PACKAGES_ROOT, 'tools', 'src', 'types.ts')]) {
       expect(importsLane(file), `${file} imports the review-defer lane`).toBe(false)
-      expect(readFileSync(file, 'utf8')).toContain('reviewDefer')
+      expect(readFileSync(file, 'utf8'), file).not.toMatch(/reviewDefer|REVIEW_DEFER|review-defer/)
     }
   })
 })
@@ -247,12 +256,15 @@ describe('A6-PR4/H — the shipped surface matches the source surface', () => {
     // own result vocabulary, and a screen that called that a dependency on the lane would be wrong in a way
     // that eventually gets deleted.
     const moduleReference = /['"`][^'"`\n]*review-defer\/[A-Za-z-]+\.js['"`]/
+    // Dark lane: the shipped output of the lane exists, and NOTHING in the built surface references it. This
+    // is the shipped-surface twin of the source walk above, and it is the leg that fails the day somebody
+    // wires the gate without amending this file's allow-list.
     const referencing = files
       .filter((file) => moduleReference.test(readFileSync(file, 'utf8')))
       .map((file) => relative(distRoot, file).split(sep).join('/'))
       .filter((path) => !path.startsWith('packages/runtime/review-defer/'))
       .sort()
-    expect(referencing).toEqual(['packages/runtime/src/plugin/root.js'])
+    expect(referencing).toEqual([])
   })
 
   it('ships no timer in the lane output either', () => {

@@ -223,7 +223,7 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
     ).toBe(true)
   })
 
-  it('refuses an instant that does not parse and a reason that is not in the closed list', () => {
+  it('refuses an unreadable instant and an unknown reason as two different facts', () => {
     const store = createReviewDeferStore()
     const base = { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: LEG, reasonCode: 'LEADER_REQUESTED' } as const
     for (const notBeforeIso of ['tomorrow', '1793500000000', '', null]) {
@@ -232,10 +232,13 @@ describe('A6-PR4/S — a standing defer says exactly one true thing', () => {
       if (result.ok) continue
       expect(result.refusal, String(notBeforeIso)).toBe('REVIEW_DEFER_INSTANT_MALFORMED')
     }
+    // Round-1 finding F-5 on #509: this used to answer `REVIEW_DEFER_INSTANT_MALFORMED` for a bad REASON, with
+    // a perfectly good instant. A caller reading the log would go hunting for a clock bug in a call site whose
+    // only mistake was a string. Two refusals, two facts.
     const badReason = setReviewDefer(store, { ...base, notBeforeIso: later(60 * 1000), reasonCode: 'UNTIL_I_SAY_SO' as never }, NOW)
     expect(badReason.ok).toBe(false)
     if (badReason.ok) return
-    expect(badReason.refusal).toBe('REVIEW_DEFER_INSTANT_MALFORMED')
+    expect(badReason.refusal).toBe('REVIEW_DEFER_REASON_UNKNOWN')
     // A malformed now is refused too: a lane that could not locate the present could not honour a floor.
     const badNow = setReviewDefer(
       store,
@@ -469,8 +472,33 @@ describe('A6-PR4/T — the gate hands the notification to the real notifier or n
     // FAIL OPEN is the lane's whole failure posture: an extra wake costs one look at a case that is genuinely
     // still pending, a suppressed wake costs the case its reviewer.
     expect(double.seen).toHaveLength(1)
-    expect(decisions).toEqual(['WAKE_NOT_DEFERRED'])
+    // `WAKE_DECISION_FAILED`, not `WAKE_NOT_DEFERRED` (round-1 finding F-5 on #509): "no defer is standing"
+    // and "the decision could not be computed" are different facts, and collapsing them makes the lane's
+    // fail-open path invisible to the one reader that could act on it.
+    expect(decisions).toEqual(['WAKE_DECISION_FAILED'])
+    // The panic path reads nothing and writes nothing: the store is exactly as the caller left it.
     expect(store.entries.size).toBe(1)
+  })
+
+  it('delivers, and names the reason, when a standing floor cannot be read as a time', async () => {
+    // The non-throwing half of the same law, which the first version of the gate got backwards (F-3): a NaN
+    // comparison is false, so this fell into the suppress branch and muted a wake on an illegible value.
+    const store = createReviewDeferStore()
+    defer(store, { notBeforeIso: later(60 * 1000) })
+    const decisions: ReviewDeferWakeReason[] = []
+    const double = recordingNotifier()
+    const gate = createReviewDeferGate({
+      notify: double.notify,
+      store,
+      nowIso: () => 'the day after the day after',
+      onDecision: (d) => decisions.push(d.reason),
+    })
+    await gate.notifyLeaderRequest(record())
+    expect(double.seen).toHaveLength(1)
+    expect(decisions).toEqual(['WAKE_DEFER_UNREADABLE'])
+    // Retired, not kept: an entry nobody can read is not a courtesy anybody can honour, and keeping it would
+    // turn one bad write into a permanent mute.
+    expect(store.entries.size).toBe(0)
   })
 
   it('reports every decision it acted on, including the one it took in a panic', async () => {
@@ -568,7 +596,7 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     expect(REVIEW_DEFER_DECISIONS).not.toContain('drop')
   })
 
-  it('produces every wake reason, in both directions', () => {
+  it('produces every wake reason, in both directions', async () => {
     const produced = new Set<ReviewDeferWakeReason>()
     const empty = createReviewDeferStore()
     produced.add(decideReviewWake(empty, ROOT, record(), NOW).reason)
@@ -579,6 +607,33 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     const expiring = createReviewDeferStore()
     defer(expiring, { notBeforeIso: later(60 * 1000) })
     produced.add(decideReviewWake(expiring, ROOT, record(), later(61 * 1000)).reason)
+    // A case named and a leg missing: attributable enough to notice, not attributable enough to mute.
+    produced.add(decideReviewWake(empty, ROOT, record({ legOrdinal: undefined }), NOW).reason)
+    // The two fail-open states, produced without a notifier in sight.
+    const unreadable = createReviewDeferStore()
+    defer(unreadable, { notBeforeIso: later(60 * 1000) })
+    produced.add(decideReviewWake(unreadable, ROOT, record(), 'not-a-time').reason)
+    // The panic reason is produced by the GATE's catch, not by the pure decision — the decision has no catch,
+    // because a pure function that swallows is not pure any more. Driving it through the gate is the only
+    // honest way to reach it, and the same drive proves the wake was still delivered.
+    const panicSeen: ReviewDeferWakeReason[] = []
+    const delivered: string[] = []
+    const poisonedGate = createReviewDeferGate({
+      notify: { notifyLeaderRequest: async (r: ReviewWakeCandidate): Promise<void> => void delivered.push(r.requestId) },
+      store: {
+        get limits(): never {
+          throw new Error('store poisoned')
+        },
+        get entries(): never {
+          throw new Error('store poisoned')
+        },
+      } as unknown as ReviewDeferStore,
+      nowIso: () => NOW,
+      onDecision: (d) => panicSeen.push(d.reason),
+    })
+    await poisonedGate.notifyLeaderRequest(record())
+    produced.add(panicSeen[0] as ReviewDeferWakeReason)
+    expect(delivered).toEqual([record().requestId])
     expect([...produced].sort()).toEqual([...REVIEW_DEFER_WAKE_REASONS].sort())
   })
 
@@ -598,6 +653,8 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     note(setReviewDefer(store, { ...base, notBeforeIso: later(10 * 60 * 1000 + 1) }, NOW))
     note(setReviewDefer(store, { ...base, approvalCaseId: 'case-second', notBeforeIso: later(30 * 1000) }, NOW))
     note(cancelReviewDefer(store, key({ approvalCaseId: 'case-none' }), NOW))
+    // A reason code outside the closed list refuses the WRITE, and does not blame the instant (F-5 on #509).
+    note(setReviewDefer(store, { ...base, notBeforeIso: later(30 * 1000), reasonCode: 'UNTIL_I_SAY_SO' as never }, NOW))
     expect([...produced].sort()).toEqual([...REVIEW_DEFER_REFUSALS].sort())
   })
 

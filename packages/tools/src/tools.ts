@@ -112,14 +112,12 @@ import {
   TEAM_TOOL_CALLER_ROOT_MISMATCH,
   TEAM_TOOL_CALLER_UNRESOLVED,
   TEAM_TOOL_PENDING_LIST_NOT_LEADER,
-  TEAM_TOOL_REVIEW_DEFER_NOT_LEADER,
   TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH,
   TeamToolArgsError,
 } from './tokens.js'
 import { INSTANCE_ID_PATTERN, LEADER_INSTANCE_ID } from '../../contracts/src/index.js'
 import { consultGuard } from './guard.js'
 import type {
-  TeamReviewDeferEntry,
   TeamToolDefinition,
   TeamToolExecContext,
   TeamToolsOptions,
@@ -1523,130 +1521,6 @@ export interface TeamToolSet {
  *   tool registration (each returns a disposer on register; the caller
  *   owns the effect lifetime).
  */
-/** The four reasons the wake lane records, mirrored from its closed list. */
-const REVIEW_DEFER_REASONS = ['PLAN_NOT_IN_FORCE', 'OFFICER_UNAVAILABLE', 'AWAITING_EVIDENCE', 'LEADER_REQUESTED'] as const
-
-/** How many standing quiets one reply reports; the store is capped, and this bounds the model-facing page. */
-const REVIEW_DEFER_REPORT_CAP = 20
-
-/**
- * Alpha.6 PR4' (Lane 2) — the Leader's quiet on approval wakes, for one leg of one case.
- *
- * Registered ONLY when `options.reviewDefer` is present, which is the same condition under which the Leader
- * notification port was wrapped by the wake gate. That is not a convenience: a tool mounted while the gate was
- * not would answer "quiet set" about a wake that keeps arriving, and a model cannot discover that from a reply
- * that is true about itself and false about the plane. One read of one config key in `root.ts` decides both.
- */
-function reviewDeferSpec(): ToolSpec {
-  return {
-    name: 'team_review_defer',
-    description:
-      'Put a temporary quiet on approval wakes for ONE leg of ONE approval case, lift it, or list the quiets that stand (Leader-only). While a quiet stands, a new approval wake for that leg is not pushed to the Leader. The request is untouched: it stays pending, still appears in `team_list_pending_control`, and can be allowed or denied as usual — a quiet holds the notification, never the decision, and the member waiting on it keeps working. When the quiet expires, the next wake for that leg is delivered normally. A quiet does not survive a restart of the team process; after a restart, the next wake arrives. Actions: "set", "lift", "list".',
-    properties: {
-      rootSessionId: ROOT_SESSION_ID_ARG,
-      requestToken: REQUEST_TOKEN_ARG,
-      action: {
-        type: 'string',
-        enum: ['set', 'lift', 'list'],
-        description: 'Which verb to run: "set" files a quiet, "lift" removes the quiet standing on that leg, "list" reports what stands.',
-      },
-      approvalCaseId: {
-        type: 'string',
-        description: 'The approval case whose wakes to hold. Required by "set" and "lift"; take the id from `team_list_pending_control`.',
-      },
-      legOrdinal: {
-        type: 'integer',
-        minimum: 1,
-        description: 'Which leg of that case, the leg now waiting. Required by "set" and "lift". Holding one leg does not hold the next one.',
-      },
-      notBeforeIso: {
-        type: 'string',
-        description: '"set" only: ISO instant until which wakes are held. Must be strictly in the future and at most 1 hour out; a longer silence is not supported, and the request stays pending and resolvable in the meantime.',
-      },
-      reason: {
-        type: 'string',
-        enum: [...REVIEW_DEFER_REASONS],
-        description: '"set" only: why the wake is being held. Recorded with the quiet and shown back by "list".',
-      },
-    },
-    required: ['rootSessionId', 'requestToken', 'action'],
-    async run(ctx, args) {
-      // Leader-only, enforced before the port is touched: what this tool manages is the attention of the
-      // Leader itself, so a blueprint that handed the tool to a member must not be able to keep the Leader
-      // away from a case.
-      const caller = ctx.caller
-      if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
-        return {
-          status: 'rejected',
-          code: TEAM_TOOL_REVIEW_DEFER_NOT_LEADER,
-          message:
-            'team-tools: team_review_defer is Leader-only (a quiet holds the approval wakes of the Leader itself; a member caller is rejected before any state is read)',
-        }
-      }
-      const action = args.action
-      if (action !== 'set' && action !== 'lift' && action !== 'list') {
-        throw new TeamToolArgsError("team-tools: argument 'action' must be 'set', 'lift' or 'list'", { action })
-      }
-      const defer = ctx.options.reviewDefer
-      if (defer === undefined) {
-        // Unreachable through registration — the spec exists exactly when the port does. Kept because the
-        // alternative is a TypeError the host reports as a tool crash, which answers the same question worse.
-        return {
-          status: 'rejected',
-          code: TEAM_TOOL_REVIEW_DEFER_NOT_LEADER,
-          message: 'team-tools: the review-wake defer plane is not wired in this process',
-        }
-      }
-      const report = (
-        verb: 'set' | 'lift' | 'list',
-        accepted: boolean,
-        code: string | undefined,
-        reason: string | undefined,
-        standing: readonly TeamReviewDeferEntry[],
-      ): TeamToolsResult => ({
-        status: 'review-defer',
-        rootSessionId: ctx.rootSessionId,
-        verb,
-        accepted,
-        ...(code === undefined ? {} : { code }),
-        ...(reason === undefined ? {} : { reason }),
-        defers: standing.slice(0, REVIEW_DEFER_REPORT_CAP),
-        count: standing.length,
-        truncated: standing.length > REVIEW_DEFER_REPORT_CAP,
-        requestToken: ctx.requestToken,
-      })
-      if (action === 'list') {
-        const standing = defer.list()
-        return report('list', true, undefined, undefined, standing)
-      }
-      const approvalCaseId = requireStringField(args, 'approvalCaseId', 128)
-      const legOrdinal = args.legOrdinal
-      if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) {
-        throw new TeamToolArgsError("team-tools: argument 'legOrdinal' must be an integer >= 1", { legOrdinal })
-      }
-      if (action === 'lift') {
-        const lifted = defer.cancel({ rootSessionId: ctx.rootSessionId, approvalCaseId, legOrdinal })
-        return lifted.ok
-          ? report('lift', true, undefined, undefined, defer.list())
-          : report('lift', false, lifted.refusal, lifted.detail, defer.list())
-      }
-      const notBeforeIso = requireStringField(args, 'notBeforeIso', 64)
-      const reason = args.reason
-      if (typeof reason !== 'string' || !(REVIEW_DEFER_REASONS as readonly string[]).includes(reason)) {
-        throw new TeamToolArgsError(
-          `team-tools: argument 'reason' must be one of ${REVIEW_DEFER_REASONS.join(', ')}`,
-          { reason },
-        )
-      }
-      const filed = defer.set({ rootSessionId: ctx.rootSessionId, approvalCaseId, legOrdinal, notBeforeIso, reasonCode: reason })
-      // A refusal is a RESULT, not a throw: "the horizon is one hour" is something the model can act on.
-      return filed.ok
-        ? report('set', true, undefined, undefined, defer.list())
-        : report('set', false, filed.refusal, filed.detail, defer.list())
-    },
-  }
-}
-
 export function createTeamTools(options: TeamToolsOptions): TeamToolSet {
   const specs: readonly ToolSpec[] = [
     listMembersSpec(),
@@ -1664,11 +1538,6 @@ export function createTeamTools(options: TeamToolsOptions): TeamToolSet {
     archiveMemberSpec(),
     permissionSpec('grant'),
     permissionSpec('revoke'),
-    // Alpha.6 PR4' (Lane 2): the sixteenth tool exists exactly when its injected port does, and that port
-    // exists exactly when the plane flag wrapped the Leader notification port with the wake gate — one read of
-    // one config key in root.ts decides both halves. Gating the FACTORY rather than the mount is what keeps a
-    // legacy-capability team from mounting it automatically.
-    ...(options.reviewDefer === undefined ? [] : [reviewDeferSpec()]),
   ]
   return {
     tools: specs.map((spec) => makeDefinition(options, spec)),

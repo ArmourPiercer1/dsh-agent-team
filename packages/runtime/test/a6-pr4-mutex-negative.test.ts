@@ -14,7 +14,13 @@
  * refusals rather than results).
  */
 
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { describe, expect, it } from 'vitest'
+
+const RUNTIME_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 import {
   cancelReviewDefer,
@@ -22,15 +28,15 @@ import {
   createReviewDeferPort,
   createReviewDeferStore,
   decideReviewWake,
+  reviewDeferEntryId,
+  type ReviewDeferStore,
   setReviewDefer,
-  type ReviewDeferEntry,
   type ReviewDeferGate,
   type ReviewWakeCandidate,
 } from '../review-defer/index.js'
 // Type-only imports: they cost nothing at runtime and they are the only honest way to assert that a real
 // record of somebody else's shape is accepted by this lane, rather than a fixture that happens to look like one.
 import type { ControlRequestNotificationPort, ControlRequestRecord } from '../control/types.js'
-import type { TeamReviewDeferEntry } from '../../tools/src/types.js'
 
 const ROOT = 'team-root-01'
 const CASE_ID = 'case-1f2e3d4c'
@@ -89,64 +95,74 @@ describe('A6-PR4/M — the shapes the lane must accept from the plane', () => {
     expect(Object.keys(port).sort()).toEqual(['notifyLeaderRequest', 'store'])
   })
 
-  it('agrees with the tool layer about what a standing quiet looks like', () => {
-    const store = createReviewDeferStore()
-    const filed = setReviewDefer(
-      store,
-      { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: 1, notBeforeIso: later(60 * 1000), reasonCode: 'AWAITING_EVIDENCE' },
-      NOW,
-    )
-    expect(filed.ok).toBe(true)
-    if (!filed.ok) return
-    // Drift detector: `packages/tools` declares the entry structurally because it must not import this lane.
-    // The day the two declarations disagree, this assignment stops compiling, and the day it stops compiling
-    // is the day the tool would be describing a state that is not the one the gate holds.
-    const entryForTool: TeamReviewDeferEntry = filed.value satisfies ReviewDeferEntry
-    expect(entryForTool.key.approvalCaseId).toBe(CASE_ID)
-    expect(entryForTool.notBeforeIso).toBe(later(60 * 1000))
+  it('pins the PRESENCE of the two attribution fields, not merely that some record is assignable', () => {
+    // Round-1 finding F-4 on #509: assignability to a type whose members are optional tolerates a rename or a
+    // removal, so the earlier version of this pin would have kept compiling while `ControlRequestRecord` lost
+    // `approvalCaseId` — the exact drift whose effect is a gate that sees no case and delivers everything
+    // forever. `keyof` sees a declared property whether or not it is optional, so THIS form fails a rename.
+    const attributionFields = ['approvalCaseId', 'legOrdinal'] as const satisfies readonly (keyof ControlRequestRecord)[]
+    expect(attributionFields).toEqual(['approvalCaseId', 'legOrdinal'])
+    // And the candidate really is the record's shape for those two facts, so the gate reads the kernel's value
+    // rather than a lookalike the fixture invented.
+    const record = { approvalCaseId: CASE_ID, legOrdinal: 3 } as unknown as ControlRequestRecord
+    const candidate: ReviewWakeCandidate = { ...record, requestId: 'req-x', rootSessionId: ROOT }
+    expect(candidate.legOrdinal).toBe(3)
+  })
+
+  it('ships no defer vocabulary in the tool layer, because a tool with nothing to suppress is a lie', () => {
+    // Round-1 finding F-1 on #509 was a blocker for exactly this reason, and it is closed by REMOVAL rather
+    // than by a comment: no `team_review_defer`, no injected port option, no plane flag, and no gate installed
+    // in `root.ts`. A model that could file a quiet whose effect is nil would have changed its behaviour on the
+    // strength of a no-op. PR-I2 ships the tool in the same change as the wake source that makes it real; this
+    // leg is the guard that the withdrawal is not quietly undone.
+    const toolSurface = readFileSync(join(RUNTIME_ROOT, '..', 'tools', 'src', 'tools.ts'), 'utf8')
+    const toolTypes = readFileSync(join(RUNTIME_ROOT, '..', 'tools', 'src', 'types.ts'), 'utf8')
+    const rootWiring = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+    for (const [name, source] of [['tools.ts', toolSurface], ['types.ts', toolTypes], ['root.ts', rootWiring]] as const) {
+      expect(source, `${name} mentions the defer plane`).not.toMatch(/reviewDefer|review-defer|REVIEW_DEFER/)
+    }
   })
 })
 
-describe('A6-PR4/M — the one chooser', () => {
-  /**
-   * A mirror of the expression in `root.ts`, not an import of it: `createTeamProductionRoot` cannot be built
-   * without a Host, which is why the mirror is here and the textual count of the real thing is in
-   * `a6-pr4-lane-hygiene.test.ts`. The mirror is honest about being a mirror, and both halves are needed:
-   * this one says what the two branches must do, that one says there is only one place that does it.
-   */
-  function chooseNotifier(
-    enabled: boolean,
-    plain: { notifyLeaderRequest(record: ReviewWakeCandidate): Promise<void> },
-    store: ReturnType<typeof createReviewDeferStore>,
-  ): { notifyLeaderRequest(record: ReviewWakeCandidate): Promise<void> } {
-    return enabled
-      ? createReviewDeferGate({ notify: plain, store, nowIso: () => NOW })
-      : plain
-  }
-
-  it('hands back the untouched notifier when the plane is off, by reference', async () => {
-    const store = createReviewDeferStore()
+describe('A6-PR4/M — what the composition may and may not do', () => {
+  it('is a pass-through for every wake when nothing stands, which is the only state a dark plane is ever in', async () => {
+    // Round-1 F-6 closed the version of this leg that exercised a hand-written mirror of `root.ts` instead of
+    // the lane: with the wiring withdrawn (F-1), the honest claim is narrower and stronger — an empty store
+    // makes the gate indistinguishable from the notifier it wraps, for every wake, in both directions.
     const double = recorder()
-    const chosen = chooseNotifier(false, double.notify, store)
-    expect(chosen).toBe(double.notify)
-    // A defer filed anyway (there is no way to file one while off, but the state shape allows the question)
-    // changes nothing: the OFF path does not consult the store, so a stray entry cannot mute a wake.
-    setReviewDefer(store, { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: 1, notBeforeIso: later(60 * 1000), reasonCode: 'LEADER_REQUESTED' }, NOW)
-    await chosen.notifyLeaderRequest(wake())
-    expect(double.seen).toHaveLength(1)
+    const gate = createReviewDeferGate({ notify: double.notify, store: createReviewDeferStore(), nowIso: () => NOW })
+    const wakes = [wake(), { rootSessionId: ROOT, requestId: 'req-legacy' }, wake({ legOrdinal: 4 })]
+    for (const record of wakes) await gate.notifyLeaderRequest(record)
+    expect(double.seen).toEqual(wakes)
+    expect(double.seen[0]).toBe(wakes[0])
+    expect(double.seen[1]).toBe(wakes[1])
+    expect(double.seen[2]).toBe(wakes[2])
   })
 
-  it('wraps the same notifier when the plane is on, and the wrapped notifier is still the thing that delivers', async () => {
-    const store = createReviewDeferStore()
+  it('composes the notifier instead of replacing it, and adds no field to what it hands down', async () => {
     const double = recorder()
-    const chosen = chooseNotifier(true, double.notify, store)
-    expect(chosen).not.toBe(double.notify)
+    const gate = createReviewDeferGate({ notify: double.notify, store: createReviewDeferStore(), nowIso: () => NOW })
     const theWake = wake()
-    await chosen.notifyLeaderRequest(theWake)
+    await gate.notifyLeaderRequest(theWake)
     expect(double.seen).toHaveLength(1)
     // Identity of the delivered object, not equality: the gate composes the notifier, it does not re-render a
     // notification somebody else owns.
     expect(double.seen[0]).toBe(theWake)
+  })
+
+  it('lets a throwing observer change nothing, because a diagnostic that can suppress a wake is a second switch', async () => {
+    const store = createReviewDeferStore()
+    const double = recorder()
+    const gate = createReviewDeferGate({
+      notify: double.notify,
+      store,
+      nowIso: () => NOW,
+      onDecision: () => {
+        throw new Error('metrics sink exploded')
+      },
+    })
+    await gate.notifyLeaderRequest(wake())
+    expect(double.seen).toHaveLength(1)
   })
 
   it('leaves the case-less row on the old path with the plane fully on', async () => {
@@ -160,6 +176,54 @@ describe('A6-PR4/M — the one chooser', () => {
     expect(double.seen).toHaveLength(1)
     expect(store.entries.size).toBe(1)
     await gate.notifyLeaderRequest(wake())
+    expect(double.seen).toHaveLength(1)
+  })
+})
+
+describe('A6-PR4/M — the fail-open law against inputs that do not throw', () => {
+  it('delivers when the clock returns something that is not a time, and says that is what happened', async () => {
+    // The reviewer proved by probe against the SHIPPED output that the first version of this gate answered
+    // "defer" here — a NaN comparison is false, so the confusion fell into the suppress branch and the error
+    // went the forbidden way. Only a THROWING clock was covered before.
+    const store = createReviewDeferStore()
+    const double = recorder()
+    const gate = createReviewDeferGate({ notify: double.notify, store, nowIso: () => 'not-a-time' })
+    fileQuiet(store)
+    await gate.notifyLeaderRequest(wake())
+    expect(double.seen).toHaveLength(1)
+  })
+
+  it('delivers and retires an entry whose floor cannot be parsed, even under a working clock', async () => {
+    const store = createReviewDeferStore()
+    const double = recorder()
+    const gate = createReviewDeferGate({ notify: double.notify, store, nowIso: () => NOW })
+    // Written straight into the map: the writer validates, so reaching this state needs a corrupt write, which
+    // is precisely what PR-I2's hydration will be able to produce.
+    store.entries.set(
+      reviewDeferEntryId({ rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: 1 }),
+      Object.freeze({
+        key: { rootSessionId: ROOT, approvalCaseId: CASE_ID, legOrdinal: 1 },
+        notBeforeIso: 'tomorrow-ish',
+        reasonCode: 'LEADER_REQUESTED' as const,
+        setAtIso: NOW,
+      }),
+    )
+    await gate.notifyLeaderRequest(wake())
+    expect(double.seen).toHaveLength(1)
+    expect(store.entries.size).toBe(0)
+  })
+
+  it('names a decision that could not be computed as itself, so a fail-open path is visible in a log', async () => {
+    const double = recorder()
+    const decisions: string[] = []
+    const observed = createReviewDeferGate({
+      notify: double.notify,
+      store: { get limits() { throw new Error('store poisoned') }, get entries() { throw new Error('store poisoned') } } as unknown as ReviewDeferStore,
+      nowIso: () => NOW,
+      onDecision: (decision) => void decisions.push(decision.reason),
+    })
+    await observed.notifyLeaderRequest(wake())
+    expect(decisions).toEqual(['WAKE_DECISION_FAILED'])
     expect(double.seen).toHaveLength(1)
   })
 })
@@ -247,9 +311,9 @@ describe('A6-PR4/M — what a quiet does not do', () => {
     await first.notifyLeaderRequest(wake())
     await second.notifyLeaderRequest(wake())
     // Two gates over one store are consistent, so nothing here is a correctness hazard — but two gates over
-    // TWO stores would be, and a store per consumer is exactly what a lazy wiring produces. The hygiene suite
-    // counts `createReviewDeferStore(` in root.ts for that reason; this leg records what the alternative
-    // would have to look like before anybody reaches for it.
+    // TWO stores would be, and a store per consumer is exactly what a lazy wiring produces. That is the shape
+    // the hygiene suite guards by counting constructions in `root.ts` (today: zero of them, because the plane
+    // is dark); this leg records what the alternative would have to look like before anybody reaches for it.
     expect(double.seen).toHaveLength(0)
   })
 })

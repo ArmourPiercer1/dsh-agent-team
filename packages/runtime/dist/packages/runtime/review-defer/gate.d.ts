@@ -9,13 +9,22 @@
  * not make. So this gate implements the port and composes the real notifier underneath it, leaving the
  * protected notifier untouched and leaving the wire format somebody else owns.
  *
- * THE ONE CHOOSER. `root.ts` builds EITHER the plain notifier or this gate, from one plane flag, once, at the
- * port-presence arm that already exists. Nothing below reads a flag, and nothing below can turn itself on:
- * a second switch that also believed it owned "the same wake" is how two deliverers end up both delivering,
- * and `a6-pr4-mutex-negative.test.ts` exists to make that shape fail loudly rather than intermittently.
+ * WHO BUILDS IT. Nobody, in this PR: the lane ships dark, and a hygiene leg walks the tree on every run to
+ * keep that true. The round-1 review on #509 established that no wake in this tree can arrive for a key that
+ * already carries a quiet, so a flag that installed this gate would be a switch with nothing on the other end
+ * (law 6 in `types.ts`). When PR-I2 supplies the re-firing wake source, the rule is this: ONE gate per team
+ * root, chosen once from one flag, at the port-presence arm in `root.ts` that already exists, sharing its
+ * store by reference with whatever files quiets. Nothing in this file reads a flag and nothing here can turn
+ * itself on — a second switch that also believed it owned "the same wake" is how two deliverers end up both
+ * delivering, and `a6-pr4-mutex-negative.test.ts` exists to make that shape fail loudly rather than
+ * intermittently.
  *
- * FAIL OPEN, ALWAYS. Every way this gate can be confused — an unreadable clock, a record that is not a record,
- * a store that has been handed a garbage entry — answers "deliver". The asymmetry is the whole design: an
+ * FAIL OPEN, ALWAYS, AND MEASURED THAT WAY. Every way this gate can be confused — a clock that returns
+ * something that is not a time, a record that is not a record, a store handed an entry whose floor cannot be
+ * parsed — answers "deliver", and says which of those it met. The first version of this file only honoured the
+ * law when the confusion THREW: a non-throwing NaN comparison answered "defer", which is the forbidden
+ * direction (round-1 finding F-3 on #509, probe-confirmed against the shipped output). The asymmetry is the
+ * whole design: an
  * extra wake costs the Leader one look at a case that is genuinely still pending, while a suppressed wake costs
  * the case its reviewer. A defer is a courtesy to attention, never a control on authority.
  */
@@ -28,9 +37,9 @@ export interface WrappedLeaderNotifier {
 /** A decision observer. Present so PR5′ can count suppressed wakes without this lane learning about metrics. */
 export type ReviewDeferObserver = (decision: ReviewDeferWakeDecision) => void;
 export interface ReviewDeferGate {
-    /** Structurally the control notification port. This is what `root.ts` hands `createControlService`. */
+    /** Structurally the control notification port — what a wired `root.ts` would hand `createControlService`. */
     readonly notifyLeaderRequest: (record: ReviewWakeCandidate) => Promise<void>;
-    /** The store the gate reads, shared by reference with the tool port. There is only ever one. */
+    /** The store the gate reads, shared by reference with whatever port files quiets. There is only ever one. */
     readonly store: ReviewDeferStore;
 }
 /**
@@ -52,12 +61,13 @@ export declare function createReviewDeferGate(deps: {
     readonly onDecision?: ReviewDeferObserver;
 }): ReviewDeferGate;
 /**
- * The port the model-facing tool is given, built from the same store the gate reads.
+ * The seam a tool is INJECTED with, built from the same store the gate reads.
  *
- * It is injected rather than imported by `packages/tools`, for two reasons that are both load-bearing: the
- * dependency direction (tools must not import a runtime lane), and the single-store law — a tool that
- * constructed its own store would happily record defers that the gate will never look at, which is a switch
- * that does nothing and a state that lies.
+ * Injected rather than imported by `packages/tools`, for two reasons that are both load-bearing: the dependency
+ * direction (tools must not import a runtime lane), and the single-store law — a tool that constructed its own
+ * store would happily record defers the gate never looks at, which is a switch that does nothing and a state
+ * that lies. This PR ships no such tool (law 6 in `types.ts`); the seam is here so the wiring in PR-I2 has one
+ * honest way to be done and no second store to invent.
  */
 export interface ReviewDeferPort {
     set(input: {

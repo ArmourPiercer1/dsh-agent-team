@@ -363,14 +363,6 @@ import type {
 // s6 surface and adds zero governance logic).
 import type { GovernanceWarningService, GovernanceStartOutcome } from '../../governance-warning/index.js'
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../team-ownership-index.js'
-// Alpha.6 PR4' (Lane 2): the review-wake defer lane — the gate on the Leader notification port, the
-// process-local floor it reads, and the port the model-facing tool is injected with. Imported here (and
-// nowhere else) because this file is the one place that decides what a Team's production root is wired with.
-import {
-  createReviewDeferGate,
-  createReviewDeferPort,
-  createReviewDeferStore,
-} from '../../review-defer/index.js'
 import type { DurableTemplateRow } from '../../projection/index.js'
 import type { RemoteSafeRecord } from '../../../remote/src/contracts/remote-safe.js'
 import type {
@@ -2383,24 +2375,6 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined } = {
     current: (input) => readPaCallFactsPort(input as PaCallFactsInput),
   }
-  // Alpha.6 PR4' (Lane 2) — the review-wake defer plane. ONE read of ONE config key decides BOTH halves of
-  // the switch: the notification gate below, and the `team_review_defer` tool handed to the tool factory
-  // further down. Those two must never be decided separately — a tool whose quiet the notifier never consults,
-  // or a notifier that holds wakes nobody asked it to hold, are the same bug wearing two faces, and each is
-  // invisible from inside the other.
-  //
-  // The key rides `config.teamToolPlane`, the pass-through bag that already carries `jobsEnabled` and
-  // `centerAssembly`: the Blueprint v3 schema is frozen and gains nothing, and the value is written by an
-  // operator at session bind time, which is what keeps it out of reach of a model tool call. Anything other
-  // than exactly `true` — absent, false, a string, a typo — is off, and off means the code below builds the
-  // pre-Alpha.6 wiring with nothing wrapped around it.
-  const reviewDeferEnabled =
-    (config as { readonly teamToolPlane?: { readonly reviewDeferEnabled?: unknown } })
-      .teamToolPlane?.reviewDeferEnabled === true
-  // ONE store per team root, shared BY REFERENCE between the gate and the tool port. A second store is the
-  // failure this whole shape exists to prevent, so it is not constructed lazily in either consumer.
-  const reviewDeferStore = createReviewDeferStore()
-  const reviewDeferPort = createReviewDeferPort({ store: reviewDeferStore, nowIso: now })
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
@@ -2409,22 +2383,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     now,
     ...(live.deliverRootControlNotification !== undefined
       ? {
-          // The pre-Alpha.6 port-presence arm is preserved exactly: no glue port, no notification on either
-          // path. Inside it, the OFF leg is the untouched notifier and the ON leg composes that SAME notifier
-          // behind the gate, so enabling the plane wraps a decision around the existing delivery rather than
-          // replacing it. There is no second chooser anywhere — a6-pr4-mutex-negative.test.ts counts the
-          // occurrences of this flag read in this file, and a second one fails the leg.
-          requestNotification: reviewDeferEnabled
-            ? createReviewDeferGate({
-                notify: createLeaderControlNotifier({
-                  deliver: live.deliverRootControlNotification,
-                }),
-                store: reviewDeferStore,
-                nowIso: now,
-              })
-            : createLeaderControlNotifier({
-                deliver: live.deliverRootControlNotification,
-              }),
+          requestNotification: createLeaderControlNotifier({
+            deliver: live.deliverRootControlNotification,
+          }),
         }
       : {}),
     // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
@@ -3961,10 +3922,6 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     messaging,
     activity,
     resolveCaller: live.resolveCaller,
-    // Alpha.6 PR4' (Lane 2): the defer tool is registered exactly when the gate was installed, from the same
-    // read above, and it is injected with the same store the gate reads — so "the switch is on" and "the
-    // switch is connected" cannot be different answers.
-    ...(reviewDeferEnabled ? { reviewDefer: reviewDeferPort } : {}),
     // PR4 ROUND 5 (FIX-2a): the permission grant/revoke entries over the
     // ONE governance mutation authority. Server-side everything: the
     // authority rides the CALLER identity the host already resolved (the

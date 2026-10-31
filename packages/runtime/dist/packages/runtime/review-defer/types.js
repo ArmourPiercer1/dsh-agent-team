@@ -7,13 +7,14 @@
  * `leader-approval` request, and the real deliverer
  * (`packages/runtime/src/plugin/live/agent-bindings.mjs`, `deliverRootControlNotification`) documents itself
  * as "at-least-once — NO dedupe here". A Team that has switched the plane flag on can therefore say "do not
- * wake the Leader about this case until T", and get exactly that, with every failure mode being an EXTRA
- * wake rather than a lost one.
+ * wake the Leader about this case until T", and every failure mode is an EXTRA wake rather than a lost one.
  *
  * WHAT THIS LANE IS NOT, stated in the order the mistakes would be made:
  *
- *  1. **Not a scheduler.** Nothing here wakes anybody. A defer raises a floor on a wake that would otherwise
- *     happen anyway; when the floor passes, the next wake that arrives is delivered. There is no timer, no
+ *  1. **Not a scheduler, and no replay — ever.** Nothing here wakes anybody. A defer raises a floor on a wake
+ *     that would otherwise happen anyway: it declines the wakes that arrive WHILE IT STANDS and it never
+ *     re-delivers a wake that already fired. Re-arming a wake at the floor is the wake kernel's job (PR-I2),
+ *     and a lane that re-fired a notification itself would be a second scheduler wearing a smaller hat. There is no timer, no
  *     queue, no retry loop, and no wall-clock timer scheduled from this directory, because a second scheduler driving review
  *     wakes would be a second scheduler, and the single scheduler is a phase law.
  *  2. **Not a second approval ledger.** A defer row stores a case id, a leg ordinal, an instant and a reason
@@ -26,11 +27,27 @@
  *     kernel is not even reachable from here (see the import law in `a6-pr4-lane-hygiene.test.ts`). The lane
  *     suppresses a delivery, not a wake, and it never claims a wake was delivered exactly once.
  *  4. **Not the mutex.** PR-I2 owns the one chooser between this notifier and the real
- *     `deliverReviewWake`. Here the chooser is a function reference chosen once, in `root.ts`, from one flag;
- *     the negative legs in `a6-pr4-mutex-negative.test.ts` exist so a second switch cannot appear quietly.
+ *     `deliverReviewWake`. THIS PR BUILDS NO CHOOSER: nothing in `packages/runtime/src` or `packages/tools`
+ *     imports this lane (a hygiene leg walks it from disk), because a switch wired to a wake source that
+ *     cannot re-fire is a control that does nothing — the round-1 blocker on #509. `root.ts` is named in this
+ *     lane's docs as the intended single consumer and the negative legs in
+ *     `a6-pr4-mutex-negative.test.ts` exist so that when the wiring arrives it arrives once.
  *  5. **Not an authority.** Refusals here refuse an *operation on a defer*, never a review, and a decision
  *     here never approves or denies anything. A suppressed notification leaves the request exactly as it was:
  *     pending, visible in the pending list, and answerable.
+ *  6. **WHAT A QUIET CAN SUPPRESS TODAY, stated exactly (the round-1 blocker on #509, verified in the kernel).**
+ *     The notification port has ONE caller, `control/service.ts:2536`, and it fires only when
+ *     `outcome.created` is true. An idempotent retry returns the existing row and the kernel says so in its own
+ *     comment — "An existing row NEVER re-notifies … the pending-list tool is the recovery path" — a risen leg
+ *     is deliberately never notified (`control/leader-notification.ts`, "WHY NO NOTIFICATION EXISTS FOR A RISEN
+ *     LEG"), and `approvalCaseId` is minted at creation from the request's correlation identity. So in this
+ *     tree a quiet can never be standing on a key before that key's only wake has already fired: **a quiet
+ *     filed today suppresses nothing.** That is why this PR ships the lane dark and ships NO model-facing
+ *     tool: a `team_review_defer` that answered `accepted: true` while suppressing zero wakes would be a tool
+ *     whose result is a lie, and a model would change its behaviour on it. The tool, the plane flag and the
+ *     `root.ts` wiring belong in the change that supplies the re-firing wake source (PR-I2's
+ *     `deliverReviewWake`), where "held until T" becomes observable — and until then the pending list stays the
+ *     recovery path, which is the kernel's own law rather than this lane's invention.
  *
  * WHY THE KEY IS `(approvalCaseId, legOrdinal)` AND WHY A CASE-LESS ROW IS NEVER DEFERRED. The record that
  * reaches the notification port is a `ControlRequestRecord`; its `approvalCaseId` is documented as "Present ⇒
@@ -60,14 +77,27 @@ export const REVIEW_DEFER_DECISIONS = ['deliver', 'defer'];
  * the machine and a produced code that is undeclared is the same lie sideways.
  */
 export const REVIEW_DEFER_WAKE_REASONS = [
-    /** No defer for this key. The ordinary answer, and the answer for every Team that never opted in. */
+    /** No defer is standing on this key. The ordinary answer, and the only answer in a Team that never opted in. */
     'WAKE_NOT_DEFERRED',
     /** A defer existed and its floor has passed: deliver, and retire the defer while we are here. */
     'WAKE_DEFER_FLOOR_PASSED',
-    /** A defer is standing on this key with a floor in the future: skip this delivery. */
+    /** A defer is standing on this key with a floor in the future: decline this delivery, nothing more. */
     'WAKE_DEFER_PENDING',
-    /** The record names no case. Deliver — the old path — because an unattributable wake is nobody's to mute. */
+    /**
+     * A defer is standing but a time involved cannot be read — its own floor, or the instant the caller was
+     * given. Delivering is the fail-open answer, and it gets its OWN reason so that "the plan expired" and
+     * "the plan was unreadable" are never reported as the same fact by a metric that cannot tell them apart.
+     */
+    'WAKE_DEFER_UNREADABLE',
+    /** The decision itself could not be computed. Deliver, and say so: a fail-open path nobody can see is a
+     *  fail-open path nobody fixes. */
+    'WAKE_DECISION_FAILED',
+    /** The record carries no readable case. Deliver — the old path — because an unattributable wake is nobody's
+     *  to mute. "No readable case" rather than "names no case": a case id that is present but not an id the
+     *  platform would mint lands here too, and the sentence has to cover that. */
     'WAKE_CASE_UNIDENTIFIED',
+    /** A case IS named and the leg is not. Attributable enough to notice, not attributable enough to mute. */
+    'WAKE_LEG_UNIDENTIFIED',
 ];
 // --- refusals -----------------------------------------------------------------------------------------
 /**
@@ -81,10 +111,16 @@ export const REVIEW_DEFER_REFUSALS = [
     /** `legOrdinal` missing, negative, or not a safe integer. */
     'REVIEW_DEFER_LEG_MALFORMED',
     /**
-     * An instant that is not an ISO string that parses, or a reason code outside the closed list. Nothing here
-     * accepts a millisecond number: two ways to say a time is two ways to disagree about one.
+     * An instant that is not an ISO string that parses. Nothing here accepts a millisecond number: two ways to
+     * say a time is two ways to disagree about one.
      */
     'REVIEW_DEFER_INSTANT_MALFORMED',
+    /**
+     * A reason code outside `REVIEW_DEFER_REASON_CODES`. It is NOT an instant problem: the caller's instant may
+     * be perfect and its reason nonsense, and a refusal that blamed the clock would send whoever read the log to
+     * the wrong file. (Round-1 finding F-5 on #509.)
+     */
+    'REVIEW_DEFER_REASON_UNKNOWN',
     /** A floor at or before the caller's `nowIso`. "Defer until the past" means "do not defer", and a lane */
     /** that silently accepted it would report a defer that suppresses nothing. */
     'REVIEW_DEFER_NOT_IN_FUTURE',
@@ -115,7 +151,7 @@ export const REVIEW_DEFER_REASON_CODES = [
     'OFFICER_UNAVAILABLE',
     /** The case's own evidence is expected to change before the floor. */
     'AWAITING_EVIDENCE',
-    /** The Leader asked for the quiet directly, through the tool. */
+    /** The Leader asked for the quiet directly, through the tool that PR-I2 will mount. */
     'LEADER_REQUESTED',
 ];
 // Frozen, unlike the closed lists above: this object is handed out BY REFERENCE as the default for every store

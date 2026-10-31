@@ -172,24 +172,6 @@ export type TeamToolsResult =
       readonly truncated: boolean
     }
   | {
-      /**
-       * Alpha.6 PR4': the answer of `team_review_defer`, for all three of its verbs. `accepted` is the fact
-       * the caller acts on; a refusal is a RESULT (the model sees why), not a thrown surprise, because a
-       * refused quiet is an ordinary outcome of an ordinary call. `defers` is bounded: the store itself is
-       * capped, and a tool that dumped unbounded state would spend the context it is meant to save.
-       */
-      readonly status: 'review-defer'
-      readonly rootSessionId: string
-      readonly verb: 'set' | 'lift' | 'list'
-      readonly accepted: boolean
-      readonly code?: string
-      readonly reason?: string
-      readonly defers: readonly TeamReviewDeferEntry[]
-      readonly count: number
-      readonly truncated: boolean
-      readonly requestToken: string
-    }
-  | {
       readonly status: 'blocked'
       readonly toolName: string
       readonly correlation: string
@@ -248,50 +230,6 @@ export interface TeamPermissionExecIntent {
   readonly timeoutMs?: number
   /** Requested sandbox mode string only; legality is decided at exec. */
   readonly sandbox_permissions?: string
-}
-
-/**
- * Alpha.6 PR4' (Lane 2) — the review-wake defer port, as the tool layer sees it.
- *
- * Declared STRUCTURALLY here, with no import from `packages/runtime/review-defer`, for two reasons that are
- * both load-bearing. The dependency direction: the tool layer is given its authorities, it does not reach
- * into a runtime lane to make one. And the single-store law: the port is injected with the very store the wake
- * gate reads, so a tool that built its own state would be a switch connected to nothing — the worst kind of
- * model-facing surface, one whose success message is true about itself and false about the plane.
- *
- * `reasonCode` and `refusal` are widened to `string` here because the closed lists belong to the lane; the
- * schema narrows the input to the four codes the lane knows, and the lane refuses anything else, so the
- * widening is a typing convenience and not a policy relaxation.
- */
-export interface TeamReviewDeferKey {
-  readonly rootSessionId: string
-  readonly approvalCaseId: string
-  readonly legOrdinal: number
-}
-
-export interface TeamReviewDeferEntry {
-  readonly key: TeamReviewDeferKey
-  /** The instant until which Leader wakes for this leg are held. */
-  readonly notBeforeIso: string
-  readonly reasonCode: string
-  /** The instant the quiet was filed at, recorded rather than read. */
-  readonly setAtIso: string
-}
-
-export type TeamReviewDeferOutcome =
-  | { readonly ok: true; readonly value: TeamReviewDeferEntry }
-  | { readonly ok: false; readonly refusal: string; readonly detail: string }
-
-export interface TeamReviewDeferPort {
-  set(input: {
-    readonly rootSessionId: string
-    readonly approvalCaseId: string
-    readonly legOrdinal: number
-    readonly notBeforeIso: string
-    readonly reasonCode: string
-  }): TeamReviewDeferOutcome
-  cancel(key: TeamReviewDeferKey): TeamReviewDeferOutcome
-  list(): readonly TeamReviewDeferEntry[]
 }
 
 export interface TeamToolsOptions {
@@ -354,14 +292,4 @@ export interface TeamToolsOptions {
       intent: TeamPermissionExecIntent,
     ) => Promise<string>
   }
-  /**
-   * Alpha.6 PR4' (Lane 2): the Leader's review-wake quiet, for one leg of one approval case.
-   *
-   * ABSENT by default, and its absence is the whole dormancy story: `team_review_defer` is not registered at
-   * all when this port is missing, so a Team that has not switched the plane on has fifteen tools and no new
-   * code path. The port is present exactly when the SAME plane flag also wrapped the Leader notification port
-   * with the defer gate — one read of one config key decides both, which is what keeps "the switch is on"
-   * and "the switch is connected" from ever being different answers.
-   */
-  readonly reviewDefer?: TeamReviewDeferPort | undefined
 }
