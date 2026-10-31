@@ -581,6 +581,69 @@ that is the truth. That costs far less than twenty rounds. It is not an argument
 needed the plants that were thrown at them; it is an argument for not writing a sentence the plants will take away
 in round five.
 
+**7.6 A filtered run is not a verdict — "passes / misses / is silent" is owed to a full unfiltered run.** Dated
+2026-10-31, written at real UTC 2026-10-31T23:28Z (`date -u`; ROUTER_RULES §8.5.8 clock-anchor law — this banner
+carries the writing instant). Standing method discipline, and the sibling of §7.4: §7.4 says what a sentence about a
+guardrail is allowed to claim, this says **which run** such a sentence may rest on. It goes into this memo rather
+than only into the log because it outlives the round that produced it.
+
+> **The law.** Any claim that a guardrail **passes**, **misses**, or **is silent** must come from a **full,
+> unfiltered run** of that instrument, reported with its command line and with the suite total. A filtered run —
+> `-t`, a file selection, an IDE's "run this test" — is evidence about **one leg in isolation**; it may be reported
+> only as leg-isolation evidence and must be labelled as such. A filtered green is a statement about a leg that was
+> selected, never about whether the guardrail catches anything.
+
+**The measurement that produced it.** Instrument = the PR-I1b guardrail spec
+`packages/runtime/test/a6-pr-i1b-admission.test.ts` at pristine `c63d6509d`, run in a scratch clone; a full pass of
+it = **80 legs**. Three symlink plants were run as full passes and **all three reddened** (rc=1 each):
+
+| plant | shape | target bytes | full unfiltered run | legs that reddened |
+| --- | --- | --- | --- | --- |
+| 1 | referenced (replaces `dist/packages/runtime/review-mandate/plan.js`) | `node:fs` (breaching) | rc=1 — `3 failed \| 70 passed \| 7 skipped (80)` | BUILT barrels, install-surface, scanner-itself |
+| 2 | referenced (same file) | `node:crypto` (benign) | rc=1 — `2 failed \| 71 passed \| 7 skipped (80)` | install-surface, scanner-itself — the BUILT barrels leg **passed** |
+| 3 | orphan (`r9_orphan.js`, unreferenced) | `node:crypto` (benign) | rc=1 — `1 failed \| 72 passed \| 7 skipped (80)` | install-surface only — the BUILT barrels leg **passed** |
+
+The verdict this subsection exists to kill said the guardrail "silently traversed a symlink in dist and read
+outside-lane bytes as lane content". It came from plant 2 run as `-t "BUILT barrels reach the same planes"` —
+`1 passed | 79 skipped (80)`, rc=**0** — and the same plant with the same bytes, unfiltered, gives rc=**1**. What the
+filter removed is exactly the leg that refuses: `the install surface enumerates the lane dist directories by CONTENT
+and classifies every file: …`, whose `listDirectoryContentRecursively` pushes every dirent answering
+`entry.isSymbolicLink()` (`:2416` — the only such call in the file) and asserts the list empty, naming the alias:
+"…carries symlinks — … the install surface refuses aliases instead of scanning through them:
+packages/runtime/dist/packages/runtime/review-mandate/plan.js". A refusal lives in whichever leg holds it, so
+**filtering to the suspect leg deletes the refusal from the record while leaving the suspect leg's own verdict
+untouched** — which is precisely a green that means nothing.
+
+**The aggravating detail, kept because it is the general form of the failure.** The wrong claim was not sloppy. It
+was internally coherent, it carried `lstat` proof (`isSymbolicLink=true isFile=false`) and the exact printed output of
+the leg that ran, and every number in it was real — and it still described **an artefact of the invocation**, not the
+behaviour of the instrument. **Evidence quality is not a substitute for running the whole suite.** The two shapes of
+one instrument and one plant — `1 passed | 79 skipped (80)` and `2 failed | 71 passed | 7 skipped (80)` — differ
+only in their totals line, so a report that quotes a pass count without the suite total is unfalsifiable: the total
+is what tells a reader which of the two they are being shown. That is why the law asks for the command line and the
+total, not for confidence.
+
+**What this subsection is not.** It is not a record that a hole was found and fixed, and no sentence here may be read
+as one. Measured at the same commit: `walkStaticClosure` (33 lines, header to `return`) contains **no** `lstat` and
+**no** `isSymbolicLink`, and the file's only symlink refusal is the listing leg's `:2416` — so a *referenced* symlink
+has a **single point of refusal**. A defence-in-depth hardening (an `lstat` in the closure walk plus walk-leg
+assertions) is being handled on that lane's own branch; it **adds** a second refusal, **retracts nothing**, and it is
+not what closes `F-I1b5-7`. `F-I1b5-7` is closed by measurement — that lane's round-8 real-build plants (its design
+memo §13) and the three round-9 full passes above — not by a patch. It is recorded here as a latent note with its
+owner named, so a future reader need not re-derive it, and not as a fixed hole.
+
+**Superseded, quoted rather than deleted (append-only).** This section's own banner lists, among the items still open
+after both closures, "**`F-I1b5-7`** — a symlink planted into the shipped `dist` is out of the instrument's reach
+until a build exists to plant into". A build was bought and the plants above were run, so that listed state is
+superseded. The closure text is that lane's design memo §13, which sits on the branch's **local** tip `c63d6509d`; at
+the moment of writing, `git ls-remote origin refs/heads/alpha6/lane2-pri1b-admission-20261031` answered
+`aee7cec18d69c2144d57ce62c0fc31fe55a33397`, so **the closure is not yet on the PR head**. That is the evidence
+boundary of this supersession, stated rather than smoothed over.
+
+**Re-open trigger for this subsection.** Any report of a guardrail's behaviour whose command line is not recorded;
+any filtered run reported without the label "leg isolation"; any pass count quoted without its suite total.
+Re-deriving the whole law costs one plant and two runs of the same spec, filtered and unfiltered.
+
 **Ledger consequence.** The trigger in §7.2 is recorded on the risk row that already owns the fact it consumes —
 `R-7` in `alpha6-lane2-execution-plan-20261030.md`, dated extension of 2026-11-01, with an owner and re-runnable
 checks. No new row was created: `R-7`'s controllability rests on `ALLOWED_CONSUMERS = []`, so a consumer appearing

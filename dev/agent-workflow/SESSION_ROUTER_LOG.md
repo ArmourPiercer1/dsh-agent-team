@@ -8111,3 +8111,109 @@ dated 锚点带书写时刻，不与文件名日期混写）。**本轮零 pin �
   （`/home/armourpiercer/projects/dsh-agent-team`）全程零写入（Lane 1 的 `?? probe.mjs` 是本轮之前已存在的未跟踪文件，
   如实照报、未触碰）；**:3080 全程未触碰**；GitHub 侧只有读操作（`gh pr view` / `gh api …/comments` 读评论），唯一的
   远端写是本分支这一次推送。
+
+## 2026-10-31（真实 UTC 23:28Z 起）— 两条纪律入册：① 我在 PR #522 上对同一分支/同一 worktree 重叠派发两个 subagent = 违反 ROUTER_RULES §8.3「一 worktree 一写者」，写成违规而不软化成"撞上"（纠正 = 一个 worktree 任意时刻最多一个在飞 agent，同分支第二个任务等第一个回报；更早可抓的信号 = 同 worktree 的 porcelain 由空转非空）；② 方法律「`-t` 过滤跑不是判决」入接口 memo **§7.6**（三枚种法全量跑 rc=1/1/1，同一种法加过滤器 rc=0）
+
+紧接上一条目（`:7996`，标题标签 `2026-11-01`，其正文自报书写时刻 = 真实 UTC 2026-10-31T22:32Z）。本条目的书写与
+测量时刻 = 真实 UTC 2026-10-31T23:28Z 起、末次门禁复跑 23:30:51Z（`date -u`；ROUTER_RULES §8.5.8 时钟锚点律：dated 锚点
+取书写时刻，不从上下文继承；两条标题的日期标签差一天而真实时刻只差一小时——§8.5.8.2 把历史标签冻为标识符，故不改名，
+只在这里说明先后）。本轮**零代码、零测试、零 build、零 boot、零 kit 跑、零测试战役**；唯一 tracked 改动 = 本日志一条目
++ 接口 memo §7.6 一节。
+
+- **第 1 件：一次写者纪律违规——写成违规，不软化。**
+  - **被破的规矩（逐字引 `docs/ROUTER_RULES.md`，本分支 HEAD `36d7e1694` 的 `:179` = §8.3）**：「Git 纪律按任务分包
+    §3：一任务一分支（`task/Pn-Tm-*`）一 worktree 一写者」；§0.3（同文件 `:35`）把它列为**不被取代、全局有效**：
+    「§8.3 的 git 纪律实质部分（一任务一分支一 worktree 一写者、gated 历史禁止 force-push、`master` = alpha 线 /
+    `stable` = 已裁决 RC）」——当期计划不覆盖它，也没有任何授权记录允许我绕它。
+  - **事实**：推进 PR #522 期间，我在**重叠的时间窗**里对**同一分支** `alpha6/lane2-pri1b-admission-20261031` 与
+    **同一 worktree** `.worktrees/alpha6-pri1b` 派发了**两个** subagent。其中一个在真实树里发现另一个留下的未提交
+    编辑，**没有** `reset`、**没有**覆盖：它停下、发问，并把外来 diff 备份到
+    `.artifacts/alpha6-s0/pri1b-fix9/foreign-worktree-diff/uncommitted.diff`（13,198 B）。
+  - **责任在我**：破规的是**派发设计**——我，lane owner，派发方。worker 做的正是纪律要求它做的事。把这件事写成
+    "两个 agent 撞上了"就是软化，本轮不这么写。
+  - **损害 = 零，而且是机器可核的零**（不是"看着没事"）：那份备份 diff 的两枚 pre-image blob（`b2653be83` = 该 lane
+    设计 memo、`0d80f5513` = guardrail spec）= 父 commit `aee7cec18` 里同两个文件的 blob；两枚 post-image blob
+    （`701295bbc`、`47391ce31`）= 其后落地的 `c63d6509d` 里的 blob；`git diff aee7cec18 c63d6509d` 与那份备份在抹平
+    `index` 行的 sha 缩写后**逐字节相同**（两份都 13,198 B）。外来编辑被**原样提交**（memo `+42 / −1`、spec
+    `+13 / −8`）：**tracked 内容零丢失、零被覆盖**。
+  - **两轮的结论确实互相冲突**：一轮说两界面对 symlink 全线点名拒绝，另一轮说 dist 里那枚被静默穿过、lane 外字节被当
+    lane 内容读。冲突是被**测量**结掉的，不是被职权结掉的——见第 2 件；派发者在这件事上没有裁决权，只有把两次主张放上
+    同一台仪器复跑的义务。
+  - **真正约束未来派发的纠正措施**（不是"下次小心"）：**一个 worktree 在任意时刻最多有一个在飞 agent；同一分支上的
+    第二个任务必须等第一个任务回报之后才能启动。** 实现点在**派发前**查在飞表，不在事后发现。
+  - **本来更早就能抓到的可观察信号**（记下来因为它是免费的）：那个 worker 任务开始时的 `git status --porcelain` 是
+    空的，**几分钟后同一 worktree 的同一命令非空**，而它自己一个字都没写过——同一 worktree 上 porcelain 由空转非空 =
+    **还有第二个写者在里面**的直接可观察证据。所以派发守卫的判据 = **启动前把在飞任务按 worktree 的 resolved 路径互相
+    比对**（同一路径命中两条即拒绝启动、排队等待），porcelain 空/非空只是它的事后佐证。
+  - **本轮同一信号的现场复现（不是我造的）**：本轮对 `.worktrees/alpha6-pri1b` **全程只读**（只 `status` / `show` /
+    `rev-parse`，零 fetch、零 checkout、零写入）；它在本轮首次读取时 porcelain = 0，到 23:28:19Z 再读已是
+    ` M packages/runtime/test/a6-pr-i1b-admission.test.ts`（scratch `gov-collision/proofs-before.txt` 留痕），即那条
+    lane 此刻确有另一个写者在飞。**这正是上面那条守卫要拦的形状**；本轮据此一个字节都没往那里写。
+  - **载体**：这条的载体 = 本日志。规则本体已在 ROUTER_RULES §8.3，把它改写成"最多一个在飞 agent + 派发前按路径查
+    重"的正文属对执行协议的修改，需用户裁决，本轮**不动那份文件**。
+
+- **第 2 件：一条方法律——`-t` 过滤出来的跑不是判决。** 判为 **standing rule 而非事件**，理由 = 它约束未来每一次跑，
+  不描述本轮这一次事实；**律的正本 = 接口 memo 新增 §7.6**（本条目交叉引用它；它与 memo §7.4 同族：§7.4 管一句关于
+  guardrail 的话**能说什么**，§7.6 管它**能靠哪一次跑**）。本条只登记律、它的测量、以及它照出的残留。
+  - **律**：**任何"某条 guardrail 通过 / 漏掉 / 沉默"的主张，必须出自该仪器的全量未过滤跑，并报出命令行与套件总数；
+    被过滤的跑（`-t`、挑文件、IDE 的 "run this test"）只能是"隔离某条腿"的证据，且必须这样标明。**
+  - **产生它的测量**（instrument = pristine `c63d6509d` 的 guardrail spec，全量 = **80** 条腿，跑在 scratch 克隆里，
+    捕获 = `.artifacts/alpha6-s0/pri1b-fix9/plant{1,2,3,2b}.log`）：三枚 symlink 种法**全量跑全部红**——plant 1
+    （REFERENCED，替换 `dist/packages/runtime/review-mandate/plan.js`，目标 `node:fs` 越界）
+    `3 failed | 70 passed | 7 skipped (80)`；plant 2（同文件，目标 `node:crypto` 干净）`2 failed | 71 passed | 7 skipped (80)`；
+    plant 3（ORPHAN `r9_orphan.js`，未被引用，干净）`1 failed | 72 passed | 7 skipped (80)`；**三笔 rc 全 = 1**。
+  - **那个"绿"是怎么来的**：**同一种法（plant 2）加过滤器** `-t "BUILT barrels reach the same planes"` =
+    `1 passed | 79 skipped (80)`、rc=**0**；同一份字节去掉过滤器 = rc=**1**。被过滤器排除掉的正是真正拒绝的那条腿
+    `the install surface enumerates the lane dist directories by CONTENT and classifies every file: …`——它在
+    `listDirectoryContentRecursively` 里把每个 `entry.isSymbolicLink()` 的 dirent 收下来（`:2416`，全文件唯一一处）
+    并断言为空，点名拒绝："…carries symlinks — … the install surface refuses aliases instead of scanning through
+    them: packages/runtime/dist/packages/runtime/review-mandate/plan.js"。**拒绝住在哪条腿里，过滤到嫌疑腿就把那条拒绝
+    从记录里删掉，而嫌疑腿自己的判决一动不动。**
+  - **加重的一笔，如实留着，因为它就是这个失误的一般形式**：那个错结论**不糙**——内部自洽，带 `lstat` 证明
+    （`isSymbolicLink=true isFile=false`），带真正跑过的那条腿的逐字输出，每个数字都是真的，而它描述的仍是**一次调用的
+    产物**，不是**仪器的行为**。**证据质量不能代替把整套跑完。** 同一仪器、同一种法的两个形状——`1 passed | 79 skipped
+    (80)` 与 `2 failed | 71 passed | 7 skipped (80)`——只差在总数行：只报通过数而不报总数就是不可证伪的写法，总数才让
+    读者分辨自己被展示的是哪一个。
+  - **它照出的那一件真实残留，写在这里是为了不被写成"已修好的洞"**：本轮在本地 tip `c63d6509d` 实测 `walkStaticClosure`
+    （33 行，函数头到 `return`）里 `lstat` 与 `isSymbolicLink` 命中 **0**，全文件唯一一处 symlink 拒绝在 listing 腿的
+    `:2416`——即**被引用的 symlink 只有 listing 这一条腿在拒**（single point of refusal）。防御纵深的加固（closure walk
+    加 `lstat` + walk 腿断言）**在那条 lane 自己的 worktree 上处理，不在本条记账**：它**新增一次拒绝、不撤销任何东西**；
+    `F-I1b5-7` 的关闭由**测量**负责（round-8 的真实构建三枚 symlink 实测 + round-9 上面这三枚全量跑），**不由那枚补丁负责**。
+- **向前退役（引原句；每条先用 `grep -cF` 验证命中唯一 = 1，计数按本条目入册前的历史文件计；引的是可唯一定位的原句前缀，整行更长而前缀已唯一）**：
+  本 lane 上一条目里现已滞后的现行性句子共两处，都在 `:8007`–`:8009` 那一个 bullet 内——
+  `:8008`「`F-I1b5-7`——symlink 进已发布 `dist` 这条逃逸在真实」（`grep -cF` = **1**）；
+  `:8009`「`F-I1b8-1`（`spec:2064` 的 "the one path" 为假，方向是低估）记为 nit，随下一次触碰处理。」（`grep -cF` = **1**）。
+  **退役的只是这两处的现行性**：`F-I1b5-7` 已按真实构建 + round-9 三枚全量实测关闭（关闭正文 = 该 lane 设计 memo §13，
+  落在**本地**分支 tip `c63d6509d`；`git ls-remote origin refs/heads/alpha6/lane2-pri1b-admission-20261031` 实测远端仍 =
+  `aee7cec18d69c2144d57ce62c0fc31fe55a33397`，即**关闭的正文尚未进 PR head**——这就是这次退役的证据边界，如实标出）；
+  `F-I1b8-1` 的"随下一次触碰处理"已兑现（`grep -cF 'the one path'`：`aee7cec18` = 1、`c63d6509d` = **0**）。
+  **不退役**同一句里 `F-I1a3-3` 的部分（引用仪器无法自证自检语义 = 元上限，本轮没有任何测量改变它），也**不退役**
+  「收束后仍开放的项，按设计开放，不许任何句子声称已闭合」这句**纪律**本身：它的实质是"没有测量就不得声称闭合"，本轮
+  不是绕过它，而是它要求的那次测量终于发生了；被更新的只是它列举的第二、第三项的事实状态，效力不变。`:8045` 那行
+  `P522`「→ 活 head `aee7cec18d69c2144d57ce62c0fc31fe55a33397`（+4 commit」**不退役**——远端 head 实测仍是 `aee7cec18`，本地多出的 `c63d6509d`
+  未推送。其余候选按上一轮同一方法搜过并逐行读回（计数按**本条目之外**的历史行计）：`待复审` 2 行（`:4232` / `:8086`）、
+  `下一轮` 6 行（`:1321` / `:5617` / `:7360` / `:7598` / `:8087` / `:8088`）、`还没被审过` 3 行（`:7598` / `:8089` /
+  `:8090`）、`永久开放` 1 行（`:8008`，已在上文退役）、`测不到` 3 行（`:4725` / `:6608` / `:8009`）、`随下一次触碰` 1 行
+  （`:8009`，已在上文退役）。其中属本 lane 且与本轮有关只有 `:7598`（#513 的"下一轮该攻我本轮新加的三条规则"）——
+  **不退役**，本轮没有替 #513 审那三条规则；`:4725` / `:6608` 属别的阶段；`:8086`–`:8090` 是上一轮自己的搜索记录，
+  不是主张。**没有可退役的就不制造退役对象；本轮找到两处，都是现行性说法，被引原句永久留在原处。**
+- **改了什么 / 没改什么**：改 = 接口 memo 一处（§7.5 之后新增 **§7.6**，含 dated banner、律、表格、加重段、"不是什么"段、
+  supersede 段、re-open 触发器）+ 本条日志。**没改** = §7 既有各段的任何一字（含那句被本节宣布为已被取代的 banner 句子，
+  原样留着）、任何 pin、任何已公布行号、任何既有测量或裁决；`packages/**`、`tests/**`、`dev/engineering/**`、两份被钉
+  s0 文档、`docs/ROUTER_RULES.md`、用户裁决 memo、该 lane 的设计 memo 与 spec 全部零改动。零代码、零测试、零证据新增。
+- **门禁（gov worktree，docs-only，本 commit 实测）**：`node dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs`
+  → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok … tracked=ok`（该 verifier 只评 `s0-revalidation-20261030.md` 的
+  `:75`/`:79` 两处引用与那份 addendum 的渲染，两份被钉文档 sha 未变，本轮改动不进入其评分面）；
+  `node scripts/docs-sync.mjs --check` → `docs:sync --check: docs=107 notes=4 plans=70(0 declaring) findings=0
+  blocking=0 contracts=20 pairs compared` + `AUTHORITY_SOURCE_BINDING … pointer_digest_verified=true`（不增删文档，
+  计数与上一轮同一）；`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1` →
+  `EB3-EVIDENCE-GUARD pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`（本轮量测与证明全在 gitignored 的
+  `.artifacts/alpha6-s0/gov-collision/`，证据根下零新增）。三条判决都不随提交前后改变：verifier 只读两份被钉文档的
+  内容哈希与渲染，docs-sync 是静态计数，eb3 的 base 以符号 `HEAD~1` 打印。
+- **边界与影响面**：本轮是治理文本入册，**非合并授权、非启用授权**，也不是对 §3/§4 两份跨项目契约的接口合同复核。
+  本分支 `alpha6/lane2-governance-20261031` 自有 head 的一次 fast-forward 推送，零 force、不碰 master/stable、不 amend
+  （一笔 append-only commit）。`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树全程零写入；
+  `/home/armourpiercer/projects/dsh-agent-team` 只读（其 `?? probe.mjs` 是本轮之前已存在的未跟踪文件，如实照报、未触碰）；
+  `/home/armourpiercer/deepseek-harness` 只读：porcelain BEFORE = 0 / AFTER = 0（HEAD 仍 `639ed01539…`，分支
+  `stable-3-0.2.0-rc.2`）；**:3080 全程未触碰**；GitHub 侧唯一动作是 `git ls-remote` 读，**零写**（PR 评论由用户自己发）；
+  对 PR #522 的分支只做本地对象库只读查询，未 fetch、未 checkout。
