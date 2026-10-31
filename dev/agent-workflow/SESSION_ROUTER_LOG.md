@@ -7552,3 +7552,27 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - 本轮另修掉两处我自己的环境事故：一次 `--cache-dir` 传空参在 worktree 根拉出目录 `-dir/`（18:48:45 时间戳核对后删除），
   以及 pnpm store 的 sqlite 索引在沙箱可写范围外 ⇒ 报 `unable to open database file`；第二次同样的命令直接走通了
   共享 store。**记下来的不是技巧，是顺序**：先确认失败原因，再决定要不要把状态目录搬进工作区，别一上来就搬。
+
+## 2026-10-31 — PR #513 round-7 关闭：引文改成"带标签的那一块"，以及我自己 round-6 那句 byte-equal 其实弱于我说过的
+
+`960b1886b`（verifier + 补遗）+ `01a3ff68d`（评审报告入册）；处置评论 `6542508128`，报告原文
+`dev/agent-workflow/evidence/alpha6-513/round7-report.md`。
+
+- **F-R7-1 BLOCKER 先自证再接受**：我自己写了一份"坏引文的 `~~~text` 围栏 + HTML 注释里藏正确字节的 ```text 围栏"，
+  跑出来是 `verdict=byte-equal sha256=8ba2ab061ffb`、rc=0，而文档里读者看得见的那一块写的是「租约」；连"把围栏整块删掉"
+  也照样绿。修法不是再加一条 case，而是换绑定机制：引文=**info string 带 `dsh-quote:<name>` 的那一块**，全文只允许一个
+  这样的标签；所有拼法（反引号、波浪号、长串、任意 `>` 起始行，HTML 注释不跳过）的块都必须被记账。
+- **本轮真正值得进日志的一条，是我自己上一条记录里的谎（非故意，但仍是谎）**：published quote 在 0 列围栏内缩进两格，
+  CommonMark 只剥到"围栏自身的缩进"，那两格会渲染出来；旧检查逐行 trim 过，所以 round-6 我宣布的 `verdict=byte-equal`
+  说的是**裁过的文本**，不是读者看到的字节 —— 那条引文与源行差两个前导空格。修的是文档不是检查。**教训写成一句**：
+  归一化（trim/fold/normalise）出现在"比较"这一侧时，必须逐条说出它抹掉了什么；否则 byte-equal 这个词会在你不知情时
+  替你说出你没验证过的东西。
+- 接受并落地：不可见字符折现在走 NFKC + `\p{Cf}`/`\p{Zl}`/`\p{Zp}`/`\p{Cs}` + 同形字表，指认模式不再要求前导点；
+  钉住的行**从文件里消失**一律算 finding（老化出窗口不算，两个方向都量过）；finding 打印完整 64-hex（否则"从输出里粘
+  哈希"这条律根本没法执行，也等于承认那两个真哈希不是从旧输出粘来的）；CRLF 重存的代价量成 `found=0 findings=6`
+  并写进头部披露；制造 `#` 误报的 section 规则**删掉**——删检查必须和加检查一样大声。
+- 明写不修的 rc=0：同一行里 anchor 出现两次不再算红，因为 anchor 不再是查找键。写出来，免得下一个人把它当成漏掉的洞。
+- 门禁（`01a3ff68d`）：verifier rc=0（`quotes=2 drift=0` / `found=4 pinned=6 findings=0`）、docs-sync
+  `docs=106 notes=4 plans=69(0 declaring) findings=0`、eb3 `pass added=1 … base=HEAD~1`、settlement
+  `BLOCKED-BY-MARKER marker=title-prefix matches=0 candidates=0`；净量 `+856 −0 / 7 paths`，逐 commit 求和
+  `+1299 −443`，14 commits，`packages/**` 0 个。净额降而求和升，是因为这轮就地重写了 verifier。
