@@ -91,6 +91,7 @@ import type { RemoteSafeJsonValue } from '../../contracts/src/index.js';
 import type { AdmissionRequest, GovernanceResult, OperationGrant } from '../../domain/tool-governance/src/index.js';
 import type { ControlDecisionRecord, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlWaitSignal } from '../control/index.js';
 import type { ControlCallerRef, PaCallFacts, PaControlManifest, PaEffectsVerifier, PaEffectsVerifierStage } from '../control/types.js';
+import type { SubtreeContains } from '../../domain/authority-envelope/src/index.js';
 import type { RuntimeAuthority } from '../governance/runtime-authority.js';
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js';
 /** What the plane hands the leg (frozen input shape). */
@@ -250,6 +251,27 @@ export interface PaEffectsVerifierDeps {
         readonly decider: ControlCallerRef;
         readonly stage: PaEffectsVerifierStage;
     }) => Promise<PaCallFacts | undefined>;
+    /** a5w-vseam (2026-10-31, real UTC; bw7 finding, LEG-SEMANTICS §6 ①): the
+     *  subtree CONTAINMENT seam, resolved PER CALL from the mount that
+     *  published this row. The pure-core seam parameter has existed since the
+     *  envelope law landed; the bw7 incident proved that a verifier
+     *  re-deriving WITHOUT it answers every subtree-scoped rule as
+     *  `undeterminable` → undetermined set → DRIFT → a durable DENY over a
+     *  genuinely granted allow (`ok:true` at the surface). The resolver
+     *  answers the mounted plane's own predicate — the SAME function the mint
+     *  side was assembled with (#508) — or `undefined` when the mount carries
+     *  none, in which case the fail-closed law runs EXACTLY as before:
+     *  undetermined coverage is never guessed, never defaulted. This is not a
+     *  fact (the 12-field `PaCallFacts` contract is untouched) and not a
+     *  waiver: it is the mount's containment question, asked with the mount's
+     *  own answer. Absent ⇒ the verifier behaves exactly as it did before. */
+    readonly resolveSubtreeContains?: (input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+        readonly manifest: PaControlManifest;
+        readonly decider: ControlCallerRef;
+        readonly stage: PaEffectsVerifierStage;
+    }) => SubtreeContains | undefined;
     /** TEST-only seam (CENTER↔AUTH ruling, CCR-358a follow-up). The
      *  `PaEffectsVerifierInput.facts` member is a caller-held facts
      *  pre-answer; in PRODUCTION no caller ever supplies it (the control
