@@ -412,6 +412,27 @@ const PINNED_UNRESOLVED = [
   // through the constant table above — this entry is a type annotation, not a
   // dynamic write.
   'packages/runtime/governance/proposal-store.ts::string',
+  // Alpha.6 PR-I1a's governed ReviewAssignment writer (#507, user ruling of 2026-10-31: one durable writer,
+  // reusing the existing TeamDomain ledger). Six entries, and none of them is a fact-type PRODUCER, which is the
+  // distinction the whole list exists to keep honest:
+  //  - `::string` is the port and row annotations (`readonly factType: string`) — the structural ledger-row
+  //    shape must not name a fact-type literal it does not own, exactly as in proposal-store.ts above;
+  //  - `::string; ledgerSequence: number` and `::string; readonly payload: ReviewAssignme` are the same
+  //    annotations written INLINE in a parameter type, which the line-based regex sweeps up as one match. They
+  //    are scanner artefacts, named rather than worked around: a workaround here (reformatting the annotation to
+  //    slip past the regex) would teach the next writer to hide from this guard;
+  //  - `::row.factType`, `::replay.factType` and `::reread.factType` pass through a fact type that came BACK
+  //    FROM THE LEDGER (fold input, replay short-circuit, read-back comparison). The writer cannot mint a value
+  //    at those sites, in the same way `journal.ts::row.intent.type` cannot.
+  // The one place this writer DOES mint a fact type is the kernel's `encodeAssignmentFact`, whose registry
+  // REVIEW_ASSIGNMENT_FACT_TYPES is a closed registry harvested by this file — pinned below in C1, and covered
+  // on the registration side by C1b's residual, which is still exactly one entry wide.
+  'packages/runtime/review-assignment/writer.ts::row.factType',
+  'packages/runtime/review-assignment/writer.ts::replay.factType',
+  'packages/runtime/review-assignment/writer.ts::reread.factType',
+  'packages/runtime/review-assignment/writer.ts::string',
+  'packages/runtime/review-assignment/writer.ts::string; ledgerSequence: number',
+  'packages/runtime/review-assignment/writer.ts::string; readonly payload: ReviewAssignme',
   'packages/storage/operations/journal.ts::row.intent.type',
 ] as const
 
@@ -438,6 +459,26 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     expect(DERIVED.values.has('activity-progress-recorded')).toBe(true)
     expect(DERIVED.values.has('activity-interval-opened')).toBe(true)
     expect(DERIVED.values.has('optional-requirement-accepted')).toBe(true)
+    // Alpha.6 PR-I1a's governed ReviewAssignment writer mints its fact type only through the closed registry
+    // below, so the family is a producer BY DECLARATION for this guard: read the registry out of the source with
+    // this file's own machinery (no import, no literal copy — a rename removes the entry and turns this red),
+    // then require every member to be derived and registered on both sides. This is what makes the six
+    // PINNED_UNRESOLVED entries named above about annotations and ledger pass-throughs rather than about an
+    // unpoliced writer: if the family ever stops being derived, C1b's residual widens and C1 names it here.
+    const reviewAssignment = REGISTRIES.get('REVIEW_ASSIGNMENT_FACT_TYPES')
+    expect(reviewAssignment, 'the review-assignment registry stopped being a closed registry this file can read').toBeDefined()
+    expect([...(reviewAssignment ?? [])].sort()).toEqual([
+      'review-assignment-created',
+      'review-assignment-retired',
+      'review-assignment-transferred',
+    ])
+    for (const factType of reviewAssignment ?? []) {
+      const hostKeys = [...HOST.keys()]
+      const clientKeys = [...CLIENT.keys()]
+      expect(DERIVED.values.has(factType), `derived set is missing ${factType}`).toBe(true)
+      expect(hostKeys, `${factType} is not registered in the ledger category map`).toContain(factType)
+      expect(clientKeys, `${factType} is missing from the client category mirror`).toContain(factType)
+    }
     // A sane floor: an under-collecting derivation is the failure mode.
     // 20 of the 21 registered types are reachable by the derivation (the count
     // includes A4-PR0's proposal fact); the one that is not is named by C1b, so
