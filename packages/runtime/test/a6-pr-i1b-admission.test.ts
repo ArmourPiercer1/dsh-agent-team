@@ -2045,8 +2045,12 @@ describe('ENV-REFUSED: the host-side legs still refused on this machine, recorde
 // does (node:crypto's own behaviour is graded by what it is, not by scanning); loader hooks, import maps or
 // any runtime resolution that rewrites specifiers between parse and load; bytes outside the enumerated
 // directories (this lane does not re-run `tsc` here — a build that emitted to a path outside the lane dist
-// directories would have to be caught by the next rebuild + these legs, and F-I1b5-7's symlink-into-dist
-// question is recorded OPEN, unmeasured, with symlinks inside either surface refused outright); the
+// directories would have to be caught by the next rebuild + these legs; F-I1b5-7's symlink questions were
+// MEASURED at a real build in a scratch clone 2026-11-02, memo §13: `tsc` follows a lane-src symlink, its
+// target in-repo or outside rootDir, and re-emits the target's bytes into the lane dist directory under the
+// link's name as a REGULAR file — which the install surface then convicts by content — and it neither
+// follows nor overwrites an alias standing inside lane dist; symlinks inside either surface stay refused
+// outright by the listing legs); the
 // semantics of names the vocabulary never heard of — which is precisely why the vocabulary net is the
 // SECOND net and the allow-lists are the rule; and, conceded by round 6's F-I1b6-1 in plain words: a
 // capability reached under a name this scan does not know. A name-based tripwire fires when review misses;
@@ -2061,8 +2065,7 @@ describe('ENV-REFUSED: the host-side legs still refused on this machine, recorde
 // folds — the key grammar actually graded, and the gaps that grammar leaves, are said at the leg), pins the
 // graded count to a second key-count pass and to the measured floor (what that guard can and cannot prove
 // is said at the leg, not here), drives the throwing existence branch live — since round 7 pinning that
-// verdict's EXACT live key set, the one path where a live shape is closed against widening — and pins
-// parsed plans to their input's effect scopes (F-I1b5-5).
+// verdict's EXACT live key set — and pins parsed plans to their input's effect scopes (F-I1b5-5).
 //
 // WHAT THESE LEGS DO NOT DO (register discipline, #502): they change no closed scope form, they add no
 // adapter, they invent no behaviour the interface does not already freeze. Where the interface carries an
@@ -2400,8 +2403,10 @@ function walkStaticClosure(entries: readonly string[], extensions: readonly stri
  *  what analysis a byte gets, with a red for anything that fits no category. Symlinks are REFUSED outright
  *  (listed, then convicted): a symlinked file is not a file of this directory, and what it points at is
  *  outside the listing's claim — round 5's R3 plant showed a symlink alias passing text scans when its
- *  target is clean, and F-I1b5-7's `tsc` symlink behaviour is still unmeasured, so neither surface tolerates
- *  aliases inside itself. */
+ *  target is clean, and F-I1b5-7 was MEASURED at a real build (memo §13): `tsc` re-emits a followed
+ *  lane-src symlink's target bytes into lane dist as a regular file the install surface convicts, and
+ *  leaves an alias standing in lane dist untouched — so the refusal stands on measurement, not on caution:
+ *  neither surface tolerates aliases inside itself. */
 function listDirectoryContentRecursively(dir: string): { files: string[]; symlinks: string[] } {
   const files: string[] = []
   const symlinks: string[] = []
@@ -2560,7 +2565,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
       // others must be reached by the walk or this leg reddens — under the old `['.ts','.mts']` filter it
       // was invisible to both measurements at once, which is the exact pair-blindness round 6 planted.
       const listing = listDirectoryContentRecursively(join(RUNTIME_ROOT, laneDir))
-      expect(listing.symlinks, `${laneDir} carries symlinks — an aliased module is not a file of this directory, and its target is outside what a listing can attest to (F-I1b5-7 leaves tsc's symlink behaviour unmeasured, so the surface refuses aliases rather than trusting them):\n${listing.symlinks.join('\n')}`).toEqual([])
+      expect(listing.symlinks, `${laneDir} carries symlinks — an aliased module is not a file of this directory, and its target is outside what a listing can attest to (F-I1b5-7, measured 2026-11-02 at a real build, memo §13: tsc follows this kind of alias and re-emits the target's bytes into the lane dist as a regular file — so the surface refuses aliases rather than trusting them):\n${listing.symlinks.join('\n')}`).toEqual([])
       const scripts = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'script')
       const nonScripts = listing.files.filter((rel) => laneSurfaceCategory(rel) !== 'script')
       expect(nonScripts, `${laneDir} (a SOURCE directory) carries files that are not lane modules — a source lane holds scripts; anything else is either a build artifact in the wrong place or a file kind this instrument has not been told about, and neither may be skipped silently:\n${nonScripts.join('\n')}`).toEqual([])
@@ -2640,7 +2645,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
       const distDir = join(RUNTIME_ROOT, 'dist', 'packages', 'runtime', laneDir)
       expect(existsSync(distDir), `the built lane directory ${relToRepo(distDir)} is missing — there is no install surface to scan`).toBe(true)
       const listing = listDirectoryContentRecursively(distDir)
-      expect(listing.symlinks, `${relToRepo(distDir)} carries symlinks — tsc's symlink behaviour is an OPEN unmeasured question (F-I1b5-7), so the install surface refuses aliases instead of scanning through them:\n${listing.symlinks.join('\n')}`).toEqual([])
+      expect(listing.symlinks, `${relToRepo(distDir)} carries symlinks — measured 2026-11-02 (F-I1b5-7, memo §13): tsc neither follows nor overwrites an alias standing in lane dist, but the alias still ships and the listing cannot attest to its target, so the install surface refuses aliases instead of scanning through them:\n${listing.symlinks.join('\n')}`).toEqual([])
       expect(listing.files.length, `${relToRepo(distDir)} lists no files at all — this leg would be scanning nothing`).toBeGreaterThan(0)
       const scripts = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'script')
       const maps = listing.files.filter((rel) => laneSurfaceCategory(rel) === 'excluded-data')

@@ -417,7 +417,9 @@ S3 `process.binding`、S4 `process.dlopen`、S5 dist 孤儿模块）全部 `75 p
   与标量值定级（F-I1b5-4，种在 ADMISSION_REQUEST_MALFORMED 上必须红）；新增解析↔输入保真腿——parsed plan 的
   `effectScopes` 必须逐条等于输入（F-I1b5-5，validation 后注入 scope 的装配改动能红）。
 - **开放测量（不猜）**：symlink 指向干净目标、以及 `tsc` 对 symlink 源文件的 dist 行为，本轮无构建许可未测，
-  记 OPEN（F-I1b5-7）；界面律先按"拒绝 symlink"执行，不等测量结果。
+  记 OPEN（F-I1b5-7）；界面律先按"拒绝 symlink"执行，不等测量结果。（**已于 2026-11-02 补测关闭**，见 §13：
+  真实构建实测支持维持"直接红"的界面律，规则一字未扩；同日按 round-8 F-I1b8-1 删去 P-2 头注一处与
+  自家腿注矛盾的 "the one path" 从句。）
 
 ## 12. dated 2026-11-01（round 6 更正，F-I1b6-1/2/3/4/5/6/7/10）：把规则补到的地方补上，补不到的地方把边界句子撤下来
 
@@ -497,3 +499,42 @@ shipped-dist 原位种 V4，实测 `process.chdir` 成功）逐枚落在已披�
   事实中任何一件改变——那时 P-1 重新定标为 boundary，行为性检查（活 verdict 逐路径 `Object.keys` 精确闭形、
   判别联合穷尽性）写进 #502 接口契约，而不是继续往名字规则上加条款。不可折叠的成员/键拼写保持披露原样：
   不为它们写规则，不写任何声称抓住它们的句子，也不维护无限清单。
+
+## 13. dated 2026-11-02（fix8：F-I1b5-7 **补测关闭**，F-I1b8-1 从句删净——最后一条需要真实构建的发现）
+
+round 7 处置与 round 8 评审都留着同一句话：`.cts → .cjs` 只有 `tsc --listFiles` 的程序半证据、
+symlink 两问（指向干净目标 / `tsc` 对 symlink 的 dist 行为，F-I1b5-7）在无构建许可的轮次里量不了。
+本轮把构建买回来：`git clone --local --no-hardlinks` 出 scratch 克隆（node_modules 与
+`tests/deepseek-harness-test-use` 软链回 worktree），构建命令
+`pnpm --filter ./packages/runtime exec tsc -p tsconfig.build.json`，全部实种/实 build 只发生在克隆里；
+真实 worktree 全程 porcelain 0，`packages/runtime/dist` 前后逐字节同摘要
+（find+sort+sha256 名单 `5321132607…`、内容 `725e510e35…`，两轮 build 未泄漏一个字节），未 push、未碰 GitHub、
+未 boot、未跑 kit。
+
+- **`.cts` 发出的字节（round 7 缺的那一半）**：孤儿 `r8orphan.cts`（`import fs = require('node:fs')`）与
+  对照 `r8clean.cts`（只用 allow-list 上的 `node:crypto`）种进 `review-mandate/` 后 build `rc=0`，各发出
+  **四枚**文件 `X.cjs / X.cjs.map / X.d.cts / X.d.cts.map`（`declaration+declarationMap+sourceMap` 实测），
+  全部落在 install-surface 腿枚举的同一 dist 目录；归类律按字节后缀：`.cjs` 与 `.d.cts` 进分析器（`.map`
+  走 `sourcesContent` 排除条件，实测 absent=通过）。对重建后的克隆跑 spec：**越界枚红三腿 rc=1**
+  （install-surface 腿点名 `…/r8orphan.cjs:2 require names external module 'node:fs'`；src 侧 DERIVED 腿点名
+  两枚孤儿；仪器自评的"真实字节必须干净"腿点名 src 越界字节 3 failed | 77 passed）；**干净枚 rc=1 但只红
+  可达性对账**，点名 `onlyInListing:["…/r8clean.cjs"]`（扫描全过、可达性另断——两条主张两条腿各自兑现）。
+  无静默通道：`.cts` 的名字与字节两侧界面都追得到。
+- **F-I1b5-7 关闭（三枚 symlink 实测，spec 全部点名拒绝，无一静默）**：(a) lane **src** 内 symlink 指向
+  越界模块（目标在仓库内、rootDir 下）：build `rc=0` **跟随**——`tsc` 把目标字节以链接名作为**普通文件**
+  再发出进 lane dist（`r8src-link.{js,js.map,d.ts,d.ts.map}`），spec 三条腿红：src 枚举腿点名 symlink 本身，
+  install-surface 与仪器自评腿点名再发出的**普通**字节（`r8src-link.js:1 import-declaration names external
+  module 'node:fs'`）——拒绝句与实测一致：界面不跟随 symlink 去*枚举*它，而 tsc 的跟随产物被字节扫描接住，
+  两道网都在。(b) lane **dist** 内 symlink 指向 lane 外越界文件：install-surface 腿点名拒绝 rc=1，且带此
+  symlink 重新 build `rc=0`、目标文件 sha256 前后一致——`tsc` 对 dist 内已存在的 alias **不跟随、不覆写**，
+  与"拒绝而非穿过扫描"的自称逐字相符。(c) src symlink 指向**仓库外**目标（绝对软链）：build 同样跟随并再发出
+  `r8far-link.js` 进 lane dist，spec 三条腿点名红——目标在不在仓库里不改变任何一腿的行为。
+  **裁决**：界面律实测成立，规则一字不扩，F-I1b5-7 由此关闭；spec 三处"OPEN/unmeasured"句子按实测改写为
+  measured，两处拒绝消息里的理由句同步换成实测事实（消息文本变动不影响任何断言计数）。
+- **F-I1b8-1（MINOR，round 8）**：P-2 头注 "the one path where a live shape is closed against widening" 与
+  自家 S-5 腿注（:726-728，说的是两枚）及 P-2 两条活腿（一条再闭一枚 door refusal、一腿闭三枚 mandate
+  verdict）矛盾——按评审原话"删除该从句"，其余句子一字不动。本条 = 本轮唯一的 tracked 文件正文更正。
+- **门（真实 worktree，commit 后）**：spec `Tests 80 passed (80)`（计数不动——本轮只动句子）；四文件 authored
+  腿 `201`；12 文件 family `471`；runtime typecheck rc=0；eslint（spec 路径）rc=0；`docs-sync --check` 与
+  `eb3-evidence-guard --new-since HEAD~1` 均 rc=0；`git diff --name-only HEAD~1 HEAD` 只有 spec 与本 memo。
+  scratch 全部留在 `.artifacts/alpha6-s0/pri1b-fix8/`（日志/克隆/实种字节），`packages/**` 零残留（p4t6 trap 避开）。
