@@ -103,3 +103,10 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - 有效格判据：五目标格任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=停线升级。
 - 收据：run-bw7.json + oracle + host-starts.jsonl 行 + 本册回执，缺一即违规。
 - 机动格回执 1/2（dated 2026-10-31T01:35Z）：bw7 真实启动 1（账本第 5 行），有效格=是（RCA-6 修正证实 + B 行 deny 新具名失败+判别子）。机动 2/2 **冻结中**：待 LEG-SEMANTICS 调查定甲/乙后按需启用（甲=套件契约修正后再烧；乙=产品缺口立项，不烧）。
+
+## bw8 机动预登记（lane=a5w-bootwave，dated 2026-10-31T04:18Z；C4 机动 2/2=最后一格，用户 2026-10-31 裁决）
+- 前置①离线预检：本 head 全套 PASS（140 --dry exit0；registries 12/12；test-use pristine @639ed01539 porcelain=0；#510 已入 master 并被本 head forward-merge 携带=修复在 boot 树内）。
+- 前置②具名归因：RCA-7+LEG-SEMANTICS-INVESTIGATION=乙级产品缺陷定案（pa-control-bridge 三处纯核调用不传 seam → B 行 allow 被记 deny）；该修复只能真机验证（C1 已绿但 L4 判据=真实 Host 正向效果读回），C4 常规余额 0/4、机动 1/2 已烧，证明确有本格之需。
+- boot head=968ecc895f 系（本预登记 commit 后 HEAD）；max-host-starts=6（账本 5 行+本格）。
+- 有效格判据：ri:ask-approved-ran/ri:attachment-commit-one/ri:tool-output-two-blocks/ri:store-law-zero-commit 任一绿=有效；全红但新具名失败+trace=有效 RCA 格；无新信息=**停线升级用户**（机动池见底，不再自行动格）。
+- 收据：run-bw8.json + oracle + logs + host-starts.jsonl 行 + 本册回执，缺一即违规。
