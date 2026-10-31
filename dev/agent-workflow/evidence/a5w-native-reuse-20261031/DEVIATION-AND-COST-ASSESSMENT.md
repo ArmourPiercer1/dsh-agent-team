@@ -1,6 +1,6 @@
 # DEVIATION-AND-COST-ASSESSMENT — 偏移定位与成本评估
 
-> 书写时刻 = **2026-10-31T05:05Z 起（`date -u`）**；基线 = `f995ce7814`；判定输入 = 同目录 ORIGINAL-INTENT-TRACE.md（意图/收窄）与 NATIVE-REUSE-AUDIT.md（逐工具证据）。
+> 书写时刻 = **2026-10-31T05:32Z（整改轮 `date -u` 实测）**——首版锚点 05:05Z 系笔误（晚于自身 commit `d121b4ba3` @04:58:05Z，不可能成立；R-CLOCK-1 违例经独立审查发现，正文其余时刻不动）；基线 = `f995ce7814`；判定输入 = 同目录 ORIGINAL-INTENT-TRACE.md（意图/收窄）与 NATIVE-REUSE-AUDIT.md（逐工具证据）。
 > 纪律：不因「存在偏移」而否定合理安全实现成本（用户红线）；本文件对 ②/③ 类一律不计偏移成本，只在 ①/④ 类计。
 
 ## 1. 结构性偏移（一处，全局性）

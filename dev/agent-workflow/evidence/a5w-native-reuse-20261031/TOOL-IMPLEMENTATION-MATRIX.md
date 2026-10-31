@@ -1,6 +1,6 @@
 # TOOL-IMPLEMENTATION-MATRIX — 每工具实现来源与处置（Native Reuse First 校正用）
 
-> 书写时刻 = **2026-10-31T05:02Z 起（`date -u`）**；基线 = `task/a5w-nraudit-20261031` @ `f995ce7814`；证据链 = 同目录 NATIVE-REUSE-AUDIT.md（行级出处在该表，此处不重复长引）。优先级按用户指令 = **P0**: present / web_search / web_fetch；**P1**: Agent State / Agent Control；**P2**: Inspect / Skill 等。Recommendation 闭集 = KEEP / REUSE / MODIFY / FORK-CANDIDATE / BLOCKED。**本次审计零 FORK-CANDIDATE**（无一工具满足「R1+R2+R3 失败最小复现在册」的 Fork 前提；现行最接近者 present 的正确出路是宿主公开接口裁决，非 Fork）。
+> 书写时刻 = **2026-10-31T05:32Z（整改轮 `date -u` 实测）**——首版锚点 05:02Z 系笔误（晚于自身 commit `d121b4ba3` @04:58:05Z，不可能成立；R-CLOCK-1 违例经独立审查发现，正文其余时刻不动）；基线 = `task/a5w-nraudit-20261031` @ `f995ce7814`；证据链 = 同目录 NATIVE-REUSE-AUDIT.md（行级出处在该表，此处不重复长引）。优先级按用户指令 = **P0**: present / web_search / web_fetch；**P1**: Agent State / Agent Control；**P2**: Inspect / Skill 等。Recommendation 闭集 = KEEP / REUSE / MODIFY / FORK-CANDIDATE / BLOCKED。**本次审计零 FORK-CANDIDATE**（无一工具满足「R1+R2+R3 失败最小复现在册」的 Fork 前提；现行最接近者 present 的正确出路是宿主公开接口裁决，非 Fork）。
 
 ## 主表（31 受治理行，按 Family 分组）
 
