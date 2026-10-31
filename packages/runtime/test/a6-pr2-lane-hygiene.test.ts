@@ -49,8 +49,18 @@ const ALLOWED_CONSUMERS: readonly string[] = []
 
 const FOUNDING_MODULES = ['facts.ts', 'handoff.ts', 'index.ts', 'router.ts', 'types.ts']
 
-/** A new module in this lane is a deliberate amendment, named in the PR that adds it. */
+/** A new module in this lane is a deliberate amendment, named in the PR that adds it. Sorted, because the leg
+ *  below compares against the on-disk list. */
 const EXTRA_MODULES_ALLOWED: readonly string[] = [
+  // Alpha.6 PR-I1b (2026-10-31, memo `pri1b-admission-design-20261031.md` D-1 as amended by §9): the entry
+  // admission for assignment DECISIONS. In-lane for the same reason as the writer, with the direction reversed:
+  // the kernel's pure rules (`checkAssignmentMutation`, `foldReviewAssignmentRows`) are the things admission must
+  // consult rather than paraphrase, and the memo chose this name precisely because `packages/runtime/admission/`
+  // and the protected `tool-admission/` already exist — a third bare "admission" in the tree is a planted
+  // misunderstanding. The module is READ-ONLY by construction (its ports carry no write handle) and its wiring is
+  // BLOCKED on the named Center-Interface act — its header says why, and `ALLOWED_CONSUMERS` staying empty below
+  // is that blocked state measured, not forgotten.
+  'assignment-admission.ts',
   // Alpha.6 PR-I1a (2026-10-31): the durable writer whose absence `types.ts` A-8 recorded out loud. It sits
   // INSIDE the lane rather than beside it for one reason: the row shape, the CAS pre-flight and the authority
   // denylist are the three things a writer must not be able to bypass, and an `import` is not a boundary —
