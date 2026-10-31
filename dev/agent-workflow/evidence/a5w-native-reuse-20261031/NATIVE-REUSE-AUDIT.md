@@ -43,6 +43,8 @@
 | update_goal | 同上 | 同上 :234 | 宿主 `ctx.goals.edit/complete/block/pause/resume` | 同上 | 同上 | 同上 | 同 create_goal | 同上 | **REUSE** | 同上 |
 | exit_plan_mode | 同上 | `packages/plan/plan-mode/src/index.ts:278` | 宿主 plan-mode（宿主注册 `plan` 资源/工具 :218/:233） | family-body 自有 plan 面 | 宿主 plan-mode 服务面 **UNKNOWN**（未深读，标 UNPROVEN） | agent-state 行内 plan 法自有 vs 宿主 plan-mode 577 行 | ② plan 提交受治理 | R1 装配；复用面未调查 = UNPROVEN | **MODIFY**（P1：同 lane 复用面调查先行，后定） | L3 缺口（类别①）；L4 PROVEN |
 
+**dated 注记（2026-10-31T11:53Z，#526 审查两条 LOW 勘误席 workflow C 追加；日期分量 = 书写时刻 `date -u` 实取，R-CLOCK-1；追加式：上表原行照留、不 escape）**：主表 `web_search` 行的 Native Execution 格含未转义竖线（`packages/web/web-search-deepseek|exa|perplexity`），该行按竖线切分读作 13 列 ≠ 表头 11 列；用列序法（按第 10 列取 Recommendation）重数时该行整体错位，会漏计其 REUSE（本席实测：列序法得 `KEEP`21/`REUSE`3/`MODIFY`4/`BLOCKED`2，合计 30≠31 行，缺的正是 web_search 行）；用粗体闭集 token 法重数（对主表 31 行逐行提取被双星号包裹的 `KEEP`/`REUSE`/`MODIFY`/`BLOCKED`/`FORK` 词）= **KEEP 21 / REUSE 4 / MODIFY 4 / BLOCKED 2 / FORK 0**（合计 31 = 行数 ✓，与 STATUS 快照及 sync16 记载一致），**粗体闭集 token 法为本文计数的正确口径**。本注记只登记方法口径，不改任何计数结论，不修订上表任何原行（含该未转义竖线，append-only）。
+
 ## A 区 — 相邻义务行（非 Family 装配，但属 58 REQUIRED 或治理面事实）
 
 | 名集 | 义务/来源 | 现状（实读） | Recommendation | 说明 |
