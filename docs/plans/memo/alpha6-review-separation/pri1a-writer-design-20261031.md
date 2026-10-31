@@ -225,7 +225,7 @@ readFileSync 要求头部同时说到这四句、且不再出现 "which of three
 但 `deps.ledger.list()` 在本模块被调用四次：分配前的折叠读、catch 里的重读、写成功后的 read-back、以及末尾算
 状态那次。round 2 用一字节损坏的行测出 ①与③ 直接把异常抛给调用方 —— ③ 正是被保护的那个问题在隔壁站点没有
 任何分支。四处现在各有分支，且都由一条腿逐个点名驱动（`answers with a refusal instead of an exception at
-EVERY read of the injected ledger`，四种 fail-at 组合，断言"没有任何东西抛到调用方"而不是"某处不抛"）。
+EVERY read of the injected ledger`，四种 fail-at 组合，断言"没有任何东西抛到调用方"而不是"某处不抛"）。 端口的 TYPE 对 `list()` 能否抛只字未提 —— 复核者「本树不可决定」第一条正是这一点；现在这句话写在端口文档上，并由那条腿用 readFileSync 钉住：**适配器可以递来一个会失败的账本，合同照样给出回答**，不许的是递来一个靠隐瞒说谎的账本。
 
 **R-18 「只有 writer.ts 能追加这一族」的扫描，被三行代码绕开过。** `const append = ledger.put.bind(ledger)`
 ＋ `ledger['put'](row)` 都不写 `.put(`；`SOURCE_EXTENSIONS` 里缺 `.mts`/`.cts`（本树 30 个受跟踪文件带这两个
