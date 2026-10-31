@@ -162,6 +162,80 @@ named sha — a later reader re-measures rather than trusts the line.
 > class of pin has nothing to re-check in this document, and the live referent of the `GOV` label is PR #513's
 > head, named in the first row.
 
+> **Second dated re-check of every pin above, written and measured at real UTC 2026-10-31T22:32Z–22:42Z
+> (`date -u`) — the closure round of PR #517 and PR #522.** Same method, same rule: a **pin is a measurement point
+> and stays**; only the parenthetical claiming currency can rot. Trigger for re-running it: both lanes closed for
+> themselves this round (§7), so both published "live head" labels above were already stale — that is the expected
+> behaviour of a label over a moving branch, and it is reported, not argued with. Method per pin: `gh pr view <n>
+> --repo ArmourPiercer1/dsh-agent-team --json number,headRefOid,headRefName,baseRefName,state,isDraft,changedFiles,
+> additions,deletions` for the live head → `git fetch origin <branch>` (objects only — no checkout, no HEAD move, no
+> worktree touch) → `git diff --name-only <pinned sha> <live head> -- <the paths the claim actually anchors>`, with
+> the repo-wide range reported too so a reader can see what was *not* anchored. Commands verbatim in Appendix A.2.
+> **Nothing moved: zero pins changed, zero locators retyped, zero measurements deleted.**
+>
+> - **`GOV` → live PR #513 head `fe8918209a94c03bedd15f334135b11670301861`**, 2 commits after the `f559ff2ec…` label
+>   above (that memo-publication commit, plus the previous round's pin re-check commit). Re-diffed pinned → live for
+>   the same 11 files whose locators §2.1–§2.4/§2.6/§3/§4 publish: **empty — 0 changed files**; repo-wide the range is
+>   3 files, all of them this lane's own prose (`dev/agent-workflow/SESSION_ROUTER_LOG.md`, this memo, and the
+>   execution-plan memo). So every published locator above still reads true at the live head, and the row's currency
+>   label is stale in the only way a governance branch's can be — by governance commits happening. The live referent
+>   of this label moves again with **this** round's commit, which is disclosed here rather than chased.
+> - **`P531` → live head `32b81fcd8b3b5ab8d2c2089d743425438edf3ad8` — unchanged**; the pinned→live diff is empty by
+>   identity. Re-read anyway because §0 quotes more than the sha: `state=OPEN`, `isDraft=true`, `baseRefName=master`,
+>   `changedFiles=4`, `+406 / −0`. Nothing to correct, and this bullet is here so the reader knows the freshness check
+>   ran on all four pins, not on the two that moved.
+> - **`P517` → live head `199e18cc45f81d3b2b8fa757c78418b7da744ac4`**, 4 commits after the `3ac9fd52e…` label above
+>   (that round's fixes plus round-4 and round-5 fixes). Re-diffed pinned → live for
+>   `packages/runtime/review-assignment/writer.ts`, for `packages/runtime/test/a6-pr2-lane-hygiene.test.ts` and for all
+>   of `packages/`: **empty — 0 changed files**; `writer.ts` byte-identical (sha256
+>   `6c1d5ee469df6b80e4ee162d3ff25a2d7215134da2752ddb4677659eaa1964ec` at both endpoints), the writer spec
+>   `packages/runtime/test/a6-pri1a-writer.test.ts` byte-identical (`2e6412b0c7a0b224c53dce08c0db8afb1a1dc789b45aaa5806f974d90c5932ed`
+>   at both), and `const ALLOWED_CONSUMERS: readonly string[] = []` still at `:48` — §2.5's measured dark-writer fact
+>   is untouched. Repo-wide the range is **128 files**: 126 under `dev/agent-workflow` (real-host evidence), the PR-I1a
+>   design memo, and one kit file. **The guardrail instrument on this PR did move**, and saying so is the point of
+>   this bullet: `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs` went from sha256 `1e34a06880b478b3…` at the pin to
+>   `16887de54cbc1322…` at the live head (+538 / −21, 539 → 1055 lines) — the driver whose FAIL header §2.5's family
+>   of claims grew around. **This memo cites no line number inside that driver**, so no locator here moves; what the
+>   move does prove is the general rule for anyone quoting that lane: a sentence naming a line in that file is true
+>   only at the commit it names, and the lane's own record already says the byte-identical FAIL header holds from
+>   `64f005cde` onward, not from the pin.
+> - **`P522` → live head `aee7cec18d69c2144d57ce62c0fc31fe55a33397`**, 4 commits after the `f773d1603…` label above
+>   (`cb7c961f6`, `f773d1603`, `afc17dd63`, `aee7cec18` — rounds 5 through 8 of that PR). Re-diffed pinned → live over
+>   the same four path sets the previous round used — `packages/runtime/review-assignment`,
+>   `packages/runtime/review-mandate`, `packages/runtime/dist`, `packages/contracts/src` — **empty — 0 changed
+>   files**, so **the content claim recorded in the block above still holds, two commits further out**: the door
+>   `assignment-admission.ts` is byte-identical at all three commits (sha256 `1d0195f3cc309c6d4825c3ecc6ad0f1b364cce226d2b4a92497b709c4cdd763f`)
+>   with `ASSIGNMENT_ADMISSION_ROLE_CLOSURE` still at `:229`, the lane `dist` and `packages/contracts/src` moved not
+>   at all, and the module is still **absent** at live `P517`, `P531` and `GOV` (`git cat-file -e` → ABSENT three
+>   times), so §2.3's "exists only on `P522`" holds at every live head. `const ALLOWED_CONSUMERS: readonly string[] =
+>   []` is still an empty list at `:56` of that branch's copy of the PR2 hygiene spec.
+>
+> **What genuinely moved on `P522` — the guardrail spec itself, and what that does to line-number sentences.**
+> Repo-wide, `P522 → live` moved exactly 2 files: that lane's design memo (`+107 / −0`) and
+> `packages/runtime/test/a6-pr-i1b-admission.test.ts` — **the guardrail spec, `+1428 / −2`, 2051 → 3477 lines**. That
+> file is the one §2.3 cites for the two-way role-closure pin, so the sentence in the block above that published
+> `:1045-1047` as the live position is now itself a stale measurement, and it stays visible: the same three assertion
+> lines are at **`:1100-1102`** at `aee7cec18` (the enclosing `it('the role-closure mirror equals
+> CONTROL_RESOLVER_ROLES…')` header sits at `:1096` there, having travelled `:1030` → `:1041` → `:1096`), and the
+> three-line slice is byte-identical at all three places — sha256
+> `17c7a23e18b628fbf0fccdd81d5d54bc27784e191e7c3685b18913e89908ca28` at `P522:1034-1036`, at `f773d1603:1045-1047`,
+> and at `aee7cec18:1100-1102`. Recorded **beside** both older numbers, not instead of them. The plain statement the
+> user asked for: **the guardrail spec moved (its spec and its memo moved on both PRs), and any sentence that cites a
+> line number in those files — in this memo, in the execution log, or in a future report — is true only of the commit
+> it names.** Nothing in §2.3's *claim* changed; the locator's currency did. Both moved lanes' spec-plus-memo pairs
+> are the same shape: prose and instrument advance together, so a locator is worth exactly what its commit label is
+> worth.
+>
+> **Machine-authority pin, re-checked again because it outranks the commit labels.**
+> `dev/engineering/current-authority.json` is byte-identical at `GOV`, at the live PR #513 head `fe8918209…` and in
+> this worktree (sha256 `42465659edeb03d85f42975969c77b2790827ee91228c7e48ef13ee438ffb0ae`) — still `as20261026r1` /
+> `sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4` — and `node scripts/current-authority.mjs`
+> still answers `"ok":true, "status":"POINTER"` with `phase_id=alpha5-tool-io-governance` and
+> `active_plan=docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md`, `two_current_findings=[]`.
+> So §0's "PR #364's plan remains the machine-active contract" is measured, not remembered. This memo still pins no
+> host/baseline commit sha, so that class has nothing to re-check here — no value of `DSH_BASELINE_VERSION` /
+> `TEST_USE_BASELINE_SHA` appears in this document, and that is stated rather than left for a reader to discover.
+
 **2.1 `CONTROL_REQUEST_KINDS` — the closed request vocabulary (GOV).**
 `packages/runtime/control/types.ts:163` —
 `{ LEADER_APPROVAL: 'leader-approval', USER_APPROVAL: 'user-approval', ENVELOPE_MUTATION: 'envelope-mutation' }`
@@ -365,6 +439,27 @@ Three explicit rules. Until the interface contract of §3/§4 is re-confirmed, t
     carries PR-I1b's added legs, which is why its number is not §2.5's `:48` at `P517` or `:47` at `GOV`; each
     number stays labelled by its own commit). Draft + DO-NOT-MERGE + "enables nothing" re-read true; the §2
     dated re-check carries the content diffs behind this line.
+  - *Second dated correction to that label, written and measured at real UTC 2026-10-31T22:32Z–22:42Z (`date -u`)*:
+    the correction above names `f773d1603…` as the live head and it is two commits behind — live PR #522 head at this
+    re-check is `aee7cec18d69c2144d57ce62c0fc31fe55a33397` (`state=OPEN`, `isDraft=true`, `baseRefName` =
+    `alpha6/lane2-pri1a-writer-20261031`, 28 files, `+7441 / −28`). Both shas stand as **what was measured at their
+    own moment**, and neither is the pin. This bullet's claims were re-measured at the new head: the diff adds no
+    protected-centre file (`packages/runtime/control/` → 0 files across `P522 → live`, and `dev/engineering/
+    current-authority.json` untouched there), `const ALLOWED_CONSUMERS: readonly string[] = []` is still empty at
+    `:56` of that branch's hygiene copy, and the admission module is still absent at every other live head. What
+    *did* move between the two labels is the lane's own **guardrail spec**
+    (`packages/runtime/test/a6-pr-i1b-admission.test.ts`, +1428 / −2) plus its design memo — measured content, not a
+    label — and §7 records what that means for the guardrail's status (nothing: it is a tripwire whose backing facts
+    are the three above, and those three are unchanged) while the §2 second re-check records what it means for line
+    numbers (every one of them is bound to its commit). The PR closed for itself at this head as
+    instrument-plus-honest-disclosure, with `F-I1b5-7` (symlink-into-`dist`) left open pending a build — this bullet
+    does not claim that gap closed.
+  - *Same round, PR #517's label*: the Keep bullet above names `P517` only as a pin and never claimed currency, so
+    there is nothing to correct there; for the record, live PR #517 head at this re-check is
+    `199e18cc45f81d3b2b8fa757c78418b7da744ac4` (`state=OPEN`, `isDraft=true`, base =
+    `alpha6/lane2-pr2-assignment-20261031`, 173 files, `+28834 / −55`), it closed for itself as
+    instrument-plus-honest-disclosure with the `F-I1a3-3` meta-ceiling **left open by design**, and §2.5's
+    dark-writer facts (`writer.ts` byte-identical, `ALLOWED_CONSUMERS = []` at `:48`) were re-measured there.
 - **PR-I2's floor-delayed timed-wake carrier.** `CORE_SEAM_BLOCKER` unchanged — status OPEN, scope
   strictly the floor-delayed carrier sub-capability
   (`dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`). The external review's
@@ -380,6 +475,116 @@ current regime is deliberately paused by user ruling* (§0). The pause is a deci
 restart condition (interface re-confirmation), not a stall, not a blocker, and not evidence that the
 lane has stopped: docs, design reviews, dark-lane kernel work, and this memo's class of governance
 work continue.
+
+## 7. Scope rulings recorded at the closure of the two guardrail PRs
+
+> **Dated 2026-11-01, written at real UTC 2026-10-31T22:32Z (`date -u`; ROUTER_RULES §8.5.8 clock-anchor law —
+> this banner carries the writing instant, not a filename date).** PR #517 and PR #522 were each **closed for
+> themselves** this round — closed *for that PR*, as **instrument-plus-honest-disclosure**, not merged: both stay
+> Draft + DO-NOT-MERGE and §6's holds are unchanged by this section. Sources, named so a reader can re-read them:
+> closure comment `6549996923` on #517 (head `199e18cc45f81d3b2b8fa757c78418b7da744ac4`, round-5 review
+> `0 BLOCKER / 0 MAJOR / 1 MINOR / 3 INFO`) and closure comment `6549996746` on #522 (head
+> `aee7cec18d69c2144d57ce62c0fc31fe55a33397`, round-8 review `0 BLOCKER / 0 MAJOR / 1 MINOR / 5 INFO`). The two
+> review reports themselves live in lane scratch and a reader does **not** have them, so everything a ruling leans
+> on is quoted here rather than pointed at. Still open after both closures, by design and not by oversight:
+> **`F-I1a3-3`** — the quoting instrument cannot certify the *meaning* of its own self-check (measured
+> meta-ceiling; open by design, and no sentence in this repository may claim it closed) — and **`F-I1b5-7`** — a
+> symlink planted into the shipped `dist` is out of the instrument's reach until a build exists to plant into.
+> One recorded nit rides the next touch: `F-I1b8-1` (`spec:2064`, "the one path" is false; understating direction).
+
+**7.1 A static scan over source text is not a capability boundary.** Both lanes' guardrails are **review-time
+tripwires**, and their real load is carried by measured facts and by code review, not by the scan:
+
+- In the lane's own words (PR #522 design memo §12, `pri1b-admission-design-20261031.md`): 「按名字的 AST 规则不是
+  能力边界——名字往后一跳、能力按成员带走，都还在名字规则之外。于是 P-1 发布的身份是**对本 lane 自己源码的
+  review-time tripwire**；这条边界的真实承重是三件实测事实：`ALLOWED_CONSUMERS = []`（S-9，零调用方）、不发布任何
+  入口、外加代码评审。」 The closure comment says the same in English: this file is 「a **tripwire over the lane's
+  own source**, backed by `ALLOWED_CONSUMERS = []`, no shipped entry point, and review」.
+- The same reading applies to PR #517's instrument: a span-signature quoting instrument certifies that printed
+  bytes are **live and locally placed**, and certifies nothing else. A green scan or a green `--self-test` is a
+  statement about the file, not about the product.
+- **What the backing facts are, measured this round at the live heads** (Appendix A.2):
+  `const ALLOWED_CONSUMERS: readonly string[] = []` at `packages/runtime/test/a6-pr2-lane-hygiene.test.ts:48` at
+  live `P517` and at `:56` of that branch's copy at live `P522` (each number labelled by its own commit);
+  `git grep` at live `P522` for any import of a `review-assignment` path outside `packages/runtime/test` and the
+  lane's own `dist` → **zero production importers** (and the same grep without the two excludes answers only test
+  files, which is the control proving the first grep is not silently empty); the module's only non-test reachability is the lane's own barrel
+  (`packages/runtime/review-assignment/index.ts:35 export * from './assignment-admission.js'`), whose header `:11`
+  states 「NOTHING calls either」; and `assignment-admission.ts` is **absent** at live `P517`, `P531` and `GOV`
+  (`cat-file -e` → ABSENT three times). So: the file catches a human edit; the **empty consumer list, the missing
+  entry point and the review** are what keep it from being a capability at all. Any future sentence that reads the
+  scan itself as the boundary has mis-scoped the guardrail — and it is the sentence that is wrong, not the scan.
+
+**7.2 The re-scope trigger: a tripwire becomes a boundary before its consumer merges.** Quoted from the #522
+closure comment, because this is the sentence a future lane must obey: 「**the moment a consumer enters that list or
+an entry point ships, P-1 must be re-graded as a boundary before that consumer merges**, with per-path runtime
+closed-shape grading living in the issue #502 interface contract rather than in another static rule.」 Stated as
+governance, the trigger is any one of three facts changing: (i) a name enters `ALLOWED_CONSUMERS`; (ii) an entry
+point ships (the module gains a caller outside `packages/runtime/test`, including through the lane barrel); (iii) a
+build or tooling consumer appears — a compiled artifact, a kit, or a script that imports the lane's `dist` rather
+than its source. When any of them happens, the guardrail **stops being a tripwire at that moment**, and the
+re-grading is owed **before that consumer merges**, not after: behavioural checks — live per-path `Object.keys`
+closed-shape assertions on every verdict path, discriminated-union exhaustiveness — go into the **issue #502
+interface contract**, and adding another static rule where a runtime check belongs is refused. Owner = the lane
+introducing the consumer, in that PR (not the governance lane, later). The reviewer's own re-open list, quoted
+(round-8 report, Duty 3): 「(1) a consumer enters `ALLOWED_CONSUMERS` or an entry point is exposed — then per-path
+runtime exact-shape assertions become owed at the #502 interface (owed at spec:729-730); (2) any P-1 backing fact
+changes — then P-1 is re-graded as a boundary with behavioural legs (memo §12.1); (3) the fold learns flow
+tracking — the 0/0 pin breaks and its sentence must move in the same edit.」 This clause is the third named entry
+in §5's enablement gate's family: §5 gates *enabling* a capability, this gates *reading* one as bounded.
+
+**7.3 Quoted diagnostic bytes may never become evidence for a product claim.** Quoted from the #517 closure comment
+`6549996923` — the sentence the reviewer took forward, and the half of that closure that is a rule rather than a
+celebration: quoted bytes 「may be a diagnostic and must never become evidence for a product claim, because
+containment certifies liveness and locality and nothing about semantics」. The same law is written into the
+instrument's own re-open list, quoted verbatim from the round-5 report's §Duty 3 (scratch
+`.artifacts/alpha6-s0/pri1a-rev5/round5-report.md`; mirrored into the PR-I1a memo banner and the Round-20 evidence
+README section at `199e18cc4`):
+
+> "(1) any leg's descriptor set is edited (spans/signatures change — the per-plant disclosures are plant-scoped,
+> exactly as the disposition insists); (2) quoted bytes are ever used as **evidence for a product claim** rather
+> than a diagnostic — containment certifies liveness and locality, never semantics; (3) the grade path absorbs
+> file-wide uniqueness into the span rule (it would refuse the byte-correct A2 quote) or the sweep is weakened back
+> into the span rule; (4) any quote path ever renders a stored line number instead of bytes read at grade time."
+
+Trigger (4) is the one this memo has to obey directly: every locator in §2 and in its dated re-checks is a
+*published measurement point*, labelled by the commit it was measured at, and none of them is what a quote is
+evidence of. A `PASS` line that prints source bytes proves the leg is live and located; a claim about what the
+product does needs a leg that runs the thing.
+
+**7.4 Standing parity discipline — re-plant or retract, every round.** Every completeness word in a leg name or a
+claim sentence (`every`, `all`, `at all`, `cannot`, `never`, `only`, `guarantee`, `boundary`, `closed`,
+`independent`) gets **re-planted with a leg or retracted**, every round, against the bytes that are actually being
+shipped. Where no rule exists to carry the sentence, **the sentence is deleted rather than defended** — the lane's
+own precedent (PR #522 memo §12.1, F-I1b7-1): 「撤去 "cannot be dodged" 与 "only by leaving the file"，收窄到真实被
+定级的键语法」, and round-8's sweep verdict: 「**Survivors: exactly one** — spec:2064, quoted verbatim above
+(F-I1b8-1). Understating direction.」 The
+discipline has a second half, and it is not optional: **shrinking a claim must never shrink coverage.** Round 8
+recorded the arithmetic so the pairing is checkable — 「**No check deleted while prose deleted:** expect-count
+arithmetic `afc17dd63 → aee7cec18`: **0 expect()s removed, 8 added**.」 Deleting a check is a separate, named act
+with its own justification; it is not a side effect of honest wording.
+
+**7.5 The process lesson, recorded honestly.** Nine review rounds were spent on PR #522 and twenty on PR #517 —
+the lanes' own counts, quoted below. (Precise framing, so the number is not inflated either: rounds are counted on
+the PR, so they include the fix rounds; the review that closed #522 was its round-8 review and the one that closed
+#517 was its round-5 review.) Neither axis closed because the rule grew; **the guardrail axis closed when the claim
+shrank.** The lanes' own
+words, quoted: 「Twenty rounds on this PR; the instrument stopped improving at round 4 and started telling the truth
+at round 4, and only the claim-attacks kept paying.」 (#517 closure) and 「Nine rounds on this module: the capability
+axis closed when the claim shrank, not when the rule grew.」 (#522 closure). On #522, rounds 5–7 bought a compiler-AST
+instrument, a value-conviction closed set and a computed-key fold — and then *retreated two sentences* to reach the
+end state, whose text says the axis buys no more rules. On #517 the plants kept paying precisely because they
+attacked the wording, not the mechanism. **So, for the next lane: scope the claim at tripwire size from the first
+draft.** Name the backing facts inside the sentence, let a rule's ambition stop at what a leg actually executes,
+put runtime shape guarantees in the #502 contract instead of in a scan, and say "detected, not certified" where
+that is the truth. That costs far less than twenty rounds. It is not an argument for reviewing less — both axes
+needed the plants that were thrown at them; it is an argument for not writing a sentence the plants will take away
+in round five.
+
+**Ledger consequence.** The trigger in §7.2 is recorded on the risk row that already owns the fact it consumes —
+`R-7` in `alpha6-lane2-execution-plan-20261030.md`, dated extension of 2026-11-01, with an owner and re-runnable
+checks. No new row was created: `R-7`'s controllability rests on `ALLOWED_CONSUMERS = []`, so a consumer appearing
+is `R-7` becoming live, and a second row would have been the same risk written twice.
 
 ---
 
@@ -448,3 +653,69 @@ git show f773d160371037672855f5401b4999c14c1b0128:packages/runtime/test/a6-pr2-l
 node scripts/current-authority.mjs   # as20261026r1 / sha256:93692d7a… / alpha5-tool-io-governance — unchanged
 ```
 
+
+### Appendix A.2 — second dated re-check commands (written and measured at real UTC 2026-10-31T22:32Z–22:42Z)
+
+The §2 second dated re-check and §6's second dated corrections are reproducible with exactly these. Run in the gov
+worktree; `git fetch` lands objects only (no checkout, no HEAD move, worktree untouched), GitHub access read-only,
+porcelain 0 before and after the measurement run. Scratch logs under `.artifacts/alpha6-s0/gov-closure/` (gitignored,
+so the evidence guard's `added=0` is not disturbed).
+
+```
+# 1. Live heads and labels, read-only (all four pins).
+for n in 531 522 517 513; do gh pr view $n --repo ArmourPiercer1/dsh-agent-team \
+  --json number,headRefOid,headRefName,baseRefName,state,isDraft,changedFiles,additions,deletions; done
+#   → 531 32b81fcd8… (= pinned P531, unchanged) | 522 aee7cec18d… | 517 199e18cc45… | 513 fe8918209a… (= GOV's branch head)
+#     every one: state=OPEN, isDraft=true
+
+# 2. Fetch each live head into objects only, then diff the CLAIMED paths (empty / non-empty as reported).
+git fetch origin alpha6/lane2-pri1b-admission-20261031        # P522 pin → aee7cec18… (+4 commits)
+git diff --name-only f1f19277ba759a87dd34424251ed872db7c77385 aee7cec18d69c2144d57ce62c0fc31fe55a33397 \
+  -- packages/runtime/review-assignment packages/runtime/review-mandate packages/runtime/dist packages/contracts/src
+#   → empty (0 files). Repo-wide the same range is 2 files: the PR-I1b design memo (+107/−0) and the guardrail spec
+#     packages/runtime/test/a6-pr-i1b-admission.test.ts (+1428/−2, 2051 → 3477 lines)
+git show aee7cec18d69c2144d57ce62c0fc31fe55a33397:packages/runtime/test/a6-pr-i1b-admission.test.ts \
+  | grep -n "role-closure mirror equals CONTROL_RESOLVER_ROLES"                                               # → :1096 (it header)
+git show aee7cec18d69c2144d57ce62c0fc31fe55a33397:packages/runtime/test/a6-pr-i1b-admission.test.ts \
+  | sed -n '1100,1102p' | sha256sum   # → 17c7a23e… = same slice sha as at P522:1034-1036 and f773d1603:1045-1047
+git show aee7cec18d69c2144d57ce62c0fc31fe55a33397:packages/runtime/review-assignment/assignment-admission.ts \
+  | sha256sum                                                                                                 # → 1d0195f3… unchanged
+git show aee7cec18d69c2144d57ce62c0fc31fe55a33397:packages/runtime/test/a6-pr2-lane-hygiene.test.ts \
+  | grep -n "const ALLOWED_CONSUMERS"                                                                         # → :56, []
+
+git fetch origin alpha6/lane2-pri1a-writer-20261031           # P517 pin → 199e18cc4… (+4 commits)
+git diff --name-only 3d06d52a9bb9791620ae1038dfd2561acff514d9 199e18cc45f81d3b2b8fa757c78418b7da744ac4 \
+  -- packages/runtime/review-assignment/writer.ts packages/runtime/test/a6-pr2-lane-hygiene.test.ts packages/
+#   → empty (0 files); repo-wide 128 files = 126 under dev/agent-workflow + the PR-I1a design memo
+#     + tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs (the guardrail driver — see §2's second re-check)
+git show 199e18cc45f81d3b2b8fa757c78418b7da744ac4:packages/runtime/review-assignment/writer.ts | sha256sum   # → 6c1d5ee4… identical
+git show 199e18cc45f81d3b2b8fa757c78418b7da744ac4:packages/runtime/test/a6-pr2-lane-hygiene.test.ts \
+  | grep -n "const ALLOWED_CONSUMERS"                                                                         # → :48, []
+git show 3d06d52a9bb9791620ae1038dfd2561acff514d9:tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs | sha256sum | cut -c1-12
+git show 199e18cc45f81d3b2b8fa757c78418b7da744ac4:tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs | sha256sum | cut -c1-12
+#   → 1e34a06880b4 (539 lines) → 16887de54cbc (1055 lines) — the instrument moved; no locator in this memo cites it
+
+git diff --name-only 991faacc4f373485b7d810de16a35518214a9301 fe8918209a94c03bedd15f334135b11670301861 \
+  -- packages/runtime/control/types.ts packages/runtime/control/service.ts \
+     packages/runtime/review-mandate/types.ts packages/runtime/review-mandate/mandate.ts \
+     packages/runtime/review-mandate/plan.ts packages/runtime/review-assignment/types.ts \
+     packages/runtime/test/a6-pr0-mandate-admission.test.ts packages/runtime/test/a6-pr0-lane-hygiene.test.ts \
+     packages/runtime/test/a6-pr2-lane-hygiene.test.ts packages/runtime/test/a6-pr3-lane-hygiene.test.ts \
+     dev/engineering/current-authority.json
+#   → empty (0 files); repo-wide 3 files, all this lane's prose (the log, this memo, the execution-plan memo)
+
+# 3. Existence and reachability of the admission module (§7.1's backing facts).
+for c in 199e18cc45f81d3b2b8fa757c78418b7da744ac4 32b81fcd8b3b5ab8d2c2089d743425438edf3ad8 fe8918209a94c03bedd15f334135b11670301861; do
+  git cat-file -e $c:packages/runtime/review-assignment/assignment-admission.ts 2>/dev/null && echo "$c PRESENT" || echo "$c ABSENT"; done
+#   → ABSENT ×3 — "exists only on P522" still true at every other live head
+git grep -n -E "(from|import\()\s*['\"][^'\"]*review-assignment" aee7cec18d69c2144d57ce62c0fc31fe55a33397 \
+  -- packages ':!packages/runtime/dist' ':!packages/runtime/test'
+#   → no output = zero production importers of the lane at live P522 (the same grep WITHOUT the excludes answers only
+#     test files, which is the control that shows the grep is not silently empty)
+
+# 4. The machine-authority pin.
+git show 991faacc4f373485b7d810de16a35518214a9301:dev/engineering/current-authority.json | sha256sum | cut -c1-12
+git show fe8918209a94c03bedd15f334135b11670301861:dev/engineering/current-authority.json | sha256sum | cut -c1-12
+#   → 42465659edeb at both, and identical to the worktree copy
+node scripts/current-authority.mjs   # ok=true / POINTER / as20261026r1 / alpha5-tool-io-governance / PR #364 plan
+```

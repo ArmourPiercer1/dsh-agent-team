@@ -7992,3 +7992,122 @@ dated 锚点带书写时刻，不与文件名日期混写）。**本轮零 pin �
   （`/home/armourpiercer/projects/dsh-agent-team`）全程零写入；**:3080 全程未触碰**；GitHub 侧只有读操作
   （`gh pr view` / `gh pr diff --name-only` / `git fetch`），唯一的远端写是本分支这一次推送。
 
+
+## 2026-11-01 — 两条 guardrail PR 各自收束：裁决与 scope rulings 转成耐久治理文本（接口 memo 新增 §7）；R-7 加触发器而不另开 R-8；四 pin 再核——被钉内容再零漂移，而 #522 的 guardrail spec 本体搬了家（+1428 / −2），新行号**并记**不重打
+
+本条目是**收束入册 + 治理文本入册 + 复核入册**，三件事同一笔 commit。书写与测量时刻 = 真实 UTC
+2026-10-31T22:32:17Z 起、末次复测 22:4xZ（`date -u`；ROUTER_RULES §8.5.8 时钟锚点律：dated 锚点带书写时刻）。
+**本轮零 pin 变更、零行号重打、零测量删除；零代码、零测试、零 build、零 boot、零 kit 跑、零大型测试战役。**
+
+- **两个裁决（都是"对本 PR 收束"，不是合并）**：PR **#517**（PR-I1a 耐久写者 + 引用仪器）于活 head
+  `199e18cc45f81d3b2b8fa757c78418b7da744ac4` **对本 PR 收束**，round-5 独立复审 = **0 BLOCKER / 0 MAJOR / 1 MINOR /
+  3 INFO**，收束身份 = **instrument-plus-honest-disclosure**（收束评论 id `6549996923`）；PR **#522**（PR-I1b 入口
+  准入 + P-1/P-2 guardrail）于活 head `aee7cec18d69c2144d57ce62c0fc31fe55a33397` **对本 PR 收束**，round-8 独立复审 =
+  **0 BLOCKER / 0 MAJOR / 1 MINOR / 5 INFO**，同一身份（收束评论 id `6549996746`）。两条 PR 仍 **Draft +
+  DO-NOT-MERGE**、仍"enables nothing"。**收束后仍开放的项，按设计开放，不许任何句子声称已闭合**：`F-I1a3-3`——引用
+  仪器无法自证其自检的**语义**（元上限，测量得出，永久开放）；`F-I1b5-7`——symlink 进已发布 `dist` 这条逃逸在真实
+  构建出现前测不到；`F-I1b8-1`（`spec:2064` 的 "the one path" 为假，方向是低估）记为 nit，随下一次触碰处理。
+- **为什么还要往治理文本里写一遍**：两份复审报告与两份收束评论都只在 scratch / GitHub 上，评审者读者手上没有；
+  凡裁决承重，就在 memo 里**逐字引用**并把触发条件写成可复跑的检查。载体选择按职责，不按目录方便：审查/启用政策的
+  载体 = 接口 memo（新增 §7），风险台账的载体 = 执行计划 memo（扩 R-7）；用户裁决 memo
+  `rulings-20261031-timed-wake-and-pr-i1.md` 自述只收用户裁决，**不收** reviewer 的 scope ruling，故本轮不写它。
+- **记入的四条 scope rulings（接口 memo §7.1–§7.4，逐条都带来源与实测）**：
+  ① **静态扫描不是能力边界**（§7.1）：两条 lane 的 guardrail 是 **review-time tripwire**，真实承重是三件实测事实——
+  `ALLOWED_CONSUMERS = []`、不发布任何入口、外加代码评审；本轮实测的支撑值一并入册：活 `P517` 的
+  `a6-pr2-lane-hygiene.test.ts:48` 与活 `P522` 那份的 `:56` 都仍是空表，`git grep` 在活 `P522` 上对
+  `review-assignment` 的**非测试、非 dist**  importer 命中 **0**（对照：不排除时只答测试文件，证明不是静默为空），
+  lane barrel `review-assignment/index.ts:35` 是该模块唯一非测试可达路径而其头部自述 「NOTHING calls either」，
+  `assignment-admission.ts` 在活 `P517`/`P531`/`GOV` 三处 `cat-file -e` 皆 ABSENT。
+  ② **重新定标的触发器**（§7.2）：三臂任一成立——名字进入 `ALLOWED_CONSUMERS`／出现入口（含经 barrel）／出现
+  build 或 tooling 消费者——则 guardrail **在那笔引入消费者的 PR 合并之前**必须重定标为 **boundary**，行为性检查
+  （逐路径 `Object.keys` 精确闭形、判别联合穷尽性）写进 **issue #502 接口合同**，**不得**用"再加一条静态规则"顶替；
+  owner = 引入消费者的那条 PR 的写者。#522 收束语与 round-8 的三条 re-open 条件均逐字引用在册。
+  ③ **引用的诊断字节永不是产品主张的证据**（§7.3）：引 #517 收束语「may be a diagnostic and must never become
+  evidence for a product claim, because containment certifies liveness and locality and nothing about semantics」，
+  并把 round-5 §Duty 3 的**四条 re-open 触发器整段逐字**收入（descriptor set 被编辑／引用字节被当作产品证据／grade
+  path 吞掉全文件唯一性或 sweep 退回 span 规则／任何引用路径渲染存量行号而非评分时读字节）。第 (4) 条对本 memo 直接
+  生效：§2 与以下复核里的每个行号都是**公布过的测量点**，不是引用所证明的东西。
+  ④ **持续性 parity 纪律**（§7.4）：leg 名与主张句里的每个完备性词，每轮**要么补腿要么撤句**；无规则可承载的句子
+  **删掉而不是辩护**（引 lane 自己的先例与 round-8 扫描结论）；第二半同样强制——**缩主张不得缩覆盖**，引 round-8 的
+  算术「**0 expect()s removed, 8 added**」；删检查是另一件有名字的事，不是诚实措辞的副作用。
+- **过程教训如实入册（§7.5）**：#522 用了 **9** 个 review round，#517 用了 **20** 个；两条轴都不是"规则变强"关掉
+  的，而是**主张缩小到仪器真正证明的东西**时关掉的（引两条收束语原文）。给后续 lane 的结论：**第一稿就把主张写成
+  tripwire 尺寸**——句内点名承重事实、规则的野心止于某条腿真正执行的东西、运行时形状保证交给 #502、该说"detected,
+  not certified"的地方就这么写。这不是"少评审"的论据：两条轴都需要那些 plant，只是别让第五轮被拿走的句子在第一稿写下。
+- **风险台账：扩 R-7，不另开 R-8**（执行计划 memo，dated 扩展）：触发器击穿的正是 R-7「可控理由②」所依据的那件事实
+  （`ALLOWED_CONSUMERS = []`），即**消费者出现 = R-7 的可控前提消失**，是同一风险本体的激活条件；同一风险写两行，未来
+  读者只会读到其中一行（上一笔 `fe8918209` 已按同一判据拒过一次新行）。扩展里带 **owner**（引入消费者的那条 PR 的写者；
+  本 lane 只在差分审查时证明触发器被查过）、**Gate 不变**（仍是接线授权前的后续差分审查，只加一条有名有姓的前置检查）、
+  **可复跑检查**（上面那三条 grep/cat-file 判据 + build 臂）与本轮实测值；R-7 上文原文一字未动。台账语义的变化是有意的：
+  可控的依据从"零调用者"这条**状态**变成"零调用者每轮被实测一次"这个**动作**。
+- **四 pin 再核（命令正本 = 接口 memo 新增附录 A.2；方法同上一轮：`gh pr view` 取活 head → `git fetch origin
+  <branch>`（只落对象）→ `git diff --name-only <被钉 sha> <活 head> -- <该论断真正锚定的路径>`，空/非空如实记）**：
+  - `P522` `f1f19277ba759a87dd34424251ed872db7c77385` → 活 head `aee7cec18d69c2144d57ce62c0fc31fe55a33397`（+4 commit：
+    `cb7c961f6`/`f773d1603`/`afc17dd63`/`aee7cec18`，即 round-5…round-8）：`packages/runtime/review-assignment`、
+    `packages/runtime/review-mandate`、`packages/runtime/dist`、`packages/contracts/src` 四组路径 **0 文件**——
+    **上一轮记的那条内容主张在新 head 依然成立**；`assignment-admission.ts` 三处逐字节相同
+    （`1d0195f3cc309c6d4825c3ecc6ad0f1b364cce226d2b4a92497b709c4cdd763f`）、`ASSIGNMENT_ADMISSION_ROLE_CLOSURE` 仍在
+    `:229`、模块在活 `P517`/`P531`/`GOV` 三处仍 ABSENT，故 §2.3 "只存在于 `P522`" 仍成立。
+  - **同一区间 repo 级动了 2 个文件，而其中一个正是 §2.3 引用的 guardrail spec——这就是本轮必须说 plain 的那句**：
+    `packages/runtime/test/a6-pr-i1b-admission.test.ts` **+1428 / −2**（2051 → 3477 行），另一个是该 lane 的设计 memo
+    （+107 / −0）。即 **guardrail spec 本体搬了家**：上一轮公布的 `:1045-1047` 现在自己也过期了，三条断言在
+    `aee7cec18` 落在 **`:1100-1102`**（外层 `it(…)` 头 `:1030` → `:1041` → `:1096`），而三行切片 sha256 =
+    `17c7a23e18b628fbf0fccdd81d5d54bc27784e191e7c3685b18913e89908ca28` 在 `:1034-1036`（被钉）、`:1045-1047`（上轮活
+    head）、`:1100-1102`（本轮活 head）**三处同一值**。新行号**并记在旧行号旁边**，不替换：任何引用这两个文件行号的
+    句子——memo、本日志、或后续报告——**只对它点名的那个 commit 为真**。§2.3 的**论断**没变，变的是行号的现行性。
+  - `P517` `3d06d52a9bb9791620ae1038dfd2561acff514d9` → 活 head `199e18cc45f81d3b2b8fa757c78418b7da744ac4`（+4 commit）：
+    `writer.ts`、`a6-pr2-lane-hygiene.test.ts`、整个 `packages/` 三组锚定路径 **0 文件**；`writer.ts` 逐字节相同
+    （`6c1d5ee469df6b80e4ee162d3ff25a2d7215134da2752ddb4677659eaa1964ec`）、写者 spec `a6-pri1a-writer.test.ts` 逐字节
+    相同（`2e6412b0c7a0b224c53dce08c0db8afb1a1dc789b45aaa5806f974d90c5932ed`）、`ALLOWED_CONSUMERS` 仍在 `:48` 为空表。
+    repo 级 **128 文件**：126 在 `dev/agent-workflow`（真实宿主证据）+ PR-I1a 设计 memo +
+    `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`。**仪器确实动了**并如实入册：驱动 sha256 `1e34a06880b478b3…` →
+    `16887de54cbc1322…`（+538 / −21，539 → 1055 行），故"FAIL 头第 129 行逐字节相同"只在 `64f005cde` 之后成立（#517
+    自己的文档已披露）；本 memo 不在该文件里引用任何行号，故此处无定位器需要动。
+  - `GOV` `991faacc4f373485b7d810de16a35518214a9301` → 活 head（= 活 #513 head）`fe8918209a94c03bedd15f334135b11670301861`
+    （+2 commit）：§2.1–§2.4/§2.6/§3/§4 逐行列出的 11 个文件 **0 文件**；repo 级 3 个文件全是本 lane 自己的散文（本日志、
+    接口 memo、执行计划 memo）。`dev/engineering/current-authority.json` 三处（`GOV` / 活 head / 工作树）逐字节相同
+    （`42465659edeb…`），`node scripts/current-authority.mjs` 仍 `ok=true` / `POINTER` / `as20261026r1` /
+    `phase_id=alpha5-tool-io-governance` + PR #364 的 plan，`two_current_findings=[]`。**治理分支的现行性标签每笔治理
+    commit 都会过期——包括承载本条的这一笔，披露而不追打。**
+  - `P531` `32b81fcd8b3b5ab8d2c2089d743425438edf3ad8`：pin 即活 head，差异按恒等为空；§0 引的不止 sha，故重读
+    `state=OPEN` / `isDraft=true` / `baseRefName=master` / `changedFiles=4` / `+406 −0` 全部为真。**四个 pin 都跑了
+    新鲜度检查，不是只跑被 reviewer 撞见的那一个。**
+  - 如实说明类别边界：本 memo 仍**不含**宿主/基线 commit pin（`tests/paths.mjs` 的任何值都没出现在里面），那类 pin
+    在此无物可核——**没有就说不有，不制造。**
+- **向前退役（引原句；每条先用 `grep -F` 验证命中唯一 = 1）**：本 lane 此前条目里现已滞后的现行性句子共四行，逐字为——
+  `:7930`「  - `P522` `f1f19277ba759a87dd34424251ed872db7c77385` → 活 head `f773d160371037672855f5401b4999c14c1b0128`（+2」；
+  `:7936`「  - `P517` `3d06d52a9bb9791620ae1038dfd2561acff514d9` → 活 head `3ac9fd52e102720413c1105b2f78debf3f018af7`（+2」；
+  `:7942`「  - `GOV` `991faacc4f373485b7d810de16a35518214a9301` → 活 head `f559ff2ec98522e5c14e5fdda592e16caa20b7fb`（+1」；
+  `:7963`「  `:1045-1047`（外层 `it(…)` 头从 `:1030` 移到 `:1041`），三行**逐字节相同**：三行切片 sha256 =」。
+  **退役的只是"活 head"与"落在"这两个现行性说法**：那三行记录的差值（+2/+2/+1）与四组路径 0 文件都是当时区间的真实
+  测量，永久为真；`:7963` 的 sha256 与"三处同一值"也仍然为真——只是"同一值"现在是三个位置而不止两个。**不退役**的相邻
+  句子，逐条给理由：`:7951`（`P531` pin 即活 head）在本轮仍为真；`:7974`（那份 hygiene 的 `:56`）在 `aee7cec18` 实测
+  仍是 `:56`；`:7935`（"只存在于 `P522`"在活 head 仍成立）本轮重测仍真；`:7976`–`:7977` 是纪律条目而非现行性主张。
+  此外把"现已过期的待复审式句子"也搜了一遍并逐条读回（计数按**本条目之外**的历史行计）：`待复审` 命中 1 行（`:4232`）、
+  `下一轮` 命中 4 行（`:1321` / `:5617` / `:7360` / `:7598`）、`待 round` 命中 5 行（`:4376` / `:4503` / `:4538` /
+  `:4540` / `:4549`）。其中属本 lane 的只有 `:7598`「  round-7 全部攻击仍红。**下一轮该攻我本轮新加的三条规则**：LCS
+  阈值 24、注释区间扫描、遇 CR 拒绝判定——都还没被审过。」——**不退役**，因为**在本条目入册之前**，`:7598` 之后全 log
+  再无 `LCS` / `注释区间` / `CR 拒绝` 任何命中（今天再搜只会多命中本条目自己这一处引用），即"还没被审过"到今天仍然为真
+  （#513 的复审停在 round-8；本轮是 #517/#522 的收束，没有替它审）。
+  其余命中（`:4232` / `:4376` / `:4503` / `:4538` / `:4540` / `:4549` / `:1321` / `:5617` / `:7360`）属别的 lane 与别的
+  阶段的历史条目，本轮的收束不改变它们。**没有可退役的就不制造退役对象；但"没找到"必须给出搜了什么、命中几行、逐行怎么读的。**
+- **改了什么 / 没改什么**：改 = 接口 memo 一个文件四处（§2 pin 表下第二个 dated 逐 pin 复核块；新增 **§7** 五条
+  scope rulings 与过程教训；§6 #522 项下第二条 dated 标签更正 + #517 的对应说明；新增附录 A.2 = 本轮复核命令正本）+
+  执行计划 memo 一处（R-7 dated 扩展）+ 本条日志。**没改** = 任何 pin 的 sha、任何已公布行号（`:1034-1036` 与
+  `:1045-1047` 都留在原处）、任何既有测量或裁决；`dev/engineering/**`、`packages/**`、`tests/**`、两份被钉 s0 文档、
+  用户裁决 memo；零代码、零测试、零证据改动。
+- **门禁（gov worktree，docs-only，本 commit 实测）**：`node dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs`
+  → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok … tracked=ok`（两份被钉 s0 文档未被触碰，sha 未变；该 verifier 只评
+  `s0-revalidation-20261030.md` 的 `:75`/`:79` 两处引用与该 addendum 的渲染，故本轮三处散文改动不进入其评分面）；
+  `node scripts/docs-sync.mjs --check` → `docs=107 notes=4 plans=70(0 declaring) findings=0 blocking=0 contracts=20
+  pairs compared`（不增删文档，计数与上一轮同一）；`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1` →
+  `EB3-EVIDENCE-GUARD pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`（本轮量测日志全在 gitignored 的
+  `.artifacts/alpha6-s0/gov-closure/`，证据根下零新增）。
+- **边界与影响面**：开发授权 + 治理文本授权，**非合并授权、非启用**，也不是 §3/§4 两契约的接口合同复核本身；§7 记的
+  是 scope rulings，其执行点在未来的消费者 PR 与 #502 接口合同里。本分支 `alpha6/lane2-governance-20261031` 自有 head
+  的一次 fast-forward 推送，零 force、不碰 master/stable、不 amend；提交后 gov worktree porcelain = 0。
+  `/home/armourpiercer/deepseek-harness` 只读：porcelain BEFORE = 0 / AFTER = 0（HEAD 仍 `639ed01539…`，分支
+  `stable-3-0.2.0-rc.2`）；`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1
+  （`/home/armourpiercer/projects/dsh-agent-team`）全程零写入（Lane 1 的 `?? probe.mjs` 是本轮之前已存在的未跟踪文件，
+  如实照报、未触碰）；**:3080 全程未触碰**；GitHub 侧只有读操作（`gh pr view` / `gh api …/comments` 读评论），唯一的
+  远端写是本分支这一次推送。

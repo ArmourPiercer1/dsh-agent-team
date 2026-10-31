@@ -160,3 +160,38 @@ client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变�
   语义漂移无处泄露——没有任何生产路径消费审批作用域判断；③两个开放契约已被写成**具名决策**（各自的
   选项、当前行为、以及"本轮不改代码，因为对未冻结契约发明适配器只会造出假接口"的记录在案），不是被
   默认吞掉的假设。控制的实际内容 = 差分审查到来时读者不必重新考古。
+
+#### R-7 扩展（dated 2026-11-01，真实 UTC 2026-10-31T22:32Z–22:42Z 书写；`date -u`，ROUTER_RULES §8.5.8 时钟锚点律）：
+#### 触发器入册——**消费者在 guardrail 仍按 tripwire 定标时出现**（owner + 检查写死，不另开 R-8）
+
+- **为什么扩这一行而不是新增 R-8**：本触发器击穿的正是本行「当时判定"可控"的理由」第②条所依据的那件实测事实——
+  `ALLOWED_CONSUMERS = []`（零生产调用者）。也就是说，**消费者出现 = 本行的可控前提消失**，这是同一个风险本体的
+  激活条件，不是第二个风险；同一风险写两行，未来的读者只会读到其中一行。上一笔治理 commit（`fe8918209`）已按同一
+  判据拒绝过一次新增行（那次是标签新鲜度），本轮沿同一判据。**扩展只加内容，本行上文原文一字不动。**
+- **触发条件（任一成立即触发，全部可实测）**：①任何名字进入 `ALLOWED_CONSUMERS`（不再等于 `[]`）；②发布出任何
+  入口——`packages/runtime/review-assignment/**` 或 `review-mandate/**` 在 `packages/runtime/test/` **之外**获得
+  调用方（含经由 lane barrel `review-assignment/index.ts` 的 re-export）；③出现 build/tooling 消费者——有产物、
+  kit 或脚本 import lane 的 `dist` 而非源码（此臂同时是 PR #522 开放项 `F-I1b5-7`（symlink 进 `dist`）从"无法测"
+  变为"必须测"的那条线）。
+- **触发后欠的动作（时序是硬要求）**：guardrail **在那笔引入消费者的 PR 合并之前**重新定标为 **boundary**——
+  行为性检查（活 verdict 逐路径 `Object.keys` 精确闭形、判别联合穷尽性）写进 **issue #502 的接口合同**，
+  **不得**以"再加一条静态规则"顶替（静态扫描不是能力边界：正本 = 接口 memo §7.1/§7.2
+  `docs/plans/memo/alpha6-review-separation/alpha5-sandbox-first-interface-20261101.md`，含 #522 收束语逐字引用）。
+  定标未改而消费者已合并 = 本行由"可控"直接转为**已泄露**，须按 ROUTER_RULES 入册为缺陷，不是补文档。
+- **Owner**：引入消费者的那笔 PR 的写者——**在其 PR 内**完成重新定标；本 lane 治理写者只负责在差分审查到来时证明
+  触发器被检查过（可复跑命令见下），不承担替别人定标。**Gate 未变**：仍是本行的后续差分审查（differential review），
+  发生在任何审批→执行路径接线授权之前；本扩展给这个 Gate 加了一条有名有姓的前置检查，没有替换它。
+- **检查（可复跑，逐条给判据；本轮实测值附后）**：
+  `grep -n "const ALLOWED_CONSUMERS" packages/runtime/test/a6-pr2-lane-hygiene.test.ts` → 判据 = 必须是 `= []`
+  （本轮实测：`GOV` `991faacc4` `:47`；活 `P517` `199e18cc4` `:48`；活 `P522` `aee7cec18` 那份 `:56`——三处皆空表，
+  行号各按其 commit 标注）；
+  `git grep -n -E "(from|import\()\s*['\"][^'\"]*review-assignment" <head> -- packages ':!packages/runtime/dist' ':!packages/runtime/test'`
+  → 判据 = **必须无输出**（本轮实测 `aee7cec18` 无输出；不加排除的对照只答测试文件，证明这条 grep 不是"静默为空"）；
+  `git cat-file -e <head>:packages/runtime/review-assignment/assignment-admission.ts` → 判据 = 除 `P522` 系分支外
+  **必须 ABSENT**（本轮实测活 `P517` / 活 `P531` / `GOV` 三处 ABSENT）；再加一条 build 臂：任何新增的
+  `tests/kits/**` 或脚本若 import lane 的 `dist` 路径，即触发 ③。
+- **本轮实测状态（2026-11-01 记账，真实 UTC 2026-10-31T22:32Z–22:42Z）**：三个触发条件全部**未成立**，两条
+  guardrail PR（#517 / #522）本轮**各自收束于"仪器+诚实披露"**（#517 于 `199e18cc4`，round-5 = 0/0/1/3，
+  `F-I1a3-3` 元上限按设计保持开放；#522 于 `aee7cec18`，round-8 = 0/0/1/5，`F-I1b5-7` 待真实构建保持开放），
+  两者仍 Draft + DO-NOT-MERGE、`control/service.ts` 仍不在 #522 的 diff 内。**风险状态：仍可控，但"可控"的依据从
+  "零调用者"这条事实变成了"零调用者这条事实每轮被实测一次"**——差别是有意的：前者是状态，后者是动作。
