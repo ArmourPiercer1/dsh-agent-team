@@ -1,0 +1,136 @@
+/**
+ * Alpha.6 PR4′ — the review-wake defer lane: types and vocabulary.
+ *
+ * WHAT THIS LANE IS. A pre-kernel gate that answers one question about one wake: *deliver this Leader
+ * notification now, or hold it until a floor instant has passed*. It exists because the wake trigger is
+ * unconditional — `packages/runtime/control/service.ts:2535` calls the notification port for every created
+ * `leader-approval` request, and the real deliverer
+ * (`packages/runtime/src/plugin/live/agent-bindings.mjs`, `deliverRootControlNotification`) documents itself
+ * as "at-least-once — NO dedupe here". A Team that has switched the plane flag on can therefore say "do not
+ * wake the Leader about this case until T", and get exactly that, with every failure mode being an EXTRA
+ * wake rather than a lost one.
+ *
+ * WHAT THIS LANE IS NOT, stated in the order the mistakes would be made:
+ *
+ *  1. **Not a scheduler.** Nothing here wakes anybody. A defer raises a floor on a wake that would otherwise
+ *     happen anyway; when the floor passes, the next wake that arrives is delivered. There is no timer, no
+ *     queue, no retry loop, and no wall-clock timer scheduled from this directory, because a second scheduler driving review
+ *     wakes would be a second scheduler, and the single scheduler is a phase law.
+ *  2. **Not a second approval ledger.** A defer row stores a case id, a leg ordinal, an instant and a reason
+ *     code. It stores no decision, no authority, no EffectSet and no grant, and it is not durable: it lives
+ *     in one process's memory and is gone on restart. The authoritative record of what is pending remains the
+ *     control-request pending list, and the authoritative record of what was decided remains the one
+ *     ControlService write path. If a defer is ever made durable it must be booked through that path, not
+ *     beside it.
+ *  3. **Not a dedupe.** "The same wake" is not a concept this lane owns; the wake kernel owns it, and the
+ *     kernel is not even reachable from here (see the import law in `a6-pr4-lane-hygiene.test.ts`). The lane
+ *     suppresses a delivery, not a wake, and it never claims a wake was delivered exactly once.
+ *  4. **Not the mutex.** PR-I2 owns the one chooser between this notifier and the real
+ *     `deliverReviewWake`. Here the chooser is a function reference chosen once, in `root.ts`, from one flag;
+ *     the negative legs in `a6-pr4-mutex-negative.test.ts` exist so a second switch cannot appear quietly.
+ *  5. **Not an authority.** Refusals here refuse an *operation on a defer*, never a review, and a decision
+ *     here never approves or denies anything. A suppressed notification leaves the request exactly as it was:
+ *     pending, visible in the pending list, and answerable.
+ *
+ * WHY THE KEY IS `(approvalCaseId, legOrdinal)` AND WHY A CASE-LESS ROW IS NEVER DEFERRED. The record that
+ * reaches the notification port is a `ControlRequestRecord`; its `approvalCaseId` is documented as "Present ⇒
+ * the row is an Alpha.4 LEG row", so its ABSENCE means the old path. Suppressing a wake we cannot attribute to
+ * a case would mean a defer set for one case could silence another, and the lane's whole justification is
+ * that it only ever silences the thing it was pointed at. So an unidentified wake is delivered, always — the
+ * same answer the pre-Alpha.6 code gives, which is also what keeps every Team that has not opted in
+ * byte-identical.
+ *
+ * THE IMPORT LAW. This directory imports nothing but its own siblings (and `node`-free types from
+ * `../../contracts/src/index.js` when it needs one). It does NOT reach into the control lane's own type module, even though
+ * `ControlRequestRecord` is the input in practice: `packages/runtime/control/` is inside the ARC-A protected
+ * centre, and a lane that depends on the protected centre cannot be reviewed as a separate seam. The record is
+ * therefore described structurally by `ReviewWakeCandidate` below, and a leg in the mutex spec proves that a
+ * real `ControlRequestRecord` is assignable to it — the compatibility is asserted, not assumed.
+ */
+// --- decisions ----------------------------------------------------------------------------------------
+/**
+ * The two answers the gate gives. There is no third: "drop the wake" is not an option, because dropping a
+ * notification with nothing scheduled to replace it turns a liveness signal into a silent case. `defer`
+ * means *this delivery is skipped*; the request stays pending and stays visible.
+ */
+export const REVIEW_DEFER_DECISIONS = ['deliver', 'defer'];
+/**
+ * Why a gate answered the way it did. Closed, and every member is produced — the reachability leg in
+ * `a6-pr4-review-defer.test.ts` checks both directions, because a code no path can produce is a lie about
+ * the machine and a produced code that is undeclared is the same lie sideways.
+ */
+export const REVIEW_DEFER_WAKE_REASONS = [
+    /** No defer for this key. The ordinary answer, and the answer for every Team that never opted in. */
+    'WAKE_NOT_DEFERRED',
+    /** A defer existed and its floor has passed: deliver, and retire the defer while we are here. */
+    'WAKE_DEFER_FLOOR_PASSED',
+    /** A defer is standing on this key with a floor in the future: skip this delivery. */
+    'WAKE_DEFER_PENDING',
+    /** The record names no case. Deliver — the old path — because an unattributable wake is nobody's to mute. */
+    'WAKE_CASE_UNIDENTIFIED',
+];
+// --- refusals -----------------------------------------------------------------------------------------
+/**
+ * Every refusal this lane can answer with. A refusal refuses an *operation on a defer* — setting one,
+ * cancelling one, reading one. It never refuses a review, a wake, or a decision, and nothing in this list
+ * is a permission denial: the only enforcement in this lane is the enforcement of its own input contract.
+ */
+export const REVIEW_DEFER_REFUSALS = [
+    /** A root session id, case id or request id that is not the shape the platform uses. */
+    'REVIEW_DEFER_ID_MALFORMED',
+    /** `legOrdinal` missing, negative, or not a safe integer. */
+    'REVIEW_DEFER_LEG_MALFORMED',
+    /**
+     * An instant that is not an ISO string that parses, or a reason code outside the closed list. Nothing here
+     * accepts a millisecond number: two ways to say a time is two ways to disagree about one.
+     */
+    'REVIEW_DEFER_INSTANT_MALFORMED',
+    /** A floor at or before the caller's `nowIso`. "Defer until the past" means "do not defer", and a lane */
+    /** that silently accepted it would report a defer that suppresses nothing. */
+    'REVIEW_DEFER_NOT_IN_FUTURE',
+    /** A floor beyond the plane's horizon. A Leader can be kept away from a case for a bounded time only. */
+    'REVIEW_DEFER_HORIZON_EXCEEDED',
+    /**
+     * A cancel naming a key with nothing standing on it. Expiry is not a second answer — the sweep runs first,
+     * so a floor that has passed is simply gone, and the detail says which of the two the caller met.
+     */
+    'REVIEW_DEFER_NO_ACTIVE_DEFER',
+    /**
+     * The store is at capacity. Refusing a NEW defer is the only honest overflow: evicting a standing defer to
+     * make room would silently un-mute a case somebody asked to have left alone.
+     */
+    'REVIEW_DEFER_STORE_SATURATED',
+    /**
+     * A wake with no `approvalCaseId`: not an error, but not deferrable either. Reported so a caller never
+     * concludes "deferred" from the absence of a delivered notification.
+     */
+    'REVIEW_DEFER_CASE_UNIDENTIFIED',
+];
+// --- the durable-enough shape -------------------------------------------------------------------------
+/** Why a defer was filed. Closed, because a free-text reason is where a policy engine hides. */
+export const REVIEW_DEFER_REASON_CODES = [
+    /** The plan the case would be reviewed under is not in force yet. */
+    'PLAN_NOT_IN_FORCE',
+    /** The mandated reviewer instance is not reachable right now; a wake would only be refused on arrival. */
+    'OFFICER_UNAVAILABLE',
+    /** The case's own evidence is expected to change before the floor. */
+    'AWAITING_EVIDENCE',
+    /** The Leader asked for the quiet directly, through the tool. */
+    'LEADER_REQUESTED',
+];
+// Frozen, unlike the closed lists above: this object is handed out BY REFERENCE as the default for every store
+// the plane builds, so a mutation of one caller's horizon would silently become every store's horizon. The
+// vocabulary lists follow the repository convention instead (`as const` in `review-mandate` and `review-wake`),
+// where readonly is enforced on TypeScript consumers; the values that cross this lane's boundary — keys,
+// entries, decisions — are frozen at runtime, which is where a mutated value could be mistaken for a decision.
+export const REVIEW_DEFER_DEFAULT_LIMITS = Object.freeze({
+    // One hour: long enough to cover a plan epoch rolling or an officer finishing a turn, short enough that a
+    // forgotten defer cannot strand a case for a working day. The control-plane pending list remains the
+    // recovery path for anything longer, which is the point — this is a courtesy to the Leader's attention,
+    // not a queue.
+    horizonMs: 60 * 60 * 1000,
+    // One per leg of one case at a time, and a Team's review cases are bounded by its own quotas; 64 is well
+    // past any legitimate shape and small enough that a runaway writer cannot grow the map without bound.
+    maxEntries: 64,
+});
+//# sourceMappingURL=types.js.map

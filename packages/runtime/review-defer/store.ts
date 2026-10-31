@@ -1,0 +1,245 @@
+/**
+ * Alpha.6 PR4′ — the defer store: the only mutable state in the lane, and the reason the lane can be
+ * reasoned about at all.
+ *
+ * PROCESS-LOCAL ON PURPOSE. This is a `Map` in one Node process, created once per team root in `root.ts` and
+ * shared with the tool factory as an injected port. It is not a ledger, not durable, and not replicated. The
+ * consequence is stated rather than hidden: **a restart forgets every defer, and a forgotten defer produces an
+ * early wake.** An early wake is a liveness event — the Leader looks at a case that is genuinely still pending
+ * — while a lost wake is an authority event, because a case nobody is told about stops being reviewable. Every
+ * possible failure of this store is therefore on the safe side of that line, and `a6-pr4-mutex-negative.test.ts`
+ * asserts the ordering by emptying the store and requiring delivery.
+ *
+ * WHY THERE IS NO DURABLE VERSION YET. `review-assignment/index.ts` states the law for this phase's review
+ * lanes: there is no sanctioned durable writer until PR-I1 supplies `allocateSequence()` + `put` behind the
+ * team lock. Writing a defer row beside that seam would create the second ledger this phase forbids, and the
+ * notification wrapper runs AFTER the control service released the team lock (`control/service.ts:2510-2513`),
+ * so a defer committed there is an unlocked fresh read racing the very request that triggered it. A racing
+ * defer loses, and loses safely: the notification goes out.
+ *
+ * SWEEP ON EVERY TOUCH. Expiry is evaluated against the caller's `nowIso` at every entry point — set, cancel,
+ * decide, list — so an expired entry is indistinguishable from an absent one without anyone having to run a
+ * reaper. There is no reaper, and there must not be one: a timer that wakes cases is the second scheduler this
+ * phase already refused.
+ *
+ * NO CLOCK, NO I/O. Every function takes the instant it needs. `Date.parse` and `new Date(n).toISOString()`
+ * appear below; both are pure arithmetic on a supplied value, which is the same distinction `review-wake/slot.ts`
+ * draws when it floors a backoff from `ctx.nowIso`.
+ */
+
+import {
+  REVIEW_DEFER_DEFAULT_LIMITS,
+  REVIEW_DEFER_REASON_CODES,
+  type ReviewDeferEntry,
+  type ReviewDeferKey,
+  type ReviewDeferLimits,
+  type ReviewDeferReasonCode,
+  type ReviewDeferRefusal,
+  type ReviewDeferResult,
+  type ReviewWakeCandidate,
+} from './types.js'
+
+/**
+ * The platform's identifier shape, restated rather than imported. `review-assignment/types.ts` has the same
+ * pattern, and importing it would put a dependency edge from PR4′ into PR2′'s lane — which is legal only if
+ * PR2′'s dormancy ledger is amended to admit this consumer, and a wake gate that cannot be reviewed without
+ * the assignment lane is a worse seam than one duplicated regular expression.
+ */
+const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
+
+export interface ReviewDeferStore {
+  readonly limits: ReviewDeferLimits
+  readonly entries: Map<string, ReviewDeferEntry>
+}
+
+function accept<T>(value: T): ReviewDeferResult<T> {
+  return { ok: true, value }
+}
+
+function refuse<T>(refusal: ReviewDeferRefusal, detail: string): ReviewDeferResult<T> {
+  return { ok: false, refusal, detail }
+}
+
+/**
+ * The single derivation of a store slot from a key. Exported because the gate reads the same slots the writer
+ * writes, and a second copy of this expression in the gate would be a bug waiting to diverge: a gate that
+ * computes a different slot than the tool writes never sees the defer, which fails open and therefore fails
+ * silently. `a6-pr4-review-defer.test.ts` pins that a set and a decide agree on one key without going through
+ * either caller.
+ *
+ * The root session id is part of the slot even though production creates one store per team root. A slot that
+ * named only `(case, leg)` would make that containment the whole isolation story, so a store ever shared or
+ * reused between roots would let a defer filed for one team session mute another. The id makes that
+ * unrepresentable instead of merely unintended.
+ */
+export function reviewDeferEntryId(key: ReviewDeferKey): string {
+  return `${key.rootSessionId}::${key.approvalCaseId}#${String(key.legOrdinal)}`
+}
+
+function keyOf(key: ReviewDeferKey): string {
+  return reviewDeferEntryId(key)
+}
+
+/** How many milliseconds an instant is from `nowIso`. Negative when it lies in the past. */
+function deltaMs(nowIso: string, instantIso: string): number {
+  return Date.parse(instantIso) - Date.parse(nowIso)
+}
+
+/**
+ * Derive the deferrable identity of a wake, or refuse with the reason it is not deferrable.
+ *
+ * The asymmetry is the point: a record without `approvalCaseId` is a perfectly ordinary pre-Alpha.4 row and
+ * the gate must deliver it, so this function's refusal is NOT an error signal for a caller that is deciding
+ * whether to notify. `decideReviewWake` therefore handles the unidentified case itself and only calls this for
+ * rows that name a case.
+ */
+export function reviewDeferKeyOf(
+  rootSessionId: string,
+  candidate: ReviewWakeCandidate,
+): ReviewDeferResult<ReviewDeferKey> {
+  if (!ID_PATTERN.test(rootSessionId) || !ID_PATTERN.test(candidate.requestId)) {
+    return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / requestId failed hygiene')
+  }
+  const caseId = candidate.approvalCaseId
+  if (caseId === undefined || caseId === '') {
+    return refuse('REVIEW_DEFER_CASE_UNIDENTIFIED', 'the record carries no approvalCaseId (pre-Alpha.4 row)')
+  }
+  if (!ID_PATTERN.test(caseId)) {
+    return refuse('REVIEW_DEFER_ID_MALFORMED', 'approvalCaseId failed hygiene')
+  }
+  const leg = candidate.legOrdinal
+  if (typeof leg !== 'number' || !Number.isSafeInteger(leg) || leg < 1) {
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `a case-scoped defer needs legOrdinal >= 1, got ${String(leg)}`)
+  }
+  return accept(Object.freeze({ rootSessionId, approvalCaseId: caseId, legOrdinal: leg }))
+}
+
+/** Create the one store a team root shares between its wake gate and its tool. */
+export function createReviewDeferStore(limits: ReviewDeferLimits = REVIEW_DEFER_DEFAULT_LIMITS): ReviewDeferStore {
+  return { limits, entries: new Map<string, ReviewDeferEntry>() }
+}
+
+/**
+ * Drop every entry whose floor has passed and report how many went. Called by every entry point, so the count
+ * here is bookkeeping for the caller's telemetry rather than a housekeeping chore somebody must remember.
+ */
+export function sweepReviewDefers(store: ReviewDeferStore, nowIso: string): number {
+  let swept = 0
+  for (const [id, entry] of store.entries) {
+    if (deltaMs(nowIso, entry.notBeforeIso) <= 0) {
+      store.entries.delete(id)
+      swept += 1
+    }
+  }
+  return swept
+}
+
+/**
+ * File a defer, or explain why there is not one.
+ *
+ * Re-filing a key that already stands REPLACES its floor: the newest instruction from the Leader is the one
+ * that should hold, and a lane that refused the second instruction would leave the first one muting a case
+ * nobody asked about. Saturation is the opposite case — a new key when the store is full is refused rather
+ * than made room for, because evicting a standing defer un-mutes a case somebody asked to have left alone,
+ * and a surprise wake for the wrong case is the failure this lane exists to prevent.
+ */
+export function setReviewDefer(
+  store: ReviewDeferStore,
+  input: {
+    readonly rootSessionId: string
+    readonly approvalCaseId: string
+    readonly legOrdinal: number
+    readonly notBeforeIso: string
+    readonly reasonCode: ReviewDeferReasonCode
+  },
+  nowIso: string,
+): ReviewDeferResult<ReviewDeferEntry> {
+  const key: ReviewDeferKey = {
+    rootSessionId: input.rootSessionId,
+    approvalCaseId: input.approvalCaseId,
+    legOrdinal: input.legOrdinal,
+  }
+  if (!ID_PATTERN.test(input.rootSessionId) || !ID_PATTERN.test(input.approvalCaseId)) {
+    return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
+  }
+  if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${String(input.legOrdinal)}`)
+  }
+  if (typeof nowIso !== 'string' || Number.isNaN(Date.parse(nowIso))) {
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${String(nowIso)} does not parse`)
+  }
+  if (typeof input.notBeforeIso !== 'string' || Number.isNaN(Date.parse(input.notBeforeIso))) {
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `notBeforeIso ${String(input.notBeforeIso)} does not parse`)
+  }
+  if (!REVIEW_DEFER_REASON_CODES.includes(input.reasonCode)) {
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `unknown reason code ${String(input.reasonCode)}`)
+  }
+  const remaining = deltaMs(nowIso, input.notBeforeIso)
+  if (remaining <= 0) {
+    return refuse('REVIEW_DEFER_NOT_IN_FUTURE', 'a floor at or before now defers nothing; cancel instead')
+  }
+  if (remaining > store.limits.horizonMs) {
+    return refuse(
+      'REVIEW_DEFER_HORIZON_EXCEEDED',
+      `${String(remaining)}ms exceeds the ${String(store.limits.horizonMs)}ms horizon; the pending list is the path for a longer silence`,
+    )
+  }
+  sweepReviewDefers(store, nowIso)
+  const id = keyOf(key)
+  if (!store.entries.has(id) && store.entries.size >= store.limits.maxEntries) {
+    return refuse(
+      'REVIEW_DEFER_STORE_SATURATED',
+      `${String(store.entries.size)} defers standing at the cap; a standing defer is never evicted to admit another`,
+    )
+  }
+  const entry: ReviewDeferEntry = Object.freeze({
+    key,
+    notBeforeIso: input.notBeforeIso,
+    reasonCode: input.reasonCode,
+    setAtIso: nowIso,
+  })
+  store.entries.set(id, entry)
+  return accept(entry)
+}
+
+/**
+ * Withdraw a defer. The answer is the entry that was standing, so a caller can report what it undid.
+ *
+ * A floor that has already passed is not a special case: the sweep runs first, so the honest answer is "there
+ * is nothing standing", and the detail says which of the two the caller met. Conflating them would let a caller
+ * report "your defer has been lifted" about a defer that had already lifted itself, which is the sort of
+ * sentence that teaches an operator to trust a stale answer.
+ */
+export function cancelReviewDefer(
+  store: ReviewDeferStore,
+  key: ReviewDeferKey,
+  nowIso: string,
+): ReviewDeferResult<ReviewDeferEntry> {
+  if (!ID_PATTERN.test(key.rootSessionId) || !ID_PATTERN.test(key.approvalCaseId)) {
+    return refuse('REVIEW_DEFER_ID_MALFORMED', 'rootSessionId / approvalCaseId failed hygiene')
+  }
+  if (!Number.isSafeInteger(key.legOrdinal) || key.legOrdinal < 1) {
+    return refuse('REVIEW_DEFER_LEG_MALFORMED', `legOrdinal must be a safe integer >= 1, got ${String(key.legOrdinal)}`)
+  }
+  if (typeof nowIso !== 'string' || Number.isNaN(Date.parse(nowIso))) {
+    return refuse('REVIEW_DEFER_INSTANT_MALFORMED', `nowIso ${String(nowIso)} does not parse`)
+  }
+  const had = store.entries.get(keyOf(key))
+  sweepReviewDefers(store, nowIso)
+  const id = keyOf(key)
+  const standing = store.entries.has(id) ? store.entries.get(id) : undefined
+  if (standing === undefined) {
+    return refuse(
+      'REVIEW_DEFER_NO_ACTIVE_DEFER',
+      had === undefined ? 'no defer is standing on this key' : 'the floor had already passed; the defer lifted itself',
+    )
+  }
+  store.entries.delete(id)
+  return accept(standing)
+}
+
+/** What is standing right now, in filing order. Read-only, and it sweeps on the way past. */
+export function listReviewDefers(store: ReviewDeferStore, nowIso: string): readonly ReviewDeferEntry[] {
+  sweepReviewDefers(store, nowIso)
+  return [...store.entries.values()]
+}

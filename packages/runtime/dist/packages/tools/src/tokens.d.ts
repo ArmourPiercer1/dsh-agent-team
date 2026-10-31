@@ -26,6 +26,8 @@ export declare const TEAM_TOOL_CALLER_UNRESOLVED = "TEAM_TOOL_CALLER_UNRESOLVED"
  *  control list is a Leader discovery surface — a non-leader caller is
  *  rejected before any read). */
 export declare const TEAM_TOOL_PENDING_LIST_NOT_LEADER = "TEAM_TOOL_PENDING_LIST_NOT_LEADER";
+/** Alpha.6 PR4': `team_review_defer` is Leader-only — the quiet it sets is the Leader's own attention. */
+export declare const TEAM_TOOL_REVIEW_DEFER_NOT_LEADER = "TEAM_TOOL_REVIEW_DEFER_NOT_LEADER";
 /** The closed tool-layer leader-only caller error code (team_archive_member:
  *  member archiving is the Leader lifecycle-management surface — a
  *  non-leader caller is rejected before the guard consult and any

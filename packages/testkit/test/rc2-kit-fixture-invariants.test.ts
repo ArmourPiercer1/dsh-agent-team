@@ -90,9 +90,15 @@ const MANAGED = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 const SAFE_UNMANAGED = ['todo_write']
 const LEADER_ALLOW = ['team_list_members', 'team_list_templates', 'team_inspect_config', 'team_create_member', 'team_delegate', 'team_collect']
 
-/** The catalog as it stood at the base commit — 11 names, four tools missing. */
+/**
+ * The catalog as it stood at the base commit — 11 names. Alpha.6 PR4' extends the exclusion list with
+ * `team_review_defer`, which did not exist then either: the fixture has to be a catalog that was really once
+ * shipped, not one invented to keep an assertion at four. The drift it now reproduces is five tools, and the
+ * leg below expects five — a stale fixture is caught MORE widely than before, which is the only direction an
+ * amendment to a drift-detection leg may move in.
+ */
 const STALE_CATALOG = TEAM_TOOL_CATALOG.filter(
-  (n) => !['team_list_pending_control', 'team_archive_member', 'team_grant_permission', 'team_revoke_permission'].includes(n),
+  (n) => !['team_list_pending_control', 'team_archive_member', 'team_grant_permission', 'team_revoke_permission', 'team_review_defer'].includes(n),
 )
 
 interface Spy {
@@ -118,14 +124,17 @@ describe('rc2 kit fixture pre-flight — an invalid fixture never reaches the ho
   it('I1 the kit catalog is the plugin catalog, including the verb-built pair', () => {
     const real = catalogFromSource()
     expect([...TEAM_TOOL_CATALOG].sort()).toEqual(real)
-    expect(TEAM_TOOL_CATALOG.length).toBe(15)
+    // The DECLARED namespace, not the default mounted set: `team_review_defer` (Alpha.6 PR4') is a declared
+    // spec registered only behind `config.teamToolPlane.reviewDeferEnabled`, so the default mount stays at
+    // fifteen and that is pinned where it belongs — in `packages/tools`, not in a blueprint fixture.
+    expect(TEAM_TOOL_CATALOG.length).toBe(16)
     // The pair a `name: 'team_*'` grep loses — pinned explicitly.
     expect(TEAM_TOOL_CATALOG).toContain('team_grant_permission')
     expect(TEAM_TOOL_CATALOG).toContain('team_revoke_permission')
     expect(new Set(TEAM_TOOL_CATALOG).size).toBe(TEAM_TOOL_CATALOG.length)
   })
 
-  it('I2 the historical 11-name drift is detected and names exactly four tools', () => {
+  it('I2 the historical 11-name drift is detected and names exactly five tools', () => {
     expect(STALE_CATALOG.length).toBe(11)
     const deny = deriveBuiltinToolDeny({ surface: LIVE_SURFACE, managed: MANAGED, safeUnmanaged: SAFE_UNMANAGED, teamCatalog: STALE_CATALOG })
     const violations = findFixtureViolations({ denyList: deny, teamCatalog: STALE_CATALOG, leaderTeamTools: LEADER_ALLOW, managed: MANAGED })
@@ -134,7 +143,15 @@ describe('rc2 kit fixture pre-flight — an invalid fixture never reaches the ho
     if (first === undefined) throw new Error('pre-flight reported no violation')
     expect(first.code).toBe('stale-team-catalog')
     expect([...first.names].sort()).toEqual(
-      ['team_archive_member', 'team_grant_permission', 'team_list_pending_control', 'team_revoke_permission'].sort(),
+      [
+        'team_archive_member',
+        'team_grant_permission',
+        'team_list_pending_control',
+        'team_revoke_permission',
+        // The plane-gated declaration added by Alpha.6 PR4': a kit that does not know it would deny a tool
+        // the plugin can mount, which is precisely the failure this pre-flight exists to catch.
+        'team_review_defer',
+      ].sort(),
     )
     // The healthy catalog shows the same surface is clean: the difference IS
     // the constant, which is why this is fixture debt and not a host behavior.

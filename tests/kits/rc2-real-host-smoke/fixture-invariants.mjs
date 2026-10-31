@@ -38,11 +38,18 @@
  */
 
 /**
- * The plugin team-tool namespace: 13 statically registered tools
- * (`packages/tools/src/tools.ts`, `name: 'team_*'`) plus the verb-built
- * permission pair named at `packages/tools/src/tools.ts:1316`
+ * The plugin team-tool namespace: the 14 tools declared with a `name: 'team_*'`
+ * literal in `packages/tools/src/tools.ts`, plus the verb-built permission pair
  * (`const toolName = verb === 'grant' ? 'team_grant_permission' :
  * 'team_revoke_permission'`, so a grep for `name: 'team_*'` alone misses them).
+ *
+ * This is the DECLARED namespace, and one entry is not mounted by default:
+ * `team_review_defer` (Alpha.6 PR4') is registered only when the row config sets
+ * `config.teamToolPlane.reviewDeferEnabled === true`, so a team without the flag mounts
+ * fifteen tools. It belongs here anyway, because the pre-flight protects a blueprint from
+ * denying or failing to know a tool the plugin can hand a model — and a gated tool is still
+ * a tool. The default-off registration is pinned in
+ * `packages/tools/test/a6-pr4-tool-surface.test.ts` and `p6t6-bypass-scan.test.ts`.
  *
  * `packages/testkit/test/rc2-kit-fixture-invariants.test.ts` pins this list
  * against the REAL catalog built by `createTeamTools`, so a future team tool
@@ -65,6 +72,9 @@ export const TEAM_TOOL_CATALOG = Object.freeze([
   'team_archive_member',
   'team_grant_permission',
   'team_revoke_permission',
+  // Alpha.6 PR4': declared, plane-gated (see the note above) — absent from the mounted set
+  // of every team that has not switched `reviewDeferEnabled` on.
+  'team_review_defer',
 ])
 
 /** A pre-flight violation: named, counted, and fatal by construction. */

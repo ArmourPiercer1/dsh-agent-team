@@ -82,14 +82,5 @@ export interface TeamToolSet {
      *  extended it — it is not a frozen thirteen). */
     readonly tools: readonly TeamToolDefinition[];
 }
-/**
- * Build the model-facing team tool set over one runtime satellite wiring.
- *
- * @param options - the sanctioned runtime ports (facade, control service,
- *   messaging coordinator, activity ledger, caller resolver — SD-DEPS).
- * @returns the tool definitions, ready for the host's public
- *   tool registration (each returns a disposer on register; the caller
- *   owns the effect lifetime).
- */
 export declare function createTeamTools(options: TeamToolsOptions): TeamToolSet;
 //# sourceMappingURL=tools.d.ts.map

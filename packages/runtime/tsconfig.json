@@ -39,6 +39,11 @@
     // lane in front of a compiler at all — measured, not assumed: with the entry missing,
     // `tsc --listFilesOnly` listed every file of the two lanes above and none of this one.
     "review-assignment",
+    // Alpha.6 PR4' (Lane 2): the review-wake defer lane — a pre-kernel gate on the Leader notification port
+    // plus the process-local floor it reads. Dormant unless `config.teamToolPlane.reviewDeferEnabled === true`,
+    // and named here for the same measured reason as the two lanes above: without the entry no repo-wide tsc
+    // reads the directory at all.
+    "review-defer",
     "test",
     "vitest.config.ts"
   ]
