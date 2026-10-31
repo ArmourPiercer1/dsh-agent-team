@@ -82,6 +82,11 @@ function writerSources(files: readonly string[], sources: Map<string, string>): 
   const WRITER_SHAPES = [
     /\bputEntry\s*\(|\bledger\.put\s*\(|\.put\(\s*entry\b|appendLedger/,
     /\bcommitDurableFact\s*\(/,
+    // Importing the durable-fact funnel reaches the ledger through it even when the importer renames it on the
+    // way in. Round 2 of #517 planted `import { commitDurableFact as commit }` and this census did not merely
+    // fail to judge the file — it never classified it as a writer at all, so no other rule looked at it either
+    // (F-R2-5). The call-site harvest cannot follow an alias, so the file is pulled in and forced to speak.
+    /\bimport\b[^;\n]*\bcommitDurableFact\b/,
     // Any quoted label, not only a single-quoted one, and any computed label expression: a writer that spells
     // its fact type with double quotes or builds it from a concatenation is still writing a fact type, and
     // gating the CLASSIFICATION on one quote style made the whole guard blind to such a file at once (round 1
@@ -207,22 +212,27 @@ function topLevelArgs(inner: string): string[] {
   return args
 }
 
-/** Argument text `inner` of every `FUN(` call in `src`, balanced-scan based. */
+/**
+ * Argument text `inner` of every call to `FUN` in `src`, balanced-scan based.
+ *
+ * The call site is located with `\s*(` rather than an `indexOf` of the literal `FUN(`. `commitDurableFact (repos,
+ * …)` — one space — is the same call to TypeScript, and the literal needle meant the funnel harvest never ran for
+ * it, so the fact type travelling in its fourth argument was neither derived nor forced to be named (round 2 of
+ * #517, F-R2-5). The CLASSIFIER above already matched with the space; a guard whose two halves disagree about
+ * what a call looks like reports its own hole as a clean sweep.
+ */
 function callArgumentTexts(src: string, fun: string): string[] {
   const out: string[] = []
-  const needle = `${fun}(`
-  let from = 0
+  const call = new RegExp(`\\b${fun}\\s*\\(`, 'g')
   for (;;) {
-    const start = src.indexOf(needle, from)
-    if (start === -1) return out
+    const hit = call.exec(src)
+    if (hit === null) return out
+    const start = hit.index
     // A declaration (`function FUN(` / `const FUN = (`) is not a write.
-    if (/(?:function|const|let)\s*$/.test(src.slice(Math.max(0, start - 20), start))) {
-      from = start + needle.length
-      continue
-    }
+    if (/(?:function|const|let)\s*$/.test(src.slice(Math.max(0, start - 20), start))) continue
     let depth = 0
     let quote: string | null = null
-    let i = start + needle.length
+    let i = start + hit[0].length
     for (; i < src.length; i += 1) {
       const ch = src[i] as string
       if (quote !== null) {
@@ -239,8 +249,10 @@ function callArgumentTexts(src: string, fun: string): string[] {
         if (depth === 0) break
       }
     }
-    out.push(src.slice(start + needle.length, i))
-    from = i + 1
+    out.push(src.slice(start + hit[0].length, i))
+    // Resume after the balanced argument region, as the literal-needle scan did: a nested call inside an
+    // argument is part of this site, not a second site.
+    call.lastIndex = i + 1
   }
 }
 
@@ -257,7 +269,14 @@ function harvestFunnelSites(
 ): void {
   for (const file of writers) {
     const src = sources.get(file) ?? ''
-    for (const inner of callArgumentTexts(src, 'commitDurableFact')) {
+    const sites = callArgumentTexts(src, 'commitDurableFact')
+    // The funnel arrives under another name and no recognisable call site exists, so this harvest is looking at
+    // the wrong identifier. Unresolvable is not the same as absent: the file must name what it writes, exactly
+    // as a concatenation does.
+    if (sites.length === 0 && /\bimport\b[^;\n]*\bcommitDurableFact\b/.test(src)) {
+      unresolved.add(`${file}::durable-fact-funnel-imported-by-alias`)
+    }
+    for (const inner of sites) {
       const args = topLevelArgs(inner)
       const raw = args[3] ?? ''
       const literal = resolvedLiteralText(raw)
@@ -363,6 +382,16 @@ function deriveWrittenFactTypes(
       // expression. It cannot be derived statically, so it must be named here.
       unresolved.add(`${file}::${raw.slice(0, 40)}`)
     }
+    // A shorthand property is the same problem with the value removed rather than indirected: `put({ factType,
+    // payload })` carries no text to derive from at all. Round 2 of #517 measured the worst available outcome —
+    // the file WAS classified as a writer (the `.put(` shape matched), was judged to write nothing, and was
+    // forced into nothing either, so the fact type travelled through the census unjudged while the census
+    // reported a clean sweep (F-R2-5). Nothing static can read the value here; what the scan can do is refuse to
+    // let the site pass unremarked, which is what "must be named" has always meant.
+    // One entry per FILE rather than per site: a byte offset would drift with every unrelated edit to a hot
+    // file, and a check that goes red on an innocent reflow trains nobody to read it. Which file hides a
+    // shorthand label is the reviewable fact; how many labels it hides is visible in the file itself.
+    if (/[{,]\s*factType\s*[,}]/.test(src)) unresolved.add(`${file}::shorthand-factType`)
   }
   return { values, unresolved }
 }
@@ -447,6 +476,16 @@ const PINNED_UNRESOLVED = [
   // parameter; its callers write through the `factType:`-keyed paths this
   // derivation already resolves.
   'packages/runtime/action-router/effects.ts::commitDurableFact arg4 factType',
+  // Shorthand labels — `put({ factType, payload })` — which carry no text to derive from at all. Found by the
+  // widening round 2 of #517 asked for (F-R2-5): before it, a file in this shape was classified as a writer,
+  // judged to write nothing, and forced into nothing either. All three forward a value a caller supplied, and
+  // each is one of the sites the entry above already describes as a pass-through; they are listed because a NEW
+  // unresolvable write must be a review-visible edit. `review-assignment/writer.ts` is this PR's own governed
+  // writer, and its one shorthand label is `factType`, bound two lines above from
+  // `REVIEW_ASSIGNMENT_FACT_TYPES[command.kind]` — the kernel's closed map, not a producer of a new one.
+  'packages/runtime/action-router/effects.ts::shorthand-factType',
+  'packages/runtime/requirements/facts.ts::shorthand-factType',
+  'packages/runtime/review-assignment/writer.ts::shorthand-factType',
   'packages/runtime/control/service.ts::string',
   'packages/runtime/requirements/facts.ts::RequirementFactType',
   // A4-PR0's proposal store: the ledger-row PORT type and the corrupt-outcome
@@ -569,6 +608,15 @@ describe('A4-PR0a: every fact type production can write is registered in the led
       'funnel-computed.ts': "await commitDurableFact(repos, root, now, 'sneaky' + '-fact-x', payload)\n",
       'label-double.ts': 'return { factType: "governance-proposal-created", payload: p }\n',
       'label-const-concat.ts': 'return { factType: FACT_PREFIX + FACT_SUFFIX, payload: p }\n',
+      // The three shapes round 2 measured escaping this guard, each through a different hole: a label that
+      // carries no value (shorthand), a call the harvest could not locate (one space), and an import alias the
+      // census never even classified as a writer.
+      'label-shorthand.ts':
+        "const factType = 'review-assignment-created'\nreturn ledger.put({ factType, payload: p })\n",
+      'funnel-spaced.ts': "await commitDurableFact (repos, root, now, 'spaced-funnel-x', payload)\n",
+      'funnel-alias.ts':
+        "import { commitDurableFact as commit } from '../storage/repositories/facts.js'\n" +
+          "await commit(repos, root, now, 'aliased-funnel-x', payload)\n",
       'reader-only.ts':
         "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n",
     }
@@ -577,10 +625,13 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     // Four write shapes are writers, and the file that only reads is not. Written out, because a classification
     // rule nobody can diff against a list is a rule that drifts.
     expect(classified.sort()).toEqual([
+      'funnel-alias.ts',
       'funnel-computed.ts',
       'funnel-positional.ts',
+      'funnel-spaced.ts',
       'label-const-concat.ts',
       'label-double.ts',
+      'label-shorthand.ts',
     ])
     const derived = deriveWrittenFactTypes(classified, plants, CONSTS, REGISTRIES)
     harvestFunnelSites(classified, plants, CONSTS, derived.values, derived.unresolved)
@@ -596,6 +647,21 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     // And what genuinely cannot be resolved is NAMED rather than dropped: a concatenation of two constants has
     // no static value here, and the site shows up in the set C5 pins.
     expect([...derived.unresolved].some((site) => site.includes('label-const-concat.ts::'))).toBe(true)
+
+    // Round 2's three escapes, each pinned at the hole it fell through. The spaced call is now a site like any
+    // other, so its fact type is DERIVED — the space was never a barrier to the language, only to an `indexOf`.
+    expect(derived.values.has('spaced-funnel-x')).toBe(true)
+    // The shorthand label and the aliased import cannot be derived from, and that is exactly why they must not
+    // pass silently: each shows up as a named site for a human to resolve. `aliased-funnel-x` is NOT in `values`
+    // by design — inventing a derivation for a call the harvest cannot see would be the same lie in the other
+    // direction.
+    expect([...derived.unresolved].some((site) => site.includes('label-shorthand.ts::shorthand-factType'))).toBe(true)
+    expect(
+      [...derived.unresolved].some((site) => site.includes('funnel-alias.ts::durable-fact-funnel-imported-by-alias')),
+    ).toBe(true)
+    expect(derived.values.has('aliased-funnel-x')).toBe(false)
+    // And a file that only reads stays out of the census entirely, so "wider" has not become "useless".
+    expect(classified).not.toContain('reader-only.ts')
   })
 
   it('C2: every derived fact type has a host category (the defect this PR fixes)', () => {

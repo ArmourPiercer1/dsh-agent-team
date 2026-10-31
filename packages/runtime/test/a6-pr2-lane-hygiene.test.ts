@@ -69,9 +69,23 @@ const PROTECTED_PREFIXES = [
   `governance-center${sep}`,
 ]
 
-/** `.tsx` and the per-package floor exist because PR3′'s round-5 review planted an importer in
- *  `alpha/src/offender.tsx` and in an empty package directory, and the leg stayed green both times. */
-const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.js']
+/**
+ * `.tsx` and the per-package floor exist because PR3′'s round-5 review planted an importer in
+ * `alpha/src/offender.tsx` and in an empty package directory, and the leg stayed green both times.
+ *
+ * `.mts` and `.cts` were added in round 2 of #517 (F-R2-6) after a plant in `second-writer.mts` — byte-identical
+ * to a plant in `.cjs` beside it — was walked by one extension and not the other. They are not exotic here: 30
+ * tracked files under `packages` carry them today. Declaration files are the one thing in that set no module can
+ * execute, so the skip that already existed for `.d.ts` now covers all three spellings, otherwise widening the
+ * extensions would have made 14 `.d.mts` declarations count as production source.
+ *
+ * `composition-shim` is skipped because it is GENERATED, not because it is inconvenient: it is rebuilt from
+ * `packages/client` sources by `scripts/build-client-composition.mjs`, and
+ * `scripts/check-artifacts-at-head.mjs` rebuilds it and compares the bytes at every head (`drift=0`), so a
+ * writer cannot be hand-planted in it without that gate going red. What a source-level name/verb scan would do
+ * there is convict the bundle for containing what its lawful inputs contain.
+ */
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.cjs', '.mts', '.cts', '.js']
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'composition-shim', 'coverage'])
 
 /** Sibling suites (f3a/f3b/f3c, po-notify) create and destroy scratch under
@@ -114,7 +128,7 @@ function sourceFiles(root: string): string[] {
       out.push(...sourceFiles(full))
       continue
     }
-    if (entry.endsWith('.d.ts')) continue
+    if (/\.d\.(?:ts|mts|cts)$/.test(entry)) continue
     if (SOURCE_EXTENSIONS.some((extension) => entry.endsWith(extension))) out.push(full)
   }
   return out
@@ -265,11 +279,29 @@ describe('a6-pr2 lane hygiene', () => {
       registry: /REVIEW_ASSIGNMENT_FACT_TYPES/,
     }
     const verbAlternatives: Readonly<Record<string, RegExp>> = {
-      put: /\.put\(/,
-      putEntry: /\.putEntry\(/,
+      // A method reached through a computed member, or handed out by `.bind` to be called somewhere else, is the
+      // same write with the `(` moved off the name. Round 2 of #517 planted both (`const append =
+      // ledger.put.bind(ledger)` and `ledger['put'](row)`) and the detector saw neither, while a reviewer
+      // grepping for `.put(` saw neither either (F-R2-6).
+      put: /\.put\s*(?:\(|\.\s*\bbind\b)|\[\s*['"`]put['"`]\s*\]\s*\(/,
+      putEntry: /\.putEntry\s*(?:\(|\.\s*\bbind\b)|\[\s*['"`]putEntry['"`]\s*\]\s*\(/,
       allocateSequence: /allocateSequence\s*\(/,
+      // `\s*(` here, matching the classifier in `a4pr0a-fact-type-closed-set.test.ts`: one space before the
+      // parenthesis is the same call to TypeScript, and two detectors on two different needles is how one of
+      // them goes blind while the other stays honest (F-R2-5).
       commitDurableFact: /commitDurableFact\s*\(/,
     }
+    // The table itself, written out. The plant↔alternative tie below cannot see a PAIR being deleted: drop this
+    // verb and its plant together and the two key sets stay equal, which is exactly how round 2 re-opened round
+    // 1's funnel hole with four lines removed (F-R2-7). A literal key list is the check that survives being the
+    // thing under test, the same way the refusal census on the writer is written out rather than compared to itself.
+    expect(Object.keys(verbAlternatives).sort()).toEqual([
+      'allocateSequence',
+      'commitDurableFact',
+      'put',
+      'putEntry',
+    ])
+    expect(Object.keys(nameAlternatives).sort()).toEqual(['literal', 'registry'])
     const union = (table: Readonly<Record<string, RegExp>>): RegExp =>
       new RegExp(Object.values(table).map((pattern) => pattern.source).join('|'))
     const namesFamily = union(nameAlternatives)
@@ -299,36 +331,79 @@ describe('a6-pr2 lane hygiene', () => {
 
     // Anti-vacuity over EVERY alternative, which is what round 1's F4 said the old control did not do: it pinned
     // one intersection (literal name ∧ `.put(`), so three of the four verbs and one of the two naming shapes
-    // could be deleted from the detector and this leg would have stayed green. Each plant names exactly one
-    // alternative; the key says which; and `toEqual` between the key sets means an alternative can be neither
-    // dropped nor added without this leg going red.
-    const plants: Readonly<Record<string, string>> = {
-      'name:literal': "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n",
-      'name:registry':
-        "import { REVIEW_ASSIGNMENT_FACT_TYPES } from '../review-assignment/types.js'\nawait ledger.put(row)\n",
-      'verb:put': "const F = 'review-assignment-transferred'\nawait ledger.put(row)\n",
-      'verb:putEntry': "const F = 'review-assignment-retired'\nawait store.putEntry(row)\n",
-      'verb:allocateSequence': "const F = 'review-assignment-created'\nconst s = await ledger.allocateSequence()\n",
-      'verb:commitDurableFact':
-        "await commitDurableFact(repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-created', payload)\n",
+    // could be deleted from the detector and this leg would have stayed green.
+    //
+    // Round 2 changed the shape of the tie rather than adding to it. Keying plants BY alternative (the previous
+    // form) made "exactly one plant per alternative" an assertion, so a second shape for the same verb had
+    // nowhere to live — which is why `.put.bind(` had never been planted — and pair-deleting an alternative with
+    // its plant kept the two key sets equal (F-R2-7). Plants are now keyed by plant and each declares which
+    // alternative it drives: every alternative must still be driven, an alternative may be driven more than once,
+    // and a plant that names an alternative the detector does not have is a red leg.
+    const plants: Readonly<Record<string, { readonly drives: string; readonly text: string }>> = {
+      'name:literal': {
+        drives: 'name:literal',
+        text: "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n",
+      },
+      'name:registry': {
+        drives: 'name:registry',
+        text: "import { REVIEW_ASSIGNMENT_FACT_TYPES } from '../review-assignment/types.js'\nawait ledger.put(row)\n",
+      },
+      'verb:put': {
+        drives: 'verb:put',
+        text: "const F = 'review-assignment-transferred'\nawait ledger.put(row)\n",
+      },
+      'verb:put-bound': {
+        drives: 'verb:put',
+        // The three-line module round 2 measured as invisible to BOTH this scan and the closed-set census: the
+        // name is there, the method is reached through `bind`, and nothing writes `.put(` anywhere.
+        text:
+          "const factType = 'review-assignment-created'\n" +
+          "const append = ledger.put.bind(ledger)\n" +
+          'await append({ factType, payload })\n',
+      },
+      'verb:put-computed': {
+        drives: 'verb:put',
+        text: "const F = 'review-assignment-retired'\nawait ledger['put'](row)\n",
+      },
+      'verb:putEntry': {
+        drives: 'verb:putEntry',
+        text: "const F = 'review-assignment-retired'\nawait store.putEntry(row)\n",
+      },
+      'verb:allocateSequence': {
+        drives: 'verb:allocateSequence',
+        text: "const F = 'review-assignment-created'\nconst s = await ledger.allocateSequence()\n",
+      },
+      'verb:commitDurableFact': {
+        drives: 'verb:commitDurableFact',
+        text:
+          "await commitDurableFact(repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-created', payload)\n",
+      },
+      'verb:commitDurableFact-spaced': {
+        drives: 'verb:commitDurableFact',
+        text:
+          "await commitDurableFact (repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-transferred', p)\n",
+      },
     }
-    expect(Object.keys(plants).sort()).toEqual(
+    const alternativeOf = (key: string): RegExp | undefined =>
+      key.startsWith('name:')
+        ? nameAlternatives[key.slice('name:'.length)]
+        : verbAlternatives[key.slice('verb:'.length)]
+    const driven = [...new Set(Object.values(plants).map((plant) => plant.drives))].sort()
+    expect(driven, 'an alternative of the detector has no plant driving it').toEqual(
       [...Object.keys(nameAlternatives).map((name) => `name:${name}`),
         ...Object.keys(verbAlternatives).map((name) => `verb:${name}`)].sort(),
     )
-    for (const [key, plant] of Object.entries(plants)) {
-      const alternative = key.startsWith('name:')
-        ? nameAlternatives[key.slice('name:'.length)]
-        : verbAlternatives[key.slice('verb:'.length)]
-      expect(alternative, `${key} names an alternative the detector does not have`).toBeDefined()
-      expect(alternative!.test(codeOnly(plant)), `${key} does not exercise the alternative it is named for`).toBe(true)
-      expect(convicts('second-writer/impl.ts', plant, false), `${key} plant was not convicted`).toBe(true)
+    for (const [id, plant] of Object.entries(plants)) {
+      const alternative = alternativeOf(plant.drives)
+      expect(alternative, `${id} drives an alternative the detector does not have`).toBeDefined()
+      expect(alternative!.test(codeOnly(plant.text)), `${id} does not exercise ${plant.drives}`).toBe(true)
+      expect(convicts('second-writer/impl.ts', plant.text, false), `${id} plant was not convicted`).toBe(true)
     }
 
     // The lane's own writer is the only in-lane exception, and a lane module that is not the writer is convicted
     // exactly like an outside one: the exception is a filename, not a directory.
-    expect(convicts('router.ts', plants['verb:commitDurableFact'] as string, true)).toBe(true)
-    expect(convicts('writer.ts', plants['verb:put'] as string, true)).toBe(false)
+    expect(convicts('router.ts', (plants['verb:commitDurableFact'] as { text: string }).text, true)).toBe(true)
+    expect(convicts('writer.ts', (plants['verb:put'] as { text: string }).text, true)).toBe(false)
     // Two exclusions that are load-bearing rather than convenient: reading rows is what PR5′ will do, and prose
     // that NAMES the forbidden calls while forbidding them must not convict the law for stating itself (the
     // `types.ts` A-8 comment is that case in the real tree).
@@ -337,11 +412,22 @@ describe('a6-pr2 lane hygiene', () => {
     expect(convicts('pr5-reader/impl.ts', reader, false)).toBe(false)
     expect(convicts('types.ts', '/* no module may call allocateSequence() for review-assignment-created */\n', false))
       .toBe(false)
-    // Disclosed residual, because "scans the whole repository" is only as wide as a text scan can be: a family
-    // name reaching a call through a multi-hop alias, or a writer sitting in a file this walk does not read
-    // (test sources, and anything untracked), is outside what it sees. The claim this leg actually supports is
-    // "no tracked production source outside the writer contains both a family name and a route to the ledger",
-    // which is what the epoch CAS needs and what the PR body says.
+    // Disclosed residual, named rather than gestured at, because "scans the whole repository" is only as wide as
+    // a text scan can be. What this walk does NOT see, each verified by a plant in round 2 of #517:
+    //  • the SPLIT PAIR — a helper file holding the verb with no family name, and a caller file holding the
+    //    family name with no verb. Each file is lawful on its own and the two together append a row; catching
+    //    that needs a call graph, which is `a4pr0a`'s funnel harvest and, past it, a human reading the diff.
+    //  • a name built at runtime: a template literal that interpolates, `'review-assignment-' + 'created'`, or
+    //    `'REVIEW_ASSIGNMENT_FACT_' + 'TYPES'`. The closed-set census forces the concatenation it can parse into
+    //    being named; this scan simply does not see it.
+    //  • test sources and untracked files, by construction.
+    //  • `dist` and `composition-shim`, both generated — which is not a hole, because
+    //    `check-artifacts-at-head.mjs` rebuilds both and compares bytes at every head, so neither can hold a
+    //    hand-planted writer while the artifacts gate is green.
+    // So the claim this leg actually supports is the one the PR body makes: "no tracked production source outside
+    // the writer contains both a family name and a route to the ledger in one file". It is not "no other module
+    // can append a row", and a reviewer should read the two guards together — this one and the closed-set census
+    // — as a net with named holes, not as a proof.
   })
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {

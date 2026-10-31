@@ -671,7 +671,7 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     expect(failed.ok).toBe(false)
     if (failed.ok) return
     expect(failed.refusal).toBe('REVIEW_ASSIGNMENT_ROW_DURABLE')
-    expect(failed.detail).toMatch(/the row IS durable at that sequence \(review-assignment-created@1\)/)
+    expect(failed.detail).toMatch(/row this command wrote IS durable at that sequence \(review-assignment-created@1/)
     expect(failed.detail).not.toMatch(/no assignment row exists/)
     expect(world.familyRows().map((row) => row.sequence)).toEqual([1])
 
@@ -705,10 +705,10 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     }
     // No crash switch needed: the missing TeamSession row makes the write's own generation stamp throw, and
     // the second read — the one this writer added to answer honestly — is the one this reader refuses.
-    const result = await applyReviewAssignment(deps, command({ rootSessionId: root }))
+    const result = await run(deps, { rootSessionId: root })
     expect(result.ok).toBe(false)
     if (result.ok) return
-    expect(result.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
+    expect(result.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN')
     expect(result.detail).toMatch(/could not be re-read/)
     expect(result.detail).toContain('reader unavailable after the write attempt')
     expect(result.detail).toMatch(/MAY be durable/)
@@ -719,6 +719,267 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     expect(retry.ok).toBe(true)
     if (!retry.ok) return
     expect(retry.applied).toBe('already')
+  })
+
+  it('will not certify a row it did not write, when the append landed and the stamp failed', async () => {
+    // Round 2 of #517, finding F-R2-1. Round 1 made this branch look before it speaks; it looked at the SEQUENCE
+    // ALONE (`find(row => row.sequence === sequence)`), while the success path forty lines below asks a stricter
+    // question — same family, same root, same payload. The failure path was the one place in the module that
+    // answered a durability question without asking whose row it had found, and the medium this spec already
+    // admits proves the state is reachable: the same payload difference that answers READBACK_MISMATCH over a
+    // healthy session answered ROW_DURABLE — plus a promise that a retry "will be recognised as already
+    // applied" — once the stamp also failed. The retry then refused ALREADY_ACTIVE.
+    const root = 'session-root-9'
+    const world = await harness({ root, seedSession: false })
+    const inner = ledgerPort(world.domain)
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: {
+        ...inner,
+        put: (draft) =>
+          inner.put({ ...draft, payload: { ...draft.payload, reasonCode: 'REWRITTEN_BY_THE_MEDIUM' } }),
+      },
+    }
+    const failed = await run(deps, { rootSessionId: root })
+    expect(failed.ok).toBe(false)
+    if (failed.ok) return
+    expect(failed.refusal).toBe('REVIEW_ASSIGNMENT_READBACK_MISMATCH')
+    expect(failed.detail).toMatch(/is not the row this command wrote/)
+    expect(failed.detail).not.toMatch(/IS durable/)
+    expect(failed.detail).not.toMatch(/recognised as already applied/)
+    // And the row stays, as it does everywhere else in this module: no refusal here implies a take-back.
+    expect(world.familyRows()).toHaveLength(1)
+  })
+
+  it('will not name a row of another family on another root as this durable row', async () => {
+    // An append that never lands, in front of a reader that obeys the port contract EXACTLY — the whole ledger,
+    // in sequence order, unfiltered — so whatever sits at the allocated sequence belongs to someone else. Matching
+    // on sequence alone called that "this command's row IS durable … a retry will be recognised as already
+    // applied", then answered the same refusal forever. Nothing in the module was asking whether the row it found
+    // was this family's, this root's, or this command's.
+    const root = 'session-root-9'
+    const world = await harness({ root })
+    const inner = ledgerPort(world.domain)
+    const foreign: ReviewAssignmentLedgerRow = {
+      sequence: 1,
+      rootSessionId: 'session-root-2',
+      factType: 'control-leg-decided',
+      payload: { decision: 'deny' },
+    }
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: {
+        ...inner,
+        put: () => Promise.reject(new Error('seam refused the append')),
+        list: () => [foreign],
+      },
+    }
+    const failed = await run(deps, { rootSessionId: root })
+    expect(failed.ok).toBe(false)
+    if (failed.ok) return
+    expect(failed.refusal).toBe('REVIEW_ASSIGNMENT_READBACK_MISMATCH')
+    expect(failed.refusal).not.toBe('REVIEW_ASSIGNMENT_ROW_DURABLE')
+    expect(failed.detail).toContain('control-leg-decided@1')
+    expect(failed.detail).toContain('session-root-2')
+    expect(failed.detail).not.toMatch(/recognised as already applied/)
+  })
+
+  it('answers with a refusal instead of an exception at EVERY read of the injected ledger', async () => {
+    // Round 1's no-escape rule ("a call that throws while answering 'did my row land?' must not escape") is
+    // applied at one of this module's four reads of `list()`. Round 2 drove the others and found them escaping as
+    // exceptions on a corrupt row — including the read-back after a SUCCESSFUL append, which is the same question
+    // asked at the sibling site with no branch at all. All four are driven here, each with the read that fails
+    // named, and the law asserted is the strong one: nothing throws at the caller, whatever the answer is.
+    const root = 'session-root-9'
+    const cases = [
+      { name: 'the fold read before allocation', failAt: 1, seedSession: false, code: 'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED' },
+      { name: 'the re-read after a failed append', failAt: 2, seedSession: false, code: 'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN' },
+      { name: 'the read-back after a successful append', failAt: 2, seedSession: true, code: 'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN' },
+      { name: 'the state read after a verified row', failAt: 3, seedSession: true, code: 'REVIEW_ASSIGNMENT_ROW_DURABLE' },
+    ] as const
+    for (const one of cases) {
+      const world = await harness({ root, seedSession: one.seedSession })
+      const inner = ledgerPort(world.domain)
+      let lists = 0
+      const deps: ReviewAssignmentStoreDeps = {
+        ...world.deps,
+        ledger: {
+          ...inner,
+          list: () => {
+            lists += 1
+            if (lists === one.failAt) throw new Error(`reader corrupt at read ${String(one.failAt)}`)
+            return inner.list()
+          },
+        },
+      }
+      let thrown: unknown = null
+      let result: ReviewAssignmentWriteResult | undefined
+      try {
+        result = await run(deps, { rootSessionId: root })
+      } catch (error) {
+        thrown = error
+      }
+      expect(thrown, `${one.name} let an exception escape the module`).toBeNull()
+      expect(result, `${one.name} produced no answer`).toBeDefined()
+      if (result === undefined || result.ok) throw new Error(`${one.name} did not answer with a refusal`)
+      expect(result.refusal, `${one.name} answered ${result.refusal}`).toBe(one.code)
+      expect(result.detail).toContain(`reader corrupt at read ${String(one.failAt)}`)
+    }
+  })
+
+  it('carries the medium code into the refusal instead of the word "object"', async () => {
+    // INFO-1: `describe` rendered any non-`Error` throw as `typeof error`, so a composed adapter that rejects
+    // with `{ code: 'RECORD_DUPLICATE', problem: 'duplicate-ledger-entry' }` produced a refusal reading "the row
+    // write failed (object)" — the string is what an operator reads, and it was thrown away at exactly the moment
+    // it was wanted.
+    const root = 'session-root-9'
+    const world = await harness({ root })
+    const inner = ledgerPort(world.domain)
+    const hostile = { code: 'RECORD_DUPLICATE', problem: 'duplicate-ledger-entry' }
+    const deps: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: { ...inner, put: () => Promise.reject(hostile) },
+    }
+    const failed = await run(deps, { rootSessionId: root })
+    expect(failed.ok).toBe(false)
+    if (failed.ok) return
+    expect(failed.detail).toContain('RECORD_DUPLICATE')
+    expect(failed.detail).toContain('duplicate-ledger-entry')
+    expect(failed.detail).not.toContain('(object)')
+  })
+
+  it('sees an omission that breaks the epoch chain, and is blind only to one that does not — and the blind spot costs more than disclosed', async () => {
+    // INFO-2. The port contract said the writer "cannot detect an omission", which is over-universal: hide a MIDDLE
+    // row of a real chain and the epoch CAS convicts the reader (EPOCH_CONFLICT, folded into
+    // WRITE_FOLD_UNRECONCILED). The shape it genuinely cannot see is a SUFFIX, and the consequence there is worse
+    // than the "two live rows in one epoch" this file disclosed: the writer mints the next sequence claiming an
+    // epoch that is already durable, and the case is unwritable from then on.
+    const world = await harness()
+    const created = await run(world.deps)
+    expect(created.ok).toBe(true)
+    if (!created.ok) return
+    const transferred = await run(world.deps, { kind: 'transferred', target: { kind: 'leader' } })
+    expect(transferred.ok).toBe(true)
+    if (!transferred.ok) return
+    const real = world.familyRows().map((row) => row.sequence)
+    expect(real).toEqual([1, 2])
+    const inner = ledgerPort(world.domain)
+
+    // Middle row hidden: the chain breaks, so the fold refuses. Detected.
+    const middle: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: { ...inner, list: () => inner.list().filter((row) => row.sequence !== 1) },
+    }
+    const caughtByChain = await run(middle, { kind: 'transferred', target: { kind: 'leader' } })
+    expect(caughtByChain.ok).toBe(false)
+    if (caughtByChain.ok) return
+    expect(caughtByChain.refusal).toBe('REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED')
+    expect(caughtByChain.detail).toContain('REVIEW_ASSIGNMENT_EPOCH_CONFLICT')
+
+    // Suffix hidden: the writer sees a one-row ledger, mints epoch 2 at sequence 3, and calls it `written`.
+    const suffix: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: { ...inner, list: () => inner.list().filter((row) => row.sequence !== 2) },
+    }
+    const blind = await run(suffix, { kind: 'transferred', target: { kind: 'leader' } })
+    expect(blind.ok).toBe(true) // the boundary, measured
+    if (!blind.ok) return
+    expect(blind.assignmentEpoch).toBe(2)
+    expect(world.familyRows().map((row) => row.sequence)).toEqual([1, 2, 3])
+
+    // And what that costs: over the TRUE ledger the case is now permanently unwritable, because sequence 3 claims
+    // an epoch sequence 2 already claimed. This is the sentence the port contract has to carry.
+    const after = await applyReviewAssignment(world.deps, command({ kind: 'transferred', target: { kind: 'leader' } }))
+    expect(after.ok).toBe(false)
+    if (after.ok) return
+    expect(after.refusal).toBe('REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED')
+    expect(after.detail).toContain('REVIEW_ASSIGNMENT_EPOCH_CONFLICT')
+
+    const source = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'writer.ts'), 'utf8')
+    expect(source).toMatch(/blind to a suffix it is never shown/)
+    expect(source).toMatch(/permanently unwritable/)
+  })
+
+  it('produces four different durability claims from four different codes, and the header names four', async () => {
+    // F-R2-4. The header used to enumerate three answers and the fix for F1 added a fourth state while leaving it
+    // at three, so the sentence was both false and unpinned. This leg is the pin: it drives one state per code,
+    // asserts no two states share a code, and greps the header for the claim each code carries. The vocabulary
+    // census pins the NAMES; this pins that a name means one thing, which is what a caller switch-ing on the
+    // closed set is actually reading.
+    const root = 'session-root-9'
+    const arms: readonly { readonly code: string; readonly claim: RegExp; readonly deps: (w: Harness) => ReviewAssignmentStoreDeps; readonly seed: boolean }[] = [
+      {
+        code: 'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+        claim: /no assignment row exists at that sequence/,
+        seed: false,
+        deps: (w) => {
+          const inner = ledgerPort(w.domain)
+          return { ...w.deps, ledger: { ...inner, put: () => Promise.reject(new Error('append refused')), list: () => [] } }
+        },
+      },
+      {
+        code: 'REVIEW_ASSIGNMENT_ROW_DURABLE',
+        claim: /row this command wrote IS durable at that sequence/,
+        seed: false,
+        // No port tampering: a root that names no TeamSession row is enough, which is the point of F1.
+        deps: (w) => w.deps,
+      },
+      {
+        code: 'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+        claim: /is not the row this command wrote/,
+        seed: false,
+        deps: (w) => {
+          const inner = ledgerPort(w.domain)
+          return {
+            ...w.deps,
+            ledger: { ...inner, put: (d) => inner.put({ ...d, payload: { ...d.payload, reasonCode: 'REWRITTEN_BY_THE_MEDIUM' } }) },
+          }
+        },
+      },
+      {
+        code: 'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN',
+        claim: /MAY be durable at that sequence and it MAY be absent/,
+        seed: false,
+        deps: (w) => {
+          const inner = ledgerPort(w.domain)
+          let lists = 0
+          return {
+            ...w.deps,
+            ledger: {
+              ...inner,
+              list: () => {
+                lists += 1
+                if (lists > 1) throw new Error('reader unavailable after the write attempt')
+                return inner.list()
+              },
+            },
+          }
+        },
+      },
+    ]
+    const codes = new Set<string>()
+    for (const arm of arms) {
+      const world = await harness({ root, seedSession: arm.seed })
+      const failed = await run(arm.deps(world), { rootSessionId: root })
+      expect(failed.ok, `${arm.code} answered accepted`).toBe(false)
+      if (failed.ok) return
+      expect(failed.refusal, `expected ${arm.code}`).toBe(arm.code)
+      expect(failed.detail).toMatch(arm.claim)
+      codes.add(failed.refusal)
+    }
+    expect(codes.size).toBe(arms.length)
+
+    const source = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'writer.ts'), 'utf8')
+    expect(source).not.toMatch(/which of three things happened/)
+    for (const phrase of [
+      'nothing this command did is durable',
+      'IS durable at that sequence',
+      'is not the row this command wrote',
+      'MAY be durable at that sequence and it MAY be absent',
+    ]) {
+      expect(source, `the header no longer states: ${phrase}`).toContain(phrase)
+    }
+    expect(source).toMatch(/four durability claims/)
   })
 
   it('refuses a malformed command before touching the ledger or the lock', async () => {
@@ -987,6 +1248,7 @@ describe('PR-I1a lock discipline and refusal vocabulary', () => {
     // position holding `expect([...SET].sort()).toEqual([...SET].sort())` — true for any value whatsoever, the
     // one statically-dead assertion in the file. A name list a reader can diff against the source is the check.
     expect([...REVIEW_ASSIGNMENT_WRITE_REFUSALS].sort()).toEqual([
+      'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN',
       'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
       'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
       'REVIEW_ASSIGNMENT_ROW_DURABLE',

@@ -33,15 +33,28 @@
  *  - **A REFUSAL IS AN ANSWER, AND NOTHING IS EVER HALF-CLAIMED (D-4/D-5).** There is no rollback anywhere in this
  *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
  *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
- *    failure path here says which of three things happened: nothing was allocated, a sequence was allocated and
- *    nothing was written, or a row IS durable and here is its sequence (`REVIEW_ASSIGNMENT_ROW_DURABLE`, whose
- *    producing branch re-reads the ledger rather than inferring the answer from the exception — round 1 of
- *    #517 caught this branch asserting the second answer while the row sat durable at that sequence, because
- *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming
- *    no TeamSession row makes the append succeed and the stamp throw). A write is only reported as applied after
- *    it has been read back out of the ledger, and a read-back disagreement is reported as one rather than
- *    presented as a retraction — the row stays, because the honest sentence about an append-only ledger is that
- *    you cannot un-write it.
+ *    failure path that reached the ledger names exactly one of FOUR DURABILITY CLAIMS, and each claim is carried
+ *    by its own code, because a caller switch-ing on the closed set is reading the NAME. Stated as four durability claims:
+ *      1. **nothing this command did is durable** — `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED`: allocation refused,
+ *         allocation unusable, the ledger unreadable before anything was allocated, or the append refused and the
+ *         re-read confirms nothing is at that sequence;
+ *      2. **the row this command wrote IS durable at that sequence** — `REVIEW_ASSIGNMENT_ROW_DURABLE`, produced
+ *         only by a branch that re-reads the ledger and identifies the row as this command's (family, root and
+ *         payload), never by inference out of an exception;
+ *      3. **what is at that sequence is not the row this command wrote** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`;
+ *      4. **it cannot be told** — `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`: the ledger could not be read far
+ *         enough to answer, so the row MAY be durable at that sequence and it MAY be absent.
+ *    Round 1 of #517 caught this module withholding claim 2 while the row sat durable at that sequence, because
+ *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming no
+ *    TeamSession row makes the append succeed and the stamp throw. Round 2 caught the same branch MAKING claim 2
+ *    about a row it had not identified: the re-read matched on sequence alone, where the success path matches
+ *    family and root and payload, so a `control-leg-decided` row filed under another team's root was reported as
+ *    this command's durable row — with a promise about the retry that the same module then refused. Both
+ *    directions are pinned by legs that produce each code and assert no two claims share one. No answer here
+ *    predicts what a retry answers; only the fold knows.
+ *    A refusal is never a retraction either: a write is only reported as applied after it has been read back out
+ *    of the ledger, and a read-back disagreement is reported as one rather than presented as a take-back — the row
+ *    stays, because the honest sentence about an append-only ledger is that you cannot un-write it.
  *
  * WHAT THIS MODULE IS NOT: it is not an authority check (A-1, and a row it writes cannot become one — the payload
  * gate refuses authority-bearing keys before anything durable happens), it is not a router (that is `router.ts`,
@@ -58,7 +71,7 @@ import type { ReviewAssignmentFactKind, ReviewAssignmentRefusal, ReviewAssignmen
  * the ones that only exist once a durable write is on the table, so they are a separate closed set rather than
  * an addition to the frozen kernel vocabulary.
  */
-export declare const REVIEW_ASSIGNMENT_WRITE_REFUSALS: readonly ["REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED", "REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE", "REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED", "REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE", "REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED", "REVIEW_ASSIGNMENT_ROW_DURABLE", "REVIEW_ASSIGNMENT_READBACK_MISMATCH"];
+export declare const REVIEW_ASSIGNMENT_WRITE_REFUSALS: readonly ["REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED", "REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE", "REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED", "REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE", "REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED", "REVIEW_ASSIGNMENT_ROW_DURABLE", "REVIEW_ASSIGNMENT_READBACK_MISMATCH", "REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN"];
 export type ReviewAssignmentWriteRefusal = (typeof REVIEW_ASSIGNMENT_WRITE_REFUSALS)[number];
 /**
  * What a refusal result may name. The kernel's refusals pass through **unchanged** rather than being re-labelled:
@@ -100,14 +113,18 @@ export interface ReviewAssignmentLedgerWriterPort {
 /**
  * The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job.
  *
- * **An unfiltered, un-truncated, non-stale read is part of this port's contract, and the writer cannot detect an
- * omission.** It re-reads inside the lock rather than trusting a cached view, and it refuses when a row it can
- * see does not reconcile; it has no way to notice a row it cannot see, because a fold over a shorter ledger is
- * just a fold over a shorter ledger. That is not a gap this module can close from its seat, so it is stated as
- * the adapter's obligation. Measured, not asserted: `a6-pri1a-writer.test.ts` drives a reader that drops one
- * row and pins what follows — the second create is accepted and the family ends up with two live rows in one
- * epoch, which is the epoch CAS failing to have anything to conflict with. A `slice`, a stale cache or a
- * filtered adapter behind this port is an adapter bug with that shape of consequence.
+ * **An unfiltered, un-truncated, non-stale read is part of this port's contract.** The writer re-reads inside
+ * the lock rather than trusting a cached view, and it refuses when a row it can see does not reconcile. What it
+ * cannot do is see a row it was not shown, so it is blind to a suffix it is never shown — a fold over a shorter
+ * ledger is just a fold over a shorter ledger. That asymmetry is measured in both directions, not asserted: hide
+ * a MIDDLE row of a real chain and the epoch CAS convicts the reader (`REVIEW_ASSIGNMENT_EPOCH_CONFLICT`, folded
+ * into `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`); hide the NEWEST row and the command is accepted.
+ * The consequence of that second shape is worse than "two live rows in one epoch", and the leg pins it: the
+ * writer mints the next sequence claiming an epoch an earlier row already claimed, and from that moment the case
+ * is permanently unwritable — every later command reads both rows and refuses to fold them. A `slice`, a stale
+ * cache or a filtered adapter behind this port is an adapter bug with
+ * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
+ * whoever writes the adapter (PR-I1b) and not to a defensive check here.
  */
 export interface ReviewAssignmentLedgerReaderPort {
     list(): readonly ReviewAssignmentLedgerRow[];

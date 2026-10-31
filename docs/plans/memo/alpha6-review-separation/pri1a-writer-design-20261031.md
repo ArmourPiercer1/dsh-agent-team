@@ -103,7 +103,7 @@ dormancy 扫描继续成立，`ALLOWED_CONSUMERS=[]` 不变；lane 模块集合�
 **本 PR 不声称**：真实 Host 上的并发对账、跨代重启后的投影呈现、以及与 control 路径在同一把锁下的 interleaving
 ——这些需要 PR-I1b 的接线与单所有者 C2 运行。
 
-## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-13 round-1 独立复核后：每条给证据）
+## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-14 round-1 独立复核后，R-15..R-21 round-2 独立复核后：每条给证据）
 
 裁决要求「不允许静默重定义」，因此每条都写明：原状态、被什么推翻、现在的法律、钉住它的腿。
 
@@ -186,7 +186,7 @@ round-1 用一层过滤 wrapper 藏掉 sequence 1 的那一行，第二次 `crea
 被拒），同时用 readFileSync 钉住那句文档**存在** —— 没人跑的文档句就是没人负责的文档句。
 
 **R-13 一条静态恒真的断言被换成手写名单。** census 腿里原本写着 `expect([...SET].sort()).toEqual([...SET].sort())`：
-自我比较，任何取值都为真，是这 38 条里唯一装饰性的一条（同一腿的其余断言在 M2/M3/M6/M7 变异下会红）。现在改为
+自我比较，任何取值都为真，是当时那 38 条里唯一装饰性的一条（同一腿的其余断言在 M2/M3/M6/M7 变异下会红）。现在改为
 手写八个代码的期望列表 + 唯一性 + 前缀约定；也正因为它，本 PR 的自有代码从 7 个变成 8 个（R-9 的新代码），census
 依然要求「声明的都被产生过」。
 
@@ -197,21 +197,83 @@ try 包住，读不动时给第三种诚实答案：`REVIEW_ASSIGNMENT_DURABLE_W
 不存在**，并说明重发同一命令会如何把问题答出来（在 ⇒ `already`，不在 ⇒ 下一个 sequence 落账）。
 钉住它的腿是 `answers with a refusal rather than an exception when even the re-read fails`（先跑红，确认
 异常确实从 `writer.ts` 的重读处逃出，再加保护）。法律不是"修完就完"：**修完的东西是新的攻击面**，这条就是。
+（round 2 的更正：本条当时给出的第三种诚实答案后来被拆成两个代码 —— 见 R-16；本条的叙述保留原文，因为
+「这一轮当时怎么做到的」也是证据。）
 
-方法条目（进 SESSION_ROUTER_LOG）：**写结案说明本身就是自查手段** —— 这条不是复核者找到的，是把 F1 的修法
-逐句写成文字、问到自己修法新增的每一次调用时会怎样失败之后找到的。
+**R-15 `ROW_DURABLE` 说出的是它没有验证的东西：只看 sequence 的"重读"。** R-9 让 catch 去看，但只看了
+`find(row => row.sequence === sequence)` —— 成功路径四十行之下问的是「这是不是我写的那行」（family ∧ root ∧
+payload），失败路径成了本模块唯一一处不问「这是谁的行」就回答耐久性的地方。round 2 用本 lane 自己承认的介质
+（`a6-pri1a-writer.test.ts` 里那条改写载荷的 `put`）配上盖章失败，测出：同一处载荷差异在健康会话上答
+`READBACK_MISMATCH`，加上盖章失败就答 `ROW_DURABLE` 并许诺「重发同一命令必被判为 already」，而重发实际得到
+`ALREADY_ACTIVE`（第三种状态：一个诚实的 reader 返回整个账本，那一行是别队的 `control-leg-decided`，于是本模块
+把别人的行说成这条命令的耐久行，且永远重复同一 refusal）。修法是复用成功路径那同一把尺，并把「重发会怎样」的
+许诺删掉 —— **只有折叠知道那个答案**（R-16）。钉住它的腿：`will not certify a row it did not write…` 与
+`will not name a row of another family on another root as this durable row`；变异 M-I（把尺退回 sequence 单键）
+使这三条腿点名变红。
+
+**R-16 头部的「三个答案」法律被 R-9 的修法变成假话，而且没人跑它。** round 1 之后多出来的那条分支既不属于
+「什么都没分配」也不属于「什么都没写」更不属于「有一行耐久」，可头部仍写着三件事，`grep` 只有头部与一条注释，
+没有任何腿 —— 一条没人跑的文档句就是把法律放在没人守的地方。现在改成**四个耐久声明、一码一义**：
+`DURABLE_WRITE_FAILED`＝本命令什么都没留下；`ROW_DURABLE`＝本命令写的那一行确实落在那個 sequence（两条产生分支
+都说同一件事：追加后失败，或写成功但末尾那次状态读失败 —— 后者不报 `written`，因为「已应用」的答案要带状态，
+而模块不肯交出没读过的状态）；`READBACK_MISMATCH`＝那个 sequence 上的不是本命令写的行；新增的
+`REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`＝读不动，说不了（自有代码 8 → 9 个，census 腿跟着改）。钉住它的腿
+`produces four different durability claims from four different codes…`：驱动四态、断言四码互不相同，再用
+readFileSync 要求头部同时说到这四句、且不再出现 "which of three things happened"。
+
+**R-17 R-14 的"不逃逸"规则只作用在四次读取里的一次。** 规则说「问『我这行落了吗』的那次调用不得以异常逃出」，
+但 `deps.ledger.list()` 在本模块被调用四次：分配前的折叠读、catch 里的重读、写成功后的 read-back、以及末尾算
+状态那次。round 2 用一字节损坏的行测出 ①与③ 直接把异常抛给调用方 —— ③ 正是被保护的那个问题在隔壁站点没有
+任何分支。四处现在各有分支，且都由一条腿逐个点名驱动（`answers with a refusal instead of an exception at
+EVERY read of the injected ledger`，四种 fail-at 组合，断言"没有任何东西抛到调用方"而不是"某处不抛"）。
+
+**R-18 「只有 writer.ts 能追加这一族」的扫描，被三行代码绕开过。** `const append = ledger.put.bind(ledger)`
+＋ `ledger['put'](row)` 都不写 `.put(`；`SOURCE_EXTENSIONS` 里缺 `.mts`/`.cts`（本树 30 个受跟踪文件带这两个
+后缀），而 `.d.mts` 会被当生产文件读（原本只跳 `.d.ts`）。round 2 还证明「植物与备择一一对应」的绑法看不见
+**成对删除**：删掉一个动词连同它的植物，两套 key 仍然相等（M-F 变异四行删除即可重开 round 1 的漏斗洞）。修法：
+动词形状补 `.bind`/计算成员，扩展表补 `.mts`/`.cts` 并把 `.d.{ts,mts,cts}` 一起跳；植物改为**按植物命名、各自
+声明驱动哪条备择**（一条备择可被驱动两次），动词表的 key 名单照 refusal census 的写法手写。合成树上五个额外
+追加者仍在的场景，改前该腿 PASS，改后 M-E/M-F 点名变红。
+
+**R-19 closed-set 还能写下它从不判断的事实类型：三处形状。** ①简写标签 `put({ factType, payload })`——文件被
+判为 writer（`.put(` 命中），却不判断任何东西，也不被强制命名任何东西（这是最坏组合：清点报告"干净"）；
+②`commitDurableFact (…)`（一个空格）——分类器认 `\s*(`，漏斗采集的 needle 是字面量 `commitDurableFact(`，
+两处对「什么算一次调用」看法不一致，于是漏的那一半把自己的洞报成干净；③`import { commitDurableFact as commit }`
+——连分类都进不去。修法：简写标签强制进入 unresolved；needle 改正则 `\bFUN\s*\(`；导入漏斗的文件被分类，
+且「导入了漏斗却没有可辨认调用点」被强制命名（别名跟不下去，就不假装推导出）。真实树因此多出三条 unresolved
+站点（`action-router/effects.ts`、`requirements/facts.ts`、本 writer）：**钉文件不钉字节偏移**，因为偏移会随
+无关排版漂移，而"哪个文件藏着简写标签"才是可复核事实。M-G/M-H/M-J 三个变异分别使 C1d/C5 点名变红。
+
+**R-20 我上一轮结案说明里的"读者清单"漏掉了让残留变静默的那个读者。** 上一轮写「没有东西按 generation 读账本，
+所以漏盖章不会少报变化」—— 那句对 delta-read API 成立，对**投影帧**不成立：帧里带 `team_sessions.generation`，
+客户端见相等判 `duplicate` 并丢弃（`pull-v6.ts:147-150` 明说那一格是唯一的刷新触发器）。带着真实
+`team_sessions` 行、用 `setCrashAfterWrites` 精确打断第三次写入（计数→落账→盖章）实测：账本两行、generation
+仍为 2、writer 答 `ROW_DURABLE`，而携带新行的帧被丢弃。方向是**误导（静默少报）不是拒答**。本轮更正记录、把
+writer 里那段注释改成说真话（哪个读者让残留要紧），并把「谁写盖章、何时写」的处置作为 PR-I1b 义务登在 #502；
+本模块行为不改 —— 修法在接线端，不在一个本模块不拥有的读者里。
+
+**R-21 两条 INFO 各改一处文字，也各钉一处。** ①`describe()` 过去把非 `Error` 的抛出渲染成 `typeof`，于是组合
+适配器 reject 一个 `{ code, problem }` 时，运维读到的字符串是 "(object)" —— 恰恰在最需要它的时刻丢掉信息；现在
+带上介质自己的 `code`/`problem`。②端口合同写「writer 看不见任何遗漏」过于普遍：藏中间行会被 epoch CAS 判出
+（`EPOCH_CONFLICT` ⇒ `WRITE_FOLD_UNRECONCILED`，实测），真正看不见的是**后缀**，而它的代价比此前披露的"两条活行
+同 epoch"更重 —— writer 会铸出一个已被占用的 epoch，此后该案**永久不可写**（腿把这条后果也钉住）。
+
+方法条目（进 SESSION_ROUTER_LOG）：**"看了"不等于"看对了地方"** —— R-15 与 R-17 都是 R-9/R-14 的修法本身缺一块
+（一把尺用在一处、一条规则用在一处），而它们看起来像已经修好了；把修好的东西逐句改写成"它在每种状态下会怎么
+回答"，缺口就自己开口说话。
+
 
 ## 3. 覆盖映射（用户裁决六条 → 测试腿）
 
-| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，38 条，全部走**真实** `LedgerRepository`） |
+| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，45 条，全部走**真实** `LedgerRepository`） |
 | --- | --- | --- |
-| 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9） |
+| 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9）；㉟那一行不是本命令写的（改写载荷 / 别队的 `control-leg-decided`）⇒ `READBACK_MISMATCH` 点名现场，且 `ROW_DURABLE` 与「必被判为 already」的许诺**都不出现**（R-15）；㊀四处读取逐点驱动 ⇒ **没有任何异常逃到调用方**（R-17）；㊁四个耐久声明各由一个代码产生、四码互不相同，头部四句法律被 readFileSync 钉住（R-16） |
 | Epoch/CAS、幂等、并发冲突、写失败 | D-3/D-4/D-5 + R-7/R-8 | ⑥同命令立即重放：`already` 且 `writeCount` 不变、行数不变；⑦换 reason ⇒ 不是重放（`ALREADY_ACTIVE`），行数不变；⑧两条并发同命令 ⇒ 一写一 already、同一 sequence、只一行；⑨两条并发 mutation ⇒ epoch [2,3]、sequence 互不相同、对「已当前」的 target 重发是 `already`、换 reason 是 `TARGET_UNCHANGED`；⑩四种非法 sequence（0/-1/1.5/MAX+1）各自拒且零行；⑪分配失败腿 detail 含 allocate；⑫坏 root/坏命令 ⇒ `writeCount` 不变 |
 | Ledger 所有权校验、跨 Case/Team 隔离、损坏诊断 | D-7 + R-3/R-5 | ⑬两支队伍共用同一 caseId 各自独立折叠与独立 epoch；⑭挂本 root 但载荷指向他队的行 ⇒ `WRITE_CROSS_TEAM_ROW` + 点名 `factType@sequence`，坏行**留在原地**不隐藏；⑮未知字段/授权键行 ⇒ `WRITE_FOLD_UNRECONCILED` 且 detail 点名诊断码（与 `control/service.ts:1801-1812` 的静默丢弃**正相反**，有专门一条腿钉这点）；⑯10 条坏行 ⇒ 列 8 个句柄 + `+2 more` + detail < 1200 字符；⑰同队两 case 独立 epoch 链；⑱契约解析拒绝的 4 种 root ⇒ 先对**解析器本身**断言抛错，再要求 `WRITE_ROOT_UNMINTABLE` 且零锁零写；⑲`session/../../etc` 能 mint、被 lane 语法拒（R-5 的披露） |
 | host/client factType-category 一致 + 重启后 Projection 重建 | §1 的双侧图 + 本 PR 的耐久半边 | ⑳写入的字符串与 `projection-source.ts` 里那三个字面量逐字节相同（腿直接读该文件要求三个字面量都在）；㉑`createdAt` 与 contracts 的 `ISO_8601_TIMESTAMP_PATTERN` **字面同源**（读回 contracts 源码比对）。**category 两侧各自的钉法不在本文件重复**：host 侧 = `a6-pr2-assignment-kernel.test.ts` 的 mirror pin（沿 factType 字面量走到 `FACT_TYPE_CATEGORY` 条目并要求 `team`），client 侧 = `packages/client/test/ledger-adapter.test.ts` 的行为腿（三行进 `team`、badge 不亮）；本 PR 补的正是此前不存在的那一半 —— **耐久行里真的是这三个字符串**。**真实宿主投影的重启呈现仍是 C2/ENV_BLOCK，不记 PASS** |
 | Assignment 非授权凭据 | D-9 | ㉒耐久载荷键集合 == `REVIEW_ASSIGNMENT_PAYLOAD_FIELDS`（最强形式：封闭集之外无键），且其中无 authorit/permission/grant/credential/token/allowed 命中；㉓绕过 Writer、在编码之后往 `put` 载荷里塞 `authority` ⇒ 被**读回**抓为 `READBACK_MISMATCH`（不是被接受） |
 | 无法证明即退回 Leader，禁止由空/缺失记录推导允许 | D-8 + `checkAssignmentMutation` + R-4 | ㉔空 case 上 `transferred` ⇒ `NO_ACTIVE_ASSIGNMENT` 且零行（不会顺手创建 assignment）；㉕空状态对三种 caller × 三个 epoch 一律不允（`maySubmitFor` 全拒）；㉖退休后三种命令全拒且零新行，同队另一 case 不受影响（R-4） |
-| （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 8 个自有代码**全部被产生过**（期望列表手写，见 R-13）、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿；㉞reader 藏行 ⇒ 两条活行同 epoch 的后果被测量 + 端口合同的文档句被钉住（R-12） |
+| （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 8 个自有代码**全部被产生过**（期望列表手写，见 R-13）、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿；㉞reader 藏行 ⇒ 两条活行同 epoch 的后果被测量 + 端口合同的文档句被钉住（R-12）；㊂藏**中间**行被 epoch CAS 判出、藏**后缀**看不见且使该案永久不可写 —— 两边都测（R-21）；㊃介质 reject 一个 `{code, problem}` 时 refusal 带上它自己的代码而不是 "(object)"（R-21） |
 
 **未在本 PR 测量（不假装）**：真实宿主世界上的并发对账与重启后的客户端呈现（C2 = ENV_BLOCK）；与 control 路径共享
 同一把锁时的 interleaving（需 PR-I1b 接线）；投影在真实客户端 store 里跨代的重建（PR-I1a 只承诺写进去的字节与两侧图一致）。

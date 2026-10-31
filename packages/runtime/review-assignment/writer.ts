@@ -33,15 +33,28 @@
  *  - **A REFUSAL IS AN ANSWER, AND NOTHING IS EVER HALF-CLAIMED (D-4/D-5).** There is no rollback anywhere in this
  *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
  *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
- *    failure path here says which of three things happened: nothing was allocated, a sequence was allocated and
- *    nothing was written, or a row IS durable and here is its sequence (`REVIEW_ASSIGNMENT_ROW_DURABLE`, whose
- *    producing branch re-reads the ledger rather than inferring the answer from the exception — round 1 of
- *    #517 caught this branch asserting the second answer while the row sat durable at that sequence, because
- *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming
- *    no TeamSession row makes the append succeed and the stamp throw). A write is only reported as applied after
- *    it has been read back out of the ledger, and a read-back disagreement is reported as one rather than
- *    presented as a retraction — the row stays, because the honest sentence about an append-only ledger is that
- *    you cannot un-write it.
+ *    failure path that reached the ledger names exactly one of FOUR DURABILITY CLAIMS, and each claim is carried
+ *    by its own code, because a caller switch-ing on the closed set is reading the NAME. Stated as four durability claims:
+ *      1. **nothing this command did is durable** — `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED`: allocation refused,
+ *         allocation unusable, the ledger unreadable before anything was allocated, or the append refused and the
+ *         re-read confirms nothing is at that sequence;
+ *      2. **the row this command wrote IS durable at that sequence** — `REVIEW_ASSIGNMENT_ROW_DURABLE`, produced
+ *         only by a branch that re-reads the ledger and identifies the row as this command's (family, root and
+ *         payload), never by inference out of an exception;
+ *      3. **what is at that sequence is not the row this command wrote** — `REVIEW_ASSIGNMENT_READBACK_MISMATCH`;
+ *      4. **it cannot be told** — `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`: the ledger could not be read far
+ *         enough to answer, so the row MAY be durable at that sequence and it MAY be absent.
+ *    Round 1 of #517 caught this module withholding claim 2 while the row sat durable at that sequence, because
+ *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming no
+ *    TeamSession row makes the append succeed and the stamp throw. Round 2 caught the same branch MAKING claim 2
+ *    about a row it had not identified: the re-read matched on sequence alone, where the success path matches
+ *    family and root and payload, so a `control-leg-decided` row filed under another team's root was reported as
+ *    this command's durable row — with a promise about the retry that the same module then refused. Both
+ *    directions are pinned by legs that produce each code and assert no two claims share one. No answer here
+ *    predicts what a retry answers; only the fold knows.
+ *    A refusal is never a retraction either: a write is only reported as applied after it has been read back out
+ *    of the ledger, and a read-back disagreement is reported as one rather than presented as a take-back — the row
+ *    stays, because the honest sentence about an append-only ledger is that you cannot un-write it.
  *
  * WHAT THIS MODULE IS NOT: it is not an authority check (A-1, and a row it writes cannot become one — the payload
  * gate refuses authority-bearing keys before anything durable happens), it is not a router (that is `router.ts`,
@@ -91,7 +104,17 @@ export const REVIEW_ASSIGNMENT_WRITE_REFUSALS = [
    *  any quoted token, comments included, so this paragraph must not put that preposition in front of a code
    *  name — the trap this file's own header already warns about, which I walked into again. */
   'REVIEW_ASSIGNMENT_ROW_DURABLE',
+  /**
+   *  What is at the allocated sequence is not the row this command wrote. Two branches produce it and they make
+   *  the same claim: the append reported a failure and a DIFFERENT row holds that sequence, or the append
+   *  succeeded and the row that came back is not the one that went in.
+   */
   'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+  /** The ledger could not be read far enough to answer a durability question, so this module refuses to guess in
+   *  either direction. Deliberately not folded into `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED`, whose claim is the
+   *  opposite one — that nothing this command did is durable — and round 2 of #517 measured four states answering
+   *  that name, two of which could not support it. */
+  'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN',
 ] as const
 
 export type ReviewAssignmentWriteRefusal = (typeof REVIEW_ASSIGNMENT_WRITE_REFUSALS)[number]
@@ -140,14 +163,18 @@ export interface ReviewAssignmentLedgerWriterPort {
 /**
  * The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job.
  *
- * **An unfiltered, un-truncated, non-stale read is part of this port's contract, and the writer cannot detect an
- * omission.** It re-reads inside the lock rather than trusting a cached view, and it refuses when a row it can
- * see does not reconcile; it has no way to notice a row it cannot see, because a fold over a shorter ledger is
- * just a fold over a shorter ledger. That is not a gap this module can close from its seat, so it is stated as
- * the adapter's obligation. Measured, not asserted: `a6-pri1a-writer.test.ts` drives a reader that drops one
- * row and pins what follows — the second create is accepted and the family ends up with two live rows in one
- * epoch, which is the epoch CAS failing to have anything to conflict with. A `slice`, a stale cache or a
- * filtered adapter behind this port is an adapter bug with that shape of consequence.
+ * **An unfiltered, un-truncated, non-stale read is part of this port's contract.** The writer re-reads inside
+ * the lock rather than trusting a cached view, and it refuses when a row it can see does not reconcile. What it
+ * cannot do is see a row it was not shown, so it is blind to a suffix it is never shown — a fold over a shorter
+ * ledger is just a fold over a shorter ledger. That asymmetry is measured in both directions, not asserted: hide
+ * a MIDDLE row of a real chain and the epoch CAS convicts the reader (`REVIEW_ASSIGNMENT_EPOCH_CONFLICT`, folded
+ * into `REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED`); hide the NEWEST row and the command is accepted.
+ * The consequence of that second shape is worse than "two live rows in one epoch", and the leg pins it: the
+ * writer mints the next sequence claiming an epoch an earlier row already claimed, and from that moment the case
+ * is permanently unwritable — every later command reads both rows and refuses to fold them. A `slice`, a stale
+ * cache or a filtered adapter behind this port is an adapter bug with
+ * that consequence, and no amount of care inside this module fixes it — which is why the obligation belongs to
+ * whoever writes the adapter (PR-I1b) and not to a defensive check here.
  */
 export interface ReviewAssignmentLedgerReaderPort {
   list(): readonly ReviewAssignmentLedgerRow[]
@@ -314,7 +341,20 @@ async function writeLocked(
   command: ReviewAssignmentCommand,
   root: string,
 ): Promise<ReviewAssignmentWriteResult> {
-  const all = deps.ledger.list()
+  // Round 2 of #517 (F-R2-3): the rule round 1 stated for the re-read — a read of an injected port must not
+  // escape as an exception, because then the question has no answer at all — applies to EVERY read, and this one
+  // had no branch. A corrupt row in the medium threw straight out of `applyReviewAssignment`. This read happens
+  // before anything is allocated, so the honest code is the "nothing is durable" one rather than the unknown one.
+  let all: readonly ReviewAssignmentLedgerRow[]
+  try {
+    all = deps.ledger.list()
+  } catch (error) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      `the ledger could not be read before anything was allocated (${describe(error)}); nothing was allocated and ` +
+        'nothing this command did is durable',
+    )
+  }
   const family = all.filter((row) => isReviewAssignmentFactType(row.factType))
   const mine = family.filter((row) => row.rootSessionId === root)
 
@@ -427,30 +467,65 @@ async function writeLocked(
     // (`repositories/team-sessions.ts:119`) — a root this writer deliberately mints without a team-existence
     // check (§2.2 / memo R-5). So the append can be durable while the call fails, and the only honest way to
     // choose between the two answers is to look.
+    //
+    // The complementary state, which round 2 of #517 measured (memo R-20) and which this module can neither
+    // produce nor prevent, is quieter and worse: where a TeamSession row DOES exist, a stamp that fails after a
+    // landed append throws nothing at all. The ledger moves ahead and `team_sessions.generation` stays one
+    // behind, and the reader that turns that into a silent omission is the projection frame — the stamp is put
+    // into the frame the client is sent (`projection-source.ts:499` and `:532`), and a frame whose generation
+    // equals the generation already applied is judged `duplicate` and dropped (`remote/src/push/generation.ts:73-79`;
+    // `remote/src/pull/pull-v6.ts:141-150` calls that cell the client's single ledger-refresh trigger). A client
+    // holding generation N therefore discards every later frame carrying the new row until some OTHER write
+    // advances that root's stamp. Nothing here refuses; it under-reports. That is PR-I1b's obligation (recorded
+    // on #502 with the rest of the wiring duties), because the fix is in who writes the stamp and when, not in
+    // a reader this module does not own.
     // The re-read is itself a call into an injected port, and a call that throws while answering "did my row
     // land?" must not escape as an exception: the question would then have no answer at all, which is worse
-    // than the honest "I cannot tell you". The third answer therefore has a third branch, and it says unknown
-    // rather than guessing in either direction.
+    // than the honest "I cannot tell you".
+    //
+    // And a row found at that sequence is not yet THE row this command wrote. Round 1's fix matched on
+    // `sequence` alone, which is the one field a row's identity does not settle: round 2 drove the tampering
+    // medium this lane's own spec admits (an append that rewrites the payload, with the stamp failing after the
+    // append landed) and a reader that obeys the port contract exactly, and both answers were wrong — the module
+    // called a foreign row durable and promised a retry outcome it then refused itself. So the catch applies the
+    // SAME screen the success path applies, family and root and payload, and keeps the two claims apart.
     let landed: ReturnType<ReviewAssignmentLedgerReaderPort['list']>[number] | undefined
     try {
       landed = deps.ledger.list().find((row) => row.sequence === sequence)
     } catch (readError) {
       return refuseWrite(
-        'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+        'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN',
         `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}), and the ledger ` +
           `could not be re-read to determine whether the row is durable (${describe(readError)}) — it MAY be ` +
-          'durable at that sequence and it MAY be absent. This command is not accepted; a retry of the identical ' +
-          'command answers the question: it is recognised as already applied if the row is there, and writes at ' +
-          'the next sequence if it is not',
+          'durable at that sequence and it MAY be absent. This command is not accepted. Nothing here predicts what ' +
+          'a retry answers: the retry re-reads, and answers from what it finds',
       )
     }
     if (landed !== undefined) {
+      const landedPayload = decodeAssignmentPayload(landed.factType, landed.payload)
+      if (
+        landed.factType !== factType ||
+        landed.rootSessionId !== root ||
+        !landedPayload.ok ||
+        !samePayload(landedPayload.value, encoded.value)
+      ) {
+        return refuseWrite(
+          'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+          `sequence ${String(sequence)} was allocated and the row write reported a failure (${describe(error)}), ` +
+            `and what is durable at that sequence is not the row this command wrote (${landed.factType}@` +
+            `${String(landed.sequence)}, filed under ${landed.rootSessionId}` +
+            (landedPayload.ok ? '' : ', whose payload does not decode') +
+            '). This command is not accepted, and this answer deliberately does not claim that this command wrote ' +
+            'that row — the row stays, because an append-only ledger cannot be un-written',
+        )
+      }
       return refuseWrite(
         'REVIEW_ASSIGNMENT_ROW_DURABLE',
         `sequence ${String(sequence)} was allocated and the write reported a failure (${describe(error)}), but the ` +
-          `row IS durable at that sequence (${landed.factType}@${String(landed.sequence)}) — the failure is after ` +
-          'the append, not instead of it. This command is not accepted; a retry of the identical command will be ' +
-          'recognised as already applied at that sequence',
+          `row this command wrote IS durable at that sequence (${landed.factType}@${String(landed.sequence)}, same ` +
+          'root, same payload as commanded) — the failure came after the append, not instead of it. This command ' +
+          'is not accepted as written. Whether a retry then reads as already applied is the fold\u2019s verdict on ' +
+          'this row, and a refusal here does not predict it',
       )
     }
     // The gap this leaves is real and is reported as such, and the claim is now verified rather than assumed:
@@ -458,14 +533,27 @@ async function writeLocked(
     return refuseWrite(
       'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
       `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}); the ledger was ` +
-        're-read and no assignment row exists at that sequence',
+        're-read and no assignment row exists at that sequence, so nothing this command did is durable',
     )
   }
 
   // Read-back, because "the write did not throw" is not the same claim as "the row is in the ledger" — the
   // precedent is `writeLegRowLocked`'s read-back refusal (control/service.ts:4628-4641), and the failure mode it
   // protects against is a durable layer that reports success on a partial apply.
-  const reread = deps.ledger.list().find((row) => row.sequence === sequence)
+  // Same rule as the catch: this read is a call into an injected port too, and round 2 measured it throwing at
+  // the caller with the row already durable — the exact question the guard above exists to keep answerable, at
+  // its sibling site. The row MAY be durable; that is the fourth claim, and it is not the first one.
+  let reread: ReturnType<ReviewAssignmentLedgerReaderPort['list']>[number] | undefined
+  try {
+    reread = deps.ledger.list().find((row) => row.sequence === sequence)
+  } catch (readError) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN',
+      `sequence ${String(sequence)} was written and the ledger could not be read back to confirm it ` +
+        `(${describe(readError)}) — the row MAY be durable at that sequence and it MAY be absent. This command is ` +
+        'not accepted, and it is not reported as applied either: an applied answer requires a read-back',
+    )
+  }
   if (reread === undefined) {
     return refuseWrite(
       'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
@@ -486,6 +574,31 @@ async function writeLocked(
     )
   }
 
+  // The row is durable and identified — the read-back above proved it. What can still fail is the LAST read, the
+  // one that folds the family state this answer carries. Answering `written` would report a state the module
+  // never read, and answering "unknown" would contradict the claim it just verified, so this answers with the one
+  // code whose claim is still true: the row this command wrote IS durable at that sequence, and the command is
+  // not reported as applied because its state could not be produced.
+  let finalState: ReviewAssignmentState
+  try {
+    finalState = foldReviewAssignmentRows(
+      deps.ledger
+        .list()
+        .filter((row) => isReviewAssignmentFactType(row.factType) && row.rootSessionId === root)
+        .map((row) => ({ ledgerSequence: row.sequence, factType: row.factType, payload: row.payload })),
+      root,
+      command.approvalCaseId,
+    )
+  } catch (readError) {
+    return refuseWrite(
+      'REVIEW_ASSIGNMENT_ROW_DURABLE',
+      `the row this command wrote IS durable at that sequence (${reread.factType}@${String(reread.sequence)}, ` +
+        `same root, same payload as commanded) and the write itself reported no failure, but the family state ` +
+        `could not be read (${describe(readError)}). This command is not reported as applied: an applied answer ` +
+        'carries a state, and this module will not hand out one it did not read',
+    )
+  }
+
   return {
     ok: true,
     applied: 'written',
@@ -493,14 +606,7 @@ async function writeLocked(
     factType: reread.factType,
     assignmentEpoch: rereadPayload.value.assignmentEpoch,
     payload: rereadPayload.value,
-    state: foldReviewAssignmentRows(
-      deps.ledger
-        .list()
-        .filter((row) => isReviewAssignmentFactType(row.factType) && row.rootSessionId === root)
-        .map((row) => ({ ledgerSequence: row.sequence, factType: row.factType, payload: row.payload })),
-      root,
-      command.approvalCaseId,
-    ),
+    state: finalState,
   }
 }
 
@@ -543,8 +649,22 @@ function findAppliedReplay(
   return null
 }
 
-/** An error's identity, kept out of a refusal detail by construction: never a caller object, only its message. */
+/**
+ * An error's identity, kept out of a refusal detail by construction: never a caller object, and never less than
+ * what the thing being reported actually says. A plain `Error` contributes its message; anything else is
+ * summarised by the fields an operator reads — the storage seam rejects with a `code` and a `problem` rather than
+ * an `Error` — and only then falls back to `typeof`. The fallback used to be the whole function, so every
+ * non-`Error` refusal from a composed adapter read "(object)" at the one moment a human was reading this string
+ * (round 2 of #517, INFO-1).
+ */
 function describe(error: unknown): string {
   if (error instanceof Error) return error.message
+  if (typeof error === 'object' && error !== null) {
+    const record = error as Record<string, unknown>
+    const parts = ['code', 'problem', 'message']
+      .map((field) => (typeof record[field] === 'string' ? (record[field] as string) : undefined))
+      .filter((part): part is string => part !== undefined && part.length > 0)
+    if (parts.length > 0) return parts.join(' — ')
+  }
   return typeof error
 }

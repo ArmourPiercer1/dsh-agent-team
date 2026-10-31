@@ -7303,3 +7303,27 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **V2 boot lane u7r3-shomev2 出发**（池 C2，2 starts，预登记 215362c844 推送确认在先）：生产默认 Home 写臂 + 重启读回臂，DSH_HOME unset + HOME=workspace 内算子 home，/proc environ 与 ~/.dsh mtime 双取证。RCA 停线/效率门随附。
 - 外审 #5 提效三令入账（吞吐不是目标，验收缺口才是）：纯日志 PR 批量化（sync 册制已行）；测试影响面局部快速 CI 反馈路径 = 待排 backlog；离线 PoC 成果尽快转真实 Host 验收（本波 V2 即响应）。CI 单次时长今日无改善（20.1 分钟持平）如实承认。
  origin/master
+
+## 2026-10-31（Alpha.6 / lane-2，PR-I1a #517 第二轮独立复核结案）
+
+- #517（`alpha6/lane2-pri1a-writer-20261031`，PR-I1a 唯一耐久 writer，Draft + DO-NOT-MERGE）第二轮独立复核在
+  `f1457d737` 上进行，结论 **0 BLOCKER / 2 MAJOR / 5 MINOR / 3 INFO**：F-R2-1 `ROW_DURABLE` 只按 sequence 认行，
+  于是把别队 `control-leg-decided` 说成本命令耐久行并许诺一个自己随后拒绝的重试结果；F-R2-2 上一轮结案说明的
+  「盖章残留」读者清单漏掉投影帧（generation 相等 ⇒ 客户端判 duplicate 并丢帧 ⇒ 静默少报，非拒答）；F-R2-3
+  「不逃逸」规则只覆盖四次 `list()` 中的一次；F-R2-4 头部「三个答案」法律被上一轮修法变成假话且无人跑；
+  F-R2-5/F-R2-6/F-R2-7 closed-set 与 sole-writer 两处守卫仍各有可测洞（简写标签、一个空格的调用、别名导入、
+  `.bind`/计算成员、缺 `.mts/.cts`、植物与备择一一对应看不见成对删除）。全部在本轮修完（memo R-15..R-21）。
+- 修法要点：catch 复用成功路径同一把尺（family ∧ root ∧ payload）并删去对重发结果的许诺；自有拒绝代码 8→9（
+  `REVIEW_ASSIGNMENT_DURABLE_STATE_UNKNOWN`），头部改为「四个耐久声明、一码一义」并由一条驱动四态的腿钉住；
+  四处 `list()` 全部有分支；漏斗 needle 与分类器统一；sole-writer 动词补 `.bind`/计算成员，扩展表补 `.mts/.cts`，
+  植物改为自声明驱动关系 + 动词表 key 名单手写。
+- 本轮度量（新 head，见 commit）：`a6-pri1a-writer` 45/45；`a4pr0a-fact-type-closed-set` 10/10（C5 真实树多出
+  三条简写标签站点，按文件钉住）；`a6-pr2-lane-hygiene` 28/28；六个变异（M-E/M-F/M-G/M-H/M-I/M-J）各自点名变红，
+  变异只在临时副本上做，做完按 sha256 校验还原。
+- 方法条目：**"看了"不等于"看对了地方"** —— F-R2-1 与 F-R2-3 都是上一轮修法自身缺一块（一把尺只用在一处、一条
+  规则只用在一处），而它们看起来像已经修好了；把修好的东西逐句改写成「它在每种状态下会怎么回答」，缺口就自己
+  开口。另一条：**清点报告"干净"和我方说明"没有读者依赖它"都是断言**，断言的验证方式是去跑那个读者，不是再抄
+  一遍结论。
+- 边界：本轮零 protected-centre 文件改动（ARC-A 词表与 digest 不变），PR-I1a 仍 DORMANT（`ALLOWED_CONSUMERS` 空、
+  无 flag、无挂载、无模型可见面）；PR-I1b 的接线义务（含盖章残留的读者问题）已按"提前公告"记在 Issue #502。
+  开发授权不等于合并、启用或放松门禁。
