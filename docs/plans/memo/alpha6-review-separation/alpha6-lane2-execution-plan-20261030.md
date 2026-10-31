@@ -48,3 +48,26 @@
 2. 共享 store 在本沙箱只读 ⇒ Lane 2 用工作区内 store 副本，绝不写 `~/.local/share/pnpm`。
 3. 真实 Host：**本轮零启动**。开工前置 = 跨 clone 端口分区共识（Lane 2 拟用 13000-13099 段）+ BOOT-BUDGET C-册预登记行 + 宿主树供给（本机 `/srv` 基线缺失，需从 `ArmourPiercer1/deepseek-harness` 分支 `stable-3-0.2.0-rc.2` 克隆至 `tests/deepseek-harness-test-use`）。
 4. `:3080`、用户正式 DSH_HOME、Lane 1 目录、上游 pristine 树：绝不读写。
+
+
+## 5. dated 2026-10-31：§1 那张表走到这里之后的实况（表本身不改写，改写它就是把计划当草稿）
+
+§1 的切分与验收形态仍是本轮的验收标准；下面只登记"每条 PR 现在真实是什么"，每条带它自己的 head，因为
+本项目已三次因为"当前值"被当"历史值"引用而挨打。全部 draft、标题 `DO-NOT-MERGE`，GitHub 是 lane 之间唯一通道。
+
+| PR | head | 现在的真实状态 |
+| --- | --- | --- |
+| #501 PR0（S0 复审 + `review-mandate/`） | `3e1d28464` | 已交付并两轮独立评审过；S0 正文的两句被 #513 的补遗限定（N-1 命题） |
+| #503 PR3′（`review-wake/` 单飞内核） | `ee4c0e437` | 已交付；它**不是**定时唤醒——裁决一之后这句话必须精确到"没有 floor-delayed 载体" |
+| #505 首轮评审报告 | `3a3270de2` | 记录件；仍开着的唯一理由是要留审查原文，不参与合并序列 |
+| #507 PR2′（review router + assignment 事实面） | `7b906b432` | **本 lane 的 stack base**：#513/#517/#520/#522 都以它为父；因此 hosted CI 在这四条上一个 suite 都不跑，所有门禁都在本地量 |
+| #509 PR4′（defer 面） | `ff7f4b48b` | **DORMANT**（裁决一 §5）：它等的正是 PR-I2 缺的那个时间来源；§5 的兜底方案已于同日撤回，DORMANT 不是"待合并" |
+| #513 治理与记录面 | `ed4dc5ae3` | 七轮独立评审；round-7 的 BLOCKER 促成引文按标签绑定，同时暴露我 round-6 的 `byte-equal` 只成立于被 trim 的文本——这条披露在正文与日志里都留着 |
+| #517 PR-I1a（唯一受治理的耐久写者） | `a2bc18d78` | 唯一 governed durable writer；authority-screen 是 PR-I1b/PR-I2 复用的同一道屏 |
+| #520 PR-I2（`TimedWakePort` 契约 + 决策核） | `fb4a2f726` | 契约 §2–§10 + §11（§4.1 与 §2.6 的裁决）+ `timed-wake/decision.ts` 13 条腿；**载体仍是 `CORE_SEAM_BLOCKER`，零接线**，L-1a/L-1b 在本机 ENV-REFUSED |
+| #522 PR-I1b（ControlService admission） | `50be43c57` | 设计 + §9 更正（D-3 换成 binding triple、§5 兜底撤回、模块名 `assignment-admission.ts`）；实现按"复用 `resolveCaller`，否则拒绝接线"的红线进行中 |
+
+计划层面这轮学到、也必须留给下一轮的两条：
+1. **"可独立度"要在开工前重新量一次。** §1 把 PR-I2 记成"可独立实施"，裁决一之后它的 (b) 半段其实是
+   `CORE_SEAM_BLOCKER`——差别不是难度，是"能不能声称交付"。凡是验收形态里带"到点会醒"这种句子，先问它靠谁的时钟。
+2. **默认关 ≠ 非启用团队字节不变。** 前者是配置项，后者是要量的东西；两者都写在验收里，缺一不可。
