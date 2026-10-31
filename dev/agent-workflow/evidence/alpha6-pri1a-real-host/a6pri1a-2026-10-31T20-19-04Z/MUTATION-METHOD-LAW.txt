@@ -1,0 +1,35 @@
+=== METHOD LAW — plant-c-input ===
+target            : tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+arm (FROM)        : const previousBootPid = Number(config.previousBootPid)
+replaced by       : const previousBootPid = Number(0)
+sha256 before     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pinned sha256     : 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the same file at HEAD of this tree hashes to the same sha256 — the pinned bytes are the committed bytes
+--- exact bytes planted ---
+planted: <      const previousBootPid = Number(config.previousBootPid)>
+planted: <      const previousBootPid = Number(0)>
+plant-c: read back from disk — line 258 = <      const previousBootPid = Number(0)> replaced in place, nothing inserted or removed
+plant-c: line 258 replaced; the graded span starts on line 260 and is untouched
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17860, 'lines': 313}
+counts after  : {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17839, 'lines': 313}
+expected after: {'(': 210, ')': 210, '{': 113, '}': 113, '[': 4, ']': 4, '`': 92, '"': 6, "'": 196, ';': 10, '\n': 313, 'step(': 18, 'check(': 0, 'conjunct(': 0, 'emit(': 7, 'function ': 3, '=> ': 22, 'bytes': 17839, 'lines': 313}
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 258; TO occurs once on the mutated line
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : 6e3a01f0e7f2443c85c9d40993b44a6603df017b678e5417218847764c613b7d
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3184) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-reopened-in-a-fresh-process
+named red leg as stated: boot-2-reopened-in-a-fresh-process
+stated reason present in the transcript: pri1a-probe-row\.mjs:260 const freshProcess = Number\.isInteger\(previousBootPid\) && previousBootPid > 0 && previousBootPid !== process\.pid$
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs:260 const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid
+run directory created by this run: a6pri1a-2026-10-31T20-19-04Z
+--- restore (exit path) ---
+restored from <scratch>/base/plant-c-input.pri1a-probe-row.mjs; sha256 now: 40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass

@@ -7592,3 +7592,81 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   `EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking total 1418 全部未动）；端口只用带内 318x，
   :3080 零连接；其他 worktree（`alpha6-pri1b`/`alpha6-gov`/`alpha6-pri2`）、Lane 1 与只读宿主 clone 未触碰
   （宿主 porcelain 会话首尾各测一次）；未 push、未 GitHub 写、未 amend。
+
+## 2026-10-31 — #517 round-18 修复轮：round-3 评审的 2 条 MINOR（F-I1a3-1/2）与 3 条 INFO（F-I1a3-4/5/6）全接受；arm 描述符改成测量而非抄写并逐条扫，reviewer 的种植逐字节复现；变异脚手架连同输出格式一并提交；**并更正本日志 round-17 条目里的两处说法**
+
+- **输入**：round-3 评审（0 BLOCKER / 0 MAJOR / 2 MINOR / 4 INFO）中本轮接受的 **F-I1a3-1（MINOR：graded conjunct 的
+  `from`/`lines` 偏移是未测量的抄写——reviewer 在 anchor 与 arm 之间种一行注释，FAIL 块就把那行注释当作「评分依据的字节」
+  引用，而 `--self-test` 仍报 `verdict=pass checks=30 problems=0`）**、**F-I1a3-2（MINOR：README 把
+  `the client lane runs, and no failure appears outside the disclosed baseline` 归到 `p4t6-session-event-scan.test.ts`；
+  要求把 README 与 memo 里其余每一处「腿名→文件」归因全部重查）**、**F-I1a3-4**（"quotes the bytes it was graded from"
+  需限定为 arm 字节，不含其传递依赖）、**F-I1a3-5**（关于两个已删污染 run 目录的「README/memo/日志都不引用它们」自相矛盾）、
+  **F-I1a3-6**（把变异脚手架与其输出格式一起提交，且必须是真正跑过的那一版）。F-I1a3-3（`--self-test` 断言掏空成常量
+  `true` 仍 pass）**本轮不宣称关闭**，只在 README/脚手架 README 里写明它仍未关闭。
+- **更正本日志 round-17 条目的两处说法（append-only，故不改原文，只在此更正）**：
+  1. 该条目（本文件 `:7567` 附近）把 `the client lane runs, and no failure appears outside the disclosed baseline`
+     归到 `packages/testkit/test/p4t6-session-event-scan.test.ts`。**错**：本轮 grep 全 `packages/*/test/*.ts`，该腿在
+     `packages/testkit/test/a4p7-merge-gate.test.ts:1694`，而 `p4t6-session-event-scan.test.ts` 通篇不提 client lane，
+     归因在它点名的文件里没有任何依据。另一条已披露红腿 `refuses the leg, by name, when the host module closure cannot be
+     traversed` 确在 `packages/testkit/test/a4p7-merge-gate.test.ts:1137`（原归因正确），第三条被点名的腿
+     `is green, asserted by arm name and by absence of a skip — never by the exit code` 在 `:837`（原文只说「另一条 a4p7
+     腿」，未指错文件）。**不是错误、故不改**：round-17 条目末的九文件构成表把 `p4t6-session-event-scan.test.ts` 列为
+     20 条的**套件成员文件**（它确有 20 条），那是文件枚举不是腿归属。
+  2. 该条目的方法学事故段写「这两个 run 目录 `18-34-06Z`、`18-34-30Z` …… **本仓任何文字不引用它们**」——这句话本身就是
+     引用，且该条目自己点名了这两个目录，属自相矛盾。成立且可检验的是更弱的说法：**它们未被任何主张当作证据引用**，
+     本 PR/本 memo/本日志里没有一条结论依赖这两个转写。
+  3. **模式即发现**：本 PR 先后三次把「腿名引对、文件凭记忆写错」。自本轮起，写归因必须带 grep 返回的 `file:line`，
+     不凭记忆写路径；README 的三处归因已全部带上行号。
+- **F-I1a3-1 的修法（按类别，不按实例）**：`{ anchor, from: 2, lines: 4 }` 里的 `from` 是对旧排布的转写，删净。
+  现在每条 graded arm 由驱动顶部 `bareQuote()`/`armDescriptor()` 注册一次（anchor + 跨度长度 + 跨度内每行一个 signature），
+  `locate()` 解析时**连同偏移一起验证**：跨度第 k 行必须含第 k 个 signature，否则打印 `<span drifted>` 与
+  `line N of this arm's L-line span does not contain its signature "…" — the arm moved or was rewritten; REFUSING to quote
+  bytes it did not grade` 且一行字节也不引；带 `from` 偏移的描述符在评分时刻直接拒绝并说明理由。`--self-test` 从 30 条
+  增到 **41 条**（逐条解析每个注册 arm 并校验它引到自己跨度、两条种植式 shifted-span 拒绝、对驱动**代码行**——不含注释行，
+  该限制写在定义处——的两次结构扫描：手写描述符 `file: DRIVER_REL|PROBE_REL` 或 `from:` 偏移都会红）。
+- **F-I1a3-1 的可失败性证明（reviewer 的种植逐字节复现）**：`a6pri1a-2026-10-31T20-18-20Z` 在已提交的 mut-payload hunk
+  之上、`pri1a-probe-row.mjs:246` 插入 `        // plant-A comment line that shifts the graded arm by one`，种完文件
+  sha256 `7b242c4eadfec9f707dab607043ec1a582f76a689e3c83f7c21021d66256902e`（与 round-3 评审测到的同一个哈希），kit
+  `rc=1`、`DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-rows-are-boot-1-rows`；修好的
+  FAIL 块引 **`pri1a-probe-row.mjs:247 writes: { created, replay, transferred, retired }, rows,`**（被位移后的真 arm），
+  且那行注释在整份转写里**一处也不出现**（该 run 同时断言 presence 与 absence；round-17 的代码会引 `:246`，即那行注释）。
+  补充两份：`…T20-18-42Z` 把注释种进跨度**内部** → 只打印拒绝、不打印任何字节；`…T20-19-04Z` 只改 arm 的**输入**
+  （`const previousBootPid = Number(config.previousBootPid)`→`Number(0)`）→ 腿红而引出的 arm 字节原样不变（这就是 F-I1a3-4
+  的范围：FAIL 的引文是「决定这条判决的那一行」，不是「判决所依赖的一切」的转储，README 的 FAIL 头部也把这范围写进转写）。
+- **F-I1a3-6 的交付**：`dev/agent-workflow/evidence/alpha6-pri1a-real-host/mutation-harness/`（`mutrun.sh` + `law.mjs` +
+  `diff-lines.mjs` + `plants/plant-{a,b,c}-*.mjs` + `README.md`）= 本轮实际跑过这些转写的**那一版**，含 round-17 那次自伤
+  事故的修法：动手前 pin 不符即 exit 88（也就等于「上一次还原已验证」），任何退出路径（EXIT/INT/TERM，含断言失败）都还原
+  并按 sha256 + 逐字节 `cmp` + `node --check` 三重验证后才允许 exit 0；输出继续是 `MUTATION-METHOD-LAW.txt` 同形格式，
+  committed hunk 额外并置 `MUTATION.diff`，新旧红目录可比。四条 round-17 hunk 在本轮字节上重跑：`…T20-12-18Z` mut-seq、
+  `…T20-12-40Z` mut-pid、`…T20-13-02Z` mut-payload、`…T20-13-24Z` mut-driver-pid，各自点名自己的红腿与自己的理由。
+- **本轮测值（全部在 round-18 字节上）**：绿 run `a6pri1a-2026-10-31T20-01-31Z` =
+  `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（写 3182 / 重启 3183、boot pid 37→49、marker 唯一、
+  两 world 删除、`tests/homes/` 空、宿主 porcelain 前/后 0/0）；把 pid/argv0 marker/nonce/时间戳归一后，这份转写与
+  round-17 绿转写**只差 `lane head` 一行**（本轮同样没有移动任何一条腿的断言）。
+  `--self-test` = `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=41 problems=0`（`a6pri1a-selftest-round18/selftest.txt`）；
+  六个带外端口重测仍全部 `verdict=port-refused`、每个 `rc=2`、`tests/homes` 保持空
+  （`a6pri1a-port-band-refusals-round18/port-refusals.txt`，行为与 round-17 那份逐行相同）；写者规格
+  `Tests 49 passed (49)`；九文件套件 `Test Files 1 failed | 8 passed (9)`、`Tests 2 failed | 317 passed (319)`，
+  两条红**按名字引、不按计数**：`refuses the leg, by name, when the host module closure cannot be traversed`
+  （`packages/testkit/test/a4p7-merge-gate.test.ts:1137`）与 `the client lane runs, and no failure appears outside the
+  disclosed baseline`（`packages/testkit/test/a4p7-merge-gate.test.ts:1694`）；`pnpm --filter ./packages/runtime run
+  typecheck` = 0。kit 发布 pin：`pr-i1a-real-host.mjs`
+  `ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d`（905 行，本轮唯一改动的仪器文件）、
+  `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（313 行 + 末尾换行，
+  **与 round 15/16/17 逐字节相同**，最后一次变异还原之后重测）。
+- **披露（因为它改变过被测量的东西）**：本轮早些时候由**尚在修补中的脚手架/种植脚本**产出的**八个**目录——四条 hunk 的第一遍
+  （`…T20-06-52Z`、`…T20-07-26Z`、`…T20-07-48Z`、`…T20-08-15Z`，被上面四条重跑取代）、plant-A 的一次尝试
+  （`…T20-09-57Z`，当时 `--expect-absent` 这类断言还不存在，运行按自己的规则判为 rc=85 失败）、以及三个种植目录的第一版
+  （`…T20-10-56Z`/`…T20-11-23Z`/`…T20-11-49Z`：脚本回显了一遍自己的 `planted:` 行，与法则的声明行重复、可能被读成「种了两行」，
+  改成从磁盘读回被种那一行并逐字核对，读回不符即红）——全部在本 commit **之前**移出证据目录，
+  放进本 worktree 的 gitignored scratch `.artifacts/alpha6-s0/pri1a-fix3/superseded-run-dirs/`。它们从未进入任何 commit；
+  已提交内容没有被改写、删除或重命名。round-17 的两个污染目录 `18-34-06Z`/`18-34-30Z` 仍未提交、仍未被引用（见上第 2 点）。
+- **顺序与只能后置的门禁**：本轮 tracked 改动 = `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`（注册描述符 + 两处拒绝 +
+  `--self-test` 增条；PASS 文本与腿数不变）、`dev/agent-workflow/evidence/alpha6-pri1a-real-host/**`（新 run 目录 +
+  `mutation-harness/**` + README）、本 memo 的 round-18 banner 与本条日志；`packages/**` 零 tracked diff。
+  `docs-sync --check` / `eb3-evidence-guard --new-since HEAD~1` 只能在 commit 之后跑，token 记入本轮 PR comment；
+  绿 run 的 `capture.json.laneHead` 仍是 commit 前的 head（单 commit 不含自身 sha，与 round 15/16/17 同一披露）。
+- **纪律自查**：CORE PATCH BUDGET = 0；未放松任何封闭集、卫生规则或 pin（`ALLOWED_CONSUMERS=[]`、
+  `EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、p4t6 booking 1416 → 1418 全部未动）；端口只用带内 3182–3189，
+  `:3080` 零连接（会话首尾各测一次 `ss -ltn`）；其他 worktree（`alpha6-pri1b`/`alpha6-gov`/`alpha6-pri2`）、Lane 1 与
+  只读宿主 clone 未触碰（宿主 porcelain 会话首尾各测一次）；未 push、未 GitHub 写、未 amend。

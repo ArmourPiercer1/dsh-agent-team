@@ -4,6 +4,69 @@
 写路径普查：`.artifacts/alpha6-s0/pri1a-write-path-inventory`（研究子代理 c3870124，逐条 file:line；**该路径是工作区
 scratch、未跟踪，reviewer 手上没有**——所以结论已在本文件 §1 以同等 file:line 完整复述，本行只作来源标注）。基线：`alpha6/lane2-pr2-assignment-20261031` @ `7b906b432`（PR2′ 内核）。
 
+> **Dated banner（2026-10-31，round-18 修复轮）——处理评审 round 3 的 2 条 MINOR（F-I1a3-1/2）与本轮接受的 3 条 INFO（F-I1a3-4/5/6）；不改写前两轮 banner 的历史叙述，但点名更正 round-17 banner 末段的一句（见 F-I1a3-5 条）。**
+> - **F-I1a3-1（graded conjunct 的 `from`/`lines` 偏移是抄来的，不是测出来的）——按类别修，不按实例修**：round-17 的
+>   `locate()` 只保证 anchor 在评分时刻命中一处，而跨文件描述符写的是 `{ anchor, from: 2, lines: 4 }`——`from` 是对「昨天
+>   那份文件的排布」的转写。reviewer 种一行注释就能让 FAIL 块把**那行注释**当作「评分依据的字节」打印出来，同时
+>   `--self-test` 仍报 `verdict=pass checks=30 problems=0`。本轮先把 reviewer 的种植**逐字节复现**（`a6pri1a-2026-10-31T20-18-20Z`：
+>   在 mut-payload hunk 之上、`pri1a-probe-row.mjs:246` 插入 `        // plant-A comment line that shifts the graded arm by one`，
+>   种完的文件 sha256 `7b242c4eadfec9f707dab607043ec1a582f76a689e3c83f7c21021d66256902e` 与 round 3 测到的同一个哈希），
+>   再让修好的仪器在同样的字节上给出正确答案：FAIL 引 **`pri1a-probe-row.mjs:247 writes: { created, replay, transferred, retired }, rows,`**
+>   （被位移后的真 arm 行），且那行注释在转写里**一处也不出现**（运行同时断言 presence 与 absence）。机制：
+>   ①每条 graded arm 在驱动顶部由 `bareQuote()`/`armDescriptor()` 注册一次（anchor + 跨度长度 + **跨度内每行一个 signature**）；
+>   ②`locate()` 解析描述符时**连同偏移一起验证**——跨度第 k 行必须含第 k 个 signature，否则打印 `<span drifted>` 与
+>   `line N of this arm's L-line span does not contain its signature "…" … REFUSING to quote bytes it did not grade` 且**一行也不引**；
+>   带 `from` 偏移的描述符在评分时刻直接拒绝。③`--self-test` 从 30 条增到 **41 条**：逐条解析每个注册 arm 并校验它确实引到自己
+>   的跨度、种植式 shifted-span 的两条拒绝、以及对驱动**代码行**（不是注释行，这条限制写在定义处）的两次结构扫描——手写描述符
+>   (`file: DRIVER_REL|PROBE_REL`) 或带 `from:` 偏移都会让退出码变红。④无法吸收的漂移也提交为证据：`…T20-18-42Z` 把注释种进
+>   跨度**内部**，FAIL 只打印拒绝、不打印任何字节。**本轮不宣称关闭 F-I1a3-3**：`--self-test` 只测自己的机制不测自己的意义，
+>   把断言掏空成常量 `true` 依旧 pass——41 条收窄这一类，没有关掉它。
+> - **F-I1a3-2（腿名→文件的归因错了三次；模式才是发现）**：本轮把本 PR 三处文档里每一条被引用的腿名重新 grep 到
+>   `packages/*/test/*.ts`。结果：`the client lane runs, and no failure appears outside the disclosed baseline`
+>   实际在 `packages/testkit/test/a4p7-merge-gate.test.ts:1694`，而证据 README 与 round-17 日志条目（`SESSION_ROUTER_LOG.md:7567`）
+>   把它归到 `packages/testkit/test/p4t6-session-event-scan.test.ts`——那个文件通篇不提 client lane，归因在它点名的文件里毫无依据；
+>   README 已就地改正并给出行号，日志是 append-only，更正以本轮新条目写入。两条已披露红腿现分别为
+>   `a4p7-merge-gate.test.ts:1137`（`refuses the leg, by name, when the host module closure cannot be traversed`，原归因正确）与
+>   `:1694`（上面那条）；第三条被点名的腿 `is green, asserted by arm name and by absence of a skip — never by the exit code`
+>   在 `:837`（原文只说「另一条 a4p7 腿」，未指错文件）。**不是错误、故不改**的三处：九文件套件表里
+>   `packages/testkit/test/p4t6-session-event-scan.test.ts | 20` 是**套件成员文件**（它确有 20 条）而非腿归属；本 memo 只写过
+>   「两条 a4p7 腿」；`boot-1-lock-was-serialised` 是 **kit 腿** id（`tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:696`），
+>   没有任何文档把它当 vitest 测试。自本轮起：写归因必须带上 grep 返回的 `file:line`，不凭记忆写路径。
+> - **F-I1a3-4（「quotes the bytes it was graded from」的范围）**：FAIL 头部现在把范围写进转写本身——
+>   `each quotes the ARM bytes it was graded from (arm bytes only — an arm's own inputs are not quoted, …)`，并且用种植演示而不只是声明：
+>   `…T20-19-04Z` 只改 arm 的**输入**（`const previousBootPid = Number(config.previousBootPid)`→`Number(0)`），腿红而引出的 arm 字节
+>   原样不变。因此 FAIL 的引文是「决定这条判决的那一行」的证据，不是「判决所依赖的一切」的转储。
+> - **F-I1a3-5（更正 round-17 banner 末段的一句）**：那句写的是两个不可引用的 run 目录「已在本 commit 之前删除，
+>   **README/memo/日志都不引用它们**」——这句话本身就是引用，且 round-17 日志条目点名了这两个目录，属自相矛盾。
+>   成立且可检验的是更弱的说法：它们**未被任何主张当作证据引用**（本 PR、本 memo、日志里没有一条结论依赖这两个转写）。
+>   证据 README 就地改成该弱说法并附原文；本 banner 只点名更正，不改写 round-17 banner 原文。
+> - **F-I1a3-6（把变异脚手架连同其输出格式一起提交）**：`dev/agent-workflow/evidence/alpha6-pri1a-real-host/mutation-harness/`
+>   = 本轮实际跑过这些转写的**那一版**（`mutrun.sh` + `law.mjs` + `diff-lines.mjs` + `plants/*.mjs` + 自己的 README：METHOD LAW 的
+>   可执行步骤、各拒绝码的退出码、重跑命令、明确写出的天花板）。round-17 只用散文描述这套纪律、工具留在 scratch 里——那正是
+>   本轮那次自伤事故的成因，散文不是交付物。脚手架现在也**先验 pin 再动手**（不等于 pin 就 exit 88，等于「上一次还原已验证」），
+>   任何退出路径（含断言失败、SIGINT/SIGTERM）都还原并按 sha256 + 逐字节 `cmp` + `node --check` 三重验证后才允许 exit 0，
+>   并且继续输出与既有红目录同形的 `MUTATION-METHOD-LAW.txt`（committed hunk 额外并置 `MUTATION.diff`），新旧转写可比。
+>   本轮另把 round-17 四个 hunk 在新字节上由这套脚手架重跑一遍（`…T20-12-18Z`/`…T20-12-40Z`/`…T20-13-02Z`/`…T20-13-24Z`，
+>   各自点名自己的红腿与自己的理由）。**披露**：本轮早些时候由尚在修补中的脚手架/种植脚本产出的**八个**目录——四条 hunk 的第一遍
+>   （`…T20-06-52Z`/`…T20-07-26Z`/`…T20-07-48Z`/`…T20-08-15Z`，被上面四条重跑取代）、plant-A 的一次失败尝试
+>   （`…T20-09-57Z`，当时 `--expect-absent` 这类断言还不存在，运行按自己的规则判为 rc=85 失败）、以及三个种植目录的第一版
+>   （`…T20-10-56Z`/`…T20-11-23Z`/`…T20-11-49Z`：脚本回显了自己的 `planted:` 行，与法则的声明行重复、可能被读成「种了两行」，
+>   改成从磁盘读回被种那一行并逐字核对，读回不符即退出码变红）——全部在本 commit **之前**移出证据目录，
+>   放进本 worktree 的 gitignored scratch（`.artifacts/alpha6-s0/pri1a-fix3/superseded-run-dirs/`）；它们从未进入任何 commit，
+>   已提交内容没有被改写或删除。
+> - 新测值（全部在 round-18 字节上）：绿 run `a6pri1a-2026-10-31T20-01-31Z`
+>   `DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27`（ports 3182/3183、boot pid 37→49、marker 唯一、world 删除、
+>   `tests/homes/` 空、宿主 porcelain 前/后 0）；把 pid/marker/nonce/时间戳归一后，这份转写与 round-17 的绿转写只差 `lane head` 一行；
+>   `--self-test` `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=41 problems=0`（`a6pri1a-selftest-round18/`）；端口带拒绝重测
+>   六条全部 `verdict=port-refused`、每条 `rc=2`、`tests/homes` 仍空（`a6pri1a-port-band-refusals-round18/`）；kit 字节
+>   `pr-i1a-real-host.mjs` `ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d`（905 行，本轮唯一改动的仪器文件）、
+>   `pri1a-probe-row.mjs` `40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd`（**与 round 15/16/17 逐字节相同**：
+>   313 行 + 末尾换行，最后一次变异还原之后重测）；写者规格 `Tests 49 passed (49)`；runtime typecheck exit 0；九文件套件
+>   `Tests 2 failed | 317 passed (319)`，两条红**按名字引、不按计数**（`a4p7-merge-gate.test.ts:1137` 与 `:1694`，见 F-I1a3-2）。
+> - 未放松任何封闭集、卫生规则或 pin：`ALLOWED_CONSUMERS=[]`、`EXTRA_MODULES_ALLOWED=['writer.ts']`、九个自有拒绝码、
+>   p4t6 booking（1416 → 1418）全部未动；本轮生产源码零改动（`packages/` tracked 零 diff；改动只有 `tests/kits/**` 一个仪器文件、
+>   `dev/**` 证据与脚手架、本 memo 与本日志）。
+
 > **Dated banner（2026-10-31，round-17 修复轮）——处理评审 round 2 的 1 条 MINOR（F-I1a2-1）与 4 条廉价 INFO（F-I1a2-2/4/5/6）；不改动上一轮 banner 的历史叙述，但点名更正其中一句（见第一条末）与证据 README 的一句。**
 > - **F-I1a2-1（红转写不能自证其变异；README 的 mut-seq 句与自家转写矛盾）**：本轮做三件事。
 >   1. **让仪器打印它到底评了什么**：`check()` 增加第四参数（该腿评过的 CONJUNCT 列表）。FAIL 时逐条打印

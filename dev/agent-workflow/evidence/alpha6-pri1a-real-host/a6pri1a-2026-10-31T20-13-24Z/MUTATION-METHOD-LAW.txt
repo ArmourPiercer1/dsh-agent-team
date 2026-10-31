@@ -1,0 +1,45 @@
+=== METHOD LAW — mut-driver-pid ===
+target            : tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
+arm (FROM)        : conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,
+replaced by       : conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host1.spawnPid,
+sha256 before     : ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d
+pinned sha256     : ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d
+pre-flight        : the target hashes to the pin, so the previous mutation restore is verified before this one begins
+intended file     : the copy at HEAD of this tree hashes differently (this round has uncommitted work); the run grades the bytes that hash to the pin above
+--- exact bytes planted ---
+planted: <        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,>
+planted: <        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host1.spawnPid,>
+--- structure assertions, run BEFORE the result is trusted ---
+counts before : {'(': 951, ')': 946, '{': 406, '}': 406, '[': 115, ']': 115, '`': 404, '"': 31, "'": 843, ';': 67, '\n': 905, 'step(': 2, 'check(': 29, 'conjunct(': 16, 'emit(': 2, 'function ': 12, '=> ': 76, 'bytes': 61481, 'lines': 905}
+counts after  : {'(': 951, ')': 946, '{': 406, '}': 406, '[': 115, ']': 115, '`': 404, '"': 31, "'": 843, ';': 67, '\n': 905, 'step(': 2, 'check(': 29, 'conjunct(': 16, 'emit(': 2, 'function ': 12, '=> ': 76, 'bytes': 61481, 'lines': 905}
+expected after: {'(': 951, ')': 946, '{': 406, '}': 406, '[': 115, ']': 115, '`': 404, '"': 31, "'": 843, ';': 67, '\n': 905, 'step(': 2, 'check(': 29, 'conjunct(': 16, 'emit(': 2, 'function ': 12, '=> ': 76, 'bytes': 61481, 'lines': 905}
+structure assertion: exactly one line changed, it is the FROM line with the FROM token replaced by the TO token — nothing else moved
+FROM occurred once on the pre-mutation line 765; TO occurs once on the mutated line
+NUL byte scan: none
+node --check on the mutated bytes: OK (the structure parses and it is the intended file)
+sha256 mutated    : f3b7160123cce8f39923c86611b73e12b30fd440414e5b0ed18b305d125ef32e
+--- exact bytes changed (the committed diff, verbatim) ---
+--- a/tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
++++ b/tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs
+@@ -660,7 +660,7 @@
+           `reported=${String(p1?.pid)} spawned=${String(host1.spawnPid)}`),
+         conjunct('driver', 'boot-1 self-reported argv0 equals the marker this driver stamped', p1?.argv0 === host1.marker,
+           `reported=${String(p1?.argv0)} stamped=${host1.marker}`),
+-        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host2.spawnPid,
++        conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host1.spawnPid,
+           `reported=${String(p2?.pid)} spawned=${String(host2.spawnPid)}`),
+         conjunct('driver', 'boot-2 self-reported argv0 equals the marker this driver stamped', p2?.argv0 === host2.marker,
+           `reported=${String(p2?.argv0)} stamped=${host2.marker}`),
+--- running the kit on the mutated bytes (node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --port 3188) ---
+kit exit code: 1
+DSH-PRI1A-REALHOST verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-reopened-in-a-fresh-process
+named red leg as stated: boot-2-reopened-in-a-fresh-process
+stated reason present in the transcript: p2\?\.pid === host1\.spawnPid
+  FAIL-GRADED     tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:765 conjunct('driver', 'boot-2 self-reported pid equals the pid this driver spawned', p2?.pid === host1.spawnPid,
+run directory created by this run: a6pri1a-2026-10-31T20-13-24Z
+--- restore (exit path) ---
+restored from <scratch>/base/mut-driver-pid.pr-i1a-real-host.mjs; sha256 now: ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d
+cmp against the pre-mutation backup: identical bytes
+node --check after restore: OK
+restore verified inside the run, before the next mutation could inherit anything
+METHOD LAW VERDICT: pass

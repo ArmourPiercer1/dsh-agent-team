@@ -1,0 +1,11 @@
+--- a/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
++++ b/tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs
+@@ -257,7 +257,7 @@
+       // the two reported pids against the two pids it spawned, so neither end can fake the other.
+       const previousBootPid = Number(config.previousBootPid)
+       const previousBootArgv0 = typeof config.previousBootArgv0 === 'string' ? config.previousBootArgv0 : null
+-      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && previousBootPid !== process.pid
++      const freshProcess = Number.isInteger(previousBootPid) && previousBootPid > 0 && process.pid !== process.pid
+         && previousBootArgv0 !== null && previousBootArgv0 !== process.argv0
+       const domain = await teamDomainModule.openTeamDomain(seam)
+       step('domain-reopened-fresh-process', freshProcess,

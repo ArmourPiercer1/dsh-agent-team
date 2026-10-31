@@ -114,17 +114,19 @@ const results = []
  *
  * `graded` (F-I1a2-1, review round 2) is the list of CONJUNCTS a leg actually evaluated. On FAIL every one
  * of them is printed — which side of the instrument computed it, the `file:line` it was graded from, the
- * value each side produced — and the SOURCE BYTES of each RED conjunct's line are quoted from the kit files
- * as they sit on disk during this run. Round 2's committed reds were self-consistent and could only be
+ * value each side produced — and the SOURCE BYTES of each conjunct's ARM are quoted from the kit files as
+ * they sit on disk during this run. Round 2's committed reds were self-consistent and could only be
  * explained by trusting the README, which is what a falsifiability transcript must never need; a mutated
- * arm now shows its own mutated bytes in the transcript.
+ * arm now shows its own mutated bytes in the transcript. ARM bytes, and only arm bytes (F-I1a3-4): the
+ * predicate this conjunct computed is quoted, the values that predicate consumed are not, so a mutation
+ * applied to an input line legitimately reddens the leg while the quoted bytes stay pristine.
  */
 const check = (id, ok, measured, graded = null) => {
   const rendered = ok === true || graded === null ? null : graded.map(renderConjunct)
   results.push({ id, verdict: ok === true ? 'PASS' : 'FAIL', measured: String(measured), ...(rendered === null ? {} : { graded: rendered }) })
   log(`${ok === true ? 'PASS' : 'FAIL'} ${id} — ${scrub(measured)}`)
   if (rendered !== null) {
-    log(`FAIL-GRADED ${id} — ${String(rendered.length)} conjunct(s) this leg evaluated; each quotes the bytes it was graded from:`)
+    log(`FAIL-GRADED ${id} — ${String(rendered.length)} conjunct(s) this leg evaluated; each quotes the ARM bytes it was graded from (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the leg with these bytes pristine):`)
     for (const c of rendered) {
       log(`FAIL-GRADED   ${c.ok ? 'ok  ' : 'RED '} [${c.side}] ${c.at} — ${c.what}: ${scrub(c.values)}`)
       for (const s of c.source ?? []) log(`FAIL-GRADED     ${scrub(s)}`)
@@ -164,6 +166,41 @@ const DRIVER_REL = relative(WORKTREE, join(import.meta.dirname, 'pr-i1a-real-hos
 const PROBE_REL = relative(WORKTREE, join(import.meta.dirname, 'pri1a-probe-row.mjs'))
 
 /**
+ * Every arm this instrument quotes by ANCHOR, recorded as it is built (F-I1a3-1). `--self-test` walks THIS
+ * list and resolves each entry with its own span, so no descriptor can be a transcription of a line number:
+ * an anchor that drifted, an anchor that went ambiguous, or a multi-line span that stopped landing on its
+ * arm is a REFUSAL at grade time and a PROBLEM in the self-test — never a confident wrong quote. (Driver
+ * conjuncts are quoted by their own label instead, and the self-test sweeps those labels separately.)
+ */
+const ARM_DESCRIPTORS = []
+
+/**
+ * One quotable arm. `anchor` must match exactly one line and the quote STARTS on that line — there is no
+ * `from` offset any more, because an offset measured nothing: round 3 inserted one comment line between an
+ * anchor and its arm and the instrument printed the comment as "the bytes it was graded from" while a green
+ * `--self-test` watched. The span is `lines` long and EVERY line of it must contain its own signature token
+ * (`anchor` for the first line, one `armFromLine2` token for each later line) before any byte of it prints.
+ * A signature that no longer matches says the arm moved or was rewritten, and the quote is refused.
+ */
+function bareQuote(file, anchor, lines = 1, armFromLine2 = []) {
+  if (!Number.isInteger(lines) || lines < 1) throw new Error(`arm descriptor ${JSON.stringify(anchor)}: lines must be an integer >= 1`)
+  if (armFromLine2.length !== lines - 1) {
+    throw new Error(`arm descriptor ${JSON.stringify(anchor)}: ${String(lines)} quoted line(s) need ${String(lines - 1)} signature token(s), got ${String(armFromLine2.length)}`)
+  }
+  return Object.freeze({ file, anchor, lines, signatures: Object.freeze([anchor, ...armFromLine2]) })
+}
+
+/** An arm the self-test must resolve: identical to `bareQuote`, plus a seat in the registry it walks. */
+function armDescriptor(file, anchor, lines = 1, armFromLine2 = []) {
+  const descriptor = bareQuote(file, anchor, lines, armFromLine2)
+  ARM_DESCRIPTORS.push(descriptor)
+  return descriptor
+}
+
+/** The quote a driver conjunct gets when it names no arm: its own label, which sits on its arm's line. */
+const labelQuote = (what) => bareQuote(DRIVER_REL, what)
+
+/**
  * One conjunct of a graded leg: which SIDE of the instrument computed it (the in-host probe or this driver),
  * what it asserts, the values it saw, and where its bytes live. A driver conjunct with no explicit `quote`
  * is located by its own label, which must therefore be unique in this file — that is what makes the printed
@@ -174,15 +211,33 @@ const conjunct = (side, what, ok, values, quote = null) => ({
   what,
   ok: ok === true,
   values: String(values),
-  quote: quote ?? { file: DRIVER_REL, anchor: what, lines: 1 },
+  quote: quote ?? labelQuote(what),
 })
 
-/** Locate one `{file, anchor, from, lines}` descriptor in the bytes actually on disk at grade time. */
+/**
+ * The four arms quoted out of the PROBE, each anchored on its own line and carrying the signature of every
+ * line its span covers. The two handoff arms are the arm line itself (`rows` is handed back there), NOT a
+ * fixed number of lines under the `emit(` anchor — that offset was the round-3 defect.
+ */
+const ARM_REOPEN_PROBE = armDescriptor(PROBE_REL, 'const freshProcess =', 2, ['previousBootArgv0 !== process.argv0'])
+const ARM_BOOT1_HANDOFF = armDescriptor(PROBE_REL, 'writes: { created, replay, transferred, retired }, rows,')
+const ARM_BOOT2_HANDOFF = armDescriptor(PROBE_REL, 'generation, replayFirst, fresh,')
+const ARM_NEW_FAMILY_STEP = armDescriptor(PROBE_REL, "step('new-family-writes-after-restart'", 4, ['JSON.stringify(fresh.ok', 'applied: fresh.applied', 'refusal: fresh.refusal'])
+/** The self-test's own arm, so the FAIL-rendering checks quote bytes that exist and are measurable. */
+const ARM_SELFTEST = armDescriptor(DRIVER_REL, 'const ARM_SELFTEST =')
+
+/** Locate one registered `{file, anchor, lines, signatures}` descriptor in the bytes actually on disk NOW. */
 function locate(quote) {
   const file = quote.file
   let text = null
   try { text = readFileSync(join(WORKTREE, file), 'utf8') } catch { text = null }
   if (text === null) return { at: `${file}:<unreadable>`, lines: [`${file}:<the file that declares this conjunct could not be read>`] }
+  if ('from' in quote) {
+    return {
+      at: `${file}:<descriptor carries a from offset>`,
+      lines: [`${file}:<a from offset is a transcription, not a measurement — anchor the descriptor on its arm's own line instead; REFUSING to quote>`],
+    }
+  }
   const all = text.split('\n')
   const hits = []
   all.forEach((l, i) => { if (l.includes(quote.anchor)) hits.push(i) })
@@ -192,12 +247,23 @@ function locate(quote) {
       lines: [`${file}:<anchor ${JSON.stringify(quote.anchor)} matched ${String(hits.length)} lines, not 1 — this quote is NOT the graded arm>`],
     }
   }
-  const from = hits[0] + (quote.from ?? 0)
-  const lines = []
-  for (let i = from; i < Math.min(all.length, from + (quote.lines ?? 1)); i += 1) {
-    lines.push(`${file}:${String(i + 1)} ${all[i].replace(/\s+/g, ' ').trim()}`)
+  const from = hits[0]
+  const lines = quote.lines ?? 1
+  const signatures = quote.signatures ?? [quote.anchor]
+  const span = []
+  for (let i = from; i < from + lines; i += 1) span.push(i < all.length ? all[i] : undefined)
+  const drift = signatures.findIndex((token, k) => typeof span[k] !== 'string' || !span[k].includes(token))
+  if (drift >= 0) {
+    return {
+      at: `${file}:<span drifted>`,
+      lines: [`${file}:<line ${String(from + drift + 1)} of this arm's ${String(lines)}-line span does not contain its signature ${JSON.stringify(signatures[drift])} — the arm moved or was rewritten; REFUSING to quote bytes it did not grade>`],
+    }
   }
-  return { at: `${file}:${String(from + 1)}`, lines }
+  const quoted = []
+  for (let i = from; i < from + lines; i += 1) {
+    quoted.push(`${file}:${String(i + 1)} ${all[i].replace(/\s+/g, ' ').trim()}`)
+  }
+  return { at: `${file}:${String(from + 1)}`, lines: quoted }
 }
 
 /** Resolve a conjunct into the record a FAIL transcript prints: side, file:line, values, source bytes. */
@@ -283,12 +349,17 @@ function firstValueDifference(x, y, path) {
 }
 
 /**
- * `--self-test` grades the round-3 FAIL-rendering machinery WITHOUT booting anything, so the claim "a FAIL
- * prints what it graded" is itself measured and not just asserted in prose: every driver conjunct label and
- * every explicit probe/driver quote must resolve to exactly one line of the kit bytes on disk (a drifted
- * anchor is a problem, not a silent fallback), a missing anchor must refuse to quote, a synthetic red leg
- * must render its graded block, and the row locator must name the row/field that differs. Exit 0 only when
- * every assertion holds.
+ * `--self-test` grades the FAIL-rendering machinery WITHOUT booting anything, so the claim "a FAIL prints
+ * what it graded" is itself measured and not just asserted in prose: every driver conjunct label and every
+ * registered arm must resolve to the bytes it claims — with its OWN span, not `lines: 1` and a default
+ * offset (F-I1a3-1: the round-17 sweep re-located anchors only, so the offsets under them were never graded
+ * and a shifted arm printed its neighbour as "the bytes it was graded from" past a green self-test) — a
+ * drifted span or a missing anchor must refuse to quote, a synthetic red leg must render its graded block,
+ * the row locator must name the row/field that differs, and no descriptor may be hand-written in the source
+ * where the sweep cannot reach it. Exit 0 only when every assertion holds.
+ *
+ * Its ceiling is disclosed rather than argued away (F-I1a3-3): an assertion here that is rewritten to a
+ * constant `true` still passes, because nothing grades the assertions themselves. Every round re-runs this.
  */
 function selfTest() {
   const problems = []
@@ -299,19 +370,34 @@ function selfTest() {
     else { problems.push(name); log(`SELFTEST PROBLEM ${name} — ${String(detail)}`) }
   }
 
-  // One rule the sweep below enforces, learned the hard way: an anchor literal written on a DIFFERENT line
-  // than its arm matches both lines, so a cross-line quote must anchor on the arm's unique label instead.
-  // This arm puts its descriptor on its own line, which is why it resolves.
-  const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', { file: DRIVER_REL, anchor: 'const selfTestArm =', lines: 1 })
+  const selfTestArm = conjunct('driver', 'selftest graded arm', false, 'spawned boot 1=1 boot 2=1', ARM_SELFTEST)
   const renderedRed = renderConjunct(selfTestArm)
   expect('driver-conjunct-resolves-to-a-line', /pr-i1a-real-host\.mjs:\d+$/.test(renderedRed.at), renderedRed.at)
-  expect('driver-conjunct-quotes-its-own-bytes', (renderedRed.source[0] ?? '').includes('selfTestArm'), JSON.stringify(renderedRed.source))
+  expect('driver-conjunct-quotes-its-own-bytes', (renderedRed.source[0] ?? '').includes('ARM_SELFTEST'), JSON.stringify(renderedRed.source))
 
-  const absentQuote = { file: DRIVER_REL, anchor: ['this', 'anchor', 'is', 'deliberately', 'absent'].join(' '), lines: 1 }
+  const absentQuote = bareQuote(DRIVER_REL, ['this', 'anchor', 'is', 'deliberately', 'absent'].join(' '))
   const absentLabel = ['selftest', 'absent', 'anchor', 'case'].join(' ')
   const missing = renderConjunct(conjunct('driver', absentLabel, false, 'x', absentQuote))
   expect('missing-anchor-says-so', missing.at.includes('<anchor matched 0 lines>'), missing.at)
   expect('missing-anchor-refuses-to-quote', missing.source.length === 1 && missing.source[0].includes('NOT the graded arm'), JSON.stringify(missing.source))
+
+  // F-I1a3-1, the guard the round-17 self-test did not have. Round 3 planted one comment line between an
+  // anchor and the arm it pointed `from: 2` ahead to, and the instrument quoted that comment as its own
+  // source while `--self-test` stayed green. These two descriptors are that plant, expressed as data: the
+  // anchor is a real line, the span is one line deeper than the arm, and the signature says what the arm is.
+  // (The anchor is taken from ARM_SELFTEST rather than re-typed, because writing it again here would be the
+  // duplicate-anchor bug these very checks grade.)
+  const plantedSpan = bareQuote(DRIVER_REL, ARM_SELFTEST.anchor, 2, ['the arm moved, this token is on no line here'])
+  const planted = locate(plantedSpan)
+  expect('shifted-span-refuses-to-quote', planted.at.includes('<span drifted>'), planted.at)
+  expect('shifted-span-quotes-no-pretend-source', planted.lines.length === 1 && planted.lines[0].includes('REFUSING to quote'), JSON.stringify(planted.lines))
+  expect('shifted-span-names-the-line-it-could-not-verify', /line \d+ of this arm's 2-line span/.test(planted.lines[0] ?? ''), JSON.stringify(planted.lines))
+  // The offset case is built with a computed key on purpose: writing a literal `from: 2` here would trip
+  // the no-offset rule checked at the end of this function, which is the very rule this case proves bites.
+  const offsetKey = ['fr', 'om'].join('')
+  const offsetQuote = { ...labelQuote(ARM_SELFTEST.anchor), [offsetKey]: 2 }
+  const withOffset = locate(offsetQuote)
+  expect('from-offset-is-refused-not-measured', withOffset.at.includes('<descriptor carries a from offset>') && withOffset.lines[0].includes('REFUSING to quote'), `${withOffset.at} ${JSON.stringify(withOffset.lines)}`)
 
   const before = lines.length
   check('selftest-renders-a-graded-fail', false, 'synthetic leg — nothing about the writer was measured here', [selfTestArm])
@@ -332,16 +418,32 @@ function selfTest() {
   const labels = [...source.matchAll(/conjunct\('driver', '([^']+)'/g)].map((m) => m[1])
   expect('driver-conjuncts-are-present', labels.length >= 9, `found ${String(labels.length)}`)
   for (const label of labels) {
-    const located = locate({ file: DRIVER_REL, anchor: label, lines: 1 })
+    const located = locate(labelQuote(label))
     expect(`label-locates-uniquely "${label}"`, !located.at.includes('<'), located.at)
   }
-  const quotes = [...source.matchAll(/file: (DRIVER_REL|PROBE_REL), anchor: (['"])(.*?)\2/g)]
-  expect('explicit-quotes-are-present', quotes.length >= 5, `found ${String(quotes.length)}`)
-  for (const q of quotes) {
-    const file = q[1] === 'DRIVER_REL' ? DRIVER_REL : PROBE_REL
-    const located = locate({ file, anchor: q[3], lines: 1 })
-    expect(`quote-locates-uniquely ${q[1]} "${q[3]}"`, !located.at.includes('<'), located.at)
+
+  // The sweep round 3 asked for: resolve every registered arm WITH its own span and require the resolved
+  // bytes to be the arm. `lines` and `signatures` are taken from the descriptor, never re-typed here, so a
+  // descriptor cannot pass by being shorter than what the leg actually quotes.
+  expect('arms-are-registered-for-the-sweep', ARM_DESCRIPTORS.length >= 5, `found ${String(ARM_DESCRIPTORS.length)}`)
+  for (const d of ARM_DESCRIPTORS) {
+    const located = locate(d)
+    expect(`arm-resolves ${d.anchor}`, !located.at.includes('<'), located.at)
+    const spanOk = located.lines.length === d.lines
+      && located.lines.every((printed, k) => printed.includes(`:${String(Number(located.at.split(':')[1]) + k)} `) && printed.includes(d.signatures[k]))
+    expect(`arm-quotes-its-own-span ${d.anchor}`, spanOk, JSON.stringify(located.lines))
   }
+  // …and the rule that keeps the sweep total: a descriptor written as an object literal in this file would
+  // be invisible to it, and an offset descriptor measures nothing. Both are refused structurally, so the
+  // CODE of this file must contain neither. Leading-comment lines are excluded, so this is a rule about
+  // code and not about prose — a comment may explain the rule by naming the shape it forbids; a comment
+  // after code on the same line is still scanned.
+  const code = source.split('\n').filter((l) => {
+    const t = l.trimStart()
+    return !(t.startsWith('//') || t.startsWith('*') || t.startsWith('/*'))
+  }).join('\n')
+  expect('no-descriptor-is-hand-written-in-the-code', code.match(/\bfile:\s*(DRIVER_REL|PROBE_REL)/g) === null, JSON.stringify(code.match(/\bfile:\s*(DRIVER_REL|PROBE_REL)/g)))
+  expect('no-descriptor-carries-a-from-offset', code.match(/\bfrom:\s*\d/g) === null, JSON.stringify(code.match(/\bfrom:\s*\d/g)))
 
   log(`DSH-PRI1A-REALHOST-SELFTEST verdict=${problems.length === 0 ? 'pass' : 'fail'} checks=${String(assertions)} problems=${String(problems.length)}${problems.length === 0 ? '' : ` failed=${problems.join(',')}`}`)
   return problems.length === 0 ? 0 : 1
@@ -653,7 +755,7 @@ async function main() {
       const reopenConjuncts = [
         conjunct('probe', 'the probe concluded it is not the boot-1 process', step2('domain-reopened-fresh-process')?.ok === true,
           `step.ok=${String(step2('domain-reopened-fresh-process')?.ok)} — ${String(step2('domain-reopened-fresh-process')?.measured)}`,
-          { file: PROBE_REL, anchor: 'const freshProcess =', lines: 2 }),
+          ARM_REOPEN_PROBE),
         conjunct('driver', 'both boots reported a process identity', p1 !== null && p2 !== null,
           `boot 1 report ${p1 === null ? 'ABSENT' : 'present'}; boot 2 report ${p2 === null ? 'ABSENT' : 'present'}`),
         conjunct('driver', 'boot-1 self-reported pid equals the pid this driver spawned', p1?.pid === host1.spawnPid,
@@ -686,13 +788,12 @@ async function main() {
       // Only the DRIVER quotes its own arm by its own label, because that label sits on the same line as the
       // arm. A quote whose anchor is written literally on a DIFFERENT line matches both lines, so cross-file
       // quotes (the probe) are the only ones carrying an explicit anchor here — `--self-test` enforces both.
+      // Since round 3 those anchors sit ON the arm line (F-I1a3-1): the two handoff arms below are the probe's
+      // own `rows` lines, resolved from the probe bytes at grade time, not offsets under the `emit(` anchor.
       const rowsConjuncts = [
         conjunct('driver', 'boot 1 produced a report whose rows can be compared at all', r1 !== null,
           `boot 1 reported ${String(boot1Rows?.length ?? 0)} row(s), boot 2 reported ${String(boot2Rows.length)} row(s); the two handoff lines quoted below are the only sources of these two arrays`,
-          [
-            { file: PROBE_REL, anchor: "state: 'done', mode: 'write'", from: 2, lines: 1 },
-            { file: PROBE_REL, anchor: "state: 'done', mode: 'restart'", from: 2, lines: 1 },
-          ]),
+          [ARM_BOOT1_HANDOFF, ARM_BOOT2_HANDOFF]),
         conjunct('driver', 'every field of every row is byte-identical across the two boots', same,
           same ? 'FULL-row JSON equality holds'
             : `${firstRowDifference(boot1Rows, boot2Rows)}; boot1=${JSON.stringify(boot1Rows).slice(0, 400)} boot2=${JSON.stringify(boot2Rows).slice(0, 400)}`),
@@ -720,7 +821,7 @@ async function main() {
       const continueConjuncts = [
         conjunct('probe', 'the probe asserted its own fresh write continued the chain exactly', step2('new-family-writes-after-restart')?.ok === true,
           `step.ok=${String(step2('new-family-writes-after-restart')?.ok)} — ${String(step2('new-family-writes-after-restart')?.measured)}`,
-          { file: PROBE_REL, anchor: "step('new-family-writes-after-restart'", lines: 4 }),
+          ARM_NEW_FAMILY_STEP),
         conjunct('driver', 'the driver re-derives the same expected sequence from boot 1 rows', r2.fresh?.sequence === r1Max + 1,
           `boot 1 rows carry max sequence ${String(r1Max)}, so the next write must be ${String(r1Max + 1)}; boot 2 reported sequence ${String(r2.fresh?.sequence)}`),
       ]

@@ -1,4 +1,4 @@
-# PR-I1a — real-Host durability evidence (rounds 15–17, 2026-10-31)
+# PR-I1a — real-Host durability evidence (rounds 15–18, 2026-10-31)
 
 Produced by `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs` (driver) with
 `tests/kits/pr-i1a-real-host/pri1a-probe-row.mjs` (probe row, mounted only through the public
@@ -9,6 +9,171 @@ Host: `tests/deepseek-harness-test-use`, pristine, detached @ `639ed015397290b37
 ports 3182 / 3183 (validated against `TEST_PORT_RANGES` immediately before boot — see round 16), one
 unique process marker per boot. Both worlds deleted at teardown; both ports free; host porcelain 0
 before and after (each run records it in `capture.json`).
+
+# Round 18 (fix round for review round 3: MINOR F-I1a3-1/2 + INFOs F-I1a3-4/5/6)
+
+Headline — the green run at the bytes this round commits, `a6pri1a-2026-10-31T20-01-31Z`:
+
+```
+DSH-PRI1A-REALHOST verdict=pass pass=27 fail=0 refused=0 legs=27
+```
+
+(default port 3182, restart 3183, boot pids 37→49; one unique marker per boot, both worlds deleted at
+teardown, `tests/homes/` empty, host porcelain 0 before and after, both ports validated against
+`TEST_PORT_RANGES` immediately before any world existed.) Normalizing pid / argv0 marker / module nonce /
+run-stamp / clock, that transcript differs from round 17's green transcript **only** in its `lane head`
+line: no leg's assertion moved this round either — the work is in how a FAIL names what it graded, in
+the self-test that guards it, and in committing the tooling that produced these files.
+
+## F-I1a3-1 — an arm descriptor is a measurement, not a transcription
+
+Round 17 located a driver conjunct by its own label but **transcribed** the offsets of the cross-file
+descriptors: `{ file: PROBE_REL, anchor: …, from: 2, lines: 4 }` asserts "the arm starts two lines below
+wherever that anchor matched today". That is a guess about the file's layout, and the reviewer's plant
+proved what the guess costs: one comment line between the anchor and the arm it pointed past, and the
+FAIL block quoted the **comment** as "the bytes it was graded from" while `--self-test` printed
+`verdict=pass checks=30 problems=0`.
+
+Reproduced here at the bytes this commit ships (`a6pri1a-2026-10-31T20-18-20Z`, via the harness now in
+`mutation-harness/`): the planted line is
+
+```
+        // plant-A comment line that shifts the graded arm by one
+```
+
+inserted at `pri1a-probe-row.mjs:246` on top of the committed mut-payload hunk; the planted file hashes to
+`7b242c4eadfec9f707dab607043ec1a582f76a689e3c83f7c21021d66256902e` — the same hash round 3 measured, so
+the plant is byte-identical, not a paraphrase of it. The kit exits 1 with
+`verdict=fail pass=26 fail=1 refused=0 legs=27 failed=boot-2-rows-are-boot-1-rows`, and the FAIL block now
+quotes the graded arm at its **shifted** line — `pri1a-probe-row.mjs:247 writes: { created, replay,
+transferred, retired }, rows,` — while the planted comment appears **nowhere** in the transcript (the run
+asserts both, `--expect-regex` and `--expect-absent`; round 17 would have printed `:246`, the comment).
+
+The fix is a **category rule**, so that no amount of future re-editing can silently reintroduce the old
+behaviour, and it is not a re-transcription of the offsets:
+
+* Every graded arm is registered once near the top of the driver by `bareQuote()` / `armDescriptor()` —
+  anchor, span length, and **one signature per line of the span** (`ARM_REOPEN_PROBE`,
+  `ARM_BOOT1_HANDOFF`, `ARM_BOOT2_HANDOFF`, `ARM_NEW_FAMILY_STEP`, `ARM_SELFTEST`). A descriptor claiming
+  `lines: N` must carry N signatures; that is checked when the descriptor is built, not when it is used.
+* `locate()` resolves a descriptor **together with** its offsets. Line k of the span must contain
+  signature k, else the FAIL prints `…: <span drifted>` and
+  `line N of this arm's L-line span does not contain its signature "…" — the arm moved or was rewritten;
+  REFUSING to quote bytes it did not grade` — with no bytes quoted for that arm. A descriptor that carries
+  a `from` offset is refused at grade time, the refusal printed where the bytes would have been.
+* `--self-test` sweeps the registry: every descriptor must resolve **and** quote its own span, and two
+  structural scans over the driver's code lines fail if any descriptor is hand-written inline
+  (`file: DRIVER_REL|PROBE_REL`) or carries a `from:` offset. The scans read code lines only — a comment
+  may mention those tokens without tripping them, which is stated where the scan is defined so the rule is
+  about code and not about prose. **`checks=41 problems=0`** at these bytes
+  (`a6pri1a-selftest-round18/selftest.txt`; round 17 measured 30, and every added check moves the exit
+  code — the eleven additions are the sweep of each registered arm, its shifted-span refusals, and the
+  two structural scans).
+* The drift that cannot be absorbed is committed too: `a6pri1a-2026-10-31T20-18-42Z` plants a line
+  **inside** a graded span, and the FAIL block prints the refusal and no bytes at all for that arm.
+  Quoted correctly, or refused — those are the only two outcomes this instrument allows.
+* **Not claimed (F-I1a3-3, left open on purpose).** `--self-test` grades its own machinery, not its own
+  meaningfulness: an assertion emptied to a constant `true` still passes. 41 checks narrow that class and
+  do not close it; nothing in this section says otherwise.
+
+## F-I1a3-4 — "the bytes it was graded from" means ARM bytes, and only arm bytes
+
+The FAIL header now says it in the transcript rather than in prose: `each quotes the ARM bytes it was
+graded from (arm bytes only — an arm's own inputs are not quoted, so a mutation of an input reddens the
+leg with these bytes pristine)`. That limit is demonstrated, not asserted:
+`a6pri1a-2026-10-31T20-19-04Z` mutates the arm's **input** one line above the span
+(`const previousBootPid = Number(config.previousBootPid)` → `Number(0)`) and the leg reddens with the arm
+quoted unchanged — `pri1a-probe-row.mjs:260 const freshProcess = Number.isInteger(previousBootPid) &&
+previousBootPid > 0 && previousBootPid !== process.pid`. So a FAIL's quote is evidence about the arm that
+decided the verdict; it is not a dump of everything the verdict depends on, and it should not be read as
+one. (Round 17's wording, "the source bytes of that line", was not wrong but was unscoped, which is what
+let the mut-seq transcript read as though it quoted the probe's whole computation.)
+
+## F-I1a3-2 — every leg-name-to-file attribution re-checked, the pattern treated as the finding
+
+Three published attributions in this PR have now been wrong, all of them the same mistake — a **leg name**
+quoted correctly and filed under a **test file** chosen from memory. The re-check grepped each quoted leg
+name against `packages/*/test/*.ts` at these bytes:
+
+| leg name as published | file published | file where it actually is | verdict |
+| --- | --- | --- | --- |
+| `the client lane runs, and no failure appears outside the disclosed baseline` | `packages/testkit/test/p4t6-session-event-scan.test.ts` | `packages/testkit/test/a4p7-merge-gate.test.ts:1694` | **was wrong — corrected below and in a new dated log entry** |
+| `refuses the leg, by name, when the host module closure cannot be traversed` | `packages/testkit/test/a4p7-merge-gate.test.ts` | `packages/testkit/test/a4p7-merge-gate.test.ts:1137` | correct, now given a line anchor |
+| `is green, asserted by arm name and by absence of a skip — never by the exit code` | (unnamed in prose: "a *different* a4p7 leg") | `packages/testkit/test/a4p7-merge-gate.test.ts:837` | correct, now named and anchored |
+
+Non-attributions checked and left alone, because inventing a correction would be its own error: the
+battery row `packages/testkit/test/p4t6-session-event-scan.test.ts | 20` is a **file** in the nine-file
+battery (it has 20 tests), not a leg attribution; the memo attributes the two red legs to "两条 a4p7 腿"
+and never to a wrong file; `boot-1-lock-was-serialised` is a **kit leg** id
+(`tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs:696`), not a vitest test, and no document claims
+otherwise. `p4t6-session-event-scan.test.ts` never mentions the client lane at all — the published
+attribution had no basis in the file it named.
+
+## F-I1a3-5 — the two unusable round-17 runs, stated accurately
+
+The sentence these two directories used to carry read: "both were **deleted before this commit** — nothing
+in this README, the memo or the log refers to them." That was self-contradicting: the sentence is itself a
+reference, and the round-17 log entry describes both. Corrected where it was published (see the dated
+correction under the round-17 section) to: they are **not cited as evidence** anywhere — no claim in this
+PR, the memo or the log rests on either run's transcript.
+
+## F-I1a3-6 — the mutation harness is committed beside the transcripts it produced
+
+`mutation-harness/` holds the version of the harness that actually ran these round-18 transcripts
+(`mutrun.sh`, `law.mjs`, `diff-lines.mjs`, `plants/*.mjs`) plus its own README: the METHOD LAW as
+executable steps, the exit code each refusal returns, the re-run commands, and the disclosed ceiling.
+Round 17 described the law in prose and left the tool in a scratch directory — which is how the round's
+own first incident happened, and why prose is not the deliverable. It emits the same
+`MUTATION-METHOD-LAW.txt` shape the earlier committed reds use (and now writes `MUTATION.diff` next to it
+when the mutation is a committed hunk), so a transcript from 20-06 and one from 20-13 stay comparable.
+
+## Round-18 run directories
+
+| directory | what it grades | verdict line |
+| --- | --- | --- |
+| `a6pri1a-2026-10-31T20-01-31Z` | **the measurement run at the committed kit bytes** | `…verdict=pass pass=27 fail=0 refused=0 legs=27` |
+| `a6pri1a-2026-10-31T20-12-18Z` | **mut-seq** re-run at these bytes by the committed harness | `…failed=boot-2-new-family-continues-the-chain` |
+| `a6pri1a-2026-10-31T20-12-40Z` | **mut-pid** re-run | `…failed=boot-2-reopened-in-a-fresh-process` |
+| `a6pri1a-2026-10-31T20-13-02Z` | **mut-payload** re-run | `…failed=boot-2-rows-are-boot-1-rows` |
+| `a6pri1a-2026-10-31T20-13-24Z` | **mut-driver-pid** re-run (driver-side arm) | `…failed=boot-2-reopened-in-a-fresh-process` |
+| `a6pri1a-2026-10-31T20-18-20Z` | **plant A** — the reviewer's F-I1a3-1 plant, byte-identical | `…failed=boot-2-rows-are-boot-1-rows`, arm quoted at its shifted line |
+| `a6pri1a-2026-10-31T20-18-42Z` | **plant B** — a line inside a graded span | `…failed=boot-2-reopened-in-a-fresh-process`, arm **refused** |
+| `a6pri1a-2026-10-31T20-19-04Z` | **plant C** — arm's input mutated, arm pristine (F-I1a3-4) | `…failed=boot-2-reopened-in-a-fresh-process`, arm quoted pristine |
+| `a6pri1a-selftest-round18` | not a run — `--self-test` at these bytes | `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=41 problems=0` |
+| `a6pri1a-port-band-refusals-round18` | not a run — the six refused ports re-measured | six × `verdict=port-refused`, every `rc=2`, `tests/homes` empty |
+
+Each red directory carries `MUTATION-METHOD-LAW.txt`: pin refusal, the planted bytes in angle brackets,
+the pre-diff's own bytes when the plant sits on a committed hunk, census before / after / **predicted from
+the declaration**, the whole-file rebuild line, `node --check`, the kit verdict and named leg, the stated
+reason and stated absence, then the restore with its sha256, byte `cmp` and `node --check`. Eight
+directories produced earlier in this round, by revisions of this harness or its plant scripts that were
+still being fixed, were moved out of this directory **before** the commit, into this worktree's gitignored
+scratch (`.artifacts/alpha6-s0/pri1a-fix3/superseded-run-dirs/`), and are not part of the repository:
+`…T20-06-52Z` / `…T20-07-26Z` / `…T20-07-48Z` / `…T20-08-15Z` (the first pass of the four hunks, superseded
+by the four re-runs above); `…T20-09-57Z` (a plant-A attempt run before `--expect-absent` existed — it
+failed its own rc=85 assertion); `…T20-10-56Z` / `…T20-11-23Z` / `…T20-11-49Z` (the first plant runs, whose
+scripts echoed their own `planted:` line, duplicating the law's declaration line closely enough to be
+misread as two planted bytes — a plant script now reads the planted line back off the disk and fails the
+run if it is not what was declared). Nothing committed was rewritten or removed.
+
+## Gate measurements at the round-18 bytes
+
+`pr-i1a-real-host.mjs` `ba03e7d65740e317322d897190c1ca4e7fea4ae9fb8c3a272d3d3ddff2a4496d` (905 lines;
+changed: registered arm descriptors, the two refusals, the widened self-test); `pri1a-probe-row.mjs`
+`40528066b6508473565acffc8a66b66c1a1e75b67305d980ece80c5df0b83ebd` — **byte-identical to the round-15 pin**
+(313 lines + trailing newline; re-measured after the last mutation restored, and quoted here precisely so
+that "unchanged" is checkable rather than asserted). Every run in the table above ran on bytes carrying
+these hashes.
+
+Writer spec `Tests 49 passed (49)`; runtime typecheck exit 0; the named nine-file battery
+`Tests 2 failed | 317 passed (319)` with **both red legs named, never counted** —
+`refuses the leg, by name, when the host module closure cannot be traversed`
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1137`) and
+`the client lane runs, and no failure appears outside the disclosed baseline`
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1694`) — see F-I1a2-6 above for why the total is not a
+fingerprint, and F-I1a3-2 above for why the file anchors are given. `node scripts/docs-sync.mjs --check`
+and `node scripts/eb3-evidence-guard.mjs --new-since HEAD~1` are quoted in the round-18 report.
+`packages/**` is untouched this round: `git status --porcelain` over `packages/` is empty.
 
 # Round 17 (fix round for review round 2: MINOR F-I1a2-1 + the cheap INFOs F-I1a2-2/4/5/6)
 
@@ -30,8 +195,11 @@ branch and in the tooling around the runs, not in what a green run asserts.
 `check()` takes a fourth argument: the list of CONJUNCTS the leg evaluated. On FAIL it prints every
 one of them — which side of the instrument computed it (`[probe]` or `[driver]`), the `file:line` it
 was graded from, the values each side produced, and the **source bytes of that line, read from disk
-during this run**. The reopen-identity leg carries 9 conjuncts, the rows leg 2, the continue-chain
-leg 2; every other leg keeps its 3-argument call, which is why the leg count did not move.
+during this run** (round-18 scoping, F-I1a3-4: *the arm's* bytes and only the arm's — an arm's own inputs
+are never quoted, so a mutation of an input reddens the leg with the printed bytes pristine; the header
+line of a FAIL says so in the transcript itself). The reopen-identity leg carries 9 conjuncts, the rows
+leg 2, the continue-chain leg 2; every other leg keeps its 3-argument call, which is why the leg count
+did not move.
 
 The `file:line` is not transcribed — `locate()` finds the arm in the kit bytes at grade time and
 requires exactly one match. A driver conjunct is located by its own label (which must therefore be
@@ -41,11 +209,21 @@ something plausible. Two consequences were learned by writing them down: an anch
 a *different* line than its arm matches both lines (so cross-line quotes only ever point at the
 probe), and a comment that mentions an anchor breaks its uniqueness.
 
+> **Round-18 correction (F-I1a3-1).** The paragraph above is true of the *anchor*, and this round found out
+> the hard way that it was not true of the whole coordinate: the cross-file descriptors added offsets by
+> hand (`from: 2`), and an offset is a transcription of yesterday's layout, not a measurement taken at
+> grade time. One planted comment line was enough for the FAIL block to quote the wrong bytes while this
+> section's own `--self-test` stayed green. Fixed as a category rule in round 18 — see **F-I1a3-1** above;
+> the paragraph is kept as it was written because it records what round 17 actually measured.
+
 `node tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs --self-test` grades this machinery without
 booting anything — 30 assertions, `DSH-PRI1A-REALHOST-SELFTEST verdict=pass checks=30 problems=0`,
 transcript in `a6pri1a-selftest-round17/selftest.txt`. It is not a leg: no world, no port, nothing
 about the writer is measured there. It exists because a claim like "a FAIL prints what it graded"
-must be measured, and writing it caught two bugs in the first draft.
+must be measured, and writing it caught two bugs in the first draft. **Round-18 note:** 30 was honest for
+round 17 and insufficient — none of those 30 checks resolved a descriptor together with its offsets, which
+is why the plant above slipped through at `checks=30 problems=0`. The same command now measures 41
+(`a6pri1a-selftest-round18/selftest.txt`).
 
 ## Round-17 run directories
 
@@ -108,11 +286,18 @@ The first version of this round's mutation harness computed the expected byte de
 its own assertion and exited **with the probe still mutated**. Two runs inherited that mutation
 before it was noticed: `a6pri1a-2026-10-31T18-34-06Z` (which failed the reopen leg for a reason that
 was not the mutation it claimed) and `a6pri1a-2026-10-31T18-34-30Z` (three failed legs at once).
-Neither is citable, neither was committed, and both were **deleted before this commit** — nothing in
-this README, the memo or the log refers to them. The harness was rewritten to (a) refuse to touch
+Neither is citable, neither was committed, and both were **deleted before that commit** — they are **not
+cited as evidence** anywhere: no claim in this README, the memo or the log rests on either run's
+transcript. The harness was rewritten to (a) refuse to touch
 bytes whose sha256 is not the pinned one, and (b) restore on every exit path including a failed
 assertion; the four transcripts committed here were produced by that version, each verifying its own
 restore before the next mutation started.
+
+> **Round-18 correction (F-I1a3-5).** This paragraph published the last sentence as "both were **deleted
+> before this commit** — nothing in this README, the memo or the log refers to them", which is
+> self-contradicting: the sentence is itself a reference to them, and the round-17 log entry names both
+> directories. What is true, and what the sentence now says, is the weaker claim that can actually be
+> checked — the two runs are not **cited as evidence** by any claim in this PR.
 
 ## Gate measurements at the round-17 bytes
 
@@ -157,9 +342,20 @@ afterwards, `git status --porcelain` over `packages/` empty), the same two test 
 a4p7 leg is red for a *different* reason (the absent build output, not the un-traversable closure).
 Any fresh clone lands in that second state. So the two published **names** are load-bearing and the
 totals are not: `refuses the leg, by name, when the host module closure cannot be traversed`
-(`packages/testkit/test/a4p7-merge-gate.test.ts`) and
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1137`) and
 `the client lane runs, and no failure appears outside the disclosed baseline`
-(`packages/testkit/test/p4t6-session-event-scan.test.ts`) — quote these, not the counts.
+(`packages/testkit/test/a4p7-merge-gate.test.ts:1694`) — quote these, not the counts.
+
+> **Round-18 correction (F-I1a3-2).** This paragraph published the second leg as living in
+> `packages/testkit/test/p4t6-session-event-scan.test.ts`. It does not live there — that file never
+> mentions the client lane, and the leg is `packages/testkit/test/a4p7-merge-gate.test.ts:1694`. The same
+> wrong file was published in this PR's round-17 entry in `SESSION_ROUTER_LOG.md` (line 7567); the log is
+> append-only, so the correction there is a new dated entry rather than an edit of that line. Both legs
+> now carry line anchors, and every other leg-name-to-file attribution in this README and in the memo was
+> re-grepped at these bytes — the results, including the non-errors that were left alone, are in the
+> F-I1a3-2 table above. The pattern, not the single slip, is the finding: three published attributions in
+> one PR were leg names quoted correctly and filed under a path chosen from memory, so from this round on
+> an attribution is written only with the `file:line` the grep returned.
 
 # Round 16 (fix round for review round 1: MINOR F-I1a1-1/2/3 + INFOs)
 
