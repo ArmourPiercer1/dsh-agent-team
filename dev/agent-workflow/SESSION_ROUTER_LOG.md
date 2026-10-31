@@ -8217,3 +8217,105 @@ dated 锚点带书写时刻，不与文件名日期混写）。**本轮零 pin �
   `/home/armourpiercer/deepseek-harness` 只读：porcelain BEFORE = 0 / AFTER = 0（HEAD 仍 `639ed01539…`，分支
   `stable-3-0.2.0-rc.2`）；**:3080 全程未触碰**；GitHub 侧唯一动作是 `git ls-remote` 读，**零写**（PR 评论由用户自己发）；
   对 PR #522 的分支只做本地对象库只读查询，未 fetch、未 checkout。
+
+## 2026-10-31（真实 UTC 23:48Z 起）— 三件治理 append，一笔：① 上一条目末个 bullet 的 GitHub「零写」句逐字为假（同条目 `:8215` 自报分支推送），引原句入册、更正形向前，原句留在 `:8218`；② PR #522 收束轮后落的两笔按性质分开记——`c63d6509d` **按测量**关闭 `F-I1b5-7`，`237a86e71` 只是**第二枚拒绝**（纵深、不撤销、不是关闭者），`:8045` 的 `P522` 活 head 标签按本轮自测 `git ls-remote` 向前退役为 `237a86e710503958531bf41318f89f6a1548a231`；③ PR #530 collection 门的跨 lane CI 集成事实入册（Alpha.6 加 **零** `*.test.mjs`；托管 CI 只触发 `branches: [master]`，**Alpha.6 任何 draft PR 都见不到这些腿**；本地 vitest 绿永不报成 CI 证据），风险台账查无集成/变基行，**不新开行**，只在本条引用
+
+紧接上一条目（`:8115`，真实 UTC 23:28Z 起；其 `:8218` 即本条目第 1 件的更正对象）。本条目的书写与测量时刻 =
+真实 UTC 2026-10-31T23:48Z 起（`date -u`，ROUTER_RULES §8.5.8 时钟锚点律）。本轮**零代码、零测试跑、零 build、
+零 boot、零 kit 跑、零测试战役**；唯一 tracked 改动 = 本日志一条目（一笔 append-only commit；接口 memo、执行计划
+memo、风险台账全部零改动——台账检查见第 3 件）。
+
+- **第 1 件：一句逐字为假的话，向前更正（append-only 更正 = 新条目，绝不改史）。**
+  - **原句**（`:8218`，上一条目末个 bullet「边界与影响面」之内，`grep -cF` 全句在本条目入册前 = **1**）：
+    「GitHub 侧唯一动作是 `git ls-remote` 读，**零写**（PR 评论由用户自己发）」
+  - **为什么逐字为假**：同一条目、同一个 bullet 的 `:8215` 自报「本分支 `alpha6/lane2-governance-20261031` 自有
+    head 的一次 fast-forward 推送」——对 GitHub 而言分支推送就是写；"唯一动作是……零写"与它自己刚报的推送不可能
+    同时成立。这不是滞后，是**同条目内部自相矛盾**。上一轮两笔条目用的都是正确形（`:7993`、`:8113`「唯一的远端写
+    是本分支这一次推送」），这一轮退回了假形。
+  - **更正形（向前入册；原句永久留在 `:8218` 原处，一字不动）**：「GitHub 侧除本分支这一次 fast-forward 推送外
+    只有 `git ls-remote` 读，零 PR 写（PR 评论由用户自己发）」——用户 2026-10-31 指令授权入册的措辞。
+  - **本条目遵守的 house 先例（日志正本自身所载）**：`:7337`「引用精度修正（append-only 修复走新条目）」；
+    X6 纪律「恢复走 append-only……另开 PR 修正是诚实做法」「三个 commit……append-only，未 force-push，未改写
+    任何 commit message」；`fe8918209` 条目所载 "pins and line numbers kept, dated corrections appended"；以及
+    上一条目的「向前退役（引原句；每条先用 `grep -cF` 验证命中唯一 = 1）」——本条目逐条照办：不改原文、不改名、
+    不动行号。
+  - **本条目自身 GitHub 侧动作逐件列明（防止再造同类句）**：读 = `git ls-remote origin`（一次三个 ref）、
+    `gh api …/issues/comments/6550209575`、`gh pr view 530`、`gh pr view 522`；写 = **仅本分支这一次 fast-forward
+    推送**；PR/issue 零写（零评论、零 review、零 label、零状态变更）。
+
+- **第 2 件：PR #522 收束轮之后落了什么——两笔提交、两种性质，不许并成一句。**
+  - **关闭靠测量的是 `c63d6509d`（fix8）**：`F-I1b5-7` 按该 lane 的真实构建实测关闭——种一枚 `.cts` lane 文件后
+    构建发出 `.cjs` / `.cjs.map` / `.d.cts` / `.d.cts.map` 四件，全部落在被枚举的 lane dist 目录内，install-surface
+    腿转红并点名发出的文件；三枚 symlink 种法全部拒绝（**rc=1/1/1**）。这些测量由 pri1b lane 自己执行，本轮零复跑，
+    记为 **reported-by-that-lane**；关闭正文（该 lane 设计 memo §13）已随 `c63d6509d` 进入 PR head。
+  - **第二枚拒绝是纵深，不是关闭者，`237a86e71`（fix10）**：`walkStaticClosure` 现在直接 `lstat` 并拒绝 symlink，
+    而不是读穿它；四枚断言落在既有腿内，spec 计数不变 **80 → 80**（lane-reported）。它**不撤销任何东西，也不是
+    `F-I1b5-7` 的关闭依据**——关闭由上一条目的测量负责；本笔只新增第二次拒绝，其标题自述「只加一枚拒绝、不撤一句」。
+    **本地对象库只读核验**：`git log aee7cec18..237a86e71` 恰为这两笔（`c63d6509d` → `237a86e71`）；
+    `packages/runtime/test/a6-pr-i1b-admission.test.ts` 里 `lstat` 命中数 `c63d6509d` = **0**、`237a86e71` = **6**。
+  - **`:8045` 的 `P522` 活 head 标签向前退役（引原句；唯一前缀 `grep -cF` 在本条目入册前 = **1**——该标签被
+    `:8193` 再引过，整串现共 2 行，故前缀带 `P522` 编号与被钉 sha 定位）**：「`P522`
+    `f1f19277ba759a87dd34424251ed872db7c77385` → 活 head `aee7cec18d69c2144d57ce62c0fc31fe55a33397`（+4 commit：」。
+    **退役的只是"活 head"这个现行性说法**：本轮自测 `git ls-remote origin refs/heads/alpha6/lane2-pri1b-admission-20261031`
+    → **`237a86e710503958531bf41318f89f6a1548a231`**（rc=0，本条目直接取测、不采用任何转述数字；`gh pr view 522
+    --json headRefOid` = 同值），即 `f1f19277b..237a86e71` = **+6 commit**（原四枚 `cb7c961f6`/`f773d1603`/
+    `afc17dd63`/`aee7cec18` 再加 `c63d6509d`、`237a86e71`，`git rev-list --reverse` 实测）。上一条目 `:8193`
+    当时拒绝退役该标签，依据「远端 head 实测仍是 `aee7cec18`」是当时测量、永久为真，且它当场披露了过期触发器
+    （「关闭的正文尚未进 PR head」）——触发器现已翻转（两笔都已推送），本轮正是执行退役的一轮。**只退役标签，
+    不延伸内容主张**：`:8045`–`:8049` 记的"四组路径 0 文件"是 `f1f19277b→aee7cec18` 区间的实测，本轮对
+    `aee7cec18→237a86e71` **未复跑**该差分，不宣称也不退役它。
+  - **该 lane 自测于 `237a86e71` 的门禁（记为 reported-by-that-lane，非本条目 governance-verified）**：spec **80**；
+    四份 authored 套件 **201**；family **471**；typecheck / eslint / docs-sync / eb3 全 rc=**0**；arms `73|7`
+    rc=**0**、`7|73` rc=**1**；settlement `BLOCKED-BY-MARKER`。
+
+- **第 3 件：跨 lane CI 集成事实（一段，按 issue #502 评论 `6550209575` 发表原文入册）。**
+  2026-10-31T22:55Z 测量（评论发布 22:51:32Z，本轮 `gh api` 复读原文，发布者 = 同一账号 `ArmourPiercer1`）：
+  PR #530 新增 `scripts/eb3-node-test-collection.mjs`，枚举 `git ls-files '*.test.mjs'` 并拒绝任何不被采集源
+  运行的 tracked 文件；Alpha.6 lane 分支加 **零** `*.test.mjs`（三个 lane head 各 36 枚 vs `origin/master =
+  8067f631f` 的 **38** 枚；只存在于 master 的两枚是 `tests/world-factory/poc/poc-native-present.test.mjs` 与
+  `tests/world-factory/port-probe.test.mjs`）；Alpha.6 测试文件全部是 `packages/runtime/test/a6-*.test.ts`
+  （vitest，在该门 `*.test.mjs` 图案之外）；三条 lane 分支对 master 全部 **behind=57**。**以上数字本轮全部复测
+  成立**：`git ls-tree -r` 计数 `199e18cc4`/`237a86e71`/`054f1a44c`/`9b61716dc` = 36/36/36/36、master = 38，
+  `comm` 差集恰为上述两枚，`git rev-list --left-right --count origin/master…分支` 三条全 behind=57（ahead
+  29/38/23），lane 侧新增的 test 形文件中非 `packages/runtime/test/a6-*.test.ts` 者 = **0**。
+  - **治理后果（入册为规则）**：本仓托管 CI 只在 `branches: [master]` 触发 ⇒ **Alpha.6 任何 draft PR 都不会经过
+    这些腿**；collection 门必须在**变基后的分支上本地跑过**才能主张任何 settlement；**本地 vitest 绿永不得被报成
+    CI 证据**。
+  - **#530 本体（本轮 `gh pr view 530` 自测）**：OPEN、**非 draft**、同一账号所开、对 `master`，head
+    `69cce6b0048967cc5ca2edf901513f5937da6a1e`、分支 `task/a5w-uncollected-wire-20261031`、MERGEABLE/CLEAN。
+    **归属别的 phase，本 lane 对它零写、零协调。**
+  - **风险台账核查（如实，不造行）**：本 lane 风险台账 = `docs/plans/memo/alpha6-review-separation/`
+    `alpha6-lane2-execution-plan-20261030.md` 的 R-5 / R-6 / R-7 三行（各自行本体 = #513 pinned-quote 校验器可被
+    同 commit 关掉；census 腿无可达绿色世界（继承的 Alpha.5 baseline/仪器缺陷）；审批作用域语义在 Alpha.5 执行侧
+    重设计）。**其中不存在集成/变基风险行**；R-6 行内所载「托管 CI 对这些分支不触发」只是该行的佐证语境，其风险
+    本体不是 rebase 集成。按 2026-10-31 指令：查无属行则**不新开风险行**，#530 的 rebase-time 依赖只在本条引用，
+    执行计划 memo 零改动。
+
+- **其余现行性候选（与上一轮同法搜索；计数按本条目之外的历史行计）**：`零写` 命中 40 行——绝大多数是各 lane 各
+  阶段的普通「零写入」用法，逐字为假的全句只有 `:8218` 一处，已在第 1 件更正；`未推送` 命中 11 行，其中
+  `:8192`–`:8193` 的「`c63d6509d` 未推送」是当时测量、当时为真，且当场披露了自己的过期触发器，本轮条件翻转、
+  已在第 2 件说明；`尚未进 PR head` 与「远端 head 实测仍是 `aee7cec18`」各命中 1 行（同上，属披露式测量，永久
+  为真，不退役）。`:8045` 的四组路径内容主张本轮未复跑，既不宣称也不退役。**没有可退役的就不制造退役对象；本轮
+  更正/退役的只有两处现行性（`:8218` 假形、`:8045` 活 head 标签），被引原句永久留在原处。**
+
+- **改了什么 / 没改什么**：改 = 本日志一条目（一笔 append-only commit）。**没改** = 接口 memo（含 §7.6 与四枚
+  pin）、执行计划 memo（含 R-1…R-7 与 R-7 的 dated 扩展）、两份被钉 s0 文档、`docs/ROUTER_RULES.md`、
+  `dev/engineering/**`、`packages/**`、`tests/**` 的任何一字，以及任何既有测量、裁决、pin sha、已公布行号。
+  零代码、零测试、证据根零新增（本轮测量与证明全部落在 gitignored 的 `.artifacts/alpha6-s0/gov-append11/`）。
+
+- **门禁（gov worktree，docs-only；三条判决在提交前（worktree 即本条目终稿）与提交后各跑一遍，结果一致）**：
+  `node dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs` → `DSH-VERBATIM-VERDICT quotes=2
+  drift=0 verdict=ok … tracked=ok`（两份被钉 s0 文档未触碰，本轮改动不进入其评分面）；
+  `node scripts/docs-sync.mjs --check` → `docs:sync --check: docs=107 notes=4 plans=70(0 declaring) findings=0
+  blocking=0 contracts=20 pairs compared` + `AUTHORITY_SOURCE_BINDING … pointer_digest_verified=true`（不增删
+  文档，计数与上一轮同一）；`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1` → `EB3-EVIDENCE-GUARD pass
+  added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`（HEAD~1..HEAD 唯一新增文件 = 本日志自身，证据根下
+  零新增）。
+
+- **边界与影响面**：治理文本入册，**非合并授权、非启用授权**；也不是对第 2 件那组门禁数字的复测（它们保持
+  reported-by-that-lane）。本分支 `alpha6/lane2-governance-20261031` 自有 head 的一次 fast-forward 推送，零
+  force、不碰 master/stable、不 amend。`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树全程零写入
+  （本轮起止 porcelain 均 = 0）；`/home/armourpiercer/projects/dsh-agent-team` 只读（其 `?? probe.mjs` 是本轮
+  之前已存在的未跟踪文件，如实照报、未触碰）；`/home/armourpiercer/deepseek-harness` 只读：porcelain BEFORE = 0
+  / AFTER = 0（HEAD 仍 `639ed01539…`，分支 `stable-3-0.2.0-rc.2`）；**:3080 全程未触碰**；GitHub 侧动作如第 1
+  件逐件所列：除本分支唯一一次 fast-forward 推送外全是读，零 PR 写。
