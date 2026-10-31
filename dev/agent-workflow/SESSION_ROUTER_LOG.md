@@ -7444,3 +7444,34 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   命令被引用就运行它，没被引用就先运行一个能证伪它的**。
 - 门禁：docs-sync `findings=0 plans=69`；verifier rc=0；mutation 两处均 sha 还原校验 OK；settlement gate 仍
   `BLOCKED-BY-MARKER`（应有之红）。CORE PATCH BUDGET 0；受保护中心只读未写；开发授权，非合并、非启用、非放宽门禁。
+## 2026-10-31 — PR #513 round-5 关闭：这一轮攻的是我这台的**检查工具**，五个限制被证明、四个当场关掉；两个 MAJOR 全是我自己的句子
+
+- 报告 `6541969970`（全文公开）、处置 `6541970202`、二次数字更正 `6541971632`。判决 0 BLOCKER / 2 MAJOR /
+  6 MINOR / 5 INFO；**全部十条逐条自测复现，全部接受，本轮零拒绝**。
+- **MAJOR 之一（F-R5-1）**：我 round-4 那句"四去三"本身是错的，而且错在被它取代的那句话的同一个习惯上——只数了
+  折行渲染的**第一行**。整段 `git show 6937dd32b` 旧渲染 :15 与 :16 各 1 根 = **2**，源行 75 = **4**；存活的正是
+  两根单元格分隔符（含 「domain/changed | packages/…」，它就躺在我引用的对象里）。补遗已改成"四去二"并写下律：
+  **数被折行的渲染，要数整段渲染，不能数承载它的第一行**。
+- **MAJOR 之二（F-R5-2）**：正文把 `+557 −0` / `+598 −41` 标在 `8ab9eba09` 名下，实测这两组数只在 `e1171d505` 成立
+  （`8ab9eba09` 真实为 `+600 −0` / `+642 −42`），同一格还留着 `@ e1171d505` 的旧标签。这是 G-R3-2/G-R3-3 在
+  "为防它而写的那句话"里复发。律：**数字标注哪个 head，就必须在那个 head 上重跑过；head 一动，先重跑再复用标签**。
+- **工具侧（F-R5-6/7/8 + 两条 INFO）当场关闭**，每条都用复核者的攻击原地重跑过：锚点必须唯一
+  （`anchor … is ambiguous: 2 occurrences at line(s) 14,21` rc=1）；源行按内容哈希钉住（协同改源+引文 ⇒
+  `verdict=source-moved pinned=8ba2ab061ffb actual=16a8fcbcd4f9` rc=1）；pin 集合允许字节复制 ⇒
+  重复声明判红（`line=7389,7448 reason=pinned-designation-duplicated` rc=1）；pin 改原始行哈希（多一个尾随空格 ⇒
+  `findings=2` rc=1）；检测正则 `\.artifacts\b`（今日命中数不变，白捡）。**未关且写进文件头的仍是行级边界**。
+- **二次数字更正（`6541971632`）里最贵的一条**：我为修"off-by-one"发的那条评论，自己带了同形状的 off-by-one。
+  真实值 20,282 字符 / 21,863 字节；我先前测的是 `gh api --jq .body > file` 的**落盘副本**，而 `--jq` 会在输出末尾
+  补一个换行（该文件末字节实测 `0a`）。律：**字符串用 `.body|length` 量，永远不要用 JSON 工具写出的文件去 `wc`**。
+  同批更正：目录内 **18** 个文件（我的 19 来自 `find <dir> | wc -l` 把目录本身算进去）；"82 分钟"实为 **81:21**、
+  最早产物是 `pr-meta.json` 17:15:06；「verifier 176 行」实为 **182 行**（数字写完后同一轮又给那文件加了 6 行）。
+- **两条本轮新增的可复用陷阱**：`grep -n "3 MINOR"` 返回 **5** 行而不是我发布的"只返回这一行"（:7394 发布时就已存在；
+  F-R4-3 的**拒绝**不依赖命中数，靠的是 :7373-7375 的 3+1=4 枚举，本轮复核也确认拒绝成立）；用 YAML 数 workflow
+  触发器时 `on:` 会被解析成布尔 `True` 键，必须 `d.get('on', d.get(True))`——重测的完整普查：3 个
+  `pull_request`+`push`+`workflow_dispatch`（全部 `branches: [master]`）、`ci-required` 仅 `pull_request`（带
+  types）、4 个 `workflow_call`、1 个 `workflow_dispatch`；结论不变（lane base 的 PR 什么都不会跑），但正文从此写
+  普查而不是写口号。
+- 本轮没有新增把 gitignored scratch 当存放处的声明；因此棘轮 `found=3 pinned=3 findings=0` 不变——**这条要连着上面
+  那条边界一起读**：条目里点名过那个路径，但按行级检测的形状它不该命中，我也没有为了让它命中去改措辞。
+- 门禁（`02738256c`）：verifier rc=0；docs-sync `plans=69 findings=0`；本轮被 mutate 的三个文件
+  `sha256sum -c` 全部 OK；无 `packages/**` 改动 ⇒ 无安装面共提。CORE PATCH BUDGET 0；受保护中心未触碰。
