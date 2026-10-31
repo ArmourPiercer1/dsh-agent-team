@@ -7913,3 +7913,82 @@ Alpha.6 继续，但**在两个项目的授权/执行接口合同重新确认之
   `alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1 均零写入；本轮零 boot、零 kit
   跑、零大型测试战役——遵用户暂停令。**授权边界**：开发授权，非合并授权，非启用，**不是**接口合同复核
   本身；§3/§4 两契约的裁决权在后续差分审查与人手上。
+
+## 2026-10-31 — 治理 memo 的 head 标签复核（PR #522 round-6 finding F-I1b6-11）：四个 pin 全部重读，三个标签滞后而被钉内容实测零漂移；一个行号定位器随文件搬家——只披露，不重打
+
+本条目是**复核入册**，触发者 = PR #522 round-6 独立审查的 finding **F-I1b6-11**（报告留在 lane scratch，不入 tracked
+内容）。整轮的难度全在这个区分上：**被钉的内容没动，被钉的标签动了**——接口 memo
+`docs/plans/memo/alpha6-review-separation/alpha5-sandbox-first-interface-20261101.md` §2 的 pin 表把
+`P522 = f1f19277b…` 写成"（PR #522 head …）"，而远端 head 已在两 commit 之后。sha 是**测量点**，保留原样；会过期的
+只是"…head"这句现行性声明。测量与书写时刻 = 真实 UTC 2026-10-31T21:14Z–21:24Z（`date -u`；§8.5.8 时钟锚点律：新
+dated 锚点带书写时刻，不与文件名日期混写）。**本轮零 pin 变更、零行号重打、零测量删除。**
+
+- **复测方法（逐 pin；命令正本已写入 memo 新增附录 A.1，任何人可复跑）**：`gh pr view <n> --repo
+  ArmourPiercer1/dsh-agent-team --json number,headRefOid,headRefName,baseRefName,state,isDraft,changedFiles` 取活
+  head → `git fetch origin <branch>`（只落对象，不动 HEAD/工作树）→ `git diff --name-only <被钉 sha> <活 head> --
+  <该论断真正涉及的路径>`，空/非空如实记：
+  - `P522` `f1f19277ba759a87dd34424251ed872db7c77385` → 活 head `f773d160371037672855f5401b4999c14c1b0128`（+2
+    commit：PR-I1b round-5，P-1 仪器从逐行 regex 换成编译器 AST + 两个 allow-list、P-2 闭集重新定级）：
+    `packages/runtime/review-assignment`、`packages/runtime/review-mandate`、`packages/runtime/dist`、
+    `packages/contracts/src` 四组路径 **0 文件**（独立复现 round-6 的同一测量）；`assignment-admission.ts` 逐字节
+    相同、`ASSIGNMENT_ADMISSION_ROLE_CLOSURE` 仍在 `:229`；该模块在活 `P517`/`P531`/`GOV` 三处仍不存在，故 §2.3
+    "只存在于 `P522`"在活 head 仍成立。**结论：标签过期，测量成立，pin 不动。**
+  - `P517` `3d06d52a9bb9791620ae1038dfd2561acff514d9` → 活 head `3ac9fd52e102720413c1105b2f78debf3f018af7`（+2
+    commit：round-2/round-3 审查修复）：`packages/runtime/review-assignment/writer.ts`、
+    `packages/runtime/test/a6-pr2-lane-hygiene.test.ts` 以及整个 `packages/` **0 文件**；`writer.ts` 逐字节相同，
+    `ALLOWED_CONSUMERS` 仍是 `readonly string[] = []`（`:48`）。同一区间 repo 级动了 88 个文件，全在真实宿主证据 /
+    本日志 / PR-I1a 设计 memo / `tests/kits/pr-i1a-real-host/pr-i1a-real-host.mjs`，无一条是 §2.5 的论断。**round-6
+    只点名 #522；这一条同样滞后，按同一标准一并入册，而不是留给下一位读者踩。**
+  - `GOV` `991faacc4f373485b7d810de16a35518214a9301` → 活 head `f559ff2ec98522e5c14e5fdda592e16caa20b7fb`（+1
+    commit，且那一个正是本 memo 的发布 commit）。`gh pr view 513` 把旧措辞只暗示的指称说清了：PR **#513** 就是这条
+    分支（`headRefName=alpha6/lane2-governance-20261031`、`baseRefName=alpha6/lane2-pr2-assignment-20261031`、
+    `state=OPEN`、`isDraft=true`）。§2.1–§2.4/§2.6/§3/§4 逐行列出的 11 个文件（含
+    `dev/engineering/current-authority.json`）**0 文件**；公布行号逐个回读为真（`CONTROL_REQUEST_KINDS` `:163`、
+    `CONTROL_RESOLVER_ROLES` `:193`、四处 `CONTROL_RESOLVER_ROLES[…]` 站 `:2622 / :4852 / :5228 / :5495`、
+    `CONTROL_ROLE_CLOSURE_MIRROR` `:82`、`SCOPE_FORM_UNKNOWN` `:209-210`、`ReviewCaseView` `:217`、`ALLOWED_CONSUMERS`
+    空表在 `a6-pr2…:47` 与 `a6-pr3…:38`、`[runtime/review-assignment/router.ts]` 在 `a6-pr0…:62`）。原行"（branch …,
+    porcelain 0）"写的是测量检出的状态，不是 head 主张——治理分支每笔 commit 都会移动它，本条所在这笔也是。
+  - `P531` `32b81fcd8b3b5ab8d2c2089d743425438edf3ad8`：pin 即活 head，**未动**，差异按恒等为空；但 §0 引的不止 sha，
+    故一并重读 `state=OPEN` / `isDraft=true` / `baseRefName=master` / `changedFiles=4` / `+406 −0` / 四文档路径，
+    `gh pr diff 531 --name-only | grep -c current-authority.json` → `0`，全部重读为真。**这一条入册的意义是让读者知道
+    新鲜度检查跑了四个 pin，不是只跑了被 reviewer 撞见的那一个。**
+  - 机器权威 pin（§0）另测：`dev/engineering/current-authority.json` 在 `GOV` 与活 #513 head **逐字节相同**（
+    `as20261026r1` / `sha256:93692d7aeb3b097c3b3467e0a9207f1da5f05c2c1cb324c74d25168b1516a4d4`），
+    `node scripts/current-authority.mjs` 仍解析到 `phase_id=alpha5-tool-io-governance` 与
+    `active_plan=docs/plans/active/unified-baseline-alpha5/current-implementation-plan.md`，即"PR #364 的 plan 仍是机器
+    现行合同"不是过期句子。另如实说明：本 memo **不含**宿主/基线 commit pin（`tests/paths.mjs` 的任何值都没出现在里面），
+    那类 pin 在此无物可核——**没有就说不有，不制造。**
+- **唯一真搬了家的行号——只报告，不重打**：`P522 → 活 head` 区间 repo 级只动 2 个文件，其中
+  `packages/runtime/test/a6-pr-i1b-admission.test.ts` 正是 §2.3 用来钉"双向 pin"的那个文件。三条断言在活 head 落在
+  `:1045-1047`（外层 `it(…)` 头从 `:1030` 移到 `:1041`），三行**逐字节相同**：三行切片 sha256 =
+  `17c7a23e18b628fbf0fccdd81d5d54bc27784e191e7c3685b18913e89908ca28`，被钉位置与活 head 位置同一值。所以 §2.3 的**论断**
+  在两个 commit 都真，它**公布的行号**只在被钉 commit 真。**pin 与原文行号都不重打**：重打就把"在哪里量出来的"这条信息
+  抹掉了，而那正是一个钉住的测量唯一不可替代的价值。
+- **向前退役（引原句；每条先用 `grep -F` 验证命中唯一）**：全 log 检索 `522 head` / `517 head` / `513 head` /
+  `gov 分支 head` / `531 head` 并逐条读回，本 lane 此前发布过现已滞后 head 标签的行只有 memo 入册那一条，逐字为——
+  `:7890`「- **持住清单**：审批接入执行路径的生产接线（#522 head `f1f19277b` 保持 Draft + DO-NOT-MERGE，其 diff 不含」；
+  `:7901`「测量基准 commit：gov 分支 head `991faacc4`、PR #517」+ `:7902`「head `3d06d52a9`（PR-I1a 写者 mid-work，
+  引用一律点名 sha）、PR #522 head `f1f19277b`；风险台账」。**这两行退役的只是"head"一词的现行性**，不是它们的裁决
+  内容：#522 仍是 Draft + DO-NOT-MERGE（活 head `state=OPEN`、`isDraft=true` 重读为真）、`control/service.ts` 仍不在其
+  diff（活 head 对其 merge-base `a2bc18d783046c62db3f9db41a8d22dc716e5fa0` 实测 `packages/runtime/control/` 命中 `0`，
+  `dev/engineering/current-authority.json` 命中 `0`）、`ALLOWED_CONSUMERS` 仍 `[]`（该分支那份 PR2 hygiene 的 `:56`——
+  它带着 PR-I1b 新增的腿，故行号既不是 §2.5 的 `:48` 也不是 `GOV` 的 `:47`，各号各按自己的 commit 标注）。`:7884` 与
+  `:7898` 两处 PR #531 head `32b81fcd8…` **不退役**——活 head 与它相等。顺带一条纪律入册：这两行用的是 9 字缩写
+  （`f1f19277b`），**缩写只能当指针，不能当锚点**；凡需跨轮复现的引用一律写 40-hex。
+- **改了什么 / 没改什么**：改 = 接口 memo 一个文件三处（§2 pin 表下新增 dated 逐 pin 复核块；§6 #522 项下新增 dated
+  标签更正；新增附录 A.1 = 复核命令正本）+ 本条日志。没改 = 任何 pin 的 sha、任何已公布的行号、任何既有测量；执行计划
+  memo 与其风险台账（不新增 R-8：本轮缺陷是标签新鲜度，已由 memo 的 dated 块承担并有命令可复跑，风险本体仍是 R-7 已
+  登记的作用域语义漂移）；`dev/engineering/**` 与任何 `packages/**`；零代码、零测试、零证据改动；零 build、零 boot、零
+  kit 跑、零大型测试战役——遵用户暂停令。
+- **门禁（gov worktree，docs-only，本 commit 实测）**：`node dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs`
+  → `DSH-VERBATIM-VERDICT quotes=2 drift=0 verdict=ok … tracked=ok`（两份被钉 s0 文档本轮未触碰，sha 未变）；
+  `node scripts/docs-sync.mjs --check` → `docs=107 notes=4 plans=70(0 declaring) findings=0 blocking=0 contracts=20
+  pairs compared`（本 commit 不增删文档，计数与上一轮同一）；`node scripts/eb3-evidence-guard.mjs --new-since HEAD~1`
+  → `EB3-EVIDENCE-GUARD pass added=0 bound=1048576 exempted=0 findings=0 base=HEAD~1`。
+- **边界与影响面**：开发授权，非合并授权、非启用，**也不是** §3/§4 两契约的接口合同复核本身。本分支
+  `alpha6/lane2-governance-20261031` 自有 head 的一次 fast-forward 推送，零 force、不碰 master/stable、不 amend；
+  gov worktree 提交后 porcelain = 0。`/home/armourpiercer/deepseek-harness` 只读：porcelain BEFORE = 0 / AFTER = 0
+  （HEAD 仍 `639ed01539…`）；`alpha6-pri1a` / `alpha6-pri1b` / `alpha6-pri2` / lane-2 主树 / Lane 1
+  （`/home/armourpiercer/projects/dsh-agent-team`）全程零写入；**:3080 全程未触碰**；GitHub 侧只有读操作
+  （`gh pr view` / `gh pr diff --name-only` / `git fetch`），唯一的远端写是本分支这一次推送。
+
