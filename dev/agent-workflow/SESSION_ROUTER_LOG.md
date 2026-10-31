@@ -7576,3 +7576,23 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   `docs=106 notes=4 plans=69(0 declaring) findings=0`、eb3 `pass added=1 … base=HEAD~1`、settlement
   `BLOCKED-BY-MARKER marker=title-prefix matches=0 candidates=0`；净量 `+856 −0 / 7 paths`，逐 commit 求和
   `+1299 −443`，14 commits，`packages/**` 0 个。净额降而求和升，是因为这轮就地重写了 verifier。
+
+## 2026-10-31 — PR #513 round-8 关闭：保证从"每块都记账"换成"被钉文本不得在标签块之外出现长片段"，六轮同一个错误的名字第一次被写进文件头
+
+修复 `6fbdae28a`，报告入册 `25208b40d`，处置评论 `6542734302`（round-8 报告 head=`ed4dc5ae3`：3 BLOCKER / 2 MAJOR /
+3 MINOR / 3 INFO，全部接受，三个 BLOCKER 我都在本机自证过才接受）。
+
+- **六轮同一个错误，这次写下了它的名字**：这个脚本读的是**原始行**，而它头部每一条保证都是照"我读到的是渲染器
+  产出的东西"写的。段落、CommonMark lazy continuation、行尾单 `\r` 的围栏 —— 三个变体都不需要"块"就能把坏引文
+  摆在读者眼前，而检查照样打印 byte-equal。补一条更宽的正则不算修：真正换掉的是**规则的类型**——从"块要记账"
+  换成"**标签块之外不允许出现与正本连续 24 字符以上的片段**"（逐行 LCS），外加"文档里有 CR 就拒绝判定"。
+  承认自己读不到渲染结果，比再宣称一次封闭有用。
+- **我发布的两个数字被证实是错的，都在三处正文向前退休**：① 聚合 `+856 −0 / 7 paths / 14 commits` 属于
+  `960b1886b`，`01a3ff68d` 实为 `+1203 −0 / 8 paths / 15 commits`（这条错同时进了正文、处置评论与本日志之前的条目）；
+  ② CRLF 代价 `found=0 findings=6` **从来没有被测过** —— `io.open().read()` 先替我把行尾翻译了，
+  我"转成 CRLF"的那份文件里 CR 字节数为 0。真 CRLF 在 `6fbdae28a` 打印 `found=3 findings=9`。
+- **本轮最该记住的一条不是攻击，是"打印了发现却没进总数"**：重复指认检查会把 finding 行印出来，然后让 findings
+  总数不变，于是 rc=0。**一条不计入退出码的发现比没有检查更糟**，因为令牌看着吓人、退出码说没事。
+  顺带把"复制的行落在窗口外且不含词表词 ⇒ 永远不可见"这个构造性盲点也堵了（改为全文件计数）。
+- 控制项复跑：干净文档 rc=0（`quotes=2 drift=0` / `found=3 pinned=6 findings=0`）、"老化出窗口但仍在文件里" rc=0、
+  round-7 全部攻击仍红。**下一轮该攻我本轮新加的三条规则**：LCS 阈值 24、注释区间扫描、遇 CR 拒绝判定——都还没被审过。
