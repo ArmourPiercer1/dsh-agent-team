@@ -51,15 +51,29 @@ export interface ReviewDeferStore {
  * with case `c` and root `a` with case `b::c` produce the same string, which is a cross-root mute built out of
  * two legitimate ids. Minted ids never contain `:`, so nothing in this tree reaches it, but a claim of
  * "unrepresentable" has to survive the alphabet it states, and a length prefix makes it true for every input
- * the pattern accepts. `a6-pr4-review-defer.test.ts` pins the reviewer's collision pair to two distinct slots.
+ * the pattern accepts. `a6-pr4-review-defer.test.ts` drives exactly that pair — root `a::b` with case `c`
+ * against root `a` with case `b::c` — asserts two distinct slots, and carries the old `root::case#leg` join in the
+ * same leg as a counterexample, so the pin dies by name if the length prefixes are ever removed.
  *
  * INPUT CONTRACT, because round-5 finding R5-3 on #509 named this as the lane's last entry point that
  * evaluates a caller's `toString`: `key` must already be a key that `reviewDeferKeyOf` or `setReviewDefer`
- * accepted. A hostile member (an object with a throwing `toString`, an array where an id belongs) makes this
- * function throw rather than answer, and that is deliberate — a garbage key has NO correct slot, and inventing
- * one (a fixed sentinel, say) would collide two unrelated cases into one mute. Every in-lane call site passes a
- * validated key, and the gate's panic path absorbs a direct misuse as `WAKE_DECISION_FAILED` with the store
- * byte-intact; the leg that pins this contract drives the throw so the sentence is not the only enforcement.
+ * accepted. This is a PRECONDITION on callers, not a validation layer, and round-6 finding R6-2 on #509 caught
+ * this paragraph claiming otherwise, so the two halves are now stated separately and each is driven by a leg.
+ *
+ * A member that EVALUATES — an object with a throwing `toString` in any of the three positions — makes this
+ * function throw rather than answer. That is deliberate: a garbage key has NO correct slot, and inventing one (a
+ * fixed sentinel, say) would collide two unrelated cases into one mute.
+ *
+ * A member that only stringifies — an array where an id belongs — is NOT refused, and what it produces is worse
+ * than a shrug. A one-element array collides EXACTLY: `['x']` answers the same slot as `'x'`. A longer array
+ * produces a slot whose width field is a lie, because `value.length` on an array counts ELEMENTS, not characters:
+ * `['a','b']` answers `2:a,b` where the text is three characters, while `'a,b'` answers `3:a,b`. So the two land
+ * apart for the wrong reason, and the property the length prefix exists to provide — the prefix is the field's
+ * length, so a reader can locate the boundaries without trusting the separator — is simply absent for that input.
+ * Neither collision is detected or prevented here, and that is the honest statement: containment comes from the
+ * accepted entry points that validate ids before any slot is computed, and a caller that skips them gets a
+ * silently shared mute instead of an error. Every in-lane call site passes a validated key, and the gate's panic
+ * path absorbs a direct misuse as `WAKE_DECISION_FAILED` with the store byte-intact.
  */
 export declare function reviewDeferEntryId(key: ReviewDeferKey): string;
 /**

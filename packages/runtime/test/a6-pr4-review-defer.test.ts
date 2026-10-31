@@ -817,13 +817,66 @@ describe('A6-PR4/V — the vocabulary is closed, reachable, and not a policy eng
     }
     expect(() => reviewDeferEntryId(key({ legOrdinal: { toString: throws } as never }))).toThrow('hostile')
     expect(() => reviewDeferEntryId(key({ approvalCaseId: { toString: throws } as never }))).toThrow('hostile')
-    // The boundary is stated on both sides, because "hostile input throws" is only true of a value that
-    // evaluates something. An array stringifies, and the slot it produces is still distinct:
+    // R6-6 on #509: the contract names THREE members and this leg drove two. `rootSessionId` is the member whose
+    // absence from a slot is the cross-root mute this whole lane was built to refuse, so leaving its arm undriven
+    // meant the sentence "every member throws" was enforced on two thirds of the input — and the mutation that
+    // swallowed a hostile root id survived the whole suite. Now every position the contract names is driven.
+    expect(() => reviewDeferEntryId(key({ rootSessionId: { toString: throws } as never }))).toThrow('hostile')
+    // The boundary is stated on both sides, because "hostile input throws" is only true of a value that EVALUATES
+    // something. R6-2 on #509: the store doc used to say an array throws. It does not — it stringifies — and the
+    // slot it produces is not merely "still distinct from other arrays", it is the slot of the joined string. That
+    // collision is pinned here rather than described, because the honest reading of this function is that it
+    // neither detects nor prevents it: containment lives in the validating entry points, not in the derivation.
     const arrayish = reviewDeferEntryId(key({ approvalCaseId: ['a', 'b'] as never }))
     expect(arrayish).toContain('2:a,b')
+    expect(reviewDeferEntryId(key({ approvalCaseId: ['x'] as never })), 'a one-element array IS the string slot').toBe(
+      reviewDeferEntryId(key({ approvalCaseId: 'x' })),
+    )
+    // A longer array is the interesting half, and the first draft of this assertion got it wrong by assuming the
+    // two must land together: they do not, because `value.length` on an array counts ELEMENTS, so the width field
+    // no longer describes the text it guards. The slots differ for a corrupt reason, not a sound one — which is
+    // exactly why the derivation must not be mistaken for a validation layer.
+    expect(reviewDeferEntryId(key({ approvalCaseId: ['a', 'b'] as never }))).toBe(
+      `${String(ROOT.length)}:${ROOT}|2:a,b#${String(LEG)}`,
+    )
+    expect(reviewDeferEntryId(key({ approvalCaseId: ['a', 'b'] as never }))).not.toBe(
+      reviewDeferEntryId(key({ approvalCaseId: 'a,b' })),
+    )
+    expect(reviewDeferEntryId(key({ approvalCaseId: 'a,b' }))).toContain('3:a,b')
     // And the validated path is a function of its key: stable for the same key, distinct across cases.
     expect(reviewDeferEntryId(key())).toBe(reviewDeferEntryId(key()))
     expect(reviewDeferEntryId(key())).not.toBe(reviewDeferEntryId(key({ approvalCaseId: 'case-other' })))
+  })
+
+  it('keeps the collision pair in two slots, and carries the join that did not as its own counterexample', () => {
+    // Round-6 finding R6-1 on #509, and it is the lane's most embarrassing one: `store.ts` has said since round 1
+    // that this file "pins the reviewer's collision pair to two distinct slots". It never did. `git grep 'b::c'`
+    // across every commit of this branch's test tree is empty, and stripping the length prefixes from every string
+    // id left the whole suite at 70/70. Worse, reverting the derivation to the pre-F-6 join died on exactly one
+    // leg — the R5-3 array-format assertion — which is an incidental death, not a guard: the protection against
+    // re-opening the round-1 cross-root mute was a side effect of an unrelated test.
+    //
+    // The pair, from the round-1 review: root `a::b` with case `c`, against root `a` with case `b::c`. Both are
+    // legal under the id alphabet this lane accepts (minted ids contain no `:`, but a claim of "unrepresentable"
+    // has to survive the alphabet it states). Under the length prefix they are four distinct segments; under the
+    // old join they are one string, i.e. one team's defer muting another's.
+    const left = reviewDeferEntryId(key({ rootSessionId: 'a::b', approvalCaseId: 'c', legOrdinal: 1 }))
+    const right = reviewDeferEntryId(key({ rootSessionId: 'a', approvalCaseId: 'b::c', legOrdinal: 1 }))
+    expect(left).not.toBe(right)
+    // Each slot still carries its own root as its own segment, which is what makes a mute attributable at all.
+    expect(left).toContain('4:a::b|')
+    expect(right).toContain('1:a|')
+    // The counterexample lives in the same leg, so the reader sees what the fix bought and the pin has something
+    // to be different from. This restates the removed join locally rather than importing it: production must not
+    // grow a second, weaker derivation just so a test can call it.
+    const legacyJoin = (root: string, approvalCase: string, ordinal: number): string =>
+      `${root}::${approvalCase}#${String(ordinal)}`
+    expect(legacyJoin('a::b', 'c', 1)).toBe(legacyJoin('a', 'b::c', 1))
+    expect(left).not.toBe(legacyJoin('a::b', 'c', 1))
+    // Length prefixes carry the claim for out-of-contract strings, so drive one through a separator that is legal
+    // in neither id: `|` and `#` sit outside the alphabet, and a segment that embeds them stays in its own field.
+    const embedded = reviewDeferEntryId(key({ rootSessionId: 'a|b', approvalCaseId: 'c#1', legOrdinal: 2 }))
+    expect(embedded).toBe('3:a|b|3:c#1#2')
   })
 
   it('produces every wake reason, in both directions', async () => {

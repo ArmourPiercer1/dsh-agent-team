@@ -206,12 +206,34 @@ describe('A6-PR4/H — dormancy and the single switch, walked from disk', () => 
     // R3-4/R3-5 on #509): the plane's config keys would be spelled `reviewDeferEnabled` / `reviewDeferGate`, and a
     // screen reading only `review-defer|REVIEW_DEFER` is blind to the exact shape a flag arrives in — which made
     // the tsconfig sentence it credits ("gated by no flag of any kind") untrue for the flag half.
+    // R6-5 / R6-7 on #509, both closed at the source rather than in prose. The screen skips the test tree and the
+    // lane, so "the product" is NOT the whole walk: the round-3 body credited it with 1,464 files, which is the
+    // walk total including the test files this loop deliberately does not read. The population is therefore
+    // measured and named here instead of being asserted as a number a future commit would silently invalidate —
+    // a pinned count drifts, a pinned predicate does not.
+    const screened: string[] = []
     for (const file of walk(PACKAGES_ROOT)) {
       if (file.startsWith(LANE_DIR)) continue
       const rel = relative(PACKAGES_ROOT, file)
       if (rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`)) continue
+      screened.push(rel)
       expect(readFileSync(file, 'utf8'), `${rel} references the defer plane`).not.toMatch(/review-defer|REVIEW_DEFER|reviewDefer/iu)
     }
+    // A loop over an empty list passes, so the population is proven non-empty and proven to be a PROPER subset of
+    // the walk (R6-7: vacuating this list left the suite green in round 6).
+    const walked = walk(PACKAGES_ROOT)
+    expect(screened.length, 'the vocabulary screen read at least one file').toBeGreaterThan(0)
+    expect(screened.length, 'the screen reads fewer files than the walk visits').toBeLessThan(walked.length)
+    expect(screened.filter((rel) => rel.includes(`${sep}test${sep}`) || rel.includes(`${sep}tests${sep}`))).toEqual([])
+    // `rel` is relative to PACKAGES_ROOT while LANE_DIR is absolute, so the lane exclusion is compared in the same
+    // terms the loop uses; comparing an absolute prefix against a relative path would pass by construction.
+    const laneRel = relative(PACKAGES_ROOT, LANE_DIR)
+    expect(screened.filter((rel) => rel === laneRel || rel.startsWith(laneRel + sep))).toEqual([])
+    // And the residual is stated, not glossed: this is an enumeration of three spellings, case-insensitive, not a
+    // detector for "a flag". A plane flag named `wakeHoldEnabled` satisfies every assertion above. The claim this
+    // leg can honestly make is that no name in this vocabulary reaches the product, which is what a withdrawal of
+    // THIS plane has to mean; the general claim belongs to a config-surface audit, not to a lane hygiene spec.
+    expect('wakeHoldEnabled'.match(/review-defer|REVIEW_DEFER|reviewDefer/iu)).toBeNull()
   })
 
   it('does not touch the completion wake family, which is not this lane to quiet', () => {
