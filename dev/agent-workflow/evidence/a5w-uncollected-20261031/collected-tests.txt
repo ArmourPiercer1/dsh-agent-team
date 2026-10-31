@@ -1,0 +1,6 @@
+scripts/eb3-tool-acceptance.test.mjs
+scripts/pr-settlement-gate.test.mjs
+tests/checks/dist-placements.test.mjs
+tests/checks/eslint-node-globals.test.mjs
+tests/diag-call-chain/diag-call-chain.test.mjs
+tests/u7-3-devex/devex-integration.test.mjs

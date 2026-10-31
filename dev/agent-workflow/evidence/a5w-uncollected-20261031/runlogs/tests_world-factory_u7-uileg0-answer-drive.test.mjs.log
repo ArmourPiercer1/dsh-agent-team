@@ -1,0 +1,18 @@
+✔ boot line parses to origin + single launch token; junk and multi-token URLs refuse (0.984033ms)
+✔ token exchange rides GET /?token= and only the dsh-auth-* pair is kept (0.196372ms)
+✔ answer RPC is a client-request envelope with the generated wire args {agentId,callId,answer} (0.170483ms)
+✔ BAD_ANSWER preflight (service index.ts:176-182): each question exactly once, else zero wire (0.238341ms)
+✔ answer outcomes classify by the SERVICE law, never optimistic success (0.263308ms)
+✔ mux open frame for $events and frame recognition (stream-protocol.ts:7-15,53-60) (0.170072ms)
+✔ waterfall answer settles through POST /api/$events/result with exactly {clientId,eventId,outcome} (0.097715ms)
+✔ end-to-end offline drive: boot line → 303 cookie → waterfall answer → late-answer RPC (0.270853ms)
+✔ attachWait witness frame carries the generated wire args (0.220608ms)
+✔ item-wrapped downlink frames are accepted at both predicates (live wire law) (0.160323ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.438695

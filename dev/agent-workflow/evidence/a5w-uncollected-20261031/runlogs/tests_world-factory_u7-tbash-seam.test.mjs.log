@@ -1,0 +1,17 @@
+✔ u7-tbash seam (a): no flags resolve byte-for-byte to the #415 defaults (0.967362ms)
+✔ u7-tbash seam (b): flags override budget, ledger and evidence dir (0.359451ms)
+✔ u7-tbash seam (c): --evidence without the other two flags is refused (0.385069ms)
+✔ u7-tbash seam (d): paths outside the repo or inside the closed lane are refused (0.370582ms)
+✔ u7-tbash seam (e): a ledger already at budget is refused before the next boot (0.388997ms)
+✔ u7-tbash seam (f): F1 flagged --budget above the committed cap is refused; the override is env-named and self-disclosing (0.541134ms)
+✔ u7-tbash seam (g): F2 the budget ledger must live in the SAME lane as --evidence (0.434692ms)
+✔ u7-tbash seam (h): F3 flagged runs refuse a reused --evidence dir and cite only runId-stamped files they wrote (127.417061ms)
+✔ u7-tbash seam (i): F4 --dry-run without --fixtures is refused by name, never reading argv[0] (63.080663ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 283.486258
