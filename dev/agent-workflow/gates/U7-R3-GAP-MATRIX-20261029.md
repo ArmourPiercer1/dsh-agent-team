@@ -35,3 +35,10 @@ web_search（L4）：**纳入承诺范围**。需 Provider 集成工作包（"we
 L3: ①10 + ①/③2 + ②5 = 17 ✓   L4: ②6 + ③1 + ④5 = 12 ✓   合计 29 ✓
 ## 执行序（USER-RULING-20261029B 已批准）
 ①C1 包（无 boot）可先行，**但不产生任何 L3 提升**。提升全在 boot 包（类别②+①/③原生臂，一次预算裁决）。试点建议（外部审查门禁 3）：先取 team_glob（①+C2）与 job_list（①+C2）两格走通"C1→分支 C2→合并后跨 Family C2→台账升级"全链，再批量。④逐项产品裁决，未裁决前台账不动。
+
+## Dated 台账更新（2026-10-31T05:39Z，boot 波次 a5w-bootwave 收束条目；主 Agent 落笔）
+- **read_image：L3 = PROVEN，L4 = PROVEN**（真实 Host 双跑独立复现：bw9 run u5-u7r3-bootwave-bw9-2026-10-31T05-38-21-670Z + bw10 run u5-u7r3-bootwave-bw10-2026-10-31T05-39-04-663Z；六格全绿×2；证据=c2/L4-RECEIPT-read-image.md + run-bw9/bw10.json + logs + RCA-1..8 链条）。L3 双臂在案：kernel-admission 臂（bw8/9/10）+ control-bridge 臂（bw6/7，#510 后语义）。
+- 修复链（全部已合并 master）：#508 subtreeContains 绑定面 → #510 PA-Control 桥校验器 seam → #511 内核授予审计行装配面（观测白名单）。
+- 波次预算终账：C2 8/8（含披露 bw6x misfire）+ 机动 2/2（bw7/bw8，有效格）+ 用户新批 2/2（bw9/bw10）=10 starts；池=0。
+- ui:live-root-law：NOT_REACHED 维持 L2-as-is 披露（非 read_image 义务格）。
+- 本条目=逐工具验收账翻转的具名承载；G5/发布级结论不在本条目范围。

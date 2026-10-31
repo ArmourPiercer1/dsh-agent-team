@@ -130,3 +130,7 @@ B 册（`BOOT-BUDGET-20261029B.md`，24 starts）于此封卷：已用 12/24（p
 - 授权来源：同上批 (b)=read_image L4 收据独立复现跑（bw9 已九绿：u5-u7r3-bootwave-bw9-2026-10-31T05-38-21-670Z；本跑=独立复现格，收据翻台账前置）。
 - boot tree=同 bw9（task/a5w-bootwave-20261030 当前 head，含 bw9 证据 commit；套件与产品码零变）。判据=九绿复现（允许 ui:live-root-law NOT_REACHED）；任何 FAIL=具名 RCA，不自动追加。
 - 预算账：账本现 7 行 → --max-host-starts 8。本批 2/2 用尽后池=0，再启动需用户新裁。
+
+## bw9/bw10 回执（批 2/2 用尽，dated 2026-10-31T05:39Z）
+- bw9=1 start（账本行 7）：九绿，L4 三格收口首跑。bw10=1 start（行 8）：九绿精确复现（同对象 sha，异 world/ids）。批 2/2 用尽，**池=0**；L4 收据=c2/L4-RECEIPT-read-image.md。
+- 两跑零 FAIL 零 RCA 追加；泄漏检查双绿。再启动（含任何复验）需用户新裁。
