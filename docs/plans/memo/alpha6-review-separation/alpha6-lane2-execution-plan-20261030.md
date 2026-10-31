@@ -48,3 +48,63 @@
 2. 共享 store 在本沙箱只读 ⇒ Lane 2 用工作区内 store 副本，绝不写 `~/.local/share/pnpm`。
 3. 真实 Host：**本轮零启动**。开工前置 = 跨 clone 端口分区共识（Lane 2 拟用 13000-13099 段）+ BOOT-BUDGET C-册预登记行 + 宿主树供给（本机 `/srv` 基线缺失，需从 `ArmourPiercer1/deepseek-harness` 分支 `stable-3-0.2.0-rc.2` 克隆至 `tests/deepseek-harness-test-use`）。
 4. `:3080`、用户正式 DSH_HOME、Lane 1 目录、上游 pristine 树：绝不读写。
+
+---
+
+## 修订记录（2026-10-31 真实 UTC，用户裁决驱动；原文 §0–§4 不改写）
+
+裁决正本 = 同目录 `rulings-20261031-timed-wake-and-pr-i1.md`；能力边界变化 = 同目录
+`s0-addendum-timed-wake-carrier-20261031.md`（新增命题 N-1）；阻塞台账 =
+`dev/agent-workflow/blockers/alpha6-pr-i2-timed-wake-carrier-20261031.md`。
+
+### R-1 依赖图变化（新增一条阻塞边，重述一条既有边）
+
+```
+新增：CORE_SEAM_BLOCKER(alpha6-pr-i2-timed-wake-carrier) --阻塞--> PR-I2 的 floor-delayed 定时唤醒子集
+重述 **2026-10-31 同批裁决 §3**（round-3 G-R3-7 修正归因：BL-01 的 OPEN RELEASE BLOCKER 状态与「阻塞发布」是既有记录 `ALPHA5-EFFECTIVE-BACKLOG.md:13`；**PR1-allow 这条边**与「开发/审查不受阻」豁免出自本轮裁决——此前计划把 PR1 的 allow 门记在 G-5、把 BL-01 指向 PR-I1/PR-I2）：BL-01(OPEN RELEASE BLOCKER, Alpha.5) --阻塞--> PR1 的 allow 接线与发布验收（开发/审查不受阻）
+不变：PR-I1a --无前置--> 可开工（本轮已开始）
+不变：PR-I1b --前置--> 具名 Center-Interface PR + ARC-A override + 与 Alpha.5 的文件所有权协调；可与 I1a 并行开发
+不变：PR5′  --前置--> 仅读现有真实事实；优先级低于 PR-I1
+不变：真实 Host C2 --ENV_BLOCK--> 最终候选 HEAD 的单所有者运行（资源隔离未证明前不计 PASS）
+```
+
+### R-2 §1 表的编号映射（消歧，不改内容；历史编号不得静默重定义）
+
+| 原 §1 行 | 当前编号 | 变更性质 |
+| --- | --- | --- |
+| PR2′（含 `ReviewAssignment` fact + 投影 booking） | **PR2′（#507 已交付待审，Draft + DO-NOT-MERGE，未合并）** + **PR-I1a（新名，本轮开工）** | PR-I1a = 原 PR2′ 行中被递延的"持久化 Writer"那一半，正式命名；不是新造历史编号 |
+| PR-I1（4 站点 role-closure 的 Mandate 准入 OR 支 + arc-a override） | **PR-I1b** | 仅编号细化以腾出 I1a；内容、受保护面、override 要求一字不改 |
+| PR-I2（`agent-bindings.mjs` 投递面 + 互斥开关） | **PR-I2（不变）**，内部区分「即时唤醒子集」与「定时唤醒子集」 | 后者被 R-1 的 blocker 停掉；**不新建 PR 编号**；PR-I2 的 PR 描述必须显式声明只含即时唤醒子集 |
+| PR1 / PR4 / PR5 / PR6 | 维持原编号；PR5′ = 只读展示收窄版 | BL-01 与 C2 的门槛按裁决重述，语义不变 |
+
+### R-3 本轮实际交付（替换 §1 末行"本轮实际交付"的时点陈述，原文保留）
+
+已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 路径 / 无消费者无接线（`ALLOWED_CONSUMERS=[]`）/ 四个新增休眠 lane 模块 `packages/runtime/review-defer/**`（**universe 明示**：tracked 路径按 #509 head `ff7f4b48b` 实测 = 4——`gate.ts`/`index.ts`/`store.ts`/`types.ts`；同一路径在本 lane 的其它 worktree 里根本没检出（0），所以任何「这个 glob 匹配 N 个」的句子都必须说自己数的是哪个 head、tracked 还是磁盘——round-4 F-R4-10 报的 20 路径在我能到达的三个位置上没有一个复现）——「零生产文件」的旧说法已于 2026-10-31 在 #509 正文撤回，见其评论 `6540728163`，round-3 G-R3-5；三轮独立审查
+闭合中）。进行中：**PR-I1a**（受治理的 `ReviewAssignment` 唯一持久化 Writer）。并行允许：PR-I1b 的接口设计与
+安全负控（其受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权）。受阻：PR-I2 定时唤醒子集（R-1）。
+
+### R-4 PR-I1a 的验收判据（用户裁决六条，逐条必须有测试）
+
+创建/转交/退休的持久化写入与恢复；Epoch/CAS + 幂等 + 并发冲突 + 写入失败的明确处理；ledger 所有权校验 + 跨
+Case/Team 隔离 + 损坏记录诊断；host/client factType-category 一致 + 重启后 Projection 重建；**Assignment 只是
+处理者归属事实，绝不是授权凭据**；条件无法证明时**退回 Leader**，禁止由空 Assignment 或缺失记录推导出允许执行。
+硬约束：复用 TeamDomain Ledger / 写入序列 / Team 锁 / 投影；**不建第二套审批 Ledger**；factType 新增必须 host +
+client 同 commit 落账；默认关闭，未启用 Team 行为逐字节不变。
+
+### R-5 风险台账（ROUTER_RULES §6）：#513 pinned-quote 校验器可被同 commit 关掉——2026-10-31 接受为已知残差
+
+- **Gate**：ci-pr-gate leg `verbatim-quotes`（必需 leg，非 OPTIONAL_BY_DEFAULT）+ 其校验器
+  `dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs`。
+- **风险点**（round-11 F-R11-3 MAJOR，作者已接受；round-14 复现）：**被打分的那份 checker 与被它打分的
+  内容在同一个 commit 里可编辑**。把 `NEAR` 从 56 抬到 124、把 leg 从 LEG_ORDER 摘掉、或把校验器换成一个
+  只打印 `quotes=2 drift=0 verdict=ok` 的桩，都能让本应红的文档变绿；汇总行的 `verifier_sha256=`
+  **不验证任何东西**——它哈希的是"当前正在跑的那份字节"，因此钉住的是结论，不是判断。
+- **相关文件 / 证据位置**：校验器头部 RESIDUAL RISK 段（同一措辞三处：本 memo、leg 注释
+  `scripts/ci-pr-gate.mjs`、校验器头部）；复现在 round-11 攻击集与 round-14 攻击集的
+  `x_stub_verifier` / `x_near_switch` 两例（各自打印被改字节与 rc 翻转；按 lane 约定证据留在 scratch，
+  不入 tracked 内容，结论与可复跑用例名登记在此行与校验器头部）。
+- **当时判定"可控"的理由**：round 11 的结论成立且被接受——**仓库内不存在防线**（PR 内的任何检查都可被该
+  PR 编辑，自指即无穷回归；自哈希或由同一文件校验签名只是掩盖回归，不是消除）。唯一真实的控制是带外动作：
+  对 `scripts/ci-pr-gate.mjs` 与 `dev/agent-workflow/evidence/alpha6-513/` 施加 branch protection +
+  `CODEOWNERS` 审查。**这是托管远端上的运维者动作，本 lane 尚未执行，也不得宣称已经就位。**本控制真正
+  拥有的是确定性：同一字节必得同一结论，任何人可复跑，所以绿可被核查——但不可被伪造这一点，它没有。

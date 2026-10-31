@@ -117,6 +117,7 @@ const LEG_ORDER = [
   'graph-parse',
   'kit-home-guard',
   'state-freshness',
+  'verbatim-quotes',
   'install',
   'blueprint-fence',
   'typecheck',
@@ -1508,6 +1509,53 @@ const LEGS = {
       detail: `pointer agrees both ways (round ${String(info.declared_round)} = newest record = last log heading), records contiguous, ` +
         `${String(info.declared_sha)} reachable (${lag}); current contract ok (phase_id ${String(cc.info.contract.phase_id)}, ` +
         `baseline ${String(cc.info.contract.baseline).slice(0, 12)}…, matrix rows ${String(cc.info.matrix_rows)} claimed ${String(cc.info.claimed_rows)}, drift ${String(cc.info.drift_paths)} path(s))`,
+    }
+  },
+
+  // PR #513 pinned-quote instrument (round 10): renders the PUBLISHING document with the repo's
+  // CommonMark parser (micromark, a direct devDependency since that rewrite) and asserts on the
+  // render — rules, threshold bounds and scope cuts are stated in the verifier's own header, so
+  // this leg adds none of its own judgment: it grades the tool's summary token and exit code.
+  // Every printed finding increments the tool's drift= and moves rc, so a token alone can never
+  // disagree with the exit status. Missing parser dependency is REFUSED with the recovery named
+  // (an unrunnable tool must not blame the product, and must not pass): --full fails undeclared
+  // refusals, so CI cannot switch it off by forgetting an env.
+  // RESIDUAL RISK, ACCEPTED AND NAMED (F-R11-3, round 11 MAJOR; also in the verifier header and in
+  // 修订记录 R-5 of docs/plans/memo/alpha6-review-separation/alpha6-lane2-execution-plan-20261030.md):
+  // THIS LEG GRADES A CHECKER THE SAME COMMIT MAY EDIT. Raising the tool's NEAR, dropping this leg
+  // from LEG_ORDER/OPTIONAL_BY_DEFAULT, or replacing the file with a stub that prints
+  // `quotes=2 drift=0 verdict=ok` all pass, and the summary's `verifier_sha256=` verifies against
+  // nothing — it hashes whatever bytes are running, pinning a verdict rather than a judgment. Round
+  // 11 proved both shapes (519-byte stub; NEAR 56→116) and round 14 re-proved them; round 11's
+  // conclusion is accepted: no in-repo defence exists, since any check inside a PR is editable by
+  // that PR, and self-hashing or a signature checked by this same file would hide the regress, not
+  // remove it. The only real controls are OUT OF BAND — branch protection plus CODEOWNERS review on
+  // `scripts/ci-pr-gate.mjs` and on `dev/agent-workflow/evidence/alpha6-513/` — which are OPERATOR
+  // ACTIONS ON THE HOSTED REMOTE THAT THIS LANE HAS NOT TAKEN; nobody may read a green here as
+  // evidence that they are in place. What the control does own is determinism: same bytes, same
+  // verdict, re-runnable by anyone, so a green is checkable even though it is not unforgeable.
+  'verbatim-quotes'() {
+    const abs = resolve(REPO_ROOT, 'dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs')
+    if (!existsSync(abs)) {
+      return { verdict: 'fail', detail: 'dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes.mjs is absent; pinned quotes cannot be unreadable and green' }
+    }
+    const r = runCommand(process.execPath, [abs])
+    const out = `${r.stdout}${r.stderr}`.trim()
+    const summary = out.split('\n').find((l) => l.startsWith('DSH-VERBATIM-VERDICT ')) ?? ''
+    if (r.code === 0 && summary.includes('quotes=2 drift=0 verdict=ok')) {
+      return { verdict: 'pass', detail: summary.slice(0, 320) }
+    }
+    if (summary.includes('verdict=unrunnable') || /ERR_MODULE_NOT_FOUND|Cannot find package/.test(out)) {
+      return {
+        verdict: 'refused',
+        refuseReason: 'verbatim-verifier-cannot-run',
+        detail: `the pinned-quote verifier could not run here — recovery: pnpm install --frozen-lockfile must have completed (the tool imports the direct devDependency micromark from the repo root): ${tail(out, 3)}`,
+      }
+    }
+    const findings = out.split('\n').filter((l) => l.startsWith('DSH-VERBATIM ')).slice(0, 6).join(' | ')
+    return {
+      verdict: 'fail',
+      detail: `pinned quotes are not green at this checkout (rc=${String(r.code)}): ${tail(`${findings} ${summary}`, 4)}`,
     }
   },
 

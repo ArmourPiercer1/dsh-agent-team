@@ -63,6 +63,9 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.5.0
+      micromark:
+        specifier: 4.0.2
+        version: 4.0.2
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
