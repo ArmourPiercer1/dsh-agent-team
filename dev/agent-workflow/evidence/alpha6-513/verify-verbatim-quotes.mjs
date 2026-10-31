@@ -58,11 +58,14 @@
  * at this rewrite against this document by this round's harness, same case geometry as round 11 (evidence
  * stays out of tracked content by lane convention; the numbers are published here so any reader can re-derive them):
  * clean max run 24; `file:line` citation 24; fragment citation 27; measured citation ceiling 44 (the whole
- * packages/…/index.ts path, F-R9-5's class) — legitimate ceiling 44; attack floor 70 (field reorder),
- * corrupted copy 112, separator swap 122, soft-wrap split 123, and the whole invisible-insertion family
- * (soft hyphen, word joiner, ZWSP, BOM, combining marks, mixed, U+3164) 123 rather than the 24–46 that
- * F-R11-2 measured under the old fold. The gap (44, 70) is measured, not asserted — 12 characters of slack
- * below the threshold and 14 above it — and insertion can no longer tune a run into it because the inserted
+ * packages/…/index.ts path, F-R9-5's class) — legitimate ceiling 44. Attack floor 68, hit by five different
+ * restylings that all cut the row into its longest cell plus the seam (every ` | ` separator → `,`; fullwidth
+ * ｜; the row as a list item; cells one per line; plain CSV), then 70 (two cells reordered), 78 (a column
+ * dropped), 112 (corrupted copy), 122 (one separator swapped) and 123 (soft-wrap split, plus the whole
+ * invisible-insertion family — soft hyphen, word joiner, ZWSP, BOM, combining marks, mixed, U+3164 — where
+ * F-R11-2 measured 24–46 under the old fold). The gap (44, 68) is measured across twenty further restylings,
+ * not asserted: 12 characters of slack below the threshold and 12 above it, and no measured restyling of the
+ * row lands inside it. Insertion can no longer tune a run into the gap either, because the inserted
  * characters are gone from both sides before measuring. A future legitimate
  * citation sharing ≥56 reader-visible characters of these lines goes red, and the answer is a re-pin with a
  * written reason or a reviewer-blessed reword — never a quiet threshold edit.
@@ -74,7 +77,10 @@
  * code points whose GLYPH paints blank while Unicode classes them as visible (U+2800 BRAILLE PATTERN BLANK,
  * private-use U+E000) hold a dense-insert run at 24 and stay green, because what a font paints is not a
  * category; `Default_Ignorable_Code_Point` does catch the ones the standard does class that way (U+3164
- * HANGUL FILLER now measures 123 → red). The scratch-pointer log check is DELETED whole: what stops being
+ * HANGUL FILLER now measures 123 → red). Two siblings added by this round's floor probe are green for the
+ * same reason and are named rather than hidden: upper-casing the row's latin letters, and writing them in
+ * fullwidth forms, each measures 24 — changing character identity is a spelling change, so neither a shared
+ * run nor a category fold sees it. The scratch-pointer log check is DELETED whole: what stops being
  * checked is the enumeration of log lines designating gitignored scratch paths (80-line window + 6 raw-line
  * pins + fold-class scan of SESSION_ROUTER_LOG.md); what replaces it is review judgment, because F-R9-6
  * showed the window was bypassable by exactly the rewrite class above while F-R9-9 showed it charged CRLF
