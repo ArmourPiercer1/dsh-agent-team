@@ -85,7 +85,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
@@ -2355,22 +2355,51 @@ interface ClosureWalk {
    *  the walk's completeness precondition, now read from the parse tree, not from a per-line regex
    *  (round 5, F-I1b5-1/S1: `import\n  ('./hidden/index.js')` split the line and the regex never saw it). */
   readonly nonStatic: readonly string[]
+  /** `${file} …` for every alias (symlink) the walk's BFS reached — an edge that resolved to a link. The walk
+   *  REFUSES it AS A SYMLINK: it never `readFileSync`es the target, so the target's bytes never enter any
+   *  verdict and the target's own path never enters any path-based judgement. Following the link and grading
+   *  what it points at while reporting the LINK's lane path is the F-I1b5-7 hole — the listing legs close the
+   *  same hole by name (an alias is not a file of the directory), this bucket closes it for edges the barrel
+   *  actually reaches. The refusal is `lstat`-driven, so it fires on an alias of ANY name in ANY directory —
+   *  it is a rule about the object kind, not a list of planted paths, and it says "is a symlink", not a
+   *  verdict about the target. */
+  readonly symlinks: readonly string[]
 }
 
 /** BFS over the REAL module edges (the `scanModuleClosure` idiom from `scripts/composition-smoke-closure.mjs`,
  *  re-established on the test side, parsed not pattern-matched): nothing here is a hand-maintained file list
  *  — the reachable set is derived from the edges the compiler itself would follow, including edges that cross
- *  a line break, sit in a subdirectory, or hide next to string literals that look like comments. */
+ *  a line break, sit in a subdirectory, or hide next to string literals that look like comments.
+ *  SYMLINKS ARE REFUSED AS SYMLINKS (F-I1b5-7): an edge that resolves to an alias is recorded and NOT read
+ *  through — the walk `lstat`s every file it reaches and never follows a link into a verdict. This is a rule
+ *  about the object kind (`lstatSync(...).isSymbolicLink()`), so it fires on an alias of ANY name in ANY
+ *  directory; it is not a list of planted paths. Until this rule the walk followed links (`existsSync` +
+ *  `readFileSync`), so an alias the barrel reached was graded on its TARGET's bytes while reported under the
+ *  LINK's lane path and its target's own path never entered any path judgement — a benign target cleared the
+ *  leg outright (measured green in a scratch clone at `aee7cec18`, 2026-11-02), which is the traversal the
+ *  listing legs close by name and this rule now closes for the edges the barrel actually loads. */
 function walkStaticClosure(entries: readonly string[], extensions: readonly string[]): ClosureWalk {
   const seen = new Set<string>()
   const unresolved: string[] = []
   const external = new Set<string>()
   const nonStatic: string[] = []
+  const symlinks: string[] = []
   const queue = [...entries]
   while (queue.length > 0) {
     const file = queue.shift() as string
     if (seen.has(file)) continue
     seen.add(file)
+    // Refuse an alias before reading through it. `lstatSync` grades the LINK (it does not follow), so this is
+    // a rule about the object kind and not about any particular target or name: a symlink the walk reaches is
+    // recorded and NOT scanned, so its target's bytes are never graded and its target's path never enters any
+    // path judgement — the walk declines to travel an edge whose target is an alias instead of a file. This
+    // closes the same hole the listing legs close by name (`listDirectoryContentRecursively`), for the edges
+    // the barrel actually loads (F-I1b5-7). A missing file falls through to `scanFile`, which reds as usual.
+    const link = lstatSync(file, { throwIfNoEntry: false })
+    if (link?.isSymbolicLink()) {
+      symlinks.push(`${relToRepo(file)} is a symlink — the closure reaches it over a real import edge but refuses to read through an alias: what it points at is outside the lane this walk attests to, and grading the target's bytes under the link's path is exactly the traversal F-I1b5-7 forbids`)
+      continue
+    }
     const scan = scanFile(file)
     unresolved.push(...scan.parseErrors)
     nonStatic.push(...scan.nonStatic)
@@ -2392,7 +2421,7 @@ function walkStaticClosure(entries: readonly string[], extensions: readonly stri
       else unresolved.push(`${scan.label}:${edge.line} ${edge.kind} imports '${edge.specifier}', which resolves to no file`)
     }
   }
-  return { files: [...seen].sort(), unresolved, external: [...external].sort(), nonStatic }
+  return { files: [...seen].sort(), unresolved, external: [...external].sort(), nonStatic, symlinks }
 }
 
 /** Enumerate the CONTENT of a directory recursively — every file, unfiltered (F-I1b6-3). The previous
@@ -2560,6 +2589,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
     expect(walk.nonStatic, `the decision plane grew an edge the walk cannot resolve to a literal specifier, so a static closure can no longer name what it reaches:\n${walk.nonStatic.join('\n')}`).toEqual([])
     expect(walk.unresolved, `a relative import resolves to no file (or a file no longer parses) — the closure would silently stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
+    expect(walk.symlinks, `a lane-source import edge resolves to a symlink — the closure refuses to read through an alias, so its target is never graded as lane source (F-I1b5-7):\n${walk.symlinks.join('\n')}`).toEqual([])
     for (const laneDir of ['review-assignment', 'review-mandate']) {
       // The expectation is directory CONTENT, unfiltered (F-I1b6-3): a `.cts` module dropped next to the
       // others must be reached by the walk or this leg reddens — under the old `['.ts','.mts']` filter it
@@ -2589,6 +2619,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     // A future import of any other plane — sandbox-provider, control, blueprint/policy writers, or a builtin
     // with I/O — reddens THIS leg by name, which is the point of freezing it now.
     const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
+    expect(walk.symlinks, `a lane-source import edge resolves to a symlink — the closure refuses to read through an alias, so its target is never graded as lane source (F-I1b5-7):\n${walk.symlinks.join('\n')}`).toEqual([])
     expect(outsideReachablePlanes(walk.files), `the decision path now reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])
     expect(walk.external, `the decision plane imports external modules beyond the closed allow-list ${ALLOWED_EXTERNAL_MODULES.join(', ')}:\n${walk.external.join(', ')}`).toEqual([...ALLOWED_EXTERNAL_MODULES])
     const scans = walk.files.map(scanFile)
@@ -2606,6 +2637,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
     // not know are not caught by either. What this net independently catches is
     // a forbidden surface spelled in code WITHOUT being imported as an edge: a call, a string, an alias.
     const walk = walkStaticClosure(DECISION_ENTRIES_SRC, LANE_SRC_CLOSURE_EXTENSIONS)
+    expect(walk.symlinks, `a lane-source import edge resolves to a symlink — the closure refuses to read through an alias, so its target is never graded as lane source (F-I1b5-7):\n${walk.symlinks.join('\n')}`).toEqual([])
     const hits = vocabularyHitsOfFiles(walk.files, FORBIDDEN_DECISION_PLANE_VOCABULARY)
     expect(hits, `the reachable decision-plane source names policy-writing or confinement surfaces:\n${hits.join('\n')}`).toEqual([])
   })
@@ -2620,6 +2652,7 @@ describe('P-1 (A5↔A6, PR #531 invariant): an approval decision cannot reach po
       expect(existsSync(entry), `the built counterpart ${relToRepo(entry)} is missing — this leg measures the SHIPPED graph, so a missing mirror is a red leg, not a skipped one`).toBe(true)
     }
     const walk = walkStaticClosure(DECISION_ENTRIES_DIST, LANE_DIST_CLOSURE_EXTENSIONS)
+    expect(walk.symlinks, `a built lane import edge resolves to a symlink — the install surface refuses to read through an alias, so an emitted file's target is never graded as lane code (F-I1b5-7): the link, not its payload, is refused:\n${walk.symlinks.join('\n')}`).toEqual([])
     expect(walk.nonStatic, `the built decision plane grew an edge no static walk can resolve:\n${walk.nonStatic.join('\n')}`).toEqual([])
     expect(walk.unresolved, `a built relative import resolves to no built file (or a built file no longer parses) — the dist closure would stop short:\n${walk.unresolved.join('\n')}`).toEqual([])
     expect(outsideReachablePlanes(walk.files), `the BUILT decision path reaches outside the lanes + frozen contracts:\n${outsideReachablePlanes(walk.files).join('\n')}`).toEqual([])

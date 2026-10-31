@@ -538,3 +538,48 @@ symlink 两问（指向干净目标 / `tsc` 对 symlink 的 dist 行为，F-I1b5
   腿 `201`；12 文件 family `471`；runtime typecheck rc=0；eslint（spec 路径）rc=0；`docs-sync --check` 与
   `eb3-evidence-guard --new-since HEAD~1` 均 rc=0；`git diff --name-only HEAD~1 HEAD` 只有 spec 与本 memo。
   scratch 全部留在 `.artifacts/alpha6-s0/pri1b-fix8/`（日志/克隆/实种字节），`packages/**` 零残留（p4t6 trap 避开）。
+
+## 14. dated 2026-11-02（fix10：闭包行走的纵深加固——`walkStaticClosure` 现在直接拒绝 symlink **作为 symlink**；加一枚拒绝、不撤一句；`-t` 教训落成方法律）
+
+fix9 的补测（scratch 克隆、全套 80 腿）把三枚 symlink 的事实钉死：**referenced+越界 `node:fs` 目标 rc=1、
+referenced+干净 `node:crypto` 目标 rc=1、orphan+干净目标 rc=1**——全套运行里 install-surface 的列举腿对
+任何 symlink 一律按名拒绝，与目标内容、是否被引用无关。此前那句"FACT B 绿"是 `-t "BUILT barrels"` 过滤
+运行的 artefact：plant 2b 在原 spec 上复现——过滤跑打印 `1 passed | 79 skipped` 绿，同一字节全套跑
+`2 failed`。过滤把列举腿排除在外，只剩闭包行走，而行走当时确实**跟随**被引用的链接、把目标字节按链接的
+lane 路径定级。**方法律（规则落纸）：`-t` 过滤运行不是裁决；任何守卫结论必须来自全套运行**——本轮与 fix9
+的全部裁决都出自无过滤全套；`-t` 若用于隔离某条腿，其输出只能标注为 leg-isolation 证据，裁决必须由
+同字节的全套运行另行建立。
+
+- **本轮真正买的东西（单点拒绝）**：fix9 的腿隔离证据显示，把那枚列举腿单独去掉后，被引用 symlink（干净
+  `node:crypto` 目标）的闭包行走自己会绿（rc=0）——install-surface 列举腿是当时**唯一**拒绝 referenced
+  symlink 的腿，整条界面立在一枚腿上。本补丁撤掉这个单点依赖：`walkStaticClosure` 对每个走到的条目先做
+  `lstatSync(file, { throwIfNoEntry: false })`，`isSymbolicLink()` 即记录并**不读取**——点名链接本身、声明
+  "拒绝穿过 alias 读取"，目标字节不进任何定级、目标路径不进任何按路径的判断；四枚
+  `expect(walk.symlinks, …).toEqual([])` 分别落在三条 src 侧腿与 BUILT-barrels 腿（spec **+36/−3**，断言计数
+  不动：新断言全部长在同一批既有腿里）。规则按对象种类判（lstat 作用于每条被走到的边），不 keyed 到任何
+  名字或目录，不含攻击拼写枚举、不含硬编码路径清单；**只加一枚拒绝、不撤任何一句**——三条被删的行各自被
+  其超集替换（import 行、注释行、return 行），没有任何既有期望被放宽。
+- **新规则的五枚全套实测（scratch 克隆 `--local --no-hardlinks`；每个 rc 都出自无过滤全套）**：
+  (a) referenced 链接替换 barrel 导入的 `dist/…/review-mandate/plan.js`（干净 `node:crypto` 目标）**rc=1、
+  3 failed**——**BUILT-barrels 腿在 fix9 同款实种下本为绿，现在直接红**，点名
+  `…plan.js is a symlink — … refuses to read through an alias`；install-surface 列举腿与 scanner 自校腿的
+  clean-control 下限（脚本计数 32≥33：plan.js 不再是普通文件，仪器自己发现少了一枚被扫对象）同红；
+  (b) 同款换 `node:fs` 越界目标 **rc=1、3 failed** 同三条腿——行走腿拒的是**链接而非 payload**，目标字节
+  从头到尾未被读取、未被定级；(c) 链接落在**新建子目录** `r10sub/nested.js`、经真实 barrel 边到达 **rc=1、
+  2 failed**（行走腿+列举腿各自点名）；(d) 链接名 **`we!rd name$01.js`**（怪名+空格+特殊字符）**rc=1、
+  2 failed** 同两条腿——(c)(d) 合证规则不 keyed 到名字或目录；(e) 全部恢复后的干净树 **rc=0、80 passed**
+  （克隆基线同 80/80）——补丁不给干净树添任何红。每枚实种当场 lstat `isSymbolicLink=true isFile=false`，
+  恢复后复验 `isFile=true` 且 sha256 对账 MATCH（plan.js `b223705b…`、index.js `c636b200…`）。实种自身的课
+  也记：该 barrel 的 EOF 无换行，第一次追加的边线并进 `//# sourceMappingURL` 注释行、对行走器不可见（首跑
+  只红列举腿）——边线必须经 parser-可见断言（独立成行）后才允许把红腿名当规则生效的证据。
+- **F-I1b5-7 的地位不变**：它由 §13 的实测关闭，**不因本补丁重开，也不靠本补丁关闭**；「界面律实测成立，
+  规则一字不扩」原句保留——那句话对它的轮次为真（当时的关闭由测量偿还）。本节的含义只有一条：同一界面律
+  如今在闭包行走里有第二枚自己的拒绝面，列举腿若被削弱，行走不再独自沉默——纵深的价格（一枚 lstat 规则 +
+  四枚腿断言）已按 fix9 的估价付清。
+- **门（真实 worktree，commit 后复跑）**：spec `Tests 80 passed (80)` rc=0（计数不动——断言在既有腿内）；
+  四文件 authored `201`；12 文件 family `471`；runtime typecheck rc=0；eslint（spec 路径）rc=0；
+  `docs-sync --check` 与 `eb3-evidence-guard --new-since HEAD~1` 均 rc=0；降级臂 A（藏 runtime）
+  `73 passed | 7 skipped (80)` rc=0、臂 B（藏 capture）`7 failed | 73 passed (80)` rc=1，restore 后
+  capture sha `bb0b0b9e…` 复验；`git diff --name-only HEAD~1 HEAD` 只有 spec 与本 memo。scratch 全部留在
+  `.artifacts/alpha6-s0/pri1b-fix10/`，真实 worktree `packages/runtime/dist` 逐字节同摘要（名单
+  `5321132607…`、内容 `725e510e35…`），`packages/**` 零残留。
