@@ -238,3 +238,34 @@ floor-delayed 载体不受本节任何影响：以上全部发生在"写已经�
 两条都跑完之前，接线代码里按本仓先例写 `{ global: true }`，并把这条理由写在注释里指向本 memo，而不是指向我的记忆。
 
 **授权边界**：开发授权，非合并授权，非生产启用，非放宽门禁。
+
+## 9. dated 2026-10-31：§8.5 那六条腿**在本机跑不了**——这是环境缺口，写清楚它挡什么、不挡什么
+
+实测（绝对路径 + 原样错误，不粉饰）：
+
+```
+$ ls -d .worktrees/alpha6-pri2/tests/deepseek-harness-test-use
+ls: cannot access '...': No such file or directory
+$ ls tests/homes            # 本 worktree 与 lane 根都查过
+ls: cannot access 'tests/homes': No such file or directory
+$ ls -d /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness
+No such file or directory
+```
+
+`tests/paths.mjs` 在（版本 pin 读得到），但 TEST_METHODS §2/§5 的**运行时检出本体不存在**，而它唯一的来源——共享
+只读 baseline `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`——这台机器上没有。于是：
+
+- **挡住**：L-1a/L-1b（订阅能否收到自己域的写、`global` 到底改变什么）、L-3 的包含性与自有失败计数、
+  L-4 的忙等回归（要真实写链才谈"下一次同域 put 被推迟"）、L-5 的跨域次序实测——即 §8.5 里所有**需要真实宿主
+  进程**的腿。分类上这是 **环境入口缺口**，不是 `CORE_SEAM_BLOCKER`：按 2026-10-31 裁决一，`CORE_SEAM_BLOCKER`
+  只限 PR-I2 的 floor-delayed timed-wake 载体；本机缺检出**不新增**任何 blocker 类目，也不构成改宿主的理由。
+- **不挡**：不需要宿主进程的部分——判定核（给定四元组 + 耐久 wake 记录，判"该醒/该忽略"与闭合理由码）、
+  默认关时的字节等价、无时间源 ⇒ `TIMED_WAKE_UNAVAILABLE` 拒绝路径、`typeof ctx.on === 'function'` 缺失 ⇒
+  拒绝并点名。这些在 `packages/*/test` 的既有 vitest 世界里就是可测的。
+- **因此这条 memo 强制的分解**：立即唤醒子集拆成 **(a) 纯判定核 + 其单测（本 lane 现在能做）** 与
+  **(b) 订阅接线（等 L-1a/L-1b 先跑，跑不了就不接线）**。(b) 不得用"假定 `global` 语义"冒充已验证——上一节
+  已经为此把 L-1 拆成两条腿。缺 (b) 的运行时证据时，正确的产物是**拒绝接线并点名这条环境缺口**，
+  而不是先写接线再补一个跑不到的测试。
+
+谁在别的机器上补齐这六条腿，请连同**它跑在哪个检出、哪个 DSH_HOME、哪个 commit** 一起交；`ENV-REFUSED` 不是
+PASS，"我本地能跑"也不是答案（同一份 memo 就是为这个区别写的）。
