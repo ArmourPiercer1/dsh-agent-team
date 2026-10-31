@@ -93,6 +93,19 @@ const FACT_TYPE_CATEGORY: Readonly<Record<string, LedgerCategoryValue>> = {
   // discriminator distinguishes the Root entries) → the existing `team`
   // category (no new category — plan §15.7).
   'team-root-work-delivered': 'team',
+  // ALPHA6-PR2' (Lane 2): mirror of the host category map, in the SAME commit as the host
+  // registration in `projection-source.ts` — the client's ledger summary must classify the row exactly
+  // as the host's fold does, and `a4pr0a-fact-type-closed-set.test.ts` C3 compares the two maps' KEY
+  // SETS, so the VALUE is pinned by this file's own test (`a6-pr2: assignment rows classify as team
+  // lifecycle and badge nothing`). The category is `team`, never `control`: the frozen description of
+  // `control` is "control requests, decisions, consumption, and durable authorization grants", and an
+  // assignment is none of those four — it records WHO IS EXPECTED TO LOOK, and grants nothing. The three
+  // rows therefore enter the pairing switch NOWHERE below, exactly like `artifact-read-granted` and
+  // `control-escalation-recorded`: no pending count can move because of them, and
+  // `pendingControlCount` is computed from `control-request-recorded` alone.
+  'review-assignment-created': 'team',
+  'review-assignment-transferred': 'team',
+  'review-assignment-retired': 'team',
   'provision-member-instance': 'member',
   'member-lifecycle-changed': 'lifecycle',
   'team-message-delivered': 'message',

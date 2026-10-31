@@ -31,10 +31,35 @@ const RUNTIME_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LANE_DIR = join(RUNTIME_ROOT, 'review-mandate')
 const PACKAGES_ROOT = join(RUNTIME_ROOT, '..')
 
-/** Production source files that may import the lane. Empty until PR-I1 wires
- *  it — and PR-I1 must arrive WITH its Center-Interface ledger override, its
- *  own tests and this list updated in the same change, never as a stray edit. */
-const ALLOWED_CONSUMERS: readonly string[] = []
+/**
+ * Production consumers of the delegation vocabulary. One entry, added by Alpha.6 PR2′ (#507) — the first
+ * consumer PR0 has ever had, and the reason this list exists instead of a plain ban: a consumer is named
+ * in the PR that adds it, and everything unnamed stays a failure. PR-I1 still has to arrive WITH its
+ * Center-Interface entry, its own tests and its amendment to this list, in one change, never as a stray
+ * edit — which is exactly how #507 added the entry below.
+ *
+ * `review-assignment/router.ts` imports PR0 for one reason, and it is the reason PR0 exists: the router
+ * asks PR0 whether the officer may decide, so a router can never be wider than the admission gate. A
+ * router that re-implemented that check would be a second vocabulary deciding who may decide — the failure
+ * mode this phase keeps refusing.
+ *
+ * What the consumer takes, exactly — stated here, CHECKED by the leg below, because the first version of
+ * this block was prose that got three of its own checkable claims wrong (review F-5), one of them a symbol
+ * the consumer never imported. Today it is one import statement: two values (`evaluateReviewAdmission`,
+ * `isParsedReviewPlan`) and four type-only names. `DELEGABLE_REVIEW_RUNG` is NOT imported, deliberately:
+ * rung non-delegability already lives inside `delegationApplicable`, and a router that checked the rung a
+ * second time would put a permission rule in two places. Note what the sibling spec does and does not
+ * cover: `a6-pr2-lane-hygiene.test.ts` closes the MODULE specifiers the consumer may use; it cannot see
+ * names inside a specifier, which is why that pin lives here.
+ *
+ * What did NOT change: the consumer is itself dormant — `a6-pr2-lane-hygiene.test.ts` requires ITS consumer
+ * set to be empty, so no production path reaches PR0 through it — and no Alpha.5 permission, refusal,
+ * EffectSet or Grant semantic moved. #507's footprint inside #501's delivered surface is this file plus
+ * `packages/runtime/tsconfig.json` and `tsconfig.build.json`, where the assignment lane is named as a build
+ * input; naming a directory in a build graph is not behaviour, but it is a real edit and is named here
+ * rather than glossed over.
+ */
+const ALLOWED_CONSUMERS: readonly string[] = ['runtime/review-assignment/router.ts']
 
 /** Prefixes inside the ARC-A protected center (the set
  *  `packages/testkit/test/arc-a-fitness/scan.mjs` pins; restated here as the
@@ -159,6 +184,32 @@ describe('a6-pr0 lane hygiene', () => {
     // landed, instead of an unrelated hygiene leg going red.
     const EXTRA_MODULES_ALLOWED: readonly string[] = []
     expect(files.filter((file) => !['index.ts', 'mandate.ts', 'plan.ts', 'types.ts'].includes(file))).toEqual([...EXTRA_MODULES_ALLOWED])
+  })
+
+  it('the one consumer takes exactly the names it is named for, and no rung check with them', () => {
+    // Review F-5: the block above used to describe this import set in prose and got it wrong, so the
+    // description became a check. The names PR0 hands to PR2′ are a closed set; widening it is an edit to
+    // THIS list, in a PR that says why, reviewed by somebody who did not write either side.
+    const source = readFileSync(join(PACKAGES_ROOT, 'runtime', 'review-assignment', 'router.ts'), 'utf8')
+    const statements = [...source.matchAll(
+      /import\s+(type\s+)?\{([^}]*)\}\s+from\s+['"](?:\.\.\/)+review-mandate\/index\.js['"]/g,
+    )]
+    expect(statements, 'exactly one import statement may cross into PR0').toHaveLength(1)
+    const names = (statements[0]?.[2] ?? '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+    expect(names.sort()).toEqual([
+      'evaluateReviewAdmission',
+      'isParsedReviewPlan',
+      'type ReviewCaseView',
+      'type ReviewMandate',
+      'type ReviewMandateDecision',
+      'type ReviewPlan',
+    ])
+    // And the rung vocabulary stays where it belongs — not a style preference: the moment a second module
+    // checks the rung, the two checks can disagree, and their disagreement is a permission question.
+    expect(source).not.toMatch(/DELEGABLE_REVIEW_RUNG\s*[,)}]/)
   })
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {

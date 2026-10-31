@@ -229,6 +229,63 @@ describe('adaptTeamLedger — entry rows', () => {
     expect(model.pendingControlByInstance).toEqual({})
   })
 
+  it("ALPHA6-PR2': assignment rows carry the host's category and badge nothing", () => {
+    // The value pin, not just the key pin. `a4pr0a-fact-type-closed-set.test.ts` C3 compares the two
+    // maps' KEY SETS only, so a client map that booked these three rows under `control` would pass that
+    // guard while showing the operator an authorization category for a fact that authorizes nothing —
+    // the exact drift `control-escalation-recorded`'s comment above says this file owns preventing.
+    // The three rows are also proven inert for the badge: no control chain opens, and
+    // `pendingControlByInstance` stays empty even under a known-complete ledger, because a pending
+    // count is built from `control-request-recorded` rows alone.
+    const model = adaptTeamLedger(
+      [
+        entry(1, 'review-assignment-created', {
+          rootSessionId: 'root-1',
+          approvalCaseId: 'case-1',
+          currentLegRequestId: 'r1',
+          targetKind: 'instance',
+          targetInstanceId: 'i7',
+          assignmentEpoch: 1,
+          previousEpoch: 0,
+          reasonCode: 'ROUTER_PLAN_COVERS_ACTION',
+          basedOnCaseVersion: 'casever-0001',
+          actorCallerRef: 'instance:i7',
+        }),
+        entry(2, 'review-assignment-transferred', {
+          rootSessionId: 'root-1',
+          approvalCaseId: 'case-1',
+          currentLegRequestId: 'r1',
+          targetKind: 'leader',
+          targetInstanceId: null,
+          assignmentEpoch: 2,
+          previousEpoch: 1,
+          reasonCode: 'LEADER_GLOBAL_INFORMATION_NEEDED',
+          basedOnCaseVersion: 'casever-0001',
+          actorCallerRef: 'instance:i7',
+        }),
+        entry(3, 'review-assignment-retired', {
+          rootSessionId: 'root-1',
+          approvalCaseId: 'case-1',
+          currentLegRequestId: 'r1',
+          targetKind: 'leader',
+          targetInstanceId: null,
+          assignmentEpoch: 3,
+          previousEpoch: 2,
+          reasonCode: 'CASE_CLOSED',
+          basedOnCaseVersion: 'casever-0001',
+          actorCallerRef: 'instance:i7',
+        }),
+      ],
+      true,
+    )
+    expect(model.entries.length).toBe(3)
+    expect(model.entries[0] === undefined ? 'missing' : model.entries[0].category).toBe('team')
+    expect(model.entries[1] === undefined ? 'missing' : model.entries[1].category).toBe('team')
+    expect(model.entries[2] === undefined ? 'missing' : model.entries[2].category).toBe('team')
+    expect(model.controls.length).toBe(0)
+    expect(model.pendingControlByInstance).toEqual({})
+  })
+
   it('A4-PR3: a full escalation reads as closed leg 1, one plain row, pending leg 2', () => {
     // The composition half of the same duty: the client must read the
     // escalation exactly as the host fold does — the terminal DENY row (with
