@@ -771,6 +771,55 @@ function guardObservationFace(row) {
 }
 
 /**
+ * a5w-bindseam (dated 2026-10-31T00:00Z, real UTC): THE subtree containment
+ * seam the alpha.5 Team tool plane is assembled WITH (passed as
+ * `fs.subtreeContains` at the GLUE-5 mount below).
+ *
+ * THE GAP THIS CLOSES (bw5 evidence, dev/agent-workflow/evidence/
+ * a5w-bootwave-20261030/c2/run-bw5.json trace[4]): this assembly path never
+ * passed `fs` to createTeamToolPlaneAssembly, so a member template carrying
+ * ANY subtree rule hit the admission kernel's fail-closed projection law
+ * (`projection-subtree-seam-missing`, tool-admission/admission-kernel.ts)
+ * and the mount was refused with TOOL_BINDING_UNVERIFIED. The kernel law is
+ * correct and stays untouched: subtree coverage is answered by an injected
+ * containment predicate or never.
+ *
+ * THE LAW (the one the kernel refusal names — "same law as the C-FS wiring
+ * face"): child === root, or child lies UNDER the root — child.startsWith
+ * (root with trailing slashes stripped + '/'). This is byte-equivalent to
+ * the C-FS lane's own no-seam default arm (controlled-fs.ts `effectCovers`)
+ * and to the a5p2 projection pin. A sibling sharing the root's prefix
+ * (`/root-evil` under a `/root` rule) is NEVER covered: the separator
+ * decides the boundary, never the prefix alone.
+ *
+ * THREE CONSUMER FACES, ONE PREDICATE (the plane feeds ALL of them this
+ * function — see team-tool-plane.mjs `input.fs.subtreeContains`):
+ *  · the kernel lanes (projection `matcherCovers`, the effect-set expansion,
+ *    the deny-source walks) call it POSITIONALLY over realm-joined keys
+ *    (`<realmId>|<canonical>` on BOTH sides — the shared prefix is inert for
+ *    the law, the separator still decides);
+ *  · the lane re-check (`createLaneDecide`) calls it POSITIONALLY over the
+ *    raw rule path vs the effect's canonicalLocator;
+ *  · the governed fs-family rows call it with ONE object argument
+ *    `{ realmId, parent, child }` (raw paths).
+ * Anything that is not two strings THROWS: an unanswerable containment is
+ * UNKNOWN coverage, never a guessed verdict — every caller maps the throw to
+ * its own typed fail-closed arm (the lane tightens, the kernel refuses).
+ * EXPORTED for the C1 suite (packages/runtime/test/a5w-bindseam-subtree-
+ * seam-c1.test.ts); the production wiring below is its only in-tree consumer.
+ */
+export function a5PlaneSubtreeContains(a, b) {
+  const shaped = b === undefined && typeof a === 'object' && a !== null
+  const root = shaped ? a.parent : a
+  const child = shaped ? a.child : b
+  if (typeof root !== 'string' || typeof child !== 'string') {
+    throw new TypeError(`a5w-bindseam: subtree containment needs two path strings (the row face {parent, child} or positional root/child) — coverage is never guessed from ${shaped ? 'an object without string parent/child' : JSON.stringify([typeof root, typeof child])}`)
+  }
+  if (child === root) return true
+  return child.startsWith(`${root.replace(/\/+$/, '')}/`)
+}
+
+/**
  * Create the bindings closure over one row instance's deps.
  * @param {object} deps - see the module header.
  * @returns {object} the bindings (see the module header).
@@ -2807,6 +2856,16 @@ export function createAgentBindings(deps) {
           // FAMILY inside the entry, and zero/ambiguous answers stale the
           // call instead of falling back to revision 1.
           readCallFacts: (input) => readPaCallFactsForCall(input),
+          // a5w-bindseam (dated 2026-10-31T00:00Z, real UTC): the subtree
+          // containment seam this mount's policy is projected WITH — the ONE
+          // plane-facing injection (helper header: the same containment law
+          // as the C-FS wiring face; the kernel's subtree fail-closed law
+          // itself stays untouched). Its ABSENCE was the bw5 member-mount
+          // refusal: a blueprint carrying a subtree ask rule could never
+          // mount (`projection-subtree-seam-missing` → the throw below with
+          // TOOL_BINDING_UNVERIFIED). The kernel answers EVERY subtree
+          // coverage question through this predicate from here on.
+          fs: { subtreeContains: a5PlaneSubtreeContains },
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: {
             jobs: a5JobsBridge,
