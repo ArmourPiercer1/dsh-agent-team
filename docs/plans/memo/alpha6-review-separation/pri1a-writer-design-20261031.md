@@ -73,9 +73,11 @@ allow-list 不含 deep path，故采取「复制 + 一条腿读回 contracts 源
 而诚实的答案是「你的时钟读不懂，且我什么都没分配」。
 
 **D-7 所有权与隔离用既有权威，不自造。** `rootSessionId` 是 Team key；写入前校验：命令的 root、账本行的
-root、以及既有 assignment 行载荷里的 root 三者一致（不一致 ⇒ `REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW`，
+root、以及既有 assignment 行载荷里的 root（**round-1 更正措辞**：命令 root 对行 root 是**过滤**——别队的行被排除出
+本次折叠，这正是隔离机制本身；真正**拒绝**写入的是载荷 root 与所在行 root 不一致，即一条挂错队伍的行。代码注释
+写对了，是这句话此前把它压缩成了「三者一致」：不一致 ⇒ `REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW`，
 并在 detail 里点名那条 `factType@sequence`；**原稿这里写的是一个不存在的代码名 `REVIEW_ASSIGNMENT_TEAM_MISMATCH`，
-已按实现更正**）；跨 Case 写入 ⇒
+已按实现更正**）；跨 Case 写入 ⇒（同一队两 case 的隔离由 kernel 三态负责，见下）
 `checkAssignmentMutation` 的 `LEG_MISMATCH` / `ALREADY_ACTIVE` / `NO_ACTIVE_ASSIGNMENT` 三态拒绝；corrupt 行 ⇒
 折叠 diagnostics + `ROW_UNPARSEABLE` **拒绝写入**，绝不"当没有这行"继续。
 **明确拒绝复制的既有缺陷**：control 折叠对已知类型的 decision/abandon/escalation 载荷损坏是**静默丢弃**
@@ -101,7 +103,7 @@ dormancy 扫描继续成立，`ALLOWED_CONSUMERS=[]` 不变；lane 模块集合�
 **本 PR 不声称**：真实 Host 上的并发对账、跨代重启后的投影呈现、以及与 control 路径在同一把锁下的 interleaving
 ——这些需要 PR-I1b 的接线与单所有者 C2 运行。
 
-## 2b. 实现期修订（R-1..R-8：写代码与写测试时发现的，每条给证据）
+## 2b. 实现期修订（R-1..R-8 实现期，R-9..R-13 round-1 独立复核后：每条给证据）
 
 裁决要求「不允许静默重定义」，因此每条都写明：原状态、被什么推翻、现在的法律、钉住它的腿。
 
@@ -143,17 +145,63 @@ epoch 2 与 3（腿钉住 `[2,3]` 与 sequence 互不相同）；换掉锁就退
 
 **R-8 幂等身份 = 载荷**：见 D-4 的补充。两条腿分别钉 `already`（同决定重发）与 `TARGET_UNCHANGED`（换 reason）。
 
+### round-1 独立复核（#517，head `1a60b9e26`）之后的修订
+
+**R-9 三种答案的第三种必须有生产者。** 模块顶上的法律写着每条失败路径都要说清三件事之一：什么都没分配 /
+分配了但没写进去 / **有一行是耐久的，它的 sequence 在此**。round-1 用一个「合法 root 但不存在 TeamSession 行」
+的世界把它打通：`LedgerRepository.putEntry` 先落账本行、**再**推进 session generation
+（`storage/repositories/ledger.ts:201`/`:214`，缺行时 `team-sessions.ts:119` 抛 `missing-key`），
+于是 put 抛出**之后**行已经耐久，而 catch 无条件说「该 sequence 上不存在 assignment 行」，重试又回答 `already`
+—— 同一条命令给出两个互斥断言。修法不是改措辞而是**先看再说**：catch 里重读 ledger，命中 ⇒ 新代码
+`REVIEW_ASSIGNMENT_ROW_DURABLE` + detail 点名 `factType@sequence`；未命中 ⇒ 保留原句子，但加上「已重读」。
+钉住它的腿是 `says the truth about what is durable when the append lands and the stamp fails`，它同时断言旧句子
+**不出现**、耐久行集合 == [1]、重试 `already` 且 sequence 1；harness 新增 `seedSession:false` 才第一次能表达这个
+状态（此前唯一的无队伍腿用 `session/../../etc`，在本 lane 的 id 语法上就死了，永远到不了 put）。
+复核者的 A3-LIE / A3b 两条攻击在本头现在**失败**（断言旧谎言），这是修复生效的可复现证据。
+
+**R-10 「扫描全仓库找任何写入者」在动词表上漏掉了本仓库自己的漏斗。** 探测器的动词集合原本只有
+`.put(` / `.putEntry(` / `allocateSequence(`，而 `action-router/effects.ts:1306` 的
+`commitDurableFact(repositories, root, now, factType, payload)` **内部**就会分配 sequence 并 put：一个用位置参数
+传族名、自己不写 `.put(` 的模块能造出本族的耐久行而 28 条 hygiene 腿全绿。现在 `commitDurableFact\s*\(` 是第四个
+动词，且探测器重写成纯函数 `convicts(path, text, inLane)`，仓库扫描与 plant 走**同一段代码**；每个 alternative
+一个 plant，plant 的键集合用 `toEqual` 钉在 alternative 表上（少一个 alternative 或多一个 plant 都红），另有两条
+负控制（合法读取者、以及在注释里**提到**被禁调用的法律文字）。披露残余：这是文本扫描，跨多跳别名的族名、以及它
+不读的文件（测试源、未跟踪文件）在它视野之外 —— 所以这条腿真正支持的说法是「除 Writer 外没有任何被跟踪的生产源
+同时含有族名与通往账本的路径」，PR 正文按这句话写。
+
+**R-11 closed-set 的「封闭」曾经只封闭一种拼写。** 派生只认 `factType: '<字面量>'`（单引号），既不认双引号也不认
+`'a' + 'b'`；后者是编译期完全确定的值，却被丢进 unresolved 名单里无人阅读 —— 于是未注册的拼法可以一路绿过去。
+现在两种拼法都解析（`stringLiteralText` / `resolvedLiteralText`），拼出来的值直接进入 closed-set 判定（C2 会要求它
+有 host category）；真正静态不可解的（例如两个常量相加）仍然**点名**进 unresolved，由 C5 钉住。分类集合也加宽到
+任何引号与计算式标签 —— 在本树实测**不新增任何文件**，即加宽不带来新的噪声。新增 `C1d` 腿把五种 plant 直接喂给
+上述真函数：四种写入形状都被分类、族名都能被派生、`sneaky-fact-x` 成为**值**且 `HOST.has(...)` 为假（即 C2 会在
+真实树上判它红），只有常量拼接留在 unresolved。为什么在这里跑 plant 而不是往复制树里丢文件：本 guard 读
+`git ls-files`， planted 文件可不可见是 checkout 的性质，不是探测器的性质。
+
+**R-12 折叠诚实的前提是 reader 诚实，这一点现在是合同文字并被测量。** 文档写「折叠取自账本」，但端口是注入的：
+round-1 用一层过滤 wrapper 藏掉 sequence 1 的那一行，第二次 `created` 被接受，家族最终有**两条活行同处 epoch 1**
+（CAS 并非失败，而是无可冲突）。Writer 在自己的座位上无法检测「看不见的那一行」，所以这条不是可关闭的缺陷而是
+适配器的义务：`ReviewAssignmentLedgerReaderPort` 的文档明确「未过滤、不截断、不陈旧的读属于端口合同，本模块无法
+检测遗漏」，并由 `cannot see a reader that hides a row...` 一条腿测量后果（两行、epoch 集合 [1]、同命令在诚实读下
+被拒），同时用 readFileSync 钉住那句文档**存在** —— 没人跑的文档句就是没人负责的文档句。
+
+**R-13 一条静态恒真的断言被换成手写名单。** census 腿里原本写着 `expect([...SET].sort()).toEqual([...SET].sort())`：
+自我比较，任何取值都为真，是这 38 条里唯一装饰性的一条（同一腿的其余断言在 M2/M3/M6/M7 变异下会红）。现在改为
+手写八个代码的期望列表 + 唯一性 + 前缀约定；也正因为它，本 PR 的自有代码从 7 个变成 8 个（R-9 的新代码），census
+依然要求「声明的都被产生过」。
+
+
 ## 3. 覆盖映射（用户裁决六条 → 测试腿）
 
-| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，36 条，全部走**真实** `LedgerRepository`） |
+| 裁决要求 | 实现位置 | 实际钉住它的腿（`a6-pri1a-writer.test.ts`，38 条，全部走**真实** `LedgerRepository`） |
 | --- | --- | --- |
-| 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空） |
+| 创建/转交/退休写入 + 恢复 | `writer.ts` 三个命令 + 折叠 | ①三行按 epoch 1/2/3 与 sequence 顺序落账（读回 ledger 字节，不看返回值）；②`team_sessions.generation` +1（S1-A hook A：证明它是「一条账本行」而不只是一个 ok）；③close+re-open 后折叠重建同一状态，新 Writer 追加 epoch 3；④重启后重放 ⇒ `already` + 原 sequence；⑤分配后写失败 ⇒ 点名花掉的 sequence，清障后重试在**可见的洞**上前进（行 [1,3]，epoch 2，diagnostics 空）；㉝落账成功但盖章失败 ⇒ `ROW_DURABLE` + 点名 `review-assignment-created@1` + 旧谎言**不出现** + 重试 `already`@1（R-9） |
 | Epoch/CAS、幂等、并发冲突、写失败 | D-3/D-4/D-5 + R-7/R-8 | ⑥同命令立即重放：`already` 且 `writeCount` 不变、行数不变；⑦换 reason ⇒ 不是重放（`ALREADY_ACTIVE`），行数不变；⑧两条并发同命令 ⇒ 一写一 already、同一 sequence、只一行；⑨两条并发 mutation ⇒ epoch [2,3]、sequence 互不相同、对「已当前」的 target 重发是 `already`、换 reason 是 `TARGET_UNCHANGED`；⑩四种非法 sequence（0/-1/1.5/MAX+1）各自拒且零行；⑪分配失败腿 detail 含 allocate；⑫坏 root/坏命令 ⇒ `writeCount` 不变 |
 | Ledger 所有权校验、跨 Case/Team 隔离、损坏诊断 | D-7 + R-3/R-5 | ⑬两支队伍共用同一 caseId 各自独立折叠与独立 epoch；⑭挂本 root 但载荷指向他队的行 ⇒ `WRITE_CROSS_TEAM_ROW` + 点名 `factType@sequence`，坏行**留在原地**不隐藏；⑮未知字段/授权键行 ⇒ `WRITE_FOLD_UNRECONCILED` 且 detail 点名诊断码（与 `control/service.ts:1801-1812` 的静默丢弃**正相反**，有专门一条腿钉这点）；⑯10 条坏行 ⇒ 列 8 个句柄 + `+2 more` + detail < 1200 字符；⑰同队两 case 独立 epoch 链；⑱契约解析拒绝的 4 种 root ⇒ 先对**解析器本身**断言抛错，再要求 `WRITE_ROOT_UNMINTABLE` 且零锁零写；⑲`session/../../etc` 能 mint、被 lane 语法拒（R-5 的披露） |
 | host/client factType-category 一致 + 重启后 Projection 重建 | §1 的双侧图 + 本 PR 的耐久半边 | ⑳写入的字符串与 `projection-source.ts` 里那三个字面量逐字节相同（腿直接读该文件要求三个字面量都在）；㉑`createdAt` 与 contracts 的 `ISO_8601_TIMESTAMP_PATTERN` **字面同源**（读回 contracts 源码比对）。**category 两侧各自的钉法不在本文件重复**：host 侧 = `a6-pr2-assignment-kernel.test.ts` 的 mirror pin（沿 factType 字面量走到 `FACT_TYPE_CATEGORY` 条目并要求 `team`），client 侧 = `packages/client/test/ledger-adapter.test.ts` 的行为腿（三行进 `team`、badge 不亮）；本 PR 补的正是此前不存在的那一半 —— **耐久行里真的是这三个字符串**。**真实宿主投影的重启呈现仍是 C2/ENV_BLOCK，不记 PASS** |
 | Assignment 非授权凭据 | D-9 | ㉒耐久载荷键集合 == `REVIEW_ASSIGNMENT_PAYLOAD_FIELDS`（最强形式：封闭集之外无键），且其中无 authorit/permission/grant/credential/token/allowed 命中；㉓绕过 Writer、在编码之后往 `put` 载荷里塞 `authority` ⇒ 被**读回**抓为 `READBACK_MISMATCH`（不是被接受） |
 | 无法证明即退回 Leader，禁止由空/缺失记录推导允许 | D-8 + `checkAssignmentMutation` + R-4 | ㉔空 case 上 `transferred` ⇒ `NO_ACTIVE_ASSIGNMENT` 且零行（不会顺手创建 assignment）；㉕空状态对三种 caller × 三个 epoch 一律不允（`maySubmitFor` 全拒）；㉖退休后三种命令全拒且零新行，同队另一 case 不受影响（R-4） |
-| （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 7 个自有代码**全部被产生过**、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿 |
+| （额外）锁纪律与拒绝词表 census | D-2/D-10 + R-6/R-7 | ㉗每命令恰好一次 `withLock`、key 是 minted root、绝不重入（peak depth 1）；㉘两根并发 ⇒ peak depth 2（**这正是**「不是全局锁」的证据）；㉙声明的 8 个自有代码**全部被产生过**（期望列表手写，见 R-13）、产生的每个 passthrough 代码都属于 kernel 词表、两个词表不相交；㉚9 种敌意命令形状一律 typed refusal 不抛异常；㉛账本谎报一行 ⇒ `ROW_UNPARSEABLE` 在 detail 里；㉜R-6 的不承重锁腿；㉞reader 藏行 ⇒ 两条活行同 epoch 的后果被测量 + 端口合同的文档句被钉住（R-12） |
 
 **未在本 PR 测量（不假装）**：真实宿主世界上的并发对账与重启后的客户端呈现（C2 = ENV_BLOCK）；与 control 路径共享
 同一把锁时的 interleaving（需 PR-I1b 接线）；投影在真实客户端 store 里跨代的重建（PR-I1a 只承诺写进去的字节与两侧图一致）。
@@ -169,5 +217,11 @@ epoch 2 与 3（腿钉住 `[2,3]` 与 sequence 互不相同）；换掉锁就退
 - **退休后的 case 无法再获得 assignment（R-4）**：树能证明的是 `checkAssignmentMutation` 的三条规则与由此产生的终点性；
   要不要给「重新指派一条新 leg」一个公开的行种类，是 D-8 那条公开变更的决策，需要新裁决 + host/client 两张 category
   图同步，本 PR 不替它选。
+- **目标可以是 Leader 实例，而路由面拒绝它**（round-1 A4a）：`checkAssignmentMutation` 不校验
+  `target.instanceId` 是否等于 `LEADER_INSTANCE_ID`，于是 Writer 会把「把某条 leg 指派给 Leader 自己」写成耐久行，
+  而 `router.ts:1795` 的 `TARGET_IS_LEADER_INSTANCE` 在路由面拒绝同一形状；`maySubmitFor` 之后还会承认一个
+  **自称**该实例、`isLeaderInstance:false` 的 caller。A-1 未被破坏（行不授予任何权限），但「受治理的耐久路径比
+  未接线的路由面更宽」是反向的。决定：**不在本 PR 偷偷加第四条校验**（那会改变 kernel 语义，属新法律），
+  而是把「admission 必须拒绝 Leader 实例作为 assignment 目标，或明确解释为何允许」写成 PR-I1b 的具名义务。
 - **确认「这支队伍真的存在」不在本层**（R-5）：树能定价的是三幕屏幕各挡什么、`session/../../etc` 停在哪一幕；
   把存在性检查放到哪里属 PR-I1b 的 admission 设计。

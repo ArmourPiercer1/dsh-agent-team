@@ -34,7 +34,11 @@
  *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
  *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
  *    failure path here says which of three things happened: nothing was allocated, a sequence was allocated and
- *    nothing was written, or a row IS durable and here is its sequence. A write is only reported as applied after
+ *    nothing was written, or a row IS durable and here is its sequence (`REVIEW_ASSIGNMENT_ROW_DURABLE`, whose
+ *    producing branch re-reads the ledger rather than inferring the answer from the exception — round 1 of
+ *    #517 caught this branch asserting the second answer while the row sat durable at that sequence, because
+ *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming
+ *    no TeamSession row makes the append succeed and the stamp throw). A write is only reported as applied after
  *    it has been read back out of the ledger, and a read-back disagreement is reported as one rather than
  *    presented as a retraction — the row stays, because the honest sentence about an append-only ledger is that
  *    you cannot un-write it.
@@ -54,7 +58,7 @@ import type { ReviewAssignmentFactKind, ReviewAssignmentRefusal, ReviewAssignmen
  * the ones that only exist once a durable write is on the table, so they are a separate closed set rather than
  * an addition to the frozen kernel vocabulary.
  */
-export declare const REVIEW_ASSIGNMENT_WRITE_REFUSALS: readonly ["REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED", "REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE", "REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED", "REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE", "REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED", "REVIEW_ASSIGNMENT_READBACK_MISMATCH"];
+export declare const REVIEW_ASSIGNMENT_WRITE_REFUSALS: readonly ["REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED", "REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE", "REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW", "REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED", "REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE", "REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED", "REVIEW_ASSIGNMENT_ROW_DURABLE", "REVIEW_ASSIGNMENT_READBACK_MISMATCH"];
 export type ReviewAssignmentWriteRefusal = (typeof REVIEW_ASSIGNMENT_WRITE_REFUSALS)[number];
 /**
  * What a refusal result may name. The kernel's refusals pass through **unchanged** rather than being re-labelled:
@@ -93,7 +97,18 @@ export interface ReviewAssignmentLedgerWriterPort {
     allocateSequence(): Promise<number>;
     put(row: ReviewAssignmentRowDraft): Promise<unknown>;
 }
-/** The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job. */
+/**
+ * The read half: the WHOLE ledger, in sequence order, unfiltered — the row-level filter is this module's job.
+ *
+ * **An unfiltered, un-truncated, non-stale read is part of this port's contract, and the writer cannot detect an
+ * omission.** It re-reads inside the lock rather than trusting a cached view, and it refuses when a row it can
+ * see does not reconcile; it has no way to notice a row it cannot see, because a fold over a shorter ledger is
+ * just a fold over a shorter ledger. That is not a gap this module can close from its seat, so it is stated as
+ * the adapter's obligation. Measured, not asserted: `a6-pri1a-writer.test.ts` drives a reader that drops one
+ * row and pins what follows — the second create is accepted and the family ends up with two live rows in one
+ * epoch, which is the epoch CAS failing to have anything to conflict with. A `slice`, a stale cache or a
+ * filtered adapter behind this port is an adapter bug with that shape of consequence.
+ */
 export interface ReviewAssignmentLedgerReaderPort {
     list(): readonly ReviewAssignmentLedgerRow[];
 }

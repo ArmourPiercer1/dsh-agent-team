@@ -254,32 +254,94 @@ describe('a6-pr2 lane hygiene', () => {
     // "two locks over disjoint state" into "two locks over one state", which no epoch check survives.
     // The scan is a NAME + VERB test rather than an import test: a module that imports the kernel and builds
     // its own `put` call is precisely the offender an import-based scan describes as a lawful reader.
-    const writeVerbs = /\.put\(|\.putEntry\(|allocateSequence\s*\(/
-    const namesFamily = /review-assignment-(?:created|transferred|retired)|REVIEW_ASSIGNMENT_FACT_TYPES/
+    // Both halves of the test are named tables rather than one regex each, because round 1 of #517 showed what
+    // an unnamed union costs: the verb list held `.put(`, `.putEntry(` and `allocateSequence(`, while a module
+    // appending through this repository's OWN durable-fact funnel — `action-router/effects.ts:1306`
+    // `commitDurableFact(repositories, root, now, factType, payload)`, which allocates the sequence and puts the
+    // row internally — names the family in a positional argument and matched none of them. The funnel is a verb
+    // now, and every alternative below carries its own plant, tied to the table by key equality.
+    const nameAlternatives: Readonly<Record<string, RegExp>> = {
+      literal: /review-assignment-(?:created|transferred|retired)/,
+      registry: /REVIEW_ASSIGNMENT_FACT_TYPES/,
+    }
+    const verbAlternatives: Readonly<Record<string, RegExp>> = {
+      put: /\.put\(/,
+      putEntry: /\.putEntry\(/,
+      allocateSequence: /allocateSequence\s*\(/,
+      commitDurableFact: /commitDurableFact\s*\(/,
+    }
+    const union = (table: Readonly<Record<string, RegExp>>): RegExp =>
+      new RegExp(Object.values(table).map((pattern) => pattern.source).join('|'))
+    const namesFamily = union(nameAlternatives)
+    const writeVerbs = union(verbAlternatives)
     // Comments are stripped and test sources are skipped, and both exclusions are load-bearing rather than
     // convenient: A-8 in `types.ts` NAMES `allocateSequence()` while explaining that no writer existed, so a
     // scan over prose convicts the law for stating itself; and a spec that plants an offender to prove its own
     // detector works must be allowed to write the shape of one. What is not excluded is any module that could
     // run in production, which is the only kind of module that can append a row.
     const codeOnly = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    // The detector as a pure function of (path, text), so the plants below drive the SAME code the repository is
+    // scanned with instead of a paraphrase of it — which is the difference between a control and a decoration.
+    const convicts = (rel: string, rawText: string, inLane: boolean): boolean => {
+      const text = codeOnly(rawText)
+      if (!namesFamily.test(text) || !writeVerbs.test(text)) return false
+      return inLane ? rel !== 'writer.ts' : true
+    }
     const offenders: string[] = []
     for (const file of sourceFiles(PACKAGES_ROOT)) {
       if (/[\\/]test[\\/]/.test(file) || /\.test\.[cm]?ts$/.test(file)) continue
       const inLane = file.startsWith(LANE_DIR + sep)
-      const text = codeOnly(readFileSync(file, 'utf8'))
-      if (!namesFamily.test(text) || !writeVerbs.test(text)) continue
-      if (inLane && relative(LANE_DIR, file) !== 'writer.ts') offenders.push(relative(RUNTIME_ROOT, file))
-      if (!inLane) offenders.push(relative(PACKAGES_ROOT, file))
+      const rawText = readFileSync(file, 'utf8')
+      const rel = inLane ? relative(LANE_DIR, file) : relative(PACKAGES_ROOT, file)
+      if (convicts(rel, rawText, inLane)) offenders.push(inLane ? relative(RUNTIME_ROOT, file) : rel)
     }
     expect(offenders, `modules appending rows of this family besides the writer: ${offenders.join(', ')}`).toEqual([])
-    // Anti-vacuity: the scan must fire on the shape it describes. Written as a string so this file is not
-    // itself an offender — the scan reads sources, and it does not care who wrote them.
-    const planted = "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n"
-    expect(/review-assignment-(?:created|transferred|retired)|REVIEW_ASSIGNMENT_FACT_TYPES/.test(planted)).toBe(true)
-    expect(writeVerbs.test(planted)).toBe(true)
-    // And it must not fire on a lawful reader of the same family: reading rows is what PR5′ will do.
-    const reader = "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n"
-    expect(writeVerbs.test(reader)).toBe(false)
+
+    // Anti-vacuity over EVERY alternative, which is what round 1's F4 said the old control did not do: it pinned
+    // one intersection (literal name ∧ `.put(`), so three of the four verbs and one of the two naming shapes
+    // could be deleted from the detector and this leg would have stayed green. Each plant names exactly one
+    // alternative; the key says which; and `toEqual` between the key sets means an alternative can be neither
+    // dropped nor added without this leg going red.
+    const plants: Readonly<Record<string, string>> = {
+      'name:literal': "const FACT = 'review-assignment-created'\nawait ledger.put(row)\n",
+      'name:registry':
+        "import { REVIEW_ASSIGNMENT_FACT_TYPES } from '../review-assignment/types.js'\nawait ledger.put(row)\n",
+      'verb:put': "const F = 'review-assignment-transferred'\nawait ledger.put(row)\n",
+      'verb:putEntry': "const F = 'review-assignment-retired'\nawait store.putEntry(row)\n",
+      'verb:allocateSequence': "const F = 'review-assignment-created'\nconst s = await ledger.allocateSequence()\n",
+      'verb:commitDurableFact':
+        "await commitDurableFact(repos, root, () => '2026-10-31T09:00:00Z', 'review-assignment-created', payload)\n",
+    }
+    expect(Object.keys(plants).sort()).toEqual(
+      [...Object.keys(nameAlternatives).map((name) => `name:${name}`),
+        ...Object.keys(verbAlternatives).map((name) => `verb:${name}`)].sort(),
+    )
+    for (const [key, plant] of Object.entries(plants)) {
+      const alternative = key.startsWith('name:')
+        ? nameAlternatives[key.slice('name:'.length)]
+        : verbAlternatives[key.slice('verb:'.length)]
+      expect(alternative, `${key} names an alternative the detector does not have`).toBeDefined()
+      expect(alternative!.test(codeOnly(plant)), `${key} does not exercise the alternative it is named for`).toBe(true)
+      expect(convicts('second-writer/impl.ts', plant, false), `${key} plant was not convicted`).toBe(true)
+    }
+
+    // The lane's own writer is the only in-lane exception, and a lane module that is not the writer is convicted
+    // exactly like an outside one: the exception is a filename, not a directory.
+    expect(convicts('router.ts', plants['verb:commitDurableFact'] as string, true)).toBe(true)
+    expect(convicts('writer.ts', plants['verb:put'] as string, true)).toBe(false)
+    // Two exclusions that are load-bearing rather than convenient: reading rows is what PR5′ will do, and prose
+    // that NAMES the forbidden calls while forbidding them must not convict the law for stating itself (the
+    // `types.ts` A-8 comment is that case in the real tree).
+    const reader =
+      "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n"
+    expect(convicts('pr5-reader/impl.ts', reader, false)).toBe(false)
+    expect(convicts('types.ts', '/* no module may call allocateSequence() for review-assignment-created */\n', false))
+      .toBe(false)
+    // Disclosed residual, because "scans the whole repository" is only as wide as a text scan can be: a family
+    // name reaching a call through a multi-hop alias, or a writer sitting in a file this walk does not read
+    // (test sources, and anything untracked), is outside what it sees. The claim this leg actually supports is
+    // "no tracked production source outside the writer contains both a family name and a route to the ledger",
+    // which is what the epoch CAS needs and what the PR body says.
   })
 
   it('is DORMANT: no production file outside the lane imports it yet', () => {

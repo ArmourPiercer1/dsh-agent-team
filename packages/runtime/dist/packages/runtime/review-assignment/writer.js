@@ -34,7 +34,11 @@
  *    storage layer — the ledger is append-only and failures roll forward, and the existing precedent for a
  *    multi-row operation is "retry completes the half-write" (`closeZeroReviewCaseTransactionally`). So every
  *    failure path here says which of three things happened: nothing was allocated, a sequence was allocated and
- *    nothing was written, or a row IS durable and here is its sequence. A write is only reported as applied after
+ *    nothing was written, or a row IS durable and here is its sequence (`REVIEW_ASSIGNMENT_ROW_DURABLE`, whose
+ *    producing branch re-reads the ledger rather than inferring the answer from the exception — round 1 of
+ *    #517 caught this branch asserting the second answer while the row sat durable at that sequence, because
+ *    `LedgerRepository.putEntry` appends the row and only then stamps the session generation, so a root naming
+ *    no TeamSession row makes the append succeed and the stamp throw). A write is only reported as applied after
  *    it has been read back out of the ledger, and a read-back disagreement is reported as one rather than
  *    presented as a retraction — the row stays, because the honest sentence about an append-only ledger is that
  *    you cannot un-write it.
@@ -62,6 +66,13 @@ export const REVIEW_ASSIGNMENT_WRITE_REFUSALS = [
     'REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED',
     'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
     'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+    /** The append landed and something after it failed, so the row IS durable while the command is NOT accepted.
+     *  Kept distinct because this answer and `REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED` say opposite things about
+     *  whether a row exists, and a caller's retry is aimed differently in each case. The word order here is
+     *  deliberate rather than clumsy: the lane's import screen reads the module-specifier preposition followed by
+     *  any quoted token, comments included, so this paragraph must not put that preposition in front of a code
+     *  name — the trap this file's own header already warns about, which I walked into again. */
+    'REVIEW_ASSIGNMENT_ROW_DURABLE',
     'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
 ];
 function refuseWrite(refusal, detail) {
@@ -246,10 +257,23 @@ async function writeLocked(deps, command, root) {
         await deps.ledger.put({ sequence, rootSessionId: root, factType, payload: encoded.value, createdAt });
     }
     catch (error) {
-        // The gap this leaves is real and is reported as such: the ledger allows a gap to be filled later, and the
-        // honest statement of this state is "a sequence was spent, no row exists at it".
-        return refuseWrite('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED', `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}); ` +
-            'no assignment row exists at that sequence');
+        // A throw is not the same observation as "no row exists", and the difference is reachable rather than
+        // theoretical: `putEntry` appends the record and only afterwards advances the session generation
+        // (`repositories/ledger.ts:201/214`), and that stamp throws `missing-key` for a root with no TeamSession row
+        // (`repositories/team-sessions.ts:119`) — a root this writer deliberately mints without a team-existence
+        // check (§2.2 / memo R-5). So the append can be durable while the call fails, and the only honest way to
+        // choose between the two answers is to look.
+        const landed = deps.ledger.list().find((row) => row.sequence === sequence);
+        if (landed !== undefined) {
+            return refuseWrite('REVIEW_ASSIGNMENT_ROW_DURABLE', `sequence ${String(sequence)} was allocated and the write reported a failure (${describe(error)}), but the ` +
+                `row IS durable at that sequence (${landed.factType}@${String(landed.sequence)}) — the failure is after ` +
+                'the append, not instead of it. This command is not accepted; a retry of the identical command will be ' +
+                'recognised as already applied at that sequence');
+        }
+        // The gap this leaves is real and is reported as such, and the claim is now verified rather than assumed:
+        // the ledger was re-read and nothing is at that sequence. The ledger allows the gap to be filled later.
+        return refuseWrite('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED', `sequence ${String(sequence)} was allocated and the row write failed (${describe(error)}); the ledger was ` +
+            're-read and no assignment row exists at that sequence');
     }
     // Read-back, because "the write did not throw" is not the same claim as "the row is in the ledger" — the
     // precedent is `writeLegRowLocked`'s read-back refusal (control/service.ts:4628-4641), and the failure mode it

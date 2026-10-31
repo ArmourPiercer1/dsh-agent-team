@@ -124,11 +124,19 @@ interface Harness {
   clock: (iso: string | (() => string)) => void
 }
 
-async function harness(options: { readonly root?: string } = {}): Promise<Harness> {
+async function harness(
+  options: { readonly root?: string; readonly seedSession?: boolean } = {},
+): Promise<Harness> {
   const root = options.root ?? (P4_FIXTURE.rootSessionId as string)
   const seam = new InMemoryStorageSeam()
   const domain = await createTeamDomain(seam)
-  await domain.repositories.teamSessions.put(teamSessionInput(parseRootSessionId(root)))
+  // `seedSession: false` is the state round 1 of #517 needed and this harness could not express: a root that is a
+  // legal root session id, that the writer accepts, and that names NO TeamSession row. That is precisely where
+  // the ledger makes the row durable and then fails to stamp the generation, so it is the only way to drive the
+  // third answer of the writer's three-answer law.
+  if (options.seedSession !== false) {
+    await domain.repositories.teamSessions.put(teamSessionInput(parseRootSessionId(root)))
+  }
   return build(seam, domain, root)
 
   async function build(seam: InMemoryStorageSeam, domain: TeamDomain, rootSessionId: string): Promise<Harness> {
@@ -397,6 +405,8 @@ describe('PR-I1a epoch discipline and failure honesty', () => {
     if (failed.ok) return
     expect(failed.refusal).toBe('REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED')
     expect(failed.detail).toMatch(/allocated .*no assignment row exists/)
+    // ...and the sentence is now earned: the writer re-read the ledger before claiming the gap exists.
+    expect(failed.detail).toContain('re-read')
     const gapSequence = Number(/sequence (\d+) was allocated/.exec(failed.detail)?.[1])
     expect(Number.isSafeInteger(gapSequence)).toBe(true)
     expect(world.domain.repositories.ledger.list().some((row) => row.sequence === gapSequence)).toBe(false)
@@ -487,6 +497,40 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     expect(world.familyRows().filter((row) => row.rootSessionId === world.root)).toHaveLength(1)
     expect(world.familyRows().filter((row) => row.rootSessionId === other)).toHaveLength(1)
     expect((world.familyRows()[0]?.payload as Record<string, unknown>)['rootSessionId']).toBe(world.root)
+  })
+
+  it('cannot see a reader that hides a row, and says so on the port instead of pretending otherwise', async () => {
+    // The fold is done "from the ledger" — which is only a guarantee if the port delivers the ledger. Round 1
+    // wrapped the real repository in a filter that dropped one row and the writer accepted a second live
+    // assignment into the same epoch: the CAS did not fail, it had nothing to conflict with. That is an adapter
+    // bug, not something this module can detect from its seat, so the consequence is measured and the obligation
+    // is stated where an adapter author will read it.
+    const world = await harness()
+    const first = await run(world.deps)
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    const inner = ledgerPort(world.domain)
+    const hiding: ReviewAssignmentStoreDeps = {
+      ...world.deps,
+      ledger: { ...inner, list: () => inner.list().filter((row) => row.sequence !== first.sequence) },
+    }
+    const blind = await run(hiding)
+    expect(blind.ok).toBe(true) // the finding, measured: a shorter ledger is just a shorter ledger
+    if (!blind.ok) return
+    expect(world.familyRows().map((row) => row.sequence)).toEqual([1, 2])
+    const epochs = new Set(
+      world.familyRows().map((row) => (row.payload as unknown as ReviewAssignmentPayload).assignmentEpoch),
+    )
+    expect([...epochs]).toEqual([1]) // two live rows, one epoch — the CAS never had a second epoch to refuse
+
+    // The same command over the true ledger is refused, which is what makes the difference the port's.
+    const honest = await applyReviewAssignment(world.deps, command())
+    expect(honest.ok).toBe(false)
+
+    // And the contract sentence that carries this obligation is pinned, because an unpinned doc sentence is a
+    // claim nobody runs.
+    const source = readFileSync(join(RUNTIME_ROOT, 'review-assignment', 'writer.ts'), 'utf8')
+    expect(source).toMatch(/unfiltered, un-truncated, non-stale read is part of this port's contract/)
   })
 
   it('refuses to write when a row filed under this root names another team', async () => {
@@ -614,6 +658,29 @@ describe('PR-I1a ledger ownership, cross-team isolation and corrupt rows', () =>
     )
     expect(slash.refusal).toBe('REVIEW_ASSIGNMENT_INPUT_MALFORMED')
     expect(world.familyRows()).toHaveLength(0)
+  })
+
+  it('says the truth about what is durable when the append lands and the stamp fails', async () => {
+    // Round 1 of #517 drove a legal root that names no TeamSession row and found the writer claiming "no
+    // assignment row exists at that sequence" about a row that WAS there, then answering `already` on the retry —
+    // one command, two mutually exclusive claims. Both halves of the pair are pinned here, together with the
+    // sentence that used to be a lie.
+    const root = 'session-root-9'
+    const world = await harness({ root, seedSession: false })
+    const failed = await run(world.deps, { rootSessionId: root })
+    expect(failed.ok).toBe(false)
+    if (failed.ok) return
+    expect(failed.refusal).toBe('REVIEW_ASSIGNMENT_ROW_DURABLE')
+    expect(failed.detail).toMatch(/the row IS durable at that sequence \(review-assignment-created@1\)/)
+    expect(failed.detail).not.toMatch(/no assignment row exists/)
+    expect(world.familyRows().map((row) => row.sequence)).toEqual([1])
+
+    // And the answer agrees with the bytes it refuses to contradict: the retry recognises the durable row.
+    const retry = await run(world.deps, { rootSessionId: root })
+    expect(retry.ok).toBe(true)
+    if (!retry.ok) return
+    expect(retry.applied).toBe('already')
+    expect(retry.sequence).toBe(1)
   })
 
   it('refuses a malformed command before touching the ledger or the lock', async () => {
@@ -878,7 +945,21 @@ describe('PR-I1a lock discipline and refusal vocabulary', () => {
   it('names every refusal it can produce, and produces every refusal it names', () => {
     // A closed set with no census is a list of intentions: PR4's round-4 review proved that by leaving a
     // reason code in the vocabulary and out of every assertion. Same trap, same fix.
-    expect([...REVIEW_ASSIGNMENT_WRITE_REFUSALS].sort()).toEqual([...REVIEW_ASSIGNMENT_WRITE_REFUSALS].sort())
+    // The declared vocabulary, written out here rather than compared to itself. Round 1 of #517 found this
+    // position holding `expect([...SET].sort()).toEqual([...SET].sort())` — true for any value whatsoever, the
+    // one statically-dead assertion in the file. A name list a reader can diff against the source is the check.
+    expect([...REVIEW_ASSIGNMENT_WRITE_REFUSALS].sort()).toEqual([
+      'REVIEW_ASSIGNMENT_DURABLE_WRITE_FAILED',
+      'REVIEW_ASSIGNMENT_READBACK_MISMATCH',
+      'REVIEW_ASSIGNMENT_ROW_DURABLE',
+      'REVIEW_ASSIGNMENT_WRITE_CLOCK_UNREADABLE',
+      'REVIEW_ASSIGNMENT_WRITE_COMMAND_MALFORMED',
+      'REVIEW_ASSIGNMENT_WRITE_CROSS_TEAM_ROW',
+      'REVIEW_ASSIGNMENT_WRITE_FOLD_UNRECONCILED',
+      'REVIEW_ASSIGNMENT_WRITE_ROOT_UNMINTABLE',
+    ])
+    // No code is named twice, and every name carries this lane's prefix, so a reader can tell whose refusal it is.
+    expect(new Set(REVIEW_ASSIGNMENT_WRITE_REFUSALS).size).toBe(REVIEW_ASSIGNMENT_WRITE_REFUSALS.length)
     const declared = new Set<string>(REVIEW_ASSIGNMENT_WRITE_REFUSALS)
     // The pass-through codes are the kernel's, and this file observed some of them; they are not this set's
     // business, but they must not COLLIDE with it, or a reader cannot tell which module refused.

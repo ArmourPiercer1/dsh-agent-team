@@ -82,7 +82,12 @@ function writerSources(files: readonly string[], sources: Map<string, string>): 
   const WRITER_SHAPES = [
     /\bputEntry\s*\(|\bledger\.put\s*\(|\.put\(\s*entry\b|appendLedger/,
     /\bcommitDurableFact\s*\(/,
-    /factType:\s*'[a-z0-9-]+'/,
+    // Any quoted label, not only a single-quoted one, and any computed label expression: a writer that spells
+    // its fact type with double quotes or builds it from a concatenation is still writing a fact type, and
+    // gating the CLASSIFICATION on one quote style made the whole guard blind to such a file at once (round 1
+    // of #517, F2). Measured on this tree: the widening adds no new file today.
+    /factType:\s*['"`]/,
+    /factType:\s*[A-Za-z_$][\w$.]*\s*[+?|]/,
   ]
   return files.filter((f) => {
     const src = sources.get(f) ?? ''
@@ -255,9 +260,9 @@ function harvestFunnelSites(
     for (const inner of callArgumentTexts(src, 'commitDurableFact')) {
       const args = topLevelArgs(inner)
       const raw = args[3] ?? ''
-      const literal = raw.match(/^'([a-z0-9-]+)'$/)
-      if (literal) {
-        values.add(group(literal, 1))
+      const literal = resolvedLiteralText(raw)
+      if (literal !== undefined) {
+        values.add(literal)
         continue
       }
       const identifier = raw.match(/^([A-Za-z_][A-Za-z0-9_]*)$/)
@@ -278,6 +283,45 @@ type Derived = {
   readonly unresolved: Set<string>
 }
 
+/**
+ * The text of a quoted string literal, in any of the three quote styles, or `undefined`.
+ *
+ * Round 1 of #517 found the derivation recognising only the single-quoted style, which made "closed set" mean
+ * "closed over the spellings this scanner happens to read". Quote style is a formatting choice, not a property
+ * of the value.
+ */
+function stringLiteralText(raw: string): string | undefined {
+  const single = raw.match(/^'([^']*)'$/)
+  if (single !== null) return group(single, 1)
+  const double = raw.match(/^"([^"]*)"$/)
+  if (double !== null) return group(double, 1)
+  const backtick = raw.match(/^`([^`]*)`$/)
+  if (backtick !== null) return group(backtick, 1)
+  return undefined
+}
+
+/**
+ * Resolve a fact-type expression that is made only of string literals — including a concatenation of them.
+ *
+ * A value written as `'sneaky' + '-fact-x'` is fully determined at compile time: leaving it in `unresolved`
+ * hides an unwritten-in-registry fact type behind a name nobody reads, while resolving it puts the value in
+ * front of the closed-set assertion, which is the whole point of the guard. Anything that is not literals all
+ * the way down still stays unresolved, because that is the truth.
+ */
+function resolvedLiteralText(raw: string): string | undefined {
+  const direct = stringLiteralText(raw)
+  if (direct !== undefined) return direct
+  const parts = raw.split('+').map((part) => part.trim())
+  if (parts.length < 2) return undefined
+  const pieces: string[] = []
+  for (const part of parts) {
+    const text = stringLiteralText(part)
+    if (text === undefined) return undefined
+    pieces.push(text)
+  }
+  return pieces.join('')
+}
+
 function deriveWrittenFactTypes(
   writers: readonly string[],
   sources: ReadonlyMap<string, string>,
@@ -290,9 +334,9 @@ function deriveWrittenFactTypes(
     const src = sources.get(file) ?? ''
     for (const m of src.matchAll(/factType:\s*([^\n,}]+)/g)) {
       const raw = group(m, 1).trim()
-      const literal = raw.match(/^'([a-z0-9-]+)'$/)
-      if (literal) {
-        values.add(group(literal, 1))
+      const literal = resolvedLiteralText(raw)
+      if (literal !== undefined) {
+        values.add(literal)
         continue
       }
       const identifier = raw.match(/^([A-Z_][A-Z0-9_]*)$/)
@@ -511,6 +555,47 @@ describe('A4-PR0a: every fact type production can write is registered in the led
     // under-collect exactly the family the registry exists to close — so an
     // unresolved member is red here, not dropped.
     expect([...UNRESOLVED_REGISTRIES].sort()).toEqual([])
+  })
+
+  it('C1d: the harvest convicts the write shapes that left it green in round 1 (plants through the real functions)', () => {
+    // Round 1 of #517 planted second writers into a copied tree and reported two shapes that left this guard
+    // green: a family name reaching the ledger as a POSITIONAL argument of the durable-fact funnel, and a fact
+    // type written as a COMPUTED concatenation. The plants are driven here, through the same three functions
+    // the derivation above calls, rather than by dropping files into a copy of the repository: this guard reads
+    // `git ls-files`, so a planted file's visibility is a property of the checkout, not of the detector, and a
+    // green run in a scratch tree proves nothing either way.
+    const PLANTS: Readonly<Record<string, string>> = {
+      'funnel-positional.ts': "await commitDurableFact(repos, root, now, 'review-assignment-created', payload)\n",
+      'funnel-computed.ts': "await commitDurableFact(repos, root, now, 'sneaky' + '-fact-x', payload)\n",
+      'label-double.ts': 'return { factType: "governance-proposal-created", payload: p }\n',
+      'label-const-concat.ts': 'return { factType: FACT_PREFIX + FACT_SUFFIX, payload: p }\n',
+      'reader-only.ts':
+        "import { isReviewAssignmentFactType } from '../review-assignment/index.js'\nconst rows = ledger.list()\n",
+    }
+    const plants = new Map(Object.entries(PLANTS))
+    const classified = writerSources(Object.keys(PLANTS), plants)
+    // Four write shapes are writers, and the file that only reads is not. Written out, because a classification
+    // rule nobody can diff against a list is a rule that drifts.
+    expect(classified.sort()).toEqual([
+      'funnel-computed.ts',
+      'funnel-positional.ts',
+      'label-const-concat.ts',
+      'label-double.ts',
+    ])
+    const derived = deriveWrittenFactTypes(classified, plants, CONSTS, REGISTRIES)
+    harvestFunnelSites(classified, plants, CONSTS, derived.values, derived.unresolved)
+    // The positional funnel argument is derived (this half already worked; it is pinned so it cannot regress),
+    expect(derived.values.has('review-assignment-created')).toBe(true)
+    // the concatenation is a VALUE rather than a shrug, which is the fix, and
+    expect(derived.values.has('sneaky-fact-x')).toBe(true)
+    // a double-quoted label is the same fact type as a single-quoted one.
+    expect(derived.values.has('governance-proposal-created')).toBe(true)
+    // Because the computed value is a value, the closed set can judge it: 'sneaky-fact-x' has no host category,
+    // so C2 above is the leg that would convict it in the real tree. Before this fix it never reached C2.
+    expect(HOST.has('sneaky-fact-x')).toBe(false)
+    // And what genuinely cannot be resolved is NAMED rather than dropped: a concatenation of two constants has
+    // no static value here, and the site shows up in the set C5 pins.
+    expect([...derived.unresolved].some((site) => site.includes('label-const-concat.ts::'))).toBe(true)
   })
 
   it('C2: every derived fact type has a host category (the defect this PR fixes)', () => {
