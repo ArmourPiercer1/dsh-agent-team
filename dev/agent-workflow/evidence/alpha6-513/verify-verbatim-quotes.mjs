@@ -25,6 +25,12 @@
  *     diff — which is the point: the instrument makes the act visible and expensive, it does not make it
  *     impossible, and this comment says so out loud rather than claiming a guarantee it cannot give.
  *
+ * Its boundary, learned the hard way in the very commit that adds it (round 4): the detector is **line-scoped** —
+ * a path on one line and 落盘/正本 on the next is not a designation as far as this check is concerned. The log entry
+ * documenting F-R4-1 does exactly that, and passed. Evading it needs no malice, only ordinary line wrapping. It
+ * stays because a real designation is almost always written as one clause ("正本 = <path>"), but anyone citing this
+ * check has to cite its shape with it.
+ *
  * Read-only by construction: it opens three tracked files and writes nothing.
  *
  * @module dev/agent-workflow/evidence/alpha6-513/verify-verbatim-quotes

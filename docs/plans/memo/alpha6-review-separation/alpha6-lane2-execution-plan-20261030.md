@@ -79,7 +79,7 @@
 
 ### R-3 本轮实际交付（替换 §1 末行"本轮实际交付"的时点陈述，原文保留）
 
-已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 路径 / 无消费者无接线（`ALLOWED_CONSUMERS=[]`）/ 四个新增休眠 lane 模块 `packages/runtime/review-defer/**`——「零生产文件」的旧说法已于 2026-10-31 在 #509 正文撤回，见其评论 `6540728163`，round-3 G-R3-5；三轮独立审查
+已交付待审（全部 Draft + `DO-NOT-MERGE`，无一合并）：PR-A、PR0、PR3′、PR2′（#507）、PR4′（#509，defer 面，**DORMANT**；26 路径 / 无消费者无接线（`ALLOWED_CONSUMERS=[]`）/ 四个新增休眠 lane 模块 `packages/runtime/review-defer/**`（**universe 明示**：tracked 路径按 #509 head `ff7f4b48b` 实测 = 4——`gate.ts`/`index.ts`/`store.ts`/`types.ts`；同一路径在本 lane 的其它 worktree 里根本没检出（0），所以任何「这个 glob 匹配 N 个」的句子都必须说自己数的是哪个 head、tracked 还是磁盘——round-4 F-R4-10 报的 20 路径在我能到达的三个位置上没有一个复现）——「零生产文件」的旧说法已于 2026-10-31 在 #509 正文撤回，见其评论 `6540728163`，round-3 G-R3-5；三轮独立审查
 闭合中）。进行中：**PR-I1a**（受治理的 `ReviewAssignment` 唯一持久化 Writer）。并行允许：PR-I1b 的接口设计与
 安全负控（其受保护文件改动须先与 Alpha.5 协调并在 #502 公告所有权）。受阻：PR-I2 定时唤醒子集（R-1）。
 
