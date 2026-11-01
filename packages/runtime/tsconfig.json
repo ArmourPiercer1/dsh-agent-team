@@ -29,6 +29,10 @@
     // call, no live-registry import, no production consumer (a5w suite
     // re-pins the dormancy leg; a5p4 hygiene keeps its own self-check).
     "sandbox-provider",
+    // Alpha.6 PR0 (Lane 2): the review-delegation vocabulary lane. Dormant by
+    // declaration (nothing imports it until the named Center-Interface PR), so
+    // it must be NAMED here or no repo-wide tsc ever reads it.
+    "review-mandate",
     "test",
     "vitest.config.ts"
   ]
