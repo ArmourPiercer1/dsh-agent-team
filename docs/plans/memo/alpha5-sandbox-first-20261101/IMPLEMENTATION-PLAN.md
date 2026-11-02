@@ -6,7 +6,7 @@
 
 **Goal:** 通过 Blueprint 限制各 Member 的**文件读、文件写、网络 allow/deny**；使原生 DSH 工具保持原样，通过 `service-mediated` 和 `os-confined` 两种可组合的通用执行方式接入，并给未来工具提供通用接入口。
 
-**Architecture:** 重用 Alpha.4 Guard/ApprovalCase/Control 与原生 `ToolDefinition`。Team 新增 MemberPolicy、InvocationAuthority 绑定和可信工具登记；在 `ctx.fs` / `ctx.web` / `ctx.subprocess` / PTY 等公共服务处接入受控 Provider 和 OS 进程沙箱。必要时有限 Fork 上游**基础设施插件**并于 Team Preset 排他替换，`CORE PATCH BUDGET = 0`。
+**Architecture:** 以 `MemberCeiling ∩ ToolRestriction` 编译逐 Member、逐工具的全局 I/O 硬上界，重用 v4 工具限制词汇与 Alpha.4 Guard/ApprovalCase/Control、原生 `ToolDefinition`。Team 新增 MemberPolicy、InvocationAuthority 绑定和可信工具登记；在 `ctx.fs` / `ctx.web` / `ctx.subprocess` / PTY 等公共服务处接入受控 Provider 和 OS 进程沙箱。必要时有限 Fork 上游**基础设施插件**并于 Team Preset 排他替换，`CORE PATCH BUDGET = 0`。
 
 **Tech stack:** TypeScript/Node 22+、pnpm 11、Cordis、Linux Bubblewrap/Landlock 等已验证 confinement backend、Vitest、现有 TestWorldFactory。Host 基线唯一 `tests/paths.mjs`：`0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`。
 
@@ -18,7 +18,7 @@
 - **不变量**：A5-NATIVE-01/02、A5-BOUNDARY-01、A5-FALLBACK-01、A5-GENERIC-01..04。不得修改、Fork、复制原生模型可见工具的业务实现，不得引入任何 `read/grep/web` 业务替代算法；只做最小、公开 API 优先的基础设施 Provider/Backend 扩展或受控 Fork。
 - **信任边界**：可信工具摘要与实际绑定验证仅代表部署者选择，不代表恶意 JS 防绕过；`service-mediated` 必须标 `TRUSTED_ONLY`，`os-confined` 只有实测 OS 禁止才能宣称相应隔离。允许 hardlink 作为授权路径别名，但不开放未经授权的路径。
 - **测试资源**：只用 `tests/deepseek-harness-test-use` pristine Host，`tests/homes/<world>`、`tests/paths.mjs` 端口租约和 `tests/world-factory`；先 `node tests/world-factory/provision-host-sandbox.mjs --check` 预检沙箱原生资产；绝不影响 `:3080`、稳定 DSH_HOME、冻结源码或其他 lane 的 World。`ENV_BLOCK` 不计 PASS。
-- **版本/迁移**：旧 Blueprint v3/v4 行为与 hash 不变；v5 Member I/O 语法是推荐目标而非未经审查的既成事实。与 `AGENTS.md` 禁 vendoring 规则冲突，须于**独立 Authority Migration PR** 协同修订，先不以本 Draft 推翻现行限制。P1 的契约评审明确新 v5 语法、缺省、审批相容性、向后迁移策略。
+- **版本/迁移**：旧 Blueprint v3/v4 行为与 hash 不变；优先复用 v4 `toolBindings[].io` 现有词汇/映射，只为实际缺失的 Member ceiling 做最小增量。封闭语法确实需要时才考虑加法式版本，不预设 v5。与 `AGENTS.md` 禁 vendoring 规则冲突，须于**独立 Authority Migration PR** 协同修订，先不以本 Draft 推翻现行限制。P1 的契约评审先证明 v4 可复用边界，明确最小新增字段、缺省、审批相容性及向后迁移策略。
 - **Fork 纪律**：优先继承公开上游类和替换公开 Provider，必须 Fork 时先提交 `FORK-DECISION`（包/入口、需改的接缝、上游 SHA、最小 diff、许可证、Owner、跟踪更新/撤回机制）；不能为了减少 Fork 数重写工具或手工套一份简化 SubprocessRuntime。
 - **任务所有权**：Policy/Schema Owner；Service Adapter Owner；OS Sandbox Owner；Native Tool Integrator；Test/Security Reviewer；唯一 Authority Writer。一个任务一 branch/worktree/Writer；不同人可在冻结接口后并行 Service 与 OS 分支，不能并发写 `host.ts`、`agent-bindings.mjs`、`cordis.patch.yml`、`current-authority.json`。
 - **工作流**：每个任务按 RED 失败测试 → 最小实现 → GREEN → 类型检查 → 受影响回归 → 独立 Review → commit/PR；所有真实 Host 操作必须有运行记录、权限决策与独立副作用 Oracle。完成前独立 Reviewer 检验没有新工具执行体。
