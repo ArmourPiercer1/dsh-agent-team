@@ -1,11 +1,11 @@
 {
   "schema": "a5sf-golden-corpus/1",
   "task": "BL-13 (R5) — conversion of retired Alpha.5 tool-family golden vectors",
-  "note": "Regression comparison input only. The old vectors were recorded under the retired tool-family execution path; they are NOT new acceptance evidence and a MATCH pins only what the new lane must not silently change.",
+  "note": "Regression comparison input only. The old vectors were recorded under the retired tool-family execution path; they are NOT new gate evidence and a MATCH pins only what the new lane must not silently change.",
   "generatedAt": "2026-11-02",
-  "vectorCount": 10,
+  "vectorCount": 12,
   "dispositionCounts": {
-    "REPLAY_AS_REGRESSION": 4,
+    "REPLAY_AS_REGRESSION": 6,
     "RETIRE_AS_OLD_SEMANTICS": 4,
     "UNUSABLE": 2
   },
@@ -30,10 +30,17 @@
         "entry": "toLocatorKey",
         "module": "packages/runtime/member-io-policy/src/path-rules.ts"
       },
-      "input": { "locator": "caf\u00e9.txt" },
+      "input": {
+        "locator": "café.txt"
+      },
       "compare": {
         "kind": "equal",
-        "expected": { "absolute": false, "segments": ["caf\u00e9.txt"] }
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "café.txt"
+          ]
+        }
       }
     },
     {
@@ -56,10 +63,17 @@
         "entry": "toLocatorKey",
         "module": "packages/runtime/member-io-policy/src/path-rules.ts"
       },
-      "input": { "locator": "cafe\u0301.txt" },
+      "input": {
+        "locator": "café.txt"
+      },
       "compare": {
         "kind": "equal",
-        "expected": { "absolute": false, "segments": ["cafe\u0301.txt"] }
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "café.txt"
+          ]
+        }
       }
     },
     {
@@ -82,10 +96,18 @@
         "entry": "toLocatorKey",
         "module": "packages/runtime/member-io-policy/src/path-rules.ts"
       },
-      "input": { "locator": "../escape.txt" },
+      "input": {
+        "locator": "../escape.txt"
+      },
       "compare": {
         "kind": "equal",
-        "expected": { "absolute": false, "segments": ["..", "escape.txt"] }
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "..",
+            "escape.txt"
+          ]
+        }
       }
     },
     {
@@ -110,9 +132,49 @@
       },
       "input": {
         "locator": "/etc/outside.txt",
-        "lane": { "mode": "restricted", "allow": ["/work"], "ask": [], "deny": [] }
+        "lane": {
+          "mode": "restricted",
+          "allow": [
+            "/work"
+          ],
+          "ask": [],
+          "deny": []
+        }
       },
-      "compare": { "kind": "lane-decision", "expected": "deny" }
+      "compare": {
+        "kind": "lane-decision",
+        "expected": "deny"
+      }
+    },
+    {
+      "id": "read-path-absolute-stays-absolute",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 2459,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:44",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'/etc/outside.txt'}) was recorded as an ABSOLUTE path (resource `file:/etc/outside.txt`), not as a relative in-root path.",
+      "derivation": "Converted as a SUBSET claim on the same locator: only absoluteness is pinned (`absolute: true`); the segment list is deliberately left free, so an unrelated key-shape refinement does not read as a regression. The old fingerprint is not carried.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "toLocatorKey",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "/etc/outside.txt"
+      },
+      "compare": {
+        "kind": "subset",
+        "expected": {
+          "absolute": true
+        }
+      }
     },
     {
       "id": "read-golden-operation-fingerprint",
@@ -176,14 +238,45 @@
       "source": {
         "path": "packages/runtime/test/u7f-web-c1.test.ts",
         "line": 242,
-        "producer": "u7-f web_fetch C1 positive (ask + approval, bytes delivered)"
+        "producer": "u7-f web_fetch C1 positive (governed ask + grant, bytes delivered)"
       },
-      "effectClaim": "web_fetch with ask + approval delivered bytes and the leg saw the declared effect set; this was counted as a web-family success.",
-      "oldSemantics": "Changed invariant: admission-only is not a network hard ceiling. The new lane enforces network as a boolean hard ceiling and refuses destination-restricted as UNSUPPORTED; the old ask+approval delivery is neither network enforcement nor new-lane evidence, so the vector retires instead of pinning delivery.",
+      "effectClaim": "web_fetch with a governed ask + grant delivered bytes and the leg saw the declared effect set; this was counted as a web-family success.",
+      "oldSemantics": "Changed invariant: admission-only is not a network hard ceiling. The new lane enforces network as a boolean hard ceiling and refuses destination-restricted as UNSUPPORTED; the old ask+grant delivery is neither network enforcement nor new-lane evidence, so the vector retires instead of pinning delivery.",
       "newLane": {
         "owner": "sandbox-provider-os-runner",
         "entry": "compileExecutionProfile",
         "module": "packages/runtime/team-sandbox/src/profile.ts"
+      }
+    },
+    {
+      "id": "shell-command-is-not-resplit-into-argv",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr3-20261026/golden-vectors-master.json",
+        "line": 1,
+        "vectorIndex": 8,
+        "producer": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts:48",
+        "recordedVectorCount": 299,
+        "recordedDigest": "efb096a6140530d913ab2b5483d59c981843aa4b57e599fac451c93ae1d02964"
+      },
+      "effectClaim": "bash({command:'a | b && c || d ; e'}) was a single shell-command string that canonicalized to a fingerprint.",
+      "derivation": "Converted as the argv-boundary claim that replaces the retired command-string projection: the command text is handed to the OS runner as ONE explicit argv element and must arrive unchanged (no shell splitting, no metacharacter interpretation). The old fingerprint is not carried; this is why `shell-golden-command-fingerprint` retires while this boundary claim replays.",
+      "newLane": {
+        "owner": "sandbox-provider-os-runner",
+        "entry": "createTeamConfinedRunner",
+        "module": "packages/runtime/team-sandbox/src/runner.ts"
+      },
+      "input": {
+        "argv": [
+          "a | b && c || d ; e"
+        ]
+      },
+      "compare": {
+        "kind": "argv",
+        "expected": [
+          "a | b && c || d ; e"
+        ]
       }
     },
     {

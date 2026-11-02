@@ -58,19 +58,55 @@ export const NEW_LANE_OWNERS = Object.freeze([
 export const COMPARE_KINDS = Object.freeze(['equal', 'subset', 'lane-decision', 'argv'])
 
 /**
- * Tokens a fixture MUST NOT carry. They are the acceptance-shaped vocabulary
- * of the old gates; finding one means the fixture was copied from an
- * acceptance record instead of converted into a regression claim. Matching is
- * on uppercase whole words, which is why this module (comments included) may
- * name them without ever emitting one.
+ * The ONE blocklist of acceptance-shaped vocabulary a fixture MUST NOT carry.
+ * This is the single source: SCHEMA.md documents it and the tests exercise every
+ * family of it.
+ *
+ * Matching is CASE-INSENSITIVE and INFLECTION-AWARE (whole words over a
+ * lowercased haystack), because a fixture that says `verdict: "pass"`,
+ * `"PASSED"`, `"Accepted"` or `"approved"` is exactly as acceptance-shaped as
+ * one that shouts `PASS`. `live-confirmed` is kept as the old matrix's own
+ * grade word.
  */
 export const ACCEPTANCE_SHAPED_TOKENS = Object.freeze([
-  'PASS',
-  'GO',
-  'ACCEPTED',
-  'ACCEPTANCE',
-  'APPROVED',
-  'LIVE-CONFIRMED',
+  'accept',
+  'accepts',
+  'accepted',
+  'accepting',
+  'acceptance',
+  'approve',
+  'approves',
+  'approved',
+  'approving',
+  'approval',
+  'pass',
+  'passes',
+  'passed',
+  'passing',
+  'go',
+  'green',
+  'live-confirmed',
+])
+
+/**
+ * Keys that could carry a VERDICT / STATUS meaning. Any object key with one of
+ * these names is refused outright, at any depth, regardless of its value — a
+ * fixture may not smuggle a verdict under a key whose name is the verdict. If a
+ * fixture genuinely needs to talk about an observed outcome it must use a
+ * descriptive name (e.g. `observedDisposition`), not a grade slot.
+ *
+ * `disposition` is deliberately NOT in this set: it is the R5 classification
+ * (`REPLAY` / `RETIRE` / `UNUSABLE`), a conversion decision, not acceptance.
+ */
+export const VERDICT_BEARING_KEYS = Object.freeze([
+  'verdict',
+  'grade',
+  'status',
+  'acceptance',
+  'decision',
+  'result',
+  'signoff',
+  'sign-off',
 ])
 
 /** A typed refusal: an invalid fixture is an operator error, not a diverged vector. */
@@ -90,8 +126,8 @@ export class GoldenVectorError extends Error {
 }
 
 /**
- * Walk an arbitrary fixture value and return the first acceptance-shaped
- * token found, as `{ token, at }`, or `null`.
+ * Walk an arbitrary fixture value and return the first acceptance-shaped token
+ * found, as `{ token, at }`, or the first verdict-bearing KEY, or `null`.
  *
  * @param {unknown} value
  * @param {string} [at]
@@ -99,8 +135,9 @@ export class GoldenVectorError extends Error {
  */
 export function findAcceptanceToken(value, at = '$') {
   if (typeof value === 'string') {
+    const haystack = value.toLowerCase()
     for (const token of ACCEPTANCE_SHAPED_TOKENS) {
-      if (new RegExp(`(^|[^A-Za-z0-9_-])${token}([^A-Za-z0-9_-]|$)`).test(value)) {
+      if (new RegExp(`(^|[^a-z0-9])${token}([^a-z0-9]|$)`).test(haystack)) {
         return { token, at }
       }
     }
@@ -115,6 +152,10 @@ export function findAcceptanceToken(value, at = '$') {
   }
   if (value !== null && typeof value === 'object') {
     for (const [key, child] of Object.entries(value)) {
+      const normalizedKey = String(key).toLowerCase().replace(/[^a-z0-9-]/g, '')
+      if (VERDICT_BEARING_KEYS.includes(normalizedKey)) {
+        return { token: key, at: `${at}.<key>` }
+      }
       const hit = findAcceptanceToken(key, `${at}.<key>`) ?? findAcceptanceToken(child, `${at}.${key}`)
       if (hit !== null) return hit
     }
@@ -213,6 +254,23 @@ export function validateVector(vector) {
       throw new GoldenVectorError(
         'FIXTURE_FIELD_INVALID',
         `replay vector '${String(vector.id)}'.compare.expected is required`,
+        { id: vector.id },
+      )
+    }
+    const expected = vector.compare.expected
+    if (vector.compare.kind === 'argv') {
+      if (!Array.isArray(expected) || expected.some((part) => typeof part !== 'string')) {
+        throw new GoldenVectorError(
+          'FIXTURE_FIELD_INVALID',
+          `argv vector '${String(vector.id)}'.compare.expected must be a string[] (got ${formatValue(expected)})`,
+          { id: vector.id },
+        )
+      }
+    }
+    if (vector.compare.kind === 'subset' && !isPlainObject(expected)) {
+      throw new GoldenVectorError(
+        'FIXTURE_FIELD_INVALID',
+        `subset vector '${String(vector.id)}'.compare.expected must be an object (got ${formatValue(expected)})`,
         { id: vector.id },
       )
     }

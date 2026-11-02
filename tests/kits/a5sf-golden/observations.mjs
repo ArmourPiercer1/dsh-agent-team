@@ -53,6 +53,68 @@ export function loadPathRules() {
   return pathRulesPromise
 }
 
+let runnerPromise = null
+
+/** Import the shipping OS runner (`createTeamConfinedRunner`). */
+export function loadRunnerSeam() {
+  if (runnerPromise !== null) return runnerPromise
+  registerRepoHooks()
+  runnerPromise = import(
+    pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-sandbox', 'src', 'runner.ts')).href
+  ).then((module) => Object.freeze({ createTeamConfinedRunner: module.createTeamConfinedRunner }))
+  return runnerPromise
+}
+
+/** A profile that compiles without naming a write or network dimension. */
+const READ_ONLY_POLICY = Object.freeze({
+  memberIdentity: 'a5sf-r5-observation',
+  templateId: 'a5sf-r5',
+  instanceGeneration: 1,
+  revision: 'a5sf-r5-regression',
+  read: Object.freeze({ mode: 'restricted', allow: Object.freeze(['/tmp']), ask: Object.freeze([]), deny: Object.freeze([]) }),
+  write: Object.freeze({ mode: 'restricted', allow: Object.freeze([]), ask: Object.freeze([]), deny: Object.freeze([]) }),
+  network: Object.freeze({ access: 'allow' }),
+})
+
+/** A provider that answers the capability probe and refuses to spawn. */
+const PROBE_ONLY_PROVIDER = Object.freeze({
+  async probe() {
+    return { ok: true, value: [{ dimension: 'content-read', level: 'enforced' }] }
+  },
+  async spawn() {
+    throw new Error('the argv observation uses plan(), never spawn()')
+  },
+})
+
+/**
+ * Observe the argv the OS runner would hand the provider for an explicit
+ * argument vector (the `compare.kind = argv` observation shape).
+ *
+ * This exercises the shipping `plan()` path: policy compilation + capability
+ * probe + argv assembly. It never spawns a process, so it is host-free.
+ *
+ * @param {string[]} argv
+ * @returns {Promise<string[]>}
+ */
+export async function observeRunnerArgv(argv) {
+  const { createTeamConfinedRunner } = await loadRunnerSeam()
+  const runner = createTeamConfinedRunner(PROBE_ONLY_PROVIDER)
+  const planned = await runner.plan({
+    policy: READ_ONLY_POLICY,
+    realmId: 'a5sf-r5-observation',
+    bindingId: 'a5sf-r5-binding',
+    memberScope: 'a5sf-r5-member',
+    grantFingerprint: 'sha256:a5sf-r5-regression',
+    argv: Object.freeze([...argv]),
+    cwd: '/tmp',
+    env: Object.freeze([]),
+  })
+  if (planned.ok !== true) {
+    throw new Error(`the OS runner refused the observation: ${String(planned.code)} ${String(planned.detail)}`)
+  }
+  return [...planned.request.argv]
+}
+
 /**
  * Observe a locator with the new lane's comparison key (the `compare.kind =
  * equal` observation shape).

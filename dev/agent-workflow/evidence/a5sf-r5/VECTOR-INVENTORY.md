@@ -26,20 +26,31 @@ recorded-corpus path (`line 1`) and the vector index used for conversion.
 
 | # | Old golden material | Gate / assertion source | Recording | Vectors | Disposition |
 |---|---|---|---|---|---|
-| 1 | **read canonicalization** | `packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54` (digest), `:55` (count); generator `packages/runtime/test/u6-pr2-golden-corpus.mts:28-105`; path classes `:33,:34,:37,:44` | `dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json:1` (`bfa69f58…`, 2893) | 2893 | **split**: 4 path-identity claims REPLAY; the operation fingerprint RETIREs |
-| 2 | **shell canonicalization** | `packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts:48` (digest), `:49` (count); generator `u6-pr3-golden-corpus.mts` | `dev/agent-workflow/evidence/u6-pr3-20261026/golden-vectors-master.json:1` (`efb096a6…`, 299) | 299 | **RETIRE** (command-string fingerprint) |
+| 1 | **read canonicalization** | `packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54` (digest), `:55` (count); generator `packages/runtime/test/u6-pr2-golden-corpus.mts:28-105`; path classes `:33,:34,:37,:44` | `dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json:1` (`bfa69f58…`, 2893) | 2893 | **split**: 5 path-identity claims REPLAY; the operation fingerprint RETIREs |
+| 2 | **shell canonicalization** | `packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts:48` (digest), `:49` (count); generator `u6-pr3-golden-corpus.mts` | `dev/agent-workflow/evidence/u6-pr3-20261026/golden-vectors-master.json:1` (`efb096a6…`, 299) | 299 | **split**: the command-string fingerprint RETIREs; the argv boundary REPLAYs |
 | 3 | **search surface + `rg` argv** | `packages/runtime/test/u6-pr5-search-golden-vectors.test.ts:53` (digest), `:54` (count); generator `u6-pr5-search-golden-corpus.mts` | `dev/agent-workflow/evidence/u6-pr5-20261026/golden-vectors-master.json:1` (`0dabc187…`, 409) | 409 | **RETIRE** (the argv builder dies with the family; the new OS runner is argv-taking) |
 | 4 | **write/edit/read_image canonical law** | `packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts:34` (digest), `:35` (count); generator `packages/runtime/test/u7-9a-mutation-golden-corpus.mts:87-103` | `dev/agent-workflow/evidence/u7-9a-fs-20261026/golden-recording.txt:10` (`91fee9a6…`, 1440) | 1440 | **split**: read_image UNUSABLE; write/edit fingerprint RETIREs |
 | 5 | **grep argv spelling (A5-SRGP control)** | `packages/runtime/test/alpha5-search-backend.test.ts:205-213` ("R1 pins its argv form verbatim") | — (assertion in test) | 2 argv shapes | **RETIRE** |
 | 6 | **web_fetch admission delivery** | `packages/runtime/test/u7f-web-c1.test.ts:242-257` (W-1 ask + approval, bytes delivered) | — (live C1) | 1 behaviour | **RETIRE** |
 | 7 | **direct-vs-stub effect parity** | `packages/tools/a5p5-tools/test/a5p5-parity.test.ts:11` (parity law), `:196` (`effectFingerprint`) | — (family-plane test) | 1 matrix | **UNUSABLE** |
 
-**Total recorded vectors found: 5,041** (2893 + 299 + 409 + 1440), plus three
-adjacent single-assertion output expectations (#5, #6, #7). All remain in the
-tree; the legacy vitest gates keep running in the legacy world. BL-13 does
-**not** delete or rewrite them.
+**Live gate-pinned corpus total: 5,041 vectors** across the four recorded
+corpora (2893 + 299 + 409 + 1440), plus three adjacent single-assertion output
+expectations (#5, #6, #7). All remain in the tree; the legacy vitest gates keep
+running in the legacy world. BL-13 does **not** delete or rewrite them.
 
-## 2. Converted corpus — 10 vectors, dispositions, owners
+Disclosed so the total is not over-read: the same evidence directories hold
+**older recordings and byte-identical copies**, which are NOT additional
+distinct vectors. `u6-pr2-20261025/golden-vectors-after-pr2.json` is the
+superseded **round-1 recording of 877 vectors** (digest
+`7fbb3ab9ae48451fc8ab41489491dfcf4d0420bfaa0f596dd09c949124a7987c`, quoted in
+the gate header as the pre-extension gate); `golden-vectors-round2-family.json`
+and `golden-vectors-round2-master.json` both hold the **same 2893 vectors**
+(750,899 bytes each, digest `bfa69f58…`), and the u6-pr3 / u6-pr5 evidence dirs
+each hold a family/master pair with identical counts and sizes (299 / 409).
+The 5,041 figure counts each live gate-pinned corpus once, not its copies.
+
+## 2. Converted corpus — 12 vectors, dispositions, owners
 
 `tests/kits/a5sf-golden/vectors.json`; `file:line` is the old source, and
 `newLane` is the NEW owner of the equivalent effect.
@@ -50,14 +61,24 @@ tree; the legacy vitest gates keep running in the legacy world. BL-13 does
 | `read-path-nfd-not-folded` | same recording idx 1019; path class `u6-pr2-golden-corpus.mts:34` | `read('cafe\u0301.txt')` stayed distinct from NFC (no normalization) | `member-io-policy#toLocatorKey` | **REPLAY-AS-REGRESSION** |
 | `read-path-dotdot-literal` | same recording idx 1451; path class `u6-pr2-golden-corpus.mts:37` | `read('../escape.txt')` → `file:../escape.txt` (`..` never folded) | `member-io-policy#toLocatorKey` | **REPLAY-AS-REGRESSION** |
 | `read-path-absolute-outside-denied` | same recording idx 2459; path class `u6-pr2-golden-corpus.mts:44` | absolute path outside the root | `member-io-policy#matchLocator` | **REPLAY-AS-REGRESSION** (derived: deny under a restricted `/work` lane) |
+| `read-path-absolute-stays-absolute` | same recording idx 2459; path class `u6-pr2-golden-corpus.mts:44` | the same path was recorded as an absolute resource (`file:/etc/outside.txt`) | `member-io-policy#toLocatorKey` | **REPLAY-AS-REGRESSION** (subset: only `absolute:true` is pinned) |
 | `read-golden-operation-fingerprint` | `u6-pr2-read-golden-vectors.test.ts:54-55` | read calls addressed by a 2893-vector `canonicalizeOperation` digest | `member-io-policy#compileEffectiveIo` | **RETIRE-AS-OLD-SEMANTICS** |
-| `shell-golden-command-fingerprint` | `u6-pr3-shell-golden-vectors.test.ts:48-49` | bash command strings canonicalized into approval fingerprints | `sandbox-provider-os-runner#createTeamConfinedRunner` | **RETIRE-AS-OLD-SEMANTICS** |
+| `shell-golden-command-fingerprint` | `u6-pr3-shell-golden-vectors.test.ts:48-49` | bash command strings canonicalized into grant fingerprints | `sandbox-provider-os-runner#createTeamConfinedRunner` | **RETIRE-AS-OLD-SEMANTICS** |
+| `shell-command-is-not-resplit-into-argv` | `u6-pr3-20261026/golden-vectors-master.json:1` idx 8; gate `u6-pr3-shell-golden-vectors.test.ts:48` | `bash({command:'a \| b && c \|\| d ; e'})` was one valid shell-command string | `sandbox-provider-os-runner#createTeamConfinedRunner` | **REPLAY-AS-REGRESSION** (derived: the text is ONE argv element, passed through unchanged) |
 | `search-rg-argv-spelling` | `alpha5-search-backend.test.ts:205-213` | the family's exact `rg` argv (`-rIn` quirks) | `sandbox-provider-os-runner#createTeamConfinedRunner` | **RETIRE-AS-OLD-SEMANTICS** |
-| `web-family-admission-delivery` | `u7f-web-c1.test.ts:242-257` | ask + approval delivering web bytes counted as a web success | `sandbox-provider-os-runner#compileExecutionProfile` | **RETIRE-AS-OLD-SEMANTICS** |
+| `web-family-admission-delivery` | `u7f-web-c1.test.ts:242-257` | ask + governed grant delivering web bytes counted as a web success | `sandbox-provider-os-runner#compileExecutionProfile` | **RETIRE-AS-OLD-SEMANTICS** |
 | `read-image-attachment-projection` | `u7-9a-mutation-golden-corpus.mts:97,101-103`; gate `u7-9a-mutation-golden-vectors.test.ts:34` | `read_image` projected a resource key only | `team-services#installToolBindingRealm` | **UNUSABLE** |
 | `effect-fingerprint-backend-parity` | `a5p5-parity.test.ts:11,196` | direct vs C-PROC stub parity on `effectFingerprint`/settlement/spill | `team-services#createMemberFsGuard` | **UNUSABLE** |
 
-**Converted dispositions: REPLAY-AS-REGRESSION 4 · RETIRE-AS-OLD-SEMANTICS 4 · UNUSABLE 2 (total 10).**
+**Converted dispositions: REPLAY-AS-REGRESSION 6 · RETIRE-AS-OLD-SEMANTICS 4 · UNUSABLE 2 (total 12).**
+
+The two `compare.kind` declarations that initially had no corpus coverage now
+each have a real vector (review conditions C3): `subset` pins only
+`absolute:true` on the same absolute-outside locator (segments deliberately
+untouched), and `argv` pins the new argv **boundary** — the retired search
+vector `search-rg-argv-spelling` still retires the family's argv *builder*,
+while `shell-command-is-not-resplit-into-argv` replays the *pass-through*
+claim that replaces the command-string projection.
 
 ### Why each RETIRE changed an invariant
 
@@ -92,11 +113,11 @@ tree; the legacy vitest gates keep running in the legacy world. BL-13 does
 
 ## 3. What was deliberately NOT converted
 
-- **5,031 of the 5,041 recorded vectors** — the corpora are atomic digest gates
+- **5,029 of the 5,041 recorded vectors** — the corpora are atomic digest gates
   over old projections. Importing them would either (a) re-assert a dead
   fingerprint, or (b) require copying thousands of old expectations blindly.
   They stay in their evidence dirs and keep running in the legacy vitest world.
-  The converted 10 are the explainable sample.
+  The converted 12 are the explainable sample.
 - **write/edit content fingerprint** — same class as the read fingerprint
   (RETIRE); not duplicated as a separate converted vector because the mutation
   corpus digest already covers it in the legacy world and the new lane computes

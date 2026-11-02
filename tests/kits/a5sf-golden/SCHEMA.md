@@ -14,7 +14,7 @@ new Provider / Service / OS-runner lanes.
 
 | File | Role |
 |---|---|
-| `vectors.json` | the converted corpus (10 effect claims) |
+| `vectors.json` | the converted corpus (12 effect claims) |
 | `compare.mjs` | pure comparator + CLI (`MATCH` / `DIVERGED(reason)` / `NOT_APPLICABLE(basis)`) |
 | `observations.mjs` | new-lane side: calls the shipping P1 path algebra to make an observation |
 | `compare.test.mjs` | host-free `node:test` suite (RED/GREEN logs in `dev/agent-workflow/evidence/a5sf-r5/`) |
@@ -29,8 +29,8 @@ Top level:
   "task": "BL-13 (R5) — conversion of retired Alpha.5 tool-family golden vectors",
   "note": "regression comparison input only",
   "generatedAt": "YYYY-MM-DD",
-  "vectorCount": 10,
-  "dispositionCounts": { "REPLAY_AS_REGRESSION": 4, "RETIRE_AS_OLD_SEMANTICS": 4, "UNUSABLE": 2 },
+  "vectorCount": 12,
+  "dispositionCounts": { "REPLAY_AS_REGRESSION": 6, "RETIRE_AS_OLD_SEMANTICS": 4, "UNUSABLE": 2 },
   "vectors": []
 }
 ```
@@ -59,7 +59,7 @@ Each vector:
 | `equal` | any JSON value | deep-equal JSON value |
 | `subset` | object | object; every expected key must be present and deep-equal (extra keys allowed) |
 | `lane-decision` | `"allow"` \| `"ask"` \| `"deny"` | one of those strings from `member-io-policy#matchLocator` |
-| `argv` | `string[]` | `string[]` as handed to the OS runner |
+| `argv` | `string[]` (validated as a string array) | `string[]` the shipping OS runner would hand the provider (`plan().request.argv`) |
 
 ## Comparator contract
 
@@ -74,20 +74,36 @@ compareObservation(vector, observation)
 Laws, all pinned by `compare.test.mjs`:
 
 1. **Validation first.** A fixture without `regressionOnly: true` throws
-   `FIXTURE_NOT_REGRESSION_ONLY`. A fixture carrying an uppercase
-   acceptance-shaped token (`PASS`, `GO`, `ACCEPTED`, `ACCEPTANCE`, `APPROVED`,
-   `LIVE-CONFIRMED`) anywhere in a key or string throws
-   `FIXTURE_ACCEPTANCE_TOKEN`. Corpus-level token scan throws
-   `CORPUS_ACCEPTANCE_TOKEN`.
-2. **Disposition wins over observation.** For `RETIRE_AS_OLD_SEMANTICS` and
+   `FIXTURE_NOT_REGRESSION_ONLY`.
+2. **Acceptance vocabulary is refused case-insensitively, with inflections, and
+   by key.** `compare.mjs` exports the ONE blocklist
+   (`ACCEPTANCE_SHAPED_TOKENS`): `accept`, `accepts`, `accepted`, `accepting`,
+   `acceptance`, `approve`, `approves`, `approved`, `approving`, `approval`,
+   `pass`, `passes`, `passed`, `passing`, `go`, `green`, `live-confirmed`.
+   Whole-word matching runs over a **lowercased** haystack, so `"PASS"`,
+   `"pass"`, `"Pass"`, `"PASSED"`, `"Accepted"` and `"approved"` are all
+   refused. Additionally, any object key whose normalized name is one of
+   `VERDICT_BEARING_KEYS` (`verdict`, `grade`, `status`, `acceptance`,
+   `decision`, `result`, `signoff`, `sign-off`) is refused **regardless of its
+   value** — a fixture may not smuggle a verdict under a grade slot. A fixture
+   that needs to describe an outcome must use a descriptive key
+   (`observedDisposition`, not `status`). `disposition` is deliberately NOT
+   refused: it is the R5 conversion classification, not a verdict.
+   Refusals throw `FIXTURE_ACCEPTANCE_TOKEN` / `FIXTURE_FIELD_INVALID`; the
+   corpus-level scan throws `CORPUS_ACCEPTANCE_TOKEN`.
+3. **Expectation shapes are validated.** `compare.kind: "argv"` requires
+   `compare.expected` to be a `string[]`; `compare.kind: "subset"` requires an
+   object. A malformed expectation is `FIXTURE_FIELD_INVALID`, never a silent
+   empty-`argv` MATCH.
+4. **Disposition wins over observation.** For `RETIRE_AS_OLD_SEMANTICS` and
    `UNUSABLE`, `compareObservation` returns `NOT_APPLICABLE` **before it looks
    at the observation**. Even a byte-identical observation cannot yield `MATCH`.
    `describeResult` renders `NOT_APPLICABLE(old-semantics)` /
    `NOT_APPLICABLE(no-equivalent)` and carries `oldSemantics` as `reason`.
-3. **Closed vocabulary.** `RESULT` has exactly three members, none of which is a
-   verdict. The module never returns an acceptance token; the token list above
+5. **Closed vocabulary.** `RESULT` has exactly three members, none of which is a
+   verdict. The module never returns an acceptance token; the blocklist above
    is a *refusal* list only.
-4. **Divergence names the field.** `DIVERGED` always carries a `reason` naming
+6. **Divergence names the field.** `DIVERGED` always carries a `reason` naming
    the first differing path (`observation.segments[0]: expected … observed …`,
    `argv[3]: …`, `<locator>: expected lane decision 'deny', observed 'allow'`).
 
@@ -103,7 +119,7 @@ node tests/kits/a5sf-golden/compare.mjs \
 # REFUSED(<code>) (exit 2)
 ```
 
-## Why only 10 vectors out of 5,041 recorded ones
+## Why only 12 vectors out of the 5,041 live gate-pinned ones
 
 The old evidence dirs hold four recorded corpora (`2893` read, `299` shell,
 `409` search, `1440` mutation = **5,041** vectors). Those digests still run in

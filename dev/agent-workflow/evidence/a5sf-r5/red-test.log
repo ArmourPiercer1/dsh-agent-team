@@ -1,49 +1,51 @@
-✔ the corpus is well-formed: every vector is regression-only and names a new-lane owner (6.835911ms)
-✔ the corpus and every fixture are free of acceptance-shaped vocabulary (0.083909ms)
-✖ MATCH: a same-shape new-lane observation is a regression comparison, not acceptance (58.822101ms)
-✔ MATCH: an absolute-outside locator is denied by a restricted lane (lane decision) (0.313754ms)
-✖ DIVERGED: a folded Unicode path names the field that moved (0.468828ms)
-✖ DIVERGED: a relaxed lane decision is reported with both decisions named (0.214426ms)
-✖ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.207803ms)
-✖ REFUSED: a fixture carrying an acceptance-shaped token is not converted corpus (0.19545ms)
-✖ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.215558ms)
-✖ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.21667ms)
-✖ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (0.161756ms)
-✔ the closed result vocabulary has exactly three statuses and none is a verdict (0.116009ms)
-ℹ tests 12
+✖ the corpus is well-formed: every vector is regression-only and names a new-lane owner (0.74469ms)
+✔ the corpus and every fixture are free of acceptance-shaped vocabulary (0.129035ms)
+✔ MATCH: a same-shape new-lane observation is a regression comparison, not acceptance (58.667056ms)
+✔ MATCH: an absolute-outside locator is denied by a restricted lane (lane decision) (0.254291ms)
+✖ DIVERGED: a folded Unicode path names the field that moved (0.635874ms)
+✖ DIVERGED: a relaxed lane decision is reported with both decisions named (0.247078ms)
+✔ MATCH: a subset expectation pins only the field it names (0.423852ms)
+✖ DIVERGED: a subset expectation still catches a changed pinned field (0.10595ms)
+✔ MATCH: the OS runner passes an explicit argv element through unchanged (4.286716ms)
+✖ DIVERGED: a re-split argv is reported at the argv index (0.235215ms)
+✖ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.213304ms)
+✖ REFUSED: an acceptance-shaped token is refused in EVERY case and inflection (0.146678ms)
+✖ REFUSED: a verdict/status-bearing KEY is refused even with a benign value (0.080062ms)
+✖ REFUSED: an argv expectation must be a string[] (C2) (0.146948ms)
+✖ REFUSED: a subset expectation must be an object (C2, no array-kind escape) (0.230054ms)
+✖ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.219486ms)
+✖ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.176174ms)
+✖ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (0.187024ms)
+✔ the closed result vocabulary has exactly three statuses and none is a verdict (0.125908ms)
+ℹ tests 19
 ℹ suites 0
-ℹ pass 4
-ℹ fail 8
+ℹ pass 6
+ℹ fail 13
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 135.68722
+ℹ duration_ms 130.34321
 
 ✖ failing tests:
 
-test at tests/kits/a5sf-golden/compare.test.mjs:86:1
-✖ MATCH: a same-shape new-lane observation is a regression comparison, not acceptance (58.822101ms)
-  AssertionError [ERR_ASSERTION]: The "string" argument must be of type string. Received type undefined (undefined)
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:92:10)
-      at async Test.run (node:internal/test_runner/test:1409:7)
-      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
-    generatedMessage: true,
-    code: 'ERR_ASSERTION',
-    actual: undefined,
-    expected: /not acceptance evidence/,
-    operator: 'match',
-    diff: 'simple'
-  }
+test at tests/kits/a5sf-golden/compare.test.mjs:60:1
+✖ the corpus is well-formed: every vector is regression-only and names a new-lane owner (0.74469ms)
+  TypeError: Cannot read properties of undefined (reading 'vectorCount')
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:61:23)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
 
-test at tests/kits/a5sf-golden/compare.test.mjs:106:1
-✖ DIVERGED: a folded Unicode path names the field that moved (0.468828ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:107:1
+✖ DIVERGED: a folded Unicode path names the field that moved (0.635874ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
   
   + 'MATCH'
   - 'DIVERGED'
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:110:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:111:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -58,15 +60,15 @@ test at tests/kits/a5sf-golden/compare.test.mjs:106:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:118:1
-✖ DIVERGED: a relaxed lane decision is reported with both decisions named (0.214426ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:119:1
+✖ DIVERGED: a relaxed lane decision is reported with both decisions named (0.247078ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
   
   + 'MATCH'
   - 'DIVERGED'
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:121:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:122:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -81,11 +83,57 @@ test at tests/kits/a5sf-golden/compare.test.mjs:118:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:126:1
-✖ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.207803ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:136:1
+✖ DIVERGED: a subset expectation still catches a changed pinned field (0.10595ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'MATCH'
+  - 'DIVERGED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:139:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'MATCH',
+    expected: 'DIVERGED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/a5sf-golden/compare.test.mjs:151:1
+✖ DIVERGED: a re-split argv is reported at the argv index (0.235215ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'MATCH'
+  - 'DIVERGED'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:154:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'MATCH',
+    expected: 'DIVERGED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/kits/a5sf-golden/compare.test.mjs:161:1
+✖ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.213304ms)
   AssertionError [ERR_ASSERTION]: expected a GoldenVectorError refusal, got none
-      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:56:10)
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:129:16)
+      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:57:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:164:16)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -100,11 +148,11 @@ test at tests/kits/a5sf-golden/compare.test.mjs:126:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:132:1
-✖ REFUSED: a fixture carrying an acceptance-shaped token is not converted corpus (0.19545ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:167:1
+✖ REFUSED: an acceptance-shaped token is refused in EVERY case and inflection (0.146678ms)
   AssertionError [ERR_ASSERTION]: expected a GoldenVectorError refusal, got none
-      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:56:10)
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:136:18)
+      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:57:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:178:18)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -119,15 +167,72 @@ test at tests/kits/a5sf-golden/compare.test.mjs:132:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:145:1
-✖ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.215558ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:188:1
+✖ REFUSED: a verdict/status-bearing KEY is refused even with a benign value (0.080062ms)
+  AssertionError [ERR_ASSERTION]: expected a GoldenVectorError refusal, got none
+      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:57:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:192:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at tests/kits/a5sf-golden/compare.test.mjs:201:1
+✖ REFUSED: an argv expectation must be a string[] (C2) (0.146948ms)
+  AssertionError [ERR_ASSERTION]: expected a GoldenVectorError refusal, got none
+      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:57:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:206:7)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at tests/kits/a5sf-golden/compare.test.mjs:215:1
+✖ REFUSED: a subset expectation must be an object (C2, no array-kind escape) (0.230054ms)
+  AssertionError [ERR_ASSERTION]: expected a GoldenVectorError refusal, got none
+      at refusalCode (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:57:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:220:7)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at tests/kits/a5sf-golden/compare.test.mjs:228:1
+✖ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.219486ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
   
   + 'MATCH'
   - 'NOT_APPLICABLE'
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:148:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:231:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -142,15 +247,15 @@ test at tests/kits/a5sf-golden/compare.test.mjs:145:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:154:1
-✖ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.21667ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:237:1
+✖ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.176174ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
   
   + 'MATCH'
   - 'NOT_APPLICABLE'
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:157:10)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:240:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
@@ -165,15 +270,15 @@ test at tests/kits/a5sf-golden/compare.test.mjs:154:1
     diff: 'simple'
   }
 
-test at tests/kits/a5sf-golden/compare.test.mjs:163:1
-✖ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (0.161756ms)
+test at tests/kits/a5sf-golden/compare.test.mjs:246:1
+✖ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (0.187024ms)
   AssertionError [ERR_ASSERTION]: read-golden-operation-fingerprint / undefined
   + actual - expected
   
   + 'MATCH'
   - 'NOT_APPLICABLE'
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:167:14)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r5-golden/tests/kits/a5sf-golden/compare.test.mjs:250:14)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:974:18)

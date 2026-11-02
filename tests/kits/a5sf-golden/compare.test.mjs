@@ -28,13 +28,14 @@ import {
   GoldenVectorError,
   RESULT,
   REGRESSION_LABEL,
+  VERDICT_BEARING_KEYS,
   compareObservation,
   describeResult,
   findAcceptanceToken,
   loadCorpus,
   validateVector,
 } from './compare.mjs'
-import { REPO_ROOT, observeLaneDecision, observeLocator } from './observations.mjs'
+import { REPO_ROOT, observeLaneDecision, observeLocator, observeRunnerArgv } from './observations.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const CORPUS_PATH = join(HERE, 'vectors.json')
@@ -58,7 +59,7 @@ function refusalCode(fn) {
 
 test('the corpus is well-formed: every vector is regression-only and names a new-lane owner', () => {
   assert.equal(corpus.vectorCount, vectors.length)
-  assert.equal(vectors.length, 10)
+  assert.equal(vectors.length, 12)
   const counts = Object.fromEntries(DISPOSITIONS.map((disposition) => [disposition, 0]))
   for (const vector of vectors) {
     assert.equal(validateVector(vector), true, vector.id)
@@ -72,7 +73,7 @@ test('the corpus is well-formed: every vector is regression-only and names a new
     )
   }
   assert.deepEqual(counts, {
-    REPLAY_AS_REGRESSION: 4,
+    REPLAY_AS_REGRESSION: 6,
     RETIRE_AS_OLD_SEMANTICS: 4,
     UNUSABLE: 2,
   })
@@ -123,23 +124,105 @@ test('DIVERGED: a relaxed lane decision is reported with both decisions named', 
   assert.match(result.reason, /observed 'allow'/)
 })
 
+test('MATCH: a subset expectation pins only the field it names', async () => {
+  const vector = vectorById('read-path-absolute-stays-absolute')
+  const observation = await observeLocator(vector.input.locator)
+  const result = compareObservation(vector, observation)
+  assert.equal(result.status, RESULT.MATCH, JSON.stringify(result))
+  // Extra keys are allowed by design: the segments are deliberately un-pinned.
+  assert.deepEqual(Object.keys(vector.compare.expected), ['absolute'])
+})
+
+test('DIVERGED: a subset expectation still catches a changed pinned field', () => {
+  const vector = vectorById('read-path-absolute-stays-absolute')
+  const result = compareObservation(vector, { absolute: false, segments: ['etc', 'outside.txt'] })
+  assert.equal(result.status, RESULT.DIVERGED)
+  assert.match(result.reason, /observation\.absolute: expected true, observed false/)
+})
+
+test('MATCH: the OS runner passes an explicit argv element through unchanged', async () => {
+  const vector = vectorById('shell-command-is-not-resplit-into-argv')
+  const observation = await observeRunnerArgv(vector.input.argv)
+  assert.deepEqual(observation, vector.compare.expected)
+  const result = compareObservation(vector, observation)
+  assert.equal(result.status, RESULT.MATCH, JSON.stringify(result))
+})
+
+test('DIVERGED: a re-split argv is reported at the argv index', () => {
+  const vector = vectorById('shell-command-is-not-resplit-into-argv')
+  const result = compareObservation(vector, ['a | b && c || d ; e', 'whoami'])
+  assert.equal(result.status, RESULT.DIVERGED)
+  assert.match(result.reason, /argv length: expected 1, observed 2/)
+  const element = compareObservation(vector, ['a | b && c || d ; e whoami'])
+  assert.equal(element.status, RESULT.DIVERGED)
+  assert.match(element.reason, /argv\[0\]: expected/)
+})
+
 test('REFUSED: a fixture without regressionOnly: true is not a comparison input', () => {
   const vector = vectorById('read-path-unicode-nfc-locator')
   const { regressionOnly: _dropped, ...withoutFlag } = vector
   assert.equal(refusalCode(() => validateVector(withoutFlag)), 'FIXTURE_NOT_REGRESSION_ONLY')
 })
 
-test('REFUSED: a fixture carrying an acceptance-shaped token is not converted corpus', () => {
+test('REFUSED: an acceptance-shaped token is refused in EVERY case and inflection', () => {
   const vector = vectorById('read-path-unicode-nfc-locator')
-  for (const token of ['PASS', 'GO', 'ACCEPTED', 'APPROVED']) {
-    const contaminated = { ...vector, verdict: token }
-    assert.equal(refusalCode(() => validateVector(contaminated)), 'FIXTURE_ACCEPTANCE_TOKEN', token)
+  const carried = [
+    'PASS', 'pass', 'Pass', 'PASSED', 'passed', 'passing', 'passes',
+    'ACCEPTED', 'Accepted', 'accepted', 'accept', 'acceptance',
+    'APPROVED', 'approved', 'approval', 'approve',
+    'GO', 'go', 'Green', 'green', 'LIVE-CONFIRMED', 'live-confirmed',
+  ]
+  for (const token of carried) {
+    // (a) as the value of a key that has no verdict meaning
+    const inValue = { ...vector, effectClaim: `${vector.effectClaim} ${token}` }
+    assert.equal(refusalCode(() => validateVector(inValue)), 'FIXTURE_ACCEPTANCE_TOKEN', `value: ${token}`)
+    // (b) as a key (a bare token key is refused by the token scan)
+    const asKey = { ...vector, [token]: 'x' }
+    assert.equal(refusalCode(() => validateVector(asKey)), 'FIXTURE_ACCEPTANCE_TOKEN', `key: ${token}`)
   }
-  // ... including a token buried in a free-text field, not only a verdict key.
-  const sneaked = { ...vector, effectClaim: `${vector.effectClaim} GO` }
-  assert.equal(refusalCode(() => validateVector(sneaked)), 'FIXTURE_ACCEPTANCE_TOKEN')
   // The refusal vocabulary itself is not emitted as a result vocabulary.
   assert.ok(ACCEPTANCE_SHAPED_TOKENS.length > 0)
+  assert.ok(ACCEPTANCE_SHAPED_TOKENS.every((token) => token === token.toLowerCase()))
+})
+
+test('REFUSED: a verdict/status-bearing KEY is refused even with a benign value', () => {
+  const vector = vectorById('read-path-unicode-nfc-locator')
+  for (const key of VERDICT_BEARING_KEYS) {
+    const contaminated = { ...vector, [key]: 'anything' }
+    assert.equal(refusalCode(() => validateVector(contaminated)), 'FIXTURE_ACCEPTANCE_TOKEN', key)
+  }
+  // ... and the key scan is case- and punctuation-insensitive.
+  for (const key of ['VERDICT', 'Status', 'sign_off', 'sign-off', 'Grade']) {
+    const contaminated = { ...vector, [key]: 'anything' }
+    assert.equal(refusalCode(() => validateVector(contaminated)), 'FIXTURE_ACCEPTANCE_TOKEN', key)
+  }
+})
+
+test('REFUSED: an argv expectation must be a string[] (C2)', () => {
+  const vector = vectorById('shell-command-is-not-resplit-into-argv')
+  for (const bad of ['a | b', 42, null, { argv: [] }, [1, 2], [null]]) {
+    const contaminated = { ...vector, compare: { ...vector.compare, expected: bad } }
+    assert.equal(
+      refusalCode(() => validateVector(contaminated)),
+      'FIXTURE_FIELD_INVALID',
+      `expected: ${JSON.stringify(bad)}`,
+    )
+  }
+  // The happy shape still validates.
+  assert.equal(validateVector(vector), true)
+})
+
+test('REFUSED: a subset expectation must be an object (C2, no array-kind escape)', () => {
+  const vector = vectorById('read-path-absolute-stays-absolute')
+  for (const bad of [[true], 'absolute', 1, null]) {
+    const contaminated = { ...vector, compare: { ...vector.compare, expected: bad } }
+    assert.equal(
+      refusalCode(() => validateVector(contaminated)),
+      'FIXTURE_FIELD_INVALID',
+      `expected: ${JSON.stringify(bad)}`,
+    )
+  }
+  assert.equal(validateVector(vector), true)
 })
 
 test('NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation', () => {
