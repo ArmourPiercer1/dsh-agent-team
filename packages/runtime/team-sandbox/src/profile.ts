@@ -17,13 +17,19 @@
  *  - `mode: all` on either axis (a "no allowlist" policy cannot be turned into
  *    a default-deny ruleset without changing its meaning);
  *  - `ask` dispositions (an ask is not an allow: the profile never upgrades it);
+ *  - a DENY that is a strict descendant of an allow on the same axis (Landlock
+ *    has no negative rules; granting the parent would grant the denial);
+ *  - for a write locator nested under a readable parent the kernel read bit on
+ *    the parent also covers it: the module reports it as readable, not as
+ *    write-only (no silent write-only claim for a nested path);
  *  - `chmod` (Landlock cannot restrict it for a same-uid owner; disclosed in the
  *    evidence, never silently claimed).
  *
  * @module @dsh-agent-team/runtime/team-sandbox/profile
  */
 
-import type { AllowPathEntry } from '../../sandbox-provider/provider.js'
+import type { AllowPathEntry } from '../../sandbox-provider/index.js'
+import { coversLocator } from '../../member-io-policy/src/path-rules.js'
 import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
 
 /** The policy shapes this compiler accepts (member ceiling or effective policy). */
@@ -32,6 +38,7 @@ export type ProfilePolicy = MemberPolicy | EffectiveIoPolicy
 export const PROFILE_REFUSAL_CODES = [
   'PATH_LANE_UNRESTRICTED',
   'PATH_LANE_UNSUPPORTED',
+  'PATH_NESTED_DENY_UNEXPRESSIBLE',
   'NETWORK_DENY_UNEXPRESSIBLE',
   'NO_NAMED_SUBTREE',
 ] as const
@@ -80,6 +87,19 @@ export function compileExecutionProfile(policy: ProfilePolicy): ProfileResult {
     }
     if (lane.ask.length > 0) {
       return refuse('PATH_LANE_UNSUPPORTED', `${axis} axis carries 'ask' destinations; an ask is not an OS grant and the profile never upgrades it`)
+    }
+    // Landlock rules are ADDITIVE: there is no negative rule, so a deny that is
+    // a strict DESCENDANT of an allow cannot be expressed at all. Keep the
+    // equal-or-ancestor case (dropping that allow is exactly the deny), refuse
+    // the descendant case rather than silently granting the denied subtree.
+    for (const denied of lane.deny) {
+      const covered = lane.allow.some((allowed) => coversLocator(allowed, denied) && allowed !== denied)
+      if (covered) {
+        return refuse(
+          'PATH_NESTED_DENY_UNEXPRESSIBLE',
+          `the ${axis} lane denies '${denied}' inside an allowed subtree; the OS backend has no negative rules, so this profile cannot be expressed without widening`,
+        )
+      }
     }
     // deny entries need no rule: the ruleset is default-deny. `deny` wins over a
     // matching `allow` by construction, because we drop denied allows below.

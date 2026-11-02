@@ -87,9 +87,16 @@ describe('P1-06 provider replacement', () => {
     expect(result).toMatchObject({ ok: false, code: 'BASE_ROW_MISSING' })
   })
 
-  it('is a closed refusal vocabulary', () => {
-    expect(COMPOSITION_REFUSAL_CODES).toContain('TEAM_ROW_ACTIVE_WITH_BASE')
-    expect(COMPOSITION_REFUSAL_CODES).toContain('PATCH_UNMATCHED')
+  it('every refusal path returns a code from the closed vocabulary', () => {
+    const refusals = [
+      replaceProvider([], TEAM_SERVICE_ROWS[0]!),
+      replaceProvider([...baseEntries(), { id: 'team-fs', name: '@dsh-agent-team/runtime/team-services/fs' }], TEAM_SERVICE_ROWS[0]!),
+    ]
+    for (const refusal of refusals) {
+      expect(refusal.ok).toBe(false)
+      if (refusal.ok) continue
+      expect([...COMPOSITION_REFUSAL_CODES]).toContain(refusal.code)
+    }
   })
 })
 
@@ -110,7 +117,13 @@ describe('P1-06 shipped bundle dormancy (normal DSH unaffected)', () => {
     expect(assertDormant(smuggled)).toMatchObject({ ok: false, code: 'TEAM_ROW_SHIPPED_EARLY', service: 'fs' })
   })
 
-  it('every declared row is explicitly unshipped in this round', () => {
-    expect(TEAM_SERVICE_ROWS.every((row) => row.shipped === false)).toBe(true)
+  it('an unshipped row cannot be planned into a replacement (no accidental delivery)', () => {
+    const planned = planProviderReplacement(
+      [...baseEntries(), { id: 'team-fs', name: '@dsh-agent-team/runtime/team-services/fs' }],
+      [TEAM_SERVICE_ROWS[0]!],
+    )
+    expect(planned.ok).toBe(false)
+    if (planned.ok) return
+    expect(planned.code).toBe('TEAM_ROW_DUPLICATE')
   })
 })

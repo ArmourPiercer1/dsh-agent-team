@@ -369,12 +369,14 @@ export function bumpInvocationEpoch(binder: InvocationBinder = DEFAULT_BINDER): 
  * Project a minted capability into the P1-02 `InvocationAuthority` input the
  * policy compiler consumes. This is an AUDIT projection, not an execution
  * permission: it does not consume the capability and does not widen anything.
- * A capability that is stale (cold start) or revoked is refused here too, so a
- * dead reference cannot be replayed into a fresh policy compile.
+ * A capability that is consumed, stale (cold start), lease-expired or revoked is
+ * refused here too, so a dead reference cannot be replayed into a fresh policy
+ * compile. A leased capability requires the caller clock.
  */
 export function toInvocationAuthority(
   capability: InvocationCapability,
   binder?: InvocationBinder,
+  now?: number,
 ): { readonly ok: true; readonly value: InvocationAuthority } | InvocationRefusal {
   if (!isBranded(capability)) {
     return refusal(
@@ -386,6 +388,15 @@ export function toInvocationAuthority(
   const state = CAPABILITY_STATE.get(capability)
   if (state === undefined) {
     return refusal('CAPABILITY_UNKNOWN', 'the capability has no per-call binding state', 'capability')
+  }
+  // A CONSUMED capability is dead: projecting it again would let one approved
+  // call compile (and run) any number of times.
+  if (state.consumed) {
+    return refusal(
+      'CAPABILITY_CONSUMED',
+      `capability '${capability.callId}' was already consumed; it cannot be projected into another policy compile`,
+      'capability',
+    )
   }
   if (binder !== undefined && state.owner !== binder) {
     return refusal(
@@ -401,6 +412,22 @@ export function toInvocationAuthority(
       `capability '${capability.callId}' was minted under epoch ${String(capability.epoch)}, but the binder is at epoch ${String(owner.currentEpoch())}`,
       'capability.epoch',
     )
+  }
+  if (capability.lease !== null) {
+    if (now === undefined) {
+      return refusal(
+        'CAPABILITY_LEASE_UNVERIFIED',
+        `capability '${capability.callId}' carries a lease; projecting it requires the caller clock ('now')`,
+        'capability.lease',
+      )
+    }
+    if (now > capability.lease.expiresAt) {
+      return refusal(
+        'CAPABILITY_LEASE_EXPIRED',
+        `capability '${capability.callId}' expired at ${String(capability.lease.expiresAt)} (caller now ${String(now)})`,
+        'capability.lease.expiresAt',
+      )
+    }
   }
   const memberEpoch = owner.currentMemberEpoch(capability.memberIdentity)
   if (capability.memberEpoch !== memberEpoch) {

@@ -298,7 +298,7 @@ describe('P1-02 · EffectiveIo = MemberCeiling ∩ ToolRestriction', () => {
     expect(effective.value.read.ask).not.toEqual([])
   })
 
-  it('a one-shot approval can never widen the ceiling (approvedOnce is not policy)', () => {
+  it('approvedOnce is NOT an input to the policy compiler (no widening channel exists)', () => {
     const member = compiled()
     const bash = tool(0)
     const approved = compileEffectiveIo(member, bash, invocationFor(member, bash, { approvedOnce: true }))

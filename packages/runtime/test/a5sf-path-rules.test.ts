@@ -40,6 +40,7 @@ import {
   type PathIdentity,
   type PathIdentityResolver,
 } from '../member-io-policy/src/provider-capabilities.js'
+import { intersectPathRuleSets } from '../member-io-policy/src/path-rules.js'
 import type { PathRuleSet } from '../member-io-policy/src/types.js'
 
 // --- fixtures ----------------------------------------------------------------
@@ -256,8 +257,21 @@ describe('P1-03 · symlink escape is refused by provider-resolved identity', () 
     expect(decision.decision).toBe('deny')
     if (decision.decision !== 'deny') return
     expect(decision.code).toBe('PATH_NOT_ALLOWED')
-    // the outside file was never even read: bytes are only read by the caller
-    expect(await readFile(join(outsideDir, 'secret.txt'), 'utf8')).toBe('secret\n')
+  })
+
+  it('refuses a write through a DANGLING symlink (never approves the link name)', async () => {
+    const link = join(allowedDir, 'dangling')
+    try {
+      await rm(link, { force: true })
+    } catch {
+      // absent is fine
+    }
+    await symlink(join(outsideDir, 'never-created.txt'), link)
+    const decision = await evaluateLocatorAccess({ lane: allowedLane(), locator: link, access: 'write' })
+    expect(decision.decision).toBe('deny')
+    if (decision.decision !== 'deny') return
+    expect(decision.code).toBe('PATH_SYMLINK_ESCAPE')
+    await rm(link, { force: true })
   })
 })
 
@@ -344,6 +358,44 @@ describe('P1-03 · native write/edit requires read', () => {
   })
 })
 
+// --- 4b. mixed-mode intersection (all ∩ restricted) -------------------------
+
+describe('P1-03 · mixed-mode intersection', () => {
+  const all = (): PathRuleSet => Object.freeze({ mode: 'all', allow: Object.freeze([]), ask: Object.freeze([]), deny: Object.freeze([]) })
+  const restricted = (...allow: string[]): PathRuleSet =>
+    Object.freeze({ mode: 'restricted', allow: Object.freeze(allow), ask: Object.freeze([]), deny: Object.freeze([]) })
+
+  it('Member `all` ∩ tool restricted keeps the TOOL lane (no deny-all collapse)', () => {
+    const effective = intersectPathRuleSets(all(), restricted('/work/a/docs'))
+    expect(effective.mode).toBe('restricted')
+    expect([...effective.allow]).toEqual(['/work/a/docs'])
+  })
+
+  it('Member restricted ∩ tool `all` keeps the MEMBER lane', () => {
+    const effective = intersectPathRuleSets(restricted('/work/a'), all())
+    expect(effective.mode).toBe('restricted')
+    expect([...effective.allow]).toEqual(['/work/a'])
+  })
+
+  it('both `all` stays `all` and both restricted intersects', () => {
+    expect(intersectPathRuleSets(all(), all()).mode).toBe('all')
+    const narrow = intersectPathRuleSets(restricted('/work/a'), restricted('/work/a/docs'))
+    expect([...narrow.allow]).toEqual(['/work/a/docs'])
+  })
+
+  it('a deny on either side survives the mixed-mode intersection', () => {
+    const denied = Object.freeze({
+      mode: 'restricted' as const,
+      allow: Object.freeze(['/work/a/docs']),
+      ask: Object.freeze([]),
+      deny: Object.freeze(['/work/a/docs/secret']),
+    })
+    const effective = intersectPathRuleSets(all(), denied)
+    expect([...effective.allow]).toEqual(['/work/a/docs'])
+    expect([...effective.deny]).toEqual(['/work/a/docs/secret'])
+  })
+})
+
 // --- 5. Provider capability coverage ----------------------------------------
 
 function providerWith(methods: readonly string[]): Readonly<Record<string, unknown>> {
@@ -354,8 +406,10 @@ function providerWith(methods: readonly string[]): Readonly<Record<string, unkno
 
 describe('P1-03 · ctx.fs provider capability coverage', () => {
   it('declares the closed managed-path vocabulary', () => {
+    expect(MANAGED_FS_METHODS.length).toBe(13)
     expect([...MANAGED_FS_METHODS]).toEqual([
       'resolve',
+      'processPath',
       'contains',
       'stat',
       'lstat',

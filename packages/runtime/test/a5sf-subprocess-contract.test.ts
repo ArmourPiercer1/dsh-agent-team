@@ -62,12 +62,14 @@ describe('P1-07 subprocess contract', () => {
     const live = await provider.spawnStreaming(planned.request)
     expect(live.ok).toBe(true)
     if (!live.ok) return
-    const handle = toSubprocessHandle(live.value)
+    const handle = toSubprocessHandle(live.value, { capture: true })
+    expect(handle.capturing).toBe(true)
     expect(typeof handle.pid).toBe('number')
     expect(handle.stdin).toBeDefined()
     expect(handle.stdout).toBeDefined()
     expect(handle.stderr).toBeDefined()
     expect(handle.collected).toEqual({ stdout: '', stderr: '' })
+    expect(handle.capturing).toBe(true)
     const exit = await handle.waitForExit()
     expect(exit.code).toBe(0)
     expect(handle.collected.stdout).toBe('hello')
@@ -76,6 +78,30 @@ describe('P1-07 subprocess contract', () => {
     // terminate after exit is idempotent and settles the same lease.
     const settled = await handle.terminate()
     expect(settled.ok).toBe(true)
+  }, 30_000)
+
+  it('does NOT consume the streams unless capture is requested', async () => {
+    const provider = createConfinedProcessProvider({ realmId: 'realm-sub3', trustRoot: 'git:a5sf:subprocess', scratchRoot: world })
+    const runner = createTeamConfinedRunner(provider)
+    const planned = await runner.plan({
+      policy: { ...POLICY, read: lane(['/usr', '/bin', '/lib', '/lib64', workdir]) },
+      realmId: 'realm-sub3', bindingId: 'b', memberScope: 'm', grantFingerprint: 'sha256:sub-3',
+      argv: ['/bin/sh', '-c', 'printf streamed'],
+      cwd: workdir, env: [],
+    })
+    expect(planned.ok).toBe(true)
+    if (!planned.ok) return
+    const live = await provider.spawnStreaming(planned.request)
+    expect(live.ok).toBe(true)
+    if (!live.ok) return
+    const handle = toSubprocessHandle(live.value)
+    expect(handle.capturing).toBe(false)
+    let text = ''
+    for await (const chunk of handle.stdout) text += String(chunk)
+    await handle.waitForExit()
+    // The consumer got every byte; the wrapper stole none of them.
+    expect(text).toBe('streamed')
+    expect(handle.collected).toEqual({ stdout: '', stderr: '' })
   }, 30_000)
 
   it('refuses when the backend cannot enforce the profile (no naked process)', async () => {

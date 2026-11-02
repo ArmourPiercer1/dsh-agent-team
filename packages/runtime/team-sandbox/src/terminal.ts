@@ -129,6 +129,10 @@ export interface TerminalRegistryOptions {
 
 const keyOf = (owner: TerminalOwner): string => `${owner.identity.teamId}/${owner.identity.memberInstanceId}/${owner.toolBindingIdentity}`
 
+/** Revocation is per GENERATION: a member re-created at a new generation may acquire again. */
+const memberKey = (identity: TrustedMemberIdentity): string =>
+  `${identity.teamId}/${identity.memberInstanceId}#${String(identity.instanceGeneration)}`
+
 /**
  * Create the domain registry. Every mutation is synchronous inside one
  * microtask boundary except `spawn`, so two concurrent acquires for the same
@@ -161,7 +165,7 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
     if (!options.isTrustedMember(identity)) {
       return Object.freeze({ ok: false, code: 'OWNER_UNTRUSTED' as const, detail: `'${identity.memberInstanceId}' is not a trusted TeamDomain member` })
     }
-    if (revokedMembers.has(identity.memberInstanceId)) {
+    if (revokedMembers.has(memberKey(identity))) {
       return Object.freeze({ ok: false, code: 'DOMAIN_REVOKED' as const, detail: `'${identity.memberInstanceId}' is revoked; a new shell requires a new generation` })
     }
     const current = options.currentRevision(identity)
@@ -243,6 +247,16 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
       return Object.freeze({ ok: true, revision: domain.policyRevision })
     },
     async revoke(memberInstanceId?: string, reason = 'revoked'): Promise<readonly string[]> {
+      // Mark revocation BEFORE the first await: an `acquire` interleaving with
+      // the kill loop must already observe the member as revoked, otherwise it
+      // can spawn a shell that survives this call.
+      if (memberInstanceId !== undefined) {
+        for (const domain of domains.values()) {
+          if (domain.owner.identity.memberInstanceId === memberInstanceId) {
+            revokedMembers.add(memberKey(domain.owner.identity))
+          }
+        }
+      }
       const killed: string[] = []
       for (const domain of [...domains.values()]) {
         if (memberInstanceId !== undefined && domain.owner.identity.memberInstanceId !== memberInstanceId) continue
@@ -250,7 +264,6 @@ export function createTerminalDomainRegistry(options: TerminalRegistryOptions): 
         domains.delete(keyOf(domain.owner))
         killed.push(domain.domainId)
       }
-      if (memberInstanceId !== undefined) revokedMembers.add(memberInstanceId)
       return Object.freeze(killed)
     },
     list(): readonly TerminalDomain[] {

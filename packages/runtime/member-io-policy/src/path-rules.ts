@@ -159,14 +159,25 @@ function unionLocators(...lists: readonly (readonly string[])[]): readonly strin
  *
  * Disposition law (conservative, never widens):
  *  - mode is `all` only when BOTH lanes are `all`;
- *  - allow keeps the narrower related subtree of each pair;
+ *  - an `all` side is the IDENTITY of the intersection: it contributes no
+ *    narrowing, so the other side's allow list is the effective allow list
+ *    (treating `all` as `allow: []` would turn every "no Member narrowing"
+ *    declaration into deny-everything);
+ *  - otherwise allow keeps the narrower related subtree of each pair;
  *  - deny is the UNION (a deny on either axis survives);
  *  - `ask` is the STRICTER disposition: an ask survives if the OTHER lane
  *    permits that location, and it is never promoted to allow. Any surviving
  *    ask that is denied is dropped (deny wins).
  */
 export function intersectPathRuleSets(member: PathRuleSet, tool: PathRuleSet): PathRuleSet {
-  const allow = intersectAllowLocators(member.allow, tool.allow)
+  const allow =
+    member.mode === 'all' && tool.mode === 'all'
+      ? Object.freeze([])
+      : member.mode === 'all'
+        ? Object.freeze([...tool.allow])
+        : tool.mode === 'all'
+          ? Object.freeze([...member.allow])
+          : intersectAllowLocators(member.allow, tool.allow)
   const deny = unionLocators(member.deny, tool.deny)
   const mode: 'all' | 'restricted' = member.mode === 'all' && tool.mode === 'all' ? 'all' : 'restricted'
   const permissive: PathRuleSet = Object.freeze({

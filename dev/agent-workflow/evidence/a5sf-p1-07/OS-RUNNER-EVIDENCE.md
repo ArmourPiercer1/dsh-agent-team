@@ -30,7 +30,7 @@ other hosts, and `directory-metadata`/`alias`/network remain UNSUPPORTED here.
 |---|---|
 | read/write compiled INDEPENDENTLY; a write-only subtree has no read bits | profile pure tests |
 | read+write locator becomes one entry with all bits | profile pure tests |
-| a deny on the lane removes the locator from the kernel ruleset | profile pure tests |
+| a deny EQUAL to an allow removes the rule; a deny NESTED inside an allow is REFUSED (`PATH_NESTED_DENY_UNEXPRESSIBLE`) because Landlock has no negative rules | profile pure tests |
 | `mode: all` ⇒ `PATH_LANE_UNRESTRICTED` (never invented as an allowlist) | profile pure tests |
 | `ask` ⇒ `PATH_LANE_UNSUPPORTED` (an ask is not an OS grant) | profile pure tests |
 | network `deny` rides `networkProfile`, `allow` adds no restriction | profile pure tests |
@@ -39,6 +39,19 @@ other hosts, and `directory-metadata`/`alias`/network remain UNSUPPORTED here.
 | network deny with no enforcement ⇒ `ENFORCEMENT_UNAVAILABLE`, no process | real OS leg |
 | empty argv / inexpressible profile refused before any process | runner plan tests |
 | native `SubprocessHandle` shape: pid/stdin/stdout/stderr/`collected`/`done`/`waitForExit`/idempotent `terminate` over the streaming arm | subprocess contract (real stream) |
+
+## 2b. Review follow-up (2026-11-02, PR #532 review)
+
+- **BLOCKER fixed**: the profile used to DROP a deny nested inside an allow, so the child could read
+  the denied subtree. It now refuses the profile. The previous test (which asserted the parent rule
+  and was named "a denied locator never reaches the kernel ruleset") was rewritten to assert the
+  refusal, and the false claim was removed from this document.
+- The real-OS test now SKIPS (not passes) on a host without enforcement, so a non-enforcing kernel
+  can never report the FS law green.
+- `toSubprocessHandle` no longer consumes the streams by default (`capture` is opt-in) — the native
+  `for await` consumers keep every byte.
+- `chmod`, nested write-only-under-read, and the `network`/`dir-metadata`/`alias` rows remain
+  disclosed limitations.
 
 ## 3. Honest gaps
 

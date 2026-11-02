@@ -38,7 +38,7 @@ createMemberFsGuard(policy, resolver?)
 | read ceiling per Member | A reads A, B reads B; A→B, B→A and A→outside are `IO_READ_DENIED` |
 | write ceiling + `write ⇒ read` | write outside axis `IO_WRITE_DENIED`; existing target with read axis narrower `IO_WRITE_REQUIRES_READ`; both-cover write succeeds and lands on disk |
 | call-time service identity | the SAME `read_file` implementation shape registered in both scopes resolves its OWN provider: A's tool body reads A, and A's tool cannot read B's file |
-| install atomicity | refused compile → `MEMBER_POLICY_UNAVAILABLE`; duplicate identity → `MEMBER_DUPLICATE`; no root Provider → `PROVIDER_UNAVAILABLE`; short Provider surface → `PROVIDER_INCOMPATIBLE` |
+| install atomicity (including a POST-MOUNT failure: the earlier Member is rolled back and a retry succeeds) | refused compile → `MEMBER_POLICY_UNAVAILABLE`; duplicate identity → `MEMBER_DUPLICATE`; no root Provider → `PROVIDER_UNAVAILABLE`; short Provider surface → `PROVIDER_INCOMPATIBLE` |
 | dispose | removes the Member Provider from its scope (`ctx.get('fs')` undefined), idempotent |
 | closed vocabularies | `TEAM_IO_DENIAL_CODES` / `TEAM_SERVICE_INSTALL_CODES` exported and used by tests |
 
@@ -64,3 +64,19 @@ createMemberFsGuard(policy, resolver?)
 cd .worktrees/a5sf-p1-01
 node_modules/.bin/vitest run packages/runtime/test/a5sf-service-install.test.ts
 ```
+
+## 4. Review follow-up (2026-11-02, PR #532 review)
+
+- **Single capability vocabulary**: `REQUIRED_PROVIDER_METHODS` was deleted; the install path now calls
+  the tested `requireProviderCapabilities` (13 closed methods incl. `processPath`/`contains`), so the
+  gate that P1-03 tests is the gate the install actually runs.
+- **Stale generation**: `MemberPolicy` carries `instanceGeneration`; a generation-N policy installed
+  for generation N+1 is refused (`MEMBER_POLICY_STALE`).
+- **The right factor is enforced**: `installToolBindingRealm` mounts a confined Provider for one
+  (Member × tool binding) pair from the compiled `EffectiveIo`; a test proves the narrower binding
+  lane refuses a path the Member ceiling allows.
+- **Write admission**: only `ENOENT` means "nothing to read" (other `lstat` errors are
+  `IO_POLICY_UNSUPPORTED`), and the caller's `sandboxPolicy` argument is NOT forwarded to the base
+  Provider (it could only weaken the host fence).
+- **Disclosed residual**: guard→provider TOCTOU (a symlink swapped between check and syscall);
+  hardening (openat2/O_NOFOLLOW) is P2. Same-realm malicious JS remains outside this boundary.

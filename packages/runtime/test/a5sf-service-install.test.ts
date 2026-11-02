@@ -38,8 +38,13 @@ import { Context, Service } from '@deepseek-ai/cordis'
 import { ToolRuntime, type ToolDefinition } from '@deepseek-ai/dsh-tools'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import type { MemberPolicy, PathRuleSet, TrustedMemberIdentity } from '../member-io-policy/src/types.js'
-import { installMemberIoProviders } from '../team-services/src/install.js'
+import type {
+  EffectiveIoPolicy,
+  MemberPolicy,
+  PathRuleSet,
+  TrustedMemberIdentity,
+} from '../member-io-policy/src/types.js'
+import { installMemberIoProviders, installToolBindingRealm } from '../team-services/src/install.js'
 import type { MemberServiceInstallation } from '../team-services/src/types.js'
 import type { MemberServiceSpec } from '../team-services/src/install.js'
 import { TEAM_IO_DENIAL_CODES, TeamServiceInstallError } from '../team-services/src/types.js'
@@ -72,6 +77,7 @@ function policyOf(identity: TrustedMemberIdentity, read: PathRuleSet, write: Pat
   return Object.freeze({
     memberIdentity: identity.memberInstanceId,
     templateId: identity.templateId,
+    instanceGeneration: identity.instanceGeneration,
     revision: `rev-${identity.memberInstanceId}`,
     read,
     write,
@@ -95,6 +101,10 @@ class TestFileSystem extends Service {
 
   processPath(target: unknown): string {
     return (target as FsTargetLike).hostPath
+  }
+
+  contains(parent: unknown, child: unknown): boolean {
+    return this.processPath(child).startsWith(this.processPath(parent))
   }
 
   async resolve(path: string): Promise<FsTargetLike> {
@@ -151,6 +161,14 @@ class TestFileSystem extends Service {
 
 /** The root-level base Provider the install samples. */
 class BaseFileSystem extends TestFileSystem {}
+
+/** A Provider that fails to mount when its config says so (rollback leg). */
+class FailingFileSystem extends TestFileSystem {
+  constructor(ctx: Context, config: Record<string, unknown> = {}) {
+    if (config.failMount === true) throw new Error('boom: provider mount failed')
+    super(ctx, config)
+  }
+}
 
 /** A Provider missing the managed surface — the install must refuse it. */
 class IncompleteFileSystem extends TestFileSystem {}
@@ -353,5 +371,68 @@ describe('P1-05 per-Member service realm', () => {
     expect(TEAM_IO_DENIAL_CODES).toContain('IO_WRITE_DENIED')
     expect(TEAM_IO_DENIAL_CODES).toContain('IO_WRITE_REQUIRES_READ')
     expect(new TeamServiceInstallError('MEMBER_DUPLICATE', 'x').code).toBe('MEMBER_DUPLICATE')
+  })
+
+  it('rolls back an already-mounted Member when a LATER mount fails (all-or-nothing)', async () => {
+    const scopedRoot = new Context()
+    await scopedRoot.plugin(SystemPrompt, {})
+    await scopedRoot.plugin(ToolRuntime)
+    await scopedRoot.plugin(BaseFileSystem, {})
+    await expect(
+      installMemberIoProviders({
+        root: scopedRoot,
+        providerClass: FailingFileSystem,
+        members: [
+          { identity: IDENTITY_A, policy: { ok: true, value: policyOf(IDENTITY_A, lane([dirA]), lane([dirA])) } },
+          {
+            identity: { ...IDENTITY_A, memberInstanceId: 'member-fails' },
+            policy: { ok: true, value: policyOf({ ...IDENTITY_A, memberInstanceId: 'member-fails' }, lane([dirA]), lane([dirA])) },
+            config: { failMount: true },
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: 'SERVICE_MOUNT_FAILED' })
+    // Nothing from the failed install survives: the first Member can be
+    // installed again (no duplicate/ghost entry) and its realm serves normally.
+    const retry = await installMemberIoProviders({
+      root: scopedRoot,
+      providerClass: BaseFileSystem,
+      members: [{ identity: IDENTITY_A, policy: { ok: true, value: policyOf(IDENTITY_A, lane([dirA]), lane([dirA])) } }],
+    })
+    expect(await retry.members[0]!.fs.readText(await retry.members[0]!.fs.resolve(join(dirA, 'a.txt')))).toBe('alpha\n')
+    await retry.dispose()
+  })
+
+  it('refuses a policy compiled for a STALE instance generation', async () => {
+    const stale = policyOf(IDENTITY_A, lane([dirA]), lane([dirA]))
+    await expect(
+      installMemberIoProviders({
+        root,
+        members: [{ identity: { ...IDENTITY_A, instanceGeneration: 2 }, policy: { ok: true, value: stale } }],
+      }),
+    ).rejects.toMatchObject({ code: 'MEMBER_POLICY_STALE' })
+  })
+
+  it('a tool-binding realm enforces the NARROWER effective lane, not the Member ceiling', async () => {
+    const docs = join(dirA, 'docs')
+    await mkdir(docs, { recursive: true })
+    await writeFile(join(docs, 'narrow.txt'), 'narrow\n', 'utf8')
+    const effective: EffectiveIoPolicy = Object.freeze({
+      memberIdentity: IDENTITY_A.memberInstanceId,
+      toolBindingIdentity: 'dsh.fs/read',
+      invocationId: 'call-narrow',
+      policyRevision: 'rev-narrow',
+      read: lane([docs]),
+      write: lane([]),
+      network: Object.freeze({ access: 'allow' as const }),
+    })
+    const realm = await installToolBindingRealm({
+      root,
+      spec: { identity: IDENTITY_A, toolBindingIdentity: 'dsh.fs/read', effective },
+    })
+    expect(await realm.fs.readText(await realm.fs.resolve(join(docs, 'narrow.txt')))).toBe('narrow\n')
+    // The Member ceiling allows dirA, but the BINDING does not: refused.
+    await expect(realm.fs.readText(await realm.fs.resolve(join(dirA, 'a.txt')))).rejects.toMatchObject({ code: 'IO_READ_DENIED' })
+    await realm.dispose()
   })
 })

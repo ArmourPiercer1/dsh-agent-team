@@ -35,7 +35,7 @@
  * @module @dsh-agent-team/runtime/member-io-policy/provider-capabilities
  */
 
-import { basename, dirname, join, resolve as resolvePath } from 'node:path'
+import { basename, dirname, join, resolve as resolvePath, sep } from 'node:path'
 import { lstat as nodeLstat, realpath as nodeRealpath } from 'node:fs/promises'
 import { laneCoversDeny, locatorWithinRuleSet } from './path-rules.js'
 import type { PathRuleSet } from './types.js'
@@ -50,6 +50,7 @@ import type { PathRuleSet } from './types.js'
  */
 export const MANAGED_FS_METHODS = [
   'resolve',
+  'processPath',
   'contains',
   'stat',
   'lstat',
@@ -227,6 +228,23 @@ function refusePath(
   return Object.freeze({ decision, code, detail })
 }
 
+/** Does any existing segment of `locator` name a symlink? Fail-closed `false` on probe error. */
+async function pathHasSymlinkSegment(locator: string, resolver: PathIdentityResolver): Promise<boolean> {
+  const absolute = resolvePath(locator)
+  const segments = absolute.split(sep).filter((segment) => segment.length > 0)
+  let current: string = sep
+  for (const segment of segments) {
+    current = current === sep ? `${sep}${segment}` : `${current}${sep}${segment}`
+    try {
+      if ((await resolver.lstat(current)).isSymbolicLink()) return true
+    } catch {
+      // A non-existent segment cannot be a symlink (and cannot be a link hop).
+      return false
+    }
+  }
+  return false
+}
+
 function isNotFound(error: unknown): boolean {
   return typeof error === 'object' && error !== null &&
     (error as { readonly code?: unknown }).code === 'ENOENT'
@@ -265,9 +283,11 @@ export async function evaluateLocatorAccess(input: PathGuardInput): Promise<Path
   // 2. provider resolution.
   let resolved: string
   let symlink = false
+  let linkIdentityKnown = false
   try {
     const identity = await resolver.lstat(locator)
     symlink = identity.isSymbolicLink()
+    linkIdentityKnown = true
     resolved = await resolver.realpath(locator)
   } catch (error) {
     if (!isNotFound(error)) {
@@ -275,6 +295,16 @@ export async function evaluateLocatorAccess(input: PathGuardInput): Promise<Path
         'unsupported',
         'PATH_RESOLUTION_UNSUPPORTED',
         `the Provider could not resolve '${locator}': ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+    if (linkIdentityKnown && symlink) {
+      // A symlink whose target does not resolve is a DANGLING LINK: the leaf
+      // itself exists and points outside. Falling into the create-leaf branch
+      // would approve a write whose bytes land wherever the link points.
+      return refusePath(
+        'deny',
+        'PATH_SYMLINK_ESCAPE',
+        `'${locator}' is a dangling symlink whose target does not resolve; a write through it would leave the authorized subtree`,
       )
     }
     if (access === 'read') {
@@ -295,7 +325,11 @@ export async function evaluateLocatorAccess(input: PathGuardInput): Promise<Path
 
   // 3. the RESOLVED path is the one the decision is taken on.
   const lexical = resolvePath(locator)
-  const aliased = resolved !== lexical
+  // A DIFFERENT resolved path is only a SYMLINK escape when a symlink is really
+  // on the authored path. Lexical/canonicalization differences (relative
+  // locator, `//`, a symlinked checkout root, case folding) must not be
+  // reported as an alias; they are decided by containment like any other path.
+  const aliased = resolved !== lexical && (symlink || (await pathHasSymlinkSegment(locator, resolver)))
   if (laneCoversDeny(input.lane, resolved)) {
     return refusePath(
       'deny',

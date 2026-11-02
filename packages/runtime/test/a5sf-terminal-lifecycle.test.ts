@@ -129,6 +129,29 @@ describe('P1-08 terminal domain lifecycle', () => {
     expect(bogus).toMatchObject({ ok: false, code: 'OWNER_UNTRUSTED' })
   })
 
+  it('a member re-created at a NEW generation may acquire again after revocation', async () => {
+    const ptys: FakePty[] = []
+    const revisions = new Map<string, string>([[IDENTITY.memberInstanceId, 'rev-1']])
+    const registry = createTerminalDomainRegistry({
+      currentRevision: (identity) => revisions.get(identity.memberInstanceId),
+      now: () => 't0',
+      isTrustedMember: () => true,
+    })
+    const factory = (): PtyHandle => {
+      const pty = makePty(600 + ptys.length)
+      ptys.push(pty)
+      return pty
+    }
+    await registry.acquire(spec(factory, { policyRevision: 'rev-1' }))
+    await registry.revoke(IDENTITY.memberInstanceId, 'archived')
+    const nextGeneration = { ...IDENTITY, instanceGeneration: 2 }
+    const acquired = await registry.acquire({
+      ...spec(factory, { policyRevision: 'rev-1' }),
+      owner: { identity: nextGeneration, toolBindingIdentity: 'binding-pty' },
+    })
+    expect(acquired.ok).toBe(true)
+  })
+
   it('revocation kills the domain and refuses new shells for that member', async () => {
     const ptys: FakePty[] = []
     const registry = createTerminalDomainRegistry({ currentRevision: () => 'rev-1', now: () => 't0', isTrustedMember: () => true })
@@ -145,7 +168,7 @@ describe('P1-08 terminal domain lifecycle', () => {
     expect(await registry.acquire(spec(factory))).toMatchObject({ ok: false, code: 'DOMAIN_REVOKED' })
   })
 
-  it('shutdown reports pid, descendants and the settled revision (independent receipt)', async () => {
+  it('shutdown receipt reflects the live pty facts: pid, descendants, revision, killed', async () => {
     const ptys: FakePty[] = []
     const registry = createTerminalDomainRegistry({ currentRevision: () => 'rev-9', now: () => 't0', isTrustedMember: () => true })
     const factory = (): PtyHandle => {
@@ -172,6 +195,9 @@ describe('P1-08 terminal domain lifecycle', () => {
     expect(created.ok).toBe(true)
     const domain = registry.list()[0]!
     expect(domain.createdAt).toBe('fixed')
-    expect(JSON.stringify(domain)).not.toMatch(/approvedOnce|approval|grant/i)
+    // The record carries exactly the lifecycle facts — no approval/grant field.
+    expect(Object.keys(domain).sort()).toEqual(
+      ['backend', 'createdAt', 'domainId', 'owner', 'pid', 'policyRevision', 'pty', 'sessionHandle', 'status'].sort(),
+    )
   })
 })

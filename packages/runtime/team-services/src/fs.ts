@@ -32,7 +32,7 @@ import {
   evaluateLocatorAccess,
   type PathIdentityResolver,
 } from '../../member-io-policy/src/provider-capabilities.js'
-import type { MemberPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
+import type { EffectiveIoPolicy, MemberPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
 import { TeamIoDenial } from './types.js'
 
 /**
@@ -44,6 +44,7 @@ export interface FsProviderSurface {
   /** Resolution-only: unguarded, but required (a provider without it is unusable). */
   resolve(path: string, opts?: unknown): Promise<unknown>
   processPath(target: unknown): string
+  contains(parent: unknown, child: unknown): boolean
   readText(target: unknown, signal?: AbortSignal): Promise<string>
   streamText(target: unknown, signal?: AbortSignal): Promise<AsyncIterable<string>>
   readBytes(target: unknown, signal: AbortSignal | undefined, maxBytes: number): Promise<Uint8Array>
@@ -59,40 +60,15 @@ export interface FsProviderSurface {
 /** A Provider constructor that Cordis can mount as the `fs` service. */
 export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface
 
-/**
- * Methods the confined subclass must find on the live Provider to enforce the
- * ceiling. `resolve`/`contains` are deliberately NOT required here: they are
- * resolution-only and stay unguarded, and a provider without them fails at the
- * tool layer, not at the ceiling.
- */
-export const REQUIRED_PROVIDER_METHODS = [
-  'resolve',
-  'processPath',
-  'readText',
-  'streamText',
-  'readBytes',
-  'readByteRange',
-  'listDir',
-  'stat',
-  'lstat',
-  'watch',
-  'writeText',
-  'editText',
-] as const
-
 /** The write half of the managed surface (everything else is read). */
 const WRITE_METHODS: ReadonlySet<string> = new Set(['writeText', 'editText'])
 
 /**
- * Enumerate the missing pieces of a Provider surface. Empty means the Provider
- * can be confined without silently dropping an operation (a missing method must
- * never mean "unrestricted": that would let `streamText` bypass the read axis).
+ * The policy lanes the guard reads. A Member ceiling and an effective policy
+ * share exactly this shape, so the SAME guard enforces either one (the tool
+ * factor of the invariant is not allowed to be decorative).
  */
-export function providerSurfaceProblems(provider: unknown): readonly string[] {
-  const surface = provider as Record<string, unknown> | null | undefined
-  if (surface === null || typeof surface !== 'object') return [...REQUIRED_PROVIDER_METHODS]
-  return REQUIRED_PROVIDER_METHODS.filter((method) => typeof surface[method] !== 'function')
-}
+export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>
 
 /** The per-call admission function the subclass calls before delegating. */
 export type FsGuard = (method: string, hostPath: string) => Promise<void>
@@ -104,7 +80,7 @@ export type FsGuard = (method: string, hostPath: string) => Promise<void>
  * no path that returns "allow" by omission.
  */
 export function createMemberFsGuard(
-  policy: MemberPolicy,
+  policy: PolicyLanes,
   resolver: PathIdentityResolver = NODE_PATH_IDENTITY_RESOLVER,
 ): FsGuard {
   return async function guard(method: string, hostPath: string): Promise<void> {
@@ -129,7 +105,17 @@ export function createMemberFsGuard(
     let exists = true
     try {
       await resolver.lstat(resolved)
-    } catch {
+    } catch (error) {
+      // Only "no such file" means "nothing to read". Any other failure (EACCES,
+      // ELOOP, a resolver fault) is NOT evidence of absence: refuse instead of
+      // silently skipping the read-before-write requirement.
+      if ((error as { readonly code?: unknown }).code !== 'ENOENT') {
+        throw new TeamIoDenial(
+          'IO_POLICY_UNSUPPORTED',
+          `could not determine whether '${hostPath}' exists (${error instanceof Error ? error.message : String(error)}); write admission cannot be proven`,
+          { memberIdentity: policy.memberIdentity, method, target: hostPath },
+        )
+      }
       exists = false
     }
     if (!exists) return
@@ -221,7 +207,11 @@ export function createConfinedFileSystemClass(
       policy?: unknown,
     ): Promise<unknown> {
       await this.admitted('writeText', target)
-      return super.writeText(target, content, expected, signal, policy)
+      // The caller's `policy` argument is deliberately NOT forwarded: it can only
+      // weaken the host fence (e.g. `danger-full-access`) and the Member ceiling
+      // has already decided this write. The base provider's own default applies.
+      void policy
+      return super.writeText(target, content, expected, signal)
     }
 
     override async editText(
@@ -232,7 +222,8 @@ export function createConfinedFileSystemClass(
       policy?: unknown,
     ): Promise<unknown> {
       await this.admitted('editText', target)
-      return super.editText(target, edit, expected, signal, policy)
+      void policy
+      return super.editText(target, edit, expected, signal)
     }
   }
 

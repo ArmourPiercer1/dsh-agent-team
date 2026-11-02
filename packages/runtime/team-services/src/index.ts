@@ -9,8 +9,6 @@
 export {
   createConfinedFileSystemClass,
   createMemberFsGuard,
-  providerSurfaceProblems,
-  REQUIRED_PROVIDER_METHODS,
 } from './fs.js'
 export type { FsGuard, FsProviderConstructor, FsProviderSurface } from './fs.js'
 export { installMemberIoProviders } from './install.js'

@@ -84,6 +84,12 @@ export interface CompileInput {
 export interface MemberPolicy {
   readonly memberIdentity: string
   readonly templateId: string
+  /**
+   * The monotonic instance generation this ceiling was compiled for. An install
+   * that mounts a policy of an older generation has a stale ceiling, not a
+   * wider one, and must refuse.
+   */
+  readonly instanceGeneration: number
   readonly revision: string
   readonly read: PathRuleSet
   readonly write: PathRuleSet

@@ -129,6 +129,22 @@ describe('P1-04 · one frozen capability for exactly one audited tuple', () => {
     expect(loser.code).toBe('CAPABILITY_CONSUMED')
   })
 
+  it('projection refuses a CONSUMED capability (no replay into another compile)', () => {
+    const binder = createInvocationBinder()
+    const capability = bound(binder)
+    expect(toInvocationAuthority(capability, binder).ok).toBe(true)
+    expect(binder.consume(capability, useRequest({ now: 1 })).ok).toBe(true)
+    expect(toInvocationAuthority(capability, binder)).toMatchObject({ ok: false, code: 'CAPABILITY_CONSUMED' })
+  })
+
+  it('projection requires and checks the caller clock for a leased capability', () => {
+    const binder = createInvocationBinder()
+    const capability = bound(binder, bindInput({ lease: { expiresAt: 100 } }))
+    expect(toInvocationAuthority(capability, binder)).toMatchObject({ ok: false, code: 'CAPABILITY_LEASE_UNVERIFIED' })
+    expect(toInvocationAuthority(capability, binder, 50).ok).toBe(true)
+    expect(toInvocationAuthority(capability, binder, 101)).toMatchObject({ ok: false, code: 'CAPABILITY_LEASE_EXPIRED' })
+  })
+
   it('the module-level binder API exists and is one-shot too', () => {
     const minted = bindInvocation(bindInput({ callId: 'call-module-1' }))
     expect(minted.ok).toBe(true)

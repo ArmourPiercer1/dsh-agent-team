@@ -23,11 +23,18 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import type { CompileResult, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js'
+import type {
+  CompileResult,
+  EffectiveIoPolicy,
+  MemberPolicy,
+  TrustedMemberIdentity,
+} from '../../member-io-policy/src/types.js'
+import { requireProviderCapabilities } from '../../member-io-policy/src/provider-capabilities.js'
 import {
   createConfinedFileSystemClass,
-  providerSurfaceProblems,
+  createMemberFsGuard,
   type FsProviderConstructor,
+  type FsProviderSurface,
 } from './fs.js'
 import {
   TeamServiceInstallError,
@@ -82,6 +89,14 @@ function assertSpec(spec: MemberServiceSpec): MemberPolicy {
   if (!compiled.revision) {
     throw new TeamServiceInstallError('MEMBER_POLICY_UNAVAILABLE', 'a compiled policy must carry its revision')
   }
+  // A policy compiled for generation N must never be mounted for N+1: the
+  // revision would claim a generation the ceiling was not derived from.
+  if (compiled.instanceGeneration !== identity.instanceGeneration) {
+    throw new TeamServiceInstallError(
+      'MEMBER_POLICY_STALE',
+      `Member '${identity.memberInstanceId}' policy was compiled for generation ${String(compiled.instanceGeneration)}, but the instance is at generation ${String(identity.instanceGeneration)}`,
+    )
+  }
   return compiled
 }
 
@@ -130,12 +145,12 @@ export async function installMemberIoProviders(
       'no live fs Provider at the root and no providerClass supplied; a Member never falls back to the raw host filesystem',
     )
   }
-  const problems = providerSurfaceProblems(Base.prototype)
-  if (problems.length > 0) {
-    throw new TeamServiceInstallError(
-      'PROVIDER_INCOMPATIBLE',
-      `the base Provider cannot be confined without dropping operations: missing ${problems.join(', ')}`,
-    )
+  // ONE closed vocabulary owns "what a confinable Provider must expose". The
+  // gate is the tested `requireProviderCapabilities` (a missing method never
+  // degrades to all-read, an unknown one is never a managed capability).
+  const capability = requireProviderCapabilities(Base.prototype)
+  if (!capability.ok) {
+    throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail)
   }
 
   // 3. Mount, tracking every fiber so a later failure can roll back.
@@ -153,7 +168,7 @@ export async function installMemberIoProviders(
   for (const { spec, policy } of compiled) {
     const label = Symbol(`member:${spec.identity.memberInstanceId}`)
     const scoped = root.isolate('fs', label)
-    const guard = (await import('./fs.js')).createMemberFsGuard(policy)
+    const guard = createMemberFsGuard(policy)
     const Confined = createConfinedFileSystemClass(Base, guard)
     let disposeMount: () => Promise<void>
     try {
@@ -209,4 +224,104 @@ export async function installMemberIoProviders(
       await rollback()
     },
   })
+}
+
+// ---------------------------------------------------------------------------
+// Tool-binding realm (the RIGHT factor of the invariant, enforced at runtime)
+// ---------------------------------------------------------------------------
+
+/** One (Member × tool binding) realm: the effective policy, not the ceiling. */
+export interface ToolBindingRealmSpec {
+  readonly identity: TrustedMemberIdentity
+  readonly toolBindingIdentity: string
+  /** The compiled `EffectiveIo` for this binding (P1-02 intersection). */
+  readonly effective: EffectiveIoPolicy
+  readonly config?: Record<string, unknown>
+}
+
+export interface ToolBindingRealm {
+  readonly identity: TrustedMemberIdentity
+  readonly toolBindingIdentity: string
+  readonly policyRevision: string
+  readonly ctx: Context
+  readonly fs: FsProviderSurface
+  dispose(): Promise<void>
+}
+
+const BINDING_REALMS = new WeakMap<Context, Map<string, ToolBindingRealm>>()
+
+/**
+ * Mount a confined Provider for ONE tool binding under its OWN isolate. The
+ * Member realm (above) enforces the ceiling; this realm enforces the narrower
+ * per-binding intersection. Installing only the Member realm would leave
+ * `EffectiveIo` decorative at runtime, which is exactly the defect G1 review
+ * found.
+ */
+export async function installToolBindingRealm(input: {
+  readonly root: Context
+  readonly spec: ToolBindingRealmSpec
+  readonly providerClass?: FsProviderConstructor
+}): Promise<ToolBindingRealm> {
+  const { root, spec } = input
+  if (!spec.toolBindingIdentity.trim()) {
+    throw new TeamServiceInstallError('MEMBER_IDENTITY_INVALID', 'a tool-binding realm needs a non-blank binding identity')
+  }
+  if (spec.effective.memberIdentity !== spec.identity.memberInstanceId) {
+    throw new TeamServiceInstallError(
+      'MEMBER_IDENTITY_INVALID',
+      `effective policy was compiled for '${spec.effective.memberIdentity}', not '${spec.identity.memberInstanceId}'`,
+    )
+  }
+  if (spec.effective.toolBindingIdentity !== spec.toolBindingIdentity) {
+    throw new TeamServiceInstallError(
+      'MEMBER_IDENTITY_INVALID',
+      `effective policy was compiled for binding '${spec.effective.toolBindingIdentity}', not '${spec.toolBindingIdentity}'`,
+    )
+  }
+  const key = `${spec.identity.memberInstanceId}#${spec.toolBindingIdentity}`
+  if (BINDING_REALMS.get(root)?.has(key)) {
+    throw new TeamServiceInstallError('SERVICE_ALREADY_INSTALLED', `binding realm '${key}' is already installed`)
+  }
+  const Base = input.providerClass ?? sampleProviderClass(root)
+  if (Base === undefined) {
+    throw new TeamServiceInstallError('PROVIDER_UNAVAILABLE', 'no base fs Provider for a tool-binding realm')
+  }
+  const capability = requireProviderCapabilities(Base.prototype)
+  if (!capability.ok) {
+    throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail)
+  }
+  const guard = createMemberFsGuard(spec.effective)
+  const Confined = createConfinedFileSystemClass(Base, guard)
+  const scoped = root.isolate('fs', Symbol(`binding:${key}`))
+  let fiber: { dispose(): Promise<void> } | undefined
+  try {
+    fiber = await scoped.plugin(Confined, spec.config ?? {})
+    if (scoped.get('fs') === undefined) {
+      throw new Error('the binding realm mounted no fs service')
+    }
+  } catch (error) {
+    await fiber?.dispose().catch(() => undefined)
+    throw new TeamServiceInstallError(
+      'SERVICE_MOUNT_FAILED',
+      `binding realm '${key}' mount failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+  let disposed = false
+  const realm: ToolBindingRealm = Object.freeze({
+    identity: spec.identity,
+    toolBindingIdentity: spec.toolBindingIdentity,
+    policyRevision: spec.effective.policyRevision,
+    ctx: scoped,
+    fs: scoped.get('fs'),
+    dispose: async (): Promise<void> => {
+      if (disposed) return
+      disposed = true
+      BINDING_REALMS.get(root)?.delete(key)
+      await fiber?.dispose()
+    },
+  })
+  const registry = BINDING_REALMS.get(root) ?? new Map<string, ToolBindingRealm>()
+  registry.set(key, realm)
+  BINDING_REALMS.set(root, registry)
+  return realm
 }

@@ -13,14 +13,7 @@
  * @module @dsh-agent-team/runtime/team-sandbox/runner
  */
 
-import type {
-  createConfinedProcessProvider,
-  ProviderLease,
-  RunOutput,
-  SpawnReceipt,
-  SpawnRequest,
-} from '../../sandbox-provider/provider.js'
-import type { ProviderResult } from '../../sandbox-provider/contract-stub.js'
+import type { createConfinedProcessProvider, ProviderLease, ProviderResult, RunOutput, SpawnReceipt, SpawnRequest } from '../../sandbox-provider/index.js'
 import { compileExecutionProfile, type ProfilePolicy, type ProfileRefusal } from './profile.js'
 
 /** The provider surface the runner consumes (the real lane's return type). */

@@ -34,6 +34,7 @@ export type TeamIoDenialCode = (typeof TEAM_IO_DENIAL_CODES)[number]
 /** Closed install-time refusal vocabulary. */
 export const TEAM_SERVICE_INSTALL_CODES = [
   'MEMBER_POLICY_UNAVAILABLE',
+  'MEMBER_POLICY_STALE',
   'MEMBER_IDENTITY_INVALID',
   'MEMBER_DUPLICATE',
   'PROVIDER_UNAVAILABLE',

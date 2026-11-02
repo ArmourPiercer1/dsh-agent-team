@@ -150,7 +150,7 @@ describe('a5p4 lane purity and dormancy', () => {
    * way it always did; a named mount that is simply absent from this checkout is
    * reported, not required (each lane books its own row on its own branch).
    */
-  const NAMED_PROVIDER_MOUNTS: readonly { readonly file: string; readonly lane: string; readonly edge: string; readonly kind?: 'requirement' }[] = [
+  const NAMED_PROVIDER_MOUNTS: readonly { readonly file: string; readonly lane: string; readonly edge: string; readonly kind?: 'requirement' | 'types-only' }[] = [
     {
       // U6 PR5 (the real family move): the anchored rg glob row, mounted by
       // the SEARCH family lane since the mechanics moved (a5glb was the
@@ -205,6 +205,34 @@ describe('a5p4 lane purity and dormancy', () => {
       file: 'tools/process-family/src/confined-shell-executor.mjs',
       lane: 'u6-pr3 — confined shell executor (CI-07: the lane drives the named provider, no bridge)',
       edge: "import { createConfinedProcessProvider } from '../../../runtime/sandbox-provider/index.js'",
+    },
+    {
+      // Alpha.5 sandbox-first P1-07 (PR #532): the Team runner is the ONE
+      // managed execution entry point; it consumes the confined provider's
+      // PUBLIC-FACE TYPES and receives the provider INSTANCE (the caller owns
+      // construction), so it never calls the factory itself. Booked as a
+      // reviewed types-only edge: exactly one public-face import, no deep path,
+      // no factory call — the dormancy claim this leg guards is unchanged.
+      file: 'runtime/team-sandbox/src/runner.ts',
+      lane: 'p1-07 — Team execution runner (types-only; provider instance injected)',
+      edge: "import type { createConfinedProcessProvider, ProviderLease, ProviderResult, RunOutput, SpawnReceipt, SpawnRequest } from '../../sandbox-provider/index.js'",
+      kind: 'types-only',
+    },
+    {
+      // P1-07: the policy → ruleset compiler consumes the frozen
+      // `AllowPathEntry` shape only (it produces rules; it starts nothing).
+      file: 'runtime/team-sandbox/src/profile.ts',
+      lane: 'p1-07 — execution profile compiler (types-only; produces rule entries)',
+      edge: "import type { AllowPathEntry } from '../../sandbox-provider/index.js'",
+      kind: 'types-only',
+    },
+    {
+      // P1-07: the native-compatible SubprocessHandle adapter consumes the
+      // streaming handle types only; the process is owned by the runner.
+      file: 'runtime/team-sandbox/src/subprocess.ts',
+      lane: 'p1-07 — SubprocessHandle adapter (types-only; no process creation)',
+      edge: "import type { ProviderLease, ProviderResult, StreamingOptions, StreamingSpawnHandle } from '../../sandbox-provider/index.js'",
+      kind: 'types-only',
     },
     {
       // U7-F (the governed pwsh shell-class row): the pwsh confined backend
@@ -263,6 +291,16 @@ describe('a5p4 lane purity and dormancy', () => {
       const path = resolve(PACKAGES_DIR, mount.file)
       if (!existsSync(path)) continue // that lane has not mounted on THIS tree (reported below)
       const body = readFileSync(path, 'utf8')
+      if (mount.kind === 'types-only') {
+        // A types-only consumer carries the SAME single public-face import
+        // edge as a mount (no deep path), and is FORBIDDEN to create a
+        // process: no factory call site, no `spawn(` call of its own.
+        const lines = body.split('\n').map((l) => l.trim())
+        expect(lines.filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l)), `${mount.file}: a types-only edge is exactly the pinned public-face import (${mount.lane})`).toEqual([mount.edge])
+        expect(lines.filter((l) => /from\s+'[^']*sandbox-provider\/[^']+'/.test(l) && !/sandbox-provider\/index\.js'/.test(l)), `${mount.file}: only the PUBLIC FACE may be imported (${mount.lane})`).toEqual([])
+        expect(lines.filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l)), `${mount.file}: a types-only edge must not build a provider (${mount.lane})`).toEqual([])
+        continue
+      }
       if (mount.kind === 'requirement') {
         // A requirement/doc name: the pinned declaration line appears
         // EXACTLY once, and the file carries NO import edge and NO factory

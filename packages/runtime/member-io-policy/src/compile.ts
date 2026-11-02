@@ -166,6 +166,7 @@ export function compileMemberPolicy(input: CompileInput): CompileResult<MemberPo
     value: Object.freeze({
       memberIdentity: member.memberInstanceId,
       templateId: member.templateId,
+      instanceGeneration: member.instanceGeneration,
       revision,
       read,
       write,
