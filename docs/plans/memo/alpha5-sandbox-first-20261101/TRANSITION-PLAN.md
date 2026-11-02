@@ -26,6 +26,14 @@
 - `controlled-fs` 的路径与版本核验：仅提取与新 `ctx.fs` ABI 能匹配的机制，避免用旧接口强行取代原生 FS 的流式读/编辑。P1 必须实现 `MemberCeiling ∩ ToolRestriction`，而非从 Member 或 Tool 两者任选其一。
 - 旧工具 Family 和所有历史 Evidence：**暂不删除**。先通过真实原生纵切验证替代后再按 Gate 逐一退役，必要时旧路径只能用于明确隔离的历史测试世界，不能在声称受限的生产执行路径上静默回退。
 
+## 1A. 新增 B2-R 证据与修订后的技术路线
+
+在独立证据分支 `task/a5x-envpoc-20261031 @ 6205df33` 的 B2-R 中，**原生 terminal-bash 的公开 `apply` 包裹件**在测试会话上成功实施了 OS 写入根限制：rootA 内写入成功、外部写入失败；原生插件源码零复制、零修改。该结果把此前的持久 Bash `CORE_SEAM_BLOCKER` 缩小为 **CONDITIONAL（仅写侧受限纵切）**，并证明应在 P1 优先验证公开包裹，而不是先做基础设施 Fork。
+
+但受限读权限并未成立，Member 标识使用测试会话名子串匹配且缺省回退旧 Policy，真正有效的权限升档入口和持久 PTY 策略撤销也未验证。因此 **不能据此升级 Member×Tool 全局三轴硬上界为 READY**，也不能把 `sandbox_permissions` 额外参数当成有效的持久 Bash 升权测试。需按 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 优先做真实 TeamDomain Member 身份与独立读写约束；未绑定时前置拒绝，禁止裸 fallback。
+
+工作排序：公开 Provider/原版装配 → 零复制公开接口包裹 → 缺公开接缝时的最小基础设施 Fork → **绝不修改原生 ToolDefinition 或 DSH Core**。仍然先复用现有 v4 工具 I/O 词汇，仅补必要 Member ceiling；`network: restricted` 不能自动转为布尔 allow/deny，不能兑现时报告 UNSUPPORTED 与显式迁移义务。
+
 ## 2. 真实 PoC 与新阶段之间如何衔接
 
 `POC-PLAN.md` 和 `FORK-POC-RESOLUTION-PROPOSAL.md` 是本架构的历史实验依据。可由本地 Agent 将已推送完整源码、真实 Host 运行记录、测试与设备环境绑定到 P1/P2 对应 Gate；对已证明、相同 Host SHA/相同边界/相同权限契约的实验，不必重复。**只凭摘要或截图不能判 PASS**；差异点产生最小补测列表。
