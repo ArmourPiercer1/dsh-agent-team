@@ -1,0 +1,20 @@
+✔ the corpus is well-formed: every vector is regression-only and names a new-lane owner (6.634441ms)
+✔ the corpus and every fixture are free of acceptance-shaped vocabulary (0.561824ms)
+✔ MATCH: a same-shape new-lane observation is a regression comparison, not acceptance (56.917893ms)
+✔ MATCH: an absolute-outside locator is denied by a restricted lane (lane decision) (0.349832ms)
+✔ DIVERGED: a folded Unicode path names the field that moved (0.239263ms)
+✔ DIVERGED: a relaxed lane decision is reported with both decisions named (0.145004ms)
+✔ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.201391ms)
+✔ REFUSED: a fixture carrying an acceptance-shaped token is not converted corpus (0.450193ms)
+✔ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.197985ms)
+✔ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.225847ms)
+✔ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (1.252402ms)
+✔ the closed result vocabulary has exactly three statuses and none is a verdict (0.141168ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.576329

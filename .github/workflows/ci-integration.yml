@@ -197,6 +197,17 @@ jobs:
         # READ from tests/paths.mjs as a constant, never resolved into a checkout.
         run: node --test tests/world-factory/a5sf-harness.test.mjs
 
+      - name: "a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free)"
+        # BL-13/R5: the retired family output vectors were converted into a regression
+        # comparison corpus for the new lanes. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 lesson), so without this step the comparator's
+        # refusal laws would run in NO layer. Declared in dev/ci/eb3-ci-manifest.json
+        # with the file path as a required token; dropping it is CI_LAYER_LEG_WEAKENED.
+        # This is NOT an acceptance gate: a MATCH is a regression comparison only.
+        # Host-free: no port, no DSH_HOME, no pristine host tree; the P1 path algebra
+        # loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader).
+        run: node --test tests/kits/a5sf-golden/compare.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

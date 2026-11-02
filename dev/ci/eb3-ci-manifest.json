@@ -198,6 +198,17 @@
             "tests/world-factory/a5sf-harness.test.mjs"
           ],
           "why": "R2/BL-10 (2026-11-02): the Alpha.5 Sandbox-First P2 suites inherit the pre-existing TestWorldFactory / shared host-start ledger / Oracle / PR #394 diagnostics, and the harness that adapts them needs a CI-visible C1 proof of its own. Like the #394 and #529 legs, it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the file runs nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the candidate pin is imported as a constant from tests/paths.mjs, and the P1 TS seams load through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+        },
+        {
+          "id": "a5sf golden-vector regression corpus",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "tests/kits/a5sf-golden/compare.test.mjs"
+          ],
+          "why": "R5/BL-13 (2026-11-02): the retired Alpha.5 tool-family golden output vectors were converted into a small regression-comparison corpus for the new Provider/Service/OS-runner lanes. This is NOT an acceptance gate — a MATCH is a regression comparison only, and every RETIRE/UNUSABLE vector is refused before the observation is inspected. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the comparator's refusal laws run nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the P1 path algebra loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
         }
       ],
       "hostFree": true
