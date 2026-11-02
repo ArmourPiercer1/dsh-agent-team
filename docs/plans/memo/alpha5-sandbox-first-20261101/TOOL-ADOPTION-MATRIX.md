@@ -2,6 +2,8 @@
 
 > **DRAFT / NOT TESTED**。本表是 P3-00 的**静态种子**而非运行时真实全部工具清单；一切 `Status` 初始均为 `PENDING`。必须在 pinned DSH `639ed01539` 的真实 `ToolRuntime`/Preset/动态来源下重新导出库存才能声称覆盖完整，禁止从名称猜测真正 I/O 效果。依据 [架构](./ARCHITECTURE.md)、[实施计划](./IMPLEMENTATION-PLAN.md)、[ADR](./ADR.md)。
 
+**全表的权限计算前提**：每条实际受限调用都遵守 `EffectiveIo(member,tool,call) ⊆ MemberCeiling(member) ∩ ToolRestriction(member,tool)`。工具级 `allow all` 不是 Member ceiling 的提升；未额外声明的工具限制也不能超过 Member ceiling。工具调用审批仅决定是否/如何执行，并不默默改写硬上界。
+
 ## 1. 工具类型与统一执行路径
 
 | 代表原生工具 / 类型 | 原生事实或待验证假设 | 推荐接入模式 | P2 代表测试 / P3 批量接入 | 最低验收 & 残余风险 |
@@ -34,9 +36,9 @@
 
 ```text
 toolName | actualPreset | sourcePackage/version/SHA | registeredDefinitionIdentity
-scope/member/call binding | effective provider id | I/O dimensions
+scope/member/call binding + policyRevision | effective provider id | I/O dimensions
 selected mode(s) | trust registry digest | P2/P3/P4 suite IDs
-native output oracle | permission-effect oracle | C1/C2/C3 status
+native output oracle | provider consulted decision/receipt | permission-effect oracle | C1/C2/C3 status
 failure/cancel/teardown status | assurance label | exception & owner
 ```
 
@@ -50,7 +52,7 @@ failure/cancel/teardown status | assurance label | exception & owner
 
 **正向（P3）**：原生 ToolDefinition provenance、参数输入/输出 schema、真实结果/错误、窗口与流/取消行为、必要的宿主服务、非 Team 参照与性能。
 
-**权限（P3 最小拒绝 + P4 完整矩阵）**：每个工具实际执行的 `read/write/network` 维度至少一个真实允许和一个禁止用例（无法执行对应效果则注明 NOT_APPLICABLE），单次审批、双 Member、旧资源存活/撤销按实际能力覆盖。
+**权限（P3 最小拒绝 + P4 完整矩阵）**：每个工具实际执行的 `read/write/network` 维度至少一个真实允许和一个禁止用例，且同一 member/tool/call/revision 能从审批追溯至 provider consulted 与 OS/FS/network 实际效果（无法执行对应效果则注明 NOT_APPLICABLE），单次审批、双 Member、旧资源存活/撤销按实际能力覆盖。
 
 **审计（P5）**：导入/注册/执行链路能证明不涉及修改 DSH 原生 ToolDefinition；失效、重绑定和前置拒绝的路径不允许不受限 fallback，别名/TOCTOU/FD/网络绕过依据用户接受的信任范围判定。
 
