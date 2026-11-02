@@ -1,0 +1,7 @@
+FATAL Error: pristine drift: ref: refs/heads/stable-3-0.2.0-rc.2 != 639ed015397290b3745d163aafe02ffee4aa3f84
+    at prepareWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-b2r-kit.mjs:64:54)
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-b2r-kit.mjs:181:3)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-b2r-kit.mjs:230:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
