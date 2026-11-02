@@ -208,6 +208,17 @@ jobs:
         # loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader).
         run: node --test tests/kits/a5sf-golden/compare.test.mjs
 
+      - name: "a5sf diag R4 (BL-12 — node:test, host-free, delegates to the PR #394 classifier)"
+        # BL-12/R4: the approval-bypass / failure-classification report reuses the PR #394
+        # diagnostics (`scripts/diag-call-chain.mjs`) and the P1 locator algebra instead of
+        # creating a second vocabulary or a second matcher. ci-integration lists node:test
+        # files EXPLICITLY (the #394 and #529 incidents were files no layer collected), so
+        # the suite needs this step; the file path is a required token in
+        # dev/ci/eb3-ci-manifest.json and dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: fixtures are JSONL rows under tests/a5sf-diag/fixtures — no boot, no
+        # port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/a5sf-diag/a5sf-diag.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

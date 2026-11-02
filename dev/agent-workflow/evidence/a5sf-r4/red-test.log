@@ -1,0 +1,209 @@
+✖ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (37.629037ms)
+✖ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (42.900087ms)
+✖ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (32.400592ms)
+✖ L4 failure classification passes the PR #394 class string through unchanged (34.872148ms)
+✖ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (33.412505ms)
+✖ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.163539ms)
+✖ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (34.314643ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 282.497624
+
+✖ failing tests:
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:48:1
+✖ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (37.629037ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1568
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/scripts/a5sf-diag.mjs'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+      at Module._load (node:internal/modules/cjs/loader:1341:5)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v24.21.0
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:50:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:60:1
+✖ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (42.900087ms)
+  AssertionError [ERR_ASSERTION]
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:64:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:77:1
+✖ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (32.400592ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:81:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:92:1
+✖ L4 failure classification passes the PR #394 class string through unchanged (34.872148ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1568
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/scripts/a5sf-diag.mjs'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+      at Module._load (node:internal/modules/cjs/loader:1341:5)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v24.21.0
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:94:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:105:1
+✖ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (33.412505ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:109:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:119:1
+✖ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.163539ms)
+  Error: ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/scripts/a5sf-diag.mjs'
+      at readFileSync (node:fs:483:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:120:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/scripts/a5sf-diag.mjs'
+  }
+
+test at tests/a5sf-diag/a5sf-diag.test.mjs:129:1
+✖ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (34.314643ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1568
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/scripts/a5sf-diag.mjs'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+      at Module._load (node:internal/modules/cjs/loader:1341:5)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v24.21.0
+  
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r4-diag/tests/a5sf-diag/a5sf-diag.test.mjs:134:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

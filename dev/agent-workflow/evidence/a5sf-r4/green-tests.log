@@ -1,0 +1,104 @@
+# a5sf-r4 / BL-12 — GREEN captures (real output, captured by tee; 2026-11-02 real UTC)
+# branch task/a5sf-r4-diag-20261102, base origin/master 180088813
+
+$ node --test tests/a5sf-diag/a5sf-diag.test.mjs
+✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (102.11038ms)
+✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (101.645643ms)
+✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (101.742103ms)
+✔ L4 failure classification passes the PR #394 class string through unchanged (102.54677ms)
+✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (102.903082ms)
+✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.21699ms)
+✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (99.993684ms)
+✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (102.338923ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 775.590618
+exit=0
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/clean.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=6 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+ALLOW_LEGITIMATE file=tests/a5sf-diag/fixtures/clean.jsonl:3 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=c2 requestId=req-clean-1 tool=read axis=read
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/clean.jsonl:6 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
+SUMMARY calls=3 allow=2 findings=0 legitimate_narrowed=1 undecidable=0 classified=1 gaps=0 verdict=NO_BYPASS_FOUND
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=0
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/bypass.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=4 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:2 code=ALLOW_WITHOUT_DURABLE_APPROVAL callId=c1 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:3 code=APPROVAL_SCOPE_MISMATCH callId=c2 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt requestId=req-bypass-2
+SUMMARY calls=2 allow=2 findings=2 legitimate_narrowed=0 undecidable=0 classified=0 gaps=0 verdict=BYPASS_FOUND
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/miscope.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=3 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/miscope.jsonl:2 code=ALLOW_OUTSIDE_COMPILED_CEILING callId=c1 member=alpha tool=read axis=read lane=allow compiled=deny locator=/work/beta/outside.txt
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/miscope.jsonl:3 code=TOOL_NOT_IN_COMPILED_CEILING callId=c2 member=alpha tool=bash axis=write lane=allow compiled=absent locator=/work/alpha
+SUMMARY calls=2 allow=2 findings=2 legitimate_narrowed=0 undecidable=0 classified=0 gaps=0 verdict=BYPASS_FOUND
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/failure.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=2 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/failure.jsonl:1 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/failure.jsonl:2 code=GRANT_STALE attribution=ATTRIBUTED faces=pa-control-edge
+SUMMARY calls=0 allow=0 findings=0 legitimate_narrowed=0 undecidable=0 classified=2 gaps=0 verdict=NO_BYPASS_FOUND
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=0
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/gap.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=3 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/gap.jsonl:3 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
+FAILURE_CLASS_GAP file=tests/a5sf-diag/fixtures/gap.jsonl:1 code=MEMBER_GENERATION_STALE source=a5sf-compiler overlappingAlpha5String=false reason=the PR #394 table has no a5sf compiler row; quoting an overlapping Alpha.5 string would be a cross-vocabulary misattribution
+FAILURE_CLASS_GAP file=tests/a5sf-diag/fixtures/gap.jsonl:2 code=IO_POLICY_UNSUPPORTED source=a5sf-compiler overlappingAlpha5String=true reason=the PR #394 table has no a5sf compiler row; quoting an overlapping Alpha.5 string would be a cross-vocabulary misattribution
+SUMMARY calls=0 allow=0 findings=0 legitimate_narrowed=0 undecidable=0 classified=1 gaps=2 verdict=GAP_DISCLOSED
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+exit=0
+
+$ node scripts/eb3-ci-negative-controls.mjs
+
+24/24 control(s) behaved as required
+exit=0
+
+$ node scripts/doc-checks.mjs
+exit=0

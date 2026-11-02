@@ -1,0 +1,2 @@
+{"kind":"failure","callId":"c1","text":"a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=alpha did not approve the call"}
+{"kind":"failure","callId":"c2","text":"a5p5-refused kind=refused-admission code=GRANT_STALE detail=approval generation moved"}
