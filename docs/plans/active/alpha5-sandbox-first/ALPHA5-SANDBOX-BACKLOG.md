@@ -30,11 +30,11 @@
 | BL-06 | P1-06 Provider/Backend 排他替换及发布路径 | DONE | `evidence/a5sf-p1-06/` |
 | BL-07 | P1-07 OS Runner / Subprocess 公共面（真实 Landlock 证据，嵌套 deny 拒绝） | DONE | `evidence/a5sf-p1-07/` |
 | BL-08 | P1-08 PTY / 持久进程生命周期（撤销先于首个 await、generation 键） | DONE | `evidence/a5sf-p1-08/` |
-| BL-09 | R1 审批/治理接管（Alpha.4 ControlService/Envelope/ApprovalCase 以公开 seam 接管新执行面） | READY | 待新 PR；不得生成第二 Ledger |
-| BL-10 | R2 工程基线继承（WorldFactory/Canary/oracle、四层 CI、`PR #394` 诊断工具） | READY | 与 BL-09 同批 |
-| BL-11 | R3 证据链（Alpha.4 允许/拒绝 → 编译结果 → Provider consulted → 独立效果 Oracle 同调用对齐） | BLOCKED（依赖 BL-09） | P2 每个机制的前置 |
-| BL-12 | R4 诊断工具（approval-bypass / 失效分类报告） | READY | 复用 `PR #394` 工具，不新写 |
-| BL-13 | R5 黄金向量转换（旧 tool-family 输出向量 → 新 Provider 对照） | READY | 只作回归输入，不作新验收 |
+| BL-09 | R1 审批/治理接管（Alpha.4 ControlService/Envelope/ApprovalCase 以公开 seam 接管新执行面） | DONE | PR #541；`evidence/a5sf-r1/`；只消费既有 `ControlService.guardOperation` 的耐久 allow，只可收窄不可放宽；无第二 Ledger |
+| BL-10 | R2 工程基线继承（WorldFactory/Canary/oracle、四层 CI、`PR #394` 诊断工具） | DONE | PR #540；`evidence/a5sf-r2/`；唯一 launcher/ledger/oracle/诊断表，预算门移到 `run-record.mjs` 单一实现 |
+| BL-11 | R3 证据链（Alpha.4 允许/拒绝 → 编译结果 → Provider consulted → 独立效果 Oracle 同调用对齐） | READY | BL-09 已 DONE（PR #541）；行 schema 由 R4 报告声明，P2 每个机制的前置 |
+| BL-12 | R4 诊断工具（approval-bypass / 失效分类报告） | DONE | PR #542；`evidence/a5sf-r4/`；`scripts/a5sf-diag.mjs` 复用 `PR #394` 分类表与 P1 `matchLocator`，不新增词汇 |
+| BL-13 | R5 黄金向量转换（旧 tool-family 输出向量 → 新 Provider 对照） | DONE | PR #543；`evidence/a5sf-r5/`；12/5041 向量转成回归对照语料，MATCH 明确不构成验收 |
 
 ## 2. P2 — 每机制代表工具（G2）
 
