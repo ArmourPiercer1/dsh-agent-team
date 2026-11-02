@@ -27,7 +27,7 @@
 
 <!-- q5:main-begin -->
 
-| ① 行 ID | ② 工具 / 面 | ③ 接入模式 | ④ 编译上界 | ⑤ 最低验收 | ⑥ 验证 | ⑦ 残余风险 | ⑧ 等级 | ⑨ V@B |
+| ①行ID | ② 工具 / 面 | ③ 接入模式 | ④ 编译上界 | ⑤ 最低验收 | ⑥ 验证 | ⑦ 残余风险 | ⑧ 等级 | ⑨ V@B |
 |---|---|---|---|---|---|---|---|---|
 | read (M-01) | 原生 read（ctx.fs） | service-mediated:fs | MemberCeiling(read) ∩ ToolRestriction(read) | 大文件中间窗口、流式、禁读真实拒绝、双 Member 不串权 | 证据=dev/agent-workflow/evidence/a5sf-g1/G1-GATE-REPORT.md；机制级已测，工具级待 BL-14 | 工具尚未绑定；可信 JS 可绕 ctx.fs（TRUSTED_ONLY） | NOT_WIRED | no |
 | write (M-02) | 原生 write（ctx.fs） | service-mediated:fs | MemberCeiling(write) ∩ ToolRestriction(write) | 原子替换与版本校验、禁写字节不变、写不自动获读 | 证据=dev/agent-workflow/evidence/a5sf-g1/G1-GATE-REPORT.md；写路径拒绝由 BL-03/BL-05 覆盖，工具级待 BL-15 | 工具尚未绑定；同 realm 恶意 JS | NOT_WIRED | no |
