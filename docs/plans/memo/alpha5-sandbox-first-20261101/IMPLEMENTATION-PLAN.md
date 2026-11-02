@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: `superpowers:subagent-driven-development` 或 `superpowers:executing-plans`；逐任务 TDD、独立复审、真实证据再晋级。此处所有 `- [ ]` 是**待实施任务**，不是已完成项。
 >
-> **STATUS: DRAFT / IMPLEMENTATION NOT AUTHORIZED BY THIS PR.** 2026-11-02。与 [ADR.md](./ADR.md)、[ARCHITECTURE.md](./ARCHITECTURE.md)、[TOOL-ADOPTION-MATRIX.md](./TOOL-ADOPTION-MATRIX.md) 配套。此前本地 PoC 的主张须按实际 commit/log 独立核验，不能凭截图变 PASS。
+> **STATUS: ARCHITECTURE PoC CLOSED / IMPLEMENTATION-READY DESIGN, NOT ACTIVATED.** 2026-11-03。与 [ADR.md](./ADR.md)、[ARCHITECTURE.md](./ARCHITECTURE.md)、[TOOL-ADOPTION-MATRIX.md](./TOOL-ADOPTION-MATRIX.md) 配套。此前本地 PoC 的主张须按实际 commit/log 独立核验，不能凭截图变 PASS。
 
 **Goal:** 通过 Blueprint 限制各 Member 的**文件读、文件写、网络 allow/deny**；使原生 DSH 工具保持原样，通过 `service-mediated` 和 `os-confined` 两种可组合的通用执行方式接入，并给未来工具提供通用接入口。
 
@@ -18,11 +18,24 @@
 - **不变量**：A5-NATIVE-01/02、A5-BOUNDARY-01、A5-FALLBACK-01、A5-GENERIC-01..04。不得修改、Fork、复制原生模型可见工具的业务实现，不得引入任何 `read/grep/web` 业务替代算法；只做最小、公开 API 优先的基础设施 Provider/Backend 扩展或受控 Fork。
 - **信任边界**：可信工具摘要与实际绑定验证仅代表部署者选择，不代表恶意 JS 防绕过；`service-mediated` 必须标 `TRUSTED_ONLY`，`os-confined` 只有实测 OS 禁止才能宣称相应隔离。允许 hardlink 作为授权路径别名，但不开放未经授权的路径。
 - **测试资源**：只用 `tests/deepseek-harness-test-use` pristine Host，`tests/homes/<world>`、`tests/paths.mjs` 端口租约和 `tests/world-factory`；先 `node tests/world-factory/provision-host-sandbox.mjs --check` 预检沙箱原生资产；绝不影响 `:3080`、稳定 DSH_HOME、冻结源码或其他 lane 的 World。`ENV_BLOCK` 不计 PASS。
-- **版本/迁移**：旧 Blueprint v3/v4 行为与 hash 不变；优先复用 v4 `toolBindings[].io` 现有词汇/映射，只为实际缺失的 Member ceiling 做最小增量。封闭语法确实需要时才考虑加法式版本，不预设 v5。与 `AGENTS.md` 禁 vendoring 规则冲突，须于**独立 Authority Migration PR** 协同修订，先不以本 Draft 推翻现行限制。P1 的契约评审先证明 v4 可复用边界，明确最小新增字段、缺省、审批相容性及向后迁移策略。
+- **版本/迁移**：Blueprint 运行版本集已为 `[3,4]`（PR #324）；v4 `toolBindings` **仅文档解析/哈希生效，I/O 执行未生效**。保留 v3/v4 原意和 hash；复用 v4 `toolBindings[].io`，仅新增不可替代的 Member ceiling 载体/身份引用和编译接线，必要的封闭 Schema 版本增量另按最小变更处理，不预设 v5。v4 的 `owner` 是工具来源（`authoringOwner`），不是 Member；`ask` 和 `network:restricted` 不得隐式变成硬上界扩大或布尔许可。现行 `AGENTS.md` 禁 vendoring 规则与有限基础设施 Fork 的新裁决冲突，只能由**独立 Authority Migration PR** 在启用前修订；本 Draft 不自行修改生效权威。
 - **Fork 纪律**：优先继承公开上游类和替换公开 Provider，必须 Fork 时先提交 `FORK-DECISION`（包/入口、需改的接缝、上游 SHA、最小 diff、许可证、Owner、跟踪更新/撤回机制）；不能为了减少 Fork 数重写工具或手工套一份简化 SubprocessRuntime。
 - **任务所有权**：Policy/Schema Owner；Service Adapter Owner；OS Sandbox Owner；Native Tool Integrator；Test/Security Reviewer；唯一 Authority Writer。一个任务一 branch/worktree/Writer；不同人可在冻结接口后并行 Service 与 OS 分支，不能并发写 `host.ts`、`agent-bindings.mjs`、`cordis.patch.yml`、`current-authority.json`。
 - **工作流**：每个任务按 RED 失败测试 → 最小实现 → GREEN → 类型检查 → 受影响回归 → 独立 Review → commit/PR；所有真实 Host 操作必须有运行记录、权限决策与独立副作用 Oracle。完成前独立 Reviewer 检验没有新工具执行体。
 - **通用命令（仅在任务实施时执行）**：`pnpm exec vitest run <exact-test-files>`、`pnpm -r typecheck`、`pnpm -r build`、`pnpm check:artifacts`、`node tests/world-factory/u5-canary-runner.mjs --suite <new-suite-name> --line <line> --evidence <dir>`；所有 suite 名在对应任务创建后才有效。对于 doc PR 不要求虚称这些命令已运行。
+
+### 架构 PoC 收口与开发启动边界（2026-11-03）
+
+**PoC 已结束，不再追加独立“完整机制验证轮”。** 已经有受信 Service、原生 `grep/glob` 子进程、Web 布尔限制、原生持久 Bash 零复制 wrapper 和 OS profile 的可复查技术纵切。原始证据：[综合报告](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/POC-RESULTS.md) · [B2R2](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R2-DELTA-RESULT.md) · [IOAXIS](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) · [WRITEONLY `9c56f94a1`](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff)。
+
+| 已有证据 | 能继承的结论 | 必须在实施阶段完成 |
+|---|---|---|
+| Service-mediated / bwrap / wrapper | 公开接缝可行、保留原生工具且零 Core patch；受信 JS 的旁路不在恶意代码隔离保证内 | P1 真实 Member×Tool/Provider 绑定；P2 原生效果 |
+| IOAXIS（19/19 + 12/12） | bwrap 可做受限挂载及有限路径掩码，公开 `resolve + confine` 能消费加性 `io` | 任意读 allowlist 不得由 `--ro-bind / /` + 掩码冒充 |
+| WRITEONLY（15/15 + 13/13） | VFS `0300/0200` × bwrap 在固定权限样本下出现 EACCES，且原生 Bash 接缝成立 | 同 UID `chmod` 和新文件读位意味着该方案不是任意命令的硬上界；严格模式首选 Landlock |
+| Landlock WSL2 env probe | 本测试宿主 `add_rule=EBADF`，判 `ENV_BLOCK` | 在支持的 Linux 执行环境中于 P1/P2 做能力检测与 C2 真效果验收，**不是新 PoC** |
+
+**停止规则**：P1–P5 中发现的 Member 绑定、旧 PTY、异常/撤销、非 Team 兼容和 Landlock 后端具体缺陷，直接成为实现/修复任务。若本机缺所需 Landlock 能力，则仅拒绝无法被现有后端强制表达的策略，不退化为更宽的 bwrap 或 VFS 模式。只有实际发现公开接缝无法传递受信策略且最小基础设施 Fork 也不可用，才可提出具名的新技术阻塞；不得据此重新开启全架构 PoC。
 
 ### 五个特别容易遗漏的 Review Focus
 
@@ -34,6 +47,8 @@
 | 新的网络 deny 仅屏蔽 Web Provider，却让 OS 进程通过 DNS/UDP 等联网 | P1-07/P2-05/P4-03 | OS 真实数据面负控；后端无法证实则 UNSUPPORTED |
 | 同一调用 Alpha.4 已批准但执行 Provider 使用了另一 Member/Tool/代际，或 Provider applied 却未 consulted | P1-04/P2-01/P3-00/P4-05 | 联结 `memberId/toolIdentity/callId/revision`；工具绑定、Provider consulted 与真实 I/O Oracle 同调用成对出现 |
 | 合法目录下硬链接被原受控 FS 的 `nlink===1` 拒绝，或放宽时意外影响 Team 控制面完整性 | P1-03/P2-01/P4-02 | 普通 Member hardlink 经授权路径可用；内部 authority/ledger 保持原保护 |
+| bwrap 掩码/文件 owner 模式被误当任意读 allowlist/只写硬上界 | P1-07/P2-04/P4-01 | 真实 Landlock 或等价不可由被控进程放宽的后端；`chmod` / 新文件负控；不支持则拒绝 |
+| wrapper 在 `danger-full-access` 时可能走原生裸 argv 早返回 | P1-06/P1-08/P2-04 | 策略封顶发生在该早返回之前，任何受管调用都不裸执行 |
 
 ---
 
@@ -49,6 +64,8 @@
 
 - [ ] 选真实 v4 Blueprint 2–3 份，构造 Member A 只读 A/只写 B、Member B 使用同一 Bash 但只读 C/只写 D、同 Member 的 read/grep 工具进一步收窄、Leader 与未知 CLI 均受 Member 上界四种样例；记录现有 v4 + Alpha.4 能表达/不能表达的逐字段证据。
 - [ ] RED：用 `pnpm exec vitest run packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts` 验证 A/B 不能串权、工具级 `allow all` 不能扩大 Member、缺项不能静默扩权、v4 网络 `restricted` 不自动当布尔 allow/deny、旧 v4 文档/哈希不漂移。
+- [ ] 按已启用的 v4 实际模型核对：`toolBindings[].owner/name` 标识**提供者来源/工具名称**，不代表 Member，禁止把 `owner='A'` 的语法可接受性解释为 Member A 的权限已绑定；MemberIdentity 必须由受信 TeamDomain 引用闭合。只新增确实缺少的 Member 全局上界作者载体，不重建 v4 词汇。
+- [ ] v4 `io.ask` 保持既有声明/审批语义；硬上界变更只能走明确授权的策略 revision，不能将 `ask` 或一次性工具调用批准默认为拓宽 hard ceiling。不可兑现的旧 `network:restricted` 以 `IO_POLICY_UNSUPPORTED`/拒绝表达，不静默转布尔。
 - [ ] 只有在缺少 Member ceiling 表达时，增加**最少作者字段和映射**，重用 v4 三轴词汇/路径匹配/工具绑定；若封闭 Schema 需要新版本，只做加法式版本与显式迁移，不构建完整第二套语言。
 - [ ] GREEN + `packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts`、`a5sr3-default-deny-mapping.test.ts`、`a4p7-v3-identity-binds-grammar.test.ts` 回归；独立审查“增量是否必要”和默认拒绝含义。
 - **Gate G1.1**：明确 Member × Tool 两轴的执行上界与旧语法可复用范围；P1 之前不得开始大规模 v5 语法/迁移实现。
@@ -126,10 +143,12 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 **文件**：新 `packages/runtime/team-sandbox/src/{profile,runner,subprocess}.ts`；测试 `packages/runtime/test/a5sf-os-runner.test.ts`、`a5sf-subprocess-contract.test.ts`。复用/评估现有 `packages/runtime/sandbox-provider/`、上游 `sandbox-local` / `subprocess-local`。
 
-- [ ] RED：allow 读/写与 denied 路径内核拒绝、实际 TCP/UDP/DNS deny、可用后端自动 probe、不可用时不创建裸进程、`SubprocessRuntime.spawn()` **同步**返回 `SubprocessHandle` 并保留 stdin/out/err/`collected`/`done`/`terminate`/`waitForExit`。
-- [ ] 实现最小 profile 编译、pre-spawn 生命周期检查与外部 OS backend；不能把上游 `sandbox.confine` 异步返回直接变更 `spawn` ABI。原生 `rg`/Node/bash 不重写。
-- [ ] GREEN、OS 真效果 Oracle、`pnpm -r typecheck`；对无法创建网络 namespace、landlock 只 partial 的环境明确 `ENV_BLOCK/UNSUPPORTED`；commit。
-- **Gate G1.7**：至少一个真实进程拒读/拒写/禁网；`SubprocessHandle` 行为兼容，不以 fake wrapper 通过。
+- [ ] RED：按 read/write 独立白名单生成执行 profile；在受支持后端分别验证允许读 A、拒读 B、允许写 B、拒写 A、**只写不读**（含已有与新文件）、路径/子树粒度、符号链接、`chmod` 尝试，以及实际 TCP/UDP/DNS 禁网；无能力时不得启动裸进程。同步 `spawn():SubprocessHandle` 的 stdin/out/err/`collected`/`done`/`terminate`/`waitForExit` 不退化。
+- [ ] 先走公开 `sandboxPolicy.resolve` + `ctx.get("sandbox").confine` 代理，规则仅在 Team 受限执行路径消费；仅遇具体接缝缺失才有限 Fork 基础设施。**必须在原生 `danger-full-access` 裸 argv 早返回前完成 ceiling clamp**。不复制原生 `rg`/Node/Bash。
+- [ ] Linux 实现优先组合 bwrap（mount/执行依赖、可表达的子集、`--unshare-net`）和 Landlock FS（独立 READ_FILE/READ_DIR/WRITE_FILE/MAKE_REG 等；涉及 TRUNCATE 语义要求 ABI ≥3）。在实际目标系统探测 ABI、`add_rule` 与 `restrict_self` 的**真效果**；本 WSL2 Landlock EBADF 标 `ENV_BLOCK`，不作为部署 PASS。系统运行依赖只在受信路径可读，用户秘密不能经全根 `--ro-bind / /` 漏出。
+- [ ] `0300/0200` VFS owner 位实验仅作为有条件 PoC，不允许成为通用硬上界 fallback：同 UID owner 可 `chmod`，新建文件可能可读；bwrap mask 也不能冒充 read allowlist。不支持所需完整语义时明确 `UNSUPPORTED` / fail closed，允许已证明能兑现的独立子集。
+- [ ] GREEN、独立 OS 内容/网络效果 Oracle、`pnpm -r typecheck`、同版本 Host 原生对照；保留 backend/profile/ABI 与 consulted trace；commit。
+- **Gate G1.7**：至少一种真实后端对其声明支持的完整限制提供正反效果证据，`spawn` 签名兼容，无法兑现的环境/策略明确拒绝；**不因本机 WSL2 不支持 Landlock 再启动 PoC**。
 
 ### P1-08 — PTY / 持久进程生命周期
 
@@ -137,7 +156,7 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 **文件**：新 `packages/runtime/team-sandbox/src/terminal.ts`；`packages/runtime/test/a5sf-terminal-lifecycle.test.ts`，条件性最小 Fork `@deepseek-ai/dsh-terminal-bash` 或 `@deepseek-ai/dsh-bash-sandbox` 的**Backend**代码。
 
-- [ ] RED：`spec.owner.session` 绑定正确 Member，持久进程被约束、`danger-full-access` 不破上界、权限缩紧 kill/drain、单次扩权不会变成永久 PTY 权限。
+- [ ] RED：从受信 TeamDomain MemberInstance/ToolBinding 取得身份（不是 PoC caps 文件/label/argv），`spec.owner.session` 不可伪造；持久域记录创建时有效的 policy revision / backend 与 PTY PID。每次复用命令先比对 revision，旧域在收紧/撤销后拒绝新命令并 kill/drain 或重建；`danger-full-access` 不破上界、单次批准不变成永久 PTY 扩权。**不要求每条命令重启正常的同代际 PTY**。
 - [ ] 按原生 `backendType` 公开配置优先装入 `team-shell`；保持 `spawnTerminal`、session startup、信号/窗口/输出/关闭/回收机制。
 - [ ] GREEN、真实 PTY 测试与普通 `shell` 对照；commit。
 - **Gate G1.8**：PID/子孙进程/终端 session 的边界可观测；停机收束有独立收据。
@@ -155,7 +174,7 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 | P2-01 | 原生 `read` | `ctx.fs`；`tests/world-factory/suites/a5sf-read.mjs` | 大于 10MiB 文件的中间行窗口；和原版结果一致，保留流式处理 | 禁止路径正文不可读、Member A/B 不串权、硬链接按新契约可读 |
 | P2-02 | 原生 `write` | `ctx.fs`；`…/a5sf-write.mjs` | 允许路径原生创建/覆盖，保留原子替换和版本校验 | 禁写路径真实字节未变、写不自动获读权限 |
 | P2-03 | 原生 `grep` | `ctx.subprocess.spawn`→OS `rg`；`…/a5sf-grep.mjs` | 匹配/不匹配 exit 0/1、非法正则、结果裁剪、取消 | `rg` 禁读路径真实 OS 拒绝，非原生字符串过滤，原工具未改 |
-| P2-04 | 原生持久 `bash` | `ctx.terminals`→`team-shell`；`…/a5sf-bash.mjs` | 同 PTY 多命令、cwd、前后台、信号/超时 | 禁读/写/联网路径拒绝；旧 PTY 不因一次批准获得永久扩权 |
+| P2-04 | 原生持久 `bash` | `ctx.terminals`→`team-shell`；`…/a5sf-bash.mjs` | 同 PTY 多命令、cwd、前后台、信号/超时 | 受支持 Linux 后端真测独立读写与只写不读；同 UID `chmod`/新文件不得越界；禁网、跨代际旧 PTY 拒用，不把 VFS PoC 当通用 PASS |
 | P2-05 | 原生 `web_fetch` | `ctx.web`；`…/a5sf-web.mjs` | 本地批准的 mock server fetch、超时/取消/转换不退化 | network=deny 在 HTTP 前拒绝，普通 DSH fetch 不受影响 |
 | P2-06 | 原生 `run_code/PTC` | Node 子进程 + 受控 Host bridge；`…/a5sf-ptc.mjs` | 原本支持的运行/嵌套调用正控 | 直接 Node 文件/网络受 OS 限制，IPC 无可用的 Host 代发旁路 |
 | P2-07 | 全新第三方 CLI | `os-confined` 通用 launcher；`…/a5sf-new-cli.mjs` | 换一个未命名到 Team 源码的命令仍可执行 | 权限拒绝生效；增加新 CLI **零专用 ToolDefinition 执行体** |
@@ -164,7 +183,7 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 每条 P2 任务采用相同执行步骤：**[ ] RED 实测**（初始 Provider 尚未绑定时预期拒绝或负控植入导致失败）→ **[ ] 最小接线** → **[ ] C1 正向+拒绝** → **[ ] C2 真实 Host Oracle 正向+拒绝与原生对照** → **[ ] 独立 Review** → **[ ] commit**。命令：`node tests/world-factory/u5-canary-runner.mjs --suite <a5sf-name> --line a5sf-p2-<id> --evidence <task-dir>`（先创建 suite/使用 WorldFactory 支持的加载方式；不复刻已有 launcher）。
 
-**B2-R 后的 P2-04 修订**：真正的测试须经原生支持的 sandbox 模式或 Alpha.4 审批路径做 danger 请求（不能使用 `tool-bash-persistent` 不支持的 `sandbox_permissions` 参数）、真实 Team Member 身份绑定及跨代际 PTY 复用；读/写上界应分别由 OS 或可信服务真实执行。保留 B2-R 写侧正控但不重跑同样的 PoC。详见 [差量 PoC](./DELTA-POC-AFTER-B2R.md)。
+**B2R2 / IOAXIS / WRITEONLY 后的 P2-04 验收**：原生 session-mode `danger-full-access` 的钳制已有测试证据，不重跑作为新 PoC；实施须换成真实 Team Member 绑定、受支持后端的独立读写/只写不读、旧 PTY 代际拒用及投影一致性。bwrap 的 mask 子集不能宣称通用 read allowlist；VFS `0300/0200` 的固定权限正控不替代 `chmod`、新建文件负控。Landlock WSL2 ENV_BLOCK 不判成功，所需机制在其他活跃 Linux 内核纳入 P1/P2 实施 C2。详见 [收口记录](./POC-PLAN.md)。
 
 **P2 总 Gate（G2）**：`read/write/grep/bash/web/ptc/new-cli` 至少以覆盖相应机制的代表 case 提交可复查正向+负控，允许明确声明 OS 整类环境阻断但**不能把未测能力当 PASS**。其中服务路径与 OS 路径均须有真实原生成功和内核/Provider 拒绝，不得只凭单元桩。缺一个必交机制不能进入该机制 P3 批量接入。
 
@@ -239,13 +258,13 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 | 任务 | 新增测试套件/验收维度 | 必须实测断言 |
 |---|---|---|
-| P4-01 FS 授权矩阵 | `tests/world-factory/suites/a5sf-readwrite-matrix.mjs` | read 允许/拒绝、write 允许/拒绝、读写分离；文件/目录/新建/覆盖/删除/rename（适用工具）；两个 Member 不交叉 |
+| P4-01 FS 授权矩阵 | `tests/world-factory/suites/a5sf-readwrite-matrix.mjs` | read 允许/拒绝、write 允许/拒绝、读写分离；文件/目录/新建/覆盖/删除/rename（适用工具）；只写目录的 `chmod` / 新文件/现有 FD、跨工具/双 Member 不串权；所需后端无效时拒绝 |
 | P4-02 路径与硬链接 | `…/a5sf-path-alias-matrix.mjs` | 授权硬链接可读/可写；未授权路径不能直接打开；软链接出界拒绝；路径前缀、rename/目录替换/相对路径的约束真实可见；Team authority 的保护不变 |
 | P4-03 Network deny/allow | `…/a5sf-network-matrix.mjs` | Web request allow/deny、OS 真实 TCP/UDP/IPv4/IPv6/DNS/代理/重定向；无法运行 netns 时不伪称通用禁网；Host LLM/control-plane 独立且不代发 |
 | P4-04 一次性审批和撤权 | `…/a5sf-grant-revocation.mjs` | 同 Member 两并发调用只有获批的一次扩权；后续不继承；持久 Bash 权限缩紧旧进程排空/销毁；取消不等于确认终止 |
 | P4-05 绑定/运行时更新 | `…/a5sf-binding-generation.mjs` | HMR/源摘要/同名替换/不同 Realm/重启/cold resume、Provider 不可用/旧 SHA 的执行一致性；失败无未受控 fallback |
 | P4-06 Host 兼容 | `…/a5sf-nonteam-compat.mjs` | 普通 DSH 非 Team read/bash/web 不受侵害，出错时没有一个替代 Provider 影响全局用户；`spillStore` 回归 |
-| P4-05A 双平面同调用一致性与实际消费 | `tests/world-factory/suites/a5sf-cross-plane-consumption.mjs` | 同一 `member/tool/call/revision` 从 Alpha.4 → Provider consulted → 独立 I/O oracle 全部对齐；故意换 Member/漏咨询须 RED；批准工具但被 I/O ceiling 拒绝是正确的可解释结果 |
+| P4-05A 双平面同调用一致性与实际消费 | `tests/world-factory/suites/a5sf-cross-plane-consumption.mjs` | 同一 `member/tool/call/revision` 从 Alpha.4 → Provider consulted → 独立 I/O oracle 全部对齐；故意换 Member/漏咨询须 RED；额外验证模型侧原生 session-mode 投影与执行侧受管上界一致（包括 danger clamp），批准调用但被 I/O ceiling 拒绝须可解释 |
 | P4-07 性能与运行资源 | `tests/kits/a5sf-benchmark/` | 对照原生 vs service-mediated vs os-confined leaf，场景 1KiB read、10MiB 窗口、1K 文件 grep、持久 Shell、并发 1/4/16，报告 p50/p95/p99、RSS、CPU、启动次数、Host 初始化分摊；无自定“10ms”假保证 |
 
 每条 P4 工作包必须：**[ ] 先设计独立效果 Oracle** → **[ ] 故意植入一例越界/绕过，让测试 RED** → **[ ] 移除植入，在真实 Provider 下正反控** → **[ ] 保存真实 Host/Team/Policy/Tool digest 与运行原始结果** → **[ ] 独立 Review 并 commit**。严禁依赖模型输出一句“Permission denied”代替真实文件/网络效果观测。
@@ -284,7 +303,7 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 - [ ] 固定 Team/Host SHA、tool hash、Blueprint/Authority generation、Provider/Fork 版本、测试环境、World、权限矩阵、性能表；审查无伪造或跨版本复用的 PASS。
 - [ ] C1 单元、C2 实测、C3 并行/重启、`pnpm typecheck` / `pnpm build` / `pnpm check:artifacts` / `pnpm smoke:composition` / `pnpm check:install-manifest` 与文档检查按 Gate 全部执行，并逐项列明基线旧红、新红、ENV_BLOCK 与例外。
-- [ ] **单独**申请 Authority Migration PR：修订 `AGENTS.md` 与用户批准的有限基础设施 Fork 规则，替换旧 active plan/旧矩阵，按 `scripts/switch-authority.mjs` 的唯一 Writer 规则原子切换；审查回滚与 Release Gate，未授权不合并。
+- [ ] **单独**准备并审查 Authority Migration PR：修订 `AGENTS.md` 和有限基础设施 Fork 规则、替换旧 active plan/矩阵，按 `scripts/switch-authority.mjs` 唯一 Writer 规则原子切换；**任何生产执行路径的启用必须先完成该授权切换**。此 PR 可以在 P3–P5 期间准备，不必等 P5 才开始；最终发布仍单独裁决。
 - [ ] 写明内部试用支持范围与“不保证恶意同进程 JS 隔离”；不把 `TRUSTED_ONLY` 当 `OS_BOUNDARY_TESTED`。
 - **Gate G5.3 / 发布 GO**：所有承诺能力有真实验收；没有隐藏 fallback、原生工具改造、未获批扩权；两层独立 Review（功能兼容、执行边界） + 用户最终裁决。
 
@@ -318,14 +337,14 @@ P1-01 v4 reuse + minimal ceiling ---- P1-02 policy compiler ---- P1-04 invocatio
                            |
                     P5 adversarial + release
                            |
-               Separate Authority Migration PR
+               Production activation requires separate Authority Migration PR
 ```
 
-建议 PR 颗粒：`P1-policy`（P1-01..04，Schema 需另 Gate）→ `P1-service` / `P1-os`（可并行）→ `P1-integration`（唯一 Writer）→ `P2-service-v` / `P2-os-v`（分别独立）→ `P3-fs` / `P3-process` / `P3-web` / `P3-other`（互不共享写者）→ `P3-center-cutover` → `P4-matrix` → `P5-hardening` → **单独** `Authority-Migration`。不要求每 task 一新 PR，只要求一个 PR 内每工作包可独立 review 且形成 C1/C2 证据。
+建议 PR 颗粒：`P1-policy`（P1-01..04，Schema 需另 Gate）→ `P1-service` / `P1-os`（可并行）→ `P1-integration`（唯一 Writer）→ `P2-service-v` / `P2-os-v`（分别独立）→ `P3-fs` / `P3-process` / `P3-web` / `P3-other`（互不共享写者）→ `P3-center-cutover` → `P4-matrix` → `P5-hardening` → **单独** `Authority-Migration`（安排在任何生产启用之前，不是 P5 才能开始）。不要求每 task 一新 PR，只要求一个 PR 内每工作包可独立 review 且形成 C1/C2 证据。
 
 ## 退出标准 / Stop-Rules / 已有成果再利用
 
-- **已有可引用而无需重做的事实**：PR #26 `spill-local` 替换方式；过去 Alpha.4 的权限审批机制；现有 `tests/world-factory`；已有 Service Realm/OS PoC 的**原始 logs、commit、机型、Host pin 与运行负控**在复查后可作为相同条件的有效证据。不得“为满足流程完整性”重跑已经通过且输入/版本相同的实验。
+- **已有可引用而无需重做的事实**：PR #26 `spill-local` 替换方式；Alpha.4 权限审批；`tests/world-factory`；B2R2、IOAXIS、WRITEONLY 的原始日志/commit/环境/正反 Oracle 按对应语义复用。**架构 PoC 已关闭**；新缺口优先归入实现任务，不得为形式再组织轮次。
 - **不可继承为 PASS 的事实**：以前的 Family 自研 read/grep 能运行、`ctx.isolate` 方法存在、进程 Provider 测试的局部 `fakeDeps` 绿、同进程恶意 JS 被 Hash 登记、简单 Landlock TCP 规则存在。
 - **停工**：不允许一工具一个替代体、未能证明调用来源/权限代际、禁网无法阻止实际 OS 数据面、执行入口不受控、公开接口不够时试图 patch Host Core、单次扩权泄漏、测试触碰稳定 :3080、Fork 导致非 Team 正向回归失败。只能记录具名 `CORE_SEAM_BLOCKER` 或 `UNSUPPORTED/ENV_BLOCK` 并寻求通用 Provider 修复；不得改写需求。
 - **性能验收**：优先比较“同一工具原版 + Team 配置”的真实 p50/p95，并报告原因。性能没有预先约束为固定毫秒数；内部使用者可在 G4 测值后确定可接受预算；不能让小文件读每次冷启动一个完整 Node Tool Host 而不披露。

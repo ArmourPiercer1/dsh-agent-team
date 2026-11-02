@@ -1,7 +1,7 @@
 # ADR — Alpha.5 Sandbox-First / Native-Immutable / Generic Execution
 
 > **状态：用户已裁决产品原则；本文件在 PR #531 中仍为 DRAFT DESIGN，未成为运行时权威。**
-> **更新：2026-11-02；源代码基线：DSH 0.2.0-rc.2 @ `639ed015397290b3745d163aafe02ffee4aa3f84`。**
+> **更新：2026-11-03；架构可行性 PoC 已收口，实施仍须单独授权；源代码基线：DSH 0.2.0-rc.2 @ `639ed015397290b3745d163aafe02ffee4aa3f84`。**
 > 本 PR 只更新设计与计划。它不修改原生工具、Team 产品代码、`AGENTS.md`、`dev/engineering/current-authority.json`、旧 active plan、历史证据或稳定实例。实施权威迁移须单独受审。
 
 索引：[架构](./ARCHITECTURE.md) · [五阶段实施计划](./IMPLEMENTATION-PLAN.md) · [工具接入/测试矩阵](./TOOL-ADOPTION-MATRIX.md) · [现有 PoC 证据计划](./POC-PLAN.md) · [权威迁移](./TRANSITION-PLAN.md)。[Fork/PoC 缺口历史记录](./FORK-POC-RESOLUTION-PROPOSAL.md) 为来源证据，不再是另一套竞争规则。
@@ -12,7 +12,7 @@
 |---|---|---|
 | 用户明确决定 | Member × Tool 的 read/write/network **全局上界**，任意工具调用不得超出 Member ceiling | 本 Draft 的产品需求 |
 | 用户明确决定 | 本轮网络执行范围为布尔 allow/deny、目的地 ACL 留以后；允许硬链接路径别名；可信工具摘要登记；可有限 Fork 执行基础设施插件 | 本 Draft 的产品需求 |
-| 已有仓库事实 | v4 `toolBindings[].io` 语法/哈希已存在，但执行层仍待接线；Alpha.4 审批与受控 Provider 替换先例已存在 | 作为复用输入，不自行升级为已测的新执行能力 |
+| 已有仓库事实 | v4 文档解析已在 PR #324 启用（运行版本集 `[3,4]`），`toolBindings[].io` 可解析/冻结/哈希绑定但**效果未执行**；Alpha.4 审批与受控 Provider 替换先例已存在 | 复用既有事实，不把文档解析等同于 I/O 强制执行 |
 | AI 技术提案 | 内部 Policy/Provider 分解、是否需要最小新增 Schema 版本、具体 Fork 位置、工具接入顺序 | 需按 P1/Gate 证实；不是用户要求指定的实现 |
 
 本文件是 Draft PR 的**用户已确认产品目标 + 尚未生效的实施设计**，不是当前机器 Authority 或 `registry.yaml` 的替代品。正式执行前由唯一 Writer 在受审的 Authority Migration 流程中登记裁决来源，并消除当前 `AGENTS.md` 的有限基础设施 Fork 规则冲突；不得由 PR 标题/横幅自动更改既有权威。
@@ -118,7 +118,7 @@ type EffectiveIoPolicy = {
 // effective.network = member.allow && tool.allow && applicable call permission
 ```
 
-**优先复用已经存在的 v4 工具词汇**：`schemaVersion:4` 的 `toolBindings[].io.read/write/network`、`allow/ask/deny`、`all/restricted`、`owner/name` 与 `v4-authoring-map.ts` 都是真实已合并语法/映射，而非待重新发明的规则。与此同时，该字段族当前**仅 parse/freeze/hash，并未在生产执行层生效**；不能仅因能书写 v4 就声称执行上界已实施。`owner/name` 主要标识工具，不直接表示 Member 身份。
+**优先复用已经存在的 v4 工具词汇**：`schemaVersion:4` 的 `toolBindings[].io.read/write/network`、`allow/ask/deny`、`all/restricted`、`owner/name` 与 `v4-authoring-map.ts` 都是真实已合并语法/映射，而非待重新发明的规则。与此同时，该字段族当前**仅 parse/freeze/hash，并未在生产执行层生效**；不能仅因能书写 v4 就声称执行上界已实施。`owner/name` 标识工具来源/注册项，映射中 `owner → authoringOwner`（现有示例为 `dsh.shell`），**不是 Member 身份**；即使可把字符串写作 `A`，也不得据此把 `owner` 静默解释成成员。P1 需从可信 TeamDomain MemberInstance 另行建立调用绑定。
 
 **P1-01 的次序是能力比较而非 v5 开发**：先用实际 v4 蓝图（同一工具、两个 Member，不同读写上界；工具级额外收窄；Leader 同路）做手工和纯函数映射对照，复核 Alpha.4 模板权限能表达的部分。若现有冻结语法能在**不静默改变旧文档意义、哈希、默认拒绝**的前提下表达全部必需能力，就不升级版本。若缺少 Member 全局 ceiling 的作者载体，仅新增必要字段/映射，并**最大程度复用 v4 三轴规则、路径匹配、审批词汇及数据投影**；只有闭合 Schema 不兼容时才建立**最小加法式版本**（v5 只是一个可能的版本号，不是完整新词汇表）。
 
@@ -126,17 +126,25 @@ type EffectiveIoPolicy = {
 
 **调用与策略变更**：普通 `ask` 可在 Member/Tool Ceiling 内批准一次使用，但不会扩大硬上界。合法 ceiling 改变是另一类明确授权策略变更，并生成 policy revision；在运行的 OS 域必须按新版本重建或排空。禁止把一次批准变成在持久 `bash` 中常驻的宽权限。
 
-## D7A — B2-R PoC 的证据级别与部署路线
+## D7A — 技术 PoC 收口（2026-11-03）与 Linux 执行后端路线
 
-2026-11-02 第二轮 PoC 证明：通过公开 `{apply, Config, inject, name}` 为原生 `terminal-bash` 提供零复制包裹上下文，`sandboxPolicy.resolve` 在 PTY 创建时可以限制指定测试会话的**写入根**。此路线优先于复制或 Fork 基础设施插件，仍不改变原生模型工具。
+**架构可行性结论：可以进入实施，不再启动泛化的探索轮次。** 证据来自原生工具未改动的真实 Host 波次，且每种结论仅在其受测边界内成立：
+- [完整早期结果](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/POC-RESULTS.md)：可信 FS/Web Provider、受限 `rg` 子进程、未知工具与性能均已有实验；同进程恶意 JS 不受 service-mediated 强隔离的结论保留。
+- [B2R2 差量](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R2-DELTA-RESULT.md)：原生 `terminal-bash.apply` 的公开零复制 wrapper 支持精确测试会话映射、缺映射拒绝、写域封顶与真实 session-mode 提权钳制；持久 PTY 只在 spawn 时消费策略，旧进程代际失效问题已实测。
+- [IOAXIS](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) 及 [WRITEONLY](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff)：bwrap 挂载组合与 `sandboxPolicy.resolve → ctx.get("sandbox").confine` 公开接缝可在不改 ToolDefinition/Core 时传递加性 `io`、生成受限 argv；最后一轮 VFS owner 位 `0300/0200` × bwrap 的“只写不读”样本内核层 15/15、原生 Bash 接缝 13/13。
 
-**仅此写入纵切为已测**：原生 `workspace-write` 允许读取白名单外文件；测试采用包含 `M1` 的 sessionId 字符串匹配，匹配缺失时回落旧策略；`sandbox_permissions` 并非原生持久 Bash 的有效模型参数，不能将该次尝试当作实际 danger 升权机制验证；真实 TeamMember 权威绑定、完整 read/write 分离、持久 PTY 撤权、网络与 UI 仍待差量测试。未达这些条件的 Member 全局 I/O 保证保持 CONDITIONAL / NOT_TESTED，不能宣称 READY。
+**关键限制不得被 PoC 的绿色数字覆盖：**
+1. bwrap `--ro-bind / /` + 显式掩码是 *deny-by-mask*，不是默认拒绝的任意 read allowlist；rw-bind 本身也不会提供不可读保证。
+2. VFS owner 位只在测试时的文件元数据与权限状态下拒读。执行者如果是文件所有者，可以 `chmod` 重新放开读取；新建文件也可能自动具有读位。因此该实验**不是**任意 Bash/CLI 的持久“只写不读硬上界”证明，不可作为通用生产回退。
+3. 严格独立 read/write 的 Linux 首选为 **Landlock 文件系统规则**（分别管理 READ_FILE / READ_DIR / WRITE_FILE / CREATE 等；覆盖 truncation 的规则组合需 ABI ≥3），按需与 bwrap 的 namespace/mount/网络隔离组合。Landlock 在本次 WSL2 环境中 `landlock_add_rule` 返回 EBADF，标记 `ENV_BLOCK`，不是可用性 PASS。
+4. 必须在 P1/P2 **实现验收**时对实际选中的后端进行能力探测与真实正反效果测试，包括 chmod/新文件、单文件/子树、运行时依赖、预打开 FD。凡策略要求的硬上界不能兑现，即 `UNSUPPORTED` / fail closed；可明确支持的 bwrap 子集可以单独认证，不可将其宣称为完整 allowlist。
+5. PoC 用部署方 session→caps 表作为 TeamDomain 绑定替身；生产的 Member×Tool 身份、Alpha.4 审批、PTY 策略代际与真实 UI 投影在 P1–P4 实现与验收，不作为新一轮设计 PoC 前置条件。
 
-实际受限路径的 Member 绑定缺失、权限代际不符或受控包装服务未被消费时必须 fail closed；非 Team 会话通过独立配置保留原生行为。差量证据任务与阻断条件见 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md)。
+**执行接缝优先级**：公开 Provider/配置 → 公开 `apply`/Context/Service wrapper（零复制）→ 有具名缺口时最小基础设施 Fork；Core 与原生模型工具源码始终不改。必须在 `danger-full-access` 原生早返回之前钳制受管策略，防止绕过 `confine`；非 Team 路径保持原生装配。
 
 ## D8 — 接入与验收
 
-建议阶段：P1 通用基础体系 → P2 每执行机制代表工具正向+拒绝验证 → P3 原生工具逐个接入与功能回归 → P4 全工具读/写/网络与授权/生命周期矩阵 → P5 漏洞负控、修补与回归。**P2/P3 必有最小真实拒绝测试，不可把安全负控全部留到 P5。**
+建议阶段：P1 通用基础体系 → P2 每执行机制代表工具正向+拒绝验证 → P3 原生工具逐个接入与功能回归 → P4 全工具读/写/网络与授权/生命周期矩阵 → P5 漏洞负控、修补与回归。**P2/P3 必有最小真实拒绝测试，不可把安全负控全部留到 P5。架构 PoC 到此结束；未覆盖项直接归入实施 Gate，除非发现足以推翻通用执行接缝的新事实，否则不得另立广域 PoC。**
 
 P1–P4 的验收还必须覆盖 **Member × Tool × Call 三者的相同身份/策略代际、实际 Provider consulted 记录和真实 I/O 结果**：不能因为插件已 apply 或调用获审批就宣称 I/O 限制生效。跨平面验收允许“调用批准但具体 I/O 因 ceiling 被拒绝”，但必须给出可解释的同源决策链。阶段 Gate 详见 [IMPLEMENTATION-PLAN](./IMPLEMENTATION-PLAN.md)。
 

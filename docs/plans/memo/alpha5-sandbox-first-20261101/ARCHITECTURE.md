@@ -1,4 +1,4 @@
-# Alpha.5 Sandbox-First 技术架构（2026-11-02 Draft）
+# Alpha.5 Sandbox-First 技术架构（2026-11-03 定稿候选；仅待实施授权）
 
 > **用户已裁决方向；技术方案待阶段 Gate 实证。** ADR = [ADR.md](./ADR.md)，任务 = [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md)。仅更改 Team 外部插件与服务装配，不碰 DSH 原生 ToolDefinition、Core 或宿主源码树。Pinned DSH 0.2.0-rc.2 @ `639ed01539`。
 
@@ -59,17 +59,27 @@ Blueprint Member ceiling + existing v4 toolBindings.io    Alpha.4 Tool Admission
 | `web_fetch/search` | 原生 ToolDefinition → `ctx.web` → Web Provider | 受控 Web Provider 或 scoped WebRuntime | provider 选择、重定向及 network deny、Host 联网不可被转借 |
 | UI/Goal/Jobs 等 | DSH 受信宿主服务 | 仅调用准入或显式受控 I/O service | 若涉及用户文件/网络 I/O，不能仅凭名字豁免 |
 
-上游 `SandboxPolicy` 只有 `read-only/workspace-write/danger-full-access`，不足以表达 Member 读白名单和禁网；避免改 Core 类型，在 Team 自己的受信上下文附加 Policy。现有 `sandbox-local` 的 bwrap profile `--ro-bind / /` 放开全盘读，不能原样使用为读限制实现。Landlock 的网络 ABI 不等于完整禁网。`ctx.isolate()` 只隔离 Cordis 服务，不隔离任意同进程 Node I/O。
+上游 `SandboxPolicy` 只有 `read-only/workspace-write/danger-full-access`，不足以表达 Member 独立读写白名单；避免改 Core 类型，在 Team 受信策略/Provider 接缝附加执行侧 `io`。现有 bwrap `--ro-bind / /` 放开宿主其他只读文件，**不得将目录掩码当作默认拒绝 read allowlist**。Linux 严格 FS 上界首选 Landlock（真实能力预检），bwrap 可组合提供 mount/namespace/整域禁网及经证明可表达的子集；Landlock 网络 ABI 不等于完整禁网。`ctx.isolate()` 只隔离 Cordis 服务，不隔离任意同进程 Node I/O。
 
-## 4A. 持久 Bash 的零复制公开接口包裹路线（B2-R）
+## 4A. 持久 Bash 的零复制公开接缝（已完成 PoC）
 
-优先级：**原生公开 Provider/配置 → 公开 `apply` 包裹/代理 Context（零复制）→ 小范围基础设施 Fork → Core/原生 ToolDefinition 修改始终禁止**。
+优先级：**原生公开 Provider/配置 → 公开 `apply`/Context wrapper → 必要的最小基础设施 Fork → Core/模型可见原生工具修改始终禁止**。
 
-已测包裹：Team 专用 Preset 以 wrapper 替换 `terminal-bash` 配置行，直接调用上游 `nativeApply(wrappedCtx, config)`。wrapper 的 `sandboxPolicy.resolve` 动态计算测试会话写入根；有写出界失败与允许区成功的真实文件副作用证据。此装配不需要复制任何上游插件源文件。
+B2R2 已在原生持久 Bash 上验证精确 session-id 键、未匹配拒绝、写根限制与真实 session-mode `danger-full-access` 钳制；IOAXIS 和 WRITEONLY 又验证 `sandboxPolicy.resolve` 可附加 `io`，原生 `spawnArgv` 将 policy 传给公开 `ctx.get("sandbox").confine` 接缝，由受控 confine wrapper 构造 OS argv。上游 `terminal-bash` ToolDefinition 与 Core 未被修改。此事实已足以确定**生产实现方向**，不要求再次证明 wrapper 形式可行。
 
-**不构成完整权限证明**：该 PoC 用测试会话名称子串匹配 Member，且找不到匹配时 `return base`；读面仍可访问任意只读路径；所谓 danger 测试使用了原生工具不认识的额外参数。生产必须以可信 TeamDomain Member 身份+策略版本+真实工具绑定替代字符串匹配，未绑定受限 Member 则拒绝；真实支持的 sandbox 模式/审批路径须单独验证，持久 PTY 在版本变化时需终止/新建。
+PoC 仅用部署者 caps 表代替真实 TeamDomain 身份；生产在 P1 将受信 MemberInstance/ToolBinding/策略代际接线到同一接缝。受管路径的 `danger-full-access` 必须在原生的裸 argv 早返回之前被封顶；策略缺失、接缝未消费不得回落不受限执行。持久 PTY 的 OS 域只在 spawn 时查询权限：后续命令复用须核对域创建时的策略版本，变化时拒绝旧域并终止/重建；**不要求每次命令重启 PTY**。模型/审批 UI 所展示的策略也必须与真实上界一致。
 
-为满足独立 read/write 上界，`workspace-write` 只是**写侧候选机制**。OS Reader/Writer 需分别在真实沙箱域强制执行权限；目录掩蔽只能证明被掩的目录不可见，不等于任意文件级读允许列表已成立。详细差量 PoC 见 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md)。
+## 4B. Linux FS 强制后端：已知能力与实现门禁
+
+| 机制 | 已知能力与限制 | 实施选择 |
+|---|---|---|
+| bwrap mount/namespace | 精确写入根、受控文件暴露与显式目录掩码已实测；全根 ro-bind + 掩码不是通用 read allowlist，rw-bind 不保证 write-only | 仅承诺当前策略**确可表达**的子集；可与 Landlock 组合 |
+| Landlock FS | 内核文档定义独立 READ_FILE、READ_DIR、WRITE_FILE、MAKE_REG 等访问位；需正确处理 TRUNCATE、继承、预打开 FD；本 WSL2 实验为 ENV_BLOCK | **严格独立 read/write 的首选执行约束**；P1 探测真实可用 ABI 与规则安装，P2 进行实际拒绝测试 |
+| VFS `0300/0200` × bwrap | 只在固定文件权限位的样本中拒读（15/15 + 13/13）；同 UID 文件所有者可 chmod 恢复读取，新文件可读 | **仅作为历史 PoC/受控环境技巧，不计不可突破的 Member 硬上界，不当作 Landlock 自动降级替代** |
+
+独立 read/write 的运行时 `EffectiveIoPolicy` 应编译为真实后端 profile；这不是要求新增完整 Blueprint 权限语言。若部署环境不能安装所需 Landlock 规则，且 bwrap 无法表达该调用声明的硬边界，则对该受限调用明确 `UNSUPPORTED` 并拒绝，而非扩大授权。执行依赖的只读挂载不得顺带开放用户秘密；验证系统目录、Symlink、hardlink 已接受的别名效果、预打开 FD、网络/UDS/host bridge。
+
+依据：[IOAXIS 实验](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) · [WRITEONLY 实验](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff) · [Linux Landlock 内核文档](https://docs.kernel.org/userspace-api/landlock.html)。
 
 ## 5. Fork 的维护契约
 
@@ -81,7 +91,7 @@ Blueprint Member ceiling + existing v4 toolBindings.io    Alpha.4 Tool Admission
 
 ## 6. Blueprint 复用优先，必要增量扩展
 
-**禁止预设必须新建 v5 全套权限语法**。当前 v4 的 `toolBindings[].io` 已经包含 read/write/network 与 allow/ask/deny、路径限制词汇，解析/映射已存在但生产 I/O 执行未完成。其 `owner/name` 定义工具绑定，不直接区分 Member。P1-01 先做三组对照：同一工具的 Member A/B 不同 ceiling；同一 Member 的 bash/read 有不同额外约束；Leader/新 CLI 也受 Member 上界。优先复用既有工具级规则、路径匹配器、Alpha.4 审批，并仅为**确实缺失的 Member ceiling 作者载体**增加最小字段/映射。
+**禁止预设必须新建 v5 全套权限语法**。当前 v4 的 `toolBindings[].io` 已经包含 read/write/network 与 allow/ask/deny、路径限制词汇，解析/映射已存在但生产 I/O 执行未完成。其 `owner/name` 是工具来源/名称坐标，`owner → authoringOwner`（如 `dsh.shell`），**不能作为 MemberIdentity 的别名**。P1-01 先做三组对照：同一工具的 Member A/B 不同 ceiling；同一 Member 的 bash/read 有不同额外约束；Leader/新 CLI 也受 Member 上界。优先复用既有工具级规则、路径匹配器、Alpha.4 审批，并仅为**确实缺失的 Member ceiling 作者载体**增加最小字段/映射。
 
 若 v4 封闭语法不能兼容新增字段，才考虑**最小加法式**新版本；保留 v3/v4 哈希和语义，不能凭字段名称复用去静默改写旧文档。v4 的 `network.restricted` 必须继续如实解析；新运行时只承诺 network boolean，若无法兑现旧文档的目的地限制，则受限调用应明确 UNSUPPORTED/拒绝或依授权的兼容策略，绝不把 restricted 直接当 allow。任何工具未写独立 I/O 约束时不能因此突破 Member ceiling；默认处理须在 P1 契约门禁明确。
 
