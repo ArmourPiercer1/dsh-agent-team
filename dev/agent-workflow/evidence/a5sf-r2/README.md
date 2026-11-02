@@ -3,8 +3,9 @@
 Dated **2026-11-02T20:27Z** (real UTC, `date -u` at authoring time).
 Package: **BL-10** of `docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md`
 (P2 BL-14…BL-20 are the consumers). Branch `task/a5sf-r2-baseline-20261102`, worktree
-`.worktrees/a5sf-r2-baseline`, base `origin/master` = `17ce70430` (PR #531 merge, the PR that
-ratified the Sandbox-First plan and landed P1).
+`.worktrees/a5sf-r2-baseline`, base `origin/master` = `0a5b58418` (PR #537, the authority-carrier
+PR; this branch's merge-base is `17ce70430`, PR #531 — the branch was **not** rebased, per the
+coordinator).
 
 **Verdict of this package: the harness is wired and C1-proven; no real Host boot was performed
 here, and none is claimed.** P2 suites own the C2 boots (see §7 for the exact command the
@@ -22,7 +23,7 @@ owner directly or wraps it in one normalising call; nothing is re-implemented.
 |---|---|---|---|
 | World creation | `tests/world-factory/lib/world-factory.mjs:224` `TestWorldFactory`, `:331` `createWorld` | **A — as-is** | `harness.createWorld()` is a pass-through. No second launcher, no second home/ownership/lease path. |
 | Host boot | `tests/world-factory/lib/world-factory.mjs:570` `TestWorld.startHost` (the one `DshInstance` chain) | **A — as-is** | `harness.boot()` calls it LAST, after the budget step below. The harness never spawns anything itself. |
-| Host-start budget ledger | `tests/world-factory/lib/run-record.mjs:66` `createRunRecord`, `:80` `logHostStart`, `:95` `ledgerStartCount` | **A — as-is** | `createA5sfHarness()` refuses without that object (`BUDGET_LEASE_REQUIRED`); `boot()` checks the ledger position (`BUDGET_EXHAUSTED`), appends its own start to the SAME ledger, then boots. `harness.budget()` only reads it. **No second ledger file exists on any path.** |
+| Host-start budget ledger | `tests/world-factory/lib/run-record.mjs:95` `createRunRecord`, `:109` `logHostStart`, `:124` `ledgerStartCount`; ONE gate `run-record.mjs:39` `DEFAULT_MAX_HOST_STARTS` + `:40` `hostStartBudgetPosition` | **A — as-is** | `createA5sfHarness()` refuses without that record **and** a non-empty `record.hostStarts.ledgerPath` (`BUDGET_LEASE_REQUIRED`); `boot()` re-checks the path, asks the **imported** gate for the position (`BUDGET_EXHAUSTED`), appends its own start to the SAME ledger, then boots. `harness.budget()` is the gate's position. **No second ledger file and no second formula.** |
 | Fixed candidate (host pin) | `tests/paths.mjs:71` `TEST_USE_BASELINE_SHA`; read-only guard `world-factory.mjs:297` `assertHostBase` | **A — as-is** | `harness.candidate()` returns the imported pin (`source: tests/paths.mjs#…`); `harness.assertCandidate()` delegates to `assertHostBase`. The C1 test asserts the 40-hex literal is **absent** from the harness source. |
 | Member ceiling compiler | `packages/runtime/member-io-policy/src/compile.ts:100` `compileMemberPolicy` (P1-02) | **A — as-is** | `harness.compileCeiling()` parses the v4 doc via the shipped `parseBlueprintV4` and calls the compiler. It requires the **Alpha.4 effective authority** as input (`AUTHORITY_REQUIRED`) — it never synthesises admission state. |
 | Tool restriction + per-call intersection | `member-io-policy/src/compile.ts` `projectToolIoRestriction` / `compileEffectiveIo` | **A — as-is** | `harness.compileInvocation()` delegates both; no local algebra. |
@@ -43,7 +44,7 @@ decision of its own: the unsupported lane comes back as the compiler's own
 | not built | why |
 |---|---|
 | a second Host launcher / `startHost` path | R2-b: `TestWorldFactory`/`DshInstance` is the only creation+boot point. A parallel boot chain would fork the ownership ledger (`/proc/<pid>/environ` verification), port leases and cleanup markers in one stroke. |
-| a second budget ledger (or a per-harness counter file) | The host-start budget is a **shared** artifact; `run-record.mjs#logHostStart` is its only writer. A second counter could not be summed with the first, so "max starts" would stop being enforceable. The harness therefore *requires* the existing record instead of offering an alternative. |
+| a second budget ledger (or a per-harness counter file), or a second budget-gate formula | The host-start budget is a **shared** artifact; `run-record.mjs#logHostStart` is its only writer and `run-record.mjs#hostStartBudgetPosition` its only `used >= max` formula (both `u5-canary-runner.mjs` and the harness import it; the default cap is `DEFAULT_MAX_HOST_STARTS`, also imported). A second counter could not be summed with the first, so "max starts" would stop being enforceable. The harness therefore *requires* the existing record **and** its ledger path instead of offering an alternative. |
 | a second policy compiler / a harness-local ceiling type | R2/R1: `member-io-policy` is the only place `EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction` is computed. The C1 test asserts object identity + `instanceGeneration`, i.e. that no copy is in play. |
 | a second oracle algebra | `lib/oracle.mjs` is the only effect conjunction (marker ∧ `body-ran` ∧ attributable pid). The harness only adapts the call shape. |
 | a second failure-classification vocabulary/table | §5: the PR #394 table is reused as-is. Adding a5sf rows would create exactly the two-vocabulary hazard the reclamation registry §4 forbids. |
@@ -55,7 +56,9 @@ decision of its own: the unsupported lane comes back as the compiler's own
 | path | why |
 |---|---|
 | `tests/world-factory/lib/a5sf-harness.mjs` | NEW. The one adapter P2 suites call: World creation + budgeted boot, P1 ceiling/invocation/guard/realm, oracle adapter, PR #394 classification entry point. |
-| `tests/world-factory/a5sf-harness.test.mjs` | NEW. C1 proof (9 tests, zero boots): budget lease, pin-not-copied, `MemberPolicy` identity + shipped guard allow/deny, `network: restricted` ⇒ UNSUPPORTED, oracle sensitivity both arms, classification delegation. |
+| `tests/world-factory/a5sf-harness.test.mjs` | NEW. C1 proof (10 tests, zero boots): budget lease (incl. **no ledger path ⇒ refusal**), pin-not-copied, `MemberPolicy` identity + shipped guard allow/deny, `network: restricted` ⇒ UNSUPPORTED, oracle sensitivity both arms, classification delegation. |
+| `tests/world-factory/lib/run-record.mjs` | MODIFIED (review response, 2026-11-02): exports the ONE `DEFAULT_MAX_HOST_STARTS` + `hostStartBudgetPosition` gate next to the ledger it reads. It lives here (not in `u5-canary-runner.mjs`) because importing the runner from a collected suite would close a top-level-await cycle (`runner → loadSuites → suite → harness → runner`) and deadlock; `run-record.mjs` has no such cycle. |
+| `tests/world-factory/u5-canary-runner.mjs` | MODIFIED (review response, 2026-11-02): the inline host-start gate now calls the imported `hostStartBudgetPosition` and `parseArgs` uses the imported `DEFAULT_MAX_HOST_STARTS`, so the harness **imports** the one formula/default instead of copying either. Behaviour is unchanged. |
 | `.github/workflows/ci-integration.yml` | ONE step (`a5sf harness C1`, host-free `node --test`) — the minimal wiring so the C1 file is not invisible to every layer. |
 | `dev/ci/eb3-ci-manifest.json` | ONE `ci-integration` leg entry declaring that step's required token file, so dropping it is `CI_LAYER_LEG_WEAKENED` rather than a silent gap. |
 | `dev/agent-workflow/evidence/a5sf-r2/README.md` | this record. |
@@ -104,6 +107,10 @@ missing, and the upstream tree is untouched.
   refusal would be a cross-vocabulary misattribution, and adding an a5sf row would be a second
   table. The `overlappingAlpha5String: true` flag discloses the overlap instead of hiding it.
 * **No new classification vocabulary was created; no row was added to the PR #394 table.**
+* **Boundary disclosure:** `A5SF_HARNESS_CODES` (`a5sf-harness.mjs:71-92`) is the adapter's **transport**
+  refusal vocabulary (budget lease/exhaustion, world, seam, authority) — it is **not** a
+  failure-classification table. A compiler refusal keeps `compilerCode` verbatim and a tool refusal is
+  classified by `scripts/diag-call-chain.mjs`; nothing here classifies a tool effect.
 
 ## 6. Four-layer CI inheritance — what carries a5sf work
 
@@ -144,6 +151,7 @@ Observed on this executor (2026-11-02, real UTC), exit 0:
 
 ```
 ✔ budget lease: no run record ⇒ typed BUDGET_LEASE_REQUIRED, nothing constructed
+✔ budget lease: a record with NO shared ledger path is refused — no ledger, no boot
 ✔ budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched
 ✔ budget lease: a permitted boot appends to the SAME shared ledger BEFORE startHost, then boots
 ✔ fixed candidate: the pin is READ from tests/paths.mjs, never copied into the harness
@@ -152,13 +160,13 @@ Observed on this executor (2026-11-02, real UTC), exit 0:
 ✔ unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow
 ✔ oracle adapter: a planted effect is detected and an unplanted tag is absent (sensitivity, both arms)
 ✔ diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary
-ℹ tests 9
-ℹ pass 9
+ℹ tests 10
+ℹ pass 10
 ℹ fail 0
 ```
 
 Also re-run green at this base (unchanged by this package): `node --test tests/world-factory/registries.test.mjs`
-(12/12) and `node --test tests/world-factory/world-factory.test.mjs` (45/45, 112 s — it includes the
+(12/12) and `node --test tests/world-factory/world-factory.test.mjs` (45/45, 115 s — it includes the
 cross-process lease-race harness).
 
 **Dependency note:** the C1 test imports the P1 TS seams, so it needs the workspace installed
@@ -209,3 +217,75 @@ export default { suite: 'a5sf-read', cases: [...], totalRequests: 80, async run(
 
   (the suite file `tests/world-factory/suites/0NN-a5sf-read.mjs` is BL-14's deliverable; the runner,
   its budget gate and its RUN record are inherited unchanged).
+
+## 9. Review response (2026-11-02T21:05Z, real UTC)
+
+The independent review at HEAD `2e3a57a22b865afce7f500b144bf8a832d4f58c6` returned **BLOCK** for
+one fail-open, plus three conditions. This section is the response at the review-response HEAD.
+
+**B1 (blocking) — a record with no ledger path booted unbudgeted.** `createRunRecord()` makes
+`ledgerPath` optional; `ledgerStartCount()` then answers `0` forever, so the old gate (`used >= max`)
+never fired: a default record with `maxHostStarts: 1` executed 3 boots. Fixed as *no ledger, no boot*:
+
+* `assertBudgetLease()` refuses construction when `record.hostStarts.ledgerPath` is null/empty
+  (`a5sf-harness.mjs:195-204`), `BUDGET_LEASE_REQUIRED` with `field: 'ledgerPath'`;
+* `boot()` re-checks the path so a record mutated after construction cannot slip through
+  (`a5sf-harness.mjs:281-288`), before the position check and before any spawn;
+* new C1 arm `budget lease: a record with NO shared ledger path is refused — no ledger, no boot`
+  (`a5sf-harness.test.mjs:152-181`): the default record is refused at construction, and a
+  ledger-bearing record whose path is stripped is refused on **both** boot attempts with
+  `startHost` never reached and no ledger row written.
+
+**C1 — the ordering claim was unasserted.** `stubWorld({ onStart })` now reads the shared ledger
+*inside* `startHost()` (`a5sf-harness.test.mjs:92-100`, `:214-225`). Moving `logHostStart` after the
+spawn makes that read throw and the suite RED (mutation below).
+
+**C2 — one gate, not two.** The gate now lives with the ledger it reads:
+`run-record.mjs:39` `DEFAULT_MAX_HOST_STARTS` + `:40` `hostStartBudgetPosition`. The runner's
+pre-spawn gate calls it (`u5-canary-runner.mjs:57`, `:992`) and the harness imports **exactly**
+`{ DEFAULT_MAX_HOST_STARTS, hostStartBudgetPosition }` from `./run-record.mjs`
+(`a5sf-harness.mjs:67`). No formula or default is copied locally; `harness.budget()` returns the
+helper's position unchanged. Nothing was imported from `u5-canary-runner.mjs`.
+
+*Why not export it from the runner:* doing so made the harness import the runner, and a collected
+suite importing the harness closes a top-level-await cycle
+(`u5-canary-runner.mjs → loadSuites() → suite → a5sf-harness.mjs → u5-canary-runner.mjs`) that
+deadlocks with `Warning: Detected unsettled top-level await`. Reproduced on a throwaway tree with a
+synthetic `suites/999-a5sf-cycle.mjs` importing the harness; after moving the gate to
+`run-record.mjs` the same probe reports `cycle-safe: true`. This is why the one gate is imported
+from the ledger module, not the runner module.
+
+**C3 — evidence.** Base corrected to `0a5b58418` (#537) with the `17ce70430` merge-base disclosed;
+`A5SF_HARNESS_CODES` disclosed as transport vocabulary, not a classification table (§5).
+
+Re-runs on the review-response tree (real command output):
+
+```
+$ node --test tests/world-factory/a5sf-harness.test.mjs
+ℹ tests 10
+ℹ pass 10
+ℹ fail 0
+```
+
+Mutation checks on a throwaway copy of the worktree (each mutation restores the tree afterwards;
+scratch deleted, no branch file touched):
+
+| mutation | result |
+|---|---|
+| disable the gate (`if (false && position.exhausted)`) | `ℹ pass 9 / ℹ fail 1` — `budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched` |
+| coerce `IO_POLICY_UNSUPPORTED` to `{ok:true, policy}` | `ℹ pass 9 / ℹ fail 1` — `unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow` |
+| let a null ledger path through (`ledgerPathOf` fallback) | `ℹ pass 9 / ℹ fail 1` — `budget lease: a record with NO shared ledger path is refused — no ledger, no boot` |
+| log after the spawn (`startHost` then `logHostStart`) | `ℹ pass 9 / ℹ fail 1` — `budget lease: a permitted boot appends to the SAME shared ledger BEFORE startHost, then boots` |
+
+```
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+$ node --test tests/world-factory/world-factory.test.mjs
+ℹ tests 45
+ℹ pass 45
+ℹ fail 0
+```
+
+No Host boot was performed for this package; the only `startHost` reached in the C1 suite is the
+stub. No shared budget ledger file was created or modified by the branch (`git status --short` is
+clean apart from the intended files).

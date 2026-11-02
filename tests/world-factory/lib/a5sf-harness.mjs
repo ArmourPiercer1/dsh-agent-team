@@ -15,7 +15,7 @@
  *   | ------------------ | ------------------------------------------------------ | --- |
  *   | World creation     | `TestWorldFactory` / `TestWorld.createWorld`            | `factory` |
  *   | Host boot          | `TestWorld.startHost` (the ONE DshInstance chain)       | `boot()` |
- *   | Host-start budget  | `createRunRecord().logHostStart / ledgerStartCount`     | `budget()` / `boot()` |
+ *   | Host-start budget  | `createRunRecord().logHostStart / ledgerStartCount` + `run-record.mjs#hostStartBudgetPosition` | `budget()` / `boot()` |
  *   | Fixed candidate    | `TEST_USE_BASELINE_SHA` (`tests/paths.mjs`)             | `candidate()` |
  *   | Member ceiling     | `runtime/member-io-policy` `compileMemberPolicy` (P1-02)| `compileCeiling()` |
  *   | Tool restriction   | `member-io-policy` `projectToolIoRestriction`           | `compileInvocation()` |
@@ -28,11 +28,16 @@
  * THE BUDGET LEASE IS A PRECONDITION, NOT A FLAG. `createA5sfHarness` takes the
  * caller's `runRecord` (the object `lib/run-record.mjs#createRunRecord`
  * returns; the C2 runner passes it to every collected suite as `record`) and
- * refuses to construct without its two ledger functions. `boot()` then checks
- * the SHARED ledger position, appends its own start to that same ledger BEFORE
- * the spawn, and only then calls `world.startHost()`. So the a5sf lane cannot
- * start a Host the ledger does not know about, and a suite that forgot the
- * lease gets a typed refusal instead of a boot.
+ * refuses to construct without its two ledger functions AND a non-empty
+ * `record.hostStarts.ledgerPath`. A record with no ledger path is not a lease:
+ * `ledgerStartCount()` would answer 0 forever, so a boot would be unbudgeted.
+ * `boot()` re-checks the path (a record mutated after construction cannot slip
+ * through), asks the ONE gate `run-record.mjs#hostStartBudgetPosition`
+ * (imported, not re-derived) for the shared ledger position, appends its own
+ * start to that same ledger BEFORE the spawn, and only then calls
+ * `world.startHost()`. So the a5sf lane cannot start a Host the ledger does not
+ * know about, and a suite that forgot the lease gets a typed refusal instead of
+ * a boot.
  *
  * WHY THE P1 MODULES ARRIVE THROUGH A RESOLUTION HOOK: the P1 lanes ship as
  * TypeScript sources (`packages/runtime/member-io-policy/src/*.ts`,
@@ -59,12 +64,20 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { TEST_USE_BASELINE_SHA } from '../../paths.mjs'
+import { DEFAULT_MAX_HOST_STARTS, hostStartBudgetPosition } from './run-record.mjs'
 import { createOracle, oraclePaths } from './oracle.mjs'
 import { TestWorldFactory } from './world-factory.mjs'
 
-/** The closed refusal vocabulary of THIS adapter (P1 codes are carried through verbatim). */
+/**
+ * The closed TRANSPORT-refusal vocabulary of THIS adapter (budget/world/seam
+ * preconditions), deliberately NOT a failure-classification table: a tool or
+ * compiler refusal keeps its owner's code verbatim (`compilerCode`, or the PR
+ * #394 tool's report). Adding classification rows here would be the second
+ * vocabulary R2 forbids; `dev/agent-workflow/evidence/a5sf-r2/README.md` §5
+ * discloses the boundary.
+ */
 export const A5SF_HARNESS_CODES = Object.freeze([
-  /** no `runRecord` (or an object without the shared-ledger functions) was handed in */
+  /** no `runRecord`, no ledger functions, or no shared ledger path was handed in */
   'BUDGET_LEASE_REQUIRED',
   /** the SHARED host-start ledger already holds `maxHostStarts` starts */
   'BUDGET_EXHAUSTED',
@@ -163,6 +176,12 @@ export async function loadPolicySeams(repoRoot) {
   return promise
 }
 
+/** The record's shared-ledger path, or null when the record cannot lease one. */
+function ledgerPathOf(runRecord) {
+  const ledgerPath = runRecord?.record?.hostStarts?.ledgerPath
+  return typeof ledgerPath === 'string' && ledgerPath.trim() !== '' ? ledgerPath : null
+}
+
 /** An object that can pay the shared host-start ledger's bill. */
 function assertBudgetLease(runRecord) {
   const ok = runRecord !== null && typeof runRecord === 'object' &&
@@ -171,6 +190,16 @@ function assertBudgetLease(runRecord) {
     throw new A5sfHarnessError(
       'BUDGET_LEASE_REQUIRED',
       'createA5sfHarness needs the run record that OWNS the shared host-start ledger (lib/run-record.mjs#createRunRecord): an object with logHostStart() and ledgerStartCount(). Without it a World cannot be booted under a budget, so the harness refuses instead of booting unbudgeted.',
+    )
+  }
+  // A record with no ledger path is NOT a lease: ledgerStartCount() would answer
+  // 0 forever, so every boot would be unbudgeted (the 2026-11-02 review's
+  // fail-open). Refuse at construction; boot() re-checks the path below.
+  if (ledgerPathOf(runRecord) === null) {
+    throw new A5sfHarnessError(
+      'BUDGET_LEASE_REQUIRED',
+      'the run record has no shared host-start ledger path (record.hostStarts.ledgerPath is null/empty); a record without a ledger cannot lease a boot. Pass the ledgerPath that createRunRecord() was given (the C2 runner: --budget-ledger).',
+      { field: 'ledgerPath' },
     )
   }
   return runRecord
@@ -185,12 +214,12 @@ function assertBudgetLease(runRecord) {
  * @param {string} opts.suite         suite name (e.g. 'a5sf-read'); tag only
  * @param {string} opts.line          World line tag (same rule as `createWorld`)
  * @param {object} opts.runRecord     the caller's shared-ledger run record (REQUIRED)
- * @param {number} [opts.maxHostStarts] cap read against the SHARED ledger (default 15, the runner's default)
+ * @param {number} [opts.maxHostStarts] cap read against the SHARED ledger (default `DEFAULT_MAX_HOST_STARTS` from `run-record.mjs`, not a local copy)
  * @param {string} [opts.leaseRoot]   shared port-lease dir (forwarded to the factory)
  * @param {string} [opts.hostTree]    pristine host tree (forwarded to the factory)
  */
 export function createA5sfHarness(opts = {}) {
-  const { repoRoot, evidenceRoot, suite, line, maxHostStarts = 15, leaseRoot, hostTree } = opts
+  const { repoRoot, evidenceRoot, suite, line, maxHostStarts = DEFAULT_MAX_HOST_STARTS, leaseRoot, hostTree } = opts
   for (const [name, value] of [['repoRoot', repoRoot], ['evidenceRoot', evidenceRoot], ['suite', suite], ['line', line]]) {
     if (typeof value !== 'string' || value.trim() === '') {
       throw new A5sfHarnessError('BUDGET_LEASE_REQUIRED', `createA5sfHarness needs a non-blank '${name}'`, { field: name })
@@ -205,8 +234,9 @@ export function createA5sfHarness(opts = {}) {
 
   /** Current position of the SHARED ledger this run is charged against. */
   function budget() {
-    const used = runRecord.ledgerStartCount()
-    return Object.freeze({ ledgerPath: runRecord.record?.hostStarts?.ledgerPath ?? null, used, max: maxHostStarts, remaining: Math.max(0, maxHostStarts - used) })
+    // ONE gate: `run-record.mjs` owns the `used >= max` formula and the default
+    // cap; this adapter only carries its position unchanged.
+    return hostStartBudgetPosition(runRecord, maxHostStarts)
   }
 
   const harness = {
@@ -239,16 +269,24 @@ export function createA5sfHarness(opts = {}) {
     /**
      * Boot a World under the SHARED budget ledger.
      *
-     * Order is the law: (1) ledger position check, (2) append THIS start to the
-     * same ledger, (3) `world.startHost()` (the one launcher). A refusal in (1)
-     * leaves the ledger and the World untouched — no spawn happens.
+     * Order is the law: (0) the record still carries a shared ledger path,
+     * (1) ledger position check, (2) append THIS start to the same ledger,
+     * (3) `world.startHost()` (the one launcher). A refusal in (0)/(1) leaves
+     * the ledger and the World untouched — no spawn happens.
      */
     async boot({ world, phase = 'a5sf-boot1', bootTimeoutMs } = {}) {
       if (world === null || world === undefined || typeof world.startHost !== 'function') {
         throw new A5sfHarnessError('WORLD_REQUIRED', 'boot() needs a World created by this harness (createA5sfHarness().createWorld())', {})
       }
+      if (ledgerPathOf(runRecord) === null) {
+        throw new A5sfHarnessError(
+          'BUDGET_LEASE_REQUIRED',
+          'the run record no longer carries a shared host-start ledger path; refusing to boot unbudgeted (no ledger, no boot)',
+          { field: 'ledgerPath', worldId: world.id },
+        )
+      }
       const position = budget()
-      if (position.used >= maxHostStarts) {
+      if (position.exhausted) {
         throw new A5sfHarnessError(
           'BUDGET_EXHAUSTED',
           `the shared host-start ledger already holds ${String(position.used)} >= ${String(maxHostStarts)} starts; refusing to boot ${world.id}`,

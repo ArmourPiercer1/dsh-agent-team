@@ -86,17 +86,32 @@ function blueprintDoc({ readAllow, writeAllow, network = NET_ALLOW }) {
 
 const AUTHORITY = Object.freeze({ revision: 'a4:r2-fixture', admitted: true })
 
-/** A stub World: records whether the launcher was reached; never spawns. */
-function stubWorld(id = 'u5a5sfstub-20261102T00-00-00Z') {
+/** A stub World: records whether the launcher was reached; never spawns.
+ *  `onStart` runs INSIDE startHost() — the ordering probe below reads the
+ *  shared ledger there, so logging after the spawn cannot stay green. */
+function stubWorld(id = 'u5a5sfstub-20261102T00-00-00Z', { onStart = null } = {}) {
   const calls = { startHost: 0 }
   return {
     id,
     calls,
     async startHost() {
+      if (onStart !== null) await onStart()
       calls.startHost += 1
       return { port: 3199, logPath: join(tmpdir(), 'never-written.log') }
     },
   }
+}
+
+/** A run record that OWNS a real shared ledger file (the lease the law needs). */
+function recordFor(dir, runId, extra = {}) {
+  return createRunRecord({
+    runId,
+    suite: 'a5sf-harness-c1',
+    selectedCases: [],
+    bindings: {},
+    ledgerPath: join(dir, `budget-${runId}.jsonl`),
+    ...extra,
+  })
 }
 
 function harnessFor(dir, { runRecord, maxHostStarts = 5 } = {}) {
@@ -134,6 +149,37 @@ test('budget lease: no run record ⇒ typed BUDGET_LEASE_REQUIRED, nothing const
   }
 })
 
+test('budget lease: a record with NO shared ledger path is refused — no ledger, no boot', async () => {
+  const dir = tmp('noledger')
+  try {
+    const evidenceRoot = join(dir, 'evidence')
+    const base = { repoRoot: REPO_ROOT, evidenceRoot, suite: 'a5sf-harness-c1', line: 'r2c1', hostTree: join(dir, 'no-host-tree'), leaseRoot: join(dir, 'leases') }
+    // (a) the DEFAULT createRunRecord (ledgerPath omitted) cannot lease a boot.
+    assert.throws(
+      () => createA5sfHarness({ ...base, runRecord: createRunRecord({ runId: 'r2-noledger', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) }),
+      (error) => error instanceof A5sfHarnessError && error.code === 'BUDGET_LEASE_REQUIRED' && error.field === 'ledgerPath',
+      'a record without a shared ledger path must be refused at construction',
+    )
+    // (b) even a record that HAD a ledger cannot lose it after construction:
+    // both boot attempts are refused and the launcher is never reached.
+    const runRecord = recordFor(dir, 'r2-stripped')
+    const harness = harnessFor(dir, { runRecord, maxHostStarts: 1 })
+    runRecord.record.hostStarts.ledgerPath = null
+    const world = stubWorld()
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      await assert.rejects(
+        harness.boot({ world }),
+        (error) => error instanceof A5sfHarnessError && error.code === 'BUDGET_LEASE_REQUIRED' && error.field === 'ledgerPath',
+        `boot attempt ${String(attempt)} must be refused when the ledger path is gone`,
+      )
+    }
+    assert.equal(world.calls.startHost, 0, 'no ledger path ⇒ the launcher is never reached')
+    assert.equal(runRecord.ledgerStartCount(), 0, 'a refused boot writes no ledger row')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('budget lease: an exhausted SHARED ledger refuses the boot and leaves ledger + World untouched', async () => {
   const dir = tmp('exhausted')
   const ledgerPath = join(dir, 'budget.jsonl')
@@ -142,7 +188,7 @@ test('budget lease: an exhausted SHARED ledger refuses the boot and leaves ledge
     runRecord.logHostStart({ world: 'prior-1' })
     runRecord.logHostStart({ world: 'prior-2' })
     const harness = harnessFor(dir, { runRecord, maxHostStarts: 2 })
-    assert.deepEqual(harness.budget(), { ledgerPath, used: 2, max: 2, remaining: 0 })
+    assert.deepEqual(harness.budget(), { ledgerPath, used: 2, max: 2, remaining: 0, exhausted: true })
 
     const world = stubWorld()
     await assert.rejects(
@@ -162,10 +208,21 @@ test('budget lease: a permitted boot appends to the SAME shared ledger BEFORE st
   try {
     const runRecord = createRunRecord({ runId: 'r2-permit', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {}, ledgerPath })
     const harness = harnessFor(dir, { runRecord, maxHostStarts: 3 })
-    const world = stubWorld()
+    // ORDER IS THE LAW: inside startHost() the ledger row must ALREADY exist.
+    // If logHostStart moves after the spawn, this read throws ENOENT and the
+    // test goes red (the previous review's survivor).
+    let rowsAtStart = null
+    const world = stubWorld(undefined, {
+      onStart() {
+        rowsAtStart = readFileSync(ledgerPath, 'utf8').trim().split('\n').map((l) => JSON.parse(l))
+      },
+    })
     const boot = await harness.boot({ world, phase: 'c1-proof' })
     assert.equal(boot.port, 3199)
     assert.equal(world.calls.startHost, 1)
+    assert.equal(rowsAtStart?.length, 1, 'the ledger row must exist BEFORE startHost is called')
+    assert.equal(rowsAtStart[0].world, world.id)
+    assert.equal(rowsAtStart[0].phase, 'c1-proof')
     assert.equal(runRecord.ledgerStartCount(), 1, 'the start was charged to the shared ledger')
     const rows = readFileSync(ledgerPath, 'utf8').trim().split('\n').map((l) => JSON.parse(l))
     assert.equal(rows.length, 1)
@@ -186,7 +243,7 @@ test('budget lease: a permitted boot appends to the SAME shared ledger BEFORE st
 test('fixed candidate: the pin is READ from tests/paths.mjs, never copied into the harness', () => {
   const dir = tmp('candidate')
   try {
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-pin', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-pin') })
     const candidate = harness.candidate()
     assert.equal(candidate.pin, TEST_USE_BASELINE_SHA)
     assert.match(candidate.source, /tests\/paths\.mjs/)
@@ -211,7 +268,7 @@ test('policy identity: the installed ceiling IS the P1 MemberPolicy, and its gua
     writeFileSync(join(readDir, 'a.txt'), 'readable\n')
     writeFileSync(join(outsideDir, 'b.txt'), 'not ours\n')
 
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-policy', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-policy') })
     const compiled = await harness.requireCeiling({
       blueprint: blueprintDoc({ readAllow: readDir, writeAllow: writeDir }),
       templateId: 'alpha',
@@ -269,7 +326,7 @@ test('policy identity: the installed ceiling IS the P1 MemberPolicy, and its gua
 test('policy identity: the Alpha.4 authority is required, never synthesised by the harness', async () => {
   const dir = tmp('authority')
   try {
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-auth', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-auth') })
     await assert.rejects(
       harness.compileCeiling({ blueprint: blueprintDoc({ readAllow: '/work/a', writeAllow: '/work/b' }), templateId: 'alpha', memberInstanceId: 'mi-alpha-1', instanceGeneration: 3 }),
       (error) => error instanceof A5sfHarnessError && error.code === 'AUTHORITY_REQUIRED',
@@ -284,7 +341,7 @@ test('policy identity: the Alpha.4 authority is required, never synthesised by t
 test('unsupported lane: network:restricted surfaces the P1 UNSUPPORTED code, never an allow', async () => {
   const dir = tmp('unsupported')
   try {
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-unsup', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-unsup') })
     const input = {
       blueprint: blueprintDoc({ readAllow: '/work/a', writeAllow: '/work/b', network: NET_RESTRICTED }),
       templateId: 'alpha',
@@ -339,7 +396,7 @@ test('oracle adapter: a planted effect is detected and an unplanted tag is absen
       JSON.stringify({ leg: 'marker-ran', tag: PLANTED }),
     ].join('\n') + '\n')
 
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-oracle', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-oracle') })
     const world = { home, markerDir, ledgerPath }
     const oracle = harness.oracleFor(world)
     assert.equal(oracle.id, 'sound')
@@ -373,7 +430,7 @@ test('oracle adapter: a planted effect is detected and an unplanted tag is absen
 test('diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary', async () => {
   const dir = tmp('diag')
   try {
-    const harness = harnessFor(dir, { runRecord: createRunRecord({ runId: 'r2-diag', suite: 'a5sf-harness-c1', selectedCases: [], bindings: {} }) })
+    const harness = harnessFor(dir, { runRecord: recordFor(dir, 'r2-diag') })
     // Alpha.5 refusal vocabulary ⇒ the existing tool's own JSON report.
     const line = 'a5p5-refused kind=refused-admission code=APPROVAL_STALE detail=a4:control:stale'
     const delegated = await harness.classifyFailure(line)
