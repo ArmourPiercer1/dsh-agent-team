@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 15ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  02:05:06
+   Duration  165ms (transform 26ms, setup 0ms, import 57ms, tests 15ms, environment 0ms)
+
+runtime typecheck rc=0

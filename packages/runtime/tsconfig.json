@@ -33,6 +33,8 @@
     "member-io-policy/src",
     // Alpha.5 P1-05: the per-Member Service realm (confined fs Provider).
     "team-services/src",
+    // Alpha.5 P1-07: the OS execution lane (profile + runner + subprocess).
+    "team-sandbox/src",
     "test",
     "vitest.config.ts"
   ]

@@ -27,3 +27,19 @@ export type {
   TeamIoDenialCode,
   TeamServiceInstallCode,
 } from './types.js'
+export {
+  assertDormant,
+  collectRows,
+  COMPOSITION_REFUSAL_CODES,
+  planProviderReplacement,
+  replaceProvider,
+  TEAM_MANAGED_SERVICES,
+  TEAM_SERVICE_ROWS,
+} from './manifest.js'
+export type {
+  CompositionRefusal,
+  CompositionRefusalCode,
+  CompositionResult,
+  TeamManagedService,
+  TeamServiceRow,
+} from './manifest.js'
