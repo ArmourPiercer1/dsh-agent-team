@@ -47,7 +47,35 @@ import type { TeamBlueprintCore } from './types.js';
 export declare const BLUEPRINT_V4_SCHEMA_VERSION = 4;
 /** v4 top-level face = the frozen v3 face plus the optional field family. */
 export declare const BLUEPRINT_V4_TOOL_BINDING_FAMILY: "toolBindings";
-/** The closed v4 top-level key set: the frozen v3 table plus the ONE family. */
+/**
+ * The SECOND v4-only family: the per-Member global I/O ceiling (Alpha.5
+ * P1-01, the ONE missing author carrier).
+ *
+ * WHY IT EXISTS: `toolBindings[].io` is PER-TOOL; `toolBindings[].owner` is
+ * the tool's authoring source, NOT a MemberIdentity (pinned by a5sr2 and
+ * re-pinned by a5sf-v4-member-ceiling-projection); a4 `memberEnvelopes`
+ * carry mutation-operation tokens, not file/network I/O.  The plan's
+ * `EffectiveIO(member, tool, call) ⊆ MemberCeiling(member) ∩
+ * ToolRestriction(member, tool)` therefore needs exactly one authoring
+ * carrier for the LEFT factor, and this family is it.
+ *
+ * REUSE, NOT A SECOND LANGUAGE: an entry's `io` block has the SAME closed
+ * three-lane shape, SAME mode variants, SAME locator law and SAME
+ * zero-normalization as `toolBindings[].io` (the lane validators are
+ * literally shared).  The only new fact is the `templateId` reference,
+ * which is CLOSED over this blueprint's templates (leader included) — an
+ * authoring-time reference the trusted compiler later resolves to a real
+ * MemberIdentity; it is never a free-form name and never inferred from
+ * argv/cwd.
+ *
+ * OPTIONAL and present-only in the hash, exactly like `toolBindings`: an
+ * absent family declares NOTHING (a member without a row has no ceiling —
+ * never a synthesized `read: all`).
+ */
+export declare const BLUEPRINT_V4_MEMBER_CEILING_FAMILY: "memberIoCeilings";
+/** The closed entry shape of one `memberIoCeilings` item. */
+export declare const BLUEPRINT_V4_MEMBER_CEILING_FIELDS: readonly ["templateId", "io"];
+/** The closed v4 top-level key set: the frozen v3 table plus the TWO v4-only families. */
 export declare const BLUEPRINT_V4_TOP_LEVEL_FIELDS: readonly string[];
 /** The closed entry shape of one `toolBindings` item. */
 export declare const BLUEPRINT_V4_TOOL_BINDING_FIELDS: readonly ["owner", "name", "authorization", "io", "execution"];
@@ -65,7 +93,7 @@ export declare const BLUEPRINT_V4_IMPLEMENTATION_ORIGINS: readonly ["dsh-native"
 export declare const BLUEPRINT_V4_EXECUTION_BOUNDARIES: readonly ["trusted-host", "confined-subprocess", "delegated-remote"];
 /** v2-proposal fields refused BY NAME (D-05; the refusal names the removal). */
 export declare const BLUEPRINT_V4_REMOVED_FIELDS: Readonly<Record<'entry' | 'execution', readonly string[]>>;
-export declare const V4_PROBLEM_CODES: readonly ["not-a-record", "field-type", "unknown-field", "removed-field", "ambiguous-omission", "unknown-enum", "path-unresolvable"];
+export declare const V4_PROBLEM_CODES: readonly ["not-a-record", "field-type", "unknown-field", "removed-field", "ambiguous-omission", "unknown-enum", "path-unresolvable", "duplicate-member-ceiling"];
 export type V4ProblemCode = (typeof V4_PROBLEM_CODES)[number];
 export interface V4ContractProblem {
     readonly code: V4ProblemCode;
@@ -98,6 +126,21 @@ export type V4NetworkLane = {
     readonly mode: 'deny';
     readonly default: 'ask' | 'deny';
 };
+/**
+ * One Member-level I/O ceiling (Alpha.5 P1-01).  `templateId` resolves to a
+ * template of THIS blueprint (leader template included); `io` is the shared
+ * closed three-lane block — identical to a tool binding's `io`, so the
+ * projection reuses the same tables and emits the same resource
+ * declarations.
+ */
+export interface V4MemberIoCeilingAuthoring {
+    readonly templateId: string;
+    readonly io: {
+        readonly read: V4RwLane;
+        readonly write: V4RwLane;
+        readonly network: V4NetworkLane;
+    };
+}
 export interface V4ToolBindingAuthoring {
     readonly owner: string;
     readonly name: string;
@@ -116,6 +159,8 @@ export interface V4ToolBindingAuthoring {
 export type TeamBlueprintV4Core = Omit<TeamBlueprintCore, 'schemaVersion'> & {
     readonly schemaVersion: 4;
     readonly toolBindings?: readonly V4ToolBindingAuthoring[];
+    /** The per-Member global I/O ceiling family (absent = no ceiling declared). */
+    readonly memberIoCeilings?: readonly V4MemberIoCeilingAuthoring[];
 };
 export type TeamBlueprintV4 = TeamBlueprintV4Core & {
     readonly contentHash: BlueprintContentHash;
@@ -129,6 +174,12 @@ export type TeamBlueprintV4 = TeamBlueprintV4Core & {
 export declare function validateBlueprintV4Document(raw: unknown): TeamBlueprintV4Core;
 /** The hashable projection: the frozen v3 projection (restamped) plus the declared family. */
 export declare function toHashableBlueprintV4(core: TeamBlueprintV4Core): RemoteSafeRecord;
+/**
+ * Look up the Member ceiling of one template, or `null` when the document
+ * declares none.  `null` is the ONLY honest answer for an undeclared
+ * ceiling: callers must fail closed, never synthesize `read: all`.
+ */
+export declare function findMemberIoCeiling(core: TeamBlueprintV4Core, templateId: string): V4MemberIoCeilingAuthoring | null;
 /** Source pipeline mirror of `parseBlueprint` for the v4 grammar (dormant). */
 export declare function parseBlueprintV4(source: string): TeamBlueprintV4;
 //# sourceMappingURL=blueprint-v4.d.ts.map
