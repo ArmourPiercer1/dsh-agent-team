@@ -1,0 +1,17 @@
+{
+  "a5x-b2r2-MA-20261102T154210": {
+    "gen": 2,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T154210/rootA2"
+  },
+  "a5x-b2r2-MA2-20261102T154210": {
+    "gen": 2,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T154210/rootA2"
+  },
+  "a5x-b2r2-MB-20261102T154210": {
+    "gen": 1,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T154210/rootB"
+  }
+}

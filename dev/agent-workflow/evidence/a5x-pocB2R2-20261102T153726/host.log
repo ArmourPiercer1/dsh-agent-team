@@ -1,0 +1,4 @@
+[b2r2] capped terminal-bash v2 apply() engaged (exact-id keys, fail-closed)
+dsh web: http://127.0.0.1:3186/?token=0PBvjwu5zt04s5LyMb4I4VlfY1c36Hv1q6XoY-eRayU
+[b2r2] resolve sid=a5x-b2r2-MA-20261102T153726 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[b2r2] CAP applied sid=a5x-b2r2-MA-20261102T153726 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T153726/rootA

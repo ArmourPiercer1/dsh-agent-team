@@ -1,0 +1,1 @@
+ERROR cannot change sandbox mode from "workspace-write" to "danger-full-access" while persistent terminal sessions are open or being created; wait for creation to settle and close them first

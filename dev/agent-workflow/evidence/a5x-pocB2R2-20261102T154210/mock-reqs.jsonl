@@ -1,0 +1,7 @@
+{"n":1,"lane":"MA","steps":{"MA":0,"MA2":0,"MB":0,"CTL":0}}
+{"n":2,"lane":"MA","steps":{"MA":1,"MA2":0,"MB":0,"CTL":0}}
+{"n":3,"lane":"MA","steps":{"MA":1,"MA2":0,"MB":0,"CTL":0}}
+{"n":4,"lane":"MA","steps":{"MA":2,"MA2":0,"MB":0,"CTL":0}}
+{"n":5,"lane":"MA","steps":{"MA":3,"MA2":0,"MB":0,"CTL":0}}
+{"n":6,"lane":"MA","steps":{"MA":4,"MA2":0,"MB":0,"CTL":0}}
+{"n":6,"DECIDE_ERROR":"TypeError: [object Uint32Array] is not an int32 or BigInt64 typed array.\n    at Atomics.wait (<anonymous>)\n    at busySleep (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/a5x-b2r2-kit.mjs:47:67)\n    at mutateCapsForMA (file:///home/armourpiercer/"}

@@ -1,0 +1,93 @@
+{
+  "stamp": "20261102T155747",
+  "stableProbe": {
+    "before": 401,
+    "after": 401
+  },
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "verdicts": {
+    "D-BIND-01": {
+      "maInsideWriteOk": true,
+      "maWriteEscapeRefused": true,
+      "secretRefused": true,
+      "mbInsideWriteOk": true,
+      "mbWriteEscapeRefused": true,
+      "ctlFailClosedRefused": true,
+      "wrapperConsulted": true
+    },
+    "D-FS-02": {
+      "crossMemberReadByMA": true,
+      "crossMemberReadByMB": true,
+      "writeRootAlsoReadable": true,
+      "singleFileRules": "NOT_TESTED (root granularity only in host policy vocabulary)",
+      "nativeEditImplicitRead": "NOT_TESTED (write-only root inexpressible; P1-07 compatibility note)"
+    },
+    "D-BASH-03": {
+      "maModeSwitchResult": "ERROR cannot change sandbox mode from \"workspace-write\" to \"danger-full-access\" while persistent terminal sessions are open or being created; wait for creation to settle and close them first",
+      "ma2ModeSwitchResult": "applied requested=danger-full-access overrideOf=danger-full-access",
+      "ma2FenceAttempts": 0,
+      "ma2DangerModeSeenAtResolve": true,
+      "ma2DangerClampedByCap": true,
+      "nativeToolParamsFact": "bash parameters = {command} only (tool-bash-persistent lib) — the v1 sandbox_permissions leg was NOT a native escalation"
+    },
+    "D-PTY-04": {
+      "staleDomainWroteOldRoot": true,
+      "staleConsultSawGen2": false,
+      "staleDomainLacksNewRoot": true,
+      "convergenceOnNewSession": true
+    }
+  },
+  "tails": {
+    "MA": {
+      "step": 7,
+      "tails": {
+        "step0": "A5X-LANE-MA run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configure",
+        "step1": "\nB2R2NEEDLE-7741\n[Command finished with exit code 0]",
+        "step2": "\n[Command finished with exit code 0]",
+        "step3": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootB/ma-escape.txt: Read-only file system\n[Command finished with exit code 1]",
+        "step4": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/secret.md: Read-only file system\n[Command finished with exit code 1]",
+        "step5": "\n[Command finished with exit code 0]",
+        "step6": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootA2/ma-old-domain.txt: Read-only file system\n[Command finished with exit code 1]"
+      },
+      "done": true
+    },
+    "MA2": {
+      "step": 3,
+      "tails": {
+        "step0": "A5X-LANE-MA2 run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: danger-full-access. The DSH file sandbox does not restrict file modifications by available operations.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+        "step1": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootA/ma2-escape.txt: Read-only file system\n[Command finished with exit code 1]",
+        "step2": "\n[Command finished with exit code 0]"
+      },
+      "done": true
+    },
+    "MB": {
+      "step": 4,
+      "tails": {
+        "step0": "A5X-LANE-MB run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configure",
+        "step1": "\n[Command finished with exit code 0]",
+        "step2": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootA/mb-escape.txt: Read-only file system\n[Command finished with exit code 1]",
+        "step3": "\nok\n[Command finished with exit code 0]"
+      },
+      "done": true
+    },
+    "CTL": {
+      "step": 2,
+      "tails": {
+        "step0": "A5X-LANE-CTL run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configur",
+        "step1": "\nError: b2r2: no member ceiling registered for session a5x-b2r2-CTL-20261102T155747 — refusing to spawn (fail-closed)"
+      },
+      "done": true
+    }
+  },
+  "consulted": [
+    "[b2r2] capped terminal-bash v2 apply() engaged (exact-id keys, fail-closed)",
+    "[b2r2] resolve sid=a5x-b2r2-MA-20261102T155747 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1",
+    "[b2r2] CAP applied sid=a5x-b2r2-MA-20261102T155747 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootA",
+    "[b2r2] resolve sid=a5x-b2r2-MA2-20261102T155747 base.mode=danger-full-access base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen2",
+    "[b2r2] CAP applied sid=a5x-b2r2-MA2-20261102T155747 gen=2 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootA2",
+    "[b2r2] resolve sid=a5x-b2r2-MB-20261102T155747 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1",
+    "[b2r2] CAP applied sid=a5x-b2r2-MB-20261102T155747 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155747/rootB",
+    "[b2r2] resolve sid=a5x-b2r2-CTL-20261102T155747 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=NONE"
+  ],
+  "mockRequests": 20
+}

@@ -1,0 +1,11 @@
+[b2r2] capped terminal-bash v2 apply() engaged (exact-id keys, fail-closed)
+dsh web: http://127.0.0.1:3186/?token=aG1dGteJVI16KH5gw9r-3mB6UMTmggtkrhKYao2yuJ8
+[b2r2] resolve sid=a5x-b2r2-MA-20261102T155404 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[b2r2] CAP applied sid=a5x-b2r2-MA-20261102T155404 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155404/rootA
+[b2r2] resolve sid=a5x-b2r2-MA2-20261102T155404 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen2
+[b2r2] CAP applied sid=a5x-b2r2-MA2-20261102T155404 gen=2 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155404/rootA2
+[b2r2] resolve sid=a5x-b2r2-MB-20261102T155404 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[b2r2] CAP applied sid=a5x-b2r2-MB-20261102T155404 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R2-20261102T155404/rootB
+[b2r2] resolve sid=a5x-b2r2-CTL-20261102T155404 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=NONE
+
+[b2r2kit] host closed code=0 signal=null
