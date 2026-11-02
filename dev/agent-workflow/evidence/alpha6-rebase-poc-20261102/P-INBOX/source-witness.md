@@ -1,8 +1,8 @@
 # P-INBOX seam witness — DSH 0.2.0-rc.2 @ 639ed01539
 
-The upstream files are fetched verbatim into `upstream/` from the pinned SHA
-(`packages/core/agent-loop/src/inbox.ts`, `agent.ts`). Line numbers below are
-the lines of those fetched copies.
+The relevant upstream blocks are quoted verbatim in
+[`upstream/EXCERPTS.md`](./upstream/EXCERPTS.md) with GitHub permalinks at the
+pinned SHA. Line numbers below are those of the upstream files.
 
 ## The public facts the light-wake design relies on
 

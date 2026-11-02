@@ -28,6 +28,6 @@ dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/run-prototype.sh
 - The probes are outside `packages/*/test/**`; CI does not collect them.
 - `P-AUTH/prototype.patch` is **not** a proposal and must never be applied to a
   production branch. It exists to prove one insertion point.
-- The host source under `P-INBOX/upstream/` is fetched verbatim from the pinned
-  SHA `639ed015397290b3745d163aafe02ffee4aa3f84` (`dsh-v0.2.0-rc.2`) and is
-  quoted by line number in `P-INBOX/source-witness.md`.
+- The host facts under `P-INBOX/upstream/EXCERPTS.md` are quoted verbatim from
+  the pinned SHA `639ed015397290b3745d163aafe02ffee4aa3f84` (`dsh-v0.2.0-rc.2`),
+  with permalinks; the full upstream files are not vendored.
