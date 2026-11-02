@@ -1,6 +1,8 @@
-# Alpha.5 Fork 路线复核与契约调整提案（PoC 之后，待裁决）
+# Alpha.5 Fork 路线复核与契约调整提案（历史审计记录）
 
-> **STATUS: DRAFT ADDENDUM / NOT RATIFIED.** 这是对 [ADR.md](./ADR.md)、[ARCHITECTURE.md](./ARCHITECTURE.md)、[POC-PLAN.md](./POC-PLAN.md) 的**候选修订**，不修改已采纳 ADR、不切换当前 `current-authority.json`，不允许据此启用受限 Host、合并产品代码或宣称 PoC 全部通过。
+> **HISTORICAL RECORD — 后续裁决已并入 [ADR.md](./ADR.md)，正式执行顺序见 [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md)。本文件保留最初问题与当时判断作为审计证据，不再是未决裁决清单。**
+>
+> **原始状态（当时）：DRAFT ADDENDUM / NOT RATIFIED.** 这是对 [ADR.md](./ADR.md)、[ARCHITECTURE.md](./ARCHITECTURE.md)、[POC-PLAN.md](./POC-PLAN.md) 的**候选修订**，不修改已采纳 ADR、不切换当前 `current-authority.json`，不允许据此启用受限 Host、合并产品代码或宣称 PoC 全部通过。
 >
 > 输入：用户 2026-11-02 提供的本地 PoC **缺口对照截图**（B2 绑定、全权限直通、瞬态 Shell、文件读粒度、恶意同 Realm 旁路、硬链接、生命周期），以及 Host `0.2.0-rc.2 @639ed01539` 源码。此仓库当前可见的设计 PR #531 内尚无截图所依赖的完整本地 PoC 复现实录；逐项结论为**源码核对 + 截图主张的设计评估**，不是独立重跑的 PASS。
 
@@ -86,4 +88,4 @@ Alpha.4 approved invocation
 - **明确舍弃的要求**：禁止一切同进程恶意代码越界、禁止硬链接跨名底层数据共享、保证所有未知 JS 一键完整沙箱兼容、按域名/IP 本轮限网。
 - **保留的强制边界**：蓝图读/写/联网对所选择执行模式的真实能力要求、权限使用前准入、无静默 fallback、调用身份不混淆及可观察受限进程的生命周期。
 
-后续如用户采纳 R-T 与 R-H，应**单独修订 ADR.md 的不变量文字、IO path contract、`POC-PLAN.md` 测试判据**，并建立正式权威迁移 PR。本文件不得被当作自动变更旧契约的授权。
+**后续记录（2026-11-02）**：用户已采纳 R-T（受信工具绑定）与 R-H（硬链接路径语义）；两项已进入 [ADR.md](./ADR.md) 和 [ARCHITECTURE.md](./ARCHITECTURE.md)，PoC 判据已进入 [POC-PLAN.md](./POC-PLAN.md)，实施规划见 [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md)。生产 Authority 指针仍待独立迁移，本文件本身不构成执行授权。
