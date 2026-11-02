@@ -1,0 +1,343 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests | 18 failed) 51ms
+     × adds exactly one top-level key, derived from the frozen v4 face (no v5, no second grammar) 4ms
+     × reuses the v4 closed lane shapes for the ceiling (same three axes, same variants) 14ms
+     × a v4 document without the family parses and every member ceiling lookup is null 3ms
+     × a declared family may omit a member row — that member still has NO ceiling, never a synthesized one 3ms
+     × an empty family declares nothing (legal, like an empty toolBindings list) 0ms
+     × resolves the leader template as well as member templates 3ms
+     × refuses an unknown templateId (identity is closed over this blueprint) 1ms
+     × refuses a duplicate binding for the same member 1ms
+     × `toolBindings[].owner` is the tool SOURCE, not a Member: an owner named like a member mints no ceiling 2ms
+     × refuses an entry key outside the closed shape, a missing lane and an implicit mode 1ms
+     × refuses a non-array family (a declared family is explicit) 1ms
+     × projects A and B to disjoint read/write sets and disjoint network booleans 3ms
+     × resource declarations keep the lane rights (read vs write vs connect) and no canonicalization happens 2ms
+     × is frozen: a projected ceiling cannot be mutated into a wider one 3ms
+     ✓ projects `mode: all` as a mode flag with ZERO allow locators (no synthesized realm root) 1ms
+     × a per-tool restricted lane narrows within the same Member (and is not merged into the ceiling) 2ms
+     × projects restricted as UNSUPPORTED — never as boolean allow or deny 1ms
+     ✓ keeps the existing v4 network vocabulary untouched for per-tool bindings 1ms
+     ✓ omits the key from the hashable projection when the family is absent 1ms
+     × binds the declared family into the hash (two docs differing only there hash differently) 2ms
+     × changing only one locator changes the hash (the ceiling is not laundered) 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · the Member ceiling author carrier is the minimal ADDITIVE v4 family > adds exactly one top-level key, derived from the frozen v4 face (no v5, no second grammar)
+AssertionError: expected undefined to be 'memberIoCeilings' // Object.is equality
+
+- Expected:
+"memberIoCeilings"
+
++ Received:
+undefined
+
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:213:48
+    211| describe('P1-01 · the Member ceiling author carrier is the minimal ADD…
+    212|   it('adds exactly one top-level key, derived from the frozen v4 face …
+    213|     expect(BLUEPRINT_V4_MEMBER_CEILING_FAMILY).toBe('memberIoCeilings')
+       |                                                ^
+    214|     expect(BLUEPRINT_V4_TOP_LEVEL_FIELDS).toContain(BLUEPRINT_V4_MEMBE…
+    215|     expect(BLUEPRINT_V4_TOP_LEVEL_FIELDS).toContain('toolBindings')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · the Member ceiling author carrier is the minimal ADDITIVE v4 family > reuses the v4 closed lane shapes for the ceiling (same three axes, same variants)
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:221:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L1 absence declares NOTHING > a v4 document without the family parses and every member ceiling lookup is null
+TypeError: findMemberIoCeiling is not a function
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:238:12
+    236|     const parsed = parseBlueprintV4(yamlOf(doc))
+    237|     expect(parsed.memberIoCeilings).toBeUndefined()
+    238|     expect(findMemberIoCeiling(parsed, 'alpha')).toBeNull()
+       |            ^
+    239|     expect(findMemberIoCeiling(parsed, 'leader')).toBeNull()
+    240|     // absence must never be reported as an unrestricted ceiling
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L1 absence declares NOTHING > a declared family may omit a member row — that member still has NO ceiling, never a synthesized one
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:245:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L1 absence declares NOTHING > an empty family declares nothing (legal, like an empty toolBindings list)
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:251:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > resolves the leader template as well as member templates
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:259:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > refuses an unknown templateId (identity is closed over this blueprint)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusal packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:186:37
+    184|     const details = (error as { details?: Record<string, unknown> }).d…
+    185|     const problems = details[problemsKey]
+    186|     expect(Array.isArray(problems)).toBe(true)
+       |                                     ^
+    187|     const found = (problems as readonly { code: string; path: string }…
+    188|     expect(found, `expected a ${code} problem at ${path}; got ${JSON.s…
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:265:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > refuses a duplicate binding for the same member
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusal packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:186:37
+    184|     const details = (error as { details?: Record<string, unknown> }).d…
+    185|     const problems = details[problemsKey]
+    186|     expect(Array.isArray(problems)).toBe(true)
+       |                                     ^
+    187|     const found = (problems as readonly { code: string; path: string }…
+    188|     expect(found, `expected a ${code} problem at ${path}; got ${JSON.s…
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:273:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > `toolBindings[].owner` is the tool SOURCE, not a Member: an owner named like a member mints no ceiling
+TypeError: findMemberIoCeiling is not a function
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:297:12
+    295|     })
+    296|     const parsed = parseBlueprintV4(yamlOf(doc))
+    297|     expect(findMemberIoCeiling(parsed, 'alpha')).toBeNull()
+       |            ^
+    298|     const binding = projectV4ToolBindingAuthoring(maps(), toolBindingA…
+    299|     expect(binding.ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > refuses an entry key outside the closed shape, a missing lane and an implicit mode
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusal packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:186:37
+    184|     const details = (error as { details?: Record<string, unknown> }).d…
+    185|     const problems = details[problemsKey]
+    186|     expect(Array.isArray(problems)).toBe(true)
+       |                                     ^
+    187|     const found = (problems as readonly { code: string; path: string }…
+    188|     expect(found, `expected a ${code} problem at ${path}; got ${JSON.s…
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:306:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L2 the ceiling binds a TRUSTED blueprint templateId — never a tool owner or free text > refuses a non-array family (a declared family is explicit)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ expectRefusal packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:186:37
+    184|     const details = (error as { details?: Record<string, unknown> }).d…
+    185|     const problems = details[problemsKey]
+    186|     expect(Array.isArray(problems)).toBe(true)
+       |                                     ^
+    187|     const found = (problems as readonly { code: string; path: string }…
+    188|     expect(found, `expected a ${code} problem at ${path}; got ${JSON.s…
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:329:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L3 per-Member projection is isolated (A never carries B’s locators) > projects A and B to disjoint read/write sets and disjoint network booleans
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:339:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L3 per-Member projection is isolated (A never carries B’s locators) > resource declarations keep the lane rights (read vs write vs connect) and no canonicalization happens
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:359:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L3 per-Member projection is isolated (A never carries B’s locators) > is frozen: a projected ceiling cannot be mutated into a wider one
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:373:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L4 a tool-level `all` lane cannot invent a path outside the Member ceiling > a per-tool restricted lane narrows within the same Member (and is not merged into the ceiling)
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:398:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L5 `network: restricted` parses but is a TYPED unsupported fact > projects restricted as UNSUPPORTED — never as boolean allow or deny
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:412:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L6 hash discipline (present-only, no drift for old documents) > binds the declared family into the hash (two docs differing only there hash differently)
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:448:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts > P1-01 · L6 hash discipline (present-only, no drift for old documents) > changing only one locator changes the hash (the ceiling is not laundered)
+TeamContractError: TeamBlueprint has unknown fields: memberIoCeilings
+ ❯ teamContractError packages/contracts/src/errors.ts:112:10
+    110|   details?: RemoteSafeRecord,
+    111| ): TeamContractError {
+    112|   return new TeamContractError(code, message, details)
+       |          ^
+    113| }
+    114|
+ ❯ assertNoUnknownFields packages/contracts/src/dto/common.ts:69:11
+ ❯ validateBlueprintDocument packages/domain/blueprint/src/validate.ts:1347:3
+ ❯ validateBlueprintV4Document packages/domain/blueprint/src/blueprint-v4.ts:438:17
+ ❯ parseBlueprintV4 packages/domain/blueprint/src/blueprint-v4.ts:476:16
+ ❯ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts:458:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 3 passed (21)
+   Start at  01:31:17
+   Duration  441ms (transform 223ms, setup 0ms, import 279ms, tests 51ms, environment 0ms)
+

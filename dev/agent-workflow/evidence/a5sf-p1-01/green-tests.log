@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 49ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  01:31:21
+   Duration  417ms (transform 224ms, setup 0ms, import 277ms, tests 49ms, environment 0ms)
+
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/domain/test/a5sr1-tool-binding-placement.test.ts (9 tests) 5ms
+ ✓ packages/domain/test/a5sr4-migration-report.test.ts (8 tests) 10ms
+ ✓ packages/domain/test/a5sr5-migration-negative-cases.test.ts (4 tests) 11ms
+ ✓ packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts (22 tests) 19ms
+ ✓ packages/domain/test/a5fl1-blueprint-v4-flip.test.ts (15 tests) 33ms
+ ✓ packages/domain/test/a4p7-v3-identity-binds-grammar.test.ts (13 tests) 40ms
+ ✓ packages/domain/test/a5sr3-default-deny-mapping.test.ts (13 tests) 7ms
+
+ Test Files  7 passed (7)
+      Tests  84 passed (84)
+   Start at  01:31:22
+   Duration  437ms (transform 1.45s, setup 0ms, import 1.93s, tests 126ms, environment 1ms)
+
+typecheck rc=0
