@@ -24,3 +24,11 @@ M3 exit=1
 
 == restore check ==
 scripts/a5sf-diag.mjs: OK
+
+== review-response-2 (2026-11-02): M4 (N1 duplicate-consumption check disabled) ==
+✖ L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE (97.59274ms)
+ℹ pass 10
+ℹ fail 1
+✖ L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE (97.59274ms)
+M4 exit=1
+scripts/a5sf-diag.mjs: OK

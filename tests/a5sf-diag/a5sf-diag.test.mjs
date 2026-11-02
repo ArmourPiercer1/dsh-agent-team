@@ -162,6 +162,24 @@ test('L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED
   assert.ok(line(r.stdout, 'FAILURE_CLASS '), r.stdout)
 })
 
+test('L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE', () => {
+  const r = run([join(FIXTURES, 'replay.jsonl')])
+  assert.equal(r.status, 1, r.stdout + r.stderr)
+  const legit = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('ALLOW_LEGITIMATE'))
+  assert.equal(legit.length, 1, r.stdout)
+  assert.match(legit[0], /callId=call-r1-real-oneshot\b/)
+  assert.match(legit[0], /requestId=req-once\b/)
+  const und = line(r.stdout, 'UNDECIDABLE')
+  assert.ok(und, r.stdout)
+  assert.match(und, /code=DUPLICATE_CONSUMPTION\b/)
+  assert.match(und, /callId=call-r1-replay\b/)
+  assert.match(und, /requestId=req-once\b/)
+  assert.match(und, /replay\.jsonl:3\b/)
+  assert.match(r.stdout, /SUMMARY calls=2 allow=2 findings=0 legitimate_narrowed=1 undecidable=1\b/)
+  assert.doesNotMatch(r.stdout, /verdict=NO_BYPASS_FOUND/)
+  // and two DISTINCT durable rows still both pass (L1's clean fixture: req-clean-1 + req-clean-2)
+})
+
 test('S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row', () => {
   const src = readFileSync(TOOL, 'utf8')
   assert.match(src, /from '\.\/diag-call-chain\.mjs'/)

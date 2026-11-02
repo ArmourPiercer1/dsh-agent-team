@@ -67,6 +67,10 @@
  *         A repeated `ceiling` row for one member is ambiguous and makes that
  *         member's allow calls `UNDECIDABLE AMBIGUOUS_CEILING` (fail closed: a looser
  *         duplicate must not mask a bypass); each duplicate is also `ROW_INVALID`.
+ *         Consumption is ONE-TO-ONE per report: a second allow bound to an
+ *         already-consumed requestId is `UNDECIDABLE DUPLICATE_CONSUMPTION`
+ *         (R1's durable guard consumes an allow exactly once), never a second
+ *         `ALLOW_LEGITIMATE`. The used-row map is local to one invocation.
  *
  *   {"kind":"failure","callId":"c1","text":"a5p5-refused kind=… code=… detail=…"}
  *   {"kind":"compiler-refusal","callId":"c2","code":"MEMBER_GENERATION_STALE"}
@@ -102,6 +106,7 @@ export const LIMITS = Object.freeze([
   'not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that',
   'the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"',
   'a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported',
+  'a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow',
   'an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table',
   'redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know',
 ])
@@ -273,6 +278,9 @@ export function analyzeRows(rows) {
   const findings = []
   const legitimate = []
   const undecidable = []
+  // ONE durable row authorizes exactly ONE allow (R1's durable guard is exactly-once).
+  // Scoped to this invocation's rows: the tool never keeps cross-run state.
+  const consumedRequests = new Map()
   const validCalls = new Set(calls)
   const validFailures = new Set(failures)
   const validCompilerRefusals = new Set(compilerRefusals)
@@ -340,6 +348,17 @@ export function analyzeRows(rows) {
       addFinding(entry, 'APPROVAL_SCOPE_MISMATCH', { ...common, compiled: 'ask', requestId: named.requestId, why: binding.reason })
       continue
     }
+    // N1: a second allow bound to an ALREADY-CONSUMED row is not legitimate. R1's
+    // shipped law is exactly-once (a replay reaches the durable guard and is refused);
+    // a log that shows one row authorizing two allows is undecidable, never clean.
+    if (consumedRequests.has(named.requestId)) {
+      addUndecidable(entry, 'DUPLICATE_CONSUMPTION', {
+        callId: call.callId, compiled: 'ask', requestId: named.requestId,
+        why: `this durable row already authorized call '${consumedRequests.get(named.requestId)}'; R1 consumes one row exactly once`,
+      })
+      continue
+    }
+    consumedRequests.set(named.requestId, call.callId)
     legitimate.push({ file: entry.file, line: entry.line, code: 'APPROVAL_CONSUMED_NARROWED_ALLOW', callId: call.callId, requestId: named.requestId, tool: call.tool, axis: call.axis, boundBy: binding.reason })
   }
 

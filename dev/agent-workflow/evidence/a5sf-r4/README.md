@@ -81,6 +81,7 @@ Codes the table does not know are **not** added; they print `FAILURE_CLASS_GAP �
 |---|---|---|
 | `fixtures/clean.jsonl` | plain allow; **two R1-shaped legit narrowed allows** (`req-clean-1` bound by `operationFingerprint` with `callId=call-r1-real-oneshot` vs `correlation=corr-a5sf-r1-oneshot`; `req-clean-2` bound by `logicalOperationId`); deny; one `APPROVAL_DENIED` failure | `findings=0 legitimate_narrowed=2 classified=1`, exit 0, `verdict=NO_BYPASS_FOUND` |
 | `fixtures/bypass.jsonl` | allow in the compiled `ask` lane with no row; an allow whose durable row names `tool=write`; an allow whose row carries a different `actionName` | 3 × `APPROVAL_BYPASS` (`…:2 code=ALLOW_WITHOUT_DURABLE_APPROVAL`, `…:3 code=APPROVAL_SCOPE_MISMATCH why=scope.toolName`, `…:5 code=APPROVAL_SCOPE_MISMATCH why=scope.actionName`), `findings=3`, exit 1 |
+| `fixtures/replay.jsonl` | ONE durable row (`req-once`, R1-shaped) bound to two allows: `call-r1-real-oneshot` and `call-r1-replay` (both `logicalOperationId=corr-a5sf-r1-oneshot`) | first `ALLOW_LEGITIMATE`, second `UNDECIDABLE code=DUPLICATE_CONSUMPTION`, `findings=0 undecidable=1`, exit 1 — the N1 fix |
 | `fixtures/unbindable.jsonl` | a NAMED durable row (`correlation=corr-a5sf-r1-unbound`) for a call with `callId=call-r1-unbound` and no logical id/fingerprint | `UNDECIDABLE code=APPROVAL_SCOPE_UNBINDABLE`, `findings=0 undecidable=1`, exit 1 — the C1 fix |
 | `fixtures/miscope.jsonl` | allow at a locator outside the ceiling; allow of a tool absent from the ceiling | `APPROVAL_BYPASS …:2 code=ALLOW_OUTSIDE_COMPILED_CEILING`, `…:3 code=TOOL_NOT_IN_COMPILED_CEILING`, exit 1 |
 | `fixtures/duplicate-ceiling.jsonl` | a strict ceiling then a LOOSER duplicate for the same member, and an allow that the strict one would call a bypass | `ROW_INVALID …:3 code=DUPLICATE_CEILING_MEMBER` + `UNDECIDABLE code=AMBIGUOUS_CEILING`, `findings=0 undecidable=2`, exit 1 — the C4 fix |
@@ -102,8 +103,8 @@ node --test tests/a5sf-diag/a5sf-diag.test.mjs
 Result: **7 tests, 7 fail, 0 pass**; every arm reports
 `Error: Cannot find module '…/scripts/a5sf-diag.mjs'` (`MODULE_NOT_FOUND`). Full output:
 [`red-test.log`](./red-test.log). **That capture predates the S3 leg and the review-response
-legs** (L1b, C4) — it is the original 7-leg file; the suite is 10 legs after this review round
-(§9), and the log was deliberately not rewritten (an append-only RED record). The fixture-derived
+legs** (L1b, C4, L1c) — it is the original 7-leg file; the suite is 11 legs after the second
+review round (§9/§10), and the log was deliberately not rewritten (an append-only RED record). The fixture-derived
 expectations were not changed when the tool landed; one fixture *locator* was corrected during
 GREEN (the first draft used a path covered by the ceiling subtree, so `matchLocator` lawfully
 returned `allow` — the test, not the tool, was wrong). The RED signature above is the module's
@@ -112,14 +113,14 @@ absence, which is unchanged by those edits.
 ### GREEN
 
 ```
-node --test tests/a5sf-diag/a5sf-diag.test.mjs      # 10/10 pass, exit 0 (after the review round, §9)
+node --test tests/a5sf-diag/a5sf-diag.test.mjs      # 11/11 pass, exit 0 (after the second review round, §9/§10)
 node scripts/eb3-ci-required.mjs                    # EB3-CI-REQUIRED pass workflows=9 findings=0
 node scripts/eb3-ci-negative-controls.mjs           # 24/24 control(s) behaved as required
 node scripts/doc-checks.mjs                          # exit 0, no output (document checks)
 node scripts/eb3-evidence-guard.mjs --new-since origin/master   # pass added=4 (measured AFTER the final commit: README + red log + green log + mutation log; pre-commit it reads added=0 by design because the guard grades ADDED=committed files)
 ```
 
-plus the seven fixture runs (`A5SF-DIAG …` reports with the summaries in §3). The diag suite has
+plus the eight fixture runs (`A5SF-DIAG …` reports with the summaries in §3). The diag suite has
 **no workspace install dependency** (`path-rules.ts` imports only repo-local type modules), unlike
 the R2 harness C1 suite in a fresh worktree; this is why it runs in a bare checkout. Full transcript:
 [`green-tests.log`](./green-tests.log).
@@ -202,8 +203,8 @@ the diagnostic will (correctly) refuse to call it legitimate.
 | path | why |
 |---|---|
 | `scripts/a5sf-diag.mjs` | NEW: one CLI, imports the PR #394 classifier + P1 `matchLocator`; reports `APPROVAL_BYPASS`/`ALLOW_LEGITIMATE`/`FAILURE_CLASS`/`FAILURE_CLASS_GAP` with `file:line` |
-| `tests/a5sf-diag/a5sf-diag.test.mjs` | NEW: 10 node:test legs (clean/R1-shape / unbindable / synthetic bypass / mis-scoped allow / class pass-through with pinned AMBIGUOUS faces / duplicate ceiling / disclosed gap / single-source / refusal / malformed-row fail-closed) |
-| `tests/a5sf-diag/fixtures/*.jsonl` | NEW: seven JSONL fixtures (real files, so `file:line` is exercised) |
+| `tests/a5sf-diag/a5sf-diag.test.mjs` | NEW: 11 node:test legs (clean/R1-shape / unbindable / synthetic bypass / mis-scoped allow / class pass-through with pinned AMBIGUOUS faces / duplicate ceiling / duplicate consumption / disclosed gap / single-source / refusal / malformed-row fail-closed) |
+| `tests/a5sf-diag/fixtures/*.jsonl` | NEW: eight JSONL fixtures (real files, so `file:line` is exercised) |
 | `.github/workflows/ci-integration.yml` | ONE host-free `node:test` step |
 | `dev/ci/eb3-ci-manifest.json` | ONE `ci-integration` leg with the step's required token |
 | `dev/agent-workflow/evidence/a5sf-r4/{README.md,red-test.log,green-tests.log}` | this record + real captures |
@@ -247,9 +248,9 @@ pinned.
 
 ### C3 — evidence honesty
 
-- `README` §4 GREEN now reports the measured `eb3-evidence-guard … pass added=3` and states WHY the
+- `README` §4 GREEN now reports the measured `eb3-evidence-guard … pass added=4` and states WHY the
   pre-commit run reads `added=0` (the guard grades committed additions).
-- §4 RED states explicitly that the 7-test capture predates the S3 leg (7 vs 10 tests now) and was
+- §4 RED states explicitly that the 7-test capture predates the S3 leg (7 vs 10 tests in that round; 11 after §10) and was
   not rewritten.
 
 ### C4 — duplicate ceiling rows fail closed
@@ -282,6 +283,70 @@ $ node --test tests/a5sf-diag/a5sf-diag.test.mjs
 ℹ tests 10  ℹ pass 10  ℹ fail 0   exit=0
 ```
 
-plus the seven fixture runs (summaries in §3), `eb3-ci-required` (`pass workflows=9 findings=0`),
+plus the eight fixture runs (summaries in §3), `eb3-ci-required` (`pass workflows=9 findings=0`),
 `eb3-ci-negative-controls` (24/24), `doc-checks` (exit 0). No Host boot, no port, no real-effect
 verification was performed; no PR was opened.
+
+## 10. Review response 2 (dated 2026-11-02, real UTC) — N1 + N2
+
+Second independent pass on `4f1492ac8` (PR #542): APPROVE-WITH-CONDITIONS, C1–C4 confirmed
+fixed and all required mutations + both former survivors RED. Two new conditions, both closed
+here.
+
+### N1 — consumption is one-to-one (the last false-clean)
+
+`scripts/a5sf-diag.mjs` bound every allow independently, so ONE durable row could authorize N
+allows and the report said `NO_BYPASS_FOUND`. R1's shipped law is exactly-once: the durable
+`control-allow-consumed` row is consumed once and a replay reaches the existing guard and is
+refused.
+
+Fix: a `consumedRequests` map local to one `analyzeRows()` invocation (no global state, one
+invocation = one report). On the second allow bound to an already-used `requestId` the report
+prints `UNDECIDABLE code=DUPLICATE_CONSUMPTION requestId=… why=…` (naming the call that used it
+first) and exits 1; the first allow stays `ALLOW_LEGITIMATE`. Two DISTINCT rows still both pass —
+`fixtures/clean.jsonl` has `req-clean-1` + `req-clean-2` and leg L1 asserts
+`legitimate_narrowed=2`.
+
+New fixture `fixtures/replay.jsonl` (the reviewer's repro): `req-once` + two calls
+(`call-r1-real-oneshot`, `call-r1-replay`) with the same `logicalOperationId`. New leg L1c:
+one `ALLOW_LEGITIMATE`, one `DUPLICATE_CONSUMPTION`, `findings=0 undecidable=1`, exit 1.
+
+### N2 — stale evidence number
+
+§9 C3 said `pass added=3`; the live guard and §4 say `added=4` (README, red log, green log,
+mutation log are the four added evidence files). Corrected to `added=4`; this section adds no
+new evidence file (mutation M4 appends to the existing `mutation-controls.log`).
+
+### Mutation table — full (real runs, [`mutation-controls.log`](./mutation-controls.log))
+
+Every mutation was applied to `scripts/a5sf-diag.mjs`, the suite run, and the file restored
+(sha256 verified).
+
+| # | mutation | expected | measured |
+|---|---|---|---|
+| M1 | hardcode `attribution=ATTRIBUTED` | L4 RED | **L4 RED** `pass 9 fail 1` exit 1 |
+| M2 | hardcode `faces=pa-control-edge` | L4 RED | **L4 RED** `pass 9 fail 1` exit 1 |
+| M3 | duplicate ceiling last-wins | C4 RED | **C4 RED** `pass 9 fail 1` exit 1 |
+| M4 | N1 duplicate-consumption check disabled (`if (false && consumedRequests.has(…))`) | L1c RED | **L1c RED** `pass 10 fail 1` exit 1 |
+
+### Re-run after N1/N2 (real, [`green-tests.log`](./green-tests.log))
+
+```
+$ node --test tests/a5sf-diag/a5sf-diag.test.mjs
+✔ L1 clean …  ✔ L1b unbindable …  ✔ L1c one-row-one-allow (N1)
+✔ L2 bypass … ✔ L3 miscope …      ✔ L4 class pass-through …
+✔ C4 duplicate ceiling …          ✔ L4b gap …  ✔ S1  ✔ S2  ✔ S3
+ℹ tests 11  ℹ pass 11  ℹ fail 0    exit=0
+```
+
+Eight fixture runs: clean `calls=4 allow=3 findings=0 legitimate_narrowed=2 classified=1 exit 0`;
+unbindable `undecidable=1 exit 1`; replay `findings=0 legitimate_narrowed=1 undecidable=1
+exit 1`; bypass `findings=3 exit 1`; miscope `findings=2 exit 1`; duplicate-ceiling
+`undecidable=2 exit 1`; failure `classified=3 gaps=0 exit 0`; gap `gaps=2 exit 1`. Then
+`eb3-ci-required` (`pass workflows=9 findings=0`), `eb3-ci-negative-controls` (24/24),
+`doc-checks` exit 0, evidence guard `pass added=4`.
+
+Honest limits are unchanged (§6); N1 adds one: a durable row authorizes at most one allow **per
+report**, so a log that spans multiple independent runs with reused requestIds would be reported
+UNDECIDABLE rather than clean (stateless per invocation is deliberate). No Host boot, no port, no
+real-effect verification was performed; no PR action.

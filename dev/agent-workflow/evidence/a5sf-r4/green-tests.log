@@ -1,25 +1,26 @@
-# a5sf-r4 / BL-12 — GREEN captures (real output; 2026-11-02 real UTC; review round after rebase onto 65bcea4ed)
+# a5sf-r4 / BL-12 — GREEN captures (real output; 2026-11-02 real UTC; second review round, head before commit 4f1492ac8 + N1/N2)
 # branch task/a5sf-r4-diag-20261102
 
 $ node --test tests/a5sf-diag/a5sf-diag.test.mjs
-✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (105.82815ms)
-✔ L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass (103.430723ms)
-✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (101.50289ms)
-✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (97.394815ms)
-✔ L4 failure classification passes the PR #394 class string through unchanged (100.420471ms)
-✔ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (99.461308ms)
-✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (101.327709ms)
-✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.280582ms)
-✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (104.795364ms)
-✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (105.987601ms)
-ℹ tests 10
+✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (102.875692ms)
+✔ L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass (101.003739ms)
+✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (99.348143ms)
+✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (104.45914ms)
+✔ L4 failure classification passes the PR #394 class string through unchanged (102.122337ms)
+✔ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (101.868583ms)
+✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (101.12604ms)
+✔ L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE (103.283475ms)
+✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.403474ms)
+✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (102.934401ms)
+✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (103.900373ms)
+ℹ tests 11
 ℹ suites 0
-ℹ pass 10
+ℹ pass 11
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 982.75909
+ℹ duration_ms 1083.549049
 exit=0
 
 $ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/clean.jsonl
@@ -33,6 +34,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=0
@@ -46,6 +48,22 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/replay.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=4 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+ALLOW_LEGITIMATE file=tests/a5sf-diag/fixtures/replay.jsonl:2 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=call-r1-real-oneshot requestId=req-once tool=read axis=read boundBy=call.logicalOperationId = scope.correlation
+UNDECIDABLE file=tests/a5sf-diag/fixtures/replay.jsonl:3 code=DUPLICATE_CONSUMPTION callId=call-r1-replay requestId=req-once why=this durable row already authorized call 'call-r1-real-oneshot'; R1 consumes one row exactly once
+SUMMARY calls=2 allow=2 findings=0 legitimate_narrowed=1 undecidable=1 classified=0 gaps=0 verdict=INCOMPLETE
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
@@ -61,6 +79,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
@@ -75,6 +94,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
@@ -89,6 +109,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
@@ -104,6 +125,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=0
@@ -119,6 +141,7 @@ LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read be
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
 LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
 LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
