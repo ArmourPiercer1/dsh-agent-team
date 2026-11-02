@@ -209,6 +209,17 @@
             "tests/kits/a5sf-golden/compare.test.mjs"
           ],
           "why": "R5/BL-13 (2026-11-02): the retired Alpha.5 tool-family golden output vectors were converted into a small regression-comparison corpus for the new Provider/Service/OS-runner lanes. This is NOT an acceptance gate — a MATCH is a regression comparison only, and every RETIRE/UNUSABLE vector is refused before the observation is inspected. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the comparator's refusal laws run nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the P1 path algebra loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+        },
+        {
+          "id": "a5sf diag R4",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "tests/a5sf-diag/a5sf-diag.test.mjs"
+          ],
+          "why": "R4/BL-12 (2026-11-02): the approval-bypass / failure-classification report is one node CLI over run rows. It imports the PR #394 classifier (`scripts/diag-call-chain.mjs` FACE_TABLE/attribute/diagnose) and the P1 locator algebra (`path-rules.ts#matchLocator`) instead of restating either, and its suite pins the clean / synthetic-bypass / mis-scoped-allow / classification-pass-through legs, the R1 logical-operation binding (correlation | logicalOperationId | operationFingerprint, unbindable = UNDECIDABLE), the one-allow-per-durable-row law (DUPLICATE_CONSUMPTION), the disclosed a5sf-vocabulary gap and the refusal of an input with no answerable rows. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the suite runs nowhere. Host-free: JSONL fixtures under tests/a5sf-diag/fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seam loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
         }
       ],
       "hostFree": true
