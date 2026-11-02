@@ -311,6 +311,6 @@ P1-01 blueprint contract ---- P1-02 policy compiler ---- P1-04 invocation/trust
 
 - **已有可引用而无需重做的事实**：PR #26 `spill-local` 替换方式；过去 Alpha.4 的权限审批机制；现有 `tests/world-factory`；已有 Service Realm/OS PoC 的**原始 logs、commit、机型、Host pin 与运行负控**在复查后可作为相同条件的有效证据。不得“为满足流程完整性”重跑已经通过且输入/版本相同的实验。
 - **不可继承为 PASS 的事实**：以前的 Family 自研 read/grep 能运行、`ctx.isolate` 方法存在、进程 Provider 测试的局部 `fakeDeps` 绿、同进程恶意 JS 被 Hash 登记、简单 Landlock TCP 规则存在。
-- **وقف工**：不允许一工具一个替代体、未能证明调用来源/权限代际、禁网无法阻止实际 OS 数据面、执行入口不受控、公开接口不够时试图 patch Host Core、单次扩权泄漏、测试触碰稳定 :3080、Fork 导致非 Team 正向回归失败。只能记录具名 `CORE_SEAM_BLOCKER` 或 `UNSUPPORTED/ENV_BLOCK` 并寻求通用 Provider 修复；不得改写需求。
+- **停工**：不允许一工具一个替代体、未能证明调用来源/权限代际、禁网无法阻止实际 OS 数据面、执行入口不受控、公开接口不够时试图 patch Host Core、单次扩权泄漏、测试触碰稳定 :3080、Fork 导致非 Team 正向回归失败。只能记录具名 `CORE_SEAM_BLOCKER` 或 `UNSUPPORTED/ENV_BLOCK` 并寻求通用 Provider 修复；不得改写需求。
 - **性能验收**：优先比较“同一工具原版 + Team 配置”的真实 p50/p95，并报告原因。性能没有预先约束为固定毫秒数；内部使用者可在 G4 测值后确定可接受预算；不能让小文件读每次冷启动一个完整 Node Tool Host 而不披露。
 - **变更守则**：除独立 Authority Migration PR 外，本设计文档不自动修改 `AGENTS.md`、现行实现计划和当前 authority 指针。最终审查的裁决词必须明确 PASS / CONDITIONAL / BLOCK / ENV_BLOCK / UNSUPPORTED，不得以“部分工具有绿”为整个阶段自动发布许可。
