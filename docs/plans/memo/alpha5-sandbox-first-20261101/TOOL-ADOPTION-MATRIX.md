@@ -13,9 +13,9 @@
 | `edit` | `ctx.fs.editText` / guarded write | `service-mediated:fs` | P3-01 | 正常替换/版本冲突，禁写；工具读取旧内容也需读权限 |
 | `read_image` | 原生 FS/Attachment 具体绑定待真实 trace | `service-mediated:fs` + 可能需要可信附件服务 | P3-01 | 原生像素/大小上界/工具展示等价；附件来源无法绑定则 UNSUPPORTED |
 | `str_replace_editor` | 若在该 Host Preset 登记，具体写入服务待 trace | `service-mediated:fs`（有条件） | P3-01 | 保留原生编辑与原子写，逐工具拒绝 |
-| `grep` | 原生 JS → `ctx.subprocess.spawn` → `rg --json` | `service-mediated:subprocess` + `os-confined:leaf` | P2-03 → P3-02 | exit 0/1、无匹配、非法模式、流/取消；真实 OS 禁读 |
+| `grep` | 原生 JS → `ctx.subprocess.spawn` → `rg --json` | `service-mediated:subprocess` + `os-confined:leaf` | P2-03 → P3-02 | exit 0/1、无匹配、非法模式、流/取消；必须用实际后端证明读 allowlist，不能以 bwrap 掩码覆盖局部文件的测试冒充全域拒读 |
 | `glob` | 原生 JS → `ctx.subprocess.spawn` → `rg` | `service-mediated:subprocess` + `os-confined:leaf` | P3-02 | 目录/过滤/无结果、异常、禁读；不能退回裸 spawn |
-| `bash` 持久 | 原生 `tool-bash-persistent` → `ctx.terminals` → PTY | `os-confined:leaf`，受信装配 `team-shell` Backend | P2-04 → P3-02 | 原生命令连续性、cwd/信号/取消、禁读写网、撤权/旧进程排空 |
+| `bash` 持久 | 原生 `tool-bash-persistent` → `ctx.terminals` → PTY | `os-confined:leaf`，公开 wrapper → 受控 confine（按需 bwrap+Landlock），受信装配 `team-shell` | P2-04 → P3-02 | 原生命令连续性、独立读写/只写不读及同 UID chmod/new-file 负控，禁网/撤权；后端不支持即拒绝，不用 VFS 权限位冒充硬上界 |
 | `bash` 瞬态 | 原生工具 → `ctx.shell` → `bash-sandbox` | `os-confined:leaf`，必要时最小 `bash-sandbox` Fork | P3-02 | 与持久终端分别验收，`danger-full-access` 不越 Member ceiling |
 | `pwsh` 持久/瞬态 | Windows/Posix backend 选择待证实 | `os-confined:leaf`（可用平台） | P3-02（条件性） | 不虚称 Linux PASS 等于 Windows/Pwsh；平台不支持则 ENV_BLOCK |
 | `run_code` / PTC | Node 子进程和嵌套调用 | `os-confined:leaf` + 受控 Host bridges | P2-06 → P3-02 | 允许/拒绝 I/O；nested tool、IPC/环境 FD/取消 |
@@ -30,9 +30,9 @@
 | `present` / `skill` / attachment | 可能读取用户文件或宿主服务；不能按“无 I/O”猜测 | `service-mediated` / 可信宿主代理，待 trace | P3-04 | 上传/读取/渲染与来源能力分开；已知不受管的 Host I/O 标 CONDITIONAL |
 | 未知同进程第三方 JS | 可直接 `node:fs`/Socket，不承诺依赖 `ctx.fs` | 默认 `os-confined:whole-tool`（有通用 Tool Host 时）否则 UNSUPPORTED；已信任可 `TRUSTED_ONLY` | P3-04 | **hash 登记非 sandbox**；whole-tool 未实施时不提供伪保证 |
 
-## 1A. B2-R 证据定位
+## 1A. B2R2 / IOAXIS / WRITEONLY 证据定位
 
-原生持久 Bash 可经零复制公开 `apply` wrapper 在测试会话实施写入根限制。该行仍为 **CONDITIONAL（写）/ NOT_TESTED（Member 身份、读、网络、真实 danger 升权、PTY 撤权）**，不应计入完整 I/O 支持率。生产 `backendType`、受限 Member 的来源绑定与读写独立性按 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 验收。
+已验证原生持久 Bash 在零复制 `apply` wrapper 后，可通过公开 `sandboxPolicy.resolve` 与 `sandbox.confine` 传递加性执行规则；B2R2 验证真实 session-mode 钳制、精确测试会话映射和失效旧 PTY 风险，IOAXIS（19/19+12/12）验证 bwrap 路径子集，WRITEONLY（15/15+13/13）验证 VFS 权限位下的固定元数据只写不读样本。**不能据此标记完整权限 READY**：生产 TeamDomain 身份、Landlock 严格读 allowlist、PTY 代际重建和全工具验收仍属 P1–P4。尤其 bwrap mask 非完整 allowlist，VFS 同 UID owner 可 chmod，新建文件可读，因此不得作为完整硬上界回退。
 
 ## 2. P3-00 必填的真实库存字段
 

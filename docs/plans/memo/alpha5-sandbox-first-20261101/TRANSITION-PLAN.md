@@ -26,13 +26,16 @@
 - `controlled-fs` 的路径与版本核验：仅提取与新 `ctx.fs` ABI 能匹配的机制，避免用旧接口强行取代原生 FS 的流式读/编辑。P1 必须实现 `MemberCeiling ∩ ToolRestriction`，而非从 Member 或 Tool 两者任选其一。
 - 旧工具 Family 和所有历史 Evidence：**暂不删除**。先通过真实原生纵切验证替代后再按 Gate 逐一退役，必要时旧路径只能用于明确隔离的历史测试世界，不能在声称受限的生产执行路径上静默回退。
 
-## 1A. 新增 B2-R 证据与修订后的技术路线
+## 1A. B2R2 / IOAXIS / WRITEONLY 已完成的技术证据与实施路线
 
-在独立证据分支 `task/a5x-envpoc-20261031 @ 6205df33` 的 B2-R 中，**原生 terminal-bash 的公开 `apply` 包裹件**在测试会话上成功实施了 OS 写入根限制：rootA 内写入成功、外部写入失败；原生插件源码零复制、零修改。该结果把此前的持久 Bash `CORE_SEAM_BLOCKER` 缩小为 **CONDITIONAL（仅写侧受限纵切）**，并证明应在 P1 优先验证公开包裹，而不是先做基础设施 Fork。
+证据分支的 B2R2 已将原生持久 Bash 成员写域的 `CORE_SEAM_BLOCKER` 改为公开零复制 wrapper 可承载；IOAXIS 又利用公开 `sandboxPolicy.resolve → sandbox.confine` 代理确认 bwrap 的受限读掩码与写根可传递给原生工具；WRITEONLY 提供 VFS 固定 owner 位下只写不读 EACCES 的实验（15/15 + 13/13）。这些结果证明基础设施接缝和有限内核机制可行，**架构 PoC 收口**，不要求在定稿前开展更多独立探索。
 
-但受限读权限并未成立，Member 标识使用测试会话名子串匹配且缺省回退旧 Policy，真正有效的权限升档入口和持久 PTY 策略撤销也未验证。因此 **不能据此升级 Member×Tool 全局三轴硬上界为 READY**，也不能把 `sandbox_permissions` 额外参数当成有效的持久 Bash 升权测试。需按 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 优先做真实 TeamDomain Member 身份与独立读写约束；未绑定时前置拒绝，禁止裸 fallback。
+但边界必须准确：bwrap `--ro-bind / /` 加目录掩码不是默认拒绝的 read allowlist，VFS 0300/0200 也不能阻止同 UID 文件 owner `chmod` 或新建文件出现可读权限。严格独立读写执行的生产首选 Landlock 文件规则（适用 ABI 与实际内核能力必须 P1/P2 验收）；本 WSL2 Landlock `add_rule=EBADF` 仅为 ENV_BLOCK。若目标环境无法兑现受管策略，不得静默退化到 VFS 或权限更宽的 bwrap，必须对该配置拒绝或标出明确支持子集。
 
-工作排序：公开 Provider/原版装配 → 零复制公开接口包裹 → 缺公开接缝时的最小基础设施 Fork → **绝不修改原生 ToolDefinition 或 DSH Core**。仍然先复用现有 v4 工具 I/O 词汇，仅补必要 Member ceiling；`network: restricted` 不能自动转为布尔 allow/deny，不能兑现时报告 UNSUPPORTED 与显式迁移义务。
+实施路线：公开 Provider/原版装配 → 零复制 `apply`/Context/Service wrapper → 具名缺口时最小基础设施 Fork → **绝不修改 Core/原生 ToolDefinition**。真实 TeamDomain 身份、Policy revision 与旧 PTY 失效处理在 P1/P2 实施；v4 已启用文档解析但 I/O effect 未执行，`toolBindings.owner` 为工具来源而非 Member 身份，不能借旧字段改语义。更多验证直接由 P1–P5 Gate 承接，而非再次派发 PoC。
+
+证据：[B2R2](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R2-DELTA-RESULT.md) · [IOAXIS](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) · [WRITEONLY](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff)。
+
 
 ## 2. 真实 PoC 与新阶段之间如何衔接
 
@@ -56,7 +59,7 @@ P5 漏洞/性能/升级复验 → G5（发布候选）
 单独用户批准的 Authority Migration PR + Final Release Review
 ```
 
-注意：**权限权威切换是否应在 P1 编译器之前进行**必须由正式执行时的分支/集成计划解决。P1/P2 可以在 test-only/profile-gated 模式做原型，而不能既要求全生产授权来源在旧合同下生效、又阻止迁移 PR 直到 P5。建议分成两个正交裁决：**设计实施授权/受控 Feature Flag**（在 P1 前经用户审查，隔离在 Team 测试 Preset）与**正式生产 Authority 指针切换**（P3 接入稳定、发布前进行独立 PR）。任何功能需要进生产 Host 时，须先完成相应 Authority Migration，而非假装 Draft 具有运行权限。
+注意：**实施授权与生产权威切换必须分开**，不再把执行计划的时间顺序当作需要重新裁决的产品语义。P1/P2 可以在 test-only/profile-gated 模式做原型，而不能既要求全生产授权来源在旧合同下生效、又阻止迁移 PR 直到 P5。建议分成两个正交裁决：**设计实施授权/受控 Feature Flag**（在 P1 前经用户审查，隔离在 Team 测试 Preset）与**正式生产 Authority 指针切换**（P3 接入稳定、发布前进行独立 PR）。任何功能需要进生产 Host 时，须先完成相应 Authority Migration，而非假装 Draft 具有运行权限。
 
 ## 3. 工程和文档 Owner 的最小变更面
 

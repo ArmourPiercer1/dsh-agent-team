@@ -1,6 +1,6 @@
 # A5SF — B2-R 之后的最小差量 PoC（2026-11-02）
 
-> **状态：待本地 Agent 执行；不是已经通过的验收。** 来源：PR #531 评论 #6576045610 / #6576078330；证据锚点 task/a5x-envpoc-20261031 @ 6205df337948d5a219440698600a9862ab118dbc。真实 Host 基线从 tests/paths.mjs 获取。仅用 docs/TEST_METHODS.md 允许的隔离 World，严禁 :3080、稳定 DSH_HOME 和修改 pristine DSH。PoC 只补足原结果无法证明的边界，**不重新证明已经实测通过的 disable/insert 或原生 grep 正控**。
+> **状态：历史任务表，已由 B2R2、IOAXIS、WRITEONLY 执行结果收口（2026-11-03）；剩余项转入实施 Gate，禁止继续按本表启动泛化 PoC。** 来源：PR #531 评论 #6576045610 / #6576078330；证据锚点 task/a5x-envpoc-20261031 @ 6205df337948d5a219440698600a9862ab118dbc。真实 Host 基线从 tests/paths.mjs 获取。仅用 docs/TEST_METHODS.md 允许的隔离 World，严禁 :3080、稳定 DSH_HOME 和修改 pristine DSH。PoC 只补足原结果无法证明的边界，**不重新证明已经实测通过的 disable/insert 或原生 grep 正控**。
 
 ## 0. 判定基线
 
@@ -37,3 +37,10 @@ R-B1 grep/glob 的受限 subprocess 已有代表正控；文件级白名单、�
 用真实 v4 `toolBindings[].io`、Alpha.4 模板权限与 Member ceiling 的候选最小扩展，分别人工列出 (Member A, bash), (Member B, bash), (Member A, read), (Member A, 未绑定 CLI)。按 read/write/network 三轴明确来源、默认值、ask 的批准边界、ToolRestriction 未声明的含义和 effective ceiling。**不得把“逐工具语法能投影到某条执行策略”当作“已存在不同 Member 上界作者载体”的证据。**
 
 **建议判定**：零复制 wrapper 是新的首选候选，B2-R 为 **CONDITIONAL（写边界纵切通过）**；D-BIND-01 + D-FS-02 必须完成才可能升级整个 Member 读写路径结论。
+## 4. 结束记录（2026-11-03；覆盖本文件原待测状态）
+
+- D-BIND-01：精确 session-id、无映射拒绝与双会话写上界已通过 PoC；**真实 TeamDomain Member 绑定在 P1 实施**。
+- D-FS-02：bwrap 目录写根、掩码和文件暴露可行（IOAXIS kernel 19/19、接缝 12/12）；VFS 0300/0200 的固定权限只写不读样本可行（WRITEONLY kernel 15/15、接缝 13/13），但**不足以作为执行者不可放宽的任意 Bash 硬上界**：同 UID owner 可 chmod，新文件可能默认可读。完整读 allowlist 优先由 Landlock 实装；本 WSL2 的 Landlock add_rule=EBADF 是 ENV_BLOCK；该环境能力须在 P1/P2 能力探测与真实实施验收中验证，而非继续 PoC。
+- D-BASH-03：真实 session-mode 提权及上界钳制已完成；D-PTY-04：stale 域危害已捕获，终止/代际重建列为 P1-08/P2-04。
+- D-OS-05/D-NET-06/D-PLANE-07：复用既有证据，未证实的完整矩阵属于 P2–P4；D-UP-08 留在 P5 升级验收。不能把有限 PoC 数字直接当生产 PASS。
+- 结束依据：[B2R2](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R2-DELTA-RESULT.md) · [IOAXIS](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) · [WRITEONLY](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff)。

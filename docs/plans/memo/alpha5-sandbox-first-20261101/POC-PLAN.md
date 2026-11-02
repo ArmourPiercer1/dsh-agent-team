@@ -1,7 +1,7 @@
 # Alpha.5 Sandbox-First — PoC 成果接收与差量验证计划
 
 > **历史 PoC 的输入/验收索引，不是第二套实施计划。** 五阶段产品开发与任务 Gate 以 [IMPLEMENTATION-PLAN](./IMPLEMENTATION-PLAN.md) 为准，实验前提与产品语义以 [ADR](./ADR.md)、[ARCHITECTURE](./ARCHITECTURE.md) 为准。
-> **状态：用户表示本地 Agent 已完成 PoC 并推 GitHub；本 PR 没有把其完整日志与源码证据作为本文件内已验证结果。** 已有 PoC 要复用，绝不为形式重跑；未核对的机制仍记 NOT_VERIFIED。DSH pin = `tests/paths.mjs`。
+> **状态：架构 PoC 已收口（2026-11-03）；本文件保留历史试验及 P1/P2 证据索引，不再是新 PoC 派单。** 完整受限产品仍未实施，历史测试仅对已证明的边界有效。DSH pin = `tests/paths.mjs`。
 
 ## 1. 从已有事实可直接引用的工程基础
 
@@ -10,7 +10,8 @@
 | PR #26 `team-spill-local` 及后续真实 Host 验收 | Cordis `disable+insert`/公共服务 Provider 替代与继承有成熟先例 | 所有新 Provider 的 Member 级身份都正确 |
 | DSH 原生 `ctx.isolate()` / `ctx.fs` / `ctx.web` / `ctx.subprocess` | 公开服务的结构与操作可源码确认 | 同进程任意 JS 被强制隔离；特定原生工具已绑定正确 realm |
 | DSH Bash/terminal `backendType` 与 `terminal-bash` | 可能通过 Team 专属 `team-shell` 排他注册 | MemberPolicy 能可靠绑定旧持久 PTY 的 live 权限 |
-| 本地 Agent 的 Realm + OS PoC（上传待核实） | 有望证明具体 Host 版本/真实 runner 的纵切 | 无证据登记前全部自动通过 |
+| [综合 PoC](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/POC-RESULTS.md)、[B2R2](https://github.com/ArmourPiercer1/dsh-agent-team/blob/18e3823e3/dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R2-DELTA-RESULT.md) | 真实 Host 的 Service/OS 机制与零复制接缝已形成可复核纵切 | TeamDomain 绑定、独立读白名单与 PTY 撤权仍须 P1/P2 实施验收 |
+| [IOAXIS](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9b261060c) / [WRITEONLY](https://github.com/ArmourPiercer1/dsh-agent-team/commit/9c56f94a12cd241ffdb8c27eaab0696813f0dbff) | bwrap 子集与公开 confine 接缝已实测；VFS 固定位下严格只写不读样例成功 | 非默认拒绝 read allowlist；VFS 权限位可被同 UID owner chmod 改回，不能充当强安全边界；Landlock WSL2 ENV_BLOCK |
 | 存量 `tests/world-factory`、沙箱原生资产 preflight | 已有真实 Host 测试/隔离运行能力 | 新 profile/网络布尔及 hardlink 语义已验收 |
 
 ## 2. 收证任务（P1-00，必要但非全新实验）
@@ -20,7 +21,7 @@
 - [ ] 仅对因版本、证据缺口、语义修订（可信 Hash、硬链接允许、网络仅 boolean）而**不再等价**的实验做差量补测，复用现有 WorldFactory。
 - [ ] 输出 `P0-REUSE-MAP.md` 与 `POC-EVIDENCE-INDEX.md`（实施阶段保存到 `dev/agent-workflow/evidence/a5sf-p1/`，本 Draft 不凭空生成），逐项指向 G1/P2 的验证项。
 
-## 3. 差量 PoC 关键矩阵
+## 3. 历史差量 PoC 关键矩阵（**归档；未完成部分改为实施 Gate**）
 
 | 机制 | 真正需要的证据 | 阻塞/处理 |
 |---|---|---|
@@ -45,9 +46,9 @@
 - 同一源码、policy、Host SHA、test world 的有效实验可复用；受影响的 Provider/Fork 改动后重跑对应 Gate，不做全仓无意义重复。
 - 性能记录只报告测试环境下原生 vs service-mediated vs OS leaf 的 `p50/p95/p99`、CPU/RSS、冷/热启动；不能借别人的 `bwrap 10ms` 数字当本机验收承诺。
 
-## 4A. 第二轮 PoC 后的新验证入口
+## 4A. B2R/B2R2/IOAXIS/WRITEONLY 收口（历史入口，不再派单）
 
-原始证据：PR #531 评论 #6576045610 / #6576078330，`task/a5x-envpoc-20261031` @ `6205df337948d5a219440698600a9862ab118dbc`。B2-R **CONDITIONAL**：原生 `terminal-bash` 公开接口 wrapper 无复制实现了测试会话写入根；真实 Member 身份、读权限、有效 danger 审批与存活 PTY 代际均未测。P1/P2 应优先完成 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 的 D-BIND-01、D-FS-02，再做 D-BASH-03/D-PTY-04；旧 B1/A3 正控不用重跑。
+原始证据：PR #531 评论 #6576045610 / #6576078330 / #6581822277 / #6582964165 / #6583334717；源码和日志分别见上述综合、B2R2、IOAXIS、WRITEONLY 链接。B2R2 已完成精确 session-id 映射、fail-closed、真实 session-mode clamp 和旧 PTY stale-domain 危害验证；IOAXIS 的 kernel 19/19 + DSH 12/12 验证 bwrap 子集及公开接缝；WRITEONLY 的 kernel 15/15 + DSH 13/13 验证 VFS 固定位样本。**已证明的机制不再重复为 PoC；生产 TeamDomain、Landlock 全 read allowlist、撤权/真实审批等转入 P1–P4 实施验收。** bwrap deny-by-mask 不能假称默认拒绝 allowlist；VFS 位同 UID 可 chmod / 新建文件默认读位，不能充当任意 Shell 的硬上界。
 
 ## 5. 此文档与阶段计划的关系
 
