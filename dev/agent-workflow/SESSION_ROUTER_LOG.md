@@ -7340,3 +7340,41 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **待裁六项复记（用户裁决位，sync16 后无新裁决）**：① PR-D 中心接口最小变更（4 项接口缺口，`WEB-NATIVE-POC.md` §7）是否立项；② PR-E/F 迁移（M1–M4）是否放行；③ boot 预算新批（**池=0 硬停线**，任何 live 再证含复验需新裁）；④ **live-root 产品范围**（`ui:live-root-law` 维持 L2-as-is NOT_REACHED，载体 GAP-MATRIX :43 + 评估 §B-5，= read_image L4 转正第一条件的裁决位）；⑤ **J-5 内部试用候选（白名单 10 面）采纳**（评估只给候选判定，不自走试用）；⑥ **present O2-B 四问**（sync16 已并入 PR-D/E/F 路线裁决位，不另立、不遗忘）。
 - **本席交付**：本条 + `docs/STATUS.md` 顶部 dated 更正一行（段 (3) 计数方法标签「本席对表列 awk 实测」按 `NATIVE-REUSE-AUDIT.md` :46 dated 注记改读为**粗体闭集 token 法**（本席重数 31 行 = KEEP 21/REUSE 4/MODIFY 4/BLOCKED 2/FORK 0，合计 31 ✓；列序法失 web_search 行、合计 30≠31）；计数结论不变）= #527 审查席 Advisory A「STATUS L7 method-label alignment (one future append line)」在册闭合的耐久承载。其余文件零改动。
 - **sync17 追加勘误（dated 2026-10-31T12:48Z，#528 独立审查席 F-1/F-2，原文行照留不改）**：①上文「三律本席对源码逐行复核、测试文件各有 fixture」对 **① ACCEPT_DISCLOSED_UNSOURCED 不成立**——`scripts/eb3-tool-acceptance.test.mjs` 12 测试全为 RUN/CASE 律、`eb3-ci-negative-controls.mjs` C20 的 DISCLOSED 腿只演空 reason（→ACCEPT_DISCLOSED_UNREASONED）；① 现行执法 = ci-integration 每次对真实台账实跑判级（`a5w-ledgerfix-20261031/DISCLOSURE-REFRESH-read-image-L4.md` 即自证）但**无变异 fixture**（削弱 containsVerbatim 恒真 CI 仍绿），②③ fixture 实存（test :74/:119）；变异腿补挂 = 在册工程尾项（workflow C 候选，不需用户裁决）。②分支标签 `task/a5w-sync17-20261101` 的日期分量映射：其**真实 UTC 创建日 = 2026-10-31**（同波其余分支后缀均=真实创建日，此根为标签笔误；禁改名——PR/清偿评论已引用，此行为唯一在册映射）。
+
+## 2026-11-02T19:5xZ（真实 UTC）— Alpha.6 重设计计划细化 + PR #536 三项 P0 PoC（主 Agent，PR #536 lane）
+
+- **范围与授权**：用户指令「执行计划细化和PoC，完成后更新PR」。只在 PR #536 分支
+  `docs/alpha6-blueprint-router-wake-rebase-20261103` 上追加文档与证据；零生产
+  代码、零 schema、零启用、零合并授权。设计正本 = PR #536 @ `50e0147c2`。
+- **计划细化**：`docs/plans/memo/alpha6-review-separation/alpha6-execution-plan-20261102.md`
+  —— 7 个 PR 切片（A6-PR1 v5 schema+router / PR2 Control 中心接缝 / PR3 纯 wake /
+  PR4 投递中心 / PR5 Officer 访问 / PR6 接线 opt-in / PR7 真 Host），含所有权、
+  依赖、验收矩阵 1–12、风险/回滚、待用户裁决 5 项。提议 v5 = v4 + 可选
+  `reviewRouting`；Officer 唯一性用「存在性不变量」而非新账本。
+- **P-BP（PASS，11/11）**：v3 canary `sha256:e71c4629…0cdd`、v4 `sha256:0c6c1cee…a4b`
+  零移动；当前生产入口以 `MALFORMED_DTO` + `unknownFields=['reviewRouting']`
+  拒绝 family（注意：拦在 core normalizer，不是 v4 grammar 闭集 pass）；加法面
+  解析 Template × Tool 确定；instanceId/label 选择器拒绝；family 进哈希 → 版本
+  边界必需。证据 `evidence/alpha6-rebase-poc-20261102/P-BP/`。
+- **P-AUTH（PASS-with-qualification，base 2/2 + prototype 5/5）**：真实
+  ControlService + TeamDomain 世界确认 Member 被
+  `CONTROL_RESOLVER_NOT_AUTHORIZED` 拒绝（worker 模板 envelope 已含
+  `resolve-control`，故 gate 是角色闭集而非 envelope）；throwaway patch 在
+  `service.ts:2622` 同一 gate 加一个 case-scoped 谓词后，指定非 Leader 完成决议、
+  账本记录该实例、既有 guard 消费 allow 恰好一次，非指定 Member 与二次决议仍拒。
+  该接缝属 ARC-A 受保护中心（`control/service.ts`），生产需具名
+  Center-Interface PR + ledger override + 用户授权；hardcode 仅证明用。证据
+  `evidence/alpha6-rebase-poc-20261102/P-AUTH/`（patch 永不合并）。
+- **P-INBOX（seam PASS / model PASS 7/7 / host ENV_BLOCK）**：pinned Host
+  `639ed01539` 的 `inbox.ts:109-156`、`agent.ts:155-164/267-271` 见证
+  append/claim/remove-before-claim/pending/turn 公开事实；纯 latch 模型证明
+  3 请求→1 wake、running 只 dirty、resolved/无进展不 re-wake、崩溃恢复重读。
+  真 Host 三请求/claim/崩溃/Stop **未运行**：本工作区无 pristine Host
+  checkout，且路由/唤醒接线尚不存在；ENV_BLOCK 解除条件已写
+  `P-INBOX/RESULTS.md`。证据 `evidence/alpha6-rebase-poc-20261102/P-INBOX/`。
+- **披露**：PoC 均在 `packages/*/test/**` 之外，CI 不收集；P-AUTH 原型 patch
+  在运行时以 trap 回滚，工作树零残留；未触碰 `:3080`、未启动 Host、未 push
+  其他分支。
+- **下一步（用户裁决位）**：执行计划 §8 的 5 项（v5 边界、Officer 存在性不变量、
+  Officer 缺失 fail-closed、hold 默认、指标落点）；P-AUTH 接缝立项前不得开始
+  A6-PR2。

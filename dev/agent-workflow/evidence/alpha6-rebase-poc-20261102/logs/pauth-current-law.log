@@ -1,0 +1,11 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-p536-20261102
+
+ ✓ dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pauth.test.ts (5 tests | 3 skipped) 38ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 3 skipped (5)
+   Start at  04:05:17
+   Duration  1.14s (transform 820ms, setup 0ms, import 994ms, tests 38ms, environment 0ms)
+

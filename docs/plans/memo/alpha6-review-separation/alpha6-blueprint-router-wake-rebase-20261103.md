@@ -5,6 +5,11 @@
 > 本文件记录用户在 Alpha.6 重设计讨论中已作出的**产品语义裁决**、**仅约束本轮 Alpha.6 开发的工程不变量**、架构方向及有限 PoC。它不修改任何生产路径、工具执行体系、基础权限法律或已有 Blueprint；不得将本文描述的功能报告为已实现。
 >
 > **基线**：仓库 master（建分支时）、DSH 0.2.0-rc.2（对接核验目标）；Alpha.5 的 Sandbox-first 方案以 PR #531 的正式实施版本为协调对象，具体生产接口须按最终已批准实现复核。
+
+> **2026-11-02（真实 UTC）PoC 执行记录（append-only）**：本文件 §4 的三项 P0 已执行，证据与复现入口 =
+> [`dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/`](../../../../dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/README.md)。
+> 结果：**P-AUTH PASS-with-qualification**（角色闭集是唯一基础权限 gate；一个 case-scoped 谓词即可走完同一账本与 guard；该接缝属 ARC-A 受保护中心，需具名 Center-Interface PR + override + 用户授权）；**P-BP PASS**（v3/v4 哈希零移动；当前入口拒绝 `reviewRouting`；加法面可确定解析 Template × Tool；family 进哈希，故需版本边界）；**P-INBOX seam PASS / 模型 PASS / 真 Host ENV_BLOCK**（Host Inbox 公开接缝足够；三请求/崩溃/Stop 端到端未运行）。
+> 计划细化 = [`alpha6-execution-plan-20261102.md`](./alpha6-execution-plan-20261102.md)。本文件的产品语义与不变量未因 PoC 结果改写。
 >
 > **旧计划定位**：#319、#501、#503、#507、#509、#513、#517、#520、#522 是可评估和回收的历史设计/实验资产，不是新方案必须逐项实施的前置条件。未另行批准前，它们不自动获得合并/启用授权。
 
@@ -185,7 +190,11 @@ reviewRouting:
 
 ## 4. 有限 PoC：只证明会改变路线的接缝，不建设第二套实验工程
 
-**当前状态：NOT RUN。本 PR 不宣称执行或验收了这些实验。** PoC 只针对真实不确定的三个问题；已经由固定源码明确支持的简单功能不重复做独立实验。若证明可行，直接纳入实现计划；若失败，给出最薄替代方案和明确阻塞，不允许为继续 PoC 再自增“必须支持”的产品语义。
+**当前状态：NOT RUN。本 PR 不宣称执行或验收了这些实验。**
+
+> **2026-11-02（真实 UTC）更新（append-only）**：三项 PoC 已执行。P-AUTH/P-BP 有可复现证据；P-INBOX 只完成公开接缝见证与纯 latch 模型，真 Host 三请求/claim/崩溃/Stop 仍为 **ENV_BLOCK**（本工作区无 pristine Host checkout，且路由/唤醒接线尚未实现）。本节原文保留，作为本轮开始前的状态记录。
+
+PoC 只针对真实不确定的三个问题；已经由固定源码明确支持的简单功能不重复做独立实验。若证明可行，直接纳入实现计划；若失败，给出最薄替代方案和明确阻塞，不允许为继续 PoC 再自增“必须支持”的产品语义。
 
 | PoC | 需回答的具体问题 | 最小可验证对象 | PASS 判据 | FAIL/BLOCK 的处理 |
 | --- | --- | --- | --- | --- |
@@ -234,12 +243,12 @@ reviewRouting:
 
 ## 6. 证据及交叉核验入口
 
-- [现行 Blueprint 类型：Template、Team 快照与 v4 工具绑定](../../../packages/domain/blueprint/src/types.ts)
-- [v4 Blueprint 封闭校验与工具绑定 grammar](../../../packages/domain/blueprint/src/blueprint-v4.ts)
-- [Control 请求 kind、resolver roles、当前 leg 和决议身份](../../../packages/runtime/control/types.ts)
-- [ControlService 请求后的旧 C1 notifier 接线](../../../packages/runtime/control/service.ts)
-- [现行 Leader notifier（每请求一条）](../../../packages/runtime/control/leader-notification.ts)
-- [Agent live delivery / 工作完成通知](../../../packages/runtime/src/plugin/live/agent-bindings.mjs)
+- [现行 Blueprint 类型：Template、Team 快照与 v4 工具绑定](../../../../packages/domain/blueprint/src/types.ts)
+- [v4 Blueprint 封闭校验与工具绑定 grammar](../../../../packages/domain/blueprint/src/blueprint-v4.ts)
+- [Control 请求 kind、resolver roles、当前 leg 和决议身份](../../../../packages/runtime/control/types.ts)
+- [ControlService 请求后的旧 C1 notifier 接线](../../../../packages/runtime/control/service.ts)
+- [现行 Leader notifier（每请求一条）](../../../../packages/runtime/control/leader-notification.ts)
+- [Agent live delivery / 工作完成通知](../../../../packages/runtime/src/plugin/live/agent-bindings.mjs)
 - [Alpha.5 新架构方案 PR #531](https://github.com/ArmourPiercer1/dsh-agent-team/pull/531)
 - [旧 Alpha.6 架构提案 PR #319](https://github.com/ArmourPiercer1/dsh-agent-team/pull/319)
 - [DSH 0.2.0-rc.2 Inbox 固定源码](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/agent-loop/src/inbox.ts)
