@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (13 tests) 38ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  02:40:57
+   Duration  216ms (transform 60ms, setup 0ms, import 85ms, tests 38ms, environment 0ms)
+

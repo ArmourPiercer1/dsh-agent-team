@@ -29,6 +29,12 @@
     // call, no live-registry import, no production consumer (a5w suite
     // re-pins the dormancy leg; a5p4 hygiene keeps its own self-check).
     "sandbox-provider",
+    // Alpha.5 P1-02: the Member I/O policy lane (pure compiler + types).
+    "member-io-policy/src",
+    // Alpha.5 P1-05: the per-Member Service realm (confined fs Provider).
+    "team-services/src",
+    // Alpha.5 P1-07: the OS execution lane (profile + runner + subprocess).
+    "team-sandbox/src",
     "test",
     "vitest.config.ts"
   ]

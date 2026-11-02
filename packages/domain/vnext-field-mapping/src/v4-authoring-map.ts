@@ -208,3 +208,115 @@ export function projectV4ToolBindingAuthoring(maps: V4AuthoringMaps, entry: unkn
     }),
   })
 }
+
+// --- Member ceiling projection (Alpha.5 P1-01) --------------------------------
+
+/**
+ * The network axis this round actually commits: a BOOLEAN.  A v4
+ * `restricted` lane keeps parsing (the vocabulary is untouched) but projects
+ * as a TYPED unsupported fact — it is never coerced into `allow` or `deny`,
+ * because silently dropping destination constraints would widen authority.
+ */
+export type MemberNetworkCeiling =
+  | { readonly kind: 'boolean'; readonly access: 'allow' | 'deny'; readonly declaredMode: 'allow' | 'deny' }
+  | { readonly kind: 'unsupported'; readonly declaredMode: 'restricted'; readonly reason: 'network-destination-restricted-not-enforced' }
+
+/** The projected form of one `memberIoCeilings` entry. */
+export interface MemberCeilingProjection {
+  readonly templateId: string
+  readonly io: {
+    readonly read: Readonly<Record<string, unknown>>
+    readonly write: Readonly<Record<string, unknown>>
+    readonly network: Readonly<Record<string, unknown>>
+  }
+  readonly networkCeiling: MemberNetworkCeiling
+  readonly resourceDeclarations: readonly V4ResourceDeclaration[]
+}
+
+export type MemberCeilingResult = { readonly ok: true; readonly value: MemberCeilingProjection } | MappingRejection
+
+const MEMBER_CEILING_ENTRY_KEYS = ['templateId', 'io'] as const
+const MEMBER_CEILING_IO_KEYS = ['read', 'write', 'network'] as const
+
+function projectCeilingLane(
+  maps: V4AuthoringMaps,
+  lane: 'read' | 'write',
+  value: unknown,
+  fields: string[],
+): { readonly ok: true; readonly value: Readonly<Record<string, unknown>> } | MappingRejection {
+  if (!isRec(value)) return reject('unmapped-source-field', `io.${lane} must be a record with an explicit mode`, [...fields, `io.${lane}`])
+  const mode = value['mode']
+  if (mode !== 'all' && mode !== 'restricted') {
+    return reject('unmapped-source-field', `mode '${String(mode)}' selects no declared rw variant`, [...fields, `io.${lane}.mode`])
+  }
+  return projectThroughMap(maps.rwByMode[mode], value)
+}
+
+/**
+ * Project one `memberIoCeilings` entry through the SAME shipped v4 tables.
+ * Default-deny at every level: keys outside the closed grouping or lane maps
+ * are refused, and every mapped source must be PRESENT.  The returned value
+ * is deeply frozen so a consumer cannot mutate a ceiling into a wider one.
+ */
+export function projectV4MemberIoCeiling(maps: V4AuthoringMaps, entry: unknown): MemberCeilingResult {
+  if (!isRec(entry)) return reject('unmapped-source-field', 'a memberIoCeilings entry must be a record before any map applies', ['$'])
+  for (const key of Object.keys(entry)) {
+    if (!(MEMBER_CEILING_ENTRY_KEYS as readonly string[]).includes(key)) {
+      return reject('unmapped-source-field', `entry key '${key}' has no member-ceiling mapping and is never dropped silently`, [key])
+    }
+  }
+  const missing = MEMBER_CEILING_ENTRY_KEYS.filter((key) => !Object.hasOwn(entry, key))
+  if (missing.length > 0) return reject('missing-source-field', 'a declared Member ceiling maps with no implicit defaults', missing)
+  const templateId = entry['templateId']
+  if (typeof templateId !== 'string' || templateId.trim() === '') {
+    return reject('unmapped-source-field', 'templateId must be a non-empty string (the validated grammar owns the closed-reference check)', ['templateId'])
+  }
+
+  const ioRaw = entry['io']
+  if (!isRec(ioRaw)) return reject('unmapped-source-field', 'io must be a record of the three closed lanes', ['io'])
+  for (const key of Object.keys(ioRaw)) {
+    if (!(MEMBER_CEILING_IO_KEYS as readonly string[]).includes(key)) {
+      return reject('unmapped-source-field', `io key '${key}' has no member-ceiling mapping and is never dropped silently`, [`io.${key}`])
+    }
+  }
+  const ioMissing = MEMBER_CEILING_IO_KEYS.filter((key) => !Object.hasOwn(ioRaw, key))
+  if (ioMissing.length > 0) return reject('missing-source-field', 'all three io lanes are declared when io is declared', ioMissing.map((k) => `io.${k}`))
+
+  const read = projectCeilingLane(maps, 'read', ioRaw['read'], [])
+  if (!read.ok) return { ...read, fields: read.fields.map((f) => (f === 'io.read' ? f : `io.read.${f}`)) }
+  const write = projectCeilingLane(maps, 'write', ioRaw['write'], [])
+  if (!write.ok) return { ...write, fields: write.fields.map((f) => (f === 'io.write' ? f : `io.write.${f}`)) }
+
+  const networkRaw = ioRaw['network']
+  if (!isRec(networkRaw)) return reject('unmapped-source-field', 'io.network must be a record with an explicit mode', ['io.network'])
+  const networkMode = networkRaw['mode']
+  if (networkMode !== 'allow' && networkMode !== 'restricted' && networkMode !== 'deny') {
+    return reject('unmapped-source-field', `mode '${String(networkMode)}' selects no declared network variant`, ['io.network.mode'])
+  }
+  const network = projectThroughMap(maps.networkByMode[networkMode], networkRaw)
+  if (!network.ok) return { ...network, fields: network.fields.map((f) => (f === 'io.network' ? f : `io.network.${f}`)) }
+
+  const io = Object.freeze({
+    read: Object.freeze({ ...read.value }),
+    write: Object.freeze({ ...write.value }),
+    network: Object.freeze({ ...network.value }),
+  })
+  const resourceDeclarations = Object.freeze([
+    ...declarationsFor('read', read.value),
+    ...declarationsFor('write', write.value),
+    ...declarationsFor('network', network.value),
+  ])
+  const networkCeiling: MemberNetworkCeiling = networkMode === 'restricted'
+    ? Object.freeze({ kind: 'unsupported' as const, declaredMode: 'restricted' as const, reason: 'network-destination-restricted-not-enforced' as const })
+    : Object.freeze({ kind: 'boolean' as const, access: networkMode, declaredMode: networkMode })
+
+  return Object.freeze({
+    ok: true as const,
+    value: Object.freeze({
+      templateId,
+      io,
+      networkCeiling,
+      resourceDeclarations,
+    }),
+  })
+}
