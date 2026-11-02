@@ -6,14 +6,36 @@
 
 索引：[架构](./ARCHITECTURE.md) · [五阶段实施计划](./IMPLEMENTATION-PLAN.md) · [工具接入/测试矩阵](./TOOL-ADOPTION-MATRIX.md) · [现有 PoC 证据计划](./POC-PLAN.md) · [权威迁移](./TRANSITION-PLAN.md)。[Fork/PoC 缺口历史记录](./FORK-POC-RESOLUTION-PROPOSAL.md) 为来源证据，不再是另一套竞争规则。
 
+## D0 — 裁决与建议的来源边界
+
+| 性质 | 内容 | 当前状态 |
+|---|---|---|
+| 用户明确决定 | Member × Tool 的 read/write/network **全局上界**，任意工具调用不得超出 Member ceiling | 本 Draft 的产品需求 |
+| 用户明确决定 | 本轮网络执行范围为布尔 allow/deny、目的地 ACL 留以后；允许硬链接路径别名；可信工具摘要登记；可有限 Fork 执行基础设施插件 | 本 Draft 的产品需求 |
+| 已有仓库事实 | v4 `toolBindings[].io` 语法/哈希已存在，但执行层仍待接线；Alpha.4 审批与受控 Provider 替换先例已存在 | 作为复用输入，不自行升级为已测的新执行能力 |
+| AI 技术提案 | 内部 Policy/Provider 分解、是否需要最小新增 Schema 版本、具体 Fork 位置、工具接入顺序 | 需按 P1/Gate 证实；不是用户要求指定的实现 |
+
+本文件是 Draft PR 的**用户已确认产品目标 + 尚未生效的实施设计**，不是当前机器 Authority 或 `registry.yaml` 的替代品。正式执行前由唯一 Writer 在受审的 Authority Migration 流程中登记裁决来源，并消除当前 `AGENTS.md` 的有限基础设施 Fork 规则冲突；不得由 PR 标题/横幅自动更改既有权威。
+
 ## D1 — 唯一产品目标与非目标
 
-Alpha.5 仅增强**按 Team Blueprint / Member 有效权限配置的 I/O 执行环境**：
+Alpha.5 仅增强**逐 Member、逐工具、全局有效的 I/O 权限硬上界**。每次受管效果实际允许范围至少是 Member 硬上界和该工具有效约束的交集；不同工具可以进一步收窄，但绝不能突破所属 Member 的上界。Member 与 Tool 是**同时成立的两个坐标**，不是产品功能的二选一。
 
-1. 文件**读取**只能经过蓝图允许的路径或子树。
-2. 文件**写入**只能经过蓝图允许的路径或子树；读写相互独立，不因写权限自动赠送读权限。
-3. Member 的工具**是否允许联网**：`allow | deny`。将未来网络连接目标约束预留为版本化策略扩展，不在本轮实现 DNS/IP/域名/URL/端口目的地 ACL。
-4. Alpha.4 原有**工具调用** `allow/ask/deny`、ApprovalCase、权限范围变更和单次审批机制继续作为唯一权限准入来源。对于没有受管文件/网络 I/O 的 Goal/Todo/Jobs/Present 等宿主内部业务调用，Alpha.5 不增加专用业务管制。
+产品关系（逐 read / write 路径集合和 network 布尔维度计算）：
+
+§§§text
+BaseCeiling(member, tool) = MemberCeiling(member) ∩ ToolRestriction(member, tool)
+EffectiveIO(member, tool, call) ⊆ BaseCeiling(member, tool)
+§§§
+
+“ToolRestriction 未声明”的具体处理由兼容性规则确定：不能因此获得超出 MemberCeiling 的权限，不能将 v4 原本“未声明效果治理”的含义静默改成旧执行路径上的默认宽放；在明确开启的新受管路径中，可以将其解释为“不增加工具级收窄”，但必须在 P1 显式验证并标明生效条件。
+
+
+
+1. 文件**读取**只能经过该 Member 与该工具的最终授权路径或子树。
+2. 文件**写入**只能经过该 Member 与该工具的最终授权路径或子树；读写相互独立，不因写权限自动赠送读权限。
+3. Member × Tool 的**联网权限**：`allow | deny` 的有效交集（任何一方 deny 即 deny）。将未来网络连接目标约束预留为版本化策略扩展，不在本轮实现 DNS/IP/域名/URL/端口目的地 ACL。
+4. Alpha.4 原有**工具调用** `allow/ask/deny`、ApprovalCase、权限范围变更和单次审批机制继续作为调用准入来源；**批准一次工具调用不等于扩张 Member/Tool I/O 硬上界**。如果需要改变上界，必须走有相应授权的明确策略变更与新代际生效流程。对于没有受管文件/网络 I/O 的 Goal/Todo/Jobs/Present 等宿主内部业务调用，Alpha.5 不增加专用业务管制。
 5. 为原生及未来新工具提供通用受限执行服务；**对未知工具不保证功能兼容性**，对受信同进程工具不作恶意代码抗绕过保证。
 
 **明确非目标**：新工具算法、重写 ToolDefinition、逐工具 EffectSet/完整效果类型系统、跨平台完全等价、远端云服务内部 I/O 沙箱化、事务回滚、形式化安全证明、消除文件 hardlink 全局别名、所有未知 JS 插件即插即强隔离。**工具调用频率不进入架构或信任边界决策。**
@@ -36,7 +58,7 @@ Alpha.5 仅增强**按 Team Blueprint / Member 有效权限配置的 I/O 执行�
 - `os-confined`：在 Linux OS 受限的真实子进程（`leaf-process`）执行 I/O，必要时在独立进程加载完整工具运行时（`whole-tool`）。leaf/whole-tool 是**同一模式的内部形态**，whole-tool 不属于本轮必须交付的全功能兼容承诺。
 - 两者**可组合**：原生 `grep` 的 JS 参数/结果在可信 Realm，`ctx.subprocess.spawn` 的 `rg` 子进程使用 OS 限制。
 
-**A5-GENERIC-02 — One Effective MemberPolicy**：Blueprint + Alpha.4 权限层级/ApprovalCase → 统一 `MemberPolicy` 与绑定到调用的 `InvocationAuthority`；FS/Web/Subprocess/PTY/OS runner 使用相同解释。工具准入与受限 I/O 互相正交。临时批准仅作用于一调用；持久进程拥有固定的 OS 上界，扩权需新域，撤销需排空/终止旧域或有证据的代际隔离。
+**A5-GENERIC-02 — One Effective Two-Axis Policy**：Blueprint 的 Member 硬上界 + 工具级约束 + 现有 Alpha.4 有效调用准入 → 统一 `MemberPolicy`、`ToolIoRestriction` 与调用绑定的 `InvocationAuthority`。read / write / network 每轴独立求交，所有 FS/Web/Subprocess/PTY/OS runner 遵守同一硬上界。单次批准仅在硬上界**内部**对这次调用生效；如需提升硬上界，必须另行通过既有权限治理中的**明确授权策略变更**生成新 policy revision。持久进程的 OS 上界固定，增加权限需新域，收紧/撤销需排空、终止旧域或经过验证的代际隔离。
 
 **A5-GENERIC-03 — Open Tool Enrollment**：新工具由部署者选择经过验证的执行模式与通用入口/依赖，不新增专用工具体。可独立执行的 CLI 首选 OS runner；无可信服务约束的未知同进程 JS 必须使用真正的 whole-tool 隔离或明确 UNSUPPORTED；没有文件/网络数据面 I/O 的宿主状态工具仅受既有调用准入约束。不能通过“工具名字/调用频率”选择框架。
 
@@ -50,7 +72,7 @@ Team 启动前由**部署者**登记允许使用 `service-mediated` 的可信工
 
 ## D5 — 文件访问语义：允许硬链接
 
-文件读取/写入权限定义在**执行时所使用的授权路径/命名空间**上，而不是 inode 在整个宿主的唯一归属。已存在的 `/allowed/link` 与 `/denied/secret` 若为同一 inode，则通过 `/allowed/link` 读写**属于允许效果**；该效果可能被其他名字观察到。测试不得把“相同 inode 的授权别名可读写”判为逃逸漏洞。
+文件读取/写入权限定义在**执行时所使用的授权路径/命名空间**上，而不是 inode 在整个宿主的唯一归属。已存在的 `/allowed/link` 与 `/denied/secret` 若为同一 inode，则通过 `/allowed/link` 读写在路径授权模型下**可能属于允许效果**；该效果可能被其他名字观察到。**测试必须保留、记录并披露**所有跨路径硬链接别名的实际影响，不能据此自动判红、也绝不能因此删掉泄露证据；必须另外验证未授权路径不能被直接打开。
 
 这不授予直接通过 `/denied/secret` 打开权限；符号链接越界、路径规范化、目录替换、非授权路径访问依旧需要测试。`writeText` 原生原子替换可能更换目录条目 inode，不能强行要求任意写操作一定影响硬链接的另一名字。文件名/metadata 侧信道需据实披露，不扩大承诺。
 
@@ -64,28 +86,51 @@ Team 启动前由**部署者**登记允许使用 `service-mediated` 的可信工
 
 历史工程先例 PR #26 的 `spill-local` disable + Team replacement/继承证明了该**装配形式**可行；不证明新 Provider 的逐 Member 正确性。对于 `terminal-bash` 可优先考虑 Team 专属 `backendType` 或 Team Scope 内排他替换，不能令两个同名 Provider 冲突。
 
-## D7 — 版本化策略接口与单次审批
+## D7 — 双轴 I/O 策略与最小 Blueprint 扩展（修订裁决）
 
-`MemberPolicy` 的概念形态（**不代表旧 Blueprint v3/v4 已具有此语法**）：
+**产品已定**：每个 Member 的硬上界对其使用的**所有**工具有效；每个工具的已声明 I/O 约束在 Member 上界内进一步收窄。工具调用 `allow/ask/deny` 与 I/O 上界分层，不能把批准一次工具调用暗中翻译为扩大 Member/Tool ceiling。该产品目标不要求“以 Member 为主体”与“以工具为主体”二选一。
+
+有效策略概念形态（不是要求新建一套 Blueprint 语法）：
 
 ```ts
-type MemberPolicy = {
-  memberIdentity: string; revision: string;
-  read: PathRuleSet; write: PathRuleSet;
+type MemberIoCeiling = {
+  memberIdentity: string;
+  revision: string;
+  read: PathRuleSet;
+  write: PathRuleSet;
   network: { access: "allow" | "deny" };
 };
-type InvocationAuthority = {
-  memberIdentity: string; invocationId: string; policyRevision: string;
-  approvedDelta?: { read?: PathRuleSet; write?: PathRuleSet; network?: "allow" | "deny" };
-  lease: unknown; // bound to existing Alpha.4 lifecycle, not a new grant store
+type ToolIoRestriction = {
+  bindingIdentity: string;
+  read: PathRuleSet | "no-additional-narrowing";
+  write: PathRuleSet | "no-additional-narrowing";
+  network: "allow" | "deny";
 };
+type EffectiveIoPolicy = {
+  memberIdentity: string;
+  toolBindingIdentity: string;
+  invocationId: string;
+  policyRevision: string;
+  read: PathRuleSet; write: PathRuleSet; network: { access: "allow" | "deny" };
+  approvedWithinCeiling: unknown; // existing Alpha.4 call-scoped grant, never a ceiling override
+};
+// effective.read/write = member ∩ tool ∩ any call-scope tightening
+// effective.network = member.allow && tool.allow && applicable call permission
 ```
 
-当前 `schemaVersion:4` 的 `toolBindings[].io` 是逐工具、包含网络 restricted 的旧合同，不能静默改写成全 Member 策略。本设计建议使用**受独立版本迁移审查的 v5 Blueprint 路线**增加 Member I/O 策略；v3/v4 继续按历史语义解析，不得自动默许缺省权限、把 `restricted` 解释成布尔 allow/deny，或破坏已存哈希。最终字段形状见 [ARCHITECTURE](./ARCHITECTURE.md) 提案，并在实施 P1 契约 Gate 冻结。
+**优先复用已经存在的 v4 工具词汇**：`schemaVersion:4` 的 `toolBindings[].io.read/write/network`、`allow/ask/deny`、`all/restricted`、`owner/name` 与 `v4-authoring-map.ts` 都是真实已合并语法/映射，而非待重新发明的规则。与此同时，该字段族当前**仅 parse/freeze/hash，并未在生产执行层生效**；不能仅因能书写 v4 就声称执行上界已实施。`owner/name` 主要标识工具，不直接表示 Member 身份。
+
+**P1-01 的次序是能力比较而非 v5 开发**：先用实际 v4 蓝图（同一工具、两个 Member，不同读写上界；工具级额外收窄；Leader 同路）做手工和纯函数映射对照，复核 Alpha.4 模板权限能表达的部分。若现有冻结语法能在**不静默改变旧文档意义、哈希、默认拒绝**的前提下表达全部必需能力，就不升级版本。若缺少 Member 全局 ceiling 的作者载体，仅新增必要字段/映射，并**最大程度复用 v4 三轴规则、路径匹配、审批词汇及数据投影**；只有闭合 Schema 不兼容时才建立**最小加法式版本**（v5 只是一个可能的版本号，不是完整新词汇表）。
+
+**缺省与冲突必须显式**：尤其要验证“v4 无 `toolBindings`”“同一工具绑定到两个 Member”“工具未额外收窄”“Member 未声明 ceiling”“v4 `network.restricted` 由哪种执行后端能兑现”，不得将 `restricted` 悄悄投影为布尔 `allow` 或 `deny`。本轮实际网络机制只承诺布尔准入，保留现有 v4 语法；若旧文档请求端点限制而当前执行后端无法兑现，应该明确 UNSUPPORTED/拒绝受限执行或按授权的兼容规则处理，不能无声丢掉端点约束。
+
+**调用与策略变更**：普通 `ask` 可在 Member/Tool Ceiling 内批准一次使用，但不会扩大硬上界。合法 ceiling 改变是另一类明确授权策略变更，并生成 policy revision；在运行的 OS 域必须按新版本重建或排空。禁止把一次批准变成在持久 `bash` 中常驻的宽权限。
 
 ## D8 — 接入与验收
 
 建议阶段：P1 通用基础体系 → P2 每执行机制代表工具正向+拒绝验证 → P3 原生工具逐个接入与功能回归 → P4 全工具读/写/网络与授权/生命周期矩阵 → P5 漏洞负控、修补与回归。**P2/P3 必有最小真实拒绝测试，不可把安全负控全部留到 P5。**
+
+P1–P4 的验收还必须覆盖 **Member × Tool × Call 三者的相同身份/策略代际、实际 Provider consulted 记录和真实 I/O 结果**：不能因为插件已 apply 或调用获审批就宣称 I/O 限制生效。跨平面验收允许“调用批准但具体 I/O 因 ceiling 被拒绝”，但必须给出可解释的同源决策链。阶段 Gate 详见 [IMPLEMENTATION-PLAN](./IMPLEMENTATION-PLAN.md)。
 
 每阶段按照 [IMPLEMENTATION-PLAN](./IMPLEMENTATION-PLAN.md) 执行文件/测试/证据 Gate；环境不支持可记录 `ENV_BLOCK/UNSUPPORTED`，不能伪造 PASS。已完成的历史 PoC/PR #26 装配证据可复用，但不能由历史报告自动继承新机制的绿色结论。
 
