@@ -30,6 +30,10 @@
 | `present` / `skill` / attachment | 可能读取用户文件或宿主服务；不能按“无 I/O”猜测 | `service-mediated` / 可信宿主代理，待 trace | P3-04 | 上传/读取/渲染与来源能力分开；已知不受管的 Host I/O 标 CONDITIONAL |
 | 未知同进程第三方 JS | 可直接 `node:fs`/Socket，不承诺依赖 `ctx.fs` | 默认 `os-confined:whole-tool`（有通用 Tool Host 时）否则 UNSUPPORTED；已信任可 `TRUSTED_ONLY` | P3-04 | **hash 登记非 sandbox**；whole-tool 未实施时不提供伪保证 |
 
+## 1A. B2-R 证据定位
+
+原生持久 Bash 可经零复制公开 `apply` wrapper 在测试会话实施写入根限制。该行仍为 **CONDITIONAL（写）/ NOT_TESTED（Member 身份、读、网络、真实 danger 升权、PTY 撤权）**，不应计入完整 I/O 支持率。生产 `backendType`、受限 Member 的来源绑定与读写独立性按 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 验收。
+
 ## 2. P3-00 必填的真实库存字段
 
 每个实际 ToolRuntime 记录形成单独一行；最少需要：
