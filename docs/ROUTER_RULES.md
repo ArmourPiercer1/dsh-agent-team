@@ -26,6 +26,8 @@
 
 **裁决内容**：自 Alpha.4 起，**当期已验收的阶段计划自带的执行协议优先于本文档**；本文档写于上一组模型与旧任务分包体系之下，其部分条款已过时。
 
+> **【2026-11-02 当期计划指向】** 当期计划 = `docs/plans/active/alpha5-sandbox-first/current-implementation-plan.md`（待办唯一入口 `ALPHA5-SANDBOX-BACKLOG.md`，逐工具验收 `TOOL-ACCEPTANCE-MATRIX.md`）；设计需求正本 = `docs/plans/memo/alpha5-sandbox-first-20261101/`。下一段所列 Alpha.4 计划为历史先例，只用于说明 §0 的裁决方式，不再是当期执行协议。
+
 1. **优先范围**：当期计划（首份 = `docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md`）中关于**任务分解与合并顺序、并行 lane 划分与文件所有权、审查组成与审查顺序、每个 PR 的合并门、临时语义披露、证据目录**的规定，构成当期执行协议。与本文档冲突时**以计划为准**，无需逐案再问用户。
 2. **被取代的本文档条款**（仅在其与当期计划冲突的范围内失效；计划未覆盖处仍适用）：
    - §1 模型路由：`qiyuan-self/qwen3.8-27b` 的钉死路由与"启动时核验路由、不符即停"**废止**。执行模型 = 当次会话/ preset 由 harness 指派的模型；审查子代理继承同一 harness，独立性由**独立会话**保证，不由模型标识保证。
