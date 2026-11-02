@@ -45,6 +45,10 @@
 - 同一源码、policy、Host SHA、test world 的有效实验可复用；受影响的 Provider/Fork 改动后重跑对应 Gate，不做全仓无意义重复。
 - 性能记录只报告测试环境下原生 vs service-mediated vs OS leaf 的 `p50/p95/p99`、CPU/RSS、冷/热启动；不能借别人的 `bwrap 10ms` 数字当本机验收承诺。
 
+## 4A. 第二轮 PoC 后的新验证入口
+
+原始证据：PR #531 评论 #6576045610 / #6576078330，`task/a5x-envpoc-20261031` @ `6205df337948d5a219440698600a9862ab118dbc`。B2-R **CONDITIONAL**：原生 `terminal-bash` 公开接口 wrapper 无复制实现了测试会话写入根；真实 Member 身份、读权限、有效 danger 审批与存活 PTY 代际均未测。P1/P2 应优先完成 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md) 的 D-BIND-01、D-FS-02，再做 D-BASH-03/D-PTY-04；旧 B1/A3 正控不用重跑。
+
 ## 5. 此文档与阶段计划的关系
 
 - P1 对应策略/信任/服务/OS 后端机制与装配；P2 对应 **read/write/grep/bash/web/ptc/new CLI** 代表性正向 + 基础拒绝。验证完成解锁对应 P3 接入。
