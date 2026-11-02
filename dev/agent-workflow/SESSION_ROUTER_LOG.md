@@ -7348,3 +7348,4 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **新增发现（入报告 §6）**：投影/执行域分叉（MA2 模型上下文注入 `danger-full-access` 而 OS 域钳于 workspace-write——P4-05A 跨面一致性须覆盖投影事件源 vs 执行层 clamp 对）；consult 粒度=spawn 级非 call 级（审计后果）。
 - **撤回**：v1 之「无损投影」「MemberPolicy=UI 糖」「restricted→deny 默认降级」三项过强表述（对表 v2 §4；restricted 维持 IO_POLICY_UNSUPPORTED + 显式迁移）。
 - **纪律**：pristine porcelain 运行前后空；stable :3080 probe 401→401；DSH_HOME 工作区内（4 个 b2r2 世界，命名合规）；mock 20 reqs（远低于熔丝）；run*.log 留工作区不入库（口径同 poc-build.log）；**未 push**（一次性授权需用户新裁）。
+- **追加（dated 2026-11-02T16:0xZ，用户一次性授权兑现）**：上条「未 push」状态更新——`6205df337..18e3823e3` 已推送 `origin/task/a5x-envpoc-20261031`（fast-forward，零 force-push；分支全名 = `task/a5x-envpoc-20261031`）；PR #531 permalink 跟进评论 = issuecomment-6581841218（正文评论 = issuecomment-6581822277）。
