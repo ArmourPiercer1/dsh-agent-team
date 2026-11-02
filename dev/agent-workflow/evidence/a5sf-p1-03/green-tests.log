@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (27 tests) 19ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 86ms
+
+ Test Files  2 passed (2)
+      Tests  43 passed (43)
+   Start at  01:47:59
+   Duration  464ms (transform 270ms, setup 0ms, import 341ms, tests 105ms, environment 0ms)
+
+runtime typecheck rc=0

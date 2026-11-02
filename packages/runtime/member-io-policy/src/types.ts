@@ -147,3 +147,211 @@ export interface PolicyRefusal {
 }
 
 export type CompileResult<T> = { readonly ok: true; readonly value: T } | PolicyRefusal
+
+// ===========================================================================
+// Alpha.5 P1-04 — Invocation Binder vocabulary (APPEND-ONLY; nothing above
+// this banner changes meaning). The binder mints a per-call capability; the
+// trust registry records deployment trust. Neither is a grant ledger.
+// ===========================================================================
+
+/**
+ * A caller-supplied lease. `expiresAt` is epoch milliseconds supplied by the
+ * caller; the library never reads a clock, so expiry stays deterministic.
+ * The boundary is INCLUSIVE: a capability is expired only when
+ * `now > expiresAt` (the strict-`>` rule Alpha.4's grant lease already uses).
+ */
+export interface InvocationLease {
+  readonly expiresAt: number
+}
+
+/**
+ * The trusted inputs of one binding. `member` is the TeamDomain identity (the
+ * same shape P1-02's compiler consumes), never an argv/cwd/UI string.
+ * `toolBindingIdentity` is the v4 `authoringOwner/toolName` coordinate the
+ * capability is pinned to; it cannot be inferred from the call arguments.
+ */
+export interface BindInvocationInput {
+  readonly member: TrustedMemberIdentity
+  readonly callId: string
+  readonly policyRevision: string
+  readonly toolBindingIdentity: string
+  /** Alpha.4's per-call approval input, carried forward for audit only. */
+  readonly approvedOnce: boolean
+  readonly lease: InvocationLease | null
+}
+
+/**
+ * A non-transferable reference to exactly one bound call. Frozen and branded
+ * by the module that minted it: a structural copy is not a capability.
+ *
+ * `epoch` is the binder-wide cold-start epoch; `memberEpoch` is the per-member
+ * revocation epoch. A capability stays valid only while BOTH match the
+ * binder's current values, so neither a cold start nor `revoke(member)` can
+ * leave an outstanding reference usable.
+ */
+export interface InvocationCapability {
+  readonly memberIdentity: string
+  readonly callId: string
+  readonly policyRevision: string
+  readonly toolBindingIdentity: string
+  readonly epoch: number
+  readonly memberEpoch: number
+  readonly approvedOnce: boolean
+  readonly singleUse: true
+  readonly lease: InvocationLease | null
+}
+
+/**
+ * What a consumer presents to consume a capability. The whole tuple must match
+ * the mint, so a capability minted for member A / call X / tool T / revision R
+ * is refused for B, Y, U or S.
+ */
+export interface InvocationConsumeRequest {
+  readonly memberIdentity: string
+  readonly callId: string
+  readonly policyRevision: string
+  readonly toolBindingIdentity: string
+  /** Only needed (and mandatory) when the capability carries a lease. */
+  readonly now?: number
+}
+
+/** The audit record returned by a successful (single) consumption. */
+export interface InvocationConsumption {
+  readonly memberIdentity: string
+  readonly callId: string
+  readonly policyRevision: string
+  readonly toolBindingIdentity: string
+  readonly epoch: number
+  readonly memberEpoch: number
+  readonly approvedOnce: boolean
+  readonly consumedAt: number | null
+}
+
+/** Closed invocation refusal vocabulary. */
+export const INVOCATION_REFUSAL_CODES = [
+  'CAPABILITY_INPUT_INVALID',
+  'CAPABILITY_UNKNOWN',
+  'CAPABILITY_CONSUMED',
+  'CAPABILITY_MEMBER_MISMATCH',
+  'CAPABILITY_CALL_MISMATCH',
+  'CAPABILITY_BINDING_MISMATCH',
+  'CAPABILITY_REVISION_MISMATCH',
+  'CAPABILITY_EPOCH_STALE',
+  'CAPABILITY_MEMBER_REVOKED',
+  'CAPABILITY_LEASE_EXPIRED',
+  'CAPABILITY_LEASE_UNVERIFIED',
+] as const
+
+export type InvocationRefusalCode = (typeof INVOCATION_REFUSAL_CODES)[number]
+
+export interface InvocationRefusal {
+  readonly ok: false
+  readonly code: InvocationRefusalCode
+  readonly detail: string
+  readonly path: string
+}
+
+export type BindInvocationResult =
+  | { readonly ok: true; readonly value: InvocationCapability }
+  | InvocationRefusal
+
+export type ConsumeInvocationResult =
+  | { readonly ok: true; readonly value: InvocationConsumption }
+  | InvocationRefusal
+
+export interface MemberRevocationReceipt {
+  readonly ok: true
+  readonly memberIdentity: string
+  readonly memberEpoch: number
+  readonly binderEpoch: number
+}
+
+export interface EpochBumpReceipt {
+  readonly ok: true
+  readonly epoch: number
+}
+
+export type RevokeInvocationResult = MemberRevocationReceipt | InvocationRefusal
+
+/**
+ * The binder surface. Consumption is a SYNCHRONOUS single-threaded state
+ * transition (check-and-mark in one step), so two interleaved callers cannot
+ * both win; the per-capability record is in-memory state, not a grant ledger.
+ */
+export interface InvocationBinder {
+  bind(input: BindInvocationInput): BindInvocationResult
+  consume(capability: InvocationCapability, request: InvocationConsumeRequest): ConsumeInvocationResult
+  revoke(memberIdentity: string): RevokeInvocationResult
+  bumpEpoch(): EpochBumpReceipt
+  currentEpoch(): number
+  currentMemberEpoch(memberIdentity: string): number
+}
+
+// ===========================================================================
+// Alpha.5 P1-04 — Trusted Tool Registry vocabulary (APPEND-ONLY).
+// Identity + load generation ONLY; this is not a sandbox and never claims a
+// trusted in-process JS module cannot bypass its Provider.
+// ===========================================================================
+
+/**
+ * One explicit load-time registration. Digests are SUPPLIED BY THE LOADER
+ * (package source and dependency-lock digests); the registry compares them and
+ * never walks or hashes a file tree per call.
+ */
+export interface TrustedBindingRegistration {
+  readonly packageDigest: string
+  readonly dependencyDigest: string
+  /** The registration scope (e.g. `member:<id>` or a service realm id). */
+  readonly scope: string
+  /** The load generation of the Definition this registration belongs to. */
+  readonly definitionGeneration: number
+  readonly toolName: string
+}
+
+/** A verification presents the same tuple the loader knew at call time. */
+export type TrustedBindingVerification = TrustedBindingRegistration
+
+/** The frozen receipt of one accepted registration. */
+export interface TrustedBindingReceipt {
+  readonly packageDigest: string
+  readonly dependencyDigest: string
+  readonly scope: string
+  readonly definitionGeneration: number
+  readonly toolName: string
+}
+
+/** Closed trust refusal vocabulary. */
+export const TRUST_REFUSAL_CODES = [
+  'TRUST_INPUT_INVALID',
+  'TRUST_BINDING_UNKNOWN',
+  'TRUST_PACKAGE_DIGEST_MISMATCH',
+  'TRUST_DEPENDENCY_DIGEST_MISMATCH',
+  'TRUST_GENERATION_STALE',
+  'TRUST_GENERATION_MISMATCH',
+  'TRUST_REGISTRATION_CONFLICT',
+] as const
+
+export type TrustRefusalCode = (typeof TRUST_REFUSAL_CODES)[number]
+
+export interface TrustRefusal {
+  readonly ok: false
+  readonly code: TrustRefusalCode
+  readonly detail: string
+  readonly path: string
+}
+
+export type TrustRegistrationResult =
+  | { readonly ok: true; readonly value: TrustedBindingReceipt }
+  | TrustRefusal
+
+export type TrustVerificationResult =
+  | { readonly ok: true; readonly value: TrustedBindingReceipt }
+  | TrustRefusal
+
+/** The registry surface: explicit registration, closed refusal vocabulary. */
+export interface TrustRegistry {
+  register(input: TrustedBindingRegistration): TrustRegistrationResult
+  verify(input: TrustedBindingVerification): TrustVerificationResult
+  inspect(scope: string, toolName: string): TrustedBindingReceipt | null
+  size(): number
+}
