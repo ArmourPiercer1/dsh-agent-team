@@ -133,8 +133,22 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
   // guards is unchanged: zero PRODUCTION importers outside the lanes.
   // Form-pinned below: the exception only ever matches a path under a
   // `test/` directory.
+  //
+  // REVIEWED PRODUCTION-EDGE exception (Alpha.5 sandbox-first P1-01, PR #532):
+  // the new policy lane's compiler consumes the SHIPPED v4 authoring projection
+  // (`projectV4MemberIoCeiling`) instead of re-implementing the closed three-lane
+  // grammar. That is a deliberate design change (the plan explicitly reuses the
+  // v4 tables), not an import accident: the edge is form-pinned below so the
+  // compiler can only reach the lane's barrel, never a deep module. Dormancy is
+  // unchanged in substance — nothing NEW here ships to a live Host.
+  const REVIEWED_PRODUCTION_EDGE_EXCEPTIONS: readonly string[] = [
+    'runtime/member-io-policy/src/compile.ts',
+    'runtime/member-io-policy/src/types.ts',
+  ]
+
   const REVIEWED_TEST_EDGE_EXCEPTIONS: readonly string[] = [
     'domain/test/a5sr3-default-deny-mapping.test.ts',
+    'domain/test/a5sf-v4-member-ceiling-projection.test.ts',
   ]
 
   const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = [
@@ -204,6 +218,13 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         rel.startsWith('domain/vnext-field-mapping/') ||
         /\/a5p7-/.test(rel)
       if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel) || REVIEWED_EDGE_EXCEPTIONS.includes(rel)) continue
+      if (REVIEWED_PRODUCTION_EDGE_EXCEPTIONS.includes(rel)) {
+        // form pin: a sanctioned production edge must live in the P1 policy lane
+        if (!rel.startsWith('runtime/member-io-policy/src/')) {
+          throw new Error(`reviewed production edge ${rel} is outside runtime/member-io-policy/src/`)
+        }
+        continue
+      }
       if (REVIEWED_TEST_EDGE_EXCEPTIONS.includes(rel)) {
         // form pin: a reviewed test edge must stay a test file, never a source edge
         if (!rel.includes('/test/')) throw new Error(`reviewed test edge ${rel} is not under a test/ directory`)

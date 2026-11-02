@@ -85,3 +85,24 @@ P5 漏洞/性能/升级复验 → G5（发布候选）
 不得因原有开发投入和历史任务数而扩大这次需求；不得复活“一工具一执行器”或逐 EffectSet 系统；不得把 `whole-tool` 全功能隔离做成本轮强制交付；不得因工具频率区别架构；不得替换原生工具 schema/render；不得把外部 MCP/远端服务器的内部 I/O 宣称为本地 OS 已限制。
 
 **本文件取代先前 T0–T4 研究式方案作为本 Draft 的迁移规划；它仍不是激活的机器执行权威。**
+
+## 6. 资产回收登记（2026-11-02，用户裁决后补充）
+
+> 本节回应"旧 Alpha.5 执行架构大幅退役、但权限治理/审批基础设施/工作区基线/测试框架/工程管理管线高价值回收"的裁决。完整逐项登记（源码路径、最后改动 SHA、回收类型、目标接口、Owner、退役条件、验收证据）见
+> [`dev/agent-workflow/evidence/a5sf-reclaim/ASSET-RECLAMATION-REGISTRY.md`](../../../../dev/agent-workflow/evidence/a5sf-reclaim/ASSET-RECLAMATION-REGISTRY.md)。
+
+三条不可让渡的回收纪律：
+
+1. **A/B/C 三分**：A 直接沿用（ControlService、Authority Pointer、TestWorldFactory、CI、文档/状态体系）；B 复用机制但改接口（一次性 Grant、PA mount/binding、sandbox-provider 执行基础设施、controlled-fs 路径核验、动态工具 Census）；C 只继承测试/证据/失败经验（旧 fs/process/search/web 工具体、EffectSet、旧覆盖矩阵 PASS）。
+2. **历史绿灯 ≠ 新验收**：旧执行器通过不证明新 Provider 或 OS 后端通过；每项回收资产必须在对应 Gate 取得新证据才计入。
+3. **回收不得削弱新不变量**：为复用旧模型而重新引入 `EffectSet`、`FamilyAssembly` 默认接入、第二策略编译器或第二权威指针，一律禁止——那正是"为了复用旧资产而破坏新架构"的第二次失败。
+
+工作包映射（并入 P1–P3，不另起竞争性迁移计划）：
+
+| R | 交付 | 时点 | 本分支状态 |
+|---|---|---|---|
+| R1 审批与权限治理接管 | 复用 Control/Approval/Grant 入口，删除重复权限计算；证明"审批不提升硬上界、一次性 Grant 不可重放" | P1-02～P1-05 | 单元级完成（`a5sf-member-policy` / `a5sf-invocation`）；真实 Control→Binder 往返在 P2 |
+| R2 工程基线继承 | 唯一 Authority、docs/CI、WorldFactory、Host Pin 不重建；迁移不产生第二权威/第二测试启动器 | P1 前即可核验 | 已验证：本分支未改权威指针/AGENTS/active plans/CI；迁移为独立 PR |
+| R3 原生工具接线与审计复用 | 可信 Binding + Mount 生命周期；单次调用的审批/策略/实际 I/O 证据链；重复绑定、旧代际、日志缺失负控 | P1-04、P2、P3-00 | 机制就绪（P1-04 trust registry、P1-05 install）；证据链测试在 P2 |
+| R4 通用执行基础设施提取 | 从 `sandbox-provider` 提取 launcher/进程树/取消/资源释放；不迁移工具业务；后端能力重新实测 | P1-07～P2 | P1-07 单元 + 真实 OS 效果完成；后端重新探测已记录（本机 FS enforced、network unsupported） |
+| R5 历史测试资产转换 | 原生输出黄金向量、已知回归、越权负控、性能样本转为新验收输入；历史绿灯不计入新 Gate | P2～P3 | 未开始（P2） |

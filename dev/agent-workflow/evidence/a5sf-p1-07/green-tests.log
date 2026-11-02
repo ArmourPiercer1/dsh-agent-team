@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 330ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 457ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  02:40:47
+   Duration  644ms (transform 131ms, setup 0ms, import 179ms, tests 787ms, environment 0ms)
+

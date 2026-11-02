@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ❯ packages/runtime/test/a5sf-service-install.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5sf-service-install.test.ts [ packages/runtime/test/a5sf-service-install.test.ts ]
+Error: Cannot find module '../team-services/src/install.js' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01/packages/runtime/test/a5sf-service-install.test.ts
+ ❯ packages/runtime/test/a5sf-service-install.test.ts:42:1
+     40| import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+     41| import type { MemberPolicy, PathRuleSet, TrustedMemberIdentity } from …
+     42| import { installMemberIoProviders, TeamServiceInstallError } from '../…
+       | ^
+     43| import type { MemberServiceSpec } from '../team-services/src/install.j…
+     44| import { TEAM_IO_DENIAL_CODES } from '../team-services/src/types.js'
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  01:54:53
+   Duration  133ms (transform 22ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

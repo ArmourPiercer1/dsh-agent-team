@@ -31,6 +31,8 @@ tests/live-host-015rc2/
 
 # build & tooling (P1-T4 skeleton)
 node_modules/
+# worktree dependency symlinks (not directories): untracked on purpose, never committed
+node_modules
 dist/
 coverage/
 *.tsbuildinfo
