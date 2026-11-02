@@ -24,14 +24,14 @@
 
 | 机制 | 真正需要的证据 | 阻塞/处理 |
 |---|---|---|
-| 真实 `service-mediated` | 原版 `tool-fs` 在 Member A/B 相同工具名、不同 Scope 下访问相互拒绝；Provider 接收可信 invocation context | 仅 `ctx.isolate()` 调用正常不能 PASS；改装配或标 UNSUPPORTED |
+| 真实 `service-mediated` | 原版 `tool-fs` 在 Member A/B 相同工具名、不同 Scope 下访问相互拒绝；同一 Member 不同工具再收窄；Provider 接收可信 invocation context | 仅 `ctx.isolate()` 调用正常不能 PASS；改装配或标 UNSUPPORTED |
 | TrustedToolRegistry | 加载源 hash、scope/Definition generation 正确匹配；更换字节、HMR、同名换源后失效 | Hash 只是信任登记；same-realm 恶意 JS 旁路不当作本轮缺陷 |
 | 原生 FS 全方法 | `streamText/readByteRange`、write/edit 的真实 Provider 方法和副作用；读取 10MiB 中间窗口无源文件 1MiB 限制 | 禁读/写零实际越界，未覆盖 Provider 方法列 UNSUPPORTED |
 | `ctx.subprocess` | 原生 grep → `spawn(spec)` **同步返回 handle** → OS 禁读的真实 `rg`；退出码、输出与取消 | 不得把 `spawn` 改 async 或自己写 grep 算法 |
 | PTY/瞬态 Bash | `team-shell` 实际注册、非 Team `shell` 正常，危险 Full Access 不能突破 Member 权限 | 持久进程旧策略不能直接扩权；需重建/拒绝 |
 | OS file allowlist | 真实允许/拒读写、单文件与子树、正确的执行依赖挂载；`--ro-bind / /` 不得成为受限世界所有文件可读的原因 | 后端不支持时明确 UNSUPPORTED，而非只是输出拒绝 |
 | OS network boolean | allow 正控、deny 下实际 HTTP/TCP/UDP/DNS/IPv4/IPv6、proxy/host bridge；主 Host 模型网络独立 | 仅 Landlock TCP 功能不能算全禁网；无可用 netns 的机器记 ENV_BLOCK |
-| hardlink 新语义 | `/allowed/link` 与 `/denied/secret` 同 inode：通过允许路径读取/适用的写入成功、直接禁止路径打不开 | 不把别名允许效果当 bug；原生 write 可能 atomically replace，并不保证修改相同 inode |
+| hardlink 新语义 | `/allowed/link` 与 `/denied/secret` 同 inode：通过允许路径读取/适用的写入成功、直接禁止路径打不开，必须记录跨路径影响 | 不自动把允许别名当 bug，**但绝不能省略泄露/别名影响证据**；原生 write 可能 atomically replace |
 | 单次授权/策略缩紧 | 一个批准调用≠另一并发调用；持久进程新策略前必须确认旧域结束或标不确定 | 不允许 silent fallback/replay |
 | 未知工具 | 新 CLI 不写专属 Team ToolDefinition 直接通过 OS Runner；未知 JS 需标 TRUSTED_ONLY/UNSUPPORTED | 不强迫完成 whole-tool Host |
 
@@ -39,6 +39,7 @@
 
 - **真实 Host C2/C3 只通过 `tests/world-factory`**。独立 DSH_HOME 为 `tests/homes/<world>`，只用 `tests/paths.mjs` 许可端口，`:3080` 与稳定 DSH_HOME 零写。
 - 使用既有 `tests/world-factory/provision-host-sandbox.mjs --check` 预检；原生二进制缺失、内核/Namespace 不支持与产品失败分开判，不得自动转成 PASS。
+- 每次受限调用记录并配对 `memberId/toolBindingIdentity/callId/policyRevision`、Alpha.4 admission、实际 Provider `consulted` 决策与独立 I/O Oracle。`applied` 不等于 `consulted`；缺任一环节不能 PASS。
 - 对 I/O 授权负控用**独立观察到的文件字节/进程行为/网络 server logs**，不要仅凭工具文本。
 - 引入新故障测试需先 RED（植入可见的越界/绕过错误），修复后 GREEN；记录失败日志与 run manifest。
 - 同一源码、policy、Host SHA、test world 的有效实验可复用；受影响的 Provider/Fork 改动后重跑对应 Gate，不做全仓无意义重复。
