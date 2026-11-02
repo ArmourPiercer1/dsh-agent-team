@@ -1,0 +1,2 @@
+[b2r 11:29:32] {"forkEngaged":true,"bashWriteSecretRefused":false,"bashWriteInsideOk":true,"bashEscapeRefused":false,"dangerClamped":false,"bashReadLeakFork":true,"stable":{"before":401,"after":401}}
+[b2r 11:29:32] EVIDENCE /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R-20261102T112930

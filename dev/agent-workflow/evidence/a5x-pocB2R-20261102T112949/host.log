@@ -1,0 +1,6 @@
+[a5x-b2r] capped terminal-bash apply() engaged (member ceiling from A5X_B2R_CAPS)
+dsh web: http://127.0.0.1:3186/?token=j9AEeuM5b2O65L4QfqClCXvsjoq2ncYYEJfbcvccYgQ
+[a5x-b2r] resolve session=a5x-b2r-M1-20261102T112949 key=M1 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031
+[a5x-b2r] CAP applied -> mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R-20261102T112949/rootA
+
+[b2r] host closed code=0 signal=null

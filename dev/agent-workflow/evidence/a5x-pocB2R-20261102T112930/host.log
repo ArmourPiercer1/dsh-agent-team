@@ -1,0 +1,5 @@
+[a5x-b2r] capped terminal-bash apply() engaged (member ceiling from A5X_B2R_CAPS)
+dsh web: http://127.0.0.1:3186/?token=SFBYelA9BhLWJneqQLk1LqdFiltSs_avV2BXGGBsoU0
+[a5x-b2r] resolve session=[object Object] key=NONE base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031
+
+[b2r] host closed code=0 signal=null

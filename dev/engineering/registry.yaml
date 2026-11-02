@@ -171,3 +171,37 @@ entries:
     verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log]
     verified_tier: C1
     verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
+  # ── User adjudications registered 2026-11-02 (append-only). These cards
+  #    RECORD direct user rulings on the PR #531 design axis; they do not move
+  #    machine authority — current-authority.json pointer stays untouched.
+  - id: A5X-UADJ-1
+    kind: work-package
+    title: "User ruling: member network scope is boolean (allow|deny); v4 network:restricted requires an explicit downgrade rule before projection — default direction still owed"
+    decision_status: accepted
+    implementation_status: not_started
+    verification_status: not_verified
+    release_status: not_released
+    owners: [User Adjudication, Validation Node]
+    refs: ["docs/plans/memo/alpha5-sandbox-first-20261101 (PR #531) ADR D1.4/D7", dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/A5SF-P1-01-PROJECTION.md]
+    verification_artifacts: [dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/A5SF-P1-01-PROJECTION.md]
+  - id: A5X-UADJ-2
+    kind: work-package
+    title: "User ruling: hardlinks into a workspace are authorized aliases, not escapes; enforcement must not treat same-inode aliasing as a boundary violation and tests must cover it"
+    decision_status: accepted
+    implementation_status: not_started
+    verification_status: not_verified
+    release_status: not_released
+    owners: [User Adjudication, Validation Node]
+    refs: ["docs/plans/memo/alpha5-sandbox-first-20261101 (PR #531) ADR D5"]
+    verification_artifacts: [dev/agent-workflow/evidence/a5x-pocA1-20261031T183659]
+  - id: A5X-UADJ-3
+    kind: work-package
+    title: "User ruling: bounded infrastructure forks of {sandbox-local, terminal-bash, bash-sandbox, fs-sandbox, subprocess-local} acceptable when upstream-tracking per FORK-DECISION gates; superseded by public-seam wrappers where proven (B2-R zero-copy wrap closed the member-ceiling case)"
+    decision_status: accepted
+    implementation_status: not_started
+    verification_status: verified_local
+    release_status: not_released
+    owners: [User Adjudication, Validation Node]
+    refs: ["docs/plans/memo/alpha5-sandbox-first-20261101 (PR #531) ADR D6", dev/agent-workflow/evidence/a5x-sandboxpoc-20261101/B2R-FORK-RESULT.md]
+    verification_artifacts: [dev/agent-workflow/evidence/a5x-pocB2R-20261102T112949/b2r.json, tests/kits/a5x-envpoc/a5x-fork-capped-terminal-bash.mjs]
+    verified_tier: C1

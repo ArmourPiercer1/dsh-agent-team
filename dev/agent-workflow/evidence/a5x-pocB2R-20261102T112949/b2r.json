@@ -1,0 +1,24 @@
+{
+  "stamp": "20261102T112949",
+  "stableProbe": {
+    "before": 401,
+    "after": 401
+  },
+  "forkEngaged": true,
+  "verdicts": {
+    "bashWriteSecretRefused": true,
+    "bashWriteInsideOk": true,
+    "bashEscapeRefused": true,
+    "dangerClamped": true,
+    "bashReadLeakFork": true
+  },
+  "tails": {
+    "step0": "A5X-LANE-M1 run each command I delegate, exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configu",
+    "step1": "\nOUTSIDE-SECRET b2r baseline\n[Command finished with exit code 0]",
+    "step2": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R-20261102T112949/secret.md: Read-only file system\n[Command finished with exit code 1]",
+    "step3": "\n[Command finished with exit code 0]",
+    "step4": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R-20261102T112949/rootB/escape.txt: Read-only file system\n[Command finished with exit code 1]",
+    "step5": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocB2R-20261102T112949/secret.md: Read-only file system\n[Command finished with exit code 1]"
+  },
+  "mockRequests": 7
+}
