@@ -33,7 +33,7 @@
 | 8 | `packages/runtime/control/types.ts:453` `ApprovalCaseIdentity` | Frozen case identity (spec 11.1). | **KEEP** — the decision identity the durable rows carry. |
 | 9 | `packages/runtime/control/types.ts:548` `ApprovalCaseState` | Derived state of one case reconstructed from durable rows. | **KEEP**. |
 | 10 | `packages/runtime/control/types.ts:710` `ApprovalCaseSummary` | The open-case summary shape. | **KEEP**. |
-| 11 | `packages/runtime/control/types.ts:1502` `ControlOperationScope` | The exact, lossless scope an allow authorizes (member, tool, correlation, optional fingerprint / authority point). | **CONSUME as the approval scope type** — the adapter forwards this exact object to `guardOperation`. |
+| 11 | `packages/runtime/control/types.ts:1502` `ControlOperationScope` | The exact, lossless scope an allow authorizes (root session, member, tool, correlation, optional fingerprint / authority point). | **CONSUME as the approval scope type** — the adapter forwards this exact object to `guardOperation`, after binding its `rootSessionId` to the required `expectedRootSessionId`. |
 | 12 | `packages/runtime/control/types.ts:1694` `ControlDecisionRecord` | The durable decision row (allow / deny / stale-denied). | **KEEP** — the authority behind the verdict. |
 | 13 | `packages/runtime/control/types.ts:1923` `ControlGuardVerdict` | The closed last-mile verdict (`allowed: true` + request/decision ids, or `allowed:false` + closed block reason). | **CONSUME as the approval decision type** — the adapter maps it, and maps `allow-consumed` to a typed refusal. |
 | 14 | `packages/runtime/control/types.ts:1818` `CONTROL_GUARD_BLOCK_REASONS` | The closed block vocabulary (`no-request` / `request-pending` / `decision-deny` / `allow-consumed` / …). | **CONSUME** — the adapter treats every non-allow reason as a refusal (an `ask` is never autonomously allowed). |
@@ -106,7 +106,7 @@ member-io-policy/src/approval-takeover.ts  ──  resolveAskClassCall(...)
         │   (1) generation check → MEMBER_POLICY_STALE
         │   (2) compileEffectiveIo(...)  ← THE only permission computation
         │   (3) matchLocator(compiled lane)  → deny = refuse, allow = refuse, ask = continue
-        │   (4) exact authored ask locator + exact ControlOperationScope binding
+        │   (4) exact authored ask locator + TeamSession root + exact ControlOperationScope binding
         ▼
 ControlService.guardOperation(scope)  ← the SAME public last-mile guard the tool pipeline uses
         │   durable allow + external hard recheck + check-and-reserve consumption
@@ -117,7 +117,12 @@ ControlGuardVerdict  → allowed ⇒ exactly one ask→allow move on the COMPILE
 
 - **Public surface used:** `@dsh-agent-team/runtime/control` barrel (`control/index.ts:203`,
   `:154-196`) — `ControlService.guardOperation`, `ControlGuardVerdict`,
-  `ControlOperationScope`. No `src/plugin/**` private import, no upstream package touched.
+  `ControlOperationScope`. The adapter imports those types **type-only from the barrel**
+  (`from '../../control/index.js'`, never `control/types.js`). No `src/plugin/**` private
+  import, no upstream package touched.
+- **TeamSession binding:** the caller must pass the required `expectedRootSessionId`; the
+  adapter refuses when it is absent/blank or when `scope.rootSessionId` differs, because an
+  instance id is unique only within a team.
 - **Why it is the only approval authority:** `guardOperation` is the same function that
   performs the durable `control-allow-consumed` check-and-reserve under the per-team lock
   (`control/service.ts:3240`); the new adapter owns **no state, no ledger, no grant table**.

@@ -46,7 +46,7 @@
  * @module @dsh-agent-team/runtime/member-io-policy/approval-takeover
  */
 
-import type { ControlGuardVerdict, ControlOperationScope } from '../../control/types.js'
+import type { ControlGuardVerdict, ControlOperationScope } from '../../control/index.js'
 import { compileEffectiveIo } from './compile.js'
 import { locatorsEquivalent, matchLocator } from './path-rules.js'
 import type {
@@ -122,6 +122,15 @@ export interface ResolveAskClassCallInput {
    * compiled for a different generation is stale and never authorizes a call.
    */
   readonly currentInstanceGeneration: number
+  /**
+   * The TeamSession root that OWNS the compiled MemberPolicy. REQUIRED: an
+   * instance id is unique only WITHIN one team, so a durable allow minted for
+   * `team.other` can carry the same `targetInstanceId` as this member. The
+   * adapter refuses unless this equals `scope.rootSessionId`. The value must be
+   * sourced from the trusted TeamDomain the policy was compiled under, NEVER
+   * copied from `scope` — copying it would make the comparison vacuous.
+   */
+  readonly expectedRootSessionId: string
   /** The axis and the EXACT authored ask locator this call targets. */
   readonly ask: {
     readonly axis: PathAxes
@@ -220,6 +229,13 @@ export async function resolveAskClassCall(
   if (ask.axis !== 'read' && ask.axis !== 'write') {
     return refuse('APPROVAL_SCOPE_UNBOUND', "the asked axis must be 'read' or 'write'", 'ask.axis')
   }
+  if (!isNonBlank(input.expectedRootSessionId)) {
+    return refuse(
+      'APPROVAL_SCOPE_UNBOUND',
+      'the adapter requires the expected TeamSession root of the compiled policy; an instance id alone is unique only within a team, so a root is required to bind the durable allow',
+      'expectedRootSessionId',
+    )
+  }
 
   // (1) Stale generation: the existing `MEMBER_POLICY_STALE` semantics
   // (team-services/install.ts) — a policy compiled for generation N never
@@ -273,6 +289,13 @@ export async function resolveAskClassCall(
   if (!isNonBlank(scope.actionName)) {
     return refuse('APPROVAL_SCOPE_UNBOUND', 'the approval scope must carry its action name', 'scope.actionName')
   }
+  if (!isNonBlank(scope.rootSessionId) || scope.rootSessionId !== input.expectedRootSessionId) {
+    return refuse(
+      'APPROVAL_SCOPE_UNBOUND',
+      `the approval scope root is '${String(scope.rootSessionId)}', but the compiled policy is bound to TeamSession root '${input.expectedRootSessionId}'`,
+      'expectedRootSessionId',
+    )
+  }
   if (scope.targetInstanceId !== memberPolicy.memberIdentity) {
     return refuse(
       'APPROVAL_SCOPE_MISMATCH',
@@ -280,10 +303,17 @@ export async function resolveAskClassCall(
       'scope.targetInstanceId',
     )
   }
-  if (scope.toolName !== undefined && scope.toolName !== toolNameOf(tool.bindingIdentity)) {
+  if (!isNonBlank(scope.toolName)) {
+    return refuse(
+      'APPROVAL_SCOPE_UNBOUND',
+      'the approval scope must name a non-empty tool; a tool-less scope cannot be bound to this invocation',
+      'scope.toolName',
+    )
+  }
+  if (scope.toolName !== toolNameOf(tool.bindingIdentity)) {
     return refuse(
       'APPROVAL_SCOPE_MISMATCH',
-      `the approval scope names tool '${String(scope.toolName)}', but the invocation is bound to '${tool.bindingIdentity}'`,
+      `the approval scope names tool '${scope.toolName}', but the invocation is bound to '${tool.bindingIdentity}'`,
       'scope.toolName',
     )
   }

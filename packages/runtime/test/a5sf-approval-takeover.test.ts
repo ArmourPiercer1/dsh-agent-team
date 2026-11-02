@@ -48,7 +48,9 @@ import {
   APPROVAL_TAKEOVER_REFUSAL_CODES,
   resolveAskClassCall,
   type AskApprovalAuthority,
+  type ResolveAskClassCallInput,
 } from '../member-io-policy/src/approval-takeover.js'
+import { APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES } from '../member-io-policy/src/index.js'
 import type {
   InvocationAuthority,
   MemberPolicy,
@@ -213,6 +215,17 @@ function refusal(
   expect(result.code).toBe(code)
 }
 
+const ROOT = 'root-a5sf-r1'
+
+/** Every leg names the TeamSession root unless the leg is testing its absence. */
+function resolve(
+  input: Omit<ResolveAskClassCallInput, 'expectedRootSessionId'> & {
+    readonly expectedRootSessionId?: string | undefined
+  },
+): ReturnType<typeof resolveAskClassCall> {
+  return resolveAskClassCall({ expectedRootSessionId: ROOT, ...input })
+}
+
 // --- R1 RED laws: approval can only narrow -----------------------------------
 
 describe('R1 · approval can only narrow the compiled intersection', () => {
@@ -221,7 +234,7 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     const tool = toolRestriction()
     const { calls, authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -242,7 +255,7 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     const tool = toolRestriction()
     const { calls, authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -262,7 +275,7 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     const invocation = invocationFor(member, tool, { callId: 'call-r1-narrow' })
     const { calls, authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation,
@@ -292,7 +305,7 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     const tool = toolRestriction()
     const { authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -317,6 +330,46 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     })
   })
 
+  it('a locator the compiler already allows is refused as NOT_ASKED (no approval path)', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const { calls, authority } = allowingAuthority()
+
+    // `/work/a/plain.txt` is covered by the authored allow `/work/a` and is not
+    // an ask locator: the approval path must not touch it.
+    const result = await resolve({
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'read', locator: '/work/a/plain.txt' },
+      scope: scope(),
+      approvalAuthority: authority,
+    })
+
+    refusal(result, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_NOT_ASKED)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('an axis outside read/write is refused before any lane is consulted', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const { calls, authority } = allowingAuthority()
+
+    const result = await resolve({
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'network' as unknown as 'read', locator: '/work/a/p1.txt' },
+      scope: scope(),
+      approvalAuthority: authority,
+    })
+
+    refusal(result, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND)
+    expect(calls).toHaveLength(0)
+  })
+
   it('a non-authored resource under an ask subtree is refused instead of widening the subtree', async () => {
     const member = compiledPolicy()
     const tool = toolRestriction()
@@ -326,7 +379,7 @@ describe('R1 · approval can only narrow the compiled intersection', () => {
     // approval may only name the authored locator itself. Turning the whole ask
     // subtree into allow would be a widening, so the adapter refuses. This is a
     // named limit, disclosed in the R1 evidence README.
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -372,8 +425,8 @@ describe('R1 · one-shot approval and stale generations', () => {
       approvalAuthority: oneShot,
     }
 
-    expect((await resolveAskClassCall(input)).ok).toBe(true)
-    refusal(await resolveAskClassCall(input), APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_ALREADY_CONSUMED)
+    expect((await resolve(input)).ok).toBe(true)
+    refusal(await resolve(input), APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_ALREADY_CONSUMED)
     expect(calls).toHaveLength(2)
   })
 
@@ -382,7 +435,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     const tool = toolRestriction()
     const { calls, authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -401,7 +454,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     const tool = toolRestriction()
     const { calls, authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool, { policyRevision: 'a5sf1:stale-revision' }),
@@ -423,7 +476,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     const { calls, authority } = allowingAuthority()
 
     refusal(
-      await resolveAskClassCall({
+      await resolve({
         memberPolicy: member,
         tool,
         invocation: invocationFor(member, tool),
@@ -435,7 +488,7 @@ describe('R1 · one-shot approval and stale generations', () => {
       APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_MISMATCH,
     )
     refusal(
-      await resolveAskClassCall({
+      await resolve({
         memberPolicy: member,
         tool,
         invocation: invocationFor(member, tool),
@@ -457,7 +510,7 @@ describe('R1 · one-shot approval and stale generations', () => {
 
     // A fingerprint-less ask cannot be bound to an exact-scope approval.
     refusal(
-      await resolveAskClassCall({
+      await resolve({
         memberPolicy: member,
         tool,
         invocation: invocationFor(member, tool),
@@ -470,7 +523,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     )
     // A different resource fingerprint is a different approval.
     refusal(
-      await resolveAskClassCall({
+      await resolve({
         memberPolicy: member,
         tool,
         invocation: invocationFor(member, tool),
@@ -483,7 +536,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     )
     expect(calls).toHaveLength(0)
 
-    const matched = await resolveAskClassCall({
+    const matched = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -494,6 +547,106 @@ describe('R1 · one-shot approval and stale generations', () => {
     })
     expect(matched.ok).toBe(true)
     expect(calls).toHaveLength(1)
+  })
+
+  it('binds the durable allow to the compiled policy TeamSession root, not just the instance id', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const { calls, authority } = allowingAuthority()
+    const base = {
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'read' as const, locator: '/work/a/p1.txt' },
+      approvalAuthority: authority,
+    }
+
+    // Same TeamSession root: accepted.
+    const accepted = await resolve({ ...base, scope: scope(MEMBER, { rootSessionId: ROOT }) })
+    expect(accepted.ok).toBe(true)
+
+    // A durable allow minted for another team with the SAME instance id is not
+    // transferable: instance ids are unique only within a team.
+    refusal(
+      await resolve({ ...base, scope: scope(MEMBER, { rootSessionId: 'root-team-b' }) }),
+      APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND,
+    )
+    // A missing expected root cannot bind the approval at all.
+    refusal(
+      await resolve({ ...base, scope: scope(), expectedRootSessionId: undefined }),
+      APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND,
+    )
+    // A blank scope root is never a wildcard.
+    refusal(
+      await resolve({ ...base, scope: scope(MEMBER, { rootSessionId: '   ' }) }),
+      APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND,
+    )
+    expect(calls).toHaveLength(1)
+  })
+
+  it('requires a non-empty tool name on the approval scope', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const { calls, authority } = allowingAuthority()
+
+    const result = await resolve({
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'read', locator: '/work/a/p1.txt' },
+      scope: scope(MEMBER, { toolName: undefined }),
+      approvalAuthority: authority,
+    })
+
+    refusal(result, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('requires a non-blank correlation and action name on the approval scope', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const { calls, authority } = allowingAuthority()
+    const base = {
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'read' as const, locator: '/work/a/p1.txt' },
+      approvalAuthority: authority,
+    }
+
+    refusal(
+      await resolve({ ...base, scope: scope(MEMBER, { correlation: '' }) }),
+      APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND,
+    )
+    refusal(
+      await resolve({ ...base, scope: scope(MEMBER, { actionName: '  ' }) }),
+      APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_SCOPE_UNBOUND,
+    )
+    expect(calls).toHaveLength(0)
+  })
+
+  it('a malformed verdict shape fails closed as AUTHORITY_FAILED', async () => {
+    const member = compiledPolicy()
+    const tool = toolRestriction()
+    const base = {
+      memberPolicy: member,
+      tool,
+      invocation: invocationFor(member, tool),
+      currentInstanceGeneration: 3,
+      ask: { axis: 'read' as const, locator: '/work/a/p1.txt' },
+      scope: scope(),
+    }
+
+    for (const malformed of [null, { allowed: 'yes' }, {}]) {
+      const result = await resolve({
+        ...base,
+        approvalAuthority: async () => malformed as unknown as ControlGuardVerdict,
+      })
+      refusal(result, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_AUTHORITY_FAILED)
+    }
   })
 
   it('a denied / pending / absent durable verdict is refused, never treated as an allowance', async () => {
@@ -507,7 +660,7 @@ describe('R1 · one-shot approval and stale generations', () => {
       { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST },
     ]
     for (const verdict of verdicts) {
-      const result = await resolveAskClassCall({
+      const result = await resolve({
         memberPolicy: member,
         tool,
         invocation: invocationFor(member, tool),
@@ -524,7 +677,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     const member = compiledPolicy()
     const tool = toolRestriction()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -545,7 +698,7 @@ describe('R1 · one-shot approval and stale generations', () => {
     const { calls, authority } = allowingAuthority()
     const exactScope = scope()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation: invocationFor(member, tool),
@@ -573,7 +726,7 @@ describe('R1 · exactly one permission computation', () => {
     if (!compiled.ok) return
     const { authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: member,
       tool,
       invocation,
@@ -613,7 +766,7 @@ describe('R1 · exactly one permission computation', () => {
     const tool = toolRestriction()
     const { authority } = allowingAuthority()
 
-    const result = await resolveAskClassCall({
+    const result = await resolve({
       memberPolicy: fabricated,
       tool,
       invocation: invocationFor(fabricated, tool),
@@ -639,9 +792,14 @@ describe('R1 · exactly one permission computation', () => {
     expect(source).not.toContain('declareV4AuthoringMaps')
     expect(source).not.toContain('findMemberIoCeiling')
     // The approval decision is the EXISTING public control-plane shape.
-    expect(source).toContain("from '../../control/types.js'")
+    expect(source).toContain("from '../../control/index.js'")
+    expect(source).not.toContain("from '../../control/types.js'")
     expect(source).toContain('ControlGuardVerdict')
     expect(source).toContain('ControlOperationScope')
+    // The barrel exports the complete closed refusal vocabulary.
+    expect(APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES).toEqual(
+      Object.values(APPROVAL_TAKEOVER_REFUSAL_CODES),
+    )
     // And it must not own a second approval store: no ledger/grant table here.
     expect(source).not.toContain('GrantLedger')
     expect(source).not.toContain('new Map')
@@ -688,6 +846,7 @@ describe('R1 · the real ControlService owns the one-shot approval', () => {
         tool,
         invocation: invocationFor(member, tool, { callId: 'call-r1-real-oneshot' }),
         currentInstanceGeneration: 3,
+        expectedRootSessionId: P6T4_ROOT,
         ask: {
           axis: 'read' as const,
           locator: '/work/a/p1.txt',
@@ -699,11 +858,11 @@ describe('R1 · the real ControlService owns the one-shot approval', () => {
         approvalAuthority: (received: ControlOperationScope) => service.guardOperation(received),
       }
 
-      const first = await resolveAskClassCall(input)
+      const first = await resolve(input)
       expect(first.ok).toBe(true)
       if (first.ok) expect(matchLocator(first.value.read, '/work/a/p1.txt')).toBe('allow')
 
-      const replay = await resolveAskClassCall(input)
+      const replay = await resolve(input)
       refusal(replay, APPROVAL_TAKEOVER_REFUSAL_CODES.APPROVAL_ALREADY_CONSUMED)
 
       const state = await service.listControlState(P6T4_ROOT)

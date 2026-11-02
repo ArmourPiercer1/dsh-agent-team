@@ -49,10 +49,11 @@ P3/P4 must retire) is [`INVENTORY.md`](./INVENTORY.md).
    - `allow` → `APPROVAL_NOT_ASKED` (no approval path);
    - `ask` → continue.
 4. **Binding** — the asked locator must be an **authored** `ask` locator (not a child of an ask
-   subtree), the scope must name the same member, the same tool and the same correlation, and
-   when the scope carries a canonical `operationFingerprint` the ask must carry the **same**
-   fingerprint (the adapter compares strings; it never derives a fingerprint — that would be a
-   second canonicalizer).
+   subtree); the scope must name the same TeamSession **root** (required
+   `expectedRootSessionId` — an instance id is unique only within a team), the same member, the
+   same **non-empty** tool and the same correlation; and when the scope carries a canonical
+   `operationFingerprint` the ask must carry the **same** fingerprint (the adapter compares
+   strings; it never derives a fingerprint — that would be a second canonicalizer).
 5. **Existing authority** — `await approvalAuthority(scope)`; thrown/unavailable → fail closed
    `APPROVAL_AUTHORITY_FAILED`; `allow-consumed` → `APPROVAL_ALREADY_CONSUMED`; any other
    non-allow → `APPROVAL_DENIED` (notably `no-request`, which the tool guard treats as
@@ -82,7 +83,7 @@ Full output: [`red-test.log`](./red-test.log).
 node_modules/.bin/vitest run a5sf
 ```
 
-Result: **11 files, 157 tests passed** (140 pre-existing + 17 new) — full output in
+Result: **11 files, 163 tests passed** (140 pre-existing + 23 new) — full output in
 [`green-tests.log`](./green-tests.log). The 140 baseline is the G1 inventory
 (`evidence/a5sf-g1/g1-full-run.log`): 9 `packages/runtime/test/a5sf-*` files (119) plus
 `packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts` (21).
@@ -170,6 +171,15 @@ was added (the frozen quarantine hit set is unchanged).
    `ControlService` over the P6-T4 world is stronger than a fake, but it does not exercise the
    production construction (`root.ts`), the live external-policy facts port, the Host boot
    budget, or the native tool pipeline. No claim beyond that is made.
+7. **Caller-supplied `MemberPolicy` provenance (no seal).** The adapter consumes the
+   `MemberPolicy` object it is given and cannot prove it came from `compileMemberPolicy`. There
+   is no runtime seal: the fabricated-lane test codifies that the adapter must trust the
+   compiler's output object, and a caller that hand-builds a wider `MemberPolicy` would defeat
+   the ceiling. Production callers must pass only the P1-02 compiler output (the P2 install path
+   will hold that object), and `expectedRootSessionId` must come from the same trusted
+   TeamDomain — never from `scope` itself, which would make the root comparison vacuous. This is
+   a provenance precondition, not a property the adapter can enforce without a compiler-owned
+   seal.
 
 ## 7. Evidence index
 
@@ -177,8 +187,61 @@ was added (the frozen quarantine hit set is unchanged).
 |---|---|
 | [`INVENTORY.md`](./INVENTORY.md) | every approval/grant/control entry point with `file:line`, disposition, duplicate computations, chosen seam |
 | [`red-test.log`](./red-test.log) | real vitest output of the failing pre-implementation run |
-| [`green-tests.log`](./green-tests.log) | real vitest output: 11 files / 157 tests green |
-| `packages/runtime/test/a5sf-approval-takeover.test.ts` | the 17 new tests |
+| [`green-tests.log`](./green-tests.log) | real vitest output: 11 files / 163 tests green |
+| `packages/runtime/test/a5sf-approval-takeover.test.ts` | the 23 new tests |
 | `packages/runtime/member-io-policy/src/approval-takeover.ts` | the adapter |
 | `packages/runtime/member-io-policy/src/index.ts` | public export of the adapter |
 | `packages/testkit/test/p4t6-bookings/a5sf.json` | books the two new scannable paths (measured tie `1396 → 1425`) |
+
+
+## 8. Review response (2026-11-02) — APPROVE-WITH-CONDITIONS
+
+All six conditions were fixed in this branch. The law is unchanged; the two HIGH items are
+scope-binding gaps, not ceiling changes.
+
+### 8.1 Conditions and fixes
+
+| # | Condition | Fix |
+|---|---|---|
+| 1 (HIGH) | Bind the approval to the Member's TeamSession root | `ResolveAskClassCallInput.expectedRootSessionId` is **required**; absent/blank → `APPROVAL_SCOPE_UNBOUND`; `scope.rootSessionId !== expectedRootSessionId` → `APPROVAL_SCOPE_UNBOUND`. Legs: same root accepted, different root refused, missing expected root refused, blank scope root refused. Mutation R proves deleting the comparison makes the suite RED. |
+| 2 | `scope.toolName === undefined` was silently skipped | Non-empty `scope.toolName` is now required (`APPROVAL_SCOPE_UNBOUND`); the equality check is unchanged. Leg added; mutation T proves it RED. |
+| 3 | Seam honesty | Type-only import moved to the public barrel: `from '../../control/index.js'`. Source fence now asserts the barrel import and **forbids** `from '../../control/types.js'`. README/INVENTORY updated. |
+| 4 | Barrel export | `APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES` exported from `member-io-policy/src/index.ts`; a test asserts it equals `Object.values(APPROVAL_TAKEOVER_REFUSAL_CODES)`. |
+| 5 | Residual risk §6 | Added risk #7: caller-supplied `MemberPolicy` provenance (compiler-output-only precondition, no seal), matching the fabricated-lane test. |
+| 6 | Coverage of four surviving mutations | Added legs for A `APPROVAL_NOT_ASKED`, B blank `correlation` + blank `actionName`, C malformed verdict shape (`null` / `{allowed:'yes'}` / `{}`), H invalid `ask.axis`. Each is named by a test; the mutation table below is measured, not asserted. |
+
+### 8.2 Measured outputs (this tree, after the fixes)
+
+```
+node_modules/.bin/vitest run a5sf
+```
+→ **11 files, 163 tests passed** (140 pre-existing + 23 new; exit 0) — `green-tests.log`.
+
+```
+node_modules/.bin/tsc -p packages/runtime/tsconfig.json
+```
+→ exit 0, no output.
+
+```
+node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+```
+→ **20/20 passed**. No new scannable file was added by this response, so the booking tie stays
+`{from: 1396, to: 1425}`.
+
+### 8.3 Mutation table (measured by editing the adapter, running the new suite, restoring)
+
+Every mutation was applied alone to `approval-takeover.ts`, then
+`vitest run test/a5sf-approval-takeover.test.ts` was run; the file was restored byte-for-byte.
+Baseline is 23/23 green.
+
+| Mutation | What was removed/weakened | Result |
+|---|---|---|
+| **R** root comparison | deleted the `scope.rootSessionId !== expectedRootSessionId` refusal | **RED** — `1 failed \| 22 passed` |
+| **T** tool name required | deleted the non-empty `scope.toolName` refusal | **RED** — `1 failed \| 22 passed` |
+| **A** NOT_ASKED branch | deleted the `disposition === 'allow'` refusal | **RED** — `1 failed \| 22 passed` |
+| **B** blank correlation/action | deleted both blank-field refusals | **RED** — `1 failed \| 22 passed` |
+| **C** malformed verdict | relaxed the shape guard to `verdict === null || typeof verdict !== 'object'` | **RED** — `1 failed \| 22 passed` |
+| **H** axis gate | replaced the read/write gate with `if (false)` | **RED** — `1 failed \| 22 passed` |
+
+Each mutation fails exactly the leg that names it, so deleting or weakening any of these
+branches cannot pass silently.
