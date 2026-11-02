@@ -11,7 +11,7 @@
 | 旧体系 | 新裁决 | 迁移方式 |
 |---|---|---|
 | `FamilyAssembly`、`contribution-schema` 默认 `family-body/named-bridge` 和 Team 自研执行体 | 原生 `ToolDefinition` 零修改、通用 `service-mediated/os-confined` | 在 P3-05 开辟原生服务绑定模式，最后替换默认路径并下线旧业务体 |
-| v4 `toolBindings[].io` 包含每工具 `read/write/network restricted` 等复杂语义 | Member 级读/写路径 + network boolean | P1-01 冻结独立新 Blueprint 版本/迁移规则；历史 v3/v4 保持版本自洽，不静默 reinterpret |
+| v4 `toolBindings[].io` 已有逐工具 read/write/network，而 Member 硬上界未完整表达 | Member × Tool 两轴全局硬上界，网络本轮只承诺布尔 | P1-01 **优先复用 v4 语法/映射**，只补缺失的 Member ceiling 作者载体；封闭语法确需版本增量才最小升级；保留 v3/v4 旧语义与 hash |
 | 旧 `controlled-fs` 对 `nlink>1` 拒绝 | Member 授权路径允许 hardlink 别名 | P1-03/P4-02 引入新路径契约；仅对新的 Member 数据面废止旧拒绝，控制面完整性不变 |
 | 上游“不得 vendor 修改源码”旧红线 | 用户允许小范围**执行基础设施**插件 Fork，模型工具禁止 Fork | 独立权威迁移 PR 精确定义允许清单、upstream SHA/许可证/diff 与维护者 |
 | 全工具副作用 EffectSet、网络端点 restricted 的旧交付范围 | 本轮唯一 read/write/network boolean | 新矩阵与 release gate 减去无关业务要求；历史证据作为事实保留，不能假造新测试 PASS |
@@ -19,11 +19,11 @@
 
 ## 1. 现有成果的复用表
 
-- Alpha.4 工具 allow/ask/deny、ApprovalCase、单次 Grant、Control/Authority Envelope、Guard：**保留并作为新 MemberPolicy/Invocation Binder 的唯一权限来源**。不新建第二审批系统。
+- Alpha.4 工具 allow/ask/deny、ApprovalCase、单次 Grant、Control/Authority Envelope、Guard：**保留为调用准入与授权治理来源**。单次批准不扩大 Member/Tool I/O 硬上界；合法硬上界变更须明确的策略变更与代际更新。不新建第二审批系统。
 - PR #26 `team-spill-local`：外部插件通过 `disable+insert` 替换同名受信服务成功、非 Team 不受影响；复用**装配方法**，不同新 Provider 必须自己证明真正绑定。
 - 当前 `tests/world-factory`、`tests/paths.mjs`、C1/C2/C3 工具与资产预检：保留、复用，避免复制大型 Host checkout、重复开新 launcher 和无谓 CI 重跑。
 - `packages/runtime/sandbox-provider` 的 Linux launcher、Fd、probe、租约、退出码和进程树清理代码：可评估**提取通用执行能力**，不要求全部照搬其旧 EffectSet/`network:restricted` 语义，严格保持原生 `SubprocessHandle`。
-- `controlled-fs` 的路径与版本核验：仅提取与新 `ctx.fs` ABI 能匹配的机制，避免用旧接口强行取代原生 FS 的流式读/编辑。
+- `controlled-fs` 的路径与版本核验：仅提取与新 `ctx.fs` ABI 能匹配的机制，避免用旧接口强行取代原生 FS 的流式读/编辑。P1 必须实现 `MemberCeiling ∩ ToolRestriction`，而非从 Member 或 Tool 两者任选其一。
 - 旧工具 Family 和所有历史 Evidence：**暂不删除**。先通过真实原生纵切验证替代后再按 Gate 逐一退役，必要时旧路径只能用于明确隔离的历史测试世界，不能在声称受限的生产执行路径上静默回退。
 
 ## 2. 真实 PoC 与新阶段之间如何衔接
@@ -54,7 +54,7 @@ P5 漏洞/性能/升级复验 → G5（发布候选）
 
 | Owner | 可以修改 | 禁止 |
 |---|---|---|
-| Blueprint/Policy | `packages/domain/blueprint` 新版本、新 `member-io-policy` | 直接修改冻结 v3/v4 历史、二次实现 Alpha.4 Authority |
+| Blueprint/Policy | v4 词汇投影复用、最小 Member ceiling 扩展、`member-io-policy` | 先验创建 v5 全套新词汇、直接修改冻结 v3/v4 历史、二次实现 Alpha.4 Authority |
 | Service | `team-services` 的公共 FS/Web/Sp-Provider | Fork 原生 `read/web/grep` 业务 |
 | OS | `team-sandbox` + 必要的基础设施 Fork | 修改上游 Host checkout、重写 PTY/Process 状态机 |
 | Native Integrator | Team Preset/`cordis.patch.yml`、`host.ts`、`agent-bindings.mjs`、装配索引 | 并发多 Writer、静默 native fallback |
