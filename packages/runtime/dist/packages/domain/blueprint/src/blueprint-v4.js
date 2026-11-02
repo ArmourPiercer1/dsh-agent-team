@@ -52,10 +52,39 @@ import { toHashableBlueprint, validateBlueprintDocument } from './validate.js';
 export const BLUEPRINT_V4_SCHEMA_VERSION = 4;
 /** v4 top-level face = the frozen v3 face plus the optional field family. */
 export const BLUEPRINT_V4_TOOL_BINDING_FAMILY = 'toolBindings';
-/** The closed v4 top-level key set: the frozen v3 table plus the ONE family. */
+/**
+ * The SECOND v4-only family: the per-Member global I/O ceiling (Alpha.5
+ * P1-01, the ONE missing author carrier).
+ *
+ * WHY IT EXISTS: `toolBindings[].io` is PER-TOOL; `toolBindings[].owner` is
+ * the tool's authoring source, NOT a MemberIdentity (pinned by a5sr2 and
+ * re-pinned by a5sf-v4-member-ceiling-projection); a4 `memberEnvelopes`
+ * carry mutation-operation tokens, not file/network I/O.  The plan's
+ * `EffectiveIO(member, tool, call) ⊆ MemberCeiling(member) ∩
+ * ToolRestriction(member, tool)` therefore needs exactly one authoring
+ * carrier for the LEFT factor, and this family is it.
+ *
+ * REUSE, NOT A SECOND LANGUAGE: an entry's `io` block has the SAME closed
+ * three-lane shape, SAME mode variants, SAME locator law and SAME
+ * zero-normalization as `toolBindings[].io` (the lane validators are
+ * literally shared).  The only new fact is the `templateId` reference,
+ * which is CLOSED over this blueprint's templates (leader included) — an
+ * authoring-time reference the trusted compiler later resolves to a real
+ * MemberIdentity; it is never a free-form name and never inferred from
+ * argv/cwd.
+ *
+ * OPTIONAL and present-only in the hash, exactly like `toolBindings`: an
+ * absent family declares NOTHING (a member without a row has no ceiling —
+ * never a synthesized `read: all`).
+ */
+export const BLUEPRINT_V4_MEMBER_CEILING_FAMILY = 'memberIoCeilings';
+/** The closed entry shape of one `memberIoCeilings` item. */
+export const BLUEPRINT_V4_MEMBER_CEILING_FIELDS = ['templateId', 'io'];
+/** The closed v4 top-level key set: the frozen v3 table plus the TWO v4-only families. */
 export const BLUEPRINT_V4_TOP_LEVEL_FIELDS = Object.freeze([
     ...BLUEPRINT_TOP_LEVEL_FIELDS_V3,
     BLUEPRINT_V4_TOOL_BINDING_FAMILY,
+    BLUEPRINT_V4_MEMBER_CEILING_FAMILY,
 ]);
 /** The closed entry shape of one `toolBindings` item. */
 export const BLUEPRINT_V4_TOOL_BINDING_FIELDS = ['owner', 'name', 'authorization', 'io', 'execution'];
@@ -93,6 +122,12 @@ export const V4_PROBLEM_CODES = [
     'ambiguous-omission',
     'unknown-enum',
     'path-unresolvable',
+    /**
+     * A `memberIoCeilings` family binds one templateId TWICE.  A second row is
+     * never merged or resolved by declaration order: two ceilings for one
+     * member have no single meaning, so the whole document is refused.
+     */
+    'duplicate-member-ceiling',
 ];
 function isRec(v) {
     return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -272,6 +307,35 @@ function validateExecution(exec, path, sink) {
     }
     return out;
 }
+/**
+ * The ONE closed three-lane I/O block, shared by `toolBindings[].io` and
+ * `memberIoCeilings[].io` (Alpha.5 P1-01: reuse, never a second vocabulary).
+ * Every lane is REQUIRED and every declared lane is fully explicit (D-03);
+ * an unknown lane key is refused at its full path and never dropped.
+ */
+function validateIoBlock(ioRaw, path, sink) {
+    if (!isRec(ioRaw)) {
+        sink.push({ code: 'not-a-record', path, detail: 'io must be a record with all three lanes declared' });
+        return null;
+    }
+    for (const key of Object.keys(ioRaw)) {
+        if (!BLUEPRINT_V4_IO_FIELDS.includes(key)) {
+            sink.push({ code: 'unknown-field', path: `${path}.${key}`, detail: `field '${key}' is outside the closed io shape (read | write | network)` });
+        }
+    }
+    const read = Object.hasOwn(ioRaw, 'read')
+        ? validateLane(ioRaw['read'], `${path}.read`, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, 'the read lane must be a record with an explicit mode', sink)
+        : (pushMissing(sink, `${path}.read`, 'read'), null);
+    const write = Object.hasOwn(ioRaw, 'write')
+        ? validateLane(ioRaw['write'], `${path}.write`, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, 'the write lane must be a record with an explicit mode', sink)
+        : (pushMissing(sink, `${path}.write`, 'write'), null);
+    const network = Object.hasOwn(ioRaw, 'network')
+        ? validateNetworkLane(ioRaw['network'], `${path}.network`, sink)
+        : (pushMissing(sink, `${path}.network`, 'network'), null);
+    if (read === null || write === null || network === null)
+        return null;
+    return { read, write, network };
+}
 function validateEntry(entry, path, sink) {
     if (!isRec(entry)) {
         sink.push({ code: 'not-a-record', path, detail: 'a toolBindings entry must be a record' });
@@ -310,32 +374,9 @@ function validateEntry(entry, path, sink) {
     if (!Object.hasOwn(entry, 'io') || entry['io'] === undefined) {
         pushMissing(sink, `${path}.io`, 'io');
     }
-    else if (!isRec(entry['io'])) {
-        sink.push({ code: 'not-a-record', path: `${path}.io`, detail: 'io must be a record with all three lanes declared' });
-    }
     else {
-        io = {};
-        for (const key of Object.keys(entry['io'])) {
-            if (!BLUEPRINT_V4_IO_FIELDS.includes(key)) {
-                sink.push({ code: 'unknown-field', path: `${path}.io.${key}`, detail: `field '${key}' is outside the closed io shape (read | write | network)` });
-            }
-        }
-        const read = Object.hasOwn(entry['io'], 'read')
-            ? validateLane(entry['io']['read'], `${path}.io.read`, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, 'the read lane must be a record with an explicit mode', sink)
-            : (pushMissing(sink, `${path}.io.read`, 'read'), null);
-        const write = Object.hasOwn(entry['io'], 'write')
-            ? validateLane(entry['io']['write'], `${path}.io.write`, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, 'the write lane must be a record with an explicit mode', sink)
-            : (pushMissing(sink, `${path}.io.write`, 'write'), null);
-        const network = Object.hasOwn(entry['io'], 'network')
-            ? validateNetworkLane(entry['io']['network'], `${path}.io.network`, sink)
-            : (pushMissing(sink, `${path}.io.network`, 'network'), null);
-        if (read !== null)
-            io['read'] = read;
-        if (write !== null)
-            io['write'] = write;
-        if (network !== null)
-            io['network'] = network;
-        if (read === null || write === null || network === null)
+        io = validateIoBlock(entry['io'], `${path}.io`, sink);
+        if (io === null)
             ok = false;
     }
     let execution = null;
@@ -356,6 +397,85 @@ function validateEntry(entry, path, sink) {
         io: io,
         execution: execution,
     };
+}
+/** One `memberIoCeilings` entry: a closed templateId reference + the shared io block. */
+function validateMemberCeiling(entry, path, templateIds, seen, sink) {
+    if (!isRec(entry)) {
+        sink.push({ code: 'not-a-record', path, detail: 'a memberIoCeilings entry must be a record' });
+        return null;
+    }
+    for (const key of Object.keys(entry)) {
+        if (!BLUEPRINT_V4_MEMBER_CEILING_FIELDS.includes(key)) {
+            sink.push({ code: 'unknown-field', path: `${path}.${key}`, detail: `field '${key}' is outside the closed memberIoCeilings entry shape (templateId | io)` });
+        }
+    }
+    let ok = true;
+    let templateId = null;
+    if (!Object.hasOwn(entry, 'templateId') || entry['templateId'] === undefined) {
+        pushMissing(sink, `${path}.templateId`, 'templateId');
+        ok = false;
+    }
+    else {
+        templateId = validateNameLike(entry['templateId'], `${path}.templateId`, sink);
+        if (templateId === null) {
+            ok = false;
+        }
+        else if (!templateIds.has(templateId)) {
+            // Identity is CLOSED over this blueprint's templates (leader included):
+            // a ceiling may never name a member the document does not declare, and
+            // it may never be inferred from a tool owner or an argv/cwd value.
+            sink.push({
+                code: 'path-unresolvable',
+                path: `${path}.templateId`,
+                detail: `templateId '${templateId}' does not resolve to any template of this blueprint (leader template included) — a Member ceiling is bound to a declared template, never a free-form name`,
+            });
+            ok = false;
+        }
+        else if (seen.has(templateId)) {
+            sink.push({
+                code: 'duplicate-member-ceiling',
+                path: `${path}.templateId`,
+                detail: `templateId '${templateId}' already has a Member ceiling; two ceilings for one member have no single meaning and are never merged by declaration order`,
+            });
+            ok = false;
+        }
+        else {
+            seen.add(templateId);
+        }
+    }
+    let io = null;
+    if (!Object.hasOwn(entry, 'io') || entry['io'] === undefined) {
+        pushMissing(sink, `${path}.io`, 'io');
+        ok = false;
+    }
+    else {
+        io = validateIoBlock(entry['io'], `${path}.io`, sink);
+        if (io === null)
+            ok = false;
+    }
+    if (!ok || templateId === null || io === null)
+        return null;
+    return { templateId, io: io };
+}
+/**
+ * Validate the `memberIoCeilings` family. The template reference set is the
+ * document's OWN closed template set (leader + members), read from the
+ * already-validated frozen v3 core — never a free-standing list.
+ */
+function validateMemberCeilingFamily(familyRaw, core, sink) {
+    if (!Array.isArray(familyRaw)) {
+        sink.push({ code: 'field-type', path: '$.memberIoCeilings', detail: 'memberIoCeilings must be an array of entries (an absent family declares nothing; an empty array declares nothing — but a non-array is a defect)' });
+        return null;
+    }
+    const templateIds = new Set([core.leader.templateId, ...core.members.map((member) => member.templateId)]);
+    const seen = new Set();
+    const entries = [];
+    familyRaw.forEach((entry, index) => {
+        const parsed = validateMemberCeiling(entry, `$.memberIoCeilings[${String(index)}]`, templateIds, seen, sink);
+        if (parsed !== null)
+            entries.push(parsed);
+    });
+    return entries;
 }
 /**
  * Validate a v4 authoring document. The v3 core face is delegated to the
@@ -378,43 +498,72 @@ export function validateBlueprintV4Document(raw) {
         throw teamContractError('SCHEMA_VERSION_MISMATCH', `the v4 authoring grammar accepts only ${String(BLUEPRINT_V4_SCHEMA_VERSION)}, got ${String(version)}`, { path: '$.schemaVersion' });
     }
     const hasFamily = Object.hasOwn(raw, BLUEPRINT_V4_TOOL_BINDING_FAMILY) && raw[BLUEPRINT_V4_TOOL_BINDING_FAMILY] !== undefined;
+    const hasCeilingFamily = Object.hasOwn(raw, BLUEPRINT_V4_MEMBER_CEILING_FAMILY) && raw[BLUEPRINT_V4_MEMBER_CEILING_FAMILY] !== undefined;
     const rest = { ...raw };
     delete rest[BLUEPRINT_V4_TOOL_BINDING_FAMILY];
+    delete rest[BLUEPRINT_V4_MEMBER_CEILING_FAMILY];
     // The delegation: the frozen v3 validator owns every other field — v4
     // adds NO core-face freedom, so the frozen branch stays structurally true.
     const core3 = validateBlueprintDocument({ ...rest, schemaVersion: 3 });
-    if (!hasFamily) {
+    if (!hasFamily && !hasCeilingFamily) {
         return deepFreeze({ ...core3, schemaVersion: 4 });
     }
-    const familyRaw = raw[BLUEPRINT_V4_TOOL_BINDING_FAMILY];
     const sink = [];
-    if (!Array.isArray(familyRaw)) {
-        sink.push({ code: 'field-type', path: '$.toolBindings', detail: 'toolBindings must be an array of entries (an absent family declares nothing; an empty array declares nothing — but a non-array is a defect)' });
-    }
-    else {
-        const entries = [];
-        familyRaw.forEach((entry, index) => {
-            const parsed = validateEntry(entry, `$.toolBindings[${String(index)}]`, sink);
-            if (parsed !== null)
-                entries.push(parsed);
-        });
-        if (sink.length === 0) {
-            return deepFreeze({ ...core3, schemaVersion: 4, toolBindings: entries });
+    let bindings;
+    let ceilings;
+    if (hasFamily) {
+        const familyRaw = raw[BLUEPRINT_V4_TOOL_BINDING_FAMILY];
+        if (!Array.isArray(familyRaw)) {
+            sink.push({ code: 'field-type', path: '$.toolBindings', detail: 'toolBindings must be an array of entries (an absent family declares nothing; an empty array declares nothing — but a non-array is a defect)' });
+        }
+        else {
+            bindings = [];
+            familyRaw.forEach((entry, index) => {
+                const parsed = validateEntry(entry, `$.toolBindings[${String(index)}]`, sink);
+                if (parsed !== null)
+                    bindings.push(parsed);
+            });
         }
     }
-    throw teamContractError('MALFORMED_DTO', 'the v4 toolBindings family was refused; every problem is listed at its full path', {
+    if (hasCeilingFamily) {
+        const parsedFamily = validateMemberCeilingFamily(raw[BLUEPRINT_V4_MEMBER_CEILING_FAMILY], core3, sink);
+        if (parsedFamily !== null)
+            ceilings = parsedFamily;
+    }
+    if (sink.length === 0) {
+        return deepFreeze({
+            ...core3,
+            schemaVersion: 4,
+            ...(bindings === undefined ? {} : { toolBindings: bindings }),
+            ...(ceilings === undefined ? {} : { memberIoCeilings: ceilings }),
+        });
+    }
+    throw teamContractError('MALFORMED_DTO', 'the v4 effect-governance families were refused; every problem is listed at its full path', {
         problems: sink.map((p) => ({ code: p.code, path: p.path, detail: p.detail, ...(p.legalValues === undefined ? {} : { legalValues: [...p.legalValues] }) })),
     });
 }
 /** The hashable projection: the frozen v3 projection (restamped) plus the declared family. */
 export function toHashableBlueprintV4(core) {
-    const { schemaVersion: _v4, toolBindings, ...rest } = core;
+    const { schemaVersion: _v4, toolBindings, memberIoCeilings, ...rest } = core;
     const hashable3 = toHashableBlueprint({ ...rest, schemaVersion: 3 });
     return {
         ...hashable3,
         schemaVersion: BLUEPRINT_V4_SCHEMA_VERSION,
         ...(toolBindings !== undefined ? { toolBindings: JSON.parse(JSON.stringify(toolBindings)) } : {}),
+        ...(memberIoCeilings !== undefined ? { memberIoCeilings: JSON.parse(JSON.stringify(memberIoCeilings)) } : {}),
     };
+}
+/**
+ * Look up the Member ceiling of one template, or `null` when the document
+ * declares none.  `null` is the ONLY honest answer for an undeclared
+ * ceiling: callers must fail closed, never synthesize `read: all`.
+ */
+export function findMemberIoCeiling(core, templateId) {
+    for (const entry of core.memberIoCeilings ?? []) {
+        if (entry.templateId === templateId)
+            return entry;
+    }
+    return null;
 }
 /** Source pipeline mirror of `parseBlueprint` for the v4 grammar (dormant). */
 export function parseBlueprintV4(source) {
