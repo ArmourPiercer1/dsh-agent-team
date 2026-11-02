@@ -61,6 +61,16 @@ Blueprint Member ceiling + existing v4 toolBindings.io    Alpha.4 Tool Admission
 
 上游 `SandboxPolicy` 只有 `read-only/workspace-write/danger-full-access`，不足以表达 Member 读白名单和禁网；避免改 Core 类型，在 Team 自己的受信上下文附加 Policy。现有 `sandbox-local` 的 bwrap profile `--ro-bind / /` 放开全盘读，不能原样使用为读限制实现。Landlock 的网络 ABI 不等于完整禁网。`ctx.isolate()` 只隔离 Cordis 服务，不隔离任意同进程 Node I/O。
 
+## 4A. 持久 Bash 的零复制公开接口包裹路线（B2-R）
+
+优先级：**原生公开 Provider/配置 → 公开 `apply` 包裹/代理 Context（零复制）→ 小范围基础设施 Fork → Core/原生 ToolDefinition 修改始终禁止**。
+
+已测包裹：Team 专用 Preset 以 wrapper 替换 `terminal-bash` 配置行，直接调用上游 `nativeApply(wrappedCtx, config)`。wrapper 的 `sandboxPolicy.resolve` 动态计算测试会话写入根；有写出界失败与允许区成功的真实文件副作用证据。此装配不需要复制任何上游插件源文件。
+
+**不构成完整权限证明**：该 PoC 用测试会话名称子串匹配 Member，且找不到匹配时 `return base`；读面仍可访问任意只读路径；所谓 danger 测试使用了原生工具不认识的额外参数。生产必须以可信 TeamDomain Member 身份+策略版本+真实工具绑定替代字符串匹配，未绑定受限 Member 则拒绝；真实支持的 sandbox 模式/审批路径须单独验证，持久 PTY 在版本变化时需终止/新建。
+
+为满足独立 read/write 上界，`workspace-write` 只是**写侧候选机制**。OS Reader/Writer 需分别在真实沙箱域强制执行权限；目录掩蔽只能证明被掩的目录不可见，不等于任意文件级读允许列表已成立。详细差量 PoC 见 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md)。
+
 ## 5. Fork 的维护契约
 
 - PR #26 `spill-local` disable + Team Provider 插入/继承已经证明「在外部插件替换一个公共服务」可实施；**不表示本次 FS/PTY/Subprocess 的 Member 绑定已经通过**。
