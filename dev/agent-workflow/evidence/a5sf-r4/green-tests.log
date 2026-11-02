@@ -1,31 +1,34 @@
-# a5sf-r4 / BL-12 — GREEN captures (real output, captured by tee; 2026-11-02 real UTC)
-# branch task/a5sf-r4-diag-20261102, base origin/master 180088813
+# a5sf-r4 / BL-12 — GREEN captures (real output; 2026-11-02 real UTC; review round after rebase onto 65bcea4ed)
+# branch task/a5sf-r4-diag-20261102
 
 $ node --test tests/a5sf-diag/a5sf-diag.test.mjs
-✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (102.11038ms)
-✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (101.645643ms)
-✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (101.742103ms)
-✔ L4 failure classification passes the PR #394 class string through unchanged (102.54677ms)
-✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (102.903082ms)
-✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.21699ms)
-✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (99.993684ms)
-✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (102.338923ms)
-ℹ tests 8
+✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (105.82815ms)
+✔ L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass (103.430723ms)
+✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (101.50289ms)
+✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (97.394815ms)
+✔ L4 failure classification passes the PR #394 class string through unchanged (100.420471ms)
+✔ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (99.461308ms)
+✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (101.327709ms)
+✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.280582ms)
+✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (104.795364ms)
+✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (105.987601ms)
+ℹ tests 10
 ℹ suites 0
-ℹ pass 8
+ℹ pass 10
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 775.590618
+ℹ duration_ms 982.75909
 exit=0
 
 $ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/clean.jsonl
-A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=6 files=1
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=8 files=1
 SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
-ALLOW_LEGITIMATE file=tests/a5sf-diag/fixtures/clean.jsonl:3 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=c2 requestId=req-clean-1 tool=read axis=read
-FAILURE_CLASS file=tests/a5sf-diag/fixtures/clean.jsonl:6 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
-SUMMARY calls=3 allow=2 findings=0 legitimate_narrowed=1 undecidable=0 classified=1 gaps=0 verdict=NO_BYPASS_FOUND
+ALLOW_LEGITIMATE file=tests/a5sf-diag/fixtures/clean.jsonl:3 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=call-r1-real-oneshot requestId=req-clean-1 tool=read axis=read boundBy=operationFingerprint
+ALLOW_LEGITIMATE file=tests/a5sf-diag/fixtures/clean.jsonl:4 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=c3 requestId=req-clean-2 tool=read axis=read boundBy=call.logicalOperationId = scope.correlation
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/clean.jsonl:8 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
+SUMMARY calls=4 allow=3 findings=0 legitimate_narrowed=2 undecidable=0 classified=1 gaps=0 verdict=NO_BYPASS_FOUND
 LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
@@ -34,12 +37,26 @@ LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, neve
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=0
 
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/unbindable.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=3 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+UNDECIDABLE file=tests/a5sf-diag/fixtures/unbindable.jsonl:2 code=APPROVAL_SCOPE_UNBINDABLE callId=call-r1-unbound requestId=req-unbound-1 why=the call carries no logicalOperationId and scope.correlation ≠ callId
+SUMMARY calls=1 allow=1 findings=0 legitimate_narrowed=0 undecidable=1 classified=0 gaps=0 verdict=INCOMPLETE
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
 $ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/bypass.jsonl
-A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=4 files=1
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=6 files=1
 SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
 APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:2 code=ALLOW_WITHOUT_DURABLE_APPROVAL callId=c1 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt
-APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:3 code=APPROVAL_SCOPE_MISMATCH callId=c2 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt requestId=req-bypass-2
-SUMMARY calls=2 allow=2 findings=2 legitimate_narrowed=0 undecidable=0 classified=0 gaps=0 verdict=BYPASS_FOUND
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:3 code=APPROVAL_SCOPE_MISMATCH callId=c2 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt requestId=req-bypass-2 why=scope.toolName
+APPROVAL_BYPASS file=tests/a5sf-diag/fixtures/bypass.jsonl:5 code=APPROVAL_SCOPE_MISMATCH callId=c3 member=alpha tool=read axis=read lane=allow compiled=ask locator=/work/alpha/secret.txt requestId=req-bypass-3 why=scope.actionName
+SUMMARY calls=3 allow=3 findings=3 legitimate_narrowed=0 undecidable=0 classified=0 gaps=0 verdict=BYPASS_FOUND
 LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
@@ -62,12 +79,27 @@ LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, neve
 LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
 exit=1
 
+$ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/duplicate-ceiling.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=3 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+UNDECIDABLE file=tests/a5sf-diag/fixtures/duplicate-ceiling.jsonl:2 code=AMBIGUOUS_CEILING callId=c1 member=alpha why=a duplicate ceiling row makes this member undecidable; neither duplicate decides it
+ROW_INVALID file=tests/a5sf-diag/fixtures/duplicate-ceiling.jsonl:3 code=DUPLICATE_CEILING_MEMBER reason=a second ceiling row for member 'alpha' is ambiguous; neither row is used to decide its allow calls
+SUMMARY calls=1 allow=1 findings=0 legitimate_narrowed=0 undecidable=2 classified=0 gaps=0 verdict=INCOMPLETE
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=1
+
 $ node scripts/a5sf-diag.mjs tests/a5sf-diag/fixtures/failure.jsonl
-A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=2 files=1
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=3 files=1
 SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
 FAILURE_CLASS file=tests/a5sf-diag/fixtures/failure.jsonl:1 code=APPROVAL_DENIED attribution=ATTRIBUTED faces=pa-control-edge
 FAILURE_CLASS file=tests/a5sf-diag/fixtures/failure.jsonl:2 code=GRANT_STALE attribution=ATTRIBUTED faces=pa-control-edge
-SUMMARY calls=0 allow=0 findings=0 legitimate_narrowed=0 undecidable=0 classified=2 gaps=0 verdict=NO_BYPASS_FOUND
+FAILURE_CLASS file=tests/a5sf-diag/fixtures/failure.jsonl:3 code=TOOL_BINDING_UNVERIFIED attribution=AMBIGUOUS faces=admission-kernel+assurance+closed-world-guard+pa-control-edge
+SUMMARY calls=0 allow=0 findings=0 legitimate_narrowed=0 undecidable=0 classified=3 gaps=0 verdict=NO_BYPASS_FOUND
 LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
 LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
 LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"

@@ -1,0 +1,26 @@
+# a5sf-r4 / BL-12 — review-response mutation controls (real runs; each mutation applied to scripts/a5sf-diag.mjs, then reverted)
+# 2026-11-02 real UTC; branch task/a5sf-r4-diag-20261102
+
+== M1 (C2 attribution hardcoded) ==
+✖ L4 failure classification passes the PR #394 class string through unchanged (102.87926ms)
+ℹ pass 9
+ℹ fail 1
+✖ L4 failure classification passes the PR #394 class string through unchanged (102.87926ms)
+M1 exit=1
+
+== M2 (C2 faces hardcoded) ==
+✖ L4 failure classification passes the PR #394 class string through unchanged (106.439887ms)
+ℹ pass 9
+ℹ fail 1
+✖ L4 failure classification passes the PR #394 class string through unchanged (106.439887ms)
+M2 exit=1
+
+== M3 (C4 duplicate ceiling last-wins) ==
+✖ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (99.348915ms)
+ℹ pass 9
+ℹ fail 1
+✖ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (99.348915ms)
+M3 exit=1
+
+== restore check ==
+scripts/a5sf-diag.mjs: OK

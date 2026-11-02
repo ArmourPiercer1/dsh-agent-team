@@ -2,3 +2,5 @@
 {"kind":"call","callId":"c1","member":"alpha","tool":"read","axis":"read","locator":"/work/alpha/secret.txt","lane":"allow"}
 {"kind":"call","callId":"c2","member":"alpha","tool":"read","axis":"read","locator":"/work/alpha/secret.txt","lane":"allow","approvalRequestId":"req-bypass-2"}
 {"kind":"approval","requestId":"req-bypass-2","decisionSequence":9,"consumedAt":"2026-11-02T00:00:01.000Z","scope":{"rootSessionId":"team.1","targetInstanceId":"alpha","toolName":"write","correlation":"c2"}}
+{"kind":"call","callId":"c3","member":"alpha","tool":"read","axis":"read","locator":"/work/alpha/secret.txt","lane":"allow","approvalRequestId":"req-bypass-3","actionName":"team.action.execute"}
+{"kind":"approval","requestId":"req-bypass-3","decisionSequence":10,"consumedAt":"2026-11-02T00:00:02.000Z","scope":{"rootSessionId":"team.1","targetInstanceId":"alpha","actionName":"team.action.other","toolName":"read","correlation":"c3"}}

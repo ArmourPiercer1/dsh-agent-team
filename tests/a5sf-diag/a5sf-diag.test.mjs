@@ -11,7 +11,8 @@
  *
  * The four required legs (BL-12):
  *   L1 a clean run reports no finding and does not flag a LEGITIMATE narrowed
- *      allow (compiled `ask` + durable consumed row — the R1 reference model);
+ *      allow (compiled `ask` + durable consumed row, R1-shaped: correlation ≠ callId);
+ *   L1b an UNBINDABLE named row is UNDECIDABLE, never a silent bypass;
  *   L2 a synthetic bypass (allow with no durable approval row) IS a finding;
  *   L3 a mis-scoped allow (tool absent from the compiled ceiling / locator
  *      outside it) IS a finding;
@@ -49,12 +50,29 @@ test('L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow st
   const r = run([join(FIXTURES, 'clean.jsonl')])
   assert.equal(r.status, 0, r.stdout + r.stderr)
   assert.equal(line(r.stdout, 'APPROVAL_BYPASS'), undefined, r.stdout)
-  const legit = line(r.stdout, 'ALLOW_LEGITIMATE')
-  assert.ok(legit, r.stdout)
-  assert.match(legit, /callId=c2\b/)
-  assert.match(legit, /requestId=req-clean-1\b/)
-  assert.match(r.stdout, /SUMMARY calls=3 .*findings=0\b/)
-  assert.match(r.stdout, /legitimate_narrowed=1\b/)
+  assert.equal(line(r.stdout, 'UNDECIDABLE'), undefined, r.stdout)
+  const legit = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('ALLOW_LEGITIMATE'))
+  assert.equal(legit.length, 2, r.stdout)
+  // R1's real shape: invocation callId ≠ durable scope.correlation; the fingerprint binds them.
+  assert.match(legit[0], /callId=call-r1-real-oneshot\b/)
+  assert.match(legit[0], /requestId=req-clean-1\b/)
+  assert.match(legit[0], /boundBy=operationFingerprint\b/)
+  assert.match(legit[1], /callId=c3\b/)
+  assert.match(legit[1], /boundBy=call\.logicalOperationId = scope\.correlation\b/)
+  assert.match(r.stdout, /SUMMARY calls=4 .*findings=0\b/)
+  assert.match(r.stdout, /legitimate_narrowed=2\b/)
+})
+
+test('L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass', () => {
+  const r = run([join(FIXTURES, 'unbindable.jsonl')])
+  assert.equal(r.status, 1, r.stdout + r.stderr)
+  const und = line(r.stdout, 'UNDECIDABLE')
+  assert.ok(und, r.stdout)
+  assert.match(und, /code=APPROVAL_SCOPE_UNBINDABLE\b/)
+  assert.match(und, /callId=call-r1-unbound\b/)
+  assert.match(und, /requestId=req-unbound-1\b/)
+  assert.equal(line(r.stdout, 'APPROVAL_BYPASS'), undefined, r.stdout)
+  assert.match(r.stdout, /SUMMARY .*findings=0 .*undecidable=1\b/)
 })
 
 test('L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding', () => {
@@ -67,11 +85,16 @@ test('L2 synthetic bypass: allow in the compiled ask lane with NO durable row is
   assert.match(f1, /compiled=ask\b/)
   assert.match(f1, /bypass\.jsonl:2\b/)
   // a durable row that exists but names another tool does NOT authorize this call
-  const f2 = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('APPROVAL_BYPASS'))[1]
-  assert.ok(f2, r.stdout)
-  assert.match(f2, /code=APPROVAL_SCOPE_MISMATCH\b/)
-  assert.match(f2, /callId=c2\b/)
-  assert.match(r.stdout, /findings=2\b/)
+  const all = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('APPROVAL_BYPASS'))
+  assert.equal(all.length, 3, r.stdout)
+  assert.match(all[1], /code=APPROVAL_SCOPE_MISMATCH\b/)
+  assert.match(all[1], /callId=c2\b/)
+  assert.match(all[1], /why=scope\.toolName\b/)
+  // ... and neither does one whose actionName differs from the call's
+  assert.match(all[2], /code=APPROVAL_SCOPE_MISMATCH\b/)
+  assert.match(all[2], /callId=c3\b/)
+  assert.match(all[2], /why=scope\.actionName\b/)
+  assert.match(r.stdout, /findings=3\b/)
 })
 
 test('L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings', () => {
@@ -93,13 +116,36 @@ test('L4 failure classification passes the PR #394 class string through unchange
   const r = run([join(FIXTURES, 'failure.jsonl')])
   assert.equal(r.status, 0, r.stdout + r.stderr)
   const lines = r.stdout.split(/\r?\n/).filter((l) => l.startsWith('FAILURE_CLASS '))
-  assert.equal(lines.length, 2, r.stdout)
+  assert.equal(lines.length, 3, r.stdout)
   const expected = attribute('refused-admission', 'APPROVAL_DENIED')
   assert.match(lines[0], /code=APPROVAL_DENIED\b/)
   assert.match(lines[0], new RegExp(`attribution=${expected.verdict}\\b`))
   assert.match(lines[1], /code=GRANT_STALE\b/)
+  // C2: pin the AMBIGUOUS verdict AND the face list EXACTLY, compared to the imported
+  // table (hardcoding either in the tool turns this RED).
+  const ambiguous = attribute('refused-admission', 'TOOL_BINDING_UNVERIFIED')
+  assert.equal(ambiguous.verdict, 'AMBIGUOUS')
+  const faces = ambiguous.candidates.map((c) => c.face).join('+')
+  assert.match(lines[2], /code=TOOL_BINDING_UNVERIFIED\b/)
+  assert.match(lines[2], new RegExp(`attribution=${ambiguous.verdict}\\b`))
+  assert.ok(lines[2].includes(`faces=${faces}`), `expected faces=${faces} in ${lines[2]}`)
   assert.equal(line(r.stdout, 'FAILURE_CLASS_GAP'), undefined, r.stdout)
   assert.match(r.stdout, /SUMMARY .*gaps=0\b/)
+})
+
+test('C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report', () => {
+  const r = run([join(FIXTURES, 'duplicate-ceiling.jsonl')])
+  assert.equal(r.status, 1, r.stdout + r.stderr)
+  const rowInvalid = line(r.stdout, 'ROW_INVALID')
+  assert.ok(rowInvalid, r.stdout)
+  assert.match(rowInvalid, /code=DUPLICATE_CEILING_MEMBER\b/)
+  assert.match(rowInvalid, /duplicate-ceiling\.jsonl:3\b/)
+  const und = line(r.stdout, 'UNDECIDABLE')
+  assert.ok(und, r.stdout)
+  assert.match(und, /code=AMBIGUOUS_CEILING\b/)
+  assert.match(und, /callId=c1\b/)
+  assert.equal(line(r.stdout, 'APPROVAL_BYPASS'), undefined, r.stdout)
+  assert.match(r.stdout, /SUMMARY .*findings=0 .*undecidable=2\b/)
 })
 
 test('L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended', () => {

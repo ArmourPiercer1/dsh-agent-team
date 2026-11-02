@@ -40,14 +40,33 @@
  *
  *   {"kind":"call","callId":"c1","member":"alpha","tool":"read","axis":"read",
  *    "locator":"/work/alpha/f","lane":"allow"|"ask"|"deny",
- *    "approvalRequestId":"req-1"?}
+ *    "approvalRequestId":"req-1"?,"logicalOperationId":"corr-1"?,
+ *    "operationFingerprint":"sha256:…"?,"actionName":"team.action.execute"?,
+ *    "capabilityDomain":"…"?}
  *       — one decided call. `axis` is read|write (network is a boolean this round).
+ *         `callId` is the INVOCATION id; `logicalOperationId` (when the lane has one)
+ *         is the logical-operation identity R1's durable scope uses. See the binding
+ *         rule below.
  *
  *   {"kind":"approval","requestId":"req-1","decisionSequence":7,
- *    "consumedAt":"<ISO-8601>","scope":{rootSessionId,targetInstanceId,toolName,
- *    correlation,operationFingerprint?}}
+ *    "consumedAt":"<ISO-8601>","scope":{rootSessionId,targetInstanceId,actionName?,
+ *    toolName,capabilityDomain?,correlation,operationFingerprint?}}
  *       — the durable `control-allow-consumed` fact (the real ControlConsumptionRecord
  *         shape). Presence of this row IS the consumption; this tool never mints one.
+ *         R1's legitimate narrowed allow is exactly this row: its `scope.correlation`
+ *         is a LOGICAL-OPERATION id (`corr-…`), NOT the invocation `callId`
+ *         (`packages/runtime/test/a5sf-approval-takeover.test.ts`: callId
+ *         `call-r1-real-oneshot` vs correlation `corr-a5sf-r1-oneshot`). The row
+ *         authorizes a call when member + tool (+ actionName/capabilityDomain when
+ *         BOTH sides carry them) agree AND one identity of operation holds:
+ *         `scope.correlation === call.callId`, or
+ *         `call.logicalOperationId === scope.correlation`, or both carry an equal
+ *         `operationFingerprint`. If a NAMED row exists but the call carries no
+ *         logical-operation identifier and `correlation ≠ callId`, the verdict is
+ *         `UNDECIDABLE APPROVAL_SCOPE_UNBINDABLE` — never bypass, never clean.
+ *         A repeated `ceiling` row for one member is ambiguous and makes that
+ *         member's allow calls `UNDECIDABLE AMBIGUOUS_CEILING` (fail closed: a looser
+ *         duplicate must not mask a bypass); each duplicate is also `ROW_INVALID`.
  *
  *   {"kind":"failure","callId":"c1","text":"a5p5-refused kind=… code=… detail=…"}
  *   {"kind":"compiler-refusal","callId":"c2","code":"MEMBER_GENERATION_STALE"}
@@ -164,21 +183,52 @@ export function collectInput(target) {
   return { rows, files: files.map(displayPath), bytes: totalBytes }
 }
 
-/** A durable approval authorizes a call only for the SAME identity it was minted for. */
+/**
+ * Bind one durable approval row to one call, in the shape R1 actually ships.
+ *
+ * R1's legitimate narrowed allow is `callId: 'call-…'` + scope
+ * `correlation: 'corr-…'` — a LOGICAL-OPERATION correlation, not the invocation
+ * id (`packages/runtime/test/a5sf-approval-takeover.test.ts`: callId
+ * `call-r1-real-oneshot` vs correlation `corr-a5sf-r1-oneshot`). Treating
+ * `correlation === callId` as the only binding would flag every real R1 allow.
+ *
+ * Identity of operation is established by ANY of:
+ *   (i)   scope.correlation === call.callId;
+ *   (ii)  call.logicalOperationId === scope.correlation;
+ *   (iii) both carry an operationFingerprint and they are equal.
+ * Member/tool (and actionName/capabilityDomain when BOTH sides carry them) must
+ * agree first. When the identity cannot be established (a named row exists, the
+ * call carries no logical-operation id, and correlation ≠ callId) the answer is
+ * `unbindable` — the caller reports UNDECIDABLE, never bypass and never clean.
+ *
+ * @returns {{state:'authorized'|'mismatch'|'unbindable', reason:string}}
+ */
+export function bindApproval(approval, call) {
+  const scope = approval?.scope
+  if (scope === null || typeof scope !== 'object') return { state: 'mismatch', reason: 'scope' }
+  if (!isNonBlank(scope.rootSessionId)) return { state: 'mismatch', reason: 'scope.rootSessionId' }
+  if (scope.targetInstanceId !== call.member) return { state: 'mismatch', reason: 'scope.targetInstanceId' }
+  if (scope.toolName !== call.tool) return { state: 'mismatch', reason: 'scope.toolName' }
+  if (isNonBlank(scope.actionName) && isNonBlank(call.actionName) && scope.actionName !== call.actionName) return { state: 'mismatch', reason: 'scope.actionName' }
+  if (isNonBlank(scope.capabilityDomain) && isNonBlank(call.capabilityDomain) && scope.capabilityDomain !== call.capabilityDomain) return { state: 'mismatch', reason: 'scope.capabilityDomain' }
+  if (scope.correlation === call.callId) return { state: 'authorized', reason: 'correlation = callId' }
+  if (isNonBlank(call.logicalOperationId) && call.logicalOperationId === scope.correlation) return { state: 'authorized', reason: 'call.logicalOperationId = scope.correlation' }
+  const bothFingerprints = isNonBlank(call.operationFingerprint) && isNonBlank(scope.operationFingerprint)
+  if (bothFingerprints && call.operationFingerprint === scope.operationFingerprint) return { state: 'authorized', reason: 'operationFingerprint' }
+  if (isNonBlank(call.logicalOperationId)) return { state: 'mismatch', reason: 'scope.correlation' }
+  if (bothFingerprints) return { state: 'mismatch', reason: 'scope.operationFingerprint' }
+  return { state: 'unbindable', reason: 'the call carries no logicalOperationId and scope.correlation ≠ callId' }
+}
+
+/** True iff the durable row binds this exact call (backward-compatible boolean). */
 export function approvalAuthorizes(approval, call) {
-  if (approval === null || typeof approval !== 'object') return false
-  if (!isNonBlank(approval.consumedAt) || !Number.isInteger(approval.decisionSequence)) return false
-  const scope = approval.scope
-  if (scope === null || typeof scope !== 'object') return false
-  return isNonBlank(scope.rootSessionId) &&
-    scope.targetInstanceId === call.member &&
-    scope.toolName === call.tool &&
-    scope.correlation === call.callId
+  return bindApproval(approval, call).state === 'authorized'
 }
 
 /** Stable, order-preserving analysis of already-parsed rows. */
 export function analyzeRows(rows) {
   const ceilings = new Map()
+  const ambiguousCeilings = new Set()
   const approvals = []
   const calls = []
   const failures = []
@@ -191,9 +241,18 @@ export function analyzeRows(rows) {
     const kind = row?.kind
     if (kind === 'ceiling') {
       if (!isNonBlank(row.member) || !Array.isArray(row.tools)) { invalid.push({ ...entry, reason: 'ceiling needs member + tools[]' }); continue }
+      if (ceilings.has(row.member)) {
+        // A repeated ceiling row is AMBIGUOUS: keeping the last one would let a looser
+        // duplicate mask a bypass, and keeping the first silently would too. Fail closed.
+        invalid.push({ ...entry, code: 'DUPLICATE_CEILING_MEMBER', reason: `a second ceiling row for member '${row.member}' is ambiguous; neither row is used to decide its allow calls` })
+        ambiguousCeilings.add(row.member)
+        continue
+      }
       ceilings.set(row.member, row)
     } else if (kind === 'approval') {
-      if (!isNonBlank(row.requestId) || row.scope === null || typeof row.scope !== 'object') { invalid.push({ ...entry, reason: 'approval needs requestId + scope' }); continue }
+      if (!isNonBlank(row.requestId) || row.scope === null || typeof row.scope !== 'object' || !isNonBlank(row.consumedAt) || !Number.isInteger(row.decisionSequence)) {
+        invalid.push({ ...entry, code: 'APPROVAL_ROW_INVALID', reason: 'a durable approval needs requestId + decisionSequence (integer) + consumedAt + scope; a malformed row is not a consumption' }); continue
+      }
       approvals.push(row)
     } else if (kind === 'call') {
       if (!isNonBlank(row.callId) || !isNonBlank(row.member) || !isNonBlank(row.tool) || !isNonBlank(row.locator) || !['allow', 'ask', 'deny'].includes(row.lane)) {
@@ -232,6 +291,10 @@ export function analyzeRows(rows) {
       addUndecidable(entry, 'AXIS_UNSUPPORTED', { callId: call.callId, axis: call.axis, why: 'only read|write are decidable; network is a boolean this round' })
       continue
     }
+    if (ambiguousCeilings.has(call.member)) {
+      addUndecidable(entry, 'AMBIGUOUS_CEILING', { callId: call.callId, member: call.member, why: 'a duplicate ceiling row makes this member undecidable; neither duplicate decides it' })
+      continue
+    }
     const ceiling = ceilings.get(call.member)
     if (ceiling === undefined) {
       addUndecidable(entry, 'NO_COMPILED_CEILING', { callId: call.callId, member: call.member })
@@ -258,6 +321,9 @@ export function analyzeRows(rows) {
     }
     if (disposition === 'allow') continue
     // disposition === 'ask': the ceiling requires the durable approval authority.
+    // A row NAMED by requestId is bound (or reported unbindable). Without a name, only a
+    // row that positively binds this call counts as an approval; any other row is not
+    // evidence about this call and the durable fact is simply absent.
     const named = isNonBlank(call.approvalRequestId)
       ? approvals.find((a) => a.requestId === call.approvalRequestId)
       : approvals.find((a) => approvalAuthorizes(a, call))
@@ -265,11 +331,16 @@ export function analyzeRows(rows) {
       addFinding(entry, 'ALLOW_WITHOUT_DURABLE_APPROVAL', { ...common, compiled: 'ask', requestId: call.approvalRequestId })
       continue
     }
-    if (!approvalAuthorizes(named, call)) {
-      addFinding(entry, 'APPROVAL_SCOPE_MISMATCH', { ...common, compiled: 'ask', requestId: named.requestId })
+    const binding = bindApproval(named, call)
+    if (binding.state === 'unbindable') {
+      addUndecidable(entry, 'APPROVAL_SCOPE_UNBINDABLE', { callId: call.callId, compiled: 'ask', requestId: named.requestId, why: binding.reason })
       continue
     }
-    legitimate.push({ file: entry.file, line: entry.line, code: 'APPROVAL_CONSUMED_NARROWED_ALLOW', callId: call.callId, requestId: named.requestId, tool: call.tool, axis: call.axis })
+    if (binding.state === 'mismatch') {
+      addFinding(entry, 'APPROVAL_SCOPE_MISMATCH', { ...common, compiled: 'ask', requestId: named.requestId, why: binding.reason })
+      continue
+    }
+    legitimate.push({ file: entry.file, line: entry.line, code: 'APPROVAL_CONSUMED_NARROWED_ALLOW', callId: call.callId, requestId: named.requestId, tool: call.tool, axis: call.axis, boundBy: binding.reason })
   }
 
   // Failure classification: delegate, print the class string verbatim, disclose a gap.
@@ -318,16 +389,16 @@ export function renderReport(result) {
   out.push(`A5SF-DIAG tool=${TOOL} rows=${String(result.rows)} files=${String(result.files)}`)
   out.push(`SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator`)
   for (const f of result.findings) {
-    out.push(`APPROVAL_BYPASS file=${f.file}:${String(f.line)} code=${f.code} callId=${safeField(f.callId)} member=${safeField(f.member)} tool=${safeField(f.tool)} axis=${safeField(f.axis)} lane=allow compiled=${f.compiled} locator=${safeField(f.locator)}${f.requestId === undefined ? '' : ` requestId=${safeField(f.requestId)}`}`)
+    out.push(`APPROVAL_BYPASS file=${f.file}:${String(f.line)} code=${f.code} callId=${safeField(f.callId)} member=${safeField(f.member)} tool=${safeField(f.tool)} axis=${safeField(f.axis)} lane=allow compiled=${f.compiled} locator=${safeField(f.locator)}${f.requestId === undefined ? '' : ` requestId=${safeField(f.requestId)}`}${f.why === undefined ? '' : ` why=${safeField(f.why)}`}`)
   }
   for (const l of result.legitimate) {
-    out.push(`ALLOW_LEGITIMATE file=${l.file}:${String(l.line)} code=${l.code} callId=${safeField(l.callId)} requestId=${safeField(l.requestId)} tool=${safeField(l.tool)} axis=${safeField(l.axis)}`)
+    out.push(`ALLOW_LEGITIMATE file=${l.file}:${String(l.line)} code=${l.code} callId=${safeField(l.callId)} requestId=${safeField(l.requestId)} tool=${safeField(l.tool)} axis=${safeField(l.axis)} boundBy=${safeField(l.boundBy)}`)
   }
   for (const u of result.undecidable) {
-    out.push(`UNDECIDABLE file=${u.file}:${String(u.line)} code=${u.code} callId=${u.callId === undefined ? '-' : safeField(u.callId)}${u.member === undefined ? '' : ` member=${safeField(u.member)}`}${u.axis === undefined ? '' : ` axis=${safeField(u.axis)}`}${u.why === undefined ? '' : ` why=${safeField(u.why)}`}`)
+    out.push(`UNDECIDABLE file=${u.file}:${String(u.line)} code=${u.code} callId=${u.callId === undefined ? '-' : safeField(u.callId)}${u.member === undefined ? '' : ` member=${safeField(u.member)}`}${u.axis === undefined ? '' : ` axis=${safeField(u.axis)}`}${u.requestId === undefined ? '' : ` requestId=${safeField(u.requestId)}`}${u.why === undefined ? '' : ` why=${safeField(u.why)}`}`)
   }
   for (const i of result.invalid) {
-    out.push(`ROW_INVALID file=${i.file}:${String(i.line)} reason=${safeField(i.reason)}`)
+    out.push(`ROW_INVALID file=${i.file}:${String(i.line)}${i.code === undefined ? '' : ` code=${i.code}`} reason=${safeField(i.reason)}`)
   }
   for (const c of result.classified) {
     out.push(`FAILURE_CLASS file=${c.file}:${String(c.line)} code=${safeField(c.code)} attribution=${c.attribution} faces=${c.faces}`)
