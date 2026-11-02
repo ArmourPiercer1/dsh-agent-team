@@ -126,6 +126,14 @@ type EffectiveIoPolicy = {
 
 **调用与策略变更**：普通 `ask` 可在 Member/Tool Ceiling 内批准一次使用，但不会扩大硬上界。合法 ceiling 改变是另一类明确授权策略变更，并生成 policy revision；在运行的 OS 域必须按新版本重建或排空。禁止把一次批准变成在持久 `bash` 中常驻的宽权限。
 
+## D7A — B2-R PoC 的证据级别与部署路线
+
+2026-11-02 第二轮 PoC 证明：通过公开 `{apply, Config, inject, name}` 为原生 `terminal-bash` 提供零复制包裹上下文，`sandboxPolicy.resolve` 在 PTY 创建时可以限制指定测试会话的**写入根**。此路线优先于复制或 Fork 基础设施插件，仍不改变原生模型工具。
+
+**仅此写入纵切为已测**：原生 `workspace-write` 允许读取白名单外文件；测试采用包含 `M1` 的 sessionId 字符串匹配，匹配缺失时回落旧策略；`sandbox_permissions` 并非原生持久 Bash 的有效模型参数，不能将该次尝试当作实际 danger 升权机制验证；真实 TeamMember 权威绑定、完整 read/write 分离、持久 PTY 撤权、网络与 UI 仍待差量测试。未达这些条件的 Member 全局 I/O 保证保持 CONDITIONAL / NOT_TESTED，不能宣称 READY。
+
+实际受限路径的 Member 绑定缺失、权限代际不符或受控包装服务未被消费时必须 fail closed；非 Team 会话通过独立配置保留原生行为。差量证据任务与阻断条件见 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md)。
+
 ## D8 — 接入与验收
 
 建议阶段：P1 通用基础体系 → P2 每执行机制代表工具正向+拒绝验证 → P3 原生工具逐个接入与功能回归 → P4 全工具读/写/网络与授权/生命周期矩阵 → P5 漏洞负控、修补与回归。**P2/P3 必有最小真实拒绝测试，不可把安全负控全部留到 P5。**
