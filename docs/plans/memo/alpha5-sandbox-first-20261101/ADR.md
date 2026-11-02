@@ -1,112 +1,92 @@
 # ADR — Alpha.5 Sandbox-First / Native-Immutable / Generic Execution
 
-> **状态：DRAFT PR / 用户已裁决目标与原则，技术路线待 PoC 验证。**
-> **日期：2026-11-01。Host 代码审阅锚点：DSH 0.2.0-rc.2 @ `639ed015397290b3745d163aafe02ffee4aa3f84`。**
-> **本 PR 是设计与 PoC 提案，不是 active-plan 切换，不修改任何产品代码、测试实例、Blueprint 存量文档或当前 authority 指针；不得据此自动合并、发布或结束现有 Gate。**
+> **状态：用户已裁决产品原则；本文件在 PR #531 中仍为 DRAFT DESIGN，未成为运行时权威。**
+> **更新：2026-11-02；源代码基线：DSH 0.2.0-rc.2 @ `639ed015397290b3745d163aafe02ffee4aa3f84`。**
+> 本 PR 只更新设计与计划。它不修改原生工具、Team 产品代码、`AGENTS.md`、`dev/engineering/current-authority.json`、旧 active plan、历史证据或稳定实例。实施权威迁移须单独受审。
 
-关联文档：[架构](./ARCHITECTURE.md) · [PoC 计划](./POC-PLAN.md) · [实施与权威迁移](./TRANSITION-PLAN.md)。
+索引：[架构](./ARCHITECTURE.md) · [五阶段实施计划](./IMPLEMENTATION-PLAN.md) · [工具接入/测试矩阵](./TOOL-ADOPTION-MATRIX.md) · [现有 PoC 证据计划](./POC-PLAN.md) · [权威迁移](./TRANSITION-PLAN.md)。[Fork/PoC 缺口历史记录](./FORK-POC-RESOLUTION-PROPOSAL.md) 为来源证据，不再是另一套竞争规则。
 
-## 0. 唯一产品目标（USER-RULING，2026-11-01）
+## D1 — 唯一产品目标与非目标
 
-Alpha.5 **只**在 Team Blueprint 为 Member 定义并兑现以下 I/O 限制：
+Alpha.5 仅增强**按 Team Blueprint / Member 有效权限配置的 I/O 执行环境**：
 
-1. **读**：只能读取蓝图允许的文件/目录资源。
-2. **写**：只能修改蓝图允许的文件/目录资源。
-3. **网络**：本轮只支持 Member **能否联网**（`allow` / `deny`）。API 预留未来“只能连接哪些目的地”的扩展位置，但本轮不实现 DNS、IP、域名、URL、端口、重定向白名单或动态目标审批。
-4. 既有 Alpha.4 **工具调用** `allow/ask/deny`、审批与权限范围变更仍然有效；不新增工具业务状态管理目标，也不复制 Goal、Todo、Present、Jobs 等原生工具。
-5. 所有可接入的原生与未来工具，通过两个通用机制获得 I/O 限制增强；不能适配的能力必须诚实标注，不能声称已满足。
+1. 文件**读取**只能经过蓝图允许的路径或子树。
+2. 文件**写入**只能经过蓝图允许的路径或子树；读写相互独立，不因写权限自动赠送读权限。
+3. Member 的工具**是否允许联网**：`allow | deny`。将未来网络连接目标约束预留为版本化策略扩展，不在本轮实现 DNS/IP/域名/URL/端口目的地 ACL。
+4. Alpha.4 原有**工具调用** `allow/ask/deny`、ApprovalCase、权限范围变更和单次审批机制继续作为唯一权限准入来源。对于没有受管文件/网络 I/O 的 Goal/Todo/Jobs/Present 等宿主内部业务调用，Alpha.5 不增加专用业务管制。
+5. 为原生及未来新工具提供通用受限执行服务；**对未知工具不保证功能兼容性**，对受信同进程工具不作恶意代码抗绕过保证。
 
-**明确非目标**：逐工具业务行为建模、完整 EffectSet/逐效果审批平台、自研原生工具执行体、通用沙箱内的恶意插件真实性证明、远端 Provider 内部 I/O 控制、COW/回滚、跨平台等价、当前版本按目的地过滤网络。工具频率不得改变本 ADR 的接口与信任分类。
+**明确非目标**：新工具算法、重写 ToolDefinition、逐工具 EffectSet/完整效果类型系统、跨平台完全等价、远端云服务内部 I/O 沙箱化、事务回滚、形式化安全证明、消除文件 hardlink 全局别名、所有未知 JS 插件即插即强隔离。**工具调用频率不进入架构或信任边界决策。**
 
-## 1. 不变量组 A：原生工具不可变与边界诚实
+## D2 — 不变量组 A：原生工具及受信执行边界
 
-**A5-NATIVE-01 — Native Tool Immutable**：
-禁止修改、patch、fork、vendor 经过修改的、复制或重新实现任意 DSH 原生模型工具 `ToolDefinition` 的业务执行逻辑。包括参数解析、搜索与读取算法、文本/图片渲染、错误/Spill/PTY/Job 语义。不得以“为了安全”作为豁免。原生包应保持可更新和可替换。
+**A5-NATIVE-01 — Native Tool Immutable**：不得修改、Fork、复制、vendor 改造或重新实现任何 DSH **模型可见原生工具 `ToolDefinition` 的业务逻辑**，包括参数/算法/窗口/输出/错误/Spill/取消/PTY 展示。允许通过配置、上下文服务和通用代理引用原生工具定义。原生工具源码及可观察能力是测试对照基线。
 
-**A5-NATIVE-02 — Native Semantics Preserved**：
-适配层可绑定路由、取消、权限上下文及公共服务，但不拥有原生工具的业务结果语义。允许通用 IPC 转发工具定义与结果；不得写成 `read-executor`、`grep-executor`、`web-fetch-executor` 等替代算法。原生行为基准回归是迁移门禁，而非可选优化项。
+**A5-NATIVE-02 — Native Semantics Preserved**：在接入新执行环境时，参数、返回类型、输出呈现、流、取消、错误分类、后台/终端生命周期等必须与同版上游正向行为对照；不允许 `read-executor`、`grep-executor`、`web-executor` 等替代业务实现。若通用接入使个别工具不兼容，记录 UNSUPPORTED 或明确条件降级，而不是复刻工具。
 
-**A5-BOUNDARY-01 — Enforcement Outside Tool Body**：
-文件与网络限制由经过验证的通用受信 Service Provider 或 OS 执行边界实施，绝不依赖工具自行遵守模型层面的声明。服务层约束仅覆盖经过该服务的调用；同进程恶意代码直接使用 `node:fs`、`node:net` 等不属于 OS 隔离，不能冒称“任意 JS 已隔离”。
+**A5-BOUNDARY-01 — Enforcement Outside Tool Body**：由 Team 的可信受限 Service Provider 或真实 OS 受限执行边界管理读/写/网络；不得依赖 LLM 或原生工具自行诚实声明。`service-mediated` 本质上是**部署者信任工具代码**、工具常规使用 `ctx.fs/web/subprocess` 的受限调用方式，**不隔离同进程直接 `node:fs` / `node:net` 的恶意调用**。`os-confined` 仅约束真正进入受限进程及其后代的效果。不能把这种部署信任冒称为恶意代码安全防护。
 
-**A5-FALLBACK-01 — No Silent Bypass**：
-当所需 I/O 能力缺少可信边界、依赖的 Provider 失效、成员/调用身份不明、单次批准无法限域或动态源尚未绑定时，对该受限能力拒绝执行；不允许无隔离直通、先产生副作用后拒绝、一次性授权默默保留给后续调用。失败后不自动重放已产生部分副作用的命令。
+**A5-FALLBACK-01 — No Silent Bypass**：Member、调用、策略代际、Trusted Binding 或所需 Provider 不可验证，OS 后端不可用或单次扩权无法隔离时，对**声称受限**的路径 fail closed；不得改用未受限上游 Provider、先执行后拒绝、将一次性权限遗留给下一调用，也不得自动重放可能已产生副作用的操作。非 Team 普通路径保留原生行为，但须独立装配而非受限路径 fallback。
 
-## 2. 不变量组 B：通用执行机制
+## D3 — 不变量组 B：两种通用执行机制
 
-**A5-GENERIC-01 — Two Generic Integration Modes**：
-Alpha.5 对外仅提供两类 I/O 接入模式：
+**A5-GENERIC-01 — Two Generic I/O Modes**：
 
-- **`service-mediated`**：受信工具在 DSH Host 运行，其全部受管 I/O 经由已绑定至 Member 的公共 Service（`ctx.fs`、`ctx.web`、`ctx.subprocess` 等）执行。该模式不宣称能隔离任意同进程 JavaScript。
-- **`os-confined`**：真实 I/O 发生在具备声明权限的受限 OS 进程及其后代中。该模式可用在已有工具启动的子进程（leaf）或必要时在整个独立 Tool Host（whole-tool）。leaf/whole-tool 是内部实现形态，不是第三、第四套 Blueprint 权限机制。
+- `service-mediated`：在受信 Host/Member Service Scope 运行原生 ToolDefinition，注入受控 `fs/web/subprocess` 等 Provider，执行前后仍由原生工具完成业务语义。只对经过这些公共服务的 I/O 承诺限制；工具作者/部署者的可信选择是前提。
+- `os-confined`：在 Linux OS 受限的真实子进程（`leaf-process`）执行 I/O，必要时在独立进程加载完整工具运行时（`whole-tool`）。leaf/whole-tool 是**同一模式的内部形态**，whole-tool 不属于本轮必须交付的全功能兼容承诺。
+- 两者**可组合**：原生 `grep` 的 JS 参数/结果在可信 Realm，`ctx.subprocess.spawn` 的 `rg` 子进程使用 OS 限制。
 
-两种模式可组合（例如 `grep` 的原生 JS 层受信、`rg` 在受限子进程内）。不存在“按工具调用次数多少选择模式”的标准。
+**A5-GENERIC-02 — One Effective MemberPolicy**：Blueprint + Alpha.4 权限层级/ApprovalCase → 统一 `MemberPolicy` 与绑定到调用的 `InvocationAuthority`；FS/Web/Subprocess/PTY/OS runner 使用相同解释。工具准入与受限 I/O 互相正交。临时批准仅作用于一调用；持久进程拥有固定的 OS 上界，扩权需新域，撤销需排空/终止旧域或有证据的代际隔离。
 
-**A5-GENERIC-02 — Single MemberPolicy**：
-读范围、写范围、网络布尔许可由同一可信 MemberPolicy/InvocationAuthority 编译，传至两类执行机制。蓝图权限是可执行策略而非工具提示。工具调用准入与 I/O 权限相互独立；不变更 Alpha.4 的 reviewer、authority ladder 或已有 Tool Admission 来源。相同资源的可访问性不得因接入模式而无意扩大。
+**A5-GENERIC-03 — Open Tool Enrollment**：新工具由部署者选择经过验证的执行模式与通用入口/依赖，不新增专用工具体。可独立执行的 CLI 首选 OS runner；无可信服务约束的未知同进程 JS 必须使用真正的 whole-tool 隔离或明确 UNSUPPORTED；没有文件/网络数据面 I/O 的宿主状态工具仅受既有调用准入约束。不能通过“工具名字/调用频率”选择框架。
 
-**A5-GENERIC-03 — Open Tool Onboarding**：
-新增工具不必加入名称级白名单或开发专用 Family 执行体。作者/部署者只需声明其执行入口、需要的 I/O 能力、可用的通用模式与可验证的 Provider 依赖。`service-mediated` 需有受信约定（或具体代码路径/测试）证明 I/O 确由受控服务完成；未知同进程 JS 默认不得据声明取得此模式的“已实施隔离”标签。`os-confined` 若无法把完整工具装进 Tool Host，可报告 UNSUPPORTED，不强造执行体。
+**A5-GENERIC-04 — Evidence-Bounded Assurance**：对原生工具的最强安全进阶保证为：“在注明 Host SHA、操作系统/后端、工具来源、成员策略、正反测试的实验范围内，未观察到越界案例”。不代表所有输入、供应者与升级版本已获普遍证明。保证标签使用 `TESTED_NO_BYPASS_OBSERVED` / `TRUSTED_ONLY` / `NOT_TESTED` / `UNSUPPORTED`；ENV_BLOCK 不是 PASS。
 
-**A5-GENERIC-04 — Evidence-Bounded Assurance**：
-对 DSH 原生工具可作的“可靠”进阶陈述 **仅限**：“在指定 Host SHA、系统环境、权限矩阵、对照测试中，未观察到越界案例”。这不是形式化证明，不得由有限测试宣称对所有输入、更新版本、插件和旁路拥有全面安全保证。需按真实路径分别披露 `tested-no-bypass-observed`、`trusted-delegation`、`not-tested`、`unsupported`；测试证据不能跨 Host 版本或执行环境直接迁移。
+## D4 — 受信工具登记（用户已批准的信任界限）
 
-## 3. Policy 契约：概念形态，而非立即启用的 Blueprint Schema
+Team 启动前由**部署者**登记允许使用 `service-mediated` 的可信工具/插件：至少含来源包/版本、源代码摘要或可复查发布摘要、所选工具名、预期 Scope/Definition 绑定、依赖锁摘要及允许的 Provider 范围。装载时校验实际来源；每次调用核对当前 binding identity + generation，重新加载/HMR/变更来源后失效并重检。**无需每次调用重新哈希整套 node_modules**。
 
-以下是技术组件之间的**目标契约草案**，不表示当前 `schemaVersion: 4` 已接受这些字段：
+该登记只是部署者信任决策与漂移检查，**不是工具代码不含恶意的数学证明**。已登记工具若直接绕过 Provider 访问 Host 系统 API，`service-mediated` 不保证阻断；不能因此要求建设任意 JS 全隔离平台。对未知工具默认不能以未受信方式获得 `service-mediated` 的受控保证。
+
+## D5 — 文件访问语义：允许硬链接
+
+文件读取/写入权限定义在**执行时所使用的授权路径/命名空间**上，而不是 inode 在整个宿主的唯一归属。已存在的 `/allowed/link` 与 `/denied/secret` 若为同一 inode，则通过 `/allowed/link` 读写**属于允许效果**；该效果可能被其他名字观察到。测试不得把“相同 inode 的授权别名可读写”判为逃逸漏洞。
+
+这不授予直接通过 `/denied/secret` 打开权限；符号链接越界、路径规范化、目录替换、非授权路径访问依旧需要测试。`writeText` 原生原子替换可能更换目录条目 inode，不能强行要求任意写操作一定影响硬链接的另一名字。文件名/metadata 侧信道需据实披露，不扩大承诺。
+
+**此放宽仅覆盖 Member 工作区文件 I/O**；不取消 Team 自身权威指针、审批账本、资产 provenance、Evidence 的完整性/原子性保护。旧 `controlled-fs` 的 `nlink === 1` 保护是待迁移的旧语义，须隔离式退役，不能在该提案中直接删除历史证据。
+
+## D6 — 基础设施有限 Fork，CORE_SEAM=0
+
+**不变**：DSH Core 不打补丁；不修改 Host checkout/私有 API/构建文档系统；`CORE PATCH BUDGET=0`。新的 Team 插件在自己的仓库编译/发布、于 Team 装配时替代相应受信服务/Backend。
+
+**允许**：先直接公共 Provider/继承；若公开接口无法传递 MemberPolicy，可**最小化 Fork DSH 执行基础设施插件**，例如 `sandbox-local`、`terminal-bash`、`bash-sandbox`、`fs-sandbox`、`subprocess-local` 的必要策略接线处。它们不是模型可见 ToolDefinition 的 Fork；禁止改工具解析、算法、render 或结果布局。**不是这五个组件必然全部 Fork**，任何 Fork 均需具名 gap、基线源码、最小 diff、许可证、上游跟踪 Owner、更新/退役条件、非 Team 不受影响测试。旧 `AGENTS.md` 的“禁止 vendor 修改上游副本”与此用户新裁决**存在待迁移规范冲突**；在正式权威迁移 PR 审查修订之前，本 Draft 不把 Fork 当作现行旧合同下可直接实施的许可。
+
+历史工程先例 PR #26 的 `spill-local` disable + Team replacement/继承证明了该**装配形式**可行；不证明新 Provider 的逐 Member 正确性。对于 `terminal-bash` 可优先考虑 Team 专属 `backendType` 或 Team Scope 内排他替换，不能令两个同名 Provider 冲突。
+
+## D7 — 版本化策略接口与单次审批
+
+`MemberPolicy` 的概念形态（**不代表旧 Blueprint v3/v4 已具有此语法**）：
 
 ```ts
 type MemberPolicy = {
-  memberIdentity: string;           // trusted bound identity, never caller-supplied
-  revision: string;                 // immutable authority generation
-  read: PathRuleSet;                // bound workspace + explicit allowed resources
-  write: PathRuleSet;               // independent from read
-  network: {
-    access: "allow" | "deny";        // ONLY shipped network policy
-    // future extension: structured destination constraints (NOT parsed now)
-  };
+  memberIdentity: string; revision: string;
+  read: PathRuleSet; write: PathRuleSet;
+  network: { access: "allow" | "deny" };
 };
 type InvocationAuthority = {
-  memberIdentity: string;
-  invocationId: string;
-  policyRevision: string;
+  memberIdentity: string; invocationId: string; policyRevision: string;
   approvedDelta?: { read?: PathRuleSet; write?: PathRuleSet; network?: "allow" | "deny" };
-  expiresAtOrLease: unknown;        // exact representation decided by PoC
+  lease: unknown; // bound to existing Alpha.4 lifecycle, not a new grant store
 };
 ```
 
-约束：路径须基于执行世界的真实资源身份判断，不能靠字符串前缀判定，不能以可变 `cwd` 重新解释蓝图路径；别名/符号链接、TOCTOU、重命名、挂载、硬链接、读后写等必须纳入负控。用户授权写而不授权读时，原生 write/edit 若有读取旧内容/生成差异的必要，应受相同读权限约束；不为保证工具成功而隐式赠送读取权限。
+当前 `schemaVersion:4` 的 `toolBindings[].io` 是逐工具、包含网络 restricted 的旧合同，不能静默改写成全 Member 策略。本设计建议使用**受独立版本迁移审查的 v5 Blueprint 路线**增加 Member I/O 策略；v3/v4 继续按历史语义解析，不得自动默许缺省权限、把 `restricted` 解释成布尔 allow/deny，或破坏已存哈希。最终字段形状见 [ARCHITECTURE](./ARCHITECTURE.md) 提案，并在实施 P1 契约 Gate 冻结。
 
-旧 Blueprint v3/v4 数据、哈希和 Authority Envelope 保持原样。本轮先确定可实现能力；是否改用 Member 级默认策略、如何将当前 v4 `toolBindings.io` 映射到 MemberPolicy，以及任何新语法版本，另起 Schema/迁移决策。网络 `restricted` 的旧草案不得继续冒充本轮承诺。
+## D8 — 接入与验收
 
-## 4. 单次审批、并发与进程生命周期
+建议阶段：P1 通用基础体系 → P2 每执行机制代表工具正向+拒绝验证 → P3 原生工具逐个接入与功能回归 → P4 全工具读/写/网络与授权/生命周期矩阵 → P5 漏洞负控、修补与回归。**P2/P3 必有最小真实拒绝测试，不可把安全负控全部留到 P5。**
 
-- Alpha.4 仍先决定工具是否允许调用；任何临时 I/O 扩权须在受管效果开始前完成审批，绑定 Member、调用、策略代际及生命周期。
-- Trusted Provider 可以在**每次 I/O 前**读取可信调用上下文并判断是否在有效 Grant 内；不能依赖易串线的可变全局变量，也不能把一次性 Grant 移交给同 Member 的并行调用。
-- OS 沙箱若固定了进程创建时的读/写/网络上界，不能事后直接扩大（例如 Landlock 已施加的限制）；临时扩权必须在新的受限执行环境中实施，或经证明无旁路的可信 I/O 服务完成。
-- 已运行的持久 Bash、后台任务及子进程继承的是其启动时的环境上界；策略缩紧与撤销需要停止/排空旧执行域或有实证支持的更强失效机制；不得宣称“改变蓝图即追回已发生的副作用”。
-- 从 OS 受限工具获得的宿主服务桥接，须明确方法、主体、资源与返回数据范围；不能通过桥接让禁网工具调用 Host 的任意网络服务来绕过网络 `deny`。
+每阶段按照 [IMPLEMENTATION-PLAN](./IMPLEMENTATION-PLAN.md) 执行文件/测试/证据 Gate；环境不支持可记录 `ENV_BLOCK/UNSUPPORTED`，不能伪造 PASS。已完成的历史 PoC/PR #26 装配证据可复用，但不能由历史报告自动继承新机制的绿色结论。
 
-## 5. 网络策略本轮的边界
-
-本轮只区分 Member 工具数据面的**外联允许/禁止**，包括直接 Socket、DNS、代理/重定向路径、子进程/子孙进程以及公开 Web Service 的工具请求。实现可以比布尔开关更严格；必须声明本地 loopback/Unix Socket/Host IPC 的真实处理规则，不把“仅阻止公网 HTTP”冒充通用网络禁止。主 DSH Host 的 LLM/control-plane 传输与 Member 工具的数据面不同，但禁止通过 control-plane 的通用代理实现网络旁路。
-
-远端 MCP/SSH/云 Provider 的**内部**文件/网络能力不因本机 OS 沙箱而自动受限；只能通过可信远端部署承诺或标记 UNSUPPORTED。后续的目标地址 ACL 为接口预留，不进行本轮验收或任何暗示“已实现”的声明。
-
-## 6. 允许的基础设施改动
-
-- **不允许** DSH Core patch/私有 import/原生工具 fork。保持 `CORE PATCH BUDGET = 0`。
-- **允许作为受审候选**：独立的受限 FS/Web/Subprocess/Sandbox Provider、真实 OS Runner、通用 IPC Tool Host 或极小范围的**执行基础设施插件** fork。任何 fork 须证明公共接口确实不足、最小化 diff，登记原 upstream SHA、许可证、升级责任和未来移除条件；不得把工具执行体偷渡进“基础设施”目录。
-- 对于实测缺失的公共接口，先出准确的 `CORE_SEAM_BLOCKER` 和最小复现，再由项目决策是否采用最小基础设施 fork；本 ADR 不预先批准具体 fork 实现。
-
-## 7. 与既有 Alpha.5 设计的关系
-
-本 ADR **有意取代原 Alpha.5 V2 中超出用户目标的部分**：网络 endpoint `restricted` 的本轮交付、逐工具 EffectSet/Family Body 作为默认执行模型、原生 ToolDefinition 的有界 fork 后备路线、以及“逐工具正向验收数量即完整安全保证”的解释。
-
-保留：Alpha.4 准入与 ApprovalCase、必要的 Guard/Scope/撤销链、现有可信执行能力、受保护的测试世界、历史证据、并发/生命周期正确性及不经限制而直通的禁止。原实现与证据不删除；待技术 PoC 与迁移 Gate 后才更改产品路线。
-
-当前 `docs/plans/memo/unified-baseline-alpha5-20261025/execution-plan.md` / `dev/engineering/current-authority.json` 仍然是**机器意义的现行执行入口**，不得因本 Draft PR 的存在自动切换；用户的新产品裁决与机器当前合同的冲突作为待受控迁移的**显式设计冲突**记录在 [TRANSITION-PLAN](./TRANSITION-PLAN.md)。
-
-## 8. 采纳 / 停止门禁
-
-只有当 [POC-PLAN](./POC-PLAN.md) 对**工具不可变、服务/进程两接缝、调用身份、读写与禁网负控、性能、持久进程与授权撤销**形成可复查证据，才可进入产品迁移。测试失败允许报告“不支持某工具/模式”，不得转向自研工具执行体。Draft PR 不意味着 PoC 通过、Alpha.5 Gate 通过或用户已批准切换生产路线。
+**权威切换是单独的最后决策**：本 Draft PR 不改 `dev/engineering/current-authority.json`、旧计划、主分支、稳定运行实例。旧 PR #364 的现行机器合同与本设计目标冲突，须由独立 Authority Migration PR 有序替换，不形成双权威。
