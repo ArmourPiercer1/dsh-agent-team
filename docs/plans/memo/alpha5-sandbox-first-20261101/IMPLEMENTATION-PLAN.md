@@ -113,6 +113,8 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 ### P1-06 — Provider/Backend 排他替换及发布路径
 
+**B2-R 已有条件性证据**：公开 `terminal-bash.apply` + wrapped Context 的零复制方式，在测试会话中实现了 OS 写入根限制。优先将其发展为可信的 Team Preset 绑定，而不是先 Fork `terminal-bash`。具体残余和任务见 [DELTA-POC-AFTER-B2R.md](./DELTA-POC-AFTER-B2R.md)；仅证明写侧、不是读写网络整套已完成。
+
 **文件**：新 `packages/runtime/team-services/src/manifest.ts`、测试 `packages/runtime/test/a5sf-provider-composition.test.ts`；实施时调整 `cordis.patch.yml`、根 `package.json` `exports/files` 与编译产物（需唯一 Integrator）。
 
 - [ ] RED：`disable+insert` 最终恰一个受控 Provider、重复插件 ID/未命中 patch 时拒绝、Team 使用 `team-shell` 而普通 Host 使用原版 `shell`；真实 `dump-config` 与启动实例一致。
@@ -130,6 +132,8 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 - **Gate G1.7**：至少一个真实进程拒读/拒写/禁网；`SubprocessHandle` 行为兼容，不以 fake wrapper 通过。
 
 ### P1-08 — PTY / 持久进程生命周期
+
+**新增硬门**：零复制 wrapper 的测试会话名 `includes` 映射和 `key===undefined → return base` 只用于 PoC，不能进入受限生产路径。需由真实 TeamDomain Member 绑定计算有效 `MemberCeiling ∩ ToolRestriction`，并记录 backend/exec-domain 的 `policyRevision`；不存在有效绑定或代际不相符时前置拒绝，不能回到默认宿主 SandboxPolicy。
 
 **文件**：新 `packages/runtime/team-sandbox/src/terminal.ts`；`packages/runtime/test/a5sf-terminal-lifecycle.test.ts`，条件性最小 Fork `@deepseek-ai/dsh-terminal-bash` 或 `@deepseek-ai/dsh-bash-sandbox` 的**Backend**代码。
 
@@ -159,6 +163,8 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 每条 P2 任务必须在同一 invocation 中联结 Alpha.4 允许/拒绝、`MemberCeiling ∩ ToolRestriction` 编译结果、实际 Provider/Backend 的 `consulted` 记录和独立效果 Oracle；任一缺失均不算通过。审批放行而 I/O 因硬上界拒绝允许存在，但必须来源一致、诊断正确。
 
 每条 P2 任务采用相同执行步骤：**[ ] RED 实测**（初始 Provider 尚未绑定时预期拒绝或负控植入导致失败）→ **[ ] 最小接线** → **[ ] C1 正向+拒绝** → **[ ] C2 真实 Host Oracle 正向+拒绝与原生对照** → **[ ] 独立 Review** → **[ ] commit**。命令：`node tests/world-factory/u5-canary-runner.mjs --suite <a5sf-name> --line a5sf-p2-<id> --evidence <task-dir>`（先创建 suite/使用 WorldFactory 支持的加载方式；不复刻已有 launcher）。
+
+**B2-R 后的 P2-04 修订**：真正的测试须经原生支持的 sandbox 模式或 Alpha.4 审批路径做 danger 请求（不能使用 `tool-bash-persistent` 不支持的 `sandbox_permissions` 参数）、真实 Team Member 身份绑定及跨代际 PTY 复用；读/写上界应分别由 OS 或可信服务真实执行。保留 B2-R 写侧正控但不重跑同样的 PoC。详见 [差量 PoC](./DELTA-POC-AFTER-B2R.md)。
 
 **P2 总 Gate（G2）**：`read/write/grep/bash/web/ptc/new-cli` 至少以覆盖相应机制的代表 case 提交可复查正向+负控，允许明确声明 OS 整类环境阻断但**不能把未测能力当 PASS**。其中服务路径与 OS 路径均须有真实原生成功和内核/Provider 拒绝，不得只凭单元桩。缺一个必交机制不能进入该机制 P3 批量接入。
 
@@ -244,6 +250,8 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 
 每条 P4 工作包必须：**[ ] 先设计独立效果 Oracle** → **[ ] 故意植入一例越界/绕过，让测试 RED** → **[ ] 移除植入，在真实 Provider 下正反控** → **[ ] 保存真实 Host/Team/Policy/Tool digest 与运行原始结果** → **[ ] 独立 Review 并 commit**。严禁依赖模型输出一句“Permission denied”代替真实文件/网络效果观测。
 
+**附加核验**：真实 TeamMember 而非模拟 session 名称，同工具不同 Member 权限；同 Member 不同工具限制；批准工具调用但 I/O 硬上界拒绝时正确诊断；原生持久 PTY 在当前 `policyRevision` 下合法存活或拒绝复用。Provider applied 只有结合调用域、consulted 证据与独立效果 Oracle 才能计 PASS。
+
 **P4 总 Gate（G4）**：对目标 release 范围的原生工具 × 其实际 I/O 类别的矩阵逐格 PASS，未测/禁用/远端必须有类型化例外；一次性审批、撤销和持久进程可核验。**内部试用候选**可在目标工具已通过 G4 子集、使用说明明确限定范围时交付；不是正式全工具 GO。
 
 ---
@@ -279,6 +287,8 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 - [ ] **单独**申请 Authority Migration PR：修订 `AGENTS.md` 与用户批准的有限基础设施 Fork 规则，替换旧 active plan/旧矩阵，按 `scripts/switch-authority.mjs` 的唯一 Writer 规则原子切换；审查回滚与 Release Gate，未授权不合并。
 - [ ] 写明内部试用支持范围与“不保证恶意同进程 JS 隔离”；不把 `TRUSTED_ONLY` 当 `OS_BOUNDARY_TESTED`。
 - **Gate G5.3 / 发布 GO**：所有承诺能力有真实验收；没有隐藏 fallback、原生工具改造、未获批扩权；两层独立 Review（功能兼容、执行边界） + 用户最终裁决。
+
+**升级维护成本要求**：除基础设施 Fork，还必须将**零复制 wrapper**纳入真实上游版本升级演习，测试公开导出的接口稳定性、Context 代理行为、原生工具不变及安全负控，记录差分/冲突/维修工作量。
 
 **P5 总 Gate（G5）**：产品承诺内的功能、权限、性能、故障与维护均有有界证据，正式发布只有独立审查/用户批准才可启动。
 
