@@ -31,6 +31,8 @@
     "sandbox-provider",
     // Alpha.5 P1-02: the Member I/O policy lane (pure compiler + types).
     "member-io-policy/src",
+    // Alpha.5 P1-05: the per-Member Service realm (confined fs Provider).
+    "team-services/src",
     "test",
     "vitest.config.ts"
   ]

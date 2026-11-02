@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (18 tests) 7ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (27 tests) 19ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (10 tests) 26ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 88ms
+
+ Test Files  5 passed (5)
+      Tests  81 passed (81)
+   Start at  01:57:24
+   Duration  471ms (transform 418ms, setup 0ms, import 553ms, tests 144ms, environment 0ms)
+
+runtime typecheck rc=0
