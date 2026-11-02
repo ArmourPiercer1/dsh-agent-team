@@ -161,6 +161,18 @@ function compileEffectiveIo(member: MemberPolicy, tool: ToolIoRestriction, invoc
 - [ ] GREEN、真实 PTY 测试与普通 `shell` 对照；commit。
 - **Gate G1.8**：PID/子孙进程/终端 session 的边界可观测；停机收束有独立收据。
 
+### P1 回收工作包（R1–R5，2026-11-02 用户裁决并入）
+
+P1 不重建既有基础能力；逐项登记见 `dev/agent-workflow/evidence/a5sf-reclaim/ASSET-RECLAMATION-REGISTRY.md`，规约见 `TRANSITION-PLAN.md` §6。
+
+| 工作包 | P1 内的具体落点 | 状态 |
+|---|---|---|
+| R1 审批治理接管 | P1-02 只消费 `Alpha4EffectiveAuthority`/`approvedOnce` 作为输入；P1-04 一次性能力不可重放、审批不提升硬上界；不新建第二审批/第二策略计算 | 单元证据已入 P1-02/P1-04 |
+| R2 工程基线继承 | 不新增权威指针/测试启动器/CI；迁移走独立 Authority Migration PR（`publish`→`switch`，含回滚演练） | 分支内已验证指针/AGENTS/active计划/CI 未改 |
+| R3 原生接线与审计 | P1-04 trust registry 提供绑定代际核验；P1-05 提供安装收据；单次调用证据链（member→definition→callId→revision→approval→provider/OS→effect）在 P2 落地 | 机制就绪，链测试 P2 |
+| R4 通用执行设施 | P1-07 复用 `sandbox-provider` launcher/租约/FD，不迁移工具业务；后端能力每次实测，不可兑现即拒绝 | P1-07 已含真实正反效果 |
+| R5 历史资产转换 | 旧 fs/process/search/web 工具体转回归输入；历史矩阵 PASS 不计入 G2–G4 | P2 开始 |
+
 **P1 总 Gate（G1）**：G1.1–G1.8 严格报告 PASS/CONDITIONAL/ENV_BLOCK，不要求工具族穷尽。关键进程和 Provider 的基础正负控为真，旧 Host checkout/稳定实例不变；没有接受全新 Feature Family 执行器。P1 可按先冻结 Compiler/Invocation/Mode ABI 后将 service 和 OS 两路并行实现；**不提前并行改共享 host/glue/patch**。
 
 ---

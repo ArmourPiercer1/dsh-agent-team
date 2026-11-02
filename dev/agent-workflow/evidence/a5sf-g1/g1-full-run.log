@@ -1,0 +1,22 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p1-01
+
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (18 tests) 7ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (6 tests) 6ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (27 tests) 22ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 21ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (10 tests) 35ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 79ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (2 tests) 360ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 361ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 124ms
+
+ Test Files  10 passed (10)
+      Tests  128 passed (128)
+   Start at  02:06:54
+   Duration  700ms (transform 1.33s, setup 0ms, import 1.81s, tests 1.02s, environment 1ms)
+
+---
+runtime tsc rc=0
+domain tsc rc=0
