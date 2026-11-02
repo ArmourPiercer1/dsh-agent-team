@@ -17,7 +17,6 @@ import {
   createTerminalDomainRegistry,
   type PtyHandle,
   type TerminalAcquireSpec,
-  type TerminalDomainRegistry,
 } from '../team-sandbox/src/terminal.js'
 
 const IDENTITY: TrustedMemberIdentity = Object.freeze({

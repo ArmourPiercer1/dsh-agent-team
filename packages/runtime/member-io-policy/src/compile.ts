@@ -29,7 +29,6 @@ import { declareV4AuthoringMaps, projectV4MemberIoCeiling, projectV4ToolBindingA
 import { intersectPathRuleSets } from './path-rules.js'
 import type {
   Alpha4EffectiveAuthority,
-  BoundBlueprint,
   CompileInput,
   CompileResult,
   EffectiveIoPolicy,
@@ -40,7 +39,6 @@ import type {
   PolicyRefusalCode,
   ToolIoRestriction,
   ToolPathLane,
-  TrustedMemberIdentity,
 } from './types.js'
 
 /** The one shipped declaration set (declaration is deterministic and pure). */

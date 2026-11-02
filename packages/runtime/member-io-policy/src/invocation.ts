@@ -143,7 +143,10 @@ function isBranded(capability: unknown): capability is InvocationCapability {
 export function createInvocationBinder(initialEpoch = 1): InvocationBinder {
   let epoch = isGeneration(initialEpoch) && initialEpoch > 0 ? initialEpoch : 1
   // Assigned before the returned binder can be called; the closures below
-  // need the identity of the binder they belong to.
+  // need the identity of the binder they belong to. `prefer-const` cannot see
+  // the forward reference, and initialising it eagerly would create a second
+  // copy of the closures.
+  // eslint-disable-next-line prefer-const
   let self: InvocationBinder
   /** Per-member revocation epoch (0 = never revoked). */
   const memberEpochs = new Map<string, number>()
