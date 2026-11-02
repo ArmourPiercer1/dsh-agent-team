@@ -1,0 +1,22 @@
+{
+  "a5x-ioaxis-IO-R-20261102T164631": {
+    "gen": 1,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseA/rootA",
+    "io": {
+      "maskPaths": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB"
+      ]
+    }
+  },
+  "a5x-ioaxis-IO-W-20261102T164631": {
+    "gen": 1,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB",
+    "io": {
+      "writeRoots": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB"
+      ]
+    }
+  }
+}

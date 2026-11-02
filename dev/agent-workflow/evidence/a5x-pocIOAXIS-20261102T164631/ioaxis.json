@@ -1,0 +1,74 @@
+{
+  "stamp": "20261102T164631",
+  "stableProbe": {
+    "before": 401,
+    "after": 401
+  },
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostHeadActual": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "wrapperSourceSha": "7d136e268a388f23fa6948b8fcaecc26f9fdba66",
+  "nativeToolDefinitionIdentity": {
+    "nameUnchanged": true,
+    "injectUnchanged": true,
+    "name": "terminal-bash",
+    "inject": [
+      "terminals",
+      "sandboxPolicy",
+      "sessionProjections",
+      "subprocess"
+    ]
+  },
+  "verdicts": {
+    "IO-R(read-axis domain, io.maskPaths=[rootB])": {
+      "readA_ok": false,
+      "readB_denied_ENOENT": false,
+      "writeA_denied_EROFS": false,
+      "fs_rootA_untouched": true
+    },
+    "IO-W(write-axis domain, io.writeRoots=[rootB])": {
+      "writeB_ok": false,
+      "writeB_fs": true,
+      "writeA_denied_EROFS": false,
+      "writeA_fs": true,
+      "readA_in_W_readable_dialect": false
+    },
+    "SEAM(consulted trace via existing public service faces)": {
+      "resolveConsultedBoth": true,
+      "capIoApplied": true,
+      "confineDualAxisR": true,
+      "confineDualAxisW": true
+    }
+  },
+  "tails": {
+    "IO-R": {
+      "step": 4,
+      "tails": {
+        "step0": "A5X-LANE-IO-R run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+        "step1": "\nALPHA-CONTENT-7741\n[Command finished with exit code 0]",
+        "step2": "\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB/b-file.txt: No such file or directory\n[Command finished with exit code 1]",
+        "step3": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseA/rootA/r-write.txt: Read-only file system\n[Command finished with exit code 1]"
+      },
+      "done": true
+    },
+    "IO-W": {
+      "step": 4,
+      "tails": {
+        "step0": "A5X-LANE-IO-W run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+        "step1": "\nw-content\n[Command finished with exit code 0]",
+        "step2": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseA/rootA/w-write.txt: Read-only file system\n[Command finished with exit code 1]",
+        "step3": "\nALPHA-CONTENT-7741\n[Command finished with exit code 0]"
+      },
+      "done": true
+    }
+  },
+  "consulted": [
+    "[ioaxis] capped terminal-bash v3 apply() engaged (exact-id keys, fail-closed, additive io + sandbox-confine shadow)",
+    "[ioaxis] resolve sid=a5x-ioaxis-IO-R-20261102T164631 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1",
+    "[ioaxis] CAP applied sid=a5x-ioaxis-IO-R-20261102T164631 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseA/rootA io=yes",
+    "[ioaxis] confine sid=a5x-ioaxis-IO-R-20261102T164631 writeRoots=[] maskPaths=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB\"] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …",
+    "[ioaxis] resolve sid=a5x-ioaxis-IO-W-20261102T164631 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1",
+    "[ioaxis] CAP applied sid=a5x-ioaxis-IO-W-20261102T164631 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB io=yes",
+    "[ioaxis] confine sid=a5x-ioaxis-IO-W-20261102T164631 writeRoots=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164631/baseB/rootB\"] maskPaths=[] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …"
+  ],
+  "mockRequests": 10
+}

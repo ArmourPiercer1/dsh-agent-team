@@ -1,0 +1,10 @@
+{"n":1,"lane":"IO-R","steps":{"IO-R":0,"IO-W":0}}
+{"n":2,"lane":"IO-R","steps":{"IO-R":1,"IO-W":0}}
+{"n":3,"lane":"IO-R","steps":{"IO-R":1,"IO-W":0}}
+{"n":4,"lane":"IO-R","steps":{"IO-R":2,"IO-W":0}}
+{"n":5,"lane":"IO-R","steps":{"IO-R":3,"IO-W":0}}
+{"n":6,"lane":"IO-W","steps":{"IO-R":4,"IO-W":0}}
+{"n":7,"lane":"IO-W","steps":{"IO-R":4,"IO-W":1}}
+{"n":8,"lane":"IO-W","steps":{"IO-R":4,"IO-W":1}}
+{"n":9,"lane":"IO-W","steps":{"IO-R":4,"IO-W":2}}
+{"n":10,"lane":"IO-W","steps":{"IO-R":4,"IO-W":3}}

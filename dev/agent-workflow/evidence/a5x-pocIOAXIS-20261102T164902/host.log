@@ -1,0 +1,10 @@
+[ioaxis] capped terminal-bash v3 apply() engaged (exact-id keys, fail-closed, additive io + sandbox-confine shadow)
+dsh web: http://127.0.0.1:3186/?token=PGHpswobxVT3ieKbqWWPmY5rvc5e1mWWbjHI7IhiJIQ
+[ioaxis] resolve sid=a5x-ioaxis-IO-R-20261102T164902 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[ioaxis] CAP applied sid=a5x-ioaxis-IO-R-20261102T164902 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164902/baseA/rootA io=yes
+[ioaxis] confine sid=a5x-ioaxis-IO-R-20261102T164902 writeRoots=[] maskPaths=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164902/baseB/rootB"] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …
+[ioaxis] resolve sid=a5x-ioaxis-IO-W-20261102T164902 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[ioaxis] CAP applied sid=a5x-ioaxis-IO-W-20261102T164902 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164902/baseB/rootB io=yes
+[ioaxis] confine sid=a5x-ioaxis-IO-W-20261102T164902 writeRoots=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocIOAXIS-20261102T164902/baseB/rootB"] maskPaths=[] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …
+
+[ioaxiskit] host closed code=0 signal=null

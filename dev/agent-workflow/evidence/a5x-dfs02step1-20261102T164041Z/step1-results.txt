@@ -1,0 +1,75 @@
+── domain R ──
+R1 read A dir-file (expect OK):
+ALPHA-CONTENT-7741
+[exit=0]
+R2 read B (expect DENIED ENOENT):
+cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseB/rootB/b-file.txt: No such file or directory
+[exit=1]
+R2b list B (expect EMPTY):
+[ls exit=0]
+R3 write A (expect DENIED EROFS):
+/bin/sh: 5: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseA/rootA/r3.txt: Read-only file system
+[exit=2]
+R3b create sibling under baseB (expect DENIED EROFS):
+mkdir: Read-only file system
+[exit=1]
+R4 env-dep shell+coreutils+math:
+sum=42
+FileCheck-21
+NF
+[exit=0]
+R5 env-dep etc+proc+dev+tmp:
+DESKTOP-D
+Name:	head
+devnull-ok
+tmpok
+[exit=0]
+[exit=0]
+── domain W ──
+W1 write B (expect OK):
+w-content
+[exit=0]
+W2 write A (expect DENIED EROFS):
+/bin/sh: 3: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseA/rootA/w2.txt: Read-only file system
+[exit=2]
+W2b create sibling under baseB (expect DENIED EROFS):
+mkdir: Read-only file system
+[exit=1]
+W3 read A in write-domain (documented dialect: ro / => A readable):
+ALPHA-CONTENT-7741
+[exit=0]
+W4 env-dep binaries resolve+run:
+/usr/bin/cat
+1000
+[exit=0]
+[exit=0]
+── domain Rf ──
+Rf1 read the exposed single file (expect OK):
+ALPHA-CONTENT-7741
+[exit=0]
+Rf2 list A dir (expect EMPTY — masked):
+[ls exit=0]
+Rf3 read via original path (expect DENIED ENOENT):
+cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseA/rootA/one-file.txt: No such file or directory
+[exit=1]
+Rf4 write the exposed file (expect DENIED EROFS):
+/bin/sh: 5: cannot create /tmp/whitelist-x.txt: Read-only file system
+[exit=2]
+Rf5 read B (expect DENIED ENOENT):
+cat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseB/rootB/b-file.txt: No such file or directory
+[exit=1]
+[exit=0]
+── boundary: single-file MASK on existing file path ──
+bwrap: Can't mkdir /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164041Z/baseA/rootA/dir-other.txt: Not a directory
+[boundary exit=1]
+── host control (no domain) ──
+BETA-CONTENT-3356
+[control readB exit=0]
+ALPHA-DIR-OTHER-2290
+[control readA-sibling exit=0]
+── env-probe: landlock ──
+kernel=6.18.33.2-microsoft-standard-WSL2
+create_ruleset: OK
+add_rule: File descriptor in bad state
+[probe exit=0]
+securityfs-content: 0 entries

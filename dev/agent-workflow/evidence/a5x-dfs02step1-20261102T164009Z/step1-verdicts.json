@@ -1,0 +1,32 @@
+{
+ "verdicts": {
+  "R1_readA_ok": true,
+  "R2_readB_denied": true,
+  "R2b_listB_empty": true,
+  "R3_writeA_erofs": true,
+  "R3b_sibling_erofs": true,
+  "R4_env_shell_math": true,
+  "R5_env_etc_proc_dev_tmp": true,
+  "W1_writeB_ok": true,
+  "W2_writeA_erofs": true,
+  "W2b_sibling_erofs": true,
+  "W3_readA_in_W_readable": true,
+  "W4_env_binaries": false,
+  "Rf1_exposedFile_ok": true,
+  "Rf2_listA_empty": true,
+  "Rf3_origPath_denied": true,
+  "Rf4_exposedWrite_erofs": true,
+  "Rf5_readB_denied": true,
+  "boundary_fileMask_enotdir": true,
+  "control_host_ok": true
+ },
+ "osEffects": {
+  "R2_readB": "R2 read B (expect DENIED ENOENT):\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164009Z/baseB/rootB/b-file.txt: No such file or directory\n[exit=1]",
+  "R3_writeA": "R3 write A (expect DENIED EROFS):\n/bin/sh: 5: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164009Z/baseA/rootA/r3.txt: Read-only file system\n[exit=2]",
+  "W2_writeA": "W2 write A (expect DENIED EROFS):\n/bin/sh: 3: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164009Z/baseA/rootA/w2.txt: Read-only file system\n[exit=2]",
+  "Rf3_origPath": "Rf3 read via original path (expect DENIED ENOENT):\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164009Z/baseA/rootA/one-file.txt: No such file or directory\n[exit=1]",
+  "Rf4_exposedW": "Rf4 write the exposed file (expect DENIED EROFS):\n/bin/sh: 5: cannot create /tmp/whitelist-x.txt: Read-only file system\n[exit=2]",
+  "boundary": ": single-file MASK on existing file path \u2500\u2500\nbwrap: Can't mkdir /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-dfs02step1-20261102T164009Z/baseA/rootA/dir-other.txt: Not a directory\n[boundary exit=1]\n\u2500\u2500 host contro",
+  "landlock_probe": "kernel=6.18.33.2-microsoft-standard-WSL2\ncreate_ruleset: OK\nadd_rule: File descriptor in bad state\n[probe exit=0]\nsecurityfs-content: 0 entries"
+ }
+}
