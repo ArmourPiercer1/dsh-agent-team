@@ -24,7 +24,7 @@
  * @module test/a5sf-path-rules
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { link, mkdir, mkdtemp, readFile, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { link, mkdir, mkdtemp, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import {
   checkWriteRequiresRead,
