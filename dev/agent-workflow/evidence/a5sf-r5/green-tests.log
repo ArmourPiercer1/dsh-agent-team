@@ -1,0 +1,27 @@
+✔ the corpus is well-formed: every vector is regression-only and names a new-lane owner (8.102409ms)
+✔ the corpus and every fixture are free of acceptance-shaped vocabulary (1.962315ms)
+✔ MATCH: a same-shape new-lane observation is a regression comparison, not acceptance (59.782846ms)
+✔ MATCH: an absolute-outside locator is denied by a restricted lane (lane decision) (0.435956ms)
+✔ DIVERGED: a folded Unicode path names the field that moved (0.366554ms)
+✔ DIVERGED: a relaxed lane decision is reported with both decisions named (0.239594ms)
+✔ MATCH: a subset expectation pins only the field it names (0.33793ms)
+✔ DIVERGED: a subset expectation still catches a changed pinned field (0.224816ms)
+✔ MATCH: the OS runner passes an explicit argv element through unchanged (3.722991ms)
+✔ DIVERGED: a re-split argv is reported at the argv index (0.48619ms)
+✔ REFUSED: a fixture without regressionOnly: true is not a comparison input (0.199899ms)
+✔ REFUSED: an acceptance-shaped token is refused in EVERY case and inflection (6.928364ms)
+✔ REFUSED: a verdict/status-bearing KEY is refused even with a benign value (2.628928ms)
+✔ REFUSED: an argv expectation must be a string[] (C2) (1.302225ms)
+✔ REFUSED: a subset expectation must be an object (C2, no array-kind escape) (1.083962ms)
+✔ NOT_APPLICABLE: a RETIRE vector never matches, even with a byte-identical observation (0.268288ms)
+✔ NOT_APPLICABLE: an UNUSABLE vector never matches, and says why there is no equivalent (0.208946ms)
+✔ NOT_APPLICABLE: every retired vector is refused BEFORE the observation is inspected (2.123651ms)
+✔ the closed result vocabulary has exactly three statuses and none is a verdict (0.109307ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.234662
