@@ -1,0 +1,20 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r1-approval
+
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 15ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 7ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 23ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (13 tests) 59ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 74ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 348ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 116ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 516ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 84ms
+
+ Test Files  11 passed (11)
+      Tests  163 passed (163)
+   Start at  05:18:40
+   Duration  1.34s (transform 2.15s, setup 0ms, import 2.88s, tests 1.25s, environment 1ms)
+

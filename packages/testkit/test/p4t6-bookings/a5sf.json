@@ -3,6 +3,7 @@
   "lane": "A5SF",
   "paths": [
     "packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts",
+    "packages/runtime/member-io-policy/src/approval-takeover.ts",
     "packages/runtime/member-io-policy/src/compile.ts",
     "packages/runtime/member-io-policy/src/index.ts",
     "packages/runtime/member-io-policy/src/invocation.ts",
@@ -20,6 +21,7 @@
     "packages/runtime/team-services/src/install.ts",
     "packages/runtime/team-services/src/manifest.ts",
     "packages/runtime/team-services/src/types.ts",
+    "packages/runtime/test/a5sf-approval-takeover.test.ts",
     "packages/runtime/test/a5sf-invocation.test.ts",
     "packages/runtime/test/a5sf-member-policy.test.ts",
     "packages/runtime/test/a5sf-os-runner.test.ts",
@@ -32,8 +34,8 @@
   ],
   "expectedDelta": {
     "from": 1396,
-    "to": 1423
+    "to": 1425
   },
-  "reason": "alpha5-sandbox-first P1 (PR #531/#532, dated 2026-11-02): the new policy lane (`member-io-policy`, 7 source files), the OS/PTY lane (`team-sandbox`, 5), the per-Member Service realm (`team-services`, 5), the nine `a5sf-*` runtime suites and the one domain projection suite. Twenty-seven NEW scannable paths, all owned by this lane; the sources are feature-gated and reach no production composition (G1 report: `dev/agent-workflow/evidence/a5sf-g1/G1-GATE-REPORT.md`), and the lane adds zero denylist vocabulary (the frozen scanner's quarantine hit set is unchanged at fifteen).",
-  "tieNote": "MEASURED on THIS tree, not copied: with the lane's 27 files on disk and no booking yet, the suite read `expected 1396 to be 1423` (the ledger's 1396 + exactly the 27 new paths). Booking them by name ends the tie at 1423. The earlier census red (run 41505141828) reported the same arithmetic from the CI side: captured 664f/8745l against the baseline document's 626/7936, with the p4t6 count legs among the new reds."
+  "reason": "alpha5-sandbox-first P1 + R1 (PR #531/#532 and the R1/BL-09 lane, dated 2026-11-02): the new policy lane (`member-io-policy`, 8 source files incl. the R1 `approval-takeover.ts` bridge), the OS/PTY lane (`team-sandbox`, 5), the per-Member Service realm (`team-services`, 5), the ten `a5sf-*` runtime suites (incl. `a5sf-approval-takeover`) and the one domain projection suite. Twenty-nine NEW scannable paths, all owned by this lane; the sources are feature-gated and reach no production composition (G1 report `dev/agent-workflow/evidence/a5sf-g1/G1-GATE-REPORT.md`; R1 evidence `dev/agent-workflow/evidence/a5sf-r1/`), and the lane adds zero denylist vocabulary (the frozen scanner's quarantine hit set is unchanged at fifteen).",
+  "tieNote": "MEASURED on THIS tree, not copied: with the lane's 29 files on disk and no booking yet, the suite read `expected 1396 to be 1425` (the ledger's 1396 + exactly the 29 new paths); the R1 round re-ran the scanner after adding `approval-takeover.ts` + `a5sf-approval-takeover.test.ts` and the unbooked reading was `scanner counts 1425, ledger derives 983 + 440 = 1423`. Booking all 29 by name ends the tie at 1425."
 }
