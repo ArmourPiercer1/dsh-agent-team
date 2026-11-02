@@ -1,0 +1,25 @@
+{
+ "verdicts": {
+  "H1_readFile_denied_EACCES": true,
+  "H2_listDir_denied_EACCES": true,
+  "H3_append_ok": true,
+  "H4_create_ok": true,
+  "H5_stat_ok": true,
+  "D1_domain_readFile_EACCES": true,
+  "D2_domain_listDir_EACCES": true,
+  "D3_domain_append_ok": true,
+  "D4_domain_stat_ok": true,
+  "D5_outside_write_scope": true,
+  "D_denial_is_EACCES_not_EROFS": true,
+  "O_hostAppend_landed": true,
+  "O_domainAppend_landed": true,
+  "O_hostNewFile_landed": true,
+  "preconf_bits_300_200": true,
+  "mountMode": "direct"
+ },
+ "mountMode": "direct",
+ "hostLeg": "\u2500\u2500 host (no domain, pure VFS) \u2500\u2500\nH1 read file (expect DENIED EACCES):\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW/wf.txt: Permission denied\n[exit=1]\nH2 list dir (expect DENIED EACCES):\nls: cannot open directory '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW': Permission denied\n[exit=2]\nH3 append file (expect OK):\n[exit=0]\nH4 create new file (expect OK):\n[exit=0]\nH5 stat size (expect OK, stat needs only x):\n37\n[exit=0]",
+ "domainLeg": "\u2500\u2500 domain WO (bwrap + VFS bits, mount=direct) \u2500\u2500\nD1 read file in domain (expect DENIED EACCES):\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW/wf.txt: Permission denied\n[exit=1]\nD2 list dir in domain (expect DENIED EACCES):\nls: cannot open directory '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW': Permission denied\n[exit=2]\nD3 append file in domain (expect OK \u2014 proves mount is rw, not ro):\n[exit=0]\nD4 stat size in domain (expect OK):\n56\n[exit=0]\nD5 write OUTSIDE write-root (expect DENIED-EROFS ):\n/bin/sh: 6: cannot create /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/sib.txt: Read-only file system\n[exit=2]\n[domain exit=0]",
+ "oracleLeg": "\u2500\u2500 teardown + FS oracle (host-side) \u2500\u2500\nwf.txt content after restore:\nWRITEONLY-SEED-1123\nHOST-APPEND-9042\nDOMAIN-APPEND-4417\nwf2.txt content (if exists):\nHOST-NEW-5511\n[teardown exit=0]",
+ "preconf": "\u2500\u2500 preconf (host-side mode bits, before any spawn) \u2500\u2500\n755 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW\n300 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW\n200 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/tests/kits/a5x-envpoc/../../../dev/agent-workflow/evidence/a5x-wr0step1-20261102T170527Z/baseW/rootW/wf.txt"
+}

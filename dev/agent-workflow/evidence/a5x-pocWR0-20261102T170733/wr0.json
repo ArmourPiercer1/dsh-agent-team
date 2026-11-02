@@ -1,0 +1,55 @@
+{
+  "stamp": "20261102T170733",
+  "stableProbe": {
+    "before": 401,
+    "after": 401
+  },
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostHeadActual": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "wrapperSourceSha": "5bb156c3e4e2fb3aa5fa9451ab20c3fd5b968609",
+  "nativeToolDefinitionIdentity": {
+    "nameUnchanged": true,
+    "injectUnchanged": true,
+    "name": "terminal-bash",
+    "inject": [
+      "terminals",
+      "sandboxPolicy",
+      "sessionProjections",
+      "subprocess"
+    ]
+  },
+  "verdicts": {
+    "WO(write-only domain, io.writeOnlyRoots=[rootW])": {
+      "readFile_denied_EACCES": true,
+      "listDir_denied_EACCES": true,
+      "append_ok": true,
+      "create_ok": true,
+      "outside_write_scope_EROFS": true,
+      "denial_is_EACCES_not_EROFS": true,
+      "fs_appendLanded": true,
+      "fs_newFileLanded": true,
+      "fs_seedIntact": true
+    },
+    "SEAM(consulted trace via existing public service faces)": {
+      "resolveConsulted": true,
+      "capIoApplied": true,
+      "preconditionChecked": true,
+      "confineWriteOnly": true
+    }
+  },
+  "tails": {
+    "step0": "A5X-LANE-WO run each delegated command exactly, in order. Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+    "step1": "\ncat: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW/wf.txt: Permission denied\n[Command finished with exit code 1]",
+    "step2": "\nls: cannot open directory '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW': Permission denied\n[Command finished with exit code 2]",
+    "step3": "\n37\n[Command finished with exit code 0]",
+    "step4": "\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/sib.txt: Read-only file system\n[Command finished with exit code 1]"
+  },
+  "consulted": [
+    "[ioaxis] capped terminal-bash v4 apply() engaged (exact-id keys, fail-closed, additive io + sandbox-confine shadow + writeOnlyRoots precondition)",
+    "[ioaxis] resolve sid=a5x-wr0-WO-20261102T170733 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1",
+    "[ioaxis] CAP applied sid=a5x-wr0-WO-20261102T170733 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW io=yes",
+    "[ioaxis] precondition sid=a5x-wr0-WO-20261102T170733 writeOnlyRoot=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW owner=300",
+    "[ioaxis] confine sid=a5x-wr0-WO-20261102T170733 writeRoots=[] writeOnlyRoots=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW\"] maskPaths=[] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …"
+  ],
+  "mockRequests": 6
+}

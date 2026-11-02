@@ -1,0 +1,8 @@
+[ioaxis] capped terminal-bash v4 apply() engaged (exact-id keys, fail-closed, additive io + sandbox-confine shadow + writeOnlyRoots precondition)
+dsh web: http://127.0.0.1:3186/?token=9vs0Tb8A96Ps2hmWuIFSv9BjkW2VA1UqcHd26Df-MWc
+[ioaxis] resolve sid=a5x-wr0-WO-20261102T170733 base.mode=workspace-write base.root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031 mapped=gen1
+[ioaxis] CAP applied sid=a5x-wr0-WO-20261102T170733 gen=1 mode=workspace-write root=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW io=yes
+[ioaxis] precondition sid=a5x-wr0-WO-20261102T170733 writeOnlyRoot=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW owner=300
+[ioaxis] confine sid=a5x-wr0-WO-20261102T170733 writeRoots=[] writeOnlyRoots=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW"] maskPaths=[] exposeFiles={} argv=/usr/bin/bwrap --ro-bind / / --dev /dev --unshare-pid --proc /proc --die-with-parent …
+
+[wr0kit] host closed code=0 signal=null

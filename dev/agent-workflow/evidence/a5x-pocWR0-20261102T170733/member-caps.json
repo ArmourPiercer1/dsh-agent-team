@@ -1,0 +1,12 @@
+{
+  "a5x-wr0-WO-20261102T170733": {
+    "gen": 1,
+    "mode": "workspace-write",
+    "workspaceRoot": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW",
+    "io": {
+      "writeOnlyRoots": [
+        "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5xenv-20261031/dev/agent-workflow/evidence/a5x-pocWR0-20261102T170733/baseW/rootW"
+      ]
+    }
+  }
+}
