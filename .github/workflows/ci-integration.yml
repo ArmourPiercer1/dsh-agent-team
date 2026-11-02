@@ -186,6 +186,17 @@ jobs:
         # required token. Dropping it is CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/eb3-tool-acceptance.test.mjs
 
+      - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
+        # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
+        # machinery, so the harness wiring needs a C1 proof of its own. This step is the
+        # minimal wiring: ci-integration lists node:test files EXPLICITLY, so a new C1
+        # suite would otherwise be invisible to every layer (the #394 and #529 incidents
+        # were exactly that). Declared in dev/ci/eb3-ci-manifest.json with the file path
+        # as a required token; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: no port, no DSH_HOME, no pristine host tree — the pinned candidate is
+        # READ from tests/paths.mjs as a constant, never resolved into a checkout.
+        run: node --test tests/world-factory/a5sf-harness.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what
