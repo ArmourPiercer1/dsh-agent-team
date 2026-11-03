@@ -394,3 +394,15 @@ re-mounted native tool layer) disappear when a Member is actually stopped, and i
 seam that reports it?* Answering it needs a composition whose leader envelope **includes
 `archive-member`** (a one-line fixture change in `mainBlueprintYaml()`), and a witness for a read
 after the stop; if no such seam exists, the next deliverable is the seam proposal, not another boot.
+
+## Post-run repair: the records now bind the authority generation
+
+`eb3-run-manifest --new-since origin/master` refused both new run records with
+`RUN_AUTHORITY_BINDING_MISMATCH … bindings.authority is absent on a NEW record`. That is
+the guard doing its job: a record added by a change must say which authority generation it
+measured. The lanes captured their records before they knew the block was required, so the
+block was added **after the fact** to both `a5sf-live-native2` and `a5sf-live-native3`
+records, binding the live pointer (`as20261102r1` + its content digest + the pointer bytes'
+sha256) with an explicit `note` saying it was added at repair time. Nothing else in either
+record moved: the verdicts, counters and facts are the ones the boots produced, and the
+repair is disclosed here rather than passing as original capture.

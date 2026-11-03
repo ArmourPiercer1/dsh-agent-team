@@ -61,7 +61,15 @@
         "lines": []
       }
     },
-    "nativeConfinementBackend": "full"
+    "nativeConfinementBackend": "full",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound at the post-run repair of this record (the lane captured before the authority block was required by the guard); the generation is the one the boot ran under, unchanged."
+    }
   },
   "cases": [
     {
