@@ -71,13 +71,22 @@ export function controlRequestNotification(
     }
     const { blueprint, routing } = parsed
     const leader = config.seedMembers.find((member) => member.childSessionId === config.rootSessionId)
+    if (leader === undefined) {
+      return {
+        requestNotification: {
+          notifyLeaderRequest: async () => {
+            throw new Error('Alpha.6 review routing is enabled but no Leader seed matches the root session; no Leader fallback')
+          },
+        },
+      }
+    }
     const officer = config.seedMembers.find((member) => member.templateId === routing.officerTemplateId)
     const decision = decideAlpha6Composition({
       enabled: true,
       blueprintDocumentVersion: blueprint.schemaVersion,
       reviewRouting: { enabled: routing.enabled, officerTemplateId: routing.officerTemplateId },
       activeMemberTemplateIds: config.seedMembers.map((member) => member.templateId),
-      leaderTemplateId: leader?.templateId ?? '',
+      leaderTemplateId: leader.templateId,
     })
     if (decision.mode === 'refused') {
       return {

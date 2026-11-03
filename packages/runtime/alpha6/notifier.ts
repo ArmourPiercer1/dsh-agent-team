@@ -65,7 +65,7 @@ export function renderOfficerReviewWake(request: ControlRequestRecord): string {
  * - `legacy` decision → the legacy notifier is invoked unchanged.
  * - `alpha6` decision → exactly one wake to the resolved Officer session and
  *   NO Leader notification.
- * - Any other decision (a refusal) → legacy; the safe fallback.
+ * - A `refused` decision → throw; never the Leader fallback.
  */
 export function createComposedControlNotifier(ports: {
   readonly decision: Alpha6CompositionDecision
