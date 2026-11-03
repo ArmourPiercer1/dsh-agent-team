@@ -49,8 +49,10 @@ spawn is still a start.
 [2026-11-03T13:03:24.895Z] RUN-SUMMARY run=a5sf-live-native2-2026-11-03T13-02-54-748Z suite=a5sf-live-native2 overall=FAIL cases=7 FAIL:7 worlds=none
 ```
 
-`worlds=none` is the runner's own word for it: no World became ready. The mock never received a
-model request (the Host never started a session).
+`worlds=none` is the runner's own word for it: no World became ready. No model request could be
+issued: the Host never printed its boot marker, the driver never reached `authenticate()`, and no
+session was created. (No mock request count survives teardown — this rests on the absent boot
+marker and the absent session, not on a counted zero.)
 
 **The six points, honestly disposed:**
 
