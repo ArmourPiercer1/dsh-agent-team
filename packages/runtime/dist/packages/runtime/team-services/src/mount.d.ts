@@ -25,7 +25,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
-import type { Context } from '@deepseek-ai/cordis';
+import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
@@ -44,6 +44,39 @@ export interface A5sfRealmBinding {
     readonly effective: EffectiveIoPolicy;
     readonly config?: Record<string, unknown>;
 }
+/**
+ * One NATIVE tool module to re-mount INSIDE the Member's isolated `fs` scope.
+ *
+ * WHY THIS EXISTS (route C, 2026-11-03): the Agent preset registry mounts its
+ * tool rows under the preset's STANDING scope, which is an ANCESTOR of the
+ * agent scope; the definition a preset registers therefore resolves the preset
+ * scope's `fs` (the base Provider). A registration made from the Member's own
+ * isolated scope — `root.isolate('fs', label)`, whose DSH scope key is still the
+ * agent's (`cordinate extend` inherits the scope tag) — SHADOWS that definition
+ * for this agent only, and its body resolves the confined Provider. Mounting
+ * the native module here is what makes the MODEL-VISIBLE native `read`/`write`/
+ * `edit` execute on the confined lane. No Core patch, no copied tool body, no
+ * second mount path: the module is the SAME package the preset mounted.
+ *
+ * The module is imported by the CALLER (row composition), never resolved here:
+ * this seam must not own module-resolution policy (the same discipline that
+ * keeps policy compilation out).
+ *
+ * ORDER IS LOAD-BEARING (review fix, 2026-11-03): the shadow must be created
+ * AFTER the Member capability deny lane (`applyBuiltInToolDeny`). An OWN-scope
+ * registration sits outside the inherited `tools.restrict` filter, so a deny
+ * applied to the inherited surface BEFORE the shadow hides the preset row and
+ * lets the shadow take its place; a deny applied AFTER the shadow cannot hide
+ * it. The production glue therefore calls `mountNativeToolModules` after the
+ * deny block, and the surface-neutrality check compares against the POST-DENY
+ * surface.
+ */
+export interface NativeToolModuleMount {
+    /** A Cordis plugin module (already imported): the native tool package's module object. */
+    readonly module: Plugin;
+    /** Plugin config forwarded verbatim to `ctx.plugin`. */
+    readonly config?: unknown;
+}
 export interface MountA5sfRealmInput {
     readonly root: Context;
     readonly members: readonly A5sfRealmMember[];
@@ -57,6 +90,17 @@ export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];
     readonly installation: MemberIoInstallation;
     readonly bindings: readonly ToolBindingRealm[];
+    /**
+     * ROUTE C — re-mount NATIVE tool modules into the Member's isolated scope NOW
+     * (the caller MUST have applied its capability deny lane first: see the
+     * `NativeToolModuleMount` ordering note). The returned fibers are the ones
+     * this call created; they are ALREADY tracked for disposal by this realm, and
+     * the caller may dispose them individually if its surface-neutrality check
+     * fails. Refuses (typed) unless this realm carries exactly ONE Member
+     * ceiling: every Member realm inherits the SAME agent scope key, so a second
+     * re-mount of the same tool names collides in one scope layer.
+     */
+    mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>;
     dispose(): Promise<void>;
 }
 /**
