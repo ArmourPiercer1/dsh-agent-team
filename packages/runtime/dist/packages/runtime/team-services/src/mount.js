@@ -37,6 +37,11 @@
  */
 import { installMemberIoProviders, installToolBindingRealm, } from './install.js';
 import { TeamServiceInstallError } from './types.js';
+/**
+ * P0 (2026-11-03): the stable machine-readable code carried by the admission
+ * refusal's `error.info.code` while a realm's native shadow is invalidated.
+ */
+export const A5SF_NATIVE_SHADOW_INVALIDATED = 'A5SF_NATIVE_SHADOW_INVALIDATED';
 /** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
 export const NATIVE_REGISTRATION_ROUTING = 'a5sfRegistrationRouting';
 /** The tool name a ToolBinding identity addresses: the last `/` segment of `<owner>/<tool>`. */
@@ -265,12 +270,26 @@ export async function mountA5sfRealm(input) {
     // preset path.
     let invalidation = null;
     let detachVerification;
+    /**
+     * P0 (2026-11-03): the Member ADMISSION listener. Registered with the attach
+     * and kept for the realm's life; while `nativeInvalidation !== null` it denies
+     * every tool name this attach COVERED, BEFORE the (now preset) definition
+     * body runs. This is the existing `tools/pre-execute` admission stage every
+     * dispatch already passes through — not a second execution engine and not a
+     * second policy compiler: it reads one boolean and a name set.
+     */
+    let detachAdmission;
     let resolveVerification;
     const verificationSettled = new Promise((resolve) => { resolveVerification = resolve; });
     /** The in-flight invalidation teardown (resolved when nothing is mounted). */
     let invalidationTeardown = Promise.resolve();
     /** name -> the exact definition this attach registered (the coverage signal). */
     const expectedDefinitions = new Map();
+    /**
+     * P0: name -> the realm that owned its (now disposed) shadow, so a refusal
+     * can NAME the realm and the Member instead of being an anonymous error.
+     */
+    const managedRealmOf = new Map();
     /**
      * The Member's model-visible tool NAMES at arm time (post-attach, so the
      * mount's own registrations are in the baseline). A later name-set difference
@@ -279,6 +298,36 @@ export async function mountA5sfRealm(input) {
      * schemas (a double), in which case only definition identity is verified.
      */
     let expectedSurfaceNames;
+    /** The typed refusal for one managed name while the realm is invalid. */
+    const refusalOf = (name, record) => {
+        const member = installation.members[0]?.identity;
+        const where = managedRealmOf.get(name);
+        const realm = where?.realm === 'binding'
+            ? `binding realm ${JSON.stringify(where.toolBindingIdentity)}`
+            : 'ceiling realm';
+        return {
+            reason: `a5sf: managed native tool ${JSON.stringify(name)} is REFUSED — Member `
+                + `${JSON.stringify(member?.memberInstanceId ?? null)} (team ${JSON.stringify(member?.teamId ?? null)}, `
+                + `generation ${String(member?.instanceGeneration ?? null)}) / ${realm} has an INVALIDATED native shadow; `
+                + `reason: ${record.reason}; the preset definition is visible but may not serve this Member until a full `
+                + 're-assembly verifies a new shadow',
+            info: Object.freeze({ name: 'A5sfNativeShadowInvalidatedError', code: A5SF_NATIVE_SHADOW_INVALIDATED }),
+        };
+    };
+    /**
+     * `tools/pre-execute` admission: DENY a covered name while the realm is
+     * invalid, otherwise delegate to the rest of the waterfall. Denying here is
+     * what makes `NoStaleShadow` imply `NoUnconfinedExecution`: the preset
+     * definition may be visible, but it never executes for this Member.
+     */
+    const admitCoveredTool = (exec, next) => {
+        const record = invalidation;
+        const name = exec?.name;
+        if (record !== null && typeof name === 'string' && expectedDefinitions.has(name)) {
+            return { kind: 'deny', ...refusalOf(name, record) };
+        }
+        return typeof next === 'function' ? next() : undefined;
+    };
     /**
      * Dispose the native shadow and RECORD the event. Fail closed: after this the
      * realm refuses further native mounts, so a caller cannot re-create a partial
@@ -301,6 +350,15 @@ export async function mountA5sfRealm(input) {
             surfaceRemoved: Object.freeze([...new Set(surfaceRemoved)]),
             observedAt: new Date().toISOString(),
         });
+        // ORDER IS LOAD-BEARING (P0, 2026-11-03): the record is set FIRST, so the
+        // admission listener (`admitCoveredTool`) already DENIES every covered name
+        // before a single router fiber is torn down. Refuse first, then dispose: a
+        // dispatch that arrives during the teardown can never be served by the
+        // preset, and one already in flight keeps running on its CONFINED body (the
+        // existing cancellation/drain path owns it) — there is no window in which an
+        // unguarded definition serves this Member. Eligibility does not come back
+        // here: `mountNativeToolModules` refuses an invalid realm and the admission
+        // deny lasts until this realm is disposed and fully re-assembled.
         invalidation = record;
         if (detachVerification !== undefined) {
             try {
@@ -316,7 +374,8 @@ export async function mountA5sfRealm(input) {
         // `nativeInvalidation`); the process log names it too because the live glue
         // is not changed by this lane. This is a REPORT, not a second authority.
         console.error(`a5sf: native tool shadow INVALIDATED (${record.schema}): ${record.reason}; `
-            + `uncovered=${JSON.stringify(record.uncovered)}; disposing every router fiber to restore the preset surface`);
+            + `uncovered=${JSON.stringify(record.uncovered)}; managed tools are now REFUSED at admission, `
+            + 'disposing every router fiber to restore the preset surface');
         invalidationTeardown = disposeNative()
             .catch((error) => {
             console.error(`a5sf: native shadow invalidation teardown failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -415,17 +474,56 @@ export async function mountA5sfRealm(input) {
     };
     const armVerification = (scope) => {
         verificationScope = scope;
+        // P0 (2026-11-03): the two listeners are part of the MANAGED guarantee, so
+        // failing to attach either REFUSES the attach (fail closed, typed). The old
+        // behaviour — silently degrade to the two bounded rounds — meant a Member
+        // could keep running with no continuous invalidation detection at all.
+        const memberCtx = installation.members[0]?.ctx;
+        const refuse = (listener, detail) => new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool re-mount refused: the Member context cannot attach the '${listener}' listener this managed`
+            + ` attach needs to verify its shadow (${detail}); refusing instead of silently falling back to the bounded`
+            + ' post-settle rounds only');
+        if (typeof memberCtx?.on !== 'function')
+            throw refuse('tools/change', 'ctx.on is unavailable');
         // CONTINUOUS VERIFICATION, without a loader seam: `@deepseek-ai/dsh-tools`
         // emits `tools/change` on every scoped registration/restriction/disposal,
         // so a late arrival or hot update is observed as it happens, not inferred.
-        const memberCtx = installation.members[0]?.ctx;
-        if (typeof memberCtx?.on === 'function') {
+        try {
+            const detach = memberCtx.on('tools/change', () => { verifyRoutedSurface(verificationScope); });
+            detachVerification = typeof detach === 'function' ? detach : undefined;
+        }
+        catch (error) {
+            detachVerification = undefined;
+            throw refuse('tools/change', error instanceof Error ? error.message : String(error));
+        }
+        if (detachVerification === undefined)
+            throw refuse('tools/change', 'ctx.on returned no disposer');
+        // ADMISSION (P0): the deny path that closes "the shadow is gone, so serve the
+        // preset". Registered at the SAME time as verification, so there is no
+        // attach that can invalidate without a refusal armed.
+        try {
+            const detach = memberCtx.on('tools/pre-execute', (exec, next) => admitCoveredTool(exec, next));
+            detachAdmission = typeof detach === 'function' ? detach : undefined;
+        }
+        catch (error) {
+            detachAdmission = undefined;
             try {
-                detachVerification = memberCtx.on('tools/change', () => { verifyRoutedSurface(verificationScope); });
+                detachVerification();
             }
             catch {
-                detachVerification = undefined;
+                // The refusal below is the failure that is reported.
             }
+            detachVerification = undefined;
+            throw refuse('tools/pre-execute', error instanceof Error ? error.message : String(error));
+        }
+        if (detachAdmission === undefined) {
+            try {
+                detachVerification();
+            }
+            catch {
+                // The refusal below is the failure that is reported.
+            }
+            detachVerification = undefined;
+            throw refuse('tools/pre-execute', 'ctx.on returned no disposer');
         }
         // BOUNDED POST-SETTLE ROUNDS (the review's explicit requirement): the mount
         // already settled one macrotask for deferred registrations; two MORE
@@ -471,7 +569,24 @@ export async function mountA5sfRealm(input) {
                 }
                 detachVerification = undefined;
             }
-            expectedDefinitions.clear();
+            // A caller's own (pre-invalidation) refusal abandons a HEALTHY attach, so
+            // the admission deny has nothing to guard and is detached with it; a later
+            // re-attach arms a fresh one. While the realm IS invalid this path must NOT
+            // disarm the deny or forget the covered names: the Member stays out of
+            // service until the whole realm is disposed and re-assembled.
+            if (invalidation === null) {
+                if (detachAdmission !== undefined) {
+                    try {
+                        detachAdmission();
+                    }
+                    catch {
+                        // The caller's refusal is the failure that is reported.
+                    }
+                    detachAdmission = undefined;
+                }
+                expectedDefinitions.clear();
+                managedRealmOf.clear();
+            }
             expectedSurfaceNames = undefined;
             await disposeNative();
         },
@@ -542,6 +657,10 @@ export async function mountA5sfRealm(input) {
                         nativeFibers.splice(at, 1);
                 }
                 created.length = 0;
+                // A refused attach leaves NO managed names behind: the coverage maps
+                // describe what THIS attach shadows, so a rollback clears them with it.
+                expectedDefinitions.clear();
+                managedRealmOf.clear();
             };
             for (const [index, mount] of modules.entries()) {
                 const binding = observeOnly || mount.toolBindingIdentity === undefined
@@ -664,6 +783,14 @@ export async function mountA5sfRealm(input) {
                     nativeFibers.push(fiber);
                     for (const [name, definition] of partition.forwardedDefinitions)
                         expectedDefinitions.set(name, definition);
+                    // P0: remember which realm owned each covered name so a refusal can
+                    // name it (binding identity or ceiling).
+                    for (const name of partition.forwarded) {
+                        managedRealmOf.set(name, {
+                            realm: binding === undefined ? 'ceiling' : 'binding',
+                            toolBindingIdentity: binding?.toolBindingIdentity ?? null,
+                        });
+                    }
                 }
                 const routing = Object.freeze({
                     realm: binding === undefined ? 'ceiling' : 'binding',
@@ -692,7 +819,16 @@ export async function mountA5sfRealm(input) {
                 return Object.freeze([...created]);
             // ASSEMBLY GAP 2: arm re-verification AFTER the last registration, so the
             // mount's own writes cannot be mistaken for a later change.
-            armVerification(options?.scope);
+            // P0 (2026-11-03): arming is fail-closed. If either listener cannot be
+            // attached the WHOLE attach is rolled back and refused (typed), instead of
+            // running a managed Member on the bounded rounds alone.
+            try {
+                armVerification(options?.scope);
+            }
+            catch (error) {
+                await rollbackCreated();
+                throw error;
+            }
             return Object.freeze([...created]);
         },
         dispose: async () => {
@@ -708,6 +844,18 @@ export async function mountA5sfRealm(input) {
                     // being gone is not a failure.
                 }
                 detachVerification = undefined;
+            }
+            // P0: the admission deny is dropped only with the WHOLE realm (the Member
+            // is unassembled), never while invalid. Until here every covered name was
+            // refused.
+            if (detachAdmission !== undefined) {
+                try {
+                    detachAdmission();
+                }
+                catch {
+                    // Same rule as the verification disposer above.
+                }
+                detachAdmission = undefined;
             }
             resolveVerification?.();
             // The native shadow is disposed FIRST: once the confined Provider fiber is
