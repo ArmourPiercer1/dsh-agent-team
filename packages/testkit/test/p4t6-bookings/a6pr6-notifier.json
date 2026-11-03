@@ -1,0 +1,11 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6PR6NOTIFIER",
+  "paths": [
+    "packages/runtime/alpha6/notifier.ts",
+    "packages/runtime/test/a6-pr6-notifier.test.ts"
+  ],
+  "expectedDelta": { "from": 1407, "to": 1409 },
+  "reason": "Alpha.6 PR6 notifier composition: one pure adapter module plus its spec. No denylist vocabulary.",
+  "tieNote": "MEASURED on this tree after the first PR6 booking: 1407 -> 1409; exactly these two paths."
+}
