@@ -45,6 +45,13 @@ import type {
   TrustedMemberIdentity,
 } from '../member-io-policy/src/types.js'
 import { installMemberIoProviders, installToolBindingRealm } from '../team-services/src/install.js'
+import { mountA5sfRealm } from '../team-services/src/mount.js'
+import {
+  createGuardConsultFileSink,
+  GuardObservationError,
+  readGuardConsultFile,
+  type GuardConsultFact,
+} from '../team-services/src/guard-observability.js'
 import type { MemberServiceInstallation } from '../team-services/src/types.js'
 import type { MemberServiceSpec } from '../team-services/src/install.js'
 import { TEAM_IO_DENIAL_CODES, TeamServiceInstallError } from '../team-services/src/types.js'
@@ -99,6 +106,9 @@ class TestFileSystem extends Service {
 
   readonly config: Record<string, unknown>
 
+  /** Base-Provider read count, used by the P2 seam's fail-closed arm. */
+  static reads = 0
+
   processPath(target: unknown): string {
     return (target as FsTargetLike).hostPath
   }
@@ -112,6 +122,7 @@ class TestFileSystem extends Service {
   }
 
   async readText(target: unknown): Promise<string> {
+    TestFileSystem.reads += 1
     return readFile(this.processPath(target), 'utf8')
   }
 
@@ -433,6 +444,95 @@ describe('P1-05 per-Member service realm', () => {
     expect(await realm.fs.readText(await realm.fs.resolve(join(docs, 'narrow.txt')))).toBe('narrow\n')
     // The Member ceiling allows dirA, but the BINDING does not: refused.
     await expect(realm.fs.readText(await realm.fs.resolve(join(dirA, 'a.txt')))).rejects.toMatchObject({ code: 'IO_READ_DENIED' })
+    await realm.dispose()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// P2 seam (BL-14/P2-01 follow-up): guard consultations are observable, the
+// default path is unchanged, and the ONE mount entry point composes the two
+// installers. The cross-process transport is proved in
+// `tests/world-factory/a5sf-p2-seam.test.mjs`; this block pins the package-side
+// laws over the REAL Cordis unit root.
+// ---------------------------------------------------------------------------
+
+describe('P2 seam: observable guard consultations', () => {
+  const seamLane = (allow: string[]): PathRuleSet => lane(allow)
+
+  function seamEffective(identity: TrustedMemberIdentity, binding: string, allow: string[]): EffectiveIoPolicy {
+    return Object.freeze({
+      memberIdentity: identity.memberInstanceId,
+      toolBindingIdentity: binding,
+      invocationId: `call-${binding}`,
+      policyRevision: `rev-${binding}`,
+      read: seamLane(allow),
+      write: seamLane(allow),
+      network: Object.freeze({ access: 'allow' as const }),
+    })
+  }
+
+  it('default path: no observer ⇒ same frozen shape and same allow/deny outcomes', async () => {
+    const dir = await mkdtemp(join(rootDir, 'seam-default-'))
+    await writeFile(join(dir, 'ok.txt'), 'ok\n', 'utf8')
+    const identity = { ...IDENTITY_A, memberInstanceId: 'member-seam-default' }
+    const effective = seamEffective(identity, 'seam/read', [dir])
+
+    const plain = await installToolBindingRealm({ root, spec: { identity, toolBindingIdentity: 'seam/read', effective } })
+    const observed = await installToolBindingRealm({
+      root,
+      spec: { identity: { ...identity, memberInstanceId: 'member-seam-observed' }, toolBindingIdentity: 'seam/read-observed', effective: seamEffective({ ...identity, memberInstanceId: 'member-seam-observed' }, 'seam/read-observed', [dir]) },
+      onGuardConsult: () => undefined,
+    })
+    expect(Object.keys(plain).sort()).toEqual(Object.keys(observed).sort())
+    expect(Object.isFrozen(plain)).toBe(true)
+    expect(plain.policyRevision).toBe('rev-seam/read')
+    expect(await plain.fs.readText(await plain.fs.resolve(join(dir, 'ok.txt')))).toBe('ok\n')
+    await expect(plain.fs.readText(await plain.fs.resolve(join(dirA, 'a.txt')))).rejects.toMatchObject({ code: 'IO_READ_DENIED' })
+    await plain.dispose()
+    await observed.dispose()
+  })
+
+  it('observer records one fact per consultation, and the JSONL sink round-trips', async () => {
+    const dir = await mkdtemp(join(rootDir, 'seam-observe-'))
+    await writeFile(join(dir, 'ok.txt'), 'ok\n', 'utf8')
+    const sinkDir = await mkdtemp(join(FIXTURE_PARENT, 'seam-sink-'))
+    const sinkPath = join(sinkDir, 'consult.jsonl')
+    const sink = createGuardConsultFileSink({ path: sinkPath })
+    const facts: GuardConsultFact[] = []
+    const identity = { ...IDENTITY_A, memberInstanceId: 'member-seam-observe' }
+    const mounted = await mountA5sfRealm({
+      root,
+      members: [{ identity, policy: { ok: true, value: policyOf(identity, lane([dir]), lane([dir])) } }],
+      bindings: [{ identity, toolBindingIdentity: 'seam/observe', effective: seamEffective(identity, 'seam/observe', [dir]) }],
+      providerClass: BaseFileSystem,
+      onGuardConsult: async (fact) => {
+        facts.push(fact)
+        await sink.record(fact)
+      },
+    })
+    const binding = mounted.bindings[0]!
+    expect(await binding.fs.readText(await binding.fs.resolve(join(dir, 'ok.txt')))).toBe('ok\n')
+    await expect(binding.fs.readText(await binding.fs.resolve(join(dirA, 'a.txt')))).rejects.toMatchObject({ code: 'IO_READ_DENIED' })
+    expect(facts.map((fact) => fact.sequence)).toEqual([1, 2])
+    expect(facts.map((fact) => fact.decidedBy)).toEqual(['ALLOW', 'IO_READ_DENIED'])
+    expect(facts.every((fact) => fact.realm === 'binding' && fact.toolBindingIdentity === 'seam/observe')).toBe(true)
+    expect(await readGuardConsultFile(sinkPath)).toEqual(facts)
+    await mounted.dispose()
+  })
+
+  it('sink failure is fail-closed and reported, and the Provider is never consulted', async () => {
+    const dir = await mkdtemp(join(rootDir, 'seam-fail-'))
+    await writeFile(join(dir, 'ok.txt'), 'ok\n', 'utf8')
+    const identity = { ...IDENTITY_A, memberInstanceId: 'member-seam-fail' }
+    const sink = createGuardConsultFileSink({ path: join(dir, 'missing-subdir', 'consult.jsonl') })
+    const realm = await installToolBindingRealm({
+      root,
+      spec: { identity, toolBindingIdentity: 'seam/fail', effective: seamEffective(identity, 'seam/fail', [dir]) },
+      onGuardConsult: (fact) => sink.record(fact),
+    })
+    TestFileSystem.reads = 0
+    await expect(realm.fs.readText(await realm.fs.resolve(join(dir, 'ok.txt')))).rejects.toBeInstanceOf(GuardObservationError)
+    expect(TestFileSystem.reads).toBe(0)
     await realm.dispose()
   })
 })

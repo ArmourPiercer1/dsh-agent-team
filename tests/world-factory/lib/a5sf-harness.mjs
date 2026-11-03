@@ -55,6 +55,14 @@
  * This file does the same instead of editing another lane's TS surface
  * (one-writer rule). See `dev/agent-workflow/evidence/a5sf-r2/README.md` §4.
  *
+ * P2 SEAM ADDITION (2026-11-03, additive, default-preserving): the harness now
+ * exposes `mountRealm()` — its caller of `team-services#mountA5sfRealm`, the ONE
+ * entry point a booted Host would call for an admitted Member — and forwards an
+ * optional `onGuardConsult` through `installBindingRealm()` / `mountRealm()`.
+ * `mountRealm()` is exercised host-free by
+ * `tests/world-factory/a5sf-p2-seam.test.mjs`; no boot, launcher or policy
+ * compiler is added here.
+ *
  * CORE PATCH BUDGET = 0: nothing here imports or modifies an upstream tree.
  *
  * @module tests/world-factory/lib/a5sf-harness
@@ -151,10 +159,18 @@ export async function loadPolicySeams(repoRoot) {
         TeamIoDenial: services.TeamIoDenial,
         TEAM_IO_DENIAL_CODES: services.TEAM_IO_DENIAL_CODES,
         installToolBindingRealm: servicesDeep.installToolBindingRealm,
+        installMemberIoProviders: services.installMemberIoProviders,
+        // P2 seam (additive): the ONE mount entry point + the guard-consult
+        // transport, both re-exported by the team-services barrel.
+        mountA5sfRealm: services.mountA5sfRealm,
+        createGuardConsultFileSink: services.createGuardConsultFileSink,
+        readGuardConsultFile: services.readGuardConsultFile,
+        GuardObservationError: services.GuardObservationError,
       })
       const functions = [
         'parseBlueprintV4', 'compileMemberPolicy', 'projectToolIoRestriction', 'compileEffectiveIo',
-        'createMemberFsGuard', 'installToolBindingRealm',
+        'createMemberFsGuard', 'installToolBindingRealm', 'installMemberIoProviders',
+        'mountA5sfRealm', 'createGuardConsultFileSink', 'readGuardConsultFile',
       ]
       for (const name of functions) {
         if (typeof seams[name] !== 'function') {
@@ -395,13 +411,39 @@ export function createA5sfHarness(opts = {}) {
      * Mount the confined Provider for ONE (Member × tool binding) realm through
      * the shipped P1-05 installer. Requires the live Cordis root of a booted
      * World — this adapter passes the call through and adds nothing.
+     *
+     * P2 seam (additive): `onGuardConsult` is forwarded to the installer's own
+     * observer input, so a suite observes each consultation of THIS realm
+     * without a second install path. Omitted = the installer's default path.
      */
-    async installBindingRealm({ root, identity, toolBindingIdentity, effective, config, providerClass } = {}) {
+    async installBindingRealm({ root, identity, toolBindingIdentity, effective, config, providerClass, onGuardConsult } = {}) {
       const seams = await loadPolicySeams(String(repoRoot))
       return seams.installToolBindingRealm({
         root,
         spec: { identity, toolBindingIdentity, effective, ...(config === undefined ? {} : { config }) },
         ...(providerClass === undefined ? {} : { providerClass }),
+        ...(onGuardConsult === undefined ? {} : { onGuardConsult }),
+      })
+    },
+
+    /**
+     * Mount a Member's COMPILED realm (ceiling + its binding realms) through the
+     * ONE P2 entry point `team-services#mountA5sfRealm`. This is the harness's
+     * caller of the production mount: it adds no launcher, no compiler and no
+     * policy logic — the caller supplies the root Context and the compiled
+     * objects. Omitted `onGuardConsult` = the entry point's default path.
+     */
+    async mountRealm({ root, members, bindings, providerClass, onGuardConsult } = {}) {
+      if (root === undefined || root === null) {
+        throw new A5sfHarnessError('WORLD_REQUIRED', 'mountRealm needs the live Cordis root of a booted World (or an in-process unit root)', {})
+      }
+      const seams = await loadPolicySeams(String(repoRoot))
+      return seams.mountA5sfRealm({
+        root,
+        members,
+        ...(bindings === undefined ? {} : { bindings }),
+        ...(providerClass === undefined ? {} : { providerClass }),
+        ...(onGuardConsult === undefined ? {} : { onGuardConsult }),
       })
     },
 

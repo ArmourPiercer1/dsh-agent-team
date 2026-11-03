@@ -21,6 +21,33 @@ export type {
   ToolBindingRealm,
   ToolBindingRealmSpec,
 } from './install.js'
+export { mountA5sfRealm } from './mount.js'
+export type {
+  A5sfRealmBinding,
+  A5sfRealmMember,
+  MountA5sfRealmInput,
+  MountedA5sfRealm,
+} from './mount.js'
+export {
+  createGuardConsultFileSink,
+  GUARD_ALLOW_DECIDED_BY,
+  GUARD_CONSULT_SCHEMA,
+  GUARD_CONSULT_TRANSPORT_CODES,
+  GuardConsultTransportError,
+  GuardObservationError,
+  observeGuard,
+  readGuardConsultFile,
+} from './guard-observability.js'
+export type {
+  GuardConsultContext,
+  GuardConsultDecision,
+  GuardConsultFact,
+  GuardConsultFileSink,
+  GuardConsultFileSinkOptions,
+  GuardConsultObserver,
+  GuardConsultRealm,
+  GuardConsultTransportCode,
+} from './guard-observability.js'
 export {
   TEAM_IO_DENIAL_CODES,
   TEAM_SERVICE_INSTALL_CODES,
