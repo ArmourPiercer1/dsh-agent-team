@@ -190,6 +190,12 @@
    "sha256": "fd5d4126ffb7f610b59b0151d6a20255172c79fdfd13ad1d10c2bf3b32633264",
    "pr": "PR #557 (task/a5sf-native-route-c-20261103) - NAMED center-interface change, SAME named center-interface as the a5sf P2 wiring/F1 bookings, coordinator-assigned",
    "reason": "BL-22 route C: the Member's native tool modules are re-mounted on the isolated fs scope, and the shadow is created AFTER builtinToolDeny so the deny lane is applied to the inherited surface before an own-scope registration can sit outside the restrict() filter (measured bypass if reversed: a denied native read stays visible and executable). The mount keeps its position because it feeds the Team tool-plane placement and the permission-adapter fs seam; the new attach call plus a structural order pin are the whole delta on this file."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b",
+   "pr": "PR for task/a5sf-scope-key-20261103 - NAMED center-interface change, SAME named center-interface class as #550/#555/#557, coordinator-assigned",
+   "reason": "The first live Host boot measured a duplicate @deepseek-ai/dsh-scope module instance (Team plugin resolves the .pnpm copy, the pristine Host resolves packages/core/scope/lib), so scopeOf(agentCtx) is undefined for a healthy Host-tagged ctx and route C's native attach refused every a5sf-wired Member activation. Fix: the attach now receives the setup's CANONICAL runtime Agent as the scope key (the identity the Permission Coverage Gate already uses), with scopeOf() demoted to last-resort and the refusal kept when neither yields a key. Delta on this file = one added argument at the existing attach call plus its justification comment."
   }
  ]
 }
