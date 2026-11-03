@@ -7463,3 +7463,12 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **验证**：docs-sync 0 findings；docs-probe 0 blocking。零生产代码、零 schema。
 - **下一步**：按用户要求拉起多个独立子代理做更深入复审；修正后再决定
   PR2a/PR2b 是否启动。CI 仍无 pull_request run（基础设施异常，另行披露）。
+
+## 2026-11-03T12:0xZ（真实 UTC）— Alpha.6 PR #536 正式进入分阶段实现（主 Agent）
+
+- **用户裁决**：外部审查已批准按冻结契约进入实现（GO）；不需要逐阶段等待放行，除非严重阻塞。PR #536 仍为 DRAFT / DO-NOT-MERGE；本轮只启动实现，不解除合并、生产启用或发布门禁。
+- **仓库基线**：实现基 branch `alpha6/pr536-impl-20261103` @ `444fa52e9`（PR #536 design head；base `origin/master 8067f631f`），worktree `.worktrees/alpha6-impl-base`。Alpha.5 当前合同指针未切换；PR #536 的三份设计文档是本次实现契约正本。
+- **并行 lane**：PR1（v5 dormant grammar + 唯一共享 `BlueprintReviewPolicy` + `ReviewRouter`）与 PR3（纯轻量 `ReviewWakeCoordinator`）分别使用独立 branch/worktree/writer；PR2a 等 PR1 稳定后启动；PR2b 才进入 Control/PA 受保护中心，需 ARC-A override 与独立审查。
+- **纪律**：CORE PATCH BUDGET = 0；旧 v3/v4 解析与哈希零移动；PR1/PR3 零生产消费者；所有 PR 先跑 `node scripts/ci-pr-gate.mjs` 本地门（托管 CI 只在 master 触发，Alpha.6 draft PR 无 hosted check）；不把本地 vitest 绿冒充 CI 证据。
+- **下一步**：PR3 可由独立子代理并行实现；PR1 由主 Agent 实现；完成各自单测/类型检查/lane hygiene 后提交并推送实现分支，再开 stacked PR（base = PR #536 design branch）。
+- **Graph 修复（base 既有损坏，非本轮引入）**：`graph.yaml` 在 `alpha4_governance_20261007.a4_pr7_task7` 内已有 3 个重复 `s7_in_flight_lanes` key 和 2 处被换行截断的 closing quote；这使 base graph 本身无法被 YAML 解析。已按历史顺序改名 `s7_in_flight_lanes_round40/41` 与 `s7_4_lane_registry_round38`，并把断行引号收回行尾；内容未删，`node yaml.parse` 恢复通过。该修复属于仓库状态可读性，不改变任何任务语义。

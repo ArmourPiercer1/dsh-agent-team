@@ -1,0 +1,8 @@
+$ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/check-artifacts-at-head.mjs --store-dir /tmp/dsh-pnpm-store-a6
+# exit=3 signal=null error=none seconds=0
+--- stdout ---
+[check-artifacts-at-head] NOT-RUN: the only discoverable pnpm store (--store-dir: /tmp/dsh-pnpm-store-a6) is not writable, so the scratch cannot be installed. Pass --store-dir <writable path>; a refusal is not a verdict of "fresh".
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=not-run reason=store-not-writable
+
+--- stderr ---
+
