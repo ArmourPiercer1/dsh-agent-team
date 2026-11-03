@@ -186,6 +186,8 @@ reviewRouting:
 - **正确授权时序**：ControlService 在写决议前计算可信 ReviewCapability 候选并经 PA precommit 验证；成功后同一 durable decision 行记录真实 decider 与能力证据；后续 PA/Grant/Guard 从该行及现行有效调用事实重验。不得在 precommit 读取不存在的 decision，也不得在各层各写一套特例。
 - 这些只是审批委托模型的扩展，不修改原生工具、原有角色 rung、非委托权限法律或 Alpha.5 I/O 硬上界。权威接口细节见 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4](./alpha6-execution-plan-20261102.md)。
 
+**跨 leg 工具审批**：见 [ADR D6a/D6b](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4b](./alpha6-execution-plan-20261102.md)。现有 PA Bridge 仅等待初始 requestId，须先接入正式 Control Case/leg、保留严格 manifest，等待最终 Human 决议后才按原调用存活状态、实际终态 requestId/decisionSequence 与全部执行前检查决定是否继续；中间 deny/escalated 不是最终工具拒绝。Leader 可主动代决而不被自动双投。
+
 ### 3.4 轻量通知：Activation + Poll + Latch
 
 - **激活（Activation）**：只发出 WorkChanged 提示，不按 requestId 注入模型消息。新 Case、resolve/abandon、leg 升级、Handoff、故障接管等都是需要**重查当前待办**的触发源；通知失败不回滚权威 Case。
