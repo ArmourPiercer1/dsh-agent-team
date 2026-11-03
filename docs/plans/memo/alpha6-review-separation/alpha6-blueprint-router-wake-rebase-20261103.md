@@ -17,13 +17,15 @@
 >
 > **旧计划定位**：#319、#501、#503、#507、#509、#513、#517、#520、#522 是可评估和回收的历史设计/实验资产，不是新方案必须逐项实施的前置条件。未另行批准前，它们不自动获得合并/启用授权。
 
+> **2026-11-03 ADR 一致性修订**：本文件的早期 PoC 记录作为历史证据保留，不能覆盖新结论。现行实施契约为 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 与 [实施计划 §2.4/§3](./alpha6-execution-plan-20261102.md)。已收口 precommit/decision 依赖、Blueprint Leader 例外限制 Officer 委托、Handoff 非权限来源、真实参与主体分离、Unavailable Takeover 可信 Runtime 入口。**不追加独立 PoC，零生产代码改动。**
+
 ## 0. 唯一产品目标、边界
 
 **目标 G1：职责分离。** 一名专职 Approval Officer 承担团队中日常运行产生的审批；Leader 保留团队调度与治理、持久权限变更和蓝图指定的全局决策/特殊例外。Leader 不再被普通工具审批打断。
 
 **目标 G2：修复重复消息。** 已 resolve 的审批请求不再触发新的多余审批通知；多件同时/连续到达的审批只产生必要的合并唤醒，而不是每个请求投递一轮 next-turn。收到通用唤醒的 Agent 再读取当前权威待办。
 
-**本轮非目标**：通用动态路由/调度系统、路由 LLM/subagent、Jev 策略实现、自动风险评分、复杂定时 defer、多个 Officer 的分布式负载均衡、外部恶意插件/提示词注入的专门防御、实例级持久路由策略编辑器、改造工具执行或基础权限体系。只预留未来 RoutingStrategy 扩展点。
+**本轮非目标**：通用动态路由/调度系统、路由 LLM/subagent、Jev 策略实现、自动风险评分、复杂定时 defer、多个 Officer 的分布式负载均衡、外部恶意插件/提示词注入的专门防御、实例级持久路由策略编辑器、改造工具执行或非委托基础权限法律（ADR-A6-1 已授权统一扩展审批委托能力）。只预留未来 RoutingStrategy 扩展点。
 
 **信任模型**：本阶段假设各 Member 与 Officer 可信、Officer 足以识别并拒绝不合理请求。仍须遵守现有权限层级、审批范围与终态规则；不因忽略复杂恶意主体威胁而允许未经授权的操作。
 
@@ -91,42 +93,39 @@
 
 **A6-AUTHORITY 的可行性与边界（ADR 已接受）**：master 的 CONTROL_RESOLVER_ROLES 当前使普通 Member 不可直接 resolve leader-approval；完整 PA 链的 `deciderAuthority()` / `mayReview()` / `verifyEffectSetApproval()` / `issueApprovedGrant()` 也把 member 解释为不能覆盖 leader 级审批。**“角色闭集接缝”只解决 Control 入口，不等于 PA 工具审批可用。** 2026-11-02 的完整 PA 链实验证实：真实 PA manifest 下 Officer 的 allow 在 resolve 阶段即被判 `pa-authority-drift`。
 
-用户 2026-11-03 裁决：保留非委托语义与全部执行约束，**允许对审批授权契约作统一扩展**。契约正本 = [`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)：真实 Principal 身份与 Case-scoped `ReviewCapability` 分离；单一纯求值器；durable decision 能力快照；Control/PA/Grant/Guard 只读同一快照；不建 per-case Mandate。若实施证明必须扩大 Human/基础工具权限或无法在 ADR 边界内实现，才停止并申请新的架构裁决。
+用户 2026-11-03 裁决：保留非委托语义与全部执行约束，**允许对审批授权契约作统一扩展**。契约正本 = [`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)：真实 Principal 身份与 Case-scoped `ReviewCapability` 分离；单一纯求值器；提交前以可信能力候选完成 PA 验证、提交时在同一 decision 写入能力依据、提交后 PA/Grant/Guard 依凭据重验；不建 per-case Mandate。若实施证明必须扩大 Human/基础工具权限或无法在 ADR 边界内实现，才停止并申请新的架构裁决。
 
 ## 3. 架构方向（不提前冻结具体 API / schema）
 
 ### 3.1 主通路与三个组件
 
 ~~~text
-Trusted Blueprint Snapshot + MemberTemplate identity + Tool identity
-                           |
-                Existing allow / ask / deny
-                           |
-         Existing ControlService / ApprovalCase
-                   (authoritative fact)
-                           |
-             post-commit WorkChanged hint
-                           v
-        ReviewRouter / BlueprintRoutingStrategy
-             | route → recipient, reason
-             | route ≠ authorize; reread current leg
-                           v
-                ReviewWakeCoordinator
-         activation → authoritative scan → latch
-                           |
-          DSH native Agent Inbox (shared carrier)
-                           |
-          Officer / Leader   or   existing Human path
-                           |
-    restricted review read/decision → existing ControlService
-                           |
-              existing execution guard/grant
-           (Alpha.6 MUST NOT change this path)
+Trusted Blueprint Snapshot + operation-owner Template + real Tool
+                              |
+                   Shared BlueprintReviewPolicy
+                  /                            \
+                 v                              v
+  ReviewRouter (current recipient)   ReviewCapabilityEvaluator
+             |                              ^
+             v                              |
+   ReviewWakeCoordinator         trusted Principal/Requester/Owner
+       (poll/latch)              current Case/leg/scope/generation
+             |                              |
+        DSH Inbox                 ControlService PRECOMMIT
+             |                    PA verifies trusted candidate
+      Officer / Leader                       |
+             |                               v
+             +---- review action ----> same-row durable decision
+                                      + capability evidence
+                                               |
+                                               v
+                                      PA/Grant/Guard revalidation
+                               (Alpha.5 Tool/IO hard ceilings unchanged)
 ~~~
 
-1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；输入来自冻结 Blueprint、真实 Template/Tool 身份、当前 leg、少量显式转交事实；输出单个当前合法接收者/无待办/不可路由及原因。不得接管消息排队或 allow。
+1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；**与 ReviewCapabilityEvaluator 共用唯一 BlueprintReviewPolicy**，输入来自冻结 Blueprint、实际 OperationOwner 的 MemberTemplate/可信 Tool、当前 leg、少量显式转交事实；输出唯一当前处理者/无待办/不可路由及原因。不得接管消息排队或 allow。
 2. **ReviewWakeCoordinator**：对接收者的待办变化进行激活、实时权威状态重读、单飞锁存和必要通知；不持有审批权威或新的路由配置。
-3. **ReviewAccessAdapter（薄适配层）**：让专职 Officer 仅能读取自己应审的当前 Case、在既有审批入口提交决定；所有审批合法性与执行时检查仍复用 ControlService。首版不提供 Leader 的完整管理能力。
+3. **ReviewAccessAdapter（薄适配层）**：让专职 Officer 仅读取其合法待办，并由 ReviewCapabilityEvaluator/ControlService 在提交前验证可信候选、决议时同行写能力证据、执行时通过既有 PA/Grant/Guard 重新检查。首版不提供 Leader 的完整管理能力。
 
 ### 3.2 路由决定优先级
 
@@ -141,7 +140,7 @@ Trusted Blueprint Snapshot + MemberTemplate identity + Tool identity
 | 7 | 其余可委托的日常工具 ask | 专职 Officer |
 | 8 | Officer 不可用 | 依该 Blueprint 的 hold / leader 策略；不自动 allow |
 
-实现应将“当前实际执行操作的 Member”与“代表其创建请求的调用者”分开处理；使用 Alpha.5 最终可信调用身份，不能错误地按消息发送者、displayName 或 tool owner 选择 MemberTemplate。
+实现应分别绑定 Reviewer/Decider、Requester、OperationOwner，并以实际 OperationOwner 的 Template × 可信 Tool 对 Blueprint 的 Leader 例外进行唯一判定。Leader 例外同时禁止 Officer 接收通知与取得该 leg 的委托审批权；使用 Alpha.5 最终可信调用身份，不能错误地按消息发送者、displayName 或 tool owner 选择 MemberTemplate。
 
 接口建议维持一个策略端口（签名与类型仅示意）：
 
@@ -178,6 +177,14 @@ reviewRouting:
 - 示例中的 owner/name 坐标仅表达需要受信工具身份，不宣称这些具体键已被产品接受；应优先复用 Alpha.5 工具身份定义。
 - 既有 Blueprint 解析器与历史 v3/v4 内容哈希必须保持原义。真正实现前先核对 Alpha.5 当前定稿 schema 的最小可扩展位置；选择一次明确的加法式变更。
 - 当路由配置无效时，不启用新模式并输出明确错误，不悄悄回退到平行 Host 配置。
+
+### 3.3a 当前授权与路由的清晰边界
+
+- **共享 BlueprintReviewPolicy** 是 Router 和 ReviewCapabilityEvaluator 对 MemberTemplate × 可信 Tool、固定 Leader 管理类别、Human rung、Officer 自问及显式 Leader 例外的唯一静态策略实现。Router 决定归属；委托求值器决定 Actor 当前能否签署。路由为 Leader 的显式例外不得同时允许 Officer 有效审批。
+- **三种主体必须区别**：Reviewer/Decider（审批者）、Requester（提出请求的人）、OperationOwner（真正执行工具调用的 Member）；按 OperationOwner 的 Template 而非 Officer 或 Requester 的 Template 进行规则匹配。工具身份来自受信工具登记/调用绑定。
+- **Handoff 与不可用接管不是审批能力来源**。仅保存一种当前-leg `CurrentLegTransfer`，分别由 Officer 或符合 Blueprint 条件的可信 Team Runtime 发起；Leader 使用其原生权限，旧 Officer 不再能审该 leg。
+- **正确授权时序**：ControlService 在写决议前计算可信 ReviewCapability 候选并经 PA precommit 验证；成功后同一 durable decision 行记录真实 decider 与能力证据；后续 PA/Grant/Guard 从该行及现行有效调用事实重验。不得在 precommit 读取不存在的 decision，也不得在各层各写一套特例。
+- 这些只是审批委托模型的扩展，不修改原生工具、原有角色 rung、非委托权限法律或 Alpha.5 I/O 硬上界。权威接口细节见 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4](./alpha6-execution-plan-20261102.md)。
 
 ### 3.4 轻量通知：Activation + Poll + Latch
 
@@ -262,4 +269,4 @@ PoC 只针对真实不确定的三个问题；已经由固定源码明确支持�
 - [DSH 0.2.0-rc.2 Inbox 固定源码](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/agent-loop/src/inbox.ts)
 - [DSH 0.2.0-rc.2 Agent Loop 固定源码](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/agent-loop/src/agent.ts)
 
-**本 Draft 的完成标准只是“设计裁决得到准确记录 + PoC 具有可执行的最小判据”。** 不得把该文档视为实现完成、全面权限复核通过或默认允许修改任何已冻结的生产权限/执行代码。
+**本 Draft 的完成标准仅是“产品裁决、ADR 与实施计划一致，历史 PoC 状态准确披露”。** 不得把该文档视为实现完成、全面权限复核通过或默认允许修改任何已冻结的生产权限/执行代码。
