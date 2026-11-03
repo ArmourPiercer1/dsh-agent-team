@@ -1,0 +1,9 @@
+team plugin resolves dsh-scope  : /home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-scope@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-invariants_0d6b19188928ab894325adc32e18b0b5/node_modules/@deepseek-ai/dsh-scope/lib/index.js
+pristine host resolves dsh-scope: /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/scope/lib/index.js
+same realpath                  : false
+same module namespace          : false
+team createScope === host createScope: false
+scope minted via TEAM instance   : scopeOf=KEY
+same ctx read via HOST instance  : undefined
+VERDICT: a healthy scoped plugin ctx is UNREADABLE to scopeOf() from the other dsh-scope instance;
+         route C's a5sfAgentToolSurface() uses only scopeOf(agentCtx) and therefore refuses in a boot.

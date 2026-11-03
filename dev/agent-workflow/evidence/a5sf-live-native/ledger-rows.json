@@ -1,0 +1,25 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-03T11:23:17.004Z",
+      "runId": "a5sf-live-native-2026-11-03T11-23-16-973Z",
+      "suite": "a5sf-read",
+      "kind": "budget-intent",
+      "phase": "a5sf-read-intent",
+      "world": "intent:grant-a5sf-live-native-c8a5836238b1",
+      "grantId": "grant-a5sf-live-native-c8a5836238b1",
+      "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"F1 effective-half verification\" (1 boot; the other 2 boots of that item moved to route C and binding acceptance)",
+      "boundCommit": "c8a5836238b1a567fb512d09fdf7f4dff5853ae3",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-03T11:23:23.425Z",
+      "runId": "a5sf-live-native-2026-11-03T11-23-16-973Z",
+      "suite": "a5sf-live-native",
+      "world": "u5a5sflive-20261103T11-23-17Z",
+      "phase": "a5sf-live-native-boot1"
+    }
+  ]
+}

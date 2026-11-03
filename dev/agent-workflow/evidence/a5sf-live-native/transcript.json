@@ -1,0 +1,213 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "surfacePerMemberRequest": [],
+  "teamCallsIssued": [
+    {
+      "seq": 5,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sf-worker",
+        "prompt": "A5SF_LIVE_READ_OUTSIDE read the planted outside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 6,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sf-worker",
+        "prompt": "A5SF_LIVE_READ_OUTSIDE read the planted outside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 6,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d2-delegate",
+        "delegationInstanceId": "inst-1rn23qe04pfh",
+        "label": "a5sf-inside",
+        "prompt": "A5SF_LIVE_READ_INSIDE read the planted inside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 7,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sf-worker",
+        "prompt": "A5SF_LIVE_READ_OUTSIDE read the planted outside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 7,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d2-delegate",
+        "delegationInstanceId": "inst-1rn23qe04pfh",
+        "label": "a5sf-inside",
+        "prompt": "A5SF_LIVE_READ_INSIDE read the planted inside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 7,
+      "name": "team_create_member",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-denyread-create",
+        "delegationTemplateId": "denyread",
+        "label": "a5sf-denyread"
+      }
+    },
+    {
+      "seq": 8,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sf-worker",
+        "prompt": "A5SF_LIVE_READ_OUTSIDE read the planted outside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 8,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-d2-delegate",
+        "delegationInstanceId": "inst-1rn23qe04pfh",
+        "label": "a5sf-inside",
+        "prompt": "A5SF_LIVE_READ_INSIDE read the planted inside-ceiling file once, then report.",
+        "async": false
+      }
+    },
+    {
+      "seq": 8,
+      "name": "team_create_member",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-denyread-create",
+        "delegationTemplateId": "denyread",
+        "label": "a5sf-denyread"
+      }
+    },
+    {
+      "seq": 8,
+      "name": "team_archive_member",
+      "args": {
+        "rootSessionId": "session-a5sf-live-team",
+        "requestToken": "a5sf-archive",
+        "targetInstanceId": "inst-1rn23qe04pfh"
+      }
+    }
+  ],
+  "results": [
+    {
+      "seq": 5,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1rn23qe04pfh': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 6,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1rn23qe04pfh': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 6,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"blocked\",\"toolName\":\"team_delegate\",\"correlation\":\"a5sf-d2-delegate\",\"reason\":\"target-stale\"}"
+    },
+    {
+      "seq": 7,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1rn23qe04pfh': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 7,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"blocked\",\"toolName\":\"team_delegate\",\"correlation\":\"a5sf-d2-delegate\",\"reason\":\"target-stale\"}"
+    },
+    {
+      "seq": 7,
+      "tool": "team_create_member",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 8,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1rn23qe04pfh': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 8,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"blocked\",\"toolName\":\"team_delegate\",\"correlation\":\"a5sf-d2-delegate\",\"reason\":\"target-stale\"}"
+    },
+    {
+      "seq": 8,
+      "tool": "team_create_member",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr"
+    },
+    {
+      "seq": 8,
+      "tool": "team_archive_member",
+      "isError": false,
+      "head": "{\"status\":\"blocked\",\"toolName\":\"team_archive_member\",\"correlation\":\"a5sf-archive\",\"reason\":\"target-stale\"}"
+    }
+  ],
+  "createDenyText": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\",\"rootSessionId\":\"session-a5sf-live-team\",\"instanceId\":\"inst-1m0s1pf1deuo\"}}\n{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\",\"rootSessionId\":\"session-a5sf-live-team\",\"instanceId\":\"inst-1m0s1pf1deuo\"}}"
+}

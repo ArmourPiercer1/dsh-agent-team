@@ -1,0 +1,7 @@
+{
+  "grantId": "grant-a5sf-live-native-c8a5836238b1",
+  "maxStarts": 2,
+  "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"F1 effective-half verification\" (1 boot; the other 2 boots of that item moved to route C and binding acceptance)",
+  "boundCommit": "c8a5836238b1a567fb512d09fdf7f4dff5853ae3",
+  "note": "maxStarts = 1 pre-registration (intent) row + 1 boot (BL-14 arithmetic: the gate counts shared-ledger rows, not spawns)"
+}

@@ -1,0 +1,43 @@
+[2026-11-03T11:23:16.969Z] BOOT MODE — exactly ONE Host start. repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native
+[2026-11-03T11:23:16.970Z] hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-03T11:23:16.973Z] HEAD=c8a5836238b1a567fb512d09fdf7f4dff5853ae3
+[2026-11-03T11:23:16.973Z] grant materialised: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/grant.json maxStarts=2 boundCommit=c8a5836238b1a567fb512d09fdf7f4dff5853ae3
+[2026-11-03T11:23:17.004Z] candidate asserted: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-03T11:23:17.004Z] gate lease: grant=grant-a5sf-live-native-c8a5836238b1 intentRows=1 rowsBeforeIntent=0 rowsAfterIntent=1 remaining=1
+[2026-11-03T11:23:17.042Z] planted inside=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/workspace/inside-ceiling.txt (A5SF_INSIDE_CLAIM_u5a5sflive-20261103T11-23-17Z); outside=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/outside-ceiling.txt (A5SF_OUTSIDE_CLAIM_u5a5sflive-20261103T11-23-17Z)
+[2026-11-03T11:23:17.042Z] rows: a5sf-native-provider,dsh-agent-team,p6t6-team-tools,preset-a5sf-live-base
+[2026-11-03T11:23:17.042Z] team row a5sfEvidencePath=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/a5sf-consult.jsonl a5sfNativeToolModules=["file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/fs/tool-fs/lib/index.js"]
+[2026-11-03T11:23:23.425Z] mock started on 3493
+[2026-11-03T11:23:32.089Z] BOOTED port=3183 (lease bootsSpent=1) log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/logs/u5a5sflive-20261103T11-23-17Z/instance-port3183.log
+[2026-11-03T11:23:32.330Z] authenticated (token never recorded)
+[2026-11-03T11:23:32.736Z] p6t6 health=true hostAlive=true
+[2026-11-03T11:23:32.745Z] p6t6 state (rootSessionId=session-a5sf-live-root, teamSession!=null)=true
+[2026-11-03T11:23:32.765Z] discovery prompt status=200
+[2026-11-03T11:23:33.166Z] model-visible surface (24): bash,edit,glob,grep,read,read_image,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,u5_canary,u6fs_probe,write
+[2026-11-03T11:23:33.166Z] builtinToolDeny base list: glob,grep,u5_canary,u6fs_probe
+[2026-11-03T11:23:33.173Z] main blueprint written and validated by the host facade
+[2026-11-03T11:23:33.645Z] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sf-s5pkunxow","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-live-team","blueprint":{"blueprintId":"team.a5sf.live.main","revision":"1","contentHash":"sha256:1157d8ae09758883d138e675723060fd33287d0efb069dcb5e65d650656ef663"},"createdAt":"2026-11-03T11:23:33.212Z","generation":1,
+[2026-11-03T11:23:33.645Z] leader chain closed (A5SF_L1_DONE)=true
+[2026-11-03T11:23:34.647Z] sink=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/a5sf-consult.jsonl exists=false rows=0 guardFacts=0 outside=0 inside=0
+[2026-11-03T11:23:34.647Z] consultations.jsonl ABSENT sha256=null bytes=0
+[2026-11-03T11:23:34.647Z] host log witnesses: a5sf=1 guard=0 dispose=0
+[2026-11-03T11:23:34.647Z] case live:booted-member-a5sf-wired: FAIL {"hostAlive":true,"memberRequestSeen":false,"readVisibleCount":null,"surfaceSize":null,"surface":null,"note":"a managed Member ran a model turn whose surface carried exactly ONE native `read` while the row config carried a5sfEvidencePath + a5sfNativeToolModules"}
+[2026-11-03T11:23:34.648Z] case live:native-read-outside-refused: FAIL {"outsideReadSeen":false,"refusedWithIoReadDenied":false,"outsideClaimLeaked":false,"observed":[],"note":"the model issued `read` on a path outside the compiled ceiling and the Guard refused it before any byte was returned"}
+[2026-11-03T11:23:34.648Z] case live:sink-exactly-one-deny-fact: FAIL {"sinkExists":false,"totalGuardFacts":0,"outsideFacts":0,"denyFacts":0,"fact":null,"note":"the product sink (a5sfEvidencePath), not the model transcript, is the witness"}
+[2026-11-03T11:23:34.648Z] case live:native-read-inside-allowed: FAIL {"insideReadSeen":false,"insideClaimReturned":false,"allowedFactWritten":false,"observed":[],"note":"the same native `read` inside the ceiling returned the planted bytes and its consultation was recorded as allow"}
+[2026-11-03T11:23:34.648Z] case live:builtin-deny-native-fails-loud: FAIL {"createMemberResultSeen":true,"isError":[false,false],"a5sfSurfaceRefusal":false,"text":"{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activa
+[2026-11-03T11:23:34.648Z] case live:teardown-no-shadow: NOT_REACHED {"reason":"NO_OBSERVABLE_SEAM_FOR_A_DEAD_SCOPE","archiveCalls":1,"archiveOk":true,"sinkRowsAtEnd":0,"hostAlive":true,"disposeLines":[],"note":"The Member was stopped through the product lifecycle (team_archive_member) and the host stayed alive with no realm-dispose fault line, but no host-exposed seam reports a residual shadow on the disposed agent scope. Route C §5(b)'s fail-open (realm disposed 
+[2026-11-03T11:23:34.648Z] case live:runtime-revoke-reachable: NOT_REACHED {"reason":"NO_A5SF_RUNTIME_REVOKE_SEAM","note":"The 15 team tools expose no a5sf revoke; team_grant_permission_rule/team_revoke_permission_rule are the Alpha.4 permission-rule lane and do not re-evaluate a mounted a5sf realm. The only a5sf revoke is the row teardown (realm.dispose), which co-terminates with the agent on archive. This is the seam gap the next boot/lane must close before §5(b) can b
+[2026-11-03T11:23:34.781Z] teardown: {"host":{"wasRunning":true,"pid":57,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z","releasedPorts":[3183,3493,3183],"killedPids":[57],"notes":[]}
+[2026-11-03T11:23:34.781Z] ledger rows (2): budget-intent:grant-a5sf-live-native-c8a5836238b1 | a5sf-live-native-boot1:u5a5sflive-20261103T11-23-17Z
+[2026-11-03T11:23:34.782Z] RUN-SUMMARY run=a5sf-live-native-2026-11-03T11-23-16-973Z suite=a5sf-live-native overall=FAIL cases=7 FAIL:5 NOT_REACHED:2 worlds=none
+[2026-11-03T11:23:34.782Z] bootsSpent=1 overall=FAIL failure=none
+RUN-SUMMARY run=a5sf-live-native-2026-11-03T11-23-16-973Z suite=a5sf-live-native overall=FAIL cases=7 FAIL:1 NOT_REACHED:6 worlds=none
+dispositions:
+  live:booted-member-a5sf-wired: FAIL — REFUTED
+  live:native-read-outside-refused: NOT_REACHED — NOT_REACHED
+  live:sink-exactly-one-deny-fact: NOT_REACHED — NOT_REACHED
+  live:native-read-inside-allowed: NOT_REACHED — NOT_REACHED
+  live:builtin-deny-native-fails-loud: NOT_REACHED — LOUD_FAILURE_PROVEN / DENY_SPECIFIC_REFUSAL_NOT_REACHED
+  live:teardown-no-shadow: NOT_REACHED — NOT_REACHED
+  live:runtime-revoke-reachable: NOT_REACHED — NOT_REACHED

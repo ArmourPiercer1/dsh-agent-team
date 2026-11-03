@@ -1,0 +1,221 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-native-2026-11-03T11-23-16-973Z",
+  "suite": "a5sf-live-native",
+  "startedAt": "2026-11-03T11:23:16.973Z",
+  "selectedCases": [
+    "live:booted-member-a5sf-wired",
+    "live:native-read-outside-refused",
+    "live:sink-exactly-one-deny-fact",
+    "live:native-read-inside-allowed",
+    "live:builtin-deny-native-fails-loud",
+    "live:teardown-no-shadow",
+    "live:runtime-revoke-reachable"
+  ],
+  "bindings": {
+    "teamSha": "c8a5836238b1a567fb512d09fdf7f4dff5853ae3",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sflive",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-live-native-c8a5836238b1",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-live-native/a5sf-native-provider-row.mjs (no product provider exists at this base)",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-11-03T11:23:23.426Z",
+      "probed": true,
+      "runtimeTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "full",
+      "usable": true,
+      "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "full",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "full",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "full"
+  },
+  "cases": [
+    {
+      "id": "live:booted-member-a5sf-wired",
+      "verdict": "FAIL",
+      "at": "2026-11-03T11:26:06.484Z",
+      "disposition": "REFUTED",
+      "reason": "A5SF_WIRED_MEMBER_SETUP_REFUSED",
+      "hostBooted": true,
+      "teamSessionCreated": true,
+      "memberModelTurns": 0,
+      "refusals": 6,
+      "observed": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1rn23qe04pfh': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr",
+      "note": "The Host booted and the Team Session was created, but the a5sf-wired Member never reached an agent turn: its child-session activation refused with the exact TypeError below. \"A booted world where a model-visible native read is refused\" is therefore NOT established at this HEAD — the product seam refuses earlier."
+    },
+    {
+      "id": "live:native-read-outside-refused",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "NOT_REACHED",
+      "reason": "MEMBER_SETUP_REFUSED_BEFORE_ANY_TOOL_CALL",
+      "memberModelTurns": 0,
+      "readCallsSeen": 0,
+      "note": "No Member agent ever existed, so no model request, no `read` tool call and no guard decision took place. This is a product-seam blocker, not a missing test seam: the refusal is the setup TypeError quoted under live:booted-member-a5sf-wired."
+    },
+    {
+      "id": "live:sink-exactly-one-deny-fact",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "NOT_REACHED",
+      "reason": "SINK_NEVER_CREATED",
+      "sinkExists": false,
+      "guardFacts": 0,
+      "note": "The configured `a5sfEvidencePath` sink was never created: the realm mounted (mount happens before the attach) but no tool ever consulted the Guard, so there is nothing to count. An empty sink is reported as empty, never as \"zero denials found\"."
+    },
+    {
+      "id": "live:native-read-inside-allowed",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "NOT_REACHED",
+      "reason": "MEMBER_SETUP_REFUSED_BEFORE_ANY_TOOL_CALL",
+      "note": "Same blocker as the outside read: no Member ran, so neither the inside bytes nor an allow fact exist."
+    },
+    {
+      "id": "live:builtin-deny-native-fails-loud",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "LOUD_FAILURE_PROVEN / DENY_SPECIFIC_REFUSAL_NOT_REACHED",
+      "reason": "REFUSAL_IS_THE_UNSCOPED_CTX_TYPEERROR_NOT_THE_SURFACE_NEUTRALITY_REFUSAL",
+      "refused": true,
+      "toolResultIsErrorFlag": [
+        false,
+        false
+      ],
+      "observed": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1m0s1pf1deuo': TypeError: agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)\",\"details\":{\"source\":\"activation-pr",
+      "note": "PROVEN that a `builtinToolDeny: [read]` Member does NOT run silently unconfined: the create result is a typed rejection (\"status\":\"rejected\", code TEAM_RUNTIME_DURABLE_WRITE_FAILED) carrying the cause verbatim, and no member turn happened. NOT_REACHED for C2(a)'s *specific* arm: the refusal is the unscoped-agent-Context TypeError that EVERY a5sf-wired Member hits (the control `worker` Member got the identical error first), so the deny-then-attach surface-neutrality refusal never executed and cannot be credited here."
+    },
+    {
+      "id": "live:teardown-no-shadow",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "NOT_REACHED",
+      "reason": "NO_OBSERVABLE_SEAM_FOR_A_DEAD_SCOPE",
+      "archiveIssued": true,
+      "archiveResult": "blocked target-stale (the Member never reached a live durable state)",
+      "note": "No Member ran, so there was no shadow to keep or drop. C2(b)'s \"does the row keep a shadow after the Member stops\" remains unobservable in this boot: the only stop reachable from the product is archive, which co-terminates with the agent, and no host-exposed seam reports the disposed agent scope."
+    },
+    {
+      "id": "live:runtime-revoke-reachable",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T11:26:06.485Z",
+      "disposition": "NOT_REACHED",
+      "reason": "NO_A5SF_RUNTIME_REVOKE_SEAM",
+      "note": "No a5sf runtime revoke exists on the model/leader surface: the 15 team tools contain no a5sf revoke; team_grant_permission / team_revoke_permission are the Alpha.4 permission-rule lane and do not re-evaluate a mounted a5sf realm. The only a5sf revoke is the row teardown (realm.dispose), reached by archive and co-terminating with the agent."
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-03T11:23:17.004Z",
+        "runId": "a5sf-live-native-2026-11-03T11-23-16-973Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-live-native-c8a5836238b1",
+        "grantId": "grant-a5sf-live-native-c8a5836238b1",
+        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"F1 effective-half verification\" (1 boot; the other 2 boots of that item moved to route C and binding acceptance)",
+        "boundCommit": "c8a5836238b1a567fb512d09fdf7f4dff5853ae3",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-03T11:23:23.425Z",
+        "runId": "a5sf-live-native-2026-11-03T11-23-16-973Z",
+        "suite": "a5sf-live-native",
+        "world": "u5a5sflive-20261103T11-23-17Z",
+        "phase": "a5sf-live-native-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-native-boot1",
+      "world": "u5a5sflive-20261103T11-23-17Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/logs/u5a5sflive-20261103T11-23-17Z/instance-port3183.log"
+    }
+  ],
+  "evidence": {
+    "worldId": "u5a5sflive-20261103T11-23-17Z",
+    "outside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/outside-ceiling.txt",
+    "inside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/workspace/inside-ceiling.txt",
+    "sinkPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/tests/homes/u5a5sflive-20261103T11-23-17Z/a5sf-consult.jsonl",
+    "sinkSha256": null,
+    "hostLogPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native/dev/agent-workflow/evidence/a5sf-live-native/logs/u5a5sflive-20261103T11-23-17Z/instance-port3183.log",
+    "surface": [
+      "bash",
+      "edit",
+      "glob",
+      "grep",
+      "read",
+      "read_image",
+      "team_archive_member",
+      "team_collect",
+      "team_create_member",
+      "team_delegate",
+      "team_follow_up",
+      "team_grant_permission",
+      "team_inspect_config",
+      "team_list_members",
+      "team_list_pending_control",
+      "team_list_templates",
+      "team_report_progress",
+      "team_request_control",
+      "team_resolve_control",
+      "team_revoke_permission",
+      "team_send_message",
+      "u5_canary",
+      "u6fs_probe",
+      "write"
+    ],
+    "denyList": [
+      "glob",
+      "grep",
+      "u5_canary",
+      "u6fs_probe"
+    ],
+    "guardFacts": 0
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-11-03T11:23:34.781Z",
+  "verdictsRevised": {
+    "by": "dev/agent-workflow/evidence/a5sf-live-native/rejudge.mjs",
+    "why": "the executed predicate required toolResult.is_error===true for a legible setup refusal; the host reports a refused activation as status:\"rejected\" with is_error false. Re-derived from the same single boot's captured transcript; NO second boot was made.",
+    "bootLedgerRows": 2,
+    "grantId": "grant-a5sf-live-native-c8a5836238b1",
+    "grantBoundCommit": "c8a5836238b1a567fb512d09fdf7f4dff5853ae3"
+  }
+}
