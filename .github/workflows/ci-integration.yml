@@ -186,6 +186,15 @@ jobs:
         # required token. Dropping it is CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/eb3-tool-acceptance.test.mjs
 
+      - name: "scripts node:test suite (L0 selection laws — host-free)"
+        # #552 (2026-11-03, external review of #552 problem B): the L0 selector's rules are the
+        # only part of ci-local.mjs a reader cannot verify by eye — which changed paths select
+        # which tests, which runner dispatch they get, and the unknown-path rule that must report
+        # undetermined instead of "no tests". node:test, so it cannot ride a vitest suiteList;
+        # ci-integration lists node:test files explicitly. Declared in dev/ci/eb3-ci-manifest.json
+        # with the file path as a required token — dropping it is CI_LAYER_LEG_WEAKENED.
+        run: node --test scripts/ci-local.test.mjs
+
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
         # machinery, so the harness wiring needs a C1 proof of its own. This step is the
