@@ -1,0 +1,22 @@
+DERIVED SUMMARY of `pnpm ci:local` on the reconciled code head aae43e45c (base 474a8d46d).
+The raw 1.2 MB capture is NOT committed (EB3 evidence bound); nothing about the verdict is omitted:
+the run FAILED, exit 1, coverage=determined (never the exit 2 "undetermined" case).
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=260.6s
+Test Files  3 failed | 480 passed (483)
+Tests  3 failed | 5990 passed (5993)
+failing test(s):
+  FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+  FAIL  packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict > X3 the timeout arm settles cancelled and spills nothing
+  FAIL  packages/runtime/test/alpha5-search-backend.test.ts > P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) > P8b the confined face carries NO payload exit code — so completion is proved from the stream
+
+--- isolation at the SAME code head ---
+`pnpm vitest run a5g6-install-face-render.test.ts alpha5-glob-backend.test.ts \
+  alpha5-search-backend.test.ts` -> exit 0, Test Files 3 passed (3), Tests 100 passed (100),
+  Duration 24.98s (inside the per-file 5 s default, no load contention).
+
+READING: all three reds are files this diff does not touch, all three pass TOGETHER in isolation at
+this same head, and they are the same pre-existing ci-local load/timeout flake S-1 documented
+(dev/agent-workflow/evidence/a5sf-s1/README.md §4.1: the WHOLE 483-file packages/runtime vitest
+tree runs in one threads pool against vitest's 5 s default). The per-file gates in the README are
+the ones that bind THIS change. No pass is claimed that was not measured.

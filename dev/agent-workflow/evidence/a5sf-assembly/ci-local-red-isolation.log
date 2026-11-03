@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-red-realm templateId=a5glb-red-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-red-instance-glob:mount:ec2ce3ea-80a1-4059-8b65-a626c24490a6-1 approvalCaseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-red-instance-glob:mount:ec2ce3ea-80a1-4059-8b65-a626c24490a6-1 grantId=grant:a81c280e3987a1b867017a7d4104fb94 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-red-instance-glob:mount:ec2ce3ea-80a1-4059-8b65-a626c24490a6-1 grantId=grant:a81c280e3987a1b867017a7d4104fb94 caseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0
+
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+stdout | packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5g6-unit-realm templateId=a5g6-tpl
+
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 1339ms
+     ✓ the four definitions all carry a render that returns an array of typed text blocks  1335ms
+ ✓ packages/runtime/test/alpha5-search-backend.test.ts (42 tests) 3400ms
+     ✓ P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row  687ms
+     ✓ V8 a governed root that is a symlink alias is refused, never followed  310ms
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-realm templateId=a5glb-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-instance-glob:mount:07d0e754-b050-4acc-9f5b-15afb4bc8c4b-1 approvalCaseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-instance-glob:mount:07d0e754-b050-4acc-9f5b-15afb4bc8c4b-1 grantId=grant:695db774b347482459b6ea4ece051d88 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-instance-glob:mount:07d0e754-b050-4acc-9f5b-15afb4bc8c4b-1 grantId=grant:695db774b347482459b6ea4ece051d88 caseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0
+
+ ✓ packages/runtime/test/alpha5-glob-backend.test.ts (53 tests) 24652ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  972ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  542ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  608ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  375ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  17136ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  1026ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  342ms
+
+ Test Files  3 passed (3)
+      Tests  100 passed (100)
+   Start at  02:31:09
+   Duration  24.98s (transform 4.42s, setup 0ms, import 3.57s, tests 29.39s, environment 0ms)
+
