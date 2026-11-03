@@ -129,7 +129,7 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 | **A6-PR2c** | Officer Handoff / 可信 Runtime Unavailable Takeover：共用 current-leg transfer 事实 + 生产事件接线 + 纵向测试 | `packages/runtime/control/**`（中心）、`live/**` 接线（另开中心 PR） | **是** | PR2b | Officer 主动 Handoff 或 Runtime 在 archived/crashed/未恢复时按 Blueprint 显式 leader 策略发起接管 → 校验当前 case/leg → 共用幂等 transfer 事实 → 原 Officer 失去**未来**签署资格 → Leader 合并 wake；Busy 不触发；不抢回；decision 后 transfer 不追溯否定已签 allow；不建通用 Assignment Ledger |
 | **A6-PR3** | 纯 `ReviewWakeCoordinator`：activation/poll/latch、generation、no-progress 守卫 | `packages/runtime/review-wake/**`（纯） | 否 | 无（可与 PR1 并行） | 3 请求→≤1 wake；running 只 dirty；resolved/无进展不 re-wake；**pending-unchanged 不 cancel**；**恢复前查持久 wake，不重复**；**投递失败释放 queued**；零 I/O、零 timer |
 | **A6-PR4** | 投递接缝：通用 Review Wake 入 DSH Inbox；旧 Leader notifier 互斥替换 | `packages/runtime/control/leader-notification.ts`、`live/agent-bindings.mjs` | **是**（一次一个文件） | PR3 | 在可控 Host 适配环境实际投递一条 wake；`createUserMessage().id` 可 remove/replace；claim 后不可撤；未启用 Team 逐字节旧行为 |
-| **A6-PR5** | Officer 受限访问 + Handoff 工具面：读自己应审待办、走既有入口决议/转交 | `packages/tools/**`、访问适配器、契约 | 视落点 | PR2c | Officer 不能读全 Team 管理面；决议/转交复用 ControlService；负控完整 |
+| **A6-PR5** | Officer 受限访问 + Handoff/直接 Escalate 工具面：读自己应审待办、执行当前合法 leg 决议/转交/升级 | `packages/tools/**`、访问适配器、契约 | 视落点 | PR2c | Officer 不能读全 Team 管理面；决议、Handoff、合法升级均复用 ControlService；不能批准 Human successor；负控完整 |
 | **A6-PR6** | 生产接线与 opt-in：唯一 Officer、蓝图绑定、旧 notifier 切换、观测 | `packages/runtime/root*`、plugin 组装、GUI 邻接 | 可能 | PR1/2b/4/5 | **第一条真实消费纵切在此闭合**（含 Handoff 与通知出口）；未启用 Team 零变化；指标可读 |
 | **A6-PR7** | 组合回归、故障/压力、性能指标与发布验收 | 测试套件/证据，不改生产语义 | 否 | PR6 | 最终行为矩阵回归；**不再承担第一次生产接线**；Host 核心行为必须通过，ENV_BLOCK 只能出现在设计/模块阶段 |
 
@@ -138,9 +138,9 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 | 里程碑 | 必须证明 |
 | --- | --- |
 | PR1 / PR3 | 纯函数正确性；误取消/恢复重复/投递失败三处 P0 已修 |
-| PR1 + PR2a + PR2b | 共享资格规则、precommit PA 可信候选、原子 decision/evidence、真实 ControlService + PA manifest + Officer + Grant/Guard 跨层结果 |
+| PR1 + PR2a + PR2b | 共享资格规则、precommit PA 候选、原子 decision/evidence；真实工具 ask → Control Case/leg → Officer 升级 → Human 最终决议 → 活跃原调用的 Grant/Guard 完整服务链 |
 | PR4 | 可控 Host 适配环境真实投递一条 wake，验证 claim/去重/取消 |
-| PR2c / PR5 / PR6 | Officer 身份、受限读取、实际路由、Handoff、通知出口的纵向闭环 |
+| PR2c / PR5 / PR6 | Officer 受限读取、合法 Escalation、Handoff、Human successor 可见性与通知出口的纵向闭环 |
 | PR7 | 只做组合回归、压力/故障、性能指标与发布验收 |
 
 **并行 lane**：Lane D（PR1）、Lane W（PR3）可并行；Lane C（**PR1 + ADR → PR2a → PR2b → PR2c → PR5**）串行；Integration（PR4→PR6→PR7）串行，不与中心 PR 并行改同一文件。
