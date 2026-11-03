@@ -1,75 +1,84 @@
-# a5sf-p2-read — GREEN transcript (BL-14 / P2-01, dated 2026-11-03, real UTC)
+# a5sf-p2-read — GREEN transcript (BL-14 / P2-01, dated 2026-11-03, real UTC; round 2)
 
 Host-free. **No Host was booted, no port bound, no DSH_HOME created, no budget row
 spent.** Every command below was run in the worktree `.worktrees/a5sf-p2-read` at the
-base commit and on the two file sha256s printed in the transcript header — the files
-this package ships.
+committed head and on the two file sha256s printed in the transcript header — the files
+this package ships. The tree was CLEAN when the commands ran (`git status --short`
+empty), so this is a transcript of the shipped artifact, not of a half-edited tree.
 
 What each block is:
 
   §1  node --test tests/world-factory/a5sf-read-gate.test.mjs
-      10/10. The budget gate: every refusal leaves the SHARED ledger byte-identical and
-      spends zero starts; a granted lease appends its reservation BEFORE the boot and
-      boots once through a stub; the second boot is refused by the same imported formula.
+      13/13. The budget gate: every refusal leaves the SHARED ledger byte-identical —
+      including the PARTIALLY-SPENT pool (1 prior row, maxStarts 2 ⇒ refuses BEFORE
+      reserving; the same pool grants at 3). A granted lease appends its reservation
+      BEFORE the boot, boots once, and is refused a second boot. Plus the pure
+      `windowCaseVerdict()` arms (a non-native driver can only be NOT_REACHED) and the
+      dry-scene test, so the host-free path is enforced by node --test in CI.
   §2  node tests/world-factory/suites/150-a5sf-read.mjs --dry
-      11/11 assertions. The real P1 compiler + real shipped guard + real locator algebra
-      + real R3 recorder + real R4 reader over a two-Member scene. driver=dry-node-fs,
-      native=false — this is NOT the native `read` tool and NOT a Host (README §8).
+      14/14 assertions, 6 PASS / 1 NOT_REACHED / 0 FAIL. The real P1 compiler + real
+      shipped guard + real locator algebra + real R3 recorder + real R4 reader over a
+      two-Member scene. driver=dry-node-fs, native=false — this is NOT the native
+      `read` tool and NOT a Host. The >10MiB case prints NOT_REACHED with its reason.
   §3  node --test tests/a5sf-diag/a5sf-diag.test.mjs
-      11/11 — the inherited R4 reader, unchanged, re-run at this base.
+      11/11 — the inherited R4 reader, unchanged, re-run at this head.
   §4  node --test tests/checks/{dist-placements,eslint-node-globals}.test.mjs -> 19/19
   §5  node scripts/eb3-ci-required.mjs          -> pass workflows=9 findings=0
   §6  node scripts/eb3-ci-negative-controls.mjs -> 24/24
   §7  node scripts/doc-checks.mjs               -> exit 0 (no output)
+  §8  git diff --check: clean in the worktree AND across b126d87d8..HEAD (the branch's
+      whole diff vs master) — the round-1 trailing-whitespace finding (C7) is gone.
 
 Deliberately NOT in this transcript, because this environment cannot run them (the
 worktree has no installed workspace: `pnpm install --frozen-lockfile` fails with
 ERR_SQLITE_ERROR, the limitation R2 recorded): the R2 harness C1 suite and the R3
-evidence suite both refuse with `SEAM_UNAVAILABLE` here; they are green in CI, where
+evidence suite refuse with `SEAM_UNAVAILABLE` here; they are green in CI, where
 `ci-integration` installs the workspace first. Neither is a dependency of BL-14's gate
-suite (it imports only `lib/run-record.mjs` and the suite module, whose top level does
-not pull the Host machinery — README §7).
+suite (it imports only `lib/run-record.mjs` and the suite module; the Host machinery is
+loaded by dynamic import inside `run()`).
 
 --- transcript follows ---------------------------------------------------------
 ### date -u
-Tue Nov  3 01:02:54 UTC 2026
+Tue Nov  3 01:29:33 UTC 2026
 
 ### node -v
 v24.21.0
 
 ### git rev-parse HEAD
-d58f078734a0512fb70d4f4a85be3d999c23465a
+f003563f885d3a78068e1802e273fb8946aaf571
 
-### sha256 of the two added test files
-11e2f3e597709d490172314ab1d92d7ef99cd469f877a5f5a68220135c8fbbf6  tests/world-factory/suites/150-a5sf-read.mjs
-b699acc0feadd03cd7f100281d6c4034b8e26afdc95286b9d3aebe9f5f360e0e  tests/world-factory/a5sf-read-gate.test.mjs
+### git status --short (must be empty)
 
-### git status --short
- M .github/workflows/ci-integration.yml
- M dev/ci/eb3-ci-manifest.json
-?? dev/agent-workflow/evidence/a5sf-p2-read/
-?? tests/world-factory/a5sf-read-gate.test.mjs
-?? tests/world-factory/suites/150-a5sf-read.mjs
+### sha256 of the shipped test files
+387c657b61a9648e7d7dd942b0504dd0a84a88e03f8bb8d7166857d95943fba5  tests/world-factory/suites/150-a5sf-read.mjs
+bb78587afb8dac9865a400ca158ac43b4bd20ee3964e2fb12cef6392dc21cc52  tests/world-factory/a5sf-read-gate.test.mjs
+
+### git diff --check (whole tree, then vs master)
+worktree exit=0
+vs-master exit=0
 
 $ node --test tests/world-factory/a5sf-read-gate.test.mjs
-✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.719946ms)
-✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (1.309229ms)
-✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.306119ms)
-✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.353469ms)
-✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (1.096315ms)
-✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.487153ms)
-✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.296691ms)
-✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (4.57513ms)
-✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.359643ms)
-✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.427049ms)
-ℹ tests 10
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.586463ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (0.999903ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.252237ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.070316ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.378787ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.424193ms)
+✔ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.641454ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.271424ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (0.974134ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.416449ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (515.461424ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.483597ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.275311ms)
+ℹ tests 13
 ℹ suites 0
-ℹ pass 10
+ℹ pass 13
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 85.129414
+ℹ duration_ms 592.14024
 exit=0
 
 $ node tests/world-factory/suites/150-a5sf-read.mjs --dry
@@ -79,28 +88,38 @@ PASS denied-outside-ceiling: a typed P1 refusal, no read performed
 PASS denied-zero-bytes: zero bytes escaped
 PASS two-member-isolation: B is denied the locator A was allowed
 PASS window-over-10mib: the file is >10MiB and the ceiling admits it
+PASS window-over-10mib: the read returned exactly the requested window (bytes + content)
+PASS window-over-10mib: a window at the file-edge boundary returns exactly the requested length
+PASS chain artifact does not carry the driver marker; the run summary does
 PASS read:diag clean for the run rows
 PASS read:diag finds the synthetic bypass
 PASS read:chain - the refused call aligns across the four links
 PASS read:chain - the allowed call is missing ONLY the host-attributable effect link
 PASS read:chain - every broken link is the host-attributable effect (no other link is missing or contradictory)
 PASS read:leak-check - the denied content appears in no evidence artifact
-A5SF-READ-DRY assertions=11/11 diag=NO_BYPASS_FOUND synthetic=1 chain=CHAIN_BROKEN
+CASE PASS read:allowed-inside-ceiling reason=ASSERTION_PASSED
+CASE PASS read:denied-outside-ceiling reason=ASSERTION_PASSED
+CASE PASS read:denied-zero-bytes reason=ASSERTION_PASSED
+CASE NOT_REACHED read:window-over-10mib reason=NATIVE_WINDOW_UNAVAILABLE
+CASE PASS read:two-member-isolation reason=ASSERTION_PASSED
+CASE PASS read:chain-diag-no-bypass reason=ASSERTION_PASSED
+CASE PASS read:leak-check reason=ASSERTION_PASSED
+A5SF-READ-DRY assertions=14/14 cases=6PASS/1NOT_REACHED/0FAIL diag=NO_BYPASS_FOUND synthetic=1 chain=CHAIN_BROKEN
 evidence: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/.artifacts/a5sf-read/dry
 exit=0
 
 $ node --test tests/a5sf-diag/a5sf-diag.test.mjs
-✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (111.511651ms)
-✔ L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass (114.812682ms)
-✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (127.233172ms)
-✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (110.737676ms)
-✔ L4 failure classification passes the PR #394 class string through unchanged (102.450967ms)
-✔ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (103.535661ms)
-✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (100.116918ms)
-✔ L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE (105.606271ms)
-✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.325416ms)
-✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (105.679299ms)
-✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (100.437304ms)
+✔ L1 clean run: no APPROVAL_BYPASS, and a durable-approval narrowed allow stays clean (102.671121ms)
+✔ L1b a NAMED durable row whose correlation ≠ callId and no logical id ⇒ UNDECIDABLE, never bypass (103.351869ms)
+✔ L2 synthetic bypass: allow in the compiled ask lane with NO durable row is a finding (102.082489ms)
+✔ L3 mis-scoped allow: locator outside the ceiling and tool absent from it are findings (101.640067ms)
+✔ L4 failure classification passes the PR #394 class string through unchanged (103.679922ms)
+✔ C4 a duplicate ceiling row is fail-closed: ROW_INVALID + AMBIGUOUS_CEILING, never a clean report (99.316491ms)
+✔ L4b a Sandbox-First compiler refusal the table cannot express is DISCLOSED, not extended (100.655316ms)
+✔ L1c N1: ONE durable row authorizes ONE allow — a replay on the same row is UNDECIDABLE, never a second ALLOW_LEGITIMATE (100.559722ms)
+✔ S1 single source: imports the PR #394 table and the P1 locator algebra; embeds no row (0.339493ms)
+✔ S2 a directory with no call rows is REFUSED (exit 2), never a clean report (100.98934ms)
+✔ S3 a malformed row is reported ROW_INVALID and never crashes the report (97.196977ms)
 ℹ tests 11
 ℹ suites 0
 ℹ pass 11
@@ -108,29 +127,29 @@ $ node --test tests/a5sf-diag/a5sf-diag.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1145.946081
+ℹ duration_ms 1070.653852
 exit=0
 
 $ node --test tests/checks/dist-placements.test.mjs tests/checks/eslint-node-globals.test.mjs
-✔ shipped ledger: N derived from disk, glue first, every file non-empty, frozen list == a fresh load (1.699558ms)
-✔ mirror filter: covers every shipped extension (json included) and no tsc-emitted one (0.109888ms)
-✔ shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file) (0.175974ms)
-✔ enumeration is deterministic: two loads agree, and the order is the file-name prefix (1.246439ms)
-✔ RED-first: a REMOVED placement is detected — DELTA N-1 (the drift a by-hand list hid) (0.994442ms)
-✔ RED-first: a mis-named file, a duplicate prefix, an unknown schema and an empty list all refuse (3.673414ms)
-✔ RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (1.402606ms)
-✔ order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse (1.494079ms)
-✔ RED-first: an EMPTY directory refuses instead of reading as "no placements" (0.283978ms)
-✔ a new family adds ONE file and edits none: the appended entry lands after the existing ones (DELTA N+1) (0.902369ms)
-✔ parity: the frozen nine are all still declared, and inline adds no lane of its own (1.510639ms)
-✔ parity: collected == the collected documents on disk (derived — no lane roster to edit) (0.737226ms)
-✔ a NEW node-side lane is reflected with NO edit to this test (the u7-w0 collection law) (1.169925ms)
-✔ RED-first: a lane JSON the collector fails to surface is caught as DRIFT (not by naming a lane) (0.782732ms)
-✔ every declared pattern matches at least one TRACKED file (a stale pattern is RED) (8.227366ms)
-✔ the config is deterministic: two reads of the collected list agree, and the order is the file prefix (0.305759ms)
-✔ RED-first: a REMOVED frozen entry breaks parity (the family deleted its line, the tree did not) (0.700256ms)
-✔ RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (0.84525ms)
-✔ RED-first: a malformed or empty document refuses instead of silently dropping globals (0.541525ms)
+✔ shipped ledger: N derived from disk, glue first, every file non-empty, frozen list == a fresh load (1.659241ms)
+✔ mirror filter: covers every shipped extension (json included) and no tsc-emitted one (0.112523ms)
+✔ shipped ledger: the tracked dist mirror equals the ledger dist set (no unbooked mirror file) (0.273147ms)
+✔ enumeration is deterministic: two loads agree, and the order is the file-name prefix (1.228966ms)
+✔ RED-first: a REMOVED placement is detected — DELTA N-1 (the drift a by-hand list hid) (0.882401ms)
+✔ RED-first: a mis-named file, a duplicate prefix, an unknown schema and an empty list all refuse (3.670429ms)
+✔ RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (1.517813ms)
+✔ order law (review R1 F-2): prefix GAPS are allowed and order correctly; only duplicates/ill-formed names refuse (1.427873ms)
+✔ RED-first: an EMPTY directory refuses instead of reading as "no placements" (0.299577ms)
+✔ a new family adds ONE file and edits none: the appended entry lands after the existing ones (DELTA N+1) (0.871681ms)
+✔ parity: the frozen nine are all still declared, and inline adds no lane of its own (1.541529ms)
+✔ parity: collected == the collected documents on disk (derived — no lane roster to edit) (0.66523ms)
+✔ a NEW node-side lane is reflected with NO edit to this test (the u7-w0 collection law) (1.254254ms)
+✔ RED-first: a lane JSON the collector fails to surface is caught as DRIFT (not by naming a lane) (0.763746ms)
+✔ every declared pattern matches at least one TRACKED file (a stale pattern is RED) (8.734415ms)
+✔ the config is deterministic: two reads of the collected list agree, and the order is the file prefix (0.314906ms)
+✔ RED-first: a REMOVED frozen entry breaks parity (the family deleted its line, the tree did not) (0.673865ms)
+✔ RED-first (review R1 F-1): a stray entry — other extension, subdirectory, dotfile — refuses BY NAME (1.033156ms)
+✔ RED-first: a malformed or empty document refuses instead of silently dropping globals (0.532308ms)
 ℹ tests 19
 ℹ suites 0
 ℹ pass 19
@@ -138,7 +157,7 @@ $ node --test tests/checks/dist-placements.test.mjs tests/checks/eslint-node-glo
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 502.73453
+ℹ duration_ms 691.046011
 exit=0
 
 $ node scripts/eb3-ci-required.mjs
@@ -174,5 +193,5 @@ PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr
 24/24 control(s) behaved as required
 exit=0
 
-$ node scripts/doc-checks.mjs && echo 'doc-checks: exit 0, no output'
+$ node scripts/doc-checks.mjs
 doc-checks: exit 0, no output

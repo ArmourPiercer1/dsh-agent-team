@@ -374,8 +374,11 @@ saved copy, re-hash. Both mutations were run against the shipped module.
 | **M3** (C3) | the remaining-capacity pre-check `if (before.exhausted \|\| before.remaining < INTENT_ROWS_PER_LEASE + requiredBoots) throw … GRANT_EXHAUSTED …` | `gate: a PARTIALLY-SPENT pool refuses BEFORE reserving` — the old code reserves first (pool 1→2) and only refuses at the boot, so the ledger-equality assertion fails | **RED: 1 failed** (`a refused gate must not append a reservation row`); every other arm green |
 | **M4** (C4) | the `native !== true ⇒ NOT_REACHED` branch of `windowCaseVerdict` (returning the optimistic PASS path instead) | `window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window` — a non-native driver would earn PASS | **RED: 1 failed** (`NATIVE_WINDOW_UNAVAILABLE` ≠ `PASS`); every other arm green |
 
-Raw output is in ``red-test.log`` under `### RED 4/3 — mutation M3` / `### RED 5/3 — mutation M4`
-(the numbering continues past the original three; the file is append-only).
+Raw output is in [`red-test.log`](./red-test.log) — `### RED 4/5 — mutation M3` and
+`### RED 5/5 — mutation M4`, alongside the re-measured M1/M2 and the module-absent baseline.
+The log was re-captured in this round against the shipped module (its `orig sha` and
+`restored sha` both equal the shipped file), so the line numbers it quotes are the round-2
+capture, not the round-1 one.
 
 ### 11.2 Also corrected without a finding
 
