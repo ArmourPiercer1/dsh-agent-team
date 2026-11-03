@@ -1,7 +1,8 @@
 RED — the BL-11 suite before the implementation exists (captured 2026-11-03, real UTC).
-Method: the ONE file this package adds (tests/world-factory/lib/a5sf-evidence.mjs) was moved out of the tree —
-the exact state of the branch before the introduction — and the suite was run unchanged. The failure is
-the module absence itself, not a behaviour mismatch: no chain can be recorded by a tree that has no recorder.
+Method: the ONE module this package adds (tests/world-factory/lib/a5sf-evidence.mjs) was moved out of
+the tree — the exact state of the branch before its introduction — and the suite was run unchanged.
+The failure is the module absence itself, not a behaviour mismatch: a tree with no recorder can
+record no chain, so every one of the twelve legs is unreachable (node reports the file as one test).
 
 $ node --test tests/world-factory/a5sf-evidence.test.mjs
 
@@ -25,7 +26,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/d
 }
 
 Node.js v24.21.0
-✖ tests/world-factory/a5sf-evidence.test.mjs (46.675635ms)
+✖ tests/world-factory/a5sf-evidence.test.mjs (46.124672ms)
 ℹ tests 1
 ℹ suites 0
 ℹ pass 0
@@ -33,11 +34,11 @@ Node.js v24.21.0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 52.275327
+ℹ duration_ms 52.292069
 
 ✖ failing tests:
 
 test at tests/world-factory/a5sf-evidence.test.mjs:1:1
-✖ tests/world-factory/a5sf-evidence.test.mjs (46.675635ms)
+✖ tests/world-factory/a5sf-evidence.test.mjs (46.124672ms)
   'test failed'
 exit=1

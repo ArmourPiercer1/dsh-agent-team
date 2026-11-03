@@ -9,7 +9,7 @@
  *   | ---- | ---------------------------------------------------------------- | ------------------- |
  *   | 1    | the Alpha.4 decision + durable consumption (`ControlOperationScope`) | `packages/runtime/control/service.ts:3240` `guardOperation` → `control-allow-consumed` (`packages/runtime/control/types.ts:1735` `ControlConsumptionRecord`) |
  *   | 2    | the compiled `MemberPolicy` + the per-call `EffectiveIo`           | `packages/runtime/member-io-policy/src/compile.ts:100` / `:189` (`compileEffectiveIo` is the ONE computation) |
- *   | 3    | the Provider actually consulted                                   | `packages/runtime/team-services/src/install.ts:260` `installToolBindingRealm` → `ToolBindingRealm` (`:242` identity + policyRevision) |
+ *   | 3    | a `ToolBindingRealm`-shaped fact the lane hands in (NOT instrumented) | `packages/runtime/team-services/src/install.ts:260` `installToolBindingRealm` → `ToolBindingRealm` (`:242` identity + policyRevision) is the shape; a live mount is not exercised here |
  *   | 4    | the independently observed effect                                 | `tests/world-factory/lib/oracle.mjs:47` `createOracle` via `tests/world-factory/lib/a5sf-harness.mjs:423` `judgeEffect` |
  *
  * WHY IT EXISTS. `scripts/a5sf-diag.mjs` (R4/BL-12) already answers "was this
@@ -18,9 +18,11 @@
  * producer. It is deliberately NOT a second diagnostics tool, a second policy
  * compiler, a second approval store or a second oracle: link 2 is the object
  * `compileEffectiveIo` returned, link 1 is the row the durable control plane
- * wrote, link 3 is the shipped installer's result, link 4 is the shipped
- * oracle's verdict — this file copies them into rows and never recomputes any
- * of them.
+ * wrote, link 4 is the shipped oracle's verdict, and link 3 is a
+ * `ToolBindingRealm`-shaped fact the LANE hands in — this recorder does not
+ * instrument the Provider (no live realm mount, no fs interception), so
+ * `consulted` is a reported boolean, not an observation. It copies these into
+ * rows and never recomputes any of them.
  *
  * THE RECORDER IS PASSIVE (asserted by the C1 suite's source fence). It:
  *   - never calls `compileMemberPolicy` / `compileEffectiveIo` / `matchLocator`
@@ -30,7 +32,9 @@
  *     the P1 algebra; the guard's outcome is `lane`) and are copied verbatim;
  *   - never mints an approval: it records a `ControlConsumptionRecord` it is
  *     handed, verbatim, and refuses anything that is not shaped like one;
- *   - never observes the effect itself: it records `judgeEffect()`'s result.
+ *   - never observes the effect itself: it records `judgeEffect()`'s result;
+ *   - never instruments the Provider: link 3 is a shape-checked fact the lane
+ *     passes in, so `consulted` says what the lane reports, not what it saw.
  * One computation = `compileEffectiveIo`; this file only cites its output.
  *
  * ROW SCHEMA (the interface `scripts/a5sf-diag.mjs` validates — read, not
@@ -49,9 +53,10 @@
  *    "approvalRequestId"?,"logicalOperationId"?,"operationFingerprint"?,
  *    "actionName"?,"capabilityDomain"?,"provider":{…},"effect":{…}}
  *
- * ADDITIVE FIELDS, AND THE NAMED SCHEMA GAP. `a5sf-diag.mjs` validates a `call`
- * row on `callId`/`member`/`tool`/`locator`/`lane` and IGNORES unknown fields;
- * `ceiling` on `member`+`tools[]`; `approval` on `requestId`+integer
+ * ADDITIVE FIELDS, AND THE NAMED SCHEMA GAP. `a5sf-diag.mjs` validates FIVE kinds
+ * (`ceiling`, `call`, `approval`, `failure`, `compiler-refusal`) and IGNORES
+ * unknown fields; a `call` row needs `callId`/`member`/`tool`/`locator`/`lane`;
+ * `ceiling` needs `member`+`tools[]`; `approval` needs `requestId`+integer
  * `decisionSequence`+`consumedAt`+`scope`. Three facts this chain needs have
  * NO slot in that contract: the compiled `instanceGeneration` (and
  * `policyRevision`), the Provider-consulted record, and the oracle effect. The
@@ -62,8 +67,10 @@
  * (proved by the round-trip leg, which also asserts `ignored === 0`). It does
  * NOT invent a new `kind` — an unknown `kind` is silently counted as `ignored`
  * by the tool and would be invisible evidence, i.e. exactly the parallel
- * schema this lane refuses. The gap is filed in
- * `dev/agent-workflow/evidence/a5sf-r3/README.md` §6.
+ * schema this lane refuses. The GAP is filed in
+ * `dev/agent-workflow/evidence/a5sf-r3/README.md` §7. Note the asymmetry: the
+ * R4 tool IGNORES an unknown kind, while THIS reader fails closed on it
+ * (`UNKNOWN_ROW_KIND`) — silence there is exactly why it must be loud here.
  *
  * ALIGNMENT CHECK. `alignEvidenceChain(rows)` groups the recorded rows by call
  * and requires the four links to carry ONE identity: member instance id,
@@ -97,7 +104,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { bindApproval, approvalAuthorizes } from '../../../scripts/a5sf-diag.mjs'
 
-/** The row kinds `scripts/a5sf-diag.mjs` validates (no new kind is invented here). */
+/** The row kinds this recorder EMITS (a subset of the five the R4 reader validates; no new kind is invented). */
 export const EVIDENCE_ROW_KINDS = Object.freeze(['ceiling', 'approval', 'call'])
 
 /** The closed verdict vocabulary of {@link alignEvidenceChain}. */
@@ -216,7 +223,7 @@ function providerFactOf(provider, consulted) {
   if (!factShaped) {
     throw new A5sfEvidenceError(
       'PROVIDER_RESULT_INVALID',
-      'a provider link must be the shipped installer\'s ToolBindingRealm result (identity{teamId,memberInstanceId,templateId,instanceGeneration} + toolBindingIdentity + policyRevision) or that fact normalized, with an explicit boolean `consulted`',
+      'a provider link must be a ToolBindingRealm-shaped fact the lane hands in (identity{teamId,memberInstanceId,templateId,instanceGeneration} + toolBindingIdentity + policyRevision) or that fact normalized, with an explicit boolean `consulted`; this recorder does not instrument the Provider',
       { field: 'provider' },
     )
   }
@@ -416,8 +423,10 @@ export function createEvidenceRecorder(opts = {}) {
      * Everything is what the lane reported: `policy`/`effective` are the
      * compiler's output objects, `disposition` is `matchLocator`'s answer on
      * the compiled lane (allow|ask|deny), `lane` is the lane's decided outcome,
-     * `provider` is the shipped installer's result, `effect` is the shipped
-     * oracle's verdict. No value is re-derived.
+     * `provider` is a `ToolBindingRealm`-shaped fact the lane hands in (shape
+     * checked, NOT instrumented: a live realm mount is not exercised), `effect`
+     * is the shipped oracle's verdict, and `consulted` is the lane's report. No
+     * value is re-derived.
      */
     call(input = {}) {
       const {
@@ -503,6 +512,14 @@ const CALL_KEYS = Object.freeze(['callId', 'member', 'instanceGeneration', 'poli
 const broken = (callId, link, reason, detail = null) => ({ verdict: 'CHAIN_BROKEN', callId, link, reason, detail })
 const undecidable = (callId, link, reason, detail = null) => ({ verdict: 'UNDECIDABLE', callId, link, reason, detail })
 
+/**
+ * The other two kinds `scripts/a5sf-diag.mjs` validates. They answer the
+ * FAILURE-QUESTION, not the chain question, so this reader tolerates them where
+ * the tool would use them (a real P2 log may carry both) and counts them as
+ * `notChain`. Anything else is an UNKNOWN kind and fails closed.
+ */
+export const NOT_CHAIN_ROW_KINDS = Object.freeze(['failure', 'compiler-refusal'])
+
 /** Index the recorded rows the way the diagnostic does (ceilings by member, approvals by requestId). */
 export function indexEvidenceRows(rows) {
   const ceilings = new Map()
@@ -511,6 +528,7 @@ export function indexEvidenceRows(rows) {
   const ambiguousApprovals = new Set()
   const calls = []
   const invalid = []
+  const notChain = []
   for (const row of Array.isArray(rows) ? rows : []) {
     if (!isPlainObject(row)) { invalid.push({ row, reason: 'not a JSON object' }); continue }
     if (row.kind === 'ceiling') {
@@ -528,9 +546,17 @@ export function indexEvidenceRows(rows) {
       // A malformed call row stays VISIBLE: `alignCall` fails it closed instead
       // of dropping it from the report (a dropped row would be a silent pass).
       calls.push(row)
+    } else if (NOT_CHAIN_ROW_KINDS.includes(row.kind)) {
+      notChain.push(row)
+    } else {
+      // FAIL CLOSED on an unknown kind. `scripts/a5sf-diag.mjs` silently counts
+      // it `ignored`; here silence would let a writer add `{"kind":"provider",
+      // "consulted":false}` and still get a green check. The row is named, and
+      // the file-level verdict can never be CHAIN_ALIGNED with one present.
+      invalid.push({ row, kind: typeof row.kind === 'string' ? row.kind : null, reason: 'UNKNOWN_ROW_KIND' })
     }
   }
-  return { ceilings, ambiguousCeilings, approvals, ambiguousApprovals, calls, invalid }
+  return { ceilings, ambiguousCeilings, approvals, ambiguousApprovals, calls, invalid, notChain }
 }
 
 /**
@@ -621,7 +647,7 @@ export function alignCall({ call, ceiling, approval, ambiguousCeiling = false, a
     if (binding.state !== 'authorized') return undecidable(callId, 'approval', 'APPROVAL_SCOPE_UNBINDABLE', { requestId: approval.requestId, why: String(binding.state) })
   }
 
-  // --- link 3: the Provider actually consulted ------------------------------
+  // --- link 3: the handed-in Provider fact (shape-checked, NOT instrumented) ---
   const provider = call.provider
   if (provider.memberInstanceId !== call.member) return broken(callId, 'provider', 'PROVIDER_MEMBER_MISMATCH', { provider: provider.memberInstanceId, call: call.member })
   if (provider.instanceGeneration !== call.instanceGeneration) return broken(callId, 'provider', 'PROVIDER_GENERATION_MISMATCH', { provider: provider.instanceGeneration, call: call.instanceGeneration })
@@ -713,6 +739,8 @@ export function alignEvidenceChain(rows) {
       broken: brokenCount,
       undecidable: undecidableCount,
       invalid: index.invalid.length,
+      // Recognised, not part of the chain (failure/compiler-refusal rows).
+      notChain: index.notChain.length,
       verdict,
     },
   }
@@ -749,7 +777,10 @@ export function renderChainReport(result) {
       out.push(`${chain.verdict} callId=${String(chain.callId)} link=${String(chain.link)} reason=${chain.reason}${chain.detail === null ? '' : ` detail=${JSON.stringify(chain.detail)}`}`)
     }
   }
-  out.push(`SUMMARY calls=${String(result.summary.calls)} aligned=${String(result.summary.aligned)} broken=${String(result.summary.broken)} undecidable=${String(result.summary.undecidable)} invalid=${String(result.summary.invalid)} verdict=${result.summary.verdict}`)
+  for (const entry of result.invalid) {
+    out.push(`ROW_INVALID kind=${String(entry.kind ?? '-')} reason=${String(entry.reason)}`)
+  }
+  out.push(`SUMMARY calls=${String(result.summary.calls)} aligned=${String(result.summary.aligned)} broken=${String(result.summary.broken)} undecidable=${String(result.summary.undecidable)} invalid=${String(result.summary.invalid)} notChain=${String(result.summary.notChain)} verdict=${result.summary.verdict}`)
   return `${out.join('\n')}\n`
 }
 

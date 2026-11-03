@@ -26,10 +26,19 @@
  *   A8 the recorder refuses to mint/poison: duplicate ceiling, a call whose
  *      tool was not compiled, a mismatched EffectiveIo, a replayed
  *      consumption row, a malformed provider/effect fact.
- *   A9 passivity fence: the recorder's own source never calls the compiler,
- *      the locator algebra, the guard or the approval service; it imports the
- *      binding law from the R4 tool instead of restating it.
+ *   A9 passivity fence: a LITERAL-TOKEN scan of the recorder's own source. It
+ *      catches a call to the compiler/algebra/guard/approval service written
+ *      under those names; it cannot catch a re-derivation hidden behind a
+ *      renamed helper (README §8 says so).
  *   A10 the CLI verdict/exit contract.
+ *   A11 EVERY identity branch of the checker, one mutation each: the policy
+ *      revision, the tool-outside-ceiling, the four Provider keys, the oracle
+ *      id/tag, the effect-despite-refusal law, the exactly-once consumption
+ *      law, and the recorder's invocation-id refusal. Each must be RED when
+ *      its branch is deleted (review C2).
+ *   A12 an UNKNOWN row kind fails closed (`UNKNOWN_ROW_KIND`, exit != 0) while
+ *      the two recognised non-chain kinds (`failure`, `compiler-refusal`) are
+ *      tolerated and counted (review C4).
  *
  * CORE PATCH BUDGET = 0. Nothing here touches `tests/deepseek-harness-test-use/`.
  * Dependency note (same as the R2 harness C1): the P1 TS seams need the
@@ -49,6 +58,7 @@ import { createA5sfHarness, loadPolicySeams } from './lib/a5sf-harness.mjs'
 import {
   A5SF_EVIDENCE_CODES,
   A5sfEvidenceError,
+  alignCall,
   alignEvidenceChain,
   alignEvidenceFile,
   createEvidenceRecorder,
@@ -443,6 +453,19 @@ test('A6 a narrowed allow with the approval row missing is UNDECIDABLE, never al
   assert.equal(chainVerdict.reason, 'APPROVAL_ROW_MISSING')
   assert.equal(result.summary.verdict, 'UNDECIDABLE')
 
+  // The SAME law when the lane did not name the row it consumed: R1's real
+  // shape carries a logical-operation id, not a requestId, so the narrowed-allow
+  // arm — not the named-row arm — is what must catch this. (Named-only coverage
+  // let a mutant that deleted the narrowed-allow arm stay green: the UNNAMED
+  // case below is the one that kills it.)
+  const unnamed = rows.map((row) => (row.kind === 'call' && row.callId === LEGIT_CALL
+    ? { ...row, approvalRequestId: undefined }
+    : row))
+  const unnamedLegit = chainOf(alignEvidenceChain(unnamed), LEGIT_CALL)
+  assert.equal(unnamedLegit.verdict, 'UNDECIDABLE', JSON.stringify(unnamedLegit))
+  assert.equal(unnamedLegit.link, 'approval')
+  assert.equal(unnamedLegit.reason, 'APPROVAL_ROW_MISSING')
+
   // Even a plain compiled `allow` that NAMES a durable row the record does not
   // contain is a missing link, not a clean chain.
   const namedMissing = rows.map((row) => (row.kind === 'call' && row.callId === PLAIN_CALL
@@ -537,8 +560,12 @@ test('A8 recorder refuses to mint or poison evidence (fail closed, typed codes)'
 
 // --- A9: the passivity fence ------------------------------------------------
 
-test('A9 passivity fence: the recorder never calls the compiler/algebra/guard/approval service', () => {
+test('A9 passivity fence (literal-token scan): the recorder source never spells a compiler/algebra/guard/approval call', () => {
   const source = evidenceSourceText()
+  // SCOPE (stated, not implied): this is a literal-token scan. It catches a
+  // call written as `name(`, and it proves nothing about a re-derivation
+  // renamed beyond these tokens; the runtime facts it protects are the round
+  // trip in A1 and the branch table in A11.
   // A CALL to any of these would be a second permission computation or a
   // second approval authority (the two things R3 must not create).
   for (const forbidden of [
@@ -597,4 +624,167 @@ test('A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refu
   // The file-level helper and the CLI agree (one implementation).
   assert.equal(alignEvidenceFile(chain.file).summary.verdict, 'CHAIN_ALIGNED')
   assert.equal(alignEvidenceFile(brokenFile).summary.verdict, 'CHAIN_BROKEN')
+})
+
+// --- A11: every identity branch, one mutation each (review C2) --------------
+
+test('A11 every identity branch is load-bearing: one row mutation each, one named verdict each', async () => {
+  const dir = mkdtempSync(join(SCRATCH, 'branches-'))
+  const chain = await buildAlignedChain({ dir, label: 'branches' })
+  const otherRevision = 'a5sf1:000000000000000000000000000000ff'
+  const call = (callId, patch) => chain.rows.map((row) => (row.kind === 'call' && row.callId === callId ? { ...row, ...patch } : row))
+  const provider = (patch) => chain.rows.map((row) => (row.kind === 'call' && row.callId === LEGIT_CALL
+    ? { ...row, provider: { ...row.provider, ...patch } }
+    : row))
+  const effect = (patch) => chain.rows.map((row) => (row.kind === 'call' && row.callId === LEGIT_CALL
+    ? { ...row, effect: { ...row.effect, ...patch } }
+    : row))
+
+  const withoutLink = (callId, key) => chain.rows.map((row) => {
+    if (row.kind !== 'call' || row.callId !== callId) return row
+    const copy = { ...row }
+    delete copy[key]
+    return copy
+  })
+  const ceilingRow = rowOf(chain.rows, (row) => row.kind === 'ceiling')
+  const cases = [
+    { name: 'ceiling row absent for this member', rows: chain.rows.filter((row) => row.kind !== 'ceiling'), link: 'policy', reason: 'CEILING_ROW_MISSING', verdict: 'UNDECIDABLE' },
+    { name: 'two ceiling rows for one member', rows: [...chain.rows, ceilingRow], link: 'policy', reason: 'AMBIGUOUS_CEILING', verdict: 'UNDECIDABLE' },
+    { name: 'the compiled ceiling has no lane for this axis', rows: chain.rows.map((row) => (row.kind === 'ceiling' ? { ...row, tools: [{ ...row.tools[0], read: undefined }] } : row)), link: 'policy', reason: 'CEILING_AXIS_MISSING', verdict: 'UNDECIDABLE' },
+    { name: 'provider link absent', rows: withoutLink(LEGIT_CALL, 'provider'), link: 'provider', reason: 'LINK_MISSING', verdict: 'UNDECIDABLE' },
+    { name: 'effect link absent', rows: withoutLink(LEGIT_CALL, 'effect'), link: 'effect', reason: 'LINK_MISSING', verdict: 'UNDECIDABLE' },
+    {
+      name: 'durable row duplicated for one requestId',
+      rows: [...chain.rows, rowOf(chain.rows, (row) => row.kind === 'approval')],
+      link: 'approval',
+      reason: 'AMBIGUOUS_APPROVAL_ROW',
+      verdict: 'UNDECIDABLE',
+    },
+    {
+      name: 'the call carries no operation identity, so the row cannot be bound',
+      rows: chain.rows.map((row) => {
+        if (row.kind === 'approval') return { ...row, scope: { ...row.scope, correlation: 'corr-unrelated' } }
+        if (row.kind === 'call' && row.callId === LEGIT_CALL) {
+          const copy = { ...row }
+          delete copy.logicalOperationId
+          delete copy.operationFingerprint
+          return copy
+        }
+        return row
+      }),
+      link: 'approval',
+      reason: 'APPROVAL_SCOPE_UNBINDABLE',
+      verdict: 'UNDECIDABLE',
+    },
+    {
+      name: 'compiled policy revision disagrees with the call',
+      rows: chain.rows.map((row) => (row.kind === 'ceiling' ? { ...row, policyRevision: otherRevision } : row)),
+      link: 'policy',
+      reason: 'POLICY_REVISION_MISMATCH',
+    },
+    {
+      name: 'the call tool is absent from the compiled ceiling',
+      rows: chain.rows.map((row) => (row.kind === 'ceiling' ? { ...row, tools: [] } : row)),
+      link: 'policy',
+      reason: 'TOOL_NOT_IN_COMPILED_CEILING',
+    },
+    { name: 'Provider member', rows: provider({ memberInstanceId: 'inst-someone-else' }), link: 'provider', reason: 'PROVIDER_MEMBER_MISMATCH' },
+    { name: 'Provider generation', rows: provider({ instanceGeneration: GENERATION + 1 }), link: 'provider', reason: 'PROVIDER_GENERATION_MISMATCH' },
+    { name: 'Provider policy revision', rows: provider({ policyRevision: otherRevision }), link: 'provider', reason: 'PROVIDER_POLICY_REVISION_MISMATCH' },
+    { name: 'Provider tool-binding identity', rows: provider({ toolBindingIdentity: 'dsh.fs/read@other' }), link: 'provider', reason: 'PROVIDER_BINDING_MISMATCH' },
+    { name: 'oracle identity unsound', rows: effect({ oracleId: 'suspect' }), link: 'effect', reason: 'EFFECT_ORACLE_UNSOUND' },
+    { name: 'oracle tag names another invocation', rows: effect({ tag: 'call-a5sf-r3-other' }), link: 'effect', reason: 'EFFECT_TAG_MISMATCH' },
+    {
+      name: 'refused call with an observed effect',
+      rows: call(PLAIN_CALL, { lane: 'deny', disposition: 'deny' }),
+      link: 'effect',
+      reason: 'EFFECT_DESPITE_REFUSAL',
+    },
+  ]
+  for (const entry of cases) {
+    const result = alignEvidenceChain(entry.rows)
+    const verdict = chainOf(result, entry.name === 'refused call with an observed effect' ? PLAIN_CALL : LEGIT_CALL)
+    assert.equal(verdict?.verdict, entry.verdict ?? 'CHAIN_BROKEN', `${entry.name}: ${JSON.stringify(verdict)}`)
+    assert.equal(verdict.link, entry.link, entry.name)
+    assert.equal(verdict.reason, entry.reason, entry.name)
+  }
+
+  // One durable row authorizes at most ONE allow per file: a replayed call that
+  // binds the same consumption row is UNDECIDABLE, never a second legitimate allow.
+  const replay = chain.rows.map((row) => (row.kind === 'call' && row.callId === PLAIN_CALL
+    ? { ...row, approvalRequestId: chain.consumption.requestId, logicalOperationId: chain.scope.correlation }
+    : row))
+  const replayResult = alignEvidenceChain(replay)
+  assert.equal(chainOf(replayResult, LEGIT_CALL).verdict, 'CHAIN_ALIGNED')
+  const duplicate = chainOf(replayResult, PLAIN_CALL)
+  assert.equal(duplicate.verdict, 'UNDECIDABLE', JSON.stringify(duplicate))
+  assert.equal(duplicate.link, 'approval')
+  assert.equal(duplicate.reason, 'DUPLICATE_CONSUMPTION')
+  assert.equal(duplicate.detail.requestId, chain.consumption.requestId)
+  assert.equal(duplicate.detail.firstCallId, LEGIT_CALL)
+
+  // MEMBER_MISMATCH is reachable only through the direct entry point: the file
+  // index keys ceilings by member, so a foreign-member ceiling is reported as
+  // CEILING_ROW_MISSING there. Both are fail-closed; this pins the branch.
+  const foreign = alignCall({
+    call: rowOf(chain.rows, (row) => row.kind === 'call' && row.callId === LEGIT_CALL),
+    ceiling: { ...rowOf(chain.rows, (row) => row.kind === 'ceiling'), member: 'inst-someone-else' },
+    approval: rowOf(chain.rows, (row) => row.kind === 'approval'),
+  })
+  assert.equal(foreign.verdict, 'CHAIN_BROKEN', JSON.stringify(foreign))
+  assert.equal(foreign.link, 'policy')
+  assert.equal(foreign.reason, 'MEMBER_MISMATCH')
+
+  // The recorder refuses an EffectiveIo compiled for a DIFFERENT invocation:
+  // the invocation id is the per-call identity, so it cannot be "close enough".
+  const fresh = createEvidenceRecorder({ path: join(dir, 'invocation.jsonl') })
+  fresh.ceiling({ policy: chain.policy, tools: [{ tool: 'read', effective: chain.plainEffective }] })
+  assert.throws(
+    () => fresh.call({
+      policy: chain.policy,
+      effective: { ...chain.plainEffective, invocationId: 'call-a5sf-r3-other' },
+      disposition: 'allow', lane: 'allow', callId: PLAIN_CALL, tool: 'read', axis: 'read', locator: PLAIN_LOCATOR,
+      provider: chain.installResult, consulted: true, effect: { oracleId: 'sound', tag: PLAIN_CALL, effect: false },
+    }),
+    (error) => error instanceof A5sfEvidenceError && error.code === 'INVOCATION_ID_MISMATCH',
+  )
+})
+
+// --- A12: unknown kinds fail closed; recognised non-chain kinds do not ------
+
+test('A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated', async () => {
+  const dir = mkdtempSync(join(SCRATCH, 'kinds-'))
+  const chain = await buildAlignedChain({ dir, label: 'kinds' })
+
+  // A writer cannot smuggle a link in a kind this reader does not know: the row
+  // is NAMED and the file can never be CHAIN_ALIGNED. (`a5sf-diag.mjs` silently
+  // counts an unknown kind `ignored` — that silence is why this reader is loud.)
+  for (const row of [{ kind: 'provider', consulted: false }, { kind: 'effect', effect: false }]) {
+    const rows = [...chain.rows, row]
+    const result = alignEvidenceChain(rows)
+    assert.equal(result.summary.invalid, 1, JSON.stringify(result.summary))
+    assert.equal(result.summary.verdict, 'UNDECIDABLE')
+    assert.equal(result.invalid[0].kind, row.kind)
+    assert.equal(result.invalid[0].reason, 'UNKNOWN_ROW_KIND')
+
+    const file = join(dir, `unknown-${row.kind}.jsonl`)
+    writeFileSync(file, `${rows.map((entry) => JSON.stringify(entry)).join('\n')}\n`)
+    const r = spawnSync(process.execPath, [EVIDENCE_CLI, '--check', file], { encoding: 'utf8', timeout: 30_000 })
+    assert.equal(r.status, 1, `${r.stdout}${r.stderr}`)
+    assert.match(r.stdout, new RegExp(`ROW_INVALID kind=${row.kind} reason=UNKNOWN_ROW_KIND\\b`))
+    assert.match(r.stdout, /SUMMARY .*invalid=1 .*verdict=UNDECIDABLE\b/)
+  }
+
+  // The two OTHER kinds the R4 reader validates answer the failure question,
+  // not the chain question: a real P2 log may carry them, so they are counted
+  // (`notChain`) and do not break an otherwise aligned chain.
+  const tolerated = [
+    ...chain.rows,
+    { kind: 'failure', callId: LEGIT_CALL, text: 'a5p5-refused kind=fs.read code=SANDBOX_DENIED' },
+    { kind: 'compiler-refusal', callId: LEGIT_CALL, code: 'MEMBER_GENERATION_STALE' },
+  ]
+  const result = alignEvidenceChain(tolerated)
+  assert.equal(result.summary.invalid, 0, JSON.stringify(result.summary))
+  assert.equal(result.summary.notChain, 2)
+  assert.equal(result.summary.verdict, 'CHAIN_ALIGNED')
 })

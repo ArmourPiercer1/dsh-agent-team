@@ -8,7 +8,7 @@
 > Branch `task/a5sf-r3-chain-20261103`, worktree `.worktrees/a5sf-r3-chain`, cut from
 > `origin/master` = `cdf883244` (PR #542, R4/BL-12 on top of #541 R1 and #540 R2) and rebased
 > before publishing onto `f0215bdf5` (#544 — the status PR that recorded the four R-lane merges
-> and flipped this row to `READY`); the diff against that base is the eight files listed in §9.
+> and flipped this row to `READY`); the diff against that base is the files listed in §9.
 >
 > **CORE PATCH BUDGET = 0.** Nothing under `tests/deepseek-harness-test-use/` or any upstream
 > tree was read or written. No Host boot, no port, no `DSH_HOME`, no network, **no
@@ -46,11 +46,13 @@ compiler, and the effect from the **real** oracle, then uses the R4 reader as th
 
 ## 2. The row schema: emitted vs validated
 
-`scripts/a5sf-diag.mjs` validates exactly three kinds and IGNORES unknown fields
-(`tests/a5sf-diag/a5sf-diag.test.mjs`, `scripts/a5sf-diag.mjs` `validCall`/`validLane`).
-The recorder emits exactly those three kinds and **appends** to the JSONL path it is given (one
-file per run: a reused path accumulates rows, and a second `ceiling` row for the same member is
-refused rather than emitted — see §7 item 2).
+`scripts/a5sf-diag.mjs` validates **five** kinds — `ceiling`, `call`, `approval`, `failure`,
+`compiler-refusal` (`scripts/a5sf-diag.mjs:267/270`) — and IGNORES unknown fields and unknown
+kinds. The recorder emits three of the five (`ceiling`/`approval`/`call`, the chain rows) and
+**appends** to the JSONL path it is given (one file per run: a reused path accumulates rows, and
+a second `ceiling` row for the same member is refused rather than emitted — see §7 item 2).
+The two non-chain kinds are recognised by this reader's index and counted as `notChain`
+(§4, A12), never as evidence for or against a chain.
 
 ```
 {"kind":"ceiling","member","templateId","instanceGeneration","policyRevision",
@@ -69,7 +71,8 @@ refused rather than emitted — see §7 item 2).
 
 | field | validated by `a5sf-diag.mjs`? | why it is carried |
 |---|---|---|
-| `kind` ∈ {ceiling, call, approval} | **yes** (closed dispatch; unknown kind = `ignored`) | the recorder emits no other kind |
+| `kind` ∈ {ceiling, call, approval} | **yes** (closed dispatch; an unknown kind is `ignored` by the tool) | the recorder emits no other kind |
+| `kind` ∈ {failure, compiler-refusal} | **yes** (the failure question) | not emitted by the recorder; tolerated and counted `notChain` by this reader |
 | `call.callId/member/tool/locator/lane` + `axis` | **yes** (required) | the tool's own contract |
 | `call.approvalRequestId`, `logicalOperationId`, `operationFingerprint`, `actionName`, `capabilityDomain` | **yes** (optional; used by `bindApproval`) | the durable-row binding keys |
 | `call.instanceGeneration`, `call.policyRevision`, `call.toolBindingIdentity`, `call.disposition` | **no — additive** | the per-call policy identity + the lane's own `matchLocator` disposition (narrowed-allow vs unexplained-allow cannot be decided without it) |
@@ -102,6 +105,17 @@ oracle tag, and operation agreement across approval+call. It **names** the keys 
 can carry — `unbound: ["approval.instanceGeneration", "effect.member",
 "effect.instanceGeneration"]` — instead of implying them; A1 pins that disclosure.
 
+**What `CHAIN_ALIGNED` is NOT: a bypass verdict.** `disposition` and `lane` are
+**lane-claimed inputs** — the recorder copies what the lane reported and never re-derives the
+lane (that is the passivity law, A9). So `CHAIN_ALIGNED` means *the four recorded links carry
+one identity*; it does not mean *the allow was lawful*. A lane that misreports its own
+`disposition` (claims `allow` where the compiled lane said `ask`) is invisible to this reader
+and stays aligned — and `scripts/a5sf-diag.mjs` is the **compensating reader**: it re-derives
+the compiled lane from the `ceiling` rows with the P1 algebra and reports
+`ALLOW_WITHOUT_DURABLE_APPROVAL` / `BYPASS_FOUND` for exactly those rows. The two verdicts
+answer different questions and are never interchangeable: run BOTH (the round-trip in §6 does;
+A6 shows the same rows as `UNDECIDABLE` here and `ALLOW_WITHOUT_DURABLE_APPROVAL` there).
+
 ## 4. Verdict semantics (fail closed)
 
 * `CHAIN_ALIGNED` — all four links present and every key two links both carry agrees.
@@ -115,6 +129,11 @@ can carry — `unbound: ["approval.instanceGeneration", "effect.member",
   `CEILING_ROW_MISSING`, `AMBIGUOUS_CEILING`, `APPROVAL_ROW_MISSING`,
   `APPROVAL_SCOPE_UNBINDABLE`, `AMBIGUOUS_APPROVAL_ROW`, `DUPLICATE_CONSUMPTION`,
   `CALL_FIELD_MISSING`, `CEILING_AXIS_MISSING`.
+* **An unknown `kind` is a named `ROW_INVALID reason=UNKNOWN_ROW_KIND`** and forces the file to
+  `UNDECIDABLE` with a non-zero exit (A12). `scripts/a5sf-diag.mjs` would count such a row
+  `ignored`; this reader is deliberately loud where the tool is silent, because otherwise
+  `{"kind":"provider","consulted":false}` would be a green check. The recognised non-chain
+  kinds (`failure`, `compiler-refusal`) are counted `notChain` and do not affect the verdict.
 
 **The missing-approval asymmetry (A6/A7), deliberately two verdicts.** For a *narrowed
 allow* (compiled disposition `ask`, decided `allow`) a missing durable row is
@@ -139,20 +158,29 @@ $ node --test tests/world-factory/a5sf-evidence.test.mjs      # module absent = 
 ℹ pass 0  ℹ fail 1                                            # red-test.log
 
 $ node --test tests/world-factory/a5sf-evidence.test.mjs      # GREEN
-✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate
-✔ A2 approval link broken … ✔ A3 policy link broken … ✔ A4 provider link broken …
-✔ A5 effect link broken … ✔ A6 missing approval row ⇒ UNDECIDABLE … ✔ A7 unexplained allow ⇒ BROKEN …
-✔ A8 recorder refuses to mint or poison evidence … ✔ A9 passivity fence … ✔ A10 CLI …
-ℹ tests 10  ℹ pass 10  ℹ fail 0                               # green-tests.log
+✔ A1 aligned: one identity … ✔ A2 approval link broken … ✔ A3 policy link broken …
+✔ A4 provider link broken … ✔ A5 effect link broken …
+✔ A6 missing approval row ⇒ UNDECIDABLE (named AND unnamed arms)
+✔ A7 unexplained allow ⇒ BROKEN … ✔ A8 recorder refuses to mint or poison evidence …
+✔ A9 passivity fence (literal-token scan) … ✔ A10 CLI …
+✔ A11 every identity branch is load-bearing: one row mutation each, one named verdict each
+✔ A12 an unknown row kind is a named INVALID … while failure rows are tolerated
+ℹ tests 12  ℹ pass 12  ℹ fail 0                               # green-tests.log
 ```
 
 The suite additionally runs the adjacent inherited legs (`a5sf-harness` 10, `a5sf-diag` 11,
 `a5sf-golden` 19 → `ℹ tests 40  ℹ pass 40  ℹ fail 0`), `node scripts/eb3-ci-required.mjs`
 (`pass workflows=9 findings=0`) and `node scripts/eb3-ci-negative-controls.mjs`
-(`24/24`). Mutation controls (each applied to the module, then restored — same SHA):
-M1 provider-consult check removed ⇒ **A4 red**; M2 generation comparison removed ⇒ **A3 red**;
-M3 effect-observation check removed ⇒ **A5 red** (and A10, same law through the CLI);
-M4 missing approval row treated as aligned ⇒ **A6 red**.
+(`24/24`).
+
+**Mutation controls** (`mutation-controls.log`): **27 mutations**, each applied to the module
+and then restored byte-for-byte (sha256 re-checked) — **all 27 RED, no survivors**. They cover
+every branch the review named: the narrowed-allow arm (A6, unnamed requestId), the named-row
+arm (A6), the policy revision / tool-in-ceiling / ceiling-member comparisons (A11), the four
+Provider keys (A11), the oracle id + tag (A11), `EFFECT_DESPITE_REFUSAL` (A11), the
+exactly-once `DUPLICATE_CONSUMPTION` law (A11), the recorder's `INVOCATION_ID_MISMATCH`
+(A11), the `UNKNOWN_ROW_KIND` branch (A12), plus the pre-existing A2/A3/A4/A5/A7 arms and the
+missing-link/ambiguous-row/axis arms (A11). See §11 for the table.
 
 ## 6. The diag round-trip (the schema contract is measured, not declared)
 
@@ -176,7 +204,7 @@ $ node tests/world-factory/lib/a5sf-evidence.mjs --check dev/agent-workflow/evid
 CHAIN_ALIGNED callId=call-a5sf-r3-legit … operation=logicalOperationId:corr-a5sf-r3-fixture
   boundBy=call.logicalOperationId = scope.correlation unbound=approval.instanceGeneration,effect.member,effect.instanceGeneration
 CHAIN_ALIGNED callId=call-a5sf-r3-open …
-SUMMARY calls=2 aligned=2 broken=0 undecidable=0 invalid=0 verdict=CHAIN_ALIGNED
+SUMMARY calls=2 aligned=2 broken=0 undecidable=0 invalid=0 notChain=0 verdict=CHAIN_ALIGNED
 ```
 
 Both readers consume the **same file** without conversion. (`observedAt` is run-specific; the
@@ -190,9 +218,11 @@ lanes from the compiled policy, so a regeneration reproduces everything except t
    "Provider consulted" or "effect observed". This recorder adds them as fields on the rows
    the tool already accepts (§2). The alternative — new `kind` values — would be counted as
    `ignored` by `a5sf-diag.mjs` and would be **invisible** evidence, i.e. the parallel schema
-   the reclamation registry forbids; it is refused. A future R4 change could validate these
-   fields (the recorder's names are the contract proposed here), but that change belongs to
-   R4/BL-12, not to this lane.
+   the reclamation registry forbids; it is refused. Note the deliberate asymmetry: the tool
+   IGNORES an unknown `kind`; this reader fails closed on it (§4, A12), because a silent
+   `ignored` is exactly how `{"kind":"provider"}` would become a green check. A future R4
+   change could validate these fields (the recorder's names are the contract proposed here),
+   but that change belongs to R4/BL-12, not to this lane.
 2. **`ceiling` is keyed by MEMBER only.** Two compiled generations of one member cannot be
    recorded in one file: the diag reports that member's allows `UNDECIDABLE` with
    `DUPLICATE_CEILING_MEMBER`. The recorder therefore **refuses** a second ceiling row for a
@@ -211,10 +241,13 @@ lanes from the compiled policy, so a regeneration reproduces everything except t
 
 ## 8. What this chain does NOT prove
 
-* **It records what the lane reported.** The recorder is passive by design (A9 fences its
-  source): `disposition` is the lane's `matchLocator` answer, `lane` is the lane's decided
-  outcome, `consulted` is the lane's boolean, and the effect is the oracle's verdict. None of
-  these is re-derived or instrumented here.
+* **It records what the lane reported.** The recorder is passive by design; `disposition` is
+  the lane's `matchLocator` answer, `lane` is the lane's decided outcome, `consulted` is the
+  lane's boolean, and the effect is the oracle's verdict. None of these is re-derived or
+  instrumented here. A9's fence is a **literal-token scan of the module source** for the
+  forbidden call spellings (`matchLocator(`, `compileEffectiveIo(`, …): it proves the module
+  does not *spell* a second computation, NOT that a re-derivation could never hide behind a
+  renamed helper. The runtime proofs are the round-trip (A1) and the branch table (A11).
 * **It does not observe the kernel.** No syscall/eBPF/Landlock probe, no fd inspection. The
   oracle's channels are World-level (marker file, the plugin's canary ledger, host-pid
   liveness — `oracle.mjs` header), not the OS's view of the process.
@@ -239,11 +272,12 @@ lanes from the compiled policy, so a regeneration reproduces everything except t
 | file | why |
 |---|---|
 | `tests/world-factory/lib/a5sf-evidence.mjs` | the recorder (ceiling/approval/call), the four-link alignment check, the `--check` CLI, the closed transport-refusal vocabulary |
-| `tests/world-factory/a5sf-evidence.test.mjs` | 10 host-free `node:test` legs (A1 aligned + round-trip, A2–A5 the four mutations, A6/A7 the missing-approval asymmetry, A8 recorder refusals, A9 passivity fence, A10 CLI) |
+| `tests/world-factory/a5sf-evidence.test.mjs` | 12 host-free `node:test` legs (A1 aligned + round-trip, A2–A5 the four original link mutations, A6 both missing-approval arms, A7 unexplained allow, A8 recorder refusals, A9 literal-token passivity fence, A10 CLI, A11 every identity branch + exactly-once + invocation id, A12 unknown-kind fail-closed) |
 | `.github/workflows/ci-integration.yml` | one new step (`a5sf evidence chain R3`), after the R2 harness step — node:test files are listed explicitly, so a suite no step runs exists nowhere |
 | `dev/ci/eb3-ci-manifest.json` | one new required leg (`a5sf evidence chain R3`) with the test path as a required token; dropping it is `CI_LAYER_LEG_WEAKENED` |
 | `dev/agent-workflow/evidence/a5sf-r3/{README.md,red-test.log,green-tests.log}` | this account, the RED capture, and the GREEN transcript including the round-trip and mutation controls |
 | `dev/agent-workflow/evidence/a5sf-r3/aligned-chain.jsonl` | the real recorded chain both readers consume (fixture for review, not a test input) |
+| `dev/agent-workflow/evidence/a5sf-r3/mutation-controls.log` | the 20-mutation table: each deleted branch, the RED leg that caught it, and the restored module sha256 |
 
 Dependency note (identical to R2's C1): the P1 TS seams need the workspace installed
 (`pnpm install --frozen-lockfile`; `ci-integration` already installs) and Node ≥ 24 for native
@@ -262,3 +296,62 @@ recorder from ever computing them itself. The reviewer should decide whether P2'
 wiring must make `disposition`/`consulted` mechanically produced at the guard/installer seam
 (the honest next step) instead of remaining recorded claims — this package deliberately does
 not pretend otherwise.
+
+## 11. Review response (dated 2026-11-03, real UTC) — APPROVE-WITH-CONDITIONS, C1–C8
+
+The independent review found **eight surviving mutations** (test strength, not direction) and
+**one genuine silent-bypass mutation**, plus five documentation/schema-truth defects. All are
+closed below; nothing in the review's direction changed (no new row kind, no second
+computation, `scripts/a5sf-diag.mjs` still untouched).
+
+| # | condition | fix | proof |
+|---|---|---|---|
+| C1 | A6 covered only the NAMED `approvalRequestId`; deleting the narrowed-allow arm stayed **10/10 green** (silent bypass) | A6 now also drops the `approvalRequestId` — R1's real shape — and asserts the SAME `UNDECIDABLE(approval, APPROVAL_ROW_MISSING)` | **M04** RED on A6 |
+| C2 | eight identity branches had no test: policy revision, tool-in-ceiling, provider member/generation/revision/binding, oracle id/tag, `EFFECT_DESPITE_REFUSAL`, `DUPLICATE_CONSUMPTION`, recorder `INVOCATION_ID_MISMATCH` | new leg **A11** — a row-mutation table with one named verdict per branch, plus exactly-once replay, `MEMBER_MISMATCH` via the direct entry point, and the recorder's invocation-id refusal | **M08–M19** RED on A11 |
+| C3 | "validates exactly three kinds" was false (five: also `failure`, `compiler-refusal`) | §2 + module JSDoc corrected; the two non-chain kinds are recognised, counted `notChain`, and cannot contribute to a chain verdict | **A12** (tolerated arm) |
+| C4 | an unknown row kind was silently dropped and `--check` still said `CHAIN_ALIGNED` (`{"kind":"provider"}`, `{"kind":"effect"}`) | unknown kind ⇒ named `ROW_INVALID reason=UNKNOWN_ROW_KIND`, file verdict `UNDECIDABLE`, exit 1; A12 runs both probes through the CLI | **M20** RED on A12 |
+| C5 | §3/§4 overstated: `CHAIN_ALIGNED` was described as if it settled lawfulness | §3 now says `disposition`/`lane` are **lane-claimed inputs** and `CHAIN_ALIGNED` is an *alignment* verdict, never a bypass verdict; `scripts/a5sf-diag.mjs` is named as the compensating reader (it re-derives the compiled lane) and A6/A12 keep the two readers' divergence visible | §3, §4, §6 |
+| C6 | module JSDoc still called link 3 "the Provider actually consulted" / "the shipped installer's result" | reworded everywhere (module header, table row, passivity list, `call()` doc, `providerFactOf` refusal) to "a `ToolBindingRealm`-shaped fact the lane hands in — not instrumented; live mount not exercised" | `grep -n "actually consulted"` = 0 |
+| C7 | A9's scope was not stated (a literal-token scan) | A9 title and §8 now say it is a **literal-token scan**: it catches a call spelled `name(`, not a re-derivation hidden behind a renamed helper; the runtime proofs are A1 + A11 | §8, A9 |
+| C8 | `green-tests.log` repeated its header | regenerated from a single run (one header, one transcript) | `green-tests.log` |
+
+Full mutation table (each row: mutation applied to the module, full suite run, file restored,
+sha256 re-verified — `mutation-controls.log` holds the same table):
+
+| mutation | what was deleted | RED leg(s) | suite |
+|---|---|---|---|
+| M01 | provider consult check deleted (lane=allow needs consulted:true) | A4 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M02 | policy generation comparison deleted | A3 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M03 | effect-not-observed check deleted | A5, A10 | exit=1 ℹ pass 10 ℹ fail 2 |
+| M04 | narrowed-allow arm deleted (unnamed durable row) | A6 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M05 | named-row-missing arm deleted | A6 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M06 | ALLOW_OUTSIDE_COMPILED_CEILING deleted | A7 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M07 | APPROVAL_SCOPE_MISMATCH deleted | A2 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M08 | ceiling member comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M09 | ceiling policyRevision comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M10 | TOOL_NOT_IN_COMPILED_CEILING deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M11 | provider member comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M12 | provider generation comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M13 | provider policyRevision comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M14 | provider toolBindingIdentity comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M15 | oracle identity check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M16 | oracle tag check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M17 | EFFECT_DESPITE_REFUSAL deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M18 | DUPLICATE_CONSUMPTION neutralised (one row may authorize a second allow) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M19 | recorder INVOCATION_ID_MISMATCH deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M20 | UNKNOWN_ROW_KIND push deleted (unknown kinds silently skipped) | A12 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M21 | provider LINK_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M22 | effect LINK_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M23 | AMBIGUOUS_CEILING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M24 | CEILING_ROW_MISSING null guard deleted (crash) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M25 | CEILING_AXIS_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M26 | AMBIGUOUS_APPROVAL_ROW check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M27 | unbindable handling deleted (both the named branch and the catch-all) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+
+Honest scope of "no survivors": every mutation listed above is RED, and the sixteen
+`alignCall` branches that a recorded file can reach all have a checked verdict. Two defensive
+arms are exercised without a mutation of their own — `CALL_ROW_INVALID` (a non-object row)
+and the empty-file refusal — because deleting them produces a crash or a `NO_ROWS` refusal
+rather than a silent pass. The **one** structural limit from §10 is NOT fixed by this round
+and is not a mutation: `consulted`, `disposition` and `lane` are still lane-claimed inputs, so
+a lane that lies about what it consulted is caught by diag, not by this chain.

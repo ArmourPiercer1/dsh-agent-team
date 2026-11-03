@@ -3,30 +3,27 @@ Host-free C1: a durable P6-T4 UNIT world (real ControlService consumption row), 
 through the merged #540 harness, the shipped oracle over a World-shaped home, and the R4 reader
 (scripts/a5sf-diag.mjs) reading the recorded JSONL back. No Host boot, no port, no DSH_HOME, no network.
 
-GREEN — BL-11 / R3 evidence chain (captured 2026-11-03, real UTC).
-Host-free C1: a durable P6-T4 UNIT world (real ControlService consumption row), the real P1 compiler
-through the merged #540 harness, the shipped oracle over a World-shaped home, and the R4 reader
-(scripts/a5sf-diag.mjs) reading the recorded JSONL back. No Host boot, no port, no DSH_HOME, no network.
-
 $ node --test tests/world-factory/a5sf-evidence.test.mjs
-✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate (156.436711ms)
-✔ A2 approval link broken: a durable row for another member is CHAIN_BROKEN(link=approval) (12.381329ms)
-✔ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (10.545094ms)
-✔ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (11.629126ms)
-✔ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (10.828809ms)
-✔ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (113.863983ms)
-✔ A7 an unexplained allow stays BROKEN when the approval row is missing (10.213726ms)
-✔ A8 recorder refuses to mint or poison evidence (fail closed, typed codes) (10.012835ms)
-✔ A9 passivity fence: the recorder never calls the compiler/algebra/guard/approval service (0.405869ms)
-✔ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (419.503108ms)
-ℹ tests 10
+✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate (160.0914ms)
+✔ A2 approval link broken: a durable row for another member is CHAIN_BROKEN(link=approval) (13.310749ms)
+✔ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (11.541821ms)
+✔ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (12.289647ms)
+✔ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (11.960264ms)
+✔ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (111.935222ms)
+✔ A7 an unexplained allow stays BROKEN when the approval row is missing (11.784158ms)
+✔ A8 recorder refuses to mint or poison evidence (fail closed, typed codes) (10.997361ms)
+✔ A9 passivity fence (literal-token scan): the recorder source never spells a compiler/algebra/guard/approval call (0.432339ms)
+✔ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (419.690106ms)
+✔ A11 every identity branch is load-bearing: one row mutation each, one named verdict each (15.592819ms)
+✔ A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated (213.491084ms)
+ℹ tests 12
 ℹ suites 0
-ℹ pass 10
+ℹ pass 12
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1167.947513
+ℹ duration_ms 1419.982158
 
 $ node --test tests/world-factory/a5sf-harness.test.mjs tests/a5sf-diag/a5sf-diag.test.mjs tests/kits/a5sf-golden/compare.test.mjs
 ℹ tests 40
@@ -36,7 +33,7 @@ $ node --test tests/world-factory/a5sf-harness.test.mjs tests/a5sf-diag/a5sf-dia
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1086.037424
+ℹ duration_ms 1084.81529
 
 $ node scripts/eb3-ci-required.mjs
 EB3-CI-REQUIRED pass workflows=9 findings=0
@@ -45,7 +42,7 @@ $ node scripts/eb3-ci-negative-controls.mjs
 
 24/24 control(s) behaved as required
 
---- ROUND TRIP: the R4 reader (scripts/a5sf-diag.mjs) on the recorded chain ---
+--- ROUND TRIP: the R4 reader on the recorded chain ---
 $ node scripts/a5sf-diag.mjs dev/agent-workflow/evidence/a5sf-r3/aligned-chain.jsonl
 A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=4 files=1
 SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
@@ -65,16 +62,5 @@ $ node tests/world-factory/lib/a5sf-evidence.mjs --check dev/agent-workflow/evid
 A5SF-EVIDENCE-CHECK rows=4 calls=2
 CHAIN_ALIGNED callId=call-a5sf-r3-legit member=inst-p6t4seedw01 generation=3 operation=logicalOperationId:corr-a5sf-r3-fixture boundBy=call.logicalOperationId = scope.correlation unbound=approval.instanceGeneration,effect.member,effect.instanceGeneration
 CHAIN_ALIGNED callId=call-a5sf-r3-open member=inst-p6t4seedw01 generation=3 operation=callId:call-a5sf-r3-open boundBy=null unbound=approval.instanceGeneration,effect.member,effect.instanceGeneration
-SUMMARY calls=2 aligned=2 broken=0 undecidable=0 invalid=0 verdict=CHAIN_ALIGNED
+SUMMARY calls=2 aligned=2 broken=0 undecidable=0 invalid=0 notChain=0 verdict=CHAIN_ALIGNED
 exit=0
---- MUTATION CONTROLS (each applied to tests/world-factory/lib/a5sf-evidence.mjs in turn, then restored) ---
-M1 provider-consult check removed: exit=1 ℹ pass 9 ℹ fail 1
-    ✖ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (11.866406ms)
-M2 policy generation check removed: exit=1 ℹ pass 9 ℹ fail 1
-    ✖ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (11.241872ms)
-M3 effect-not-observed check removed: exit=1 ℹ pass 8 ℹ fail 2
-    ✖ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (12.952602ms)
-    ✖ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (230.950558ms)
-M4 missing approval row treated as ALIGNED: exit=1 ℹ pass 9 ℹ fail 1
-    ✖ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (12.714912ms)
-restored sha256 verified identical: 020e6419ffa321314037585c006139e6440dcc14873b07c745d403343bce8cc3
