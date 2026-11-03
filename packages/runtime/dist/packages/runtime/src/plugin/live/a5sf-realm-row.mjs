@@ -44,6 +44,21 @@
  * that into `GUARD_OBSERVATION_FAILED`, and the consulted call is REFUSED
  * before the base Provider runs. This module adds no catch and no downgrade.
  *
+ * F1 DISCLOSURE (review response 2026-11-03) — REACHABLE MECHANICALLY, NOT
+ * EFFECTIVELY. The mount installs the confined Provider through
+ * `root.isolate('fs', …)` (`team-services/src/install.ts:182` member / `:332`
+ * binding); Cordis `isolate()` creates a SIBLING scope, so the Context handed
+ * in (the live agent row's ctx) keeps the BASE provider and nothing
+ * product-side resolves the isolated scope today. Consumers must read through
+ * the returned `installation.members[i].ctx|fs` or `bindings[i].ctx|fs`; only
+ * those produce facts. A product row that keeps consuming `agentCtx` gets
+ * ZERO consultations and an EMPTY sink even with the wiring enabled. Measured:
+ * `dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs` (agent row
+ * ctx → outside ALLOWED; member/binding realm ctx → IO_READ_DENIED). The
+ * effective half (mount the Member's tools under the isolated ctx, or route
+ * the tool plane's fs through it) is NOT done here — see that evidence README
+ * §8.
+ *
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
@@ -127,3 +142,57 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     onGuardConsult: (fact) => sink.record(fact),
   })
 }
+
+/**
+ * Wrap a mounted realm's async `dispose()` as a SAFE SYNC row disposer.
+ *
+ * WHY: the row drain (`agent-bindings.mjs` close) invokes every disposer
+ * SYNCHRONOUSLY (`d()`) and only catches synchronous throws — an `async`
+ * disposer returned un-awaited would be fire-and-forget, and a rejection would
+ * surface as an unhandled rejection instead of a reported teardown fault. This
+ * wrapper starts the unmount on the same tick (the drain has already decided to
+ * tear down), never throws, reports a rejection to `onError` instead of
+ * swallowing it, and exposes `settled()` so the row can AWAIT the disposals it
+ * started before it returns from `close()`.
+ *
+ * Idempotency is the realm's own (`MountedA5sfRealm.dispose` is idempotent);
+ * this wrapper does not add a second flag — calling it twice starts two awaits
+ * whose second resolves immediately. The agent-scope unwind remains the
+ * backstop if the row never reaches its drain.
+ *
+ * @param {{ dispose(): Promise<void> }} realm - the mount helper's return value.
+ * @param {(error: unknown) => void} [onError] - reports a rejected unmount
+ *   (the row pushes an observation; it is never silent).
+ * @returns {(() => void) & { settled(): Promise<void> }} the sync disposer.
+ */
+export function createA5sfRealmRowDisposer(realm, onError) {
+  if (realm === undefined || realm === null || typeof realm.dispose !== 'function') {
+    throw new TypeError('agent-bindings: createA5sfRealmRowDisposer needs a mounted realm with an async dispose()')
+  }
+  /** @type {Set<Promise<void>>} the unmounts this wrapper started. */
+  const pending = new Set()
+  const dispose = () => {
+    const disposal = Promise.resolve()
+      .then(() => realm.dispose())
+      .catch((error) => {
+        try {
+          onError?.(error)
+        } catch {
+          // A faulting reporter must never re-break the teardown path.
+        }
+      })
+      .finally(() => {
+        pending.delete(disposal)
+      })
+    pending.add(disposal)
+  }
+  Object.defineProperty(dispose, 'settled', {
+    value: async () => {
+      // Loop: an onError report may itself trigger no new disposal, but a
+      // concurrent second call can add one while we await; converge.
+      while (pending.size > 0) await Promise.allSettled([...pending])
+    },
+  })
+  return dispose
+}
+

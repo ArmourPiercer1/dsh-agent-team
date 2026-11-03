@@ -140,18 +140,69 @@ if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId 
     provider: a5sfRealmProvider,
     member: { sessionId, instanceId, teamRootSessionId: teamRoot, templateId: boundTemplate?.templateId, bindPath },
   })
-  if (a5sfRealm !== undefined) toolDisposers.push(() => a5sfRealm.dispose())
+  if (a5sfRealm !== undefined) {
+    const disposeRealm = createA5sfRealmRowDisposer(a5sfRealm, (error) => observations.push(/* … */))
+    a5sfRealmDisposers.push(disposeRealm)   // close() AWAITS these
+    toolDisposers.push(disposeRealm)        // the sync drain starts them
+  }
 }
 ```
 
 * **member only** — `sessionId !== teamRoot`: a LEADER session owns no
   MemberInstance and never mounts;
-* **disposer on the row** — `toolDisposers` is the row-stop drain (the same
-  drain the model selection and tool registrations use); `dispose()` is
-  idempotent and the agent-scope unwind covers it as well;
+* **disposer on the row** — the pushed disposer is the SAFE SYNC wrapper
+  `createA5sfRealmRowDisposer` (review C3): the row-stop drain invokes
+  disposers synchronously (`d()` at `agent-bindings.mjs:5947`), so an async
+  `dispose()` returned un-awaited would be fire-and-forget and a rejection
+  would be unhandled. The wrapper starts the unmount, reports a rejection as a
+  row observation (never swallows it), and the row records it in
+  `a5sfRealmDisposers`, which `close()` AWAITS via `settled()` immediately
+  after the drain. The agent-scope unwind remains the backstop;
 * **default-preserving** — both halves absent is one `&&` short-circuit: no
   provider call, no Context touched, no file written. The legacy path is
   byte-identical in behaviour.
+
+#### 2.2.1 F1 — WHAT THIS CALL SITE DOES **NOT** DO: the mount lands in a SIBLING isolate
+
+Added in the review response (2026-11-03). The mount installs the confined
+Provider through `root.isolate('fs', Symbol(…))` — `install.ts:182` for the
+Member ceiling and `install.ts:332` for each binding realm. Cordis `isolate()`
+creates a **sibling** branch, not a replacement: the Context handed to the
+mount (the live agent row's `agentCtx`) keeps the BASE provider, and only the
+returned `realm.installation.members[i].ctx|fs` / `realm.bindings[i].ctx|fs`
+see `TeamConfinedFileSystem`. **Nothing product-side resolves those scopes
+today**: the base tools are mounted on `agentCtx` (`agent-bindings.mjs:2427`,
+`await presets.mount(agentCtx, …)`) and the Team tools register on
+`agentCtx.tools` (`:2705`).
+
+Consequence, stated plainly: **even with `teamA5sfRealm` +
+`config.a5sfEvidencePath`, a booted row yields ZERO consultations and an EMPTY
+sink.** The sink fills only for consumers that read through the returned realm
+contexts. This package's claim is therefore **"reachable MECHANICALLY, not
+effectively"** — it removes the "no product caller / no built artifact" gap, it
+does not make the guard consulted in a live row.
+
+Measured probe (`probe-f1-isolate.mjs`, run against the committed
+`packages/runtime/dist`; host-free):
+
+```
+$ cd packages/runtime/dist
+$ node ../../../dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs "$(pwd)"
+mount root ctx constructor       : FsDouble
+agent row ctx -> outside         : ALLOWED:"outside\n"
+realm member ctx constructor     : TeamConfinedFileSystem
+realm member ctx -> outside      : IO_READ_DENIED
+realm binding ctx constructor    : TeamConfinedFileSystem
+realm binding ctx -> outside     : IO_READ_DENIED
+agent row ctx -> allowed file    : ALLOWED:"ok\n"
+sink exists / facts              : true / 2
+sink attribution                 : the facts above are the probe's OWN two realm-ctx reads; the agent-row-ctx read (outside ALLOWED) contributed ZERO
+VERDICT                          : the mount lands in a SIBLING isolate; the agent row ctx keeps the BASE Provider (ALLOWED), so a product row consuming agentCtx produces ZERO consultations.
+```
+
+The same fact is restated at the call site (`agent-bindings.mjs`, the F1
+comment block) and in the helper's module header, so the next lane cannot
+re-derive it wrong.
 
 ### 2.3 `packages/runtime/src/plugin/host.ts` + `packages/runtime/src/plugin/types.ts`
 
@@ -165,9 +216,10 @@ if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId 
 
 ## 3. Step 3 — host-free proof (DONE)
 
-`tests/world-factory/a5sf-p2-wiring.test.mjs` — 7 `node:test` arms, all
-host-free (in-process Cordis unit root, `mkdtemp` fixtures, no boot/port/
-DSH_HOME). RED → GREEN logs are `red-test.log` / `green-tests.log`.
+`tests/world-factory/a5sf-p2-wiring.test.mjs` — 9 `node:test` arms (7 at first
+landing + W7/W8 from the review response), all host-free (in-process Cordis unit
+root, `mkdtemp` fixtures, no boot/port/DSH_HOME). RED → GREEN logs are
+`red-test.log` / `green-tests.log`.
 
 | arm | law |
 |---|---|
@@ -177,7 +229,9 @@ DSH_HOME). RED → GREEN logs are `red-test.log` / `green-tests.log`.
 | W3 | sink failure fails closed: the consulted call rejects `GUARD_OBSERVATION_FAILED` (decision + cause on the error) and `providerReads === 0` — an unrecorded decision never becomes an effect |
 | W4 | config reader: absent ⇒ `undefined`; blank/`42`/`{}`/`[]` ⇒ `TypeError`; valid ⇒ frozen block |
 | W5 | malformed provider answers (non-object, no `compiledFor`, empty `members`, non-array `bindings`) throw — a declared wiring that cannot mount is a fault, not a no-op |
-| W6 | structural pin of the glue call site: the helper import, the both-halves guard, `sessionId !== teamRoot`, and the row-kept disposer |
+| W6 | structural pin of the glue call site: the helper import, the both-halves guard, `sessionId !== teamRoot`, the safe row disposer (`a5sfRealmDisposers` + `toolDisposers`), `close()`'s `await disposeRealm.settled()`, the reported rejection, and the F1 sibling-isolate disclosure |
+| W7 | **C2** — no unexpected file: the unconfigured helper leaves a scanned evidence tree byte-identical (provider never asked), and the helper source carries no absolute/home path literal and none derived from `process.env`/`cwd`/`tmpdir`/`homedir` |
+| W8 | **C3** — safe row disposer: synchronous entry (the drain calls `d()`), `settled()` awaits the unmount, and a rejected unmount is REPORTED (never swallowed, never unhandled) |
 
 **RED** (`red-test.log`) — the suite run against the BASE source
 (`git stash push -u -- packages/runtime/src/plugin/live/a5sf-realm-row.mjs packages/runtime/src/plugin/live/agent-bindings.mjs`,
@@ -271,8 +325,8 @@ that is why this was measured last.
 | file | why |
 |---|---|
 | `packages/runtime/tsconfig.build.json` | +2 file enrolments (the minimal import closure) |
-| `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | **NEW** — the exported call-site helper (config reader + sink + mount) |
-| `packages/runtime/src/plugin/live/agent-bindings.mjs` | additive optional dep + the guarded Member-setup call site + row-kept disposer |
+| `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | **NEW** — the exported call-site helper (config reader + sink + mount) + `createA5sfRealmRowDisposer` (review C3) + the F1 header disclosure |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | additive optional dep + the guarded Member-setup call site + safe row disposer awaited by `close()` + the F1 call-site disclosure |
 | `packages/runtime/src/plugin/host.ts` | passes the lazy `teamA5sfRealm` provider accessor |
 | `packages/runtime/src/plugin/types.ts` | `a5sfEvidencePath?: string` (JSON-safe row config) |
 | `scripts/dist-placements/120-a5sf-p2-wiring.json` | **NEW** — the `.mjs` mirror placement |
@@ -280,8 +334,9 @@ that is why this was measured last.
 | `.github/workflows/ci-integration.yml` | ONE CI step for the new node:test suite |
 | `dev/ci/eb3-ci-manifest.json` | ONE `a5sf P2 wiring` leg pinning the file token |
 | `packages/testkit/test/p4t6-bookings/a5sf.json` | measured tie `{1396, 1428}` + the one new path |
-| `tests/world-factory/a5sf-p2-wiring.test.mjs` | **NEW** — 7 host-free arms |
-| this evidence package | README + RED/GREEN logs |
+| `tests/world-factory/a5sf-p2-wiring.test.mjs` | **NEW** — 9 host-free arms (W7 = C2, W8 = C3) |
+| `dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs` | **NEW** — the reproducible F1 probe over `packages/runtime/dist` |
+| this evidence package | README + RED/GREEN logs + the F1 probe |
 
 ## 7. What is STILL not proven (do not read any of this as C2)
 
@@ -291,25 +346,181 @@ that is why this was measured last.
    host-free over the real installers with a fake Context/member/compiled
    objects; "a real Team member row mounted it during a live setup" is NOT
    proven. W6 pins the call-site SHAPE (source-level), not its live execution.
-3. **No kernel / OS enforcement** (no Landlock/seccomp claim) and **no native
+3. **NO EFFECTIVE ENFORCEMENT — F1 (§2.2.1).** The mount lands in a sibling
+   `isolate()` scope; the agent ctx and every tool scope composed on it keep
+   the BASE provider. Nothing product-side resolves
+   `realm.installation.members[i].ctx` / `realm.bindings[i].ctx`, so even a
+   fully configured row produces **zero consultations and an empty sink**. The
+   claim of this package is **reachable mechanically, not effectively**. The
+   next step is booked in §8 (not done here).
+4. **No kernel / OS enforcement** (no Landlock/seccomp claim) and **no native
    `read` effect**: BL-14's own live half is untouched.
-4. **No Host-attributable effect** and no live-pid conjunct in the oracle.
-5. **The compiled objects are injected, not produced product-side.** This round
+5. **No Host-attributable effect** and no live-pid conjunct in the oracle.
+6. **The compiled objects are injected, not produced product-side.** This round
    wires the mount; it does not add a product policy compiler. A row must
    provide `teamA5sfRealm` (`compiledFor`) + `config.a5sfEvidencePath` for the
    wiring to activate. Whichever lane supplies the compiled ceilings is still
-   the missing production half — this package makes the mount **reachable**, not
-   **self-activating**.
-6. **Tamper-evidence**: the JSONL file is unsigned transport, not authority.
-7. **The evidence path is not sandboxed** by this code — it is the operator's
+   the missing production half.
+7. **Tamper-evidence**: the JSONL file is unsigned transport, not authority.
+8. **The evidence path is not sandboxed** by this code — it is the operator's
    run/evidence configuration; the parent directory must exist.
+9. **Teardown**: the row now AWAITS its realm disposals (C3), but the unmount
+   path itself is only exercised host-free (W1/W8); a live row's teardown is not
+   measured.
 
-## 8. The one risk for the reviewer
+## 8. The booked NEXT measured step (F1 effective half) — NOT done here
 
-**The activation depends on a service (`teamA5sfRealm`) that no row in this
-tree provides yet.** The wiring is reachable and proven, but it is inert until a
-composition supplies the compiled-realm provider — so a reviewer must not read
-"wired" as "active in production". The honest statement is: the call site, the
-emit, the dist artifacts and the freshness gate are now in place; the
-production compiled-realm provider is the next half and is NOT part of this
-package.
+Two candidate routes, both requiring their own review because each changes
+tool-plane semantics; a drive-by here would be an unreviewed authority change:
+
+**(a) Mount the Member's tool surface under the isolated realm ctx.**
+Instead of `presets.mount(agentCtx, …)` / `agentCtx.tools.register(def)`, mount
+on `realm.installation.members[i].ctx` (and the per-binding ctx where a binding
+lane is admitted). Files/lines that would change:
+
+| place | current line | what changes |
+|---|---|---|
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2427` `await presets.mount(agentCtx, …)` | the base-tool preset must join the isolated scope so inherited tools resolve the confined `fs` |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2705` `agentCtx.tools.register(def)` | Team tool registrations must live on the same scope as the preset, or the agent's tool surface splits |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2547`, `:5608` (`agentCtx.tools`) | the schemas/registry reads must follow the moved surface |
+| `packages/runtime/src/plugin/host.ts` | `:2306-2309` (`fsBackend`) | the target-canonicalization accessor resolves `ctx.get('fs')` globally; it cannot see the isolated scope unless routed |
+
+Why not here: it moves where the whole agent's tools live relative to the
+Cordis ancestor chain, i.e. it changes the tool-plane model (and the
+already-joined-preset guard's semantics). That is a product design decision
+with its own failure modes (split surfaces, double mounts, preset joins), and
+this reviewer explicitly required it not be a drive-by.
+
+**(b) Route the tool plane's `fs` resolution through the isolated scope.**
+Resolve the Member's confined provider per call (the `fsBackend` accessor at
+`host.ts:2306-2309` and its consumers at `agent-bindings.mjs:3418/3484/3505/3556`)
+instead of `ctx.get('fs')`. Why not here: that accessor currently feeds
+target-canonicalization for the PERMISSION adapter (not the tool bodies), so
+routing it alone would make the permission adapter see one provider while the
+tool executes on another — an inconsistency the admission kernel is not written
+for.
+
+Either route must be measured with the `probe-f1-isolate.mjs` shape (agent row
+ctx vs realm ctx) BEFORE/AFTER, and must show the sink filling from a
+tool-invoked read, not from a direct realm-ctx read by a test.
+
+## 9. The one risk for the reviewer
+
+**Even when a composition supplies `teamA5sfRealm` + `config.a5sfEvidencePath`,
+the guard is still not consulted in a live row (F1).** The wiring is reachable
+and proven mechanically, but it is inert until the tool surface is mounted
+under (or routed through) the isolated realm scope — the booked next step in
+§8. A reviewer must not read "wired" as "active in production"; the honest
+statement is: the call site, the emit, the dist artifacts, the freshness gate
+and the teardown safety are in place, and the EFFECTIVE half is explicitly
+unfinished.
+
+## 10. Review response (dated 2026-11-03) — F1 material, C2, C3
+
+The first submission was reviewed as **APPROVE-WITH-CONDITIONS**. The reviewer
+verified the dist claim by actually mounting from `dist` and independently found
+a **material** gap (F1): the mount lands in a sibling `isolate()` scope, so a
+booted row yields zero consultations even with the wiring enabled. F1's
+disclosure, the booked next step, and two smaller conditions are addressed
+below. **No product design decision was taken by this lane**: step 1 of the
+review response (disclosure) was done; step 2 (the effective half) was NOT
+implemented because it changes tool-plane semantics and needs its own review —
+it is booked with file:line in §8, as instructed.
+
+### 10.1 F1 — disclosed (required) — DONE
+
+* **README** §2.2.1 (new) + §7.3 + §9 now state: the mount lands in a **sibling
+  isolate** (`install.ts:182`/`:332`), the Context handed in keeps the BASE
+  provider, nothing product-side resolves the isolated scope today, the sink
+  fills only for consumers reading through `realm.installation.members[i].ctx`
+  or `realm.bindings[i].ctx`, and the package's claim is **"reachable
+  MECHANICALLY, not effectively"**. The "every consultation is transported…"
+  wording was removed/qualified.
+* **Glue**: the call-site comment now carries the same disclosure with the
+  measured probe reference, the two tool-mount lines that would have to move
+  (`:2427`, `:2705`), and the explicit warning not to read the mount as "the
+  guard is consulted in production". The helper's module header carries it too.
+* **W6** structurally pins the disclosure's presence (`F1 (review response
+  2026-11-03)` + `SIBLING scope`) so it cannot be silently deleted.
+
+Measured probe (durable, reproducible, host-free) — `probe-f1-isolate.mjs`,
+run against the committed `packages/runtime/dist`:
+
+```
+$ cd packages/runtime/dist
+$ node ../../../dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs "$(pwd)"
+mount root ctx constructor       : FsDouble
+agent row ctx -> outside         : ALLOWED:"outside\n"
+realm member ctx constructor     : TeamConfinedFileSystem
+realm member ctx -> outside      : IO_READ_DENIED
+realm binding ctx constructor    : TeamConfinedFileSystem
+realm binding ctx -> outside     : IO_READ_DENIED
+agent row ctx -> allowed file    : ALLOWED:"ok\n"
+sink exists / facts              : true / 2
+sink attribution                 : the facts above are the probe's OWN two realm-ctx reads; the agent-row-ctx read (outside ALLOWED) contributed ZERO
+VERDICT                          : the mount lands in a SIBLING isolate; the agent row ctx keeps the BASE Provider (ALLOWED), so a product row consuming agentCtx produces ZERO consultations.
+```
+
+This independently reproduces the reviewer's measurement (agent ctx ALLOWED vs
+realm ctx `IO_READ_DENIED`) and additionally attributes the sink facts to the
+probe's own realm-ctx reads, i.e. the empty-sink consequence.
+
+### 10.2 F1 — the next measured step BOOKED, not done — DONE (booked)
+
+§8 books both routes with the exact file:line each would change and why each is
+not a drive-by:
+
+* **(a)** mount the Member's tools under the isolated ctx —
+  `agent-bindings.mjs:2427` (`presets.mount(agentCtx, …)`),
+  `:2705` (`agentCtx.tools.register(def)`), plus the surface reads at
+  `:2547`/`:5608`, and the `fsBackend` accessor in `host.ts:2306-2309`. Changes
+  where the whole tool surface lives in the Cordis ancestor chain.
+* **(b)** route the tool plane's `fs` through the isolated scope — the
+  `fsBackend` accessor (`host.ts:2306-2309`) and its consumers
+  (`agent-bindings.mjs:3418/3484/3505/3556`). Routing it alone would make the
+  permission adapter see a different provider than the tool body executes on.
+
+Each route must be measured with the §10.1 probe shape and must show the sink
+filling from a **tool-invoked** read, not a direct realm-ctx read.
+
+### 10.3 C2 — no unexpected file — DONE
+
+* **W7** scans a dedicated `mkdtemp` evidence tree recursively before/after an
+  unconfigured helper call: byte-identical (and empty), with a provider that
+  throws if asked, proving the provider is never called.
+* **W7** also structurally pins the helper source: no absolute/home path
+  literal, and no path derived from `process.env`, `homedir()`, `tmpdir()` or
+  `process.cwd()`. Combined with W4 (the path is whatever row config carries)
+  and W1 (the sink path equals the configured path), the "mailbox" path can
+  only come from run configuration.
+
+### 10.4 C3 — safe teardown disposer — DONE
+
+`agent-bindings.mjs:5947` invokes disposers **synchronously** (`d()`) and only
+catches synchronous throws; the previous `() => a5sfRealm.dispose()` was an
+async fire-and-forget whose rejection would be unhandled. Now:
+
+* `createA5sfRealmRowDisposer(realm, onError)` (in the helper) returns a SYNC
+  disposer that starts the unmount, **reports** a rejection through `onError`
+  (the row pushes an observation) instead of swallowing it, and exposes
+  `settled()`;
+* the row records each disposer in `a5sfRealmDisposers` and `close()` AWAITS
+  `disposeRealm.settled()` immediately after the drain — so the row does not
+  return before the isolated Provider fibers are unmounted;
+* the agent-scope unwind remains the backstop;
+* **W8** tests the wrapper contract (sync entry, settlement, reported
+  rejection, TypeError on a non-realm), and **W6** pins the glue wiring
+  (`a5sfRealmDisposers.push`, `toolDisposers.push(disposeRealm)`,
+  `await disposeRealm.settled()`, reported rejection).
+
+Teardown of a LIVE row is still not measured (§7.9) — the backstop path is
+exercised only host-free.
+
+### 10.5 Gates re-run on the review-response head
+
+See `green-tests.log` for the full output. Summary: wiring suite **9/9** (was
+7), the four sibling a5sf node:test suites 14/10/12/13, `vitest run a5sf`
+166/166, p4t6 20/20 (`{1396, 1428}` — unchanged: no new scannable path this
+round), `pnpm -r typecheck` + `pnpm -r build` all 9 packages,
+`check-artifacts-committed` ok, `check-artifacts-at-head` ok, `eb3-ci-required`
+9 workflows / 0 findings, negative controls 24/24, `git diff --check` clean.

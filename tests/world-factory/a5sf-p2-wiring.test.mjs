@@ -31,20 +31,33 @@
  *   W5 MALFORMED PROVIDER ANSWERS THROW — a declared wiring that cannot mount
  *      is a configuration fault, never a silent no-op.
  *   W6 THE GLUE'S CALL SITE IS GUARDED (structural pin) — the product glue
- *      mounts only inside the both-halves-present guard, keeps the disposer on
- *      the row drain, and imports the helper (so the wiring cannot be silently
- *      deleted without this suite noticing). This arm reads SOURCE; it proves
- *      the shape of the call site, not a live setup.
+ *      mounts only inside the both-halves-present guard, records the async
+ *      realm disposal, AWAITS it in close(), reports a rejected unmount, and
+ *      keeps the F1 sibling-isolate disclosure attached to the call site. This
+ *      arm reads SOURCE; it proves the shape of the call site, not a live
+ *      setup.
+ *   W7 C2 — NO UNEXPECTED FILE: the unconfigured helper leaves a scanned
+ *      evidence tree byte-identical (the provider is never asked), and the
+ *      helper source carries NO path literal (no absolute/home path, no
+ *      process.env/cwd/tmpdir derivation) — the path can only come from row
+ *      config.
+ *   W8 C3 — SAFE ROW DISPOSER: the pushed disposer is a SYNC function (the
+ *      row drain invokes disposers synchronously), its settlement is awaitable
+ *      (`settled()`), and a rejected unmount is REPORTED, never an unhandled
+ *      rejection. close()'s `await disposeRealm.settled()` is pinned in W6.
  *
  * LIMITS (stated so no reader over-claims): this suite does NOT boot a Host, does
  * NOT run a live agent row, does NOT prove kernel enforcement and does NOT prove
- * a native `read` tool path or a Host-attributable effect. The boot budget is
- * still 0.
+ * a native `read` tool path or a Host-attributable effect. It also does NOT
+ * prove the F1 effective half: the mount lands in the installer's SIBLING
+ * isolate, so only consumers reading through `realm.installation.members[i].ctx`
+ * / `realm.bindings[i].ctx` produce facts (see evidence README §8). The boot
+ * budget is still 0.
  *
  * CORE PATCH BUDGET = 0. Nothing here touches `tests/deepseek-harness-test-use/`.
  */
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire, register } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -435,20 +448,101 @@ test('W5 malformed provider answers throw: non-object, missing compiledFor, empt
 // W6 — structural pin on the glue's call site
 // =============================================================================
 
-test('W6 the glue call site is guarded, keeps the row disposer, and imports the helper', () => {
+test('W6 the glue call site is guarded, keeps a SAFE row disposer, and imports the helper', () => {
   const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-  assert.match(glue, /import \{ a5sfRealmConfigOf, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/, 'the glue imports the ONE helper')
+  assert.match(
+    glue,
+    /import \{ a5sfRealmConfigOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
+    'the glue imports the ONE helper + the safe disposer factory',
+  )
   assert.match(glue, /const a5sfRowConfig = a5sfRealmConfigOf\(config\)/, 'the row config is read once at assembly')
   assert.match(
     glue,
     /if \(a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot\) \{/,
     'the mount runs only when BOTH halves are present and the session is a member (not a team root)',
   )
-  assert.match(glue, /toolDisposers\.push\(\(\) => a5sfRealm\.dispose\(\)\)/, 'the row keeps the disposer (row-stop drain unmounts)')
-  assert.match(glue, /onGuardConsult|provider: a5sfRealmProvider/, 'the consult observer is wired at the call site')
+  assert.match(glue, /a5sfRealmDisposers\.push\(disposeRealm\)/, 'the async realm disposal is recorded for the row to await')
+  assert.match(glue, /toolDisposers\.push\(disposeRealm\)/, 'the sync wrapper also rides the row-stop drain')
+  assert.match(glue, /await disposeRealm\.settled\(\)/, 'close() AWAITS the disposals it started (no fire-and-forget teardown)')
+  assert.match(glue, /createA5sfRealmRowDisposer\(a5sfRealm, \(error\) => \{/, 'a rejected unmount is REPORTED as an observation, never silently swallowed')
+  assert.match(glue, /provider: a5sfRealmProvider/, 'the consult observer is wired at the call site')
   assert.match(
     glue,
     /sessionId !== teamRoot/,
     'a LEADER session (a team root) owns no MemberInstance and never mounts',
   )
+  // F1 disclosure must stay attached to the call site (review response): the
+  // sibling-isolate fact is what stops the next lane re-deriving it wrong.
+  assert.match(glue, /F1 \(review response 2026-11-03\)/, 'the call-site F1 disclosure is present')
+  assert.match(glue, /SIBLING scope/, 'the glue states that isolate() is a sibling, not a replacement')
+})
+
+// =============================================================================
+// W7 — C2: the unconfigured helper writes NOTHING, anywhere it could write
+// =============================================================================
+
+test('W7 no unexpected file: the unconfigured helper writes nothing under a scanned evidence tree, and carries no path literal', async () => {
+  const tree = mkdtempSync(join(tmpdir(), 'a5sf-p2-wiring-w7-'))
+  CLEANUP.push(tree)
+  const scan = (dir) => {
+    const out = []
+    const walk = (rel) => {
+      for (const entry of readdirSync(join(tree, rel), { withFileTypes: true })) {
+        const child = rel === '' ? entry.name : `${rel}/${entry.name}`
+        out.push(`${child}${entry.isDirectory() ? '/' : ''}`)
+        if (entry.isDirectory()) walk(child)
+      }
+    }
+    walk(dir)
+    return out.sort()
+  }
+  const before = scan('')
+  // A provider that WOULD write/count if it were ever asked.
+  let asked = 0
+  const provider = () => {
+    asked += 1
+    return { compiledFor: () => compiledForFixture(makeFixture('w7-inner')) }
+  }
+  const mounted = await row.mountMemberA5sfRealm({
+    root: await makeRoot(),
+    a5sfConfig: row.a5sfRealmConfigOf({ rootSessionId: 'session-root-w7' }), // no a5sfEvidencePath
+    provider,
+    member: { sessionId: 'session-child-w7' },
+  })
+  assert.equal(mounted, undefined)
+  assert.equal(asked, 0, 'the provider is never asked, so no compiled fixture is even created')
+  assert.deepEqual(scan(''), before, 'the scanned tree is byte-identical: nothing appeared anywhere under it')
+  assert.deepEqual(before, [], 'the sandbox tree started empty and stayed empty')
+
+  // Structural: the helper carries NO path literal (the path can only come
+  // from row config). This is the pin a future lane cannot silently weaken.
+  const helper = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'), 'utf8')
+  assert.doesNotMatch(helper, /['"`](\/[A-Za-z]|~\/)/, 'no absolute or home-relative path literal')
+  assert.doesNotMatch(helper, /process\.env|homedir\(\)|tmpdir\(\)|process\.cwd\(\)/, 'the helper derives no path from the environment/cwd')
+})
+
+// =============================================================================
+// W8 — C3: the row disposer is a SAFE SYNC wrapper whose settlement is awaitable
+// =============================================================================
+
+test('W8 row disposer: synchronous entry, settlement awaitable, rejection reported (never unhandled)', async () => {
+  let calls = 0
+  const realm = { dispose: async () => { calls += 1 } }
+  const dispose = row.createA5sfRealmRowDisposer(realm, () => {
+    throw new Error('a faulting reporter must not break teardown')
+  })
+  assert.equal(typeof dispose, 'function')
+  assert.equal(dispose(), undefined, 'the drain can call it synchronously')
+  await dispose.settled()
+  assert.equal(calls, 1, 'settled() means the unmount actually ran')
+
+  const reported = []
+  const boom = new Error('boom')
+  const failing = row.createA5sfRealmRowDisposer({ dispose: async () => { throw boom } }, (error) => reported.push(error))
+  failing()
+  await failing.settled()
+  assert.deepEqual(reported, [boom], 'the rejection is REPORTED (row observation), not swallowed and not unhandled')
+
+  assert.throws(() => row.createA5sfRealmRowDisposer({}), (error) => error instanceof TypeError)
+  assert.throws(() => row.createA5sfRealmRowDisposer(undefined), (error) => error instanceof TypeError)
 })
