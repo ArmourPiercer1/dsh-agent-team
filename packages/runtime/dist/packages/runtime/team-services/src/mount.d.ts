@@ -76,7 +76,47 @@ export interface NativeToolModuleMount {
     readonly module: Plugin;
     /** Plugin config forwarded verbatim to `ctx.plugin`. */
     readonly config?: unknown;
+    /**
+     * S-1 (2026-11-03) — the ToolBinding whose realm this mount's tools execute on.
+     *
+     * A native tool PACKAGE registers a whole suite from one `apply`
+     * (`@deepseek-ai/dsh-tool-fs` registers `read`/`write`/`edit`/`read_image`),
+     * so mounting the module into a binding realm applies THAT binding's lane to
+     * every sibling tool. A binding-targeted mount therefore installs a
+     * REGISTRATION ROUTER over `realm.bindings[i].ctx` (already isolated for
+     * `fs`) that forwards only the definition/prompt-section whose tool name is
+     * the binding's own tool (`<owner>/<tool>` -> `<tool>`) and drops the rest to
+     * their own fibers. A mount WITHOUT a binding identity keeps the ceiling
+     * realm and forwards every definition whose tool has NO mounted binding, so
+     * the union of the fibers reproduces the module's surface exactly once.
+     *
+     * The router evaluates NO lane and reads no blueprint: it dispatches to the
+     * already-installed realm, whose guard was built from the compiled
+     * intersection. A binding identity with no mounted binding realm, or a
+     * binding-targeted module that never registers that tool, is a typed refusal
+     * (fail closed) — never a silent fallback onto the wider ceiling.
+     */
+    readonly toolBindingIdentity?: string;
 }
+/**
+ * S-1 routing receipt: what ONE router fiber forwarded and dropped, by name.
+ * Attached (non-enumerable) to the fiber this mount returned, so a caller can
+ * prove the partition per fiber without a second registry.
+ */
+export interface NativeRegistrationRouting {
+    /** Which realm this fiber's forwarded tools execute on. */
+    readonly realm: 'ceiling' | 'binding';
+    /** The binding identity of a `'binding'` fiber; `null` for the ceiling fiber. */
+    readonly toolBindingIdentity: string | null;
+    /** Tool names this fiber registered on the real `tools` service. */
+    readonly forwarded: readonly string[];
+    /** Tool names this fiber dropped (they belong to another fiber). */
+    readonly dropped: readonly string[];
+    /** Prompt-section names (`tool:<name>`) this fiber registered. */
+    readonly forwardedSections: readonly string[];
+}
+/** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
+export declare const NATIVE_REGISTRATION_ROUTING = "a5sfRegistrationRouting";
 export interface MountA5sfRealmInput {
     readonly root: Context;
     readonly members: readonly A5sfRealmMember[];
@@ -99,6 +139,13 @@ export interface MountedA5sfRealm {
      * fails. Refuses (typed) unless this realm carries exactly ONE Member
      * ceiling: every Member realm inherits the SAME agent scope key, so a second
      * re-mount of the same tool names collides in one scope layer.
+     *
+     * S-1 (2026-11-03): every mount is installed behind a REGISTRATION ROUTER.
+     * A mount carrying `toolBindingIdentity` is mounted on that binding's realm
+     * and forwards ONLY the binding's own tool; a mount without one stays on the
+     * Member ceiling realm and forwards every tool that has no mounted binding.
+     * The union is the module's surface, exactly once, so this remains
+     * surface-neutral per fiber.
      */
     mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>;
     dispose(): Promise<void>;

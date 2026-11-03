@@ -350,7 +350,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     }
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
-  const fibers = await realm.mountNativeToolModules(nativeToolModules)
+  const fibers = await realm.mountNativeToolModules(nativeToolMountsOf(nativeToolModules, realm))
   const after = a5sfAgentToolSurface(root, runtimeAgent)
   const added = [...after].filter((name) => !before.has(name))
   const removed = [...before].filter((name) => !after.has(name))
@@ -374,6 +374,47 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     )
   }
   return fibers
+}
+
+/**
+ * Expand the configured native modules into the PER-FIBER mounts S-1 requires.
+ *
+ * A native tool PACKAGE registers its whole suite from one `apply`, so a single
+ * mount can only ever execute on ONE realm. The mount seam's registration
+ * router (see `mount.ts`) partitions the suite by tool name; this function is
+ * the row-side half of that partition:
+ *
+ *   - ONE ceiling mount per module (no `toolBindingIdentity`), which forwards
+ *     every tool that has NO mounted binding (today's behaviour), and
+ *   - ONE mount per mounted ToolBinding realm, which forwards ONLY that
+ *     binding's own tool (`dsh.fs/read` -> `read`) and executes it on the
+ *     binding's already-compiled/confined provider.
+ *
+ * The UNION of the fibers is the module's surface, exactly once: the existing
+ * surface-neutrality check below stays the gate, and `EffectiveIo` is never
+ * recomputed — the selected realm's guard already holds the compiled
+ * intersection.
+ *
+ * @param {readonly object[]} nativeToolModules - imported module specs.
+ * @param {object} realm - the mounted realm (its `bindings` are the routing table).
+ * @returns {readonly object[]} the mounts to hand to `mountNativeToolModules`.
+ */
+function nativeToolMountsOf(nativeToolModules, realm) {
+  const bindings = Array.isArray(realm?.bindings) ? realm.bindings : []
+  const identities = []
+  for (const binding of bindings) {
+    const identity = binding?.toolBindingIdentity
+    if (typeof identity !== 'string' || identity.trim() === '') {
+      throw new TypeError('agent-bindings: every mounted a5sf ToolBinding realm must carry a non-blank toolBindingIdentity (the native routing table)')
+    }
+    identities.push(identity)
+  }
+  const mounts = []
+  for (const module of nativeToolModules) {
+    mounts.push(module)
+    for (const toolBindingIdentity of identities) mounts.push({ ...module, toolBindingIdentity })
+  }
+  return Object.freeze(mounts)
 }
 
 /**

@@ -1,0 +1,21 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1
+
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 8ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 6ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 23ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 16ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 69ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 70ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 361ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 126ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 513ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 80ms
+
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+   Start at  23:27:43
+   Duration  1.38s (transform 2.39s, setup 0ms, import 3.04s, tests 1.28s, environment 1ms)
+

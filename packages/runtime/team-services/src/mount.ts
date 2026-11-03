@@ -92,6 +92,180 @@ export interface NativeToolModuleMount {
   readonly module: Plugin
   /** Plugin config forwarded verbatim to `ctx.plugin`. */
   readonly config?: unknown
+  /**
+   * S-1 (2026-11-03) — the ToolBinding whose realm this mount's tools execute on.
+   *
+   * A native tool PACKAGE registers a whole suite from one `apply`
+   * (`@deepseek-ai/dsh-tool-fs` registers `read`/`write`/`edit`/`read_image`),
+   * so mounting the module into a binding realm applies THAT binding's lane to
+   * every sibling tool. A binding-targeted mount therefore installs a
+   * REGISTRATION ROUTER over `realm.bindings[i].ctx` (already isolated for
+   * `fs`) that forwards only the definition/prompt-section whose tool name is
+   * the binding's own tool (`<owner>/<tool>` -> `<tool>`) and drops the rest to
+   * their own fibers. A mount WITHOUT a binding identity keeps the ceiling
+   * realm and forwards every definition whose tool has NO mounted binding, so
+   * the union of the fibers reproduces the module's surface exactly once.
+   *
+   * The router evaluates NO lane and reads no blueprint: it dispatches to the
+   * already-installed realm, whose guard was built from the compiled
+   * intersection. A binding identity with no mounted binding realm, or a
+   * binding-targeted module that never registers that tool, is a typed refusal
+   * (fail closed) — never a silent fallback onto the wider ceiling.
+   */
+  readonly toolBindingIdentity?: string
+}
+
+/**
+ * S-1 routing receipt: what ONE router fiber forwarded and dropped, by name.
+ * Attached (non-enumerable) to the fiber this mount returned, so a caller can
+ * prove the partition per fiber without a second registry.
+ */
+export interface NativeRegistrationRouting {
+  /** Which realm this fiber's forwarded tools execute on. */
+  readonly realm: 'ceiling' | 'binding'
+  /** The binding identity of a `'binding'` fiber; `null` for the ceiling fiber. */
+  readonly toolBindingIdentity: string | null
+  /** Tool names this fiber registered on the real `tools` service. */
+  readonly forwarded: readonly string[]
+  /** Tool names this fiber dropped (they belong to another fiber). */
+  readonly dropped: readonly string[]
+  /** Prompt-section names (`tool:<name>`) this fiber registered. */
+  readonly forwardedSections: readonly string[]
+}
+
+/** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
+export const NATIVE_REGISTRATION_ROUTING = 'a5sfRegistrationRouting'
+
+/** The tool name a ToolBinding identity addresses: the last `/` segment of `<owner>/<tool>`. */
+function toolNameOfBindingIdentity(toolBindingIdentity: string): string {
+  const at = toolBindingIdentity.lastIndexOf('/')
+  const name = at === -1 ? toolBindingIdentity : toolBindingIdentity.slice(at + 1)
+  return name.trim()
+}
+
+/** One router fiber's live accounting, published on the fiber once the module loaded. */
+interface RegistrationPartition {
+  readonly forwarded: Set<string>
+  readonly dropped: Set<string>
+  readonly forwardedSections: Set<string>
+}
+
+/** The Cordis tracker symbol a `Service` instance carries (it makes `ctx.<service>` context-bound). */
+function trackerSymbolOf(service: object): symbol | undefined {
+  for (const symbol of Object.getOwnPropertySymbols(service)) {
+    const value = Reflect.get(service, symbol)
+    if (value !== null && typeof value === 'object' && (value as { property?: unknown }).property === 'ctx') {
+      return symbol
+    }
+  }
+  return undefined
+}
+
+/**
+ * A router whose target is its OWN object, never the live service — AND which
+ * carries the service's Cordis tracker so the context binds it to the CALLING
+ * context.
+ *
+ * WHY THE TRACKER MATTERS (measured, not assumed): a `Service` is served
+ * through a traceable proxy; the tracker is what lets `ctx.tools.register()`
+ * run with `this.ctx` = the ACCESSING context, and therefore what binds the
+ * registration effect to the MODULE fiber (so disposing the fiber unregisters
+ * the tool). A router WITHOUT the tracker resolves to the service's own ctx
+ * instead: registrations would be owned by the realm's fiber and survive the
+ * router teardown (measured: the preset definition never came back).
+ *
+ * WHY THE TARGET IS NOT THE LIVE SERVICE: a proxy whose target IS the traceable
+ * proxy inherits the tracker, gets re-wrapped, and the re-wrap reads
+ * `register`/`section` from the PROTOTYPE descriptor — silently bypassing the
+ * interceptor (measured: the router forwarded nothing).
+ */
+function createRoutedService(
+  real: object,
+  fallbackCtx: Context,
+  overrides: Record<string, (...args: never[]) => unknown>,
+): object {
+  const router: Record<PropertyKey, unknown> = Object.create(null) as Record<PropertyKey, unknown>
+  for (const [name, fn] of Object.entries(overrides)) router[name] = fn
+  const trackerSymbol = trackerSymbolOf(real)
+  if (trackerSymbol !== undefined) {
+    Object.defineProperty(router, trackerSymbol, {
+      value: { associate: 'a5sfRouter', property: 'ctx' },
+      enumerable: false,
+    })
+  }
+  return new Proxy(router, {
+    get(target, prop) {
+      // The tracker symbol (and any other symbol) is the router's OWN state.
+      if (typeof prop === 'symbol') return Reflect.get(target, prop)
+      if (Object.hasOwn(target, prop)) return Reflect.get(target, prop)
+      const value = Reflect.get(real, prop)
+      return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(real) : value
+    },
+    has(target, prop) {
+      if (Object.hasOwn(target, prop)) return true
+      return typeof prop === 'string' && prop in real
+    },
+  })
+}
+
+/** The context that OWNS a registration: the accessing ctx Cordis binds, else the realm ctx. */
+function owningContextOf(receiver: unknown, fallback: Context): Context {
+  const ctx = (receiver as { ctx?: unknown } | undefined)?.ctx
+  return ctx !== undefined && ctx !== null ? (ctx as Context) : fallback
+}
+
+/**
+ * The narrowest registration router: intercept `tools.register` and
+ * `systemPrompt.section`, forward per the caller's partition, delegate every
+ * other member to the REAL service untouched. It reads no policy.
+ */
+function createRegistrationRouters(
+  realTools: object,
+  realPrompt: object,
+  targetCtx: Context,
+  forwardTool: (name: string) => boolean,
+  forwardSection: (name: string) => boolean,
+): { tools: object; systemPrompt: object; partition: RegistrationPartition } {
+  const partition: RegistrationPartition = {
+    forwarded: new Set<string>(),
+    dropped: new Set<string>(),
+    forwardedSections: new Set<string>(),
+  }
+  const realRegister = Reflect.get(realTools, 'register') as (definition: unknown) => unknown
+  const realSection = Reflect.get(realPrompt, 'section') as (section: unknown) => unknown
+  const toolLayers = Reflect.get(realTools, 'layers')
+  const promptLayers = Reflect.get(realPrompt, 'layers')
+  const tools = createRoutedService(realTools, targetCtx, {
+    register(this: unknown, definition: { readonly name?: unknown }) {
+      const name = typeof definition?.name === 'string' ? definition.name : undefined
+      // A malformed definition is the REAL registry's refusal, never an
+      // anonymous drop: forward it so its validation error is the one seen.
+      if (name === undefined) {
+        return realRegister.call({ layers: toolLayers, ctx: owningContextOf(this, targetCtx) }, definition)
+      }
+      if (!forwardTool(name)) {
+        partition.dropped.add(name)
+        return () => {}
+      }
+      partition.forwarded.add(name)
+      return realRegister.call({ layers: toolLayers, ctx: owningContextOf(this, targetCtx) }, definition)
+    },
+  })
+  const systemPrompt = createRoutedService(realPrompt, targetCtx, {
+    section(this: unknown, section: { readonly name?: unknown }) {
+      const raw = typeof section?.name === 'string' ? section.name : undefined
+      if (raw === undefined) {
+        return realSection.call({ layers: promptLayers, ctx: owningContextOf(this, targetCtx) }, section)
+      }
+      if (!forwardSection(raw)) {
+        partition.dropped.add(`section:${raw}`)
+        return () => {}
+      }
+      partition.forwardedSections.add(raw)
+      return realSection.call({ layers: promptLayers, ctx: owningContextOf(this, targetCtx) }, section)
+    },
+  })
+  return { tools, systemPrompt, partition }
 }
 
 export interface MountA5sfRealmInput {
@@ -117,6 +291,13 @@ export interface MountedA5sfRealm {
    * fails. Refuses (typed) unless this realm carries exactly ONE Member
    * ceiling: every Member realm inherits the SAME agent scope key, so a second
    * re-mount of the same tool names collides in one scope layer.
+   *
+   * S-1 (2026-11-03): every mount is installed behind a REGISTRATION ROUTER.
+   * A mount carrying `toolBindingIdentity` is mounted on that binding's realm
+   * and forwards ONLY the binding's own tool; a mount without one stays on the
+   * Member ceiling realm and forwards every tool that has no mounted binding.
+   * The union is the module's surface, exactly once, so this remains
+   * surface-neutral per fiber.
    */
   mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>
   dispose(): Promise<void>
@@ -224,36 +405,153 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       }
       // Its `ctx` IS the isolated scope the confined Provider was installed on
       // (`install.ts:182`).
-      const target = installation.members[0]?.ctx
-      if (target === undefined) {
+      const memberTarget = installation.members[0]?.ctx
+      if (memberTarget === undefined) {
         throw new TeamServiceInstallError(
           'SERVICE_MOUNT_FAILED',
           'native tool re-mount found no installed Member realm to mount into',
         )
       }
-      const created: Fiber[] = []
-      for (const mount of modules) {
-        try {
-          const fiber = await target.plugin(mount.module, mount.config as never)
-          created.push(fiber)
-          nativeFibers.push(fiber)
-        } catch (error) {
-          // Roll back only what THIS call created; the realm stays mounted (the
-          // caller may still run without the native shadow).
-          for (const fiber of [...created].reverse()) {
-            try {
-              await fiber.dispose()
-            } catch {
-              // Rollback path: the mount failure is the one reported.
-            }
-          }
-          for (const fiber of created) {
-            const at = nativeFibers.indexOf(fiber)
-            if (at !== -1) nativeFibers.splice(at, 1)
-          }
+      // S-1: the binding-owned tool names are the ONE routing authority. They
+      // come from the binding identities P1 already compiled and this realm
+      // already mounted — never from a blueprint, never from a lane.
+      const bindingRealmOf = (toolBindingIdentity: string): ToolBindingRealm | undefined =>
+        mounted.find((realm) => realm.toolBindingIdentity === toolBindingIdentity)
+      const bindingToolNames = new Set<string>()
+      for (const realm of mounted) {
+        const name = toolNameOfBindingIdentity(realm.toolBindingIdentity)
+        if (name === '') {
           throw new TeamServiceInstallError(
             'SERVICE_MOUNT_FAILED',
-            `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
+            `native tool re-mount: mounted binding '${realm.toolBindingIdentity}' addresses no tool name`,
+          )
+        }
+        bindingToolNames.add(name)
+      }
+      // Refuse BEFORE registering anything: an unknown binding would otherwise
+      // fall back onto the wider ceiling realm (a silent widening).
+      for (const mount of modules) {
+        if (mount.toolBindingIdentity === undefined) continue
+        if (bindingRealmOf(mount.toolBindingIdentity) === undefined) {
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            `native tool re-mount names binding '${mount.toolBindingIdentity}' but this realm mounted no such ToolBinding realm`,
+          )
+        }
+      }
+      const created: Fiber[] = []
+      const rollbackCreated = async (): Promise<void> => {
+        for (const fiber of [...created].reverse()) {
+          try {
+            await fiber.dispose()
+          } catch {
+            // Rollback path: the mount failure is the one reported.
+          }
+        }
+        for (const fiber of created) {
+          const at = nativeFibers.indexOf(fiber)
+          if (at !== -1) nativeFibers.splice(at, 1)
+        }
+        created.length = 0
+      }
+      for (const [index, mount] of modules.entries()) {
+        const binding = mount.toolBindingIdentity === undefined
+          ? undefined
+          : bindingRealmOf(mount.toolBindingIdentity)
+        const target = binding?.ctx ?? memberTarget
+        const ownedToolName = binding === undefined ? undefined : toolNameOfBindingIdentity(binding.toolBindingIdentity)
+        // The REAL services: the router delegates everything except the two
+        // registration calls, so the tool bodies see the live registry.
+        const realTools = target.get('tools')
+        const realPrompt = target.get('systemPrompt')
+        if (realTools === undefined || realTools === null) {
+          await rollbackCreated()
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            'native tool re-mount needs the tools service on the target context',
+          )
+        }
+        if (realPrompt === undefined || realPrompt === null) {
+          await rollbackCreated()
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            'native tool re-mount needs the systemPrompt service on the target context',
+          )
+        }
+        const { tools, systemPrompt, partition } = createRegistrationRouters(
+          realTools as object,
+          realPrompt as object,
+          target,
+          (name) => (binding === undefined ? !bindingToolNames.has(name) : name === ownedToolName),
+          (name) => {
+            // Prompt sections are partitioned the same way as the tools they
+            // belong to: `tool:<name>` follows its tool, every other section
+            // belongs to the CEILING fiber so it is registered exactly once.
+            if (!name.startsWith('tool:')) return binding === undefined
+            const toolName = name.slice('tool:'.length)
+            return binding === undefined ? !bindingToolNames.has(toolName) : toolName === ownedToolName
+          },
+        )
+        const label = `${binding === undefined ? 'ceiling' : binding.toolBindingIdentity}:${String(index)}`
+        // Fresh isolate labels: the router services are visible ONLY to this
+        // fiber's own subtree, never to the agent scope or another fiber.
+        const routerCtx = target
+          .isolate('tools', Symbol(`a5sf-router:tools:${label}`))
+          .isolate('systemPrompt', Symbol(`a5sf-router:systemPrompt:${label}`))
+        let inner: (Fiber & PromiseLike<Fiber>) | undefined
+        let fiber: Fiber | undefined
+        try {
+          // The router plugin owns the two shadow services and the module fiber
+          // as ONE disposable unit. `apply` must NOT await the module: the
+          // module's dependencies are satisfied only once this fiber is ACTIVE,
+          // so the caller awaits the inner fiber after this one settles.
+          fiber = await routerCtx.plugin({
+            name: 'a5sf-tool-registration-router',
+            apply: (routerContext: Context): void => {
+              routerContext.provide('tools', tools as never)
+              routerContext.provide('systemPrompt', systemPrompt as never)
+              inner = routerContext.plugin(mount.module, mount.config as never)
+            },
+          } as never, undefined as never)
+          if (inner === undefined) {
+            throw new TeamServiceInstallError(
+              'SERVICE_MOUNT_FAILED',
+              `native tool registration router for ${JSON.stringify(mount.toolBindingIdentity ?? null)} mounted no module fiber`,
+            )
+          }
+          await inner
+        } catch (error) {
+          await fiber?.dispose().catch(() => undefined)
+          await rollbackCreated()
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            error instanceof TeamServiceInstallError
+              ? error.message
+              : `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+        created.push(fiber)
+        nativeFibers.push(fiber)
+        const routing: NativeRegistrationRouting = Object.freeze({
+          realm: binding === undefined ? 'ceiling' : 'binding',
+          toolBindingIdentity: binding?.toolBindingIdentity ?? null,
+          forwarded: Object.freeze([...partition.forwarded]),
+          dropped: Object.freeze([...partition.dropped]),
+          forwardedSections: Object.freeze([...partition.forwardedSections]),
+        })
+        Object.defineProperty(fiber, NATIVE_REGISTRATION_ROUTING, {
+          value: routing,
+          enumerable: false,
+          configurable: true,
+        })
+        // FAIL CLOSED: a binding-targeted module that never registered the
+        // binding's tool cannot enforce that binding's lane. Refuse instead of
+        // leaving the tool registered by the wider ceiling fiber.
+        if (ownedToolName !== undefined && !partition.forwarded.has(ownedToolName)) {
+          await rollbackCreated()
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            `native tool module ${JSON.stringify(mount.toolBindingIdentity)} registers no tool named '${ownedToolName}'; a binding-targeted mount must own its tool (fail closed)`,
           )
         }
       }

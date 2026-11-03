@@ -1,0 +1,47 @@
+CI-LOCAL FLAKE NOTE — why three attempts, and what each measured
+================================================================
+
+Attempt 1 (log overwritten by attempt 2; excerpt captured verbatim below):
+  FAIL  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts >
+        E3 — the REAL createAgentBindings consumes a FILLED plane ref ... >
+        a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+  Error: Test timed out in 5000ms.
+  DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=255.5s
+
+  Isolation re-run of the SAME file, nothing else on the box:
+  `npx vitest run packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts`
+  -> Test Files 1 passed (1); Tests 20 passed (20)          [flake-isolation-a3p4-e3.log]
+
+Attempt 2 (full log kept: ci-local-flake-run2.log):
+  FAIL  packages/runtime/test/a5g6-install-face-render.test.ts >
+        GLUE-6 LEG B — the plane renders ContentBlock[], not a String >
+        the four definitions all carry a render that returns an array of typed text blocks
+  FAIL  packages/runtime/test/alpha5-glob-backend.test.ts >
+        A5-GLOB X — CHANNEL AUDIT ... > X3 the timeout arm settles cancelled and spills nothing
+  Error: Test timed out in 5000ms.  (the render leg)
+  DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=233.9s
+
+  Isolation re-run of BOTH files, nothing else on the box:
+  `npx vitest run packages/runtime/test/a5g6-install-face-render.test.ts packages/runtime/test/alpha5-glob-backend.test.ts`
+  -> Test Files 2 passed (2); Tests 58 passed (58)          [flake-isolation-a5g6-and-glob.log]
+
+Attempt 3 (full log kept: ci-local.log) — the verdict this lane reports:
+  DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=240.2s
+  Test Files  483 passed (483)
+  Tests  5993 passed (5993)
+
+DIAGNOSIS (measured, not assumed): ci-local selects the WHOLE `packages/runtime`
+vitest tree (483 files, one in-process `threads` pool). That tree contains
+deliberately CPU-heavy adversarial suites (alpha5-glob-backend-adversarial: 217 s,
+A5 alone 178 s) and `vitest.config.ts` leaves `testTimeout` at vitest's 5 s
+default, so on a loaded box a 5-second default timeout can fire in an unrelated
+test. The three failures landed in THREE DIFFERENT files across two attempts
+(never the same one twice), each passed in isolation, and none is touched by
+this lane:
+  - a3p4-pr4 E3 reaches `createAgentBindings`, whose source
+    (packages/runtime/src/plugin/live/agent-bindings.mjs) is byte-identical to
+    origin/master (sha256 df9b46af...).
+  - a5g6-install-face-render and alpha5-glob-backend are unrelated to mount.ts.
+Exit code was 1 in both red attempts (a selected check failed), never 2
+(coverage undetermined), so the red verdicts are honest failures — of the
+MACHINE's timing budget, not of a semantic assertion.
