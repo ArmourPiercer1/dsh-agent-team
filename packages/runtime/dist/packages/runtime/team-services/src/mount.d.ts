@@ -23,15 +23,17 @@
  * disposed before the typed install error propagates. `dispose()` is
  * idempotent and disposes bindings before Member ceilings.
  *
- * COVERAGE, NOT JUST NAMES: a module that registers from a DEFERRED
- * `ctx.inject(...)` child cannot register inside the router's isolated service
- * scope (measured: `cannot get property "tools" without inject`, or a child that
- * stays pending). Its tool would then keep executing on the UNGUARDED preset
- * definition while a name-set surface check stayed green. A mount therefore
- * settles its fiber window and REFUSES (typed `SERVICE_MOUNT_FAILED`) when a
- * descendant fiber did not reach ACTIVE and one of its inject names resolves in
- * the surrounding Member scope; an optional dependency that exists nowhere stays
- * benign. Refusing disposes the router fiber, so the surface is restored.
+ * COVERAGE, NOT JUST NAMES: a module may register from a DEFERRED
+ * `ctx.inject(...)` child after `apply` returns (the pinned `dsh-tool-fs`
+ * registers `read_image` that way). A mount therefore SETTLES a bounded window,
+ * lets the child run THROUGH THE SAME ROUTER (its deferred inject carries the
+ * router's two services, see `routedModuleContext`), and then INSPECTS the
+ * result: a FAILED child, a child that never settles, or a name no fiber of the
+ * attach forwards is refused (typed `SERVICE_MOUNT_FAILED`) — while a child that
+ * forwards a covered name is accepted, identity-tracked and verified exactly
+ * like a synchronous registration. An optional dependency absent everywhere
+ * stays benign (the child never runs and registers nothing). Refusing disposes
+ * every fiber this mount created, so the preset surface is restored.
  *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
