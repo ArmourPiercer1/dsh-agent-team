@@ -113,18 +113,18 @@ be reached at all: `A5-accepted-shadow-invalidates: FAIL — mounted: attach ref
 ```
 A1-accept-routed-read: mounted=true elapsedMs=10 surface=["edit","read","read_image","write"]
 A1-accept-routed-read: PASS
-A6-absent-attachments-mounts: mounted=true elapsedMs=28 surface=["edit","read","write"]
+A6-absent-attachments-mounts: mounted=true elapsedMs=27 surface=["edit","read","write"]
 A6-absent-attachments-mounts: PASS
-A2-uncovered-deferred-refused: mounted=false elapsedMs=3
+A2-uncovered-deferred-refused: mounted=false elapsedMs=2
   … registered UNCOVERED name(s) ["x_a5sf_uncovered"] through a deferred registration: no fiber of this mount forwards them, so they would stay on the unshadowed preset definition with zero guard facts; refusing the mount (fail closed)
 A2-uncovered-deferred-refused: PASS
-A3-failed-deferred-refused: mounted=false elapsedMs=4
+A3-failed-deferred-refused: mounted=false elapsedMs=5
   … started a DEFERRED registration that failed inside the routed mount (deferred registration failed, waiting on [attachments,tools,systemPrompt]); …
 A3-failed-deferred-refused: PASS
-A4-unsettled-deferred-refused: mounted=false elapsedMs=50
+A4-unsettled-deferred-refused: mounted=false elapsedMs=51
   … started a DEFERRED registration that did not settle within 20 macrotasks (deferred registration state 1, waiting on [attachments,tools,systemPrompt]); refusing the mount instead of hanging on it or accepting a shadow it cannot verify
 A4-unsettled-deferred-refused: PASS
-A5-accepted-shadow-invalidates: mounted=true elapsedMs=4 surface=["edit","read","read_image","write"]
+A5-accepted-shadow-invalidates: mounted=true elapsedMs=6 surface=["edit","read","read_image","write"]
 A5-accepted-shadow-invalidates: PASS
 RESULT arms=6 PASS:6 FAIL:0
 ```
@@ -189,7 +189,7 @@ listener refuses the attach). The deferred-specific protections are TA12/TA13/TA
 ```
 MEASURED p4t6 tie, MEASURED LAST on this tree (all files on disk at run time):
   scanSessionEventVocabulary: filesScanned=1428 files.length=1428
-  ledger derived expected=1428 violations=[]
+  ledger derived expected=1428 violations=[] loadViolations=[]
   A5SF booking expectedDelta={"from":1396,"to":1428}
 ```
 
