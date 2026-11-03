@@ -1,0 +1,66 @@
+GREEN — BL-11 / R3 evidence chain (captured 2026-11-03, real UTC).
+Host-free C1: a durable P6-T4 UNIT world (real ControlService consumption row), the real P1 compiler
+through the merged #540 harness, the shipped oracle over a World-shaped home, and the R4 reader
+(scripts/a5sf-diag.mjs) reading the recorded JSONL back. No Host boot, no port, no DSH_HOME, no network.
+
+$ node --test tests/world-factory/a5sf-evidence.test.mjs
+✔ A1 aligned: one identity across all four links, and a5sf-diag reports the narrowed allow as legitimate (160.0914ms)
+✔ A2 approval link broken: a durable row for another member is CHAIN_BROKEN(link=approval) (13.310749ms)
+✔ A3 policy link broken: a generation mismatch is CHAIN_BROKEN(link=policy) (11.541821ms)
+✔ A4 provider link broken: an unconsulted Provider is CHAIN_BROKEN(link=provider) (12.289647ms)
+✔ A5 effect link broken: an oracle that saw nothing is CHAIN_BROKEN(link=effect) (11.960264ms)
+✔ A6 a narrowed allow with the approval row missing is UNDECIDABLE, never aligned and never a silent bypass (111.935222ms)
+✔ A7 an unexplained allow stays BROKEN when the approval row is missing (11.784158ms)
+✔ A8 recorder refuses to mint or poison evidence (fail closed, typed codes) (10.997361ms)
+✔ A9 passivity fence (literal-token scan): the recorder source never spells a compiler/algebra/guard/approval call (0.432339ms)
+✔ A10 CLI: aligned file exits 0, a broken chain exits 1, a missing file refuses with 2 (419.690106ms)
+✔ A11 every identity branch is load-bearing: one row mutation each, one named verdict each (15.592819ms)
+✔ A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated (213.491084ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1419.982158
+
+$ node --test tests/world-factory/a5sf-harness.test.mjs tests/a5sf-diag/a5sf-diag.test.mjs tests/kits/a5sf-golden/compare.test.mjs
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1084.81529
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+
+$ node scripts/eb3-ci-negative-controls.mjs
+
+24/24 control(s) behaved as required
+
+--- ROUND TRIP: the R4 reader on the recorded chain ---
+$ node scripts/a5sf-diag.mjs dev/agent-workflow/evidence/a5sf-r3/aligned-chain.jsonl
+A5SF-DIAG tool=scripts/a5sf-diag.mjs rows=4 files=1
+SOURCE classification=scripts/diag-call-chain.mjs#FACE_TABLE,attribute,diagnose locators=packages/runtime/member-io-policy/src/path-rules.ts#matchLocator
+ALLOW_LEGITIMATE file=dev/agent-workflow/evidence/a5sf-r3/aligned-chain.jsonl:3 code=APPROVAL_CONSUMED_NARROWED_ALLOW callId=call-a5sf-r3-legit requestId=ctrl-1rmo4gz0qr5iri1un0m391uc tool=read axis=read boundBy=call.logicalOperationId = scope.correlation
+SUMMARY calls=2 allow=2 findings=0 legitimate_narrowed=1 undecidable=0 classified=0 gaps=0 verdict=NO_BYPASS_FOUND
+LIMIT READ-ONLY over the rows it is handed: no Host boot, no live ledger read beyond the input, no re-run, no write
+LIMIT not an authority: printing ALLOW_LEGITIMATE never grants, approves or extends anything; only the durable ControlService row does that
+LIMIT the input row schema is declared by this tool, not yet emitted by a production a5sf lane (P2): an absent ceiling/approval row is UNDECIDABLE, never "clean"
+LIMIT a call whose axis is network is UNDECIDABLE here: network is a boolean this round and destination granularity is unsupported
+LIMIT a durable row authorizes at most ONE allow per report (R1 exactly-once); a repeated requestId is DUPLICATE_CONSUMPTION, not a second legitimate allow
+LIMIT an a5sf compiler refusal code has NO PR #394 row: the gap is printed, never filled by adding a row to that table
+LIMIT redaction reuses scripts/redaction-patterns.mjs; it cannot prove the absence of a secret the pattern list does not know
+exit=0
+
+--- the R3 chain checker on the same file ---
+$ node tests/world-factory/lib/a5sf-evidence.mjs --check dev/agent-workflow/evidence/a5sf-r3/aligned-chain.jsonl
+A5SF-EVIDENCE-CHECK rows=4 calls=2
+CHAIN_ALIGNED callId=call-a5sf-r3-legit member=inst-p6t4seedw01 generation=3 operation=logicalOperationId:corr-a5sf-r3-fixture boundBy=call.logicalOperationId = scope.correlation unbound=approval.instanceGeneration,effect.member,effect.instanceGeneration
+CHAIN_ALIGNED callId=call-a5sf-r3-open member=inst-p6t4seedw01 generation=3 operation=callId:call-a5sf-r3-open boundBy=null unbound=approval.instanceGeneration,effect.member,effect.instanceGeneration
+SUMMARY calls=2 aligned=2 broken=0 undecidable=0 invalid=0 notChain=0 verdict=CHAIN_ALIGNED
+exit=0
