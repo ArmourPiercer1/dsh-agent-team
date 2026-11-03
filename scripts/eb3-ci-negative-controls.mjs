@@ -571,7 +571,12 @@ control('C9 mandatory-leg-invoked-not-mentioned', () => {
   const honest = checkRequiredJobs({ files: wf }).findings
   if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
   const FAST = '.github/workflows/ci-fast.yml'
-  const FULL = '.github/workflows/ci-full.yml'
+  // The census layer is whichever manifest layer declares a `census` leg; its workflow is the
+  // file the c1/c2/c3 evasions must be staged on. Derived, not hardcoded, so the 2026-11-03
+  // ci-full -> ci-product/ci-census split did not leave this control pointing at a dead path.
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const censusLayer = manifest.layers.find((l) => (l.legs ?? []).some((x) => x.id === 'census'))
+  const FULL = censusLayer.workflow
   const SYNC = 'node scripts/docs-sync.mjs --check'
   const stage = (name, path, edit, codes) => {
     const before = wf.get(path)
@@ -694,8 +699,10 @@ control('C12 reusable-workflow-output-boundary', () => {
   const wf = workflowFiles(ROOT)
   if (checkRequiredJobs({ files: wf }).findings.length !== 0) return { ok: false, detail: 'honest workflows already fail' }
   const misses = []
-  for (const name of ['ci-fast', 'ci-integration', 'ci-security', 'ci-full']) {
-    const path = `.github/workflows/${name}.yml`
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  for (const layer of manifest.layers) {
+    const name = layer.id
+    const path = layer.workflow
     const before = wf.get(path)
     // Remove the on.workflow_call.outputs block from the honest file.
     // Indentation is 4/6/8 in the real files; the first draft guessed 6/8/10 and the
@@ -1035,50 +1042,156 @@ control('C20 acceptance-ledger-refuses-unproven-proven', () => {
   }
 })
 
-// ─────────────────────────────────────────────────── deferred tier (ci-defer-full)
+// ─────────────────────────────────────── deferred tier (draft, and `ci-defer-full`)
 const GREEN_LAYER = { result: 'success', outputs: { verdict: 'PASS' } }
-const fourLayerNeeds = (fullEntry) => ({
+
+/**
+ * A needs object covering every declared layer, with the deferral layer optionally overridden.
+ * Built FROM THE MANIFEST rather than from a hardcoded name list, so a layer rename is a
+ * one-line change here and the controls cannot pass while grading a layer that no longer exists.
+ */
+const layerNeeds = (manifest, censusEntry) => ({
   synthesize: { result: 'success' },
-  'ci-fast': GREEN_LAYER,
-  'ci-integration': GREEN_LAYER,
-  'ci-security': GREEN_LAYER,
-  ...(fullEntry === undefined ? {} : { 'ci-full': fullEntry }),
+  ...Object.fromEntries(manifest.layers.filter((l) => l.id !== manifest.deferral.layer).map((l) => [l.id, GREEN_LAYER])),
+  ...(censusEntry === undefined ? {} : { [manifest.deferral.layer]: censusEntry }),
 })
 
 control('C21 deferred-run-cannot-produce-ci-required-success', () => {
   const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
-  const { checkDeferralConflict, loadManifest } = requireModule('scripts/eb3-ci-required.mjs')
+  const { loadManifest } = requireModule('scripts/eb3-ci-required.mjs')
   const m = loadManifest()
+  const LAYER = m.deferral.layer
   const misses = []
-  // The deferral flag means ci-full is SKIPPED; the Required grade (no deferral relief) must be red.
-  const deferred = gradeNeeds({ needs: fourLayerNeeds({ result: 'skipped', outputs: {} }) })
-  if (deferred.verdict !== 'fail') misses.push(`4 green layers + skipped ci-full graded ${deferred.verdict}, not fail`)
-  if (!deferred.rows.some((r) => r.layer === 'ci-full' && r.klass === 'skipped')) misses.push('ci-full:skipped is not named in the rows')
+  const needs = layerNeeds(m, { result: 'skipped', outputs: {} })
+  // The deferral means the census layer is SKIPPED; the Required grade (no relief) must be red.
+  const deferred = gradeNeeds({ needs })
+  if (deferred.verdict !== 'fail') misses.push(`green layers + skipped ${LAYER} graded ${deferred.verdict}, not fail`)
+  if (!deferred.rows.some((r) => r.layer === LAYER && r.klass === 'skipped')) misses.push(`${LAYER}:skipped is not named in the rows`)
   // THE PROPERTY THAT MATTERS: the exact command ci-required runs must EXIT NON-ZERO (the
   // check run is red). If the grader is ever taught to tolerate a skipped layer, this goes red.
   let cliExit = 0
-  try { execFileSync(process.execPath, [join(ROOT, 'scripts/eb3-merge-tree.mjs'), '--grade-needs', JSON.stringify(fourLayerNeeds({ result: 'skipped', outputs: {} }))], { stdio: 'pipe' }) } catch (err) { cliExit = err.status ?? -1 }
-  if (cliExit === 0) misses.push('`eb3-merge-tree.mjs --grade-needs` exited 0 on a deferred run (ci-full skipped) — ci-required would be GREEN')
+  try { execFileSync(process.execPath, [join(ROOT, 'scripts/eb3-merge-tree.mjs'), '--grade-needs', JSON.stringify(needs)], { stdio: 'pipe' }) } catch (err) { cliExit = err.status ?? -1 }
+  if (cliExit === 0) misses.push(`\`eb3-merge-tree.mjs --grade-needs\` exited 0 on a deferred run (${LAYER} skipped) — ci-required would be GREEN`)
+  // The deferred REPORT still grades what ran: every other layer green must pass.
+  const report = gradeNeeds({ needs: layerNeeds(m, undefined), manifest: { ...m, layers: m.layers.filter((l) => l.id !== LAYER) } })
+  if (report.verdict !== 'pass') misses.push('the deferred report did not pass on every other layer green')
   // The deferred job must never be the Required context.
   if (m.deferral?.context === m.aggregate.context || m.deferral?.job === m.aggregate.job) misses.push('the deferred job shares the Required context name')
-  // Conflict rule: label + ci-required success is a finding; guarded to a no-op without inputs.
-  const conflict = checkDeferralConflict({ labels: ['ci-defer-full'], requiredConclusion: 'success' })
-  if (!conflict.findings.some((f) => f.code === 'CI_DEFERRAL_CONFLICT')) misses.push('label + ci-required success raised no CI_DEFERRAL_CONFLICT')
-  if (checkDeferralConflict({ labels: [], requiredConclusion: 'success' }).findings.length !== 0) misses.push('no label + success raised a conflict')
-  if (checkDeferralConflict({}).checked !== false) misses.push('unreadable PR was not a no-op')
-  return { ok: misses.length === 0, detail: misses.length === 0 ? 'deferred run (ci-full skipped) grades fail on the Required path and the ci-required CLI exits non-zero, ci-full:skipped named; deferred job is not the Required context; CI_DEFERRAL_CONFLICT fires on label+success and is a no-op without PR inputs' : misses.join(' ;; ') }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `deferred run (${LAYER} skipped) grades fail on the Required path and the CLI exits non-zero, ${LAYER}:skipped named; the deferred report passes on every other layer green; the deferred job is not the Required context`
+      : misses.join(' ;; '),
+  }
 })
 
-control('C22 no-deferral-ci-full-missing-is-a-failure', () => {
+control('C22 no-deferral-census-missing-is-a-failure', () => {
   const { gradeNeeds } = requireModule('scripts/eb3-merge-tree.mjs')
+  const { loadManifest } = requireModule('scripts/eb3-ci-required.mjs')
+  const m = loadManifest()
+  const LAYER = m.deferral.layer
   const misses = []
-  const absent = gradeNeeds({ needs: fourLayerNeeds(undefined) })
-  if (absent.verdict !== 'fail' || !absent.rows.some((r) => r.layer === 'ci-full' && r.klass === 'absent')) misses.push(`ci-full missing graded ${absent.verdict} (want fail, ci-full:absent)`)
-  const skipped = gradeNeeds({ needs: fourLayerNeeds({ result: 'skipped', outputs: {} }) })
-  if (skipped.verdict !== 'fail') misses.push('ci-full skipped without a deferral flag graded pass')
-  const green = gradeNeeds({ needs: fourLayerNeeds(GREEN_LAYER) })
-  if (green.verdict !== 'pass') misses.push(`all five green graded ${green.verdict}`)
-  return { ok: misses.length === 0, detail: misses.length === 0 ? 'without the deferral flag a missing or skipped ci-full is a failure (today\'s rule); all green still passes' : misses.join(' ;; ') }
+  const absent = gradeNeeds({ needs: layerNeeds(m, undefined) })
+  if (absent.verdict !== 'fail' || !absent.rows.some((r) => r.layer === LAYER && r.klass === 'absent')) misses.push(`${LAYER} missing graded ${absent.verdict} (want fail, ${LAYER}:absent)`)
+  const skipped = gradeNeeds({ needs: layerNeeds(m, { result: 'skipped', outputs: {} }) })
+  if (skipped.verdict !== 'fail') misses.push(`${LAYER} skipped without a deferral graded pass`)
+  const green = gradeNeeds({ needs: layerNeeds(m, GREEN_LAYER) })
+  if (green.verdict !== 'pass') misses.push(`all layers green graded ${green.verdict}`)
+  return { ok: misses.length === 0, detail: misses.length === 0 ? `without a deferral a missing or skipped ${LAYER} is a failure; all layers green still passes` : misses.join(' ;; ') }
+})
+
+// ─────────────────── control 23: BOTH deferral sources, and the two conditions as complements
+/**
+ * The rev-4 external review found the census caller's condition INVERTED (`draft || label` on an
+ * `if:`, i.e. the census ran on drafts and was skipped on ready PRs). A control that only
+ * asserted "the manifest text appears in the file" would have passed the wrong polarity, because
+ * both files and manifest agreed on the same wrong string. So this control asserts the SEMANTICS
+ * of both sides: the function must fire on each deferral source and stay silent otherwise, and
+ * the two workflow conditions must be complements in their actual literal wording.
+ */
+control('C23 both-deferral-sources-and-their-complement', () => {
+  const { checkDeferralConflict, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const misses = []
+  for (const [name, args] of [
+    ['draft + success', { labels: [], requiredConclusion: 'success', draft: true }],
+    ['label + success', { labels: ['ci-defer-full'], requiredConclusion: 'success', draft: false }],
+  ]) {
+    if (!checkDeferralConflict(args).findings.some((f) => f.code === 'CI_DEFERRAL_CONFLICT')) misses.push(`${name} raised no CI_DEFERRAL_CONFLICT`)
+  }
+  for (const [name, args] of [
+    ['ready + success', { labels: [], requiredConclusion: 'success', draft: false }],
+    ['draft + failure', { labels: [], requiredConclusion: 'failure', draft: true }],
+  ]) {
+    if (checkDeferralConflict(args).findings.length !== 0) misses.push(`${name} raised a conflict`)
+  }
+  const unreadable = checkDeferralConflict({})
+  if (unreadable.checked !== false || unreadable.findings.length !== 0) misses.push('absent inputs were not a no-op')
+  const wf = workflowFiles(ROOT)
+  const req = wf.get('.github/workflows/ci-required.yml') ?? ''
+  const censusIf = /\n {4}if: \$\{\{ ([^\n]+) \}\}\n {4}uses: \.\/\.github\/workflows\/[a-z0-9-]+\.yml/.exec(req)
+  if (censusIf === null) misses.push('could not find the layer caller if:/uses: pair')
+  else {
+    const text = censusIf[1].trim()
+    if (!text.includes('!github.event.pull_request.draft')) misses.push(`the layer caller does not require NOT-draft: ${text}`)
+    if (!text.includes("!contains(github.event.pull_request.labels.*.name, 'ci-defer-full')")) misses.push(`the layer caller does not require NOT-labelled: ${text}`)
+    if (/\|\|/.test(text)) misses.push(`the layer caller condition is a disjunction: ${text}`)
+  }
+  const tail = req.slice(req.indexOf('required-deferred:'))
+  const defIf = /\n {4}if: \$\{\{ ([^\n]+) \}\}\n {4}needs:/.exec(tail)
+  if (defIf === null) misses.push('could not find the required-deferred if:')
+  else {
+    const text = defIf[1].trim()
+    if (!text.includes('always()')) misses.push('the deferred report lost always()')
+    if (!text.includes('github.event.pull_request.draft')) misses.push('the deferred report does not fire on a draft')
+    if (!text.includes("contains(github.event.pull_request.labels.*.name, 'ci-defer-full')")) misses.push('the deferred report does not fire on the label')
+    if (!text.includes('||')) misses.push('the deferred report is not a disjunction of the two sources')
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? 'draft+success and label+success each raise CI_DEFERRAL_CONFLICT; ready+success, draft+failure and absent inputs do not; the census caller requires NOT-draft AND NOT-labelled (no disjunction), and the deferred report is always() AND (draft OR label)'
+      : misses.join(' ;; '),
+  }
+})
+
+// ─────────────── control 24: the host-free layer may not silently drop or invent a gate leg
+/**
+ * `ci-product` runs `--only <eight>`: a claim "the gate minus the census". Two independent ways
+ * that claim can rot — the manifest's list and the YAML's list drift from each other, or the
+ * manifest's list drifts from `ci-pr-gate.mjs`'s LEG_ORDER (a newly added leg silently not run in
+ * the host-free layer, which is exactly how a new check becomes advisory without anyone deciding
+ * it). Both are static facts and are graded without a runner.
+ */
+control('C24 product-layer-pinned-to-the-gate-leg-list', () => {
+  const { checkRequiredJobs, workflowFiles, readGateLegOrder } = requireModule('scripts/eb3-ci-required.mjs')
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const wf = workflowFiles(ROOT)
+  const honest = checkRequiredJobs({ files: wf }).findings
+  if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
+  const gate = readGateLegOrder()
+  const prod = manifest.layers.find((l) => Array.isArray(l.productLegs))
+  if (gate === null || prod === undefined) return { ok: false, detail: 'no readable LEG_ORDER or no layer declaring productLegs' }
+  const misses = []
+  const want = gate.filter((l) => l !== 'census').sort().join(',')
+  if ([...prod.productLegs].sort().join(',') !== want) misses.push(`honest productLegs (${prod.productLegs.join(',')}) != LEG_ORDER minus census (${want})`)
+  const staged = (name, files, man, code) => {
+    const f = checkRequiredJobs({ files, manifest: man }).findings
+    if (!f.some((x) => x.code === code)) misses.push(`${name}: not detected (${f.map((x) => x.code).join(',') || 'none'})`)
+  }
+  staged('manifest-drops-a-leg', wf, { ...manifest, layers: manifest.layers.map((l) => (l.id === prod.id ? { ...l, productLegs: l.productLegs.slice(1) } : l)) }, 'CI_PRODUCT_LEGS_INCOMPLETE')
+  const before = wf.get(prod.workflow)
+  const addCensus = new Map(wf)
+  addCensus.set(prod.workflow, before.replace(`--only ${prod.productLegs.join(',')}`, `--only census,${prod.productLegs.join(',')}`))
+  staged('workflow-adds-census', addCensus, manifest, 'CI_PRODUCT_LEGS_DRIFT')
+  const dropLeg = new Map(wf)
+  dropLeg.set(prod.workflow, before.replace(prod.productLegs.join(','), prod.productLegs.slice(1).join(',')))
+  staged('workflow-drops-a-leg', dropLeg, manifest, 'CI_PRODUCT_LEGS_DRIFT')
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest productLegs equal LEG_ORDER minus census (${String(prod.productLegs.length)} legs); a manifest-level dropped leg => CI_PRODUCT_LEGS_INCOMPLETE; a YAML level added census or dropped leg => CI_PRODUCT_LEGS_DRIFT`
+      : misses.join(' ;; '),
+  }
 })
 
 // ─────────────────────────────────────── preserved positive 1: non-Team native control
