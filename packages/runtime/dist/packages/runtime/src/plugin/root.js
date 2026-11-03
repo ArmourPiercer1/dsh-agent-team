@@ -104,9 +104,7 @@ import { createTeamOperationCoordinator } from '../../coordination/index.js';
 import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js';
-import { parseBlueprintV5 } from '../../../domain/blueprint/src/blueprint-v5.js';
-import { decideAlpha6Composition } from '../../alpha6/composition.js';
-import { createComposedControlNotifier } from '../../alpha6/notifier.js';
+import { controlRequestNotification } from '../../alpha6/wiring.js';
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs';
@@ -3442,52 +3440,5 @@ export function createTeamProductionRoot(params) {
         // disable/enable) — present only in the production host entry world.
         ...(requirementAuthority !== undefined ? { requirementAuthority } : {}),
     };
-}
-/**
- * A6-PR6 wiring: explicit config opt-in + a parsable v5 Blueprint + exactly one
- * Officer instance route the pending-request notification to that Officer's
- * session. Any failure, refusal, missing wake seam or absent flag falls back
- * to the legacy Leader notifier, byte-identically.
- */
-function controlRequestNotification(config, live) {
-    if (live.deliverRootControlNotification === undefined)
-        return {};
-    const legacy = createLeaderControlNotifier({ deliver: live.deliverRootControlNotification });
-    if (config.alpha6ReviewRouting !== true || live.deliverReviewWake === undefined) {
-        return { requestNotification: legacy };
-    }
-    try {
-        const blueprint = parseBlueprintV5(config.blueprintSource);
-        const routing = blueprint.reviewRouting;
-        if (routing === undefined)
-            return { requestNotification: legacy };
-        const leader = config.seedMembers.find((member) => member.childSessionId === config.rootSessionId);
-        const officer = config.seedMembers.find((member) => member.templateId === routing.officerTemplateId);
-        const decision = decideAlpha6Composition({
-            enabled: true,
-            blueprintDocumentVersion: blueprint.schemaVersion,
-            reviewRouting: { enabled: routing.enabled, officerTemplateId: routing.officerTemplateId },
-            activeMemberTemplateIds: config.seedMembers.map((member) => member.templateId),
-            leaderTemplateId: leader?.templateId ?? '',
-        });
-        if (decision.mode !== 'alpha6' || officer === undefined)
-            return { requestNotification: legacy };
-        return {
-            requestNotification: createComposedControlNotifier({
-                decision,
-                legacy,
-                recipientSessionId: officer.childSessionId,
-                wake: (input) => live.deliverReviewWake({
-                    rootSessionId: config.rootSessionId,
-                    targetSessionId: input.targetSessionId,
-                    wakeId: input.wakeId,
-                    text: input.text,
-                }),
-            }),
-        };
-    }
-    catch {
-        return { requestNotification: legacy };
-    }
 }
 //# sourceMappingURL=root.js.map

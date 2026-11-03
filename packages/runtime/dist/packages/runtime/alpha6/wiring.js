@@ -1,0 +1,55 @@
+/**
+ * Alpha.6 PR6 — the root composition helper (pure, exported for the wiring spec).
+ *
+ * It chooses between the legacy Leader notifier and the Officer wake. Every
+ * precondition is checked here, so `root.ts` only forwards live seams.
+ *
+ * @module @dsh-agent-team/runtime/alpha6/wiring
+ */
+import { parseBlueprintV5 } from '../../domain/blueprint/src/blueprint-v5.js';
+import { createLeaderControlNotifier } from '../control/leader-notification.js';
+import { decideAlpha6Composition } from './composition.js';
+import { createComposedControlNotifier } from './notifier.js';
+export function controlRequestNotification(config, live) {
+    if (live.deliverRootControlNotification === undefined)
+        return {};
+    const legacy = createLeaderControlNotifier({ deliver: live.deliverRootControlNotification });
+    if (config.alpha6ReviewRouting !== true || live.deliverReviewWake === undefined) {
+        return { requestNotification: legacy };
+    }
+    try {
+        const blueprint = parseBlueprintV5(config.blueprintSource);
+        const routing = blueprint.reviewRouting;
+        if (routing === undefined)
+            return { requestNotification: legacy };
+        const leader = config.seedMembers.find((member) => member.childSessionId === config.rootSessionId);
+        const officer = config.seedMembers.find((member) => member.templateId === routing.officerTemplateId);
+        const decision = decideAlpha6Composition({
+            enabled: true,
+            blueprintDocumentVersion: blueprint.schemaVersion,
+            reviewRouting: { enabled: routing.enabled, officerTemplateId: routing.officerTemplateId },
+            activeMemberTemplateIds: config.seedMembers.map((member) => member.templateId),
+            leaderTemplateId: leader?.templateId ?? '',
+        });
+        if (decision.mode !== 'alpha6' || officer === undefined)
+            return { requestNotification: legacy };
+        const wake = live.deliverReviewWake;
+        return {
+            requestNotification: createComposedControlNotifier({
+                decision,
+                legacy,
+                recipientSessionId: officer.childSessionId,
+                wake: (input) => wake({
+                    rootSessionId: config.rootSessionId,
+                    targetSessionId: input.targetSessionId,
+                    wakeId: input.wakeId,
+                    text: input.text,
+                }),
+            }),
+        };
+    }
+    catch {
+        return { requestNotification: legacy };
+    }
+}
+//# sourceMappingURL=wiring.js.map
