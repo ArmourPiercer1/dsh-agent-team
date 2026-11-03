@@ -1,0 +1,328 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-native3-2026-11-03T13-20-42-255Z",
+  "suite": "a5sf-live-native3",
+  "startedAt": "2026-11-03T13:20:42.255Z",
+  "selectedCases": [
+    "live:member-activated-surface-one-read",
+    "live:native-read-outside-refused",
+    "live:sink-exactly-one-deny-fact",
+    "live:native-read-inside-allowed",
+    "live:base-read-counter-did-not-move",
+    "live:teardown-no-shadow",
+    "live:deny-native-surface-refusal"
+  ],
+  "bindings": {
+    "teamSha": "3af944ca2e83b81a739bfbdcccec37cd4470dc37",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sflive3",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-live-native3-3af944ca2e83",
+    "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-live-native3/a5sf-native-provider-row.mjs (no product provider exists at this base)",
+    "baseReadCounter": "installed by the SAME evidence row (a5sf-native-provider-row.mjs, config.counterPath): the shipped host fs has no read counter; instrumented in-memory, prototype wrap, pass-through",
+    "worldReuse": "dev/agent-workflow/evidence/a5sf-live-native/run-boot.mjs world/heater, with three corrections documented in the README",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-11-03T13:20:48.700Z",
+      "probed": true,
+      "runtimeTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "full",
+      "usable": true,
+      "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "full",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "full",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "full",
+    "authority": {
+      "pointer": {
+        "snapshot_version": "as20261102r1",
+        "content_digest": "sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4"
+      },
+      "pointerSha256": "b0ffcbbf4b6e07856f798726a851e8ed64bad09cd9d5ba55f6fd996522201c35",
+      "note": "bound at the post-run repair of this record (the lane captured before the authority block was required by the guard); the generation is the one the boot ran under, unchanged."
+    }
+  },
+  "cases": [
+    {
+      "id": "live:member-activated-surface-one-read",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.625Z",
+      "hostAlive": true,
+      "memberRequestSeen": true,
+      "memberReadSchemas": 1,
+      "memberSurfaceSize": 24,
+      "memberSurfaceHasDuplicates": false,
+      "memberPromptReadMentions": 0,
+      "memberPromptReadSectionMentions": 0,
+      "discoveryPromptReadSectionMentions": 0,
+      "discoveryReadSchemas": 1,
+      "discoveryPromptReadMentions": 0,
+      "discoveryReadSectionMentions": 0,
+      "memberReadCalls": 2,
+      "memberSurfaceOk": true,
+      "surface": [
+        "bash",
+        "edit",
+        "glob",
+        "grep",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "memberSurface": [
+        "bash",
+        "edit",
+        "glob",
+        "grep",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "u5_canary",
+        "u6fs_probe",
+        "write"
+      ],
+      "note": "a managed Member ACTIVATED and ran model turns whose surface carried exactly ONE native `read`, while the row config carried a5sfEvidencePath + a5sfNativeToolModules"
+    },
+    {
+      "id": "live:native-read-outside-refused",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.625Z",
+      "outsideCall": {
+        "callId": "call-a5sf3-outside-0",
+        "seq": 7,
+        "name": "read",
+        "args": {
+          "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/tests/homes/u5a5sflive3-20261103T13-20-42Z/outside-ceiling.txt"
+        }
+      },
+      "outsideReadSeen": true,
+      "isError": true,
+      "guardRefusalText": true,
+      "crashLikeText": false,
+      "enoentLikeText": false,
+      "outsideClaimLeaked": false,
+      "observed": {
+        "isError": true,
+        "text": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/tests/homes/u5a5sflive3-20261103T13-20-42Z/outside-ceiling.txt' is outside every allow subtree of the lane"
+      },
+      "note": "the model issued `read` on a path outside the compiled ceiling and the a5sf Guard refused it before any byte was returned (the typed code lands in the sink fact, not the model-facing text)"
+    },
+    {
+      "id": "live:sink-exactly-one-deny-fact",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.625Z",
+      "sinkExists": true,
+      "totalGuardFacts": 3,
+      "outsideFacts": 1,
+      "denyFacts": 1,
+      "outsideDenyFacts": 1,
+      "fact": {
+        "schema": "a5sf-guard-consult/1",
+        "realm": "member",
+        "memberIdentity": "inst-076sd9g0gtwp",
+        "toolBindingIdentity": null,
+        "policyRevision": "a5sf-live3:inst-076sd9g0gtwp:g1",
+        "method": "stat",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/tests/homes/u5a5sflive3-20261103T13-20-42Z/outside-ceiling.txt",
+        "decision": "deny",
+        "decidedBy": "IO_READ_DENIED",
+        "sequence": 1,
+        "observedAt": "2026-11-03T13:20:58.668Z"
+      },
+      "note": "the product sink (a5sfEvidencePath), not the model transcript, is the witness: exactly ONE deny fact, decision deny, decidedBy IO_READ_DENIED"
+    },
+    {
+      "id": "live:native-read-inside-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.625Z",
+      "insideCalls": 1,
+      "insideResults": [
+        {
+          "isError": false,
+          "head": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/tests/homes/u5a5sflive3-20261103T13-20-42Z/workspace/inside-ceiling.txt</path>\n<type>file</type>\n<content>\n1: A5SF3_INSIDE_CLAIM_u5a5sflive3-20261103T13-20-42Z\n\n(End of file - total 1 lines)\n</content>"
+        }
+      ],
+      "insideClaimReturned": true,
+      "insideAllowFacts": 2,
+      "insideFacts": [
+        {
+          "method": "stat",
+          "decision": "allow",
+          "decidedBy": "ALLOW"
+        },
+        {
+          "method": "readText",
+          "decision": "allow",
+          "decidedBy": "ALLOW"
+        }
+      ],
+      "note": "the same native `read` inside the ceiling returned the planted bytes and its consultations were recorded as allow"
+    },
+    {
+      "id": "live:base-read-counter-did-not-move",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.625Z",
+      "counterInstalled": {
+        "at": "2026-11-03T13:20:56.507Z",
+        "leg": "counter-installed",
+        "baseCtor": "SandboxedFileSystem",
+        "baseInstance": "fs-0",
+        "methods": [
+          "readText",
+          "streamText",
+          "readBytes",
+          "readByteRange"
+        ],
+        "note": "test composition instrumentation; the shipped host fs provider has no read counter of its own"
+      },
+      "outsideAnyRead": [],
+      "outsideBaseRead": 0,
+      "insideAnyRead": [
+        {
+          "method": "readText",
+          "instance": "fs-1",
+          "isBase": false
+        }
+      ],
+      "insideBaseRead": 0,
+      "insideConfinedRead": 1,
+      "disclosure": "the shipped host fs provider has NO read counter of its own; this counter is test-composition instrumentation (in-memory prototype wrap, pass-through) installed by a5sf-native-provider-row.mjs config.counterPath. isBase=true = served by the ROOT/base provider instance; the a5sf confined provider is a different instance.",
+      "note": "the refused call never reached ANY provider read method; the inside call reached only the CONFINED provider instance; the base instance served neither"
+    },
+    {
+      "id": "live:teardown-no-shadow",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-03T13:21:00.626Z",
+      "reason": "NO_OBSERVABLE_SEAM_FOR_A_DISPOSED_AGENT_SCOPE_ON_A_SUBSEQUENT_READ",
+      "archiveCalls": 1,
+      "archiveOk": true,
+      "archivedLifecycle": true,
+      "postArchiveReadStatus": null,
+      "postArchiveReadNoLiveAgent": false,
+      "followupResult": {
+        "isError": false,
+        "head": "{\"status\":\"executed\",\"action\":\"follow-up\",\"rootSessionId\":\"session-a5sf-live3-team\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-076sd9g0gtwp\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-076sd9g0gtwp\",\"fromLifecycle\":\"SETTLED\",\"lifecycleCommitted\":true,\"sequence\":11,\"replayed\":false,\"settled\":true,\"settledSequence\":14,\"memberResult\":{\"requestToken\":\"a5sf3-post-archive-followup\",\"status\":\"succeeded\",\"body\":\"A5SF3_INSIDE_DONE <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/a"
+      },
+      "workerMember": null,
+      "disposeFaultObserved": true,
+      "disposeLines": [],
+      "seamsChecked": [
+        "team_archive_member (product lifecycle) + the leader's model-visible team_follow_up to the archived instance",
+        "GET /__p6t6/state: members[].lifecycle + observations[] (incl. \"a5sf: realm dispose failed\")",
+        "POST /__p6t6/tool {name:\"read\", as:<archived child session>}: only a LIVE agent can be dispatched to",
+        "the host instance log: no realm-dispose / shadow lines are emitted",
+        "the 15 team tools: no a5sf revoke (team_grant/revoke_permission are the Alpha.4 rule lane)"
+      ],
+      "note": "The Member was stopped through the product lifecycle and the host stayed alive. But a read AFTER the archive cannot exist on that scope: the agent is GONE (the harness tool route answers NO_LIVE_AGENT), so there is no ctx on which \"BASE again\" could be observed, and no product seam reports a disposed agent scope or its tool layer. This is NOT evidence that the shadow is gone — it is evidence that the live product exposes no read-after-stop witness. Route-c suite arm N4 proves the dispose contract HOST-FREE only."
+    },
+    {
+      "id": "live:deny-native-surface-refusal",
+      "verdict": "PASS",
+      "at": "2026-11-03T13:21:00.626Z",
+      "createMemberResultsSeen": 1,
+      "isError": [
+        false
+      ],
+      "a5sfSurfaceRefusal": true,
+      "unscopedCtxTypeError": false,
+      "text": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-1jidzyz0kmqw': TypeError: agent-bindings: the configured a5sfNativeToolModules would CHANGE the Member's model-visible tool surface (added: [\\\"read\\\"]; removed: []); refusing to mount the native shadow — a scoped registration is outside the inherited tools.restrict filter, so a re-mounted tool could re-enable a builtinToolDeny lane\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\",\"rootSessionId\":\"session-a5sf-live3-team\",\"instanceId\":\"inst-1jidzyz0kmqw\"}}",
+      "denyMemberAfter": null,
+      "note": "the a5sf attach refused with route C's surface-neutrality law (a builtinToolDeny-hidden native tool would have been re-enabled), and the unscoped-ctx TypeError is GONE"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/dev/agent-workflow/evidence/a5sf-live-native3/ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-03T13:20:42.287Z",
+        "runId": "a5sf-live-native3-2026-11-03T13-20-42-255Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-live-native3-3af944ca2e83",
+        "grantId": "grant-a5sf-live-native3-3af944ca2e83",
+        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"P2-01 live read (BL-14 / G2 live half)\", which holds 3 boots. This run is that item's SECOND boot: boot 1 (evidence/a5sf-live-native/) reached activation and was refused by the unscoped-ctx seam; boot 2 (evidence/a5sf-live-native2/) aborted at Loader compose on a composition defect before any product code ran. One boot of P2-01 remains after this one.",
+        "boundCommit": "3af944ca2e83b81a739bfbdcccec37cd4470dc37",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-03T13:20:48.700Z",
+        "runId": "a5sf-live-native3-2026-11-03T13-20-42-255Z",
+        "suite": "a5sf-live-native3",
+        "world": "u5a5sflive3-20261103T13-20-42Z",
+        "phase": "a5sf-live-native3-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-native3-boot1",
+      "world": "u5a5sflive3-20261103T13-20-42Z",
+      "port": 3183,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native3/dev/agent-workflow/evidence/a5sf-live-native3/logs/u5a5sflive3-20261103T13-20-42Z/instance-port3183.log"
+    }
+  ],
+  "overall": "NOT_REACHED",
+  "finishedAt": "2026-11-03T13:21:00.760Z"
+}
