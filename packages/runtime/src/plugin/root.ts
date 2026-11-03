@@ -220,7 +220,9 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
-import { controlRequestNotification } from '../../alpha6/wiring.js'
+import { parseBlueprintV5 } from '../../../domain/blueprint/src/blueprint-v5.js'
+import { decideAlpha6Composition } from '../../alpha6/composition.js'
+import { createComposedControlNotifier } from '../../alpha6/notifier.js'
 import type { PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -4371,3 +4373,50 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   }
 }
 
+
+/**
+ * A6-PR6 wiring: explicit config opt-in + a parsable v5 Blueprint + exactly one
+ * Officer instance route the pending-request notification to that Officer's
+ * session. Any failure, refusal, missing wake seam or absent flag falls back
+ * to the legacy Leader notifier, byte-identically.
+ */
+function controlRequestNotification(
+  config: TeamPluginConfig,
+  live: { readonly deliverRootControlNotification?: (input: { rootSessionId: string; requestId: string; text: string }) => Promise<void>; readonly deliverReviewWake?: (input: { rootSessionId: string; targetSessionId: string; wakeId: string; text: string }) => Promise<void> },
+): { requestNotification?: ReturnType<typeof createLeaderControlNotifier> } {
+  if (live.deliverRootControlNotification === undefined) return {}
+  const legacy = createLeaderControlNotifier({ deliver: live.deliverRootControlNotification })
+  if (config.alpha6ReviewRouting !== true || live.deliverReviewWake === undefined) {
+    return { requestNotification: legacy }
+  }
+  try {
+    const blueprint = parseBlueprintV5(config.blueprintSource)
+    const routing = blueprint.reviewRouting
+    if (routing === undefined) return { requestNotification: legacy }
+    const leader = config.seedMembers.find((member) => member.childSessionId === config.rootSessionId)
+    const officer = config.seedMembers.find((member) => member.templateId === routing.officerTemplateId)
+    const decision = decideAlpha6Composition({
+      enabled: true,
+      blueprintDocumentVersion: blueprint.schemaVersion,
+      reviewRouting: { enabled: routing.enabled, officerTemplateId: routing.officerTemplateId },
+      activeMemberTemplateIds: config.seedMembers.map((member) => member.templateId),
+      leaderTemplateId: leader?.templateId ?? '',
+    })
+    if (decision.mode !== 'alpha6' || officer === undefined) return { requestNotification: legacy }
+    return {
+      requestNotification: createComposedControlNotifier({
+        decision,
+        legacy,
+        recipientSessionId: officer.childSessionId,
+        wake: (input) => live.deliverReviewWake!({
+          rootSessionId: config.rootSessionId,
+          targetSessionId: input.targetSessionId,
+          wakeId: input.wakeId,
+          text: input.text,
+        }),
+      }),
+    }
+  } catch {
+    return { requestNotification: legacy }
+  }
+}
