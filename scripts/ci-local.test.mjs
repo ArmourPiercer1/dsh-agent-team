@@ -74,7 +74,8 @@ test('runnerFor reads the import, not the extension', () => {
 
 test('buildPlan: a package change selects the package test tree', () => {
   const plan = buildPlan(classify(['packages/runtime/src/a.mjs']))
-  assert.deepEqual(plan.vitest, ['packages/runtime/test/**/*.test.{ts,tsx}'])
+  // A directory prefix: vitest takes CLI args as substring filters, not globs.
+  assert.deepEqual(plan.vitest, ['packages/runtime/'])
   assert.equal(plan.coverage, 'determined')
   assert.equal(plan.typecheck, true)
 })

@@ -117,8 +117,13 @@ export function buildPlan(classified, { hasTypecheck = true } = {}) {
     else nodeTest.add(f)
   }
   for (const pkg of classified.packages) {
-    const dir = join('packages', pkg, 'test')
-    if (existsSync(join(ROOT, dir))) vitest.add(`${dir}/**/*.test.{ts,tsx}`)
+    // A DIRECTORY PREFIX, not a glob. `vitest run <arg>` treats its arguments as substring
+    // FILTERS over test file paths, not as shell patterns: `packages/x/test/**/*.test.{ts,tsx}`
+    // matched zero files (observed: "No test files found, exiting with code 1"). The prefix
+    // also covers the nested suites the vitest config includes (controlled-fs/test,
+    // a5p5-tools/test) without this tool having to know the config's include list.
+    const dir = `packages/${pkg}/`
+    if (existsSync(join(ROOT, 'packages', pkg, 'test')) || existsSync(join(ROOT, 'packages', pkg, 'controlled-fs', 'test'))) vitest.add(dir)
   }
 
   const coverage = classified.undetermined.length > 0 ? 'undetermined' : 'determined'
