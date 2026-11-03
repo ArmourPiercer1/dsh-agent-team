@@ -4282,7 +4282,7 @@ export function createControlService(options) {
                     candidate: args.reviewCapability,
                 });
                 if (problem !== undefined) {
-                    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: Member escalation is not authorized for this leg (${problem}); the global resolver table is unchanged`, { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem });
+                    throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`, { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem });
                 }
                 if (leg.payload.reviewAuthority !== 'leader' || controlEscalationSuccessor(leg.payload.reviewAuthority) !== 'human-user') {
                     throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: Member escalation is only legal from a leader-rung ordinary ask whose successor is human-user (this leg is '${String(leg.payload.reviewAuthority)}')`, { rootSessionId: root, requestId: args.requestId, reviewAuthority: leg.payload.reviewAuthority });
