@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest'
 import { CONTROL_REQUEST_KINDS, createControlService } from '../control/index.js'
 import type { ControlRequestRecord } from '../control/index.js'
+import { parseChildSessionId, parseInstanceId, parseTemplateId } from '../../contracts/src/index.js'
 import {
   P6T4_NOW,
   P6T4_ROOT,
@@ -20,18 +21,139 @@ import {
 
 const WORKER = String(P6T4_SEEDS.worker.instanceId)
 
+/** The PoC's independent, distinct Officer instance (test-local only). */
+const OFFICER = 'inst-a6pr5officer'
+
+/**
+ * Test-local v3 Blueprint with a DEDICATED `officer` MemberTemplate. The
+ * shared P6-T4 fixture has no independent Officer, and the production catalog
+ * still admits only document versions 3/4 (the v5 `reviewRouting` family is
+ * not catalog-resident yet), so the routing policy is supplied through the
+ * trusted facts port instead of the document. Blueprint surgery is avoided
+ * entirely: this is a complete, self-contained fixture.
+ */
+const OFFICER_BLUEPRINT_SOURCE = [
+  '---',
+  'schemaVersion: 3',
+  'blueprintId: A6PR5EVAL-BP',
+  'revision: "1"',
+  'leader:',
+  '  templateId: leader',
+  '  persona: You lead the A6-PR5 eval team.',
+  'members:',
+  '  - templateId: officer',
+  '    displayName: Officer',
+  '    persona: You review asks.',
+  '  - templateId: worker',
+  '    displayName: Worker',
+  '    persona: You do the work.',
+  'requirements: []',
+  'teamEnvelope:',
+  '  allow:',
+  '    - assign-task',
+  '    - create-member',
+  '    - send-message',
+  '    - report-progress',
+  '    - request-control',
+  '    - resolve-control',
+  '    - archive-member',
+  '    - restore-member',
+  '    - dispose-member',
+  '  deny:',
+  '    - delete-team',
+  'memberEnvelopes:',
+  '  - templateId: officer',
+  '    envelope:',
+  '      allow:',
+  '        - send-message',
+  '        - report-progress',
+  '        - request-control',
+  '        - resolve-control',
+  '      deny: []',
+  '  - templateId: worker',
+  '    envelope:',
+  '      allow:',
+  '        - send-message',
+  '        - report-progress',
+  '        - request-control',
+  '        - resolve-control',
+  '      deny: []',
+  'policyStates:',
+  '  - id: default',
+  '    description: The A6-PR5 eval default state.',
+  'quotas:',
+  '  team:',
+  '    maxInstances: 4',
+  '    maxConcurrent: 4',
+  '  members:',
+  '    maxInstances: 2',
+  '    maxConcurrent: 2',
+  'metadata: {}',
+  'permissionMutationEnvelope:',
+  '  rules: []',
+  'teamHardEnvelope:',
+  '  rules: []',
+  '---',
+].join('\n')
+
+/** The distinct Officer seed (test-local; not added to the shared P6-T4 world). */
+const OFFICER_SEED = {
+  instanceId: parseInstanceId(OFFICER),
+  templateId: parseTemplateId('officer'),
+  label: 'a6-pr5-officer',
+  childSessionId: parseChildSessionId('session-child-a6-pr5-officer'),
+  lifecycle: 'RUNNING' as const,
+}
+
+/**
+ * The trusted Blueprint policy the facts port supplies (the same shape the
+ * production composition parses from a v5 document today).
+ */
+const ASSIGNED_OFFICER_ROUTING = {
+  enabled: true as const,
+  officerTemplateId: 'officer',
+  ordinaryToolApprovals: { default: 'officer' as const, leaderExceptions: [] },
+  whenOfficerUnavailable: 'hold' as const,
+}
+
+/**
+ * Wire the control service with BOTH trusted assignment facts: who the leg's
+ * current reviewer is, and the world facts the durable row cannot carry. The
+ * service still derives case/leg/scope/owner/tool from the durable row.
+ */
+function createOfficerService(
+  world: Awaited<ReturnType<typeof createP6T4World>>,
+  assignedInstanceId: string,
+): ReturnType<typeof createControlService> {
+  return createControlService({
+    teamDomain: world.domain,
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => P6T4_NOW,
+    currentReviewerForTransfer: async () => ({ instanceId: assignedInstanceId }),
+    reviewCallFactsForAssignedOfficer: async () => ({
+      reviewRouting: ASSIGNED_OFFICER_ROUTING,
+      fixedLeaderOrHumanCategory: false,
+      requiresHuman: false,
+    }),
+  })
+}
+
 async function makeLeg(
   service: ReturnType<typeof createControlService>,
   correlation: string,
+  options: { readonly requester?: string; readonly ownerTemplate?: string } = {},
 ): Promise<ControlRequestRecord> {
+  const requester = options.requester ?? WORKER
+  const ownerTemplate = options.ownerTemplate ?? 'worker'
   const outcome = await service.requestApprovalLeg({
     rootSessionId: P6T4_ROOT,
-    caller: memberCaller(WORKER),
+    caller: memberCaller(requester),
     kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
     reviewAuthority: 'leader',
     requiredAuthorityAtCreation: 'leader',
     identity: {
-      subject: { kind: 'instance', instanceId: WORKER },
+      subject: { kind: 'instance', instanceId: requester },
       beneficiaryAuthority: 'member',
       requestedEffect: 'ask',
       operationFingerprint: 'fp-a6-pr5',
@@ -43,7 +165,7 @@ async function makeLeg(
     summary: 'a6-pr5 leg',
     reviewPayload: { schema: 'a6-pr5-opaque', note: 'restricted view test leg' },
     paApprovalCaseId: 'tadm:root:worker:effects:g4',
-    operationOwnerTemplateId: 'worker',
+    operationOwnerTemplateId: ownerTemplate,
     operationToolDefinitionIdentity: 'tool-def-write',
     operationToolOwner: 'dsh.fs',
     operationToolName: 'write',
@@ -133,47 +255,61 @@ describe('A6-PR5 restricted Officer access', () => {
     }
   })
 
-  it('an assigned Officer can allow its current leg and escalate to Human, while an unassigned Member cannot', async () => {
-    const world = await createP6T4World('a6-pr5-assigned-actions', ['leader', 'worker'])
+  /**
+   * A6-PR5 review P0 (PoC): the assigned-Officer entry now goes through the
+   * SINGLE `evaluateReviewCapability` — no locally minted candidate. A
+   * DISTINCT Officer is accepted (allow + escalate); the leg's own
+   * OperationOwner asking for self-review is refused by the evaluator's
+   * `operation-owner-is-officer` law, not by a bespoke service check.
+   */
+  it('accepts a distinct assigned Officer via the single evaluator and refuses self-review', async () => {
+    const world = await createP6T4World('a6-pr5-eval', ['leader', 'worker'], {
+      blueprintSource: OFFICER_BLUEPRINT_SOURCE,
+      seedMembers: [OFFICER_SEED],
+    })
     try {
-      const service = createControlService({
-        teamDomain: world.domain,
-        blueprintCatalog: world.catalog,
-        externalPolicyFacts: world.ports.externalPolicyFacts,
-        now: () => P6T4_NOW,
-        currentReviewerForTransfer: async () => ({ instanceId: WORKER }),
-      })
-      const allowLeg = await makeLeg(service, 'corr-a6-pr5-allow')
-      const allowed = await service.resolveControl({
+      const officer = createOfficerService(world, OFFICER)
+      const allowLeg = await makeLeg(officer, 'corr-a6-pr5-eval-allow')
+      const allowed = await officer.resolveControl({
         rootSessionId: P6T4_ROOT,
-        caller: memberCaller(WORKER),
+        caller: memberCaller(OFFICER),
         requestId: allowLeg.requestId,
         decision: 'allow',
         assignedOfficer: true,
       })
       expect(allowed.decision).toBe('allow')
 
-      const escalateLeg = await makeLeg(service, 'corr-a6-pr5-escalate')
-      const risen = await service.escalateApprovalLeg({
+      const escalateLeg = await makeLeg(officer, 'corr-a6-pr5-eval-escalate')
+      const risen = await officer.escalateApprovalLeg({
         rootSessionId: P6T4_ROOT,
-        caller: memberCaller(WORKER),
+        caller: memberCaller(OFFICER),
         requestId: escalateLeg.requestId,
         assignedOfficer: true,
       })
       expect(risen.nextLeg?.reviewAuthority).toBe('human-user')
 
-      const deniedLeg = await makeLeg(service, 'corr-a6-pr5-unassigned')
-      const otherService = createControlService({
-        teamDomain: world.domain,
-        blueprintCatalog: world.catalog,
-        externalPolicyFacts: world.ports.externalPolicyFacts,
-        now: () => P6T4_NOW,
-        currentReviewerForTransfer: async () => ({ instanceId: 'inst-someone-else' }),
+      // SELF-REVIEW: the trusted port assigns the leg's own OperationOwner
+      // (the officer asked for its own operation). The evaluator refuses with
+      // operation-owner-is-officer before any capability exists.
+      const selfLeg = await makeLeg(officer, 'corr-a6-pr5-eval-self', {
+        requester: OFFICER,
+        ownerTemplate: 'officer',
       })
-      await expect(otherService.resolveControl({
+      await expect(officer.resolveControl({
         rootSessionId: P6T4_ROOT,
-        caller: memberCaller(WORKER),
-        requestId: deniedLeg.requestId,
+        caller: memberCaller(OFFICER),
+        requestId: selfLeg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })).rejects.toThrow(/operation-owner-is-officer/)
+
+      // A caller the trusted port does NOT assign stays refused.
+      const unassignedLeg = await makeLeg(officer, 'corr-a6-pr5-eval-unassigned')
+      const other = createOfficerService(world, 'inst-someone-else')
+      await expect(other.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: unassignedLeg.requestId,
         decision: 'allow',
         assignedOfficer: true,
       })).rejects.toThrow(/not the trusted current reviewer|not a resolver/)

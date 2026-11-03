@@ -2094,6 +2094,23 @@ export interface ControlServiceOptions {
     readonly legOrdinal: number
   }) => Promise<{ readonly instanceId: string } | null>
   /**
+   * A6-PR5 (review P0 fix, PoC): the TRUSTED world facts an assigned-Officer
+   * capability evaluation needs and whose only trusted source is the
+   * composition — the Blueprint `reviewRouting` policy currently in force and
+   * the leg's frozen category classification. The service supplies everything
+   * else (principal, case, leg, scope, operation owner/tool, durable
+   * generation/Blueprint identity, manifest effect set), so this port can
+   * never forge a case, a leg, a principal or a scope.
+   *
+   * It MUST be derived from the durable leg + the bound Blueprint, never from
+   * model/tool arguments. ABSENT = the delegated Officer entry is refused
+   * (fail closed; the assigned-Officer path never falls back to a locally
+   * minted candidate).
+   */
+  readonly reviewCallFactsForAssignedOfficer?: (
+    input: AssignedOfficerReviewFactsQuery,
+  ) => Promise<AssignedOfficerReviewFacts | null>
+  /**
    * A6-PR2c: non-authority review events for the wake/notification plane
    * (Human successor visibility; current-leg transfer). A throwing sink must
    * not roll back the durable fact — the caller decides delivery.
@@ -2113,6 +2130,36 @@ export interface ControlServiceOptions {
     readonly currentLegRequestId: string
     readonly legOrdinal: number
   }) => Promise<{ readonly ok: true } | { readonly ok: false; readonly detail: string }>
+}
+
+/**
+ * A6-PR5 (review P0 fix, PoC) — the query an assigned-Officer facts port
+ * receives. It names the durable leg only; it carries no authority claim.
+ */
+export interface AssignedOfficerReviewFactsQuery {
+  readonly rootSessionId: string
+  readonly approvalCaseId: string
+  readonly currentLegRequestId: string
+  readonly legOrdinal: number
+  /** The durable carrier kind and rung (for the composition's own lookup). */
+  readonly kind: ControlRequestKind
+  readonly reviewAuthority: ProposalAuthorityPosition
+}
+
+/**
+ * A6-PR5 (review P0 fix, PoC) — the trusted WORLD facts for one assigned-Officer
+ * capability evaluation. Deliberately narrow: case identity, principal, scope,
+ * operation owner/tool, generation, Blueprint hash/revision and the manifest
+ * effect set are all derived by the service from the durable leg, so returning
+ * this overlay cannot widen authority beyond what the row already froze.
+ */
+export interface AssignedOfficerReviewFacts {
+  /** The Blueprint `reviewRouting` policy in force for this leg's Blueprint. */
+  readonly reviewRouting: import('../../domain/blueprint/src/index.js').ReviewRouting
+  /** A fixed Leader management/governance or Human-only category (never delegable). */
+  readonly fixedLeaderOrHumanCategory: boolean
+  /** The leg's legal authority path requires Human (never delegable). */
+  readonly requiresHuman: boolean
 }
 
 /**
