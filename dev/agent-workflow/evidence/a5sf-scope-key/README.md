@@ -22,6 +22,12 @@ already documents this hazard (its `resolveSetupAgent` doc, lines 503-508).
 ctx answered `undefined` and the attach refused. `mountNativeToolModules` itself
 was fine (the mount succeeded).
 
+**This fix removes the activation refusal; it does not itself re-prove confinement.** The
+confined native read is proven only when the next Host boot shows a model-visible native
+`read` refused outside the Member's ceiling with exactly one `a5sf-guard-consult/1` deny
+fact in the sink, allowed inside with matching bytes, and the shadow gone after teardown.
+Everything in this directory is host-free.
+
 ## 1. Fix
 
 | file:line | change |
