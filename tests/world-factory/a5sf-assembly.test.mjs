@@ -942,3 +942,44 @@ test('P0-2 a managed attach whose verification listener cannot attach is REFUSED
     await realm.dispose()
   }
 })
+
+test('P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback', async () => {
+  // C1 (review, 2026-11-03): the invalidation check used to bail out whenever no
+  // routed fiber was still active, so an external holder of the returned fibers
+  // could tear down the WHOLE shadow and the Member fell back to the preset with
+  // no record and no deny — the exact P0 leak class. A one-fiber world makes
+  // "some fiber active" and "this attach is alive" disagree immediately.
+  const moduleA = writeNativeModule('p0d', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const world = await makeWorld('p0-all-fibers', { bindingIdentities: [], modules: [moduleA] })
+  const { root, fixture, realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.equal(fibers.length, 1, 'the unbound world mounts exactly one ceiling fiber')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'healthy after attach')
+    const before = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(before.isError, false, `the shadow serves the in-lane file: ${before.text}`)
+    assert.equal(before.text, 'INSIDE\n')
+
+    // THE ATTACK: an in-process holder disposes the LAST active shadow fiber.
+    await fibers[0].dispose()
+
+    const after = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(after.isError, true, `every managed read must be REFUSED after the whole shadow is torn down: ${after.text}`)
+    assert.equal(after.text.includes('INSIDE'), false, 'the preset must not serve the bytes')
+    assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'tearing down EVERY shadow fiber must be RECORDED as an invalidation')
+    assert.ok(record.uncovered.includes('write'), `the event names the lost route(s): ${JSON.stringify(record.uncovered)}`)
+    // EVERY covered name is denied, including one whose definition identity still
+    // matches the attach (the deny is keyed on the attach's name set, not on the
+    // uncovered subset the event happens to report).
+    const writeAfter = await dispatch(root, agentKey, 'write', { file_path: fixture.insideFile, content: 'x' })
+    assert.equal(writeAfter.isError, true, `the covered write must be REFUSED too: ${writeAfter.text}`)
+    assert.equal(writeAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+    await realm.whenNativeVerificationSettled()
+  } finally {
+    await realm.dispose()
+  }
+})

@@ -665,10 +665,13 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
   const verifyRoutedSurface = (scope: unknown): void => {
     if (disposed || invalidation !== null) return
     if (expectedDefinitions.size === 0 && expectedSurfaceNames === undefined) return
-    // The row's own refusal path disposes the fibers it was handed; once NONE of
-    // this attach's fibers is active there is no shadow left to guard, and the
-    // row is reporting its own failure. Do not manufacture an invalidation.
-    if (!nativeFibers.some((fiber) => fiber.state === 2)) return
+    // C1 (review 2026-11-03): do NOT bail out when no routed fiber is still
+    // active. An external holder of the returned fibers can dispose EVERY one of
+    // them, which is exactly "the shadow is gone": returning here let the Member
+    // fall back to the preset with no record and no deny (the P0 leak class).
+    // The row's own refusal path is not distinguished by fiber state — it
+    // detaches this verifier and clears `expectedDefinitions` BEFORE disposing
+    // (`disposeNativeToolModules`), so it never reaches this check.
     const tools = installation.members[0]?.ctx?.get('tools') as
       | {
         get?: (name: string, scope: unknown) => unknown
@@ -1147,8 +1150,22 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         detachVerification = undefined
       }
       // P0: the admission deny is dropped only with the WHOLE realm (the Member
-      // is unassembled), never while invalid. Until here every covered name was
-      // refused.
+      // is unassembled), never while the realm is merely invalid. Until here
+      // every covered name was refused.
+      //
+      // C2 (review 2026-11-03) — THE INVARIANT THIS RELIES ON: after this method
+      // returns, the preset plane serves again on this agent ctx. That is only
+      // sound while the Member is gone. In PRODUCT the coupling is enforced at
+      // `close()` in packages/runtime/src/plugin/live/agent-bindings.mjs: it
+      // awaits `handle.dispose()` for every live agent BEFORE it awaits the
+      // `a5sfRealmDisposers` this realm was registered with, so a realm is never
+      // disposed while its Member's agent ctx is live. A test world (or any
+      // future caller) that disposes the realm itself and then keeps dispatching
+      // on the SAME live agent ctx is outside the managed-Member lifecycle and
+      // will reach the preset; do not "fix" that here — re-assembling a Member
+      // means disposing it and creating a new one, which is exactly this method
+      // followed by a fresh mount. Pinned by the assembly suite's re-assembly arm
+      // (P0-1 step 8) and documented in evidence/a5sf-p0/README.md §11.2.
       if (detachAdmission !== undefined) {
         try {
           detachAdmission()

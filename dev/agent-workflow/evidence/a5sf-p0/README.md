@@ -10,7 +10,7 @@ Member declared managed.
 | branch | `task/a5sf-p0-20261103` |
 | worktree | `.worktrees/a5sf-p0` |
 | base | `origin/master` = **`84e9348fc`** (verified `git fetch origin` + `git log --oneline -1 origin/master`) |
-| code head | `bacd07284` (later commits are evidence-only and change no source) |
+| code head | `PENDING-CODE-SHA` (later commits are evidence-only and change no source) |
 | authority bound | `dev/engineering/current-authority.json` → `as20261102r1`, content digest `sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4` (`node scripts/current-authority.mjs`, ok) |
 | Host boots | **ZERO** (the reservation stands: the P2-01 boot is the acceptance run *after* this fix) |
 | CORE PATCH BUDGET | **0** — no upstream file touched; `packages/runtime/src/plugin/live/agent-bindings.mjs` byte-identical (`sha256 df9b46af…6464b`, same as S-1/assembly/master); `packages/runtime/tsconfig.build.json` untouched (comment-free) |
@@ -44,6 +44,16 @@ Both RED messages are the leak itself: the **forbidden bytes are returned** (`CE
 `isError: false` — no typed refusal, zero facts. The GAP2b arm previously **pinned the leak as expected**
 (preset definition restored ⇒ preset serves); it now pins the opposite.
 
+The **C1** arm was likewise RED first, on the pre-fix tree (`red-c1-all-fibers.log`):
+
+```
+✖ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback
+  AssertionError: every managed read must be REFUSED after the whole shadow is torn down: INSIDE
+  false !== true
+```
+
+That is the same leak class through the all-fibers door: bytes served, no record, no deny.
+
 ## 3. The seam that was gated — `tools/pre-execute` admission (not a second policy system)
 
 `packages/runtime/team-services/src/mount.ts` already owns the realm. On a successful native attach it now
@@ -68,6 +78,14 @@ task explicitly allows, and it is typed through the same `error.info` channel th
 record (one boolean/record) and the set of names this attach covered. It evaluates **no** lane, calls **no**
 compiler, does **not** touch `EffectiveIo` (TA5's structural pin `doesNotMatch(mountSource,
 /AsyncLocalStorage|compileEffectiveIo|\.execute[=(]/)` still passes), and has no write path.
+
+**C1 (review 2026-11-03) — the invalidation GATE, not just the deny.** `verifyRoutedSurface` used to bail out
+with `if (!nativeFibers.some(f => f.state === 2)) return`: when an in-process holder disposed **every**
+returned shadow fiber, no invalidation was recorded and no deny was armed — the same leak class, reached by a
+different door. That early return is **deleted**. The row's own refusal path is not identified by fiber state;
+it detaches this verifier and clears `expectedDefinitions` *before* disposing (`disposeNativeToolModules`), so it
+does not manufacture an invalidation. Arm **P0-3** disposes the last active fiber and asserts the typed refusal
+with the bytes absent, then the record.
 
 ## 4. Order: refuse first, then dispose
 
@@ -109,7 +127,7 @@ trusted-source registry is added later.
 
 ## 7. GREEN — every arm on this tree
 
-`green-assembly-2.log` (final run after the last hardening edit): **12/12 pass**.
+`green-assembly-2.log` + `green-assembly-c1.log` (final run after the C1 fix): **13/13 pass**.
 
 ```
 ✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes
@@ -124,6 +142,7 @@ trusted-source registry is added later.
 ✔ C2 the ownership probes are disposed before the real mounts (live-effect count)
 ✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset
 ✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed)
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback
 ```
 
 ### P0-1 (the acceptance) — what it actually proves, in order
@@ -143,13 +162,23 @@ trusted-source registry is added later.
    → verification green, confined in-lane read returns `INSIDE`, and the out-of-lane read is still refused
    (eligibility returned only through a verified full assembly, and the lane did not widen).
 
+### P0-3 (C1) — the all-fibers attack
+
+The one-fiber unbound world makes "some fiber active" and "this attach is alive" disagree at once. The arm
+attaches, serves an in-lane read on the shadow, then **disposes the only returned fiber** and asserts, in this
+order: the covered `read` is REFUSED with `A5SF_NATIVE_SHADOW_INVALIDATED` and **no** `INSIDE` bytes (RED showed
+`INSIDE`, `isError:false` — the leak), the record is non-null, its `uncovered` names the lost route (`write`),
+and the other covered tool (`write`) is refused too. The record lists only `write` because `read`'s definition
+identity still matched the attach after teardown; the deny is keyed on the attach's **name set**, so both are
+refused — that is the point of denying at admission rather than on "uncovered" alone.
+
 ## 8. Gates
 
 | gate | result | raw |
 | --- | --- | --- |
 | RED arms on base `84e9348fc` | **9 pass / 2 fail** (leak reproduced, bytes returned) | `red-assembly.log` |
-| assembly suite (final tree) | **12/12** | `green-assembly-1.log`, `green-assembly-2.log` |
-| all a5sf node suites (9 files) | **101/101** (12+12+9+10+8+14+9+13+14) | `all-a5sf-node-suites.log` |
+| assembly suite (final tree) | **13/13** | `green-assembly-c1.log` |
+| all a5sf node suites (9 files) | **102/102** (13+12+9+10+8+14+9+13+14) | `all-a5sf-node-suites.log` |
 | `pnpm exec vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | p4t6 + laws (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`) | **54/54** | `law-and-p4t6.log` |
 | `pnpm typecheck` | pass | `typecheck.log` |
@@ -157,11 +186,11 @@ trusted-source registry is added later.
 | `node scripts/place-dist-glue.mjs` | done, 101 placements | `place-dist-glue.log` |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=1916 glue=101` | `check-artifacts-committed.log` |
 | `node scripts/check-artifacts-at-head.mjs` | `verdict=ok compared=1916 drift=0` — HEAD carries its own build | `check-artifacts-at-head.log` |
-| `node scripts/eb3-evidence-guard.mjs` | `pass added=18 bound=1048576 exempted=0 findings=0 base=origin/master` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-evidence-guard.mjs` | `pass added=20 bound=1048576 exempted=0 findings=0 base=origin/master` | `eb3-evidence-guard.log` |
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=9 findings=0` | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | `26/26 control(s) behaved as required` | `eb3-negative-controls.log` |
 | `git diff --check origin/master..HEAD` | clean | committed tree |
-| `pnpm ci:local` | **FAIL — whole-tree load/timeout flake; §10.1, red green in isolation** | `ci-local-summary.log` (derived; the 1.2 MB raw capture was NOT committed), `ci-local-red-isolation.log` |
+| `pnpm ci:local` | **see §10.1 — the red is a documented whole-tree timeout flake and is shown with its isolation run; the clean-tree rerun is quoted too** | `ci-local-summary-a.log`, `ci-local-summary-b.log`, `ci-local-red-isolation.log` |
 
 ## 9. p4t6 — MEASURED LAST on this tree
 
@@ -181,39 +210,60 @@ the tool said otherwise.
 
 | file | sha256 |
 | --- | --- |
-| `packages/runtime/team-services/src/mount.ts` | `39a2e04866adc7a91323eb969f2152c485b258e5da6f45db11029f6cd26104e2` |
-| `packages/runtime/dist/packages/runtime/team-services/src/mount.js` | `07769a1c5e01cd6937c610490ae4327b953a45a548df7c31e15c7546acc7efa8` |
-| `packages/runtime/dist/packages/runtime/team-services/src/mount.js.map` | `8af134a0cd32e8c2f72ac62de2f39367835b57f3ea73454a12a826cd194de14a` |
+| `packages/runtime/team-services/src/mount.ts` | `203dbd4335c02bdd2e079c9d49204649b17898c814882ffb2a97973674a3b892` |
+| `packages/runtime/dist/packages/runtime/team-services/src/mount.js` | `6e14a1474848174ac6350da73c6d56cb23c2192d97d799662d8b4935e1d61290` |
+| `packages/runtime/dist/packages/runtime/team-services/src/mount.js.map` | `bd125da26168c0559f7016c583ff8c636094e64bd8a72c5f4160cd27758f4302` |
 | `packages/runtime/dist/packages/runtime/team-services/src/mount.d.ts` | `23add3e7b6e61358bc42d73c8ff93084fb08d2c6a89c026bffe2d0955f696240` |
-| `packages/runtime/dist/packages/runtime/team-services/src/mount.d.ts.map` | `568b6b238eee6c945c2dff9d4b3964edb2cfb7336a3c942534c590228eea0491` |
-| `tests/world-factory/a5sf-assembly.test.mjs` | `d13b4a3330cca3e3c35fcc329119a955d3f9bfc3ad591a5a8753d48eb768ea8d` |
+| `packages/runtime/dist/packages/runtime/team-services/src/mount.d.ts.map` | `13a3cdb3e60a738a585d613d1b218d32fe50ab5e93e8796d8ac8ceac724d16cc` |
+| `tests/world-factory/a5sf-assembly.test.mjs` | `67219a9a48fabebd41fde38677c64c8228757d36925afed0c0178465f50840d2` |
 | `packages/runtime/src/plugin/live/agent-bindings.mjs` (UNCHANGED) | `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b` |
 
-## 10.1 `pnpm ci:local` — the verdict, verbatim
+## 10.1 `pnpm ci:local` — the verdicts, verbatim, each marked run-specific
+
+Run-specific facts (machine, load, which file won the timeout lottery) vary by run; the **code** is identical.
+Two runs of the same tree are quoted, because the reviewer asked for the honest pair rather than one lucky line.
+
+**Run A — before the evidence commit (an untracked evidence file was present).** Verdict:
 
 ```
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=275.9s
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=undetermined files=2 wall=250.9s
 [ELIFECYCLE] Command failed with exit code 1.
 ```
 
-Exit **1** (a selected check failed), **not 2** — coverage was `determined`. The failing step is the selected
-`vitest` leg: under the whole 483-file `packages/runtime` tree in one `threads` pool, **9 files / 8 tests**
-timed out (`Hook timed out in 10000ms` / `Test timed out in 5000ms`; `alpha5-glob-backend` alone took 80 s).
-This is the pre-existing ci-local load/timeout flake that S-1 and the assembly lane documented, not a
-behavioural red: the same 9 files run **alone on the SAME tree** → exit 0, **9 files / 147 tests passed**
-(`ci-local-red-isolation.log`). This diff touches `team-services/src/mount.ts` (+ its built mirror) and one
-`tests/world-factory` suite; none of the timed-out files attaches a native shadow or imports the changed
-admission path. No unmeasured pass is claimed — the L0 red stands as red, with the isolated mechanism measured.
+This run failed one whole-tree test — `a5g6-install-face-render.test.ts > GLUE-6 LEG B` — with
+`Error: Test timed out in 5000ms.` (the documented S-1/assembly whole-tree load flake; 483 files, 5993 tests,
+5992 passed). Its `coverage=undetermined` is **run-specific, not a property of the code**: ci-local classifies
+the changed-path set, and the then-untracked `dev/.../red-c1-all-fibers.log` was an unclassified path. That is
+the same trap the reviewer hit (`coverage=undetermined` only because of an untracked scratch dir). **Exit 2 /
+`coverage=undetermined` is asciidoc, never a pass** (ROUTER_RULES §9) — it obliges L1/L2 coverage, it does not
+certify anything.
 
-**Evidence bound:** the full run's raw capture is **1 201 771 B** (> the 1 MiB evidence bound), so only
-`ci-local-summary.log` (5 099 B, derived: selected steps, failing test identities, counts, verdict) is
-committed. No allowlist entry was added — the guard rejects an oversized raw capture and it stays rejected.
-
-The selected node leg on the same run is green and includes every P0 arm
-(`✔ P0-1 …`, `✔ P0-2 …`, `✔ GAP2b …`, 12/12).
+**Run B — clean committed tree at the SAME code head (`PENDING-RUN-B`).** Verdict:
 
 ```
-EB3-EVIDENCE-GUARD pass added=18 bound=1048576 exempted=0 findings=0 base=origin/master
+PENDING-RUN-B-VERDICT
+```
+
+**Isolation on the SAME tree** — the timed-out file(s) alone:
+
+```
+PENDING-ISOLATION
+```
+
+The diff touches `team-services/src/mount.ts` (+ its built mirror) and one `tests/world-factory` suite; none of
+the timed-out files attaches a native shadow or imports the changed admission path. No unmeasured pass is
+claimed: a red L0 is reported red, and the flake mechanism is measured in isolation.
+
+**Evidence bound:** the full run's raw capture is **1 216 423 B** (> the 1 MiB evidence bound), so only the
+derived summaries (`ci-local-summary-a.log`, `ci-local-summary-b.log`: selected steps, failing identities,
+counts, verdict) are committed. No allowlist entry was added — the guard rejects an oversized raw capture and it
+stays rejected.
+
+The selected node leg on Run A/B is green and includes every P0 arm (`✔ P0-1 …`, `✔ P0-2 …`, `✔ P0-3 …`,
+`✔ GAP2b …`).
+
+```
+EB3-EVIDENCE-GUARD pass added=20 bound=1048576 exempted=0 findings=0 base=origin/master
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
 DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
 EB3-CI-REQUIRED pass workflows=9 findings=0
@@ -234,7 +284,18 @@ EB3-CI-REQUIRED pass workflows=9 findings=0
 3. **`tools/change` must exist for a managed attach.** This is now a hard setup-time requirement (by design,
    fail closed). If a future host removes that public event, managed native assembly refuses at setup instead
    of degrading — the intended direction, but it is a compatibility cliff to know about.
-4. **Biggest risk for the reviewer:** the deny is keyed on the **name set this attach forwarded**
+4. **C2 (review 2026-11-03) — disposal vs. agent teardown, stated plainly.** `realm.dispose()` drops the
+   admission deny, so after it returns the preset plane serves again **on a still-live agent ctx**. This is
+   deliberate and bounded by a product invariant, not an accident: `close()` in
+   `packages/runtime/src/plugin/live/agent-bindings.mjs` awaits `handle.dispose()` for every live agent
+   **before** it awaits the `a5sfRealmDisposers` this realm registered, so a realm is never disposed while its
+   Member's agent ctx is live. A caller that disposes the realm itself and keeps dispatching on the same live
+   agent ctx (the suite's test worlds do exactly this) is outside the managed-Member lifecycle and will reach
+   the preset. The re-assembly arm (P0-1 step 8) pins the supported route — dispose, then mount a NEW realm and
+   attach again with verification. There is no in-process marker that could make the disposed realm deny on
+   behalf of a Member that no longer exists; adding one would require a durable/agent-level owner, i.e. a change
+   to `agent-bindings.mjs` that this lane's budget forbids.
+5. **Biggest risk for the reviewer:** the deny is keyed on the **name set this attach forwarded**
    (`expectedDefinitions`). If a covered tool is later REMOVED from the surface before invalidation, the
    admission deny still names it (harmless: the tool is invisible). If a tool the attach **never forwarded**
    (an unmanaged preset tool) is the one that becomes dangerous, it is out of scope by construction — this lane

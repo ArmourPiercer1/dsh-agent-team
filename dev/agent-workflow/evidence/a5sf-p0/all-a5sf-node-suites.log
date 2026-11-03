@@ -1,4 +1,4 @@
-tests/world-factory/a5sf-assembly.test.mjs: ℹ tests 12 ℹ pass 12 ℹ fail 0
+tests/world-factory/a5sf-assembly.test.mjs: ℹ tests 13 ℹ pass 13 ℹ fail 0
 tests/world-factory/a5sf-evidence.test.mjs: ℹ tests 12 ℹ pass 12 ℹ fail 0
 tests/world-factory/a5sf-f1-ctx.test.mjs: ℹ tests 9 ℹ pass 9 ℹ fail 0
 tests/world-factory/a5sf-harness.test.mjs: ℹ tests 10 ℹ pass 10 ℹ fail 0

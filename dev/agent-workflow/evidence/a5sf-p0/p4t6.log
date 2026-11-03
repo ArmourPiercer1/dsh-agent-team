@@ -1,9 +1,0 @@
-
- RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p0
-
- ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 15ms
-
- Test Files  1 passed (1)
-      Tests  20 passed (20)
-   Start at  04:07:51
-   Duration  763ms (transform 102ms, setup 0ms, import 589ms, tests 15ms, environment 0ms)
