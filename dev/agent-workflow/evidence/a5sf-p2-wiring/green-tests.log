@@ -1,0 +1,147 @@
+# GREEN — a5sf P2 wiring, review-response head (dated 2026-11-03, real UTC at authoring).
+# Host-free: no Host boot, no port, no DSH_HOME, no tests/homes write.
+
+$ pnpm -r typecheck 2>&1 | tail -12
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+[exit=0]
+
+$ pnpm -r build 2>&1 | tail -12
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+[exit=0]
+
+$ node scripts/place-dist-glue.mjs 2>&1 | tail -3
+place-dist-glue: packages/tools/agent-state-family/src/fs-state-store.mjs -> packages/runtime/dist/packages/tools/agent-state-family/src/fs-state-store.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/a5sf-realm-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs (byte-identical)
+place-dist-glue: done (101 placement(s))
+[exit=0]
+
+$ git add -A && node scripts/check-artifacts-committed.mjs 2>&1 | tail -2
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
+[check-artifacts-committed] OK: 1916 files — working tree equals the git INDEX for both install surfaces (incl. 101 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+[exit=0]
+
+$ node --test tests/world-factory/a5sf-p2-wiring.test.mjs 2>&1 | tail -10
+✔ W7 no unexpected file: the unconfigured helper writes nothing under a scanned evidence tree, and carries no path literal (0.720234ms)
+✔ W8 row disposer: synchronous entry, settlement awaitable, rejection reported (never unhandled) (0.357026ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 150.670196
+[exit=0]
+
+$ node --test tests/world-factory/a5sf-p2-seam.test.mjs 2>&1 | tail -9
+✔ A8 cross-process: a CHILD process mounts the realm and THIS process reads its consultations (235.756999ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 527.935545
+[exit=0]
+
+$ node --test tests/world-factory/a5sf-harness.test.mjs 2>&1 | tail -9
+✔ diagnostics: classifyFailure delegates to the PR #394 tool, and keeps a5sf codes in their own vocabulary (5.699019ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 255.632249
+[exit=0]
+
+$ node --test tests/world-factory/a5sf-evidence.test.mjs 2>&1 | tail -9
+✔ A12 an unknown row kind is a named INVALID (never silently dropped), while failure rows are tolerated (214.420607ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1410.714815
+[exit=0]
+
+$ node --test tests/world-factory/a5sf-read-gate.test.mjs 2>&1 | tail -9
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.199969ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 572.517667
+[exit=0]
+
+$ ./node_modules/.bin/vitest run a5sf 2>&1 | tail -5
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+   Start at  13:03:40
+   Duration  1.39s (transform 2.40s, setup 0ms, import 3.07s, tests 1.26s, environment 1ms)
+
+[exit=0]
+
+$ ./node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts 2>&1 | tail -5
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  13:03:42
+   Duration  483ms (transform 64ms, setup 0ms, import 380ms, tests 9ms, environment 0ms)
+
+[exit=0]
+
+$ node scripts/eb3-ci-required.mjs 2>&1 | tail -2
+EB3-CI-REQUIRED pass workflows=9 findings=0
+[exit=0]
+
+$ node scripts/eb3-ci-negative-controls.mjs 2>&1 | tail -2
+
+24/24 control(s) behaved as required
+[exit=0]
+
+$ git diff --check; echo diff-check-exit=$?
+diff-check-exit=0
+[exit=0]
+
+$ cd packages/runtime/dist && node ../../../dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs "$(pwd)"
+mount root ctx constructor       : FsDouble
+agent row ctx -> outside         : ALLOWED:"outside\n"
+realm member ctx constructor     : TeamConfinedFileSystem
+realm member ctx -> outside      : IO_READ_DENIED
+realm binding ctx constructor    : TeamConfinedFileSystem
+realm binding ctx -> outside     : IO_READ_DENIED
+agent row ctx -> allowed file    : ALLOWED:"ok\n"
+sink exists / facts              : true / 2
+sink attribution                 : the facts above are the probe’s OWN two realm-ctx reads; the agent-row-ctx read (outside ALLOWED) contributed ZERO
+VERDICT                          : the mount lands in a SIBLING isolate; the agent row ctx keeps the BASE Provider (ALLOWED), so a product row consuming agentCtx produces ZERO consultations.
+[exit=0]
+
