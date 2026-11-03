@@ -48,6 +48,14 @@
 | BL-19 | P2-06 原生 `run_code/PTC`（Node 子进程 + 受控 Host bridge，无代发旁路） | READY | `a5sf-ptc.mjs` |
 | BL-20 | P2-07 全新第三方 CLI（通用 launcher，零专用 ToolDefinition 执行体） | READY | `a5sf-new-cli.mjs` |
 
+> **外部独立审查裁决（2026-11-03，用户转达；本裁决优先于下述各段的历史判断）**：
+> 1. **撤回「BL-22 唯一归宿 = Core Patch」**。#555 的 `CORE_SEAM_BLOCKER` 结论**过强**：它正确证明了「路线 A（`presets.mount(agentCtx)` 改变已装载工具作用域）不可行」，但错误地推广成「原生工具受限必须改 Core」。**路线 C**——在受限 scope 下**重新装载原生工具模块本身**（`iso = agentCtx.isolate('fs'); iso.provide('fs', confined); await iso.plugin(await import(TOOLFS_URL))`）——已在旧 [A5-XENV PoC](evidence/a5x-envpoc-20261031T170133/A5-XENV-VERDICT.md)（`tests/kits/a5x-envpoc/a5x-probe2.mjs` @ `18e3823e3`）于**真实 Host** 上验证：原生 `read/write` 的模型调用命中重挂载的定义、经过受限 provider、越界被拒、未改 Core。**BL-22 改为：优先复用该已验证的公开接缝；只有在重挂载在当前构建确证不可行时，才审查小规模基础设施插件 Fork（用户已预批准），仍不得直接触碰 Core。**
+> 2. **两轴约束必须都落地**：当前 F1 消费 `realm.installation.members[0].ctx`，只落 **MemberCeiling** 一轴；产品合同是 `EffectiveIo(m,t) ⊆ MemberCeiling(m) ∩ ToolRestriction(m,t)`。P1 已生成更窄的 binding realm，下一步让**实际调用消费对应 ToolBinding 的约束**，不新造权限系统。
+> 3. **「未配置 realm」≠「受管但配置缺失」**：现装配以 `a5sfEvidencePath` + provider 二者存在为开关，缺一即回 Base。这是测试期可接受的 feature flag，**生产语义必须区分**：非受管/明确旧模式→原路径；受管且安装成功→受限 provider；**受管但策略/Provider/安装缺失→拒绝受管执行，不得回退 Base**。证据文件路径不得成为是否启用安全强制的唯一开关。
+> 4. **F1-8 的源码片段匹配只是回归哨兵**，不得升级为「架构层禁止 try/catch」的长期规则；真正的测试应是「在真实装配入口注入畸形 realm，整个受管 setup 失败且无模型可调用工具以无约束方式暴露」。
+> 5. **boot 排序调整**：① 1 次 boot 完成 F1 实体验证（Team Tool Plane 拒绝并记录 consulted；原生 read 仍走 Base——这是**旁路基线记录**，不是验收成功）；② 优先复核 BL-22 路线 C；③ 原生工具 × ToolBinding 实际绑定；④ 之后才做 P2-01/02/03 的 C2 验收。**当前 3 次 F1 预算只用 1 次**，其余转入路线 C 与绑定验收。
+> 6. **风险趋势**：若连续多轮只完善 Team 自有工具面而原生工具仍走 Base，会重新形成两套执行体系 —— 这正是 Sandbox-First 要避免的。**下一轮的首要工作是把原生工具接入真实产品执行路径。**
+>
 > **P2 统一前置（2026-11-03 实测；PR #548 后状态更新）**：缺口（b）「guard 咨询不可观测」已作为**机制**闭合（`onGuardConsult` 观察者 + `a5sf-guard-consult/1` 事实 + 跨进程 JSONL 传输 + `mountA5sfRealm` 单一挂载入口，子进程pid 证明真实跨进程）；缺口（a）**部分闭合**：入口存在且被真实调用者（R2 harness）使用，但产品行仍未接线。剩余工作已实测为**多于一个调用点**：（1）`packages/runtime/src/plugin/live/agent-bindings.mjs` 成员装配回调接线；（2）emit 入列（`packages/runtime/tsconfig.build.json` 目前 **不含** `team-services/src` 与 `member-io-policy/src`）+ `scripts/dist-placements` 布局；（3）重新生成并**提交** `packages/runtime/dist`（该树受 `check-artifacts-committed` 新鲜度门约束）；（4）真实 Host 运行 + 用户 boot 预算裁决（池仍 0）。
 >
 > 原缺口描述（2026-11-03 首测）：所有 P2 纵切的真实 Host 半场都被同一对缺口卡住 ——（a）`installMemberIoProviders`/`installToolBindingRealm` **没有生产调用者**，a5sf realm 在已启动 Host 中是惰性的；（b）`installToolBindingRealm` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点向上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 断言的“经 Provider 读取/guard 已咨询”都只是 driver 自述。boot 预算池仍为 0，live 运行需用户新裁。
