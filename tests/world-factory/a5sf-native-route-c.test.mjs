@@ -748,7 +748,20 @@ test('N8 duplicate scope namespaces: the attach takes the canonical runtime Agen
 
   const root = new Context()
   const surface = new Map()
-  root.provide('tools', { schemas: (scope) => surface.get(scope) ?? [] })
+  // ASSEMBLY GAP 2 (2026-11-03): a surface-only double is no longer enough once
+  // the composition DECLARES managed native modules — the row now refuses a
+  // tools row that cannot answer definition identity (`tools.get`), because a
+  // name-set-only check cannot prove the router shadowed each forwarded tool.
+  // N8 measures SCOPE resolution, not coverage, so the double answers identity
+  // too: the fake mount swaps the resolved definition (the coverage gate's
+  // positive signal) exactly as a real router would.
+  const presetRead = { name: 'read', description: 'preset read (N8)' }
+  const routedRead = { name: 'read', description: 'routed read (N8)' }
+  const definitions = new Map([['read', presetRead]])
+  root.provide('tools', {
+    schemas: (scope) => (surface.get(scope) ?? []),
+    get: (name) => definitions.get(name),
+  })
   const agentKey = { member: 'n8' }
   const agentCtx = duplicate.createScope(root, agentKey).ctx
 
@@ -765,7 +778,18 @@ test('N8 duplicate scope namespaces: the attach takes the canonical runtime Agen
   const realm = {
     mountNativeToolModules: async (modules) => {
       mounted = modules
-      return Object.freeze([{ dispose: async () => {} }])
+      definitions.set('read', routedRead)
+      return Object.freeze([{
+        a5sfRegistrationRouting: {
+          realm: 'ceiling',
+          toolBindingIdentity: null,
+          forwarded: Object.freeze(['read']),
+          observed: Object.freeze(['read']),
+          dropped: Object.freeze([]),
+          forwardedSections: Object.freeze([]),
+        },
+        dispose: async () => {},
+      }])
     },
   }
 

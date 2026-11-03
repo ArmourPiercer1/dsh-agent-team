@@ -107,6 +107,39 @@ export interface NativeToolModuleMount {
      * (fail closed) — never a silent fallback onto the wider ceiling.
      */
     readonly toolBindingIdentity?: string;
+    /**
+     * ASSEMBLY GAP 1 (2026-11-03) — OBSERVATION-ONLY mount.
+     *
+     * A binding may only be assigned to the native module that actually OWNS the
+     * tool its identity names, and a module does not declare its tools: the only
+     * honest source is what its `apply` registers. This flag mounts the module in
+     * the CEILING partition behind a router that FORWARDS NOTHING and records the
+     * names it would have registered (`a5sfRegistrationRouting.observed`). The
+     * live registry is untouched (no tool/section is registered), the fibers are
+     * NOT tracked by the realm (the caller disposes them), and the mount performs
+     * no post-settle verification because it creates no shadow.
+     *
+     * Observe-only and normal mounts cannot be mixed in one call, and an
+     * observe-only mount cannot name a binding identity (ownership is what the
+     * observation is for).
+     */
+    readonly observeOnly?: boolean;
+}
+/**
+ * Post-settle INVALIDATION event (assembly gap 2, 2026-11-03).
+ *
+ * A routed tool was found on a definition this attach did not create AFTER the
+ * mount settled — a late service arrival, a hot update, or a fiber teardown
+ * left it on the unshadowed preset path. The realm disposes every router fiber
+ * it created (restoring the preset surface) and records this event instead of
+ * leaving a live, unconstrained shadow.
+ */
+export interface NativeToolInvalidation {
+    readonly schema: 'a5sf-native-invalidation/1';
+    readonly reason: string;
+    /** The managed (routed) tool names that are no longer shadowed by this attach. */
+    readonly uncovered: readonly string[];
+    readonly observedAt: string;
 }
 /**
  * S-1 routing receipt: what ONE router fiber forwarded and dropped, by name.
@@ -120,6 +153,12 @@ export interface NativeRegistrationRouting {
     readonly toolBindingIdentity: string | null;
     /** Tool names this fiber registered on the real `tools` service. */
     readonly forwarded: readonly string[];
+    /**
+     * EVERY tool name the module attempted to register through this fiber — the
+     * union of `forwarded` and `dropped`. An observe-only mount reports its
+     * ownership answer here (`forwarded` is empty: nothing was registered).
+     */
+    readonly observed: readonly string[];
     /**
      * Registration keys this fiber dropped because they belong to another fiber:
      * tool names, and `section:<name>` for the prompt sections it declined.
@@ -159,9 +198,39 @@ export interface MountedA5sfRealm {
      * Member ceiling realm and forwards every tool that has no mounted binding.
      * The union is the module's surface, exactly once, so this remains
      * surface-neutral per fiber.
+     *
+     * ASSEMBLY GAP 1 (2026-11-03): `options.scope` is the RESOLVED agent scope
+     * key the caller already uses for its surface reads. It is REQUIRED to make
+     * the post-settle re-verification able to ask `tools.get(name, scope)` which
+     * definition the agent now resolves; without it the mount still works, but no
+     * definition-identity verification can be scheduled (the caller must then
+     * cover that itself — the product row always passes it).
      */
-    mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>;
+    mountNativeToolModules(modules: readonly NativeToolModuleMount[], options?: NativeToolModuleMountOptions): Promise<readonly Fiber[]>;
+    /**
+     * ASSEMBLY GAP 2 — the invalidation event recorded when a post-settle
+     * re-verification found a routed tool back on an unshadowed definition.
+     * `null` while the mount is healthy (or before anything was mounted).
+     */
+    readonly nativeInvalidation: NativeToolInvalidation | null;
+    /**
+     * Resolves once the bounded post-settle re-verification rounds have run (or
+     * an invalidation fired and its teardown settled). Diagnostics/tests only.
+     */
+    whenNativeVerificationSettled(): Promise<void>;
+    /**
+     * The caller's OWN refusal/abandonment of a successful attach (surface or
+     * coverage gate): detach verification, dispose every router fiber, clear the
+     * tracked set, and do NOT record an invalidation (the caller reports the
+     * refusal). Unlike an invalidation this leaves a later attach possible.
+     */
+    disposeNativeToolModules(): Promise<void>;
     dispose(): Promise<void>;
+}
+/** Options for {@link MountedA5sfRealm.mountNativeToolModules}. */
+export interface NativeToolModuleMountOptions {
+    /** The resolved agent scope key (`runtimeAgent ?? scopeOf(root)`). */
+    readonly scope?: unknown;
 }
 /**
  * Mount one Member's compiled realm (ceiling + zero or more binding realms).
