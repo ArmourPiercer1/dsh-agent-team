@@ -1,0 +1,63 @@
+$ node scripts/ci-local.mjs
+
+▶ docs:probe
+docs:probe base=origin/master head=961733981 changed=16 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=0 contracts=20 pairs compared
+✔ docs:probe (0.3s)
+
+▶ docs:sync --check
+docs:sync --check: docs=111 notes=4 plans=74(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261102r1.json","snapshot_version":"as20261102r1","content_digest":"sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+✔ docs:sync --check (0.2s)
+
+▶ ci shape (eb3-ci-required)
+EB3-CI-REQUIRED pass workflows=9 findings=0
+✔ ci shape (eb3-ci-required) (0.1s)
+
+▶ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+✔ pnpm typecheck (12.9s)
+
+▶ node --test (selected)
+✔ TA1 one realm per Member AND one per ToolBinding; the product tool-plane naming addresses the MEMBER realm only (10.137732ms)
+✔ TA2 SEAM: a call the CEILING allows but the read RESTRICTION denies is ALLOWED by the native execution path (regression sentinel) (14.98011ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (11.435791ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (3.372324ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.182806ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (2.947981ms)
+✔ TA5 structural pin: the native attach targets installation.members[0].ctx and no product source addresses realm.bindings for execution (0.997649ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 320.35876
+✔ node --test (selected) (0.4s)
+
+DSH-CI-LOCAL verdict=pass steps=5 failed=0 coverage=determined files=1 wall=13.9s
+EXIT=0

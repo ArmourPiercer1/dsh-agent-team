@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-tool-axis
+
+ ✓ packages/runtime/test/a5sf-invocation.test.ts (20 tests) 8ms
+ ✓ packages/runtime/test/a5sf-trust-registry.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5sf-terminal-lifecycle.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/a5sf-path-rules.test.ts (32 tests) 29ms
+ ✓ packages/runtime/test/a5sf-provider-composition.test.ts (9 tests) 25ms
+ ✓ packages/runtime/test/a5sf-service-install.test.ts (16 tests) 86ms
+ ✓ packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts (21 tests) 81ms
+ ✓ packages/runtime/test/a5sf-os-runner.test.ts (9 tests) 403ms
+ ✓ packages/runtime/test/a5sf-member-policy.test.ts (16 tests) 151ms
+ ✓ packages/runtime/test/a5sf-subprocess-contract.test.ts (3 tests) 562ms
+ ✓ packages/runtime/test/a5sf-approval-takeover.test.ts (23 tests) 87ms
+
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+   Start at  22:32:02
+   Duration  1.51s (transform 2.69s, setup 0ms, import 3.47s, tests 1.45s, environment 1ms)
+
+EXIT=0
