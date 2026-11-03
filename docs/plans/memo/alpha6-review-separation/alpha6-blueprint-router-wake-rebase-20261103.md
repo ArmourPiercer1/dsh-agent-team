@@ -123,7 +123,7 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
                                (Alpha.5 Tool/IO hard ceilings unchanged)
 ~~~
 
-1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；**与 ReviewCapabilityEvaluator 共用唯一 BlueprintReviewPolicy**，输入来自冻结 Blueprint、实际 OperationOwner 的 MemberTemplate/可信 Tool、当前 leg、唯一 `currentOfficer`（0/多实例 → `hold`）和少量显式转交事实；输出带具体 `instanceId` 的当前处理者/native-human/无待办/hold/不可路由及原因。不得接管消息排队或 allow。
+1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；**与 ReviewCapabilityEvaluator 共用唯一 BlueprintReviewPolicy**，输入来自冻结 Blueprint、实际 OperationOwner 的 MemberTemplate/可信 Tool、当前 leg、唯一 `currentOfficer` 和少量显式转交事实；输出带具体 `instanceId` 的当前处理者/native-human/无待办/hold/不可路由及原因。`currentOfficer` 的 0/多实例不能一律当 Unavailable：多 active 实例、template 不匹配、从未合法创建 → 配置/准入歧义 `hold`；有合法创建/admission 历史，且当前 row `ARCHIVED`/`DISPOSED` 或缺失 → 进入 Blueprint `hold`/`leader` 策略；crash/无 live agent/恢复中 → `hold` 且 reason=`officer-availability-unconfirmed`，不自动转交。不得接管消息排队或 allow。
 2. **ReviewWakeCoordinator**：对接收者的待办变化进行激活、实时权威状态重读、单飞锁存和必要通知；不持有审批权威或新的路由配置。
 3. **ReviewAccessAdapter（薄适配层）**：让专职 Officer 仅读取其合法待办，并由 ReviewCapabilityEvaluator/ControlService 在提交前验证可信候选、决议时同行写能力证据、执行时通过既有 PA/Grant/Guard 重新检查。首版不提供 Leader 的完整管理能力。
 
@@ -137,7 +137,8 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
 | 4 | 当前 leg 已有有效的 Handoff/合法故障接管覆盖 | 已覆盖接收者 |
 | 5 | **实际 OperationOwner** 的 templateId == `officerTemplateId`（Officer 自己的普通 ask） | Leader（防自等待；不交回 Officer） |
 | 6 | Blueprint 中**实际 OperationOwner** 的 MemberTemplate × 可信 Tool 显式 Leader 例外 | Leader |
-| 7 | **Officer 不可用**（仅 TeamDomain lifecycle `ARCHIVED` / `DISPOSED` 或 member row 缺失；Busy/crash/未恢复不算） | 依该 Blueprint 的 hold / leader 策略；不自动 allow；`hold` 时保留待办并报异常 |
+| 7 | **Officer 不可用**（有合法创建/admission 历史，且当前 row lifecycle `ARCHIVED`/`DISPOSED` 或缺失；Busy 不算） | 依该 Blueprint 的 hold / leader 策略；不自动 allow；`hold` 时保留待办并报异常 |
+| 7a | **Officer 状态不可判定**（无创建记录、多 active 同模板实例、template 不匹配、crash/恢复中/无 live agent） | `hold`；原因区分 `officer-not-admitted` / `officer-ambiguous` / `officer-availability-unconfirmed`；**不自动 Leader 接管** |
 | 8 | 其余可委托的日常工具 ask（且 Officer 可用；current leg `reviewAuthority='leader'`、`kind='leader-approval'`、普通工具闭集） | 专职 Officer |
 | 9 | 其余不可委托 leg（member-rung / human-user / 固定 Leader-Human 之外的非法组合） | 原生 resolver，或 `hold`/不可路由；**不得投给 Officer** |
 
@@ -152,7 +153,7 @@ type ReviewRoute =
         | { kind: 'instance'; instanceId: string; templateId: string; routeRole: 'officer' | 'leader' }
         | { kind: 'native-human' }; // Human 没有 Agent session，不发 Agent wake
       reason: string; currentLegId: string }
-  | { kind: 'hold'; reason: string; currentLegId: string } // 保留待办，等恢复/人工处理
+  | { kind: 'hold'; holdReason: 'officer-not-admitted' | 'officer-ambiguous' | 'officer-availability-unconfirmed' | 'config-invalid'; reason: string; currentLegId: string } // 保留待办，等恢复/人工处理
   | { kind: 'no-work' }
   | { kind: 'unroutable'; reason: string };
 

@@ -104,7 +104,7 @@ interface ReviewCapability {
 
 1. Reviewer 的真实实例、Template、Session 来自运行时可信身份绑定；`operationOwner` 来自本次工具操作对应的可信 Member/PA manifest；`requester` 仅表明谁提交了请求。三者可能不同，不得以 requester、tool owner、label、自由文本摘要替代操作所属 Member 的 Template。Member 委托还要求 `currentOfficer` 存在、`reviewerMember.instanceId === currentOfficer.instanceId`、`reviewerMember.templateId === currentOfficer.templateId`；缺失或有多个同模板实例时 fail closed，而不是任选一个。
 2. 普通工具委托**必须**可确认实际 `operationOwner.templateId × operationTool`；若此事实在旧式行中无法可靠建立，Officer 委托 fail closed，而 Leader/现有 Human 路径仍按旧规则工作。Blueprint 作者面的 `{owner,name}` 由 `BlueprintReviewPolicy` 映射到可信 `ToolBinding` 的 `providerId` / `toolName` / `definitionIdentity`；无法唯一映射时 fail closed，不能靠字符串猜测。
-2b. **普通工具 ask 是闭集**：`kind='leader-approval'`、无 `requestedEffect`/`mutationProposalFingerprint`、`operationTool` 可确认、所有 per-effect `requiredAuthority` ≤ `leader`、且不是固定 Leader 管理类别或 Human-only 类别。`user-approval` 与 `envelope-mutation` **永不委托**，无论 leg 的 `reviewAuthority` 是什么；任一事实不可确认即 fail closed。该谓词必须由 PR1 的唯一 `isDelegableOrdinaryToolAsk()` 实现（作为 `BlueprintReviewPolicy` 的一部分），PR2a 的求值器与 Router 共用；否则 PR1 的 Router 无法在 PR2a 之前独立工作。
+2b. **普通工具 ask 是闭集（Operation Case，不是 mutation case）**：`kind='leader-approval'`、**`requestedEffect` 必须是合法 closed overlay effect**、`operationFingerprint` 存在、`mutationProposalFingerprint` 不存在、`authorityScope` 存在、`operationTool` 可确认、所有 per-effect `requiredAuthority` ≤ `leader`、且不是固定 Leader 管理类别或 Human-only 类别。`user-approval` 与 `envelope-mutation` **永不委托**，无论 leg 的 `reviewAuthority` 是什么；任一事实不可确认即 fail closed。**不得用 `requestedEffect` 的缺失判断“不是持久权限变更”**：Alpha.4 的 `ApprovalCaseIdentity.requestedEffect` 是 Operation Case 的必填字段，缺失会被 `caseIdentityProblemOf()` 拒绝，按“缺失”筛选会把所有合法普通工具 Case 排除。该谓词必须由 PR1 的唯一 `isDelegableOrdinaryToolAsk()` 实现（作为 `BlueprintReviewPolicy` 的一部分），PR2a 的求值器与 Router 共用；否则 PR1 的 Router 无法在 PR2a 之前独立工作。
 3. Blueprint 的 Leader 例外、固定 Leader 专属管理类别、Human-only 和 Officer 自身 ask 是**委托资格排除项**。路由投给 Leader 的这些案件不得同时被 Officer 授权；若默认 Officer 的 Case 已有效 Handoff/接管至 Leader，则原 Officer 也不得再签该 leg。
 4. 同一 MemberTemplate 的所有实例初始规则一致；当前 Blueprint 不定义 Instance 级规则。额外的运行时路由修改是未来功能，不在本轮实现。
 5. `reviewCapability` 不接收任何由模型或客户端传入的证明字段作为权威。
@@ -200,7 +200,11 @@ interface CurrentLegTransfer {
 ~~~
 
 - **Officer-Handoff**：Officer 判断该 leg 需要 Leader 全局信息，主动请求，核实当前 leg/Actor 后记录。
-- **Unavailable-Takeover**：Officer 不可用且绑定的 Blueprint 已显式配置 `whenOfficerUnavailable: leader`，**由可信 Team Runtime 发起**，不要求已经不可用的 Officer 签发 Handoff。`Unavailable := TeamDomain lifecycle ∈ {ARCHIVED, DISPOSED}，或 member row 缺失`；`ARCHIVED` 可按既有 restore 恢复，`DISPOSED` 不可恢复。crash/“未恢复”/无 live agent/active turn/backlog 一律按 Busy/degraded 处理，默认 `hold`，不自动触发 Leader 接管；若未来需要 crash 接管，必须先有具名 durable exit fact 并另立决策，不在本轮偷加。`hold` 保留待办并报告异常。
+- **Unavailable-Takeover**：Officer 不可用且绑定的 Blueprint 已显式配置 `whenOfficerUnavailable: leader`，**由可信 Team Runtime 发起**，不要求已经不可用的 Officer 签发 Handoff。状态必须区分：
+  - **Unavailable**：现有 TeamDomain member/admission 历史证明该 `officerTemplateId` 曾被合法创建，且当前 member row lifecycle ∈ `{ARCHIVED, DISPOSED}`，或当前 member row 缺失但历史记录仍在；此时按 Blueprint 的 `hold`/`leader` 策略处理。`ARCHIVED` 可按既有 restore 恢复，`DISPOSED` 不可恢复。
+  - **配置/准入故障**：没有该 Officer 的合法创建记录、同时存在多个 active 同模板实例、或 templateId 不匹配 → fail closed / `hold`，**不得任选实例，也不得按 Unavailable 自动转交**。
+  - **未确认可用性**：crash、无 live agent、正在恢复、暂时不可达等不能证明 durable terminal lifecycle 的情况 → `hold`，reason 明确为 `officer-availability-unconfirmed`；这与正常 Busy 不同，但本轮都不自动触发 Leader 接管。若未来需要 crash 接管，必须先有具名 durable exit fact 并另立决策。
+  `hold` 保留待办并报告异常。
 - 两者均在可信 Team/Control 锁下验证当前 leg 仍待审、起始归属与目标合法，**同一 leg 的重复转交幂等**；只影响当前 leg，不能自动抢回；新 leg 重新按 Blueprint/有效权限计算。转交成功后新接收者需得到合并唤醒，旧接收者不能再以 Blueprint 委托签署此 leg。
 - Handoff/接管不改变 `reviewAuthority` rung，不增加任何 Principal 的 native role 能力，也不是 `escalateApprovalLeg`；Leader 按其已有原生合法权限审批。其唯一持久记录用于当前 leg 的路由覆盖与禁止旧 Officer 重签。
 - 这可采用一个最小 TeamDomain/Control 事实，不要求通用 Assignment Ledger、定时工作流或二次授权事务。
@@ -245,11 +249,11 @@ interface CurrentLegTransfer {
      用终态 leg 的真实 decision 配对后最多执行一次
 ~~~
 
-1. **身份桥接（禁止第二账本）**：PA EffectSet 的逻辑 ID（`tadm:...`）与 Control 的 durable `approvalCaseId`（`case-...`）属于不同身份域，不要求字符串相等。契约如下：
-   - 在既有 Control request/leg 行增加加法式 `paApprovalCaseId?: string`，由 PA adapter 写入，值 = `plan.approvalCaseId`；
-   - 在既有 PA approval-case/bridge 记录增加**可选加法式** `controlApprovalCaseId?: string`，由 adapter 在 Control leg 创建后写回；若最终落在严格的 `PaControlManifest` 上，必须使用加法版本且旧 manifest 字段/摘要语义不变，缺失时按 legacy 解释；
-   - 两侧必须一一对应、可读回、可审计；任一缺失或冲突即 fail closed；
-   - **不得新建 mapping table/association ledger**；若实现确实需要新表，停止并先做架构裁决。只有与原工具调用完全一致的参数/Tool/Member/EffectSet/权限代际才能复用当前 Case。
+1. **身份桥接（单一权威，禁止第二账本）**：PA EffectSet 的逻辑 ID（`tadm:...`）与 Control 的 durable `approvalCaseId`（`case-...`）属于不同身份域，不要求字符串相等。契约如下：
+   - **Control durable request/leg 是唯一权威关联来源**：在既有 Control leg 行增加加法式 `paApprovalCaseId?: string`，值 = `plan.approvalCaseId`；该字段只是关联元数据，**不参与 `approvalCaseId` 派生、`reviewPayloadDigest` 或 PA manifest digest**；原始严格 `reviewPayload`/`reviewPayloadDigest` 与冻结身份仍随该 leg 保存；不得把 Control Case ID 写回参与原始 digest 的 PA manifest。
+   - **PA Bridge 仅在当前调用上下文保存** `requestApprovalLeg` 返回的 Control `approvalCaseId`，用于本次等待/Guard 配对；不新增 PA 侧持久字段、不新增映射表。原工具调用不能自动跨重启恢复，因此恢复路径从 Control durable facts 重建关联，不需要 PA 侧持久反查。
+   - 若工程确需 PA 侧缓存，只能是**非权威、非 durable、位于 manifest/digest 之外**的缓存，并须证明旧 manifest 摘要不变；不能满足则停止并先做架构裁决。
+   - 只有与原工具调用完全一致的参数/Tool/Member/EffectSet/权限代际才能复用当前 Case。
 2. **完整 current leg 与 manifest**：A6 启用的工具 ask 必须通过 `requestApprovalLeg`（或同一合法 Case/leg 创建路径）启动，首 leg 是正式 Control Case；不得用 legacy `requestControl` 创建无 leg 请求后再补写 leg。Escalation 写 successor 时不得丢失原始严格 PA manifest 的校验来源；可由前一 leg 的已验证 immutable 来源引用并检查 digest，也可按严格恒等约束传播，选择由 PR2b 工程确定。原始 operation fingerprint、effect set、ToolBinding、OperationOwner、authorityGeneration、scope、correlation 与 cancellation identity 均不得被升级重新定义。
 3. **等待最终 Case 结果**：PA 桥按 durable Case 当前 leg 读取升级链；对中间 leg 的 deny/escalated **继续等待**，而不是当作最终工具 deny。以最终合法 allow/deny/authority-unavailable/取消等实际结局完成原工具调用；不自动发起第二次工具请求。复用现有 durable polling/AbortSignal，**不新增 timer、调度器或第二套执行引擎**。Escalation 的 Human leg 应通过既有 Human 可处理的入口被发现/通知。
 4. **最终决议及 Guard 配对**：Grant 依据的是本 Case 的**最终有效 allow leg**。如 Human 允许，则使用 Human 的真实 decider 与该 Human leg 的正确 requestId、decisionSequence 和对应的 native 审批能力，仍须验证它与原工具调用的精确 EffectSet/Scope/Tool/参数/代际相匹配。Guard 不再把被 escalated 的 initialRequestId 误当作最终批准的 requestId；不得为了跨 leg 配对放松原有 one-shot 配对与硬上界法律。
