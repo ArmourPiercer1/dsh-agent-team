@@ -37,6 +37,23 @@
     "../tools/fs-family/src",
     "../tools/process-family/src",
     "work-completion-notification",
-    "policy-adapter.ts"
+    "policy-adapter.ts",
+    // Alpha.5 P2 wiring: the ONE a5sf realm mount entry point + the guard
+    // consultation transport. The product row
+    // (`src/plugin/live/agent-bindings.mjs`, plain JS, never emitted by tsc)
+    // deep-imports these two modules at RUNTIME, so — unlike the P1-05 lane
+    // before this — their compiled bytes must exist in dist. Enrolment is
+    // deliberately by FILE, not by directory: `mount.ts` pulls exactly its
+    // own import closure (`install.ts` -> `fs.ts`/`types.ts` ->
+    // `member-io-policy/src/{types,path-rules,provider-capabilities}.ts`),
+    // which is the minimal set the built runtime needs. The lane barrel
+    // (`team-services/src/index.ts`) and `manifest.ts` are NOT enrolled: the
+    // row never imports them, and `manifest.ts` would drag the cordis
+    // loader/include plugin surfaces into the product emit. The
+    // member-io-policy compiler (`compile.ts`) is likewise absent by
+    // construction: it is type-only for this closure and its runtime imports
+    // cross into `packages/domain`, which this emit does not carry.
+    "team-services/src/mount.ts",
+    "team-services/src/guard-observability.ts"
   ]
 }

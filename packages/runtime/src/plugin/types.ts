@@ -215,6 +215,20 @@ export interface TeamPluginConfig {
   /** The denied model selection of the world (null when none). */
   readonly deniedSelection: Record<string, unknown> | null
   /**
+   * Alpha.5 P2 WIRING (this round, optional): the JSONL path the a5sf
+   * guard-consult evidence sink appends to. It comes from the RUN/evidence
+   * configuration the operator boots with — the glue never derives, invents
+   * or hardcodes it. Enablement law: the wiring is active ONLY
+   * when this key is present AND the row composition provides the optional
+   * `teamA5sfRealm` service (the compiled-realm provider). Either half absent
+   * = the legacy path byte-for-byte: no provider call, no realm mount, no
+   * sink, no file write. A present non-blank string that points outside the
+   * runner's evidence directory is the operator's call — this entry does not
+   * sandbox the path, it only transports. The file's parent directory must
+   * already exist; a write failure fails the guarded call closed.
+   */
+  readonly a5sfEvidencePath?: string
+  /**
    * The MCP server of the world (null port = not mounted). LEGACY 0|1
    * form — multi-mcp C7: still accepted during this alpha; the canonical
    * 0..N input is `mcpServers` (below), and new documents and tests use

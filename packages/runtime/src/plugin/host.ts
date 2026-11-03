@@ -409,6 +409,19 @@ interface GlueModule {
       contains?(parent: unknown, child: unknown): boolean | Promise<boolean>
     }
     /**
+     * Alpha.5 P2 WIRING (this round, optional additive): the LAZY compiled-
+     * realm provider the glue's Member setup consumes. The production host
+     * resolves an OPTIONAL public service (`teamA5sfRealm`) per call — the
+     * `jobs` / `agentPresets` accessor pattern, so a row composition that
+     * provides the service after this row applies is still seen. The service
+     * answers `{ compiledFor(member) }`, which must return the COMPILED
+     * objects of one admitted Member (`{ members, bindings?, providerClass? }`)
+     * or `undefined`; this entry never compiles a policy. Absent service =
+     * the glue's legacy path byte-for-byte (the other half of the enablement
+     * law is `config.a5sfEvidencePath`; either absent = no mount, no sink).
+     */
+    readonly a5sfRealmProvider?: () => { compiledFor(member: unknown): unknown } | undefined
+    /**
      * strict-read + core-spill (Phase D/E, implementation guide §13,
      * optional additive): the shared artifact-authority reference (the
      * controlServiceRef pattern — the entry creates the plain
@@ -2294,6 +2307,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // strict ctx.get('fs') global-store read — see the accessor's
     // rationale). Additive optional dep: never in the hard inject array.
     fsBackend,
+    // Alpha.5 P2 WIRING (this round): the LAZY compiled-realm provider. The
+    // a5sf realm is reachable from the product row ONLY through this accessor
+    // + `config.a5sfEvidencePath` (both required); no service = the legacy
+    // path. Read per setup call via the strict ctx.get (the jobs/agentPresets
+    // accessor pattern), so the providing row may apply after this one.
+    // Additive optional dep: never in the hard inject array.
+    a5sfRealmProvider: () => ctx.get('teamA5sfRealm') as { compiledFor(member: unknown): unknown } | undefined,
     // strict-read + core-spill (Phase D/E): the shared artifact-authority
     // reference (filled by the bootstrap after the authority is
     // constructed + rebuilt — see the ref's rationale). Additive optional

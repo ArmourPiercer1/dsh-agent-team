@@ -267,6 +267,23 @@ jobs:
         # fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
         run: node --test tests/world-factory/a5sf-p2-seam.test.mjs
 
+      - name: "a5sf P2 WIRING C1 (product-row call site — node:test, zero Host boots, host-free)"
+        # The PRODUCT-ROW half of the P2 seam: the mechanism landed in #548 but no product
+        # code called it, so the compiled realm was INERT in a booted Host, and the emit did
+        # not carry the lane. This step pins the wiring that closed that: the live Member
+        # setup's exported helper (`packages/runtime/src/plugin/live/a5sf-realm-row.mjs`)
+        # mounts the compiled realm through the ONE entry point with a sink whose path comes
+        # from ROW CONFIG, writes ONE fact per consultation with the expected schema, releases
+        # both realms on dispose, does NOTHING when either half of the wiring is absent (the
+        # legacy path), and fails CLOSED when the sink cannot write (the consulted call never
+        # reaches the base Provider). It also structurally pins the guarded call site in
+        # `agent-bindings.mjs` and the row-kept disposer. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 incidents were files no layer collected), so without this
+        # step the wiring's laws run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED. Host-free: an
+        # in-process Cordis unit root and mkdtemp fixtures — no boot, no port, no DSH_HOME.
+        run: node --test tests/world-factory/a5sf-p2-wiring.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

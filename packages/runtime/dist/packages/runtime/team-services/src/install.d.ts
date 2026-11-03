@@ -1,0 +1,97 @@
+/**
+ * Alpha.5 P1-05 — install the per-Member Service realm.
+ *
+ * ONE root Context (the Host), N isolated `fs` scopes (one per Member). The
+ * isolated scope is `root.isolate('fs', label)`: below it, reads and writes of
+ * `ctx.fs` resolve against that Member's confined Provider, while the root's
+ * provider and every other Member keep their own. The same tool name registered
+ * in two Member scopes therefore resolves its OWN provider at call time — the
+ * property that makes per-Member I/O governance real instead of cosmetic.
+ *
+ * INSTALL IS ALL-OR-NOTHING. Every Member's policy is validated and the live
+ * Provider's managed surface is inspected BEFORE the first scope is created; a
+ * refusal (uncompiled policy, duplicate identity, missing/incompatible
+ * Provider, a mount that throws) disposes anything already mounted and rejects
+ * with a typed {@link TeamServiceInstallError}. A partially installed realm
+ * would run some tools against the host Provider, which is exactly the failure
+ * mode this gate exists to prevent, so the Team refuses as a whole.
+ *
+ * NOT IN THIS MODULE: policy compilation (P1-02), invocation binding (P1-04),
+ * web/subprocess providers (P1-06/P2), and any approval logic.
+ *
+ * @module @dsh-agent-team/runtime/team-services/install
+ */
+import type { Context } from '@deepseek-ai/cordis';
+import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
+import { type FsProviderConstructor, type FsProviderSurface } from './fs.js';
+import { type GuardConsultObserver } from './guard-observability.js';
+import { type MemberIoInstallation } from './types.js';
+/** One Member to install: identity + its compiled policy (or the refusal). */
+export interface MemberServiceSpec {
+    readonly identity: TrustedMemberIdentity;
+    readonly policy: CompileResult<MemberPolicy>;
+    /** Provider config (e.g. the session workspace cwd). Never policy. */
+    readonly config?: Record<string, unknown>;
+}
+export interface InstallMemberIoProvidersInput {
+    readonly root: Context;
+    readonly members: readonly MemberServiceSpec[];
+    /**
+     * Explicit base Provider class. Omitted = sample the LIVE provider mounted at
+     * the root (`Object.getPrototypeOf(root.get('fs')).constructor`), which is
+     * how a real Host installs `fs-local` / `fs-sandbox` semantics.
+     */
+    readonly providerClass?: FsProviderConstructor;
+    /**
+     * P2 seam (additive, default-preserving): observe every consultation of the
+     * Member-ceiling guard this install builds. Omitted = the exact original
+     * guard object and confined class are used, with no wrapper and no extra
+     * call of any kind. Supplied = each consultation is reported exactly once,
+     * BEFORE the Provider delegates, and a report failure REFUSES the call
+     * (`GUARD_OBSERVATION_FAILED`) instead of letting an unrecorded decision
+     * become an effect. Never a second policy evaluation — see
+     * `guard-observability.ts`.
+     */
+    readonly onGuardConsult?: GuardConsultObserver;
+}
+/**
+ * Install one confined Provider per Member into its own isolated `fs` scope.
+ * Resolves only when every Member is installed; rejects (typed) otherwise.
+ */
+export declare function installMemberIoProviders(input: InstallMemberIoProvidersInput): Promise<MemberIoInstallation>;
+/** One (Member × tool binding) realm: the effective policy, not the ceiling. */
+export interface ToolBindingRealmSpec {
+    readonly identity: TrustedMemberIdentity;
+    readonly toolBindingIdentity: string;
+    /** The compiled `EffectiveIo` for this binding (P1-02 intersection). */
+    readonly effective: EffectiveIoPolicy;
+    readonly config?: Record<string, unknown>;
+}
+export interface ToolBindingRealm {
+    readonly identity: TrustedMemberIdentity;
+    readonly toolBindingIdentity: string;
+    readonly policyRevision: string;
+    readonly ctx: Context;
+    readonly fs: FsProviderSurface;
+    dispose(): Promise<void>;
+}
+/**
+ * Mount a confined Provider for ONE tool binding under its OWN isolate. The
+ * Member realm (above) enforces the ceiling; this realm enforces the narrower
+ * per-binding intersection. Installing only the Member realm would leave
+ * `EffectiveIo` decorative at runtime, which is exactly the defect G1 review
+ * found.
+ */
+export declare function installToolBindingRealm(input: {
+    readonly root: Context;
+    readonly spec: ToolBindingRealmSpec;
+    readonly providerClass?: FsProviderConstructor;
+    /**
+     * P2 seam (additive, default-preserving): observe every consultation of THIS
+     * binding's guard. Same contract as {@link InstallMemberIoProvidersInput.onGuardConsult}:
+     * omitted = the original guard object, supplied = one report per
+     * consultation before delegation, and a report failure refuses the call.
+     */
+    readonly onGuardConsult?: GuardConsultObserver;
+}): Promise<ToolBindingRealm>;
+//# sourceMappingURL=install.d.ts.map
