@@ -205,3 +205,14 @@ Gate 编号
    1. 推送前跑 `pnpm ci:local`（默认 `--base origin/master`）。它执行 docs 探针、`docs:sync --check`、CI 形状检查、`pnpm typecheck`，以及**本次改动牵连到的**测试，不执行 census，也不合成 merge tree。
    2. 退出码是判据：**0 = 选中的检查全过；1 = 选中项失败；2 = 覆盖未定**。`2` 不是故障也不是通过——有改动是本工具无法命名爆炸半径的路径（未知根文件、共享测试设施、CI 族），此时必须推送让 L1/L2 覆盖，**禁止把 `2` 当绿灯、也禁止用 `--no-tests` 把它变成 `0`**。
    3. L0 绿 ≠ 可合并。合并判据只有 `ci-required` + `pr-gate` + `pr-settlement-gate` 三个必需上下文（§8.5）。
+
+10. **CI 分层接管后的执行流（2026-11-03 用户裁决入规；CI 本身本轮不改）**：
+    1. **三层语义**：**L0** 本地内环 `pnpm ci:local`（秒级，推送前必跑，判据见 §9）；**L1** 草稿轮 = draft PR 上的 `ci-required`（≈2.5 分钟，`ci-census` 显式 **skipping**，聚合 **fail-closed 红是设计**）；**L2** Ready 轮 = 非草稿且无延迟标签（≈19 分钟，census 真跑）。**必需上下文三个**：`pr-gate`、`ci-required`、`pr-settlement-gate`；分支保护为 strict，落后 master 必须 update 后重跑，旧绿灯不作数。
+    2. **修复循环留在草稿态**：PR 一律 `--draft` 创建，**绝不直接开 Ready**；每次 push 只付一次 L1，**L1 绿之前不标 Ready**。L1 期间核对的是**形状**而不是“总绿”：`ci-census=skipping`、`ci-required=failing`（fail-closed）是草稿态的正常形态，`ci-required-deferred` 红才是其它层真红。
+    3. **状态切换一次只做一个**（draft/ready/label 之一），等该轮跑完再做下一个；GitHub 的 pending 顶替会取消中间 run，判定随之丢失。
+    4. **标 Ready 之前先发 dated settlement**（覆盖**最终** head 的完整 40-hex），**再** `gh pr ready`；顺序颠倒就要额外重跑 settlement 作业。head 前进一位即机械作废（§8.5.6.2）。
+    5. **红轮归因树**：`ci-census` 红先**同 head 重跑该 job 一次**（`gh run rerun --job <job-id>`，不是整个 workflow），两次 attempt 的 transcript 都保留；**连续两次红 = 回归**，停下报告，禁止进基线或放宽规则。其它层红读 job 日志再修，草稿态优先。`BEHIND` 一律 `gh api -X PUT …/update-branch -f expected_head_sha=<40-hex>` 立刻更新，并意识到 settlement 随即失效。绿了尽快合并。
+    6. **推送前预检除 L0 外必跑**：`node scripts/eb3-evidence-guard.mjs --new-since origin/master`（失败含义 = 新增裸 census capture 或 >1 MiB 未登记文件；修法 = 移到 gitignored 位置，确需大文件则进 `dev/ci/evidence-large-allowlist.json` 并写 reason）、`node scripts/ci-pr-gate.mjs --only graph-parse,state-freshness,blueprint-fence,lint-identities`、`node scripts/eb3-ci-required.mjs`；涉及 `packages/` 时用 `pnpm ci:local --json` 确认 `plan.vitest` 真的选中该包。
+    7. **禁止为变绿**：`--no-tests`、放宽 union 判定、把用例塞进老红基线、绕过 settlement、管理员权限合并。做不到就停下报告。
+    8. **§7 的停工上报条件扩展到本流程**：census 同 head 连续两次红；需要改 `.github/workflows/`、`dev/ci/`、`scripts/eb3-*` 或分支保护（本阶段一律不做）；需要 force-push/rebase 带证据的分支；同一 PR 超过 3 次 L2 仍红或单 PR 墙钟超过 2 小时；三条硬规则冲突。
+    9. **合并动作**：先核对 `mergeStateStatus=CLEAN` 且 head 未变，再 `gh pr merge <n> --squash --match-head-commit <40-hex>`，合并后确认 master 前进，并把 run id / 判定行写进 evidence README。
