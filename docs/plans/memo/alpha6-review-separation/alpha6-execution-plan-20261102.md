@@ -97,6 +97,15 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 
 `CurrentLegTransfer` 至少绑定 Team、Case、currentLegRequestId、legOrdinal、target=Leader、cause（`officer-handoff | officer-unavailable`）及可信 Actor/Blueprint 来源。在当前 leg 仍 `pending` 时原子追加或幂等返回；新 leg 重新计算。PR2c 拥有事实写入、旧 Officer 失去该 leg 的**未来**委托资格、Leader 唤醒触发，PR5 只提供 Officer 交接操作工具面；绝不另造完整 Assignment 状态机。若 transfer 在 precommit 与 commit 之间发生，commit 同锁重查并拒绝；decision 之后的 transfer 不使已签 evidence 失效。
 
+### 2.4b PA 工具原调用与多 leg Escalation（方案 A，ADR D6a/D6b）
+
+- **已批准行为**：Leader 可主动代决普通 Officer 路由案件，但不因此收到常规自动 Wake；Officer 可从其合法受托的当前 leader leg 直接升到 Human successor，不经 Leader Handoff，也绝不能自行批准升后的 Human leg。
+- **现行桥接缺口**：PA Bridge 的 requestControl/awaitControlDecision(initialRequestId) 不是完整的 Control ApprovalCase 升级通道。实现必须将 PA 逻辑 ID 与服务端派生 Control Case ID 可信关联，创建合法 durable leg，并在 successor 上保持原始 EffectSet、ToolBinding、operation fingerprint、scope、authority generation 与完整严格 PA manifest 的可验证来源。
+- **Case-aware wait**：中间 leg 的 deny/escalated 表示转入下一审核位置，**不等于工具最终拒绝**。等待最终合法 Case 结果，Human allow 时使用最终批准 leg 的 requestId 与 decisionSequence 完成一次性 Grant/Guard；不能以 initialRequestId 作为最终身份继续校验。
+- **调用存活性**：原工具调用保持待决；只有在 Human allow 且调用仍存活、未 Stop/Abort/超时、执行前全部硬上界与权限检查通过时才继续。否则不执行、不自动重新发起调用。重启可恢复审批历史，不自动恢复已消失的执行上下文。
+- **施工边界**：上述属于 PR2b 的 Control/PA 审批接缝重构，不改 DSH 原生 ToolDefinition、原生工具执行器或 Alpha.5 OS/I/O 沙箱。PR2c 负责 Escalation 后 Human current-leg 的可见性/通知事件，PR5 负责 Officer 合法升级工具面，PR7 验证真实 Host 全链。
+- **现有事实**：旧 PA 逻辑 ID 与 Control Case 身份域不同；升级前后的可验证清单和最终 Grant 绑定均须有服务层测试证明。不要仅以“escalateApprovalLeg 返回成功”作为验收通过。
+
 ### 2.5 Officer 自身 ask 的路由
 
 固定规则：**实际 OperationOwner 的 templateId == `officerTemplateId` 时，普通工具 ask
