@@ -161,7 +161,7 @@ trusted-source registry is added later.
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=9 findings=0` | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | `26/26 control(s) behaved as required` | `eb3-negative-controls.log` |
 | `git diff --check origin/master..HEAD` | clean | committed tree |
-| `pnpm ci:local` | **FAIL — whole-tree load/timeout flake; §10.1, red green in isolation** | `ci-local-rerun.log`, `ci-local-red-isolation.log` |
+| `pnpm ci:local` | **FAIL — whole-tree load/timeout flake; §10.1, red green in isolation** | `ci-local-summary.log` (derived; the 1.2 MB raw capture was NOT committed), `ci-local-red-isolation.log` |
 
 ## 9. p4t6 — MEASURED LAST on this tree
 
@@ -204,6 +204,10 @@ behavioural red: the same 9 files run **alone on the SAME tree** → exit 0, **9
 (`ci-local-red-isolation.log`). This diff touches `team-services/src/mount.ts` (+ its built mirror) and one
 `tests/world-factory` suite; none of the timed-out files attaches a native shadow or imports the changed
 admission path. No unmeasured pass is claimed — the L0 red stands as red, with the isolated mechanism measured.
+
+**Evidence bound:** the full run's raw capture is **1 201 771 B** (> the 1 MiB evidence bound), so only
+`ci-local-summary.log` (5 099 B, derived: selected steps, failing test identities, counts, verdict) is
+committed. No allowlist entry was added — the guard rejects an oversized raw capture and it stays rejected.
 
 The selected node leg on the same run is green and includes every P0 arm
 (`✔ P0-1 …`, `✔ P0-2 …`, `✔ GAP2b …`, 12/12).
