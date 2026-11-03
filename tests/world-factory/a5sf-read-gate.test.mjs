@@ -53,6 +53,8 @@ import {
   resolveReadDriver,
   preRegisterReadBudget,
   runA5sfRead,
+  runDryScenario,
+  windowCaseVerdict,
 } from './suites/150-a5sf-read.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -203,6 +205,28 @@ test('gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identi
   assert.equal(record.ledgerStartCount(), 2)
 })
 
+// ── 6b. PARTIALLY-SPENT pool (review C3) ───────────────────────────────────
+
+test('gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool)', async () => {
+  const dir = tmp('partial')
+  const ledger = join(dir, 'host-starts.jsonl')
+  // 1 prior row against a 2-row grant: not `exhausted`, but it cannot fund
+  // 1 reservation + 1 boot. The old gate would reserve (pool -> 2) and then
+  // refuse at the boot, i.e. a refusal that DID write.
+  writeFileSync(ledger, `${JSON.stringify({ at: '2026-11-03T00:00:00Z', phase: 'prior-boot', world: 'w1' })}\n`)
+  const record = recordFor(ledger)
+  const before = ledgerText(ledger)
+  const path = grantFile(dir, { maxStarts: 2 })
+  await expectRefusal(preRegisterReadBudget({ grantPath: path, headCommit: HEAD, runRecord: record }), 'GRANT_EXHAUSTED')
+  assert.equal(ledgerText(ledger), before, 'the partial-spend refusal must not append a reservation row')
+  assert.equal(record.ledgerStartCount(), 1, 'the pool did not move')
+  // A grant that CAN fund both rows still works from the same partial pool.
+  const bigger = grantFile(dir, { maxStarts: 3 })
+  const lease = await preRegisterReadBudget({ grantPath: bigger, headCommit: HEAD, runRecord: record })
+  assert.equal(lease.intentRows().length, 1)
+  assert.equal(record.ledgerStartCount(), 2)
+})
+
 // ── 7. no shared ledger ⇒ no lease ──────────────────────────────────────────
 
 test('gate: a run record with NO shared ledger path refuses (no second counter exists)', async () => {
@@ -249,6 +273,37 @@ test('gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, 
   await expectRefusal(lease.boot(stub), 'GRANT_EXHAUSTED')
   assert.equal(lease.bootsSpent(), 1, 'the stub ran exactly once')
   assert.equal(record.ledgerStartCount(), 2, 'a refused boot writes nothing')
+})
+
+// ── 8b. the >10MiB case verdict (review C4) ────────────────────────────────
+
+test('window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window', async () => {
+  const base = { windowed: true, bytes: 65536, expectedBytes: 65536, textOk: true, size: 10 * 1024 * 1024 + 1 }
+  // A dry driver can never turn a policy admission into this case.
+  assert.deepEqual(windowCaseVerdict({ ...base, native: false }), { verdict: 'NOT_REACHED', reason: 'NATIVE_WINDOW_UNAVAILABLE' })
+  // A native driver still has to prove the window (the old failure mode: "the
+  // whole file came back" was read as a PASS).
+  assert.deepEqual(windowCaseVerdict({ ...base, native: true, size: 10 * 1024 * 1024 }), { verdict: 'FAIL', reason: 'FILE_NOT_OVER_10MIB' })
+  assert.deepEqual(windowCaseVerdict({ ...base, native: true, windowed: false }), { verdict: 'FAIL', reason: 'NOT_WINDOWED' })
+  assert.deepEqual(windowCaseVerdict({ ...base, native: true, bytes: 65535 }), { verdict: 'FAIL', reason: 'WINDOW_LENGTH_MISMATCH' })
+  assert.deepEqual(windowCaseVerdict({ ...base, native: true, textOk: false }), { verdict: 'FAIL', reason: 'WINDOW_CONTENT_MISMATCH' })
+  assert.deepEqual(windowCaseVerdict({ ...base, native: true }), { verdict: 'PASS', reason: 'NATIVE_WINDOW_EXACT' })
+})
+
+// ── 8c. the dry scene itself is enforced in CI (no boot, no budget) ────────
+
+test('dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED', async () => {
+  const dir = tmp('dry')
+  const { assertions, cases, evidence } = await runDryScenario({ repoRoot: REPO_ROOT, evidenceDir: join(dir, 'evidence') })
+  const failed = assertions.filter((a) => !a.ok)
+  assert.deepEqual(failed.map((a) => a.id), [], 'every dry assertion must hold')
+  assert.equal(assertions.length, 14)
+  const windowCase = cases.find((c) => c.caseId === 'read:window-over-10mib')
+  assert.equal(windowCase.verdict, 'NOT_REACHED', 'a non-native driver cannot earn the native-window case')
+  assert.equal(windowCase.reason, 'NATIVE_WINDOW_UNAVAILABLE')
+  assert.equal(evidence.diag.clean.verdict, 'NO_BYPASS_FOUND')
+  assert.equal(evidence.diag.synthetic.status, 1, 'the synthetic out-of-ceiling allow must be reported as a bypass')
+  assert.equal(evidence.driver.native, false)
 })
 
 // ── 9. the suite's run(): gate before World/factory, no verdicts on refusal ─

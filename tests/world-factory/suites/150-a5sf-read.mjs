@@ -308,13 +308,17 @@ export async function preRegisterReadBudget({ grantPath, headCommit, runRecord, 
 
   const used = ledgerRows(ledgerPath)
   const before = hostStartBudgetPosition(runRecord, grant.maxStarts)
-  // Fail closed on a ledger that already spent the grant. `used >= max` is the
-  // ONE imported formula's answer — this file does not restate it.
-  if (before.exhausted) {
+  // PARTIAL-SPEND LAW (review C3): the grant must be able to pay for BOTH this
+  // reservation row AND the declared boots. Checking `exhausted` alone would let
+  // a half-spent pool (e.g. 1 prior row against maxStarts=2) reserve its row —
+  // moving the pool to its cap — and then refuse at the boot, i.e. a refusal
+  // that DID write. `position.remaining` is the same imported formula's answer
+  // (`max(0, max - used)`); this file does not restate it.
+  if (before.exhausted || before.remaining < INTENT_ROWS_PER_LEASE + requiredBoots) {
     throw new A5sfReadGateError(
       'BUDGET_NOT_GRANTED',
       'GRANT_EXHAUSTED',
-      `the shared ledger already holds ${String(before.used)} >= ${String(before.max)} row(s) allowed by grant '${grant.grantId}'; refusing before any World or spawn`,
+      `the shared ledger holds ${String(before.used)}/${String(before.max)} row(s) (${String(before.remaining)} remaining) and this run needs ${String(INTENT_ROWS_PER_LEASE)} reservation row + ${String(requiredBoots)} boot(s) = ${String(INTENT_ROWS_PER_LEASE + requiredBoots)} under grant '${grant.grantId}'; refusing BEFORE the reservation, so a refused run writes nothing`,
       { grant, position: before },
     )
   }
@@ -331,9 +335,10 @@ export async function preRegisterReadBudget({ grantPath, headCommit, runRecord, 
     plannedStarts: requiredBoots,
   })
   const after = hostStartBudgetPosition(runRecord, grant.maxStarts)
-  if (after.used > grant.maxStarts) {
-    // Defensive: cannot happen after the pre-check unless the writer over-counts.
-    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `the shared ledger moved past grant '${grant.grantId}' while reserving (${String(after.used)} > ${String(after.max)})`, { grant, position: after })
+  if (after.used > grant.maxStarts || after.remaining < requiredBoots) {
+    // Defensive: cannot happen after the pre-check unless the writer over-counts
+    // or another writer appended between the check and the reservation.
+    throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `the shared ledger cannot fund ${String(requiredBoots)} boot(s) after reserving under grant '${grant.grantId}' (${String(after.used)}/${String(after.max)} rows, ${String(after.remaining)} remaining)`, { grant, position: after })
   }
 
   let booted = 0
@@ -367,8 +372,13 @@ export async function preRegisterReadBudget({ grantPath, headCommit, runRecord, 
       if (lease.intentRows().length === 0) {
         throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'INTENT_NOT_RECORDED', `grant '${grant.grantId}' has no pre-registration row on the shared ledger; a boot without a reservation is refused`)
       }
+      if (booted >= requiredBoots) {
+        // Defense in depth (review C8): the lease declared how many boots it
+        // would spend; a third party cannot spend one more by calling boot() again.
+        throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `grant '${grant.grantId}' reserved ${String(requiredBoots)} boot(s) and the lease already spent ${String(booted)}; refusing the extra boot before the spawn`, { grant, requiredBoots })
+      }
       const position = hostStartBudgetPosition(runRecord, grant.maxStarts)
-      if (position.exhausted) {
+      if (position.exhausted || position.remaining < 1) {
         throw new A5sfReadGateError('BUDGET_NOT_GRANTED', 'GRANT_EXHAUSTED', `the shared ledger holds ${String(position.used)} >= ${String(position.max)} row(s) allowed by grant '${grant.grantId}'; refusing the boot before the spawn`, { grant, position })
       }
       spent = true
@@ -473,6 +483,33 @@ const MIB = 1024 * 1024
 /** BL-14's threshold: strictly greater than 10 MiB (not `>=`). */
 export const BIG_FILE_BYTES = 10 * MIB + 1
 export const WINDOW = Object.freeze({ offset: 0, limit: 64 * 1024 })
+
+/**
+ * The verdict of `read:window-over-10mib` — deliberately a PURE function so the
+ * C1 suite can pin it without a boot (review C4: the old case was PASS off an
+ * admission-only assertion, i.e. a fake green).
+ *
+ * Laws:
+ *  - a NON-native driver can never earn this case: the criteria are about the
+ *    native tool's window/stream, so the verdict is `NOT_REACHED`
+ *    (`NATIVE_WINDOW_UNAVAILABLE`), never PASS and never a product FAIL.
+ *  - a native driver earns PASS only when the call was windowed AND returned
+ *    EXACTLY the requested window (byte count and content), so "the whole file
+ *    came back" cannot masquerade as a window read.
+ *  - a native driver that was not windowed, or whose window is the wrong size
+ *    or content, is a FAIL.
+ *
+ * @param {{native: boolean, windowed: boolean, bytes: number, expectedBytes: number, textOk: boolean, size: number}} input
+ * @returns {{verdict: 'PASS'|'FAIL'|'NOT_REACHED', reason: string}}
+ */
+export function windowCaseVerdict({ native, windowed, bytes, expectedBytes, textOk, size } = {}) {
+  if (native !== true) return { verdict: 'NOT_REACHED', reason: 'NATIVE_WINDOW_UNAVAILABLE' }
+  if (!(typeof size === 'number' && size > 10 * MIB)) return { verdict: 'FAIL', reason: 'FILE_NOT_OVER_10MIB' }
+  if (windowed !== true) return { verdict: 'FAIL', reason: 'NOT_WINDOWED' }
+  if (bytes !== expectedBytes) return { verdict: 'FAIL', reason: 'WINDOW_LENGTH_MISMATCH' }
+  if (textOk !== true) return { verdict: 'FAIL', reason: 'WINDOW_CONTENT_MISMATCH' }
+  return { verdict: 'PASS', reason: 'NATIVE_WINDOW_EXACT' }
+}
 
 /**
  * Load the P1 seams a host-free run needs. Only modules whose import graph is
@@ -665,6 +702,7 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
     { callId: 'call-read-alpha-denied', templateId: 'alpha', locator: outsideFile, file: outsideFile, expectedLane: 'deny', role: 'denied-outside-ceiling' },
     { callId: 'call-read-beta-denied', templateId: 'beta', locator: allowedFile, file: allowedFile, expectedLane: 'deny', role: 'two-member-isolation' },
     { callId: 'call-read-alpha-window', templateId: 'alpha', locator: bigFile, file: bigFile, expectedLane: 'allow', role: 'window-over-10mib', window: WINDOW },
+    { callId: 'call-read-alpha-window-edge', templateId: 'alpha', locator: bigFile, file: bigFile, expectedLane: 'allow', role: 'window-edge', window: Object.freeze({ offset: BIG_FILE_BYTES - WINDOW.limit, limit: WINDOW.limit }) },
   ]
 
   const ceilings = new Map()
@@ -783,6 +821,7 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
   const denied = calls.find((c) => c.role === 'denied-outside-ceiling')
   const isolated = calls.find((c) => c.role === 'two-member-isolation')
   const windowed = calls.find((c) => c.role === 'window-over-10mib')
+  const windowEdge = calls.find((c) => c.role === 'window-edge')
 
   const assertions = []
   const check = (id, ok, detail) => assertions.push({ id, ok: Boolean(ok), detail })
@@ -792,6 +831,21 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
   check('denied-zero-bytes: zero bytes escaped', denied.bytes === 0 && denied.text === null, { bytes: denied.bytes })
   check('two-member-isolation: B is denied the locator A was allowed', isolated.memberInstanceId !== allowed.memberInstanceId && isolated.disposition === 'deny' && isolated.bytes === 0, { alpha: allowed.memberInstanceId, beta: isolated.memberInstanceId })
   check('window-over-10mib: the file is >10MiB and the ceiling admits it', windowed.fileBytes > 10 * MIB && windowed.disposition === 'allow', { size: windowed.fileBytes, disposition: windowed.disposition })
+  // (C4) The window semantics are asserted, not assumed: exact byte count and
+  // content at offset 0 and at the file's tail boundary. These pass for ANY
+  // driver; they do not substitute for the native-tool case verdict below.
+  check('window-over-10mib: the read returned exactly the requested window (bytes + content)', windowed.windowed === true && windowed.bytes === WINDOW.limit && windowed.text === 'a'.repeat(WINDOW.limit), { bytes: windowed.bytes, windowed: windowed.windowed })
+  check('window-over-10mib: a window at the file-edge boundary returns exactly the requested length', windowEdge.windowed === true && windowEdge.bytes === WINDOW.limit && windowEdge.text === 'a'.repeat(WINDOW.limit), { bytes: windowEdge.bytes, offset: BIG_FILE_BYTES - WINDOW.limit })
+  // (C1) The chain artifact does NOT carry the driver marker: `providerFactOf`
+  // (`lib/a5sf-evidence.mjs:198`) whitelists seven identity fields, so a dry row
+  // and a native row are indistinguishable IN THE CHAIN. The driver identity is
+  // recorded once per run in the suite's own summary artifact. This assertion
+  // keeps that boundary true instead of letting the README claim otherwise.
+  check(
+    'chain artifact does not carry the driver marker; the run summary does',
+    chainRows.every((row) => row.kind !== 'call' || row.provider === undefined || (row.provider.kind === undefined && row.provider.native === undefined)) && driver.kind !== undefined,
+    { chainProviderFields: [...new Set(chainRows.filter((r) => r.kind === 'call').flatMap((r) => Object.keys(r.provider ?? {})))], summaryDriver: { kind: driver.kind, native: driver.native === true } },
+  )
   check('read:diag clean for the run rows', cleanDiag.status === 0 && /verdict=NO_BYPASS_FOUND/.test(cleanDiag.stdout), { status: cleanDiag.status, summary: cleanDiag.stdout.split('\n').find((l) => l.startsWith('SUMMARY')) ?? null })
   check('read:diag finds the synthetic bypass', syntheticDiag.status === 1 && /ALLOW_OUTSIDE_COMPILED_CEILING/.test(syntheticDiag.stdout), { status: syntheticDiag.status, findings: syntheticDiag.stdout.split('\n').filter((l) => l.includes('APPROVAL_BYPASS')) })
   check('read:chain - the refused call aligns across the four links', chainByCall.get(denied.callId)?.verdict === 'CHAIN_ALIGNED', chainByCall.get(denied.callId) ?? null)
@@ -799,7 +853,7 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
   const brokenChains = (chain.chains ?? []).filter((entry) => entry.verdict !== 'CHAIN_ALIGNED')
   check(
     'read:chain - every broken link is the host-attributable effect (no other link is missing or contradictory)',
-    brokenChains.length === 2 && brokenChains.every((entry) => entry.link === 'effect' && entry.reason === 'EFFECT_NOT_OBSERVED'),
+    brokenChains.length === calls.filter((c) => c.lane === 'allow').length && brokenChains.every((entry) => entry.link === 'effect' && entry.reason === 'EFFECT_NOT_OBSERVED'),
     brokenChains.map(({ callId, verdict, link, reason }) => ({ callId, verdict, link, reason })),
   )
   check('read:leak-check - the denied content appears in no evidence artifact', !existsSync(chainPath) ? false : !readFileSync(chainPath, 'utf8').includes(OUTSIDE_TEXT.trim()), { outsideTextInChain: readFileSync(chainPath, 'utf8').includes(OUTSIDE_TEXT.trim()) })
@@ -814,7 +868,49 @@ async function runScenario({ mode, repoRoot, evidenceDir, driver }) {
   }
   evidence.chain = { verdict: chain.summary?.verdict ?? 'NO_VERDICT', calls: chain.chains ?? [], summary: chain.summary ?? null, error: chain.error ?? null, cliStatus: chainCli.status, cliStdout: String(chainCli.stdout ?? ''), cliStderr: String(chainCli.stderr ?? '') }
   evidence.assertions = assertions
-  return { evidence, calls, assertions, chainText: renderChainReport(chain), work }
+
+  // The per-case verdict map. A dry run is not a RUN record, but it must not
+  // print a case as PASS off a weaker assertion than the live run would need
+  // (review C4/C5): `read:window-over-10mib` is NOT_REACHED unless a NATIVE
+  // driver supplied an exact window.
+  const assertionById = new Map(assertions.map((a) => [a.id, a]))
+  const caseVerdict = (id, assertionId, extra) => {
+    const passed = assertionById.get(assertionId)?.ok === true
+    if (extra !== undefined) return extra
+    return { caseId: id, verdict: passed ? 'PASS' : 'FAIL', reason: passed ? 'ASSERTION_PASSED' : 'ASSERTION_FAILED', assertion: assertionId }
+  }
+  const windowTextOk = windowed.text === 'a'.repeat(WINDOW.limit)
+  const windowVerdict = windowCaseVerdict({
+    native: driver.native === true,
+    windowed: windowed.windowed === true,
+    bytes: windowed.bytes,
+    expectedBytes: WINDOW.limit,
+    textOk: windowTextOk,
+    size: windowed.fileBytes,
+  })
+  evidence.cases = [
+    caseVerdict('read:allowed-inside-ceiling', 'allowed-inside-ceiling: the guard admitted and the Provider returned bytes'),
+    caseVerdict('read:denied-outside-ceiling', 'denied-outside-ceiling: a typed P1 refusal, no read performed'),
+    caseVerdict('read:denied-zero-bytes', 'denied-zero-bytes: zero bytes escaped'),
+    caseVerdict('read:window-over-10mib', 'window-over-10mib: the read returned exactly the requested window (bytes + content)', { caseId: 'read:window-over-10mib', ...windowVerdict, assertion: 'windowCaseVerdict(native, windowed, bytes, content)' }),
+    caseVerdict('read:two-member-isolation', 'two-member-isolation: B is denied the locator A was allowed'),
+    caseVerdict('read:chain-diag-no-bypass', 'read:diag clean for the run rows'),
+    caseVerdict('read:leak-check', 'read:leak-check - the denied content appears in no evidence artifact'),
+  ]
+  evidence.cases.find((c) => c.caseId === 'read:chain-diag-no-bypass').synthetic = assertionById.get('read:diag finds the synthetic bypass')?.ok === true ? 'PASS' : 'FAIL'
+  return { evidence, calls, assertions, cases: evidence.cases, chainText: renderChainReport(chain), work }
+}
+
+/**
+ * Run the whole host-free scene with the `dry-node-fs` driver. Exported so the
+ * C1 suite can enforce the dry path in CI (the CLI below uses exactly this).
+ *
+ * @param {{repoRoot: string, evidenceDir: string}} input
+ */
+export async function runDryScenario({ repoRoot, evidenceDir }) {
+  const driver = createDryDriver()
+  const result = await runScenario({ mode: 'dry', repoRoot, evidenceDir, driver })
+  return { ...result, driver }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -866,20 +962,16 @@ async function run(opts = {}, ctx = {}) {
   await lease.boot(() => harness.boot({ world, phase: 'a5sf-read-boot1' }))
 
   // 4) The SAME scenario, with the live driver supplying the read.
-  const { evidence, assertions } = await runScenario({ mode: 'live', repoRoot, evidenceDir, driver })
+  const { evidence, assertions, cases } = await runScenario({ mode: 'live', repoRoot, evidenceDir, driver })
   writeFileSync(join(evidenceDir, 'live-summary.json'), `${JSON.stringify(evidence, null, 2)}\n`)
 
-  const byId = new Map(assertions.map((a) => [a.id, a]))
-  const verdictOf = (id) => (byId.get(id)?.ok === true ? 'PASS' : 'FAIL')
-  const detail = (id) => ({ assertion: byId.get(id) ?? null, evidenceDir })
-  record?.addCase('read:allowed-inside-ceiling', verdictOf('allowed-inside-ceiling: the guard admitted and the Provider returned bytes'), detail('allowed-inside-ceiling: the guard admitted and the Provider returned bytes'))
-  record?.addCase('read:denied-outside-ceiling', verdictOf('denied-outside-ceiling: a typed P1 refusal, no read performed'), detail('denied-outside-ceiling: a typed P1 refusal, no read performed'))
-  record?.addCase('read:denied-zero-bytes', verdictOf('denied-zero-bytes: zero bytes escaped'), detail('denied-zero-bytes: zero bytes escaped'))
-  record?.addCase('read:two-member-isolation', verdictOf('two-member-isolation: B is denied the locator A was allowed'), detail('two-member-isolation: B is denied the locator A was allowed'))
-  record?.addCase('read:window-over-10mib', verdictOf('window-over-10mib: the file is >10MiB and the ceiling admits it'), detail('window-over-10mib: the file is >10MiB and the ceiling admits it'))
-  record?.addCase('read:chain-diag-no-bypass', verdictOf('read:diag clean for the run rows') === 'PASS' && verdictOf('read:diag finds the synthetic bypass') === 'PASS' ? 'PASS' : 'FAIL', detail('read:diag clean for the run rows'))
-  record?.addCase('read:leak-check', verdictOf('read:leak-check - the denied content appears in no evidence artifact'), detail('read:leak-check - the denied content appears in no evidence artifact'))
-  return { lease, evidence, assertions }
+  // The per-case verdicts come from `runScenario`. `read:window-over-10mib` is
+  // NOT_REACHED unless a NATIVE driver produced an exact window (review C4): a
+  // policy admission is not a window read, so it can never make this PASS.
+  for (const row of cases) {
+    record?.addCase(row.caseId, row.verdict, { reason: row.reason, assertion: row.assertion ?? null, evidenceDir })
+  }
+  return { lease, evidence, assertions, cases }
 }
 
 export default Object.freeze({
@@ -908,8 +1000,7 @@ if (invokedDirectly) {
 
   if (mode === 'dry') {
     // The dry run is the host-free half: no World, no boot, zero budget.
-    const driver = createDryDriver()
-    const { evidence, assertions } = await runScenario({ mode: 'dry', repoRoot, evidenceDir, driver })
+    const { evidence, assertions } = await runDryScenario({ repoRoot, evidenceDir })
     const summary = {
       mode: 'dry',
       boot: false,
@@ -919,6 +1010,7 @@ if (invokedDirectly) {
       assertions: assertions.map(({ id, ok, detail }) => ({ id, ok, detail })),
       checked: assertions.filter((a) => a.ok).length,
       total: assertions.length,
+      cases: evidence.cases,
       diag: evidence.diag,
       chainVerdict: evidence.chain.verdict,
       notProven: [
@@ -932,7 +1024,8 @@ if (invokedDirectly) {
     writeFileSync(join(evidenceDir, 'dry-summary.json'), `${JSON.stringify(summary, null, 2)}\n`)
     process.stdout.write(`A5SF-READ-DRY driver=${summary.driver.kind} native=${String(summary.driver.native)} hostStarts=0\n`)
     for (const a of assertions) process.stdout.write(`${a.ok ? 'PASS' : 'FAIL'} ${a.id}\n`)
-    process.stdout.write(`A5SF-READ-DRY assertions=${summary.checked}/${summary.total} diag=${summary.diag.clean.verdict} synthetic=${summary.diag.synthetic.status} chain=${summary.chainVerdict}\n`)
+    for (const row of summary.cases) process.stdout.write(`CASE ${row.verdict} ${row.caseId} reason=${row.reason}\n`)
+    process.stdout.write(`A5SF-READ-DRY assertions=${summary.checked}/${summary.total} cases=${summary.cases.filter((c) => c.verdict === 'PASS').length}PASS/${summary.cases.filter((c) => c.verdict === 'NOT_REACHED').length}NOT_REACHED/${summary.cases.filter((c) => c.verdict === 'FAIL').length}FAIL diag=${summary.diag.clean.verdict} synthetic=${summary.diag.synthetic.status} chain=${summary.chainVerdict}\n`)
     process.stdout.write(`evidence: ${evidenceDir}\n`)
     if (summary.checked !== summary.total) process.exitCode = 1
   } else if (mode === 'live') {

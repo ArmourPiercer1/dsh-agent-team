@@ -1,34 +1,48 @@
-# a5sf-p2-read — RED capture (BL-14 / P2-01, dated 2026-11-03, real UTC)
+# a5sf-p2-read — RED capture (BL-14 / P2-01, dated 2026-11-03, real UTC; round 2)
 
-Host-free. No boot, no port, no DSH_HOME, no budget row. This file is the capture
-taken BEFORE the package's laws could hold, not a re-run of the green state.
+Host-free. No boot, no port, no DSH_HOME, no budget row. This is the capture of the
+tests BEFORE the package's laws could hold — not a re-run of the green state.
 
-Three RED measurements, all real command output:
+ROUND 2 NOTE (review C7/C3/C4). The first round's capture is superseded here because
+the module changed. Two things are different from a naive capture:
 
-  RED 1  the gate's module does not exist (the file this package adds) — every arm is
-         red with ERR_MODULE_NOT_FOUND, the "no gate at all" baseline.
-  RED 2  mutation M1: the FOREIGN-COMMIT comparison in the gate is DELETED. The
-         foreign-grant arm must go red; the other arms stay green (a targeted
-         mutation, not a blanket breakage).
-  RED 3  mutation M2: the pre-reservation EXHAUSTION refusal is DELETED. The
-         exhausted-shared-ledger arm must go red.
+  * the raw blocks are the real command output, but blank lines inside the node:test
+    assertion diffs that contained only spaces were trimmed to empty lines so
+    `git diff --check` is clean (review C7). Nothing else in the output was edited.
+  * two NEW mutations (M3, M4) cover the two laws this round added (review C3, C4).
+
+Five RED measurements, all real command output:
+
+  RED 1  the gate's module does not exist (the file this package adds) — the
+         "no gate at all" baseline: every arm red with ERR_MODULE_NOT_FOUND.
+  RED 2  M1: the FOREIGN-COMMIT comparison is deleted.
+  RED 3  M2: the whole pre-reservation CAPACITY block is deleted.
+  RED 4  M3: only the REMAINING-capacity disjunct is deleted (C3).
+  RED 5  M4: the non-native NOT_REACHED branch of windowCaseVerdict() is deleted (C4).
 
 Method: each mutation was applied to tests/world-factory/suites/150-a5sf-read.mjs, the
-suite was run, then the module was restored from a saved copy. `orig sha` / `restored
-sha` below must both equal the module's sha256 after this package's final edit
-(11e2f3e597709d490172314ab1d92d7ef99cd469f877a5f5a68220135c8fbbf6). A capture is worthless if the file it measured is not the file shipped.
+C1 suite was run, the module was restored from a saved copy. `orig sha` and `restored
+sha` below must both equal the module's sha256 as shipped after this round's last edit
+(387c657b61a9648e7d7dd942b0504dd0a84a88e03f8bb8d7166857d95943fba5); a capture is worthless if the file it measured is not the file shipped.
 
 Mutation table (what was deleted -> which arm must red -> observed):
 
-  M1  `if (String(headCommit) !== grant.boundCommit) { throw … GRANT_FOREIGN_COMMIT … }`
-      -> arm 4 "a grant bound to ANOTHER commit refuses"            -> RED (1 failed)
-  M2  `if (before.exhausted) { throw … GRANT_EXHAUSTED … }`
-      -> arm 6 "an EXHAUSTED shared ledger refuses and leaves the
-               ledger byte-identical"                               -> RED (1 failed)
+  M1  the `GRANT_FOREIGN_COMMIT` comparison
+      -> arm 4 "a grant bound to ANOTHER commit refuses"                -> RED 1 failed
+  M2  the whole pre-reservation capacity block
+      -> arm 6 "an EXHAUSTED shared ledger refuses …" AND
+         arm 6b "a PARTIALLY-SPENT pool refuses BEFORE reserving"       -> RED 2 failed
+  M3  only `before.remaining < INTENT_ROWS_PER_LEASE + requiredBoots`
+      -> arm 6b ONLY (the `exhausted` half still covers arm 6)          -> RED 1 failed
+  M4  `if (native !== true) return NOT_REACHED …` in windowCaseVerdict
+      -> the pure-function arm AND the dry-scene test (which asserts the
+         dry run records the window case NOT_REACHED)                   -> RED 2 failed
+
+Every mutation left the other arms green: the suite fails for the deleted law, not
+because a file was broken.
 
 --- raw capture follows -------------------------------------------------------
-### RED 1/3 — the gate's module does not exist (the file BL-14 adds).
-$ mv tests/world-factory/suites/150-a5sf-read.mjs .artifacts/a5sf-read/suite.bak
+### RED 1/5 — the gate module does not exist (no gate at all).
 node:internal/modules/esm/resolve:272
     throw new ERR_MODULE_NOT_FOUND(
           ^
@@ -49,7 +63,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/d
 }
 
 Node.js v24.21.0
-✖ tests/world-factory/a5sf-read-gate.test.mjs (40.513069ms)
+✖ tests/world-factory/a5sf-read-gate.test.mjs (45.271074ms)
 ℹ tests 1
 ℹ suites 0
 ℹ pass 0
@@ -57,43 +71,46 @@ Node.js v24.21.0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 45.205653
+ℹ duration_ms 51.658982
 
 ✖ failing tests:
 
 test at tests/world-factory/a5sf-read-gate.test.mjs:1:1
-✖ tests/world-factory/a5sf-read-gate.test.mjs (40.513069ms)
+✖ tests/world-factory/a5sf-read-gate.test.mjs (45.271074ms)
   'test failed'
 exit=1
-orig sha=11e2f3e597709d490172314ab1d92d7ef99cd469f877a5f5a68220135c8fbbf6
+orig sha=387c657b61a9648e7d7dd942b0504dd0a84a88e03f8bb8d7166857d95943fba5
 
-### RED 2/3 — mutation M1: the FOREIGN-COMMIT comparison is deleted; the foreign-grant arm must go red.
-✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.504819ms)
-✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (1.192798ms)
-✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.258509ms)
-✖ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.158203ms)
-✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.579187ms)
-✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.405047ms)
-✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.20628ms)
-✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.026013ms)
-✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (3.253809ms)
-✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.361585ms)
-ℹ tests 10
+### RED 2/5 — mutation M1: the FOREIGN-COMMIT comparison is deleted; only arm 4 may go red.
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.56856ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (0.969245ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.243691ms)
+✖ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.337713ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.413734ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.399887ms)
+✔ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.476833ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.251125ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (0.991988ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.326077ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (527.766645ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (8.533054ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.277345ms)
+ℹ tests 13
 ℹ suites 0
-ℹ pass 9
+ℹ pass 12
 ℹ fail 1
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 65.960214
+ℹ duration_ms 603.070105
 
 ✖ failing tests:
 
-test at tests/world-factory/a5sf-read-gate.test.mjs:162:1
-✖ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.158203ms)
+test at tests/world-factory/a5sf-read-gate.test.mjs:164:1
+✖ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (1.337713ms)
   AssertionError [ERR_ASSERTION]: Missing expected rejection.
-      at async expectRefusal (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:99:3)
-      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:167:3)
+      at async expectRefusal (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:101:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:169:3)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
@@ -104,47 +121,188 @@ test at tests/world-factory/a5sf-read-gate.test.mjs:162:1
   }
 exit=1
 
-### RED 3/3 — mutation M2: the pre-reservation EXHAUSTION refusal is deleted; the exhausted-ledger arm must go red.
-✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.428865ms)
-✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (1.059656ms)
-✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.242429ms)
-✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.354762ms)
-✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.991627ms)
-✖ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (1.102898ms)
-✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.249773ms)
-✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.084353ms)
-✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (3.487072ms)
-✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.34356ms)
-ℹ tests 10
+### RED 3/5 — mutation M2: the whole pre-reservation CAPACITY block is deleted; arms 6 (exhausted) and 6b (partially spent) may go red.
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.633994ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (0.994213ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.325928ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.960969ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.379288ms)
+✖ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (1.259325ms)
+✖ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.585739ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.274179ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.248774ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.321649ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (517.835031ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.284071ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.232159ms)
+ℹ tests 13
 ℹ suites 0
-ℹ pass 9
-ℹ fail 1
+ℹ pass 11
+ℹ fail 2
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 68.146853
+ℹ duration_ms 598.25403
 
 ✖ failing tests:
 
-test at tests/world-factory/a5sf-read-gate.test.mjs:189:1
-✖ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (1.102898ms)
+test at tests/world-factory/a5sf-read-gate.test.mjs:191:1
+✖ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (1.259325ms)
   AssertionError [ERR_ASSERTION]: a refused gate must not append a reservation row
   + actual - expected
-  
+
     '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n' +
   +   '{"at":"2026-11-03T00:01:00Z","phase":"prior-boot","world":"w2"}\n' +
-  +   '{"at":"2026-11-03T01:02:40.453Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n'
+  +   '{"at":"2026-11-03T01:28:55.267Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n'
   -   '{"at":"2026-11-03T00:01:00Z","phase":"prior-boot","world":"w2"}\n'
-  
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:202:10)
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:204:10)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
     code: 'ERR_ASSERTION',
-    actual: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n{"at":"2026-11-03T00:01:00Z","phase":"prior-boot","world":"w2"}\n{"at":"2026-11-03T01:02:40.453Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n',
+    actual: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n{"at":"2026-11-03T00:01:00Z","phase":"prior-boot","world":"w2"}\n{"at":"2026-11-03T01:28:55.267Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n',
     expected: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n{"at":"2026-11-03T00:01:00Z","phase":"prior-boot","world":"w2"}\n',
     operator: 'strictEqual',
     diff: 'simple'
   }
+
+test at tests/world-factory/a5sf-read-gate.test.mjs:210:1
+✖ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.585739ms)
+  AssertionError [ERR_ASSERTION]: the partial-spend refusal must not append a reservation row
+  + actual - expected
+
+  + '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n' +
+  +   '{"at":"2026-11-03T01:28:55.268Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n'
+  - '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n'
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:221:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n{"at":"2026-11-03T01:28:55.268Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n',
+    expected: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
 exit=1
-restored sha=11e2f3e597709d490172314ab1d92d7ef99cd469f877a5f5a68220135c8fbbf6
+
+### RED 4/5 — mutation M3: only the REMAINING-capacity disjunct is deleted (the exhausted half stays); only arm 6b may go red.
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.609407ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (1.009121ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.250584ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.905715ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.455362ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.407011ms)
+✖ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (1.120361ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.221569ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (1.117736ms)
+✔ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (0.333341ms)
+✔ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (526.822637ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.535375ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.22163ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 600.483168
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-read-gate.test.mjs:210:1
+✖ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (1.120361ms)
+  AssertionError [ERR_ASSERTION]: the partial-spend refusal must not append a reservation row
+  + actual - expected
+
+  + '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n' +
+  +   '{"at":"2026-11-03T01:28:55.913Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n'
+  - '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n'
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:221:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n{"at":"2026-11-03T01:28:55.913Z","runId":"a5sf-read-gate-run","suite":"a5sf-read","kind":"budget-intent","phase":"a5sf-read-intent","world":"intent:grant-a5sf-p2-read-001","grantId":"grant-a5sf-p2-read-001","grantedBy":"user-ruling-fixture","boundCommit":"d58f078734a0512fb70d4f4a85be3d999c23465a","plannedStarts":1}\n',
+    expected: '{"at":"2026-11-03T00:00:00Z","phase":"prior-boot","world":"w1"}\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit=1
+
+### RED 5/5 — mutation M4: the non-native NOT_REACHED branch is deleted from windowCaseVerdict(); a dry driver may earn PASS.
+✔ gate: an ABSENT grant refuses with zero ledger rows and zero starts (1.492786ms)
+✔ gate: a MALFORMED grant refuses (each required field is load-bearing) (0.962994ms)
+✔ gate: an AMBIGUOUS grant ledger refuses instead of choosing a maxStarts (0.246918ms)
+✔ gate: a grant bound to ANOTHER commit refuses (foreign artifact) (0.970539ms)
+✔ gate: a grant too small for the declared boots refuses, and a caller cannot raise its own cap (0.344703ms)
+✔ gate: an EXHAUSTED shared ledger refuses and leaves the ledger byte-identical (0.411129ms)
+✔ gate: a PARTIALLY-SPENT pool refuses BEFORE reserving (a refusal never moves the pool) (0.626466ms)
+✔ gate: a run record with NO shared ledger path refuses (no second counter exists) (0.207052ms)
+✔ gate: a GRANTED lease appends its intent row BEFORE the boot, boots once, then refuses a second boot (0.993581ms)
+✖ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (1.052142ms)
+✖ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (495.523934ms)
+✔ suite run: an absent grant refuses BEFORE any World/factory touch and records no case (4.143103ms)
+✔ driver probe: no live read driver refuses LIVE_SEAM_UNAVAILABLE before reserving budget (0.2112ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 11
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 566.148518
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-read-gate.test.mjs:280:1
+✖ window case: NOT_REACHED for a non-native driver; PASS only on an EXACT native window (1.052142ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    {
+  +   reason: 'NATIVE_WINDOW_EXACT',
+  +   verdict: 'PASS'
+  -   reason: 'NATIVE_WINDOW_UNAVAILABLE',
+  -   verdict: 'NOT_REACHED'
+    }
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:283:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { verdict: 'PASS', reason: 'NATIVE_WINDOW_EXACT' },
+    expected: { verdict: 'NOT_REACHED', reason: 'NATIVE_WINDOW_UNAVAILABLE' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-read-gate.test.mjs:295:1
+✖ dry scene: the real compiler/guard/chain/diag round-trip passes, and >10MiB is NOT_REACHED (495.523934ms)
+  AssertionError [ERR_ASSERTION]: a non-native driver cannot earn the native-window case
+  + actual - expected
+
+  + 'PASS'
+  - 'NOT_REACHED'
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-read/tests/world-factory/a5sf-read-gate.test.mjs:302:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'PASS',
+    expected: 'NOT_REACHED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit=1
+restored sha=387c657b61a9648e7d7dd942b0504dd0a84a88e03f8bb8d7166857d95943fba5
