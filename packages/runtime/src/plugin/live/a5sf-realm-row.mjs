@@ -93,6 +93,36 @@ export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
 export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
 
 /**
+ * Typed refusal of the native ASSEMBLY path (assembly gaps 1 and 2, 2026-11-03).
+ *
+ * A `TypeError` subclass with a stable `code`, so a caller can tell these
+ * fail-closed assembly refusals apart from configuration faults without string
+ * matching the message:
+ *   - `A5SF_COVERAGE_UNDEFINED` — the composition declared managed native
+ *     modules but the tools row cannot answer definition identity (`get`), so
+ *     coverage would be silently skipped.
+ *   - `A5SF_BINDING_OWNER_UNRESOLVED` — a mounted ToolBinding names a tool that
+ *     NO configured native module registers.
+ *   - `A5SF_BINDING_OWNER_AMBIGUOUS` — MORE than one configured module registers
+ *     that tool, so assigning the binding would be a guess.
+ *   - `A5SF_MODULE_OBSERVATION_UNREPRODUCED` — the REAL mount did not reproduce
+ *     what that module's ownership probe observed (a one-shot `apply` consumed
+ *     by the probe, or a conditional registration that vanished), so a tool
+ *     would stay on the unguarded preset definition while the name set matched.
+ */
+export class A5sfNativeAssemblyError extends TypeError {
+  /**
+   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED'} code
+   * @param {string} detail
+   */
+  constructor(code, detail) {
+    super(`agent-bindings: ${detail}`)
+    this.name = 'A5sfNativeAssemblyError'
+    this.code = code
+  }
+}
+
+/**
  * Name the MEMBER TOOL PLANE scope of one mounted realm.
  *
  * WHY: the mount installs the confined Provider into `root.isolate('fs', …)`,
@@ -337,13 +367,21 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // leaves the preset definition in place — same name, ZERO guard facts).
   const coverageScope = runtimeAgent ?? scopeOf(root)
   const toolsService = root.get('tools')
-  // Identity coverage needs the scoped reader; a surface-only double (a test
-  // world, or a pre-`get` tools row) keeps the name-set gate instead of
-  // pretending to prove more than it can.
+  // Identity coverage needs the scoped reader. ASSEMBLY GAP 2 (2026-11-03): on
+  // the product path a missing `get()` must NOT silently degrade to the
+  // name-set gate. The composition DECLARED managed native modules, so the only
+  // honest options are "verify by definition identity" or "refuse" — a
+  // name-set-only double is fine for tests, never for a live Member.
   const canReadDefinitions = toolsService !== undefined && toolsService !== null && typeof toolsService.get === 'function'
-  const beforeDefinitions = canReadDefinitions
-    ? new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
-    : new Map()
+  if (!canReadDefinitions) {
+    throw new A5sfNativeAssemblyError(
+      'A5SF_COVERAGE_UNDEFINED',
+      `the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} need a tools service that can answer definition identity`
+      + ' (tools.get); refusing the native mount instead of degrading to a name-set-only check that cannot prove the router'
+      + ' shadowed each forwarded tool',
+    )
+  }
+  const beforeDefinitions = new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
   const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
@@ -362,21 +400,65 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     }
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
-  const fibers = await realm.mountNativeToolModules(nativeToolMountsOf(nativeToolModules, realm))
-  const coverage = canReadDefinitions ? uncoveredShadowedTools(root, coverageScope, fibers, beforeDefinitions) : []
+  const expansion = await nativeToolMountsOf(nativeToolModules, realm)
+  const fibers = await realm.mountNativeToolModules(
+    expansion.mounts,
+    // The RESOLVED agent scope key: the realm's post-settle re-verification
+    // needs it to ask `tools.get(name, scope)` which definition the agent now
+    // resolves. This function already resolved it for the surface reads.
+    { scope: coverageScope },
+  )
+  const coverage = uncoveredShadowedTools(root, coverageScope, fibers, beforeDefinitions)
+  // The caller's OWN refusal abandons the attach: release every router fiber
+  // through the realm (which also detaches its post-settle verification) rather
+  // than disposing fibers one by one. That keeps the refusal from being recorded
+  // as a LATE-CHANGE invalidation and leaves a corrected composition able to
+  // attach later.
+  const releaseAttach = async () => {
+    if (typeof realm.disposeNativeToolModules === 'function') {
+      try {
+        await realm.disposeNativeToolModules()
+        return
+      } catch {
+        // Fall through to the individual disposals below.
+      }
+    }
+    for (const fiber of [...fibers].reverse()) {
+      try {
+        await fiber.dispose()
+      } catch {
+        // The refusal is the failure that must be reported.
+      }
+    }
+  }
+  // C1 (2026-11-03 review): reconcile the REAL forwarding against the
+  // ownership probe. A module that registers only on its FIRST `apply` is
+  // consumed by the probe: the real mount forwards NOTHING, the model-visible
+  // name set still matches the preset, and without this check the attach is
+  // ACCEPTED with the tool left on the unguarded preset definition (measured
+  // fail-open; the binding mount's own "must forward my tool" refusal catches
+  // only binding-owned tools). Per module, the real fibers' `observed` (which
+  // already includes what they forwarded) must be a SUPERSET of what the probe
+  // observed. Extra real names are the surface gate's business; a MISSING
+  // observed name is a lost shadow and refuses the whole attach.
+  const unreproduced = unreproducedObservations(expansion, fibers)
+  if (unreproduced.length > 0) {
+    await releaseAttach()
+    throw new A5sfNativeAssemblyError(
+      'A5SF_MODULE_OBSERVATION_UNREPRODUCED',
+      `the native ownership probe observed registrations that the REAL mount did not reproduce`
+      + ` (${unreproduced.map((entry) => `${entry.moduleName} observed ${JSON.stringify(entry.missing)}`).join('; ')});`
+      + ' a one-shot/conditional `apply` consumed by the probe would leave those tools on the unguarded preset definition'
+      + ' while the surface name set stayed equal — refusing the attach (fail closed)',
+    )
+  }
   if (coverage.length > 0) {
     // FAIL CLOSED on COVERAGE, not just on the name set. A tool a router reports
     // as forwarded MUST be the definition the agent now resolves; if the preset
     // definition is still the one visible, the tool executes on the BASE provider
     // with zero guard facts while every surface name stayed equal — the hole a
     // name-only check cannot see.
-    for (const fiber of [...fibers].reverse()) {
-      try {
-        await fiber.dispose()
-      } catch {
-        // The coverage refusal is the failure that must be reported.
-      }
-    }
+    await releaseAttach()
     throw new TypeError(
       `agent-bindings: the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} left ${JSON.stringify(coverage)} on the unshadowed baseline`
       + ' (the router forwarded the name but the preset definition is still the one the agent resolves); refusing the mount —'
@@ -392,13 +474,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     // tool package) or disappears is a governance change this wiring must not
     // make silently. The shadow is removed and the refusal propagates; the
     // realm itself stays mounted (it is still the Member's confined provider).
-    for (const fiber of [...fibers].reverse()) {
-      try {
-        await fiber.dispose()
-      } catch {
-        // The surface refusal is the failure that must be reported.
-      }
-    }
+    await releaseAttach()
     throw new TypeError(
       `agent-bindings: the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} would CHANGE the Member's model-visible tool surface`
       + ` (added: ${JSON.stringify(added)}; removed: ${JSON.stringify(removed)}); refusing to mount the native shadow — a scoped`
@@ -451,9 +527,22 @@ function uncoveredShadowedTools(root, scope, fibers, beforeDefinitions) {
  *
  *   - ONE ceiling mount per module (no `toolBindingIdentity`), which forwards
  *     every tool that has NO mounted binding (today's behaviour), and
- *   - ONE mount per mounted ToolBinding realm, which forwards ONLY that
- *     binding's own tool (`dsh.fs/read` -> `read`) and executes it on the
- *     binding's already-compiled/confined provider.
+ *   - ONE binding mount ONLY for the module that OWNS the binding's tool
+ *     (`dsh.fs/read` -> `read`), mounted on that binding's
+ *     already-compiled/confined provider.
+ *
+ * ASSEMBLY GAP 1 (2026-11-03) — WHY THIS IS NOT A CARTESIAN PRODUCT. A binding
+ * realm can only register the tool its identity names, so demanding that EVERY
+ * configured module's binding fiber register it refuses the whole attach as soon
+ * as a second module does not own that tool (measured: `read` belongs to one
+ * package; a companion module has no `read`, and the cartesian mount refused
+ * multi-module assembly). Ownership is therefore OBSERVED, never guessed from a
+ * table or a module specifier: each module is mounted once in the CEILING
+ * partition behind an observe-only router that registers NOTHING and reports
+ * the names its `apply` would have registered. Those fibers are disposed before
+ * the real mounts, so the observation leaves no registry effect. A binding with
+ * NO owner (or with MORE THAN ONE) is a typed refusal — fail closed, never a
+ * silent widening onto the ceiling.
  *
  * The UNION of the fibers is the module's surface, exactly once: the existing
  * surface-neutrality check below stays the gate, and `EffectiveIo` is never
@@ -462,9 +551,9 @@ function uncoveredShadowedTools(root, scope, fibers, beforeDefinitions) {
  *
  * @param {readonly object[]} nativeToolModules - imported module specs.
  * @param {object} realm - the mounted realm (its `bindings` are the routing table).
- * @returns {readonly object[]} the mounts to hand to `mountNativeToolModules`.
+ * @returns {Promise<readonly object[]>} the mounts to hand to `mountNativeToolModules`.
  */
-function nativeToolMountsOf(nativeToolModules, realm) {
+async function nativeToolMountsOf(nativeToolModules, realm) {
   const bindings = Array.isArray(realm?.bindings) ? realm.bindings : []
   const identities = []
   for (const binding of bindings) {
@@ -474,12 +563,144 @@ function nativeToolMountsOf(nativeToolModules, realm) {
     }
     identities.push(identity)
   }
-  const mounts = []
-  for (const module of nativeToolModules) {
-    mounts.push(module)
-    for (const toolBindingIdentity of identities) mounts.push({ ...module, toolBindingIdentity })
+  // No mounted binding: every module keeps today's single ceiling mount, and
+  // there is no ownership question to answer (no observation mount needed).
+  if (identities.length === 0) {
+    return Object.freeze({
+      mounts: Object.freeze([...nativeToolModules]),
+      observedByModule: null,
+      mountCounts: Uint32Array.from(nativeToolModules.map(() => 1)),
+    })
   }
-  return Object.freeze(mounts)
+  // OBSERVE what each module actually registers. `observed` is the router's
+  // receipt of every registration the module attempted; observe-only forwards
+  // none of them, so the live registry is untouched.
+  const observations = await observeNativeToolOwnership(nativeToolModules, realm)
+  /** @type {Map<number, string[]>} module index -> binding identities it owns. */
+  const assignments = new Map()
+  for (const identity of identities) {
+    const toolName = toolNameOfBindingIdentity(identity)
+    if (toolName === '') {
+      throw new TypeError(`agent-bindings: ToolBinding identity ${JSON.stringify(identity)} addresses no tool name (expected '<owner>/<tool>')`)
+    }
+    const owners = []
+    for (const [index, names] of observations.entries()) {
+      if (names.has(toolName)) owners.push(index)
+    }
+    if (owners.length === 0) {
+      throw new A5sfNativeAssemblyError(
+        'A5SF_BINDING_OWNER_UNRESOLVED',
+        `no configured ${A5SF_NATIVE_TOOL_MODULES_KEY} entry registers tool '${toolName}' named by mounted ToolBinding '${identity}';`
+        + ' a binding realm can only route a tool its own module registers (fail closed — refusing rather than falling back'
+        + ' onto the ceiling lane)',
+      )
+    }
+    if (owners.length > 1) {
+      throw new A5sfNativeAssemblyError(
+        'A5SF_BINDING_OWNER_AMBIGUOUS',
+        `mounted ToolBinding '${identity}' names tool '${toolName}', which ${String(owners.length)} configured native modules register`
+        + ` (${owners.map((index) => nativeToolModules[index]?.module?.name ?? `#${String(index)}`).join(', ')});`
+        + ' assigning the binding to one of them would be a guess (fail closed)',
+      )
+    }
+    const owner = owners[0]
+    const owned = assignments.get(owner)
+    if (owned === undefined) assignments.set(owner, [identity])
+    else owned.push(identity)
+  }
+  const mounts = []
+  const mountCounts = []
+  for (const [index, module] of nativeToolModules.entries()) {
+    const owned = assignments.get(index) ?? []
+    mounts.push(module)
+    for (const toolBindingIdentity of owned) mounts.push({ ...module, toolBindingIdentity })
+    mountCounts.push(1 + owned.length)
+  }
+  return Object.freeze({
+    mounts: Object.freeze(mounts),
+    observedByModule: observations,
+    mountCounts: Uint32Array.from(mountCounts),
+  })
+}
+
+/**
+ * Per-module C1 reconciliation: which probe-observed names the REAL mount did
+ * not reproduce.
+ *
+ * @param {{ mounts: readonly object[], observedByModule: readonly Set<string>[]|null, mountCounts: Uint32Array }} expansion
+ * @param {readonly object[]} fibers - the fibers the real mount returned, in mount order.
+ * @returns {{ moduleName: string, missing: string[] }[]}
+ */
+function unreproducedObservations(expansion, fibers) {
+  if (expansion.observedByModule === null) return []
+  const unreproduced = []
+  let cursor = 0
+  for (const [index, observed] of expansion.observedByModule.entries()) {
+    const count = expansion.mountCounts[index]
+    const moduleFibers = fibers.slice(cursor, cursor + count)
+    cursor += count
+    const real = new Set()
+    for (const fiber of moduleFibers) {
+      const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+      for (const name of routing?.observed ?? []) real.add(name)
+      for (const name of routing?.forwarded ?? []) real.add(name)
+    }
+    const missing = [...observed].filter((name) => !real.has(name))
+    if (missing.length > 0) {
+      const moduleName = expansion.mounts[index]?.module?.name ?? `#${String(index)}`
+      unreproduced.push({ moduleName, missing })
+    }
+  }
+  return unreproduced
+}
+
+/**
+ * Mount every module ONCE in the ceiling partition as an OBSERVE-ONLY probe and
+ * return its own registration answer. The probe fibers are disposed before the
+ * caller registers anything real; no tool or prompt section is registered by an
+ * observe-only mount (`mount.ts` forwards nothing), so this is a read of the
+ * module's behaviour, not a mutation of the Member's surface.
+ *
+ * @param {readonly object[]} nativeToolModules - imported module specs.
+ * @param {object} realm - the mounted realm.
+ * @returns {Promise<readonly Set<string>[]>} observed tool names, by module index.
+ */
+async function observeNativeToolOwnership(nativeToolModules, realm) {
+  const probes = await realm.mountNativeToolModules(
+    nativeToolModules.map((module) => ({ ...module, observeOnly: true })),
+    {},
+  )
+  try {
+    if (!Array.isArray(probes) || probes.length !== nativeToolModules.length) {
+      throw new TypeError(
+        `agent-bindings: the native ownership observation must answer one receipt per configured module`
+        + ` (got ${Array.isArray(probes) ? String(probes.length) : typeof probes} for ${String(nativeToolModules.length)})`,
+      )
+    }
+    return Object.freeze(probes.map((fiber) => {
+      const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+      // A pre-gap-1 double may only publish `forwarded`; accepting it keeps the
+      // observation seam backward compatible without inventing names.
+      const names = routing?.observed ?? routing?.forwarded ?? []
+      return new Set(names)
+    }))
+  } finally {
+    for (const fiber of (Array.isArray(probes) ? [...probes].reverse() : [])) {
+      try {
+        await fiber.dispose()
+      } catch {
+        // Disposal of a probe that registered nothing: the mount's own refusal
+        // (if any) is the failure that matters.
+      }
+    }
+  }
+}
+
+/** The tool name a ToolBinding identity addresses: the last `/` segment of `<owner>/<tool>`. */
+function toolNameOfBindingIdentity(toolBindingIdentity) {
+  const at = toolBindingIdentity.lastIndexOf('/')
+  const name = at === -1 ? toolBindingIdentity : toolBindingIdentity.slice(at + 1)
+  return name.trim()
 }
 
 /**
