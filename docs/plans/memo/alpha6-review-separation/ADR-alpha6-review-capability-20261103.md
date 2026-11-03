@@ -121,18 +121,18 @@ interface ReviewCapability {
 | 入口 | Officer | Leader | Human |
 | --- | --- | --- | --- |
 | `resolveControl`（allow / deny） | 仅在其 Case-scoped 委托内允许；deny 同样记录真实 decider + evidence | 按原生角色规则 | 按既有 resolver-role 表处理（包括可合法代决 `leader-approval`）；`user-approval` 仍只允许 Human，永不下放 |
-| `escalateApprovalLeg` | **禁止**；Officer 需要的是 Handoff，不是权限升级 | 允许，按既有规则 | 仅其可决范畴 |
+| `escalateApprovalLeg` | **允许合法的直接升级**：当前受委托普通工具审批 leg 为 leader 时，可按既有阶梯升至 human-user；不得自己批准后继 Human leg | 保留原生阶梯及 resolver 规则 | 保留原生阶梯及 resolver 规则，不增 Human Admin 权限 |
 | `appendTerminalOutcome` / 零审查关闭 | **禁止**；不得由 Officer 新建关闭案件 | 允许，按既有规则 | 仅其可决范畴 |
 | `abandonControlRequest` | 不作为审批决议；沿用 requester/Leader 的既有规则 | 同左 | 同左 |
 
-> 这里的“允许”只表示入口资格；实际 allow 仍须通过 PA effect/ceiling/grant/guard，实际 deny 仍写既有终态语义。不得用一个 `ReviewCapability` 同时打开四个入口。
+> 这里的“允许”只表示入口资格；实际 allow 仍须通过 PA effect/ceiling/grant/guard，实际 deny 仍写既有终态语义。Officer 直接 Escalate 是**当前合法 leg 的 reviewer 动作**，不是工具 allow、不是 Handoff，不能令 Officer 获得升级后 Human leg 的审批准入；不得用一个 ReviewCapability 无限制打开其他入口。
 >
 > **兼容说明**：Alpha.6 不收窄 Human 原有的监督/替代决议范围；其实际可决 kind 以现有 `CONTROL_RESOLVER_ROLES` 为准。表中的 Human-only 是 *必须* 由 Human 批准的请求，不意味着 Human *只能* 处理 Human-only。此处仅澄清既有能力，不新增 Actor 权限。
 
 **resolve 阶段不存在“本次 decision 行”，不得要求 verifier 从它读取能力。** 正确顺序如下，全部在现有的受保护 ControlService 决议/Team 锁边界下完成；允许 verifier 读取必要的可信调用事实，但不得绕过该决议序列：
 
 1. 读取当前权威 Case/current leg、冻结 Blueprint、真实身份、当前转交事实、权限代际与准确操作/PA manifest。候选与 PA verifier 必须共享同一个可信调用事实来源（同一 provider 或同一 generation tuple）；若分两次读取，必须显式比较 Blueprint hash、authorityGeneration、OperationOwner/Tool、EffectSet fingerprint，不一致即拒绝，禁止 split-brain。
-2. 用 **D2 唯一求值器**计算本次可信 `ReviewCapability` 候选，检查 Actor 此时是否有资格决定当前 leg。按上面的入口能力表分别核定 `allow/deny/escalate/terminal-close`；**同一资格来源不意味着所有入口开放相同能力**。
+2. 用 **D2 唯一求值器**计算本次可信 `ReviewCapability` 候选，检查 Actor 此时是否有资格决定当前 leg。按上面的入口能力表分别核定 `allow/deny/escalate/terminal-close`；**同一资格来源不意味着所有入口开放相同能力**。Officer 升级必须使用当前 leg 的可信委托资格且仅能沿现有封闭阶梯前往 Human successor，不得绕过权限检查指定新 rung。
 3. 对 allow，在实际提交决议**之前**把此候选能力作为由 ControlService 生成的、非 durable 的可信输入传给已有 PA Effects Verifier；verifier 在当前 EffectSet/Authority Ceiling 下重新验证，不能从不存在的 decision 行读数据。候选类型必须是求值器产生的 nominal/opaque `ReviewCapabilityCandidate`；PA verifier 只接受该类型，不得接受 `{reviewerAuthority:'leader'}` 之类的裸字段或模型/客户端提供的证明。
 4. 所有门禁通过后，把真实 `decider`、决议和规范化 `DecisionCapabilityEvidence` **在同一 durable decision 写入中原子记录**；不得先写 allow 再补能力，也不得存一个尚未验证的凭据。
 5. 后续 PA Presenter、Grant/Guard 从该已持久化的 decision 及其凭据读取，按 D4 在本次真实调用上下文中重新验证后再作一次性授权与消费。
@@ -200,6 +200,53 @@ interface CurrentLegTransfer {
 - Handoff/接管不改变 `reviewAuthority` rung，不增加任何 Principal 的 native role 能力，也不是 `escalateApprovalLeg`；Leader 按其已有原生合法权限审批。其唯一持久记录用于当前 leg 的路由覆盖与禁止旧 Officer 重签。
 - 这可采用一个最小 TeamDomain/Control 事实，不要求通用 Assignment Ledger、定时工作流或二次授权事务。
 
+### D6a. Leader 原生主动代决与 Officer 直接升级（已获用户裁决）
+
+- **Leader 主动代决**：默认 Officer 仅规定自动投递和 Officer 委托资格，不撤销 Leader 的原生审批权。Leader 可主动查阅并审批仍合法的普通当前 leg，无须预先 Handoff。系统不因此向 Leader 双投普通审批 Wake；第一条合法终态决议获胜，其余尝试拒绝，Officer 的失效通知随后被合并/撤销。Human 既有代决权限不变。
+- **Officer 直接升级**：仅在当前有效普通工具审批由唯一 Officer 合法受委托、当前 leg 的审批位置是 leader、权限阶梯 successor 为 human-user 时允许。必须复用当前 leg 的真实身份、作用域、ReviewCapability、同一 Principal 不重复审查及 Envelope 检查；不能自行构造另一个 Human 级案件或任意指定 successor。
+- **升级不批准工具**：当前 leg 按既有 Control 法律写入 terminal deny、reason=escalated，并持久产生升级事实与下一 Human leg；这只关闭旧 leg，**不是原工具操作的最终 deny**，不得 mint/consume Grant。下一 leg 只有合法 Human 角色及满足其权限要求的 reviewer 才能 allow/deny；Officer 不得审 Human leg。
+- 新 Human leg 按当前有效 Case/leg 的 Human 接口通知 Human，而不要求先 Handoff Leader；若 successor 无合法 resolver，则沿现有 authority-unavailable 结果终止，绝不默认 allow。Handoff 与 Escalation 仍是两种不同动作。
+
+### D6b. 原始 PA 工具调用跨 leg 继续（方案 A：Human 最终批准后可恢复）
+
+**必须修复当前 PA↔Control 接缝，不得把单纯开放 Officer 的 escalateApprovalLeg 入口当成完成。** 当前 PA Bridge 创建 requestControl 请求时并未提供 Control 的 leg 字段，持有的 PA 逻辑 ID 是 tadm:... 而非 ControlService 的 case-... ID；其 awaitControlDecision 等待原始 requestId，遇非 allow 即返回 deny。现有 Escalation 只针对有效 durable Case/leg，关闭旧 leg 为 deny/escalated，并写新 leg；当前 successor leg writer 没有保留完整严格 PA manifest。若不贯通，Human 后续 allow 无法使原工具操作合法继续。
+
+~~~text
+原始工具调用 / PA EffectSet / exact ToolBinding / cancel signal
+                |
+         PA→Control Case Adapter
+  · ControlService 派生 durable ApprovalCaseId
+  · PA 逻辑 ID 与 durable Case ID 形成可信一对一关联
+  · 创建真正可升级的首个 Control leg 和严格 PA 来源
+                |
+      current leg 0：Officer / Leader
+                |
+        Officer 合法 Escalate
+  · 旧 leg deny/escalated，但不是最终工具拒绝
+  · 新 current leg 由 Human 审核
+                |
+    Case-aware waiter 跟踪最终有效 Human 决议
+                |
+     原工具调用仍存活且未取消/超时？
+             /                      \
+           是                        否
+           |                          |
+     全部 PA/Hard Ceiling        零 Grant / 零执行
+     /Grant/Guard 重验
+           |
+     用终态 leg 的真实 decision 配对后最多执行一次
+~~~
+
+1. **身份桥接**：PA EffectSet 的逻辑 ID 与 Control 的 durable ApprovalCaseId 属于不同身份域；使用当前 Control/PA 的权威记录建立一对一、可读回、可审计的关联，不要求字符串相等，也不创建平行授权账本。只有与原工具调用完全一致的参数/Tool/Member/EffectSet/权限代际才能复用当前 Case。
+2. **完整 current leg 与 manifest**：A6 启用的工具 ask 通过合法的 Case/leg 创建路径启动，首 leg 是正式 Control Case。Escalation 写 successor 时不得丢失原始严格 PA manifest 的校验来源；可由前一 leg 的已验证 immutable 来源引用并检查 digest，也可按严格恒等约束传播，选择由 PR2b 工程确定。原始 operation fingerprint、effect set、ToolBinding、OperationOwner、authorityGeneration、scope、correlation 与 cancellation identity 均不得被升级重新定义。
+3. **等待最终 Case 结果**：PA 桥按 durable Case 当前 leg 读取升级链；对中间 leg 的 deny/escalated **继续等待**，而不是当作最终工具 deny。以最终合法 allow/deny/authority-unavailable/取消等实际结局完成原工具调用；不自动发起第二次工具请求。Escalation 的 Human leg 应通过既有 Human 可处理的入口被发现/通知。
+4. **最终决议及 Guard 配对**：Grant 依据的是本 Case 的**最终有效 allow leg**。如 Human 允许，则使用 Human 的真实 decider 与该 Human leg 的正确 requestId、decisionSequence 和对应的 native 审批能力，仍须验证它与原工具调用的精确 EffectSet/Scope/Tool/参数/代际相匹配。Guard 不再把被 escalated 的 initialRequestId 误当作最终批准的 requestId；不得为了跨 leg 配对放松原有 one-shot 配对与硬上界法律。
+5. **调用存活性与取消**：Escalation 期间原工具调用保持待决；仅当 Human 最终 allow 时，该调用还活着、未被 Stop/AbortSignal/超时/Host 取消，而且全部执行前校验通过，才继续执行。**若原调用已取消或超时，Human 后续同意也不能复活、重放或执行该调用**。durable 审批历史可以保留，过期 Case 的清理沿用既有合法 abandon/close 语义，不能把旧批准当作新调用的票据。
+6. **并发与恢复**：Case/leg 决策、升级和当前 leg 转交均复用 Team/Control 锁与现有 case 身份校验；每次合法升级只有一个当前 leg，旧 leg 的 deny/escalated 不会产生 Grant。重启可恢复审批事实/待办通知，但**不能自动重启已取消/失去执行上下文的原工具调用**。旧式无 leg 的 requestControl/awaitControlDecision 行为保持兼容，不对历史请求施加虚构的升级语义。
+7. **边界**：这些变动属于 PA↔Control 适配、Case/leg/最终审批解析和一次性 Guard 配对的必要契约重构，**不修改 DSH 原生工具执行体系、Alpha.5 的 FS/OS 沙箱或工具定义**。若当前 Host 的真实等待/取消机制无法满足方案 A，实施时明确阻塞并提供最小正确接缝，而不是绕过取消或伪造成功。
+
+**实施验收**：在 PR2b 的真实服务/严格 PA manifest 测试中至少覆盖 Officer→Human allow 后继续、Human deny、Leader 原生主动代决、取消/超时后 Human allow 零执行、caseId 双域关联、升级后 manifest 仍可验证、最后 leg 的真实 requestId/decisionSequence 配对、重复升级/过期 leg 拒绝，以及重启不重放执行。PR2c/PR4/PR5/PR6 再接入 Officer 工具面与实际 Human/Host 通知；PR7 复核真 Host 全链。不为此重新建立独立 PoC。
+
 ### D7. 失败关闭与向后兼容
 
 - 无可信 `operationOwner`/Tool/Reviewer Template、Blueprint 例外无法判定、当前 Case/leg 失配、权限代际漂移、PA effect/scope 失配、Handoff 已改变归属 → 对 Member 委托拒绝，零未经授权的 allow/grant/consumption。
@@ -261,10 +308,10 @@ Frozen Blueprint ──> BlueprintReviewPolicy (pure; ONE authoring matcher)
 | --- | --- | --- |
 | **A6-PR1** | 冻结 Blueprint 加法 grammar + 唯一共享 BlueprintReviewPolicy，Router/委托使用同一 Matcher | 实例级作者规则、路由 subagent、第二份配置系统 |
 | **A6-PR2a** | 基于 PR1 的统一 CapabilityEvaluator 与测试，特别覆盖 Leader 例外、自审、不同主体、Handoff | 并行重写另一份 Blueprint matcher |
-| **A6-PR2b** | Control precommit 候选 → PA precommit 验证 → durable 同行证据 → PA/Grant/Guard 可信重验，真实 strict PA manifest 正/负控 | 仅凭 role gate 的简单 Control PoC 宣称功能完成 |
+| **A6-PR2b** | Control precommit → durable 同行证据 → PA/Grant/Guard；并贯通 PA↔Control durable Case/leg/manifest/Case-aware waiter/最终决议配对，真实 Officer→Human 的原调用连续性与取消后零执行 | 只放开 escalate 入口；另造工具重试/执行器；忽略旧 leg 的 deny/escalated 语义 |
 | **A6-PR2c** | Officer Handoff / 可信 Runtime Unavailable Takeover，共用最小 current-leg fact、原 Officer 失权与 Leader Wake | 通用 assignment 账本、计时策略或动态路由 |
 | **A6-PR5** | Officer 的合法待办读取与提交审批，不获取全 Team 管理权限 | 第二种审批写入机制 |
 
-**主要测试必须覆盖**：precommit 不读取不存在的 decision；Officer 对 Blueprint Leader 例外不得审批；Reviewer/Requester/OperationOwner 互不混淆；接管由 Runtime 发起；持久快照不能跨 Case/leg/tool/Member 重用；非委托旧行不变；合法委托的 PA grant 只 mint/consume 一次；运行中 Handoff 对已提交决议的处理不误依赖通知状态。
+**主要测试必须覆盖**：Leader 对默认 Officer 案件可主动 native 代决但无双通知；Officer 直接 Escalate 至 Human，Human 最终 allow 后原工具仅在有效时继续；取消/超时后的 Human allow 零执行；中间 deny/escalated 不被误当最终工具拒绝；PA 逻辑 ID 与 Control Case 身份显式关联；终态 leg 的 requestId/decisionSequence 与原调用 Guard 精确配对；precommit 不读取不存在的 decision；Officer 对 Blueprint Leader 例外不得审批；Reviewer/Requester/OperationOwner 互不混淆；接管由 Runtime 发起；持久快照不能跨 Case/leg/tool/Member 重用；非委托旧行不变；合法委托的 PA grant 只 mint/consume 一次；运行中 Handoff 对已提交决议的处理不误依赖通知状态。
 
 **状态**：此 ADR 是 2026-11-03 实施前设计澄清，未执行新 PoC、未修改生产代码；后续真实服务/Host 行为仍须在 PR2b/PR4/PR6/PR7 的既定实施验收中确认。
