@@ -3,16 +3,17 @@ $ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/verify-bluepr
 --- stdout ---
 scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
 scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
-scanned-in-scope: 1113 tracked files
+scanned-in-scope: 1115 tracked files
 SCOPE-NOTE blind spot: 41 files (2 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 51 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
 adjudication-ledger: /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json (24 entries)
 SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
-blueprint-keyed files with version digits: 74
+blueprint-keyed files with version digits: 75
 GATE: dirty + UNADJUDICATED unknown only. Closure = dirty empty AND no unadjudicated unknown. adjudicated/refused/prose print for dispatch and audit, never gated. (The seventh class intentionally-dirty was RETIRED in R3 2026-10-08 — its row kind is a not-run; FINDINGS section 10.)
 OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
 OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
 OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
 OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1
+OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 ADVISORY packages/domain/test/a5fl1-blueprint-v4-flip.test.ts :: L150=v4(typed-code-position [measured survivor of the real §7.3 flip (17/18 survived) — the probe, not tsc, dispositions this line])
@@ -102,9 +103,9 @@ PROSE packages/domain/test/a5sr2-blueprint-v4-grammar.test.ts :: L10=v4
 PROSE packages/domain/test/t1-capability-schema.test.ts :: L43=v1
 PROSE packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L7=v2
 PROSE packages/runtime/test/a4f1-row-version-not-document-version.test.ts :: L9=v2
-PROSE packages/testkit/test/a4p7-blueprint-version-clean.test.ts :: L644=v99
+PROSE packages/testkit/test/a4p7-blueprint-version-clean.test.ts :: L645=v99
 PROSE packages/tools/harness/t12-vertical.mjs :: L1852=v2
-RESULT dirty(6 files, 15 sites)
+RESULT dirty(7 files, 18 sites)
 RESULT unknown(0 files, 0 sites)
 RESULT advisory(10 files, 14 sites)
 RESULT refused(56 files, 121 sites)
