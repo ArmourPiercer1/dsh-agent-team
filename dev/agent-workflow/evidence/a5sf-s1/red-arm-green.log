@@ -1,0 +1,6 @@
+ceiling allows: /tmp/a5sf-red-arm-vONBO4
+read binding allows: /tmp/a5sf-red-arm-vONBO4/inside
+locator: /tmp/a5sf-red-arm-vONBO4/ceiling-only.txt
+dispatch isError=true text="Error: authored locator '/tmp/a5sf-red-arm-vONBO4/ceiling-only.txt' is outside every allow subtree of the lane"
+facts: {"schema":"a5sf-guard-consult/1","realm":"binding","memberIdentity":"member-red-arm-a","toolBindingIdentity":"dsh.fs/read","policyRevision":"a5sf1:member-red-arm-a:g1","method":"stat","locator":"/tmp/a5sf-red-arm-vONBO4/ceiling-only.txt","decision":"deny","decidedBy":"IO_READ_DENIED","sequence":1,"observedAt":"2026-11-03T15:26:36.221Z"}
+RED-ARM: PASS — the tool axis is consumed by the execution path

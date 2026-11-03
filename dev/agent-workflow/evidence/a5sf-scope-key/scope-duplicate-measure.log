@@ -1,0 +1,9 @@
+row resolves dsh-scope   : /home/armourpiercer/projects/dsh-agent-team/node_modules/.pnpm/@deepseek-ai+dsh-scope@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-invariants_0d6b19188928ab894325adc32e18b0b5/node_modules/@deepseek-ai/dsh-scope/lib/index.js
+duplicate copy realpath  : /tmp/a5sf-scope-dup-measure-9S3A8r/index.mjs
+same module namespace    : false
+scope key via duplicate  : KEY
+same ctx via row instance: undefined
+runtimeAgent fallback    : KEY
+attach with runtime Agent: MOUNTED (the live Host refusal would be gone)
+both identity paths empty: REFUSED with the same typed TypeError (fail closed)
+VERDICT: the canonical runtime Agent supplies the key scopeOf() cannot read; the refusal survives when neither path yields one.

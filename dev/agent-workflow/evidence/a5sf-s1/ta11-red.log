@@ -1,0 +1,24 @@
+✖ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (19.140386ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.052124
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-tool-axis.test.mjs:886:1
+✖ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (19.140386ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection: a module whose deferred registration cannot run inside the routed mount must be refused
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/tests/world-factory/a5sf-tool-axis.test.mjs:903:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -184,6 +184,18 @@
    "sha256": "48d630f778f188df918514f606f8d633850d1b581e25769380b39fd8f3215fd2",
    "pr": "PR #550 (task/a5sf-f1-ctx-20261103) - NAMED center-interface change, SAME named center-interface as the a5sf P2 wiring booking, coordinator-assigned",
    "reason": "Alpha.5 F1 effective half (dated 2026-11-03): the P2 wiring mounted the compiled a5sf realm, but the mount lands in the installer's ISOLATED fs scope (install.ts:182), so the agent ctx and every tool scope kept the BASE provider and a fully configured row produced ZERO consultations. The change binds the Member TOOL PLANE to that realm scope: a per-setup a5sfToolPlaneOf() naming (isolated ctx + captured confined fs), placement of the Team tool registrations and the governed plane on toolPlaneCtx, and the permission adapter's four per-call fs reads routed through toolPlaneFsBackend so canonicalization and the effect share ONE provider. No second mount path (mountA5sfRealm stays the only entry point), no second policy compiler, no parallel tool registry; no control/**, tool-admission/dispatch, governance-center or pa-mount-registry file moves. DEFAULT PATH: with no realm mounted a5sfToolPlane is undefined, so toolPlaneCtx === agentCtx and toolPlaneFsBackend === fsBackend - the unconfigured row is byte-identical (suite arm F1-5). Evidence dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7; RED = the helper absent, GREEN = 7/7)."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "fd5d4126ffb7f610b59b0151d6a20255172c79fdfd13ad1d10c2bf3b32633264",
+   "pr": "PR #557 (task/a5sf-native-route-c-20261103) - NAMED center-interface change, SAME named center-interface as the a5sf P2 wiring/F1 bookings, coordinator-assigned",
+   "reason": "BL-22 route C: the Member's native tool modules are re-mounted on the isolated fs scope, and the shadow is created AFTER builtinToolDeny so the deny lane is applied to the inherited surface before an own-scope registration can sit outside the restrict() filter (measured bypass if reversed: a denied native read stays visible and executable). The mount keeps its position because it feeds the Team tool-plane placement and the permission-adapter fs seam; the new attach call plus a structural order pin are the whole delta on this file."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b",
+   "pr": "PR #558 - NAMED center-interface change, SAME named center-interface class as #550/#555/#557, coordinator-assigned",
+   "reason": "The first live Host boot measured a duplicate @deepseek-ai/dsh-scope module instance (Team plugin resolves the .pnpm copy, the pristine Host resolves packages/core/scope/lib), so scopeOf(agentCtx) is undefined for a healthy Host-tagged ctx and route C's native attach refused every a5sf-wired Member activation. Fix: the attach now receives the setup's CANONICAL runtime Agent as the scope key (the identity the Permission Coverage Gate already uses), with scopeOf() demoted to last-resort and the refusal kept when neither yields a key. Delta on this file = one added argument at the existing attach call plus its justification comment."
   }
  ]
 }

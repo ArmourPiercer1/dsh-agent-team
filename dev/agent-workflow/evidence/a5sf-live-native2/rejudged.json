@@ -1,0 +1,58 @@
+{
+  "runId": "a5sf-live-native2-2026-11-03T13-02-54-748Z",
+  "machineRecord": "run-record.json (untouched)",
+  "dispositionRule": "a case that needed a live drive the Host never reached is NOT_REACHED, never FAIL (FAIL would claim the product was exercised and refused)",
+  "overall": "NOT_REACHED",
+  "cases": [
+    {
+      "id": "live:member-activated-surface-one-read",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "no Host reached its boot marker: the process exited (code=1) at Loader compose, so no Member was ever admitted and no model-visible surface could be read",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:native-read-outside-refused",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "no Member existed and no model turn ran: no native `read` call was issued, so neither a refusal nor its text could be observed",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:sink-exactly-one-deny-fact",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "the sink file is written by the Guard at consultation time; no consultation happened (the Host never got past compose), so an absent sink is NOT a \"zero facts\" observation",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:native-read-inside-allowed",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "no model turn ran; no inside-ceiling read was issued or served",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:base-read-counter-did-not-move",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "the counter installs at plugin apply time and records per read; the Host never applied the rows, so no counter rows exist (again: absent ≠ \"zero movement\" as a product claim)",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:teardown-no-shadow",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "there was no live Member to archive and no subsequent read; the seam enumeration in the driver was never reached",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:deny-native-surface-refusal",
+      "machineVerdict": "FAIL",
+      "verdict": "NOT_REACHED",
+      "reason": "no Member setup ran, so neither the surface-neutrality refusal nor the unscoped-ctx TypeError could be observed",
+      "machineDetail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    }
+  ],
+  "note": "all seven cases are NOT_REACHED for the SAME precondition: no Host reached its boot marker. The one finding of this boot is the composition failure quoted in README.md §3."
+}

@@ -1,0 +1,18 @@
+DERIVED SUMMARY of `pnpm ci:local` on the C1–C4 review-fix tree (base 474a8d46d).
+Raw capture (1.2 MB) is NOT committed (EB3 evidence bound); nothing about the verdict is omitted:
+the run FAILED, exit 1, coverage=determined (never exit 2 "undetermined").
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=307.0s
+Test Files  1 failed | 482 passed (483)
+Tests  1 failed | 5992 passed (5993)
+failing test(s):
+  FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+
+--- isolation at the SAME tree ---
+`pnpm vitest run a5g6-install-face-render.test.ts` -> exit 0, Test Files 1 passed (1),
+Tests 5 passed (5), Duration 2.89s.
+
+READING: the single red is the pre-existing ci-local load/timeout flake S-1 documented
+(dev/agent-workflow/evidence/a5sf-s1/README.md §4.1: the WHOLE 483-file packages/runtime vitest
+tree in one threads pool against vitest's 5 s default). It is not touched by this diff and passes
+in isolation at this same tree. No pass is claimed that was not measured.

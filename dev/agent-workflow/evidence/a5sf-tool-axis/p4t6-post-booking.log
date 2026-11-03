@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-tool-axis
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 9ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  22:34:21
+   Duration  488ms (transform 75ms, setup 0ms, import 377ms, tests 9ms, environment 0ms)
+
+EXIT=0
