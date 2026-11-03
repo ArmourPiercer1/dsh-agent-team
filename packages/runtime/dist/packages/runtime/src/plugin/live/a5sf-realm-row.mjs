@@ -74,7 +74,7 @@ import { isAbsolute } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
-import { mountA5sfRealm } from '../../../team-services/src/mount.js'
+import { NATIVE_REGISTRATION_ROUTING, mountA5sfRealm } from '../../../team-services/src/mount.js'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
@@ -332,6 +332,18 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   }
   // The POST-DENY surface: this is the baseline the shadow must not change.
   const before = a5sfAgentToolSurface(root, runtimeAgent)
+  // The baseline DEFINITIONS, by name: the coverage check below needs identity,
+  // not just the name set (a module that registers nothing, or registers late,
+  // leaves the preset definition in place — same name, ZERO guard facts).
+  const coverageScope = runtimeAgent ?? scopeOf(root)
+  const toolsService = root.get('tools')
+  // Identity coverage needs the scoped reader; a surface-only double (a test
+  // world, or a pre-`get` tools row) keeps the name-set gate instead of
+  // pretending to prove more than it can.
+  const canReadDefinitions = toolsService !== undefined && toolsService !== null && typeof toolsService.get === 'function'
+  const beforeDefinitions = canReadDefinitions
+    ? new Map([...before].map((name) => [name, toolsService.get(name, coverageScope)]))
+    : new Map()
   const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
@@ -350,7 +362,27 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     }
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
-  const fibers = await realm.mountNativeToolModules(nativeToolModules)
+  const fibers = await realm.mountNativeToolModules(nativeToolMountsOf(nativeToolModules, realm))
+  const coverage = canReadDefinitions ? uncoveredShadowedTools(root, coverageScope, fibers, beforeDefinitions) : []
+  if (coverage.length > 0) {
+    // FAIL CLOSED on COVERAGE, not just on the name set. A tool a router reports
+    // as forwarded MUST be the definition the agent now resolves; if the preset
+    // definition is still the one visible, the tool executes on the BASE provider
+    // with zero guard facts while every surface name stayed equal — the hole a
+    // name-only check cannot see.
+    for (const fiber of [...fibers].reverse()) {
+      try {
+        await fiber.dispose()
+      } catch {
+        // The coverage refusal is the failure that must be reported.
+      }
+    }
+    throw new TypeError(
+      `agent-bindings: the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} left ${JSON.stringify(coverage)} on the unshadowed baseline`
+      + ' (the router forwarded the name but the preset definition is still the one the agent resolves); refusing the mount —'
+      + ' those tools would execute on the BASE provider with zero guard facts',
+    )
+  }
   const after = a5sfAgentToolSurface(root, runtimeAgent)
   const added = [...after].filter((name) => !before.has(name))
   const removed = [...before].filter((name) => !after.has(name))
@@ -374,6 +406,80 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     )
   }
   return fibers
+}
+
+/**
+ * The names a router reported as FORWARDED whose definition is still the
+ * pre-attach (preset) one, or whose definition is gone.
+ *
+ * WHY identity: `a5sfAgentToolSurface` compares NAMES. A tool that a module
+ * registers asynchronously — or registers nowhere while the preset still
+ * provides it — keeps the same name and the same preset DEFINITION object, so
+ * the name set is unchanged and the tool executes on the BASE provider with no
+ * guard consultation at all. Diffing definition identity per forwarded name
+ * turns that into a measured refusal.
+ *
+ * @param {object} root - the agent Context.
+ * @param {object|undefined} scope - the RESOLVED agent scope key (`runtimeAgent ?? scopeOf(root)`).
+ * @param {readonly object[]} fibers - the router fibers the mount created.
+ * @param {Map<string, unknown>} beforeDefinitions - name -> pre-attach definition.
+ * @returns {string[]} forwarded names that are not shadowed by this attach.
+ */
+function uncoveredShadowedTools(root, scope, fibers, beforeDefinitions) {
+  const tools = root.get('tools')
+  const forwarded = new Set()
+  for (const fiber of fibers) {
+    const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+    if (routing === undefined || routing === null) continue
+    for (const name of routing.forwarded) forwarded.add(name)
+  }
+  const uncovered = []
+  for (const name of forwarded) {
+    const definition = tools.get(name, scope)
+    if (definition === undefined || definition === beforeDefinitions.get(name)) uncovered.push(name)
+  }
+  return uncovered
+}
+
+/**
+ * Expand the configured native modules into the PER-FIBER mounts S-1 requires.
+ *
+ * A native tool PACKAGE registers its whole suite from one `apply`, so a single
+ * mount can only ever execute on ONE realm. The mount seam's registration
+ * router (see `mount.ts`) partitions the suite by tool name; this function is
+ * the row-side half of that partition:
+ *
+ *   - ONE ceiling mount per module (no `toolBindingIdentity`), which forwards
+ *     every tool that has NO mounted binding (today's behaviour), and
+ *   - ONE mount per mounted ToolBinding realm, which forwards ONLY that
+ *     binding's own tool (`dsh.fs/read` -> `read`) and executes it on the
+ *     binding's already-compiled/confined provider.
+ *
+ * The UNION of the fibers is the module's surface, exactly once: the existing
+ * surface-neutrality check below stays the gate, and `EffectiveIo` is never
+ * recomputed — the selected realm's guard already holds the compiled
+ * intersection.
+ *
+ * @param {readonly object[]} nativeToolModules - imported module specs.
+ * @param {object} realm - the mounted realm (its `bindings` are the routing table).
+ * @returns {readonly object[]} the mounts to hand to `mountNativeToolModules`.
+ */
+function nativeToolMountsOf(nativeToolModules, realm) {
+  const bindings = Array.isArray(realm?.bindings) ? realm.bindings : []
+  const identities = []
+  for (const binding of bindings) {
+    const identity = binding?.toolBindingIdentity
+    if (typeof identity !== 'string' || identity.trim() === '') {
+      throw new TypeError('agent-bindings: every mounted a5sf ToolBinding realm must carry a non-blank toolBindingIdentity (the native routing table)')
+    }
+    identities.push(identity)
+  }
+  const mounts = []
+  for (const module of nativeToolModules) {
+    mounts.push(module)
+    for (const toolBindingIdentity of identities) mounts.push({ ...module, toolBindingIdentity })
+  }
+  return Object.freeze(mounts)
 }
 
 /**

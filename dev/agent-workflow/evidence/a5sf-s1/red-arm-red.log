@@ -1,0 +1,9 @@
+ceiling allows: /tmp/a5sf-red-arm-6MJzn7
+read binding allows: /tmp/a5sf-red-arm-6MJzn7/inside
+locator: /tmp/a5sf-red-arm-6MJzn7/ceiling-only.txt
+dispatch isError=false text="<path>/tmp/a5sf-red-arm-6MJzn7/ceiling-only.txt</path>\n<type>file</type>\n<content>\n1: CEILING_ONLY\n\n(End of file - total 1 lines)\n</content>"
+facts: {"schema":"a5sf-guard-consult/1","realm":"member","memberIdentity":"member-red-arm-a","toolBindingIdentity":null,"policyRevision":"a5sf1:member-red-arm-a:g1","method":"stat","locator":"/tmp/a5sf-red-arm-6MJzn7/ceiling-only.txt","decision":"allow","decidedBy":"ALLOW","sequence":1,"observedAt":"2026-11-03T15:28:39.906Z"} | {"schema":"a5sf-guard-consult/1","realm":"member","memberIdentity":"member-red-arm-a","toolBindingIdentity":null,"policyRevision":"a5sf1:member-red-arm-a:g1","method":"readText","locator":"/tmp/a5sf-red-arm-6MJzn7/ceiling-only.txt","decision":"allow","decidedBy":"ALLOW","sequence":2,"observedAt":"2026-11-03T15:28:39.907Z"}
+RED-ARM: FAIL — DESIRED: a ceiling-allowed, restriction-denied read must be REFUSED
+
+false !== true
+
