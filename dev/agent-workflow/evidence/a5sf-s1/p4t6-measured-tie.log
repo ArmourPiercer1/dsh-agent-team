@@ -1,4 +1,4 @@
-MEASURED p4t6 tie on THIS tree (every file on disk, incl. this evidence dir, before the amend):
+MEASURED p4t6 tie on THIS tree (every file on disk, before the commit):
   scanSessionEventVocabulary: filesScanned=1428 files.length=1428
   ledger derived expected=1428 violations=[]
   A5SF booking expectedDelta={"from":1396,"to":1428}

@@ -65,6 +65,21 @@ class BaseFs extends Service {
   async editText() { return { version: 'v2', before: '', after: '' } }
 }
 
+class ProbeAttachments extends Service {
+  constructor(ctx) {
+    super(ctx, 'attachments')
+    this.imageLimits = {
+      mediaTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
+      maxImageBytes: 10_000_000,
+      maxMessageImageBytes: 10_000_000,
+      maxImageDimension: 8192,
+      maxImagePixels: 40_000_000,
+    }
+  }
+
+  async saveImage(image) { return { id: 'att', mediaType: image.mediaType, bytes: image.data?.length ?? 0 } }
+}
+
 const cleanup = []
 const dirs = []
 function fixture(label) {
@@ -80,10 +95,12 @@ function sinkOf(label) {
 }
 const factsOf = (p) => (existsSync(p) ? readFileSync(p, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [])
 
-async function worldWith({ ceiling, bindings = [], sinkPath }) {
+async function worldWith({ ceiling, bindings = [], sinkPath, attachments = false }) {
   const root = new Context(); cleanup.push(root)
   await root.plugin(SystemPrompt); await root.plugin(ToolRuntime); await root.plugin(BaseFs, {})
-  const standingKey = {}; const standing = createScope(root, standingKey); await standing.ctx.plugin(native)
+  const standingKey = {}; const standing = createScope(root, standingKey)
+  if (attachments) await root.plugin(ProbeAttachments)
+  await standing.ctx.plugin(native)
   const agentKey = { session: { header: {} } }; const agent = createScope(root, agentKey); bindScopeParent(agentKey, standingKey)
   const realm = await row.mountMemberA5sfRealm({
     root: agent.ctx,
@@ -260,7 +277,31 @@ try {
     return `disposeOrder=[nativeFibers,bindingRealms,memberInstallation] fibers=${fibers.length} throwingFiberReported=true siblingDisposed=${fibers[1].uid === null} presetRestored=${restored === presetRead}`
   })
 
-  console.log(`\nSIX-ARMS: PASS ${results.length}/${results.length}`)
+
+  // --- ARM 7: deferred registration is refused, never on BASE ---------------
+  await arm('ARM-7 (deferred)', async () => {
+    const fx = fixture('arm7'); const sink = sinkOf('arm7')
+    const ceiling = ceilingOf(fx.dir)
+    const w = await worldWith({ ceiling, bindings: [compile(ceiling, restrictionOf(fx.inside))], sinkPath: sink, attachments: true })
+    try {
+      const presetRead = w.root.get('tools').get('read', w.agentKey)
+      let refusal
+      try { await attach(w, sink) } catch (error) { refusal = error }
+      assert.ok(refusal instanceof Error, 'the attach accepted a module whose deferred registration cannot run')
+      assert.match(refusal.message, /registers asynchronously|deferred registration/, `unexpected refusal: ${refusal.message}`)
+      assert.equal(w.root.get('tools').get('read', w.agentKey), presetRead, 'a shadow survived the refusal')
+      assert.equal(factsOf(sink).length, 0, 'the refused attach wrote a fact')
+      // The unshadowed path consults NOTHING — the hole the refusal prevents.
+      const outcome = await read(w, fx.ceilingOnly)
+      assert.equal(outcome.isError, false, `the preset path should still run: ${outcome.text}`)
+      assert.equal(factsOf(sink).length, 0, 'the base path wrote a guard fact')
+      return `presetSurface=${JSON.stringify(names(w))} refused=${JSON.stringify(refusal.message.slice(0, 110))} shadowAfterRefusal=false baseReadFacts=0`
+    } finally {
+      await w.realm.dispose()
+    }
+  })
+
+  console.log(`\nARMS: PASS ${results.length}/${results.length}`)
 } catch (error) {
   console.error(`\nSIX-ARMS: FAIL — ${error instanceof Error ? error.message : String(error)}`)
   process.exitCode = 1

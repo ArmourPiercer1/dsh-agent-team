@@ -23,6 +23,16 @@
  * disposed before the typed install error propagates. `dispose()` is
  * idempotent and disposes bindings before Member ceilings.
  *
+ * COVERAGE, NOT JUST NAMES: a module that registers from a DEFERRED
+ * `ctx.inject(...)` child cannot register inside the router's isolated service
+ * scope (measured: `cannot get property "tools" without inject`, or a child that
+ * stays pending). Its tool would then keep executing on the UNGUARDED preset
+ * definition while a name-set surface check stayed green. A mount therefore
+ * settles its fiber window and REFUSES (typed `SERVICE_MOUNT_FAILED`) when a
+ * descendant fiber did not reach ACTIVE and one of its inject names resolves in
+ * the surrounding Member scope; an optional dependency that exists nowhere stays
+ * benign. Refusing disposes the router fiber, so the surface is restored.
+ *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
 import { installMemberIoProviders, installToolBindingRealm, } from './install.js';
@@ -34,6 +44,17 @@ function toolNameOfBindingIdentity(toolBindingIdentity) {
     const at = toolBindingIdentity.lastIndexOf('/');
     const name = at === -1 ? toolBindingIdentity : toolBindingIdentity.slice(at + 1);
     return name.trim();
+}
+/** Is `fiber` (transitively) a CHILD fiber of `ancestor`? Fiber ancestry, not scope ancestry. */
+function isDescendantOf(fiber, ancestor) {
+    let cursor = fiber.parent;
+    while (cursor !== undefined) {
+        const owner = cursor.fiber;
+        if (owner === ancestor)
+            return true;
+        cursor = owner?.parent;
+    }
+    return false;
 }
 /** The Cordis tracker symbol a `Service` instance carries (it makes `ctx.<service>` context-bound). */
 function trackerSymbolOf(service) {
@@ -106,6 +127,7 @@ function createRegistrationRouters(realTools, realPrompt, targetCtx, forwardTool
         forwarded: new Set(),
         dropped: new Set(),
         forwardedSections: new Set(),
+        forwardedDefinitions: new Map(),
     };
     const realRegister = Reflect.get(realTools, 'register');
     const realSection = Reflect.get(realPrompt, 'section');
@@ -124,6 +146,7 @@ function createRegistrationRouters(realTools, realPrompt, targetCtx, forwardTool
                 return () => { };
             }
             partition.forwarded.add(name);
+            partition.forwardedDefinitions.set(name, definition);
             return realRegister.call({ layers: toolLayers, ctx: owningContextOf(this, targetCtx) }, definition);
         },
     });
@@ -317,6 +340,12 @@ export async function mountA5sfRealm(input) {
                     .isolate('systemPrompt', Symbol(`a5sf-router:systemPrompt:${label}`));
                 let inner;
                 let fiber;
+                // Every fiber created while this mount runs, filtered by ancestry once
+                // the router fiber exists (a deferred `ctx.inject` child appears here).
+                const windowFibers = [];
+                const detachWindow = target.root.on('internal/plugin', (created) => {
+                    windowFibers.push(created);
+                });
                 try {
                     // The router plugin owns the two shadow services and the module fiber
                     // as ONE disposable unit. `apply` must NOT await the module: the
@@ -327,21 +356,56 @@ export async function mountA5sfRealm(input) {
                         apply: (routerContext) => {
                             routerContext.provide('tools', tools);
                             routerContext.provide('systemPrompt', systemPrompt);
-                            inner = routerContext.plugin(mount.module, mount.config);
                         },
                     }, undefined);
-                    if (inner === undefined) {
-                        throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool registration router for ${JSON.stringify(mount.toolBindingIdentity ?? null)} mounted no module fiber`);
-                    }
+                    const routerFiber = fiber;
+                    // Mount the module from the ALREADY-ACTIVE router fiber's context, as
+                    // its child, instead of from inside `apply`: a module that registers
+                    // through a deferred `ctx.inject(...)` needs an active parent context,
+                    // or its injected child fiber never becomes eligible to start.
+                    inner = routerFiber.ctx.plugin(mount.module, mount.config);
                     await inner;
+                    // COVERAGE (S-1): a module may register through a DEFERRED
+                    // `ctx.inject(...)` child. Under the router's isolated service scope
+                    // that child cannot reach the shadowed services (measured:
+                    // `cannot get property "tools" without inject`), so its tool would
+                    // stay UNSHADOWED on the preset definition — executing on the BASE
+                    // provider with ZERO guard facts while every surface name stayed equal.
+                    // Settle the window, then refuse if any descendant fiber did not reach
+                    // ACTIVE: a deferred registration is either served by the router or the
+                    // whole mount is refused — never silently left on BASE.
+                    await new Promise((resolve) => setTimeout(resolve, 0));
+                    const unsettled = windowFibers
+                        .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== 2)
+                        // An OPTIONAL dependency that is absent everywhere is benign: the
+                        // module declares an extra registration it cannot make (measured:
+                        // the pinned tool-fs ALWAYS declares `ctx.inject(['attachments'])`).
+                        // The dangerous shape is a dependency the REST of this Member CAN
+                        // resolve — the preset would have registered that tool, so refusing
+                        // is the only way to keep it off the unshadowed BASE path.
+                        .filter((created) => Object.keys(created.inject).some((name) => target.get(name) !== undefined));
+                    if (unsettled.length > 0) {
+                        const detail = unsettled
+                            .map((created) => {
+                            const deps = Object.keys(created.inject).join(',');
+                            const reason = created._error;
+                            return reason === undefined ? `deferred registration waiting on [${deps}]` : `deferred registration failed: ${reason instanceof Error ? reason.message : String(reason)}`;
+                        })
+                            .join('; ');
+                        throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} registers asynchronously and its deferred registration cannot run inside the routed mount (${detail}); refusing the mount instead of leaving those tools on the unshadowed preset path`);
+                    }
                 }
                 catch (error) {
+                    if (typeof detachWindow === 'function')
+                        detachWindow();
                     await fiber?.dispose().catch(() => undefined);
                     await rollbackCreated();
                     throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', error instanceof TeamServiceInstallError
-                        ? error.message
+                        ? error.detail
                         : `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`);
                 }
+                if (typeof detachWindow === 'function')
+                    detachWindow();
                 created.push(fiber);
                 nativeFibers.push(fiber);
                 const routing = Object.freeze({

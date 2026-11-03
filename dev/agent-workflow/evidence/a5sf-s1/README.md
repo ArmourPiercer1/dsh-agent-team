@@ -8,7 +8,12 @@ definition to the execution realm of its OWN `ToolBinding`, so the second axis h
 EffectiveIo(member, tool, call) ⊆ MemberCeiling(member) ∩ ToolRestriction(member, tool)
 ```
 
-**Answer: the axis now holds on the native path.** The arm that used to measure the leak (TA2 / `red-arm.mjs`)
+**Answer: the axis now holds on the native path — after a REVIEW REPAIR.** A first cut (`8199b3ea0`) was
+BLOCKED on a measured coverage hole: `read_image` registers from a DEFERRED `ctx.inject(['attachments'])`, escaped
+the partition, and kept executing on the BASE definition with zero guard facts while every surface name stayed
+equal. This tree closes it: the routed mount REFUSES a module whose deferred registration cannot run (§3.1), and
+the row verifies COVERAGE by definition identity, not by name set. The mechanism itself was verified by the
+reviewer independently (Proxy mutation → 7 red; tracker removal → TA10 red). The arm that used to measure the leak (TA2 / `red-arm.mjs`)
 is inverted: a locator the CEILING allows but the `read` TOOL RESTRICTION denies is **REFUSED**, with exactly
 one `a5sf-guard-consult/1` fact attributed to the **binding** realm (`realm:"binding"`,
 `toolBindingIdentity:"dsh.fs/read"`). `EffectiveIo` is **consumed** (it is the lane of the realm that ran), never
@@ -103,10 +108,10 @@ old structural pin (TA5: "the mount seam never addresses a binding realm") is re
 
 ---
 
-## 3. The six acceptance arms, measured
+## 3. The acceptance arms, measured
 
-`arm-probe.mjs` (this directory) drives the same product seam and prints one line per arm; the permanent gate is
-`tests/world-factory/a5sf-tool-axis.test.mjs` (13/13). Raw: `six-arms.log`.
+`arm-probe.mjs` (this directory) drives the same product seam and prints one line per arm; the permanent gates are
+`tests/world-factory/a5sf-tool-axis.test.mjs` (14/14, TA2/TA6…TA11). Raw: `six-arms.log` (`ARMS: PASS 8/8`).
 
 | arm | what it measures | measured |
 | --- | --- | --- |
@@ -116,7 +121,49 @@ old structural pin (TA5: "the mount seam never addresses a binding realm") is re
 | **4 — unbound tool** | no binding ⇒ ceiling fallback: ONE `read`, surface unchanged, member-realm facts only | `fibers=1 forwarded=["read","write","edit"] read=ok facts=[member/null/stat/allow, member/null/readText/allow]` |
 | **5 — surface neutrality per fiber** | the fibers PARTITION the module surface (no name/section registered twice, union = pre-mount surface); a module that would add a tool is refused and everything it mounted is disposed | `partition=[{ceiling:[write,edit] sections[tool:write,tool:edit]},{binding:[read] sections[tool:read]}] surfaceBefore=["read","write","edit"] surfaceAfter=["read","write","edit"]`; refusal: `would CHANGE the Member's model-visible tool surface`, surface unchanged, `factsDelta=0` |
 | **6 — teardown** | router fibers disposed BEFORE the binding realms and the Member installation; ONE throwing fiber is reported and strands nothing (sibling disposed, confined provider gone, preset definition back) | `disposeOrder=[nativeFibers,bindingRealms,memberInstallation] fibers=2 throwingFiberReported=true siblingDisposed=true presetRestored=true` |
-| **7 — S-2 not used** | no call-scoped multiplexer, no `AsyncLocalStorage`, no `execute` wrapper: the effect boundary is untouched (`exec.signal` only) | structural pin TA5: `doesNotMatch(mountSource, /AsyncLocalStorage|compileEffectiveIo|\.execute[=(]/)`; the probe's readings come from `mount.ts`/the row, not from a tool-identity channel |
+| **7 — DEFERRED (the review blocker)** | a world with `attachments` mounted makes the pinned module register `read_image` from a deferred `ctx.inject`; the attach REFUSES, the surface is restored, and the unshadowed path is shown to consult nothing (0 facts) — so the leak can never be the live path | `presetSurface=["read","write","edit","read_image"] refused="SERVICE_MOUNT_FAILED: native tool module null registers asynchronously …" shadowAfterRefusal=false baseReadFacts=0` |
+| **8 — S-2 not used** | no call-scoped multiplexer, no `AsyncLocalStorage`, no `execute` wrapper: the effect boundary is untouched (`exec.signal` only) | structural pin TA5: `doesNotMatch(mountSource, /AsyncLocalStorage|compileEffectiveIo|\.execute[=(]/)`; the probe's readings come from `mount.ts`/the row, not from a tool-identity channel |
+
+### 3.1 The review blocker: deferred registration (`read_image`) and what this tree does about it
+
+MEASURED on `8199b3ea0` with the SAME pinned module, a world where `attachments` is mounted, and the ceiling +
+`dsh.fs/read` binding:
+
+```
+before = ["read","write","edit","read_image"]      attach ACCEPTED, 2 fibers
+ceiling fiber forwarded ["write","edit"]           binding fiber forwarded ["read"]
+read_image: inAnyReceipt=false                     shadowed=false (same object as the preset row)
+surface check: GREEN (name sets equal)             a read_image call: ZERO a5sf-guard-consult facts
+```
+
+ROOT CAUSE, measured: `@deepseek-ai/dsh-tool-fs`'s `apply` ends with
+`ctx.inject(['attachments'], (imageCtx) => applyReadImageTool(imageCtx))`, i.e. a CHILD plugin whose
+registration happens after `apply` returns. Under the router's isolated service scope that child either stays
+PENDING forever (old structure) or starts and throws `cannot get property "tools" without inject` (module
+mounted from the active router fiber) — either way `read_image` is NEVER registered through the router, so the
+preset definition keeps serving it, unguarded, while `a5sfAgentToolSurface` compares only NAMES and stays green.
+
+WHAT THIS TREE DOES — **refuse, not route** (the reviewer's fallback, chosen deliberately):
+
+* `mount.ts` records every fiber created while a mount runs (Cordis `internal/plugin`), filters it to the
+  router fiber's own subtree, settles one macrotask after `await inner`, and refuses with a typed
+  `SERVICE_MOUNT_FAILED` if a descendant fiber did not reach ACTIVE **and** one of its inject names is
+  resolvable in the surrounding Member scope. That second condition is what keeps the pinned module mountable:
+  it ALWAYS declares `ctx.inject(['attachments'])`, and when the Member genuinely has no image store the
+  deferred registration is an optional capability that never existed — benign. When the Member DOES have
+  `attachments` (the dangerous shape: the preset would have registered `read_image`), the mount is refused.
+  Refusal disposes the router fiber, so the surface is restored exactly and no half-shadow survives.
+* `a5sf-realm-row.mjs` adds a COVERAGE invariant on top of the name-set check: for every name a router reports
+  as forwarded, `tools.get(name, scope)` MUST be a definition this attach created, not the pre-attach one (or
+  absent). Name equality alone cannot see a tool that "registered" without shadowing.
+
+**Why not support it.** Making the deferred child run inside the routed scope would require the shadow
+services to behave like real `Service` instances for an inject child that never declares them — a different
+S-2-style mechanism (per-call identity) rather than a routing tweak, and we could not do it honestly inside
+this seam. So: **refused**. Consequence, stated plainly: a Member that mounts the native `dsh-tool-fs` **and**
+has an `attachments` store cannot use S-1's native re-mount — the attach fails closed at setup. That is the
+honest trade: an unguarded `read_image` is worse than a refused mount, and the Team tool plane's own governed
+`read_image` row (GLUE-7) does not take this path.
 
 Key point for a reviewer: the partition is derived from `toolBindingIdentity` (P1's compiled answer) and the
 tool NAME. No lane, blueprint or ceiling is read at the mount seam — the router only asks "does this name belong
@@ -129,8 +176,8 @@ to this binding?".
 | gate | result | raw |
 | --- | --- | --- |
 | RED arm (before / after) | FAIL → **PASS** | `red-arm-red.log`, `red-arm-green.log` |
-| all a5sf node suites (8 files) | **79/79 pass** (12+9+10+8+14+9+13+13) | `all-a5sf-node-suites.log` |
-| `a5sf-tool-axis` specifically | **13/13** | `tool-axis-suite.log` |
+| all a5sf node suites (8 files) | **89/89 pass** (12+9+10+8+14+9+13+14) | `all-a5sf-node-suites.log` |
+| `a5sf-tool-axis` specifically | **14/14** (TA1–TA11) | `tool-axis-suite.log` |
 | `npx vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | p4t6 + law suites (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`) | **54/54** (20+12+13+9) | `law-and-p4t6.log` |
 | `pnpm typecheck` (all packages) | pass | `typecheck.log` |
@@ -223,12 +270,17 @@ Stated so no reader over-claims:
    invariants.** A module is now `apply`-ed once per partition (ceiling + each binding), not once. Any module
    that does more than register tools/sections — provisions a service, installs event hooks, mutates shared
    state — runs that side effect N+1 times, and its teardown must be correct per fiber. Today's native
-   `dsh-tool-fs` is pure registration (measured), and the router refuses any partition that would duplicate a
-   name or a section, but the discipline is a contract on module authors, not an enforced property of the
-   loader. A module whose section name does not follow `tool:<name>` would register that section only on the
+   `dsh-tool-fs` is NOT "pure registration": it also defers `read_image` behind `ctx.inject(['attachments'])`
+   (measured, §3.1) — that shape is now REFUSED rather than silently left on BASE, and the router refuses any
+   partition that would duplicate a name or a section. The discipline is still a contract on module authors,
+   not an enforced property of the loader. A module whose section name does not follow `tool:<name>` would register that section only on the
    ceiling fiber (once, by design) yet its tool body would run in two realms. The next lane that admits a second
    native tool module should re-run TA9/TA10 with that module, not assume this proof transfers.
-4. **The tracker contract is measured, not documented upstream.** The router depends on the Cordis `Service`
+4. **Deferred registration is refused, not supported.** Any module that registers from `ctx.inject(...)` is
+   refused when the dependency is resolvable in the Member scope (§3.1). A future module that defers a
+   BINDING-OWNED tool would therefore make the Member fail closed at setup rather than execute — correct, but
+   it is a capability limit of this seam, not a bug to be papered over.
+5. **The tracker contract is measured, not documented upstream.** The router depends on the Cordis `Service`
    tracker (`{associate, property:'ctx'}`) to bind registrations to the module fiber. It is the same public
    mechanism the tool runtime itself relies on, but a Cordis major upgrade could change it — TA10 (preset
    restoration after disposing ONLY the binding fiber) is the guard that would go red.
@@ -254,6 +306,7 @@ RED: `git checkout origin/master -- packages/runtime/team-services/src/mount.ts 
 | --- | --- |
 | `arm-probe.mjs`, `six-arms.log` | the six acceptance arms, driven through the product seam |
 | `red-arm-red.log`, `red-arm-green.log` | the sentinel before/after |
+| `ta11-red.log`, `ta11-green.log` | the DEFERRED arm on the pre-fix sources (Missing expected rejection) and on this tree |
 | `tool-axis-suite.log`, `all-a5sf-node-suites.log` | the regression suites |
 | `vitest-a5sf.log`, `law-and-p4t6.log`, `p4t6-measured-tie.log` | vitest, law, the measured tie |
 | `typecheck.log`, `build.log`, `place-dist-glue.log` | build chain |

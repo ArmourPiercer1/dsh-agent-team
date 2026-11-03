@@ -252,12 +252,37 @@ class TestFileSystem extends Service {
   }
 }
 
+/**
+ * A REAL-ish `attachments` service (the durable image store seam). Its presence
+ * makes the pinned native `dsh-tool-fs` register `read_image` from a DEFERRED
+ * `ctx.inject(['attachments'])` — the registration shape TA11 exists for.
+ */
+class TestAttachments extends Service {
+  constructor(ctx) {
+    super(ctx, 'attachments')
+    this.saved = []
+    this.imageLimits = {
+      mediaTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
+      maxImageBytes: 10_000_000,
+      maxMessageImageBytes: 10_000_000,
+      maxImageDimension: 8192,
+      maxImagePixels: 40_000_000,
+    }
+  }
+
+  async saveImage(image) {
+    this.saved.push(image)
+    return { id: `att-${this.saved.length}`, mediaType: image.mediaType, bytes: image.data?.length ?? 0 }
+  }
+}
+
 /** One host-free unit root: system prompt + the REAL tool runtime + base fs. */
-async function makeRoot() {
+async function makeRoot({ attachments = false } = {}) {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
   await root.plugin(TestFileSystem, {})
+  if (attachments) await root.plugin(TestAttachments)
   return root
 }
 
@@ -290,7 +315,7 @@ function readFacts(sinkPath) {
 }
 
 /** Mount the REAL product seam (the exact helper the live Member setup calls). */
-async function mountRealm({ root, ceiling, bindings = [], sinkPath }) {
+async function mountRealm({ root, ceiling, bindings = [], sinkPath, attachments = false }) {
   // The REAL preset topology the live Member row has: the native tool package
   // (the "preset" row) is mounted on a STANDING scope that is the PARENT of the
   // agent scope, exactly as `@deepseek-ai/dsh-agent-preset-registry` does. The
@@ -299,6 +324,11 @@ async function mountRealm({ root, ceiling, bindings = [], sinkPath }) {
   // surface is unchanged before/after and the attach's surface check passes.
   const standingKey = {}
   const standing = createScope(root, standingKey)
+  if (attachments) {
+    // The preset world with an image store: the module's own `apply` defers
+    // `read_image` behind `ctx.inject(['attachments'])`.
+    await root.plugin(TestAttachments)
+  }
   await standing.ctx.plugin(nativeToolModules)
   // The Agent IS the scope key upstream; the real `dsh-tool-fs` also reads
   // `exec.agent.session.header.cwd`, so the key carries a minimal session stub
@@ -577,6 +607,8 @@ test('TA5 structural pin: a binding-targeted mount routes into the binding realm
 
   const rowSource = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'), 'utf8')
   assert.match(rowSource, /nativeToolMountsOf\(nativeToolModules, realm\)/, 'the row expands one mount per (module × binding) plus the ceiling mount')
+  assert.match(rowSource, /uncoveredShadowedTools\(/, 'the row verifies COVERAGE by definition identity, not just the name set')
+  assert.match(rowSource, /beforeDefinitions/, 'the coverage check compares against the pre-attach definitions')
   assert.match(rowSource, /toolBindingIdentity/, 'the expansion keys on the compiled binding identity')
   assert.doesNotMatch(rowSource, /AsyncLocalStorage/, 'S-2 is not used in the row either')
   assert.doesNotMatch(rowSource, /compileEffectiveIo/, 'the row does not compile a lane')
@@ -845,6 +877,61 @@ test('TA10 TEARDOWN: router fibers are disposed before the confined providers, a
   }
   assert.equal(fsAfter, undefined, 'the confined Provider fiber was disposed despite the router teardown failure')
   assert.equal(root.get('tools').get('read', agentKey), presetRead, 'the preset definition is visible again: no shadow survives')
+})
+
+// ===========================================================================
+// TA11 — DEFERRED registration (read_image) is refused, never silently on BASE
+// ===========================================================================
+
+test('TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path', async () => {
+  const root = await makeRoot({ attachments: false })
+  const fixture = makeFixture('deferred')
+  const sink = tmpSink('deferred')
+  const ceiling = memberPolicy(fixture.dir)
+  const effective = compileBinding(ceiling, readRestriction(fixture.inside))
+  // `attachments` is mounted for the agent world: the pinned module now really
+  // registers `read_image` — from a DEFERRED `ctx.inject` child, after `apply`.
+  const { realm, agentCtx, agentKey } = await mountRealm({ root, ceiling, bindings: [effective], sinkPath: sink.path, attachments: true })
+  try {
+    assert.equal(toolNames(root, agentKey).includes('read_image'), true, 'the preset world really exposes read_image')
+    const presetReadImage = root.get('tools').get('read_image', agentKey)
+    const presetRead = root.get('tools').get('read', agentKey)
+
+    // THE ARM: the attach must refuse. Accepting would leave `read_image`
+    // executing on the BASE provider with ZERO guard facts while every name
+    // stayed equal (the leak the reviewer measured).
+    await assert.rejects(
+      () => attach(realm, agentCtx, sink.path, agentKey),
+      (error) => {
+        assert.match(
+          error.message,
+          /registers asynchronously|deferred registration/,
+          `the refusal must name the deferred registration, got: ${error.message}`,
+        )
+        return true
+      },
+      'a module whose deferred registration cannot run inside the routed mount must be refused',
+    )
+
+    // Fail-closed, not fail-dirty: the surface is unchanged and the preset
+    // definitions are the ones that remain — no half-mounted shadow survives.
+    assert.deepEqual(toolNames(root, agentKey).sort(), ['edit', 'read', 'read_image', 'write'], 'the surface is restored exactly')
+    assert.equal(root.get('tools').get('read', agentKey), presetRead, 'no shadow survives the refusal')
+    assert.equal(root.get('tools').get('read_image', agentKey), presetReadImage, 'read_image is still the preset definition')
+    assert.equal(readFacts(sink.path).length, 0, 'the refused attach wrote no guard fact')
+
+    // The unshadowed path consults NOTHING: the preset `read` serves the
+    // ceiling-only locator on the BASE provider and writes ZERO guard facts.
+    // That is exactly the leak the refusal prevents from being the live path
+    // (accepting the attach would have left read_image — and its siblings once a
+    // deferred child errors — on this same unguarded definition).
+    const outcome = await dispatchRead(root, agentKey, fixture.ceilingOnly, 'call-deferred-read')
+    assert.equal(outcome.isError, false, `the preset path still runs: ${outcome.text}`)
+    assert.match(outcome.text, /CEILING_ONLY_CLAIM/)
+    assert.equal(readFacts(sink.path).length, 0, 'zero guard facts on the unshadowed path: this is exactly what the attach refuses to leave behind')
+  } finally {
+    await realm.dispose()
+  }
 })
 
 // Keep the unused binding revision fixture referenced so a future arm can pin it.

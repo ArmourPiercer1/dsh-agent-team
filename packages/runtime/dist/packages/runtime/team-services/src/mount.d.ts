@@ -23,6 +23,16 @@
  * disposed before the typed install error propagates. `dispose()` is
  * idempotent and disposes bindings before Member ceilings.
  *
+ * COVERAGE, NOT JUST NAMES: a module that registers from a DEFERRED
+ * `ctx.inject(...)` child cannot register inside the router's isolated service
+ * scope (measured: `cannot get property "tools" without inject`, or a child that
+ * stays pending). Its tool would then keep executing on the UNGUARDED preset
+ * definition while a name-set surface check stayed green. A mount therefore
+ * settles its fiber window and REFUSES (typed `SERVICE_MOUNT_FAILED`) when a
+ * descendant fiber did not reach ACTIVE and one of its inject names resolves in
+ * the surrounding Member scope; an optional dependency that exists nowhere stays
+ * benign. Refusing disposes the router fiber, so the surface is restored.
+ *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
 import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis';
@@ -110,7 +120,10 @@ export interface NativeRegistrationRouting {
     readonly toolBindingIdentity: string | null;
     /** Tool names this fiber registered on the real `tools` service. */
     readonly forwarded: readonly string[];
-    /** Tool names this fiber dropped (they belong to another fiber). */
+    /**
+     * Registration keys this fiber dropped because they belong to another fiber:
+     * tool names, and `section:<name>` for the prompt sections it declined.
+     */
     readonly dropped: readonly string[];
     /** Prompt-section names (`tool:<name>`) this fiber registered. */
     readonly forwardedSections: readonly string[];
