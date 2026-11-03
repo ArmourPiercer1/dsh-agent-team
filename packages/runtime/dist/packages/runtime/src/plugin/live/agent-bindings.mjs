@@ -489,7 +489,7 @@ import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // plane's fs family uses its own hardened root provider rather than `ctx.fs`.
 // Evidence: dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7
 // + the BEFORE/AFTER probe over the committed dist).
-import { a5sfRealmConfigOf, a5sfToolPlaneOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
+import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
 // dependency-injected below).
@@ -2365,10 +2365,17 @@ export function createAgentBindings(deps) {
       // plane on it: the Team tool registrations, the governed plane and the
       // permission adapter's per-call fs seam move to the isolated ctx and the
       // captured confined instance. A LEADER session and every non-tool
-      // consumer stay on the base provider by design. NOT bound (see the
-      // module-header statement at :474-495 and evidence README §8): the NATIVE
-      // preset tools, which the upstream preset registry mounts under its own
-      // generation scope before any agent exists (P3 native takeover, BL-22).
+      // consumer stay on the base provider by design.
+      //
+      // ROUTE C (2026-11-03, review fix): the NATIVE preset tools
+      // (`read`/`write`/`edit`) ARE bound now — by re-mounting the SAME native
+      // module inside the isolated scope, which shadows the preset's descendant
+      // registration for THIS agent only. That step is deliberately NOT part of
+      // the mount below: it runs AFTER the `builtinToolDeny` block (see the
+      // attach call there), because an own-scope registration sits OUTSIDE the
+      // inherited `tools.restrict` filter — created first, it would survive the
+      // deny and keep a denied tool visible and executable on the confined lane
+      // (measured). Only deny-then-attach is safe.
       //
       // ENABLEMENT LAW: `config.a5sfEvidencePath` AND
       // `deps.a5sfRealmProvider` are both required. Either half absent (the
@@ -2389,8 +2396,11 @@ export function createAgentBindings(deps) {
        * @see a5sfToolPlaneOf
        */
       let a5sfToolPlane
+      /** The realm object itself (route C attaches the native shadow to it,
+       *  later, after the capability deny lane). */
+      let a5sfRealm
       if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot) {
-        const a5sfRealm = await mountMemberA5sfRealm({
+        a5sfRealm = await mountMemberA5sfRealm({
           root: agentCtx,
           a5sfConfig: a5sfRowConfig,
           provider: a5sfRealmProvider,
@@ -2777,6 +2787,17 @@ export function createAgentBindings(deps) {
         // With the Guard armed, the handle owns the mask (it lifts it only at
         // RELEASED). Without one, the alpha.4 disposer drain is unchanged.
         if (a5p1Guard === undefined) toolDisposers.push(denyDisposer)
+      }
+      // ROUTE C — the native tool shadow, created AFTER the deny lane so the
+      // surface-neutrality check compares against the POST-DENY surface. An
+      // own-scope registration is outside the inherited `tools.restrict`
+      // filter: attaching it BEFORE the deny would let it take the place of a
+      // denied preset row (the tool would stay visible AND executable on the
+      // confined lane). With this order a Member that denies a native tool
+      // makes the attach REFUSE (fail closed) instead. The lock is the ORDER,
+      // pinned by tests/world-factory/a5sf-native-route-c.test.mjs.
+      if (a5sfRealm !== undefined) {
+        await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig)
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the

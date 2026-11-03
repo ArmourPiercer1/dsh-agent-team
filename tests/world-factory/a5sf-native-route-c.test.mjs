@@ -32,11 +32,22 @@
  *       model-visible surface is ONE `read` (shadowed, not duplicated) and ONE
  *       `tool:read` prompt section.
  *   N3  SURFACE-NEUTRAL OR REFUSED — a Member whose `builtinToolDeny` lane
- *       hides `read` must NOT have it re-enabled by the re-mount: the mount is
- *       refused, the realm is unmounted, and the surface is unchanged.
+ *       hides `read` (THE REAL `applyBuiltInToolDeny`) must NOT have it
+ *       re-enabled by the re-mount: the attach is refused, no shadow remains,
+ *       and the surface is unchanged.
  *   N4  TEARDOWN — disposing the realm removes the shadow (the preset's
  *       definition is visible again on the BASE provider): measured, so no
  *       reader over-claims that confinement survives the realm.
+ *   N5  GLUE ORDER (the load-bearing arm) — the production glue attaches the
+ *       shadow AFTER `applyBuiltInToolDeny` (structural pin of
+ *       `agent-bindings.mjs`), and behaviorally: deny-then-attach refuses,
+ *       while the REVERSE order measurably re-enables the denied tool. This
+ *       arm is RED on the pre-fix head (the glue attached inside the realm
+ *       mount, i.e. before the deny).
+ *   N6  ONE MEMBER CEILING — `mountNativeToolModules` refuses a realm with two
+ *       Member ceilings before registering anything (they share one scope key).
+ *   N7  TEARDOWN ERRORS ARE REPORTED — a native fiber whose disposal throws
+ *       rejects `realm.dispose()` (and the rest of the teardown still ran).
  *
  * Run: node --test tests/world-factory/a5sf-native-route-c.test.mjs
  */
@@ -62,6 +73,8 @@ const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('
 const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
 const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
 const { createScope, scopeOf, bindScopeParent } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-scope')).href)
+/** The REAL capability mask adapter the product applies (packages/tools). */
+const { applyBuiltInToolDeny } = await import('../../packages/tools/src/index.js')
 
 // --- fixtures ---------------------------------------------------------------
 
@@ -77,9 +90,9 @@ function lane(allow) {
   return Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 }
 
-function memberPolicy(allowRoot) {
+function memberPolicy(allowRoot, memberInstanceId = IDENTITY.memberInstanceId) {
   return Object.freeze({
-    memberIdentity: IDENTITY.memberInstanceId,
+    memberIdentity: memberInstanceId,
     templateId: IDENTITY.templateId,
     instanceGeneration: IDENTITY.instanceGeneration,
     revision: MEMBER_REVISION,
@@ -266,6 +279,22 @@ function presetTopology(root) {
   return { standingKey, standing, agentKey, agentCtx: agent.ctx }
 }
 
+/**
+ * Apply the REAL product deny adapter. `applyBuiltInToolDeny` reads `ctx.tools`,
+ * which a bare Context cannot do ("cannot get property tools without inject"),
+ * so apply it from a one-shot plugin — the same shape the product's setup has.
+ */
+async function applyRealDeny(agentCtx, names) {
+  let disposer
+  await agentCtx.plugin({
+    name: 'route-c-real-deny',
+    inject: ['tools'],
+    apply(ctx) { disposer = applyBuiltInToolDeny(ctx, names) },
+  })
+  assert.equal(typeof disposer?.dispose, 'function', 'the real deny adapter returned its disposer')
+  return () => disposer.dispose()
+}
+
 function compileForFixture(fixture) {
   return () => ({
     compiledFor: () => ({
@@ -368,6 +397,10 @@ test('N2 route C: the native read on the isolated scope resolves the CONFINED pr
   try {
     assert.ok(realm !== undefined, 'a configured row with a provider must mount a realm')
     assert.equal(realm.installation.members.length, 1)
+    // The realm mount alone does NOT create the native shadow (route C attaches
+    // it after the capability deny lane); prove that, then attach.
+    assert.deepEqual(toolNames(root, agentKey), ['read'], 'the mount alone leaves the preset row in place')
+    await row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig)
 
     const after = {
       names: toolNames(root, agentKey),
@@ -408,41 +441,42 @@ test('N2 route C: the native read on the isolated scope resolves the CONFINED pr
 // ===========================================================================
 // N3 — surface-neutral or refused
 // ===========================================================================
-test('N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the mount is refused and unmounted', async () => {
+test('N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused', async () => {
   const root = await makeRoot()
   const { standing, agentKey, agentCtx } = presetTopology(root)
   const fixture = makeFixture('n3')
   const sink = tmpSink('n3')
 
   await standing.ctx.plugin(nativeToolPlugin('read', fixture.denied))
-  // The Member's capability mask (the product's `applyBuiltInToolDeny` seam).
-  await agentCtx.plugin({
-    name: 'n3-deny-read',
-    inject: ['tools'],
-    apply(ctx) { ctx.tools.restrict({ deny: ['read'] }) },
-  })
+  // THE REAL product adapter (packages/tools) — not a hand-rolled restrict.
+  const denyDisposer = await applyRealDeny(agentCtx, ['read'])
   assert.deepEqual(toolNames(root, agentKey), [], 'CONTROL: the agent cannot see the denied native tool')
 
   const a5sfConfig = row.a5sfRealmConfigOf({
     a5sfEvidencePath: sink.path,
     a5sfNativeToolModules: [writeNativeModuleFixture('n3')],
   })
+  const realm = await row.mountMemberA5sfRealm({
+    root: agentCtx,
+    a5sfConfig,
+    provider: compileForFixture(fixture),
+    member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
+  })
 
-  await assert.rejects(
-    () => row.mountMemberA5sfRealm({
-      root: agentCtx,
-      a5sfConfig,
-      provider: compileForFixture(fixture),
-      member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
-    }),
-    (error) => error instanceof TypeError
-      && /CHANGE the Member's model-visible tool surface/.test(error.message)
-      && /"read"/.test(error.message),
-    'the re-mount must refuse to widen the surface',
-  )
-
-  assert.deepEqual(toolNames(root, agentKey), [], 'the refused mount left NO shadow behind')
-  assert.deepEqual(readFacts(sink.path), [], 'and no guarded call was ever served')
+  try {
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig),
+      (error) => error instanceof TypeError
+        && /CHANGE the Member's model-visible tool surface/.test(error.message)
+        && /"read"/.test(error.message),
+      'the attach must refuse to widen the post-deny surface',
+    )
+    assert.deepEqual(toolNames(root, agentKey), [], 'the refused attach left NO shadow behind')
+    assert.deepEqual(readFacts(sink.path), [], 'and no guarded call was ever served')
+  } finally {
+    denyDisposer()
+    await realm.dispose()
+  }
 })
 
 // ===========================================================================
@@ -465,6 +499,7 @@ test('N4 teardown: disposing the realm removes the shadow (the preset definition
     provider: compileForFixture(fixture),
     member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
   })
+  await row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig)
   assert.equal((await dispatch(root, agentKey, 'read', { file_path: fixture.denied })).isError, true, 'confined while mounted')
 
   await realm.dispose()
@@ -473,4 +508,183 @@ test('N4 teardown: disposing the realm removes the shadow (the preset definition
   assert.equal(afterDispose.isError, false, 'after disposal the preset definition is back')
   assert.equal(afterDispose.value, 'outside\n', 'and it is the BASE provider again: confinement does NOT outlive the realm')
   assert.equal(scopeOf(agentCtx), agentKey, 'the agent scope key is untouched by the realm teardown')
+})
+
+// ===========================================================================
+// N5 — THE GLUE ORDER (load-bearing): deny BEFORE the shadow
+// ===========================================================================
+test('N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool', async () => {
+  // --- structural half: the order in the ONE production glue -----------------
+  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  const denyAt = glue.indexOf('applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)')
+  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig)')
+  assert.notEqual(denyAt, -1, 'the glue applies the capability deny lane')
+  assert.notEqual(attachAt, -1, 'the glue attaches the native shadow through the row helper')
+  assert.ok(
+    denyAt < attachAt,
+    'THE ORDER IS THE LOCK: the native shadow must be created AFTER the capability deny lane '
+    + '(an own-scope registration is outside the inherited tools.restrict filter)',
+  )
+  assert.equal(
+    glue.includes('nativeToolModules:'),
+    false,
+    'the realm mount must not create the shadow (no native modules on the mount input)',
+  )
+
+  // --- behavioral half: DENY then ATTACH (the fixed order) -------------------
+  {
+    const root = await makeRoot()
+    const { standing, agentKey, agentCtx } = presetTopology(root)
+    const fixture = makeFixture('n5a')
+    const sink = tmpSink('n5a')
+    await standing.ctx.plugin(nativeToolPlugin('read', fixture.denied))
+    const denyDisposer = await applyRealDeny(agentCtx, ['read'])
+    const a5sfConfig = row.a5sfRealmConfigOf({
+      a5sfEvidencePath: sink.path,
+      a5sfNativeToolModules: [writeNativeModuleFixture('n5a')],
+    })
+    const realm = await row.mountMemberA5sfRealm({
+      root: agentCtx,
+      a5sfConfig,
+      provider: compileForFixture(fixture),
+      member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
+    })
+    try {
+      await assert.rejects(
+        () => row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig),
+        /CHANGE the Member's model-visible tool surface/,
+        'deny-then-attach: the attach refuses (a denied native tool can never be re-enabled)',
+      )
+      assert.equal(toolNames(root, agentKey).includes('read'), false, 'the denied native tool stays invisible')
+      const call = await dispatch(root, agentKey, 'read', { file_path: fixture.denied })
+      assert.equal(call.isError, true, 'and it stays unexecutable')
+      assert.match(call.text, /unknown tool/)
+    } finally {
+      denyDisposer()
+      await realm.dispose()
+    }
+  }
+
+  // --- behavioral half: the REVERSE order (shadow, then deny) is UNSAFE ------
+  // This is the measured fact that makes the order load-bearing: it is asserted
+  // HERE so no reader can "simplify" the glue back to mount-then-deny.
+  {
+    const root = await makeRoot()
+    const { standing, agentKey, agentCtx } = presetTopology(root)
+    const fixture = makeFixture('n5b')
+    const sink = tmpSink('n5b')
+    await standing.ctx.plugin(nativeToolPlugin('read', fixture.denied))
+    const a5sfConfig = row.a5sfRealmConfigOf({
+      a5sfEvidencePath: sink.path,
+      a5sfNativeToolModules: [writeNativeModuleFixture('n5b')],
+    })
+    const realm = await row.mountMemberA5sfRealm({
+      root: agentCtx,
+      a5sfConfig,
+      provider: compileForFixture(fixture),
+      member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
+    })
+    try {
+      await row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig) // shadow FIRST
+      const denyDisposer = await applyRealDeny(agentCtx, ['read']) // deny SECOND
+      try {
+        assert.equal(toolNames(root, agentKey).includes('read'), true, 'REVERSE ORDER: the deny cannot hide an own-scope registration')
+        const call = await dispatch(root, agentKey, 'read', { file_path: fixture.denied })
+        assert.equal(call.isError, true, 'the shadow is still the CONFINED row (denied by the realm guard, not by the mask)')
+        assert.match(call.text, /IO_READ_DENIED|outside every allow subtree/)
+        assert.deepEqual(readFacts(sink.path).map((f) => f.decidedBy), ['IO_READ_DENIED'])
+      } finally {
+        denyDisposer()
+      }
+    } finally {
+      await realm.dispose()
+    }
+  }
+})
+
+// ===========================================================================
+// N6 — exactly one Member ceiling per agent scope
+// ===========================================================================
+test('N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything', async () => {
+  const root = await makeRoot()
+  const { standing, agentKey, agentCtx } = presetTopology(root)
+  const fixture = makeFixture('n6')
+  const sink = tmpSink('n6')
+  await standing.ctx.plugin(nativeToolPlugin('read', fixture.denied))
+
+  const second = Object.freeze({ ...IDENTITY, memberInstanceId: 'member-route-c-b' })
+  const provider = () => ({
+    compiledFor: () => ({
+      members: [
+        { identity: IDENTITY, policy: { ok: true, value: memberPolicy(fixture.inside) } },
+        { identity: second, policy: { ok: true, value: memberPolicy(fixture.inside, second.memberInstanceId) } },
+      ],
+      providerClass: TestFileSystem,
+    }),
+  })
+  const a5sfConfig = row.a5sfRealmConfigOf({
+    a5sfEvidencePath: sink.path,
+    a5sfNativeToolModules: [writeNativeModuleFixture('n6')],
+  })
+  const realm = await row.mountMemberA5sfRealm({
+    root: agentCtx,
+    a5sfConfig,
+    provider,
+    member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
+  })
+  try {
+    assert.equal(realm.installation.members.length, 2, 'two Member ceilings mounted')
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: { name: 'x', apply() {} } }]),
+      (error) => error?.code === 'SERVICE_MOUNT_FAILED' && /exactly one Member ceiling/.test(error.message),
+      'two Member realms share one agent scope key: the native re-mount is refused',
+    )
+    assert.deepEqual(toolNames(root, agentKey), ['read'], 'the preset row is untouched (nothing was registered)')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// N7 — teardown errors are reported, and never shorten the teardown
+// ===========================================================================
+test('N7 teardown: a native fiber whose disposal throws REJECTS realm.dispose() (not swallowed) and the rest still runs', async () => {
+  const root = await makeRoot()
+  const { standing, agentKey, agentCtx } = presetTopology(root)
+  const fixture = makeFixture('n7')
+  const sink = tmpSink('n7')
+  await standing.ctx.plugin(nativeToolPlugin('read', fixture.denied))
+
+  const a5sfConfig = row.a5sfRealmConfigOf({
+    a5sfEvidencePath: sink.path,
+    a5sfNativeToolModules: [writeNativeModuleFixture('n7')],
+  })
+  const realm = await row.mountMemberA5sfRealm({
+    root: agentCtx,
+    a5sfConfig,
+    provider: compileForFixture(fixture),
+    member: { sessionId: 'session-route-c', instanceId: IDENTITY.memberInstanceId, teamRootSessionId: 'team-root', templateId: IDENTITY.templateId },
+  })
+  const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig)
+  assert.equal(fibers.length, 1)
+
+  // Cordis SWALLOWS a disposable effect's own error inside `fiber.dispose()`
+  // (documented in cordis fiber.ts: "_unload swallows its work errors"), so the
+  // only honest way to drive this seam is a disposer that throws HERE.
+  fibers[0].dispose = async () => { throw new Error('native dispose boom') }
+
+  await assert.rejects(
+    () => realm.dispose(),
+    /native dispose boom/,
+    'the teardown failure is REPORTED (the old code swallowed it)',
+  )
+  // ... and the rest of the teardown still ran: the confined provider is gone.
+  let fsAfter
+  try {
+    fsAfter = realm.installation.members[0].ctx.get('fs')
+  } catch {
+    fsAfter = undefined
+  }
+  assert.equal(fsAfter, undefined, 'the confined Provider fiber was disposed despite the native teardown failure')
+  assert.equal(scopeOf(agentCtx), agentKey)
 })

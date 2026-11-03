@@ -77,6 +77,15 @@ export interface A5sfRealmBinding {
  * The module is imported by the CALLER (row composition), never resolved here:
  * this seam must not own module-resolution policy (the same discipline that
  * keeps policy compilation out).
+ *
+ * ORDER IS LOAD-BEARING (review fix, 2026-11-03): the shadow must be created
+ * AFTER the Member capability deny lane (`applyBuiltInToolDeny`). An OWN-scope
+ * registration sits outside the inherited `tools.restrict` filter, so a deny
+ * applied to the inherited surface BEFORE the shadow hides the preset row and
+ * lets the shadow take its place; a deny applied AFTER the shadow cannot hide
+ * it. The production glue therefore calls `mountNativeToolModules` after the
+ * deny block, and the surface-neutrality check compares against the POST-DENY
+ * surface.
  */
 export interface NativeToolModuleMount {
   /** A Cordis plugin module (already imported): the native tool package's module object. */
@@ -93,20 +102,23 @@ export interface MountA5sfRealmInput {
   readonly providerClass?: FsProviderConstructor
   /** Observe every guard consultation in every realm this call mounts. */
   readonly onGuardConsult?: GuardConsultObserver
-  /**
-   * Native tool modules to re-mount inside the Member's isolated scope (route
-   * C). Absent/empty = the pre-route-C mount, byte-identical. A non-empty list
-   * requires EXACTLY ONE Member ceiling: every Member realm inherits the SAME
-   * agent scope key, so a second re-mount of the same tool names would collide
-   * in one scope layer.
-   */
-  readonly nativeToolModules?: readonly NativeToolModuleMount[]
 }
 
 export interface MountedA5sfRealm {
   readonly members: readonly MemberServiceSpec[]
   readonly installation: MemberIoInstallation
   readonly bindings: readonly ToolBindingRealm[]
+  /**
+   * ROUTE C — re-mount NATIVE tool modules into the Member's isolated scope NOW
+   * (the caller MUST have applied its capability deny lane first: see the
+   * `NativeToolModuleMount` ordering note). The returned fibers are the ones
+   * this call created; they are ALREADY tracked for disposal by this realm, and
+   * the caller may dispose them individually if its surface-neutrality check
+   * fails. Refuses (typed) unless this realm carries exactly ONE Member
+   * ceiling: every Member realm inherits the SAME agent scope key, so a second
+   * re-mount of the same tool names collides in one scope layer.
+   */
+  mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>
   dispose(): Promise<void>
 }
 
@@ -117,16 +129,6 @@ export interface MountedA5sfRealm {
  */
 export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<MountedA5sfRealm> {
   const { root } = input
-  const nativeModules = input.nativeToolModules ?? []
-  // Refuse BEFORE touching the Context: every Member realm shares the agent's
-  // DSH scope key, so two re-mounts of the same native names would collide
-  // inside one scope layer. One Member ceiling per agent tool plane.
-  if (nativeModules.length > 0 && input.members.length !== 1) {
-    throw new TeamServiceInstallError(
-      'SERVICE_MOUNT_FAILED',
-      `native tool re-mount requires exactly one Member ceiling (got ${input.members.length}): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer`,
-    )
-  }
   // The Member ceiling first: a binding realm without its ceiling would enforce
   // the narrower lane while the Member-wide lane stayed decorative.
   const installation = await installMemberIoProviders({
@@ -136,20 +138,33 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
   })
 
-  // ROUTE C (2026-11-03): re-mount the native tool modules INSIDE the Member's
-  // isolated scope. One parent fiber per module; disposal rides the realm's own
-  // dispose (before the confined Provider fiber), so the shadow can never
-  // outlive the confined `fs` it resolves.
+  // ROUTE C (2026-11-03): the native tool modules are re-mounted INSIDE the
+  // Member's isolated scope by the CALLER, through this realm's
+  // `mountNativeToolModules` (the production glue calls it AFTER its capability
+  // deny lane — see the ordering note on `NativeToolModuleMount`). One parent
+  // fiber per module; disposal rides this realm's own dispose (before the
+  // confined Provider fiber), so the shadow can never outlive the confined `fs`
+  // it resolves. Teardown failures are COLLECTED and re-thrown after every
+  // disposal ran: a swallowed teardown error is the failure mode this replaces.
   const nativeFibers: Fiber[] = []
   const disposeNative = async (): Promise<void> => {
+    const errors: unknown[] = []
     for (const fiber of [...nativeFibers].reverse()) {
       try {
         await fiber.dispose()
-      } catch {
-        // Best-effort rollback: the original failure is the one reported.
+      } catch (error) {
+        errors.push(error)
       }
     }
     nativeFibers.length = 0
+    if (errors.length > 0) throw errors[0]
+  }
+  const disposeNativeQuietly = async (): Promise<void> => {
+    try {
+      await disposeNative()
+    } catch {
+      // Rollback path: the ORIGINAL failure is the one reported.
+    }
   }
 
   const mounted: ToolBindingRealm[] = []
@@ -162,30 +177,6 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       }
     }
     mounted.length = 0
-  }
-
-  try {
-    if (nativeModules.length > 0) {
-      // Exactly one Member (asserted above); its `ctx` IS the isolated scope the
-      // confined Provider was installed on (`install.ts:182`).
-      const target = installation.members[0]?.ctx
-      if (target === undefined) {
-        throw new TeamServiceInstallError(
-          'SERVICE_MOUNT_FAILED',
-          'native tool re-mount found no installed Member realm to mount into',
-        )
-      }
-      for (const mount of nativeModules) {
-        nativeFibers.push(await target.plugin(mount.module, mount.config as never))
-      }
-    }
-  } catch (error) {
-    await disposeNative()
-    await installation.dispose()
-    throw new TeamServiceInstallError(
-      'SERVICE_MOUNT_FAILED',
-      `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
-    )
   }
 
   try {
@@ -205,7 +196,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     }
   } catch (error) {
     await disposeMounted()
-    await disposeNative()
+    await disposeNativeQuietly()
     await installation.dispose()
     throw error
   }
@@ -215,15 +206,76 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     members: Object.freeze([...input.members]),
     installation,
     bindings: Object.freeze([...mounted]),
+    mountNativeToolModules: async (modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]> => {
+      // Refuse BEFORE registering anything: every Member realm shares the
+      // agent's DSH scope key, so two re-mounts of the same native names would
+      // collide inside one scope layer. One Member ceiling per agent tool plane.
+      if (input.members.length !== 1) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `native tool re-mount requires exactly one Member ceiling (got ${input.members.length}): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer`,
+        )
+      }
+      if (disposed) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          'native tool re-mount refused: the realm is already disposed',
+        )
+      }
+      // Its `ctx` IS the isolated scope the confined Provider was installed on
+      // (`install.ts:182`).
+      const target = installation.members[0]?.ctx
+      if (target === undefined) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          'native tool re-mount found no installed Member realm to mount into',
+        )
+      }
+      const created: Fiber[] = []
+      for (const mount of modules) {
+        try {
+          const fiber = await target.plugin(mount.module, mount.config as never)
+          created.push(fiber)
+          nativeFibers.push(fiber)
+        } catch (error) {
+          // Roll back only what THIS call created; the realm stays mounted (the
+          // caller may still run without the native shadow).
+          for (const fiber of [...created].reverse()) {
+            try {
+              await fiber.dispose()
+            } catch {
+              // Rollback path: the mount failure is the one reported.
+            }
+          }
+          for (const fiber of created) {
+            const at = nativeFibers.indexOf(fiber)
+            if (at !== -1) nativeFibers.splice(at, 1)
+          }
+          throw new TeamServiceInstallError(
+            'SERVICE_MOUNT_FAILED',
+            `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
+          )
+        }
+      }
+      return Object.freeze([...created])
+    },
     dispose: async (): Promise<void> => {
       if (disposed) return
       disposed = true
       // The native shadow is disposed FIRST: once the confined Provider fiber is
       // gone, a surviving shadow would resolve a missing `fs` service (fail
       // closed, but reported as a service fault) instead of the guard's refusal.
-      await disposeNative()
+      // A teardown failure is REPORTED (never swallowed) and never shortens the
+      // rest of the teardown.
+      let nativeError: unknown
+      try {
+        await disposeNative()
+      } catch (error) {
+        nativeError = error
+      }
       await disposeMounted()
       await installation.dispose()
+      if (nativeError !== undefined) throw nativeError
     },
   })
 }

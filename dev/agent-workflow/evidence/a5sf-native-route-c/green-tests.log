@@ -1,59 +1,85 @@
-# GREEN — route C wiring + suite + the sibling a5sf suites (node:test, host-free)
-# baseline HEAD=31ba2015d (PR #555) + this branch's wiring; zero Host boots, zero ports, no DSH_HOME
+GREEN — route C review-round-2 fix (head: working tree on top of f2a6b48be)
+baseline: origin/master 31ba2015d + this branch; zero Host boots, zero ports, no DSH_HOME
 
-===== node --test tests/world-factory/a5sf-native-route-c.test.mjs =====
-✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.063534ms)
-✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (17.651206ms)
-✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the mount is refused and unmounted (4.874277ms)
-✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (6.494084ms)
-ℹ tests 4
-ℹ pass 4
+===== $ node --test tests/world-factory/a5sf-native-route-c.test.mjs
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.191875ms)
+✔ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (19.642499ms)
+✔ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (5.100166ms)
+✔ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (5.237165ms)
+✔ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (8.291016ms)
+✔ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (2.270559ms)
+✔ N7 teardown: a native fiber whose disposal throws REJECTS realm.dispose() (not swallowed) and the rest still runs (2.664512ms)
+ℹ tests 7
+ℹ pass 7
 ℹ fail 0
 
-===== node --test tests/world-factory/a5sf-f1-ctx.test.mjs =====
-✔ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (6.057207ms)
-✔ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (9.348087ms)
-✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (3.664397ms)
-✔ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (4.355566ms)
-✔ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.820637ms)
-✔ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (2.474915ms)
-✔ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.033587ms)
-✔ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (0.799003ms)
-✔ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (3.231526ms)
+===== $ node --test tests/world-factory/a5sf-evidence.test.mjs
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
 ℹ tests 9
 ℹ pass 9
 ℹ fail 0
 
-===== node --test tests/world-factory/a5sf-p2-wiring.test.mjs =====
-✔ W1 call-site helper mounts the realm, writes one fact per consultation, and dispose unmounts (12.102232ms)
-✔ W2 default path does nothing: no config ⇒ no provider call, no mount, no file (0.689986ms)
-✔ W2b config without a provider does nothing; a provider answering undefined mounts nothing (1.290093ms)
-✔ W3 sink write failure fails closed: the consulted call is refused and the Provider is never asked (2.557983ms)
-✔ W4 config reader: absent ⇒ undefined; blank/non-string ⇒ loud; valid ⇒ frozen block (0.285621ms)
-✔ W5 malformed provider answers throw: non-object, missing compiledFor, empty members, non-array bindings (1.986931ms)
-✔ W6 the glue call site is guarded, keeps a SAFE row disposer, and imports the helper (1.041241ms)
-✔ W7 no unexpected file: the unconfigured helper writes nothing under a scanned evidence tree, and carries no path literal (0.935311ms)
-✔ W8 row disposer: synchronous entry, settlement awaitable, rejection reported (never unhandled) (0.434372ms)
-ℹ tests 9
-ℹ pass 9
+===== $ node --test tests/world-factory/a5sf-harness.test.mjs
+ℹ tests 10
+ℹ pass 10
 ℹ fail 0
 
-===== node --test tests/world-factory/a5sf-p2-seam.test.mjs =====
-✔ A1 default path: no observer ⇒ identical shape and identical allow/deny behaviour (11.603997ms)
-✔ A2 observer: exactly one fact per consultation, in call order, carrying the guard’s own decision (4.49494ms)
-✔ A2b Member-ceiling realm reports realm=member with no tool binding (2.160008ms)
-✔ A2c observer records the ask lane for IO_POLICY_UNSUPPORTED (1.53616ms)
-✔ A2d a non-TeamIoDenial fault is rethrown unchanged and NOT recorded (0.259271ms)
-✔ A3 file sink: append-only valid JSONL, and the reader returns exactly those facts (3.272905ms)
-✔ A4 negative control: a mount with zero consultations writes nothing (1.513225ms)
-✔ A5 sink failure (allow): the call is refused and the Provider is never asked (2.121207ms)
-✔ A5b sink failure (deny): the refusal is preserved on the error, never converted to an allow (1.56404ms)
-✔ A6 mountA5sfRealm: mounts ceiling + bindings over the real installers and disposes idempotently (1.803565ms)
-✔ A6b mountA5sfRealm rolls the whole realm back when a later binding refuses (1.069685ms)
-✔ A6c mountA5sfRealm releases a PREVIOUSLY mounted binding when a later binding refuses (1.678908ms)
-✔ A7 harness mountRealm() is a caller of the ONE entry point and carries the observer (4.279621ms)
-✔ A8 cross-process: a CHILD process mounts the realm and THIS process reads its consultations (239.827625ms)
+===== $ node --test tests/world-factory/a5sf-p2-seam.test.mjs
 ℹ tests 14
 ℹ pass 14
 ℹ fail 0
 
+===== $ node --test tests/world-factory/a5sf-p2-wiring.test.mjs
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+
+===== $ node --test tests/world-factory/a5sf-read-gate.test.mjs
+ℹ tests 13
+ℹ pass 13
+ℹ fail 0
+
+===== $ npx vitest run a5sf
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+
+===== $ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+
+===== $ npx vitest run <the three ARC-A / PR6 / A4P3 law suites>
+# EXPECTED on this head: 31/34, the three failures are the SAME unbooked ARC-A
+# digest drift of agent-bindings.mjs (fd5d4126...). The override is booked by the
+# reviewer (a named center-interface change), NOT by this branch; no code change
+# makes them pass. Everything else in the 34 passes.
+     × the working tree answers the ledger with ZERO drift (the PR5 zero-center-diff law) 7ms
+     × sensitivity: a drifted byte, a smuggled new file, and a vanished file ALL light up; only a NAMED override silences drift 9ms
+     × L1 digest lock: editing governance-center/kernel.ts in the scanned map is a violation; the honest tree passes; L2 catches the name branch too 18ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 31 passed (34)
+
+===== $ npx tsc -p packages/runtime/tsconfig.json (typecheck)
+typecheck exit=0
+
+===== $ npx tsc -p packages/runtime/tsconfig.build.json (build)
+build exit=0
+
+===== $ node scripts/place-dist-glue.mjs
+place-dist-glue: packages/runtime/src/plugin/live/a5sf-realm-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs (byte-identical)
+place-dist-glue: done (101 placement(s))
+
+===== $ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
+[check-artifacts-committed] OK: 1916 files — working tree equals the git INDEX for both install surfaces (incl. 101 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+
+===== $ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+
+===== $ node scripts/eb3-ci-negative-controls.mjs
+
+24/24 control(s) behaved as required

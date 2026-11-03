@@ -278,23 +278,65 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
     onGuardConsult: (fact) => sink.record(fact),
   }
-  const nativeSpecs = a5sfConfig.nativeToolModules ?? []
-  if (nativeSpecs.length === 0) {
-    // The pre-route-C mount, byte-identical: no tools service lookup, no
-    // module import, no surface comparison.
-    return await mountA5sfRealm(mountInput)
-  }
+  // The realm mount is UNCHANGED and does NOT create the native shadow. ROUTE C
+  // attaches the shadow LATER, through `attachA5sfNativeToolModules`, called by
+  // the glue AFTER its capability deny lane: a shadow created first would sit
+  // OUTSIDE the `tools.restrict` filter and survive the deny (measured).
+  return await mountA5sfRealm(mountInput)
+}
 
-  // ROUTE C — the Member's isolated scope gets the confined Provider AND the
-  // re-mounted NATIVE tool modules, so a model-visible native `read` resolves
-  // the confined Provider. Surface-neutral by construction of the check below.
+/**
+ * ROUTE C — create the NATIVE tool shadow on an ALREADY-MOUNTED realm, after
+ * the Member capability deny lane, and refuse if it changes the surface.
+ *
+ * WHY A SECOND CALL AND NOT PART OF THE MOUNT (review fix, 2026-11-03): the
+ * production glue mounts the realm early (its tool plane feeds the Team tools
+ * and the governed plane) but applies `builtinToolDeny` LATER in the same
+ * setup. An OWN-scope registration is outside the inherited `tools.restrict`
+ * filter, so the deny order decides the outcome:
+ *
+ *   deny  -> shadow : `read` is hidden first; the surface check then REFUSES the
+ *                     shadow (it would ADD a name) — fail closed.
+ *   shadow -> deny  : the deny hides the inherited preset row and the shadow
+ *                     takes its place — the denied tool stays visible AND
+ *                     executable on the confined lane.
+ *
+ * Only the first order is safe, so this function must be called after the deny
+ * (the glue's order is pinned by the suite).
+ *
+ * @param {object} realm - the object `mountMemberA5sfRealm` returned.
+ * @param {object} root - the agent Context the realm was mounted on.
+ * @param {object|undefined} a5sfConfig - the block from `a5sfRealmConfigOf`.
+ * @returns {Promise<readonly object[]|undefined>} the created fibers, or
+ *   `undefined` when the row does not configure native modules.
+ */
+export async function attachA5sfNativeToolModules(realm, root, a5sfConfig) {
+  const nativeSpecs = a5sfConfig?.nativeToolModules ?? []
+  if (nativeSpecs.length === 0) return undefined
+  if (realm === undefined || realm === null || typeof realm.mountNativeToolModules !== 'function') {
+    throw new TypeError('agent-bindings: the a5sf native tool attach needs a mounted realm carrying mountNativeToolModules (the pre-route-C realm cannot re-mount native tools)')
+  }
+  // The POST-DENY surface: this is the baseline the shadow must not change.
   const before = a5sfAgentToolSurface(root)
   const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
-    const imported = await import(moduleSpecifierOf(spec.url))
+    // WRAPPED: a resolution failure must name the configured entry, not surface
+    // as a bare ERR_MODULE_NOT_FOUND from the middle of agent setup.
+    let imported
+    try {
+      imported = await import(moduleSpecifierOf(spec.url))
+    } catch (error) {
+      throw new TypeError(
+        `agent-bindings: cannot load ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)}: `
+        + `${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+    if (imported === null || (typeof imported !== 'object' && typeof imported !== 'function')) {
+      throw new TypeError(`agent-bindings: ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)} did not evaluate to a Cordis plugin module`)
+    }
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
-  const realm = await mountA5sfRealm({ ...mountInput, nativeToolModules })
+  const fibers = await realm.mountNativeToolModules(nativeToolModules)
   const after = a5sfAgentToolSurface(root)
   const added = [...after].filter((name) => !before.has(name))
   const removed = [...before].filter((name) => !after.has(name))
@@ -302,15 +344,22 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
     // FAIL CLOSED. A re-mount may only place the SAME native surface on the
     // confined lane; a name that appears (a denied tool re-enabled, an extra
     // tool package) or disappears is a governance change this wiring must not
-    // make silently. The realm is unmounted before the refusal propagates.
-    await realm.dispose()
+    // make silently. The shadow is removed and the refusal propagates; the
+    // realm itself stays mounted (it is still the Member's confined provider).
+    for (const fiber of [...fibers].reverse()) {
+      try {
+        await fiber.dispose()
+      } catch {
+        // The surface refusal is the failure that must be reported.
+      }
+    }
     throw new TypeError(
       `agent-bindings: the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} would CHANGE the Member's model-visible tool surface`
-      + ` (added: ${JSON.stringify(added)}; removed: ${JSON.stringify(removed)}); refusing to mount — a scoped registration`
-      + ' is outside the inherited tools.restrict filter, so a re-mounted tool could re-enable a builtinToolDeny lane',
+      + ` (added: ${JSON.stringify(added)}; removed: ${JSON.stringify(removed)}); refusing to mount the native shadow — a scoped`
+      + ' registration is outside the inherited tools.restrict filter, so a re-mounted tool could re-enable a builtinToolDeny lane',
     )
   }
-  return realm
+  return fibers
 }
 
 /**

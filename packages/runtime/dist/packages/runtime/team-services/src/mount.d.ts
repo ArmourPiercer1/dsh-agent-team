@@ -25,7 +25,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
-import type { Context, Plugin } from '@deepseek-ai/cordis';
+import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
@@ -61,6 +61,15 @@ export interface A5sfRealmBinding {
  * The module is imported by the CALLER (row composition), never resolved here:
  * this seam must not own module-resolution policy (the same discipline that
  * keeps policy compilation out).
+ *
+ * ORDER IS LOAD-BEARING (review fix, 2026-11-03): the shadow must be created
+ * AFTER the Member capability deny lane (`applyBuiltInToolDeny`). An OWN-scope
+ * registration sits outside the inherited `tools.restrict` filter, so a deny
+ * applied to the inherited surface BEFORE the shadow hides the preset row and
+ * lets the shadow take its place; a deny applied AFTER the shadow cannot hide
+ * it. The production glue therefore calls `mountNativeToolModules` after the
+ * deny block, and the surface-neutrality check compares against the POST-DENY
+ * surface.
  */
 export interface NativeToolModuleMount {
     /** A Cordis plugin module (already imported): the native tool package's module object. */
@@ -76,19 +85,22 @@ export interface MountA5sfRealmInput {
     readonly providerClass?: FsProviderConstructor;
     /** Observe every guard consultation in every realm this call mounts. */
     readonly onGuardConsult?: GuardConsultObserver;
-    /**
-     * Native tool modules to re-mount inside the Member's isolated scope (route
-     * C). Absent/empty = the pre-route-C mount, byte-identical. A non-empty list
-     * requires EXACTLY ONE Member ceiling: every Member realm inherits the SAME
-     * agent scope key, so a second re-mount of the same tool names would collide
-     * in one scope layer.
-     */
-    readonly nativeToolModules?: readonly NativeToolModuleMount[];
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];
     readonly installation: MemberIoInstallation;
     readonly bindings: readonly ToolBindingRealm[];
+    /**
+     * ROUTE C — re-mount NATIVE tool modules into the Member's isolated scope NOW
+     * (the caller MUST have applied its capability deny lane first: see the
+     * `NativeToolModuleMount` ordering note). The returned fibers are the ones
+     * this call created; they are ALREADY tracked for disposal by this realm, and
+     * the caller may dispose them individually if its surface-neutrality check
+     * fails. Refuses (typed) unless this realm carries exactly ONE Member
+     * ceiling: every Member realm inherits the SAME agent scope key, so a second
+     * re-mount of the same tool names collides in one scope layer.
+     */
+    mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>;
     dispose(): Promise<void>;
 }
 /**

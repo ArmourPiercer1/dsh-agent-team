@@ -1,105 +1,93 @@
-# RED — tests/world-factory/a5sf-native-route-c.test.mjs against the PRE-WIRING source
+# RED — the 7-arm route-C suite against the PRE-FIX source (review round 2)
 #
-# Method: kept the suite, reverted the three source files the wiring touches to
-#   HEAD (31ba2015d, the PR #555 baseline):
-#     packages/runtime/src/plugin/live/a5sf-realm-row.mjs
-#     packages/runtime/team-services/src/mount.ts
+# Method: the suite is the FIXED one; the four source files the fix touches are
+#   stashed back to the reviewed head f2a6b48be:
+#     packages/runtime/src/plugin/live/agent-bindings.mjs   (the shadow was created by the mount, BEFORE the deny)
+#     packages/runtime/src/plugin/live/a5sf-realm-row.mjs   (no attachA5sfNativeToolModules export)
+#     packages/runtime/team-services/src/mount.ts           (native modules on the mount input)
 #     packages/runtime/src/plugin/types.ts
-#   `git stash push -- <those three>` → run → `git stash pop` (dist NOT reverted:
-#   the suite imports the src seam through scripts/run-tests-hooks.mjs).
-# Result: 4/4 arms FAIL — the not-yet-existing `config.a5sfNativeToolModules`
-#   reader, the route-C mount, the surface-neutral refusal and the teardown.
-# Exit: 1. Command: node --test tests/world-factory/a5sf-native-route-c.test.mjs
+#   `git stash push -- <those four>` -> run -> `git stash pop`. Dist is not
+#   reverted: the suite imports the src seam through scripts/run-tests-hooks.mjs.
+# Result: 6 failed / 1 passed (exit 1). N1 (the config reader) was already
+#   shipped on the reviewed head and stays green; N2..N7 — the attach step, the
+#   REAL-deny arm, the load-bearing ORDER arm, the one-ceiling refusal and the
+#   teardown-error reporting — all fail because the fix does not exist there.
+# Command: node --test tests/world-factory/a5sf-native-route-c.test.mjs
 #
-✖ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.656466ms)
-✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (10.150516ms)
-✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the mount is refused and unmounted (3.840531ms)
-✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.754635ms)
-ℹ tests 4
+✔ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.063363ms)
+✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (11.891361ms)
+✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (5.3128ms)
+✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.73634ms)
+✖ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (1.157261ms)
+✖ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (1.939511ms)
+✖ N7 teardown: a native fiber whose disposal throws REJECTS realm.dispose() (not swallowed) and the rest still runs (2.438255ms)
+ℹ tests 7
 ℹ suites 0
-ℹ pass 0
-ℹ fail 4
+ℹ pass 1
+ℹ fail 6
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 173.397355
+ℹ duration_ms 449.268111
 
 ✖ failing tests:
 
-test at tests/world-factory/a5sf-native-route-c.test.mjs:308:1
-✖ N1 config reader: native module list absent ⇒ block unchanged; valid ⇒ frozen; malformed ⇒ loud (1.656466ms)
-  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
-  + actual - expected
-  
-  + undefined
-  - [
-  -   {
-  -     url: '/abs/path/to/native-tool.mjs'
-  -   },
-  -   {
-  -     config: {
-  -       a: 1
-  -     },
-  -     url: 'file:///x.mjs'
-  -   }
-  - ]
-  
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:321:10)
+test at tests/world-factory/a5sf-native-route-c.test.mjs:369:1
+✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (11.891361ms)
+  TypeError: row.attachA5sfNativeToolModules is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:403:15)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:444:1
+✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the attach is refused (5.3128ms)
+  TypeError: agent-bindings: the configured a5sfNativeToolModules would CHANGE the Member's model-visible tool surface (added: ["read"]; removed: []); refusing to mount — a scoped registration is outside the inherited tools.restrict filter, so a re-mounted tool could re-enable a builtinToolDeny lane
+      at Module.mountMemberA5sfRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:307:11)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:459:17)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:485:1
+✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.73634ms)
+  TypeError: row.attachA5sfNativeToolModules is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:502:13)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-native-route-c.test.mjs:516:1
+✖ N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool (1.157261ms)
+  AssertionError [ERR_ASSERTION]: the glue attaches the native shadow through the row helper
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:522:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)
-      at Test.start (node:internal/test_runner/test:1262:17)
-      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
-    generatedMessage: true,
-    code: 'ERR_ASSERTION',
-    actual: undefined,
-    expected: [ { url: '/abs/path/to/native-tool.mjs' }, { url: 'file:///x.mjs', config: [Object] } ],
-    operator: 'deepStrictEqual',
-    diff: 'simple'
-  }
-
-test at tests/world-factory/a5sf-native-route-c.test.mjs:340:1
-✖ N2 route C: the native read on the isolated scope resolves the CONFINED provider (before: BASE) (10.150516ms)
-  AssertionError [ERR_ASSERTION]: the native read outside the ceiling is REFUSED
-  
-  false !== true
-  
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:382:12)
-      at async Test.run (node:internal/test_runner/test:1409:7)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
     code: 'ERR_ASSERTION',
-    actual: false,
-    expected: true,
-    operator: 'strictEqual',
+    actual: -1,
+    expected: -1,
+    operator: 'notStrictEqual',
     diff: 'simple'
   }
 
-test at tests/world-factory/a5sf-native-route-c.test.mjs:411:1
-✖ N3 surface neutrality: a builtinToolDeny-hidden native tool is NOT re-enabled — the mount is refused and unmounted (3.840531ms)
-  AssertionError [ERR_ASSERTION]: Missing expected rejection: the re-mount must refuse to widen the surface
-      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:431:3)
+test at tests/world-factory/a5sf-native-route-c.test.mjs:608:1
+✖ N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything (1.939511ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool re-mount requires exactly one Member ceiling (got 2): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer
+      at mountA5sfRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/packages/runtime/team-services/src/mount.ts:125:11)
+      at Module.mountMemberA5sfRealm (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:297:23)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:629:17)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
-    generatedMessage: false,
-    code: 'ERR_ASSERTION',
-    actual: undefined,
-    operator: 'rejects',
-    diff: 'simple'
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: 'native tool re-mount requires exactly one Member ceiling (got 2): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer'
   }
 
-test at tests/world-factory/a5sf-native-route-c.test.mjs:451:1
-✖ N4 teardown: disposing the realm removes the shadow (the preset definition is visible again on BASE) (2.754635ms)
-  AssertionError [ERR_ASSERTION]: confined while mounted
-  
-  false !== true
-  
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:468:10)
+test at tests/world-factory/a5sf-native-route-c.test.mjs:651:1
+✖ N7 teardown: a native fiber whose disposal throws REJECTS realm.dispose() (not swallowed) and the rest still runs (2.438255ms)
+  TypeError: row.attachA5sfNativeToolModules is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-native-route-c/tests/world-factory/a5sf-native-route-c.test.mjs:668:28)
       at async Test.run (node:internal/test_runner/test:1409:7)
-      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
-    generatedMessage: false,
-    code: 'ERR_ASSERTION',
-    actual: false,
-    expected: true,
-    operator: 'strictEqual',
-    diff: 'simple'
-  }
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
