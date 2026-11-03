@@ -3122,6 +3122,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly reviewCapability?: ReviewCapabilityCandidate
     readonly assignedOfficer?: boolean
   }): Promise<ControlDecisionRecord> {
+    let resolvedCapability = args.reviewCapability
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'resolve')
     if (!isActionCaller(args.caller)) {
       throw malformed('resolve', 'caller', 'caller must be {kind:human,humanId} or {kind:instance,instanceId}')
@@ -3207,6 +3208,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           })
           candidate = assigned.candidate
           assignedProblem = assigned.problem
+          resolvedCapability = candidate
         }
         const problem = assignedProblem ?? memberCapabilityProblem({
           root,
@@ -3379,7 +3381,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         scope: scopeOf(request.entry, request.payload),
         requestSequence: request.entry.sequence,
         ...(args.note !== undefined ? { note: args.note } : {}),
-        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
+        ...(resolvedCapability !== undefined ? { reviewCapability: resolvedCapability } : {}),
       })
     })
   }
@@ -5568,6 +5570,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly reviewCapability?: ReviewCapabilityCandidate
     readonly assignedOfficer?: boolean
   }): Promise<ControlEscalationOutcome> {
+    let resolvedCapability = args.reviewCapability
     const root = parseRoot(
       args.rootSessionId,
       CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
@@ -5650,6 +5653,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           })
           candidate = assigned.candidate
           assignedProblem = assigned.problem
+          resolvedCapability = candidate
         }
         const problem = assignedProblem ?? memberCapabilityProblem({
           root,
@@ -5756,7 +5760,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reason: CONTROL_DECISION_REASONS.ESCALATED,
         ...(mintsRisenLeg ? {} : { terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE }),
         ...(args.reason !== undefined ? { note: args.reason } : {}),
-        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
+        ...(resolvedCapability !== undefined ? { reviewCapability: resolvedCapability } : {}),
       })
       // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)
       // five fields (`note` deliberately does NOT join the payload — the

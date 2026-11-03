@@ -63,17 +63,17 @@ describe('A6-PR7 merged wake — real Host inbox', () => {
     const binding = world.binding as unknown as WakeBinding
     await binding.boot()
     const before = world.records.followups.length
-    const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')])
+    const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')], { sessionIdFor: (id) => (id === ROOT ? ROOT : undefined) })
     expect(plan.wakes).toHaveLength(1)
     const coordinator = createReviewWakeCoordinator(reviewWakeKeyFor(plan.wakes[0]!, ROOT, 0))
     const deliver = async (input: {
       readonly key: { readonly reviewerInstanceId: string }
       readonly wakeId: string
       readonly text: string
-    }): Promise<void> => {
+    }, targetSessionId: string): Promise<void> => {
       await binding.deliverReviewWake({
         rootSessionId: ROOT,
-        targetSessionId: input.key.reviewerInstanceId,
+        targetSessionId,
         wakeId: input.wakeId,
         text: input.text,
       })

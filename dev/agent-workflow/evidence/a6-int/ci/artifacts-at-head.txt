@@ -1,5 +1,5 @@
 $ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/check-artifacts-at-head.mjs --store-dir /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/.dsh-pnpm-store-a6
-# exit=0 signal=null error=none seconds=13.2
+# exit=0 signal=null error=none seconds=14
 --- stdout ---
 [check-artifacts-at-head] installing the scratch from --store-dir: /home/armourpiercer/projects/dsh-agent-team-lane-2/.worktrees/alpha6-int/tests/homes/.dsh-pnpm-store-a6
 [check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there

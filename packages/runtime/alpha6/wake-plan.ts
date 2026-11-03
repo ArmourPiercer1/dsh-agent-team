@@ -11,7 +11,10 @@
 import { routeReview, type ReviewRouteInput } from '../review-router/index.js'
 
 export interface PlannedWake {
-  readonly sessionId: string
+  /** The latch/authority identity (Member instance id). */
+  readonly reviewerInstanceId: string
+  /** The DSH session the inbox belongs to (durable childSessionId). */
+  readonly targetSessionId: string
   readonly templateId: string
   readonly routeRole: 'officer' | 'leader'
   readonly currentLegIds: readonly string[]
@@ -24,8 +27,16 @@ export interface WakePlan {
   readonly held: readonly { readonly requestId?: string; readonly reason: string }[]
 }
 
-export function planReviewWakes(inputs: readonly ReviewRouteInput[]): WakePlan {
-  const byRecipient = new Map<string, { templateId: string; routeRole: 'officer' | 'leader'; ids: string[] }>()
+export interface WakePlanOptions {
+  /** Composition-owned map from Member instance id to its durable DSH session. */
+  readonly sessionIdFor: (instanceId: string) => string | undefined
+}
+
+export function planReviewWakes(
+  inputs: readonly ReviewRouteInput[],
+  options: WakePlanOptions,
+): WakePlan {
+  const byRecipient = new Map<string, { targetSessionId: string; templateId: string; routeRole: 'officer' | 'leader'; ids: string[] }>()
   const human: string[] = []
   const held: { requestId?: string; reason: string }[] = []
   for (const input of inputs) {
@@ -41,7 +52,13 @@ export function planReviewWakes(inputs: readonly ReviewRouteInput[]): WakePlan {
       continue
     }
     const key = route.target.instanceId
+    const targetSessionId = options.sessionIdFor(key)
+    if (targetSessionId === undefined) {
+      held.push({ ...(route.currentLegId !== undefined ? { requestId: route.currentLegId } : {}), reason: `no durable DSH session for reviewer instance '${key}'` })
+      continue
+    }
     const group = byRecipient.get(key) ?? {
+      targetSessionId,
       templateId: route.target.templateId,
       routeRole: route.target.routeRole,
       ids: [],
@@ -50,8 +67,9 @@ export function planReviewWakes(inputs: readonly ReviewRouteInput[]): WakePlan {
     byRecipient.set(key, group)
   }
   return {
-    wakes: [...byRecipient].map(([sessionId, group]) => ({
-      sessionId,
+    wakes: [...byRecipient].map(([reviewerInstanceId, group]) => ({
+      reviewerInstanceId,
+      targetSessionId: group.targetSessionId,
       templateId: group.templateId,
       routeRole: group.routeRole,
       currentLegIds: group.ids,

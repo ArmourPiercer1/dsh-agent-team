@@ -17,7 +17,8 @@
 import { describe, expect, it } from 'vitest'
 import { blueprintReviewPolicyFrom, type ReviewRouteInput } from '../review-router/index.js'
 import type { ReviewRouting } from '../../domain/blueprint/src/index.js'
-import { planReviewWakes } from '../alpha6/wake-plan.js'
+import { planReviewWakes as planRaw } from '../alpha6/wake-plan.js'
+function planReviewWakes(inputs: readonly ReviewRouteInput[]) { return planRaw(inputs, { sessionIdFor: (id: string) => id }) }
 import {
   dispatchReviewWakes,
   planFingerprint,
@@ -74,14 +75,14 @@ function input(requestId: string, over: Partial<ReviewRouteInput> = {}): ReviewR
 
 interface RecordingPort {
   readonly calls: { wakeId: string; target: string; text: string }[]
-  readonly deliver: ReviewWakeDeliveryPort
+  readonly deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>
 }
 
 function recordingPort(): RecordingPort {
   const calls: { wakeId: string; target: string; text: string }[] = []
   return {
     calls,
-    deliver: async (delivery) => {
+    deliver: async (delivery, _targetSessionId) => {
       calls.push({
         wakeId: delivery.wakeId,
         target: delivery.key.reviewerInstanceId,
@@ -239,7 +240,7 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
     const coordinator = coordinators[0]!
     const calls: string[] = []
     let attempt = 0
-    const deliver: ReviewWakeDeliveryPort = async (delivery) => {
+    const deliver = async (delivery: Parameters<ReviewWakeDeliveryPort>[0], _targetSessionId: string): Promise<void> => {
       attempt += 1
       if (attempt === 1) throw new Error('inbox unavailable')
       calls.push(delivery.wakeId)

@@ -187,9 +187,9 @@
   },
   {
    "path": "packages/runtime/control/service.ts",
-   "sha256": "caea82c8d9cbf93a4be0634f129120ca1c606a2df6da2afb58d06fef087e1a63",
+   "sha256": "b258a2dbea91c92b5e7280f7093851e5c780161ec785736a4d5f9046e10e6953",
    "pr": "PR #571 (integration: A6 control chain + single evaluator)",
-   "reason": "assignedOfficerCapability() now builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the direct ReviewCapabilityCandidate.of() mint is gone. Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered by the PR5 spec."
+   "reason": "assignedOfficerCapability() builds ReviewCallFacts from the durable row and calls the single evaluateReviewCapability(); the resolved candidate is persisted as decision evidence (resolve + escalate). Port supplies only Blueprint reviewRouting + frozen category. Self-review refused; distinct Officer allow/escalate covered with durable evidence assertions."
   },
   {
    "path": "packages/runtime/control/types.ts",

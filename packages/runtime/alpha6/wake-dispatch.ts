@@ -69,7 +69,7 @@ export interface WakeDispatchDeps {
    */
   readonly coordinators: readonly ReviewWakeCoordinator[]
   /** The delivery seam; a rejection becomes the reducer's `delivery-failed`. */
-  readonly deliver: ReviewWakeDeliveryPort
+  readonly deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>
   /** Current generation of the recipient latch; 0 when the caller omits it. */
   readonly sessionGeneration?: number
 }
@@ -138,7 +138,7 @@ export function planFingerprint(wake: PlannedWake): string {
   const legs = [...new Set(wake.currentLegIds)].sort()
   const canonical = [
     'a6-review-wake-plan/v1',
-    wake.sessionId,
+    wake.reviewerInstanceId,
     wake.templateId,
     wake.routeRole,
     String(legs.length),
@@ -160,7 +160,7 @@ export function reviewWakeKeyFor(
 ): ReviewWakeKey {
   return {
     rootSessionId,
-    reviewerInstanceId: wake.sessionId,
+    reviewerInstanceId: wake.reviewerInstanceId,
     sessionGeneration,
   }
 }
@@ -221,7 +221,7 @@ function outcome(
   wakeId: string | null,
 ): WakeDispatchDelivery {
   return {
-    sessionId: wake.sessionId,
+    sessionId: wake.reviewerInstanceId,
     templateId: wake.templateId,
     routeRole: wake.routeRole,
     key,
@@ -247,7 +247,11 @@ export async function dispatchReviewWakes(
   deps: WakeDispatchDeps,
 ): Promise<WakeDispatchResult> {
   const generation = deps.sessionGeneration ?? 0
-  const deliver = createReviewWakeDelivery(deps.deliver)
+  const deliver = createReviewWakeDelivery(async (input) => {
+    const targetSessionId = deps.plan.wakes.find((wake) => wake.reviewerInstanceId === input.key.reviewerInstanceId)?.targetSessionId
+    if (targetSessionId === undefined) throw new Error(`no target session for reviewer instance '${input.key.reviewerInstanceId}'`)
+    await deps.deliver(input, targetSessionId)
+  })
   const deliveries: WakeDispatchDelivery[] = []
   const delivered: WakeDispatchDelivery[] = []
   const failures: WakeDispatchFailure[] = []
@@ -258,13 +262,13 @@ export async function dispatchReviewWakes(
     const coordinator = findCoordinator(deps.coordinators, key)
     if (coordinator === undefined) {
       failures.push({
-        sessionId: wake.sessionId,
+        sessionId: wake.reviewerInstanceId,
         scope: 'coordinator',
-        message: `no ReviewWakeCoordinator is registered for the derived key of session '${wake.sessionId}'`,
+        message: `no ReviewWakeCoordinator is registered for the derived key of session '${wake.reviewerInstanceId}'`,
       })
       // No latch, no state: report an idle, undelivered entry (fail closed).
       deliveries.push({
-        sessionId: wake.sessionId,
+        sessionId: wake.reviewerInstanceId,
         templateId: wake.templateId,
         routeRole: wake.routeRole,
         key,
@@ -292,7 +296,7 @@ export async function dispatchReviewWakes(
       const polled = coordinator.dispatch({ type: 'poll' })
       if (polled.outcome === 'refused') {
         failures.push(
-          failure(wake.sessionId, 'transition', 'poll was refused during an active turn', polled),
+          failure(wake.reviewerInstanceId, 'transition', 'poll was refused during an active turn', polled),
         )
       }
       deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
@@ -306,7 +310,7 @@ export async function dispatchReviewWakes(
     })
     if (scanned.outcome === 'refused') {
       failures.push(
-        failure(wake.sessionId, 'coordinator', 'the merged scan-result was refused', scanned),
+        failure(wake.reviewerInstanceId, 'coordinator', 'the merged scan-result was refused', scanned),
       )
       deliveries.push(outcome(wake, key, fingerprint, coordinator, false, null))
       continue
@@ -333,7 +337,7 @@ export async function dispatchReviewWakes(
       if (failed.outcome === 'refused') {
         failures.push(
           failure(
-            wake.sessionId,
+            wake.reviewerInstanceId,
             'transition',
             `delivery failed (${reason}) and delivery-failed was refused`,
             failed,
@@ -342,7 +346,7 @@ export async function dispatchReviewWakes(
         )
       } else {
         failures.push({
-          sessionId: wake.sessionId,
+          sessionId: wake.reviewerInstanceId,
           scope: 'delivery',
           message: reason,
           wakeId: effect.wakeId,
@@ -358,7 +362,7 @@ export async function dispatchReviewWakes(
     if (started.outcome === 'refused') {
       failures.push(
         failure(
-          wake.sessionId,
+          wake.reviewerInstanceId,
           'transition',
           'the delivered wake could not be claimed (turn-start refused)',
           started,
@@ -375,7 +379,7 @@ export async function dispatchReviewWakes(
     if (ended.outcome === 'refused') {
       failures.push(
         failure(
-          wake.sessionId,
+          wake.reviewerInstanceId,
           'transition',
           'the claimed wake could not be released (turn-end refused)',
           ended,
@@ -395,7 +399,7 @@ export async function dispatchReviewWakes(
       if (settled.outcome === 'refused') {
         failures.push(
           failure(
-            wake.sessionId,
+            wake.reviewerInstanceId,
             'coordinator',
             'the post-turn re-read was refused',
             settled,

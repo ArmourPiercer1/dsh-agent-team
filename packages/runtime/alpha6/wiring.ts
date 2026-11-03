@@ -41,11 +41,23 @@ export function controlRequestNotification(
   config: Alpha6WiringConfig,
   live: Alpha6WiringLive,
 ): { requestNotification?: ControlRequestNotificationPort } {
-  if (live.deliverRootControlNotification === undefined) return {}
-  const legacy = createLeaderControlNotifier({ deliver: live.deliverRootControlNotification })
-  if (config.alpha6ReviewRouting !== true || live.deliverReviewWake === undefined) {
-    return { requestNotification: legacy }
+  if (config.alpha6ReviewRouting !== true) {
+    if (live.deliverRootControlNotification === undefined) return {}
+    return {
+      requestNotification: createLeaderControlNotifier({ deliver: live.deliverRootControlNotification }),
+    }
   }
+  // Explicit opt-in: every missing seam is a refusal, never the Leader.
+  if (live.deliverRootControlNotification === undefined || live.deliverReviewWake === undefined) {
+    return {
+      requestNotification: {
+        notifyLeaderRequest: async () => {
+          throw new Error('Alpha.6 review routing is enabled but a required Host seam is missing; no Leader fallback')
+        },
+      },
+    }
+  }
+  const legacy = createLeaderControlNotifier({ deliver: live.deliverRootControlNotification })
   try {
     const parsed = parseAlpha6Routing(config.blueprintSource)
     if (parsed === null) {

@@ -95,11 +95,12 @@ describe('A6-PR6 root wiring', () => {
       await expect(requestNotification!.notifyLeaderRequest(request)).rejects.toThrow('no Leader fallback')
       expect(leader).not.toHaveBeenCalled()
     }
+    // Explicit opt-in without the wake seam is refused, never legacy.
     const leader = vi.fn(async () => {})
-    const { requestNotification } = controlRequestNotification(config, {
+    const missingSeam = controlRequestNotification(config, {
       deliverRootControlNotification: leader,
     })
-    await requestNotification!.notifyLeaderRequest(request)
-    expect(leader).toHaveBeenCalledTimes(1)
+    await expect(missingSeam.requestNotification!.notifyLeaderRequest(request)).rejects.toThrow('no Leader fallback')
+    expect(leader).not.toHaveBeenCalled()
   })
 })

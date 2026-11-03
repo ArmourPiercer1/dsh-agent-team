@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { blueprintReviewPolicyFrom, type ReviewRouteInput } from '../review-router/index.js'
 import type { ReviewRouting } from '../../domain/blueprint/src/index.js'
-import { planReviewWakes } from '../alpha6/wake-plan.js'
+import { planReviewWakes as planRaw } from '../alpha6/wake-plan.js'
+function planReviewWakes(inputs: readonly ReviewRouteInput[]) { return planRaw(inputs, { sessionIdFor: (id: string) => id }) }
 
 const ROUTING: ReviewRouting = {
   enabled: true,
@@ -45,7 +46,7 @@ describe('A6 main wake plan — router then per-recipient merge', () => {
   it('merges three ordinary asks into ONE Officer wake', () => {
     const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')])
     expect(plan.wakes).toEqual([
-      { sessionId: 'session-officer', templateId: 'officer', routeRole: 'officer', currentLegIds: ['req-1', 'req-2', 'req-3'] },
+      { reviewerInstanceId: 'session-officer', targetSessionId: 'session-officer', templateId: 'officer', routeRole: 'officer', currentLegIds: ['req-1', 'req-2', 'req-3'] },
     ])
     expect(plan.humanLegIds).toEqual([])
   })

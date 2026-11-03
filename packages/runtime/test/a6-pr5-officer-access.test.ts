@@ -278,6 +278,7 @@ describe('A6-PR5 restricted Officer access', () => {
         assignedOfficer: true,
       })
       expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({ source: 'blueprint-officer', entry: 'allow' })
 
       const escalateLeg = await makeLeg(officer, 'corr-a6-pr5-eval-escalate')
       const risen = await officer.escalateApprovalLeg({
@@ -287,6 +288,7 @@ describe('A6-PR5 restricted Officer access', () => {
         assignedOfficer: true,
       })
       expect(risen.nextLeg?.reviewAuthority).toBe('human-user')
+      expect(risen.terminalDecision.reviewCapability).toMatchObject({ source: 'blueprint-officer', entry: 'escalate' })
 
       // SELF-REVIEW: the trusted port assigns the leg's own OperationOwner
       // (the officer asked for its own operation). The evaluator refuses with
