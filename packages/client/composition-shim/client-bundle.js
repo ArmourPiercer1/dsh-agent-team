@@ -10099,7 +10099,7 @@ REMOTE_CORRUPT_CONTROL_LEGS_CAP });
 			    // A4-PR6 §6.C: structured families, never the `unknown` serializer.
 			    'governance-proposal-recorded': 'governance-proposal',
 			    'control-escalation-recorded': 'control-escalation',
-			    'control-current-leg-transferred': 'control',
+			    'control-current-leg-transferred': 'control-escalation',
 			};
 			/**
 			 * The INTERNAL authority fact types that never become Events rows
