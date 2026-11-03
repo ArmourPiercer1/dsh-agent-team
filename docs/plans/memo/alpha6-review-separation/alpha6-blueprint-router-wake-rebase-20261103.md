@@ -9,6 +9,8 @@
 > **2026-11-02（真实 UTC）PoC 执行记录（append-only）**：本文件 §4 的三项 P0 已执行，证据与复现入口 =
 > [`dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/`](../../../../dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/README.md)。
 > 结果：**P-AUTH PASS-with-qualification**（角色闭集是唯一基础权限 gate；一个 case-scoped 谓词即可走完同一账本与 guard；该接缝属 ARC-A 受保护中心，需具名 Center-Interface PR + override + 用户授权）；**P-BP PASS**（v3/v4 哈希零移动；当前入口拒绝 `reviewRouting`；加法面可确定解析 Template × Tool；family 进哈希，故需版本边界）；**P-INBOX seam PASS / 模型 PASS / 真 Host ENV_BLOCK**（Host Inbox 公开接缝足够；三请求/崩溃/Stop 端到端未运行）。
+
+> **2026-11-02 复审更正（append-only，取代上一行的 P-AUTH 定级）**：上一行把“角色闭集接缝通过”写成了 P-AUTH 通过，**定级过强**。复审后的完整 PA 链证据（`evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts`）显示：真实 strict PA manifest + 真实 verifier 下，member 身份的 Officer 在 `resolve` 即被判 `pa-authority-drift`，`mayReview(member, member, leader)` 恒假，零 grant、零消费；只有加入一个 throwaway 的 reviewer-authority 映射，同一链才 mint + guard 成功，且 durable decider 身份仍是 member。故重定级为：**简单 Control 决议接缝 PASS；完整 PA 工具审批链在 base law 下 FAIL；委托原型 PASS（仅证明插入点）；生产委托契约 OPEN，可能需要用户架构裁决。** P-BP 修订为 12/12（新增 Officer 必须是 MemberTemplate、Officer 自问 → Leader）；P-INBOX 模型修订为 11/11（pending/changed 分离、恢复查持久 wake、投递失败释放）。
 > 计划细化 = [`alpha6-execution-plan-20261102.md`](./alpha6-execution-plan-20261102.md)。本文件的产品语义与不变量未因 PoC 结果改写。
 >
 > **旧计划定位**：#319、#501、#503、#507、#509、#513、#517、#520、#522 是可评估和回收的历史设计/实验资产，不是新方案必须逐项实施的前置条件。未另行批准前，它们不自动获得合并/启用授权。
@@ -33,6 +35,7 @@
 4. 其他明确需要 Leader 的工具审批，按 Blueprint 中的例外规则送 Leader；无该例外则默认 Officer。
 5. Router 根据现有审批权威（当前 ApprovalCase/leg、权限要求）决定可路由性，**不得根据 request.kind='leader-approval' 直接等同为通知 Leader**；请求种类、有效审批层级、实际接收者三者不同。
 6. 对不能合法路由或没有有效接收者的案件保留权威待办、报告异常；绝不默许 allow，也不把未知权限要求当成 Officer 权限。
+7. **Officer 自己发起的普通工具 ask 默认交 Leader，绝不交回 Officer。** 当前 Officer turn 等待审批、审批又需要下一个 Officer turn，是正常运行中的依赖环；同层自审也不合法。这是职责隔离规则，不是通用死锁检测器。
 
 ### S2. Blueprint 的作者负责制定例外；Router 首版只执行确定性规则
 
@@ -46,7 +49,7 @@
 
 ### S3. 一个 Team 的专职 Officer
 
-1. Blueprint 声明一个专用 **Approval Officer MemberTemplate**。每个启用 Alpha.6 的 Team 仅绑定一个具体 Officer Instance；不增加第五级 RuntimeAuthority，不复用 Leader Instance 身份。
+1. Blueprint 声明一个专用 **Approval Officer MemberTemplate**。Officer 必须是 MemberTemplate，引用 Leader 模板作为 Officer 直接拒绝（不是“复用 Leader 身份”的合法写法）。每个启用 Alpha.6 的 Team 仅绑定一个具体 Officer Instance；不增加第五级 RuntimeAuthority，不复用 Leader Instance 身份。
 2. Agent 的运行中/空闲状态与它是否被绑定为 Officer 是两回事。Officer 可以按需激活，不必常驻运行模型。
 3. 相同 Officer 模板的能力、persona、模型偏好与初始路由配置遵循现有 Template 机制。实例如何被唯一绑定、恢复与重建属于工程设计，不能通过重新解释 Template/Instance 身份解决。
 4. 为 Officer 提供读取其当前合法待办和提交审批的最小入口；不得直接给它全部 Leader-only Team 管理/读取权限。
@@ -84,7 +87,7 @@
 | **A6-LEGACY** | 未启用 Alpha.6 的 Team 保持旧行为；Human / Admin 审批与原有用户权限不下放 | 新模式的明确 opt-in 与按 Team 的互斥通知出口 |
 | **A6-SCOPE** | 本轮不承诺处理恶意插件/提示词注入、复杂多 Officer、跨进程分布式调度及通用规则语言 | 对现有权限/审批终态做正常兼容验证，不主动扩建威胁模型 |
 
-**A6-AUTHORITY 的可行性界线必须正视**：master 的 CONTROL_RESOLVER_ROLES 当前使普通 Member 不可直接 resolve leader-approval。上述不变量并不等于“Officer 已有天然审批权”。必须先验证是否存在保留原有权限法律的最小、可信且 Case-scoped 扩展接缝。如果它实际上需要重写基础权限体系或冒充 Leader，则标记 **BLOCK / 请求另行裁决**；不因达成交付进度而偷偷突破不变量。本轮不把“完全不修改 ControlService 文件”本身误当成产品目标，但改动必须限于审批接入与通知边界，不得更改基础权限语义。
+**A6-AUTHORITY 的可行性界线必须正视**：master 的 CONTROL_RESOLVER_ROLES 当前使普通 Member 不可直接 resolve leader-approval；更重要的是，完整 PA 链的 `deciderAuthority()` / `mayReview()` / `verifyEffectSetApproval()` / `issueApprovedGrant()` 都把 member 解释为不能覆盖 leader 级审批。**“角色闭集接缝”只解决 Control 入口，不等于 PA 工具审批可用。** 2026-11-02 复审后的 P-AUTH 证实：真实 PA manifest 下 Officer 的 allow 在 resolve 阶段即被判 `pa-authority-drift`。因此必须先定义并验证一个有 Case 作用域、保留真实 Officer 身份的受限委托契约（见执行计划 §2.4）；如果它实际需要扩大基础审批法（新增 reviewer 位置、修改 `mayReview`/grant 法律），则标记 **BLOCK / 请求用户裁决**，不得以“最小接入”为名偷偷突破。
 
 ## 3. 架构方向（不提前冻结具体 API / schema）
 
@@ -129,9 +132,10 @@ Trusted Blueprint Snapshot + MemberTemplate identity + Tool identity
 | 2 | 现有权限法律要求 Human（或无合法 resolver） | 原有人类/不可处理路径，禁止下放 |
 | 3 | Team 调度/管理/权限变更类固定 Leader 职责 | Leader（但不高于 Human） |
 | 4 | 当前 leg 已有有效的 Handoff/合法故障接管覆盖 | 已覆盖接收者 |
-| 5 | Blueprint 中当前 MemberTemplate × Tool 的显式 Leader 例外 | Leader |
-| 6 | 其余可委托的日常工具 ask | 专职 Officer |
-| 7 | Officer 不可用 | 依该 Blueprint 的 hold / leader 策略；不自动 allow |
+| 5 | 请求者 templateId == `officerTemplateId`（Officer 自己的普通 ask） | Leader（防自等待；不交回 Officer） |
+| 6 | Blueprint 中当前 MemberTemplate × Tool 的显式 Leader 例外 | Leader |
+| 7 | 其余可委托的日常工具 ask | 专职 Officer |
+| 8 | Officer 不可用 | 依该 Blueprint 的 hold / leader 策略；不自动 allow |
 
 实现应将“当前实际执行操作的 Member”与“代表其创建请求的调用者”分开处理；使用 Alpha.5 最终可信调用身份，不能错误地按消息发送者、displayName 或 tool owner 选择 MemberTemplate。
 
@@ -202,7 +206,7 @@ PoC 只针对真实不确定的三个问题；已经由固定源码明确支持�
 | **P-BP（P0）** | 能否从冻结 Blueprint 按 MemberTemplate × 受信 Tool 解析确定路由，且不破坏 v3/v4 历史哈希、不制造另一套配置源？ | 2 Templates（同模板 2 Instances）× 2 Tools × Leader 例外的最小 Blueprint、schema/hash 对照；与 Alpha.5 最新作者配置并读 | 同模板同默认；不同模板可不同；未显式 Leader 为 Officer；不匹配的旧配置原样；新字段只有受支持版本/明确迁移路径 | 提出最小加法式 schema 修改与交叉协调，不以 metadata 或 sidecar 绕过；不能在已有旧 schema 偷增字段 |
 | **P-INBOX（P0）** | 在 DSH 0.2.0-rc.2 的真实 Inbox/Agent 生命周期下，轻量激活+轮询+锁存能否防止多余模型轮次而不丢当前待办？ | 一次受控真 Host：3 个请求并发、投递前 resolve、Reviewer claim 后新请求、handoff、Stop/冷恢复；读取真实 session/inbox/turn/request 事实 | 收件者只收到必要的通用 Wake；常规 ask 不再唤醒 Leader；resolved 不能单独新唤醒；claim/running 与崩溃恢复后当前 Case 可再次发现；无双 notifier | 若 Host 某一公开接缝不可用，只针对该接缝提交最小替代/基础设施改动建议；不自动引入七阶段 scheduler、可靠 Timer 或 Core patch |
 
-**真实 Host 与发布 Gate 分开**：PoC 证明基础接缝是否成立；实现后的端到端回归验证生产代码。真实 Host 不可运行时标 ENV_BLOCK，不冒充 PASS。针对固定 DSH 源码事实可直接读码并辅以单个见证，不再为已证明的 Inbox API 设计重复 PoC。
+**真实 Host 与发布 Gate 分开**：PoC 证明基础接缝是否成立；实现后的端到端回归验证生产代码。设计/模块阶段真实 Host 不可运行时可标 ENV_BLOCK，不冒充 PASS；但**宣称 Alpha.6 可用于正式验收/发布时，核心真实 Host 行为必须通过，ENV_BLOCK 不得作为发布 PASS**。针对固定 DSH 源码事实可直接读码并辅以单个见证，不再为已证明的 Inbox API 设计重复 PoC。
 
 ### 最终行为验收（实现阶段）
 

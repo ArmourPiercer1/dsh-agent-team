@@ -157,11 +157,22 @@ describe('P-BP/C — an additive face over the same frozen blueprint resolves de
   })
 
   it('the unconfigured majority defaults to Officer', () => {
-    expect(route('approval-officer', 'dsh.web', 'search')).toMatchObject({
+    expect(route('analyst', 'dsh.web', 'search')).toMatchObject({
       kind: 'recipient',
       target: 'officer',
       reason: 'blueprint-default-officer',
     })
+  })
+
+  it('P0: the Officer own ask routes to the Leader, never back to the Officer (no self-wait cycle)', () => {
+    expect(route('approval-officer', 'dsh.web', 'search')).toMatchObject({
+      kind: 'recipient',
+      target: 'leader',
+      reason: 'officer-self-ask',
+    })
+    // Even a tool that has no exception: the self-ask rule is independent of
+    // the authoring table. Same-template instances are all the Officer.
+    expect(route('approval-officer', 'dsh.shell', 'bash').reason).toBe('officer-self-ask')
   })
 
   it('instanceId / label selectors are refused (Template-only authoring face)', () => {
@@ -212,6 +223,12 @@ describe('P-BP/C — an additive face over the same frozen blueprint resolves de
     ) as { reviewRouting: unknown }
     const parsedUnknown = parseReviewRouting(unknownTemplate.reviewRouting)
     expect(refusalOf(() => buildRouteTable(core, parsedUnknown)).code).toBe('reviewRouting/unknown-officer-template')
+
+    const leaderAsOfficer = parseYaml(
+      'reviewRouting:\n  enabled: true\n  officerTemplateId: leader\n  ordinaryToolApprovals:\n    default: officer\n',
+    ) as { reviewRouting: unknown }
+    const parsedLeader = parseReviewRouting(leaderAsOfficer.reviewRouting)
+    expect(refusalOf(() => buildRouteTable(core, parsedLeader)).code).toBe('reviewRouting/officer-not-member')
 
     const missingName = parseYaml(
       'reviewRouting:\n  enabled: true\n  officerTemplateId: approval-officer\n  ordinaryToolApprovals:\n    default: officer\n    leaderExceptions:\n      - memberTemplateId: researcher\n        tool: { owner: dsh.shell }\n',

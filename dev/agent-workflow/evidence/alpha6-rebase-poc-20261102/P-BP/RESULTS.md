@@ -1,6 +1,7 @@
 # P-BP — Blueprint Template × Tool routing (executed 2026-11-02, real UTC)
 
-**Verdict: PASS (feasibility at the prototype layer).** 11/11 probe assertions.
+**Verdict: PASS (feasibility at the prototype layer).** 12/12 probe assertions
+(11 → 12 in the 2026-11-02 review revision).
 The production grammar is untouched; `reviewRouting` is validated by a
 throwaway module (`review-routing.mjs`) that is not imported by any package.
 
@@ -31,6 +32,11 @@ npx vitest run --config dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/v
      → Officer (per-template, not global);
    - an exception matches only its exact owner/name coordinate;
    - the unconfigured majority defaults to Officer;
+   - **the Officer must be a MemberTemplate**: naming the Leader template as
+     `officerTemplateId` refuses (`reviewRouting/officer-not-member`);
+   - **the Officer's OWN ordinary ask routes to the Leader**
+     (`reason: 'officer-self-ask'`), never back to the Officer — the review's
+     self-wait cycle;
    - `instanceId` and `label` selectors refuse
      (`reviewRouting/instance-selector`);
    - bad `default`, bad `whenOfficerUnavailable`, unknown template, duplicate
@@ -50,4 +56,5 @@ npx vitest run --config dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/v
 - where the validator lives (the v4 grammar's closed pass vs the document
   normalizer) so the refusal is single-sourced;
 - Officer template must be a MemberTemplate, not the Leader template; the
-  probe enforces membership in the frozen template set.
+  probe enforces membership in the frozen member-template set (the Leader
+  template is in the blueprint, but not in `blueprint.members`).

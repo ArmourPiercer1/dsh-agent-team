@@ -125,8 +125,16 @@ export function parseReviewRouting(raw) {
  */
 export function buildRouteTable(blueprint, routing) {
   const templateIds = new Set([String(blueprint.leader.templateId), ...blueprint.members.map((m) => String(m.templateId))])
+  const memberTemplateIds = new Set(blueprint.members.map((m) => String(m.templateId)))
   if (!templateIds.has(routing.officerTemplateId)) {
     refused('reviewRouting/unknown-officer-template', '$.officerTemplateId', `template '${routing.officerTemplateId}' is not in the frozen blueprint`)
+  }
+  // The Officer is a DEDICATED MEMBER reviewer. The Leader template is a
+  // legal blueprint template but never a legal Officer: routing to the
+  // Leader is expressed by the default governance path / exceptions, not by
+  // mis-declaring the Leader as the Officer.
+  if (!memberTemplateIds.has(routing.officerTemplateId)) {
+    refused('reviewRouting/officer-not-member', '$.officerTemplateId', `template '${routing.officerTemplateId}' is the Leader template; the Officer must be a MemberTemplate`)
   }
   const table = new Map()
   for (const e of routing.leaderExceptions) {
@@ -144,6 +152,13 @@ export function routeFor(blueprint, routing, table, { templateId, tool }) {
   if (!templateIds.has(templateId)) refused('reviewRouting/unknown-instance-template', '$', `template '${templateId}' is not in the frozen blueprint`)
   if (!isRecord(tool) || !nonEmpty(tool.owner) || !nonEmpty(tool.name)) {
     refused('reviewRouting/trusted-tool', '$', 'routing needs a trusted owner/name coordinate')
+  }
+  // A6-P0: the Officer's OWN ordinary tool ask never routes back to the
+  // Officer. That is a dependency cycle (the current turn waits for a review
+  // that needs the next Officer turn), not a permissions question. Same-level
+  // review is illegal anyway; the Leader is the nearest legal reviewer.
+  if (templateId === routing.officerTemplateId) {
+    return Object.freeze({ kind: 'recipient', target: 'leader', reason: 'officer-self-ask' })
   }
   const hit = table.get(`${templateId}\u0000${tool.owner}\u0000${tool.name}`)
   return Object.freeze({

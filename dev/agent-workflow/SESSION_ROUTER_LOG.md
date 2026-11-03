@@ -7378,3 +7378,41 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **下一步（用户裁决位）**：执行计划 §8 的 5 项（v5 边界、Officer 存在性不变量、
   Officer 缺失 fail-closed、hold 默认、指标落点）；P-AUTH 接缝立项前不得开始
   A6-PR2。
+
+## 2026-11-02T20:5xZ（真实 UTC）— PR #536 复审 P0 修订：完整 PA 链证伪、Officer 自问、latch 三缺陷、Handoff Owner（主 Agent，PR #536 lane）
+
+- **复审基线**：用户复审 head `659f617b7`，判定 CONDITIONAL / 暂不按原计划开工；四个 P0 =
+  完整 PA 链、Officer 自问路由、latch 取消/恢复、Handoff 实现 Owner。本轮回执只改
+  PR #536 的设计/计划/证据，零生产实现、零 schema、零启用。
+- **P-AUTH 重定级（关键）**：首轮“PASS-with-qualification”过强，只证明了 Control 角色
+  闭集接缝。新增 `P-AUTH/pa-chain.test.ts`：真实 strict PA manifest + 真实
+  `createPaEffectsVerifier` + 真实 `createPaControlLeg`（mint + guard）。base：Leader 全链
+  通过；role-only（仅角色接缝）：Officer 的 allow 在 resolve 即被 durable DENY
+  `pa-authority-drift`，零 grant/零消费；delegation（角色接缝 + throwaway
+  `deciderAuthority` 映射）：同一 durable decider（role=member）完成 allow、mint、guard
+  恰好一次。结论：简单 Control 接缝 PASS；完整 PA 链在 base law 下 FAIL；委托原型 PASS
+  仅证明插入点；生产委托契约 OPEN，若需扩基础审批法须用户架构裁决。证据
+  `evidence/alpha6-rebase-poc-20261102/P-AUTH/`（`pa-chain.test.ts`、`delegation.patch`、
+  `run-pa-chain.sh`、`logs/pa-chain-all-modes.log`；patch 均 trap 回滚）。
+- **P-BP 12/12**：新增两条复审要求——Officer 必须是 MemberTemplate（引用 Leader 拒绝，
+  `officer-not-member`）；Officer 自己的普通 ask 固定 Leader（`officer-self-ask`，防
+  “当前 turn 等审批、审批等下个 Officer turn”的依赖环）。原“Officer 默认 Officer”测试
+  改用 analyst，避免把自问当默认。
+- **P-INBOX 11/11**：修复复审指出的三处模型缺陷——`pending` 与 `changed` 分离（pending-
+  unchanged 不再被 `cancelIfStale` 误撤）；`recover({persistentWakeExists:true})` 采纳
+  已存在的持久 wake 而非重复投递；`deliveryFailed()` 释放 `queued` 并重置基线（无
+  timer，靠后续激活重试）；`wake()` 抛错同样回到 idle。
+- **计划修订**（`alpha6-execution-plan-20261102.md`，178→约 250 行）：新增 A6-PR2
+  Gate 0（先跑完整 PA 链，不通过则停）；新增 A6-PR2b 承接 Handoff/接管 current-leg
+  持久事实 + 生产接线 + 纵向测试；PR2 四入口改为“共用资格判断、逐入口能力表”（零审查
+  关闭不得由 Officer 新建）；PR3 纳入三条 latch P0；PR4 必须在可控 Host 适配环境真实
+  投递；验收前移（PR2 跨层、PR4 真投递、PR6 纵切、PR7 只回归/发布）；版本号不再预占
+  v5，与 Alpha.5 协调；MessageId 改为 `createUserMessage().id`（`followup()` 返回
+  void）；回滚改为运行时 kill switch（不改冻结蓝图、不降级二进制、已有 Case 可完成）；
+  发布判据明确 ENV_BLOCK ≠ PASS。
+- **设计正本修订**：S1 增 Officer 自问→Leader；S3 增 Officer 必须是 MemberTemplate；
+  §3.2 优先级插入自问规则；A6-AUTHORITY 增“角色接缝 ≠ PA 链”的源码事实与委托契约
+  界线；§4 增 dated 复审更正与“发布 PASS 必须含核心 Host 行为”。
+- **唯一待用户裁决**：生产 PA 委托契约若必须修改 rung/`mayReview`/grant 法律，则属
+  基础审批法扩展，需用户授权；若可在既有 ladder 上以 case-scoped 委托事实实现，则由
+  工程在 PR2 Gate 0 验证后继续。未开始 PR2 实现。

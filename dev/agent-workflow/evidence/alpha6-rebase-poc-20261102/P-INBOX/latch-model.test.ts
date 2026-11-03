@@ -6,13 +6,16 @@
 import { describe, expect, it } from 'vitest'
 import { createLatch } from './latch.mjs'
 
-function world(initial: string[] = []) {
+function world(initial: string[] = [], opts: { wakeThrows?: boolean } = {}) {
   let version = 1
   let pendingIds = [...initial]
   const wakes: Array<{ why: string; version: number; ids: string[] }> = []
   const latch = createLatch({
     scan: () => ({ version, pendingIds }),
-    wake: (w) => wakes.push(w),
+    wake: (w) => {
+      if (opts.wakeThrows === true) throw new Error('delivery failed')
+      wakes.push(w)
+    },
   })
   return {
     latch,
@@ -77,6 +80,16 @@ describe('P-INBOX/MODEL — one in-flight wake, dirty coalescing, authoritative 
     expect(w.latch.phase).toBe('idle')
   })
 
+  it('P0 regression: a pending-but-UNCHANGED wake is NOT cancelled (A is still waiting)', () => {
+    const w = world()
+    w.add('A')
+    // No new version, no new id: the review still has A to do. The old model
+    // read "not fresh" as "not pending" and withdrew the only valid wake.
+    expect(w.latch.cancelIfStale()).toBe(false)
+    expect(w.latch.phase).toBe('queued')
+    expect(w.wakes).toHaveLength(1)
+  })
+
   it('already-resolved work cannot justify a wake (the event is a hint, not the fact)', () => {
     const w = world()
     w.add('A')
@@ -111,6 +124,41 @@ describe('P-INBOX/MODEL — one in-flight wake, dirty coalescing, authoritative 
     expect(woken).toBe(true)
     expect(w.wakes).toHaveLength(2)
     expect(w.latch.phase).toBe('queued')
+  })
+
+  it('P0 regression: recovery adopts a surviving Host wake instead of duplicating it', () => {
+    const w = world()
+    w.add('A')
+    w.latch.turnStart()
+    // The crash happened after the wake was delivered but before the turn
+    // claimed it: the Host Inbox still holds the wake.
+    const woken = w.latch.recover({ persistentWakeExists: true })
+    expect(woken).toBe(false)
+    expect(w.wakes).toHaveLength(1)
+    expect(w.latch.phase).toBe('queued')
+    // Claiming the surviving wake and finishing with no progress stays silent.
+    w.latch.turnStart()
+    expect(w.latch.turnEnd().woken).toBe(false)
+    expect(w.wakes).toHaveLength(1)
+  })
+
+  it('P0 regression: a failed delivery releases queued and the same work can wake again', () => {
+    const w = world()
+    w.add('A')
+    expect(w.latch.phase).toBe('queued')
+    expect(w.latch.deliveryFailed()).toBe(true)
+    expect(w.latch.phase).toBe('idle')
+    // No timer: the next activation is what retries. The baseline was reset.
+    w.latch.workChanged()
+    expect(w.latch.phase).toBe('queued')
+    expect(w.wakes).toHaveLength(2)
+  })
+
+  it('P0 regression: a throwing wake never leaves the latch pinned in queued', () => {
+    const w = world([], { wakeThrows: true })
+    expect(() => w.add('A')).toThrow('delivery failed')
+    expect(w.latch.phase).toBe('idle')
+    expect(w.latch.dirty).toBe(true)
   })
 
   it('recovery with nothing pending stays silent', () => {

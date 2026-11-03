@@ -5,7 +5,7 @@ Three separate verdicts, deliberately not collapsed into one green:
 | Part | Verdict | Evidence |
 | --- | --- | --- |
 | Seam contract on the pinned Host source | **PASS (seam only)** | `source-witness.md` + `upstream/inbox.ts`, `upstream/agent.ts` at `639ed01539` |
-| Coalescing law (pure model) | **PASS** 7/7 | `latch.mjs`, `latch-model.test.ts` |
+| Coalescing law (pure model) | **PASS** 11/11 (after review fixes) | `latch.mjs`, `latch-model.test.ts` |
 | Real-Host 3-request / crash / Stop behavior | **ENV_BLOCK — not run** | no host world in this workspace, and the routing/wake wiring does not exist yet |
 
 ## Model results
@@ -19,7 +19,16 @@ npx vitest run --config …/vitest.poc.config.ts …/P-INBOX/latch-model.test.ts
 - asks during `running` → dirty only; turn end emits **at most one** follow-up.
 - a turn that emptied the authority → **0** follow-up.
 - a resolved case cannot justify a new wake; an unclaimed stale generic wake
-  can be withdrawn (`cancelIfStale`) but a claimed one cannot.
+  can be withdrawn (`cancelIfStale`) but a claimed one cannot;
+- **P0 fix: a PENDING-but-UNCHANGED backlog is NOT cancelled.** The old model
+  conflated "changed" with "pending" and withdrew the only valid wake for A;
+  `cancelIfStale()` now refuses while any work is pending;
+- **P0 fix: recovery adopts a surviving Host wake** (`recover({persistentWakeExists:true})`)
+  instead of unconditionally re-emitting; a missing wake still re-wakes;
+- **P0 fix: a failed delivery releases `queued`** (`deliveryFailed()`), resets
+  the freshness baseline and lets a later activation retry — no timer, no
+  permanent suppression;
+- a throwing `wake()` also returns the latch to idle instead of pinning it.
 - same pending version + same ids after a no-progress turn → **no** re-wake
   (the loop guard).
 - crash recovery resets the freshness baseline and re-wakes for still-pending
