@@ -36,6 +36,7 @@ import {
   type FsProviderConstructor,
   type FsProviderSurface,
 } from './fs.js'
+import { observeGuard, type GuardConsultObserver } from './guard-observability.js'
 import {
   TeamServiceInstallError,
   type MemberIoInstallation,
@@ -59,6 +60,17 @@ export interface InstallMemberIoProvidersInput {
    * how a real Host installs `fs-local` / `fs-sandbox` semantics.
    */
   readonly providerClass?: FsProviderConstructor
+  /**
+   * P2 seam (additive, default-preserving): observe every consultation of the
+   * Member-ceiling guard this install builds. Omitted = the exact original
+   * guard object and confined class are used, with no wrapper and no extra
+   * call of any kind. Supplied = each consultation is reported exactly once,
+   * BEFORE the Provider delegates, and a report failure REFUSES the call
+   * (`GUARD_OBSERVATION_FAILED`) instead of letting an unrecorded decision
+   * become an effect. Never a second policy evaluation — see
+   * `guard-observability.ts`.
+   */
+  readonly onGuardConsult?: GuardConsultObserver
 }
 
 /** Member id → installed, per root Context. Guards double installation. */
@@ -169,7 +181,16 @@ export async function installMemberIoProviders(
     const label = Symbol(`member:${spec.identity.memberInstanceId}`)
     const scoped = root.isolate('fs', label)
     const guard = createMemberFsGuard(policy)
-    const Confined = createConfinedFileSystemClass(Base, guard)
+    // DEFAULT PATH = the original guard object (no wrapper, no extra call).
+    const observed = input.onGuardConsult === undefined
+      ? guard
+      : observeGuard(guard, input.onGuardConsult, {
+        realm: 'member',
+        memberIdentity: spec.identity.memberInstanceId,
+        toolBindingIdentity: null,
+        policyRevision: policy.revision,
+      })
+    const Confined = createConfinedFileSystemClass(Base, observed)
     let disposeMount: () => Promise<void>
     try {
       const fiber = await scoped.plugin(Confined, spec.config ?? {})
@@ -261,6 +282,13 @@ export async function installToolBindingRealm(input: {
   readonly root: Context
   readonly spec: ToolBindingRealmSpec
   readonly providerClass?: FsProviderConstructor
+  /**
+   * P2 seam (additive, default-preserving): observe every consultation of THIS
+   * binding's guard. Same contract as {@link InstallMemberIoProvidersInput.onGuardConsult}:
+   * omitted = the original guard object, supplied = one report per
+   * consultation before delegation, and a report failure refuses the call.
+   */
+  readonly onGuardConsult?: GuardConsultObserver
 }): Promise<ToolBindingRealm> {
   const { root, spec } = input
   if (!spec.toolBindingIdentity.trim()) {
@@ -291,7 +319,16 @@ export async function installToolBindingRealm(input: {
     throw new TeamServiceInstallError('PROVIDER_INCOMPATIBLE', capability.detail)
   }
   const guard = createMemberFsGuard(spec.effective)
-  const Confined = createConfinedFileSystemClass(Base, guard)
+  // DEFAULT PATH = the original guard object (no wrapper, no extra call).
+  const observed = input.onGuardConsult === undefined
+    ? guard
+    : observeGuard(guard, input.onGuardConsult, {
+      realm: 'binding',
+      memberIdentity: spec.identity.memberInstanceId,
+      toolBindingIdentity: spec.toolBindingIdentity,
+      policyRevision: spec.effective.policyRevision,
+    })
+  const Confined = createConfinedFileSystemClass(Base, observed)
   const scoped = root.isolate('fs', Symbol(`binding:${key}`))
   let fiber: { dispose(): Promise<void> } | undefined
   try {

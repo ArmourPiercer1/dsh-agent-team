@@ -250,6 +250,23 @@ jobs:
         # no boot, no port, no DSH_HOME, no pristine host tree, no workspace runtime.
         run: node --test tests/world-factory/a5sf-read-gate.test.mjs
 
+      - name: "a5sf P2 seam C1 (BL-14/P2-01 follow-up — node:test, zero Host boots, host-free, cross-process transport)"
+        # The P2 blocking seam: the shipped guard's consultation must be MECHANICALLY
+        # OBSERVABLE (the installer used to build the closure and never return it) and the
+        # record must cross a PROCESS BOUNDARY (an in-process callback cannot reach a C2
+        # suite in another process). This step pins the additive default-preserving installer
+        # input, one record per consultation carrying the guard's own decision, the plain
+        # append-only JSONL sink + strict reader, the negative control (no consultation writes
+        # nothing), fail-closed transport (an unrecorded decision refuses the call), the ONE
+        # mount entry point `mountA5sfRealm` (the harness `mountRealm()` is its caller), and a
+        # CHILD process that mounts the realm and writes the sink THIS process reads back.
+        # ci-integration lists node:test files EXPLICITLY (the #394 / #529 incidents were files
+        # no layer collected), so without this step the seam's laws run in NO layer. The file
+        # path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/world-factory/a5sf-p2-seam.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what
