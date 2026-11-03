@@ -1,6 +1,6 @@
 {
   "schema": "eb3-ci-manifest/1",
-  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group. Each layer's `legs` name the CONCRETE invocation it must perform (cmd + required flags + forbidden flags), not a word to look for: a leg satisfied by an echo, a step name, a shell comment or a weaker flag set is not a leg. `hostFree` declares whether the layer may list a suite that resolves the pinned host checkout; eb3-ci-required refuses a host-dependent suite in a hostFree layer (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER).",
+  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group. Each layer's `legs` name the CONCRETE invocation it must perform (cmd + required flags + forbidden flags), not a word to look for: a leg satisfied by an echo, a step name, a shell comment or a weaker flag set is not a leg. `hostFree` declares whether the layer may list a suite that resolves the pinned host checkout; eb3-ci-required refuses a host-dependent suite in a hostFree layer (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER). DATED 2026-11-03: ci-full split into ci-product (host-free gate legs) and ci-census (pinned host + census); the standalone census-runtime job is retired into ci-census and removed from knownNonRequired.",
   "aggregate": {
     "workflow": ".github/workflows/ci-required.yml",
     "job": "ci-required",
@@ -17,11 +17,11 @@
   },
   "deferral": {
     "label": "ci-defer-full",
-    "layer": "ci-full",
-    "callerIf": "${{ !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}",
+    "layer": "ci-census",
+    "callerIf": "${{ !github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}",
     "job": "required-deferred",
     "context": "ci-required-deferred",
-    "note": "THE DEFERRED TIER. An intermediate fix-round push may carry the PR label `ci-defer-full`; the ci-full caller is then skipped. The Required job `ci-required` is NEVER skipped (a skipped required job reports skipped, which branch protection accepts as passing) and still needs ci-full, so a skipped ci-full grades red there: a deferred run cannot satisfy branch protection. `required-deferred` (check name `ci-required-deferred`, not Required) grades the other layers so the round still gets a verdict. The ci-full caller may carry exactly `callerIf` and nothing else; the deferred job may never be named ci-required. The head frozen for review must run with the label removed and the full aggregate green."
+    "note": "THE DEFERRED TIER. Census runs only when the PR is NOT a draft and NOT labelled `ci-defer-full`: a draft PR is the L1 tier (cheap layers only), and the label is an explicit extra lever for a ready PR. The ci-census caller is then skipped; the Required job `ci-required` is NEVER skipped (a skipped required job reports skipped, which branch protection accepts as passing) and still needs ci-census, so a skipped ci-census grades red there: a deferred run cannot satisfy branch protection. `required-deferred` (check name `ci-required-deferred`, not Required) runs on exactly the complementary condition (draft OR label) and grades the other layers so the round still gets a verdict. The ci-census caller may carry exactly `callerIf` and nothing else; the deferred job may never be named ci-required. The head frozen for review must be marked ready (or have the label removed) and run with the full aggregate green."
   },
   "layers": [
     {
@@ -301,14 +301,73 @@
       "suiteList": "tests/checks/eb3-security-suites.txt"
     },
     {
-      "id": "ci-full",
-      "workflow": ".github/workflows/ci-full.yml",
-      "job": "ci-full",
-      "purpose": "the whole gate, census included; refuses (not skips) where the pristine host is absent",
+      "id": "ci-product",
+      "workflow": ".github/workflows/ci-product.yml",
+      "job": "ci-product",
+      "purpose": "every gate leg that does not need the pinned host; the census and the host security suites live in ci-census",
       "mustRunOn": [
         "workflow_call"
       ],
       "cancelInProgress": false,
+      "productLegs": [
+        "graph-parse",
+        "kit-home-guard",
+        "state-freshness",
+        "install",
+        "blueprint-fence",
+        "typecheck",
+        "lint-identities",
+        "artifacts-at-head"
+      ],
+      "legs": [
+        {
+          "id": "product-gate",
+          "cmd": [
+            "node",
+            "scripts/ci-pr-gate.mjs"
+          ],
+          "check": [
+            "--full",
+            "--only"
+          ],
+          "forbid": [
+            "--allow-refused",
+            "--skip"
+          ],
+          "forbidValues": {
+            "--allow-refused": [
+              "census"
+            ],
+            "--only": [
+              "census"
+            ]
+          },
+          "why": "`--full` keeps \"a skipped leg is a failure\"; `--only` names the eight non-census legs explicitly, so this layer never runs the census and never has to declare it refused. The census itself is ci-census."
+        },
+        {
+          "id": "gate-transcript-regrade",
+          "cmd": [
+            "node",
+            "scripts/ci-pr-gate.mjs"
+          ],
+          "check": [
+            "--check-transcript"
+          ],
+          "why": "the transcript, not the exit code, is the authority"
+        }
+      ]
+    },
+    {
+      "id": "ci-census",
+      "workflow": ".github/workflows/census-runtime.yml",
+      "job": "census-runtime",
+      "purpose": "the pinned-host half: host security suites, then the nine-root census (two captures, no refusal)",
+      "mustRunOn": [
+        "workflow_call"
+      ],
+      "cancelInProgress": false,
+      "hostFree": false,
+      "suiteList": "tests/checks/eb3-host-security-suites.txt",
       "legs": [
         {
           "id": "host-security-suites",
@@ -318,7 +377,7 @@
           ],
           "check": [
             "--layer",
-            "ci-full",
+            "ci-census",
             "--list-file",
             "tests/checks/eb3-host-security-suites.txt"
           ],
@@ -332,6 +391,8 @@
           ],
           "check": [
             "--full",
+            "--only",
+            "census",
             "--census-captures",
             "--census-test-timeout"
           ],
@@ -344,7 +405,7 @@
               "census"
             ]
           },
-          "why": "`--full` is what makes the opt-in census required; `--allow-refused census` is exactly the declaration that lets the population go unmeasured, so a layer claiming census coverage may not carry it, and `--skip census` would drop it by name"
+          "why": "the population must be measured in this layer: `--full` makes the opt-in census required, `--only census` keeps this layer to one job, and `--allow-refused census`/`--skip census` are exactly the declarations that let it go unmeasured"
         },
         {
           "id": "gate-transcript-regrade",
@@ -354,11 +415,10 @@
           ],
           "check": [
             "--check-transcript"
-          ]
+          ],
+          "why": "second reader, same rule as ci-product"
         }
-      ],
-      "hostFree": false,
-      "suiteList": "tests/checks/eb3-host-security-suites.txt"
+      ]
     }
   ],
   "knownNonRequired": [
@@ -366,11 +426,6 @@
       "workflow": ".github/workflows/pr-gate.yml",
       "job": "gate",
       "why": "the pre-EB3 single Required context. Kept while the layered CI is proven in parallel (the plan's E3 exit: the old pr-gate/census-runtime may only retire after the new rules have been validated side by side). It remains honest on its own terms; it is no longer the only gate."
-    },
-    {
-      "workflow": ".github/workflows/census-runtime.yml",
-      "job": "census-runtime",
-      "why": "the real-host census. Informational by declaration (cancel-in-progress true). Graded for real by ci-full when the host is present, and refused with a named reason when it is not."
     },
     {
       "workflow": ".github/workflows/candidate-protection.yml",
@@ -392,8 +447,8 @@
     {
       "suite": "packages/runtime/test/a5-pindir-reserved-native.test.ts",
       "from": "ci-security",
-      "to": "ci-full",
-      "why": "resolves the pinned host (findTestRepoRoot, TEST_USE_REL, TEST_USE_BASELINE_SHA); ci-security provisions none. PR #395 first hosted run: ci-security 267/270 on exactly this file's three host-reading legs. ci-full provisions the host and runs on every PR via ci-required, so the control still gates every PR."
+      "to": "ci-census",
+      "why": "resolves the pinned host (findTestRepoRoot, TEST_USE_REL, TEST_USE_BASELINE_SHA); ci-security provisions none. PR #395 first hosted run: ci-security 267/270 on exactly this file's three host-reading legs. ci-census provisions the host and runs on every PR via ci-required, so the control still gates every PR."
     }
   ]
 }
