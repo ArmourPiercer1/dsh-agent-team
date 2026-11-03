@@ -120,12 +120,14 @@ interface ReviewCapability {
 
 | 入口 | Officer | Leader | Human |
 | --- | --- | --- | --- |
-| `resolveControl`（allow / deny） | 仅在其 Case-scoped 委托内允许；deny 同样记录真实 decider + evidence | 按 native 权限 | 仅 Human 可决的 kind；不被委托覆盖 |
+| `resolveControl`（allow / deny） | 仅在其 Case-scoped 委托内允许；deny 同样记录真实 decider + evidence | 按原生角色规则 | 按既有 resolver-role 表处理（包括可合法代决 `leader-approval`）；`user-approval` 仍只允许 Human，永不下放 |
 | `escalateApprovalLeg` | **禁止**；Officer 需要的是 Handoff，不是权限升级 | 允许，按既有规则 | 仅其可决范畴 |
 | `appendTerminalOutcome` / 零审查关闭 | **禁止**；不得由 Officer 新建关闭案件 | 允许，按既有规则 | 仅其可决范畴 |
 | `abandonControlRequest` | 不作为审批决议；沿用 requester/Leader 的既有规则 | 同左 | 同左 |
 
 > 这里的“允许”只表示入口资格；实际 allow 仍须通过 PA effect/ceiling/grant/guard，实际 deny 仍写既有终态语义。不得用一个 `ReviewCapability` 同时打开四个入口。
+>
+> **兼容说明**：Alpha.6 不收窄 Human 原有的监督/替代决议范围；其实际可决 kind 以现有 `CONTROL_RESOLVER_ROLES` 为准。表中的 Human-only 是 *必须* 由 Human 批准的请求，不意味着 Human *只能* 处理 Human-only。此处仅澄清既有能力，不新增 Actor 权限。
 
 **resolve 阶段不存在“本次 decision 行”，不得要求 verifier 从它读取能力。** 正确顺序如下，全部在现有的受保护 ControlService 决议/Team 锁边界下完成；允许 verifier 读取必要的可信调用事实，但不得绕过该决议序列：
 
