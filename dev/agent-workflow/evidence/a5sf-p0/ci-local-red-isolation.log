@@ -1,0 +1,366 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p0
+
+ ✓ packages/runtime/test/a5rbn-runtime-base-narrow.test.ts (8 tests) 2926ms
+     ✓ N3 REAL: whole-tree NAME enumeration is kernel-refused (`ls /home`, `ls /`); outside names never surface  1095ms
+     ✓ P1 REAL: the base enumeration survives (interpreter/libraries/config face)  381ms
+     ✓ P2 REAL: the per-call anchored grant reads and writes inside its root  332ms
+     ✓ P3 REAL: writes OUTSIDE the anchored root stay EACCES (the write lane is untouched)  332ms
+     ✓ P4 REAL: outside BYTES stay kernel-refused even with the right name (byte law holds)  497ms
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-red-realm templateId=a5glb-red-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-red-instance-glob:mount:39167941-dc4a-4f9d-9844-4b1d384bf6ff-1 approvalCaseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever) > R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-red-instance-glob:mount:39167941-dc4a-4f9d-9844-4b1d384bf6ff-1 grantId=grant:5cb43bf0eee215d2390e08c9baf27a81 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-red-instance-glob:mount:39167941-dc4a-4f9d-9844-4b1d384bf6ff-1 grantId=grant:5cb43bf0eee215d2390e08c9baf27a81 caseId=tadm:a5glb-red-team-root:a5glb-red-instance:sha256:9f4206a58b02a3c86c6f69bd713f8f53d56ed6d8152b09d4febb18e3c1f983cc:g0
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:71d4fc19-59fd-49f9-8567-52e2e614ab3b-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5m1-instance-bash:mount:71d4fc19-59fd-49f9-8567-52e2e614ab3b-1 grantId=grant:b8a7fa35153b308d7969372009e860b6 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5m1-instance-bash:mount:71d4fc19-59fd-49f9-8567-52e2e614ab3b-1 grantId=grant:b8a7fa35153b308d7969372009e860b6 caseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:2b8f2abb-0291-4419-9a4e-e34ba65ae62b-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:2b8f2abb-0291-4419-9a4e-e34ba65ae62b-1 grantId=grant:78e8e5a7a085accba121ebdfa58c0f9a effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:2b8f2abb-0291-4419-9a4e-e34ba65ae62b-1 grantId=grant:78e8e5a7a085accba121ebdfa58c0f9a caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:71d4fc19-59fd-49f9-8567-52e2e614ab3b-1 pid=284 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-1 background spawn refused by NAME before any probe/spawn (never reinterpreted; the refusal rides BEHIND PA: even an approved call dies by name at the row)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:47c95159-d81c-4a9c-95e4-f890bbacc039-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-1 background spawn refused by NAME before any probe/spawn (never reinterpreted; the refusal rides BEHIND PA: even an approved call dies by name at the row)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5m1-instance-bash:mount:47c95159-d81c-4a9c-95e4-f890bbacc039-1 grantId=grant:1ccadfb7b1fa7d15cb754055af4207f5 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5m1-instance-bash:mount:47c95159-d81c-4a9c-95e4-f890bbacc039-1 grantId=grant:1ccadfb7b1fa7d15cb754055af4207f5 caseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-2 cwd escape refused with zero spawn
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:0c4e302a-f1e0-4537-819a-29b4c3c1ded1-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5m1-instance-bash:mount:0c4e302a-f1e0-4537-819a-29b4c3c1ded1-1 grantId=grant:775c8b12dd82d78e9694db3e1ea7970e effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5m1-instance-bash:mount:0c4e302a-f1e0-4537-819a-29b4c3c1ded1-1 grantId=grant:775c8b12dd82d78e9694db3e1ea7970e caseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob DRAIN-INCOMPLETE realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:2b8f2abb-0291-4419-9a4e-e34ba65ae62b-1 exit=0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob:mount:2b8f2abb-0291-4419-9a4e-e34ba65ae62b-1 pid=291 files=2 capped=false
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:d2173355-51e3-4bc4-8228-a1791efaf5ac-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:d2173355-51e3-4bc4-8228-a1791efaf5ac-1 grantId=grant:ff39a47536c7ba78be67e8e43e4daa2e effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:d2173355-51e3-4bc4-8228-a1791efaf5ac-1 grantId=grant:ff39a47536c7ba78be67e8e43e4daa2e caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:cc876d69-fcf5-4c74-9efb-3c589f5d722f-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:cc876d69-fcf5-4c74-9efb-3c589f5d722f-1 grantId=grant:9f1c43cdfdf5690c2efd1e7f177d2ae9 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:cc876d69-fcf5-4c74-9efb-3c589f5d722f-1 grantId=grant:9f1c43cdfdf5690c2efd1e7f177d2ae9 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:8d5b8782-bc17-44cf-b1d2-96d5c74ce46b-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:8d5b8782-bc17-44cf-b1d2-96d5c74ce46b-1 grantId=grant:cf81ed08f6bd5c98120d00a39fefc6fa effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:8d5b8782-bc17-44cf-b1d2-96d5c74ce46b-1 grantId=grant:cf81ed08f6bd5c98120d00a39fefc6fa caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K6 (④ discipline): an UNKNOWN plane key keeps the silent-ignore law — only globEnabled is consumed+validated
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5globoff-realm templateId=a5globoff-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-grep:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:7ced1d9a4d33ad7e638de1fcb089159f0068b1e2a9fe563a5fdf9a722591a16f:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-grep:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-1 grantId=grant:08b74e574e16e073807638ec12bed17e effects=3
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-grep:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-1 grantId=grant:08b74e574e16e073807638ec12bed17e caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:7ced1d9a4d33ad7e638de1fcb089159f0068b1e2a9fe563a5fdf9a722591a16f:g0
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob C: the winner stands, the publication does not > C2 a no-channel call and a never-fired channel are the same answer
+[a5-cancel/glob C2] DRAIN-INCOMPLETE lines: no-channel=1 with-channel=1 (equal counts are NOT the claim)
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:0c4e302a-f1e0-4537-819a-29b4c3c1ded1-1 pid=326 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > B-C1-4 deny-lane answers BEFORE the backend under a shell-class deny (execCount stays 0)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:d1552658-2eac-4c72-8b95-f7dc2778692d-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:2f444ce0-cbb6-4a79-bebc-669ee315167a-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:e4905fc7-d4dc-4652-8d6e-55bd4ce26eb8-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5m1-instance-bash:mount:e4905fc7-d4dc-4652-8d6e-55bd4ce26eb8-1 grantId=grant:4f32c83f73b1911a8af0b34071f689e4 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5m1-instance-bash:mount:e4905fc7-d4dc-4652-8d6e-55bd4ce26eb8-1 grantId=grant:4f32c83f73b1911a8af0b34071f689e4 caseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5globoff-realm legs=6
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5globoff-realm call=unspecified records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-bash:mount:3b46b923-d6c4-487d-b9b3-544d0008fee9-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-bash:mount:3b46b923-d6c4-487d-b9b3-544d0008fee9-1 grantId=grant:2bd8a2ae9d8b9fe1ece8248ab5a7b4fe effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-bash:mount:3b46b923-d6c4-487d-b9b3-544d0008fee9-1 grantId=grant:2bd8a2ae9d8b9fe1ece8248ab5a7b4fe caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process) > R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:e4905fc7-d4dc-4652-8d6e-55bd4ce26eb8-1 pid=386 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-0 the takeover mount really speaks the native spelling: ownNames carries `bash`, NOT `team_bash` (both worlds)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-1 deny-lane refusal on the NATIVE row: TYPED template-deny-lane answer, backend ZERO reach, the touch NEVER lands, the root entry set is unchanged, the spawn capability is never armed
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=2 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:4068859c-27b8-4730-91f6-58c2f986a0bd-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5-m1-bash-realm templateId=a5m1-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5m1-instance-bash:mount:a37abbcc-eb35-4cf5-8bb9-a7e85fab327b-1 approvalCaseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5m1-instance-bash:mount:a37abbcc-eb35-4cf5-8bb9-a7e85fab327b-1 grantId=grant:6259c572ee494ca0e10c916d211c438b effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5m1-instance-bash:mount:a37abbcc-eb35-4cf5-8bb9-a7e85fab327b-1 grantId=grant:6259c572ee494ca0e10c916d211c438b caseId=tadm:a5m1-test-team-root:a5m1-instance:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5globoff-realm rows=6
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5globoff-realm call=team-a5globoff-instance-bash:mount:3b46b923-d6c4-487d-b9b3-544d0008fee9-1 pid=398 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-read-aa8344ec-8e3b-402a-87f2-a0cb5a75b238-1 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:f3745634f1a25c446177c80158e2dba82de3d97d7b6f6f06479b33cb90285469:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-read-aa8344ec-8e3b-402a-87f2-a0cb5a75b238-1 grantId=grant:d0e7869589fd2d96261bb4babf26e138 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-read-aa8344ec-8e3b-402a-87f2-a0cb5a75b238-1 grantId=grant:d0e7869589fd2d96261bb4babf26e138 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:f3745634f1a25c446177c80158e2dba82de3d97d7b6f6f06479b33cb90285469:g0
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=10 path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p0/tests/homes/a5globoff-unit-mw14z2oy/root/a.txt
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5globoff-instance-glob:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-2 approvalCaseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5globoff-instance-glob:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-2 grantId=grant:0293e8ac49c0ccbb87963325228ae2d7 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5globoff-instance-glob:mount:fb15ef73-ad46-497e-9341-0c354ad56b0f-2 grantId=grant:0293e8ac49c0ccbb87963325228ae2d7 caseId=tadm:a5globoff-team-root:a5globoff-instance:sha256:4971415cade5ba8241a32a98fd79118abc7e4a429ab889e023402a99a4ede9e9:g0
+
+ ✓ packages/runtime/test/a5-globoff-key.test.ts (7 tests) 6504ms
+     ✓ K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs  928ms
+     ✓ K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut  1339ms
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5-m1-bash-realm rows=6
+
+stdout | packages/runtime/test/a5-m1-bash-c1.test.ts > a5-m1-bash-c1 NAT — native `bash` spelling refusals: typed, zero backend reach, flip proves sensitivity (U7-R3 C1) > NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5-m1-bash-realm call=team-a5m1-instance-bash:mount:a37abbcc-eb35-4cf5-8bb9-a7e85fab327b-1 pid=420 exit=0 timedOut=false cancelled=false
+
+ ✓ packages/runtime/test/a5-m1-bash-c1.test.ts (10 tests) 6922ms
+     ✓ B-C2p success POSITIVE at C1 level: PA ask → durable leg approves → REAL foreground command executes (real stdout/exit facts)  770ms
+     ✓ B-C1-3 command text never leaves the governed surface: reading outside via the shell does NOT disclose the outside secret  651ms
+     ✓ R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly  636ms
+     ✓ NAT-2 PA-deny refusal on the NATIVE row: TYPED APPROVAL_DENIED, zero backend reach, zero disk; the approving flip (same spelling, same command shape) MOVES every witness — ONE real confined spawn, the touch lands  637ms
+stdout | packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts > a5w-bindseam-subtree-seam-c1 — the glue injects the plane subtree containment seam > P1: the incident member policy (subtree ask rule) MOUNTS through the assembly with the glue seam — no TOOL_BINDING_UNVERIFIED
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=a5w-bindseam-realm templateId=a5w-bindseam-member-tpl
+
+stdout | packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts > a5w-bindseam-subtree-seam-c1 — the glue injects the plane subtree containment seam > P2: the subtree rule participates in the verdict by the law — root itself and paths under it are covered, paths outside are not
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=a5w-bindseam-realm templateId=a5w-bindseam-member-tpl
+
+stdout | packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts > a5w-bindseam-subtree-seam-c1 — the glue injects the plane subtree containment seam > N2: sibling-with-shared-prefix spoofing never matches — on every consumer face the plane feeds the predicate
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=a5w-bindseam-realm templateId=a5w-bindseam-member-tpl
+
+ ✓ packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts (7 tests) 7085ms
+ ✓ packages/runtime/test/a3p5-glue-permission-receipt.test.ts (11 tests) 7479ms
+     ✓ positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived  7367ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > E2 — the REAL host entry resolves the addressed facts and treats the authority as mandatory (BLOCK-1 host + BLOCK-5) > a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4E2-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob C: the winner stands, the publication does not > C4 EVERY boundary this row asks answers with the typed refusal, and the last one stands before the single write
+[a5-cancel/glob C4] measured asks=14 stages=entry > after-rg-path > after-capability > after-anchor > pre-spawn > after-spawn > walk-aborted > after-settle > after-settle > after-stdout-drain > after-streams-drain > after-payload-record > after-verify > before-commit
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=a5glb-realm templateId=a5glb-tpl
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-a5glb-instance-glob:mount:e7bfe661-6247-4de4-a855-2aa366899495-1 approvalCaseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0 requiredAuthority=leader
+
+stdout | packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB L — the LIVE leg: the real rg process inside the confined provider > L4 the backend mounts through the plane's OWN backends seam (no plane edit)
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-a5glb-instance-glob:mount:e7bfe661-6247-4de4-a855-2aa366899495-1 grantId=grant:f2fc292d883a048dc774c1169b8b9370 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-a5glb-instance-glob:mount:e7bfe661-6247-4de4-a855-2aa366899495-1 grantId=grant:f2fc292d883a048dc774c1169b8b9370 caseId=tadm:a5glb-team-root:a5glb-instance:sha256:191498e8d9e4b3b006a1605fc416a77e5c53e484f5a3b7e3c0f3d24f8ec0c0c5:g0
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-anchor — a RELATIVE carrier rule canonicalizes at the TARGET member workspace and grants the member key (BLOCK-3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published list
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated
+
+stdout | packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5g6-unit-realm templateId=a5g6-tpl
+
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 4849ms
+     ✓ the four definitions all carry a render that returns an array of typed text blocks  4814ms
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R4 — round-4 carrier semantics at the REAL host entry (BLOCK-1/3/4 + GAP3) > R4-recover — a provider fault at warm-up is LOUD-but-continue; expansions refuse typed meanwhile and the NEXT addressed read recovers (GAP3)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: false)
+
+stdout | packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > R5 — round-5 production entries + CWD truth + carrier grammar (FIX-2/3 + R-B debt) > R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)
+[dsh-agent-team] durable permission authority ACTIVE for row session-a3p4e2root: anchor templates declaring capabilities.permissions = ["leader","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor A3P4R4-BP@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated
+
+ ✓ packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts (20 tests) 5318ms
+     ✓ a booted permissions row lets the LEADER expansion commit through the CONFIGURED carrier envelope and the plane answers allow (i-host)  579ms
+     ✓ a persisted overlay DENY beats the template ALLOW through the real glue pipeline  1575ms
+     ✓ R4-exec — a configured bash-fingerprint carrier reaches ALLOW through the real boot (BLOCK-1 unreachable no more)  553ms
+     ✓ R4-ceiling — an ASK carrier ceiling refuses the ALLOW grant and accepts the ASK grant (ladder-strict at host apply)  473ms
+     ✓ R5-derive — (round-5 INVERSION of R4-derive) carrier subtree covering the member grant COMMITS while the LEADER's own answer stays DENY (no ceiling gate; no self-widening)  317ms
+     ✓ R4-absent (§7.3) — a DECLARED-EMPTY carrier refuses the grant round-3 used to derive, tightening still commits, and an UNDECLARED document is refused before any of that  353ms
+     ✓ R5-ws — FIX-3 CWD source-of-truth: a NON-BOOT Team B (durable row, distinct default) canonicalizes at B’s durable default — never the acting row-A tail (two teams, one host row)  482ms
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/glob D3] calibration branch executed: code=internal-error
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated, terminated
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/glob D4] calibration branch executed: code=internal-error
+
+stdout | packages/runtime/test/a5-cancel-glob.test.ts > a5-cancel/glob D: a throwing terminate keeps the contract of the path that asked (F3, and the raw-arm interleaving) > D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted
+[a5-cancel/glob D] real teardown confirmed: glob D -> terminated, terminated
+
+ ✓ packages/runtime/test/a5-cancel-glob.test.ts (26 tests) 18191ms
+     ✓ OBS1 one accepted confined spawn = one provider plan + one out dir; a probe is neither  425ms
+     ✓ B1 a handle that arrives AFTER the caller gave up is adopted and stopped, not raced away  348ms
+     ✓ B2 an abort while the payload is live stops it and refuses — never an empty list, never a published one  478ms
+     ✓ B3 a channel that fires twice while the payload is live yields ONE terminal and ONE stop  459ms
+     ✓ C1 the exit won, THEN the cancel arrived: the refusal lands at the boundary after the stop  573ms
+     ✓ C2 a no-channel call and a never-fired channel are the same answer  1185ms
+     ✓ C3 every line a cancelled call books obeys this row's audit grammar (a cancel line is a line like any other)  671ms
+     ✓ C4 EVERY boundary this row asks answers with the typed refusal, and the last one stands before the single write  6395ms
+     ✓ D1 with NO channel, the row keeps its pre-existing throwing-arm contract: a typed refusal, not a published list  665ms
+     ✓ D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink  580ms
+     ✓ D3 the fault that arrives WHILE the caller withdraws, mid raw arm, is answered as the cancellation it is  1199ms
+     ✓ D4 a TIMEOUT winner keeps its own contract: with the arm throwing, no timeout shape is minted  1533ms
+     ✓ T1 a settled TIMEOUT is not rejudged by a withdrawal that lands after the race  842ms
+     ✓ T2 the direction: the SAME withdrawal at the SAME ask, on a walk that did NOT run out its budget, is a call-aborted refusal  825ms
+ ✓ packages/runtime/test/alpha5-glob-backend.test.ts (53 tests) 53700ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  3752ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  791ms
+     ✓ P2 hidden class — dotfiles are in on both sides, and the control legs show what --hidden changes natively  338ms
+     ✓ P3 ignore class — the governed argv is --no-ignore (gitignore does NOT hide), control leg proves the flag bites  311ms
+     ✓ P7 sort stability — distinct mtimes order identically, and a repeated walk re-orders nothing  508ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  904ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  1151ms
+     ✓ L1 the capability probe is ENFORCED (kernel), not advisory  366ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  1303ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  1001ms
+     ✓ L5 MEASURED interface boundary: a caller-side directory fd CANNOT cross into the confined child  514ms
+     ✓ L4 the backend mounts through the plane's OWN backends seam (no plane edit)  582ms
+     ✓ X3 the timeout arm settles cancelled and spills nothing  534ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  463ms
+     ✓ X6 the overflow arm refuses, parses nothing, and writes nothing (buffer narrowed by the assembly)  422ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  597ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  595ms
+     ✓ g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)  34108ms
+     ✓ g6b ⑤: collection leaves no timers behind across 30 walks  2261ms
+     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  574ms
+
+ Test Files  9 passed (9)
+      Tests  147 passed (147)
+   Start at  04:24:25
+   Duration  54.59s (transform 39.20s, setup 0ms, import 23.46s, tests 112.98s, environment 1ms)

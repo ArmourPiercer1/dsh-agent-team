@@ -155,13 +155,13 @@ trusted-source registry is added later.
 | `pnpm typecheck` | pass | `typecheck.log` |
 | `pnpm build` | pass | `build.log` |
 | `node scripts/place-dist-glue.mjs` | done, 101 placements | `place-dist-glue.log` |
-| `node scripts/check-artifacts-committed.mjs` | see §10 | `check-artifacts-committed.log` |
-| `node scripts/check-artifacts-at-head.mjs` | see §10 | `check-artifacts-at-head.log` |
-| `node scripts/eb3-evidence-guard.mjs` | pass | `eb3-evidence-guard.log` |
-| `node scripts/eb3-ci-required.mjs` | see §10 | `eb3-ci-required.log` |
-| `node scripts/eb3-ci-negative-controls.mjs` | see §10 | `eb3-negative-controls.log` |
+| `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=1916 glue=101` | `check-artifacts-committed.log` |
+| `node scripts/check-artifacts-at-head.mjs` | `verdict=ok compared=1916 drift=0` — HEAD carries its own build | `check-artifacts-at-head.log` |
+| `node scripts/eb3-evidence-guard.mjs` | `pass added=18 bound=1048576 exempted=0 findings=0 base=origin/master` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-ci-required.mjs` | `pass workflows=9 findings=0` | `eb3-ci-required.log` |
+| `node scripts/eb3-ci-negative-controls.mjs` | `26/26 control(s) behaved as required` | `eb3-negative-controls.log` |
 | `git diff --check origin/master..HEAD` | clean | committed tree |
-| `pnpm ci:local` | see §10 (verbatim; exit 2 is NOT a pass) | `ci-local.log` |
+| `pnpm ci:local` | **FAIL — whole-tree load/timeout flake; §10.1, red green in isolation** | `ci-local-rerun.log`, `ci-local-red-isolation.log` |
 
 ## 9. p4t6 — MEASURED LAST on this tree
 
@@ -188,6 +188,33 @@ the tool said otherwise.
 | `packages/runtime/dist/packages/runtime/team-services/src/mount.d.ts.map` | `568b6b238eee6c945c2dff9d4b3964edb2cfb7336a3c942534c590228eea0491` |
 | `tests/world-factory/a5sf-assembly.test.mjs` | `d13b4a3330cca3e3c35fcc329119a955d3f9bfc3ad591a5a8753d48eb768ea8d` |
 | `packages/runtime/src/plugin/live/agent-bindings.mjs` (UNCHANGED) | `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b` |
+
+## 10.1 `pnpm ci:local` — the verdict, verbatim
+
+```
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=275.9s
+[ELIFECYCLE] Command failed with exit code 1.
+```
+
+Exit **1** (a selected check failed), **not 2** — coverage was `determined`. The failing step is the selected
+`vitest` leg: under the whole 483-file `packages/runtime` tree in one `threads` pool, **9 files / 8 tests**
+timed out (`Hook timed out in 10000ms` / `Test timed out in 5000ms`; `alpha5-glob-backend` alone took 80 s).
+This is the pre-existing ci-local load/timeout flake that S-1 and the assembly lane documented, not a
+behavioural red: the same 9 files run **alone on the SAME tree** → exit 0, **9 files / 147 tests passed**
+(`ci-local-red-isolation.log`). This diff touches `team-services/src/mount.ts` (+ its built mirror) and one
+`tests/world-factory` suite; none of the timed-out files attaches a native shadow or imports the changed
+admission path. No unmeasured pass is claimed — the L0 red stands as red, with the isolated mechanism measured.
+
+The selected node leg on the same run is green and includes every P0 arm
+(`✔ P0-1 …`, `✔ P0-2 …`, `✔ GAP2b …`, 12/12).
+
+```
+EB3-EVIDENCE-GUARD pass added=18 bound=1048576 exempted=0 findings=0 base=origin/master
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
+EB3-CI-REQUIRED pass workflows=9 findings=0
+26/26 control(s) behaved as required
+```
 
 ## 11. Residual limits and the biggest risk
 
