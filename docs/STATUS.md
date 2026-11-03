@@ -1,6 +1,10 @@
 # STATUS — Team vNext 当前状态总览
 
 
+> **dated CURRENT 快照（2026-11-03T15:05Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(0) 用户新裁（2026-11-03）：预先批准 20 次 boot 预算，授权自行分配。** 分配与规则写入 `dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json`（P2-01 read 3、F1 有效半场 3、P2-03 write 3、P2-04 grep 3、BL-21 清单 2、G1.5/G1.6/G1.8 4、reserve 2）。每次 boot 仍走 BL-14 预登记门（per-run grant 绑定当次 HEAD，行数换算 maxStarts = boots+1），共享账本仍是唯一计数与唯一写入者；reserve 只用于全新失败类，不得对同一失败类二次重试。**boot 池从 0 变为 20，因此 P2 live 与 BL-21 不再被预算卡住；真实瓶颈改为下面的 F1 有效半场。**
+> **(1) P2 wiring（#550）被两条常驻法条拦下并已按法条修正**：census 抓到 4 个 NEW RED —— **ARC-A L1 受保护中心摘要锁**（调用点改了 `agent-bindings.mjs`，该文件只允许 **NAMED center-interface change** 加 override，family-addition 永不允许；本改动经协调者指派并附默认路径证明，override 记录新摘要+PR+理由，先例 #392/#508/#510）与 **A4-6 build-include 姿态**（`tsconfig.build.json` 被法条用朴素注释剥离器解析，解释性 `//` 块导致解析失败）。两条现已按法条满足，law 测试 34/34。**这是本轮最重要的收获：绿灯不是目的，法条是设计的一部分。**
+> **(2) F1（有效半场）仍是 P2 的唯一实质阻塞**：mount 落在 Cordis **sibling isolate**，agent row ctx 及其所有工具作用域仍拿 BASE provider，只有 `realm.installation.members[i].ctx` 是受限 fs ⇒ 即使配置齐全，已启动的行产出 **0 条咨询、空 sink**。已如实披露（README §2.2.1/§7.3/§9 + 代码注释 + 可复现探针），下一步（把工具面挂到隔离 ctx 或让工具面 fs 走隔离作用域）已按 head 重新锚定 file:line。
 > **dated CURRENT 快照（2026-11-03T10:10Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(1) P2 阻塞的机制半场闭合**：**#548** 合入 —— 两个安装器新增**保默认**的 `onGuardConsult` 观察者（省略即用原 guard 对象与原受限类调用，三向挂载臂证明形状/allow/`IO_READ_DENIED` 全等），每次咨询产出一条冻结的 `a5sf-guard-consult/1` 事实，其 `decision` 是 guard 自身拒绝码的**映射**（`*_DENIED⇒deny`、`IO_POLICY_UNSUPPORTED⇒ask`）而非重判；传输 fail-closed（未记录的 allow 不触达 Provider）；**跨进程**由子进程真实挂载、父进程按序读取（pid 不同）证明；`mountA5sfRealm` 为唯一挂载入口（组合既有安装器 + 跨 realm 回滚），无第二 launcher/compiler/ledger。审查四条件全闭且变异可感（回滚双绑定臂、`ask` 车道 ELOOP 夹具、非 `TeamIoDenial` 原样抛出、构建/布局声明改为实测）。
 > **(2) 仍未闭合的部分（诚实边界）**：产品行这段代码**仍未接线**，且剩余工作经实测**多于一个调用点**：emit 入列（`tsconfig.build.json` 不含 `team-services/src`/`member-io-policy/src`）+ 布局 + 重新提交 `packages/runtime/dist`（受新鲜度门约束）+ 调用点 + 真实 Host 运行；**boot 预算池仍为 0**，live 需用户新裁。否则传输只在调用方传 `onGuardConsult` 时存在，已启动 Host 今天不传。无内核强制、无真实 `read`、无 Host 归属效果、无 boot 的任何断言。
