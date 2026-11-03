@@ -1,0 +1,8 @@
+{
+  "grantId": "grant-a5sf-live-native2-56a669d93009",
+  "maxStarts": 2,
+  "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"P2-01 live read (BL-14 / G2 live half)\" (1 of its 3 boots; this run is that item's native read slice). The F1 effective-half item's 1 remaining boot after a5sf-live-native was re-allocated to route C and binding acceptance per SESSION_ROUTER_LOG sync21, so it is not charged here.",
+  "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
+  "boundCommit": "56a669d930097bb5ea8871299f7651cb9f08f9be",
+  "note": "maxStarts = 1 pre-registration (intent) row + 1 boot (BL-14 arithmetic: the gate counts shared-ledger rows, not spawns)"
+}

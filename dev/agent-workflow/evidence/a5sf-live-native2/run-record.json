@@ -1,0 +1,144 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-native2-2026-11-03T13-02-54-748Z",
+  "suite": "a5sf-live-native2",
+  "startedAt": "2026-11-03T13:02:54.748Z",
+  "selectedCases": [
+    "live:member-activated-surface-one-read",
+    "live:native-read-outside-refused",
+    "live:sink-exactly-one-deny-fact",
+    "live:native-read-inside-allowed",
+    "live:base-read-counter-did-not-move",
+    "live:teardown-no-shadow",
+    "live:deny-native-surface-refusal"
+  ],
+  "bindings": {
+    "teamSha": "56a669d930097bb5ea8871299f7651cb9f08f9be",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "a5sflive2",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "grantId": "grant-a5sf-live-native2-56a669d93009",
+    "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
+    "providerComposition": "test row dev/agent-workflow/evidence/a5sf-live-native2/a5sf-native-provider-row.mjs (no product provider exists at this base)",
+    "baseReadCounter": "test row dev/agent-workflow/evidence/a5sf-live-native2/a5sf-base-read-counter-row.mjs (the shipped host fs has no read counter; instrumented in-memory, prototype wrap, pass-through)",
+    "worldReuse": "dev/agent-workflow/evidence/a5sf-live-native/run-boot.mjs world/heater, with three corrections documented in the README",
+    "sandboxPreflight": {
+      "schema": "u7-sbx-sandbox-preflight/1",
+      "at": "2026-11-03T13:03:01.211Z",
+      "probed": true,
+      "runtimeTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+      "baseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platform": "linux-x64",
+      "libc": "glibc",
+      "backend": "full",
+      "usable": true,
+      "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+      "launcherPresent": true,
+      "launcherSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "verdicts": [
+        {
+          "phase": "before-provision",
+          "backend": "full",
+          "launcherPresent": true
+        },
+        {
+          "phase": "after-provision",
+          "backend": "full",
+          "launcherPresent": true
+        }
+      ],
+      "asset": null,
+      "provisionError": null,
+      "probeError": null,
+      "porcelainEmpty": true,
+      "porcelain": {
+        "available": true,
+        "empty": true,
+        "lines": []
+      }
+    },
+    "nativeConfinementBackend": "full"
+  },
+  "cases": [
+    {
+      "id": "live:member-activated-surface-one-read",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.891Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:native-read-outside-refused",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.891Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:sink-exactly-one-deny-fact",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.891Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:native-read-inside-allowed",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.892Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:base-read-counter-did-not-move",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.892Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:teardown-no-shadow",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.892Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    },
+    {
+      "id": "live:deny-native-surface-refusal",
+      "verdict": "FAIL",
+      "at": "2026-11-03T13:03:24.892Z",
+      "reason": "RUN_ABORTED",
+      "detail": "instance boot failed: process exited (code=1 signal=none)\n--- log tail ---\n        at Fiber.execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)\n        at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34\n        at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)\n        at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-us"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-live-native2/dev/agent-workflow/evidence/a5sf-live-native2/ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-03T13:02:54.780Z",
+        "runId": "a5sf-live-native2-2026-11-03T13-02-54-748Z",
+        "suite": "a5sf-read",
+        "kind": "budget-intent",
+        "phase": "a5sf-read-intent",
+        "world": "intent:grant-a5sf-live-native2-56a669d93009",
+        "grantId": "grant-a5sf-live-native2-56a669d93009",
+        "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"P2-01 live read (BL-14 / G2 live half)\" (1 of its 3 boots; this run is that item's native read slice). The F1 effective-half item's 1 remaining boot after a5sf-live-native was re-allocated to route C and binding acceptance per SESSION_ROUTER_LOG sync21, so it is not charged here.",
+        "boundCommit": "56a669d930097bb5ea8871299f7651cb9f08f9be",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-03T13:03:01.210Z",
+        "runId": "a5sf-live-native2-2026-11-03T13-02-54-748Z",
+        "suite": "a5sf-live-native2",
+        "world": "u5a5sflive2-20261103T13-02-54Z",
+        "phase": "a5sf-live-native2-boot1"
+      }
+    ]
+  },
+  "overall": "FAIL",
+  "finishedAt": "2026-11-03T13:03:24.895Z"
+}
