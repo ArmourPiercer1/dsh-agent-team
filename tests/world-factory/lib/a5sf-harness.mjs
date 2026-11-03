@@ -165,12 +165,13 @@ export async function loadPolicySeams(repoRoot) {
         mountA5sfRealm: services.mountA5sfRealm,
         createGuardConsultFileSink: services.createGuardConsultFileSink,
         readGuardConsultFile: services.readGuardConsultFile,
+        observeGuard: services.observeGuard,
         GuardObservationError: services.GuardObservationError,
       })
       const functions = [
         'parseBlueprintV4', 'compileMemberPolicy', 'projectToolIoRestriction', 'compileEffectiveIo',
         'createMemberFsGuard', 'installToolBindingRealm', 'installMemberIoProviders',
-        'mountA5sfRealm', 'createGuardConsultFileSink', 'readGuardConsultFile',
+        'mountA5sfRealm', 'createGuardConsultFileSink', 'readGuardConsultFile', 'observeGuard',
       ]
       for (const name of functions) {
         if (typeof seams[name] !== 'function') {

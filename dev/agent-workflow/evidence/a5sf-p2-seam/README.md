@@ -240,12 +240,30 @@ It is **not wired here** for three reasons, stated plainly:
    composition; keeping the entry point importable (barrel export) and leaving
    the call site to the composition owner is the smallest honest step.
 
-`mountA5sfRealm` is exported by the `team-services` barrel, so the row can
-import it from the built runtime without a deep path.
+`mountA5sfRealm` is exported by the **source** `team-services` barrel
+(`packages/runtime/team-services/src/index.ts`). That is **not** yet enough for
+the product row: this package does not emit the lane, so the remaining work is
+**more than one call site**, measured on this tree:
+
+* `packages/runtime/tsconfig.build.json` includes **neither** `team-services/src`
+  **nor** `member-io-policy/src` (whose `types.js` the new module imports) —
+  `grep -c` gives 0 for both;
+* `git ls-files packages/runtime/dist` has **0** `team-services` artifacts and
+  **0** `guard-observability` artifacts, and that dist tree is **committed and
+  freshness-gated** (`scripts/check-artifacts-committed.mjs`: tracked-but-absent
+  / produced-but-untracked / produced-but-modified / glue-placement drift). A
+  built-host import of `mountA5sfRealm` therefore resolves to nothing today.
+
+The wiring PR must do all four: (1) add the call site + disposer in
+`agent-bindings.mjs`; (2) enrol the emit — `tsconfig.build.json` include for
+`team-services/src` and `member-io-policy/src` — plus any dist placement entry;
+(3) regenerate and COMMIT `packages/runtime/dist` under `pnpm check:artifacts`;
+(4) prove it in a booted live run. This package does none of (1)–(4), and the
+barrel export alone is not importable by the product row.
 
 ## 5. C1 arms and the RED → GREEN capture
 
-`tests/world-factory/a5sf-p2-seam.test.mjs` — 11 `node:test` arms, all
+`tests/world-factory/a5sf-p2-seam.test.mjs` — 14 `node:test` arms, all
 host-free (an in-process Cordis unit root, `mkdtemp` fixtures, no boot/port/
 DSH_HOME):
 
@@ -254,12 +272,15 @@ DSH_HOME):
 | A1 | default path unchanged (shape + behaviour), `undefined` ≡ omitted |
 | A2 | one frozen record per consultation, call order, guard's own code; `realm=binding` |
 | A2b | Member-ceiling realm reports `realm=member`, `toolBindingIdentity=null` |
+| A2c | the guard's `IO_POLICY_UNSUPPORTED` refusal is recorded as `decision:'ask'` (ELOOP symlink fixture, real guard) |
+| A2d | a non-`TeamIoDenial` fault is rethrown unchanged and NOT recorded |
 | A3 | append-only valid JSONL + `readGuardConsultFile` round-trip |
 | A4 | negative control: zero consultations ⇒ no file; reader rejects ENOENT |
 | A5 | sink failure on **allow** ⇒ `GUARD_OBSERVATION_FAILED`, Provider never asked |
 | A5b | sink failure on **deny** ⇒ refusal preserved on the error, never an allow |
 | A6 | `mountA5sfRealm` mounts ceiling + bindings, idempotent dispose |
 | A6b | a refusing binding rolls the whole realm back (Member remount succeeds) |
+| A6c | a binding mounted BEFORE a later refusal is released (that exact key remounts) |
 | A7 | harness `mountRealm()` calls the entry point and carries the observer; `installBindingRealm` forwards it |
 | A8 | **cross-process**: child mounts the realm, parent reads the JSONL back |
 
@@ -319,9 +340,13 @@ Both paths were added by name and the tie re-anchored to the booking's own
   running `node --test tests/world-factory/a5sf-p2-seam.test.mjs`, after the
   BL-14 budget-gate step.
 * `dev/ci/eb3-ci-manifest.json` — ONE `ci-integration` leg `a5sf P2 seam` whose
-  `check[]` holds that path, so dropping the file is
-  `CI_LAYER_LEG_WEAKENED`, not a silent gap. `node scripts/eb3-ci-required.mjs`
-  → `pass workflows=9 findings=0`.
+  `check[]` holds that path. What the checker actually enforces is narrower than
+  the boilerplate suggests: the matching `run:` invocation must carry the file
+  as a token. An **emptied** `check[]` is not detected (`for (const f of
+  leg.check ?? [])` treats an absent list as "no required token", for every leg —
+  an inherited limitation). So the token is a review obligation, not a machine
+  law; this README and the leg's `why` say exactly that.
+  `node scripts/eb3-ci-required.mjs` → `pass workflows=9 findings=0`.
 
 Vitest files ride the existing list (no new enrolment needed).
 
@@ -355,8 +380,12 @@ recorded in the RUN record — the file is transport, not authority.
 
 1. **Boot budget is still 0** and this package did not boot. A live BL-14 run
    needs a recorded USER grant and the single boot the lease pays for.
-2. **The product call site (§4) is not wired.** Until
-   `agent-bindings.mjs`'s member setup calls `mountA5sfRealm`, the realm is still
+2. **The product call site (§4) is not wired — and wiring it is more than one
+   call site.** The lane is not emitted (`tsconfig.build.json` has no
+   `team-services/src` / `member-io-policy/src`; `git ls-files
+   packages/runtime/dist` has zero such artifacts), so the wiring PR must add
+   the emit + dist placement, commit the regenerated artifact tree, then add the
+   `agent-bindings.mjs` call and prove it live. Until then the realm is still
    inert in a real Host — this package makes the seam *available and proven
    host-free*, not *live*.
 3. **Native `read`** remains BL-14's own C2 half (window/stream, >10MiB); this
@@ -384,3 +413,81 @@ recorded in the RUN record — the file is transport, not authority.
 | `packages/testkit/test/p4t6-bookings/a5sf.json` | measured tie `{1396, 1427}` + the two new paths by name |
 | `.github/workflows/ci-integration.yml` | ONE step for the node:test C1 suite |
 | `dev/ci/eb3-ci-manifest.json` | ONE `ci-integration` leg pinning that file |
+
+## 11. Review response (dated 2026-11-03, reviewer APPROVE-WITH-CONDITIONS)
+
+All four conditions were fixed on the same branch; the base and the approach are
+unchanged.
+
+### 11.1 Condition 1 — binding-realm rollback now has a sensitivity arm (A6c)
+
+`A6c` mounts TWO bindings: `seam/one` (valid, mounted), then `seam/two` with a
+**foreign member identity** so the installer refuses with
+`MEMBER_IDENTITY_INVALID`. It asserts the mount rejects AND that the exact key
+`member-seam-a#seam/one` can be remounted afterwards — which is only possible if
+the first binding's realm was released (an un-disposed realm answers
+`SERVICE_ALREADY_INSTALLED`). Mutation M6 (delete the `await disposeMounted()`
+rollback call in `mount.ts`) now turns **A6c RED** (13 pass / 1 fail), where it
+previously survived 11/11.
+
+### 11.2 Condition 2 — the `ask` lane and the non-`TeamIoDenial` fault are pinned
+
+* `A2c` drives the REAL guard into `IO_POLICY_UNSUPPORTED` with a deterministic
+  fixture — a self-referential symlink inside the allowed subtree (`lstat` sees a
+  link, `realpath` fails `ELOOP`, `evaluateLocatorAccess` answers
+  `PATH_RESOLUTION_UNSUPPORTED`) — and asserts the recorded fact is
+  `decision:'ask'`, `decidedBy:'IO_POLICY_UNSUPPORTED'` at the right locator.
+* `A2d` calls `observeGuard` with a guard that throws a `TypeError`, asserting
+  the SAME error is rethrown and ZERO facts are recorded.
+
+Mutations: M7 (erase the ask branch, always `deny`) → **A2c RED**. M8 (delete
+`if (!(error instanceof TeamIoDenial)) throw error`, so a non-decision fault is
+recorded) → **A2c + A2d RED**. Both previously survived.
+
+### 11.3 Condition 3 — the build/placement overclaim is narrowed (and the work is
+sized honestly)
+
+The README no longer says the row can import the entry point "from the built
+runtime without a deep path". It now records the measured facts — no
+`team-services/src` / `member-io-policy/src` in
+`packages/runtime/tsconfig.build.json`, zero `team-services`/`guard-observability`
+artifacts in `git ls-files packages/runtime/dist`, and that dist tree is
+committed and freshness-gated — and states that the next wiring PR must add the
+emit + placement, commit the regenerated artifacts, add the call site, and prove
+it live. **The remaining work is explicitly more than one call site.** §9.2
+carries the same statement.
+
+### 11.4 Condition 4 — the CI claim is narrowed to what is enforced
+
+`dev/ci/eb3-ci-manifest.json` and README §7 no longer claim "dropping the file
+from the step or the check list is CI_LAYER_LEG_WEAKENED". They now say: the
+checker proves the run invocation carries the file token; an emptied `check[]`
+is **not** machine-detected (an inherited limitation of every leg), so keeping
+the token is a review obligation.
+
+### 11.5 Mutation table (new arms only; REAL runs, each restored after)
+
+| mutation | where | expected RED | measured |
+|---|---|---|---|
+| M6 delete the rollback loop (`await disposeMounted()` in `mount.ts` catch) | `mount.ts:123` | A6c | **RED** — `pass 13 / fail 1`, A6c fails on remount |
+| M7 erase the ask lane (`return code === 'IO_POLICY_UNSUPPORTED' ? 'ask' : 'deny'` → `return 'deny'`) | `guard-observability.ts:137` | A2c | **RED** — `pass 13 / fail 1`, A2c `decision` mismatch |
+| M8 record a non-`TeamIoDenial` fault (delete the `instanceof` rethrow) | `guard-observability.ts:164` | A2d (and A2c, `decidedBy` becomes `undefined`) | **RED** — `pass 12 / fail 2` |
+| none (restored) | — | — | **GREEN** — 14/14 |
+
+### 11.6 Re-run after the fixes (real output in `green-tests.log`)
+
+RED was re-captured against the BASE source after the new arms were added
+(`red-test.log`): the harness seam loader still refuses
+(`SEAM_UNAVAILABLE: 'mountA5sfRealm' is not a function`, `pass 0 / fail 1`),
+because the base barrel does not export the entry point and the base installer
+has no observer input.
+
+```
+node --test tests/world-factory/a5sf-p2-seam.test.mjs   ℹ tests 14  ℹ pass 14  ℹ fail 0
+vitest run a5sf                                          11 files / 166 tests passed
+vitest run packages/testkit/test/p4t6-session-event-scan.test.ts   20/20 (tie {1396,1427})
+pnpm -r typecheck                                        all 9 packages Done
+node scripts/eb3-ci-required.mjs                         pass workflows=9 findings=0
+node scripts/eb3-ci-negative-controls.mjs                24/24 controls
+git diff --check                                         clean
+```

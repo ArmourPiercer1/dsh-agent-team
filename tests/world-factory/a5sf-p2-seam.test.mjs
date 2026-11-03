@@ -50,7 +50,7 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createRequire, register } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -360,6 +360,41 @@ if (!process.argv.includes(CHILD_FLAG)) {
     await installation.dispose()
   })
 
+  test('A2c observer records the ask lane for IO_POLICY_UNSUPPORTED', async () => {
+    const fixture = makeFixture('a2c')
+    CLEANUP.push(fixture.dir)
+    // A self-referential symlink inside the allowed subtree: lstat sees a link,
+    // realpath fails ELOOP, and the shipped guard refuses as IO_POLICY_UNSUPPORTED
+    // ("cannot prove admission") — the ASK lane, not a deny.
+    const loop = join(fixture.inside, 'loop')
+    symlinkSync('loop', loop)
+    const facts = []
+    const root = await makeRoot()
+    const realm = await mountBinding(root, fixture, { onGuardConsult: (fact) => facts.push(fact) })
+    await assert.rejects(realm.fs.readText(await realm.fs.resolve(loop)), (error) => {
+      assert.equal(error.code, 'IO_POLICY_UNSUPPORTED')
+      return true
+    })
+    assert.equal(facts.length, 1, 'the ask decision is recorded once')
+    assert.equal(facts[0].decision, 'ask')
+    assert.equal(facts[0].decidedBy, 'IO_POLICY_UNSUPPORTED')
+    assert.equal(facts[0].method, 'readText')
+    assert.equal(facts[0].locator, loop)
+    await realm.dispose()
+  })
+
+  test('A2d a non-TeamIoDenial fault is rethrown unchanged and NOT recorded', async () => {
+    const facts = []
+    const boom = new TypeError('resolver exploded outside the guard vocabulary')
+    const observed = seams.observeGuard(
+      async () => { throw boom },
+      (fact) => facts.push(fact),
+      { realm: 'binding', memberIdentity: IDENTITY.memberInstanceId, toolBindingIdentity: BINDING, policyRevision: BINDING_REVISION },
+    )
+    await assert.rejects(observed('readText', '/tmp/whatever'), (error) => error === boom)
+    assert.equal(facts.length, 0, 'a fault outside the guard vocabulary is not a decision')
+  })
+
   // ===========================================================================
   // A3 — plain JSONL transport + strict read-back
   // ===========================================================================
@@ -531,6 +566,41 @@ if (!process.argv.includes(CHILD_FLAG)) {
       providerClass: TestFileSystem,
     })
     assert.equal(remount.members.length, 1)
+    await remount.dispose()
+  })
+
+  test('A6c mountA5sfRealm releases a PREVIOUSLY mounted binding when a later binding refuses', async () => {
+    const fixture = makeFixture('a6c')
+    CLEANUP.push(fixture.dir)
+    const root = await makeRoot()
+    const firstBinding = {
+      identity: IDENTITY,
+      toolBindingIdentity: 'seam/one',
+      effective: { ...effectivePolicy(fixture.inside), toolBindingIdentity: 'seam/one', policyRevision: 'rev-seam-one' },
+    }
+    const secondBinding = {
+      identity: { ...IDENTITY, memberInstanceId: 'some-other-member' }, // foreign ⇒ typed refusal
+      toolBindingIdentity: 'seam/two',
+      effective: { ...effectivePolicy(fixture.inside), toolBindingIdentity: 'seam/two', policyRevision: 'rev-seam-two' },
+    }
+    await assert.rejects(seams.mountA5sfRealm({
+      root,
+      members: [{ identity: IDENTITY, policy: { ok: true, value: memberPolicy(fixture.dir) } }],
+      bindings: [firstBinding, secondBinding],
+      providerClass: TestFileSystem,
+    }), (error) => {
+      assert.equal(error.code, 'MEMBER_IDENTITY_INVALID')
+      return true
+    })
+    // The FIRST binding was mounted before the second refused. If the rollback
+    // loop did not release it, this remount is SERVICE_ALREADY_INSTALLED.
+    const remount = await seams.installToolBindingRealm({
+      root,
+      spec: { identity: IDENTITY, toolBindingIdentity: 'seam/one', effective: firstBinding.effective },
+      providerClass: TestFileSystem,
+    })
+    assert.equal(remount.toolBindingIdentity, 'seam/one')
+    assert.equal(await remount.fs.readText(await remount.fs.resolve(fixture.allowed)), 'ok\n')
     await remount.dispose()
   })
 
