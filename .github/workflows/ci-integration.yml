@@ -234,6 +234,22 @@ jobs:
         # port, no DSH_HOME, no pristine host tree.
         run: node --test tests/a5sf-diag/a5sf-diag.test.mjs
 
+      - name: "a5sf read budget gate C1 (P2-01/BL-14 — node:test, zero Host boots, host-free)"
+        # BL-14/P2-01 is the FIRST P2 vertical slice and the template for BL-15…BL-20: a
+        # native `read` allowed inside a compiled ceiling, refused outside it, and a
+        # per-run BUDGET PRE-REGISTRATION gate (recorded grant: grantId / maxStarts /
+        # grantedBy / boundCommit) that refuses with BUDGET_NOT_GRANTED — absent,
+        # malformed, ambiguous, foreign-commit, too-small or exhausted — BEFORE any
+        # World exists or any start row is appended. The C2 half needs a real Host and a
+        # live read driver this tree does not have; this step is the half that must run
+        # on every PR. ci-integration lists node:test files EXPLICITLY (the #394 / #529
+        # incidents were files no layer collected), so without this step the gate's laws
+        # run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: a real run record over a temp JSONL ledger + a recording boot stub —
+        # no boot, no port, no DSH_HOME, no pristine host tree, no workspace runtime.
+        run: node --test tests/world-factory/a5sf-read-gate.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what
