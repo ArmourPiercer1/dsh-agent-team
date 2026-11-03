@@ -23,6 +23,35 @@ import { appendCappedLine } from '../canary/ledger-cap.mjs'
  *  the cap rows are dropped with ONE in-file notice (never truncated). */
 const BUDGET_LEDGER_CAP_BYTES = 1024 * 1024
 
+/**
+ * The ONE host-start budget gate and its default cap. It lives HERE, in the
+ * ledger's own module, because both callers already import this file and
+ * because importing `u5-canary-runner.mjs` from a collected suite would close a
+ * top-level-await cycle (runner → loadSuites → suite → harness → runner) and
+ * deadlock. `u5-canary-runner.mjs` (its pre-spawn gate and `parseArgs` default)
+ * and `tests/world-factory/lib/a5sf-harness.mjs` both import these symbols; a
+ * second copy of the formula or the default is the R2-b reclamation finding.
+ *
+ * @param {object} record the object `createRunRecord()` returned
+ * @param {number} maxHostStarts positive integer cap
+ * @returns {Readonly<{ledgerPath: string|null, used: number, max: number, remaining: number, exhausted: boolean}>}
+ */
+export const DEFAULT_MAX_HOST_STARTS = 15
+export function hostStartBudgetPosition(record, maxHostStarts) {
+  if (!Number.isInteger(maxHostStarts) || maxHostStarts < 1) {
+    throw new Error(`bad maxHostStarts: ${JSON.stringify(maxHostStarts)} (positive integer required)`)
+  }
+  const used = record.ledgerStartCount()
+  const ledgerPath = record?.record?.hostStarts?.ledgerPath ?? null
+  return Object.freeze({
+    ledgerPath,
+    used,
+    max: maxHostStarts,
+    remaining: Math.max(0, maxHostStarts - used),
+    exhausted: used >= maxHostStarts,
+  })
+}
+
 export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED', 'NOT_REACHED'])
 
 /** Higher = worse. `overall` takes the max severity over selected cases. */

@@ -1,0 +1,75 @@
+/**
+ * Alpha.5 P1-05 — the confined per-Member filesystem Provider.
+ *
+ * WHY A SUBCLASS AND NOT A NEW PROVIDER: the Member data plane must keep the
+ * host Provider's exact semantics (atomic writes, version guards, symlink
+ * handling, diff basis, watch) and add ONLY an admission decision. Inheriting
+ * from the live Provider class — sampled from the running service, never
+ * imported by name — gives that for free and keeps this lane free of any
+ * upstream dependency (CORE PATCH BUDGET = 0, and no lockfile change).
+ *
+ * WHAT IT ENFORCES: every target-bearing method asks the compiled
+ * {@link MemberPolicy} before delegating. `read*`/`listDir`/`stat`/`lstat`/
+ * `watch` consult the read axis; `writeText`/`editText` consult the write axis
+ * AND, when the target already exists, also require read coverage (`write ⇒
+ * read`, the native read-then-write contract). The path identity check is
+ * P1-03's `evaluateLocatorAccess`: authored containment first, then the
+ * provider-resolved real path, so a symlink that escapes the authorized subtree
+ * is refused even though its authored name is inside.
+ *
+ * WHAT IT DOES NOT DO: it does not resolve or read anything itself (every
+ * operation is `super.<method>`), does not know about tools or approvals, and
+ * does not weaken the host Provider — a refusal is raised BEFORE the operation,
+ * a permitted call behaves byte-for-byte like the base Provider.
+ *
+ * @module @dsh-agent-team/runtime/team-services/fs
+ */
+import type { Context } from '@deepseek-ai/cordis';
+import { type PathIdentityResolver } from '../../member-io-policy/src/provider-capabilities.js';
+import type { EffectiveIoPolicy, MemberPolicy } from '../../member-io-policy/src/types.js';
+/**
+ * The structural Provider surface the confined subclass relies on. The LIVE
+ * class supplies the implementations; this interface exists so the subclass can
+ * override and forward without importing the provider package.
+ */
+export interface FsProviderSurface {
+    /** Resolution-only: unguarded, but required (a provider without it is unusable). */
+    resolve(path: string, opts?: unknown): Promise<unknown>;
+    processPath(target: unknown): string;
+    contains(parent: unknown, child: unknown): boolean;
+    readText(target: unknown, signal?: AbortSignal): Promise<string>;
+    streamText(target: unknown, signal?: AbortSignal): Promise<AsyncIterable<string>>;
+    readBytes(target: unknown, signal: AbortSignal | undefined, maxBytes: number): Promise<Uint8Array>;
+    readByteRange(target: unknown, range: unknown, signal?: AbortSignal): Promise<Uint8Array>;
+    listDir(target: unknown, signal?: AbortSignal): Promise<unknown[]>;
+    stat(target: unknown, signal?: AbortSignal): Promise<unknown>;
+    lstat(path: string, opts?: unknown, signal?: AbortSignal): Promise<unknown>;
+    watch(target: unknown, changed: (error?: Error) => void, signal: AbortSignal): Promise<() => Promise<void>>;
+    writeText(target: unknown, content: string, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
+    editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
+}
+/** A Provider constructor that Cordis can mount as the `fs` service. */
+export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface;
+/**
+ * The policy lanes the guard reads. A Member ceiling and an effective policy
+ * share exactly this shape, so the SAME guard enforces either one (the tool
+ * factor of the invariant is not allowed to be decorative).
+ */
+export type PolicyLanes = Pick<MemberPolicy | EffectiveIoPolicy, 'memberIdentity' | 'read' | 'write'>;
+/** The per-call admission function the subclass calls before delegating. */
+export type FsGuard = (method: string, hostPath: string) => Promise<void>;
+/**
+ * Build the admission function for one Member. All checks are fail-closed:
+ * a resolver failure, an unsupported destination, an uncovered target or a
+ * write without read coverage all throw a typed {@link TeamIoDenial}; there is
+ * no path that returns "allow" by omission.
+ */
+export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: PathIdentityResolver): FsGuard;
+/**
+ * Create the confined Provider class for one Member: the live Provider class is
+ * the base, every target-bearing method guards first and delegates second.
+ * The returned constructor is mountable through Cordis (`ctx.plugin`) and
+ * registers the same `fs` service name in the context it is mounted under.
+ */
+export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard): FsProviderConstructor;
+//# sourceMappingURL=fs.d.ts.map

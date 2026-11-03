@@ -1,0 +1,45 @@
+MUTATION CONTROLS — BL-11 / R3 (dated 2026-11-03, real UTC)
+
+Each mutation is applied to tests/world-factory/lib/a5sf-evidence.mjs, the FULL suite is run,
+the file is restored byte-for-byte (sha256 re-checked), and the failing legs are recorded.
+A mutation that leaves the suite green is a test-strength hole; none survives below.
+
+baseline (no mutation): exit=0 ℹ pass 12 ℹ fail 0
+
+| mutation | what was deleted | RED leg(s) | suite |
+|---|---|---|---|
+| M01 | provider consult check deleted (lane=allow needs consulted:true) | A4 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M02 | policy generation comparison deleted | A3 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M03 | effect-not-observed check deleted | A5, A10 | exit=1 ℹ pass 10 ℹ fail 2 |
+| M04 | narrowed-allow arm deleted (unnamed durable row) | A6 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M05 | named-row-missing arm deleted | A6 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M06 | ALLOW_OUTSIDE_COMPILED_CEILING deleted | A7 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M07 | APPROVAL_SCOPE_MISMATCH deleted | A2 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M08 | ceiling member comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M09 | ceiling policyRevision comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M10 | TOOL_NOT_IN_COMPILED_CEILING deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M11 | provider member comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M12 | provider generation comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M13 | provider policyRevision comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M14 | provider toolBindingIdentity comparison deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M15 | oracle identity check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M16 | oracle tag check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M17 | EFFECT_DESPITE_REFUSAL deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M18 | DUPLICATE_CONSUMPTION neutralised (one row may authorize a second allow) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M19 | recorder INVOCATION_ID_MISMATCH deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M20 | UNKNOWN_ROW_KIND push deleted (unknown kinds silently skipped) | A12 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M21 | provider LINK_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M22 | effect LINK_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M23 | AMBIGUOUS_CEILING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M24 | CEILING_ROW_MISSING null guard deleted (crash) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M25 | CEILING_AXIS_MISSING check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M26 | AMBIGUOUS_APPROVAL_ROW check deleted | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+| M27 | unbindable handling deleted (both the named branch and the catch-all) | A11 | exit=1 ℹ pass 11 ℹ fail 1 |
+
+all 27 mutations RED; module sha256 restored each time: 679e598cbe0fbbdba6a548d3732c8c488efb6c08cd10a2e9daca7d04400e4230
+
+Leg map: A2 approval scope; A3/A4/A5 the three original link checks; A6 BOTH missing-row arms
+(named + unnamed); A7 unexplained allow; A11 the sixteen identity/missing-link branches +
+exactly-once consumption + the recorder invocation-id refusal; A12 unknown row kind.
+Not in this table (defensive code with no reachable file-level path, disclosed in README §11):
+CALL_ROW_INVALID (non-object row), the final "no chain at all" empty-file arm (covered by A10).

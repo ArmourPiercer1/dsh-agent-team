@@ -203,6 +203,19 @@
  *                        (fail-closed, never a pass-through). Templates
  *                        WITHOUT a permissions policy never call it
  *                        (alpha.1 / legacy: zero listeners).
+ *   a5sfRealmProvider (OPTIONAL) - the Alpha.5 P2 compiled-realm provider,
+ *                        a LAZY accessor `() => { compiledFor } | undefined`
+ *                        (host.ts reads the optional `teamA5sfRealm` service;
+ *                        a factory/test world omits it). `compiledFor(member)`
+ *                        answers the compiled objects of ONE admitted Member
+ *                        (`{ members, bindings?, providerClass? }`) or
+ *                        `undefined` for "no compiled realm". ENABLED ONLY
+ *                        together with `config.a5sfEvidencePath`; absent
+ *                        either half = the legacy path byte-identical (no
+ *                        provider call, no mount, no sink, no file write).
+ *                        The compiled objects come from the row's composition
+ *                        because compiling a ceiling/lane is the policy
+ *                        compiler's authority, never this glue's.
  *   artifactAuthorityRef (OPTIONAL) - strict-read + core-spill (Phase
  *                        D/E, implementation guide §13): the plain
  *                        { current: <TeamArtifactAuthority | undefined> }
@@ -453,6 +466,30 @@ import { createGovernedJobsBridge } from './jobs-family-bridge.mjs'
 // the bridge's scopeKey/viewer/pin feed and the per-root gateway row face.
 import { createGovernedBackgroundProducer } from './jobs-background-producer.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
+// Alpha.5 P2 WIRING (this round): the PRODUCT-ROW call site of
+// `team-services#mountA5sfRealm`. Before this import the compiled realm was
+// reachable only from tests: no product code called the entry point, so the
+// a5sf sandbox realm was INERT in a booted Host. The helper is a thin
+// sink+mount composition (`a5sf-realm-row.mjs`, byte-copied into dist by
+// place-dist-glue.mjs) — NOT a second mount path: every decision, refusal and
+// rollback stays in the P2 seam it calls.
+//
+// F1 (effective half, dated 2026-11-03) — WHAT IS BOUND AND WHAT IS NOT. The
+// mount's Provider lives in the installer's SIBLING isolate
+// (`team-services/src/install.ts:182`), so THIS agent ctx keeps the BASE
+// provider and non-tool consumers stay on it BY DESIGN. What changed is that
+// the Member's OWN TOOL PLANE is now placed on that isolated scope (see the
+// ROUTE (b) block inside `agentSetup`: Team tool registrations + the governed
+// plane + the permission adapter's per-call fs seam), so a tool-invoked read
+// IS consulted by the confined guard and its fact reaches the sink. NOT bound:
+// the NATIVE preset tools (`read`/`write`/`edit`, `@deepseek-ai/dsh-tool-fs`)
+// — the upstream preset registry eagerly mounts preset plugins under its own
+// generation scope before any agent exists, so no ctx handed to
+// `presets.mount()` can reach them (the P3 native takeover, BL-22), and the
+// plane's fs family uses its own hardened root provider rather than `ctx.fs`.
+// Evidence: dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7
+// + the BEFORE/AFTER probe over the committed dist).
+import { a5sfRealmConfigOf, a5sfToolPlaneOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
 // dependency-injected below).
@@ -834,7 +871,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, a5sfRealmProvider } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -891,6 +928,21 @@ export function createAgentBindings(deps) {
   if (resolvePersonaSubstrate !== undefined && typeof resolvePersonaSubstrate !== 'function') {
     throw new Error('agent-bindings: deps.resolvePersonaSubstrate must be a function (rootSessionId -> Promise<{ presetId, personaKind, source?, reason? }>) when present')
   }
+  // Alpha.5 P2 WIRING (additive, default-preserving): the OPTIONAL compiled-
+  // realm provider. The row's COMPOSITION supplies it (host.ts reads the
+  // optional `teamA5sfRealm` service); a factory/test world omits it and the
+  // legacy path stays byte-identical. It must be a lazy accessor function so a
+  // service mounted AFTER this factory is still seen at setup time (the D1
+  // `agentPresets` / `jobs` pattern), and it must answer a `{ compiledFor }`
+  // object or nothing.
+  if (a5sfRealmProvider !== undefined && a5sfRealmProvider !== null && typeof a5sfRealmProvider !== 'function') {
+    throw new Error('agent-bindings: deps.a5sfRealmProvider must be a function (() => { compiledFor } | undefined) when present')
+  }
+  // The row's a5sf evidence path, read ONCE at assembly (invalid config fails
+  // loudly here, never at the first Member). BOTH halves are required for the
+  // wiring to be enabled; either absent = no sink, no provider call, no mount,
+  // no file — see `a5sf-realm-row.mjs` for the enablement law.
+  const a5sfRowConfig = a5sfRealmConfigOf(config)
   // The durable-consumption resolvers ride on the opened domain.
   const consumption = domain.consumption
   if (consumption === undefined || consumption === null) {
@@ -918,6 +970,15 @@ export function createAgentBindings(deps) {
   let closing = false
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
   const toolDisposers = []
+  /**
+   * @type {Array<(() => void) & { settled(): Promise<void> }>} Alpha.5 P2
+   * wiring: the a5sf realm disposers. They also ride `toolDisposers` (the
+   * drain invokes them synchronously), and this row-level list is what
+   * close() AWAITS through `settled()` — the mount's `dispose()` is async, so
+   * starting it without waiting would make teardown fire-and-forget.
+   * @see createA5sfRealmRowDisposer
+   */
+  const a5sfRealmDisposers = []
   // GLUE-5: the per-team-root PR7 live assemblies (jobs-gateway-assembly).
   // One assembly per owning root, created lazily on the first governed
   // mount; drained by close() (the row-stop backstop). The gateway is the
@@ -2286,6 +2347,113 @@ export function createAgentBindings(deps) {
         state.mcpMountCtx = mcpMountScope.ctx
       }
       consumptionState.set(sessionId, state)
+      // Alpha.5 P2 WIRING (additive, default-preserving): mount the compiled
+      // a5sf realm for an ADMITTED MEMBER, right after the durable
+      // MemberInstance admission `resolveConsumptionViews` resolved above (the
+      // row's ceiling/effective lanes are the ones THAT admission produced —
+      // this glue never compiles or re-decides a lane). The mount is the ONE
+      // P2 entry point (`team-services#mountA5sfRealm`) via the thin row
+      // helper; the guard-consult observer is the row-configured file sink.
+      //
+      // F1 (review response 2026-11-03) — WHAT THE MOUNT DOES AND HOW IT IS
+      // CONSUMED. The mount installs the confined Provider through the
+      // installer's `root.isolate('fs', …)` (`team-services/src/install.ts:182`
+      // member / `:332` binding). Cordis `isolate()` creates a SIBLING scope,
+      // so THIS agent ctx keeps the BASE provider — a fact about the installer,
+      // not a bug in it. The very next block therefore names the tool-plane
+      // scope with `a5sfToolPlaneOf(a5sfRealm)` and places the Member's tool
+      // plane on it: the Team tool registrations, the governed plane and the
+      // permission adapter's per-call fs seam move to the isolated ctx and the
+      // captured confined instance. A LEADER session and every non-tool
+      // consumer stay on the base provider by design. NOT bound (see the
+      // module-header statement at :474-495 and evidence README §8): the NATIVE
+      // preset tools, which the upstream preset registry mounts under its own
+      // generation scope before any agent exists (P3 native takeover, BL-22).
+      //
+      // ENABLEMENT LAW: `config.a5sfEvidencePath` AND
+      // `deps.a5sfRealmProvider` are both required. Either half absent (the
+      // normal / legacy row) => `mountMemberA5sfRealm` returns `undefined`
+      // before the provider is asked, no sink exists, no Provider is installed
+      // and no byte is written: the legacy path is byte-identical. A LEADER
+      // session owns no MemberInstance, so the root bind paths never mount.
+      // FAIL CLOSED: a provider-thrown error, a malformed compiled answer or a
+      // failing sink rejects the setup, rolling the unpublished agent back —
+      // an a5sf-wired Member never runs without its realm.
+      /**
+       * @type {{ ctx: object, fs: object } | undefined} Alpha.5 F1 (effective
+       * half): the MEMBER TOOL PLANE scope of THIS setup's mounted realm — the
+       * SAME isolated ctx the confined Provider is installed on, plus the
+       * captured confined fs instance. PER SETUP (never shared across rows):
+       * `undefined` = no realm mounted, and every consumer below then keeps
+       * the pre-F1 agent ctx / base provider byte-identically.
+       * @see a5sfToolPlaneOf
+       */
+      let a5sfToolPlane
+      if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot) {
+        const a5sfRealm = await mountMemberA5sfRealm({
+          root: agentCtx,
+          a5sfConfig: a5sfRowConfig,
+          provider: a5sfRealmProvider,
+          member: {
+            sessionId,
+            instanceId,
+            teamRootSessionId: teamRoot,
+            templateId: boundTemplate?.templateId,
+            bindPath,
+          },
+        })
+        // The row keeps the disposer. It is a SAFE SYNC wrapper: the row-stop
+        // drain invokes disposers synchronously (`d()`), so an async disposer
+        // returned un-awaited would be fire-and-forget (and a rejection an
+        // unhandled rejection). The wrapper starts the unmount, reports a
+        // failure as an observation (never swallows it), and is AWAITED by
+        // this row's close() through `a5sfRealmDisposers` below. The agent
+        // scope unwind stays the backstop if the row never drains.
+        if (a5sfRealm !== undefined) {
+          // F1 (effective half): name the scope the Member's tools are placed
+          // on. The mount itself is unchanged and stays the ONE entry point;
+          // this only records which ctx/fs the tool plane must use below.
+          a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)
+          const disposeRealm = createA5sfRealmRowDisposer(a5sfRealm, (error) => {
+            observations.push(`a5sf: realm dispose failed: ${error instanceof Error ? error.message : String(error)}`)
+          })
+          a5sfRealmDisposers.push(disposeRealm)
+          toolDisposers.push(disposeRealm)
+        }
+      }
+      // Alpha.5 F1 (effective half, dated 2026-11-03) — ROUTE (b): the Member
+      // tool plane's fs resolution goes through the ISOLATED realm scope.
+      //
+      // Why this and not route (a) (mount the tools under the isolated ctx):
+      // the upstream agent-preset registry EAGERLY activates a preset at
+      // registration and mounts its plugins under its OWN generation scope
+      // (`createScope(registryCtx, generationKey)`), before any agent exists —
+      // so no ctx handed to `presets.mount()` can change a preset tool body's
+      // `fs`. The row's OWN tool plane (Team tool registrations + the governed
+      // GLUE-5 plane) is what a Member row can bind, and binding it here keeps
+      // ONE mount path: no second launcher, no second registry, no second
+      // compiler.
+      //
+      // TWO consumers, ONE authority:
+      //   1. PLACEMENT — the Team tools and the governed plane are placed on
+      //      `toolPlaneCtx`, the realm's isolated ctx. A tool definition whose
+      //      body resolves the provider from the ctx it runs on (the
+      //      preset-tool pattern: `ctx.fs` / `ctx.get('fs')`) therefore gets
+      //      the confined provider and its consultations reach the sink. The
+      //      plane's own host-service lookups (`cap.hostService('fs')`) follow
+      //      the mount ctx for the same reason.
+      //   2. CANONICALIZATION — the permission adapter's per-call fs seam
+      //      (`fsBackend`, host.ts) is replaced for THIS setup by the captured
+      //      confined instance, so the adapter canonicalizes targets and
+      //      subtree containment against the SAME provider the tool executes
+      //      on. Routing only one of the two would leave the adapter and the
+      //      effect on different authorities — the split §8 warned about.
+      //
+      // DEFAULT PATH: `a5sfToolPlane` is `undefined` for every row that did
+      // not mount a realm, so `toolPlaneCtx === agentCtx` and
+      // `toolPlaneFsBackend === fsBackend` — the pre-F1 shape, byte-identical.
+      const toolPlaneCtx = a5sfToolPlane === undefined ? agentCtx : a5sfToolPlane.ctx
+      const toolPlaneFsBackend = a5sfToolPlane === undefined ? fsBackend : () => a5sfToolPlane.fs
       toolDisposers.push(installModelSelection(agentCtx, ref))
       // D1 (v2 → v3): the ordinary base tools (the ordinary AgentPreset
       // substrate — file/shell) mount on the MEMBER bind paths (v2:
@@ -2630,7 +2798,10 @@ export function createAgentBindings(deps) {
           capabilities.mode === 'selective' ? selectTeamTools(catalog, capabilities.teamTools) : [...catalog]
         selectedTeamToolNames = selected.map((def) => def.name)
         for (const def of selected) {
-          toolDisposers.push(agentCtx.tools.register(def))
+          // F1: the Team tools are part of the Member's tool plane -> the
+          // realm's isolated ctx (identical scope layer + disposer fiber for
+          // every non-a5sf row, where toolPlaneCtx === agentCtx).
+          toolDisposers.push(toolPlaneCtx.tools.register(def))
         }
       }
       // U6 PR1 — center-assembly SHADOW mount (packages/runtime/
@@ -2881,7 +3052,10 @@ export function createAgentBindings(deps) {
           observations.push(`a5-plane: mount-REFUSED for ${sessionId} (${built.code})`)
           throw error
         }
-        const placed = built.value.mount(agentCtx)
+        // F1: the governed plane binds its host services through the mount ctx
+        // (`hostServices.ctx`), so placing it on the realm scope makes every
+        // lazy `cap.hostService('fs')` lookup answer the confined provider.
+        const placed = built.value.mount(toolPlaneCtx)
         if (placed.ok !== true) {
           const error = new Error(
             `agent-bindings: alpha.5 Team tool plane placement refused for '${sessionId}' ('${placed.name}'): ${placed.message} (code: ${placed.code})`,
@@ -3343,7 +3517,7 @@ export function createAgentBindings(deps) {
           let accessorFailed = false
           let containmentBackend
           try {
-            containmentBackend = fsBackend(agentCtx)
+            containmentBackend = toolPlaneFsBackend(agentCtx)
           } catch {
             accessorFailed = true // the resolve-time contract owns this
           }
@@ -3409,7 +3583,7 @@ export function createAgentBindings(deps) {
           // dep/service rejects here and the A2 adapter maps it to the
           // typed canonicalization denial (fail-closed, never
           // pass-through).
-          const target = await fsBackend(agentCtx).resolve(
+          const target = await toolPlaneFsBackend(agentCtx).resolve(
             path,
             typeof cwd === 'string' && cwd !== '' ? { cwd } : {},
           )
@@ -3430,7 +3604,7 @@ export function createAgentBindings(deps) {
         // treats a fault as containment-undeterminable (fail-closed
         // semantics per lane).
         const containsTargets = (parent, child) => {
-          const backend = fsBackend(agentCtx)
+          const backend = toolPlaneFsBackend(agentCtx)
           if (typeof backend.contains !== 'function') {
             // A provider without the public containment seam: the
             // subtree containment is undeterminable (the adapter fails
@@ -3481,7 +3655,7 @@ export function createAgentBindings(deps) {
         // invented) - never as a silent match.
         const containOverlayKeys = (subtreeRootKey, childKey) => {
           if (subtreeRootKey === childKey) return true
-          const backend = fsBackend(agentCtx)
+          const backend = toolPlaneFsBackend(agentCtx)
           if (typeof backend.contains !== 'function') {
             throw new Error('the fs provider does not expose a public contains() seam (overlay subtree containment undeterminable)')
           }
@@ -5837,6 +6011,15 @@ export function createAgentBindings(deps) {
         if (typeof d === 'function') d()
         else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
       } catch { /* the scope unwind covers it */ }
+    }
+    // Alpha.5 P2 wiring: the a5sf realm disposals are ASYNC (the drain above
+    // only ever starts them synchronously). Await the ones this row started so
+    // close() does not return before the isolated Provider fibers are
+    // unmounted — the rejection is already reported by the wrapper (an
+    // observation), so a failure here is reported, not thrown. The agent-scope
+    // unwind remains the backstop if a row never reaches this drain.
+    for (const disposeRealm of a5sfRealmDisposers.splice(0)) {
+      await disposeRealm.settled()
     }
     // GLUE-5: the PR7 live assemblies close with the row (pc-CONTRACT §3
     // checklist 4 — the ASSEMBLY lifecycle owns the lease window, and

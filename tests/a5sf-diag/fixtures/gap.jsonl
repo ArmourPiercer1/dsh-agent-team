@@ -1,0 +1,3 @@
+{"kind":"compiler-refusal","callId":"c1","code":"MEMBER_GENERATION_STALE"}
+{"kind":"compiler-refusal","callId":"c2","code":"IO_POLICY_UNSUPPORTED"}
+{"kind":"failure","callId":"c3","text":"a5p5-refused kind=refused-admission code=APPROVAL_DENIED detail=no approval"}

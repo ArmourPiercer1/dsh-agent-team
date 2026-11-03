@@ -1,0 +1,319 @@
+{
+  "schema": "a5sf-golden-corpus/1",
+  "task": "BL-13 (R5) — conversion of retired Alpha.5 tool-family golden vectors",
+  "note": "Regression comparison input only. The old vectors were recorded under the retired tool-family execution path; they are NOT new gate evidence and a MATCH pins only what the new lane must not silently change.",
+  "generatedAt": "2026-11-02",
+  "vectorCount": 12,
+  "dispositionCounts": {
+    "REPLAY_AS_REGRESSION": 6,
+    "RETIRE_AS_OLD_SEMANTICS": 4,
+    "UNUSABLE": 2
+  },
+  "vectors": [
+    {
+      "id": "read-path-unicode-nfc-locator",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 875,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:33",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'caf\\u00e9.txt'}) resolved to the in-root file resource `file:caf\\u00e9.txt` with the NFC spelling preserved (no Unicode normalization).",
+      "derivation": "The new lane does not consume the old resource key, so the convertible claim is the path's locator identity: the same path must yield the same segments and the same relativeness under `toLocatorKey`. The old fingerprint (sha256:8c05\\u2026) is deliberately NOT carried.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "toLocatorKey",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "café.txt"
+      },
+      "compare": {
+        "kind": "equal",
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "café.txt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "read-path-nfd-not-folded",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 1019,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:34",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'cafe\\u0301.txt'}) stayed a DISTINCT resource (`file:cafe\\u0301.txt`) from the NFC spelling; no normalization was applied.",
+      "derivation": "Converted as the locator-identity claim: the NFD spelling must produce a distinct comparison key (combining mark kept as its own codepoint in the segment), while relativeness is unchanged. The old fingerprint is not carried.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "toLocatorKey",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "café.txt"
+      },
+      "compare": {
+        "kind": "equal",
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "café.txt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "read-path-dotdot-literal",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 1451,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:37",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'../escape.txt'}) resolved to `file:../escape.txt`: the leading `..` was kept as authored and never folded away.",
+      "derivation": "Converted as the `..`-never-folds locator claim, which the old recorded key and the P1-03 containment law agree on. The fingerprint is not carried.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "toLocatorKey",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "../escape.txt"
+      },
+      "compare": {
+        "kind": "equal",
+        "expected": {
+          "absolute": false,
+          "segments": [
+            "..",
+            "escape.txt"
+          ]
+        }
+      }
+    },
+    {
+      "id": "read-path-absolute-outside-denied",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 2459,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:44",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'/etc/outside.txt'}) was recorded as an ABSOLUTE path outside the root (`file:/etc/outside.txt`), not as a relative in-root path.",
+      "derivation": "Converted as the new lane's lane decision for that same locator against a restricted allow of `/work`: an absolute outside locator must be `deny`. This is a derived effect claim, not the old fingerprint; the recorded vector only supplies the path shape.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "matchLocator",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "/etc/outside.txt",
+        "lane": {
+          "mode": "restricted",
+          "allow": [
+            "/work"
+          ],
+          "ask": [],
+          "deny": []
+        }
+      },
+      "compare": {
+        "kind": "lane-decision",
+        "expected": "deny"
+      }
+    },
+    {
+      "id": "read-path-absolute-stays-absolute",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr2-20261025/golden-vectors-round2-family.json",
+        "line": 1,
+        "vectorIndex": 2459,
+        "producer": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts:54",
+        "pathClass": "packages/runtime/test/u6-pr2-golden-corpus.mts:44",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "read({file_path:'/etc/outside.txt'}) was recorded as an ABSOLUTE path (resource `file:/etc/outside.txt`), not as a relative in-root path.",
+      "derivation": "Converted as a SUBSET claim on the same locator: only absoluteness is pinned (`absolute: true`); the segment list is deliberately left free, so an unrelated key-shape refinement does not read as a regression. The old fingerprint is not carried.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "toLocatorKey",
+        "module": "packages/runtime/member-io-policy/src/path-rules.ts"
+      },
+      "input": {
+        "locator": "/etc/outside.txt"
+      },
+      "compare": {
+        "kind": "subset",
+        "expected": {
+          "absolute": true
+        }
+      }
+    },
+    {
+      "id": "read-golden-operation-fingerprint",
+      "disposition": "RETIRE_AS_OLD_SEMANTICS",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
+        "line": 54,
+        "producer": "u6-pr2 read golden-vector gate",
+        "recordedVectorCount": 2893,
+        "recordedDigest": "bfa69f58df48b9ff7881aef6b5eb1d750b02f18a362d9c6202468ff856c6eacf"
+      },
+      "effectClaim": "A read call was addressed by a sha256 `canonicalizeOperation` fingerprint over (tool, arguments, resolver-disclosed resource); the full corpus digest was the gate.",
+      "oldSemantics": "Changed invariant: durable read grant identity is no longer derived from an operation projection. The new lane compiles `EffectiveIo` and consumes a one-shot invocation capability; `canonicalizeOperation` has zero importers in member-io-policy / team-services / team-sandbox (measured), so no fingerprint addresses a managed call. The 2893-vector digest cannot be replayed as a new-lane effect.",
+      "newLane": {
+        "owner": "member-io-policy",
+        "entry": "compileEffectiveIo",
+        "module": "packages/runtime/member-io-policy/src/compile.ts"
+      }
+    },
+    {
+      "id": "shell-golden-command-fingerprint",
+      "disposition": "RETIRE_AS_OLD_SEMANTICS",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts",
+        "line": 48,
+        "producer": "u6-pr3 shell golden-vector gate",
+        "recordedVectorCount": 299,
+        "recordedDigest": "efb096a6140530d913ab2b5483d59c981843aa4b57e599fac451c93ae1d02964"
+      },
+      "effectClaim": "A bash command STRING was canonicalized (quoting, unicode, cwd, effect fields) into a fingerprint that addressed durable shell approvals.",
+      "oldSemantics": "Changed invariant: no shell string is an execution input. The new OS runner takes an explicit non-empty argv and refuses `EMPTY_ARGV` with the detail 'argv must be an explicit, non-empty array (never a shell string)' (runner.ts:66); shell interpretation belongs to the native bash tool (BL-17, matrix NOT_WIRED). The command-string projection is deliberately dead.",
+      "newLane": {
+        "owner": "sandbox-provider-os-runner",
+        "entry": "createTeamConfinedRunner",
+        "module": "packages/runtime/team-sandbox/src/runner.ts"
+      }
+    },
+    {
+      "id": "search-rg-argv-spelling",
+      "disposition": "RETIRE_AS_OLD_SEMANTICS",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/runtime/test/alpha5-search-backend.test.ts",
+        "line": 205,
+        "producer": "A5-SRGP control face: the shipped grep-port row's argv, pinned verbatim"
+      },
+      "effectClaim": "The retired search-family synthesized the exact `rg` argv (including the `-rIn` quirks and the `-rl` splice) for a grep call.",
+      "oldSemantics": "Changed invariant: argv synthesis is not an OS-runner responsibility. The new lane's OS runner executes an explicit argv it is handed, and the native grep row owns its own argv (BL-16, matrix NOT_WIRED). Pinning the old family spelling as a new-lane requirement would resurrect the retired row builder, so the spelling retires with it.",
+      "newLane": {
+        "owner": "sandbox-provider-os-runner",
+        "entry": "createTeamConfinedRunner",
+        "module": "packages/runtime/team-sandbox/src/runner.ts"
+      }
+    },
+    {
+      "id": "web-family-admission-delivery",
+      "disposition": "RETIRE_AS_OLD_SEMANTICS",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/runtime/test/u7f-web-c1.test.ts",
+        "line": 242,
+        "producer": "u7-f web_fetch C1 positive (governed ask + grant, bytes delivered)"
+      },
+      "effectClaim": "web_fetch with a governed ask + grant delivered bytes and the leg saw the declared effect set; this was counted as a web-family success.",
+      "oldSemantics": "Changed invariant: admission-only is not a network hard ceiling. The new lane enforces network as a boolean hard ceiling and refuses destination-restricted as UNSUPPORTED; the old ask+grant delivery is neither network enforcement nor new-lane evidence, so the vector retires instead of pinning delivery.",
+      "newLane": {
+        "owner": "sandbox-provider-os-runner",
+        "entry": "compileExecutionProfile",
+        "module": "packages/runtime/team-sandbox/src/profile.ts"
+      }
+    },
+    {
+      "id": "shell-command-is-not-resplit-into-argv",
+      "disposition": "REPLAY_AS_REGRESSION",
+      "regressionOnly": true,
+      "source": {
+        "path": "dev/agent-workflow/evidence/u6-pr3-20261026/golden-vectors-master.json",
+        "line": 1,
+        "vectorIndex": 8,
+        "producer": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts:48",
+        "recordedVectorCount": 299,
+        "recordedDigest": "efb096a6140530d913ab2b5483d59c981843aa4b57e599fac451c93ae1d02964"
+      },
+      "effectClaim": "bash({command:'a | b && c || d ; e'}) was a single shell-command string that canonicalized to a fingerprint.",
+      "derivation": "Converted as the argv-boundary claim that replaces the retired command-string projection: the command text is handed to the OS runner as ONE explicit argv element and must arrive unchanged (no shell splitting, no metacharacter interpretation). The old fingerprint is not carried; this is why `shell-golden-command-fingerprint` retires while this boundary claim replays.",
+      "newLane": {
+        "owner": "sandbox-provider-os-runner",
+        "entry": "createTeamConfinedRunner",
+        "module": "packages/runtime/team-sandbox/src/runner.ts"
+      },
+      "input": {
+        "argv": [
+          "a | b && c || d ; e"
+        ]
+      },
+      "compare": {
+        "kind": "argv",
+        "expected": [
+          "a | b && c || d ; e"
+        ]
+      }
+    },
+    {
+      "id": "read-image-attachment-projection",
+      "disposition": "UNUSABLE",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/runtime/test/u7-9a-mutation-golden-corpus.mts",
+        "line": 97,
+        "producer": "u7-9a mutation golden-vector gate",
+        "recordedVectorCount": 1440,
+        "recordedDigest": "91fee9a6ff7ea6db450e49b7fd2b39b142a3fc06d4f924664521a69329da332b"
+      },
+      "effectClaim": "read_image({file_path}) projected a resource key only, over every path class.",
+      "oldSemantics": "No equivalent: the new lane has no bound attachment/image provider (matrix M-04 NOT_WIRED; the attachment store sits outside the Member I/O model), so there is no new-lane effect to compare against the old projection.",
+      "newLane": {
+        "owner": "team-services",
+        "entry": "installToolBindingRealm",
+        "module": "packages/runtime/team-services/src/install.ts"
+      }
+    },
+    {
+      "id": "effect-fingerprint-backend-parity",
+      "disposition": "UNUSABLE",
+      "regressionOnly": true,
+      "source": {
+        "path": "packages/tools/a5p5-tools/test/a5p5-parity.test.ts",
+        "line": 196,
+        "producer": "a5p5 parity matrix (direct backend vs C-PROC contract stub)"
+      },
+      "effectClaim": "For the same effect, the direct backend and a C-PROC contract stub produced the same `effectFingerprint`, settlement and spill decision under `RequestedEffectSet`.",
+      "oldSemantics": "No equivalent: the new lane forbids re-introducing `RequestedEffectSet` and has no stub-backend parity surface; the family pipeline that this matrix compared is retired. There is nothing in the new lane for the parity claim to be compared against.",
+      "newLane": {
+        "owner": "team-services",
+        "entry": "createMemberFsGuard",
+        "module": "packages/runtime/team-services/src/fs.ts"
+      }
+    }
+  ]
+}

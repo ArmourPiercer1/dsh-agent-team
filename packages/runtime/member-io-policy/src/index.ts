@@ -53,4 +53,16 @@ export {
   registerTrustedBinding,
   verifyTrustedBinding,
 } from './trust-registry.js'
+export {
+  APPROVAL_TAKEOVER_REFUSAL_CODES,
+  APPROVAL_TAKEOVER_REFUSAL_CODE_VALUES,
+  resolveAskClassCall,
+} from './approval-takeover.js'
+export type {
+  ApprovalTakeoverRefusal,
+  ApprovalTakeoverRefusalCode,
+  ApprovalTakeoverResult,
+  AskApprovalAuthority,
+  ResolveAskClassCallInput,
+} from './approval-takeover.js'
 export type * from './types.js'

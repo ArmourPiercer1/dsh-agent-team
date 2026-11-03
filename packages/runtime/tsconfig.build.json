@@ -37,6 +37,8 @@
     "../tools/fs-family/src",
     "../tools/process-family/src",
     "work-completion-notification",
-    "policy-adapter.ts"
+    "policy-adapter.ts",
+    "team-services/src/mount.ts",
+    "team-services/src/guard-observability.ts"
   ]
 }

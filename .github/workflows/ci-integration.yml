@@ -186,6 +186,130 @@ jobs:
         # required token. Dropping it is CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/eb3-tool-acceptance.test.mjs
 
+      - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
+        # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
+        # machinery, so the harness wiring needs a C1 proof of its own. This step is the
+        # minimal wiring: ci-integration lists node:test files EXPLICITLY, so a new C1
+        # suite would otherwise be invisible to every layer (the #394 and #529 incidents
+        # were exactly that). Declared in dev/ci/eb3-ci-manifest.json with the file path
+        # as a required token; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: no port, no DSH_HOME, no pristine host tree — the pinned candidate is
+        # READ from tests/paths.mjs as a constant, never resolved into a checkout.
+        run: node --test tests/world-factory/a5sf-harness.test.mjs
+
+      - name: "a5sf evidence chain R3 (BL-11 — node:test, host-free, records the four links and re-reads them with a5sf-diag)"
+        # BL-11/R3: one evidence chain PER CALL — the durable Alpha.4 consumption row, the
+        # compiled MemberPolicy + EffectiveIo (the ONE computation), the Provider the
+        # installer mounted, and the independent oracle effect — aligned on one member
+        # instance + generation + invocation id + operation identity. The suite also runs
+        # the R4 reader (`scripts/a5sf-diag.mjs`) on the recorded JSONL, so the row schema
+        # is a measured contract, not a declaration. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 incidents were files no layer collected), so without
+        # this step the chain laws run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: a durable P6-T4 UNIT world (real ControlService, no Host boot), no
+        # port, no DSH_HOME, no pristine host tree; the P1 TS seams load through the
+        # repo's existing scripts/run-tests-hooks.mjs (no new loader, no build).
+        run: node --test tests/world-factory/a5sf-evidence.test.mjs
+
+      - name: "a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free)"
+        # BL-13/R5: the retired family output vectors were converted into a regression
+        # comparison corpus for the new lanes. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 lesson), so without this step the comparator's
+        # refusal laws would run in NO layer. Declared in dev/ci/eb3-ci-manifest.json
+        # with the file path as a required token; dropping it is CI_LAYER_LEG_WEAKENED.
+        # This is NOT an acceptance gate: a MATCH is a regression comparison only.
+        # Host-free: no port, no DSH_HOME, no pristine host tree; the P1 path algebra
+        # loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader).
+        run: node --test tests/kits/a5sf-golden/compare.test.mjs
+
+      - name: "a5sf diag R4 (BL-12 — node:test, host-free, delegates to the PR #394 classifier)"
+        # BL-12/R4: the approval-bypass / failure-classification report reuses the PR #394
+        # diagnostics (`scripts/diag-call-chain.mjs`) and the P1 locator algebra instead of
+        # creating a second vocabulary or a second matcher. ci-integration lists node:test
+        # files EXPLICITLY (the #394 and #529 incidents were files no layer collected), so
+        # the suite needs this step; the file path is a required token in
+        # dev/ci/eb3-ci-manifest.json and dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: fixtures are JSONL rows under tests/a5sf-diag/fixtures — no boot, no
+        # port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/a5sf-diag/a5sf-diag.test.mjs
+
+      - name: "a5sf read budget gate C1 (P2-01/BL-14 — node:test, zero Host boots, host-free)"
+        # BL-14/P2-01 is the FIRST P2 vertical slice and the template for BL-15…BL-20: a
+        # native `read` allowed inside a compiled ceiling, refused outside it, and a
+        # per-run BUDGET PRE-REGISTRATION gate (recorded grant: grantId / maxStarts /
+        # grantedBy / boundCommit) that refuses with BUDGET_NOT_GRANTED — absent,
+        # malformed, ambiguous, foreign-commit, too-small or exhausted — BEFORE any
+        # World exists or any start row is appended. The C2 half needs a real Host and a
+        # live read driver this tree does not have; this step is the half that must run
+        # on every PR. ci-integration lists node:test files EXPLICITLY (the #394 / #529
+        # incidents were files no layer collected), so without this step the gate's laws
+        # run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: a real run record over a temp JSONL ledger + a recording boot stub —
+        # no boot, no port, no DSH_HOME, no pristine host tree, no workspace runtime.
+        run: node --test tests/world-factory/a5sf-read-gate.test.mjs
+
+      - name: "a5sf P2 seam C1 (BL-14/P2-01 follow-up — node:test, zero Host boots, host-free, cross-process transport)"
+        # The P2 blocking seam: the shipped guard's consultation must be MECHANICALLY
+        # OBSERVABLE (the installer used to build the closure and never return it) and the
+        # record must cross a PROCESS BOUNDARY (an in-process callback cannot reach a C2
+        # suite in another process). This step pins the additive default-preserving installer
+        # input, one record per consultation carrying the guard's own decision, the plain
+        # append-only JSONL sink + strict reader, the negative control (no consultation writes
+        # nothing), fail-closed transport (an unrecorded decision refuses the call), the ONE
+        # mount entry point `mountA5sfRealm` (the harness `mountRealm()` is its caller), and a
+        # CHILD process that mounts the realm and writes the sink THIS process reads back.
+        # ci-integration lists node:test files EXPLICITLY (the #394 / #529 incidents were files
+        # no layer collected), so without this step the seam's laws run in NO layer. The file
+        # path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/world-factory/a5sf-p2-seam.test.mjs
+
+      - name: "a5sf P2 WIRING C1 (product-row call site — node:test, zero Host boots, host-free)"
+        # The PRODUCT-ROW half of the P2 seam: the mechanism landed in #548 but no product
+        # code called it, so the compiled realm was INERT in a booted Host, and the emit did
+        # not carry the lane. This step pins the wiring that closed that: the live Member
+        # setup's exported helper (`packages/runtime/src/plugin/live/a5sf-realm-row.mjs`)
+        # mounts the compiled realm through the ONE entry point with a sink whose path comes
+        # from ROW CONFIG, writes ONE fact per consultation with the expected schema, releases
+        # both realms on dispose, does NOTHING when either half of the wiring is absent (the
+        # legacy path), and fails CLOSED when the sink cannot write (the consulted call never
+        # reaches the base Provider). It also structurally pins the guarded call site in
+        # `agent-bindings.mjs` and the row-kept disposer. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 incidents were files no layer collected), so without this
+        # step the wiring's laws run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED. Host-free: an
+        # in-process Cordis unit root and mkdtemp fixtures — no boot, no port, no DSH_HOME.
+        run: node --test tests/world-factory/a5sf-p2-wiring.test.mjs
+
+      - name: "a5sf F1 TOOL PLANE (effective half — node:test, zero Host boots, host-free)"
+        # The EFFECTIVE half of the P2 wiring: the mount installs the confined Provider into
+        # the installer's isolated `fs` scope, so the Context handed in keeps the BASE
+        # provider and a configured product row still produced ZERO consultations. This step
+        # pins the binding: `a5sfToolPlaneOf()` names the realm's isolated Member ctx as the
+        # Member's TOOL PLANE scope (the captured confined instance, never a per-call
+        # lookup), the glue places the Team tool registrations and the governed plane on that
+        # scope, and the permission adapter canonicalizes against the SAME instance. The suite
+        # drives the REAL tool runtime with a definition of the SAME SHAPE a preset tool
+        # plugin has and asserts the discriminating pair — a tool-invoked read outside the
+        # ceiling is DENIED with exactly ONE `a5sf-guard-consult/1` fact, while the identical
+        # shape through the base provider is ALLOWED and writes NOTHING — plus the default
+        # path, the measured three-way split, the post-dispose fail-closed lookup, a NO-FAIL-OPEN
+        # pin on a malformed realm (the glue may not try/catch the naming call) and the routed
+        # adapter accessor's semantics (one captured instance; guardless path algebra, guarded
+        # effects). The four adapter CALL SITES remain structural-pin only: the row closure is
+        # not exported and driving it needs the full live dep set (disclosed, evidence README §8.6).
+        # ci-integration lists node:test files EXPLICITLY (the #394 / #529 incidents were files
+        # no layer collected), so without this step the binding's laws run in NO layer. The
+        # file path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree; the NATIVE preset
+        # `read` row is explicitly NOT covered (the preset registry owns its plugin fibers;
+        # that half is the P3 native takeover, BL-22).
+        run: node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

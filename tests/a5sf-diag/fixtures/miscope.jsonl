@@ -1,0 +1,3 @@
+{"kind":"ceiling","member":"alpha","tools":[{"tool":"read","binding":"native.read","read":{"mode":"restricted","allow":["/work/alpha"],"ask":[],"deny":[]},"write":{"mode":"restricted","allow":[],"ask":[],"deny":[]},"network":{"access":"deny"}}]}
+{"kind":"call","callId":"c1","member":"alpha","tool":"read","axis":"read","locator":"/work/beta/outside.txt","lane":"allow"}
+{"kind":"call","callId":"c2","member":"alpha","tool":"bash","axis":"write","locator":"/work/alpha","lane":"allow"}

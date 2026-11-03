@@ -1,0 +1,12 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-p2-wiring",
+  "summary": "Alpha.5 P2 WIRING: the product row's a5sf realm call site (`src/plugin/live/a5sf-realm-row.mjs`) is plain JS imported by the byte-copied glue (`agent-bindings.mjs` is the first placement, 010). tsc never emits `.mjs`, so — exactly like the glue and the GLUE-6 runtime dependencies — the helper rides the mirror at its repo-relative layout; without this entry the emitted `agent-bindings.mjs` would import a file that does not exist in dist (ERR_MODULE_NOT_FOUND at the member setup, not at build time). The helper's own relative edges (`../../../team-services/src/{mount,guard-observability}.js`) resolve in the mirror because `tsconfig.build.json` now enrols those two modules and the emitted lane sits at the same `dist/packages/runtime/...` depth.",
+  "migratedFrom": "new lane (P2 wiring) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs"
+    }
+  ]
+}

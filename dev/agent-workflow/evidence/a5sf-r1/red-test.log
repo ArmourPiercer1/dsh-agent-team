@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r1-approval/packages/runtime
+
+ ❯ test/a5sf-approval-takeover.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5sf-approval-takeover.test.ts [ test/a5sf-approval-takeover.test.ts ]
+Error: Cannot find module '../member-io-policy/src/approval-takeover.js' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-r1-approval/packages/runtime/test/a5sf-approval-takeover.test.ts
+ ❯ test/a5sf-approval-takeover.test.ts:47:1
+     45| } from '../member-io-policy/src/compile.js'
+     46| import { matchLocator } from '../member-io-policy/src/path-rules.js'
+     47| import {
+       | ^
+     48|   APPROVAL_TAKEOVER_REFUSAL_CODES,
+     49|   resolveAskClassCall,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  04:26:22
+   Duration  366ms (transform 217ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

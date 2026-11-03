@@ -1,0 +1,87 @@
+$ node --test tests/world-factory/a5sf-p2-seam.test.mjs
+✔ A1 default path: no observer ⇒ identical shape and identical allow/deny behaviour (10.614557ms)
+✔ A2 observer: exactly one fact per consultation, in call order, carrying the guard’s own decision (4.609095ms)
+✔ A2b Member-ceiling realm reports realm=member with no tool binding (2.1494ms)
+✔ A2c observer records the ask lane for IO_POLICY_UNSUPPORTED (1.429797ms)
+✔ A2d a non-TeamIoDenial fault is rethrown unchanged and NOT recorded (0.255023ms)
+✔ A3 file sink: append-only valid JSONL, and the reader returns exactly those facts (3.244083ms)
+✔ A4 negative control: a mount with zero consultations writes nothing (1.554524ms)
+✔ A5 sink failure (allow): the call is refused and the Provider is never asked (2.030574ms)
+✔ A5b sink failure (deny): the refusal is preserved on the error, never converted to an allow (1.565685ms)
+✔ A6 mountA5sfRealm: mounts ceiling + bindings over the real installers and disposes idempotently (1.814175ms)
+✔ A6b mountA5sfRealm rolls the whole realm back when a later binding refuses (1.165186ms)
+✔ A6c mountA5sfRealm releases a PREVIOUSLY mounted binding when a later binding refuses (1.747999ms)
+✔ A7 harness mountRealm() is a caller of the ONE entry point and carries the observer (4.898303ms)
+✔ A8 cross-process: a CHILD process mounts the realm and THIS process reads its consultations (244.676503ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 575.08253
+
+$ node --test tests/world-factory/a5sf-harness.test.mjs
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260.359726
+
+$ node --test tests/world-factory/a5sf-evidence.test.mjs
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1429.545901
+
+$ node --test tests/world-factory/a5sf-read-gate.test.mjs
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 568.874714
+
+$ ../../node_modules/.bin/vitest run a5sf
+
+ Test Files  11 passed (11)
+      Tests  166 passed (166)
+   Start at  11:12:45
+   Duration  1.35s (transform 2.48s, setup 0ms, import 3.10s, tests 1.27s, environment 1ms)
+
+
+$ ../../node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  11:12:46
+   Duration  636ms (transform 53ms, setup 0ms, import 539ms, tests 8ms, environment 0ms)
+
+
+$ pnpm -r typecheck
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=9 findings=0
+
+$ node scripts/eb3-ci-negative-controls.mjs
+
+24/24 control(s) behaved as required
+
+$ git diff --check
+exit=0

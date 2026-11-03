@@ -54,7 +54,7 @@ import {
 import { findTestRepoRoot, testUseTree } from '../paths.mjs'
 import { pidAlive, scanAllLeases } from './lib/port-lease.mjs'
 import { createOracle, oraclePaths } from './lib/oracle.mjs'
-import { createRunRecord, exitCodeFor, formatSummary, readAuthorityBinding } from './lib/run-record.mjs'
+import { createRunRecord, DEFAULT_MAX_HOST_STARTS, exitCodeFor, formatSummary, hostStartBudgetPosition, readAuthorityBinding } from './lib/run-record.mjs'
 import { loadSuites } from './lib/suites.mjs'
 import { bindWorldProfile, captureOracleBinding, captureTrustedSourcesBinding } from './lib/binding-digests.mjs'
 import { findIssuedResult, makeCanaryDecide, resultClaimsRan } from './lib/mock-script.mjs'
@@ -128,7 +128,7 @@ const CANARY_VOLATILE = ['at', 'world']
 const SHADOW_VOLATILE = ['at', 'world', 'scope', 'callId']
 
 export function parseArgs(argv) {
-  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: 15, keepHome: false, only: null, holdUntil: null, probeLog: null }
+  const out = { suite: 'core', line: 'x', evidence: null, runRecord: null, budgetLedger: null, maxHostStarts: DEFAULT_MAX_HOST_STARTS, keepHome: false, only: null, holdUntil: null, probeLog: null }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--suite') out.suite = String(argv[++i])
@@ -988,10 +988,11 @@ export async function runSuite(opts) {
   const homesPre = homesCensus(join(REPO_ROOT, 'tests', 'homes'))
   const scrubbed = scrubProviderEnv()
 
-  // Host-start budget gate (fail-closed BEFORE any spawn).
-  if (record.ledgerStartCount() >= maxHostStarts) {
+  // Host-start budget gate (fail-closed BEFORE any spawn) — the ONE helper.
+  const budgetPosition = hostStartBudgetPosition(record, maxHostStarts)
+  if (budgetPosition.exhausted) {
     for (const id of selected) {
-      record.addCase(id, 'REFUSED', { reason: `host-start budget ledger already holds ${String(record.ledgerStartCount())} >= ${maxHostStarts} starts` })
+      record.addCase(id, 'REFUSED', { reason: `host-start budget ledger already holds ${String(budgetPosition.used)} >= ${maxHostStarts} starts` })
     }
     clearTimeout(hardWatchdog)
     uninstall()

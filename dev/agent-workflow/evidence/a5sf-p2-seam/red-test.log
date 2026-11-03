@@ -1,0 +1,34 @@
+# RED — the C1 suite (14 arms) against the BASE package exports/imports (seam absent).
+# Captured by: git checkout HEAD~1 -- packages/runtime/team-services/src
+#              node --test tests/world-factory/a5sf-p2-seam.test.mjs
+#              git checkout HEAD -- packages/runtime/team-services/src   (restore)
+# The base index.ts does not export the new entry point and the base install.ts
+# has no observer input, so the harness seam loader refuses before any arm runs.
+
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-seam/tests/world-factory/lib/a5sf-harness.mjs:178
+          throw new A5sfHarnessError('SEAM_UNAVAILABLE', `P1 seam '${name}' is not a function at ${key}`, { path: key })
+                ^
+
+A5sfHarnessError: a5sf harness SEAM_UNAVAILABLE: P1 seam 'mountA5sfRealm' is not a function at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-seam
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-seam/tests/world-factory/lib/a5sf-harness.mjs:178:17 {
+  code: 'SEAM_UNAVAILABLE',
+  detail: "P1 seam 'mountA5sfRealm' is not a function at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-seam",
+  path: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p2-seam'
+}
+
+Node.js v24.21.0
+✖ tests/world-factory/a5sf-p2-seam.test.mjs (224.743518ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 230.152901
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-p2-seam.test.mjs:1:1
+✖ tests/world-factory/a5sf-p2-seam.test.mjs (224.743518ms)
+  'test failed'
