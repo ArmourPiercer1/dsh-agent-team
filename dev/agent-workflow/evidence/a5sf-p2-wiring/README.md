@@ -171,9 +171,9 @@ creates a **sibling** branch, not a replacement: the Context handed to the
 mount (the live agent row's `agentCtx`) keeps the BASE provider, and only the
 returned `realm.installation.members[i].ctx|fs` / `realm.bindings[i].ctx|fs`
 see `TeamConfinedFileSystem`. **Nothing product-side resolves those scopes
-today**: the base tools are mounted on `agentCtx` (`agent-bindings.mjs:2427`,
+today**: the base tools are mounted on `agentCtx` (`agent-bindings.mjs:2467`,
 `await presets.mount(agentCtx, …)`) and the Team tools register on
-`agentCtx.tools` (`:2705`).
+`agentCtx.tools` (`:2745`).
 
 Consequence, stated plainly: **even with `teamA5sfRealm` +
 `config.a5sfEvidencePath`, a booted row yields ZERO consultations and an EMPTY
@@ -380,10 +380,10 @@ lane is admitted). Files/lines that would change:
 
 | place | current line | what changes |
 |---|---|---|
-| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2427` `await presets.mount(agentCtx, …)` | the base-tool preset must join the isolated scope so inherited tools resolve the confined `fs` |
-| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2705` `agentCtx.tools.register(def)` | Team tool registrations must live on the same scope as the preset, or the agent's tool surface splits |
-| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2547`, `:5608` (`agentCtx.tools`) | the schemas/registry reads must follow the moved surface |
-| `packages/runtime/src/plugin/host.ts` | `:2306-2309` (`fsBackend`) | the target-canonicalization accessor resolves `ctx.get('fs')` globally; it cannot see the isolated scope unless routed |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2467` `await presets.mount(agentCtx, …)` | the base-tool preset must join the isolated scope so inherited tools resolve the confined `fs` |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2745` `agentCtx.tools.register(def)` | Team tool registrations must live on the same scope as the preset, or the agent's tool surface splits |
+| `packages/runtime/src/plugin/live/agent-bindings.mjs` | `:2587`, `:5648` (`agentCtx.tools`) | the schemas/registry reads must follow the moved surface |
+| `packages/runtime/src/plugin/host.ts` | `:1472-1490` (`fsBackend` accessor body; `:2308` is the deps key) | the target-canonicalization accessor resolves `ctx.get('fs')` globally; it cannot see the isolated scope unless routed |
 
 Why not here: it moves where the whole agent's tools live relative to the
 Cordis ancestor chain, i.e. it changes the tool-plane model (and the
@@ -393,7 +393,7 @@ this reviewer explicitly required it not be a drive-by.
 
 **(b) Route the tool plane's `fs` resolution through the isolated scope.**
 Resolve the Member's confined provider per call (the `fsBackend` accessor at
-`host.ts:2306-2309` and its consumers at `agent-bindings.mjs:3418/3484/3505/3556`)
+`host.ts:1472-1490` and its consumers at `agent-bindings.mjs:3458/3524/3545/3596`)
 instead of `ctx.get('fs')`. Why not here: that accessor currently feeds
 target-canonicalization for the PERMISSION adapter (not the tool bodies), so
 routing it alone would make the permission adapter see one provider while the
@@ -438,7 +438,7 @@ it is booked with file:line in §8, as instructed.
   wording was removed/qualified.
 * **Glue**: the call-site comment now carries the same disclosure with the
   measured probe reference, the two tool-mount lines that would have to move
-  (`:2427`, `:2705`), and the explicit warning not to read the mount as "the
+  (`:2467`, `:2745`), and the explicit warning not to read the mount as "the
   guard is consulted in production". The helper's module header carries it too.
 * **W6** structurally pins the disclosure's presence (`F1 (review response
   2026-11-03)` + `SIBLING scope`) so it cannot be silently deleted.
@@ -471,13 +471,13 @@ probe's own realm-ctx reads, i.e. the empty-sink consequence.
 not a drive-by:
 
 * **(a)** mount the Member's tools under the isolated ctx —
-  `agent-bindings.mjs:2427` (`presets.mount(agentCtx, …)`),
-  `:2705` (`agentCtx.tools.register(def)`), plus the surface reads at
-  `:2547`/`:5608`, and the `fsBackend` accessor in `host.ts:2306-2309`. Changes
+  `agent-bindings.mjs:2467` (`presets.mount(agentCtx, …)`),
+  `:2745` (`agentCtx.tools.register(def)`), plus the surface reads at
+  `:2587`/`:5648`, and the `fsBackend` accessor in `host.ts:1472-1490`. Changes
   where the whole tool surface lives in the Cordis ancestor chain.
 * **(b)** route the tool plane's `fs` through the isolated scope — the
-  `fsBackend` accessor (`host.ts:2306-2309`) and its consumers
-  (`agent-bindings.mjs:3418/3484/3505/3556`). Routing it alone would make the
+  `fsBackend` accessor (`host.ts:1472-1490`) and its consumers
+  (`agent-bindings.mjs:3458/3524/3545/3596`). Routing it alone would make the
   permission adapter see a different provider than the tool body executes on.
 
 Each route must be measured with the §10.1 probe shape and must show the sink

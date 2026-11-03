@@ -2358,7 +2358,7 @@ export function createAgentBindings(deps) {
       // a wired row produces ZERO consultations and an EMPTY sink: the wiring
       // is reachable MECHANICALLY, not effectively. Measured probe +
       // next-step booking (mount the Member's tools under the isolated ctx at
-      // `presets.mount(agentCtx, …)` :2427 and `agentCtx.tools.register` :2705;
+      // `presets.mount(agentCtx, …)` :2467 and `agentCtx.tools.register` :2745;
       // or route the tool plane's fs through it) = evidence README §8.
       //
       // ENABLEMENT LAW: `config.a5sfEvidencePath` AND
