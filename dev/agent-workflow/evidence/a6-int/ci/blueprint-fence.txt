@@ -1,5 +1,5 @@
 $ /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node scripts/verify-blueprint-version-clean.mjs
-# exit=1 signal=null error=none seconds=0.3
+# exit=1 signal=null error=none seconds=0.2
 --- stdout ---
 scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
 scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
