@@ -893,6 +893,11 @@ function resolveControlSpec() {
                     caller: ctx.caller,
                     requestId,
                     ...(note !== undefined ? { reason: note } : {}),
+                    // A6-PR5: the service verifies the trusted current-reviewer port;
+                    // this flag only asks it to evaluate the delegated path.
+                    ...(ctx.caller.kind === 'instance' && ctx.caller.instanceId !== LEADER_INSTANCE_ID
+                        ? { assignedOfficer: true }
+                        : {}),
                 });
                 return { status: 'control-escalated', outcome };
             }
@@ -902,6 +907,9 @@ function resolveControlSpec() {
                 requestId,
                 decision,
                 ...(note !== undefined ? { note } : {}),
+                ...(ctx.caller.kind === 'instance' && ctx.caller.instanceId !== LEADER_INSTANCE_ID
+                    ? { assignedOfficer: true }
+                    : {}),
             });
             return { status: 'control-resolved', decision: record };
         },

@@ -2277,6 +2277,78 @@ export function createControlService(options) {
         }
         return undefined;
     }
+    /**
+     * A6-PR5: build the delegated Officer's capability ONLY after the trusted
+     * reviewer port names this instance as the current reviewer. The result is
+     * still passed through the same PR2a member gate; this helper never bypasses
+     * assignment, case currency, or the capability checks.
+     */
+    async function assignedOfficerCapability(input) {
+        const prefix = `caller is not a resolver for kind '${input.row.kind}'`;
+        const port = options.currentReviewerForTransfer;
+        if (port === undefined) {
+            return { problem: `${prefix} — no trusted reviewer port is configured` };
+        }
+        if (input.caller.kind !== 'instance') {
+            return { problem: `${prefix} — the assigned reviewer must be an instance` };
+        }
+        if (input.row.approvalCaseId === undefined || input.row.legOrdinal === undefined) {
+            return { problem: `${prefix} — the row is not an approval-case leg` };
+        }
+        let reviewer;
+        try {
+            reviewer = await port({
+                rootSessionId: input.root,
+                approvalCaseId: input.row.approvalCaseId,
+                currentLegRequestId: input.row.requestId,
+                legOrdinal: input.row.legOrdinal,
+            });
+        }
+        catch {
+            reviewer = null;
+        }
+        if (reviewer === null || reviewer.instanceId !== input.caller.instanceId) {
+            return { problem: `${prefix} — the caller is not the trusted current reviewer` };
+        }
+        const ownerInstanceId = input.row.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+            ? input.row.subject.instanceId
+            : input.row.targetInstanceId ?? '';
+        const candidate = ReviewCapabilityCandidate.of({
+            principal: input.caller,
+            source: 'blueprint-officer',
+            entry: input.entry,
+            effectiveReviewAuthority: 'leader',
+            approvalCaseId: input.row.approvalCaseId,
+            currentLegRequestId: input.row.requestId,
+            legOrdinal: input.row.legOrdinal,
+            scope: {
+                rootSessionId: input.root,
+                subject: input.row.subject,
+                ...(input.row.targetInstanceId !== undefined ? { targetInstanceId: input.row.targetInstanceId } : {}),
+                actionName: input.row.actionName,
+                ...(input.row.toolName !== undefined ? { toolName: input.row.toolName } : {}),
+                correlation: input.row.correlation,
+                ...(input.row.operationFingerprint !== undefined
+                    ? { operationFingerprint: input.row.operationFingerprint }
+                    : {}),
+            },
+            scopeFingerprint: `a6-pr5:${input.row.requestId}`,
+            blueprintContentHash: input.row.blueprintContentHash ?? '',
+            blueprintRevision: input.row.blueprintRevision ?? '',
+            authorityGeneration: input.row.authorityGeneration ?? 0,
+            operationOwner: {
+                rootSessionId: input.root,
+                instanceId: ownerInstanceId,
+                templateId: input.row.operationOwnerTemplateId ?? '',
+            },
+            operationTool: {
+                definitionIdentity: input.row.operationToolDefinitionIdentity ?? '',
+                owner: input.row.operationToolOwner ?? '',
+                name: input.row.operationToolName ?? '',
+            },
+        });
+        return { candidate };
+    }
     // --- resolveControl ------------------------------------------------------------------
     async function resolveControl(args) {
         const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'resolve');
@@ -2325,12 +2397,24 @@ export function createControlService(options) {
                 if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {
                     throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: the current leg '${args.requestId}' has been transferred to the Leader — the former Officer has no future signing authority`, { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role });
                 }
-                const problem = memberCapabilityProblem({
+                let candidate = args.reviewCapability;
+                let assignedProblem;
+                if (args.assignedOfficer === true) {
+                    const assigned = await assignedOfficerCapability({
+                        root,
+                        row: request.payload,
+                        caller: callerRefOf(caller),
+                        entry: args.decision,
+                    });
+                    candidate = assigned.candidate;
+                    assignedProblem = assigned.problem;
+                }
+                const problem = assignedProblem ?? memberCapabilityProblem({
                     root,
                     row: request.payload,
                     caller: callerRefOf(caller),
                     entry: args.decision,
-                    candidate: args.reviewCapability,
+                    candidate,
                 });
                 if (problem !== undefined) {
                     throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: Member review is not authorized for this leg (${problem}); the global resolver table is unchanged and a delegated candidate must bind this exact case/leg/scope`, { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role, problem });
@@ -4274,12 +4358,24 @@ export function createControlService(options) {
                 if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {
                     throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: the current leg '${args.requestId}' has been transferred to the Leader — the former Officer cannot escalate it`, { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role });
                 }
-                const problem = memberCapabilityProblem({
+                let candidate = args.reviewCapability;
+                let assignedProblem;
+                if (args.assignedOfficer === true) {
+                    const assigned = await assignedOfficerCapability({
+                        root,
+                        row: leg.payload,
+                        caller: callerRefOf(caller),
+                        entry: 'escalate',
+                    });
+                    candidate = assigned.candidate;
+                    assignedProblem = assigned.problem;
+                }
+                const problem = assignedProblem ?? memberCapabilityProblem({
                     root,
                     row: leg.payload,
                     caller: callerRefOf(caller),
                     entry: 'escalate',
-                    candidate: args.reviewCapability,
+                    candidate,
                 });
                 if (problem !== undefined) {
                     throw new ControlError(CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED, `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`, { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem });

@@ -132,4 +132,53 @@ describe('A6-PR5 restricted Officer access', () => {
       await destroyP6T1World(world)
     }
   })
+
+  it('an assigned Officer can allow its current leg and escalate to Human, while an unassigned Member cannot', async () => {
+    const world = await createP6T4World('a6-pr5-assigned-actions', ['leader', 'worker'])
+    try {
+      const service = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        currentReviewerForTransfer: async () => ({ instanceId: WORKER }),
+      })
+      const allowLeg = await makeLeg(service, 'corr-a6-pr5-allow')
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        requestId: allowLeg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+
+      const escalateLeg = await makeLeg(service, 'corr-a6-pr5-escalate')
+      const risen = await service.escalateApprovalLeg({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        requestId: escalateLeg.requestId,
+        assignedOfficer: true,
+      })
+      expect(risen.nextLeg?.reviewAuthority).toBe('human-user')
+
+      const deniedLeg = await makeLeg(service, 'corr-a6-pr5-unassigned')
+      const otherService = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        currentReviewerForTransfer: async () => ({ instanceId: 'inst-someone-else' }),
+      })
+      await expect(otherService.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        requestId: deniedLeg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })).rejects.toThrow(/not the trusted current reviewer|not a resolver/)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
 })

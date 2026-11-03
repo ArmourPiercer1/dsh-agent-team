@@ -2912,6 +2912,83 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return undefined
   }
 
+  /**
+   * A6-PR5: build the delegated Officer's capability ONLY after the trusted
+   * reviewer port names this instance as the current reviewer. The result is
+   * still passed through the same PR2a member gate; this helper never bypasses
+   * assignment, case currency, or the capability checks.
+   */
+  async function assignedOfficerCapability(input: {
+    readonly root: string
+    readonly row: RequestPayload
+    readonly caller: ControlCallerRef
+    readonly entry: ReviewCapabilityEntry
+  }): Promise<{ readonly candidate?: ReviewCapabilityCandidate; readonly problem?: string }> {
+    const prefix = `caller is not a resolver for kind '${input.row.kind}'`
+    const port = options.currentReviewerForTransfer
+    if (port === undefined) {
+      return { problem: `${prefix} — no trusted reviewer port is configured` }
+    }
+    if (input.caller.kind !== 'instance') {
+      return { problem: `${prefix} — the assigned reviewer must be an instance` }
+    }
+    if (input.row.approvalCaseId === undefined || input.row.legOrdinal === undefined) {
+      return { problem: `${prefix} — the row is not an approval-case leg` }
+    }
+    let reviewer: { readonly instanceId: string } | null
+    try {
+      reviewer = await port({
+        rootSessionId: input.root,
+        approvalCaseId: input.row.approvalCaseId,
+        currentLegRequestId: input.row.requestId,
+        legOrdinal: input.row.legOrdinal,
+      })
+    } catch {
+      reviewer = null
+    }
+    if (reviewer === null || reviewer.instanceId !== input.caller.instanceId) {
+      return { problem: `${prefix} — the caller is not the trusted current reviewer` }
+    }
+    const ownerInstanceId = input.row.subject.kind === CONTROL_SUBJECT_KINDS.INSTANCE
+      ? input.row.subject.instanceId
+      : input.row.targetInstanceId ?? ''
+    const candidate = ReviewCapabilityCandidate.of({
+      principal: input.caller,
+      source: 'blueprint-officer',
+      entry: input.entry,
+      effectiveReviewAuthority: 'leader',
+      approvalCaseId: input.row.approvalCaseId,
+      currentLegRequestId: input.row.requestId,
+      legOrdinal: input.row.legOrdinal,
+      scope: {
+        rootSessionId: input.root,
+        subject: input.row.subject,
+        ...(input.row.targetInstanceId !== undefined ? { targetInstanceId: input.row.targetInstanceId } : {}),
+        actionName: input.row.actionName,
+        ...(input.row.toolName !== undefined ? { toolName: input.row.toolName } : {}),
+        correlation: input.row.correlation,
+        ...(input.row.operationFingerprint !== undefined
+          ? { operationFingerprint: input.row.operationFingerprint }
+          : {}),
+      },
+      scopeFingerprint: `a6-pr5:${input.row.requestId}`,
+      blueprintContentHash: input.row.blueprintContentHash ?? '',
+      blueprintRevision: input.row.blueprintRevision ?? '',
+      authorityGeneration: input.row.authorityGeneration ?? 0,
+      operationOwner: {
+        rootSessionId: input.root,
+        instanceId: ownerInstanceId,
+        templateId: input.row.operationOwnerTemplateId ?? '',
+      },
+      operationTool: {
+        definitionIdentity: input.row.operationToolDefinitionIdentity ?? '',
+        owner: input.row.operationToolOwner ?? '',
+        name: input.row.operationToolName ?? '',
+      },
+    })
+    return { candidate }
+  }
+
   // --- resolveControl ------------------------------------------------------------------
 
   async function resolveControl(args: {
@@ -2921,6 +2998,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly decision: 'allow' | 'deny'
     readonly note?: string
     readonly reviewCapability?: ReviewCapabilityCandidate
+    readonly assignedOfficer?: boolean
   }): Promise<ControlDecisionRecord> {
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'resolve')
     if (!isActionCaller(args.caller)) {
@@ -2991,12 +3069,24 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role },
           )
         }
-        const problem = memberCapabilityProblem({
+        let candidate = args.reviewCapability
+        let assignedProblem: string | undefined
+        if (args.assignedOfficer === true) {
+          const assigned = await assignedOfficerCapability({
+            root,
+            row: request.payload,
+            caller: callerRefOf(caller),
+            entry: args.decision,
+          })
+          candidate = assigned.candidate
+          assignedProblem = assigned.problem
+        }
+        const problem = assignedProblem ?? memberCapabilityProblem({
           root,
           row: request.payload,
           caller: callerRefOf(caller),
           entry: args.decision,
-          candidate: args.reviewCapability,
+          candidate,
         })
         if (problem !== undefined) {
           throw new ControlError(
@@ -5339,6 +5429,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly requestId: string
     readonly reason?: string
     readonly reviewCapability?: ReviewCapabilityCandidate
+    readonly assignedOfficer?: boolean
   }): Promise<ControlEscalationOutcome> {
     const root = parseRoot(
       args.rootSessionId,
@@ -5409,12 +5500,24 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role },
           )
         }
-        const problem = memberCapabilityProblem({
+        let candidate = args.reviewCapability
+        let assignedProblem: string | undefined
+        if (args.assignedOfficer === true) {
+          const assigned = await assignedOfficerCapability({
+            root,
+            row: leg.payload,
+            caller: callerRefOf(caller),
+            entry: 'escalate',
+          })
+          candidate = assigned.candidate
+          assignedProblem = assigned.problem
+        }
+        const problem = assignedProblem ?? memberCapabilityProblem({
           root,
           row: leg.payload,
           caller: callerRefOf(caller),
           entry: 'escalate',
-          candidate: args.reviewCapability,
+          candidate,
         })
         if (problem !== undefined) {
           throw new ControlError(

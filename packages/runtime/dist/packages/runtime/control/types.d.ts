@@ -1775,6 +1775,8 @@ export interface ControlService {
         readonly decision: 'allow' | 'deny';
         readonly note?: string;
         readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: the caller is a Member acting as the trusted CURRENT reviewer. The service verifies the reviewer port and builds the capability from the durable leg; never a caller-supplied widening. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlDecisionRecord>;
     /**
      * Durably ABANDON one control request (pre-alpha3 PR-D, D.4 — the
@@ -2114,6 +2116,8 @@ export interface ControlService {
         readonly requestId: string;
         readonly reason?: string;
         readonly reviewCapability?: ReviewCapabilityCandidate;
+        /** A6-PR5: same trusted-current-reviewer check as resolveControl. */
+        readonly assignedOfficer?: boolean;
     }): Promise<ControlEscalationOutcome>;
     /**
      * A6-PR2c — transfer the CURRENT leg of a case to the Leader (Officer
