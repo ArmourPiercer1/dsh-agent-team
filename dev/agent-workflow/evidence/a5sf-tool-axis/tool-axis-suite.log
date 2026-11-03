@@ -1,0 +1,15 @@
+✔ TA1 one realm per Member AND one per ToolBinding; the product tool-plane naming addresses the MEMBER realm only (10.075905ms)
+✔ TA2 SEAM: a call the CEILING allows but the read RESTRICTION denies is ALLOWED by the native execution path (regression sentinel) (13.214427ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (8.113812ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (4.578868ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (2.999048ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.644648ms)
+✔ TA5 structural pin: the native attach targets installation.members[0].ctx and no product source addresses realm.bindings for execution (1.136322ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315.3788

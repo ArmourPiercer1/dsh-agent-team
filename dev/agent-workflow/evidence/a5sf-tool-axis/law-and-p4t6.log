@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-tool-axis
+
+ ✓ packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 35ms
+ ✓ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests) 398ms
+     ✓ the BOOKED digests are the BASE blobs themselves (the ledger cannot book an already-drifted byte)  320ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 12ms
+ ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 147ms
+
+ Test Files  4 passed (4)
+      Tests  54 passed (54)
+   Start at  22:32:11
+   Duration  992ms (transform 888ms, setup 0ms, import 1.73s, tests 592ms, environment 0ms)
+
+EXIT=0

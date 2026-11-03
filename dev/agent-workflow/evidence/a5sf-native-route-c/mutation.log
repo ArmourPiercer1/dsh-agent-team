@@ -1,0 +1,16 @@
+# MUTATION RECEIPTS — the two arms that survived 4/4 on the reviewed head
+#
+# Method: mount.ts was mutated IN PLACE from a byte-backed copy INSIDE the
+# workspace, the suite was run, and the file was restored byte-identically
+# (sha256 re-checked after every run: 8847980e3ca1dd067512efb4aa3a5e0cc90e7e6695076adbf0ae85428cc7ab2a).
+# Command per mutation: node --test tests/world-factory/a5sf-native-route-c.test.mjs
+#
+# --- M-b teardown order swapped (native shadows disposed AFTER the installation)
+# exit=1
+#   X N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose()
+#
+# --- M-c one-ceiling refusal removed (`if (false)` in place of `members.length !== 1`)
+# exit=1
+#   X N6 one ceiling: mountNativeToolModules refuses a two-Member realm before registering anything
+#
+# Both mutations were UNDETECTED by the reviewed 4-arm suite; the fix suite kills them.

@@ -1,0 +1,121 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-scope-key
+
+ ✓ packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 21ms
+ ❯ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests | 2 failed) 243ms
+     ✓ the protected set is real and the booking is non-vacuous 2ms
+     ✓ the BOOKED digests are the BASE blobs themselves (the ledger cannot book an already-drifted byte) 194ms
+     × the working tree answers the ledger with ZERO drift (the PR5 zero-center-diff law) 6ms
+     × sensitivity: a drifted byte, a smuggled new file, and a vanished file ALL light up; only a NAMED override silences drift 8ms
+     ✓ the center source carries ZERO tool-name string literals 0ms
+     ✓ sensitivity: a planted equality-branch on a tool name in a kernel copy is caught 1ms
+     ✓ every family contribution on the tree is booked; every booking is on the tree 0ms
+     ✓ the probe lane stays test-only: a PRODUCT file may never import it 28ms
+     ✓ sensitivity: an unbooked new family, a vanished family, and a familyId drift all light up 1ms
+     ✓ every real contribution: reviewed source, one literal familyId, readable names 1ms
+     ✓ sensitivity: a dynamic nativeName reports not-verified and an unreviewed path reports unreviewed-source 0ms
+     ✓ the scanner itself respects the protected-set shape (isProtectedPath sanity) 0ms
+ ❯ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests | 1 failed) 114ms
+     ✓ the family face carries ZERO authority surface; the registry is not an authorizer 4ms
+     ✓ consume presents EXACTLY ONCE; concurrent presentation is GRANT_IN_FLIGHT; a replay is refused; a FAILED consume burns too 1ms
+     ✓ a table move to an unbacked identity refuses every attempt until a fresh owner act re-binds the live identity 2ms
+     ✓ the tree as it stands has ONE owner of approval state; a planted twin family that claims approval state is caught 31ms
+     × L1 digest lock: editing governance-center/kernel.ts in the scanned map is a violation; the honest tree passes; L2 catches the name branch too 17ms
+     ✓ a same-name re-registration before the door is refused before any Body; with the assembly absent the PLANTED body runs 1ms
+     ✓ a mid-call re-registration aborts the fused signal; the lane reports TERMINATED-after-body-start, never cancelled-before-body 1ms
+     ✓ a success no longer backed by the table is refused fail-closed at the gate 1ms
+     ✓ a cancelled-shaped settle keeps its native shape — the veto never rewrites an honest ABORTED 1ms
+     ✓ the clean order releases at a self-counted zero and lifts the mask EXACTLY ONCE, at RELEASED 1ms
+     ✓ dispose with a call in flight stops ARMED forever: LEASE_OPEN, EXECUTION_TERMINATION_UNCONFIRMED, mask never lifts, a late settle only alarms 51ms
+     ✓ dynamic registration is not_verified (no verdict); an unbound dynamic name is refused before any Body; removal/drift refuse; only a reviewed re-registration + re-bind re-earns the seat 1ms
+     ✓ a foreign Agent identity is refused on governed AND native names; a no-identity call is refused; the lane’s own Agent keeps native names native 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/u6-arc-a-fitness.test.ts > ARC-A fitness L1 — the protected center is digest-locked > the working tree answers the ledger with ZERO drift (the PR5 zero-center-diff law)
+AssertionError: [
+ {
+  "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+  "kind": "digest-drift",
+  "detail": "booked bf081ae267fe… now df9b46af67cd… — a family addition must not move the center"
+ }
+]: expected [ { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "detail": "booked bf081ae267fe… now df9b46af67cd… — a family addition must not move the center",
++     "kind": "digest-drift",
++     "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
++   },
++ ]
+
+ ❯ packages/runtime/test/u6-arc-a-fitness.test.ts:70:61
+     68|   it('the working tree answers the ledger with ZERO drift (the PR5 zer…
+     69|     const { violations } = scanProtectedLedger({ current, ledger, trac…
+     70|     expect(violations, JSON.stringify(violations, null, 1)).toEqual([])
+       |                                                             ^
+     71|   })
+     72|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/u6-arc-a-fitness.test.ts > ARC-A fitness L1 — the protected center is digest-locked > sensitivity: a drifted byte, a smuggled new file, and a vanished file ALL light up; only a NAMED override silences drift
+AssertionError: expected [ { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "detail": "booked bf081ae267fe… now df9b46af67cd… — a family addition must not move the center",
++     "kind": "digest-drift",
++     "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
++   },
++ ]
+
+ ❯ packages/runtime/test/u6-arc-a-fitness.test.ts:97:98
+     95|     // surface their baseline drift as false positives of this self-te…
+     96|     const withOverride = { ...ledger, overrides: [...(ledger.overrides…
+     97|     expect(scanProtectedLedger({ current: tampered, ledger: withOverri…
+       |                                                                                                  ^
+     98|     const wrongOverride = { ...ledger, overrides: [...(ledger.override…
+     99|     expect(scanProtectedLedger({ current: tampered, ledger: wrongOverr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts > ARC-D AD5 — a direct center edit fails the fitness gate (must go red) > L1 digest lock: editing governance-center/kernel.ts in the scanned map is a violation; the honest tree passes; L2 catches the name branch too
+AssertionError: expected [ { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "detail": "booked bf081ae267fe… now df9b46af67cd… — a family addition must not move the center",
++     "kind": "digest-drift",
++     "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
++   },
++ ]
+
+ ❯ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts:357:74
+    355|     }
+    356|     const current = readTreeMap(REPO_ROOT, tracked) as Map<string, str…
+    357|     expect(scanProtectedLedger({ current, ledger, tracked }).violation…
+       |                                                                          ^
+    358|     // PLANT: a family PR reaches for the center directly (a name bran…
+    359|     // added to the kernel source) — the digest lock must catch it.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 31 passed (34)
+   Start at  19:44:52
+   Duration  592ms (transform 383ms, setup 0ms, import 535ms, tests 378ms, environment 0ms)
+

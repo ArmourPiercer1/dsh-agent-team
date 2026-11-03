@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-scope-key
+
+ ✓ packages/testkit/test/plugin-dsh-compat.test.ts (13 tests) 227ms
+ ✓ packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts (4 tests) 61ms
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  19:52:56
+   Duration  393ms (transform 195ms, setup 0ms, import 283ms, tests 288ms, environment 0ms)
+

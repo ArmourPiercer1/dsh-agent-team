@@ -1,0 +1,12 @@
+ARM-1 (invariant): REFUSED "Error: authored locator '/tmp/a5sf-s1-arm1-S5YoRj/ceiling-only.txt' is outside every allow subtr" facts=[binding/dsh.fs/read/stat/deny/IO_READ_DENIED]
+ARM-2 (siblings): ceilingFiber.forwarded=["write","edit"] readFiber.forwarded=["read"] insideWrite=ok outsideWrite=denied facts=[member/null/writeText/allow/ALLOW,member/null/writeText/deny/IO_WRITE_DENIED]
+ARM-3 (no widening): compiledReadAllow=["/tmp/a5sf-s1-arm3-6W0eNS/inside"] nativeRead=DENIED facts=[binding/dsh.fs/read/stat/deny/IO_READ_DENIED]
+ARM-4 (unbound): fibers=1 forwarded=["read","write","edit"] read=ok facts=[member/null/stat/allow,member/null/readText/allow]
+ARM-5 (surface): partition=[{"realm":"ceiling","tools":["write","edit"],"sections":["tool:write","tool:edit"]},{"realm":"binding","tools":["read"],"sections":["tool:read"]}] surfaceBefore=["read","write","edit"] surfaceAfter=["read","write","edit"] sections=["tool:write","tool:edit","tool:read"]
+ARM-5b (surface refusal): refused="agent-bindings: the configured a5sfNativeToolModules would CHANGE the Member's model-vis" surfaceBefore=["read","write","edit"] surfaceAfter=["read","write","edit"] factsDelta=0
+ARM-6 (teardown): disposeOrder=[nativeFibers,bindingRealms,memberInstallation] fibers=2 throwingFiberReported=true siblingDisposed=true presetRestored=true
+ARM-7 (deferred): presetSurface=["read","write","edit","read_image"] refused="SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot ru" shadowAfterRefusal=false baseReadFacts=0
+ARM-8 (limit: late ceiling-owned): receipts=[[]] shadowedAtAttach=false shadowedAfterSettle=true accountedInReceipt=false surfaceNameSetUnchanged=true
+ARM-9 (limit: late new name): namesAtAttach=["read","write","edit"] namesAfterSettle=["read","write","edit","x_a5sf_late"] escapedSurfaceGate=true addedAfterGate=["x_a5sf_late"]
+
+ARMS: PASS 10/10
