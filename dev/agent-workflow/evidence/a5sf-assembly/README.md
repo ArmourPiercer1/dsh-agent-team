@@ -9,7 +9,7 @@ manifest, **CORE PATCH BUDGET = 0** (no upstream file touched, `agent-bindings.m
 | branch | `task/a5sf-assembly2-20261103` (fresh branch in the same worktree) |
 | worktree | `.worktrees/a5sf-assembly` |
 | base | `origin/master` = **`474a8d46d`** — the MERGED S-1 squash (#561), verified with `git fetch origin` + `git log --oneline -1 origin/master` |
-| code head | `aae43e45c` — `474a8d46d` + one cherry-picked lane commit; the only later commit is this evidence |
+| code head | THIS commit (the review-fix tree): `474a8d46d` + the cherry-picked lane + the C1–C4 review fixes; any later commits are evidence-only |
 | merge strategy | **fresh branch from `origin/master` + `git cherry-pick c0ea4f44b`** (the previous single code commit), NOT a rebase of the pre-squash S-1 train. One source conflict (`mount.ts` deferred-registration block) resolved by KEEPING merged S-1's public-state-only refusal and wrapping it in `if (!observeOnly)`; the four `dist/**` conflicts were resolved by regeneration (`pnpm build` + `place-dist-glue`), never hand-merged. Row/tool-axis/route-c applied cleanly. |
 | evidence | only `dev/agent-workflow/evidence/a5sf-assembly/**`; merged `a5sf-s1/**` is history and was NOT re-added |
 
@@ -177,6 +177,46 @@ do that, and making it tolerate arbitrary late additions would reopen the S-1 ho
   a legitimate setup registration from a same-turn hostile one. The +30 ms shape that S-1 measured
   is on a later turn and is caught.
 
+## 3.6 Review condition C1 — the REAL mount must reproduce the probe (fail-open closed)
+
+The probe answers ownership, but it also RUNS the module. A module whose `apply` registers only on
+its FIRST call is consumed by the probe: the real mount then forwards nothing, the model-visible
+name set still matches the preset, and the attach would be ACCEPTED with that tool left on the
+unguarded preset definition. Binding-owned tools were caught by the binding mount's "must forward
+my own tool" refusal; **unbound tools were not** (measured fail-open).
+
+Fix: `nativeToolMountsOf` now returns, per configured module, the probe's observed name set and
+the exact number of real mounts that module will produce (`mountCounts`). After the real mount,
+`unreproducedObservations()` slices the returned fibers per module and takes the union of their
+`observed` (which already includes `forwarded`). If the real union is missing ANY name the probe
+observed, the attach is refused with typed **`A5SF_MODULE_OBSERVATION_UNREPRODUCED`** (after
+`disposeNativeToolModules()`, so nothing is left mounted). Extra real names are still the surface
+gate's business; a MISSING observed name is a lost shadow. With no mounted binding there is no
+probe and no reconciliation (nothing to reconcile).
+
+C1 arm: modules A (owns `read`, the binding) + a one-shot module B (registers `write` on its first
+`apply`), binding `dsh.fs/read`. Probe: A observes `read`, B observes `write`. Real: B's second
+`apply` registers nothing, so B's real union is empty and the attach refuses, naming `write`;
+the preset `write` definition is unchanged. RED on the pre-fix reconciliation mutation: "Missing
+expected rejection" (i.e. the attach was accepted).
+
+## 3.7 Review conditions C2–C4 (mutation pin, honesty, precision)
+
+- **C2 — probe disposal is now pinned.** A module records its live instances through a real
+  Cordis `ctx.effect` (increment on apply, decrement on dispose). After attach the live count must
+  be exactly 1 (the real ceiling fiber) and 0 after realm disposal. The mutation that skips probe
+  disposal leaves the count at 2 and turns the arm RED (`c2-mutation.log`); on this tree it is
+  GREEN (`c2-green.log`). This is an observable effect, not a mock.
+- **C3 — the diff-check claim is about the RANGE.** `git diff --check` on the working tree was
+  clean but `git diff --check 474a8d46d..HEAD` failed on trailing whitespace in committed evidence
+  logs. Every lane evidence file is now whitespace-sanitised (trailing spaces/tabs removed, no
+  trailing blank lines), and the README claim is precisely `git diff --check origin/master..HEAD`
+  clean — the range a reviewer actually checks.
+- **C4 — the apply count is N+1, not 2.** For a module that owns one binding, `apply` runs:
+  1 probe + 1 real ceiling + 1 real binding = **3** (N+1 for N bindings); an unbound module runs
+  1 probe + 1 real ceiling = 2. The one-shot consequence of that extra apply is exactly what C1
+  now refuses (§3.6, §9).
+
 ## 4. TDD: RED first on the MERGED tree, then GREEN
 
 `red-arms.log`: the 8 arms run against **merged `474a8d46d` sources** (`mount.ts` +
@@ -198,14 +238,26 @@ RED (measured, not paraphrased):
 ✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow
 ```
 
-GREEN: `ℹ tests 8  ℹ pass 8  ℹ fail 0`.
+GREEN: `ℹ tests 8  ℹ pass 8  ℹ fail 0` (the two later arms below raise the suite to 10).
+
+### 4.1 Review-condition arms (C1, C2) and their RED evidence
+
+- **C1 one-shot module** — RED is captured by the honest mutation that removes ONLY the new
+  reconciliation (`c1-red.log`): `AssertionError: Missing expected rejection: the real mount
+  forwards nothing after the probe consumed the only registration`. GREEN on this tree:
+  `A5SF_MODULE_OBSERVATION_UNREPRODUCED`, message names the missing tool `write`, and the preset
+  `write` definition is still the one the agent resolves (nothing mounted).
+- **C2 probe disposal** — RED is the mutation "probe fibers not disposed" (`c2-mutation.log`):
+  `AssertionError: exactly one live apply: the real mount; the probe fiber is disposed`
+  (`actual: 2, expected: 1`). GREEN on this tree (`c2-green.log`): one live `apply` after attach,
+  zero after realm disposal — observed through a real Cordis `ctx.effect` counter, not a mock.
 
 ## 5. Gates (all on code head `aae43e45c`)
 
 | gate | result | raw |
 | --- | --- | --- |
-| new assembly arms | **RED 6 fail/2 controls → GREEN 8/8** | `red-arms.log`, `green-arms.log` |
-| all a5sf node suites (9 files) | **97/97 pass** | `all-a5sf-node-suites.log` |
+| new assembly arms | **RED 6 fail/2 controls → GREEN 10/10** (incl. C1 one-shot refusal + C2 probe-disposal pin) | `red-arms.log`, `green-arms.log`, `c1-red.log`, `c2-mutation.log`, `c2-green.log` |
+| all a5sf node suites (9 files) | **99/99 pass** | `all-a5sf-node-suites.log` |
 | `a5sf-tool-axis` (TA1–TA11 + updated TA5) | **14/14** | inside `all-a5sf-node-suites.log` |
 | `pnpm vitest run a5sf` | **166/166, 11 files** | `vitest-a5sf.log` |
 | p4t6 + laws (`u6-arc-a-fitness`, `u6-pr6-arc-d-adversarial`, `a4p3-intervention-lane-hygiene`) | **54/54** | `law-and-p4t6.log` |
@@ -217,19 +269,19 @@ GREEN: `ℹ tests 8  ℹ pass 8  ℹ fail 0`.
 | `node scripts/eb3-evidence-guard.mjs` | pass | `eb3-evidence-guard.log` |
 | `node scripts/eb3-ci-required.mjs` | pass | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | 26/26 controls | `eb3-negative-controls.log` |
-| `git diff --check` | clean | (working tree) |
-| `pnpm ci:local` | **FAIL — see §5.1**, known flake, all reds green in isolation | `ci-local.log`, `ci-local-red-isolation.log` |
+| `git diff --check origin/master..HEAD` | clean (C3: the range a reviewer checks, not just the working tree) | committed tree |
+| `pnpm ci:local` | **FAIL — see §5.1**, known flake, red green in isolation | `ci-local.log`, `ci-local-red-isolation.log` |
 
 ### 5.1 The `pnpm ci:local` verdict, verbatim
 
 ```
-DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=260.6s
-Test Files  3 failed | 480 passed (483)
-Tests  3 failed | 5990 passed (5993)        # a5g6 GLUE-6 LEG B, alpha5-glob X3, alpha5-search P8b
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=307.0s
+Test Files  1 failed | 482 passed (483)
+Tests  1 failed | 5992 passed (5993)        # a5g6-install-face-render GLUE-6 LEG B
 ```
 
-Isolation at the SAME head: the three files together → **100/100 pass (3 files), 24.98 s**
-(`ci-local-red-isolation.log`). None is touched by this diff; they are the pre-existing
+Isolation at the SAME tree: the red file alone → **5/5 pass, 2.89 s**
+(`ci-local-red-isolation.log`). It is not touched by this diff; it is the pre-existing
 ci-local load/timeout flake S-1 documented (the whole 483-file `packages/runtime` tree, one
 `threads` pool, vitest's 5 s default). No unmeasured pass is claimed; coverage was `determined`
 (never the exit 2 case).
@@ -251,11 +303,11 @@ unchanged; exact equality, no tolerance.
 | file | sha256 | note |
 | --- | --- | --- |
 | `packages/runtime/src/plugin/live/agent-bindings.mjs` | `df9b46af67cd903641285760cd72a78e57986e87959b2fbdbaf3f86dd6c6464b` | **unchanged** |
-| `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | `632b7597dba0dc14db361321e836e16b8dc44e94f65556311a00954579f9cf13` | changed |
+| `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | `3b9b0b5bf59717ca8f40e0c8f169db809bdbe770ab7a8b20f314e4b1824e01c0` | changed (C1/C2) |
 | `packages/runtime/team-services/src/mount.ts` | `7218a9477b8c1bf0b3ea5b11207e310f328c27d2ed88096ca7b602329731015c` | changed |
-| `tests/world-factory/a5sf-assembly.test.mjs` | `a0d3bef1f5ae1672c2d8ed048a736f32820e12a5f7020a3db5b841c3c910d686` | new |
+| `tests/world-factory/a5sf-assembly.test.mjs` | `65c6b3b60b4795ddc3a35ab75e9caf4a91c1881d469a9ae15cce0339c622e0e5` | new (10 arms) |
 | `tests/world-factory/a5sf-native-route-c.test.mjs` | `0baf27123a7011ba116561424fdd6ce2ca6e606c2976e46a459794f60ee9c780` | N8 double |
-| `tests/world-factory/a5sf-tool-axis.test.mjs` | `9a055ddf9a5b034e8e00b18444093dbeaf7569e09d9c16616098e64a02f0cc12` | TA5 pins |
+| `tests/world-factory/a5sf-tool-axis.test.mjs` | `9a31a48e7a7831f8697aa197f76956c021691a930281b6119567624289d97688` | TA5 pins (incl. C1) |
 
 `pa-mount-registry.mjs` untouched.
 
@@ -263,7 +315,8 @@ unchanged; exact equality, no tolerance.
 
 | file | what |
 | --- | --- |
-| `red-arms.log` / `green-arms.log` | 8 arms on merged S-1 vs this lane |
+| `red-arms.log` / `green-arms.log` | 8 original arms on merged S-1 vs this lane; `green-arms.log` is the full 10-arm suite |
+| `c1-red.log`, `c2-mutation.log`, `c2-green.log` | C1 reconciliation RED, C2 probe-disposal mutation RED, C2 GREEN |
 | `all-a5sf-node-suites.log` | 9 a5sf node suites, 97/97 |
 | `vitest-a5sf.log` | 166/166 |
 | `law-and-p4t6.log` | laws + p4t6, 54/54 |
@@ -274,15 +327,17 @@ unchanged; exact equality, no tolerance.
 
 ## 9. Biggest risk for a reviewer who read the S-1 review thread
 
-**1. `observeOnly` double-`apply`.** Each configured module's `apply` now runs twice per attach
-(observe-only probe, then real). The probe forwards nothing and is disposed before real mounts
-(surface-neutrality arms prove the resulting surface), but a module whose `apply` does anything
-besides `tools.register`/`systemPrompt.section` — timers, sockets, globals, counters — now does it
-twice, and probe disposal does not generally undo it. The honest alternatives are mounting once
-before knowing the target realm (the chicken-and-egg the cartesian product papered over) or a
-declaration contract (a guess unless validated). This lane chose behavioural observation; the
-native-module contract may need to become side-effect-free/idempotent, or a future loader seam may
-need a register-only probe.
+**1. `observeOnly` runs `apply` N+1 times per module (not twice).** Each configured module's
+`apply` runs 1 probe + 1 real ceiling + 1 real binding per binding it owns (3 for one binding);
+an unbound module runs 2. The probe forwards nothing and is disposed before real mounts
+(surface-neutrality arms prove the surface; C2 pins the disposal), but a module whose `apply`
+does anything besides `tools.register`/`systemPrompt.section` — timers, sockets, globals,
+counters — now does it N+1 times, and probe disposal does not generally undo it. The one-shot
+case is no longer a silent fail-open: C1 refuses an attach whose real mount cannot reproduce the
+probe's observation (§3.6). The honest alternatives are mounting once before knowing the target
+realm (the chicken-and-egg the cartesian product papered over) or a declaration contract (a guess
+unless validated). This lane chose behavioural observation; the native-module contract may need to
+become side-effect-free/idempotent, or a future loader seam may need a register-only probe.
 
 **2. The `tools/change` dependency and the baseline heuristic.** Continuous verification is real
 for the pinned upstream (public event, no loader seam), but it is a dependency: if the event

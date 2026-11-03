@@ -617,6 +617,8 @@ test('TA5 structural pin: a binding-targeted mount routes into the binding realm
   assert.match(rowSource, /uncoveredShadowedTools\(/, 'the row verifies COVERAGE by definition identity, not just the name set')
   assert.match(rowSource, /beforeDefinitions/, 'the coverage check compares against the pre-attach definitions')
   assert.match(rowSource, /A5SF_COVERAGE_UNDEFINED/, 'ASSEMBLY GAP 2: a get()-less tools row refuses instead of silently skipping coverage')
+  assert.match(rowSource, /A5SF_MODULE_OBSERVATION_UNREPRODUCED/, 'C1: the real forwarding is reconciled against the ownership probe')
+  assert.match(rowSource, /unreproducedObservations\(/, 'C1: per-module probe-vs-real reconciliation')
   assert.match(rowSource, /toolBindingIdentity/, 'the expansion keys on the compiled binding identity')
   assert.doesNotMatch(rowSource, /AsyncLocalStorage/, 'S-2 is not used in the row either')
   assert.doesNotMatch(rowSource, /compileEffectiveIo/, 'the row does not compile a lane')

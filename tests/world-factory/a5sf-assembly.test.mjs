@@ -227,6 +227,62 @@ ${registrations}
   return pathToFileURL(file).href
 }
 
+/**
+ * A module whose `apply` registers its tool only on the FIRST call and is
+ * consumed by the ownership probe, reproducing the C1 fail-open: the real
+ * mount forwards nothing while the model-visible name set still matches.
+ */
+function writeOneShotModule(label, toolName) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-oneshot-${label}-`)))
+  const file = join(dir, 'one-shot.mjs')
+  writeFileSync(file, `
+let consumed = false
+export const name = ${JSON.stringify(`fixture-one-shot-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+  if (consumed) return
+  consumed = true
+  ctx.systemPrompt.section({ name: 'tool:${toolName}', order: 50, text: '${label} ${toolName} guidance' })
+  ctx.tools.register({
+    name: ${JSON.stringify(toolName)},
+    description: ${JSON.stringify(`one-shot ${label} ${toolName}`)},
+    parameters: { type: 'object', properties: {}, additionalProperties: false },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+    async execute() { return 'one-shot' },
+  })
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
+/**
+ * A module that records its LIVE instances through a real Cordis effect: each
+ * `apply` increments a global and registers the matching decrement. Probe
+ * disposal is therefore observable as an exact live count (C2).
+ */
+function writeEffectModule(label, toolName, counterKey) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-effect-${label}-`)))
+  const file = join(dir, 'effect.mjs')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-effect-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+  const key = ${JSON.stringify(counterKey)}
+  globalThis[key] = (globalThis[key] ?? 0) + 1
+  ctx.effect(() => () => { globalThis[key] -= 1 })
+  ctx.systemPrompt.section({ name: 'tool:${toolName}', order: 50, text: '${label} ${toolName} guidance' })
+  ctx.tools.register({
+    name: ${JSON.stringify(toolName)},
+    description: ${JSON.stringify(`effect ${label} ${toolName}`)},
+    parameters: { type: 'object', properties: {}, additionalProperties: false },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+    async execute() { return 'effect' },
+  })
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
 /** The PRESET row for one tool, mounted on the standing (parent) scope. */
 function presetPlugin(toolName, options = {}) {
   return {
@@ -659,5 +715,60 @@ test('GAP2b-control a tool already on the surface at arm time does not invalidat
     assert.equal(fibers.every((fiber) => fiber.state === 2), true, 'every routed fiber is still active')
   } finally {
     await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// C1 — the REAL mount must reproduce what the ownership probe observed
+// ===========================================================================
+
+test('C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration', async () => {
+  const moduleA = writeNativeModule('a9', [{ name: 'read', reads: true }])
+  const oneShot = writeOneShotModule('c1', 'write')
+  const world = await makeWorld('gap-c1', { modules: [moduleA, oneShot] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetWrite = definitionOf(root, agentKey, 'write')
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(
+          error.code,
+          'A5SF_MODULE_OBSERVATION_UNREPRODUCED',
+          `a one-shot module must fail closed, got ${error.name}: ${error.message}`,
+        )
+        assert.match(error.message, /write/)
+        return true
+      },
+      'the real mount forwards nothing after the probe consumed the only registration',
+    )
+    // The preset write is the one the agent resolves: no unguarded shadow.
+    assert.equal(definitionOf(root, agentKey, 'write'), presetWrite, 'no unguarded preset-shadow was accepted')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// C2 — probe fibers are DISPOSED (mutation-pinned)
+// ===========================================================================
+
+test('C2 the ownership probes are disposed before the real mounts (live-effect count)', async () => {
+  const key = '__a5sf_c2_probe_live'
+  delete globalThis[key]
+  const moduleA = writeNativeModule('a10', [{ name: 'read', reads: true }])
+  // B does not own the binding, so its REAL mount is exactly one ceiling fiber;
+  // its probe is a second apply. A leaked probe leaves the live count at 2.
+  const moduleB = writeEffectModule('c2', 'x_assembly_probe', key)
+  const world = await makeWorld('gap-c2', { modules: [moduleA, moduleB] })
+  const { realm, agentCtx, agentKey, config } = world
+  try {
+    await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.equal(globalThis[key], 1, 'exactly one live apply: the real mount; the probe fiber is disposed')
+    await realm.dispose()
+    assert.equal(globalThis[key], 0, 'realm disposal tears the real fiber down too')
+  } finally {
+    delete globalThis[key]
+    if (realm?.nativeInvalidation === null) await realm.dispose()
   }
 })

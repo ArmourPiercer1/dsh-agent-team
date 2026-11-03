@@ -105,10 +105,14 @@ export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
  *     NO configured native module registers.
  *   - `A5SF_BINDING_OWNER_AMBIGUOUS` — MORE than one configured module registers
  *     that tool, so assigning the binding would be a guess.
+ *   - `A5SF_MODULE_OBSERVATION_UNREPRODUCED` — the REAL mount did not reproduce
+ *     what that module's ownership probe observed (a one-shot `apply` consumed
+ *     by the probe, or a conditional registration that vanished), so a tool
+ *     would stay on the unguarded preset definition while the name set matched.
  */
 export class A5sfNativeAssemblyError extends TypeError {
   /**
-   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS'} code
+   * @param {'A5SF_COVERAGE_UNDEFINED' | 'A5SF_BINDING_OWNER_UNRESOLVED' | 'A5SF_BINDING_OWNER_AMBIGUOUS' | 'A5SF_MODULE_OBSERVATION_UNREPRODUCED'} code
    * @param {string} detail
    */
   constructor(code, detail) {
@@ -396,8 +400,9 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
     }
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
+  const expansion = await nativeToolMountsOf(nativeToolModules, realm)
   const fibers = await realm.mountNativeToolModules(
-    await nativeToolMountsOf(nativeToolModules, realm),
+    expansion.mounts,
     // The RESOLVED agent scope key: the realm's post-settle re-verification
     // needs it to ask `tools.get(name, scope)` which definition the agent now
     // resolves. This function already resolved it for the surface reads.
@@ -425,6 +430,27 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
         // The refusal is the failure that must be reported.
       }
     }
+  }
+  // C1 (2026-11-03 review): reconcile the REAL forwarding against the
+  // ownership probe. A module that registers only on its FIRST `apply` is
+  // consumed by the probe: the real mount forwards NOTHING, the model-visible
+  // name set still matches the preset, and without this check the attach is
+  // ACCEPTED with the tool left on the unguarded preset definition (measured
+  // fail-open; the binding mount's own "must forward my tool" refusal catches
+  // only binding-owned tools). Per module, the real fibers' `observed` (which
+  // already includes what they forwarded) must be a SUPERSET of what the probe
+  // observed. Extra real names are the surface gate's business; a MISSING
+  // observed name is a lost shadow and refuses the whole attach.
+  const unreproduced = unreproducedObservations(expansion, fibers)
+  if (unreproduced.length > 0) {
+    await releaseAttach()
+    throw new A5sfNativeAssemblyError(
+      'A5SF_MODULE_OBSERVATION_UNREPRODUCED',
+      `the native ownership probe observed registrations that the REAL mount did not reproduce`
+      + ` (${unreproduced.map((entry) => `${entry.moduleName} observed ${JSON.stringify(entry.missing)}`).join('; ')});`
+      + ' a one-shot/conditional `apply` consumed by the probe would leave those tools on the unguarded preset definition'
+      + ' while the surface name set stayed equal — refusing the attach (fail closed)',
+    )
   }
   if (coverage.length > 0) {
     // FAIL CLOSED on COVERAGE, not just on the name set. A tool a router reports
@@ -539,7 +565,13 @@ async function nativeToolMountsOf(nativeToolModules, realm) {
   }
   // No mounted binding: every module keeps today's single ceiling mount, and
   // there is no ownership question to answer (no observation mount needed).
-  if (identities.length === 0) return Object.freeze([...nativeToolModules])
+  if (identities.length === 0) {
+    return Object.freeze({
+      mounts: Object.freeze([...nativeToolModules]),
+      observedByModule: null,
+      mountCounts: Uint32Array.from(nativeToolModules.map(() => 1)),
+    })
+  }
   // OBSERVE what each module actually registers. `observed` is the router's
   // receipt of every registration the module attempted; observe-only forwards
   // none of them, so the live registry is untouched.
@@ -577,11 +609,49 @@ async function nativeToolMountsOf(nativeToolModules, realm) {
     else owned.push(identity)
   }
   const mounts = []
+  const mountCounts = []
   for (const [index, module] of nativeToolModules.entries()) {
+    const owned = assignments.get(index) ?? []
     mounts.push(module)
-    for (const toolBindingIdentity of assignments.get(index) ?? []) mounts.push({ ...module, toolBindingIdentity })
+    for (const toolBindingIdentity of owned) mounts.push({ ...module, toolBindingIdentity })
+    mountCounts.push(1 + owned.length)
   }
-  return Object.freeze(mounts)
+  return Object.freeze({
+    mounts: Object.freeze(mounts),
+    observedByModule: observations,
+    mountCounts: Uint32Array.from(mountCounts),
+  })
+}
+
+/**
+ * Per-module C1 reconciliation: which probe-observed names the REAL mount did
+ * not reproduce.
+ *
+ * @param {{ mounts: readonly object[], observedByModule: readonly Set<string>[]|null, mountCounts: Uint32Array }} expansion
+ * @param {readonly object[]} fibers - the fibers the real mount returned, in mount order.
+ * @returns {{ moduleName: string, missing: string[] }[]}
+ */
+function unreproducedObservations(expansion, fibers) {
+  if (expansion.observedByModule === null) return []
+  const unreproduced = []
+  let cursor = 0
+  for (const [index, observed] of expansion.observedByModule.entries()) {
+    const count = expansion.mountCounts[index]
+    const moduleFibers = fibers.slice(cursor, cursor + count)
+    cursor += count
+    const real = new Set()
+    for (const fiber of moduleFibers) {
+      const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+      for (const name of routing?.observed ?? []) real.add(name)
+      for (const name of routing?.forwarded ?? []) real.add(name)
+    }
+    const missing = [...observed].filter((name) => !real.has(name))
+    if (missing.length > 0) {
+      const moduleName = expansion.mounts[index]?.module?.name ?? `#${String(index)}`
+      unreproduced.push({ moduleName, missing })
+    }
+  }
+  return unreproduced
 }
 
 /**

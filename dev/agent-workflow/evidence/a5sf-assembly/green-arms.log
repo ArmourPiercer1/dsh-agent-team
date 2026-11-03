@@ -1,18 +1,20 @@
-✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (28.853504ms)
-✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (13.846975ms)
-✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (8.377119ms)
-✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.351355ms)
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (31.064579ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (15.324341ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (9.030006ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.410537ms)
 a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; disposing every router fiber to restore the preset surface
-✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (33.407947ms)
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (36.843139ms)
 a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; disposing every router fiber to restore the preset surface
-✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (18.46249ms)
-✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (35.109379ms)
-✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (39.855473ms)
-ℹ tests 8
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (20.740325ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (35.866661ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (42.894568ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (13.454921ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (14.121854ms)
+ℹ tests 10
 ℹ suites 0
-ℹ pass 8
+ℹ pass 10
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 427.498784
+ℹ duration_ms 484.743477

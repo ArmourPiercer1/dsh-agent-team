@@ -47,10 +47,10 @@ test at tests/world-factory/a5sf-assembly.test.mjs:432:1
 ✖ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (7.243944ms)
   AssertionError [ERR_ASSERTION]: expected the typed ownership refusal, got TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/archive" registers no tool named 'archive'; a binding-targeted mount must own its tool (fail closed)
   + actual - expected
-  
+
   + 'SERVICE_MOUNT_FAILED'
   - 'A5SF_BINDING_OWNER_UNRESOLVED'
-  
+
       at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:442:16)
       at expectedException (node:assert:578:17)
       at expectsError (node:assert:703:21)
