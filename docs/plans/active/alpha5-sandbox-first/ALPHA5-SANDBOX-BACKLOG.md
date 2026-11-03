@@ -32,7 +32,7 @@
 | BL-08 | P1-08 PTY / 持久进程生命周期（撤销先于首个 await、generation 键） | DONE | `evidence/a5sf-p1-08/` |
 | BL-09 | R1 审批/治理接管（Alpha.4 ControlService/Envelope/ApprovalCase 以公开 seam 接管新执行面） | DONE | PR #541；`evidence/a5sf-r1/`；只消费既有 `ControlService.guardOperation` 的耐久 allow，只可收窄不可放宽；无第二 Ledger |
 | BL-10 | R2 工程基线继承（WorldFactory/Canary/oracle、四层 CI、`PR #394` 诊断工具） | DONE | PR #540；`evidence/a5sf-r2/`；唯一 launcher/ledger/oracle/诊断表，预算门移到 `run-record.mjs` 单一实现 |
-| BL-11 | R3 证据链（Alpha.4 允许/拒绝 → 编译结果 → Provider consulted → 独立效果 Oracle 同调用对齐） | READY | BL-09 已 DONE（PR #541）；行 schema 由 R4 报告声明，P2 每个机制的前置 |
+| BL-11 | R3 证据链（Alpha.4 允许/拒绝 → 编译结果 → Provider consulted → 独立效果 Oracle 同调用对齐） | DONE | PR #545；`tests/world-factory/lib/a5sf-evidence.mjs` + `evidence/a5sf-r3/`；四链同调用对齐，passive（不决策），`consulted/disposition` 为 lane 声明并已披露；未知行种类 fail-closed |
 | BL-12 | R4 诊断工具（approval-bypass / 失效分类报告） | DONE | PR #542；`evidence/a5sf-r4/`；`scripts/a5sf-diag.mjs` 复用 `PR #394` 分类表与 P1 `matchLocator`，不新增词汇 |
 | BL-13 | R5 黄金向量转换（旧 tool-family 输出向量 → 新 Provider 对照） | DONE | PR #543；`evidence/a5sf-r5/`；12/5041 向量转成回归对照语料，MATCH 明确不构成验收 |
 
@@ -40,13 +40,15 @@
 
 | ID | 工作包 | 状态 | 入口 / 证据 |
 |---|---|---|---|
-| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | READY | G1.5/G1.7 runnable；suite `tests/world-factory/suites/a5sf-read.mjs` |
+| BL-14 | P2-01 原生 `read`（>10MiB 中间窗口、流式、禁读真实拒绝、双 Member 不串权） | PARTIAL（gate + dry harness；G2 未取得） | PR #546；`tests/world-factory/suites/150-a5sf-read.mjs` + `evidence/a5sf-p2-read/`；预算预登记门 + 真实 compiler/guard/chain/diag 的 host-free dry；**live 未跑**：`installToolBindingRealm` 无生产挂载点、guard 咨询不可观测（`install.ts:293`），需 seam + mount + 跨进程传输 + 用户 boot 预算裁决 |
 | BL-15 | P2-02 原生 `write`（原子替换/版本校验；禁写字节不变；写不自动获读） | READY | 同上 |
 | BL-16 | P2-03 原生 `grep`（OS `rg` 真实拒绝、exit 0/1、取消、结果裁剪） | READY | `a5sf-grep.mjs` |
 | BL-17 | P2-04 原生持久 `bash`（同 PTY 多命令、只写不读、`chmod`/新建文件负控、禁网、旧代 PTY 拒用） | READY | `a5sf-bash.mjs` |
 | BL-18 | P2-05 原生 `web_fetch`（本地 mock provider、network=deny 前置拒绝、普通 DSH fetch 不受影响） | READY | `a5sf-web.mjs` |
 | BL-19 | P2-06 原生 `run_code/PTC`（Node 子进程 + 受控 Host bridge，无代发旁路） | READY | `a5sf-ptc.mjs` |
 | BL-20 | P2-07 全新第三方 CLI（通用 launcher，零专用 ToolDefinition 执行体） | READY | `a5sf-new-cli.mjs` |
+
+> **P2 统一前置（2026-11-03 实测）**：所有 P2 纵切的真实 Host 半场都被同一对缺口卡住 ——（a）`installMemberIoProviders`/`installToolBindingRealm` **没有生产调用者**，a5sf realm 在已启动 Host 中是惰性的；（b）`installToolBindingRealm` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点向上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 断言的“经 Provider 读取/guard 已咨询”都只是 driver 自述。boot 预算池仍为 0，live 运行需用户新裁。
 
 ## 3. P3 — 原生工具逐项接入（G3）
 
