@@ -648,7 +648,20 @@ test('N6 one ceiling: mountNativeToolModules refuses a two-Member realm before r
 // ===========================================================================
 // N7 — teardown errors are reported, and never shorten the teardown
 // ===========================================================================
-test('N7 teardown: a native fiber whose disposal throws REJECTS realm.dispose() (not swallowed) and the rest still runs', async () => {
+test('N7 teardown order + error reporting: native shadows go first, and a throwing disposal REJECTS realm.dispose()', async () => {
+  // --- structural half: the disposal ORDER (a swap is a silent fail-open) ----
+  const mountSrc = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'mount.ts'), 'utf8')
+  const disposeBlock = mountSrc.slice(mountSrc.indexOf('dispose: async (): Promise<void> => {'))
+  const nativeAt = disposeBlock.indexOf('await disposeNative()')
+  const installAt = disposeBlock.indexOf('await installation.dispose()')
+  assert.notEqual(nativeAt, -1, 'the realm dispose disposes the native shadows')
+  assert.notEqual(installAt, -1, 'the realm dispose disposes the Member installation')
+  assert.ok(
+    nativeAt < installAt,
+    'TEARDOWN ORDER: the native shadow must be disposed BEFORE the confined Provider fiber '
+    + '(a surviving shadow would resolve a missing fs service)',
+  )
+
   const root = await makeRoot()
   const { standing, agentKey, agentCtx } = presetTopology(root)
   const fixture = makeFixture('n7')

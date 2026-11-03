@@ -122,7 +122,7 @@ lookup, no module import, no surface comparison.
 | N4 | after `realm.dispose()` the shadow is gone and the preset definition is visible again on **BASE** (disclosed, not overclaimed) | green |
 | **N5** | **GLUE ORDER (load-bearing)** — structural: in `agent-bindings.mjs` the `applyBuiltInToolDeny(...)` call site precedes `attachA5sfNativeToolModules(...)`, and the mount input carries no native modules; behavioral: deny-then-attach **refuses** and the tool stays invisible + `unknown tool`; the REVERSE order (shadow then deny) is measured to leave the tool **visible and executable on the confined lane** — the fact that makes the order load-bearing | green |
 | N6 | one Member ceiling: `mountNativeToolModules` refuses a two-Member realm with `SERVICE_MOUNT_FAILED` / `exactly one Member ceiling` before registering anything | green |
-| N7 | teardown error reporting: a native fiber whose `dispose` throws makes `realm.dispose()` **reject** with that error, and the confined Provider fiber is still disposed (the rest of the teardown ran) | green |
+| N7 | **teardown order + error reporting**: structural — in `mount.ts`'s realm dispose, `await disposeNative()` precedes `await installation.dispose()`; behavioral — a native fiber whose `dispose` throws makes `realm.dispose()` **reject** with that error while the confined Provider fiber is still disposed (the rest of the teardown ran) | green |
 
 `red-test.log` = the same suite against the pre-wiring source (the three files stashed
 to `31ba2015d`): **4/4 fail, exit 1**. `green-tests.log` = the new suite plus the three
@@ -251,7 +251,7 @@ green because N3 pinned the reverse order the product never ran.
 | --- | --- | --- |
 | 1. order | the shadow is attached by `attachA5sfNativeToolModules` **after** the deny block; the realm mount no longer creates it | N5 (structural + behavioral) |
 | 2. arm | N5 asserts both the glue order and the measured reverse-order defect; N3 now uses the **REAL** `applyBuiltInToolDeny` (the fake `restrict` plugin is gone) | N3, N5 |
-| 3. cheap arms | N6 `members.length !== 1` refusal; N7 teardown-error reporting | N6, N7 |
+| 3. cheap arms | N6 `members.length !== 1` refusal; N7 teardown ORDER (structural) + teardown-error reporting. Both mutations that survived 4/4 on the reviewed head now DIE (`mutation.log`): M-b (swap the disposal order) → N7 red; M-c (remove the one-ceiling refusal) → N6 red | N6, N7 |
 | 4. teardown | `disposeNative` collects and re-throws; the realm dispose reports the native error but still disposes bindings + the confined provider; the import failure is wrapped with the offending entry | N7 |
 | 5. logs | every log regenerated with trailing whitespace stripped (`git diff --check` must be clean) and the full gate list quoted in `green-tests.log` | — |
 | 6. docs | §5(a) rewritten as ORDER + surface neutrality; §8 updated; this section added | — |
