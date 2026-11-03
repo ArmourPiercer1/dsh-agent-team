@@ -200,3 +200,8 @@ Gate 编号
       1. **唯一权威时钟** = 执行体本机 `date -u`（经与 GitHub 服务端 Date header 同场实测一致，偏差 <30s）；一切**新** dated 锚点（日志头、清偿开式、boot 预登记、dated 文件名/分支名/证据目录名、ledger 行）**必须取书写时刻的 `date -u`**，禁止从会话上下文/摘要/前文叙事继承日期分量。
       2. **历史会话日历标签冻结为标识符**：2026-10-29 21:44Z … 2026-10-30 窗口内主 Agent 产生的 +1 天日期标签（`USER-RULING-20261031`、`BOOT-BUDGET-20261031C`、`*-20261031` 分支/证据目录、若干日志头等）**不改名**（名称已被律条/证据/PR 大量引用，改名=断链）；其日期分量的真实 UTC = 标签−1 天，逐条映射见勘误正本 §3；引用这些名称时日期语义以映射为准，「10-31 的裁决」的唯一含义 = 真实 2026-10-30 下达的 USER-RULING-20261031。
       3. **机器判据不受影响之确认**：`pr-settlement-gate` 的覆盖判定 = covered head sha 40-hex 相等，不读取日历分量；现存全部清偿开式经抽验均为书写时真实 UTC。本条不追溯改写任何 published 文本（append-only）。
+
+9. **本地内环 L0（`pnpm ci:local`）**【2026-11-03 接管轮补入；实现 = `scripts/ci-local.mjs`，选择律由 `scripts/ci-local.test.mjs` 钉住并由 ci-integration 的对应 leg 收集】：
+   1. 推送前跑 `pnpm ci:local`（默认 `--base origin/master`）。它执行 docs 探针、`docs:sync --check`、CI 形状检查、`pnpm typecheck`，以及**本次改动牵连到的**测试，不执行 census，也不合成 merge tree。
+   2. 退出码是判据：**0 = 选中的检查全过；1 = 选中项失败；2 = 覆盖未定**。`2` 不是故障也不是通过——有改动是本工具无法命名爆炸半径的路径（未知根文件、共享测试设施、CI 族），此时必须推送让 L1/L2 覆盖，**禁止把 `2` 当绿灯、也禁止用 `--no-tests` 把它变成 `0`**。
+   3. L0 绿 ≠ 可合并。合并判据只有 `ci-required` + `pr-gate` + `pr-settlement-gate` 三个必需上下文（§8.5）。
