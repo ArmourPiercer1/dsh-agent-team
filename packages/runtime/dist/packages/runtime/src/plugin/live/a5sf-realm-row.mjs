@@ -50,11 +50,12 @@
  * `a5sfToolPlaneOf` below is the ONE naming of the scope the product row's TOOL
  * PLANE is placed on: the live Member setup mounts its tool registrations and
  * the governed tool plane through `toolPlane.ctx`, and routes the permission
- * adapter's per-call fs seam through `toolPlane.fs` — so a tool whose body
- * resolves the fs provider from the ctx it runs on (the preset-tool pattern)
- * is consulted by the confined guard and writes one `a5sf-guard-consult/1`
- * fact, while the agent ctx itself keeps the base provider (a LEADER or a
- * non-tool consumer is untouched).
+ * adapter's per-call fs seam through `toolPlane.fs` — so a TOOL-SHAPED
+ * definition (one whose body resolves the fs provider from the ctx it runs on,
+ * as the shipped tool packages do) is consulted by the confined guard and
+ * writes one `a5sf-guard-consult/1` fact, while the agent ctx itself keeps the
+ * base provider (a LEADER or a non-tool consumer is untouched). This is NOT a
+ * claim about the native preset tools — see STILL OPEN below.
  *
  * STILL OPEN, stated so it cannot be read as done: the upstream agent-preset
  * registry EAGERLY activates a preset at registration and mounts every preset

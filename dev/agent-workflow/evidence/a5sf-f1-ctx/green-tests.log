@@ -1,4 +1,4 @@
-# F1 (effective half) — GREEN run on the FINAL tree, 2026-11-03T07:08:17Z (branch task/a5sf-f1-ctx-20261103, base 4049747c9 + this lane)
+# F1 (effective half) — GREEN run on the FINAL review-round tree, 2026-11-03T07:33:47Z (branch task/a5sf-f1-ctx-20261103, 9-arm suite)
 
 $ pnpm -r typecheck
 packages/runtime typecheck: Done
@@ -14,10 +14,21 @@ place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages
 place-dist-glue: packages/runtime/src/plugin/live/a5sf-realm-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs (byte-identical)
 place-dist-glue: done (101 placement(s))
 
+$ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+✔ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (6.336478ms)
+✔ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (9.087974ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (3.609222ms)
+✔ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (4.629644ms)
+✔ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.897823ms)
+✔ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (2.325832ms)
+✔ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.358532ms)
+✔ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (0.971901ms)
+✔ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (3.202895ms)
+ℹ tests 9
+ℹ pass 9
+ℹ fail 0
+
 $ npx vitest run packages/runtime/test/u6-arc-a-fitness.test.ts packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts
- ✓ packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 27ms
- ✓ packages/runtime/test/u6-arc-a-fitness.test.ts (12 tests) 248ms
- ✓ packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts (13 tests) 112ms
  Test Files  3 passed (3)
       Tests  34 passed (34)
 
@@ -26,12 +37,12 @@ $ npx vitest run a5sf
       Tests  166 passed (166)
 
 $ for f in tests/world-factory/a5sf-*.test.mjs; do node --test $f; done
-tests/world-factory/a5sf-evidence.test.mjs       ℹ tests 12 ℹ pass 12 ℹ fail 0 
-tests/world-factory/a5sf-f1-ctx.test.mjs         ℹ tests 7 ℹ pass 7 ℹ fail 0 
-tests/world-factory/a5sf-harness.test.mjs        ℹ tests 10 ℹ pass 10 ℹ fail 0 
-tests/world-factory/a5sf-p2-seam.test.mjs        ℹ tests 14 ℹ pass 14 ℹ fail 0 
-tests/world-factory/a5sf-p2-wiring.test.mjs      ℹ tests 9 ℹ pass 9 ℹ fail 0 
-tests/world-factory/a5sf-read-gate.test.mjs      ℹ tests 13 ℹ pass 13 ℹ fail 0 
+tests/world-factory/a5sf-evidence.test.mjs       ℹ tests 12 ℹ pass 12 ℹ fail 0
+tests/world-factory/a5sf-f1-ctx.test.mjs         ℹ tests 9 ℹ pass 9 ℹ fail 0
+tests/world-factory/a5sf-harness.test.mjs        ℹ tests 10 ℹ pass 10 ℹ fail 0
+tests/world-factory/a5sf-p2-seam.test.mjs        ℹ tests 14 ℹ pass 14 ℹ fail 0
+tests/world-factory/a5sf-p2-wiring.test.mjs      ℹ tests 9 ℹ pass 9 ℹ fail 0
+tests/world-factory/a5sf-read-gate.test.mjs      ℹ tests 13 ℹ pass 13 ℹ fail 0
 
 $ npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
  Test Files  1 passed (1)
@@ -46,12 +57,16 @@ EB3-CI-REQUIRED pass workflows=9 findings=0
 $ node scripts/eb3-ci-negative-controls.mjs
 24/24 control(s) behaved as required
 
-$ node scripts/check-artifacts-committed.mjs   # after the commit
+# after committing the review round (this receipt amend follows it)
+$ node scripts/check-artifacts-committed.mjs
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
 [check-artifacts-committed] OK: 1916 files — working tree equals the git INDEX for both install surfaces (incl. 101 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
 
-$ node scripts/check-artifacts-at-head.mjs   # the commit carries its own build
+$ node scripts/check-artifacts-at-head.mjs
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
 [check-artifacts-committed] OK: 1916 files — working tree equals the git INDEX for both install surfaces (incl. 101 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
 DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
 [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1916 compared file(s)).
+
+$ git diff --check origin/master..HEAD
+exit=0

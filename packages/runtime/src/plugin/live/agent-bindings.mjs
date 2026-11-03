@@ -2355,18 +2355,20 @@ export function createAgentBindings(deps) {
       // P2 entry point (`team-services#mountA5sfRealm`) via the thin row
       // helper; the guard-consult observer is the row-configured file sink.
       //
-      // F1 (review response 2026-11-03) — WHAT THIS DOES *NOT* DO. The mount
-      // installs the confined Provider through the installer's
-      // `root.isolate('fs', …)` (`team-services/src/install.ts:182` member /
-      // `:332` binding). Cordis `isolate()` creates a SIBLING scope, so THIS
-      // agent ctx — and every tool/preset scope composed on it below — keeps
-      // the BASE provider. Nothing product-side resolves
-      // `realm.installation.members[i].ctx` / `realm.bindings[i].ctx` yet, so
-      // a wired row produces ZERO consultations and an EMPTY sink: the wiring
-      // is reachable MECHANICALLY, not effectively. Measured probe +
-      // next-step booking (mount the Member's tools under the isolated ctx at
-      // `presets.mount(agentCtx, …)` :2467 and `agentCtx.tools.register` :2745;
-      // or route the tool plane's fs through it) = evidence README §8.
+      // F1 (review response 2026-11-03) — WHAT THE MOUNT DOES AND HOW IT IS
+      // CONSUMED. The mount installs the confined Provider through the
+      // installer's `root.isolate('fs', …)` (`team-services/src/install.ts:182`
+      // member / `:332` binding). Cordis `isolate()` creates a SIBLING scope,
+      // so THIS agent ctx keeps the BASE provider — a fact about the installer,
+      // not a bug in it. The very next block therefore names the tool-plane
+      // scope with `a5sfToolPlaneOf(a5sfRealm)` and places the Member's tool
+      // plane on it: the Team tool registrations, the governed plane and the
+      // permission adapter's per-call fs seam move to the isolated ctx and the
+      // captured confined instance. A LEADER session and every non-tool
+      // consumer stay on the base provider by design. NOT bound (see the
+      // module-header statement at :474-495 and evidence README §8): the NATIVE
+      // preset tools, which the upstream preset registry mounts under its own
+      // generation scope before any agent exists (P3 native takeover, BL-22).
       //
       // ENABLEMENT LAW: `config.a5sfEvidencePath` AND
       // `deps.a5sfRealmProvider` are both required. Either half absent (the

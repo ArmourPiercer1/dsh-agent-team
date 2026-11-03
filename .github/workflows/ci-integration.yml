@@ -296,7 +296,11 @@ jobs:
         # plugin has and asserts the discriminating pair — a tool-invoked read outside the
         # ceiling is DENIED with exactly ONE `a5sf-guard-consult/1` fact, while the identical
         # shape through the base provider is ALLOWED and writes NOTHING — plus the default
-        # path, the measured three-way split and the post-dispose fail-closed lookup.
+        # path, the measured three-way split, the post-dispose fail-closed lookup, a NO-FAIL-OPEN
+        # pin on a malformed realm (the glue may not try/catch the naming call) and the routed
+        # adapter accessor's semantics (one captured instance; guardless path algebra, guarded
+        # effects). The four adapter CALL SITES remain structural-pin only: the row closure is
+        # not exported and driving it needs the full live dep set (disclosed, evidence README §8.6).
         # ci-integration lists node:test files EXPLICITLY (the #394 / #529 incidents were files
         # no layer collected), so without this step the binding's laws run in NO layer. The
         # file path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is

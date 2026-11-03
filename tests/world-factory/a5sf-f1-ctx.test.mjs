@@ -57,6 +57,20 @@
  *         ternaries, and leaves `presets.mount(agentCtx, …)` alone (the
  *         upstream preset registry mounts preset plugins under its own
  *         generation scope — see the module header of `a5sf-realm-row.mjs`).
+ *   F1-8  NO FAIL-OPEN ON A MALFORMED REALM (review mutation M-g) — the glue
+ *         does NOT wrap the naming call in try/catch (nor `??`/`||` it away),
+ *         so a malformed mount RAISES instead of degrading to `undefined`
+ *         (which would put the whole tool plane back on the base provider).
+ *         Pinned both structurally (single call, clean window) and by replaying
+ *         the glue's own expression.
+ *   F1-9  THE PERMISSION ADAPTER, ROUTED, SHARES THE TOOL PLANE'S AUTHORITY
+ *         (behavioural) — the accessor built from the glue's ternary returns
+ *         the captured confined INSTANCE, its path algebra (`resolve`/
+ *         `contains`, inherited from the base class and therefore un-guarded)
+ *         still answers, and any EFFECT through it is the guarded one: an
+ *         outside read is refused while an inside read succeeds on the base
+ *         provider exactly once. See README §8.3 for what this does NOT prove
+ *         (the four call sites' WIRING is structural-pin only).
  *
  * LIMITS (stated so no reader over-claims): this suite does NOT boot a Host,
  * does NOT run a live agent row, does NOT prove kernel/OS enforcement, and does
@@ -504,4 +518,84 @@ test('F1-7 the glue places the Member tool plane on the realm scope and routes t
   )
   assert.equal((source.match(/fsBackend\(agentCtx\)/g) ?? []).length, 0, 'no permission-adapter read is left on the unrouted accessor')
   assert.ok(source.includes('presets.mount(agentCtx,'), 'the preset mount stays on the agent ctx (the preset registry owns its plugin fibers — route (a) is not implementable here)')
+})
+
+// ===========================================================================
+// F1-8 — a malformed realm must RAISE, never fail open (review mutation M-g)
+// ===========================================================================
+
+test('F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback', () => {
+  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  const call = 'a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)'
+  assert.equal(source.split(call).length - 1, 1, 'the naming call appears exactly once')
+  const idx = source.indexOf(call)
+  const window = source.slice(Math.max(0, idx - 400), idx + 300)
+  // M-g: `try { a5sfToolPlane = a5sfToolPlaneOf(...) } catch { a5sfToolPlane = undefined }`
+  // — or `?? undefined` / `|| undefined` on the same statement — would make a
+  // MALFORMED mount fail OPEN: `undefined` means "no realm mounted", so the
+  // whole tool plane (Team tools, governed plane, adapter seam) would silently
+  // go back to the BASE provider. That is the regression this arm kills.
+  assert.doesNotMatch(window, /\btry\b|\bcatch\b|\?\?|\|\|/, 'nothing may catch or default the naming call')
+  // Behavioural replay of the SAME expression the glue evaluates: a malformed
+  // mount raises out of the setup (which rolls the agent back) — it does not
+  // become "no realm".
+  const glueMapping = (realm) => row.a5sfToolPlaneOf(realm)
+  assert.throws(() => glueMapping({ installation: { members: [] } }), TypeError)
+  assert.throws(() => glueMapping({ installation: { members: [{ ctx: {}, fs: {} }] } }), TypeError)
+  assert.throws(() => glueMapping({}), TypeError)
+  assert.equal(glueMapping(undefined), undefined, 'the ONLY sanctioned `undefined` is "this row mounted no realm"')
+})
+
+// ===========================================================================
+// F1-9 — the routed permission-adapter accessor, behavioured
+// ===========================================================================
+
+test('F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane\'s one provider', async () => {
+  const root = await makeRoot()
+  const fixture = tracked(makeFixture('adapter'))
+  const sink = tracked(tmpSink('adapter'))
+  const agentCtx = root.extend()
+  const realm = await mountRowRealm(agentCtx, fixture, sink.path)
+  try {
+    const plane = row.a5sfToolPlaneOf(realm)
+    // The pre-F1 accessor (host.ts `fsBackend`): the ctx's own provider.
+    const fsBackend = (ctx) => ctx.get('fs')
+    // The glue's EXACT ternary, replayed (agent-bindings.mjs).
+    const toolPlaneFsBackend = plane === undefined ? fsBackend : () => plane.fs
+    const routed = toolPlaneFsBackend(agentCtx)
+
+    // (a) IDENTITY: the adapter's backend IS the captured confined instance,
+    // not the live base service the row would otherwise resolve.
+    assert.equal(routed, plane.fs)
+    assert.notEqual(routed, root.get('fs'))
+    assert.equal(routed.constructor.name, 'TeamConfinedFileSystem')
+
+    // (b) CANONICALIZATION still answers: `resolve`/`contains` are INHERITED
+    // from the base provider class (the confined class guards EFFECTS only), so
+    // the adapter's path algebra keeps working — and consults no guard, which
+    // is measured as "writes no fact". Routing them is therefore about ONE
+    // authority, NOT about new refusals on the canonicalization path.
+    const factsBefore = readFacts(sink.path).length
+    const outsideTarget = await routed.resolve(fixture.denied)
+    const insideTarget = await routed.resolve(fixture.allowed)
+    const dirTarget = await routed.resolve(fixture.dir)
+    assert.equal(outsideTarget.hostPath, fixture.denied)
+    assert.equal(routed.contains(dirTarget, outsideTarget), true, 'subtree containment answers through the routed backend')
+    assert.equal(routed.contains(insideTarget, outsideTarget), false, 'a narrower subtree excludes the outside file')
+    assert.equal(readFacts(sink.path).length, factsBefore, 'resolve/contains are inherited path algebra: no consultation, no fact')
+
+    // (c) EFFECT: the SAME instance the adapter canonicalizes against is the
+    // guarded one — an outside read is refused, an inside read succeeds on the
+    // base provider exactly once. Adapter and effect now share one authority.
+    const before = baseReads.count
+    await assert.rejects(routed.readText(outsideTarget), (error) => error.code === 'IO_READ_DENIED')
+    assert.equal(baseReads.count, before, 'the denied adapter-path effect never reached the base provider')
+    assert.equal(await routed.readText(insideTarget), 'ok\n')
+    assert.equal(baseReads.count, before + 1)
+    // The base path still allows the outside file: the split is the ROUTING,
+    // not a global lockdown.
+    assert.equal(await fsBackend(agentCtx).readText(outsideTarget), 'outside\n')
+  } finally {
+    await realm.dispose()
+  }
 })

@@ -50,7 +50,7 @@ policy compiler and no parallel tool registry.
 | `packages/runtime/src/plugin/live/a5sf-realm-row.mjs` | New exported `a5sfToolPlaneOf(realm)`: `undefined` for a row that mounted no realm; a loud `TypeError` for a malformed mount (no Member installation / no usable `ctx.get` / no confined `fs.readText`); otherwise a **frozen** `{ ctx, fs }` naming the realm's FIRST Member installation, where `fs` is the **installed confined instance, captured once** (never a per-call `ctx.get('fs')`). Module header rewritten from the F1 "not effective" disclosure to "what is bound and what is not". |
 | `packages/runtime/src/plugin/live/agent-bindings.mjs` | The named center-interface change (ARC-A override, §7). Per-setup `let a5sfToolPlane`, assigned from `a5sfToolPlaneOf(a5sfRealm)` inside the existing mount block; `toolPlaneCtx` / `toolPlaneFsBackend` ternaries (default = agent ctx / the original accessor); the Team tool registrations (`toolPlaneCtx.tools.register(def)`) and the governed plane (`built.value.mount(toolPlaneCtx)`) move to the tool-plane scope; all **four** permission-adapter fs reads (`containmentBackend`, `resolveTarget`'s `resolve`, `containsTargets`, `containOverlayKeys`) use `toolPlaneFsBackend(agentCtx)`. The stale "yields ZERO consultations" disclosure above the import is replaced with the accurate BOUND / NOT BOUND statement. |
 | `packages/runtime/dist/…/a5sf-realm-row.mjs`, `…/agent-bindings.mjs` | Committed dist mirrors (GLUE-6 placements, `place-dist-glue.mjs`; both `.mjs` are copied, never tsc-emitted). |
-| `tests/world-factory/a5sf-f1-ctx.test.mjs` | **NEW** host-free `node:test` suite, arms F1-1…F1-7 (§4, §6). |
+| `tests/world-factory/a5sf-f1-ctx.test.mjs` | **NEW** host-free `node:test` suite, arms F1-1…F1-9 (§4, §5). F1-8/F1-9 were added in the review round (§11). |
 | `dev/agent-workflow/evidence/a5sf-f1-ctx/` | This receipt, `red-test.log`, `green-tests.log`, `probe-after.log`, `probe-f1-tool-plane.mjs`. |
 | `.github/workflows/ci-integration.yml` + `dev/ci/eb3-ci-manifest.json` | The new suite is enrolled as its own leg ("a5sf F1 tool plane"), because `ci-integration` lists `node:test` files **explicitly** (the #394/#529 incidents were files no layer collected). |
 | `dev/agent-workflow/ledgers/arc-a-protected-center.json` | **Append-only** ARC-A L1 override for the new `agent-bindings.mjs` digest (§7). |
@@ -110,16 +110,18 @@ The **three-way split** after the change (suite arm F1-4):
 
 ## 5. RED / GREEN
 
-* **RED** (`red-test.log`): with the binding removed
-  (`git stash push -- packages/runtime/src/plugin/live/{a5sf-realm-row.mjs,agent-bindings.mjs}`),
-  the suite is **6 failed / 1 passed** — every arm that names or exercises the tool plane dies
-  (`row.a5sfToolPlaneOf is not a function`; the F1-7 structural pin reports the missing import and
-  the missing `toolPlaneCtx` call sites). The single passing arm is F1-5, the **default path**,
-  which is exactly right: a row without a realm must behave identically before and after.
+* **RED** (`red-test.log`, final 9-arm suite, captured by checking the two files out from
+  `origin/master` = the pre-F1 tree): **8 failed / 1 passed**. Every arm that names or exercises
+  the tool plane dies (`row.a5sfToolPlaneOf is not a function`; the F1-7/F1-8 structural pins report
+  the missing import and the missing `toolPlaneCtx` call sites). The single passing arm is **F1-3**,
+  the **control**, which never touches the helper: through the base provider the same tool-shaped
+  call is ALLOWED and writes nothing — i.e. the pre-F1 behaviour, exactly as documented. (F1-5, the
+  default-path arm, FAILS on that tree because it asserts `a5sfToolPlaneOf(undefined) === undefined`
+  and the helper does not exist yet: absence of the wiring is precisely what it pins.)
 * **GREEN** (`green-tests.log`): `pnpm -r typecheck` ✔; `pnpm -r build` ✔;
   `place-dist-glue.mjs` 101 placements (both mirrors byte-identical) ✔; ARC-A / PR6 / A4P3 law
   suites 34/34 ✔; `vitest run a5sf` 166/166 ✔; **all** `tests/world-factory/a5sf-*.test.mjs`
-  suites green (12 + **7** + 10 + 14 + 9 + 13) ✔; p4t6 20/20 ✔; `eb3-ci-required` pass
+  suites green (12 + **9** + 10 + 14 + 9 + 13) ✔; p4t6 20/20 ✔; `eb3-ci-required` pass
   (9 workflows, 0 findings) ✔; `eb3-ci-negative-controls` 24/24 ✔.
 
 ## 6. The p4t6 tie — MEASURED last, not copied
@@ -176,6 +178,22 @@ tree.
    with a missing-service fault; neither fails open.
 5. **No live enforcement was exercised.** No Host boot, no live agent row, no kernel/OS-level
    sandbox proof. This lane proves the ROUTING and the CONSULTATION, not the sandbox's OS teeth.
+6. **The permission adapter's four call sites are STRUCTURAL-PIN ONLY (review condition 6).** The
+   accessor's *semantics* are armed behaviourally by arm **F1-9**: built from the glue's own
+   ternary, it returns the captured confined instance (identity with `plane.fs`, never the live base
+   service), its `resolve`/`contains` keep answering (inherited path algebra, and they consult no
+   guard — measured as "writes no fact"), an outside *effect* through it is `IO_READ_DENIED`, and an
+   inside effect succeeds on the base provider exactly once. What F1-9 **cannot** observe is whether
+   `agent-bindings.mjs` actually passes that accessor at its four sites: `createAgentBindings`'s
+   per-session closure is not exported, and driving it needs the full row dependency set
+   (`agents` + `sessionPersistence` + a live `domain` + …) — out of this lane's host-free budget. So
+   the four-site *wiring* is pinned by F1-7's source count only; measured mutation evidence
+   (`mutation-adapter.log`): reverting ONE site to `fsBackend(agentCtx)` reds **F1-7 alone** (8/9).
+   A future PR that refactors those sites must keep F1-7's four occurrences; there is no behavioural
+   net for them yet. One consequence of the routing worth naming: the adapter canonicalizes on the
+   confined **instance** (a subclass instance built from the member's `spec.config`), not on the live
+   host fs service — for the unit worlds here the path algebra is identical, but a provider whose
+   `resolve` depends on live host config would canonicalize under the member config instead.
 
 ## 9. What a live run must prove (the next, separately-authorised step)
 
@@ -211,5 +229,61 @@ node --test tests/world-factory/a5sf-p2-wiring.test.mjs
 node ../../../dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs "$(pwd)"
 ```
 
-Expected: 7/7 green; probe BEFORE = tool scope on the agent ctx (base, ALLOWED, 0 facts), AFTER =
+Expected: 9/9 green; probe BEFORE = tool scope on the agent ctx (base, ALLOWED, 0 facts), AFTER =
 tool plane through `a5sfToolPlaneOf` (confined, `IO_READ_DENIED`, 1 fact).
+
+## 11. Review response (2026-11-03) — six conditions, all fixed on this branch
+
+Review verdict on the first push: **APPROVE-WITH-CONDITIONS (6, none blocking)**. Head before the
+fixes `69035f30e`; every condition is addressed below, with the receipt.
+
+1. **Stale contradiction at `agent-bindings.mjs:2358-2370`.** The block still said "WHAT THIS DOES
+   *NOT* DO … ZERO consultations … reachable MECHANICALLY, not effectively" and booked a next step
+   that the code 40 lines below now performs. Rewritten as **"WHAT THE MOUNT DOES AND HOW IT IS
+   CONSUMED"**: the isolated scope, the tool-plane naming that follows, what moves onto it, and a
+   pointer to the module header:474-495 + README §8 for what is still NOT bound (native presets).
+   The dist mirror was regenerated (`place-dist-glue.mjs`, byte-identical).
+2. **`a5sf-realm-row.mjs` "(the preset-tool pattern)"** invited the over-read the very next
+   paragraph forbids. Now: "a **TOOL-SHAPED** definition (one whose body resolves the fs provider
+   from the ctx it runs on, as the shipped tool packages do)" + an explicit "this is NOT a claim
+   about the native preset tools — see STILL OPEN below".
+3. **README §5 RED prose did not match `red-test.log`.** It claimed the passing arm was F1-5; the
+   log shows **F1-3** passing and F1-5 failing. Corrected, with the reason stated (F1-5 asserts the
+   helper's default-path contract, so it must fail when the helper is absent; F1-3 never touches it
+   and therefore *is* the pre-F1 behaviour). The RED log was also re-captured against the **final**
+   9-arm suite and the **pre-F1 tree** (`git checkout origin/master -- <two files>`, not a stash of
+   the commit that already contains the fix): **8 failed / 1 passed**.
+4. **Trailing whitespace in `green-tests.log`** (and therefore a false "clean" claim). The log was
+   regenerated without trailing blanks and `git diff --check origin/master..HEAD` now exits **0**
+   (§11 receipt below).
+5. **New arm F1-8 kills mutation M-g.** The reviewer's mutation (wrap the naming call in
+   `try { … } catch { a5sfToolPlane = undefined }`) survived 7/7 — a malformed realm would fail OPEN
+   onto the base provider. F1-8 asserts the call appears exactly once, that a ±1-statement window
+   contains no `try`/`catch`/`??`/`||`, and replays the glue's own expression: a malformed mount
+   RAISES (`TypeError`), while the only sanctioned `undefined` is "no realm mounted". Measured:
+   with M-g applied, **F1-8 alone reds** (`mutation-mg.log`); reverted byte-identically
+   (`sha256 50657e20…` before and after).
+6. **Permission-adapter routing.** Took the preferred option as far as it is cheap: new behavioural
+   arm **F1-9** (identity + canonicalization + guarded effect on the SAME routed instance, §8.6),
+   **plus** the honest disclosure that the four call sites' wiring is structural-pin only, with the
+   mutation receipt (`mutation-adapter.log`). Not silently upgraded into a claim of full coverage.
+
+Re-run after the fixes (all green; full transcript in `green-tests.log`):
+
+| gate | result |
+| --- | --- |
+| `node --test tests/world-factory/a5sf-f1-ctx.test.mjs` | **9/9** (F1-1…F1-9) |
+| the five sibling a5sf node:test suites | evidence 12, harness 10, p2-seam 14, p2-wiring 9, read-gate 13 — 0 fail |
+| `npx vitest run a5sf` | 166/166 (11 files) |
+| `npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` | 20/20; scanner total **1428** = booking `to` |
+| law suites (ARC-A fitness / PR6 adversarial / A4P3 lane hygiene) | 34/34 |
+| `pnpm -r typecheck` / `pnpm -r build` | ✔ / ✔ |
+| `node scripts/place-dist-glue.mjs` | 101 placements, both mirrors byte-identical |
+| `node scripts/check-artifacts-committed.mjs` | verdict **ok** (1916 files, 101 placements) |
+| `node scripts/check-artifacts-at-head.mjs` | verdict **ok**, drift **0** ("HEAD carries its own build") |
+| `node scripts/eb3-ci-required.mjs` | PASS (9 workflows, 0 findings) |
+| `node scripts/eb3-ci-negative-controls.mjs` | 24/24 controls behaved as required |
+| `git diff --check origin/master..HEAD` | exit **0** (no whitespace errors) |
+
+Two mutation receipts live beside this file (`mutation-mg.log`, `mutation-adapter.log`); both were
+run against a backup copied INSIDE the workspace and restored byte-identically (sha256 checked).
