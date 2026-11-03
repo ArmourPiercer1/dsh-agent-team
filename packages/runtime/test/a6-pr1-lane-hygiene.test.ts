@@ -20,7 +20,14 @@ function sourceFiles(dir: string): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'dist') continue
     const full = join(dir, entry)
-    const stat = statSync(full)
+    // A concurrently-removed test temp dir must not red the population scan.
+    let stat
+    try {
+      stat = statSync(full)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue
+      throw error
+    }
     if (stat.isDirectory()) out.push(...sourceFiles(full))
     else if (/\.(ts|tsx|mjs|cjs)$/.test(entry)) out.push(full)
   }
