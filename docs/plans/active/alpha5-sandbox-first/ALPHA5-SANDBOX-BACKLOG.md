@@ -48,7 +48,9 @@
 | BL-19 | P2-06 原生 `run_code/PTC`（Node 子进程 + 受控 Host bridge，无代发旁路） | READY | `a5sf-ptc.mjs` |
 | BL-20 | P2-07 全新第三方 CLI（通用 launcher，零专用 ToolDefinition 执行体） | READY | `a5sf-new-cli.mjs` |
 
-> **P2 统一前置（2026-11-03 实测）**：所有 P2 纵切的真实 Host 半场都被同一对缺口卡住 ——（a）`installMemberIoProviders`/`installToolBindingRealm` **没有生产调用者**，a5sf realm 在已启动 Host 中是惰性的；（b）`installToolBindingRealm` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点向上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 断言的“经 Provider 读取/guard 已咨询”都只是 driver 自述。boot 预算池仍为 0，live 运行需用户新裁。
+> **P2 统一前置（2026-11-03 实测；PR #548 后状态更新）**：缺口（b）「guard 咨询不可观测」已作为**机制**闭合（`onGuardConsult` 观察者 + `a5sf-guard-consult/1` 事实 + 跨进程 JSONL 传输 + `mountA5sfRealm` 单一挂载入口，子进程pid 证明真实跨进程）；缺口（a）**部分闭合**：入口存在且被真实调用者（R2 harness）使用，但产品行仍未接线。剩余工作已实测为**多于一个调用点**：（1）`packages/runtime/src/plugin/live/agent-bindings.mjs` 成员装配回调接线；（2）emit 入列（`packages/runtime/tsconfig.build.json` 目前 **不含** `team-services/src` 与 `member-io-policy/src`）+ `scripts/dist-placements` 布局；（3）重新生成并**提交** `packages/runtime/dist`（该树受 `check-artifacts-committed` 新鲜度门约束）；（4）真实 Host 运行 + 用户 boot 预算裁决（池仍 0）。
+>
+> 原缺口描述（2026-11-03 首测）：所有 P2 纵切的真实 Host 半场都被同一对缺口卡住 ——（a）`installMemberIoProviders`/`installToolBindingRealm` **没有生产调用者**，a5sf realm 在已启动 Host 中是惰性的；（b）`installToolBindingRealm` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点向上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 断言的“经 Provider 读取/guard 已咨询”都只是 driver 自述。boot 预算池仍为 0，live 运行需用户新裁。
 
 ## 3. P3 — 原生工具逐项接入（G3）
 

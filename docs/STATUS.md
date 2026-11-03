@@ -1,6 +1,10 @@
 # STATUS — Team vNext 当前状态总览
 
 
+> **dated CURRENT 快照（2026-11-03T10:10Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(1) P2 阻塞的机制半场闭合**：**#548** 合入 —— 两个安装器新增**保默认**的 `onGuardConsult` 观察者（省略即用原 guard 对象与原受限类调用，三向挂载臂证明形状/allow/`IO_READ_DENIED` 全等），每次咨询产出一条冻结的 `a5sf-guard-consult/1` 事实，其 `decision` 是 guard 自身拒绝码的**映射**（`*_DENIED⇒deny`、`IO_POLICY_UNSUPPORTED⇒ask`）而非重判；传输 fail-closed（未记录的 allow 不触达 Provider）；**跨进程**由子进程真实挂载、父进程按序读取（pid 不同）证明；`mountA5sfRealm` 为唯一挂载入口（组合既有安装器 + 跨 realm 回滚），无第二 launcher/compiler/ledger。审查四条件全闭且变异可感（回滚双绑定臂、`ask` 车道 ELOOP 夹具、非 `TeamIoDenial` 原样抛出、构建/布局声明改为实测）。
+> **(2) 仍未闭合的部分（诚实边界）**：产品行这段代码**仍未接线**，且剩余工作经实测**多于一个调用点**：emit 入列（`tsconfig.build.json` 不含 `team-services/src`/`member-io-policy/src`）+ 布局 + 重新提交 `packages/runtime/dist`（受新鲜度门约束）+ 调用点 + 真实 Host 运行；**boot 预算池仍为 0**，live 需用户新裁。否则传输只在调用方传 `onGuardConsult` 时存在，已启动 Host 今天不传。无内核强制、无真实 `read`、无 Host 归属效果、无 boot 的任何断言。
+> **(3) 状态机**：本轮共 10 棒合入（#539 P1 硬化、#540 R2、#541 R1、#542 R4、#543 R5、#544/#547 状态同步、#545 R3、#546 BL-14 PARTIAL、#548 P2 seam）；BL-11 DONE、BL-14 PARTIAL、BL-15/16 ready、BL-14 blocked（等接线 + 预算）；G2–G5 未开始，矩阵仍全 `NOT_WIRED`。
 > **dated CURRENT 快照（2026-11-03T06:45Z，主 Agent；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(1) 再合两棒**：**#545** BL-11/R3 证据链（`tests/world-factory/lib/a5sf-evidence.mjs`：四链同调用对齐，passive 不决策；同一批行同时被 R4 `scripts/a5sf-diag.mjs` 读成 `ALLOW_LEGITIMATE`/`NO_BYPASS_FOUND` 与 `CHAIN_ALIGNED`，即 schema 契约是被测的而非声明的；首审 8 个变异存活 + 1 个真·静默放行，复审 27 变异全 RED、零存活）；**#546** BL-14/P2-01 **PARTIAL**（预算预登记门 + host-free dry：真实 compiler/guard/chain/diag 六场景；门被六种攻击全红；`>10MiB` live 案例改为非原生即 `NOT_REACHED`，不再弱 PASS）。
 > **(2) P2 真实半场的统一阻塞（实测，非推测）**：`installMemberIoProviders`/`installToolBindingRealm` **无生产调用者**（a5sf realm 在已启动 Host 中惰性），且 `installToolBindingRealm` 在 `install.ts:293` 内部构造 guard 闭包、`consulted` 不可观测。零点上游补丁的最小 seam（~10–15 行）+ 生产挂载 + 跨进程传输三者齐备前，任何 P2 live 的“经 Provider 读取 / guard 已咨询”都只是 driver 自述。**boot 预算池仍为 0**，live 运行需用户新裁。

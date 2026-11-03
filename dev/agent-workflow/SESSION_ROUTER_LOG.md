@@ -7352,3 +7352,9 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **P2 真实半场阻塞（本波最重要的实测结论，已入 backlog 与 STATUS）**：`installMemberIoProviders`/`installToolBindingRealm` **无生产调用者**（grep 仅 re-export、P1-05 测试、R2 harness），a5sf realm 在已启动 Host 中惰性；`installToolBindingRealm` 在 `packages/runtime/team-services/src/install.ts:293` 内部构造 guard 闭包且不返回，`consulted` 不可观测。零点上游补丁的最小 seam（~10–15 行：`import type { FsGuard}` + `wrapGuard` + 输入 + 保默认接线）+ 生产挂载 + 跨进程传输三者缺一，P2 live 的“经 Provider 读取/guard 已咨询”就只是 driver 自述。**boot 预算池仍=0，live 需用户新裁。**
 - **状态机**：BL-11 → DONE；BL-14 → PARTIAL（明确不计入任何验收，G2 未取得）；`graph.yaml` ready=`[BL-15, BL-16]`，blocked 增列 BL-14。
 - **未决升级（无变化）**：boot 预算新批（P2 live + BL-21 都需要）；live-root 产品范围；J-5 内部试用候选；PR-D/E/F 路线。
+
+## sync20（dated 2026-11-03T10:15Z，主 Agent；覆盖 sync19 后全部收束）
+- **#548** @ `1d0c4c00a`（a5sf P2 seam）：保默认的 `onGuardConsult` 观察者（`install.ts:73/:291`，接线 `:183-190`/`:321-328`）、`guard-observability.ts` 的 `observeGuard` 每咨询一条冻结事实 + JSONL sink/严格 reader + `GuardObservationError`、`mount.ts#mountA5sfRealm` 单一挂载入口（组合既有两安装器 + 跨 realm 回滚）、harness `mountRealm` 成为真实调用者。首审：跨进程机制判 CLOSED、(a) 判 PARTIAL；四条件全闭（回滚双绑定臂 M6 现 RED、`ask` 车道 ELOOP 夹具 M7 RED、非 `TeamIoDenial` 原样抛出 A2d RED、构建/布局过度声明改为实测、CI 措辞收窄）。二次复审唯一条件 = README M8 行写错（实测 `pass 13/fail 1` 仅 A2d），已更正。`CORE PATCH BUDGET=0`；seam 套件 14/14、`vitest run a5sf` 166/166、p4t6 20/20（tie 1427 经 ±1 反证）、`pnpm -r typecheck` 9/9。
+- **本轮累计 10 棒**：#539（P1 硬化）、#540（R2）、#541（R1）、#542（R4）、#543（R5）、#544/#547（状态同步）、#545（R3）、#546（BL-14 PARTIAL）、#548（P2 seam）。全部走独立对抗审查 + dated 清偿 + 全绿托管门（census-runtime ≈18–19min、ci-full ≈14–20min）。
+- **P2 下一棒的唯一形状（已实测）**：接线 = 调用点（`agent-bindings.mjs` 成员装配）+ emit 入列（`tsconfig.build.json` 补 `team-services/src`、`member-io-policy/src`）+ `dist-placements` 布局 + 重新提交 `packages/runtime/dist` + 真实 Host 运行；且需用户 boot 预算裁决（池 0）。**不得**用驱动自述替代 guard 咨询事实。
+- **未决升级（无变化）**：boot 预算新批；live-root 产品范围；J-5 内部试用候选；PR-D/E/F 路线。
