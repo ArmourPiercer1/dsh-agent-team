@@ -16,7 +16,7 @@ import type {
 } from '../control/types.js'
 import type { Alpha6CompositionDecision } from './composition.js'
 
-export interface ReviewWakeDeliveryPort {
+export interface WakeDeliveryPort {
   (input: {
     readonly targetSessionId: string
     readonly wakeId: string
@@ -70,7 +70,7 @@ export function renderOfficerReviewWake(request: ControlRequestRecord): string {
 export function createComposedControlNotifier(ports: {
   readonly decision: Alpha6CompositionDecision
   readonly legacy: ControlRequestNotificationPort
-  readonly wake: ReviewWakeDeliveryPort
+  readonly wake: WakeDeliveryPort
   readonly recipientSessionId: string
 }): ControlRequestNotificationPort {
   return {

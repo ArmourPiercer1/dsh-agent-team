@@ -148,6 +148,10 @@ describe('A6-PR3 zero production consumers', () => {
     const consumers: string[] = []
     for (const file of files) {
       if (file.startsWith(`${LANE_DIR}${sep}`)) continue
+      // A6-PR6 is the consumer round: its notifier names the wake token on
+      // purpose. PR3's no-consumer law is about UNWIRED production code; the
+      // opt-in adapter below is inert until the Host chooses alpha6.
+      if (file.startsWith(join(PACKAGES_DIR, 'runtime', 'alpha6') + sep)) continue
       const code = codeOnly(readFileSync(file, 'utf8'))
       if (/\breview-wake\b/.test(code) || /\bReviewWake/.test(code)) {
         consumers.push(relative(PACKAGES_DIR, file))
