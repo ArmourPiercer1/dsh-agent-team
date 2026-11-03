@@ -1,0 +1,40 @@
+$ node scripts/ci-local.mjs
+
+▶ docs:probe
+docs:probe base=origin/master head=bacd07284 changed=24 rules=md-links,derived-view,contracts-shape,cited-paths,terminology,claims-need-evidence,doc-ownership-impact
+ADVISORY DOC_IMPACT_OWNED: 3 source path(s) have declared owner documents
+ADVISORY SOURCE_CHANGED_DOC_IMPACT: owning-document selection is advisory except where dev/engineering/doc-ownership.yaml marks a rule enforce:true; those are self-imposed refusals (DOC_OWNER_UPDATE_MISSING), and CI wiring (EB-ADR-0001) remains a separate coordination decision
+LIMIT T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour
+LIMIT no C1/C2/C3 substitution and no security negative control here
+LIMIT complements scripts/ci-pr-gate.mjs (graph-parse / state-freshness legs own current_contract pointer grammar and stay the merge gate); this probe does not re-implement them and cannot replace a leg
+LIMIT semantic equivalence of prose remains a Contract Owner judgement
+LIMIT natural-language claims are matched by conservative patterns; a novel phrasing can evade the pattern (reported as a limit, not as a pass)
+docs:probe blocking=0 non_blocking=0 advisories=2 contracts=20 pairs compared
+✔ docs:probe (0.3s)
+
+▶ docs:sync --check
+docs:sync --check: docs=111 notes=4 plans=74(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261102r1.json","snapshot_version":"as20261102r1","content_digest":"sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+✔ docs:sync --check (0.3s)
+
+▶ ci shape (eb3-ci-required)
+EB3-CI-REQUIRED pass workflows=9 findings=0
+✔ ci shape (eb3-ci-required) (0.1s)
+
+▶ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done

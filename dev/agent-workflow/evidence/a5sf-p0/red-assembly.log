@@ -26,10 +26,10 @@ a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member to
 test at tests/world-factory/a5sf-assembly.test.mjs:562:1
 ✖ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (34.372282ms)
   AssertionError [ERR_ASSERTION]: managed 'read' must be REFUSED after invalidation, not served by the preset: CEILING_ONLY
-  
-  
+
+
   false !== true
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p0/tests/world-factory/a5sf-assembly.test.mjs:603:14)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
@@ -44,10 +44,10 @@ test at tests/world-factory/a5sf-assembly.test.mjs:562:1
 test at tests/world-factory/a5sf-assembly.test.mjs:807:1
 ✖ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (30.873267ms)
   AssertionError [ERR_ASSERTION]: the SAME out-of-lane read must be REFUSED after invalidation: CEILING_ONLY
-  
-  
+
+
   false !== true
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-p0/tests/world-factory/a5sf-assembly.test.mjs:857:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
