@@ -1,0 +1,75 @@
+$ git stash push -- packages/runtime/src/plugin/live/{a5sf-realm-row.mjs,agent-bindings.mjs}   # the F1 binding removed
+$ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+
+✖ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (0.680929ms)
+✖ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (5.298121ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (5.281619ms)
+✖ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (2.19257ms)
+✖ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.057022ms)
+✖ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (1.666575ms)
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.101555ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 1
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.178076
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:312:1
+✖ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (0.680929ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:313:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:339:1
+✖ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (5.298121ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:346:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:402:1
+✖ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (2.19257ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:409:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:435:1
+✖ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.057022ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:440:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:463:1
+✖ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (1.666575ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:469:21)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:489:1
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.101555ms)
+  AssertionError [ERR_ASSERTION]: the tool-plane naming import: missing `import { a5sfRealmConfigOf, a5sfToolPlaneOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'`
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:499:44)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

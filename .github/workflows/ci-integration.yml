@@ -284,6 +284,28 @@ jobs:
         # in-process Cordis unit root and mkdtemp fixtures — no boot, no port, no DSH_HOME.
         run: node --test tests/world-factory/a5sf-p2-wiring.test.mjs
 
+      - name: "a5sf F1 TOOL PLANE (effective half — node:test, zero Host boots, host-free)"
+        # The EFFECTIVE half of the P2 wiring: the mount installs the confined Provider into
+        # the installer's isolated `fs` scope, so the Context handed in keeps the BASE
+        # provider and a configured product row still produced ZERO consultations. This step
+        # pins the binding: `a5sfToolPlaneOf()` names the realm's isolated Member ctx as the
+        # Member's TOOL PLANE scope (the captured confined instance, never a per-call
+        # lookup), the glue places the Team tool registrations and the governed plane on that
+        # scope, and the permission adapter canonicalizes against the SAME instance. The suite
+        # drives the REAL tool runtime with a definition of the SAME SHAPE a preset tool
+        # plugin has and asserts the discriminating pair — a tool-invoked read outside the
+        # ceiling is DENIED with exactly ONE `a5sf-guard-consult/1` fact, while the identical
+        # shape through the base provider is ALLOWED and writes NOTHING — plus the default
+        # path, the measured three-way split and the post-dispose fail-closed lookup.
+        # ci-integration lists node:test files EXPLICITLY (the #394 / #529 incidents were files
+        # no layer collected), so without this step the binding's laws run in NO layer. The
+        # file path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree; the NATIVE preset
+        # `read` row is explicitly NOT covered (the preset registry owns its plugin fibers;
+        # that half is the P3 native takeover, BL-22).
+        run: node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

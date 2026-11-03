@@ -44,20 +44,28 @@
  * that into `GUARD_OBSERVATION_FAILED`, and the consulted call is REFUSED
  * before the base Provider runs. This module adds no catch and no downgrade.
  *
- * F1 DISCLOSURE (review response 2026-11-03) — REACHABLE MECHANICALLY, NOT
- * EFFECTIVELY. The mount installs the confined Provider through
- * `root.isolate('fs', …)` (`team-services/src/install.ts:182` member / `:332`
- * binding); Cordis `isolate()` creates a SIBLING scope, so the Context handed
- * in (the live agent row's ctx) keeps the BASE provider and nothing
- * product-side resolves the isolated scope today. Consumers must read through
- * the returned `installation.members[i].ctx|fs` or `bindings[i].ctx|fs`; only
- * those produce facts. A product row that keeps consuming `agentCtx` gets
- * ZERO consultations and an EMPTY sink even with the wiring enabled. Measured:
- * `dev/agent-workflow/evidence/a5sf-p2-wiring/probe-f1-isolate.mjs` (agent row
- * ctx → outside ALLOWED; member/binding realm ctx → IO_READ_DENIED). The
- * effective half (mount the Member's tools under the isolated ctx, or route
- * the tool plane's fs through it) is NOT done here — see that evidence README
- * §8.
+ * F1 (effective half, dated 2026-11-03) — WHAT IS BOUND AND WHAT IS NOT.
+ * The realm's isolated Provider lives on `installation.members[i].ctx`
+ * (`install.ts:182`); the Context handed to the mount keeps the BASE provider.
+ * `a5sfToolPlaneOf` below is the ONE naming of the scope the product row's TOOL
+ * PLANE is placed on: the live Member setup mounts its tool registrations and
+ * the governed tool plane through `toolPlane.ctx`, and routes the permission
+ * adapter's per-call fs seam through `toolPlane.fs` — so a tool whose body
+ * resolves the fs provider from the ctx it runs on (the preset-tool pattern)
+ * is consulted by the confined guard and writes one `a5sf-guard-consult/1`
+ * fact, while the agent ctx itself keeps the base provider (a LEADER or a
+ * non-tool consumer is untouched).
+ *
+ * STILL OPEN, stated so it cannot be read as done: the upstream agent-preset
+ * registry EAGERLY activates a preset at registration and mounts every preset
+ * plugin under its OWN `createScope(registryCtx, generationKey)` fiber
+ * (`@deepseek-ai/dsh-agent-preset-registry` activate()/mountPreset()), i.e.
+ * BEFORE any agent ctx exists and never below it. No Context handed to
+ * `agentPresets.mount()` can therefore change which `fs` a preset tool body
+ * resolves — the native `read`/`write`/`edit` rows stay on the base provider
+ * until the P3 native takeover (BL-22) places them on this plane. Measured:
+ * `dev/agent-workflow/evidence/a5sf-f1-ctx/` (§3 topology measurement) and the
+ * BEFORE/AFTER probe `probe-f1-tool-plane.mjs` over the committed dist.
  *
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
@@ -66,6 +74,46 @@ import { mountA5sfRealm } from '../../../team-services/src/mount.js'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
+
+/**
+ * Name the MEMBER TOOL PLANE scope of one mounted realm.
+ *
+ * WHY: the mount installs the confined Provider into `root.isolate('fs', …)`,
+ * so the Context passed in keeps the base provider and only the returned
+ * `installation.members[i].ctx` resolves the confined one. The product row
+ * therefore needs ONE place that says "this is the ctx the Member's tools run
+ * on, and this is the fs instance its calls must resolve". This function is
+ * that place — it adds no mount, no policy decision and no second registry; it
+ * only validates and names the scope the caller already mounted.
+ *
+ * The `fs` member is the INSTALLED confined provider instance, captured once
+ * (never a per-call `ctx.get('fs')`): after the realm is disposed the isolated
+ * provider fiber unregisters and a ctx LOOKUP on the scope answers `undefined`
+ * (measured, suite arm F1-6 — it does not fall back to the base provider, but
+ * it also cannot serve a late call). Capturing the instance keeps a late or
+ * racing consumer on the confined lane, where it still gets the guard's own
+ * refusal instead of a service-resolution fault.
+ *
+ * @param {object|undefined|null} realm - the object `mountMemberA5sfRealm`
+ *   returned (`undefined` = this row mounted no realm: the legacy path).
+ * @returns {{ ctx: object, fs: object } | undefined} the frozen tool-plane
+ *   scope, or `undefined` when the row is not a5sf-wired.
+ */
+export function a5sfToolPlaneOf(realm) {
+  if (realm === undefined || realm === null) return undefined
+  const members = realm.installation?.members
+  const member = Array.isArray(members) ? members[0] : undefined
+  if (member === undefined || member === null) {
+    throw new TypeError('agent-bindings: a mounted a5sf realm must carry at least one Member installation (the tool plane needs its isolated ctx + confined fs)')
+  }
+  if (member.ctx === undefined || member.ctx === null || typeof member.ctx.get !== 'function') {
+    throw new TypeError('agent-bindings: the a5sf Member installation carries no usable isolated ctx')
+  }
+  if (member.fs === undefined || member.fs === null || typeof member.fs.readText !== 'function') {
+    throw new TypeError('agent-bindings: the a5sf Member installation carries no confined fs provider surface')
+  }
+  return Object.freeze({ ctx: member.ctx, fs: member.fs })
+}
 
 /**
  * Read the row's a5sf wiring out of its config.

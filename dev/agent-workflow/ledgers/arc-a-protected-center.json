@@ -178,6 +178,12 @@
    "sha256": "480a20836a84d1a241f71debd0920be14a06f29a7a1fc9e433e27ae1262018da",
    "pr": "PR #550 (task/a5sf-p2-wiring-20261103) - NAMED center-interface change, coordinator-assigned",
    "reason": "Alpha.5 P2 wiring (BL-14 follow-up): the Member row must mount the compiled a5sf sandbox realm and transport each guard consultation. The change is one guarded block right after the durable MemberInstance admission (a5sfRealmConfigOf + mountMemberA5sfRealm behind a both-halves enablement law), plus the lazy a5sfRealmProvider dep and a safe row disposer; the default unconfigured path stays byte-identical (no provider call, no sink, no mount, no write). Family-addition PRs never add overrides - this entry exists because the change IS an interface change to the row assembly, assigned and reviewed as such (evidence dev/agent-workflow/evidence/a5sf-p2-wiring/, host-free arms W1-W8 with the default-path mutations RED)."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "52b5bb84599dc7b6d7e491ddefb898060cac95471b82a707b3427bffd8fd4f8b",
+   "pr": "PR #550 (task/a5sf-f1-ctx-20261103) - NAMED center-interface change, SAME named center-interface as the a5sf P2 wiring booking, coordinator-assigned",
+   "reason": "Alpha.5 F1 effective half (dated 2026-11-03): the P2 wiring mounted the compiled a5sf realm, but the mount lands in the installer's ISOLATED fs scope (install.ts:182), so the agent ctx and every tool scope kept the BASE provider and a fully configured row produced ZERO consultations. The change binds the Member TOOL PLANE to that realm scope: a per-setup a5sfToolPlaneOf() naming (isolated ctx + captured confined fs), placement of the Team tool registrations and the governed plane on toolPlaneCtx, and the permission adapter's four per-call fs reads routed through toolPlaneFsBackend so canonicalization and the effect share ONE provider. No second mount path (mountA5sfRealm stays the only entry point), no second policy compiler, no parallel tool registry; no control/**, tool-admission/dispatch, governance-center or pa-mount-registry file moves. DEFAULT PATH: with no realm mounted a5sfToolPlane is undefined, so toolPlaneCtx === agentCtx and toolPlaneFsBackend === fsBackend - the unconfigured row is byte-identical (suite arm F1-5). Evidence dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7; RED = the helper absent, GREEN = 7/7)."
   }
  ]
 }
