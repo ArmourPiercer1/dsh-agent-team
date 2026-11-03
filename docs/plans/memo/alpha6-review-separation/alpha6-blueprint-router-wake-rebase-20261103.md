@@ -62,7 +62,7 @@
 
 1. Officer 判断单件案件确需 Leader 的全局视角，可以将**当前 Case 当前 leg** Handoff 给 Leader：只变更处理者，不变更当前 leg 的权限层级、请求身份或工具授权。
 2. 该转交要跨重启生效，直至当前 leg 完成。Router 重新计算不得把已转交的同一 leg 自动抢回 Officer；新 leg 重新按其有效权限与 Blueprint 决策。
-3. **Escalation** 只有在现有审批权限法律确需更高 rung 时，通过 ControlService 原有合法升级路径执行。Handoff 不是 Escalation；路由策略不是授权裁决。
+3. **Escalation** 与 Handoff 不同：Officer 可对当前合法委托的普通 leader leg 直接沿既有阶梯升级至 Human，不需要先 Handoff Leader，也不得自己审批后继 Human leg。原工具调用按方案 A 保持待决，只有 Human 批准、调用仍有效且执行前全部验证通过才继续；取消或超时后不得复活或自动重试。
 4. 默认路由不为每个 Case 写 Assignment；仅显式 Handoff 或选定的异常接管等改变默认归属的事件，才需要最小 Case/leg-scoped 持久事实。现有最终 decider 记录不能替代**决策之前**的 Handoff 事实。
 
 ### S5. 忙碌、阻滞与不可用
