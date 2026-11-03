@@ -5304,7 +5304,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         if (problem !== undefined) {
           throw new ControlError(
             CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-            `ControlService: Member escalation is not authorized for this leg (${problem}); the global resolver table is unchanged`,
+            `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`,
             { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem },
           )
         }
