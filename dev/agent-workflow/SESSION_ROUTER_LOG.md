@@ -7358,3 +7358,11 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **本轮累计 10 棒**：#539（P1 硬化）、#540（R2）、#541（R1）、#542（R4）、#543（R5）、#544/#547（状态同步）、#545（R3）、#546（BL-14 PARTIAL）、#548（P2 seam）。全部走独立对抗审查 + dated 清偿 + 全绿托管门（census-runtime ≈18–19min、ci-full ≈14–20min）。
 - **P2 下一棒的唯一形状（已实测）**：接线 = 调用点（`agent-bindings.mjs` 成员装配）+ emit 入列（`tsconfig.build.json` 补 `team-services/src`、`member-io-policy/src`）+ `dist-placements` 布局 + 重新提交 `packages/runtime/dist` + 真实 Host 运行；且需用户 boot 预算裁决（池 0）。**不得**用驱动自述替代 guard 咨询事实。
 - **未决升级（无变化）**：boot 预算新批；live-root 产品范围；J-5 内部试用候选；PR-D/E/F 路线。
+
+## sync21（dated 2026-11-03T15:10Z，主 Agent；boot 预算新裁 + P2 wiring 法条修正）
+- **用户新裁**：预先批准 **20 次 boot 预算**，授权自行分配，无需逐次放行。落盘 `dev/agent-workflow/budgets/a5sf-boot-pool-20261103.json`（分配：read 3 / F1 有效半场 3 / write 3 / grep 3 / BL-21 2 / G1 收口 4 / reserve 2；规则：每次仍走 BL-14 预登记门、per-run grant 绑当次 HEAD、共享账本唯一计数与写入、reserve 只用于全新失败类、**:3080 与稳定实例永不触碰**）。**boot 池 0 → 20，预算不再是 P2/BL-21 的阻塞项。**
+- **#550 P2 wiring 被两条常驻法条拦下（census 4 NEW RED，均正确）**：
+  1. **ARC-A L1 受保护中心摘要锁**——调用点编辑 `packages/runtime/src/plugin/live/agent-bindings.mjs`（33 个 booked center 文件之一）。账本规则：只有 **NAMED center-interface change** 可加 `path+sha256+pr+reason` override，family-addition PR **永不**可加。本改动按先例 #392/#508/#510 由协调者指派为 named center-interface change，override 记录新摘要 + PR #550 + 理由 + 证据指针；**默认路径字节不变**（W1–W8，含默认路径变异全红）才是这条 override 诚实的依据，而不是标签。
+  2. **A4-6 build-include 姿态**——`packages/runtime/tsconfig.build.json` 被法条用朴素 `://` 剥离器解析，解释性 `//` 注释块令解析报 `Unexpected token '/'`。注释移入 evidence README，include 只留两个文件条目、无注释。
+  - 结果：`u6-arc-a-fitness` / `u6-pr6-arc-d-adversarial` / `a4p3-intervention-lane-hygiene` **34/34**。
+- **F1 有效半场仍是 P2 唯一实质阻塞**：sibling isolate ⇒ 行 ctx 拿 BASE provider，只有 `realm.installation.members[i].ctx` 受限；已配置齐全也 0 咨询、空 sink。已披露 + 探针可复现 + 下一步按 head 重锚 file:line。
