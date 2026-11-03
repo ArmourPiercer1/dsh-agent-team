@@ -25,7 +25,7 @@
  *
  * @module @dsh-agent-team/runtime/team-services/mount
  */
-import type { Context } from '@deepseek-ai/cordis';
+import type { Context, Plugin } from '@deepseek-ai/cordis';
 import type { CompileResult, EffectiveIoPolicy, MemberPolicy, TrustedMemberIdentity } from '../../member-io-policy/src/types.js';
 import type { FsProviderConstructor } from './fs.js';
 import type { GuardConsultObserver } from './guard-observability.js';
@@ -44,6 +44,30 @@ export interface A5sfRealmBinding {
     readonly effective: EffectiveIoPolicy;
     readonly config?: Record<string, unknown>;
 }
+/**
+ * One NATIVE tool module to re-mount INSIDE the Member's isolated `fs` scope.
+ *
+ * WHY THIS EXISTS (route C, 2026-11-03): the Agent preset registry mounts its
+ * tool rows under the preset's STANDING scope, which is an ANCESTOR of the
+ * agent scope; the definition a preset registers therefore resolves the preset
+ * scope's `fs` (the base Provider). A registration made from the Member's own
+ * isolated scope — `root.isolate('fs', label)`, whose DSH scope key is still the
+ * agent's (`cordinate extend` inherits the scope tag) — SHADOWS that definition
+ * for this agent only, and its body resolves the confined Provider. Mounting
+ * the native module here is what makes the MODEL-VISIBLE native `read`/`write`/
+ * `edit` execute on the confined lane. No Core patch, no copied tool body, no
+ * second mount path: the module is the SAME package the preset mounted.
+ *
+ * The module is imported by the CALLER (row composition), never resolved here:
+ * this seam must not own module-resolution policy (the same discipline that
+ * keeps policy compilation out).
+ */
+export interface NativeToolModuleMount {
+    /** A Cordis plugin module (already imported): the native tool package's module object. */
+    readonly module: Plugin;
+    /** Plugin config forwarded verbatim to `ctx.plugin`. */
+    readonly config?: unknown;
+}
 export interface MountA5sfRealmInput {
     readonly root: Context;
     readonly members: readonly A5sfRealmMember[];
@@ -52,6 +76,14 @@ export interface MountA5sfRealmInput {
     readonly providerClass?: FsProviderConstructor;
     /** Observe every guard consultation in every realm this call mounts. */
     readonly onGuardConsult?: GuardConsultObserver;
+    /**
+     * Native tool modules to re-mount inside the Member's isolated scope (route
+     * C). Absent/empty = the pre-route-C mount, byte-identical. A non-empty list
+     * requires EXACTLY ONE Member ceiling: every Member realm inherits the SAME
+     * agent scope key, so a second re-mount of the same tool names would collide
+     * in one scope layer.
+     */
+    readonly nativeToolModules?: readonly NativeToolModuleMount[];
 }
 export interface MountedA5sfRealm {
     readonly members: readonly MemberServiceSpec[];

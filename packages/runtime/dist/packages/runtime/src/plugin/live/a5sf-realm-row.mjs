@@ -70,11 +70,27 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
+import { isAbsolute } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createGuardConsultFileSink } from '../../../team-services/src/guard-observability.js'
 import { mountA5sfRealm } from '../../../team-services/src/mount.js'
 
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
+
+/**
+ * The row-config key carrying the NATIVE tool modules to re-mount inside each
+ * Member's isolated `fs` scope (route C, 2026-11-03).
+ *
+ * Each entry is either a module specifier string or `{ url, config? }`:
+ *   - `file:` URL, or an absolute filesystem path (converted with
+ *     `pathToFileURL`), or any specifier `import()` resolves FROM THIS MODULE.
+ *   - The ROW COMPOSITION owns resolution (the same discipline as
+ *     `a5sfRealmProvider`): the host knows where its own `@deepseek-ai/dsh-tool-fs`
+ *     lives; this glue must not guess a host install path.
+ */
+export const A5SF_NATIVE_TOOL_MODULES_KEY = 'a5sfNativeToolModules'
 
 /**
  * Name the MEMBER TOOL PLANE scope of one mounted realm.
@@ -124,8 +140,16 @@ export function a5sfToolPlaneOf(realm) {
  * configuration fault (fail loudly at row assembly, never a silently disabled
  * sandbox lane).
  *
+ * `a5sfNativeToolModules`, when present, is validated here too (route C): a
+ * non-array, an empty array entry, or an entry that is neither a non-blank
+ * string nor `{ url: <non-blank string>, config?: object }` is a configuration
+ * fault. The key stays OMITTED from the returned block when absent, so the
+ * pre-route-C block is byte-identical (its readers and their pinned tests are
+ * unaffected).
+ *
  * @param {object|undefined|null} config - the row config.
- * @returns {{ evidencePath: string } | undefined} the frozen wiring block.
+ * @returns {{ evidencePath: string, nativeToolModules?: readonly object[] } | undefined}
+ *   the frozen wiring block.
  */
 export function a5sfRealmConfigOf(config) {
   const raw = config === undefined || config === null ? undefined : config[A5SF_EVIDENCE_PATH_KEY]
@@ -135,7 +159,71 @@ export function a5sfRealmConfigOf(config) {
       `agent-bindings: config.${A5SF_EVIDENCE_PATH_KEY} must be a non-blank string when present (the a5sf guard-consult evidence path)`,
     )
   }
-  return Object.freeze({ evidencePath: raw })
+  const modules = nativeToolModulesOf(config[A5SF_NATIVE_TOOL_MODULES_KEY])
+  return Object.freeze({
+    evidencePath: raw,
+    ...(modules === undefined ? {} : { nativeToolModules: modules }),
+  })
+}
+
+/**
+ * Validate the native-tool-module list (route C). `undefined`/`null` = the
+ * module is not requested at all: the pre-route-C mount, byte-identical.
+ *
+ * @param {unknown} raw - the config value.
+ * @returns {readonly {url: string, config?: object}[] | undefined} frozen specs.
+ */
+function nativeToolModulesOf(raw) {
+  if (raw === undefined || raw === null) return undefined
+  if (!Array.isArray(raw)) {
+    throw new TypeError(`agent-bindings: config.${A5SF_NATIVE_TOOL_MODULES_KEY} must be an array when present (one entry per native tool module)`)
+  }
+  if (raw.length === 0) return Object.freeze([])
+  return Object.freeze(raw.map((entry, index) => {
+    const where = `config.${A5SF_NATIVE_TOOL_MODULES_KEY}[${index}]`
+    if (typeof entry === 'string') {
+      if (entry.trim() === '') throw new TypeError(`agent-bindings: ${where} must be a non-blank module specifier`)
+      return Object.freeze({ url: entry })
+    }
+    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+      throw new TypeError(`agent-bindings: ${where} must be a module specifier string or { url, config? }`)
+    }
+    const url = entry.url
+    if (typeof url !== 'string' || url.trim() === '') {
+      throw new TypeError(`agent-bindings: ${where}.url must be a non-blank module specifier`)
+    }
+    const pluginConfig = entry.config
+    if (pluginConfig !== undefined && (pluginConfig === null || typeof pluginConfig !== 'object' || Array.isArray(pluginConfig))) {
+      throw new TypeError(`agent-bindings: ${where}.config must be a plain object when present`)
+    }
+    return Object.freeze({ url, ...(pluginConfig === undefined ? {} : { config: pluginConfig }) })
+  }))
+}
+
+/**
+ * The Member AGENT's model-visible tool names, read from the ONE registry.
+ *
+ * WHY a separate reader: the route-C re-mount must be SURFACE-NEUTRAL. A
+ * registration made from the agent's own scope is outside the inherited
+ * `tools.restrict` filter (`ToolRuntime.view`: own registrations are applied
+ * last, outside the filter), so re-mounting a module whose tool the Member's
+ * `builtinToolDeny` lane denied would SILENTLY RE-ENABLE it. Comparing the
+ * agent's visible set before/after the mount makes that a measured refusal
+ * instead of a governance hole.
+ *
+ * @param {object} root - the agent Context the realm installs into.
+ * @returns {Set<string>} the visible tool names.
+ */
+export function a5sfAgentToolSurface(root) {
+  const scope = scopeOf(root)
+  if (scope === undefined) {
+    throw new TypeError('agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)')
+  }
+  const tools = root.get('tools')
+  if (tools === undefined || tools === null || typeof tools.schemas !== 'function') {
+    throw new TypeError('agent-bindings: the a5sf native tool re-mount needs the tools service on the agent Context')
+  }
+  return new Set(tools.schemas(scope).map((schema) => schema.name))
 }
 
 /**
@@ -183,13 +271,63 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   // The row's configured path, never a derived or hardcoded one. The sink owns
   // no counter/ledger: one fact per consultation, in call order.
   const sink = createGuardConsultFileSink({ path: a5sfConfig.evidencePath })
-  return await mountA5sfRealm({
+  const mountInput = {
     root,
     members: compiled.members,
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
     ...(compiled.providerClass === undefined ? {} : { providerClass: compiled.providerClass }),
     onGuardConsult: (fact) => sink.record(fact),
-  })
+  }
+  const nativeSpecs = a5sfConfig.nativeToolModules ?? []
+  if (nativeSpecs.length === 0) {
+    // The pre-route-C mount, byte-identical: no tools service lookup, no
+    // module import, no surface comparison.
+    return await mountA5sfRealm(mountInput)
+  }
+
+  // ROUTE C — the Member's isolated scope gets the confined Provider AND the
+  // re-mounted NATIVE tool modules, so a model-visible native `read` resolves
+  // the confined Provider. Surface-neutral by construction of the check below.
+  const before = a5sfAgentToolSurface(root)
+  const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
+    // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
+    const imported = await import(moduleSpecifierOf(spec.url))
+    return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
+  }))
+  const realm = await mountA5sfRealm({ ...mountInput, nativeToolModules })
+  const after = a5sfAgentToolSurface(root)
+  const added = [...after].filter((name) => !before.has(name))
+  const removed = [...before].filter((name) => !after.has(name))
+  if (added.length > 0 || removed.length > 0) {
+    // FAIL CLOSED. A re-mount may only place the SAME native surface on the
+    // confined lane; a name that appears (a denied tool re-enabled, an extra
+    // tool package) or disappears is a governance change this wiring must not
+    // make silently. The realm is unmounted before the refusal propagates.
+    await realm.dispose()
+    throw new TypeError(
+      `agent-bindings: the configured ${A5SF_NATIVE_TOOL_MODULES_KEY} would CHANGE the Member's model-visible tool surface`
+      + ` (added: ${JSON.stringify(added)}; removed: ${JSON.stringify(removed)}); refusing to mount — a scoped registration`
+      + ' is outside the inherited tools.restrict filter, so a re-mounted tool could re-enable a builtinToolDeny lane',
+    )
+  }
+  return realm
+}
+
+/**
+ * Turn one configured module specifier into something `import()` accepts.
+ *
+ * `file:` URLs pass through; absolute paths become file URLs; anything else is
+ * treated as a bare specifier resolved from THIS module (the host install that
+ * carries the plugin). The row composition is responsible for naming a module
+ * the host can actually load.
+ *
+ * @param {string} specifier - the configured specifier.
+ * @returns {string} the import specifier.
+ */
+function moduleSpecifierOf(specifier) {
+  if (specifier.startsWith('file:')) return specifier
+  if (isAbsolute(specifier)) return pathToFileURL(specifier).href
+  return specifier
 }
 
 /**

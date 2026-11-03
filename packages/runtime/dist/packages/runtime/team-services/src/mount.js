@@ -26,6 +26,7 @@
  * @module @dsh-agent-team/runtime/team-services/mount
  */
 import { installMemberIoProviders, installToolBindingRealm, } from './install.js';
+import { TeamServiceInstallError } from './types.js';
 /**
  * Mount one Member's compiled realm (ceiling + zero or more binding realms).
  * Consumes compiled objects only; refuses nothing of its own — every refusal
@@ -33,6 +34,13 @@ import { installMemberIoProviders, installToolBindingRealm, } from './install.js
  */
 export async function mountA5sfRealm(input) {
     const { root } = input;
+    const nativeModules = input.nativeToolModules ?? [];
+    // Refuse BEFORE touching the Context: every Member realm shares the agent's
+    // DSH scope key, so two re-mounts of the same native names would collide
+    // inside one scope layer. One Member ceiling per agent tool plane.
+    if (nativeModules.length > 0 && input.members.length !== 1) {
+        throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool re-mount requires exactly one Member ceiling (got ${input.members.length}): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer`);
+    }
     // The Member ceiling first: a binding realm without its ceiling would enforce
     // the narrower lane while the Member-wide lane stayed decorative.
     const installation = await installMemberIoProviders({
@@ -41,6 +49,22 @@ export async function mountA5sfRealm(input) {
         ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
         ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
     });
+    // ROUTE C (2026-11-03): re-mount the native tool modules INSIDE the Member's
+    // isolated scope. One parent fiber per module; disposal rides the realm's own
+    // dispose (before the confined Provider fiber), so the shadow can never
+    // outlive the confined `fs` it resolves.
+    const nativeFibers = [];
+    const disposeNative = async () => {
+        for (const fiber of [...nativeFibers].reverse()) {
+            try {
+                await fiber.dispose();
+            }
+            catch {
+                // Best-effort rollback: the original failure is the one reported.
+            }
+        }
+        nativeFibers.length = 0;
+    };
     const mounted = [];
     const disposeMounted = async () => {
         for (const realm of [...mounted].reverse()) {
@@ -53,6 +77,24 @@ export async function mountA5sfRealm(input) {
         }
         mounted.length = 0;
     };
+    try {
+        if (nativeModules.length > 0) {
+            // Exactly one Member (asserted above); its `ctx` IS the isolated scope the
+            // confined Provider was installed on (`install.ts:182`).
+            const target = installation.members[0]?.ctx;
+            if (target === undefined) {
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', 'native tool re-mount found no installed Member realm to mount into');
+            }
+            for (const mount of nativeModules) {
+                nativeFibers.push(await target.plugin(mount.module, mount.config));
+            }
+        }
+    }
+    catch (error) {
+        await disposeNative();
+        await installation.dispose();
+        throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
     try {
         for (const binding of input.bindings ?? []) {
             const spec = {
@@ -71,6 +113,7 @@ export async function mountA5sfRealm(input) {
     }
     catch (error) {
         await disposeMounted();
+        await disposeNative();
         await installation.dispose();
         throw error;
     }
@@ -83,6 +126,10 @@ export async function mountA5sfRealm(input) {
             if (disposed)
                 return;
             disposed = true;
+            // The native shadow is disposed FIRST: once the confined Provider fiber is
+            // gone, a surviving shadow would resolve a missing `fs` service (fail
+            // closed, but reported as a service fault) instead of the guard's refusal.
+            await disposeNative();
             await disposeMounted();
             await installation.dispose();
         },

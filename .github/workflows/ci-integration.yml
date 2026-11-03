@@ -310,6 +310,33 @@ jobs:
         # that half is the P3 native takeover, BL-22).
         run: node --test tests/world-factory/a5sf-f1-ctx.test.mjs
 
+      - name: "a5sf NATIVE ROUTE C (native tool confinement — node:test, zero Host boots, host-free)"
+        # The NATIVE preset rows (`@deepseek-ai/dsh-tool-fs` read/write/edit) were ruled
+        # out of the a5sf confinement lane as CORE_SEAM_BLOCKER. That ruling is wrong at
+        # this baseline: the preset registry mounts its rows under the preset's standing
+        # scope, which is the agent scope's PARENT (`bindScopeParent(agentKey,
+        # generationKey)`), so a registration made from the Member's isolated scope
+        # (`root.isolate('fs', label)`, same DSH scope key as the agent) is an OWN
+        # registration that legally shadows the inherited preset definition, and its body
+        # resolves the confined Provider. This step pins the wiring that makes it safe:
+        # `config.a5sfNativeToolModules` (row-composition specifiers; absent = pre-route-C
+        # byte-identical) is re-mounted inside the Member's isolated scope by
+        # `mountA5sfRealm`; the mount is SURFACE-NEUTRAL OR REFUSED (an own registration is
+        # outside the inherited `tools.restrict` filter, so a re-mounted tool could
+        # otherwise silently re-enable a `builtinToolDeny` lane); disposal disposes the
+        # shadow BEFORE the confined Provider; one Member ceiling per agent scope. Arms:
+        # config reader, the discriminating pair (before: the preset's native read is
+        # served by the BASE provider; after: the identical read outside the ceiling is
+        # REFUSED with exactly one `a5sf-guard-consult/1` fact, ONE model-visible `read`,
+        # ONE `tool:read` section), the surface-neutral refusal, and teardown (after
+        # dispose the preset definition is visible again on BASE — disclosed, not
+        # overclaimed). The REAL `@deepseek-ai/dsh-tool-fs` module is measured by the probe
+        # in dev/agent-workflow/evidence/a5sf-native-route-c/probe-route-c.mjs. The file
+        # path is a required token in dev/ci/eb3-ci-manifest.json; dropping it is
+        # CI_LAYER_LEG_WEAKENED. Host-free: an in-process Cordis unit root and mkdtemp
+        # fixtures — no boot, no port, no DSH_HOME, no pristine host tree.
+        run: node --test tests/world-factory/a5sf-native-route-c.test.mjs
+
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness
         # The SAME script and the same legs pr-gate runs, so "what CI runs" and "what

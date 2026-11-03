@@ -26,7 +26,7 @@
  * @module @dsh-agent-team/runtime/team-services/mount
  */
 
-import type { Context } from '@deepseek-ai/cordis'
+import type { Context, Fiber, Plugin } from '@deepseek-ai/cordis'
 import type {
   CompileResult,
   EffectiveIoPolicy,
@@ -43,6 +43,7 @@ import {
   type ToolBindingRealmSpec,
 } from './install.js'
 import type { MemberIoInstallation } from './types.js'
+import { TeamServiceInstallError } from './types.js'
 
 /** One Member to mount: identity + the ceiling compiled for that generation. */
 export interface A5sfRealmMember {
@@ -59,6 +60,31 @@ export interface A5sfRealmBinding {
   readonly config?: Record<string, unknown>
 }
 
+/**
+ * One NATIVE tool module to re-mount INSIDE the Member's isolated `fs` scope.
+ *
+ * WHY THIS EXISTS (route C, 2026-11-03): the Agent preset registry mounts its
+ * tool rows under the preset's STANDING scope, which is an ANCESTOR of the
+ * agent scope; the definition a preset registers therefore resolves the preset
+ * scope's `fs` (the base Provider). A registration made from the Member's own
+ * isolated scope — `root.isolate('fs', label)`, whose DSH scope key is still the
+ * agent's (`cordinate extend` inherits the scope tag) — SHADOWS that definition
+ * for this agent only, and its body resolves the confined Provider. Mounting
+ * the native module here is what makes the MODEL-VISIBLE native `read`/`write`/
+ * `edit` execute on the confined lane. No Core patch, no copied tool body, no
+ * second mount path: the module is the SAME package the preset mounted.
+ *
+ * The module is imported by the CALLER (row composition), never resolved here:
+ * this seam must not own module-resolution policy (the same discipline that
+ * keeps policy compilation out).
+ */
+export interface NativeToolModuleMount {
+  /** A Cordis plugin module (already imported): the native tool package's module object. */
+  readonly module: Plugin
+  /** Plugin config forwarded verbatim to `ctx.plugin`. */
+  readonly config?: unknown
+}
+
 export interface MountA5sfRealmInput {
   readonly root: Context
   readonly members: readonly A5sfRealmMember[]
@@ -67,6 +93,14 @@ export interface MountA5sfRealmInput {
   readonly providerClass?: FsProviderConstructor
   /** Observe every guard consultation in every realm this call mounts. */
   readonly onGuardConsult?: GuardConsultObserver
+  /**
+   * Native tool modules to re-mount inside the Member's isolated scope (route
+   * C). Absent/empty = the pre-route-C mount, byte-identical. A non-empty list
+   * requires EXACTLY ONE Member ceiling: every Member realm inherits the SAME
+   * agent scope key, so a second re-mount of the same tool names would collide
+   * in one scope layer.
+   */
+  readonly nativeToolModules?: readonly NativeToolModuleMount[]
 }
 
 export interface MountedA5sfRealm {
@@ -83,6 +117,16 @@ export interface MountedA5sfRealm {
  */
 export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<MountedA5sfRealm> {
   const { root } = input
+  const nativeModules = input.nativeToolModules ?? []
+  // Refuse BEFORE touching the Context: every Member realm shares the agent's
+  // DSH scope key, so two re-mounts of the same native names would collide
+  // inside one scope layer. One Member ceiling per agent tool plane.
+  if (nativeModules.length > 0 && input.members.length !== 1) {
+    throw new TeamServiceInstallError(
+      'SERVICE_MOUNT_FAILED',
+      `native tool re-mount requires exactly one Member ceiling (got ${input.members.length}): every Member realm inherits the same agent scope key, so a second re-mount of the same tool names collides in one scope layer`,
+    )
+  }
   // The Member ceiling first: a binding realm without its ceiling would enforce
   // the narrower lane while the Member-wide lane stayed decorative.
   const installation = await installMemberIoProviders({
@@ -91,6 +135,22 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     ...(input.providerClass === undefined ? {} : { providerClass: input.providerClass }),
     ...(input.onGuardConsult === undefined ? {} : { onGuardConsult: input.onGuardConsult }),
   })
+
+  // ROUTE C (2026-11-03): re-mount the native tool modules INSIDE the Member's
+  // isolated scope. One parent fiber per module; disposal rides the realm's own
+  // dispose (before the confined Provider fiber), so the shadow can never
+  // outlive the confined `fs` it resolves.
+  const nativeFibers: Fiber[] = []
+  const disposeNative = async (): Promise<void> => {
+    for (const fiber of [...nativeFibers].reverse()) {
+      try {
+        await fiber.dispose()
+      } catch {
+        // Best-effort rollback: the original failure is the one reported.
+      }
+    }
+    nativeFibers.length = 0
+  }
 
   const mounted: ToolBindingRealm[] = []
   const disposeMounted = async (): Promise<void> => {
@@ -102,6 +162,30 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
       }
     }
     mounted.length = 0
+  }
+
+  try {
+    if (nativeModules.length > 0) {
+      // Exactly one Member (asserted above); its `ctx` IS the isolated scope the
+      // confined Provider was installed on (`install.ts:182`).
+      const target = installation.members[0]?.ctx
+      if (target === undefined) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          'native tool re-mount found no installed Member realm to mount into',
+        )
+      }
+      for (const mount of nativeModules) {
+        nativeFibers.push(await target.plugin(mount.module, mount.config as never))
+      }
+    }
+  } catch (error) {
+    await disposeNative()
+    await installation.dispose()
+    throw new TeamServiceInstallError(
+      'SERVICE_MOUNT_FAILED',
+      `native tool module re-mount failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
 
   try {
@@ -121,6 +205,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     }
   } catch (error) {
     await disposeMounted()
+    await disposeNative()
     await installation.dispose()
     throw error
   }
@@ -133,6 +218,10 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
     dispose: async (): Promise<void> => {
       if (disposed) return
       disposed = true
+      // The native shadow is disposed FIRST: once the confined Provider fiber is
+      // gone, a surviving shadow would resolve a missing `fs` service (fail
+      // closed, but reported as a service fault) instead of the guard's refusal.
+      await disposeNative()
       await disposeMounted()
       await installation.dispose()
     },
