@@ -440,9 +440,12 @@ previously survived 11/11.
 * `A2d` calls `observeGuard` with a guard that throws a `TypeError`, asserting
   the SAME error is rethrown and ZERO facts are recorded.
 
-Mutations: M7 (erase the ask branch, always `deny`) → **A2c RED**. M8 (delete
-`if (!(error instanceof TeamIoDenial)) throw error`, so a non-decision fault is
-recorded) → **A2c + A2d RED**. Both previously survived.
+Mutations: M7 (erase the ask branch, always `deny`) → **A2c RED** (`pass 13 /
+fail 1`). M8 (delete `if (!(error instanceof TeamIoDenial)) throw error`, so a
+non-decision fault is recorded) → **A2d RED only** (`pass 13 / fail 1`; A2c
+still passes because it takes the `TeamIoDenial` path this mutation does not
+touch — an earlier draft of this row said "A2c + A2d", corrected after the
+reviewer re-ran it). Both mutations previously survived.
 
 ### 11.3 Condition 3 — the build/placement overclaim is narrowed (and the work is
 sized honestly)
@@ -471,7 +474,7 @@ the token is a review obligation.
 |---|---|---|---|
 | M6 delete the rollback loop (`await disposeMounted()` in `mount.ts` catch) | `mount.ts:123` | A6c | **RED** — `pass 13 / fail 1`, A6c fails on remount |
 | M7 erase the ask lane (`return code === 'IO_POLICY_UNSUPPORTED' ? 'ask' : 'deny'` → `return 'deny'`) | `guard-observability.ts:137` | A2c | **RED** — `pass 13 / fail 1`, A2c `decision` mismatch |
-| M8 record a non-`TeamIoDenial` fault (delete the `instanceof` rethrow) | `guard-observability.ts:164` | A2d (and A2c, `decidedBy` becomes `undefined`) | **RED** — `pass 12 / fail 2` |
+| M8 record a non-`TeamIoDenial` fault (delete the `instanceof` rethrow) | `guard-observability.ts:164` | A2d only (A2c exercises the `TeamIoDenial` branch and is unaffected) | **RED** — `pass 13 / fail 1` |
 | none (restored) | — | — | **GREEN** — 14/14 |
 
 ### 11.6 Re-run after the fixes (real output in `green-tests.log`)
