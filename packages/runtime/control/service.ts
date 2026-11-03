@@ -218,6 +218,12 @@ import {
   CONTROL_ERROR_CODES,
   ControlError,
 } from './errors.js'
+import {
+  REVIEW_CAPABILITY_ENTRIES,
+  ReviewCapabilityCandidate,
+  decisionCapabilityEvidenceFrom,
+} from '../review-authority/index.js'
+import type { DecisionCapabilityEvidence, ReviewCapabilityEntry } from '../review-authority/index.js'
 import type { ControlErrorCode } from './errors.js'
 import {
   PERMISSION_OVERLAY_EFFECT_VALUES,
@@ -404,6 +410,15 @@ interface RequestPayload {
    * the human actually approved.
    */
   readonly authorityScope?: ControlAuthorityScope
+  readonly paApprovalCaseId?: string
+  readonly operationOwnerTemplateId?: string
+  readonly operationToolDefinitionIdentity?: string
+  readonly operationToolOwner?: string
+  readonly operationToolName?: string
+  readonly authorityGeneration?: number
+  readonly blueprintContentHash?: string
+  readonly blueprintRevision?: string
+  readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
 }
 
 /** The `control-decision-recorded` payload. */
@@ -417,6 +432,7 @@ interface DecisionPayload {
    *  choose (a drift close, or a close because no resolver exists). It never
    *  changes the VALUE — a terminal close is a `deny` — it says why. */
   readonly terminalReason?: ControlLegTerminalReason
+  readonly reviewCapability?: DecisionCapabilityEvidence
   readonly scope: ControlOperationScope
   readonly requestSequence: number
 }
@@ -829,6 +845,46 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
   ) {
     return undefined
   }
+  const paApprovalCaseId = value['paApprovalCaseId']
+  if (paApprovalCaseId !== undefined && (typeof paApprovalCaseId !== 'string' || paApprovalCaseId.length === 0)) {
+    return undefined
+  }
+  const operationOwnerTemplateId = value['operationOwnerTemplateId']
+  if (operationOwnerTemplateId !== undefined && (typeof operationOwnerTemplateId !== 'string' || operationOwnerTemplateId.length === 0)) {
+    return undefined
+  }
+  const operationToolDefinitionIdentity = value['operationToolDefinitionIdentity']
+  if (operationToolDefinitionIdentity !== undefined && (typeof operationToolDefinitionIdentity !== 'string' || operationToolDefinitionIdentity.length === 0)) {
+    return undefined
+  }
+  const operationToolOwner = value['operationToolOwner']
+  if (operationToolOwner !== undefined && (typeof operationToolOwner !== 'string' || operationToolOwner.length === 0)) {
+    return undefined
+  }
+  const operationToolName = value['operationToolName']
+  if (operationToolName !== undefined && (typeof operationToolName !== 'string' || operationToolName.length === 0)) {
+    return undefined
+  }
+  const authorityGeneration = value['authorityGeneration']
+  if (authorityGeneration !== undefined && (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0)) {
+    return undefined
+  }
+  const blueprintContentHash = value['blueprintContentHash']
+  if (blueprintContentHash !== undefined && (typeof blueprintContentHash !== 'string' || blueprintContentHash.length === 0)) {
+    return undefined
+  }
+  const blueprintRevision = value['blueprintRevision']
+  if (blueprintRevision !== undefined && (typeof blueprintRevision !== 'string' || blueprintRevision.length === 0)) {
+    return undefined
+  }
+  const perEffectRequiredAuthorities = value['perEffectRequiredAuthorities']
+  if (
+    perEffectRequiredAuthorities !== undefined &&
+    (!Array.isArray(perEffectRequiredAuthorities) ||
+      !perEffectRequiredAuthorities.every((authority) => isProposalAuthorityPosition(authority)))
+  ) {
+    return undefined
+  }
   // A4-PR7 Task 7.0 (ADR A1-14): the persisted authority point. A
   // present-but-malformed one fails the row (it is an authority-bearing field;
   // half-reading it would let the ceiling be re-run over a point the row did
@@ -892,6 +948,17 @@ function parseRequestPayload(value: unknown): RequestPayload | undefined {
     ...(previousRequestId !== undefined ? { previousRequestId } : {}),
     ...(mutationProposalFingerprint !== undefined ? { mutationProposalFingerprint } : {}),
     ...(authorityScope !== undefined ? { authorityScope } : {}),
+    ...(paApprovalCaseId !== undefined ? { paApprovalCaseId } : {}),
+    ...(operationOwnerTemplateId !== undefined ? { operationOwnerTemplateId } : {}),
+    ...(operationToolDefinitionIdentity !== undefined ? { operationToolDefinitionIdentity } : {}),
+    ...(operationToolOwner !== undefined ? { operationToolOwner } : {}),
+    ...(operationToolName !== undefined ? { operationToolName } : {}),
+    ...(authorityGeneration !== undefined ? { authorityGeneration } : {}),
+    ...(blueprintContentHash !== undefined ? { blueprintContentHash } : {}),
+    ...(blueprintRevision !== undefined ? { blueprintRevision } : {}),
+    ...(perEffectRequiredAuthorities !== undefined
+      ? { perEffectRequiredAuthorities: perEffectRequiredAuthorities as readonly ProposalAuthorityPosition[] }
+      : {}),
   }
 }
 
@@ -937,6 +1004,50 @@ function parseAbandonmentPayload(value: unknown): AbandonmentPayload | undefined
   }
 }
 
+/** Parse A6 capability evidence; malformed / unknown values are OMITTED. */
+function parseReviewCapabilityEvidence(value: unknown): DecisionCapabilityEvidence | undefined {
+  if (!isPlainObject(value)) return undefined
+  const source = value['source']
+  const entry = value['entry']
+  const effective = value['effectiveReviewAuthority']
+  const approvalCaseId = value['approvalCaseId']
+  const currentLegRequestId = value['currentLegRequestId']
+  const legOrdinal = value['legOrdinal']
+  const scopeFingerprint = value['scopeFingerprint']
+  const blueprintContentHash = value['blueprintContentHash']
+  const blueprintRevision = value['blueprintRevision']
+  const authorityGeneration = value['authorityGeneration']
+  const operationOwnerInstanceId = value['operationOwnerInstanceId']
+  const operationOwnerTemplateId = value['operationOwnerTemplateId']
+  const operationToolDefinitionIdentity = value['operationToolDefinitionIdentity']
+  if (source !== 'native' && source !== 'blueprint-officer') return undefined
+  if (!REVIEW_CAPABILITY_ENTRIES.includes(entry as never)) return undefined
+  if (!isProposalAuthorityPosition(effective)) return undefined
+  for (const candidate of [approvalCaseId, currentLegRequestId, scopeFingerprint, blueprintContentHash, blueprintRevision, operationOwnerInstanceId, operationOwnerTemplateId, operationToolDefinitionIdentity]) {
+    if (typeof candidate !== 'string' || candidate.length === 0) return undefined
+  }
+  if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) return undefined
+  if (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0) return undefined
+  const effectSetFingerprint = value['effectSetFingerprint']
+  if (effectSetFingerprint !== undefined && (typeof effectSetFingerprint !== 'string' || effectSetFingerprint.length === 0)) return undefined
+  return {
+    source,
+    entry: entry as never,
+    effectiveReviewAuthority: effective,
+    approvalCaseId,
+    currentLegRequestId,
+    legOrdinal,
+    scopeFingerprint,
+    ...(effectSetFingerprint === undefined ? {} : { effectSetFingerprint }),
+    blueprintContentHash,
+    blueprintRevision,
+    authorityGeneration,
+    operationOwnerInstanceId,
+    operationOwnerTemplateId,
+    operationToolDefinitionIdentity,
+  } as DecisionCapabilityEvidence
+}
+
 /** Parse a decision payload (malformed rows are treated as ABSENT). */
 function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   if (!isPlainObject(value)) return undefined
@@ -971,6 +1082,10 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   ) {
     return undefined
   }
+  // A6-PR2b: evidence is OPTIONAL and non-authoritative on its own. A malformed
+  // evidence blob is OMITTED — the decision row (the durable authority) stays;
+  // PA/Grant/Guard later fail closed with authority-undetermined if they need it.
+  const reviewCapability = parseReviewCapabilityEvidence(value['reviewCapability'])
   return {
     requestId,
     decision: decision as ControlDecisionValue,
@@ -982,6 +1097,7 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
     ...(terminalReason !== undefined
       ? { terminalReason: terminalReason as ControlLegTerminalReason }
       : {}),
+    ...(reviewCapability !== undefined ? { reviewCapability } : {}),
   }
 }
 
@@ -1908,6 +2024,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.mutationProposalFingerprint !== undefined
         ? { mutationProposalFingerprint: payload.mutationProposalFingerprint }
         : {}),
+      ...(payload.paApprovalCaseId !== undefined ? { paApprovalCaseId: payload.paApprovalCaseId } : {}),
+      ...(payload.operationOwnerTemplateId !== undefined
+        ? { operationOwnerTemplateId: payload.operationOwnerTemplateId }
+        : {}),
+      ...(payload.operationToolDefinitionIdentity !== undefined
+        ? { operationToolDefinitionIdentity: payload.operationToolDefinitionIdentity }
+        : {}),
+      ...(payload.operationToolOwner !== undefined ? { operationToolOwner: payload.operationToolOwner } : {}),
+      ...(payload.operationToolName !== undefined ? { operationToolName: payload.operationToolName } : {}),
+      ...(payload.authorityGeneration !== undefined
+        ? { authorityGeneration: payload.authorityGeneration }
+        : {}),
+      ...(payload.blueprintContentHash !== undefined
+        ? { blueprintContentHash: payload.blueprintContentHash }
+        : {}),
+      ...(payload.blueprintRevision !== undefined
+        ? { blueprintRevision: payload.blueprintRevision }
+        : {}),
+      ...(payload.perEffectRequiredAuthorities !== undefined
+        ? { perEffectRequiredAuthorities: payload.perEffectRequiredAuthorities }
+        : {}),
     }
   }
 
@@ -1937,6 +2074,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.note !== undefined ? { note: payload.note } : {}),
       ...(payload.terminalReason !== undefined
         ? { terminalReason: payload.terminalReason }
+        : {}),
+      ...(payload.reviewCapability !== undefined
+        ? { reviewCapability: payload.reviewCapability }
         : {}),
     }
   }
@@ -2001,6 +2141,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
      *  happened. Additive: the VALUE of a terminal close is a `deny` either
      *  way, so an absent field is a reviewer-chosen close. */
     readonly terminalReason?: ControlLegTerminalReason
+    readonly reviewCapability?: ReviewCapabilityCandidate
   }): Promise<ControlDecisionRecord> {
     const decisionScopeSubject = resolveSubject(args.scope)
     if (decisionScopeSubject === undefined) {
@@ -2047,6 +2188,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     const sequence = await putEntry({
       schemaVersion: 2,
@@ -2067,6 +2211,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     return record
   }
@@ -2095,6 +2242,15 @@ export function createControlService(options: ControlServiceOptions): ControlSer
      * an approval-case field must not leak into an older wire.
      */
     readonly authorityScope?: ControlAuthorityScope
+    readonly paApprovalCaseId?: string
+    readonly operationOwnerTemplateId?: string
+    readonly operationToolDefinitionIdentity?: string
+    readonly operationToolOwner?: string
+    readonly operationToolName?: string
+    readonly authorityGeneration?: number
+    readonly blueprintContentHash?: string
+    readonly blueprintRevision?: string
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
   }
 
   /**
@@ -2132,6 +2288,21 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       requestedEffect: leg.requestedEffect,
       ...(leg.mutationProposalFingerprint !== undefined
         ? { mutationProposalFingerprint: leg.mutationProposalFingerprint }
+        : {}),
+      ...(leg.paApprovalCaseId !== undefined ? { paApprovalCaseId: leg.paApprovalCaseId } : {}),
+      ...(leg.operationOwnerTemplateId !== undefined
+        ? { operationOwnerTemplateId: leg.operationOwnerTemplateId }
+        : {}),
+      ...(leg.operationToolDefinitionIdentity !== undefined
+        ? { operationToolDefinitionIdentity: leg.operationToolDefinitionIdentity }
+        : {}),
+      ...(leg.operationToolOwner !== undefined ? { operationToolOwner: leg.operationToolOwner } : {}),
+      ...(leg.operationToolName !== undefined ? { operationToolName: leg.operationToolName } : {}),
+      ...(leg.authorityGeneration !== undefined ? { authorityGeneration: leg.authorityGeneration } : {}),
+      ...(leg.blueprintContentHash !== undefined ? { blueprintContentHash: leg.blueprintContentHash } : {}),
+      ...(leg.blueprintRevision !== undefined ? { blueprintRevision: leg.blueprintRevision } : {}),
+      ...(leg.perEffectRequiredAuthorities !== undefined
+        ? { perEffectRequiredAuthorities: leg.perEffectRequiredAuthorities }
         : {}),
     }
   }
@@ -2550,6 +2721,104 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     return outcome.record
   }
 
+  // --- Alpha.6 PR2b: member capability gate (never a global role widening) -------
+
+  /**
+   * Validate an Officer's PR2a candidate against the DURABLE leg row and the
+   * real caller. This is deliberately a binding check, not a second policy
+   * evaluation: the candidate was minted by the single PR2a evaluator from
+   * trusted facts, and the service re-checks that it names THIS case, THIS
+   * leg, THIS principal, THIS operation owner/tool/scope/generation and the
+   * requested entry. `CONTROL_RESOLVER_ROLES` remains untouched: a member is
+   * admitted only through this explicit, case-scoped candidate.
+   */
+  function memberCapabilityProblem(input: {
+    readonly root: string
+    readonly row: RequestPayload
+    readonly caller: ControlCallerRef
+    readonly entry: ReviewCapabilityEntry
+    readonly candidate: ReviewCapabilityCandidate | undefined
+  }): string | undefined {
+    const candidate = input.candidate
+    if (candidate === undefined) return 'a Member reviewer requires an explicit ReviewCapability candidate'
+    if (!(candidate instanceof ReviewCapabilityCandidate)) return 'the ReviewCapability candidate is not the nominal PR2a type'
+    const capability = candidate.capability
+    if (capability.source !== 'blueprint-officer') return `the candidate source '${capability.source}' is not a delegated Officer capability`
+    if (capability.entry !== input.entry) return `the candidate entry '${capability.entry}' is not '${input.entry}'`
+    if (capability.effectiveReviewAuthority !== 'leader') return 'the delegated candidate did not resolve to the leader rung'
+    if (input.row.kind !== 'leader-approval') return `kind '${input.row.kind}' is never delegated to a Member`
+    if (capability.principal.kind !== input.caller.kind) return 'the candidate principal kind does not match the real caller'
+    if (capability.principal.kind === 'instance'
+      && (input.caller.kind !== 'instance' || capability.principal.instanceId !== input.caller.instanceId)) {
+      return 'the candidate principal is not the real caller'
+    }
+    if (capability.principal.kind === 'human'
+      && (input.caller.kind !== 'human' || capability.principal.humanId !== input.caller.humanId)) {
+      return 'the candidate principal is not the real caller'
+    }
+    if (input.row.approvalCaseId === undefined || capability.approvalCaseId !== input.row.approvalCaseId) {
+      return 'the candidate names a different approval case'
+    }
+    if (capability.currentLegRequestId !== input.row.requestId) return 'the candidate names a different current leg'
+    if (input.row.legOrdinal === undefined || capability.legOrdinal !== input.row.legOrdinal) {
+      return 'the candidate names a different leg ordinal'
+    }
+    if (input.row.operationOwnerTemplateId === undefined
+      || capability.operationOwner.templateId !== input.row.operationOwnerTemplateId) {
+      return 'the candidate operation owner does not match the durable leg'
+    }
+    if (input.row.operationToolDefinitionIdentity === undefined
+      || capability.operationTool.definitionIdentity !== input.row.operationToolDefinitionIdentity) {
+      return 'the candidate tool identity does not match the durable leg'
+    }
+    if (input.row.operationToolOwner !== undefined && capability.operationTool.owner !== input.row.operationToolOwner) {
+      return 'the candidate tool owner does not match the durable leg'
+    }
+    if (input.row.operationToolName !== undefined && capability.operationTool.name !== input.row.operationToolName) {
+      return 'the candidate tool name does not match the durable leg'
+    }
+    if (input.row.authorityGeneration !== undefined
+      && capability.authorityGeneration !== input.row.authorityGeneration) {
+      return 'the candidate authority generation does not match the durable leg'
+    }
+    if (input.row.blueprintContentHash !== undefined
+      && capability.blueprintContentHash !== input.row.blueprintContentHash) {
+      return 'the candidate Blueprint content hash does not match the durable leg'
+    }
+    if (input.row.blueprintRevision !== undefined
+      && capability.blueprintRevision !== input.row.blueprintRevision) {
+      return 'the candidate Blueprint revision does not match the durable leg'
+    }
+    const rowScope = {
+      rootSessionId: input.root,
+      subject: input.row.subject,
+      ...(input.row.targetInstanceId !== undefined ? { targetInstanceId: input.row.targetInstanceId } : {}),
+      actionName: input.row.actionName,
+      correlation: input.row.correlation,
+      ...(input.row.toolName !== undefined ? { toolName: input.row.toolName } : {}),
+      ...(input.row.operationFingerprint !== undefined ? { operationFingerprint: input.row.operationFingerprint } : {}),
+    }
+    const capScope = capability.scope
+    if (scopeKey(
+      rowScope.rootSessionId,
+      subjectIdentityOf(rowScope.subject),
+      rowScope.actionName,
+      rowScope.toolName,
+      rowScope.correlation,
+      rowScope.operationFingerprint,
+    ) !== scopeKey(
+      capScope.rootSessionId,
+      subjectIdentityOf(capScope.subject ?? { kind: CONTROL_SUBJECT_KINDS.INSTANCE, instanceId: capScope.targetInstanceId ?? '' }),
+      capScope.actionName,
+      capScope.toolName,
+      capScope.correlation,
+      capScope.operationFingerprint,
+    )) {
+      return 'the candidate scope does not match the durable leg scope'
+    }
+    return undefined
+  }
+
   // --- resolveControl ------------------------------------------------------------------
 
   async function resolveControl(args: {
@@ -2558,6 +2827,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly requestId: string
     readonly decision: 'allow' | 'deny'
     readonly note?: string
+    readonly reviewCapability?: ReviewCapabilityCandidate
   }): Promise<ControlDecisionRecord> {
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'resolve')
     if (!isActionCaller(args.caller)) {
@@ -2620,7 +2890,22 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       // never a resolver, even with the resolve-control op; the
       // user-approval kind admits only the human).
       const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]
-      if (!allowedRoles.includes(caller.role)) {
+      if (caller.role === 'member') {
+        const problem = memberCapabilityProblem({
+          root,
+          row: request.payload,
+          caller: callerRefOf(caller),
+          entry: args.decision,
+          candidate: args.reviewCapability,
+        })
+        if (problem !== undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Member review is not authorized for this leg (${problem}); the global resolver table is unchanged and a delegated candidate must bind this exact case/leg/scope`,
+            { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role, problem },
+          )
+        }
+      } else if (!allowedRoles.includes(caller.role)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
           `ControlService: role '${caller.role}' is not a resolver for kind '${request.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,
@@ -2777,6 +3062,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         scope: scopeOf(request.entry, request.payload),
         requestSequence: request.entry.sequence,
         ...(args.note !== undefined ? { note: args.note } : {}),
+        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
       })
     })
   }
@@ -3655,6 +3941,117 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       }
       return fallback
     })
+  }
+
+  // --- awaitApprovalCaseDecision (A6-PR2b, case-aware wait) ---------------------------
+
+  /**
+   * Wait for the FINAL decision of one approval case, following a legal
+   * escalation chain. An intermediate leg closed with reason `escalated` is
+   * not the tool operation's final deny: the durable case still has a current
+   * pending leg. This method re-reads the case (the durable authority), waits
+   * on its current request, and continues until an allow/deny/terminal close
+   * on the current leg is final or no successor leg exists.
+   *
+   * No new timer, scheduler or execution engine: it reuses the existing
+   * `awaitControlDecision` polling/AbortSignal implementation and the case
+   * read. A cancelled original invocation aborts this wait; it never revives.
+   */
+  async function awaitApprovalCaseDecision(input: {
+    readonly rootSessionId: string
+    readonly approvalCaseId: string
+    readonly signal?: ControlWaitSignal
+  }): Promise<ControlDecisionRecord> {
+    const root = parseRoot(
+      input.rootSessionId,
+      CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+      'wait',
+    )
+    if (typeof input.approvalCaseId !== 'string' || input.approvalCaseId.length === 0) {
+      throw malformed('wait', 'approvalCaseId', 'approvalCaseId must be a non-empty string')
+    }
+    let waitedRequestId: string | undefined
+    for (;;) {
+      const read = await readApprovalCaseState({
+        rootSessionId: root,
+        approvalCaseId: input.approvalCaseId,
+      })
+      if (read.kind === 'problem') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: cannot await approval case '${input.approvalCaseId}' — the case chain is corrupt (${read.problem})`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, problem: read.problem },
+        )
+      }
+      const state = read.state
+      const leg = state.currentLeg
+      if (leg === undefined) {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_NOT_FOUND,
+          `ControlService: approval case '${input.approvalCaseId}' has no current leg to await`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+        )
+      }
+      if (state.status === 'decided') {
+        if (state.terminalDecision === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+            `ControlService: approval case '${input.approvalCaseId}' is decided but carries no terminal decision`,
+            { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+          )
+        }
+        return state.terminalDecision
+      }
+      if (state.status === 'abandoned') {
+        // The existing wait bridge raises the typed abandoned error; do the
+        // same here rather than inventing a decision.
+        if (input.signal?.aborted === true) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_WAIT_ABORTED,
+            `ControlService: awaitApprovalCaseDecision for case '${input.approvalCaseId}' was aborted while the current leg was abandoned`,
+            { rootSessionId: root, approvalCaseId: input.approvalCaseId },
+          )
+        }
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is abandoned`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (leg.status === 'decided') {
+        // Defensive: a decided current leg with status open means the fold is
+        // inconsistent; refuse rather than spin.
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is decided but the case is still open`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (leg.status === 'abandoned') {
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_ABANDONED,
+          `ControlService: approval case '${input.approvalCaseId}' current leg '${leg.requestId}' is abandoned`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      if (waitedRequestId === leg.requestId) {
+        // No progress after a completed wait: the durable state did not move;
+        // fail closed instead of a silent spin.
+        throw new ControlError(
+          CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
+          `ControlService: approval case '${input.approvalCaseId}' did not advance after waiting for '${leg.requestId}'`,
+          { rootSessionId: root, approvalCaseId: input.approvalCaseId, requestId: leg.requestId },
+        )
+      }
+      waitedRequestId = leg.requestId
+      await awaitControlDecision({
+        rootSessionId: root,
+        requestId: leg.requestId,
+        ...(input.signal === undefined ? {} : { signal: input.signal }),
+      })
+      // Loop: the case read above now either carries the final decision or
+      // exposes the risen current leg.
+    }
   }
 
   // --- awaitControlDecision (the alpha.2 synchronous wait bridge) ----------------------
@@ -4555,6 +4952,8 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly operationFingerprint?: string
     readonly summary?: string
     readonly executionCoupling?: ControlExecutionCoupling
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
     readonly leg: LegFields
   }): Promise<ControlRequestRecord> {
     const key = scopeKey(
@@ -4600,6 +4999,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(input.summary !== undefined ? { summary: input.summary } : {}),
       ...(input.executionCoupling !== undefined
         ? { executionCoupling: input.executionCoupling }
+        : {}),
+      ...(input.reviewPayload !== undefined ? { reviewPayload: input.reviewPayload } : {}),
+      ...(input.reviewPayloadDigest !== undefined
+        ? { reviewPayloadDigest: input.reviewPayloadDigest }
         : {}),
       ...legFieldsOf(input.leg),
       // A4-PR7 Task 7.0 (ADR A1-14): the authority point on the LEG-FACT route
@@ -4655,6 +5058,20 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly capabilityDomain?: CapabilityName
     readonly summary?: string
     readonly executionCoupling?: ControlExecutionCoupling
+    /** Alpha.6 PR2b: the strict PA manifest travels VERBATIM on the first leg. */
+    readonly reviewPayload?: RemoteSafeJsonValue
+    readonly reviewPayloadDigest?: string
+    /** The PA logical case id; metadata, never part of Control case derivation. */
+    readonly paApprovalCaseId?: string
+    /** Trusted delegation facts, frozen on the leg for later capability checks. */
+    readonly operationOwnerTemplateId?: string
+    readonly operationToolDefinitionIdentity?: string
+    readonly operationToolOwner?: string
+    readonly operationToolName?: string
+    readonly authorityGeneration?: number
+    readonly blueprintContentHash?: string
+    readonly blueprintRevision?: string
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[]
   }): Promise<ControlRequestLegOutcome> {
     const root = parseRoot(
       args.rootSessionId,
@@ -4742,6 +5159,10 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.executionCoupling !== undefined
         ? { executionCoupling: args.executionCoupling }
         : {}),
+      ...(args.reviewPayload !== undefined ? { reviewPayload: args.reviewPayload } : {}),
+      ...(args.reviewPayloadDigest !== undefined
+        ? { reviewPayloadDigest: args.reviewPayloadDigest }
+        : {}),
       leg: {
         approvalCaseId,
         legOrdinal: 1,
@@ -4754,6 +5175,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           : {}),
         ...(args.identity.authorityScope !== undefined
           ? { authorityScope: args.identity.authorityScope }
+          : {}),
+        ...(args.paApprovalCaseId !== undefined ? { paApprovalCaseId: args.paApprovalCaseId } : {}),
+        ...(args.operationOwnerTemplateId !== undefined
+          ? { operationOwnerTemplateId: args.operationOwnerTemplateId }
+          : {}),
+        ...(args.operationToolDefinitionIdentity !== undefined
+          ? { operationToolDefinitionIdentity: args.operationToolDefinitionIdentity }
+          : {}),
+        ...(args.operationToolOwner !== undefined ? { operationToolOwner: args.operationToolOwner } : {}),
+        ...(args.operationToolName !== undefined ? { operationToolName: args.operationToolName } : {}),
+        ...(args.authorityGeneration !== undefined
+          ? { authorityGeneration: args.authorityGeneration }
+          : {}),
+        ...(args.blueprintContentHash !== undefined
+          ? { blueprintContentHash: args.blueprintContentHash }
+          : {}),
+        ...(args.blueprintRevision !== undefined
+          ? { blueprintRevision: args.blueprintRevision }
+          : {}),
+        ...(args.perEffectRequiredAuthorities !== undefined
+          ? { perEffectRequiredAuthorities: args.perEffectRequiredAuthorities }
           : {}),
       },
     })
@@ -4788,6 +5230,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     readonly caller: ActionCaller
     readonly requestId: string
     readonly reason?: string
+    readonly reviewCapability?: ReviewCapabilityCandidate
   }): Promise<ControlEscalationOutcome> {
     const root = parseRoot(
       args.rootSessionId,
@@ -4850,7 +5293,29 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         )
       }
       const allowedRoles = CONTROL_RESOLVER_ROLES[leg.payload.kind]
-      if (!allowedRoles.includes(caller.role)) {
+      if (caller.role === 'member') {
+        const problem = memberCapabilityProblem({
+          root,
+          row: leg.payload,
+          caller: callerRefOf(caller),
+          entry: 'escalate',
+          candidate: args.reviewCapability,
+        })
+        if (problem !== undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`,
+            { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem },
+          )
+        }
+        if (leg.payload.reviewAuthority !== 'leader' || controlEscalationSuccessor(leg.payload.reviewAuthority) !== 'human-user') {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Member escalation is only legal from a leader-rung ordinary ask whose successor is human-user (this leg is '${String(leg.payload.reviewAuthority)}')`,
+            { rootSessionId: root, requestId: args.requestId, reviewAuthority: leg.payload.reviewAuthority },
+          )
+        }
+      } else if (!allowedRoles.includes(caller.role)) {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
           `ControlService: role '${caller.role}' is not a resolver for kind '${leg.payload.kind}' (allowed: [${allowedRoles.join(', ')}])`,
@@ -4934,6 +5399,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reason: CONTROL_DECISION_REASONS.ESCALATED,
         ...(mintsRisenLeg ? {} : { terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE }),
         ...(args.reason !== undefined ? { note: args.reason } : {}),
+        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
       })
       // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)
       // five fields (`note` deliberately does NOT join the payload — the
@@ -4997,6 +5463,12 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         ...(leg.payload.executionCoupling !== undefined
           ? { executionCoupling: leg.payload.executionCoupling }
           : {}),
+        ...(leg.payload.reviewPayload !== undefined
+          ? { reviewPayload: leg.payload.reviewPayload }
+          : {}),
+        ...(leg.payload.reviewPayloadDigest !== undefined
+          ? { reviewPayloadDigest: leg.payload.reviewPayloadDigest }
+          : {}),
         leg: {
           approvalCaseId,
           legOrdinal: legOrdinal + 1,
@@ -5014,6 +5486,33 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           // escalation is exactly the rule this follows).
           ...(leg.payload.authorityScope !== undefined
             ? { authorityScope: leg.payload.authorityScope }
+            : {}),
+          ...(leg.payload.paApprovalCaseId !== undefined
+            ? { paApprovalCaseId: leg.payload.paApprovalCaseId }
+            : {}),
+          ...(leg.payload.operationOwnerTemplateId !== undefined
+            ? { operationOwnerTemplateId: leg.payload.operationOwnerTemplateId }
+            : {}),
+          ...(leg.payload.operationToolDefinitionIdentity !== undefined
+            ? { operationToolDefinitionIdentity: leg.payload.operationToolDefinitionIdentity }
+            : {}),
+          ...(leg.payload.operationToolOwner !== undefined
+            ? { operationToolOwner: leg.payload.operationToolOwner }
+            : {}),
+          ...(leg.payload.operationToolName !== undefined
+            ? { operationToolName: leg.payload.operationToolName }
+            : {}),
+          ...(leg.payload.authorityGeneration !== undefined
+            ? { authorityGeneration: leg.payload.authorityGeneration }
+            : {}),
+          ...(leg.payload.blueprintContentHash !== undefined
+            ? { blueprintContentHash: leg.payload.blueprintContentHash }
+            : {}),
+          ...(leg.payload.blueprintRevision !== undefined
+            ? { blueprintRevision: leg.payload.blueprintRevision }
+            : {}),
+          ...(leg.payload.perEffectRequiredAuthorities !== undefined
+            ? { perEffectRequiredAuthorities: leg.payload.perEffectRequiredAuthorities }
             : {}),
         },
       })
@@ -5587,6 +6086,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
     guardOperation,
     checkExternalOperation,
     awaitControlDecision,
+    awaitApprovalCaseDecision,
     commitEffectIfAuthorized,
     persistAbandonCloseLocked,
     requestApprovalLeg,

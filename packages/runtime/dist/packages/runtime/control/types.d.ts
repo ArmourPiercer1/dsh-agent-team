@@ -116,6 +116,7 @@ import type { PermissionOverlayEffect } from '../../storage/schema/permission-ov
 import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js';
 import type { RequestedEffectSet, ToolBinding, ToolPolicyDocument } from '../../domain/tool-governance/src/index.js';
 import type { PolicyDenySource } from '../tool-admission/approval-case.js';
+import type { DecisionCapabilityEvidence, ReviewCapabilityCandidate } from '../review-authority/index.js';
 /**
  * The closed control request kinds (Architecture 25.1: a member may meet
  * an operation beyond its autonomy boundary that a higher authority may
@@ -1249,6 +1250,21 @@ export interface ControlRequestRecord {
     /** The mutation proposal fingerprint, for `envelope-mutation` cases only
      *  (exactly-one-fingerprint rule, spec 11.1). */
     readonly mutationProposalFingerprint?: string;
+    /** The PA logical case id (`tadm:...`) this Control leg was opened for. */
+    readonly paApprovalCaseId?: string;
+    /** The actual OperationOwner template (trusted call identity, not requester). */
+    readonly operationOwnerTemplateId?: string;
+    /** The trusted tool definition/owner/name used by the delegation predicate. */
+    readonly operationToolDefinitionIdentity?: string;
+    readonly operationToolOwner?: string;
+    readonly operationToolName?: string;
+    /** The authority generation the case was opened under. */
+    readonly authorityGeneration?: number;
+    /** The Blueprint identity the case was opened under. */
+    readonly blueprintContentHash?: string;
+    readonly blueprintRevision?: string;
+    /** Every per-effect required authority, frozen at case creation. */
+    readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[];
     /** The request's durable state, DERIVED at read time from the durable
      *  facts: `pending` while no decision fact and no abandon fact exists
      *  for the requestId, `decided` once a decision fact does (and no
@@ -1293,6 +1309,10 @@ export interface ControlDecisionRecord {
      * terminal mark lives on the row that terminates it.
      */
     readonly terminalReason?: ControlLegTerminalReason;
+    /** A6-PR2b: the normalized capability evidence, on the SAME decision row as
+     *  the real decider. Absent on native/legacy rows; malformed evidence is
+     *  omitted by the reader (the decision row itself is never dropped). */
+    readonly reviewCapability?: DecisionCapabilityEvidence;
     /** The exact scope snapshot the decision authorizes (allow) or refuses
      *  (deny/stale-denied) — frozen at decision time. */
     readonly scope: ControlOperationScope;
@@ -1713,6 +1733,7 @@ export interface ControlService {
         readonly requestId: string;
         readonly decision: 'allow' | 'deny';
         readonly note?: string;
+        readonly reviewCapability?: ReviewCapabilityCandidate;
     }): Promise<ControlDecisionRecord>;
     /**
      * Durably ABANDON one control request (pre-alpha3 PR-D, D.4 — the
@@ -1847,6 +1868,16 @@ export interface ControlService {
     awaitControlDecision(input: {
         readonly rootSessionId: string;
         readonly requestId: string;
+        readonly signal?: ControlWaitSignal;
+    }): Promise<ControlDecisionRecord>;
+    /**
+     * A6-PR2b — wait for the FINAL decision of one approval case, following
+     * its escalation chain. Intermediate `deny`/`escalated` legs are not the
+     * original operation's final answer. Reuses the existing wait bridge.
+     */
+    awaitApprovalCaseDecision(input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
         readonly signal?: ControlWaitSignal;
     }): Promise<ControlDecisionRecord>;
     /**
@@ -1991,6 +2022,17 @@ export interface ControlService {
         readonly capabilityDomain?: CapabilityName;
         readonly summary?: string;
         readonly executionCoupling?: ControlExecutionCoupling;
+        readonly reviewPayload?: RemoteSafeJsonValue;
+        readonly reviewPayloadDigest?: string;
+        readonly paApprovalCaseId?: string;
+        readonly operationOwnerTemplateId?: string;
+        readonly operationToolDefinitionIdentity?: string;
+        readonly operationToolOwner?: string;
+        readonly operationToolName?: string;
+        readonly authorityGeneration?: number;
+        readonly blueprintContentHash?: string;
+        readonly blueprintRevision?: string;
+        readonly perEffectRequiredAuthorities?: readonly ProposalAuthorityPosition[];
     }): Promise<ControlRequestLegOutcome>;
     /**
      * Alpha.4 A4-PR3 — escalate one leg (spec 11.4, ADR A1-10, A3-3, A3-12,
@@ -2028,6 +2070,7 @@ export interface ControlService {
         readonly caller: ActionCaller;
         readonly requestId: string;
         readonly reason?: string;
+        readonly reviewCapability?: ReviewCapabilityCandidate;
     }): Promise<ControlEscalationOutcome>;
     /**
      * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
