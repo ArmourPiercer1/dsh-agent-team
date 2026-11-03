@@ -222,6 +222,17 @@
           "why": "R5/BL-13 (2026-11-02): the retired Alpha.5 tool-family golden output vectors were converted into a small regression-comparison corpus for the new Provider/Service/OS-runner lanes. This is NOT an acceptance gate — a MATCH is a regression comparison only, and every RETIRE/UNUSABLE vector is refused before the observation is inspected. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the comparator's refusal laws run nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the P1 path algebra loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
         },
         {
+          "id": "a5sf read budget gate C1",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "tests/world-factory/a5sf-read-gate.test.mjs"
+          ],
+          "why": "P2-01/BL-14 (2026-11-03): the first P2 vertical slice is the native `read` mechanism, and the slice's own law is that no Host boot may happen without a RECORDED budget grant ({grantId,maxStarts,grantedBy,boundCommit}) on the SHARED host-start ledger. The pool is 0 and a new boot needs a USER ruling, so the gate — not a convention — must refuse BUDGET_NOT_GRANTED for an absent / unreadable / ambiguous / malformed / too-small / foreign-commit / exhausted grant, BEFORE any World or start row exists, and a granted lease must append its one pre-registration row to the SAME ledger through run-record.mjs#logHostStart and boot exactly once. This suite also pins the suite-module contract: an absent grant refuses before the factory/World is touched and records no case verdict. Like the #394/#529/R2/R3/R4 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the gate runs nowhere. Host-free: temp JSONL ledgers, a recording boot stub, no boot, no port, no DSH_HOME, no pristine host tree, and no workspace runtime dependency (the C2 suite that owns the gate is not imported for a Host). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+        },
+        {
           "id": "a5sf diag R4",
           "cmd": [
             "node",
