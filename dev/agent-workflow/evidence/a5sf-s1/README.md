@@ -11,8 +11,9 @@ EffectiveIo(member, tool, call) ⊆ MemberCeiling(member) ∩ ToolRestriction(me
 **Answer: the axis now holds on the native path — after a REVIEW REPAIR.** A first cut (`8199b3ea0`) was
 BLOCKED on a measured coverage hole: `read_image` registers from a DEFERRED `ctx.inject(['attachments'])`, escaped
 the partition, and kept executing on the BASE definition with zero guard facts while every surface name stayed
-equal. This tree closes it: the routed mount REFUSES a module whose deferred registration cannot run (§3.1), and
-the row verifies COVERAGE by definition identity, not by name set. The mechanism itself was verified by the
+equal. This tree closes it: the routed mount REFUSES a module whose deferred registration cannot run (§3.1), and the
+row adds an EXTRA coverage invariant over the names a router reports as forwarded (definition identity — the
+surface check itself stays NAME-based, see §3.1 for exactly what that does and does not catch). The mechanism itself was verified by the
 reviewer independently (Proxy mutation → 7 red; tracker removal → TA10 red). The arm that used to measure the leak (TA2 / `red-arm.mjs`)
 is inverted: a locator the CEILING allows but the `read` TOOL RESTRICTION denies is **REFUSED**, with exactly
 one `a5sf-guard-consult/1` fact attributed to the **binding** realm (`realm:"binding"`,
@@ -111,7 +112,8 @@ old structural pin (TA5: "the mount seam never addresses a binding realm") is re
 ## 3. The acceptance arms, measured
 
 `arm-probe.mjs` (this directory) drives the same product seam and prints one line per arm; the permanent gates are
-`tests/world-factory/a5sf-tool-axis.test.mjs` (14/14, TA2/TA6…TA11). Raw: `six-arms.log` (`ARMS: PASS 8/8`).
+`tests/world-factory/a5sf-tool-axis.test.mjs` (14/14, TA2/TA6…TA11). Raw: `six-arms.log` (`ARMS: PASS 10/10` —
+arms 8 and 9 measure the two KNOWN LIMITS, §3.2).
 
 | arm | what it measures | measured |
 | --- | --- | --- |
@@ -121,7 +123,9 @@ old structural pin (TA5: "the mount seam never addresses a binding realm") is re
 | **4 — unbound tool** | no binding ⇒ ceiling fallback: ONE `read`, surface unchanged, member-realm facts only | `fibers=1 forwarded=["read","write","edit"] read=ok facts=[member/null/stat/allow, member/null/readText/allow]` |
 | **5 — surface neutrality per fiber** | the fibers PARTITION the module surface (no name/section registered twice, union = pre-mount surface); a module that would add a tool is refused and everything it mounted is disposed | `partition=[{ceiling:[write,edit] sections[tool:write,tool:edit]},{binding:[read] sections[tool:read]}] surfaceBefore=["read","write","edit"] surfaceAfter=["read","write","edit"]`; refusal: `would CHANGE the Member's model-visible tool surface`, surface unchanged, `factsDelta=0` |
 | **6 — teardown** | router fibers disposed BEFORE the binding realms and the Member installation; ONE throwing fiber is reported and strands nothing (sibling disposed, confined provider gone, preset definition back) | `disposeOrder=[nativeFibers,bindingRealms,memberInstallation] fibers=2 throwingFiberReported=true siblingDisposed=true presetRestored=true` |
-| **7 — DEFERRED (the review blocker)** | a world with `attachments` mounted makes the pinned module register `read_image` from a deferred `ctx.inject`; the attach REFUSES, the surface is restored, and the unshadowed path is shown to consult nothing (0 facts) — so the leak can never be the live path | `presetSurface=["read","write","edit","read_image"] refused="SERVICE_MOUNT_FAILED: native tool module null registers asynchronously …" shadowAfterRefusal=false baseReadFacts=0` |
+| **7 — DEFERRED (the review blocker)** | a world with `attachments` mounted makes the pinned module register `read_image` from a deferred `ctx.inject`; the attach REFUSES, the surface is restored, and the unshadowed path is shown to consult nothing (0 facts) — so the leak can never be the live path | `presetSurface=["read","write","edit","read_image"] refused="SERVICE_MOUNT_FAILED: native tool module null registers asynchronously …" shadowAfterRefusal=false baseReadFacts=0` (the message names the module, its pending inject names and the PUBLIC fiber state — it does not quote the upstream error text; §3.1) |
+| **8 — LIMIT: late ceiling-owned** | a registration at +30 ms after `apply` is accepted, shadows the definition, but is NOT in the receipt (built at attach time) | `receipts=[[]] shadowedAtAttach=false shadowedAfterSettle=true accountedInReceipt=false surfaceNameSetUnchanged=true` |
+| **9 — LIMIT: late new name** | a brand-new tool name at +30 ms escapes the "surface must not change" gate entirely | `namesAtAttach=["read","write","edit"] namesAfterSettle=["read","write","edit","x_a5sf_late"] escapedSurfaceGate=true` |
 | **8 — S-2 not used** | no call-scoped multiplexer, no `AsyncLocalStorage`, no `execute` wrapper: the effect boundary is untouched (`exec.signal` only) | structural pin TA5: `doesNotMatch(mountSource, /AsyncLocalStorage|compileEffectiveIo|\.execute[=(]/)`; the probe's readings come from `mount.ts`/the row, not from a tool-identity channel |
 
 ### 3.1 The review blocker: deferred registration (`read_image`) and what this tree does about it
@@ -153,9 +157,26 @@ WHAT THIS TREE DOES — **refuse, not route** (the reviewer's fallback, chosen d
   deferred registration is an optional capability that never existed — benign. When the Member DOES have
   `attachments` (the dangerous shape: the preset would have registered `read_image`), the mount is refused.
   Refusal disposes the router fiber, so the surface is restored exactly and no half-shadow survives.
-* `a5sf-realm-row.mjs` adds a COVERAGE invariant on top of the name-set check: for every name a router reports
-  as forwarded, `tools.get(name, scope)` MUST be a definition this attach created, not the pre-attach one (or
-  absent). Name equality alone cannot see a tool that "registered" without shadowing.
+  The refusal message names the module identity, its pending inject names and the PUBLIC fiber state
+  (`failed` / `state N`). It does NOT quote the upstream error text: reading `fiber._error` would be an
+  upstream private-API access (C1 of the re-review), so this seam reports public state only — the
+  consequence is stated rather than hidden.
+* `a5sf-realm-row.mjs` adds a COVERAGE invariant over the names a router reports as forwarded:
+  `tools.get(name, scope)` MUST be a definition this attach created, not the pre-attach one (or absent).
+
+**Exactly what that coverage check does and does NOT do** (this paragraph replaces an earlier overstatement —
+C2 of the re-review): the surface check is still **NAME-based**; the coverage check is an **extra invariant
+over `routing.forwarded` only**. It does **not** independently catch a deferred registration, and it must not
+be described as if it did: a tool that never registers is never in `routing.forwarded`, so it is never
+inspected. MEASURED by the reviewer with our refusal disarmed: with the `attachments` world and the mount
+refusal turned off, the attach is ACCEPTED and `read_image` stays on the preset definition — the coverage check
+says nothing, because `read_image` was never forwarded. So the **single-macrotask settle heuristic in
+`mount.ts` is the ONLY net for that shape**; the identity check guards a different class (a name a router
+claims to have forwarded whose definition is nevertheless not the one the agent resolves — e.g. a stale or
+clobbered registration; we have not constructed a live path into it, and it may be unreachable in practice).
+The two nets are complementary, not redundant, and the honest statement of the seam's guarantee is:
+*"a deferred registration whose dependency exists is refused by the settle heuristic; forwarded names are
+additionally checked by identity."*
 
 **Why not support it.** Making the deferred child run inside the routed scope would require the shadow
 services to behave like real `Service` instances for an inject child that never declares them — a different
@@ -164,6 +185,37 @@ this seam. So: **refused**. Consequence, stated plainly: a Member that mounts th
 has an `attachments` store cannot use S-1's native re-mount — the attach fails closed at setup. That is the
 honest trade: an unguarded `read_image` is worse than a refused mount, and the Team tool plane's own governed
 `read_image` row (GLUE-7) does not take this path.
+
+### 3.2 Known limits, MEASURED (both pre-existing time-escapes, NOT introduced by S-1)
+
+The attach is a SETUP-TIME snapshot with a one-macrotask settle window. A registration scheduled after that
+window is outside every gate — that was already true of the pre-S-1 attach (it registered the module and
+compared surfaces with no settle at all); S-1's router does not add or widen it, but S-1 makes it observable,
+so it is recorded here rather than left implicit. `arm-probe.mjs` arms 8 and 9 measure both shapes:
+
+```
+ARM-8 (limit: late ceiling-owned): receipts=[[]] shadowedAtAttach=false shadowedAfterSettle=true
+                                  accountedInReceipt=false surfaceNameSetUnchanged=true
+ARM-9 (limit: late new name):      namesAtAttach=["read","write","edit"]
+                                  namesAfterSettle=["read","write","edit","x_a5sf_late"]
+                                  escapedSurfaceGate=true addedAfterGate=["x_a5sf_late"]
+```
+
+(a) **Ceiling-owned tool registered at +30 ms** — accepted, and it really does shadow the preset definition
+(`shadowedAfterSettle=true`), but the receipt was built at attach time so
+`shadowedAtAttach=false, accountedInReceipt=false`: an auditor reading only the receipt under-reports what the
+attach actually changed. The tool still executes on the CEILING realm (correct lane), so this is an accounting
+gap, not a lane/widening hole.
+(b) **A brand-new tool name at +30 ms** — escapes the "the model-visible surface must not change" gate
+entirely: the gate ran and passed before the name existed, and nothing re-reads the surface afterwards. Same
+pre-existing shape as (a), but the blast radius is bigger: a late module can add a tool the surface check
+never saw.
+
+Neither is remedied here (a fix needs either a bounded settle with a re-read of the surface + receipt, or an
+ownership/late-registration protocol — the concurrent multi-module ownership lane's territory, not this
+minimal fix). What the reviewer should conclude: S-1's *deferred* net (the settle heuristic) covers the
+`ctx.inject` shape it was built for; asynchronous registrations scheduled beyond the window are NOT covered by
+any gate in this seam, before or after S-1.
 
 Key point for a reviewer: the partition is derived from `toolBindingIdentity` (P1's compiled answer) and the
 tool NAME. No lane, blueprint or ceiling is read at the mount seam — the router only asks "does this name belong
@@ -189,21 +241,44 @@ to this binding?".
 | `node scripts/eb3-ci-required.mjs` | pass | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | **26/26 controls** behaved as required | `eb3-negative-controls.log` |
 | `git diff --check` | clean | `git-diff-check.log` |
-| `pnpm ci:local` | **`DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s`** (483 files, 5993 tests) AT THIS HEAD (pre-repair: 240.2 s, see §4.1) | `ci-local.log` (derived summary; raw 1.2 MB capture not committed) |
+| `pnpm ci:local` | **NOT a reproducible gate** (see §4.1). Two runs on THIS head: **both failed** — `verdict=fail steps=6 failed=1 … wall=256.7s` and `… wall=251.6s`, the red being `a5g6-install-face-render.test.ts > GLUE-6 LEG B` (1 failed / 5992 passed of 5993), which is **green in isolation at this same head (68/68)** and is not in this diff. An earlier repair head happened to pass (`wall=234.0s`); that sample is kept only as proof the tree CAN pass | `ci-local.log` (derived summary of the failing run; raw 1.2 MB capture not committed) |
 
 No `eb3-run-manifest` record was added: this lane boots no Host and produces no run record (the manifest binds
 run records to `as20261102r1`; adding one without a boot would be a false record).
 
 ### 4.1 The `pnpm ci:local` verdict, quoted verbatim — and the two red attempts before it
 
-Reported verdict ON THIS HEAD (`ci-local.log`) — the repair did not need a re-run of the flake ladder:
+Reported verdict on the PREVIOUS repair head (`ci-local.log` now holds the FAILING run at this head):
 
 ```
+# lucky sample, previous head — proof the tree CAN pass, not a gate:
 DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s
  Test Files  483 passed (483)
       Tests  5993 passed (5993)
-  14/14 a5sf-tool-axis arms pass inside the same run (TA1…TA11)
+
+# this head, both of our runs — the honest record:
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=256.7s
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=251.6s
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)     # a5g6 GLUE-6 LEG B; green alone at this head: 68/68
+  14/14 a5sf-tool-axis arms pass inside the same failing run (TA1…TA11)
 ```
+
+**`pnpm ci:local` is NOT a reproducible gate at this head.** Measured evidence, all on the SAME code:
+- our run at the previous repair head: `verdict=pass … wall=234.0s` (kept above only as proof the tree CAN pass);
+- the re-review's two runs: `verdict=fail` with 1 and 2 unrelated reds (242.5 s / 245.1 s), each red file green
+  in isolation, none in this diff;
+- our own two runs at THIS head: `verdict=fail steps=6 failed=1 coverage=determined files=2` (256.7 s and
+  251.6 s), the red on both being `a5g6-install-face-render.test.ts > GLUE-6 LEG B` — 1 failed / 5992 passed of
+  5993 — and that file is green alone at this same head, **68/68** (`flake-isolation-a5g6-c13.log`), together
+  with the `u7-f` file whose stdout banner the failure log interleaves.
+
+So 4 of 5 runs red, on files this lane does not touch. Mechanism, measured earlier (`ci-local-flake-note.txt`):
+ci-local selects the WHOLE `packages/runtime` vitest tree (483 files) in ONE `threads` pool against
+`vitest.config.ts`'s default 5 s `testTimeout`; a loaded machine turns slow-but-correct files red. **A passing
+sample is evidence that the tree CAN pass, never that it WILL**; the honest label is "flaky, pre-existing, not
+caused by this diff, red verified green in isolation". The per-file gates in §4 (8 node suites, `vitest run
+a5sf`, the law suites) are the ones to trust for THIS change.
 
 The earlier run on the pre-repair tree (attempt 3 after two flake reds, 240.2 s) and the two red attempts
 remain below as the flake record; they are unchanged history, not this head's measurement.
@@ -297,7 +372,7 @@ Stated so no reader over-claims:
 cd .worktrees/a5sf-s1
 node dev/agent-workflow/evidence/a5sf-tool-axis/red-arm.mjs                      # GREEN (exit 0)
 node --test tests/world-factory/a5sf-tool-axis.test.mjs                         # 13/13
-node dev/agent-workflow/evidence/a5sf-s1/arm-probe.mjs                          # SIX-ARMS: PASS 7/7
+node dev/agent-workflow/evidence/a5sf-s1/arm-probe.mjs                          # ARMS: PASS 10/10 (arms 8/9 = known limits)
 npx vitest run a5sf                                                             # 166/166
 ```
 
@@ -308,7 +383,7 @@ RED: `git checkout origin/master -- packages/runtime/team-services/src/mount.ts 
 
 | file | what |
 | --- | --- |
-| `arm-probe.mjs`, `six-arms.log` | the six acceptance arms, driven through the product seam |
+| `arm-probe.mjs`, `six-arms.log` | the acceptance arms + the two measured known limits, driven through the product seam |
 | `red-arm-red.log`, `red-arm-green.log` | the sentinel before/after |
 | `ta11-red.log`, `ta11-green.log` | the DEFERRED arm on the pre-fix sources (Missing expected rejection) and on this tree |
 | `tool-axis-suite.log`, `all-a5sf-node-suites.log` | the regression suites |

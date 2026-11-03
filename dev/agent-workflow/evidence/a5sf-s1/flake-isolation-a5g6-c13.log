@@ -1,0 +1,5 @@
+Isolation run at head 4bb8618f7: the file ci:local turned red is green alone.
+$ npx vitest run packages/runtime/test/a5g6-install-face-render.test.ts packages/runtime/test/u7-f-agent-control-c1.test.ts
+ISO-EXIT=0
+ Test Files  2 passed (2)
+      Tests  68 passed (68)

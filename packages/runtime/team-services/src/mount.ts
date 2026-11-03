@@ -156,6 +156,15 @@ function toolNameOfBindingIdentity(toolBindingIdentity: string): string {
   return name.trim()
 }
 
+/**
+ * The Cordis fiber states this seam distinguishes, by their PUBLIC numeric
+ * values on `Fiber.state` (0 pending, 1 loading, 2 active, 3 failed, 4 disposed,
+ * 5 unloading). Named here so the intent survives a reader who has no Cordis
+ * enum at hand; `Fiber.state` itself is public and typed.
+ */
+const FIBER_ACTIVE = 2
+const FIBER_FAILED = 3
+
 /** Is `fiber` (transitively) a CHILD fiber of `ancestor`? Fiber ancestry, not scope ancestry. */
 function isDescendantOf(fiber: Fiber, ancestor: Fiber): boolean {
   let cursor: Context | undefined = fiber.parent
@@ -564,7 +573,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           // whole mount is refused — never silently left on BASE.
           await new Promise<void>((resolve) => setTimeout(resolve, 0))
           const unsettled = windowFibers
-            .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== 2)
+            .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== FIBER_ACTIVE)
             // An OPTIONAL dependency that is absent everywhere is benign: the
             // module declares an extra registration it cannot make (measured:
             // the pinned tool-fs ALWAYS declares `ctx.inject(['attachments'])`).
@@ -573,11 +582,18 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
             // is the only way to keep it off the unshadowed BASE path.
             .filter((created) => Object.keys(created.inject).some((name) => target.get(name) !== undefined))
           if (unsettled.length > 0) {
+            // PUBLIC state only: `Fiber.state` is the documented surface, and a
+            // fiber at FAILED says the registration threw without this seam
+            // reaching into the fiber's private error slot (CORE PATCH BUDGET = 0
+            // and AGENTS.md forbid upstream private API). The consequence, stated
+            // honestly in the evidence: the refusal names the MODULE, its pending
+            // inject names and the public fiber state — it does NOT quote the
+            // upstream error text, which this seam never reads.
             const detail = unsettled
               .map((created) => {
                 const deps = Object.keys(created.inject).join(',')
-                const reason = (created as unknown as { _error?: unknown })._error
-                return reason === undefined ? `deferred registration waiting on [${deps}]` : `deferred registration failed: ${reason instanceof Error ? reason.message : String(reason)}`
+                const state = created.state === FIBER_FAILED ? 'failed' : `state ${created.state}`
+                return `deferred registration ${state}, waiting on [${deps}]`
               })
               .join('; ')
             throw new TeamServiceInstallError(

@@ -1,5 +1,5 @@
-# DERIVED SUMMARY of the ci:local run on the S-1 repair tree (the code content of this commit's parent — the evidence commit itself is its child; raw 1.2 MB capture intentionally NOT committed, eb3-evidence-guard bound = 1 MiB/file).
-# Derived by extracting the step verdicts + totals from the raw log; nothing re-typed by hand.
+# DERIVED SUMMARY of `pnpm ci:local` on the S-1 re-review-repair tree (C1–C3). Raw 1.2 MB capture deliberately NOT committed (evidence bound = 1 MiB/file); this file is extracted from it, nothing re-typed.
+# READ THIS: ci:local is NOT a reproducible gate here (README §4.1). A pass is a lucky sample; a fail names an unrelated load-sensitive file.
 
 ▶ docs:probe
 ✔ docs:probe (0.3s)
@@ -9,31 +9,33 @@
 EB3-CI-REQUIRED pass workflows=9 findings=0
 ✔ ci shape (eb3-ci-required) (0.1s)
 ▶ pnpm typecheck
-✔ pnpm typecheck (12.8s)
+✔ pnpm typecheck (13.8s)
 ▶ vitest (selected)
- Test Files  483 passed (483)
-      Tests  5993 passed (5993)
-✔ vitest (selected) (220.0s)
+ Test Files  1 failed | 482 passed (483)
+      Tests  1 failed | 5992 passed (5993)
 ▶ node --test (selected)
-✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (12.834668ms)
-✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (16.891989ms)
-✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (12.570227ms)
-✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (5.097751ms)
-✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.546875ms)
-✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.404475ms)
-✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.112155ms)
-✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (11.834245ms)
-✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (10.101544ms)
-✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (8.659614ms)
-✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (8.6473ms)
-✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (8.846557ms)
-✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (6.294831ms)
-✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (9.359755ms)
-✔ node --test (selected) (0.5s)
-DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s
-CI-EXIT=0
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (12.569295ms)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (16.432519ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (12.388434ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (4.432672ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.431334ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.270093ms)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.132424ms)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (11.577677ms)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (9.979431ms)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (8.798678ms)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (8.699131ms)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (8.456369ms)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (7.661865ms)
+✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (6.805935ms)
+✔ node --test (selected) (0.4s)
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=251.6s
 
-# All 14 TA arms inside the ci:local node --test step:
+# red(s)
+stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-23 no roster wired: steer/interrupt FAIL CLOSED (membership unprovable = membership not held), zero port
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+
+# the 14 TA arms inside the node --test step, if it got that far:
 ✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (ok)
 ✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (ok)
 ✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (ok)

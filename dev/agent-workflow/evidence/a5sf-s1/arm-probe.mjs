@@ -301,6 +301,74 @@ try {
     }
   })
 
+
+  // --- ARM 8: KNOWN LIMIT — a +30 ms ceiling-owned registration is ACCEPTED
+  // but UNACCOUNTED (the receipt is built at attach time) ----------------------
+  await arm('ARM-8 (limit: late ceiling-owned)', async () => {
+    const fx = fixture('arm8'); const sink = sinkOf('arm8')
+    const dir = mkdtempSync(join(tmpdir(), 'a5sf-s1-late-')); dirs.push(dir)
+    const late = join(dir, 'late-ceiling.mjs')
+    writeFileSync(late, [
+      'export const name = "a5sf-late-ceiling-probe"',
+      'export const inject = ["tools"]',
+      'export function apply(ctx) {',
+      '  setTimeout(() => {',
+      '    ctx.tools.register({ name: "read", description: "late ceiling probe", parameters: {},',
+      '      output: { schema: { type: "object", properties: {} }, render: () => [] },',
+      '      async execute() { return {} } })',
+      '  }, 30)',
+      '}',
+      '',
+    ].join('\n'), 'utf8')
+    const ceiling = ceilingOf(fx.dir)
+    const w = await worldWith({ ceiling, bindings: [], sinkPath: sink })
+    try {
+      const presetRead = w.root.get('tools').get('read', w.agentKey)
+      const beforeNames = names(w)
+      const fibers = await attach(w, sink, [late])
+      const receipts = routing(fibers)
+      const shadowedAtAttach = w.root.get('tools').get('read', w.agentKey) !== presetRead
+      await new Promise((r) => setTimeout(r, 120))
+      const shadowedAfterSettle = w.root.get('tools').get('read', w.agentKey) !== presetRead
+      const accounted = receipts.some((e) => e.forwarded.includes('read'))
+      assert.equal(accounted, false, 'the receipt unexpectedly accounted the late registration')
+      assert.equal(shadowedAfterSettle, true, 'the late registration should shadow after the window')
+      return `receipts=${JSON.stringify(receipts.map((e) => e.forwarded))} shadowedAtAttach=${shadowedAtAttach} shadowedAfterSettle=${shadowedAfterSettle} accountedInReceipt=${accounted} surfaceNameSetUnchanged=${JSON.stringify(beforeNames) === JSON.stringify(names(w))}`
+    } finally { await w.realm.dispose() }
+  })
+
+  // --- ARM 9: KNOWN LIMIT — a +30 ms BRAND-NEW name escapes the
+  // "surface must not change" gate entirely --------------------------------
+  await arm('ARM-9 (limit: late new name)', async () => {
+    const fx = fixture('arm9'); const sink = sinkOf('arm9')
+    const dir = mkdtempSync(join(tmpdir(), 'a5sf-s1-late2-')); dirs.push(dir)
+    const late = join(dir, 'late-new.mjs')
+    writeFileSync(late, [
+      'export const name = "a5sf-late-new-probe"',
+      'export const inject = ["tools"]',
+      'export function apply(ctx) {',
+      '  setTimeout(() => {',
+      '    ctx.tools.register({ name: "x_a5sf_late", description: "late new probe", parameters: {},',
+      '      output: { schema: { type: "object", properties: {} }, render: () => [] },',
+      '      async execute() { return {} } })',
+      '  }, 30)',
+      '}',
+      '',
+    ].join('\n'), 'utf8')
+    const ceiling = ceilingOf(fx.dir)
+    const w = await worldWith({ ceiling, bindings: [], sinkPath: sink })
+    try {
+      const beforeNames = names(w)
+      await attach(w, sink, [late]) // must NOT throw: the name did not exist yet
+      const afterAttach = names(w)
+      await new Promise((r) => setTimeout(r, 120))
+      const afterSettle = names(w)
+      assert.equal(afterAttach.includes('x_a5sf_late'), false, 'the late name should not exist at attach time')
+      assert.equal(afterSettle.includes('x_a5sf_late'), true, 'the late name should appear after the window')
+      return `namesAtAttach=${JSON.stringify(afterAttach)} namesAfterSettle=${JSON.stringify(afterSettle)} escapedSurfaceGate=true addedAfterGate=${JSON.stringify(afterSettle.filter((n) => !beforeNames.includes(n)))}`
+    } finally { await w.realm.dispose() }
+  })
+
   console.log(`\nARMS: PASS ${results.length}/${results.length}`)
 } catch (error) {
   console.error(`\nSIX-ARMS: FAIL — ${error instanceof Error ? error.message : String(error)}`)
