@@ -22,6 +22,7 @@ function planReviewWakes(inputs: readonly ReviewRouteInput[]) { return planRaw(i
 import {
   dispatchReviewWakes,
   planFingerprint,
+  releaseReviewWake,
   reviewWakeKeyFor,
 } from '../alpha6/wake-dispatch.js'
 import {
@@ -126,6 +127,50 @@ describe('A6 wake dispatch — one plan, one reducer cycle', () => {
     expect(result.delivered[0]?.dirty).toBe(false)
     expect(result.failures).toEqual([])
     expect(result.held).toEqual([])
+  })
+
+  it('leaves the latch running when turn ownership is deferred, then releases at the real boundary', async () => {
+    const plan = planReviewWakes([input('req-1'), input('req-2'), input('req-3')])
+    const coordinators = coordinatorsFor(plan)
+    const port = recordingPort()
+    const first = await dispatchReviewWakes({
+      plan,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(first.delivered[0]?.status).toBe('running')
+    expect(port.calls).toHaveLength(1)
+
+    const during = planReviewWakes([input('req-1'), input('req-2'), input('req-3'), input('req-4')])
+    const second = await dispatchReviewWakes({
+      plan: during,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(second.delivered).toHaveLength(0)
+    expect(coordinators[0]?.state.status).toBe('running')
+    expect(port.calls).toHaveLength(1)
+
+    expect(releaseReviewWake(coordinators[0]!, {
+      kind: 'ready',
+      fingerprint: first.deliveries[0]?.workFingerprint ?? '',
+    }).outcome).toBe('applied')
+    const after = await dispatchReviewWakes({
+      plan: during,
+      rootSessionId: ROOT,
+      sessionGeneration: GENERATION,
+      coordinators,
+      deliver: port.deliver,
+      deferTurnEnd: true,
+    })
+    expect(after.delivered).toHaveLength(1)
+    expect(port.calls).toHaveLength(2)
   })
 
   it('is deterministic: the same plan yields the same key/fingerprint/wakeId and never re-wakes unchanged work', async () => {

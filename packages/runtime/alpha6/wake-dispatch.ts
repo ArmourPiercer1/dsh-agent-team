@@ -72,6 +72,12 @@ export interface WakeDispatchDeps {
   readonly deliver: (input: Parameters<ReviewWakeDeliveryPort>[0], targetSessionId: string) => Promise<void>
   /** Current generation of the recipient latch; 0 when the caller omits it. */
   readonly sessionGeneration?: number
+  /**
+   * Production turn ownership: when true the dispatcher claims the wake
+   * (`turn-start`) but does NOT synthesize `turn-end`. The caller must call
+   * {@link releaseReviewWake} from the recipient's REAL turn boundary.
+   */
+  readonly deferTurnEnd?: boolean
 }
 
 /** Per-recipient outcome of one dispatch cycle. */
@@ -375,6 +381,13 @@ export async function dispatchReviewWakes(
       continue
     }
 
+    if (deps.deferTurnEnd === true) {
+      const claimed = outcome(wake, key, fingerprint, coordinator, true, effect.wakeId)
+      deliveries.push(claimed)
+      delivered.push(claimed)
+      continue
+    }
+
     const ended = coordinator.dispatch({ type: 'turn-end' })
     if (ended.outcome === 'refused') {
       failures.push(
@@ -423,4 +436,21 @@ export async function dispatchReviewWakes(
     humanLegIds: deps.plan.humanLegIds,
     failures,
   }
+}
+
+
+/**
+ * Release a wake claimed by `dispatchReviewWakes({ deferTurnEnd: true })` at
+ * the recipient's REAL turn boundary. It is the only legal producer of the
+ * post-delivery `turn-end`; the follow-up rescan uses the caller's fresh
+ * authoritative fingerprint (not a stale one captured at delivery time).
+ */
+export function releaseReviewWake(
+  coordinator: ReviewWakeCoordinator,
+  work: { readonly kind: 'ready'; readonly fingerprint: string } | { readonly kind: 'no-ready-work' },
+): ReviewWakeTransition {
+  const ended = coordinator.dispatch({ type: 'turn-end' })
+  if (ended.outcome === 'refused') return ended
+  if (!ended.effects.some((next) => next.kind === 'rescan')) return ended
+  return coordinator.dispatch({ type: 'scan-result', work })
 }
