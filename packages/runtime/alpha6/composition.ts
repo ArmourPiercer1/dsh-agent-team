@@ -3,16 +3,19 @@
  *
  * Production wiring may enable Alpha.6 review routing ONLY when the resolved
  * Blueprint is v5, `reviewRouting.enabled` is true, and exactly ONE live
- * instance carries the Officer MemberTemplate. Every other combination keeps
- * the Alpha.5 behavior (the legacy Leader notifier and the unchanged role
- * table); zero/multiple Officers REFUSE activation rather than picking one.
+ * instance carries the Officer MemberTemplate. `legacy` is reserved for a Team
+ * that did not opt in; an explicit opt-in that cannot satisfy EVERY condition
+ * is `refused` (fail closed), never a silent Leader fallback. Zero/multiple
+ * Officers REFUSE activation rather than picking one.
  *
  * This module decides no approval and writes no state; it is the composition
  * precondition the Host wiring must call before swapping any notifier.
  *
  * @module @dsh-agent-team/runtime/alpha6/composition
  */
-export const ALPHA6_COMPOSITION_MODES = ['legacy', 'alpha6'] as const
+import { parseBlueprintV5 } from '../../domain/blueprint/src/blueprint-v5.js'
+
+export const ALPHA6_COMPOSITION_MODES = ['legacy', 'alpha6', 'refused'] as const
 export type Alpha6CompositionMode = (typeof ALPHA6_COMPOSITION_MODES)[number]
 
 export const ALPHA6_COMPOSITION_REFUSALS = [
@@ -54,8 +57,8 @@ export type Alpha6CompositionDecision =
     }
 
 /**
- * Decide the mode. `legacy` is always the safe answer; an Alpha.6 enablement
- * that cannot satisfy EVERY condition is refused and stays legacy.
+ * Decide the mode. `legacy` is only for a Team that did not opt in; an explicit
+ * Alpha.6 enablement that cannot satisfy EVERY condition is `refused`.
  */
 export function decideAlpha6Composition(input: Alpha6CompositionInput): Alpha6CompositionDecision {
   if (input.enabled !== true) return { mode: 'legacy', reason: 'disabled' }
@@ -75,5 +78,23 @@ export function decideAlpha6Composition(input: Alpha6CompositionInput): Alpha6Co
     mode: 'alpha6',
     officerTemplateId: routing.officerTemplateId,
     officerInstanceCount: 1,
+  }
+}
+
+
+/**
+ * Parse the bound Blueprint ONCE for every Alpha.6 consumer (router, control
+ * facts port, dispatcher). A v4/invalid document is `null`, never a v5 default.
+ * The caller must map `null` to `refused`, not to `legacy`.
+ */
+export function parseAlpha6Routing(
+  source: string,
+): { readonly blueprint: ReturnType<typeof parseBlueprintV5>; readonly routing: NonNullable<ReturnType<typeof parseBlueprintV5>['reviewRouting']> } | null {
+  try {
+    const blueprint = parseBlueprintV5(source)
+    if (blueprint.reviewRouting === undefined) return null
+    return { blueprint, routing: blueprint.reviewRouting }
+  } catch {
+    return null
   }
 }

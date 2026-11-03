@@ -6,10 +6,9 @@
  *
  * @module @dsh-agent-team/runtime/alpha6/wiring
  */
-import { parseBlueprintV5 } from '../../domain/blueprint/src/blueprint-v5.js'
 import type { ControlRequestNotificationPort } from '../control/types.js'
 import { createLeaderControlNotifier } from '../control/leader-notification.js'
-import { decideAlpha6Composition } from './composition.js'
+import { decideAlpha6Composition, parseAlpha6Routing } from './composition.js'
 import { createComposedControlNotifier } from './notifier.js'
 
 export interface Alpha6WiringMember {
@@ -48,9 +47,17 @@ export function controlRequestNotification(
     return { requestNotification: legacy }
   }
   try {
-    const blueprint = parseBlueprintV5(config.blueprintSource)
-    const routing = blueprint.reviewRouting
-    if (routing === undefined) return { requestNotification: legacy }
+    const parsed = parseAlpha6Routing(config.blueprintSource)
+    if (parsed === null) {
+      return {
+        requestNotification: {
+          notifyLeaderRequest: async () => {
+            throw new Error('Alpha.6 review routing is enabled but the Blueprint has no v5 reviewRouting; no Leader fallback')
+          },
+        },
+      }
+    }
+    const { blueprint, routing } = parsed
     const leader = config.seedMembers.find((member) => member.childSessionId === config.rootSessionId)
     const officer = config.seedMembers.find((member) => member.templateId === routing.officerTemplateId)
     const decision = decideAlpha6Composition({
