@@ -278,6 +278,7 @@ import type {
   ControlReviewEvent,
   CurrentLegTransferCause,
   CurrentLegTransferRecord,
+  TransferCurrentLegInput,
   ControlDecisionReason,
   ControlEscalationOutcome,
   ControlEscalationRecord,
@@ -482,7 +483,9 @@ interface CurrentLegTransferPayload {
   readonly legOrdinal: number
   readonly target: 'leader'
   readonly cause: CurrentLegTransferCause
-  readonly actor: { readonly kind: 'officer'; readonly instanceId: string }
+  readonly actor:
+    | { readonly kind: 'officer'; readonly instanceId: string }
+    | { readonly kind: 'trusted-team-runtime' }
   readonly blueprintContentHash?: string
   readonly blueprintRevision?: string
   readonly transferredAt: string
@@ -1181,9 +1184,17 @@ function parseCurrentLegTransferPayload(value: unknown): CurrentLegTransferPaylo
   if (typeof currentLegRequestId !== 'string' || currentLegRequestId.length === 0) return undefined
   if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) return undefined
   if (target !== 'leader') return undefined
-  if (cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) return undefined
-  if (!isPlainObject(actor) || actor['kind'] !== 'officer') return undefined
-  if (typeof actor['instanceId'] !== 'string' || (actor['instanceId'] as string).length === 0) return undefined
+  if (cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF
+    && cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE) return undefined
+  let normalizedActor: CurrentLegTransferPayload['actor']
+  if (cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+    if (!isPlainObject(actor) || actor['kind'] !== 'officer') return undefined
+    if (typeof actor['instanceId'] !== 'string' || (actor['instanceId'] as string).length === 0) return undefined
+    normalizedActor = { kind: 'officer', instanceId: actor['instanceId'] as string }
+  } else {
+    if (!isPlainObject(actor) || actor['kind'] !== 'trusted-team-runtime') return undefined
+    normalizedActor = { kind: 'trusted-team-runtime' }
+  }
   if (typeof transferredAt !== 'string' || transferredAt.length === 0) return undefined
   if (blueprintContentHash !== undefined && (typeof blueprintContentHash !== 'string' || blueprintContentHash.length === 0)) return undefined
   if (blueprintRevision !== undefined && (typeof blueprintRevision !== 'string' || blueprintRevision.length === 0)) return undefined
@@ -1193,7 +1204,7 @@ function parseCurrentLegTransferPayload(value: unknown): CurrentLegTransferPaylo
     legOrdinal,
     target,
     cause,
-    actor: { kind: 'officer', instanceId: actor['instanceId'] as string },
+    actor: normalizedActor,
     ...(blueprintContentHash === undefined ? {} : { blueprintContentHash: blueprintContentHash as string }),
     ...(blueprintRevision === undefined ? {} : { blueprintRevision: blueprintRevision as string }),
     transferredAt,
@@ -5644,40 +5655,39 @@ export function createControlService(options: ControlServiceOptions): ControlSer
 
   // --- transferCurrentLeg (A6-PR2c) ----------------------------------------------------
 
-  async function transferCurrentLeg(args: {
-    readonly rootSessionId: string
-    readonly caller: ActionCaller
-    readonly requestId: string
-    readonly cause: CurrentLegTransferCause
-    readonly reason?: string
-  }): Promise<CurrentLegTransferRecord> {
+  async function transferCurrentLeg(args: TransferCurrentLegInput): Promise<CurrentLegTransferRecord> {
     const stage = 'transferCurrentLeg'
     const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, stage)
     if (typeof args.requestId !== 'string' || args.requestId.length === 0) {
       throw malformed(stage, 'requestId', 'requestId must be a non-empty string')
     }
-    if (args.cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
-      throw malformed(stage, 'cause', `cause outside the closed set: ${JSON.stringify(args.cause)}`)
-    }
     if (args.reason !== undefined && typeof args.reason !== 'string') {
       throw malformed(stage, 'reason', 'reason must be a string when present')
     }
-    const caller = resolveCaller(repositories, root, args.caller)
-    const resolved = resolveTeamAndTarget(
-      repositories,
-      options.blueprintCatalog,
-      {
-        rootSessionId: root,
-        action: ACTION_NAMES.RESOLVE_CONTROL,
-        caller: args.caller,
-        requestToken: args.requestId,
-      },
-      RESOLVE_CONTROL_SPEC,
-    )
-    enforceEnvelope(
-      RESOLVE_CONTROL_SPEC,
-      callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
-    )
+    if (args.cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF
+      && args.cause !== CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE) {
+      throw malformed(stage, 'cause', 'cause outside the closed set')
+    }
+    let handoffCaller: Extract<TransferCurrentLegInput, { cause: 'officer-handoff' }>['caller'] | undefined
+    if (args.cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+      handoffCaller = args.caller
+      const caller = resolveCaller(repositories, root, args.caller)
+      const resolved = resolveTeamAndTarget(
+        repositories,
+        options.blueprintCatalog,
+        {
+          rootSessionId: root,
+          action: ACTION_NAMES.RESOLVE_CONTROL,
+          caller: args.caller,
+          requestToken: args.requestId,
+        },
+        RESOLVE_CONTROL_SPEC,
+      )
+      enforceEnvelope(
+        RESOLVE_CONTROL_SPEC,
+        callerEnvelope(resolved.bound.blueprint, caller, repositories.overrides.list(root)),
+      )
+    }
     return withTeamLock(teamLocks, root, async () => {
       const state = loadControlState(root)
       const existing = state.transfers.find(
@@ -5726,35 +5736,74 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       if (current.reviewAuthority !== 'leader') {
         throw new ControlError(
           CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED,
-          `ControlService: current leg '${args.requestId}' is reviewed at '${current.reviewAuthority}', not an ordinary leader leg; Officer handoff is not available`,
+          `ControlService: current leg '${args.requestId}' is reviewed at '${current.reviewAuthority}', not an ordinary leader leg; transfer is not available`,
           { rootSessionId: root, requestId: args.requestId },
         )
       }
-      const reviewerPort = options.currentReviewerForTransfer
-      if (reviewerPort === undefined || args.caller.kind !== 'instance') {
-        throw new ControlError(
-          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-          `ControlService: no trusted current reviewer can be established for leg '${args.requestId}' — Officer handoff is refused`,
-          { rootSessionId: root, requestId: args.requestId },
-        )
-      }
-      let reviewer: { readonly instanceId: string } | null
-      try {
-        reviewer = await reviewerPort({
-          rootSessionId: root,
-          approvalCaseId,
-          currentLegRequestId: args.requestId,
-          legOrdinal: current.legOrdinal ?? 1,
-        })
-      } catch {
-        reviewer = null
-      }
-      if (reviewer === null || reviewer.instanceId !== args.caller.instanceId) {
-        throw new ControlError(
-          CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
-          `ControlService: caller '${args.caller.instanceId}' is not the trusted current reviewer of leg '${args.requestId}' — Officer handoff is refused`,
-          { rootSessionId: root, requestId: args.requestId },
-        )
+      let actor: CurrentLegTransferRecord['actor']
+      if (args.cause === CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF) {
+        if (handoffCaller === undefined || handoffCaller.kind !== 'instance') {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: Officer handoff requires an instance caller`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        const reviewerPort = options.currentReviewerForTransfer
+        if (reviewerPort === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: no trusted current reviewer can be established for leg '${args.requestId}' — Officer handoff is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        let reviewer: { readonly instanceId: string } | null
+        try {
+          reviewer = await reviewerPort({
+            rootSessionId: root,
+            approvalCaseId,
+            currentLegRequestId: args.requestId,
+            legOrdinal: current.legOrdinal ?? 1,
+          })
+        } catch {
+          reviewer = null
+        }
+        if (reviewer === null || reviewer.instanceId !== handoffCaller.instanceId) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: caller '${handoffCaller.instanceId}' is not the trusted current reviewer of leg '${args.requestId}' — Officer handoff is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        actor = { kind: 'officer', instanceId: handoffCaller.instanceId }
+      } else {
+        const takeoverPort = options.trustedRuntimeTakeover
+        if (takeoverPort === undefined) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: no trusted runtime takeover authority is configured — unavailable takeover is refused`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        let verdict: { readonly ok: true } | { readonly ok: false; readonly detail: string }
+        try {
+          verdict = await takeoverPort({
+            rootSessionId: root,
+            approvalCaseId,
+            currentLegRequestId: args.requestId,
+            legOrdinal: current.legOrdinal ?? 1,
+          })
+        } catch {
+          verdict = { ok: false, detail: 'the takeover evidence port threw' }
+        }
+        if (!verdict.ok) {
+          throw new ControlError(
+            CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
+            `ControlService: trusted runtime takeover was refused (${verdict.detail})`,
+            { rootSessionId: root, requestId: args.requestId },
+          )
+        }
+        actor = { kind: 'trusted-team-runtime' }
       }
       const payload: CurrentLegTransferPayload = {
         approvalCaseId,
@@ -5762,7 +5811,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         legOrdinal: current.legOrdinal ?? 1,
         target: 'leader',
         cause: args.cause,
-        actor: { kind: 'officer', instanceId: args.caller.instanceId },
+        actor,
         ...(current.blueprintContentHash !== undefined
           ? { blueprintContentHash: current.blueprintContentHash }
           : {}),
@@ -5771,7 +5820,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           : {}),
         transferredAt: options.now(),
       }
-      const sequence = await putEntry({
+      await putEntry({
         schemaVersion: 2,
         sequence: await allocateSequence(),
         rootSessionId: root,
@@ -5782,7 +5831,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           legOrdinal: payload.legOrdinal,
           target: 'leader',
           cause: args.cause,
-          actor: payload.actor,
+          actor,
           ...(payload.blueprintContentHash !== undefined
             ? { blueprintContentHash: payload.blueprintContentHash }
             : {}),
@@ -5794,10 +5843,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         },
         createdAt: options.now(),
       })
-      const record: CurrentLegTransferRecord = {
-        ...payload,
-        transferredAt: payload.transferredAt,
-      }
+      const record: CurrentLegTransferRecord = payload
       try {
         options.reviewEvents?.({
           kind: 'current-leg-transferred',
@@ -5810,7 +5856,6 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       } catch {
         // Delivery is the caller's concern; the durable fact is already written.
       }
-      void sequence
       return record
     })
   }

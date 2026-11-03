@@ -228,6 +228,95 @@ describe('A6-PR2c current-leg transfer', () => {
     }
   })
 
+  it('trusted runtime takeover uses the SAME fact, requires explicit evidence, and still blocks the Officer', async () => {
+    const world = await createP6T4World('a6-pr2c-unavailable', ['leader', 'worker'])
+    try {
+      const events: ControlReviewEvent[] = []
+      const service = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        trustedRuntimeTakeover: async () => ({ ok: true }),
+        reviewEvents: (event) => events.push(event),
+      })
+      const leg = await makeLeg(service, 'corr-a6-pr2c-unavailable')
+      const transfer = await service.transferCurrentLeg({
+        rootSessionId: P6T4_ROOT,
+        requestId: leg.requestId,
+        cause: 'officer-unavailable',
+        actor: 'trusted-team-runtime',
+      })
+      expect(transfer.actor).toEqual({ kind: 'trusted-team-runtime' })
+      expect(transfer.cause).toBe('officer-unavailable')
+      expect((await service.listControlState(P6T4_ROOT)).transfers).toHaveLength(1)
+      expect(events.filter((e) => e.kind === 'current-leg-transferred')).toHaveLength(1)
+
+      await expect(service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        reviewCapability: candidateFor(leg, 'allow'),
+      })).rejects.toSatisfy((error: unknown) => {
+        assertControlCode(error, CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED)
+        return true
+      })
+      // The takeover is routing only; the Leader still decides natively.
+      const decision = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: leg.requestId,
+        decision: 'allow',
+      })
+      expect(decision.decision).toBe('allow')
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('unavailable takeover without trusted evidence or with a refusal writes no fact', async () => {
+    const world = await createP6T4World('a6-pr2c-unavailable-refuse', ['leader', 'worker'])
+    try {
+      const legService = serviceWith(world, { instanceId: WORKER })
+      const leg = await makeLeg(legService, 'corr-a6-pr2c-unavailable-refuse')
+      const noPort = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+      })
+      await expect(noPort.transferCurrentLeg({
+        rootSessionId: P6T4_ROOT,
+        requestId: leg.requestId,
+        cause: 'officer-unavailable',
+        actor: 'trusted-team-runtime',
+      })).rejects.toSatisfy((error: unknown) => {
+        assertControlCode(error, CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED)
+        return true
+      })
+      const refusing = createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: world.ports.externalPolicyFacts,
+        now: () => P6T4_NOW,
+        trustedRuntimeTakeover: async () => ({ ok: false, detail: 'officer is busy, not unavailable' }),
+      })
+      await expect(refusing.transferCurrentLeg({
+        rootSessionId: P6T4_ROOT,
+        requestId: leg.requestId,
+        cause: 'officer-unavailable',
+        actor: 'trusted-team-runtime',
+      })).rejects.toSatisfy((error: unknown) => {
+        assertControlCode(error, CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED)
+        return true
+      })
+      expect((await noPort.listControlState(P6T4_ROOT)).transfers).toHaveLength(0)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
   it('emits the Human-current-leg visibility event after an Officer escalation, without minting a transfer', async () => {
     const world = await createP6T4World('a6-pr2c-human-event', ['leader', 'worker'])
     try {

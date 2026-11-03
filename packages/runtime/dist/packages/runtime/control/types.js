@@ -852,5 +852,6 @@ export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLO
  *  evidence path; a Busy officer never transfers. */
 export const CURRENT_LEG_TRANSFER_CAUSES = {
     OFFICER_HANDOFF: 'officer-handoff',
+    OFFICER_UNAVAILABLE: 'officer-unavailable',
 };
 //# sourceMappingURL=types.js.map

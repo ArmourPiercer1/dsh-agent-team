@@ -1657,6 +1657,25 @@ export interface ControlServiceOptions {
      * not roll back the durable fact — the caller decides delivery.
      */
     readonly reviewEvents?: (event: ControlReviewEvent) => void;
+    /**
+     * A6-PR2c — the TRUSTED runtime unavailable-takeover evidence port. It is the
+     * only entrance for `cause: 'officer-unavailable'`: the composition must have
+     * proven the Blueprint's explicit `whenOfficerUnavailable: leader` policy and
+     * the Officer's durable ARCHIVED/DISPOSED/missing-with-history state. ABSENT
+     * = the takeover does not exist in this composition (fail closed). The port
+     * grants only the routing transfer; it never approves a leg.
+     */
+    readonly trustedRuntimeTakeover?: (input: {
+        readonly rootSessionId: string;
+        readonly approvalCaseId: string;
+        readonly currentLegRequestId: string;
+        readonly legOrdinal: number;
+    }) => Promise<{
+        readonly ok: true;
+    } | {
+        readonly ok: false;
+        readonly detail: string;
+    }>;
 }
 /**
  * C1 (leader-approval reachability) — the non-authority notification port
@@ -2104,13 +2123,7 @@ export interface ControlService {
      * by the configured reviewer port; when no port is configured the transfer
      * is refused. Repeating the same transfer is idempotent.
      */
-    transferCurrentLeg(input: {
-        readonly rootSessionId: string;
-        readonly caller: ActionCaller;
-        readonly requestId: string;
-        readonly cause: CurrentLegTransferCause;
-        readonly reason?: string;
-    }): Promise<CurrentLegTransferRecord>;
+    transferCurrentLeg(input: TransferCurrentLegInput): Promise<CurrentLegTransferRecord>;
     /**
      * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
      * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
@@ -2262,6 +2275,7 @@ export interface ControlService {
  *  evidence path; a Busy officer never transfers. */
 export declare const CURRENT_LEG_TRANSFER_CAUSES: {
     readonly OFFICER_HANDOFF: "officer-handoff";
+    readonly OFFICER_UNAVAILABLE: "officer-unavailable";
 };
 export type CurrentLegTransferCause = (typeof CURRENT_LEG_TRANSFER_CAUSES)[keyof typeof CURRENT_LEG_TRANSFER_CAUSES];
 /** The actor of a transfer. Never a reviewer/decider and never a capability. */
@@ -2270,6 +2284,20 @@ export type CurrentLegTransferActor = {
     readonly instanceId: string;
 } | {
     readonly kind: 'trusted-team-runtime';
+};
+/** The two legal entrances to the SAME minimal transfer fact. */
+export type TransferCurrentLegInput = {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF;
+    readonly caller: ActionCaller;
+    readonly reason?: string;
+} | {
+    readonly rootSessionId: string;
+    readonly requestId: string;
+    readonly cause: typeof CURRENT_LEG_TRANSFER_CAUSES.OFFICER_UNAVAILABLE;
+    readonly actor: 'trusted-team-runtime';
+    readonly reason?: string;
 };
 /** The durable current-leg transfer fact (one minimal fact, not an Assignment ledger). */
 export interface CurrentLegTransferRecord {

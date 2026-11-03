@@ -192,6 +192,7 @@ export type {
   CurrentLegTransferActor,
   CurrentLegTransferCause,
   CurrentLegTransferRecord,
+  TransferCurrentLegInput,
   ControlService,
   ControlServiceOptions,
   ControlSubject,
