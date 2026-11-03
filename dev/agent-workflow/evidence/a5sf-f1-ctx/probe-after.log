@@ -1,0 +1,20 @@
+$ cd packages/runtime/dist && node ../../../dev/agent-workflow/evidence/a5sf-f1-ctx/probe-f1-tool-plane.mjs "$(pwd)"
+
+── BEFORE (pre-F1 mapping: tool scope = agent ctx) ─────────────────
+agent ctx constructor            : FsDouble
+agent ctx -> outside             : ALLOWED:"outside\n"
+tool scope === agent ctx         : true
+tool scope constructor           : FsDouble
+tool scope -> outside            : ALLOWED:"outside\n"
+facts after BEFORE tool-scope read: 0 (expected 0)
+── AFTER (F1 mapping: tool plane through a5sfToolPlaneOf) ──────────
+a5sfToolPlaneOf present          : true
+tool scope === realm member ctx  : true
+tool scope constructor           : TeamConfinedFileSystem
+tool scope -> outside            : IO_READ_DENIED
+facts from the tool-scope read   : 1 (expected 1)
+tool plane fs === realm member fs: true
+realm member ctx -> outside      : IO_READ_DENIED (the SAME scope object, a second read)
+agent ctx -> outside (unchanged) : ALLOWED:"outside\n"
+sink facts                       : 2 member/readText/deny/IO_READ_DENIED member/readText/deny/IO_READ_DENIED
+VERDICT                          : BEFORE the tool plane ran on the agent ctx (base provider, read ALLOWED, zero consultations); AFTER it runs on the isolated Member scope and the same read is DENIED with a transported fact. The agent ctx itself is deliberately UNCHANGED.

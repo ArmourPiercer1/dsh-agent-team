@@ -1,0 +1,17 @@
+# Review mutations (b)/(d) — is the adapter ROUTING behaviourally observable?  2026-11-03T07:28:05Z
+# Mutation: one of the four adapter sites goes back to the unrouted accessor
+#   -          const backend = toolPlaneFsBackend(agentCtx)          # containOverlayKeys site
+#   +          const backend = fsBackend(agentCtx)
+
+$ # mutated one adapter site; running the suite
+$ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.237783ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ failing tests:
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.237783ms)
+  AssertionError [ERR_ASSERTION]: all four permission-adapter fs reads (setup containment check, resolveTarget, containsTargets, containOverlayKeys) use the routed accessor
+
+# VERDICT: only the STRUCTURAL arm F1-7 reds. F1-9 arms the accessor's SEMANTICS (identity + guarded effects)
+# but cannot observe the four call sites, whose closure is not exported: the WIRING is pin-only (README §8.3).

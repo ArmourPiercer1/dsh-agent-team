@@ -1,0 +1,22 @@
+# Review mutation M-g — does the new arm kill it?  2026-11-03T07:27:52Z
+# Mutation: wrap the naming call so a malformed realm degrades to undefined (fail open)
+#   -          a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)
+#   +          try { a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm) } catch { a5sfToolPlane = undefined }
+
+$ # mutated; running the suite
+$ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+✔ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (5.927403ms)
+✔ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (8.821991ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (3.730041ms)
+✔ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (4.348362ms)
+✔ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.878687ms)
+✔ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (2.166351ms)
+✔ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (0.923198ms)
+✖ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (1.140068ms)
+✔ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (3.435972ms)
+ℹ tests 9
+ℹ pass 8
+ℹ fail 1
+✖ failing tests:
+✖ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (1.140068ms)
+  AssertionError [ERR_ASSERTION]: nothing may catch or default the naming call

@@ -48,10 +48,11 @@
  *
  * LIMITS (stated so no reader over-claims): this suite does NOT boot a Host, does
  * NOT run a live agent row, does NOT prove kernel enforcement and does NOT prove
- * a native `read` tool path or a Host-attributable effect. It also does NOT
- * prove the F1 effective half: the mount lands in the installer's SIBLING
- * isolate, so only consumers reading through `realm.installation.members[i].ctx`
- * / `realm.bindings[i].ctx` produce facts (see evidence README §8). The boot
+ * a native `read` tool path or a Host-attributable effect. The F1 EFFECTIVE
+ * HALF of this wiring (the Member tool plane bound to the realm scope) has its
+ * own suite, `a5sf-f1-ctx.test.mjs`; the NATIVE preset `read` row is still NOT
+ * covered there either (the upstream preset registry mounts preset plugins
+ * under its own generation scope — the P3 native takeover, BL-22). The boot
  * budget is still 0.
  *
  * CORE PATCH BUDGET = 0. Nothing here touches `tests/deepseek-harness-test-use/`.
@@ -452,8 +453,11 @@ test('W6 the glue call site is guarded, keeps a SAFE row disposer, and imports t
   const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
   assert.match(
     glue,
-    /import \{ a5sfRealmConfigOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
-    'the glue imports the ONE helper + the safe disposer factory',
+    // F1 (2026-11-03) added `a5sfToolPlaneOf` to this SAME import: the helper
+    // names the isolated tool-plane scope; the ONE mount + the disposer factory
+    // are unchanged. The pin tracks the additive import, not a second path.
+    /import \{ a5sfRealmConfigOf, a5sfToolPlaneOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm \} from '\.\/a5sf-realm-row\.mjs'/,
+    'the glue imports the ONE helper + the tool-plane naming + the safe disposer factory',
   )
   assert.match(glue, /const a5sfRowConfig = a5sfRealmConfigOf\(config\)/, 'the row config is read once at assembly')
   assert.match(
