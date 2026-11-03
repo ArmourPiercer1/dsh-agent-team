@@ -14,7 +14,7 @@
  * @module @dsh-agent-team/tools/types
  */
 import type { ActionCaller, RuntimeActionEffect, TeamRuntime } from '../../runtime/admission/index.js';
-import type { ControlDecisionRecord, ControlEscalationOutcome, ControlGuardBlockReason, ControlRequestRecord, ControlService } from '../../runtime/control/index.js';
+import type { ControlDecisionRecord, ControlEscalationOutcome, CurrentLegTransferRecord, ControlGuardBlockReason, ControlRequestRecord, ControlService } from '../../runtime/control/index.js';
 import type { MessagingCoordinator } from '../../runtime/messaging/index.js';
 import type { ActivityFactRow, ActivityLedger } from '../../runtime/activity/index.js';
 /**
@@ -135,6 +135,9 @@ export type TeamToolsResult = {
 } | {
     readonly status: 'control-escalated';
     readonly outcome: ControlEscalationOutcome;
+} | {
+    readonly status: 'control-transferred';
+    readonly transfer: CurrentLegTransferRecord;
 } | {
     readonly status: 'pending-control-listed';
     readonly rootSessionId: string;

@@ -84,6 +84,7 @@ import type { ProgressValue } from '../../runtime/admission/index.js'
 import {
   CONTROL_DECISION_VALUES,
   CONTROL_REVIEW_ACTIONS,
+  CURRENT_LEG_TRANSFER_CAUSES,
   CONTROL_REQUEST_KIND_VALUES,
   isControlError,
 } from '../../runtime/control/index.js'
@@ -1016,7 +1017,7 @@ function resolveControlSpec(): ToolSpec {
   return {
     name: 'team_resolve_control',
     description:
-      "Record an allow/deny decision on a pending control request, or ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; a member is never a resolver). An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case.",
+      "Record an allow/deny decision on a pending control request, ESCALATE the leg when its reviewer judges the case above its rung (resolver roles per kind: leader-approval -> leader|human, user-approval -> human only, envelope-mutation -> leader|human; an ordinary Member is a resolver only when the service confirms it is the trusted current Officer), or HANDOFF the current leader leg to the Leader. An allow authorizes the exact scope exactly once, consumed by the last-mile guard. Escalate closes THIS leg with a terminal deny(reason 'escalated'), records the reviewer's escalation fact, and passes the case to the next rung on the closed successor ladder; the escalating reviewer can no longer act on the case. Handoff records one durable routing fact; the former Officer loses future signing authority and the Leader takes the current leg.",
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
@@ -1035,8 +1036,9 @@ function resolveControlSpec(): ToolSpec {
           CONTROL_DECISION_VALUES.ALLOW,
           CONTROL_DECISION_VALUES.DENY,
           CONTROL_REVIEW_ACTIONS.ESCALATE,
+          'handoff',
         ],
-        description: 'The decision: allow | deny | escalate.',
+        description: 'The decision: allow | deny | escalate | handoff.',
       },
       note: {
         type: 'string',
@@ -1050,13 +1052,24 @@ function resolveControlSpec(): ToolSpec {
       if (
         decision !== CONTROL_DECISION_VALUES.ALLOW &&
         decision !== CONTROL_DECISION_VALUES.DENY &&
-        decision !== CONTROL_REVIEW_ACTIONS.ESCALATE
+        decision !== CONTROL_REVIEW_ACTIONS.ESCALATE &&
+        decision !== 'handoff'
       ) {
-        throw new TeamToolArgsError("team-tools: argument 'decision' must be allow | deny | escalate", {
+        throw new TeamToolArgsError("team-tools: argument 'decision' must be allow | deny | escalate | handoff", {
           decision,
         })
       }
       const note = optionalStringField(args, 'note', NOTE_MAX_LENGTH)
+      if (decision === 'handoff') {
+        const transfer = await ctx.options.controlService.transferCurrentLeg({
+          rootSessionId: ctx.rootSessionId,
+          caller: ctx.caller,
+          requestId,
+          cause: CURRENT_LEG_TRANSFER_CAUSES.OFFICER_HANDOFF,
+          ...(note !== undefined ? { reason: note } : {}),
+        })
+        return { status: 'control-transferred', transfer }
+      }
       if (decision === CONTROL_REVIEW_ACTIONS.ESCALATE) {
         // The escalate arm (PR4 hand-off duty b): the durable law — resolver
         // roles, the `reviewedBy` exclusion, the risen leg or the A1-12
