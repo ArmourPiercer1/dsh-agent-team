@@ -189,20 +189,24 @@ to this binding?".
 | `node scripts/eb3-ci-required.mjs` | pass | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | **26/26 controls** behaved as required | `eb3-negative-controls.log` |
 | `git diff --check` | clean | `git-diff-check.log` |
-| `pnpm ci:local` | **`DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=240.2s`** (483 files, 5993 tests) | `ci-local.log` |
+| `pnpm ci:local` | **`DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s`** (483 files, 5993 tests) AT THIS HEAD (pre-repair: 240.2 s, see §4.1) | `ci-local.log` (derived summary; raw 1.2 MB capture not committed) |
 
 No `eb3-run-manifest` record was added: this lane boots no Host and produces no run record (the manifest binds
 run records to `as20261102r1`; adding one without a boot would be a false record).
 
 ### 4.1 The `pnpm ci:local` verdict, quoted verbatim — and the two red attempts before it
 
-Reported verdict (attempt 3, `ci-local.log`):
+Reported verdict ON THIS HEAD (`ci-local.log`) — the repair did not need a re-run of the flake ladder:
 
 ```
-DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=240.2s
-Test Files  483 passed (483)
+DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s
+ Test Files  483 passed (483)
       Tests  5993 passed (5993)
+  14/14 a5sf-tool-axis arms pass inside the same run (TA1…TA11)
 ```
+
+The earlier run on the pre-repair tree (attempt 3 after two flake reds, 240.2 s) and the two red attempts
+remain below as the flake record; they are unchanged history, not this head's measurement.
 
 **This lane does NOT report a pass it did not measure, and it does not hide the reds.** The first two attempts
 returned `verdict=fail` (exit 1, coverage DETERMINED — never the exit 2 "undetermined" case):

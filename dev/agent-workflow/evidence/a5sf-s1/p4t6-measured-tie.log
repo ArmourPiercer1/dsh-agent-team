@@ -1,4 +1,4 @@
-MEASURED p4t6 tie on THIS tree (every file on disk, before the commit):
+MEASURED p4t6 tie at HEAD a248a8d01 (every file in the tree, MEASURED LAST):
   scanSessionEventVocabulary: filesScanned=1428 files.length=1428
   ledger derived expected=1428 violations=[]
   A5SF booking expectedDelta={"from":1396,"to":1428}

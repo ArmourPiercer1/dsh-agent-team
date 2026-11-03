@@ -1,24 +1,50 @@
-# DERIVED SUMMARY (raw capture over the evidence guard's 1 MiB bound is not committed).
-# Verbatim verdict/aggregate lines plus the failing lines of this run:
-[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_RESPONSE_TOO_LARGE dest=http://127.0.0.1:3491
-[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TIMEOUT dest=http://127.0.0.1:3491
-[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_DESTINATION_NON_PUBLIC dest=https://mixed.example
-[dsh-agent-team] web-fetch: governed-web-fetch transport-failed code=WEB_TRANSPORT_FAILED dest=https://rebind2.example
-[dsh-agent-team] web-search: governed-web-search provider-failed code=WEB_SEARCH_DESTINATION_DENIED provider=u7f-c1-port-provider
-[dsh-agent-team] u7f-ask: governed-ask port-failed detail=CALLER_NOT_LIVE: caller is not the exact live root
-[dsh-agent-team] u7f-present: governed-present port-failed detail=no open turn on this mount
-stdout | packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 refusals — typed answers with ZERO port calls (the fake records nothing) > AC-23 no roster wired: steer/interrupt FAIL CLOSED (membership unprovable = membership not held), zero port
-2026-11-03T15:42:42.833Z PASS B2a search NEG (absolute out-of-root): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root
-2026-11-03T15:42:43.439Z PASS C2b glob NEG (absolute out-of-root path): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target is outside the governed root
-stdout | packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts > a5w-bindseam-subtree-seam-c1 — the glue injects the plane subtree containment seam > P2: the subtree rule participates in the verdict by the law — root itself and paths under it are covered, paths outside are not
-stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — center enforcement of the controlLeg contract > E3 deny leg = APPROVAL_DENIED, zero spawn (center obeys the verdict, mints nothing)
-stdout | packages/runtime/test/a5-m1-seam-enforcement.test.ts > A5M1-SEAM — center enforcement of the controlLeg contract > E3 deny leg = APPROVAL_DENIED, zero spawn (center obeys the verdict, mints nothing)
-[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration onto channel /team-remote failed (one owner per channel): webserver: route /team-remote is already registered
-    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
-    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
-    at collectTests (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-s1/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
-     ✓ g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)  393ms
+# DERIVED SUMMARY of the ci:local run on the S-1 repair tree (the code content of this commit's parent — the evidence commit itself is its child; raw 1.2 MB capture intentionally NOT committed, eb3-evidence-guard bound = 1 MiB/file).
+# Derived by extracting the step verdicts + totals from the raw log; nothing re-typed by hand.
+
+▶ docs:probe
+✔ docs:probe (0.3s)
+▶ docs:sync --check
+✔ docs:sync --check (0.3s)
+▶ ci shape (eb3-ci-required)
+EB3-CI-REQUIRED pass workflows=9 findings=0
+✔ ci shape (eb3-ci-required) (0.1s)
+▶ pnpm typecheck
+✔ pnpm typecheck (12.8s)
+▶ vitest (selected)
  Test Files  483 passed (483)
       Tests  5993 passed (5993)
-   Duration  226.18s (transform 59.13s, setup 0ms, import 344.12s, tests 544.54s, environment 123ms)
-DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=240.2s
+✔ vitest (selected) (220.0s)
+▶ node --test (selected)
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (12.834668ms)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (16.891989ms)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (12.570227ms)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (5.097751ms)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (3.546875ms)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (3.404475ms)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (1.112155ms)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (11.834245ms)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (10.101544ms)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (8.659614ms)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (8.6473ms)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (8.846557ms)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (6.294831ms)
+✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (9.359755ms)
+✔ node --test (selected) (0.5s)
+DSH-CI-LOCAL verdict=pass steps=6 failed=0 coverage=determined files=2 wall=234.0s
+CI-EXIT=0
+
+# All 14 TA arms inside the ci:local node --test step:
+✔ TA1 one realm per Member AND one per ToolBinding; the Member tool plane still names the Member realm (ok)
+✔ TA2 INVARIANT: a call the CEILING allows but the read RESTRICTION denies is REFUSED by the native path, one binding fact (ok)
+✔ TA3 CONTROL: a call allowed by BOTH the ceiling and the restriction is allowed (ok)
+✔ TA4a ceiling allows + restriction denies => the binding realm DENIES with exactly one fact (ok)
+✔ TA4b ceiling denies + a WIDER restriction allows => compileEffectiveIo intersects and the binding realm DENIES (no widening) (ok)
+✔ TA4c both allow => the binding realm ALLOWS with exactly one fact (ok)
+✔ TA5 structural pin: a binding-targeted mount routes into the binding realm behind a registration router; no second compiler, no ALS (ok)
+✔ TA6 SIBLINGS: with read restricted and write unbound, write runs on the CEILING realm and no read-lane fact appears (ok)
+✔ TA7 NO WIDENING: ceiling denies + a WIDER restriction allows => the native read is still DENIED on the binding lane (ok)
+✔ TA8 UNBOUND: a tool with no binding falls back to the ceiling realm (one read, one member fact, allowed) (ok)
+✔ TA9a SURFACE PER FIBER: the fibers partition the module surface; the union is the preset surface exactly once (ok)
+✔ TA9b SURFACE REFUSAL: a module that would change the model-visible surface is refused and its fibers disposed (ok)
+✔ TA10 TEARDOWN: router fibers are disposed before the confined providers, and one throwing fiber strands nothing (ok)
+✔ TA11 DEFERRED: a module that registers read_image from ctx.inject([attachments]) is REFUSED, never left on the unshadowed preset path (ok)
