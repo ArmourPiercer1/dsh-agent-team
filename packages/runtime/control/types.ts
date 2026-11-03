@@ -2564,6 +2564,15 @@ export interface ControlService {
    */
   transferCurrentLeg(input: TransferCurrentLegInput): Promise<CurrentLegTransferRecord>
   /**
+   * A6-PR5 — the Officer's restricted view: only the open cases whose CURRENT
+   * leg the trusted reviewer port assigns to this instance. No full-team list,
+   * no legacy rows, no management surface. Read-only.
+   */
+  listMyReviewTasks(input: {
+    readonly rootSessionId: string
+    readonly caller: ActionCaller
+  }): Promise<readonly ReviewTaskSummary[]>
+  /**
    * Alpha.4 A4-PR3 — read one approval case, derived from durable rows
    * only, with a TYPED problem outcome (A2-9: an authority-bearing read is
    * strict — a leg row that carries a case id without a leg ordinal, an
@@ -2759,6 +2768,18 @@ export interface CurrentLegTransferRecord {
 }
 
 /** Non-authority projection event for the wake/notification plane. */
+export interface ReviewTaskSummary {
+  readonly approvalCaseId: string
+  readonly currentLegRequestId: string
+  readonly legOrdinal: number
+  readonly reviewAuthority: ProposalAuthorityPosition
+  readonly kind: ControlRequestKind
+  readonly subject: ControlSubject
+  readonly actionName: string
+  readonly toolName?: string
+  readonly requestSequence: number
+}
+
 export type ControlReviewEvent =
   | {
       readonly kind: 'current-leg-transferred'

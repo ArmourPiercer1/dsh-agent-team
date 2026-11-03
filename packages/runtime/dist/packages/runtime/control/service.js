@@ -4656,6 +4656,62 @@ export function createControlService(options) {
             return record;
         });
     }
+    // --- listMyReviewTasks (A6-PR5) ------------------------------------------------------
+    async function listMyReviewTasks(args) {
+        const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'list');
+        if (args.caller.kind !== 'instance')
+            return [];
+        const reviewerPort = options.currentReviewerForTransfer;
+        if (reviewerPort === undefined)
+            return [];
+        const callerInstance = args.caller.instanceId;
+        return withTeamLock(teamLocks, root, async () => {
+            const state = loadControlState(root);
+            const caseIds = [];
+            for (const row of state.requests) {
+                const caseId = row.payload.approvalCaseId;
+                if (caseId !== undefined && !caseIds.includes(caseId))
+                    caseIds.push(caseId);
+            }
+            const tasks = [];
+            for (const approvalCaseId of caseIds) {
+                const read = buildApprovalCaseState(state, approvalCaseId);
+                if (read.kind !== 'case')
+                    continue;
+                const current = read.state.currentLeg;
+                if (current === undefined || current.status !== 'pending')
+                    continue;
+                if (read.state.transfer !== undefined)
+                    continue;
+                let reviewer;
+                try {
+                    reviewer = await reviewerPort({
+                        rootSessionId: root,
+                        approvalCaseId,
+                        currentLegRequestId: current.requestId,
+                        legOrdinal: current.legOrdinal ?? 1,
+                    });
+                }
+                catch {
+                    reviewer = null;
+                }
+                if (reviewer === null || reviewer.instanceId !== callerInstance)
+                    continue;
+                tasks.push({
+                    approvalCaseId,
+                    currentLegRequestId: current.requestId,
+                    legOrdinal: current.legOrdinal ?? 1,
+                    reviewAuthority: current.reviewAuthority ?? 'leader',
+                    kind: current.kind,
+                    subject: current.subject,
+                    actionName: current.actionName,
+                    ...(current.toolName !== undefined ? { toolName: current.toolName } : {}),
+                    requestSequence: current.requestSequence,
+                });
+            }
+            return tasks.sort((a, b) => a.requestSequence - b.requestSequence);
+        });
+    }
     // --- readApprovalCaseState / listOpenApprovalCases -----------------------------------
     async function readApprovalCaseState(args) {
         const root = parseRoot(args.rootSessionId, CONTROL_ERROR_CODES.CONTROL_REQUEST_MALFORMED, 'readApprovalCaseState');
@@ -5047,6 +5103,7 @@ export function createControlService(options) {
         abandonControlRequest,
         listControlState,
         transferCurrentLeg,
+        listMyReviewTasks,
         guardOperation,
         checkExternalOperation,
         awaitControlDecision,

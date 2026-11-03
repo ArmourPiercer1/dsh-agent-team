@@ -1118,7 +1118,7 @@ function listPendingControlSpec(): ToolSpec {
   return {
     name: 'team_list_pending_control',
     description:
-      'List this Team\'s unresolved approvals across every carrier: each open approval case at its CURRENT leg (whatever rung that leg is waiting on and whichever carrier it rides), plus any pending legacy request. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. (Leader-only; members are rejected.)',
+      'List the approvals visible to THIS caller: the Leader sees every open case at its CURRENT leg plus pending legacy requests; an assigned Officer sees only the open cases whose current leg is assigned to that Officer. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request.',
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
@@ -1149,33 +1149,58 @@ function listPendingControlSpec(): ToolSpec {
       // never sees the ledger — the read itself is root-scoped, but the
       // model-facing discovery surface is the Leader's.
       const caller = ctx.caller
-      if (caller.kind !== 'instance' || caller.instanceId !== LEADER_INSTANCE_ID) {
+      if (caller.kind !== 'instance') {
         return {
           status: 'rejected',
           code: TEAM_TOOL_PENDING_LIST_NOT_LEADER,
-          message:
-            'team-tools: team_list_pending_control is Leader-only (the pending approval list is the Leader discovery surface; a member caller is rejected before any read)',
+          message: 'team-tools: team_list_pending_control requires an instance caller',
         }
       }
       // Both sources are fresh ledger reads (invariant 45 — no cached
       // authority), and neither creates, resolves, or consumes anything.
-      const [state, openCases] = await Promise.all([
-        ctx.options.controlService.listControlState(ctx.rootSessionId),
-        ctx.options.controlService.listOpenApprovalCases({ rootSessionId: ctx.rootSessionId }),
-      ])
-      const caseLegs = openCases
-        .map((openCase) => openCase.state.currentLeg)
-        .filter((leg): leg is ControlRequestRecord => leg !== undefined)
-      const caseLegIds = new Set(caseLegs.map((leg) => leg.requestId))
-      // A pending row that IS a case leg already appears above; a pending row
-      // with no case identity is a pre-Alpha.4 / v1/v2 request and appears
-      // here (its absence would be a v1/v2 behavior change, which PR7 owns).
-      const legacyPending = state.requests.filter(
-        (row) =>
-          row.status === 'pending' &&
-          row.approvalCaseId === undefined &&
-          !caseLegIds.has(row.requestId),
-      )
+      const state = await ctx.options.controlService.listControlState(ctx.rootSessionId)
+      let caseLegs: ControlRequestRecord[]
+      let legacyPending: ControlRequestRecord[]
+      if (caller.instanceId === LEADER_INSTANCE_ID) {
+        const openCases = await ctx.options.controlService.listOpenApprovalCases({
+          rootSessionId: ctx.rootSessionId,
+        })
+        caseLegs = openCases
+          .map((openCase) => openCase.state.currentLeg)
+          .filter((leg): leg is ControlRequestRecord => leg !== undefined)
+        const caseLegIds = new Set(caseLegs.map((leg) => leg.requestId))
+        // A pending row that IS a case leg already appears above; a pending row
+        // with no case identity is a pre-Alpha.4 / v1/v2 request and appears
+        // here (its absence would be a v1/v2 behavior change, which PR7 owns).
+        legacyPending = state.requests.filter(
+          (row) =>
+            row.status === 'pending' &&
+            row.approvalCaseId === undefined &&
+            !caseLegIds.has(row.requestId),
+        )
+      } else {
+        // A6-PR5: the restricted Officer view. The service answers only the
+        // CURRENT pending legs assigned to this instance; an unassigned member
+        // gets the historical Leader-only refusal (zero rows read into the
+        // response), never the full-team ledger.
+        const tasks = await ctx.options.controlService.listMyReviewTasks({
+          rootSessionId: ctx.rootSessionId,
+          caller,
+        })
+        if (tasks.length === 0) {
+          return {
+            status: 'rejected',
+            code: TEAM_TOOL_PENDING_LIST_NOT_LEADER,
+            message:
+              'team-tools: no approval task is assigned to this member (the full pending list is Leader-only)',
+          }
+        }
+        const byId = new Map(state.requests.map((row) => [row.requestId, row]))
+        caseLegs = tasks
+          .map((task) => byId.get(task.currentLegRequestId))
+          .filter((leg): leg is ControlRequestRecord => leg !== undefined)
+        legacyPending = []
+      }
       const pending = [...caseLegs, ...legacyPending].sort(
         (a, b) => a.requestSequence - b.requestSequence,
       )
