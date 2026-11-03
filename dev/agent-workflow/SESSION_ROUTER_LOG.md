@@ -7416,3 +7416,25 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
 - **唯一待用户裁决**：生产 PA 委托契约若必须修改 rung/`mayReview`/grant 法律，则属
   基础审批法扩展，需用户授权；若可在既有 ladder 上以 case-scoped 委托事实实现，则由
   工程在 PR2 Gate 0 验证后继续。未开始 PR2 实现。
+
+## 2026-11-03T06:1xZ（真实 UTC）— ADR-A6-1 接受：ReviewCapability 契约与 PR2 重排（主 Agent，PR #536 lane）
+
+- **用户裁决**：选择“ADR 先行，再改 Control/PA 代码”；授权对 Alpha.6 审批授权
+  模型作必要、系统性的调整。边界：保留既有非委托审批语义、权限层级、Hard
+  Ceiling、工具执行约束、一次性 Grant；允许统一扩展 ReviewAuthority/Control/
+  PA/Grant 的委托契约；不建通用权限引擎/工作流/第二套授权账本；Human 与
+  Leader 专属管理不下放。
+- **新增 ADR**：`docs/plans/memo/alpha6-review-separation/ADR-alpha6-review-capability-20261103.md`
+  （ACCEPTED）。核心：真实 Principal 身份与 Case/leg/scope-scoped
+  `ReviewCapability` 分离；单一纯求值器；durable decision 携带能力快照；
+  Control/PA presenter/verifier/grant/guard 只读同一快照；静态委托来自冻结
+  Blueprint；普通案件不建 per-case Mandate；仅 Handoff 写一条最小 current-leg
+  事实；失败关闭。
+- **设计正本修订**：A6-AUTHORITY 改为“保留非委托语义，允许统一委托契约”；
+  A6-LEDGER 明确能力快照不是新账本、Handoff 仅最小事实；§4 增加 ADR 接受
+  dated 记录。
+- **执行计划重排**：PR2 Gate 0 由 ADR 取代；新切片 = ADR → PR2a（纯求值器）→
+  PR2b（Control+PA 统一契约，中心）→ PR2c（Handoff+接线）→ PR5（Officer 访问）。
+  PR2b 多文件属同一连贯契约，需列全受保护文件并串行写者；不重复三模式 PoC。
+- **状态**：本 PR 仍 DESIGN-ONLY，零生产代码、零 schema、零启用。下一步为
+  PR2a 新分支/新 worktree；PR2b 才动受保护中心，需 ARC-A override + 安全复审。

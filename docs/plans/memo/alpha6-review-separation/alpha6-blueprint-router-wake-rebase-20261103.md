@@ -2,7 +2,7 @@
 
 > **状态：DRAFT / DESIGN-ONLY / NOT IMPLEMENTATION AUTHORIZATION。** 2026-11-03。
 >
-> 本文件记录用户在 Alpha.6 重设计讨论中已作出的**产品语义裁决**、**仅约束本轮 Alpha.6 开发的工程不变量**、架构方向及有限 PoC。它不修改任何生产路径、工具执行体系、基础权限法律或已有 Blueprint；不得将本文描述的功能报告为已实现。
+> 本文件记录用户在 Alpha.6 重设计讨论中已作出的**产品语义裁决**、**仅约束本轮 Alpha.6 开发的工程不变量**、架构方向及有限 PoC。它不修改任何生产路径、工具执行体系或已有 Blueprint；审批授权契约的修订以 ADR 为准且尚未实施；不得将本文描述的功能报告为已实现。
 >
 > **基线**：仓库 master（建分支时）、DSH 0.2.0-rc.2（对接核验目标）；Alpha.5 的 Sandbox-first 方案以 PR #531 的正式实施版本为协调对象，具体生产接口须按最终已批准实现复核。
 
@@ -10,8 +10,10 @@
 > [`dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/`](../../../../dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/README.md)。
 > 结果：**P-AUTH PASS-with-qualification**（角色闭集是唯一基础权限 gate；一个 case-scoped 谓词即可走完同一账本与 guard；该接缝属 ARC-A 受保护中心，需具名 Center-Interface PR + override + 用户授权）；**P-BP PASS**（v3/v4 哈希零移动；当前入口拒绝 `reviewRouting`；加法面可确定解析 Template × Tool；family 进哈希，故需版本边界）；**P-INBOX seam PASS / 模型 PASS / 真 Host ENV_BLOCK**（Host Inbox 公开接缝足够；三请求/崩溃/Stop 端到端未运行）。
 
-> **2026-11-02 复审更正（append-only，取代上一行的 P-AUTH 定级）**：上一行把“角色闭集接缝通过”写成了 P-AUTH 通过，**定级过强**。复审后的完整 PA 链证据（`evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts`）显示：真实 strict PA manifest + 真实 verifier 下，member 身份的 Officer 在 `resolve` 即被判 `pa-authority-drift`，`mayReview(member, member, leader)` 恒假，零 grant、零消费；只有加入一个 throwaway 的 reviewer-authority 映射，同一链才 mint + guard 成功，且 durable decider 身份仍是 member。故重定级为：**简单 Control 决议接缝 PASS；完整 PA 工具审批链在 base law 下 FAIL；委托原型 PASS（仅证明插入点）；生产委托契约 OPEN，可能需要用户架构裁决。** P-BP 修订为 12/12（新增 Officer 必须是 MemberTemplate、Officer 自问 → Leader）；P-INBOX 模型修订为 11/11（pending/changed 分离、恢复查持久 wake、投递失败释放）。
-> 计划细化 = [`alpha6-execution-plan-20261102.md`](./alpha6-execution-plan-20261102.md)。本文件的产品语义与不变量未因 PoC 结果改写。
+> **2026-11-02 复审更正（append-only，取代上一行的 P-AUTH 定级）**：上一行把“角色闭集接缝通过”写成了 P-AUTH 通过，**定级过强**。复审后的完整 PA 链证据（`evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts`）显示：真实 strict PA manifest + 真实 verifier 下，member 身份的 Officer 在 `resolve` 即被判 `pa-authority-drift`，`mayReview(member, member, leader)` 恒假，零 grant、零消费；只有加入一个 throwaway 的 reviewer-authority 映射，同一链才 mint + guard 成功，且 durable decider 身份仍是 member。故重定级为：**简单 Control 决议接缝 PASS；完整 PA 工具审批链在 base law 下 FAIL；委托原型 PASS（仅证明插入点）；生产委托契约 OPEN（2026-11-03 已由 ADR-A6-1 裁决，见下）。** P-BP 修订为 12/12（新增 Officer 必须是 MemberTemplate、Officer 自问 → Leader）；P-INBOX 模型修订为 11/11（pending/changed 分离、恢复查持久 wake、投递失败释放）。
+
+>
+> **2026-11-03（真实 UTC）ADR 接受（append-only）**：用户裁决“ADR 先行”，并授权对 Alpha.6 审批授权模型作必要、系统性的调整：真实 Principal 身份与 Case-scoped `ReviewCapability` 分离；单一求值器贯通 Control/PA/Presenter/Verifier/Grant/Guard；保留非委托语义、rung、Hard Ceiling、工具执行约束与一次性 Grant。契约正本 = [`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)。A6-AUTHORITY / A6-LEDGER 已据此修订；零生产代码改动。
 >
 > **旧计划定位**：#319、#501、#503、#507、#509、#513、#517、#520、#522 是可评估和回收的历史设计/实验资产，不是新方案必须逐项实施的前置条件。未另行批准前，它们不自动获得合并/启用授权。
 
@@ -80,14 +82,16 @@
 | ID | 禁止或必须保持的边界 | 允许的最小接缝 |
 | --- | --- | --- |
 | **A6-NATIVE** | **不触碰工具执行体系**：不修改 DSH 原生 ToolDefinition、原生 read/bash/web 等工具算法、工具执行器、Provider、FS/OS Sandbox、PTY、Alpha.5 原生执行/受限调用链；不自研替代工具实现 | 读取既有可信 Member × Tool × Call 身份和已生成的审批事件；仅在通知/审批编排侧接线 |
-| **A6-AUTHORITY** | **不触碰基础权限体系**：不改 allow/ask/deny 权限判定、Authority rung/继承、Envelope/Hard Ceiling、Grant、Guard/Consumption、持久权限变更法律；不扩大原有 Member 的全局角色权限 | 如必须增加 Officer Case-scoped 审批入口，仅能在既有审批服务的薄接入层作最小扩展，并重用其全部权威检查与事实写入。不得通过修改全局 CONTROL_RESOLVER_ROLES 来使所有 Member 可审批，亦不得冒充 Leader 身份 |
+| **A6-AUTHORITY** | **保留既有非委托审批语义**：不改普通 allow/ask/deny 判定、Authority rung/继承、Envelope/Hard Ceiling、工具执行约束、一次性 Grant/Guard/Consumption、持久权限变更法律；不扩大原有 Member 的全局角色权限；Human 审批与 Leader 专属管理不下放 | **允许对 ReviewAuthority、Control、PA、Grant 的委托授权契约作统一扩展**（ADR-A6-1）：真实 Principal 身份不变，case/leg/scope 内的 `ReviewCapability` 统一求值并贯通全部审批入口；禁止各入口分别硬编码、禁止全局放宽 CONTROL_RESOLVER_ROLES、禁止冒充 Leader |
 | **A6-BLUEPRINT** | **自动路由完全由 Blueprint 解析**：不使用运行时 sidecar、ReviewPlan 平行作者系统或任意模型裁量作为默认路由来源；不引入实例级 Blueprint 特例 | 权威 Case 当前状态、显式当前-leg Handoff/接管事实，以及 Host 的运行可用性，是决策时的事实输入而非第二套可编辑路由策略 |
-| **A6-LEDGER** | 不建第二套审批授权事实、第二份 GrantStore 或第二份未决审批数据库 | 原有 ControlService/TeamDomain 为唯一审批事实；如需仅追加当前 leg 的最小转交记录，不把它升级为新的权限权威 |
+| **A6-LEDGER** | 不建第二套审批授权事实、第二份 GrantStore、第二份未决审批数据库，也不建 per-case Mandate/Assignment 账本 | 原有 ControlService/TeamDomain 为唯一审批事实；durable decision 可携带 `reviewCapability` 快照（不是新账本）；Handoff 仅追加一条当前 leg 的最小接管事实，不把它升级为新的权限权威 |
 | **A6-INBOX** | 不复制 DSH 原生 Inbox/Agent Loop，不预设新 Core patch、持久七阶段调度器、租约/fencing 及可靠定时服务 | 使用 DSH 公开的 Inbox、claim、turn/lifecycle 事实，必要时在插件侧做轻量协调 |
 | **A6-LEGACY** | 未启用 Alpha.6 的 Team 保持旧行为；Human / Admin 审批与原有用户权限不下放 | 新模式的明确 opt-in 与按 Team 的互斥通知出口 |
 | **A6-SCOPE** | 本轮不承诺处理恶意插件/提示词注入、复杂多 Officer、跨进程分布式调度及通用规则语言 | 对现有权限/审批终态做正常兼容验证，不主动扩建威胁模型 |
 
-**A6-AUTHORITY 的可行性界线必须正视**：master 的 CONTROL_RESOLVER_ROLES 当前使普通 Member 不可直接 resolve leader-approval；更重要的是，完整 PA 链的 `deciderAuthority()` / `mayReview()` / `verifyEffectSetApproval()` / `issueApprovedGrant()` 都把 member 解释为不能覆盖 leader 级审批。**“角色闭集接缝”只解决 Control 入口，不等于 PA 工具审批可用。** 2026-11-02 复审后的 P-AUTH 证实：真实 PA manifest 下 Officer 的 allow 在 resolve 阶段即被判 `pa-authority-drift`。因此必须先定义并验证一个有 Case 作用域、保留真实 Officer 身份的受限委托契约（见执行计划 §2.4）；如果它实际需要扩大基础审批法（新增 reviewer 位置、修改 `mayReview`/grant 法律），则标记 **BLOCK / 请求用户裁决**，不得以“最小接入”为名偷偷突破。
+**A6-AUTHORITY 的可行性与边界（ADR 已接受）**：master 的 CONTROL_RESOLVER_ROLES 当前使普通 Member 不可直接 resolve leader-approval；完整 PA 链的 `deciderAuthority()` / `mayReview()` / `verifyEffectSetApproval()` / `issueApprovedGrant()` 也把 member 解释为不能覆盖 leader 级审批。**“角色闭集接缝”只解决 Control 入口，不等于 PA 工具审批可用。** 2026-11-02 的完整 PA 链实验证实：真实 PA manifest 下 Officer 的 allow 在 resolve 阶段即被判 `pa-authority-drift`。
+
+用户 2026-11-03 裁决：保留非委托语义与全部执行约束，**允许对审批授权契约作统一扩展**。契约正本 = [`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)：真实 Principal 身份与 Case-scoped `ReviewCapability` 分离；单一纯求值器；durable decision 能力快照；Control/PA/Grant/Guard 只读同一快照；不建 per-case Mandate。若实施证明必须扩大 Human/基础工具权限或无法在 ADR 边界内实现，才停止并申请新的架构裁决。
 
 ## 3. 架构方向（不提前冻结具体 API / schema）
 

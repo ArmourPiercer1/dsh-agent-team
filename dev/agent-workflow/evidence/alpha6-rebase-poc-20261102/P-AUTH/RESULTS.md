@@ -7,7 +7,7 @@
 | Simple Control decision seam | **PASS** | `pauth.test.ts` base 2/2; prototype 5/5 |
 | Full PA tool-approval chain under a real `member` Officer | **FAIL under base law** | `pa-chain.test.ts` role-only mode: durable DENY `pa-authority-drift`, zero grant, zero consumption |
 | Case-scoped delegation prototype | **PASS (proves the insertion point only)** | `pa-chain.test.ts` delegation mode: same member decider completes the chain; grant minted + guard consumed exactly once |
-| Production delegation contract | **OPEN — needs architecture ruling** | §“What production must decide” |
+| Production delegation contract | **DECIDED by ADR-A6-1 (2026-11-03); implementation not started** | §3; `docs/plans/memo/alpha6-review-separation/ADR-alpha6-review-capability-20261103.md` |
 
 The first pass was **too strong**: it proved only that a Member can be admitted
 past the Control role closure, not that the resulting allow is redeemable for
@@ -87,30 +87,33 @@ that the chain can work if a trusted case-scoped delegation is recognized by
 both the presenter and the verifier. It does NOT prove a production contract:
 the mapping is hardcoded and would be a privilege bypass if merged.
 
-## 3. What production must decide (architecture ruling)
+## 3. Production contract — decided by ADR-A6-1 (2026-11-03)
 
-A deployable version needs a durable, case-scoped delegation fact that:
+The user chose “ADR first”, and authorized a systematic review-authority
+extension. The contract is now fixed in
+[`ADR-alpha6-review-capability-20261103.md`](../../../../../docs/plans/memo/alpha6-review-separation/ADR-alpha6-review-capability-20261103.md):
 
-1. keeps the real Officer identity (`member`) in the decision row;
-2. is derived from the frozen Blueprint + current leg + real instance, never
+1. the durable `decider` stays the real Principal (`member` for the Officer);
+2. a case/leg/scope-scoped `ReviewCapability` is evaluated by ONE pure
+   evaluator from the frozen Blueprint + current leg + real instance — never
    from model/client input;
-3. binds case id, effect scope, authority generation and lifetime;
-4. is honored by `deciderAuthority()` / `verifyEffectSetApproval()` /
-   `issueApprovedGrant()` / guard **only inside that case/scope**;
-5. does not apply to Officer self-review, governance, Human-only, or
-   persistent permission changes;
-6. never widens `CONTROL_RESOLVER_ROLES` globally and never writes a fake
-   leader identity.
+3. the durable decision carries the capability snapshot (additive; legacy
+   rows absent = old behaviour);
+4. PA presenter, verifier, `issueApprovedGrant` and guard read that same
+   snapshot; no per-entry Officer→Leader hardcode;
+5. no per-case Mandate ledger; the only new fact is a minimal current-leg
+   Handoff record;
+6. Human, Leader-only governance/persistent-permission changes, self-review
+   and the non-delegated semantics stay untouched.
 
-If (4) can be done without changing the rung ladder / `mayReview` / grant law,
-it is a minimal approval-layer extension. If it requires a new reviewer
-position or a different `mayReview` law, it is a base-law change and needs the
-user's explicit architecture ruling **before PR2 is implemented**. That is the
-only remaining user-decision item.
+Implementation is **not started**. Per the execution plan it is sliced into
+A6-PR2a (pure evaluator), A6-PR2b (Control + PA unified contract, protected
+center), A6-PR2c (Handoff + wiring), A6-PR5 (Officer access). The three-mode
+PoC above is now a regression baseline, not a design question.
 
 ## 4. Protected-center note
 
-`packages/runtime/control/**` is ARC-A pinned. PR2 also touches the PA bridge
-and verifier, and PR2b touches the durable leg fact. Each requires a named
+`packages/runtime/control/**` is ARC-A pinned. PR2b also touches the PA bridge
+and verifier, and PR2c touches the durable leg fact. Each requires a named
 Center-Interface PR + ledger override + security review. This PoC is not that
-authorization.
+authorization; the ADR is design authorization only.

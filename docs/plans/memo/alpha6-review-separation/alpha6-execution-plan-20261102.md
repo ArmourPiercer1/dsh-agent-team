@@ -31,12 +31,12 @@ A6-LEDGER / A6-INBOX / A6-LEGACY / A6-SCOPE**。每个 PR 描述必须逐条回�
 
 | PoC | 复审定级 | 依据 / 计划后果 |
 | --- | --- | --- |
-| **P-AUTH** | **简单 Control 决议接缝 PASS；完整 PA 工具审批链 FAIL（base law）；委托原型 PASS；生产委托契约 OPEN** | 真实 PA manifest + 真实 verifier 下，Officer（member）在 `resolve` 就被判 `pa-authority-drift`；`mayReview(member, member, leader)` 恒假，`deciderAuthority()` 把 member 固定解释为 `member`，`verifyEffectSetApproval()` / `issueApprovedGrant()` / guard 是同一结论。**PR2 第一件事 = 完整 PA 链测试；若必须扩大基础审批法才能通过，停止并申请用户架构裁决。** |
+| **P-AUTH** | **简单 Control 决议接缝 PASS；完整 PA 工具审批链 FAIL（base law）；委托原型 PASS；生产契约已由 ADR-A6-1 裁决（未实施）** | 真实 PA manifest + 真实 verifier 下，Officer（member）在 `resolve` 就被判 `pa-authority-drift`；`mayReview(member, member, leader)` 恒假，`deciderAuthority()` 把 member 固定解释为 `member`，`verifyEffectSetApproval()` / `issueApprovedGrant()` / guard 是同一结论。**2026-11-03 用户裁决 ADR 先行并授权统一 ReviewCapability；实施从 PR2a 开始，不再重复 PoC。** |
 | **P-BP** | **原型层 PASS（12/12）** | Template × Tool 确定、同模板一致、instance 选择器拒绝、哈希必须移动。复审新增两项已落：Officer 必须是 MemberTemplate；**Officer 自己的 ask 默认 Leader**（防自等待）。生产 schema 仍需与 Alpha.5 协调。 |
 | **P-INBOX** | **公开接缝 PASS；模型 PASS（11/11，已修复三处 P0）；Host ENV_BLOCK** | 旧模型把“未变化”误当“无待办”，会撤销唯一有效 wake；`recover()` 无条件重投；投递失败会永久卡 `queued`。已拆分 `pending`/`changed`，恢复前查询持久 wake，失败释放队列。Host 三请求/claim/崩溃/Stop 仍未跑。 |
 
-**不再为三项分别组织开放式架构 PoC。** 唯一需要优先补的关键验证是
-P-AUTH 完整 PA 链；它作为 PR2 的 Gate 0，而不是又一轮独立设计。
+**不再为三项分别组织开放式架构 PoC。** P-AUTH 完整 PA 链已完成并被复审确认；
+2026-11-03 ADR 接受后，实施从 PR2a（纯求值器）开始，已有三模式实验作为回归基线。
 
 ## 2. schema、身份、委托与通知的最小方案
 
@@ -77,25 +77,29 @@ P-AUTH 完整 PA 链；它作为 PR2 的 Gate 0，而不是又一轮独立设计
 
 PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可撤。
 
-### 2.4 PA 委托契约（新增，PR2 Gate 0 的对象）
+### 2.4 ReviewCapability 契约（ADR-A6-1 已接受）
 
-复审确认：**仅靠角色闭集接缝不能让 Officer 的审批在既有 PA 法律下生效。**
-要让完整链路成立，必须定义一个有 Case 作用域、保留真实 Officer 身份的受限
-委托。最小契约（供 PR2 验证/必要时申请裁决）：
+用户已选择“ADR 先行”，并授权对 Alpha.6 审批授权模型作必要、系统性的调整。
+[`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)
+是唯一契约正本，要点：
 
-- durable decision 的 `decider` 仍是真实 `{kind:'instance', instanceId, role:'member'}`；
-- 委托事实由**冻结 Blueprint + 当前 leg + 真实实例**派生，不能由模型/客户端
-  自报；带 case id、scope、authority generation、有效期；
-- PA presenter / `deciderAuthority()` / `verifyEffectSetApproval()` / guard 在
-  **该 case/scope 内**把该 decider 的 review authority 解释为 Leader 级；
-  离开该 case 即恢复 member；
-- 委托不适用于 Officer 自审、治理事项、Human-only、持久权限变更；
-- 不允许全局放宽 `CONTROL_RESOLVER_ROLES`，不允许把 durable 身份写成 Leader。
+- **身份与能力分离**：durable `decider` 始终是真实 Principal（Officer 仍是
+  member）；`ReviewCapability` 是该 Principal 在当前 Case/leg/scope 内的有效
+  审批能力，独立求值、独立快照。
+- **一个纯求值器**（建议 `packages/runtime/review-authority/`）：所有入口
+  （Control 决议、PA presenter、verifier、grant、guard）只读同一结果；禁止在
+  各入口分别硬编码 Officer→Leader。
+- **静态委托来自冻结 Blueprint**：普通案件不建 per-case Mandate/Assignment
+  账本；只有显式 Handoff 写一条最小 current-leg 事实。
+- **Durable decision 携带 `reviewCapability` 快照**（可选、additive）；旧行
+  缺席 = legacy 行为逐字节不变。
+- **失败关闭**：case/scope/generation/Blueprint 不匹配、快照缺失、verifier
+  不可读 → 拒绝或 `authority-undetermined`，绝不降级 allow。
+- **保留**：Human 审批、Leader 专属治理/持久权限变更、Alpha.5 I/O 硬上界、
+  一次性 Grant/Guard、非委托审批语义。
 
-**这是基础审批法的最小扩展候选，超出首轮“最小 case-scoped 接入”的授权
-范围。** PR2 Gate 0 先测：若该契约可在不改变基础权限阶梯的前提下实现，则
-继续；若必须新增 reviewer 位置/改 `mayReview`/改 grant 法律，则停止，向用户
-申请架构裁决。
+**不再重复三模式 PoC。** 已有证据作为回归基线；实施按 PR2a→PR2b→PR2c→PR5
+推进，PR2b 必须用真实 PA manifest 完成纵向验证。
 
 ### 2.5 Officer 自身 ask 的路由
 
@@ -107,19 +111,20 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 
 ## 3. PR 切分、所有权与依赖
 
-> 纪律：1 PR = 1 branch = 1 worktree = 1 writer；受保护中心一次只动一个
-> 文件；每个 PR 独立可回滚。Dormant PR 必须有 lane-hygiene 证明与零新权威
-> 写路径声明。
+> 纪律：1 PR = 1 branch = 1 worktree = 1 writer；一个 Center-Interface PR
+> 只落地**一个连贯契约**并列出全部受保护文件，禁止并行写者；每个 PR 独立可
+> 回滚。Dormant PR 必须有 lane-hygiene 证明与零新权威写路径声明。
 
 | PR | 内容 | 主要路径 | 受保护中心 | 依赖 | 完成判据 |
 | --- | --- | --- | --- | --- | --- |
 | **A6-PR1** | 加法版本 grammar + `BlueprintRoutingStrategy` 纯解析器 | `packages/domain/blueprint/**`、`packages/domain/test/**`、`packages/runtime/review-router/**`（纯） | 否 | 无 | 旧版哈希零移动；新版解析/拒绝矩阵；同模板一致、例外/默认；**Officer 必须是 MemberTemplate**；**Officer 自问 → Leader**；instance 选择器拒绝；零消费者 |
-| **A6-PR2 Gate 0** | 完整 PA 工具审批链验证（先于任何 Control 实现） | `packages/runtime/test/**` + evidence | 否 | PR1 的 designation 类型（可本地） | 真实 PA manifest + 真实 verifier + 真实 grant/guard：leader 正例通过；member Officer 在 base law 下被拒且理由可复现；委托契约原型通过；否则停止并申请裁决 |
-| **A6-PR2** | Control 层 case-scoped Officer 决议 + PA 委托事实（四个入口**共用资格判断、逐入口授权**） | `packages/runtime/control/service.ts`（中心）、`types.ts`、PA bridge/verifier、ARC-A override | **是**（Center-Interface） | Gate 0 通过 | 指定非 Leader 可决；非指定/跨 Team/已决/Human-only 拒绝；同一账本；grant mint + guard 消费恰好一次；**逐入口能力表**：`resolveControl` 开放决议；`escalateApprovalLeg` 仅允许合法转交；`appendTerminalOutcome`/零审查关闭**不得**让 Officer 凭空创建新关闭案件；旧角色闭集零放宽 |
-| **A6-PR2b** | Handoff / 异常接管：current-leg 持久事实 + 生产事件接线 + 纵向测试 | `packages/runtime/control/**`（中心，新增/复用 leg 事实）、`live/**` 接线（另开中心 PR） | **是** | PR2 | Officer 发起 handoff → 校验当前 case/leg → 写持久 Leader 接管事实 → 原 Officer 失去该 leg 归属 → Leader 合并 wake；不抢回；不建通用 Assignment Ledger |
+| **A6-ADR** | ReviewCapability 契约、身份/能力分离、数据流、修订后的不变量 | 本目录 ADR | 否 | 用户已裁决 | 本 ADR 接受；计划/设计正本同步；零生产代码 |
+| **A6-PR2a** | 纯 `ReviewCapability` 求值器 + 完整拒绝矩阵 + 单测；零消费者 | `packages/runtime/review-authority/**`（纯） | 否 | ADR | 单一能力来源；leader/human/治理/自审/self-ask/scope/generation 拒绝矩阵；零 I/O |
+| **A6-PR2b** | **统一契约落地**：Control 写 `reviewCapability` 快照；PA presenter/verifier/grant/guard 读同一快照（legacy fallback） | `packages/runtime/control/{types,service}.ts`、`operation-permission/pa-control-bridge.ts`、`tool-admission/approval-case.ts`（必要处）、ARC-A override | **是**（Center-Interface，多文件同一契约） | PR2a | 真实 PA manifest 全链：leader 正例、member 无委托拒绝、委托通过、grant/guard 恰好一次；durable decider 仍 member；旧行逐字节不变；四个入口**共用资格判断、逐入口能力表**（`appendTerminalOutcome`/零审查关闭不得由 Officer 新建关闭案件） |
+| **A6-PR2c** | Handoff / 异常接管：current-leg 持久事实 + 生产事件接线 + 纵向测试 | `packages/runtime/control/**`（中心）、`live/**` 接线（另开中心 PR） | **是** | PR2b | Officer 发起 handoff → 校验当前 case/leg → 写持久 Leader 接管事实 → 原 Officer 失去该 leg 归属 → Leader 合并 wake；不抢回；不建通用 Assignment Ledger |
 | **A6-PR3** | 纯 `ReviewWakeCoordinator`：activation/poll/latch、generation、no-progress 守卫 | `packages/runtime/review-wake/**`（纯） | 否 | 无（可与 PR1 并行） | 3 请求→≤1 wake；running 只 dirty；resolved/无进展不 re-wake；**pending-unchanged 不 cancel**；**恢复前查持久 wake，不重复**；**投递失败释放 queued**；零 I/O、零 timer |
 | **A6-PR4** | 投递接缝：通用 Review Wake 入 DSH Inbox；旧 Leader notifier 互斥替换 | `packages/runtime/control/leader-notification.ts`、`live/agent-bindings.mjs` | **是**（一次一个文件） | PR3 | 在可控 Host 适配环境实际投递一条 wake；`createUserMessage().id` 可 remove/replace；claim 后不可撤；未启用 Team 逐字节旧行为 |
-| **A6-PR5** | Officer 受限访问 + Handoff 工具面：读自己应审待办、走既有入口决议/转交 | `packages/tools/**`、访问适配器、契约 | 视落点 | PR2b | Officer 不能读全 Team 管理面；决议/转交复用 ControlService；负控完整 |
+| **A6-PR5** | Officer 受限访问 + Handoff 工具面：读自己应审待办、走既有入口决议/转交 | `packages/tools/**`、访问适配器、契约 | 视落点 | PR2c | Officer 不能读全 Team 管理面；决议/转交复用 ControlService；负控完整 |
 | **A6-PR6** | 生产接线与 opt-in：唯一 Officer、蓝图绑定、旧 notifier 切换、观测 | `packages/runtime/root*`、plugin 组装、GUI 邻接 | 可能 | PR1/2b/4/5 | **第一条真实消费纵切在此闭合**（含 Handoff 与通知出口）；未启用 Team 零变化；指标可读 |
 | **A6-PR7** | 组合回归、故障/压力、性能指标与发布验收 | 测试套件/证据，不改生产语义 | 否 | PR6 | 最终行为矩阵回归；**不再承担第一次生产接线**；Host 核心行为必须通过，ENV_BLOCK 只能出现在设计/模块阶段 |
 
@@ -128,13 +133,13 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 | 里程碑 | 必须证明 |
 | --- | --- |
 | PR1 / PR3 | 纯函数正确性；误取消/恢复重复/投递失败三处 P0 已修 |
-| PR2 Gate 0 + PR2 | 真实 ControlService + PA manifest + Officer + Grant/Guard 跨层结果；不是简单 Control 行 |
+| PR2a + PR2b | 单一求值器；真实 ControlService + PA manifest + Officer + Grant/Guard 跨层结果；不是简单 Control 行 |
 | PR4 | 可控 Host 适配环境真实投递一条 wake，验证 claim/去重/取消 |
-| PR2b / PR5 / PR6 | Officer 身份、受限读取、实际路由、Handoff、通知出口的纵向闭环 |
+| PR2c / PR5 / PR6 | Officer 身份、受限读取、实际路由、Handoff、通知出口的纵向闭环 |
 | PR7 | 只做组合回归、压力/故障、性能指标与发布验收 |
 
-**并行 lane**：Lane D（PR1）、Lane W（PR3）可并行；Lane C（Gate0→PR2→PR2b→PR5）
-串行；Integration（PR4→PR6→PR7）串行，不与中心 PR 并行改同一文件。
+**并行 lane**：Lane D（PR1）、Lane W（PR3）可并行；Lane C（ADR→PR2a→PR2b→
+PR2c→PR5）串行；Integration（PR4→PR6→PR7）串行，不与中心 PR 并行改同一文件。
 
 ## 4. 验收矩阵（复审修订）
 
@@ -153,8 +158,8 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 | 11 | 路由不改变 allow/deny；Officer 决议后 guard 独立验证 | PR1/PR2/PR7 | 单元 + Host |
 | 12 | 指标：Leader/Officer 模型请求数、token、通知数、审批可达性、等待时间 | PR7 | Host |
 | **13** | **Officer 自己的普通 ask → Leader，不产生等待自身下一轮审批的死锁** | **PR1/PR7** | **单元 + Host** |
-| **14** | **完整 PA 链：leader 正例；member Officer 在 base law 下被拒；委托契约下 grant mint + guard 恰好一次** | **PR2 Gate 0/PR2** | **真实服务对象** |
-| **15** | **Handoff 写入 current-leg 持久接管事实，原 Officer 不再拥有该 leg，Leader 合并唤醒** | **PR2b/PR7** | **单元 + Host** |
+| **14** | **完整 PA 链：leader 正例；member 无委托被拒；ReviewCapability 委托下 grant mint + guard 恰好一次** | **PR2a/PR2b** | **真实服务对象** |
+| **15** | **Handoff 写入 current-leg 持久接管事实，原 Officer 不再拥有该 leg，Leader 合并唤醒** | **PR2c/PR7** | **单元 + Host** |
 | **16** | **Latch：pending-unchanged 不 cancel；恢复不重复已有 wake；投递失败释放 queued** | **PR3** | **单元** |
 
 ## 5. 测试与证据策略
@@ -200,13 +205,18 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 
 - 每个 PR：lane 自检 → 独立 code-review（未参与实现）→ 中心/投递/PA 面追加
   security reviewer；修复只复审本轮 findings。
-- PR2/PR2b/PR4：ARC-A override + 具名 Center-Interface 说明 + “无新增绕过
+- PR2b/PR2c/PR4：ARC-A override + 具名 Center-Interface 说明 + “无新增绕过
   规范服务的权威写路径”声明。
-- PR2 Gate 0 的结果（通过或 BLOCK）先于 PR2 实现评审，不允许“先写再接”。
+- ADR 契约先于 PR2b；PR2a 的求值器单测先于任何消费者；不允许“先写再接”。
 - 合并前通过 `docs-sync --check`、typecheck、lint、相关测试；Host 证据与
   CI 证据分开陈述。
 
-## 8. 决策归属（复审后）
+## 8. 决策归属（ADR 接受后）
+
+**用户已裁决（2026-11-03）**：选择“ADR 先行”；授权对 Alpha.6 审批授权模型作
+必要、系统性的调整（身份/能力分离、统一 ReviewCapability、贯通 Control/PA/
+Grant/Guard），同时保留既有非委托语义、权限层级、Hard Ceiling、工具执行约束、
+一次性 Grant 与 Human/Leader 专属边界。ADR 见 §2.4 链接。
 
 以下由工程决定，不再上升为用户裁决：
 
@@ -214,10 +224,11 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 2. 唯一 Officer 的存在性不变量：产品已裁决，工程采用；不建绑定账本。
 3. 配置非法 vs 临时不可用：工程按 §2.2 区分；`hold` 默认、`leader` 显式。
 4. 指标首版只进日志/证据；长期 UI 不是本轮完成前提。
+5. `ReviewCapability` 的具体模块落点、快照字段名、legacy fallback 细节：
+   在 PR2a/PR2b 评审中定，但不得偏离 ADR 的单一来源与失败关闭。
 
-**唯一可能需要用户再次裁决的**：§2.4 的 PA 委托契约若必须扩大基础审批法
-（新增 reviewer 位置、修改 `mayReview`/grant 法律），则在 PR2 Gate 0 后停止，
-提交具体差异与影响面，等待授权。不做新的开放式产品讨论。
+**只有实施证明必须扩大 Human/基础工具权限、或无法在 ADR 边界内实现时**，
+才停止并提交新的架构裁决；不以“尽量少改代码”为由绕过契约。
 
 ## 9. 完成定义
 
@@ -229,15 +240,27 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 - 发布说明明确 Officer 能做什么、不能做什么，以及 Busy/Unavailable/Handoff/
   Officer 自问的边界。
 
-## 10. 复审修订记录（2026-11-02 真实 UTC）
+## 10. 修订记录
+
+### 2026-11-02（真实 UTC，复审修订）
 
 - 接受复审对 P-AUTH 的重定级：简单 Control 接缝通过不等于 PA 工具审批链
-  通过；新增 PR2 Gate 0 与 §2.4 委托契约。
+  通过；曾新增 PR2 Gate 0 与 §2.4 委托契约（2026-11-03 由 ADR 取代）。
 - 新增 Officer 自问 → Leader 规则与负控。
 - 修复 latch 三处 P0：pending/changed 分离、恢复查持久 wake、投递失败释放。
 - 新增 A6-PR2b 承接 Handoff/接管事实，补齐原计划缺失的 Owner。
-- 七个原切片保留为代码所有权切分；另增 PR2 Gate 0（完整 PA 链前置验证）与
-  PR2b（Handoff 纵向闭环）。阶段验收前移：PR2 验跨层，PR4 验真实投递，
-  PR6 闭纵向，PR7 只做回归/发布。
+- 七个原切片保留为代码所有权切分；另增完整 PA 链前置验证与 Handoff 纵向
+  闭环。阶段验收前移：PR2 验跨层，PR4 验真实投递，PR6 闭纵向，PR7 只做
+  回归/发布。
 - v5 版本号改为与 Alpha.5 协调；回滚改为运行时 kill switch；发布判据明确
   ENV_BLOCK 不等于 PASS。
+
+### 2026-11-03（真实 UTC，ADR 接受）
+
+- 用户选择“ADR 先行”，并授权系统性 ReviewCapability 扩展；新增
+  [`ADR-alpha6-review-capability-20261103.md`](./ADR-alpha6-review-capability-20261103.md)。
+- 原 PR2/Gate 0/PR2b 重排为：ADR → PR2a（纯求值器）→ PR2b（Control+PA 统一
+  契约，中心）→ PR2c（Handoff 与接线）→ PR5（Officer 访问）。不重复三模式
+  PoC；已有证据作回归基线。
+- A6-AUTHORITY 修订为“保留非委托语义，允许统一委托契约”；A6-LEDGER 明确
+  decision 能力快照不是新账本、Handoff 只需一条最小事实。
