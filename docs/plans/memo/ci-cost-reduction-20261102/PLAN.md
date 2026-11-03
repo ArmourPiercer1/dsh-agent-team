@@ -1,6 +1,6 @@
 # CI 成本与验证分层方案
 
-> **Dated**: 2026-11-03（UTC）· **修订**: rev 4，按第三轮外部审查（2026-11-03，对 `69bd7e0a0`）做定点收口
+> **Dated**: 2026-11-03（UTC）· **修订**: rev 5，按第四轮外部审查（2026-11-03，对 `fb80af832`）修正执行条件
 > **状态**: 提案；**未修改任何 CI 配置**；阶段一待授权，阶段二–四为独立后续提案
 > **性质**: 设计/选型 memo（`docs/plans/memo/`），不是当期执行计划，不改变机器权威指针
 > **范围**: CI 触发策略、验证分层、本地开发入口、重复运行消除；不涉及产品代码、upstream、`AGENTS.md`、`graph.yaml`、权威快照
@@ -20,7 +20,17 @@
 
 EB3-C 聚合器本身不是缺陷（Codex、DSH 上游同样使用 Required 聚合器 + 合成合并提交）；问题在「哪些检查必须进聚合器、多久跑一次」。
 
-### 0.2 rev 4 相对 rev 3 的变更（逐条对应第三轮审查）
+### 0.2 rev 5 相对 rev 4 的变更（第四轮审查：执行条件写反）
+
+| 审查项 | 变更 |
+|---|---|
+| **P0 条件写反** | `if:` 是「满足才执行」，rev 4 的 `draft || label` 会让 Draft **执行** census、Ready **跳过** census。正确条件为 `!draft && !label`（§3.3） |
+| **`ci-required-deferred` 未适配 Draft** | 其条件改为 `always() && (draft || label)`，否则无标签的 Draft 拿不到计划要求的绿色 deferred 结论 |
+| **`checkDeferralConflict` 未纳入 Draft** | 检查器需同时覆盖 Draft 状态，并加 Draft/Ready 两个负控变体 |
+| **settlement 时序** | 评论不会触发 `ready_for_review`/`labeled`；流程改为「写 settlement → 标记 Ready → L2 与 settlement gate 同轮评估」；若必须先 Ready 再写评论，则显式 rerun `pr-gate`，不新增评论驱动调度 |
+| **L0 测试运行器** | 仓库同时有 Vitest 与 `node --test`，`ci-local.mjs` 必须按类型分派（见 §4.2），不能把 `.test.mjs` 一律交给 Vitest |
+
+### 0.3 rev 4 相对 rev 3 的变更（第三轮审查，保留）
 
 | 审查项 | 变更 |
 |---|---|
@@ -33,7 +43,7 @@ EB3-C 聚合器本身不是缺陷（Codex、DSH 上游同样使用 Required 聚�
 | **合并还依赖 settlement** | §8.4 覆盖 settlement 流；B13 给 `pr-gate` 增加 `ready_for_review`/`labeled`/`unlabeled` 触发，使门禁在层级切换后重评 |
 | **收益模型** | §2.5 重算：按**实际 workflow run** 计，包含首次运行、标签/草稿切换的额外 run 与 settlement；标注为理想序列模型 |
 
-### 0.3 本轮审查给出的授权建议（据此执行）
+### 0.4 第三轮审查给出的授权建议（据此执行）
 
 | 部分 | 建议 |
 |---|---|
@@ -47,7 +57,7 @@ EB3-C 聚合器本身不是缺陷（Codex、DSH 上游同样使用 Required 聚�
 
 **实施边界（审查明确要求）**：不得为解决这些问题自行扩展成新的通用调度框架、依赖分析引擎或 CI 状态机；优先使用既有 GitHub Actions 机制与现有脚本。
 
-### 0.4 rev 2/rev 3 已落实项（保留，不重复论证）
+### 0.5 rev 2/rev 3 已落实项（保留，不重复论证）
 
 `ci-census` 必须 `cancel-in-progress: false`；新层必须补齐 `merge_tree` 输入、`--assert-tree` + `EB3_EVENT`、job→`workflow_call` 输出链、`if: always()` 的 `job.status` verdict，且必须是纯 `workflow_call`；`check-artifacts-at-head` 内部就会 install+build，不能当「要不要构建」的判据；`--census-json` 只是单报告诊断性复评；等价性用四类证据；runner-min 算术已更正；Q1–Q8 已按裁决。
 
@@ -159,7 +169,14 @@ EB3-C 聚合器本身不是缺陷（Codex、DSH 上游同样使用 Required 聚�
 **deferral 条件**（manifest `deferral.callerIf`，逐字比对，必须与 workflow 完全一致）：
 
 ```yaml
-if: ${{ github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
+# Runs census only when the PR is NOT a draft and NOT deferred.
+if: ${{ !github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
+```
+
+配套的 deferred 汇总 job（非 Required，只给本轮一个结论）：
+
+```yaml
+if: ${{ always() && (github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'ci-defer-full')) }}
 ```
 
 理由与取舍：
@@ -188,8 +205,8 @@ types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review, con
 |---|---|---|
 | 1 | 打开 Draft PR | `ci-required` 跑 L1，红（deferred）；`ci-required-deferred` 绿 |
 | 2 | push ×N（仍 draft） | 每次 L1；墙钟 ≤3 分钟 |
-| 3 | 标记 Ready | 同一 head 重跑，`ci-census` 执行，聚合绿 |
-| 4 | 写 dated settlement 评论 | `pr-gate` 重评（依赖 B13 的新触发类型） |
+| 3 | 写 dated settlement 评论（覆盖当前 head） | 评论本身不触发任何 workflow；在 Ready 之前写入 |
+| 4 | 标记 Ready | 同一 head 重跑：`ci-census` 执行、`pr-gate`（含 settlement）同轮评估，聚合绿 |
 | 5 | 合并前 | 三个必需上下文对**最新 SHA** 均为 valid |
 | 6 | 合并后 | L3 全量 census（阶段四） |
 
@@ -247,6 +264,15 @@ node scripts/ci-local.mjs [--fast] [--base origin/master]
 | 改了根级共享面（`package.json`、`pnpm-lock.yaml`、`tsconfig*`、`scripts/`、`tests/paths.mjs`） | **`undetermined`** | 不猜，交给 L1/L2 |
 | 无法归属的路径 | **`undetermined`** | 同上 |
 | 无变更 | 只跑固定步骤 | — |
+
+**运行器分派**（本仓同时存在两类测试，不能一律交给 Vitest）：
+
+| 类型 | 识别 | 运行器 |
+|---|---|---|
+| Vitest | `packages/**/test/**/*.test.ts`，或文件含 `from 'vitest'` | `vitest run <files>` |
+| `node:test` | `scripts/**/*.test.mjs`、`tests/checks/**/*.test.mjs`、`tests/devex/**/*.test.mjs`，或文件含 `node:test` | `node --test <files>` |
+
+识别以文件内容为准（`vitest` / `node:test` 导入），扩展名只作初筛；两类混在同一 package 时分别成组执行。
 
 **退出码**：`0` = 选中并全部通过；`1` = 有选中测试失败/检查失败；`2` = **测试覆盖未确定**（固定步骤仍已跑完）。
 
@@ -334,8 +360,8 @@ node scripts/eb3-ci-negative-controls.mjs   # 全绿（含草稿/ready 两个 de
 
 1. Draft 创建 → L1 红、deferred 绿、墙钟 ≤3 分钟；
 2. 中间 push → 仍 L1；
-3. **Ready** → 同一 head 重跑，`ci-census` 执行，聚合绿、墙钟 ≤20 分钟；
-4. settlement 评论 → `pr-gate` 重评并转绿（B13）；
+3. **先写 settlement**（覆盖当前 head），再**标记 Ready** → 同一 head 重跑，`ci-census` 执行、`pr-gate` 含 settlement 同轮评估，聚合绿、墙钟 ≤20 分钟；
+   （若顺序不可行，必须显式 rerun `pr-gate`；不新增评论事件驱动的调度。）
 5. 三个必需上下文对最新 SHA 均 valid；
 6. 记录实际 run 数与 P50/P90，校正 §2.5。
 
@@ -366,7 +392,7 @@ node scripts/eb3-ci-negative-controls.mjs   # 全绿（含草稿/ready 两个 de
 | R11 | `ci-census` 丢 host-security/transcript | 中 | 高 | B1/B3 明确 legs + 步骤 |
 | R12 | 选测规则漏掉受影响测试 | 中 | 中 | `undetermined` 保守回退 + 负控 |
 | R13 | 连续 push 的 pending 被替换 | 中 | 低 | §9 披露；最终 head 仍执行 |
-| R14 | settlement 不随 ready 重评 | 中 | 高 | B13 触发类型 + §8.4 覆盖 |
+| R14 | settlement 与 Ready 的时序错位 | 中 | 高 | 先写 settlement 再 Ready；B13 触发类型 + §8.4 覆盖；必要时显式 rerun pr-gate |
 | R15 | 缓存投毒/命中错误内容 | 低 | 高 | key 绑 pin+lockfile+平台；命中后校验 |
 | R16 | 分片破坏「双 capture 相同」 | 中 | 中 | 逐片断言 + leg 行声明 |
 | R17 | 把 census 绿当功能验收 | 中 | 高 | §3.6 明写；G2–G5 独立 |
