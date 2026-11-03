@@ -10,7 +10,7 @@ Member declared managed.
 | branch | `task/a5sf-p0-20261103` |
 | worktree | `.worktrees/a5sf-p0` |
 | base | `origin/master` = **`84e9348fc`** (verified `git fetch origin` + `git log --oneline -1 origin/master`) |
-| code head | THIS commit (evidence-only commits may follow; they change no source) |
+| code head | `bacd07284` (later commits are evidence-only and change no source) |
 | authority bound | `dev/engineering/current-authority.json` → `as20261102r1`, content digest `sha256:0f730fada65b8d393f0450729dc94d79ef05c3be83c94d2c590b514f7164eae4` (`node scripts/current-authority.mjs`, ok) |
 | Host boots | **ZERO** (the reservation stands: the P2-01 boot is the acceptance run *after* this fix) |
 | CORE PATCH BUDGET | **0** — no upstream file touched; `packages/runtime/src/plugin/live/agent-bindings.mjs` byte-identical (`sha256 df9b46af…6464b`, same as S-1/assembly/master); `packages/runtime/tsconfig.build.json` untouched (comment-free) |
