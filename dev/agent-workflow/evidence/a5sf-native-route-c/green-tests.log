@@ -83,3 +83,10 @@ EB3-CI-REQUIRED pass workflows=9 findings=0
 ===== $ node scripts/eb3-ci-negative-controls.mjs
 
 24/24 control(s) behaved as required
+
+===== $ node scripts/check-artifacts-at-head.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (1916 compared file(s)).
+
+===== $ git diff --check origin/master..HEAD
+exit 0 (no whitespace errors on the branch)
