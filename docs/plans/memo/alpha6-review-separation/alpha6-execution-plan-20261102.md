@@ -81,19 +81,19 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 
 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 的 2026-11-03 收口版本是唯一契约正本，不再采用先前的“resolve 从尚未存在的 decision 行读能力”的循环设计。本节把它映射到实施所有权：
 
-1. **PR1 交付唯一的共享 \`BlueprintReviewPolicy\`**：固定 Leader/Human 类别、Officer self-ask、MemberTemplate × 可信 Tool 的 Leader 例外、默认 Officer；Router 和 PR2a 的委托求值器共同消费。显式 Leader 例外**既禁止通知 Officer，也禁止 Officer 在该 Case 取得有效委托审批权**。
+1. **PR1 交付唯一的共享 `BlueprintReviewPolicy`**：固定 Leader/Human 类别、Officer self-ask、MemberTemplate × 可信 Tool 的 Leader 例外、默认 Officer；Router 和 PR2a 的委托求值器共同消费。显式 Leader 例外**既禁止通知 Officer，也禁止 Officer 在该 Case 取得有效委托审批权**。
 2. **可信独立身份**：PR2a 的输入分别表示 Reviewer/Decider、Requester、OperationOwner（持有实际调用的 MemberTemplate）、工具定义身份。路由与授权不能误用请求代发者、Officer 本人的 Template、工具 owner 或自由文本摘要代替 OperationOwner。
 3. **提交前**：ControlService 在现有 Team 锁内读取当前 Case/leg、冻结 Blueprint、operation/effect/authorityGeneration 和 current-leg transfer；使用 PR2a 单一求值器产生可信 ReviewCapability 候选，先检查准入，再把该候选交给已有 PA Verifier。此时**没有新的 durable decision**，严禁从不存在的行取能力。
-4. **提交时**：确认本次审批及 PA allow 合法后，真实 \`decider\` + decision + 规范化 DecisionCapabilityEvidence **同一 durable decision 写入**。旧行仍然没有新字段，保持 native 旧语义；不能先写 allow 后补证据。
+4. **提交时**：确认本次审批及 PA allow 合法后，真实 `decider` + decision + 规范化 DecisionCapabilityEvidence **同一 durable decision 写入**。旧行仍然没有新字段，保持 native 旧语义；不能先写 allow 后补证据。
 5. **提交后**：Presenter/PA/Grant/Guard 读取已持久决议的证据以及本次可信调用事实并进行统一重验：Case/leg、操作 Owner/Tool、scope、EffectSet、Blueprint 内容哈希、authorityGeneration 与既有 Hard Ceiling/one-shot 规则；不得把证据当作跨 Case 可转移 token。纯路由/Inbox、Officer Busy/Unavailable 不改变已签署合法决议的效力。
-6. **Handoff 不提供审批能力**：\`ReviewCapabilitySource\` 仅 native/blueprint-officer；显式 Handoff 与可信 Runtime 发起的不可用接管共用一个最小 \`CurrentLegTransfer\` 路由事实，后者必须由 Blueprint \`whenOfficerUnavailable:leader\` 明确允许，Busy 不触发。Leader 以原生能力决定；已转交同一 leg 的 Officer 不再有委托资格。
+6. **Handoff 不提供审批能力**：`ReviewCapabilitySource` 仅 native/blueprint-officer；显式 Handoff 与可信 Runtime 发起的不可用接管共用一个最小 `CurrentLegTransfer` 路由事实，后者必须由 Blueprint `whenOfficerUnavailable:leader` 明确允许，Busy 不触发。Leader 以原生能力决定；已转交同一 leg 的 Officer 不再有委托资格。
 7. **校验时点分别负责不同问题，但不重复实现规则**：PR1 规则只实现一次；PR2a 提供统一候选/证据验证函数；PR2b 在提交前/后使用同一授权合同。原有合法 Reviewer 因 PA 漂移产生 durable DENY 的语义保持，不得把无资格成员提交的请求伪装成授权拒绝后关闭整个案件。
 
 **本轮不重复三模式 PoC。** PR2b 直接进行真实 strict PA manifest 全链回归和上述负控。需要改 Control/PA/Grant 接口时允许在同一连贯 Center-Interface PR 修改必要的受保护文件，不另做权限引擎或 Mandate 账本。
 
 ### 2.4a 转交事实写入与消费的责任边界
 
-\`CurrentLegTransfer\` 至少绑定 Team、Case、currentLegRequestId、legOrdinal、target=Leader、cause（\`officer-handoff | officer-unavailable\`）及可信 Actor/Blueprint 来源。在当前 leg 仍 open 时原子追加或幂等返回；新 leg 重新计算。PR2c 拥有事实写入、旧 Officer 失去该 leg 委托资格、Leader 唤醒触发，PR5 只提供 Officer 交接操作工具面；绝不另造完整 Assignment 状态机。
+`CurrentLegTransfer` 至少绑定 Team、Case、currentLegRequestId、legOrdinal、target=Leader、cause（`officer-handoff | officer-unavailable`）及可信 Actor/Blueprint 来源。在当前 leg 仍 open 时原子追加或幂等返回；新 leg 重新计算。PR2c 拥有事实写入、旧 Officer 失去该 leg 委托资格、Leader 唤醒触发，PR5 只提供 Officer 交接操作工具面；绝不另造完整 Assignment 状态机。
 
 ### 2.5 Officer 自身 ask 的路由
 
