@@ -152,7 +152,7 @@ import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index
 import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js'
 import type { RequestedEffectSet, ToolBinding, ToolPolicyDocument } from '../../domain/tool-governance/src/index.js'
 import type { PolicyDenySource } from '../tool-admission/approval-case.js'
-import type { ReviewCapabilityCandidate } from '../review-authority/index.js'
+import type { DecisionCapabilityEvidence, ReviewCapabilityCandidate } from '../review-authority/index.js'
 
 // --- request kinds ------------------------------------------------------------------
 
@@ -1735,6 +1735,10 @@ export interface ControlDecisionRecord {
    * terminal mark lives on the row that terminates it.
    */
   readonly terminalReason?: ControlLegTerminalReason
+  /** A6-PR2b: the normalized capability evidence, on the SAME decision row as
+   *  the real decider. Absent on native/legacy rows; malformed evidence is
+   *  omitted by the reader (the decision row itself is never dropped). */
+  readonly reviewCapability?: DecisionCapabilityEvidence
   /** The exact scope snapshot the decision authorizes (allow) or refuses
    *  (deny/stale-denied) — frozen at decision time. */
   readonly scope: ControlOperationScope

@@ -24,6 +24,7 @@ import {
   destroyP6T1World,
   humanCaller,
   memberCaller,
+  writeRawControlFact,
 } from './p6t4-helpers.js'
 
 const WORKER = String(P6T4_SEEDS.worker.instanceId)
@@ -131,6 +132,43 @@ describe('A6-PR2b durable delegated chain', () => {
       })
       expect(decision.decision).toBe('allow')
       expect(decision.decider).toEqual({ kind: 'instance', instanceId: WORKER, role: 'member' })
+      expect(decision.reviewCapability).toMatchObject({
+        source: 'blueprint-officer', entry: 'allow', effectiveReviewAuthority: 'leader',
+        operationOwnerTemplateId: 'worker', operationToolDefinitionIdentity: 'tool-def-write',
+      })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('malformed capability evidence is OMITTED from the decision row, never dropping the durable decision', async () => {
+    const world = await createP6T4World('a6-pr2b-bad-evidence', ['leader', 'worker'])
+    try {
+      const service = createP6T4Service(world)
+      const leg = await makeLeg(service, 'corr-a6-pr2b-bad-evidence')
+      await writeRawControlFact(world, 'control-decision-recorded', {
+        requestId: leg.requestId,
+        decision: 'allow',
+        decider: { kind: 'instance', instanceId: WORKER, role: 'member' },
+        scope: {
+          rootSessionId: P6T4_ROOT,
+          subject: { kind: 'instance', instanceId: WORKER },
+          targetInstanceId: WORKER,
+          actionName: 'write-file',
+          toolName: 'fs.write',
+          correlation: 'corr-a6-pr2b-bad-evidence',
+          operationFingerprint: 'fp-a6-pr2b',
+          authorityScope: { operationClass: 'fs.write', matcher: { kind: 'exact', resource: 'a6-pr2b:file' } },
+        },
+        requestSequence: leg.requestSequence,
+        reviewCapability: { source: 'not-a-source', entry: 'allow' },
+      })
+      const st = await service.listControlState(P6T4_ROOT)
+      const decision = st.decisions.find((d) => d.requestId === leg.requestId)
+      expect(decision).toBeDefined()
+      expect(decision?.decision).toBe('allow')
+      expect(decision?.reviewCapability).toBeUndefined()
+      expect(st.requests.find((r) => r.requestId === leg.requestId)?.status).toBe('decided')
     } finally {
       await destroyP6T1World(world)
     }
@@ -154,6 +192,9 @@ describe('A6-PR2b durable delegated chain', () => {
         reason: 'needs Human authority',
       })
       expect(escalation.caseOutcome).toBe('escalated')
+      expect(escalation.terminalDecision.reviewCapability).toMatchObject({
+        source: 'blueprint-officer', entry: 'escalate', effectiveReviewAuthority: 'leader',
+      })
       const successor = escalation.nextLeg
       expect(successor).toBeDefined()
       if (successor === undefined) return

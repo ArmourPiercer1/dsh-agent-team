@@ -219,9 +219,11 @@ import {
   ControlError,
 } from './errors.js'
 import {
+  REVIEW_CAPABILITY_ENTRIES,
   ReviewCapabilityCandidate,
+  decisionCapabilityEvidenceFrom,
 } from '../review-authority/index.js'
-import type { ReviewCapabilityEntry } from '../review-authority/index.js'
+import type { DecisionCapabilityEvidence, ReviewCapabilityEntry } from '../review-authority/index.js'
 import type { ControlErrorCode } from './errors.js'
 import {
   PERMISSION_OVERLAY_EFFECT_VALUES,
@@ -430,6 +432,7 @@ interface DecisionPayload {
    *  choose (a drift close, or a close because no resolver exists). It never
    *  changes the VALUE — a terminal close is a `deny` — it says why. */
   readonly terminalReason?: ControlLegTerminalReason
+  readonly reviewCapability?: DecisionCapabilityEvidence
   readonly scope: ControlOperationScope
   readonly requestSequence: number
 }
@@ -1001,6 +1004,50 @@ function parseAbandonmentPayload(value: unknown): AbandonmentPayload | undefined
   }
 }
 
+/** Parse A6 capability evidence; malformed / unknown values are OMITTED. */
+function parseReviewCapabilityEvidence(value: unknown): DecisionCapabilityEvidence | undefined {
+  if (!isPlainObject(value)) return undefined
+  const source = value['source']
+  const entry = value['entry']
+  const effective = value['effectiveReviewAuthority']
+  const approvalCaseId = value['approvalCaseId']
+  const currentLegRequestId = value['currentLegRequestId']
+  const legOrdinal = value['legOrdinal']
+  const scopeFingerprint = value['scopeFingerprint']
+  const blueprintContentHash = value['blueprintContentHash']
+  const blueprintRevision = value['blueprintRevision']
+  const authorityGeneration = value['authorityGeneration']
+  const operationOwnerInstanceId = value['operationOwnerInstanceId']
+  const operationOwnerTemplateId = value['operationOwnerTemplateId']
+  const operationToolDefinitionIdentity = value['operationToolDefinitionIdentity']
+  if (source !== 'native' && source !== 'blueprint-officer') return undefined
+  if (!REVIEW_CAPABILITY_ENTRIES.includes(entry as never)) return undefined
+  if (!isProposalAuthorityPosition(effective)) return undefined
+  for (const candidate of [approvalCaseId, currentLegRequestId, scopeFingerprint, blueprintContentHash, blueprintRevision, operationOwnerInstanceId, operationOwnerTemplateId, operationToolDefinitionIdentity]) {
+    if (typeof candidate !== 'string' || candidate.length === 0) return undefined
+  }
+  if (typeof legOrdinal !== 'number' || !Number.isInteger(legOrdinal) || legOrdinal < 1) return undefined
+  if (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0) return undefined
+  const effectSetFingerprint = value['effectSetFingerprint']
+  if (effectSetFingerprint !== undefined && (typeof effectSetFingerprint !== 'string' || effectSetFingerprint.length === 0)) return undefined
+  return {
+    source,
+    entry: entry as never,
+    effectiveReviewAuthority: effective,
+    approvalCaseId,
+    currentLegRequestId,
+    legOrdinal,
+    scopeFingerprint,
+    ...(effectSetFingerprint === undefined ? {} : { effectSetFingerprint }),
+    blueprintContentHash,
+    blueprintRevision,
+    authorityGeneration,
+    operationOwnerInstanceId,
+    operationOwnerTemplateId,
+    operationToolDefinitionIdentity,
+  } as DecisionCapabilityEvidence
+}
+
 /** Parse a decision payload (malformed rows are treated as ABSENT). */
 function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   if (!isPlainObject(value)) return undefined
@@ -1035,6 +1082,10 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
   ) {
     return undefined
   }
+  // A6-PR2b: evidence is OPTIONAL and non-authoritative on its own. A malformed
+  // evidence blob is OMITTED — the decision row (the durable authority) stays;
+  // PA/Grant/Guard later fail closed with authority-undetermined if they need it.
+  const reviewCapability = parseReviewCapabilityEvidence(value['reviewCapability'])
   return {
     requestId,
     decision: decision as ControlDecisionValue,
@@ -1046,6 +1097,7 @@ function parseDecisionPayload(value: unknown): DecisionPayload | undefined {
     ...(terminalReason !== undefined
       ? { terminalReason: terminalReason as ControlLegTerminalReason }
       : {}),
+    ...(reviewCapability !== undefined ? { reviewCapability } : {}),
   }
 }
 
@@ -2023,6 +2075,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(payload.terminalReason !== undefined
         ? { terminalReason: payload.terminalReason }
         : {}),
+      ...(payload.reviewCapability !== undefined
+        ? { reviewCapability: payload.reviewCapability }
+        : {}),
     }
   }
 
@@ -2086,6 +2141,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
      *  happened. Additive: the VALUE of a terminal close is a `deny` either
      *  way, so an absent field is a reviewer-chosen close. */
     readonly terminalReason?: ControlLegTerminalReason
+    readonly reviewCapability?: ReviewCapabilityCandidate
   }): Promise<ControlDecisionRecord> {
     const decisionScopeSubject = resolveSubject(args.scope)
     if (decisionScopeSubject === undefined) {
@@ -2132,6 +2188,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     const sequence = await putEntry({
       schemaVersion: 2,
@@ -2152,6 +2211,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       ...(args.note !== undefined ? { note: args.note } : {}),
       ...(args.terminalReason !== undefined ? { terminalReason: args.terminalReason } : {}),
+      ...(args.reviewCapability !== undefined
+        ? { reviewCapability: decisionCapabilityEvidenceFrom(args.reviewCapability) }
+        : {}),
     }
     return record
   }
@@ -3000,6 +3062,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         scope: scopeOf(request.entry, request.payload),
         requestSequence: request.entry.sequence,
         ...(args.note !== undefined ? { note: args.note } : {}),
+        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
       })
     })
   }
@@ -5336,6 +5399,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         reason: CONTROL_DECISION_REASONS.ESCALATED,
         ...(mintsRisenLeg ? {} : { terminalReason: CONTROL_LEG_TERMINAL_REASONS.RESOLVER_UNAVAILABLE }),
         ...(args.reason !== undefined ? { note: args.reason } : {}),
+        ...(args.reviewCapability !== undefined ? { reviewCapability: args.reviewCapability } : {}),
       })
       // WRITE 2 of 3: the additive leg fact, payload FROZEN at the A3-12(ii)
       // five fields (`note` deliberately does NOT join the payload — the
