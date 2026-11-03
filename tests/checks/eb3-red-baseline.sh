@@ -99,18 +99,18 @@ PY
 both M1
 git checkout -- .github/workflows/census-runtime.yml
 
-echo "== M1b REQUIRED layer job removed: delete the ci-full job block (exists from step 3 on)"
-if [ -f .github/workflows/ci-full.yml ]; then
+echo "== M1b REQUIRED layer job removed: delete the ci-product job block (exists from step 3 on)"
+if [ -f .github/workflows/ci-product.yml ]; then
   python3 -c "
-p = '.github/workflows/ci-full.yml'
+p = '.github/workflows/ci-product.yml'
 lines = open(p).read().split(chr(10))
-start = lines.index('  ci-full:')
+start = lines.index('  ci-product:')
 open(p, 'w').write(chr(10).join(lines[:start]) + chr(10))
 "
   both M1b
-  git checkout -- .github/workflows/ci-full.yml
+  git checkout -- .github/workflows/ci-product.yml
 else
-  echo "  N/A  [M1b] .github/workflows/ci-full.yml does not exist on this tree (step 2: no layers yet)"
+  echo "  N/A  [M1b] .github/workflows/ci-product.yml does not exist on this tree (step 2: no layers yet)"
 fi
 
 echo "== M2 unknown MCP tool introduced into product source"

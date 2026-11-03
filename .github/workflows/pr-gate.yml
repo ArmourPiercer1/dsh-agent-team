@@ -46,6 +46,11 @@ name: pr-gate
 on:
   pull_request:
     branches: [master]
+    # The tier switch must re-evaluate the settlement: a head that is written up while it
+    # is a draft (or while `ci-defer-full` is on) becomes mergeable only after it is marked
+    # ready / the label is removed, and this gate is where the dated settlement comment and
+    # the three required contexts are read together. Default types do not include these.
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, labeled, unlabeled]
   push:
     branches: [master]
   workflow_dispatch:

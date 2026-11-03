@@ -1,0 +1,105 @@
+$ git checkout origin/master -- packages/runtime/src/plugin/live/{a5sf-realm-row.mjs,agent-bindings.mjs}   # the F1 binding removed (pre-F1 tree)
+$ node --test tests/world-factory/a5sf-f1-ctx.test.mjs
+
+✖ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (0.68618ms)
+✖ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (6.108624ms)
+✔ F1-3 CONTROL: the same tool-shaped call through the BASE provider is allowed and writes nothing (6.692951ms)
+✖ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (2.633816ms)
+✖ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.142053ms)
+✖ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (1.653341ms)
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.06711ms)
+✖ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (1.237022ms)
+✖ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (2.589482ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 1
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.771115
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:326:1
+✖ F1-1 a5sfToolPlaneOf: absent realm is the legacy path; a malformed mount is loud; a real mount names ctx + captured fs (0.68618ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:327:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:353:1
+✖ F1-2 a tool-invoked read on the tool-plane scope is DENIED and writes exactly one a5sf-guard-consult/1 fact (6.108624ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:360:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:416:1
+✖ F1-4 three-way split: agent ctx = BASE, tool-plane scope = CONFINED, realm member ctx = CONFINED (one instance) (2.633816ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:423:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:449:1
+✖ F1-5 DEFAULT PATH: no realm ⇒ no tool-plane scope ⇒ the tool plane stays the agent ctx and writes nothing (1.142053ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:454:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:477:1
+✖ F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE fallback), the CAPTURED instance still refuses (1.653341ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:483:21)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:503:1
+✖ F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it (1.06711ms)
+  AssertionError [ERR_ASSERTION]: the tool-plane naming import: missing `import { a5sfRealmConfigOf, a5sfToolPlaneOf, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'`
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:513:44)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:527:1
+✖ F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback (1.237022ms)
+  AssertionError [ERR_ASSERTION]: the naming call appears exactly once
+
+  0 !== 1
+
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:530:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-f1-ctx.test.mjs:553:1
+✖ F1-9 the permission adapter, routed, canonicalizes AND effects on the tool plane's one provider (2.589482ms)
+  TypeError: row.a5sfToolPlaneOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-f1-ctx/tests/world-factory/a5sf-f1-ctx.test.mjs:560:23)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
