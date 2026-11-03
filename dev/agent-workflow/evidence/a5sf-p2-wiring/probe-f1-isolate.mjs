@@ -17,6 +17,11 @@
  * Expected (measured 2026-11-03): agent row ctx reads the file ALLOWED; the
  * member realm ctx and the binding realm ctx answer IO_READ_DENIED; the sink
  * receives ZERO facts because nothing consumed the realm contexts.
+ *
+ * THE EFFECTIVE HALF now has its own BEFORE/AFTER probe:
+ * `dev/agent-workflow/evidence/a5sf-f1-ctx/probe-f1-tool-plane.mjs` measures the
+ * Member TOOL PLANE mapping (agent ctx vs `a5sfToolPlaneOf(realm)` scope) from
+ * the same committed dist. This probe stays as the isolate-topology receipt.
  */
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { appendFile, readFile } from 'node:fs/promises'
