@@ -45,7 +45,11 @@ export type Alpha6CompositionDecision =
       readonly officerInstanceCount: 1
     }
   | {
-      readonly mode: 'legacy'
+      /**
+       * Explicitly enabled but unusable. This is NOT the legacy fallback: the
+       * caller must hold/refuse rather than silently notify the Leader.
+       */
+      readonly mode: 'refused'
       readonly refused: Alpha6CompositionRefusal
     }
 
@@ -55,18 +59,18 @@ export type Alpha6CompositionDecision =
  */
 export function decideAlpha6Composition(input: Alpha6CompositionInput): Alpha6CompositionDecision {
   if (input.enabled !== true) return { mode: 'legacy', reason: 'disabled' }
-  if (input.blueprintDocumentVersion !== 5) return { mode: 'legacy', refused: 'blueprint-not-v5' }
+  if (input.blueprintDocumentVersion !== 5) return { mode: 'refused', refused: 'blueprint-not-v5' }
   const routing = input.reviewRouting
   if (routing === undefined || routing.enabled !== true) {
-    return { mode: 'legacy', refused: 'routing-disabled' }
+    return { mode: 'refused', refused: 'routing-disabled' }
   }
   if (routing.officerTemplateId.length === 0 || routing.officerTemplateId === input.leaderTemplateId) {
-    return { mode: 'legacy', refused: 'officer-template-missing' }
+    return { mode: 'refused', refused: 'officer-template-missing' }
   }
   const count = input.activeMemberTemplateIds.filter(
     (templateId) => templateId === routing.officerTemplateId,
   ).length
-  if (count !== 1) return { mode: 'legacy', refused: 'officer-instance-count' }
+  if (count !== 1) return { mode: 'refused', refused: 'officer-instance-count' }
   return {
     mode: 'alpha6',
     officerTemplateId: routing.officerTemplateId,

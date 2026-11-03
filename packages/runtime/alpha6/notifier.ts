@@ -75,6 +75,9 @@ export function createComposedControlNotifier(ports: {
 }): ControlRequestNotificationPort {
   return {
     async notifyLeaderRequest(request: ControlRequestRecord): Promise<void> {
+      if (ports.decision.mode === 'refused') {
+        throw new Error(`Alpha.6 review routing is enabled but refused (${ports.decision.refused}); no Leader fallback`)
+      }
       if (ports.decision.mode !== 'alpha6') {
         await ports.legacy.notifyLeaderRequest(request)
         return

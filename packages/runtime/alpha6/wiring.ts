@@ -60,6 +60,15 @@ export function controlRequestNotification(
       activeMemberTemplateIds: config.seedMembers.map((member) => member.templateId),
       leaderTemplateId: leader?.templateId ?? '',
     })
+    if (decision.mode === 'refused') {
+      return {
+        requestNotification: {
+          notifyLeaderRequest: async () => {
+            throw new Error(`Alpha.6 review routing is enabled but refused (${decision.refused}); no Leader fallback`)
+          },
+        },
+      }
+    }
     if (decision.mode !== 'alpha6' || officer === undefined) return { requestNotification: legacy }
     const wake = live.deliverReviewWake
     return {
@@ -76,6 +85,13 @@ export function controlRequestNotification(
       }),
     }
   } catch {
-    return { requestNotification: legacy }
+    // Explicitly enabled but unparsable: fail closed, never the Leader.
+    return {
+      requestNotification: {
+        notifyLeaderRequest: async () => {
+          throw new Error('Alpha.6 review routing is enabled but the Blueprint did not parse as v5; no Leader fallback')
+        },
+      },
+    }
   }
 }

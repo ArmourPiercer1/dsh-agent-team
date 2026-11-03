@@ -71,13 +71,8 @@ describe('A6-PR6 root wiring', () => {
     })
   })
 
-  it('stays legacy when disabled, v4, two Officers, or no wake seam', async () => {
-    const cases = [
-      { ...config, alpha6ReviewRouting: false },
-      { ...config, blueprintSource: V4 },
-      { ...config, seedMembers: [...config.seedMembers, { templateId: 'officer', childSessionId: 'session-officer-2' }] },
-    ]
-    for (const c of cases) {
+  it('legacy only when disabled or no wake seam; enabled-but-invalid is refused', async () => {
+    for (const c of [{ ...config, alpha6ReviewRouting: false }]) {
       const leader = vi.fn(async () => {})
       const wake = vi.fn(async () => {})
       const { requestNotification } = controlRequestNotification(c, {
@@ -87,6 +82,18 @@ describe('A6-PR6 root wiring', () => {
       await requestNotification!.notifyLeaderRequest(request)
       expect(leader).toHaveBeenCalledTimes(1)
       expect(wake).not.toHaveBeenCalled()
+    }
+    for (const c of [
+      { ...config, blueprintSource: V4 },
+      { ...config, seedMembers: [...config.seedMembers, { templateId: 'officer', childSessionId: 'session-officer-2' }] },
+    ]) {
+      const leader = vi.fn(async () => {})
+      const { requestNotification } = controlRequestNotification(c, {
+        deliverRootControlNotification: leader,
+        deliverReviewWake: vi.fn(async () => {}),
+      })
+      await expect(requestNotification!.notifyLeaderRequest(request)).rejects.toThrow('no Leader fallback')
+      expect(leader).not.toHaveBeenCalled()
     }
     const leader = vi.fn(async () => {})
     const { requestNotification } = controlRequestNotification(config, {
