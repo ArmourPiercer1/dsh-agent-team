@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly
+
+stdout | packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=a5g6-unit-realm templateId=a5g6-tpl
+
+ ✓ packages/runtime/test/a5g6-install-face-render.test.ts (5 tests) 1117ms
+     ✓ the four definitions all carry a render that returns an array of typed text blocks  1113ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  02:05:59
+   Duration  3.00s (transform 2.30s, setup 0ms, import 1.78s, tests 1.12s, environment 0ms)
+

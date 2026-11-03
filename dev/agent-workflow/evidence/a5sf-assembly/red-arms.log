@@ -1,0 +1,104 @@
+✖ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (21.200766ms)
+✖ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (10.922808ms)
+✖ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (6.897578ms)
+✖ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (1.016224ms)
+✖ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (11.984169ms)
+✖ GAP2b-control an unrelated later tool registration does not invalidate the routed shadow (11.05536ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 301.63943
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-assembly.test.mjs:361:1
+✖ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (21.200766ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/team-services/src/mount.ts:619:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:365:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:367:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: `native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)`
+  }
+
+test at tests/world-factory/a5sf-assembly.test.mjs:399:1
+✖ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (10.922808ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/team-services/src/mount.ts:619:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:365:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:405:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: `native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)`
+  }
+
+test at tests/world-factory/a5sf-assembly.test.mjs:432:1
+✖ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (6.897578ms)
+  AssertionError [ERR_ASSERTION]: expected the typed ownership refusal, got TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/archive" registers no tool named 'archive'; a binding-targeted mount must own its tool (fail closed)
+  + actual - expected
+  
+  + 'SERVICE_MOUNT_FAILED'
+  - 'A5SF_BINDING_OWNER_UNRESOLVED'
+  
+      at Object.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:442:16)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:439:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'SERVICE_MOUNT_FAILED',
+    expected: 'A5SF_BINDING_OWNER_UNRESOLVED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-assembly.test.mjs:461:1
+✖ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (1.016224ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection: a name-set-only check cannot prove the router shadowed each forwarded tool
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:482:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-assembly.test.mjs:497:1
+✖ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (11.984169ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/team-services/src/mount.ts:619:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:365:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:506:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: `native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)`
+  }
+
+test at tests/world-factory/a5sf-assembly.test.mjs:546:1
+✖ GAP2b-control an unrelated later tool registration does not invalidate the routed shadow (11.05536ms)
+  Error [TeamServiceInstallError]: SERVICE_MOUNT_FAILED: native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)
+      at Object.mountNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/team-services/src/mount.ts:619:17)
+      at async Module.attachA5sfNativeToolModules (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:365:18)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a5sf-assembly/tests/world-factory/a5sf-assembly.test.mjs:552:20)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'SERVICE_MOUNT_FAILED',
+    reveal: 'members',
+    detail: `native tool module "dsh.fs/read" registers no tool named 'read'; a binding-targeted mount must own its tool (fail closed)`
+  }

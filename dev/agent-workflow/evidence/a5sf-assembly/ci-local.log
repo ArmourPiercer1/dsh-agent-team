@@ -1,0 +1,34 @@
+DERIVED SUMMARY of two `pnpm ci:local` runs on commit c0ea4f44b (code head; the only later commits are
+evidence under dev/**, which ci:local does not select). Raw captures were 1.2 MB each and are NOT
+committed (EB3 evidence bound). Nothing is omitted about the verdict: both runs FAILED.
+
+--- run 1 ---
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=269.7s
+Test Files  2 failed | 481 passed (483)
+Tests  2 failed | 5991 passed (5993)
+failing test(s):
+  FAIL  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts > E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK-5 decision side, t12a blind spot) > a persisted overlay DENY beats the template ALLOW through the real glue pipeline
+  FAIL  packages/runtime/test/alpha5-search-backend.test.ts > P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132) > P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row
+
+--- run 2 ---
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=4 wall=260.0s
+Test Files  1 failed | 482 passed (483)
+Tests  1 failed | 5992 passed (5993)
+failing test(s):
+  FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+
+--- isolation at the SAME code head ---
+run 1 reds, both files alone: `pnpm vitest run a3p4-pr4-production-entry-regression.test.ts \
+  alpha5-search-backend.test.ts` -> exit 0, Test Files 2 passed (2), Tests 62 passed (62),
+  Duration 4.39s (a3p4 E3 alone: 1063 ms, i.e. inside the 5 s default it exceeded under load).
+run 2 red, file alone: `pnpm vitest run a5g6-install-face-render.test.ts` -> exit 0,
+  Test Files 1 passed (1), Tests 5 passed (5), Duration 2.71s.
+
+READING: three DIFFERENT unrelated files were red across two runs (a3p4 + alpha5-search-backend,
+then a5g6), each green in isolation at the same head, none in this diff
+(git diff --name-only origin/master...HEAD lists only mount.ts, a5sf-realm-row.mjs, their dist
+mirrors and three tests/world-factory files). This is the pre-existing ci-local load/timeout flake
+documented by S-1 (dev/agent-workflow/evidence/a5sf-s1/README.md §4.1): ci-local runs the WHOLE
+packages/runtime vitest tree (483 files) in one threads pool against vitest's 5 s default.
+The per-file gates below are the ones that bind THIS change. This lane does NOT claim a pass it
+did not measure: verdict=fail, exit 1, coverage=determined (never exit 2).

@@ -1,0 +1,4 @@
+MEASURED p4t6 tie, MEASURED LAST on this tree (all files on disk at run time):
+  scanSessionEventVocabulary: filesScanned=1428 files.length=1428
+  ledger derived expected=1428 violations=[]
+  A5SF booking expectedDelta={"from":1396,"to":1428}

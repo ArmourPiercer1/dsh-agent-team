@@ -1,0 +1,15 @@
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (28.034844ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (15.523489ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (8.89596ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.442659ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; disposing every router fiber to restore the preset surface
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (36.271539ms)
+✔ GAP2b-control an unrelated later tool registration does not invalidate the routed shadow (46.784071ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 394.398949
