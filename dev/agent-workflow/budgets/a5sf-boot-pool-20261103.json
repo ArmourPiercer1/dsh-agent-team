@@ -1,0 +1,24 @@
+{
+  "schema": "a5sf-boot-pool/1",
+  "grantId": "a5sf-boot-pool-20261103-user-20",
+  "grantedBy": "user ruling 2026-11-03 (chat): \"我现在预先批准20次boot预算。请自行分配。\" — pre-approval, no per-run ask required inside the allocation",
+  "grantedAt": "2026-11-03T15:00Z",
+  "bootsGranted": 20,
+  "ledgerRowArithmetic": "the BL-14 gate counts SHARED-LEDGER ROWS, not spawns: 1 pre-registration (intent) row per lease, so 20 boots need maxStarts = 21. Each per-run grant file therefore carries maxStarts = boots_allocated_for_that_run + 1 and is materialised at RUN TIME against the exact HEAD (boundCommit), because the gate refuses GRANT_FOREIGN_COMMIT when HEAD has moved.",
+  "allocation": [
+    { "item": "P2-01 live read (BL-14 / G2 live half)", "boots": 3, "why": "one smoke + two measured runs of the native read slice once the live seam exists" },
+    { "item": "F1 effective-half verification (realm ctx actually consumed by the tool plane)", "boots": 3, "why": "the sibling-isolate gap: prove a TOOL-INVOKED read fills the sink, after the wiring change lands" },
+    { "item": "P2-03 native write (BL-15)", "boots": 3, "why": "same template as read: denial, ceiling, two-member isolation" },
+    { "item": "P2-04 grep (BL-16)", "boots": 3, "why": "the second representative tool family" },
+    { "item": "P3 native-origin inventory (BL-21)", "boots": 2, "why": "inventory needs a booted Host to enumerate the real surface" },
+    { "item": "G1.5/G1.6/G1.8 closure", "boots": 4, "why": "the three open G1 boundary items" },
+    { "item": "reserve", "boots": 2, "why": "unallocated: only for a re-run of a named failure class, never to retry the same class twice" }
+  ],
+  "rules": [
+    "Every boot goes through the BL-14 pre-registration gate (tests/world-factory/suites/150-a5sf-read.mjs#readBudgetGrant) with a per-run grant file bound to the HEAD that runs; no ad-hoc spawn.",
+    "The shared ledger (tests/world-factory/lib/run-record.mjs) stays the ONE counter and ONE writer; a run that would exceed its allocation refuses with BUDGET_NOT_GRANTED rather than borrowing from another item.",
+    "The reserve is not a slush fund: it may only re-run a NEW failure class that no allocation predicted, and the reason is recorded in the run's evidence.",
+    "No boot may touch the stable instance :3080 or its DSH_HOME; test homes live under tests/homes/<world> only.",
+    "A boot that produces no Host-attributable observation is still spent: the ledger row is the cost, and 'we learned nothing' is recorded as such rather than quietly retried."
+  ]
+}
