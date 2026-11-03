@@ -220,7 +220,6 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
-import { controlRequestNotification } from '../../alpha6/wiring.js'
 import type { PaCallFacts } from '../../control/types.js'
 // untyped center module (.mjs source, no declaration file); bound through
 // the typed seam below (no `any` at the call sites).
@@ -2403,7 +2402,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     blueprintCatalog: catalog,
     externalPolicyFacts,
     now,
-    ...controlRequestNotification(config, live),
+    ...(live.deliverRootControlNotification !== undefined
+      ? {
+          requestNotification: createLeaderControlNotifier({
+            deliver: live.deliverRootControlNotification,
+          }),
+        }
+      : {}),
     // A4-PR7 Task 7.0 (ADR A1-14): the recheck port, present exactly when this
     // process has an authority-ceiling reader at all. Without it the guard
     // cannot confirm a v3 operation approval and refuses with

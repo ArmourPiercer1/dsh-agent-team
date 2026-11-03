@@ -153,13 +153,6 @@ export interface TeamPluginConfig {
      * host row).
      */
     readonly blueprintDir?: string;
-    /**
-     * Alpha.6 explicit opt-in: when true (and the bound Blueprint is v5 with a
-     * valid `reviewRouting` + exactly one Officer instance), control requests
-     * are announced to the assigned Officer through the review wake instead of
-     * the Leader. Absent/false keeps Alpha.5 byte-identical.
-     */
-    readonly alpha6ReviewRouting?: boolean;
     /** The durable TeamSession `generation` (positive integer). */
     readonly generation: number;
     /** The effective default workspace (TeamSession record field). */
