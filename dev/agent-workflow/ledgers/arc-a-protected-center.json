@@ -178,6 +178,30 @@
    "sha256": "c4c1e3ee84d740a292c3ae409fbc667f806e8467ae3c8e561a30a7f4370321c0",
    "pr": "PR #568 (center-interface: review wake delivery)",
    "reason": "A6-PR4 adds one additive review-wake delivery seam; no existing center behavior changes."
+  },
+  {
+   "path": "packages/runtime/control/index.ts",
+   "sha256": "3c44260caefa9969f2a4becec37d58e33dd7a6d0319f724e784c4f837e284e52",
+   "pr": "PR #571 (integration: A6 control chain)",
+   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "f0be2968f57883fd66eba0bc22b182ef73123d662464919be884f181665a6a9f",
+   "pr": "PR #571 (integration: A6 control chain)",
+   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+  },
+  {
+   "path": "packages/runtime/control/types.ts",
+   "sha256": "0116e29b11d129c31d74feccc7297738f23e78839d3085875ae5ffabf9846b7a",
+   "pr": "PR #571 (integration: A6 control chain)",
+   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
+  },
+  {
+   "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
+   "sha256": "ce8e736d5db919068875be34c3e24522c8a7043a3dd0c2b15e0a491e615fd797",
+   "pr": "PR #571 (integration: A6 control chain)",
+   "reason": "Alpha.6 PR2b/2c/5 add the review-capability gate, current-leg transfer and escalation successor to the existing control center; no unrelated behavior changes."
   }
  ]
 }

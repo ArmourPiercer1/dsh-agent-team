@@ -42,7 +42,10 @@ describe('a6-pr1 lane hygiene', () => {
       const text = readFileSync(file, 'utf8')
       if (/review-router|reviewRouter/.test(text) && !/review-router is dormant|Alpha\.6 PR1/.test(text)) offenders.push(rel)
     }
-    expect(offenders).toEqual([])
+    // A6-PR2a is the first legitimate importer (the capability evaluator
+    // consumes the shared policy/router vocabulary). PR1's own law remains:
+    // no PRODUCTION path consumes the lane before the PR6 opt-in wiring.
+    expect(offenders.filter((f) => !f.includes('review-authority/'))).toEqual([])
   })
 
   it('keeps the module set pure: no node builtins, no host/control/PA imports, no clock', () => {

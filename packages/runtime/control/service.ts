@@ -3092,7 +3092,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           throw new ControlError(
             CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
             `ControlService: Member review is not authorized for this leg (${problem}); the global resolver table is unchanged and a delegated candidate must bind this exact case/leg/scope`,
-            { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role, problem },
+            { rootSessionId: root, requestId: args.requestId, kind: request.payload.kind, role: caller.role, allowedRoles: [...allowedRoles], problem },
           )
         }
       } else if (!allowedRoles.includes(caller.role)) {
@@ -5523,7 +5523,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           throw new ControlError(
             CONTROL_ERROR_CODES.CONTROL_RESOLVER_NOT_AUTHORIZED,
             `ControlService: caller is not a resolver for kind '${leg.payload.kind}' — Member escalation requires a valid ReviewCapability (${problem}); the global resolver table is unchanged`,
-            { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, problem },
+            { rootSessionId: root, requestId: args.requestId, kind: leg.payload.kind, role: caller.role, allowedRoles: [...allowedRoles], problem },
           )
         }
         if (leg.payload.reviewAuthority !== 'leader' || controlEscalationSuccessor(leg.payload.reviewAuthority) !== 'human-user') {
