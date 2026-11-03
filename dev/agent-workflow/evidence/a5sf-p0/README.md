@@ -186,7 +186,7 @@ refused — that is the point of denying at admission rather than on "uncovered"
 | `node scripts/place-dist-glue.mjs` | done, 101 placements | `place-dist-glue.log` |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=1916 glue=101` | `check-artifacts-committed.log` |
 | `node scripts/check-artifacts-at-head.mjs` | `verdict=ok compared=1916 drift=0` — HEAD carries its own build | `check-artifacts-at-head.log` |
-| `node scripts/eb3-evidence-guard.mjs` | `pass added=20 bound=1048576 exempted=0 findings=0 base=origin/master` | `eb3-evidence-guard.log` |
+| `node scripts/eb3-evidence-guard.mjs` | `pass added=22 bound=1048576 exempted=0 findings=0 base=origin/master` (added = this lane's evidence files, run-specific) | `eb3-evidence-guard.log` |
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=9 findings=0` | `eb3-ci-required.log` |
 | `node scripts/eb3-ci-negative-controls.mjs` | `26/26 control(s) behaved as required` | `eb3-negative-controls.log` |
 | `git diff --check origin/master..HEAD` | clean | committed tree |
@@ -262,16 +262,16 @@ The diff touches `team-services/src/mount.ts` (+ its built mirror) and one `test
 the timed-out files attaches a native shadow or imports the changed admission path. No unmeasured pass is
 claimed: a red L0 is reported red, and the flake mechanism is measured in isolation.
 
-**Evidence bound:** the full run's raw capture is **1 216 423 B** (> the 1 MiB evidence bound), so only the
-derived summaries (`ci-local-summary-a.log`, `ci-local-summary-b.log`: selected steps, failing identities,
-counts, verdict) are committed. No allowlist entry was added — the guard rejects an oversized raw capture and it
+**Evidence bound:** the full raw captures exceed the 1 MiB evidence bound (Run A measured **1 216 423 B**), so
+only the derived summaries (`ci-local-summary-a.log`, `ci-local-summary-b.log`: selected steps, failing
+identities, counts, verdict) are committed. No allowlist entry was added — the guard rejects an oversized raw capture and it
 stays rejected.
 
 The selected node leg on Run A/B is green and includes every P0 arm (`✔ P0-1 …`, `✔ P0-2 …`, `✔ P0-3 …`,
 `✔ GAP2b …`).
 
 ```
-EB3-EVIDENCE-GUARD pass added=20 bound=1048576 exempted=0 findings=0 base=origin/master
+EB3-EVIDENCE-GUARD pass added=22 bound=1048576 exempted=0 findings=0 base=origin/master   (added = this lane's evidence files; run-specific)
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1916 glue=101
 DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1916 drift=0
 EB3-CI-REQUIRED pass workflows=9 findings=0
