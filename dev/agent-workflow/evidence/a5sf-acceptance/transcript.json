@@ -1,0 +1,82 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "u5_canary",
+    "u6fs_probe",
+    "write"
+  ],
+  "discoveryReadSchemas": 1,
+  "discoveryReadMentions": 0,
+  "discoveryReadSectionMentions": 0,
+  "denyList": [
+    "glob",
+    "grep",
+    "u5_canary",
+    "u6fs_probe"
+  ],
+  "surfacePerMemberRequest": [],
+  "calls": [
+    {
+      "callId": "call-a5sfacc-delegate",
+      "seq": 5,
+      "name": "team_delegate",
+      "args": {
+        "rootSessionId": "session-a5sf-acceptance-team",
+        "requestToken": "a5sfacc-d1-delegate",
+        "delegationTemplateId": "worker",
+        "label": "a5sfacc-worker",
+        "prompt": "A5SF_ACC_WORK: run the four-call script from the acceptance evidence, one call at a time, then report.",
+        "async": false
+      }
+    }
+  ],
+  "readCalls": [],
+  "writeCalls": [],
+  "results": [
+    {
+      "seq": 5,
+      "tool": "team_delegate",
+      "isError": false,
+      "head": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-0b366g81a5yc': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module null registers asynchronously and its deferred registration cannot run inside the routed mount (deferred "
+    }
+  ],
+  "rowValues": {
+    "a": {
+      "call": null,
+      "result": null
+    },
+    "b": {
+      "call": null,
+      "result": null
+    },
+    "c": {
+      "call": null,
+      "result": null
+    },
+    "write": {
+      "call": null,
+      "result": null,
+      "disk": null
+    }
+  }
+}
