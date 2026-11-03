@@ -1,4 +1,1 @@
-dev/agent-workflow/evidence/a5sf-deferred/ci-local-red-isolation.log:16: new blank line at EOF.
-dev/agent-workflow/evidence/a5sf-deferred/ci-local.log:69: new blank line at EOF.
-dev/agent-workflow/evidence/a5sf-deferred/laws.log:13: new blank line at EOF.
-dev/agent-workflow/evidence/a5sf-deferred/vitest-a5sf.log:21: new blank line at EOF.
+git diff --check origin/master..HEAD: clean (no whitespace errors, no blank line at EOF)
