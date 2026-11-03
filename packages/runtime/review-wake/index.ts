@@ -58,3 +58,9 @@ export {
   isReviewWakeStatus,
   reduceReviewWake,
 } from './coordinator.js'
+export { createReviewWakeDelivery, renderReviewWake } from './delivery.js'
+export type {
+  ReviewWakeDeliverEffect,
+  ReviewWakeDeliveryInput,
+  ReviewWakeDeliveryPort,
+} from './delivery.js'

@@ -83,6 +83,7 @@ describe('A6-PR3 lane purity', () => {
   it('contains the expected production files', () => {
     expect([...laneCode.keys()].sort()).toEqual([
       'coordinator.ts',
+      'delivery.ts',
       'errors.ts',
       'index.ts',
       'types.ts',
