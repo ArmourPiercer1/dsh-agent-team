@@ -337,7 +337,11 @@ async function dispatch(root, scope, name, args) {
   const text = Array.isArray(settled.content)
     ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
     : ''
-  return { isError: settled.isError === true, text }
+  // P0 (2026-11-03): a refusal must be TYPED, not just an error string. The
+  // registry materializes a denied tool as `{ isError, error: { message, info? } }`;
+  // expose `info` so an arm can pin the stable code instead of matching text.
+  const info = settled.error?.info
+  return { isError: settled.isError === true, text, info }
 }
 
 /**
@@ -355,7 +359,10 @@ async function makeWorld(label, { bindingIdentities = [READ_BINDING], modules })
     { name: 'x_assembly_probe' },
   ])
   const ceiling = memberPolicy(fixture.dir)
-  const realm = await row.mountMemberA5sfRealm({
+  // The mount input is kept as a closure so an arm can prove the P0 recovery
+  // rule: eligibility may only return after a FULL re-assembly (a new realm
+  // mount + a new native attach that passes verification again).
+  const mountRealm = () => row.mountMemberA5sfRealm({
     root: topology.agentCtx,
     a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
     provider: () => ({
@@ -380,12 +387,14 @@ async function makeWorld(label, { bindingIdentities = [READ_BINDING], modules })
       templateId: IDENTITY.templateId,
     },
   })
+  const realm = await mountRealm()
   assert.notEqual(realm, undefined)
   return {
     root,
     fixture,
     sinkPath,
     realm,
+    remountRealm: mountRealm,
     agentCtx: topology.agentCtx,
     agentKey: topology.agentKey,
     config: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath, a5sfNativeToolModules: modules }),
@@ -582,10 +591,19 @@ test('GAP2b a routed shadow removed AFTER the settle window is detected, dispose
     assert.deepEqual([...record.uncovered], ['read'], 'the unshadowed managed tool is named in the event')
     assert.equal(typeof record.observedAt, 'string')
 
-    // The rest of the shadow is disposed too: the preset surface is restored.
-    assert.equal(definitionOf(root, agentKey, 'write'), presetWrite, 'sibling write returns to the preset definition')
-    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'module B returns to the preset definition')
-    assert.equal(definitionOf(root, agentKey, 'read'), presetRead, 'the routed read is gone; the preset read serves again')
+    // The shadow fibers are disposed (the preset surface is restored) BUT the
+    // Member is out of service: the preset definition being VISIBLE must not
+    // mean it MAY SERVE. P0 (2026-11-03): every managed name is refused at the
+    // Member admission check until a full re-assembly verifies a new shadow.
+    assert.equal(definitionOf(root, agentKey, 'write'), presetWrite, 'the sibling preset definition is restored')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'module B preset definition is restored')
+    assert.equal(definitionOf(root, agentKey, 'read'), presetRead, 'the routed read is gone; the preset read definition is visible again')
+    for (const name of ['read', 'write', 'x_assembly_probe']) {
+      const refused = await dispatch(root, agentKey, name, { file_path: world.fixture.ceilingOnly })
+      assert.equal(refused.isError, true, `managed '${name}' must be REFUSED after invalidation, not served by the preset: ${refused.text}`)
+      assert.equal(refused.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `managed '${name}' refusal must be TYPED (got ${JSON.stringify(refused.info)})`)
+      assert.equal(refused.text.includes('CEILING_ONLY'), false, `no denied bytes may reach the model through '${name}'`)
+    }
 
     // Fail closed after invalidation: no second shadow can be attached.
     await assert.rejects(
@@ -770,5 +788,198 @@ test('C2 the ownership probes are disposed before the real mounts (live-effect c
   } finally {
     delete globalThis[key]
     if (realm?.nativeInvalidation === null) await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// P0 (2026-11-03) — NoStaleShadow ≠ NoUnconfinedExecution
+//
+// The defect an independent review found: invalidation disposed the shadow and
+// restored the preset surface, and the ALREADY-RUNNING Member's next call was
+// then served by the PRESET definition with ZERO guard facts. The Member was
+// declared managed but silently fell back to unconstrained execution. These
+// arms pin the closure: a managed name is REFUSED (typed) at the Member
+// admission check while the realm is invalid — even though the preset
+// definition is visible — and eligibility returns only after a FULL re-assembly
+// that passes verification again.
+// ===========================================================================
+
+test('P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset', async () => {
+  const moduleA = writeNativeModule('p0a', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('p0b', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  const world = await makeWorld('p0-invalidation', { modules: [moduleA, moduleB] })
+  const { root, fixture, realm, agentCtx, agentKey, config } = world
+
+  // 1. THE SHADOW WORKS: the confined native `read` serves INSIDE the lane.
+  await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+  await realm.whenNativeVerificationSettled()
+  assert.equal(realm.nativeInvalidation ?? null, null, 'a healthy attach never invalidates')
+  const insideBefore = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+  assert.equal(insideBefore.isError, false, `the confined in-lane read must succeed: ${insideBefore.text}`)
+  assert.equal(insideBefore.text, 'INSIDE\n', 'the shadow serves the in-lane file')
+
+  // 2. The lane is REAL BEFORE the invalidation: the same read OUT of lane is
+  //    refused by the binding realm's guard (one guard fact; not asserted here).
+  const outsideBefore = await dispatch(root, agentKey, 'read', { file_path: fixture.ceilingOnly })
+  assert.equal(outsideBefore.isError, true, `the binding lane must refuse the ceiling-only locator: ${outsideBefore.text}`)
+  assert.equal(outsideBefore.text.includes('CEILING_ONLY'), false, 'no out-of-lane bytes before invalidation')
+
+  try {
+    // 3. INVALIDATE with a late name change (S-1's measured +30 ms shape).
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    await agentCtx.plugin({
+      name: 'fixture-p0-late',
+      inject: ['tools'],
+      apply(ctx) {
+        ctx.tools.register({
+          name: 'x_p0_late_unrelated',
+          description: 'a late name registers after the settle window',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+          async execute() {
+            return 'late'
+          },
+        })
+      },
+    })
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the late name must invalidate the shadow')
+    assert.equal(record.schema, 'a5sf-native-invalidation/1')
+    assert.deepEqual([...record.surfaceAdded], ['x_p0_late_unrelated'])
+    await realm.whenNativeVerificationSettled()
+
+    // The PRESET definition is now visible again — the old fallback path.
+    assert.notEqual(definitionOf(root, agentKey, 'read'), undefined, 'the preset read definition is visible after teardown')
+
+    // 4. THE SAME read, out of lane: REFUSED. The forbidden bytes never reach
+    //    the model, and the refusal is TYPED and names the Member/realm/reason.
+    const outsideAfter = await dispatch(root, agentKey, 'read', { file_path: fixture.ceilingOnly })
+    assert.equal(outsideAfter.isError, true, `the SAME out-of-lane read must be REFUSED after invalidation: ${outsideAfter.text}`)
+    assert.equal(outsideAfter.text.includes('CEILING_ONLY'), false, 'THE LEAK: the preset must not return the denied bytes')
+    assert.equal(outsideAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(outsideAfter.info)}`)
+    assert.match(outsideAfter.text, /member-assembly-a/, 'the refusal names the affected Member')
+    assert.match(outsideAfter.text, /dsh\.fs\/read/, 'the refusal names the realm/binding that lost its shadow')
+    assert.equal(outsideAfter.text.includes(record.reason), true, 'the refusal carries the invalidation reason')
+
+    // 5. An IN-LANE read is likewise refused: the Member is OUT OF SERVICE, not
+    //    silently less governed (never "the confined path stopped, so serve the
+    //    unconfined one").
+    const insideAfter = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(insideAfter.isError, true, `an in-lane read after invalidation must also be refused: ${insideAfter.text}`)
+    assert.equal(insideAfter.text.includes('INSIDE'), false, 'no bytes at all while the Member is invalid')
+    assert.equal(insideAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+
+    // 6. A ceiling-partition managed tool is refused too, naming the ceiling realm.
+    const writeAfter = await dispatch(root, agentKey, 'write', { file_path: fixture.insideFile })
+    assert.equal(writeAfter.isError, true, 'a ceiling-partition managed tool is refused after invalidation')
+    assert.equal(writeAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+    assert.match(writeAfter.text, /ceiling/, 'the refusal names the ceiling realm')
+
+    // 7. NO SILENT / PARTIAL RESTORATION: the same realm refuses a re-attach.
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: { name: 'x', apply() {} } }]),
+      /invalidated/i,
+      'an invalidated realm refuses a partial re-attach',
+    )
+
+    // 8. ELIGIBILITY RETURNS ONLY AFTER A FULL RE-ASSEMBLY: dispose the realm,
+    //    mount a fresh one and attach again; the new attach passes verification
+    //    and the confined lane works. (Proven on the SAME agent/tool plane.)
+    await realm.dispose()
+    const realm2 = await world.remountRealm()
+    try {
+      await row.attachA5sfNativeToolModules(realm2, agentCtx, config, agentKey)
+      await realm2.whenNativeVerificationSettled()
+      assert.equal(realm2.nativeInvalidation ?? null, null, 'the re-assembled realm is verified, not invalid')
+      const insideAgain = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+      assert.equal(insideAgain.isError, false, `the re-assembled confined read must work again: ${insideAgain.text}`)
+      assert.equal(insideAgain.text, 'INSIDE\n')
+      const outsideAgain = await dispatch(root, agentKey, 'read', { file_path: fixture.ceilingOnly })
+      assert.equal(outsideAgain.isError, true, 'the re-assembled lane still refuses out-of-lane reads')
+      assert.equal(outsideAgain.text.includes('CEILING_ONLY'), false)
+    } finally {
+      await realm2.dispose()
+    }
+  } finally {
+    await realm.dispose()
+  }
+})
+
+test('P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed)', async () => {
+  const moduleA = writeNativeModule('p0c', [{ name: 'read', reads: true }])
+  const world = await makeWorld('p0-listener', { bindingIdentities: [], modules: [moduleA] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  const memberCtx = realm.installation.members[0].ctx
+  const originalOn = memberCtx.on
+  try {
+    const presetRead = definitionOf(root, agentKey, 'read')
+    // The public `tools/change` contract is what continuous verification rides.
+    // If it cannot be attached, the old code silently degraded to the two
+    // bounded rounds; P0 refuses the managed attach instead.
+    Object.defineProperty(memberCtx, 'on', {
+      configurable: true,
+      value(event, ...rest) {
+        if (event === 'tools/change') throw new Error('tools/change listener unavailable')
+        return originalOn.call(memberCtx, event, ...rest)
+      },
+    })
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(error.code, 'SERVICE_MOUNT_FAILED', `expected the typed attach refusal, got ${error.name}: ${error.message}`)
+        assert.match(error.message, /tools\/change/, 'the refusal names the listener it could not attach')
+        assert.match(error.message, /bounded|cannot attach/, 'the refusal states why it did not degrade silently')
+        return true
+      },
+      'a managed attach must not run on the bounded rounds alone',
+    )
+    // Rolled back: nothing is mounted, the preset definition is untouched and
+    // the realm recorded no invalidation (this is a REFUSAL, not an event).
+    assert.equal(definitionOf(root, agentKey, 'read'), presetRead, 'the failed attach left the preset definition untouched')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a refused attach is not an invalidation')
+  } finally {
+    Object.defineProperty(memberCtx, 'on', { configurable: true, value: originalOn })
+    await realm.dispose()
+  }
+})
+
+test('P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback', async () => {
+  // C1 (review, 2026-11-03): the invalidation check used to bail out whenever no
+  // routed fiber was still active, so an external holder of the returned fibers
+  // could tear down the WHOLE shadow and the Member fell back to the preset with
+  // no record and no deny — the exact P0 leak class. A one-fiber world makes
+  // "some fiber active" and "this attach is alive" disagree immediately.
+  const moduleA = writeNativeModule('p0d', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const world = await makeWorld('p0-all-fibers', { bindingIdentities: [], modules: [moduleA] })
+  const { root, fixture, realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await realm.whenNativeVerificationSettled()
+    assert.equal(fibers.length, 1, 'the unbound world mounts exactly one ceiling fiber')
+    assert.equal(realm.nativeInvalidation ?? null, null, 'healthy after attach')
+    const before = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(before.isError, false, `the shadow serves the in-lane file: ${before.text}`)
+    assert.equal(before.text, 'INSIDE\n')
+
+    // THE ATTACK: an in-process holder disposes the LAST active shadow fiber.
+    await fibers[0].dispose()
+
+    const after = await dispatch(root, agentKey, 'read', { file_path: fixture.insideFile })
+    assert.equal(after.isError, true, `every managed read must be REFUSED after the whole shadow is torn down: ${after.text}`)
+    assert.equal(after.text.includes('INSIDE'), false, 'the preset must not serve the bytes')
+    assert.equal(after.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED', `the refusal must be typed: ${JSON.stringify(after.info)}`)
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'tearing down EVERY shadow fiber must be RECORDED as an invalidation')
+    assert.ok(record.uncovered.includes('write'), `the event names the lost route(s): ${JSON.stringify(record.uncovered)}`)
+    // EVERY covered name is denied, including one whose definition identity still
+    // matches the attach (the deny is keyed on the attach's name set, not on the
+    // uncovered subset the event happens to report).
+    const writeAfter = await dispatch(root, agentKey, 'write', { file_path: fixture.insideFile, content: 'x' })
+    assert.equal(writeAfter.isError, true, `the covered write must be REFUSED too: ${writeAfter.text}`)
+    assert.equal(writeAfter.info?.code, 'A5SF_NATIVE_SHADOW_INVALIDATED')
+    await realm.whenNativeVerificationSettled()
+  } finally {
+    await realm.dispose()
   }
 })

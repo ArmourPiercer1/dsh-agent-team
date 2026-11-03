@@ -1,0 +1,23 @@
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (27.279044ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (14.057583ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (7.106684ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.407962ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (35.350253ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (20.294801ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (35.173426ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (40.142258ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (11.709828ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (12.082885ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): the Member tool surface changed after the native mount settled; uncovered=[]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (43.959962ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (5.229369ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 496.203859
