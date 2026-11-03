@@ -197,6 +197,21 @@ jobs:
         # READ from tests/paths.mjs as a constant, never resolved into a checkout.
         run: node --test tests/world-factory/a5sf-harness.test.mjs
 
+      - name: "a5sf evidence chain R3 (BL-11 — node:test, host-free, records the four links and re-reads them with a5sf-diag)"
+        # BL-11/R3: one evidence chain PER CALL — the durable Alpha.4 consumption row, the
+        # compiled MemberPolicy + EffectiveIo (the ONE computation), the Provider the
+        # installer mounted, and the independent oracle effect — aligned on one member
+        # instance + generation + invocation id + operation identity. The suite also runs
+        # the R4 reader (`scripts/a5sf-diag.mjs`) on the recorded JSONL, so the row schema
+        # is a measured contract, not a declaration. ci-integration lists node:test files
+        # EXPLICITLY (the #394 / #529 incidents were files no layer collected), so without
+        # this step the chain laws run in NO layer. The file path is a required token in
+        # dev/ci/eb3-ci-manifest.json; dropping it is CI_LAYER_LEG_WEAKENED.
+        # Host-free: a durable P6-T4 UNIT world (real ControlService, no Host boot), no
+        # port, no DSH_HOME, no pristine host tree; the P1 TS seams load through the
+        # repo's existing scripts/run-tests-hooks.mjs (no new loader, no build).
+        run: node --test tests/world-factory/a5sf-evidence.test.mjs
+
       - name: "a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free)"
         # BL-13/R5: the retired family output vectors were converted into a regression
         # comparison corpus for the new lanes. ci-integration lists node:test files
