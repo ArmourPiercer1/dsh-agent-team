@@ -123,7 +123,7 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
                                (Alpha.5 Tool/IO hard ceilings unchanged)
 ~~~
 
-1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；**与 ReviewCapabilityEvaluator 共用唯一 BlueprintReviewPolicy**，输入来自冻结 Blueprint、实际 OperationOwner 的 MemberTemplate/可信 Tool、当前 leg、少量显式转交事实；输出唯一当前处理者/无待办/不可路由及原因。不得接管消息排队或 allow。
+1. **ReviewRouter**：一个可扩展而首版确定性的处理者决策节点；**与 ReviewCapabilityEvaluator 共用唯一 BlueprintReviewPolicy**，输入来自冻结 Blueprint、实际 OperationOwner 的 MemberTemplate/可信 Tool、当前 leg、唯一 `currentOfficer`（0/多实例 → `hold`）和少量显式转交事实；输出带具体 `instanceId` 的当前处理者/native-human/无待办/hold/不可路由及原因。不得接管消息排队或 allow。
 2. **ReviewWakeCoordinator**：对接收者的待办变化进行激活、实时权威状态重读、单飞锁存和必要通知；不持有审批权威或新的路由配置。
 3. **ReviewAccessAdapter（薄适配层）**：让专职 Officer 仅读取其合法待办，并由 ReviewCapabilityEvaluator/ControlService 在提交前验证可信候选、决议时同行写能力证据、执行时通过既有 PA/Grant/Guard 重新检查。首版不提供 Leader 的完整管理能力。
 
@@ -137,8 +137,9 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
 | 4 | 当前 leg 已有有效的 Handoff/合法故障接管覆盖 | 已覆盖接收者 |
 | 5 | **实际 OperationOwner** 的 templateId == `officerTemplateId`（Officer 自己的普通 ask） | Leader（防自等待；不交回 Officer） |
 | 6 | Blueprint 中**实际 OperationOwner** 的 MemberTemplate × 可信 Tool 显式 Leader 例外 | Leader |
-| 7 | **Officer 不可用**（仅 archived/crashed/未恢复；Busy 不算） | 依该 Blueprint 的 hold / leader 策略；不自动 allow；`hold` 时保留待办并报异常 |
-| 8 | 其余可委托的日常工具 ask（且 Officer 可用） | 专职 Officer |
+| 7 | **Officer 不可用**（仅 TeamDomain lifecycle `ARCHIVED` / `DISPOSED` 或 member row 缺失；Busy/crash/未恢复不算） | 依该 Blueprint 的 hold / leader 策略；不自动 allow；`hold` 时保留待办并报异常 |
+| 8 | 其余可委托的日常工具 ask（且 Officer 可用；current leg `reviewAuthority='leader'`、`kind='leader-approval'`、普通工具闭集） | 专职 Officer |
+| 9 | 其余不可委托 leg（member-rung / human-user / 固定 Leader-Human 之外的非法组合） | 原生 resolver，或 `hold`/不可路由；**不得投给 Officer** |
 
 实现应分别绑定 Reviewer/Decider、Requester、OperationOwner，并以**实际 OperationOwner** 的 Template × 可信 Tool 同时判定第 5、6 行的自问与 Leader 例外；禁止用 Requester、消息发送者、displayName 或 tool owner 代替。Leader 例外同时禁止 Officer 接收通知与取得该 leg 的委托审批权；使用 Alpha.5 最终可信调用身份。Unavailable 判定必须先于默认 Officer，否则第 8 行会吞掉第 7 行。
 
@@ -146,7 +147,12 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
 
 ~~~ts
 type ReviewRoute =
-  | { kind: 'recipient'; target: 'officer' | 'leader' | 'human'; reason: string; currentLegId: string }
+  | { kind: 'recipient'
+      target:
+        | { kind: 'instance'; instanceId: string; templateId: string; routeRole: 'officer' | 'leader' }
+        | { kind: 'native-human' }; // Human 没有 Agent session，不发 Agent wake
+      reason: string; currentLegId: string }
+  | { kind: 'hold'; reason: string; currentLegId: string } // 保留待办，等恢复/人工处理
   | { kind: 'no-work' }
   | { kind: 'unroutable'; reason: string };
 
@@ -186,7 +192,7 @@ reviewRouting:
 - **正确授权时序**：ControlService 在写决议前计算可信 ReviewCapability 候选并经 PA precommit 验证；成功后同一 durable decision 行记录真实 decider 与能力证据；后续 PA/Grant/Guard 从该行及现行有效调用事实重验。不得在 precommit 读取不存在的 decision，也不得在各层各写一套特例。
 - 这些只是审批委托模型的扩展，不修改原生工具、原有角色 rung、非委托权限法律或 Alpha.5 I/O 硬上界。权威接口细节见 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4](./alpha6-execution-plan-20261102.md)。
 
-**跨 leg 工具审批**：见 [ADR D6a/D6b](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4b](./alpha6-execution-plan-20261102.md)。现有 PA Bridge 仅等待初始 requestId，须先接入正式 Control Case/leg、保留严格 manifest，等待最终 Human 决议后才按原调用存活状态、实际终态 requestId/decisionSequence 与全部执行前检查决定是否继续；中间 deny/escalated 不是最终工具拒绝。Leader 可主动代决而不被自动双投。
+**跨 leg 工具审批**：见 [ADR D6a/D6b](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4b](./alpha6-execution-plan-20261102.md)。现有 PA Bridge 仅等待初始 requestId，须先接入正式 Control Case/leg、保留严格 manifest，等待最终 Human 决议后才按原调用存活状态、实际终态 requestId/decisionSequence 与全部执行前检查决定是否继续；中间 deny/escalated 不是最终工具拒绝。Case-aware wait 复用既有 durable polling/AbortSignal，不新增 timer/调度器/执行引擎。Leader 可主动代决而不被自动双投。
 
 ### 3.4 轻量通知：Activation + Poll + Latch
 
