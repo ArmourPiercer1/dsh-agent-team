@@ -48,6 +48,12 @@
  *       Member ceilings before registering anything (they share one scope key).
  *   N7  TEARDOWN ERRORS ARE REPORTED — a native fiber whose disposal throws
  *       rejects `realm.dispose()` (and the rest of the teardown still ran).
+ *   N8  DUPLICATE SCOPE MODULE NAMESPACES — the live Host's measured hazard,
+ *       host-free: a ctx whose scope key is readable through ONE
+ *       `@deepseek-ai/dsh-scope` module namespace and `undefined` through the
+ *       helper's. The attach must still find the key via the canonical runtime
+ *       Agent and mount; with BOTH identity paths empty it must still refuse
+ *       with the same typed error. RED on the pre-fix source.
  *
  * Run: node --test tests/world-factory/a5sf-native-route-c.test.mjs
  */
@@ -72,7 +78,8 @@ const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'pac
 const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
 const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
 const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
-const { createScope, scopeOf, bindScopeParent } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-scope')).href)
+const SCOPE_ENTRY = runtimeRequire.resolve('@deepseek-ai/dsh-scope')
+const { createScope, scopeOf, bindScopeParent } = await import(pathToFileURL(SCOPE_ENTRY).href)
 /** The REAL capability mask adapter the product applies (packages/tools). */
 const { applyBuiltInToolDeny } = await import('../../packages/tools/src/index.js')
 
@@ -517,7 +524,7 @@ test('N5 glue order: the production glue attaches the native shadow AFTER applyB
   // --- structural half: the order in the ONE production glue -----------------
   const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
   const denyAt = glue.indexOf('applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)')
-  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig)')
+  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)')
   assert.notEqual(denyAt, -1, 'the glue applies the capability deny lane')
   assert.notEqual(attachAt, -1, 'the glue attaches the native shadow through the row helper')
   assert.ok(
@@ -700,4 +707,87 @@ test('N7 teardown order + error reporting: native shadows go first, and a throwi
   }
   assert.equal(fsAfter, undefined, 'the confined Provider fiber was disposed despite the native teardown failure')
   assert.equal(scopeOf(agentCtx), agentKey)
+})
+
+// ===========================================================================
+// N8 — duplicate scope module namespaces (the live Host's measured hazard)
+// ===========================================================================
+/** The exact refusal the attach owes when NEITHER identity path yields a key. */
+const A5SF_UNSCOPED_REFUSAL = 'agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)'
+
+/**
+ * A SECOND module namespace of the scope package, loaded from a COPY at a
+ * different realpath. This is the live Host's measured failure, reproduced
+ * host-free: the Team plugin resolves
+ * `node_modules/.pnpm/@deepseek-ai+dsh-scope@…` while the pristine Host resolves
+ * `packages/core/scope/lib`; the scope tag is a module-private Symbol, so a ctx
+ * minted by one namespace reads `undefined` through the other.
+ *
+ * The copy's only import (`@deepseek-ai/cordis`) is rewired to the SAME cordis
+ * file, so ONLY the scope module identity differs — the measured hazard, not a
+ * second Cordis world.
+ */
+async function loadDuplicateScope(label) {
+  const dir = mkdtempSync(join(tmpdir(), `a5sf-route-c-scope-${label}-`))
+  dirs.push(dir)
+  const source = readFileSync(SCOPE_ENTRY, 'utf8')
+  const cordisSpecifier = 'from "@deepseek-ai/cordis"'
+  assert.ok(source.includes(cordisSpecifier), 'the scope package carries its one bare cordis import')
+  const cordisUrl = pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href
+  const copy = source.replace(cordisSpecifier, `from ${JSON.stringify(cordisUrl)}`)
+  const file = join(dir, 'index.mjs')
+  writeFileSync(file, copy, 'utf8')
+  return await import(pathToFileURL(file).href)
+}
+
+test('N8 duplicate scope namespaces: the attach takes the canonical runtime Agent when scopeOf is blind; both paths empty still refuses', async () => {
+  // The two namespaces: the suite's (also the helper's own) and a copy.
+  const duplicate = await loadDuplicateScope('n8')
+  assert.notEqual(duplicate.createScope, createScope, 'the copy is a DIFFERENT module namespace')
+  assert.notEqual(duplicate.scopeOf, scopeOf, 'the copy has its own module-private Symbol')
+
+  const root = new Context()
+  const surface = new Map()
+  root.provide('tools', { schemas: (scope) => surface.get(scope) ?? [] })
+  const agentKey = { member: 'n8' }
+  const agentCtx = duplicate.createScope(root, agentKey).ctx
+
+  // The hazard, MEASURED on the very ctx the attach receives:
+  assert.equal(duplicate.scopeOf(agentCtx), agentKey, 'the key IS readable through the minting namespace')
+  assert.equal(scopeOf(agentCtx), undefined, 'the helper’s scopeOf is BLIND to it (duplicate module instance)')
+  surface.set(agentKey, [{ name: 'read' }])
+
+  const a5sfConfig = row.a5sfRealmConfigOf({
+    a5sfEvidencePath: '/tmp/a5sf-route-c-n8-consult.jsonl',
+    a5sfNativeToolModules: [writeNativeModuleFixture('n8')],
+  })
+  let mounted
+  const realm = {
+    mountNativeToolModules: async (modules) => {
+      mounted = modules
+      return Object.freeze([{ dispose: async () => {} }])
+    },
+  }
+
+  // POSITIVE: the canonical runtime Agent (the Agent IS the scope key) finds the
+  // surface and the attach mounts. RED on the pre-fix source: it consulted only
+  // scopeOf(agentCtx), answered undefined, and threw the unscoped-ctx TypeError.
+  const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig, agentKey)
+  assert.equal(fibers.length, 1, 'the attach mounted one native module')
+  assert.equal(mounted.length, 1)
+  assert.equal(mounted[0].module.name, 'fixture-native-tool')
+
+  // NEGATIVE: with BOTH identity paths yielding nothing (the same blind ctx and
+  // no runtime Agent) the SAME typed refusal still fails closed — no mount.
+  mounted = undefined
+  await assert.rejects(
+    () => row.attachA5sfNativeToolModules(realm, agentCtx, a5sfConfig),
+    (error) => {
+      assert.equal(error.constructor, TypeError)
+      assert.equal(error.message, A5SF_UNSCOPED_REFUSAL)
+      return true
+    },
+    'neither identity path -> the typed refusal (fail closed)',
+  )
+  assert.equal(mounted, undefined, 'nothing was mounted on the refusal path')
 })

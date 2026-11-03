@@ -212,10 +212,19 @@ function nativeToolModulesOf(raw) {
  * instead of a governance hole.
  *
  * @param {object} root - the agent Context the realm installs into.
+ * @param {object|undefined} [runtimeAgent] - the CANONICAL runtime Agent (the
+ *   Agent IS the scope key upstream). It takes precedence over the context tag
+ *   because `scopeOf()` is blind across duplicate `@deepseek-ai/dsh-scope`
+ *   module instances: the tag is a module-private Symbol, and the live Host
+ *   measured a healthy Host-tagged ctx reading `undefined` through the Team
+ *   plugin's `.pnpm` copy (evidence
+ *   `dev/agent-workflow/evidence/a5sf-live-native/scope-duplicate-instances.log`).
+ *   The tag stays the LAST-RESORT fallback for a host that carries no explicit
+ *   Agent; when NEITHER yields a key the refusal below still fails closed.
  * @returns {Set<string>} the visible tool names.
  */
-export function a5sfAgentToolSurface(root) {
-  const scope = scopeOf(root)
+export function a5sfAgentToolSurface(root, runtimeAgent) {
+  const scope = runtimeAgent ?? scopeOf(root)
   if (scope === undefined) {
     throw new TypeError('agent-bindings: the a5sf native tool re-mount needs a SCOPED agent Context (the tool plane is per-agent)')
   }
@@ -307,17 +316,22 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
  * @param {object} realm - the object `mountMemberA5sfRealm` returned.
  * @param {object} root - the agent Context the realm was mounted on.
  * @param {object|undefined} a5sfConfig - the block from `a5sfRealmConfigOf`.
+ * @param {object|undefined} [runtimeAgent] - the setup's CANONICAL runtime
+ *   Agent (the Agent IS the scope key). Forwarded to `a5sfAgentToolSurface` so
+ *   the POST-DENY surface read does not depend on a `scopeOf()` that is blind
+ *   across duplicate `@deepseek-ai/dsh-scope` module instances; absent = the
+ *   context tag is the last-resort fallback (and a keyless ctx still refuses).
  * @returns {Promise<readonly object[]|undefined>} the created fibers, or
  *   `undefined` when the row does not configure native modules.
  */
-export async function attachA5sfNativeToolModules(realm, root, a5sfConfig) {
+export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runtimeAgent) {
   const nativeSpecs = a5sfConfig?.nativeToolModules ?? []
   if (nativeSpecs.length === 0) return undefined
   if (realm === undefined || realm === null || typeof realm.mountNativeToolModules !== 'function') {
     throw new TypeError('agent-bindings: the a5sf native tool attach needs a mounted realm carrying mountNativeToolModules (the pre-route-C realm cannot re-mount native tools)')
   }
   // The POST-DENY surface: this is the baseline the shadow must not change.
-  const before = a5sfAgentToolSurface(root)
+  const before = a5sfAgentToolSurface(root, runtimeAgent)
   const nativeToolModules = await Promise.all(nativeSpecs.map(async (spec) => {
     // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
     // WRAPPED: a resolution failure must name the configured entry, not surface
@@ -337,7 +351,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig) {
     return Object.freeze({ module: imported, ...(spec.config === undefined ? {} : { config: spec.config }) })
   }))
   const fibers = await realm.mountNativeToolModules(nativeToolModules)
-  const after = a5sfAgentToolSurface(root)
+  const after = a5sfAgentToolSurface(root, runtimeAgent)
   const added = [...after].filter((name) => !before.has(name))
   const removed = [...before].filter((name) => !after.has(name))
   if (added.length > 0 || removed.length > 0) {
