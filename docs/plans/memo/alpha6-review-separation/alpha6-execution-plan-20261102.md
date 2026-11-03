@@ -171,6 +171,11 @@ PR4 必须在真实 Host 适配上验证 claim 后不可撤回、未 claim 可�
 | **20** | **多 Officer 同模板实例时 Member 委托 fail closed；唯一实例正常** | **PR2a/PR2b/PR7** | **单元 + 真实 PA** |
 | **21** | **Unavailable 判断先于默认 Officer：archived/crashed/未恢复 → hold/leader；Busy 仍排队** | **PR1/PR2c/PR7** | **单元 + Host** |
 | **22** | **transfer 只影响未来签署；decision 后 transfer 不阻止 guard；precommit 与 commit 之间 transfer 被同锁拒绝** | **PR2b/PR2c/PR7** | **单元 + 真实 PA** |
+| **23** | Leader 对普通 Officer 路由 leg 可主动 native 代决，不产生第二个常规 Wake；并发只生效一项合法决议 | PR2b/PR4/PR7 | 服务 + Host |
+| **24** | Officer 仅对合法委托 current leader leg 可直接 Escalate 至 Human；Human successor 不被 Officer 批准 | PR2b/PR5/PR7 | 服务 + Host |
+| **25** | PA 逻辑 ID 与 Control durable Case/leg 有可信关联；升级的严格 manifest 与原 Tool/EffectSet/Scope/代际保持一致 | PR2b/PR7 | 真实 PA |
+| **26** | 旧 leg deny/escalated 不结束原工具调用；Human allow 时只有原调用仍有效且全链复核成功才继续 | PR2b/PR7 | 真实 PA + Host |
+| **27** | Human deny 或原调用 Stop/取消/超时后零执行、零自动重放；最终 leg 的 requestId+decisionSequence 精确配对 Grant/Guard | PR2b/PR7 | 真实 PA + Host |
 
 ## 5. 测试与证据策略
 
@@ -242,7 +247,7 @@ Grant/Guard），同时保留既有非委托语义、权限层级、Hard Ceiling
 
 ## 9. 完成定义
 
-- 验收矩阵 1–22 全部有真实证据；Host 不可用项在设计/模块阶段可标 ENV_BLOCK，
+- 验收矩阵 1–27 全部有真实证据；Host 不可用项在设计/模块阶段可标 ENV_BLOCK，
   但**发布 PASS 必须包含核心 Host 行为**。
 - 未启用 Team 的旧行为有回归证据；紧急停用演练通过。
 - 无第二份审批/授权账本、无七相位调度器、无新 timer、无 Core patch。
