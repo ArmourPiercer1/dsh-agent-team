@@ -2796,8 +2796,17 @@ export function createAgentBindings(deps) {
       // confined lane). With this order a Member that denies a native tool
       // makes the attach REFUSE (fail closed) instead. The lock is the ORDER,
       // pinned by tests/world-factory/a5sf-native-route-c.test.mjs.
+      // ... and the canonical runtime Agent is handed to the attach as the
+      // SCOPE KEY. The Agent IS the scope key upstream; `scopeOf(agentCtx)` is
+      // NOT a safe substitute here because the tag is a module-private Symbol
+      // and this plugin resolves a SECOND `@deepseek-ai/dsh-scope` package
+      // instance (the live Host measured a healthy Host-tagged ctx reading
+      // `undefined` through it: evidence
+      // dev/agent-workflow/evidence/a5sf-live-native/scope-duplicate-instances.log).
+      // The attach falls back to the tag only when this is absent, and still
+      // refuses when neither yields a key.
       if (a5sfRealm !== undefined) {
-        await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig)
+        await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
