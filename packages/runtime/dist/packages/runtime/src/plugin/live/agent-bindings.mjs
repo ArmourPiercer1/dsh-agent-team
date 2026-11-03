@@ -5333,6 +5333,55 @@ export function createAgentBindings(deps) {
     // ensureMaterialized. The turn (if any) runs on its own.
   }
 
+  /**
+   * A6-PR4 — deliver ONE generic Review Wake to the review recipient's
+   * session inbox (the PR4 delivery slice's real Host seam). The caller has
+   * already resolved the recipient to a live/durable session (PR6 owns that
+   * mapping: Leader root or Officer child). Semantics are the same as the
+   * work-completion wake: idle -> followup, busy -> steer, success boundary
+   * = inbox acceptance, NO whenIdle/ensureMaterialized. Non-authority: the
+   * text is pre-rendered and the durable case ledger remains the authority.
+   * A rejection PROPAGATES: the wake coordinator's `delivery-failed`
+   * transition releases `queued`.
+   * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  async function deliverReviewWake(input) {
+    const rootSessionId = String(input?.rootSessionId ?? '')
+    const targetSessionId = String(input?.targetSessionId ?? '')
+    const wakeId = String(input?.wakeId ?? '')
+    const text = String(input?.text ?? '')
+    if (rootSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty rootSessionId')
+    }
+    if (targetSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty targetSessionId')
+    }
+    if (wakeId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty wakeId (the token-leading hint)')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty text')
+    }
+    if (closing) {
+      throw new Error('agent-bindings: live bindings are closing — review wake dropped (best-effort)')
+    }
+    const handle = await ensureLiveAgent(targetSessionId)
+    await prepareAgentForRequest(String(targetSessionId), teamRootOfSession(targetSessionId))
+    if (closing) {
+      throw new Error('agent-bindings: live bindings began closing before the review wake — dropped (best-effort)')
+    }
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin:dsh-agent-team' },
+    })
+    if (handle.agent.status === 'idle') {
+      handle.agent.followup(message)
+    } else {
+      handle.agent.steer(message)
+    }
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -6068,6 +6117,10 @@ export function createAgentBindings(deps) {
     // delivery failure is a liveness failure only, swallowed by the
     // router's completion observer)
     deliverRootWorkCompletionNotification,
+    // additive (A6-PR4): the generic Review Wake inbox delivery. The caller
+    // resolves the recipient session; idle -> followup, busy -> steer, and a
+    // rejection releases the coordinator's queued latch.
+    deliverReviewWake,
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,
