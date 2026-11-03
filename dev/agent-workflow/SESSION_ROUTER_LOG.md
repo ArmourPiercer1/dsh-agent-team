@@ -7438,3 +7438,28 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   PR2b 多文件属同一连贯契约，需列全受保护文件并串行写者；不重复三模式 PoC。
 - **状态**：本 PR 仍 DESIGN-ONLY，零生产代码、零 schema、零启用。下一步为
   PR2a 新分支/新 worktree；PR2b 才动受保护中心，需 ARC-A override + 安全复审。
+
+## 2026-11-03T08:0xZ（真实 UTC）— 复审 P0/P1 修正：路由顺序、OperationOwner、唯一 Officer、转交时序、入口表（主 Agent，PR #536 lane）
+
+- **复审对象**：外部修订 head `ab341a08a`。发现 3 个 P0：Unavailable 行在默认
+  Officer 之后不可达；Officer 自问仍按 Requester 而非 OperationOwner；PR 正文
+  仍写“不触碰基础权限体系 / 三项 PoC 未运行 / 7 切片 1–12”。
+- **已修（design-only）**：
+  - 设计 §3.2 将 Unavailable 提前到默认 Officer 之前，要求先判
+    archived/crashed/未恢复，Busy 不算；第 5/6 行改按实际 OperationOwner。
+  - ADR D2 增加 `currentOfficer` 唯一实例校验；`currentCase.status` 改
+    `pending`；source 统一为 `native`；补 ToolBinding 映射与失败关闭。
+  - ADR D3 增加四入口能力表（Officer 禁止 escalate/terminal-close；
+    allow/deny 在委托内），precommit 候选与 verifier 共享事实源或显式比对
+    tuple；候选改为 nominal/opaque，拒绝裸 `reviewerAuthority`。
+  - ADR D4/D6 明确 transfer 只影响未来签署，不追溯否定已签 decision；
+    precommit→commit 间 transfer 由同锁重查拒绝；TransferActor 独立于
+    `ControlCallerRef`，Unavailable 只来自生命周期事实。
+  - 计划 §2.2/§2.4/§2.4a/§2.5、PR2b/PR2c 完成判据同步；验收矩阵增 19–22
+    （OperationOwner 代发、多 Officer fail closed、Unavailable 顺序、
+    transfer 时序），总数 1–22。
+  - PR 正文改写 §2 A6-AUTHORITY、§3 PoC 状态、§4 Host 声明与切片计数；
+    顶部 append-only 历史保留。
+- **验证**：docs-sync 0 findings；docs-probe 0 blocking。零生产代码、零 schema。
+- **下一步**：按用户要求拉起多个独立子代理做更深入复审；修正后再决定
+  PR2a/PR2b 是否启动。CI 仍无 pull_request run（基础设施异常，另行披露）。

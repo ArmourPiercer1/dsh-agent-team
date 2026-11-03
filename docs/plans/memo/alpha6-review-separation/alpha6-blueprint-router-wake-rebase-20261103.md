@@ -39,7 +39,7 @@
 4. 其他明确需要 Leader 的工具审批，按 Blueprint 中的例外规则送 Leader；无该例外则默认 Officer。
 5. Router 根据现有审批权威（当前 ApprovalCase/leg、权限要求）决定可路由性，**不得根据 request.kind='leader-approval' 直接等同为通知 Leader**；请求种类、有效审批层级、实际接收者三者不同。
 6. 对不能合法路由或没有有效接收者的案件保留权威待办、报告异常；绝不默许 allow，也不把未知权限要求当成 Officer 权限。
-7. **Officer 自己发起的普通工具 ask 默认交 Leader，绝不交回 Officer。** 当前 Officer turn 等待审批、审批又需要下一个 Officer turn，是正常运行中的依赖环；同层自审也不合法。这是职责隔离规则，不是通用死锁检测器。
+7. **实际 OperationOwner 是 Officer 的普通工具 ask 默认交 Leader，绝不交回 Officer。** 当前 Officer turn 等待审批、审批又需要下一个 Officer turn，是正常运行中的依赖环；同层自审也不合法。这是职责隔离规则，不是通用死锁检测器。
 
 ### S2. Blueprint 的作者负责制定例外；Router 首版只执行确定性规则
 
@@ -135,12 +135,12 @@ Trusted Blueprint Snapshot + operation-owner Template + real Tool
 | 2 | 现有权限法律要求 Human（或无合法 resolver） | 原有人类/不可处理路径，禁止下放 |
 | 3 | Team 调度/管理/权限变更类固定 Leader 职责 | Leader（但不高于 Human） |
 | 4 | 当前 leg 已有有效的 Handoff/合法故障接管覆盖 | 已覆盖接收者 |
-| 5 | 请求者 templateId == `officerTemplateId`（Officer 自己的普通 ask） | Leader（防自等待；不交回 Officer） |
-| 6 | Blueprint 中当前 MemberTemplate × Tool 的显式 Leader 例外 | Leader |
-| 7 | 其余可委托的日常工具 ask | 专职 Officer |
-| 8 | Officer 不可用 | 依该 Blueprint 的 hold / leader 策略；不自动 allow |
+| 5 | **实际 OperationOwner** 的 templateId == `officerTemplateId`（Officer 自己的普通 ask） | Leader（防自等待；不交回 Officer） |
+| 6 | Blueprint 中**实际 OperationOwner** 的 MemberTemplate × 可信 Tool 显式 Leader 例外 | Leader |
+| 7 | **Officer 不可用**（仅 archived/crashed/未恢复；Busy 不算） | 依该 Blueprint 的 hold / leader 策略；不自动 allow；`hold` 时保留待办并报异常 |
+| 8 | 其余可委托的日常工具 ask（且 Officer 可用） | 专职 Officer |
 
-实现应分别绑定 Reviewer/Decider、Requester、OperationOwner，并以实际 OperationOwner 的 Template × 可信 Tool 对 Blueprint 的 Leader 例外进行唯一判定。Leader 例外同时禁止 Officer 接收通知与取得该 leg 的委托审批权；使用 Alpha.5 最终可信调用身份，不能错误地按消息发送者、displayName 或 tool owner 选择 MemberTemplate。
+实现应分别绑定 Reviewer/Decider、Requester、OperationOwner，并以**实际 OperationOwner** 的 Template × 可信 Tool 同时判定第 5、6 行的自问与 Leader 例外；禁止用 Requester、消息发送者、displayName 或 tool owner 代替。Leader 例外同时禁止 Officer 接收通知与取得该 leg 的委托审批权；使用 Alpha.5 最终可信调用身份。Unavailable 判定必须先于默认 Officer，否则第 8 行会吞掉第 7 行。
 
 接口建议维持一个策略端口（签名与类型仅示意）：
 
@@ -181,8 +181,8 @@ reviewRouting:
 ### 3.3a 当前授权与路由的清晰边界
 
 - **共享 BlueprintReviewPolicy** 是 Router 和 ReviewCapabilityEvaluator 对 MemberTemplate × 可信 Tool、固定 Leader 管理类别、Human rung、Officer 自问及显式 Leader 例外的唯一静态策略实现。Router 决定归属；委托求值器决定 Actor 当前能否签署。路由为 Leader 的显式例外不得同时允许 Officer 有效审批。
-- **三种主体必须区别**：Reviewer/Decider（审批者）、Requester（提出请求的人）、OperationOwner（真正执行工具调用的 Member）；按 OperationOwner 的 Template 而非 Officer 或 Requester 的 Template 进行规则匹配。工具身份来自受信工具登记/调用绑定。
-- **Handoff 与不可用接管不是审批能力来源**。仅保存一种当前-leg `CurrentLegTransfer`，分别由 Officer 或符合 Blueprint 条件的可信 Team Runtime 发起；Leader 使用其原生权限，旧 Officer 不再能审该 leg。
+- **三种主体必须区别**：Reviewer/Decider（审批者）、Requester（提出请求的人）、OperationOwner（真正执行工具调用的 Member）；按 OperationOwner 的 Template 而非 Officer 或 Requester 的 Template 进行规则匹配。工具身份来自受信工具登记/调用绑定。唯一 Officer 由 TeamDomain 的未归档唯一同模板实例解析；求值器必须校验该实例，歧义时 fail closed。
+- **Handoff 与不可用接管不是审批能力来源**。仅保存一种当前-leg `CurrentLegTransfer`，分别由 Officer 或符合 Blueprint 条件的可信 Team Runtime 发起；Leader 使用其原生权限，旧 Officer 不再能**未来**签署该 leg（已持久 decision 不追溯失效）。
 - **正确授权时序**：ControlService 在写决议前计算可信 ReviewCapability 候选并经 PA precommit 验证；成功后同一 durable decision 行记录真实 decider 与能力证据；后续 PA/Grant/Guard 从该行及现行有效调用事实重验。不得在 precommit 读取不存在的 decision，也不得在各层各写一套特例。
 - 这些只是审批委托模型的扩展，不修改原生工具、原有角色 rung、非委托权限法律或 Alpha.5 I/O 硬上界。权威接口细节见 [ADR-A6-1](./ADR-alpha6-review-capability-20261103.md) 和 [执行计划 §2.4](./alpha6-execution-plan-20261102.md)。
 
