@@ -52,9 +52,9 @@ branch task/a5sf-native-route-c-20261103; zero Host boots, zero ports, no DSH_HO
       Tests  20 passed (20)
 
 ===== $ npx vitest run <the three ARC-A / PR6 / A4P3 law suites>
-# EXPECTED on this head: 31/34. The three failures are the SAME unbooked ARC-A
-# digest drift of agent-bindings.mjs (fd5d4126...), booked by the REVIEWER as a
-# named center-interface change and deliberately NOT added by this branch.
+# Pre-booking transcript: 31/34, the three failures being the unbooked ARC-A digest
+# drift of agent-bindings.mjs (fd5d4126...). The coordinator then booked the override
+# at commit d08c9e8d; the post-booking run is appended at the end of this log.
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
  Test Files  2 failed | 1 passed (3)
       Tests  3 failed | 31 passed (34)
@@ -86,3 +86,9 @@ EB3-CI-REQUIRED pass workflows=9 findings=0
 
 ===== mutation receipts (M-b teardown order, M-c one-ceiling refusal)
 see mutation.log — both mutations RED, mount.ts restored byte-identically (sha256 re-checked)
+
+===== post-booking re-run of the three law suites (coordinator booking d08c9e8d)
+# The only change between the run above and this one is the ARC-A ledger entry for
+# agent-bindings.mjs's fd5d4126... digest. No code moved.
+ Test Files  3 passed (3)
+      Tests  34 passed (34)

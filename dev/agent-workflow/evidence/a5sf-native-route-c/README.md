@@ -210,9 +210,9 @@ verification step (§8), not a prerequisite.
 
 ## 8. Recommended next step
 
-1. **Re-review the fixed head**, book the ARC-A override for the new
-   `agent-bindings.mjs` digest (`fd5d4126…`, §7 note), then merge as the native half of
-   the a5sf lane with the `a5sfNativeToolModules` row-config key supplied by the host
+1. **Merge** as the native half of the a5sf lane (the ARC-A override for the new
+   `agent-bindings.mjs` digest `fd5d4126…` was booked by the coordinator at commit
+   `d08c9e8d`, so the law suites are 34/34 at this head), with the `a5sfNativeToolModules` row-config key supplied by the host
    composition (the same place that supplies the evidence path today).
 2. Then spend **one** F1-effective-half boot with a real Member + mock model to convert
    "mechanism proven host-free" into "model-visible native `read` denied in a booted
@@ -260,8 +260,18 @@ RED evidence: `red-test.log` = the 7-arm suite against the **pre-fix source** (a
 source changes stashed to `f2a6b48be`): 7/7 fail (the attach export does not exist and
 the order pin fails). GREEN: 7/7 in `green-tests.log`.
 
-Known gate state on this head: the ARC-A law suites report **31/34** — the three
-failures are the SAME unbooked digest drift of `agent-bindings.mjs`
-(`fd5d4126ffb7f610b59b0151d6a20255172c79fdfd13ad1d10c2bf3b32633264`). The ARC-A
-override is deliberately **not** added here (the reviewer books named center-interface
-changes); once booked the three laws go green with no code change.
+Gate state on this head: the ARC-A law suites report **34/34**. The override for the
+new `agent-bindings.mjs` digest
+(`fd5d4126ffb7f610b59b0151d6a20255172c79fdfd13ad1d10c2bf3b32633264`) was booked by the
+coordinator at commit `d08c9e8d` under the same named center-interface change, as the
+ledger requires (`arc-a-protected-center.json`, append-only). Before that booking the
+three laws stood at 31/34 — recorded here because the difference is the booking, not a
+code change.
+
+**Residual limits this guard does not cover** (measured, stated so nobody over-reads it):
+(i) the surface check compares tool **NAMES** only — a native module that also added a
+prompt section would not be detected by it; (ii) only the **setup-time**
+`builtinToolDeny` is protected: a *post-setup* dynamic `tools.restrict()` still cannot
+mask an own-scope shadow, because the filter applies to inherited registrations. The
+planned live check must therefore exercise (a) a Member that denies a native tool
+(confirming the setup-time failure is legible) and (b) a runtime revoke via the Guard.
