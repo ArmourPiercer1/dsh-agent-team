@@ -18,6 +18,15 @@
 - 禁止：第二套授权/第二套启动器/第二套策略编译器；禁止重新引入 `RequestedEffectSet`；
   禁止把原生工具塞回 `FamilyAssembly`；禁止把旧 `web-family` 历史当作 network ceiling 证据。
 
+- **2026-11-03 装配复杂度裁决（用户与外部审查讨论后入档，优先于本文件内既有装配策略判断）**：
+  1. **P0 优先于一切装配优化**：受管 Member 的原生 shadow 失效后，必须**先拒绝该 Member 的受管工具执行准入**，再异步销毁 Fiber；「预设定义重新可见但零新事实」**不等于**安全（`NoStaleShadow ≠ NoUnconfinedExecution`，`A5-FALLBACK-01`）。执行资格只有在完整重新装配并通过核验后才恢复。
+  2. **工具归属的优先输入 = 既有 `TrustedToolRegistry`**（`packages/runtime/member-io-policy/src/trust-registry.ts`：`toolName`/`packageDigest`/`dependencyDigest`/`scope`/`definitionGeneration`）。只增加一层**模块→工具归属**薄元数据（模块来源+摘要+工具集合+条件性工具），**不新建第二套权限权威**：归属只回答「`read` 由哪个原生模块提供」，不回答「`read` 能读什么」。
+  3. **`observeOnly` 探针仅为显式准入的受信兼容路径**，只对已验证可安全重复装载的模块启用；不推广为任意插件的通用接口，也不要求全体原生模块满足新的「幂等/无副作用」合同（幂等 ≠ 可安全重复执行）。
+  4. **不建设通用 register-only loader**；重复分 Binding 挂载（`k+1`）是 S-1 的机制成本，登记只能消掉探针那一次，不得为消除它重写原生 ToolRuntime 或改 Core。
+  5. **新增工程原则（架构审查项）**：在引入任何新的装配发现、运行时追踪或注册语义之前，**必须先检查既有 `TrustedToolRegistry` / `ToolRuntime` / Provider / OS backend 是否已掌握该事实**；只有信息确实缺失时才扩展机制。审查者不仅要找所选方案的漏洞，还要问「这个方案原本是否必要」。
+  6. **`read_image` 记为 P3 条件性不支持项**（延迟注册、`attachments` 依赖）；不得靠改登记名或复用 Team 自研 `read_image` 声称原生兼容。
+  7. **验收顺序**：P0 准入 → `tools/change` 不可用不得静默降级为两轮检查 → 归属登记复用 → 才花最后一次 P2-01 boot，六行验收表（A/B/C 三行 + `write` 不串通道 + **运行中失效后受管调用被拒且禁止字节不返回** + 终止后无失控 shadow/后台进程/未结清调用）。覆盖不全就记 NOT_REACHED，不为绿色报告放松断言。
+
 ## 1. P1 — 基础体系与可装配后端（G1）
 
 | ID | 工作包 | 状态 | 证据 / PR |
