@@ -35,6 +35,12 @@
     // call, no live-registry import, no production consumer (a5w suite
     // re-pins the dormancy leg; a5p4 hygiene keeps its own self-check).
     "sandbox-provider",
+    // Alpha.6 PR1: the pure Blueprint-first router + shared review policy.
+    // No production consumer yet; named here so repo-wide tsc reads the lane.
+    "review-router",
+    // Alpha.6 PR2a: the pure ReviewCapability evaluator. First consumer is
+    // PR2b; listed here so the lane is inside repo-wide tsc.
+    "review-authority",
     "test",
     "vitest.config.ts"
   ]

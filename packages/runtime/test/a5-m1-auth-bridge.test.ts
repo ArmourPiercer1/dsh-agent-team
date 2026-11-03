@@ -108,6 +108,7 @@ import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { EffectSetApprovalPlan } from '../tool-admission/approval-case.js'
+import { ReviewCapabilityCandidate } from '../review-authority/index.js'
 import {
   PA_CONTROL_ACTION_NAME,
   createPaControlLeg,
@@ -125,6 +126,7 @@ import type {
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
 import {
   P6T4_BLUEPRINT_SOURCE,
+  constantAuthorityRecheck,
   P6T4_NOW,
   P6T4_ROOT,
   P6T4_SEEDS,
@@ -282,6 +284,7 @@ const service: ControlService = createControlService({
   now: () => P6T4_NOW,
   waitPollIntervalMs: 5,
   paEffectsVerifier: paVerifier,
+  authorityRevalidation: constantAuthorityRecheck().port,
 })
 
 const WORKER = P6T4_SEEDS.worker.instanceId
@@ -458,6 +461,8 @@ function manifestBytes(fixture: DirectFixture): Record<string, unknown> {
     member: { teamSessionId: fixture.input.member.teamSessionId, instanceId: fixture.input.member.instanceId },
   })) as Record<string, unknown>
 }
+
+const LEDGER_ENVELOPE_SCHEMA_VERSION = 2
 
 const manifestOf = (row: ControlRequestRecord): Record<string, unknown> =>
   row.reviewPayload as Record<string, unknown>
@@ -1261,7 +1266,7 @@ async function appendDurableFact(
 ): Promise<number> {
   const sequence = await ledger.allocateSequence()
   await ledger.put({
-    schemaVersion: 2, // fence L1253 adjudication evidence: durable LEDGER-ROW envelope version (`ledger.put` row envelope — sequence/rootSessionId/factType/payload/createdAt, ZERO blueprint document fields); the ledger-row signature rides the head line (outer-line-evidence ⇒ UNKNOWN by design). NOT a blueprint document version.
+    schemaVersion: LEDGER_ENVELOPE_SCHEMA_VERSION, // durable LEDGER-ROW envelope version, not a blueprint document version
     sequence,
     rootSessionId: P6T4_ROOT,
     factType,
@@ -2355,4 +2360,168 @@ describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in
     expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
     expect(b4NowMs() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
+})
+
+// ── A6-PR2b: the REAL PA manifest chain through a delegated escalation ─────
+
+function a6Candidate(
+  row: ControlRequestRecord,
+  entry: 'allow' | 'deny' | 'escalate',
+  fixture: DirectFixture,
+): ReviewCapabilityCandidate {
+  const binding = fixture.input.request.binding
+  return ReviewCapabilityCandidate.of({
+    principal: { kind: 'instance', instanceId: WORKER, role: 'member' },
+    source: 'blueprint-officer',
+    entry,
+    effectiveReviewAuthority: 'leader',
+    approvalCaseId: String(row.approvalCaseId),
+    currentLegRequestId: row.requestId,
+    legOrdinal: Number(row.legOrdinal),
+    scope: {
+      rootSessionId: P6T4_ROOT,
+      subject: { kind: 'instance', instanceId: WORKER },
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: fixture.correlation,
+      operationFingerprint: String(row.operationFingerprint),
+    },
+    scopeFingerprint: 'a6-scope',
+    blueprintContentHash: 'a6-hash',
+    blueprintRevision: 'a6-r1',
+    authorityGeneration: fixture.plan.authorityGeneration,
+    operationOwner: { rootSessionId: P6T4_ROOT, instanceId: WORKER, templateId: 'worker' },
+    operationTool: {
+      definitionIdentity: binding.definitionIdentity,
+      owner: binding.providerId,
+      name: binding.toolName,
+    },
+  })
+}
+
+describe('A6-PR2b (real PA manifest): tool ask -> Officer escalation -> Human allow -> grant/guard once', () => {
+  it('keeps the original strict manifest across the Human leg and returns the original call on the final allow', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-chain')
+    const leg = makeLeg({
+      a6: true,
+      operationOwnerTemplateId: 'worker',
+      blueprintContentHash: 'a6-hash',
+      blueprintRevision: 'a6-r1',
+    })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    expect(first.approvalCaseId).toBeDefined()
+    expect(first.paApprovalCaseId).toBe(fixture.plan.approvalCaseId)
+    expect(first.operationToolDefinitionIdentity).toBe(fixture.input.request.binding.definitionIdentity)
+
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+      reason: 'Human authority needed',
+    })
+    expect(escalation.caseOutcome).toBe('escalated')
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    expect(humanLeg.reviewAuthority).toBe('human-user')
+    expect(humanLeg.reviewPayloadDigest).toBe(first.reviewPayloadDigest)
+    expect(humanLeg.paApprovalCaseId).toBe(first.paApprovalCaseId)
+    expect(humanLeg.operationOwnerTemplateId).toBe('worker')
+
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-chain'),
+      requestId: humanLeg.requestId,
+      decision: 'allow',
+    })
+    const result = await pending
+    expect(result.decision).toBe('approve')
+    if (result.decision !== 'approve') return
+    expect(result.requestId).toBe(humanLeg.requestId)
+    expect(result.grant).toBeDefined()
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(1)
+    expect(st.consumptions.filter((c) => c.requestId === first.requestId).length).toBe(0)
+  })
+
+  it('Human deny after escalation ends the original call with zero grant and zero consumption', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-deny')
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-deny'),
+      requestId: humanLeg.requestId,
+      decision: 'deny',
+    })
+    const result = await pending
+    expect(result.decision).toBe('deny')
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(0)
+  })
+
+  it('a duplicate escalation of the already-escalated leg is refused', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-dup')
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg(fixture.input)
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const firstEscalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = firstEscalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    await expect(service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })).rejects.toThrow()
+    // Finish the case truthfully so a lingering wait cannot pollute later tests.
+    await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller('human-a6-dup'),
+      requestId: humanLeg.requestId,
+      decision: 'deny',
+    })
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('cancel after escalation but before Human allow yields NO approval and zero consumption', async () => {
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-pr2b-cancel')
+    const controller = new AbortController()
+    const leg = makeLeg({ a6: true, operationOwnerTemplateId: 'worker', blueprintContentHash: 'a6-hash', blueprintRevision: 'a6-r1' })
+    const pending = leg({ ...fixture.input, signal: asSignal(controller) })
+    const first = await waitRow((r) => r.correlation === fixture.correlation)
+    const escalation = await service.escalateApprovalLeg({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      requestId: first.requestId,
+      reviewCapability: a6Candidate(first, 'escalate', fixture),
+    })
+    const humanLeg = escalation.nextLeg
+    if (humanLeg === undefined) throw new Error('expected a Human successor')
+    controller.abort()
+    const result = await pending
+    expect(result.decision).not.toBe('approve')
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === humanLeg.requestId).length).toBe(0)
+  })
 })
