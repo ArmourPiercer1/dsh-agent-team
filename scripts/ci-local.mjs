@@ -33,7 +33,9 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TEST_RE = /\.(test|spec)\.(ts|tsx|mjs|cjs|js)$/
-const ROOT_CONFIGS = new Set(['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json', 'vitest.config.ts'])
+/** Prose and orchestration records: their change selects no test runner, ever. */
+const DOC_PATH_RE = /^(docs|dev)\//
+const DOC_FILE_RE = /\.(md|mdx)$/i
 
 /** Files whose change is graded by the CI's own static checkers, not by package tests. */
 const CI_FAMILY = [/^\.github\//, /^dev\/ci\//, /^scripts\/eb3-[^/]*\.mjs$/, /^scripts\/ci-pr-gate\.mjs$/, /^scripts\/pr-settlement-gate\.mjs$/, /^tests\/checks\//, /^scripts\/doc-checks\.mjs$/]
@@ -87,11 +89,13 @@ export function classify(paths) {
       packages.add(pkg)
       continue
     }
-    if (ROOT_CONFIGS.has(p) || /^tsconfig[^/]*\.json$/.test(p)) { undetermined.add(p); continue }
-    if (p.startsWith('tests/')) { undetermined.add(p); continue } // shared kits/fixtures: blast radius unnamed
-    if (p.startsWith('scripts/')) { undetermined.add(p); continue }
-    // Everything else (docs, evidence, plans, graph, logs) selects no test runner.
-    docsOnly.add(p)
+    // ONLY prose is allowed to mean "no tests". Every other unrecognised path — a root
+    // config, a new top-level directory, a tool's own config file — is `undetermined`.
+    // The previous shape treated the fall-through as docs, so `eslint.config.mjs` (a real
+    // path in this repo that no rule covered) reported coverage=determined with nothing
+    // run. Exit 2 is the honest answer for a path this tool cannot place.
+    if (DOC_PATH_RE.test(p) || DOC_FILE_RE.test(p) || p === 'LICENSE') { docsOnly.add(p); continue }
+    undetermined.add(p)
   }
 
   return {

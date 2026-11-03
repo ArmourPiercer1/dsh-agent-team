@@ -93,3 +93,19 @@ test('buildPlan: a docs-only change selects no test runner and is determined', (
   assert.deepEqual(plan.vitest, [])
   assert.deepEqual(plan.nodeTest, [])
 })
+
+test('classify: an unrecognised root file is UNDETERMINED, not "no tests"', () => {
+  // NEGATIVE CONTROL (external review of #552, problem A). `eslint.config.mjs` exists in
+  // this repo and matched no rule, so the old fall-through called it docs-only and the run
+  // reported coverage=determined having executed nothing. The honest answer is undetermined.
+  const c = classify(['eslint.config.mjs'])
+  assert.deepEqual(c.undetermined, ['eslint.config.mjs'])
+  assert.deepEqual(c.docsOnly, [])
+  assert.equal(buildPlan(c).coverage, 'undetermined')
+})
+
+test('classify: only prose counts as docs-only', () => {
+  const c = classify(['docs/STATUS.md', 'dev/agent-workflow/graph.yaml', 'README.md', 'LICENSE'])
+  assert.deepEqual(c.docsOnly, ['LICENSE', 'README.md', 'dev/agent-workflow/graph.yaml', 'docs/STATUS.md'])
+  assert.deepEqual(c.undetermined, [])
+})
