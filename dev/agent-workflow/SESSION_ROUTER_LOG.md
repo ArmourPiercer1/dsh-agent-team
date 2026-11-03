@@ -7366,3 +7366,14 @@ CI 又抓出 typecheck 红（动态 import 未 await，vitest 不查型而 CI �
   2. **A4-6 build-include 姿态**——`packages/runtime/tsconfig.build.json` 被法条用朴素 `://` 剥离器解析，解释性 `//` 注释块令解析报 `Unexpected token '/'`。注释移入 evidence README，include 只留两个文件条目、无注释。
   - 结果：`u6-arc-a-fitness` / `u6-pr6-arc-d-adversarial` / `a4p3-intervention-lane-hygiene` **34/34**。
 - **F1 有效半场仍是 P2 唯一实质阻塞**：sibling isolate ⇒ 行 ctx 拿 BASE provider，只有 `realm.installation.members[i].ctx` 受限；已配置齐全也 0 咨询、空 sink。已披露 + 探针可复现 + 下一步按 head 重锚 file:line。
+
+## sync22（dated 2026-11-03T21:10Z，主 Agent；外部独立审查裁决 + 路线纠正）
+- **用户转达外部独立只读审查**（对 #555 最终 head `0624c782` 及旧 A5-XENV PoC 的核对），给出六条：
+  1. **`CORE_SEAM_BLOCKER` 判断过强，撤回**：#555 证明的是「路线 A（`presets.mount(agentCtx)` 不能改变已装载的原生工具作用域）不可行」，不能推广为「原生工具受限必须改 Core」。**路线 C**（在受限 scope 下**重新装载原生工具模块**：`iso.provide('fs', confined)` + `await iso.plugin(await import(TOOLFS_URL))`）已在旧 A5-XENV PoC 于真实 Host 验证（原生 read/write 命中重挂载定义、越界被拒、未改 Core）。BL-22 改为「优先复用该公开接缝；仅在确证不可行时审查小规模基础设施插件 Fork（已预批准），仍不碰 Core」。
+  2. **两轴都要落地**：F1 目前只用 MemberCeiling；合同要求 `EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction`，binding realm 已由 P1 生成，下一步让实际调用消费它。
+  3. **「未配置」≠「受管但缺失」**：生产语义必须拒绝「受管 Member 但 realm/策略/Provider 缺失」，不得回退 Base；证据路径不应成为安全开关。
+  4. **F1-8 只是哨兵**，不得升格为「架构禁止 try/catch」；真正的测试是在真实装配入口注入畸形 realm。
+  5. **boot 排序**：①1 次 boot 做 F1 实体验证（原生 read 仍走 Base = 旁路基线记录，**不是** P2-01 验收条件）；②复核路线 C；③原生工具×ToolBinding 绑定；④之后才做 P2 的 C2 验收。3 次 F1 预算只用 1 次，其余转给路线 C 与绑定验收。
+  6. **趋势风险**：只完善 Team 自有工具面会把系统重新分裂成两套执行体系；下一轮首要工作是原生工具接入真实产品路径。
+- **本轮动作**：已中断原先以「原生 read 仍 ALLOWED 作为验收条件」设计的 live-read lane（其任务前提被裁决纠正），改为派出 **BL-22 路线 C 复核 lane**（`task/a5sf-native-route-c-20261103`，host-free 优先，最多 1 次 boot，结论可为「不可行」并附带最小公开接缝）。
+- **裁决入档**：上述六条已写入 `ALPHA5-SANDBOX-BACKLOG.md` 顶部（优先于该文件内历史判断）。
