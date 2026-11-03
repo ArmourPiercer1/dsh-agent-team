@@ -131,8 +131,17 @@ export interface NativeToolModuleMount {
  * A routed tool was found on a definition this attach did not create AFTER the
  * mount settled — a late service arrival, a hot update, or a fiber teardown
  * left it on the unshadowed preset path. The realm disposes every router fiber
- * it created (restoring the preset surface) and records this event instead of
- * leaving a live, unconstrained shadow.
+ * it created (restoring the preset surface VISIBLY) and records this event.
+ *
+ * P0 (2026-11-03) — WHY DISPOSAL ALONE WAS A LEAK: once the shadow was gone the
+ * already-running Member's next call resolved the PRESET definition and
+ * executed with zero guard facts, i.e. a managed Member silently fell back to
+ * unconstrained execution. `NoStaleShadow ≠ NoUnconfinedExecution`. While this
+ * record is non-null the realm therefore DENIES every tool name the attach
+ * covered at the existing `tools/pre-execute` admission stage (typed refusal,
+ * naming the Member/realm/reason), and re-mounting is refused. Eligibility only
+ * returns through a FULL re-assembly (a new realm mount + a new native attach)
+ * that passes verification again.
  */
 export interface NativeToolInvalidation {
     readonly schema: 'a5sf-native-invalidation/1';
@@ -150,6 +159,11 @@ export interface NativeToolInvalidation {
     readonly surfaceRemoved: readonly string[];
     readonly observedAt: string;
 }
+/**
+ * P0 (2026-11-03): the stable machine-readable code carried by the admission
+ * refusal's `error.info.code` while a realm's native shadow is invalidated.
+ */
+export declare const A5SF_NATIVE_SHADOW_INVALIDATED = "A5SF_NATIVE_SHADOW_INVALIDATED";
 /**
  * S-1 routing receipt: what ONE router fiber forwarded and dropped, by name.
  * Attached (non-enumerable) to the fiber this mount returned, so a caller can

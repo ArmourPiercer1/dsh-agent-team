@@ -1,0 +1,49 @@
+# DERIVED SUMMARY (run B) of pnpm ci:local on the CLEAN committed tree at code head 9e014e27a.
+# The full raw capture exceeded the 1 MiB evidence bound and was NOT retained/committed.
+# Every line below is copied verbatim from that run.
+
+▶ docs:probe
+✔ docs:probe (0.3s)
+▶ docs:sync --check
+✔ docs:sync --check (0.3s)
+▶ ci shape (eb3-ci-required)
+✔ ci shape (eb3-ci-required) (0.1s)
+▶ pnpm typecheck
+✔ pnpm typecheck (23.8s)
+▶ vitest (selected)
+▶ node --test (selected)
+✔ GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes (29.156458ms)
+✔ GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane (15.648545ms)
+✔ GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing (8.503228ms)
+✔ GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped) (0.350504ms)
+✔ GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED (33.787805ms)
+✔ GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape) (18.802484ms)
+✔ GAP2b-control same-turn setup additions (the Team tools) do not invalidate (36.991713ms)
+✔ GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow (38.724271ms)
+✔ C1 a ONE-SHOT module is REFUSED when the probe consumed its only registration (12.929778ms)
+✔ C2 the ownership probes are disposed before the real mounts (live-effect count) (11.900402ms)
+✔ P0-1 the SAME out-of-lane read is REFUSED after invalidation, never served by the visible preset (42.688495ms)
+✔ P0-2 a managed attach whose verification listener cannot attach is REFUSED (fail closed, typed) (5.062917ms)
+✔ P0-3 disposing EVERY shadow fiber invalidates and denies — never a silent preset fallback (9.468163ms)
+✔ node --test (selected) (0.6s)
+
+## failing identities (whole-tree load flake)
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive receive: a running non-derived seeded member receives exactly one inject through the real binding, never steer or followup
+ FAIL  packages/runtime/test/a3p5-glue-permission-receipt.test.ts > a3p5 glue receipt — ROOT BLOCK-2 fix law on the REAL agent-bindings module > positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived
+ FAIL  packages/runtime/test/a5-read-slice-window.test.ts > A5RSW F equivalence and identity (plan (b) F1-F2) > F2 GUARD: {file_path} vs {file_path,limit:2000} are distinct identities; omitted offset == offset 1
+ FAIL  packages/runtime/test/a5g6-install-face-render.test.ts > GLUE-6 LEG B — the plane renders ContentBlock[], not a String > the four definitions all carry a render that returns an array of typed text blocks
+ FAIL  packages/runtime/test/a5mcp-native-trust-filter.test.ts > G2-MCP-B collection — the trusted-native harvest excludes the mcp__ family > the exported predicate excludes exactly the mcp__ prefix family
+ FAIL  packages/runtime/test/a5p4-lane-hygiene.test.ts > a5p4 lane purity and dormancy > self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)
+ FAIL  packages/runtime/test/alpha5-glob-backend.test.ts > A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict > X3 the timeout arm settles cancelled and spills nothing
+ FAIL  packages/runtime/test/u7-f-agent-control-c1.test.ts > u7-f C1 mount gate — the zero-flip law and the seven claims > AC-1 gate ABSENT: zero rows, zero flip (the native agent-control tools ride untouched)
+ FAIL  packages/runtime/test/u7-w0b-approval-entry-law.test.ts > u7-w0b P — the plane binds every family through the ONE binder > P0 the mount registers all four families on ONE kernel (the universe the law is checked over)
+
+## representative timeout evidence
+Error: Test timed out in 5000ms.
+Error: Test timed out in 5000ms.
+Error: Test timed out in 5000ms.
+
+ Test Files  8 failed | 475 passed (483)
+      Tests  9 failed | 5984 passed (5993)
+
+DSH-CI-LOCAL verdict=fail steps=6 failed=1 coverage=determined files=2 wall=291.4s
