@@ -1,0 +1,8 @@
+{
+  "grantId": "grant-a5sf-live-native3-3af944ca2e83",
+  "maxStarts": 2,
+  "grantedBy": "user ruling 2026-11-03 a5sf-boot-pool-20261103-user-20 — allocation item \"P2-01 live read (BL-14 / G2 live half)\", which holds 3 boots. This run is that item's SECOND boot: boot 1 (evidence/a5sf-live-native/) reached activation and was refused by the unscoped-ctx seam; boot 2 (evidence/a5sf-live-native2/) aborted at Loader compose on a composition defect before any product code ran. One boot of P2-01 remains after this one.",
+  "allocationItem": "P2-01 live read (BL-14 / G2 live half)",
+  "boundCommit": "3af944ca2e83b81a739bfbdcccec37cd4470dc37",
+  "note": "maxStarts = 1 pre-registration (intent) row + 1 boot (BL-14 arithmetic: the gate counts shared-ledger rows, not spawns)"
+}
