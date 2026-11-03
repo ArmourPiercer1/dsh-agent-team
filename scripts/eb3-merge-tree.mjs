@@ -235,7 +235,7 @@ if (invokedDirectly) {
     }
     // --deferred: the deferred-tier report job (check name ci-required-deferred). It grades every
     // layer EXCEPT the declared deferral layer, and says so; the Required `ci-required` job never
-    // passes --deferred, so it still grades ci-full and a skipped ci-full is red there.
+    // passes --deferred, so it still grades ci-census and a skipped ci-census is red there.
     const deferred = argv.includes('--deferred')
     const m0 = loadManifest()
     const g = deferred

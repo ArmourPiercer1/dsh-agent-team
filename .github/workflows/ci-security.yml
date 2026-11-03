@@ -16,7 +16,7 @@
 #
 # NO HOST, NO BOOT, NO DSH_HOME. These are unit/integration suites over the shipped
 # seams — which is why this layer can be REQUIRED on a hosted runner while the census
-# cannot. The real-host census lives in ci-full and refuses honestly when the pristine
+# cannot. The real-host census lives in ci-census and refuses honestly when the pristine
 # host is absent.
 #
 # THE CLOCK IS ON THE TOKEN. scripts/eb3-security-run.mjs raises vitest's testTimeout

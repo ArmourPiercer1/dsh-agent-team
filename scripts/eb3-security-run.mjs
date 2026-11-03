@@ -45,7 +45,7 @@ const arg = (n) => { const i = argv.indexOf(n); return i > -1 ? argv[i + 1] : nu
 const listFile = arg('--list-file') ?? DEFAULT_LIST
 const timeout = Number(arg('--timeout') ?? DEFAULT_TIMEOUT)
 const json = argv.includes('--json')
-// The layer NAME on the token. ci-full runs this same runner over the host-provisioned
+// The layer NAME on the token. ci-census runs this same runner over the host-provisioned
 // list; a token that said ci-security there would misattribute the result.
 const layerName = arg('--layer') ?? 'ci-security'
 if (!/^ci-[a-z]+$/.test(layerName)) {

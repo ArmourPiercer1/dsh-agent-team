@@ -34,21 +34,23 @@
 # acceptance.
 #
 # BRANCH PROTECTION: the context to require is `ci-required`, and it is the ONLY one
-# for the PR path. `pr-gate` and `census-runtime` stay as they are and stay honest on
-# their own terms; the plan's E3 exit allows them to retire only after the layered
-# rules have been validated side by side, so this file does not delete them.
+# for the PR path. `census-runtime` is no longer a standalone check with its own triggers:
+# since 2026-11-03 it is the `ci-census` layer called from here, so the census gates merges
+# instead of running beside them. `pr-gate` stays as it is on its own terms; the plan's E3
+# exit allows it to retire only after the layered rules have been validated side by side.
 name: ci-required
 
 on:
   pull_request:
     branches: [master]
-    # `labeled`/`unlabeled` are LOAD-BEARING for the deferred tier: the verdict depends on
-    # the PR's labels, so ADDING ci-defer-full must re-run (to skip ci-full) and REMOVING it
-    # must re-run the full aggregate on the SAME head. Without them, taking the label off
-    # would leave a red ci-required standing until the next push — a head that is fully green
-    # but cannot merge, the failure this tier must not create. The default set
-    # (opened/synchronize/reopened) does not include them.
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    # `draft`-state and the label are both LOAD-BEARING for the tier switch: the census runs
+    # only when the PR is NOT a draft and NOT labelled `ci-defer-full`. So marking ready
+    # (`ready_for_review`), adding/removing the label, and `converted_to_draft` must all re-run
+    # the aggregate on the SAME head. Without them, going ready would leave a red ci-required
+    # standing until the next push — a head that is fully green but cannot merge, the failure
+    # this tier must not create. The default set (opened/synchronize/reopened) includes none
+    # of these, so they are named here.
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -121,19 +123,32 @@ jobs:
     with:
       merge_tree: ${{ needs.synthesize.outputs.tree }}
 
-  ci-full:
-    name: ci-full
+  ci-product:
+    name: ci-product
     needs: synthesize
-    # THE DEFERRED TIER (dev/ci/eb3-ci-manifest.json#deferral). An intermediate
-    # fix-round push may carry the PR label `ci-defer-full` to skip the census. This
-    # is the ONLY layer caller allowed an `if:`, and only this exact text
-    # (scripts/eb3-ci-required.mjs grades it). It cannot produce a mergeable run:
-    # `ci-required` below still needs ci-full, a skipped ci-full grades NOT green,
-    # so the Required context is RED on a deferred run. The ci-required job itself
-    # is never skipped. A skipped required job reports `skipped`, which GitHub
-    # branch protection accepts as passing; that is why the deferral lives here.
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
-    uses: ./.github/workflows/ci-full.yml
+    uses: ./.github/workflows/ci-product.yml
+    with:
+      merge_tree: ${{ needs.synthesize.outputs.tree }}
+
+  # THE DEFERRED TIER (dev/ci/eb3-ci-manifest.json#deferral). The census — and only the
+  # census — runs when the PR is NOT a draft and NOT labelled `ci-defer-full`:
+  #
+  #   Draft PR                  → L1: cheap layers only, no census.
+  #   Ready, no label           → L2: the merge gate, census included.
+  #   Ready + ci-defer-full     → another intermediate round, no census.
+  #
+  # The `if:` is EXECUTE-WHEN-TRUE, so the condition is the negation. It is the ONLY layer
+  # caller allowed an `if:`, and only this exact text (`scripts/eb3-ci-required.mjs` grades
+  # it against the manifest's `deferral.callerIf` verbatim). A deferred run cannot merge:
+  # `ci-required` below still needs ci-census, a skipped ci-census grades NOT green, so the
+  # Required context is RED. The ci-required job itself is never skipped — a skipped required
+  # job reports `skipped`, which GitHub branch protection accepts as passing, and that is why
+  # the deferral lives here and not on the summary.
+  ci-census:
+    name: ci-census
+    needs: synthesize
+    if: ${{ !github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
+    uses: ./.github/workflows/census-runtime.yml
     with:
       merge_tree: ${{ needs.synthesize.outputs.tree }}
 
@@ -144,7 +159,7 @@ jobs:
     # skipped job is not red — the exact shape EB3-C forbids. With it, this job runs
     # whatever happened upstream and states a verdict from what it sees.
     if: always()
-    needs: [synthesize, ci-fast, ci-integration, ci-security, ci-full]
+    needs: [synthesize, ci-fast, ci-integration, ci-security, ci-product, ci-census]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -178,15 +193,17 @@ jobs:
           if-no-files-found: warn
 
   # ── the deferred tier's report (NOT Required, never named ci-required) ─────────
-  # Runs only on a deferred run (label `ci-defer-full`). It grades the three cheap
-  # layers + synthesize so a fix round still gets a verdict on what DID run. Its check
-  # name is `ci-required-deferred`, which branch protection does not require; the
-  # Required `ci-required` above is red on the same run (ci-full skipped), so a
-  # deferred run can never satisfy branch protection.
+  # Runs on exactly the COMPLEMENT of the census caller's condition: a draft PR, or a
+  # ready PR carrying `ci-defer-full`. It grades every layer except the deferred one so a
+  # fix round still gets a verdict on what DID run. Its check name is
+  # `ci-required-deferred`, which branch protection does not require; the Required
+  # `ci-required` above is red on the same run (ci-census skipped), so a deferred run can
+  # never satisfy branch protection. The two conditions are written to be exact negations
+  # of each other — if one changes, the other must, and C23 pins that.
   required-deferred:
     name: ci-required-deferred
-    if: ${{ always() && contains(github.event.pull_request.labels.*.name, 'ci-defer-full') }}
-    needs: [synthesize, ci-fast, ci-integration, ci-security]
+    if: ${{ always() && (github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'ci-defer-full')) }}
+    needs: [synthesize, ci-fast, ci-integration, ci-security, ci-product]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

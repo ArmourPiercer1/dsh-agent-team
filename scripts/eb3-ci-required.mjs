@@ -3,7 +3,7 @@
  * eb3-ci-required.mjs — EB3-B/C: the layered-CI shape checker.
  *
  * WHAT IT ENFORCES. `dev/ci/eb3-ci-manifest.json` is the one declaration of the
- * CI layers (ci-fast / ci-integration / ci-security / ci-full) and of the
+ * CI layers (ci-fast / ci-integration / ci-security / ci-product / ci-census) and of the
  * synthetic merge-tree summary job that is the single Required context. This
  * file grades the workflow YAML against it, and every rule exists because a
  * job can be PRESENT and still not gate anything:
@@ -33,6 +33,13 @@
  *                               it cannot tell success from skipped/cancelled/failure
  *   CI_WORKFLOW_UNPARSEABLE     a workflow file the parser rejects (never a skipped file)
  *   CI_DECLARED_JOB_ABSENT      a job the manifest declares as known-non-required has vanished
+ *   CI_PRODUCT_LEGS_INCOMPLETE  a layer declares `productLegs`, and that set is not exactly the
+ *                               gate's LEG_ORDER minus the census (a leg silently dropped from the
+ *                               host-free layer, or a leg listed twice)
+ *   CI_PRODUCT_LEGS_DRIFT       the layer workflow's `--only` list differs from the declared
+ *                               `productLegs` — YAML and manifest disagree about which legs run
+ *   CI_PRODUCT_LEGS_UNREADABLE  scripts/ci-pr-gate.mjs's LEG_ORDER could not be read, so the
+ *                               completeness claim cannot be graded (closed, not skipped)
  *
  * Each rule is a predicate over the PARSED workflow (`yaml`, a root dependency),
  * not over line regexes — a reformatting must not change the verdict, and a
@@ -218,7 +225,7 @@ const ASSIGN = /^[A-Za-z_][A-Za-z0-9_]*=/
  *
  *  Kept deliberately small: locale/colour/timezone/CI-flag only. No real leg line uses
  *  a prefix today (the only prefixed command in these workflows is the HOST build in
- *  ci-full, which is not a leg). A name is added here only with a reason it cannot
+ *  a layer id, which is not a leg). A name is added here only with a reason it cannot
  *  affect execution or status. */
 export const LEG_ASSIGNMENT_ALLOWLIST = Object.freeze(['CI', 'FORCE_COLOR', 'NO_COLOR', 'TZ', 'LANG', 'LC_ALL'])
 
@@ -661,20 +668,100 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     }
   }
 
+  checkProductLegs({ docs, manifest, add })
   return { findings }
 }
 
+
 /**
- * CI_DEFERRAL_CONFLICT: a head that carries the deferral label AND has a `ci-required` success.
- * A deferred run skips ci-full, so ci-required must be red on it; a success next to the label
- * means the deferral gate was bypassed. Guarded: it only grades when BOTH inputs are readable
- * (env EB3_PR_LABELS_JSON = JSON array of label names, EB3_CI_REQUIRED_CONCLUSION = the
- * ci-required check-run conclusion on the same head). Absent inputs are a no-op (checked:false).
+ * The gate's leg list, read from `scripts/ci-pr-gate.mjs` as static source.
+ *
+ * WHY NOT `import { LEG_ORDER }`. The Required summary job checks out the manifest and this
+ * script and runs with NO `pnpm install` (deliberately: a broken lockfile upstream must not
+ * make the verdict unreadable). `ci-pr-gate.mjs` pulls in the gate's whole dependency graph at
+ * module load, so importing it here would turn a lockfile incident into "the Required context
+ * cannot grade". Parsing the const literal keeps this checker dependency-free and still pins
+ * the two lists to each other — a leg renamed in the gate but not here is a finding, not a
+ * silent divergence.
  */
-export function checkDeferralConflict({ labels, requiredConclusion, label = 'ci-defer-full' } = {}) {
+export function readGateLegOrder(root = ROOT) {
+  let src
+  try { src = readFileSync(join(root, 'scripts', 'ci-pr-gate.mjs'), 'utf8') } catch { return null }
+  const m = /const LEG_ORDER = \[([\s\S]*?)\]/.exec(src)
+  if (m === null) return null
+  const legs = [...m[1].matchAll(/'([^']+)'|"([^"]+)"/g)].map((x) => x[1] ?? x[2])
+  return legs.length === 0 ? null : legs
+}
+
+/**
+ * CI_PRODUCT_LEGS_INCOMPLETE / CI_PRODUCT_LEGS_DRIFT. A layer that runs `--only <subset>` is
+ * claiming "the gate minus this named subset". That claim is only true while the declared
+ * subset is exactly LEG_ORDER minus the legs handled elsewhere, and while the YAML's literal
+ * list equals the manifest's. Both are static facts; neither needs a runner.
+ */
+function checkProductLegs({ docs, manifest, add, root = ROOT }) {
+  const gate = readGateLegOrder(root)
+  for (const layer of manifest.layers) {
+    const declared = layer.productLegs
+    if (declared === undefined) continue
+    if (gate === null) {
+      add('CI_PRODUCT_LEGS_UNREADABLE', `layer ${layer.id} declares productLegs but scripts/ci-pr-gate.mjs has no readable LEG_ORDER`, { layer: layer.id })
+      continue
+    }
+    const expected = gate.filter((l) => l !== 'census')
+    const missing = expected.filter((l) => !declared.includes(l))
+    const extra = declared.filter((l) => !gate.includes(l) || l === 'census')
+    if (missing.length > 0 || extra.length > 0 || new Set(declared).size !== declared.length) {
+      add('CI_PRODUCT_LEGS_INCOMPLETE', `layer ${layer.id}: productLegs must be exactly LEG_ORDER minus census` +
+        `${missing.length > 0 ? `; missing ${missing.join(',')}` : ''}${extra.length > 0 ? `; unexpected ${extra.join(',')}` : ''}`, { layer: layer.id })
+    }
+    const doc = docs.get(layer.workflow)
+    if (doc === undefined) continue
+    const job = (doc.jobs ?? {})[layer.job]
+    const wants = declared.join(',')
+    // The gate invocation is a PIPELINE (`… | tee …`), so it is not a simple command; the
+    // leg grader proves the pipeline executes the gate and cannot swallow its status, and
+    // this rule only needs the literal list it passes. Reading the literal keeps the check
+    // static, which is the point.
+    const seen = []
+    for (const step of job?.steps ?? []) {
+      if (typeof step?.run !== 'string' || !step.run.includes('ci-pr-gate.mjs')) continue
+      for (const m of step.run.matchAll(/--only\s+([A-Za-z0-9_,-]+)/g)) seen.push(m[1])
+    }
+    if (seen.length === 0) {
+      add('CI_PRODUCT_LEGS_DRIFT', `layer ${layer.id}: no step passes \`--only\` to ci-pr-gate.mjs, but the manifest declares productLegs`, { layer: layer.id })
+      continue
+    }
+    for (const value of seen) {
+      if (String(value) !== wants) {
+        add('CI_PRODUCT_LEGS_DRIFT', `layer ${layer.id}: \`--only ${String(value)}\` differs from the manifest's productLegs (${wants})`, { layer: layer.id })
+      }
+    }
+  }
+}
+
+/**
+ * CI_DEFERRAL_CONFLICT: a head that is DEFERRED (draft, or carrying the deferral label) and has a
+ * `ci-required` success. A deferred run skips ci-census, so ci-required must be red on it; a
+ * success next to either deferral source means the deferral gate was bypassed — the census went
+ * unmeasured while the Required context said green.
+ *
+ * BOTH deferral sources are graded, because since 2026-11-03 there are two: a DRAFT PR is the L1
+ * tier, and `ci-defer-full` is the label lever for a ready PR. A checker that only knew the label
+ * would pass exactly the case the tier model creates most often.
+ *
+ * Guarded: it only grades when the inputs are readable (env EB3_PR_LABELS_JSON = JSON array of
+ * label names, EB3_PR_DRAFT = "true"/"false", EB3_CI_REQUIRED_CONCLUSION = the ci-required
+ * check-run conclusion on the same head). Absent inputs are a no-op (checked:false).
+ */
+export function checkDeferralConflict({ labels, requiredConclusion, draft, label = 'ci-defer-full' } = {}) {
   if (!Array.isArray(labels) || typeof requiredConclusion !== 'string') return { findings: [], checked: false }
-  if (labels.includes(label) && requiredConclusion === 'success') {
+  if (requiredConclusion !== 'success') return { findings: [], checked: true }
+  if (labels.includes(label)) {
     return { checked: true, findings: [{ code: 'CI_DEFERRAL_CONFLICT', detail: `the PR carries ${label} AND ci-required is success on the same head — a deferred run must not satisfy branch protection` }] }
+  }
+  if (draft === true) {
+    return { checked: true, findings: [{ code: 'CI_DEFERRAL_CONFLICT', detail: 'the PR is a DRAFT AND ci-required is success on the same head — a draft run skips ci-census and must not satisfy branch protection' }] }
   }
   return { findings: [], checked: true }
 }
@@ -705,9 +792,12 @@ if (invokedDirectly) {
     const sl = checkSuiteLists({ root: ROOT })
     const rawLabels = process.env['EB3_PR_LABELS_JSON']
     const conclusion = process.env['EB3_CI_REQUIRED_CONCLUSION']
+    const rawDraft = process.env['EB3_PR_DRAFT']
     let dc = { findings: [] }
     if (rawLabels !== undefined && conclusion !== undefined) {
-      try { dc = checkDeferralConflict({ labels: JSON.parse(rawLabels), requiredConclusion: conclusion }) } catch (e) {
+      try {
+        dc = checkDeferralConflict({ labels: JSON.parse(rawLabels), requiredConclusion: conclusion, draft: rawDraft === undefined ? undefined : rawDraft === 'true' })
+      } catch (e) {
         dc = { findings: [{ code: 'CI_DEFERRAL_CONFLICT_UNREADABLE', detail: `EB3_PR_LABELS_JSON is set but unreadable: ${String(e?.message ?? e).slice(0, 80)}` }] }
       }
     }

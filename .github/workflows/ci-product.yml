@@ -1,0 +1,141 @@
+# ci-product — EB3 layer: every gate leg that does NOT need the pinned pristine host.
+#
+# WHAT IT IS FOR. The split of the old `ci-full` (2026-11-03, CI-cost plan L1/L2). The
+# census and the host security suites moved to `ci-census`; what remains here is the
+# eight host-free gate legs: graph-parse, kit-home-guard, state-freshness, install,
+# blueprint-fence, typecheck, lint-identities, artifacts-at-head.
+#
+# WHY `--only` AND NOT `--allow-refused census`. The old layer ran the whole gate and
+# then had to say why the census did not run. This layer does not run the census at all,
+# and says so by naming the legs it does run: `--full --only <eight>` keeps the "any
+# skipped leg is a failure" rule while making the exclusion explicit and reviewable.
+# The manifest declares the same eight names (`productLegs`) and
+# `scripts/eb3-ci-required.mjs` reds if they drift from `ci-pr-gate.mjs`'s LEG_ORDER —
+# a new leg may not be silently dropped from this layer.
+#
+# THE CENSUS IS NOT WEAKENED, IT MOVED. `ci-census` runs the nine roots, two captures,
+# with NO `--allow-refused` and NO `--skip`; the Required summary needs both layers.
+name: ci-product
+
+on:
+  # CALLED ONLY by .github/workflows/ci-required.yml. A layer with its own
+  # pull_request trigger would run TWICE per PR (once standalone, once called), and
+  # both runs would share a concurrency group, where GitHub cancels a PENDING run when
+  # a newer one queues — i.e. a layer could report `cancelled` to the Required summary
+  # through no fault of the change. One caller, one run, one result.
+  workflow_call:
+    inputs:
+      merge_tree:
+        description: tree id of the synthetic merge (base + head) this layer must grade
+        type: string
+        required: true
+    # THE REUSABLE-WORKFLOW BOUNDARY. A job-level `outputs:` inside a called workflow is
+    # NOT propagated to the caller — only `on.workflow_call.outputs` is.
+    outputs:
+      verdict:
+        description: this layer's EB3 verdict token (PASS|FAIL|CANCELLED)
+        value: ${{ jobs.ci-product.outputs.verdict }}
+permissions:
+  contents: read
+
+jobs:
+  ci-product:
+    name: ci-product
+
+    # The value is derived from job.status inside an `if: always()` step, so a layer
+    # cannot report PASS for a job GitHub calls a failure.
+    outputs:
+      verdict: ${{ steps.eb3_layer_verdict.outputs.verdict }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Bind to the synthetic merge tree (EB3_MERGE_TREE)
+        # The checkout is refs/pull/N/merge; its tree must equal the tree the summary's
+        # synthesize job built independently, or this layer grades a different tree than
+        # the Required context reports. ONE simple command, so the R2 leg allowlist can
+        # prove it gates the step.
+        env:
+          EB3_EVENT: ${{ github.event_name }}
+        run: node scripts/eb3-merge-tree.mjs --assert-tree "${{ inputs.merge_tree }}"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Build this repo (packages + composition) — the gate legs need it
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          PNPM_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
+          pnpm run build
+          pnpm build:composition
+
+      - name: Ensure a YAML parser for the graph leg
+        run: |
+          python3 -c 'import yaml' 2>/dev/null && echo "PyYAML present" || python3 -m pip install --quiet pyyaml
+          python3 -c 'import yaml; print("PyYAML", yaml.__version__)'
+
+      # ONE command, the SAME gate pr-gate runs, restricted to the host-free legs. A leg
+      # that cannot be graded reddens this layer instead of being declared away.
+      #
+      # `set -o pipefail` is load-bearing (`node … | tee …` otherwise reports tee's
+      # status, turning a red gate green; pr-gate FINDINGS F2).
+      - name: Gate — the eight host-free legs; ANY skip and ANY refusal is a failure
+        shell: bash
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+          DSH_CI_STORE_DIR: ${{ runner.temp }}/pnpm-store
+        run: |
+          set -o pipefail
+          mkdir -p "$XDG_CACHE_HOME"
+          node scripts/ci-pr-gate.mjs --full \
+            --only graph-parse,kit-home-guard,state-freshness,install,blueprint-fence,typecheck,lint-identities,artifacts-at-head \
+            --store-dir "$DSH_CI_STORE_DIR" \
+            --transcript-dir "$RUNNER_TEMP/gate-transcripts" \
+            2>&1 | tee "$RUNNER_TEMP/gate-run.txt"
+
+      - name: Gate — re-grade the transcript by the missing-token rule
+        shell: bash
+        if: always()
+        run: node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/gate-run.txt"
+
+      - name: Upload gate transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-product-transcripts-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/gate-run.txt
+            ${{ runner.temp }}/gate-transcripts/
+          if-no-files-found: warn
+
+      - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)
+        id: eb3_layer_verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ job.status }}" in
+            success) V=PASS ;;
+            cancelled) V=CANCELLED ;;
+            *) V=FAIL ;;
+          esac
+          echo "EB3-LAYER layer=ci-product verdict=$V status=${{ job.status }}"
+          echo "verdict=$V" >> "$GITHUB_OUTPUT"
