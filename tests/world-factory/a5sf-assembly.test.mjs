@@ -1,0 +1,663 @@
+/**
+ * a5sf-assembly.test.mjs — the ASSEMBLY GAPS an external review found by
+ * reading S-1's routing (2026-11-03):
+ *
+ *   GAP 1 (a real bug): `nativeToolMountsOf` built the CARTESIAN PRODUCT of
+ *       every configured native module × every ToolBinding identity. A
+ *       binding-targeted mount must register the tool its identity names, so
+ *       configuring `dsh-tool-fs` (owns `read`) WITH a second module that does
+ *       NOT own `read` demanded that the second module's binding fiber
+ *       register `read` — it cannot, and the WHOLE attach was refused. The fix
+ *       must assign a binding only to the module that actually OWNS the tool,
+ *       determined from what each module registers (not from a table, not from
+ *       the specifier), and keep the failure typed when no module owns it.
+ *
+ *   GAP 2 (coverage): (a) the row SKIPPED the definition-identity check when
+ *       the tools row had no `get()` — fine for a double, NOT fine on the
+ *       product path; a composition that declares managed native modules and a
+ *       tools row that cannot answer identity must REFUSE. (b) the mount
+ *       settled with ONE `setTimeout(0)`, so a routed surface change AFTER the
+ *       window (a late service arrival / hot update / fiber teardown) left a
+ *       managed tool on the unshadowed preset path with no record. A
+ *       post-settle re-verification plus continuous verification (the public
+ *       `tools/change` event) must DISPOSE the shadow and RECORD the event.
+ *
+ * ZERO Host boots, ZERO ports, no DSH_HOME, no `tests/homes/**`: every arm is
+ * an in-process Cordis unit root with `mkdtemp` fixtures. CORE PATCH BUDGET = 0
+ * — this suite never touches `tests/deepseek-harness-test-use/`.
+ *
+ * Run: node --test tests/world-factory/a5sf-assembly.test.mjs
+ */
+import assert from 'node:assert/strict'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire, register } from 'node:module'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { after } from 'node:test'
+import test from 'node:test'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = join(HERE, '..', '..')
+
+/** The repo's EXISTING TS-under-plain-node hooks (no new loader). */
+register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
+
+const row = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href)
+const policy = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'member-io-policy', 'src', 'index.ts')).href)
+
+const runtimeRequire = createRequire(join(REPO_ROOT, 'packages', 'runtime', 'package.json'))
+const { Context, Service } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/cordis')).href)
+const ToolRuntime = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-tools')).href)).default
+const SystemPrompt = (await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-system-prompt')).href)).default
+const transports = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'guard-observability.ts')).href)
+const { bindScopeParent, createScope } = await import(pathToFileURL(runtimeRequire.resolve('@deepseek-ai/dsh-scope')).href)
+
+// --- fixtures ---------------------------------------------------------------
+
+const IDENTITY = Object.freeze({
+  teamId: 'team-a5sf-assembly',
+  memberInstanceId: 'member-assembly-a',
+  templateId: 'worker',
+  instanceGeneration: 3,
+})
+const READ_BINDING = 'dsh.fs/read'
+const ARCHIVE_BINDING = 'dsh.fs/archive'
+const MEMBER_REVISION = 'a5sf1:member-assembly-a:g3'
+
+function lane(allow) {
+  return Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
+}
+
+function memberPolicy(readRoot, writeRoot = readRoot) {
+  return Object.freeze({
+    memberIdentity: IDENTITY.memberInstanceId,
+    templateId: IDENTITY.templateId,
+    instanceGeneration: IDENTITY.instanceGeneration,
+    revision: MEMBER_REVISION,
+    read: lane([readRoot]),
+    write: lane([writeRoot]),
+    network: Object.freeze({ access: 'allow' }),
+  })
+}
+
+function restrictionOf(bindingIdentity, readRoot) {
+  return Object.freeze({
+    bindingIdentity,
+    read: lane([readRoot]),
+    write: Object.freeze({ mode: 'all', allow: Object.freeze([]), ask: Object.freeze([]), deny: Object.freeze([]) }),
+    network: 'allow',
+  })
+}
+
+function invocationFor(bindingIdentity) {
+  return Object.freeze({
+    memberIdentity: IDENTITY.memberInstanceId,
+    callId: `call-assembly-${bindingIdentity}`,
+    policyRevision: MEMBER_REVISION,
+    toolBindingIdentity: bindingIdentity,
+    approvedOnce: false,
+  })
+}
+
+function compileBinding(ceiling, bindingIdentity, readRoot) {
+  const effective = policy.compileEffectiveIo(ceiling, restrictionOf(bindingIdentity, readRoot), invocationFor(bindingIdentity))
+  assert.equal(effective.ok, true, `compileEffectiveIo must admit this pair: ${JSON.stringify(effective)}`)
+  return effective.value
+}
+
+/** The test Provider: a real Cordis Service over node:fs (unit-world double). */
+class TestFileSystem extends Service {
+  constructor(ctx, config = {}) {
+    super(ctx, 'fs')
+    this.config = config
+  }
+
+  processPath(target) {
+    return target.hostPath
+  }
+
+  contains(parent, child) {
+    return this.processPath(child).startsWith(this.processPath(parent))
+  }
+
+  async resolve(path) {
+    return { hostPath: path }
+  }
+
+  async readText(target) {
+    const { readFileSync } = await import('node:fs')
+    return readFileSync(this.processPath(target), 'utf8')
+  }
+
+  async readBytes(target) {
+    const { readFileSync } = await import('node:fs')
+    return readFileSync(this.processPath(target))
+  }
+
+  async readByteRange(target, range) {
+    const { readFileSync } = await import('node:fs')
+    return readFileSync(this.processPath(target)).subarray(range.offset, range.offset + range.length)
+  }
+
+  async streamText(target) {
+    const text = await this.readText(target)
+    return (async function* stream() { yield text })()
+  }
+
+  async listDir() {
+    return []
+  }
+
+  async stat() {
+    return { lstat: { size: 0, mtimeMs: 0, mode: 0o644 } }
+  }
+
+  async lstat() {
+    return { size: 0, mtimeMs: 0, mode: 0o644 }
+  }
+
+  async watch() {
+    return async () => {}
+  }
+
+  async writeText() {
+    return { version: 'v1' }
+  }
+
+  async editText() {
+    return { version: 'v2' }
+  }
+}
+
+async function makeRoot() {
+  const root = new Context()
+  await root.plugin(SystemPrompt)
+  await root.plugin(ToolRuntime)
+  await root.plugin(TestFileSystem, {})
+  return root
+}
+
+const dirs = []
+function trackedDir(dir) {
+  dirs.push(dir)
+  return dir
+}
+
+function makeFixture(label) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-${label}-`)))
+  const inside = join(dir, 'inside')
+  mkdirSync(inside, { recursive: true })
+  writeFileSync(join(inside, 'ok.txt'), 'INSIDE\n', 'utf8')
+  writeFileSync(join(dir, 'ceiling-only.txt'), 'CEILING_ONLY\n', 'utf8')
+  return { dir, inside, insideFile: join(inside, 'ok.txt'), ceilingOnly: join(dir, 'ceiling-only.txt') }
+}
+
+/**
+ * Write a REAL fixture native module (the row's module-specifier path is
+ * exercised end to end). Shape = a shipped tool package: injects
+ * tools/fs/systemPrompt, registers one prompt section per tool, and a tool
+ * whose body resolves `ctx.get('fs')` from the ctx it runs on.
+ *
+ * @param {string} label - unique fixture label.
+ * @param {readonly {name: string, reads?: boolean, constant?: string}[]} tools
+ * @returns {string} file: URL.
+ */
+function writeNativeModule(label, tools) {
+  const dir = trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-mod-${label}-`)))
+  const file = join(dir, 'native-tool.mjs')
+  const registrations = tools.map((tool) => `
+  ctx.systemPrompt.section({ name: 'tool:${tool.name}', order: 50, text: '${label} ${tool.name} guidance' })
+  ctx.tools.register({
+    name: ${JSON.stringify(tool.name)},
+    description: ${JSON.stringify(`fixture ${label} ${tool.name}`)},
+    parameters: { type: 'object', properties: { file_path: { type: 'string' } }, additionalProperties: false },
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+    async execute(args) {
+      ${tool.reads === true ? 'const fs = ctx.get(\'fs\')\n      return await fs.readText(await fs.resolve(args.file_path))' : `return ${JSON.stringify(tool.constant ?? 'ok')}`}
+    },
+  })`).join('\n')
+  writeFileSync(file, `
+export const name = ${JSON.stringify(`fixture-assembly-${label}`)}
+export const inject = ['tools', 'fs', 'systemPrompt']
+export function apply(ctx) {
+${registrations}
+}
+`, 'utf8')
+  return pathToFileURL(file).href
+}
+
+/** The PRESET row for one tool, mounted on the standing (parent) scope. */
+function presetPlugin(toolName, options = {}) {
+  return {
+    name: `fixture-preset-${toolName}`,
+    inject: ['tools', 'fs', 'systemPrompt'],
+    apply(ctx) {
+      ctx.systemPrompt.section({ name: `tool:${toolName}`, order: 50, text: 'preset guidance' })
+      ctx.tools.register({
+        name: toolName,
+        description: `preset ${toolName}`,
+        parameters: { type: 'object', properties: { file_path: { type: 'string' } }, additionalProperties: false },
+        output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+        async execute(args) {
+          if (options.reads === true) {
+            const fs = ctx.get('fs')
+            return await fs.readText(await fs.resolve(args.file_path))
+          }
+          return 'preset'
+        },
+      })
+    },
+  }
+}
+
+/** The preset topology the real registry builds: standing scope -> agent scope. */
+async function presetTopology(root, presetTools) {
+  const standingKey = {}
+  const standing = createScope(root, standingKey)
+  for (const tool of presetTools) await standing.ctx.plugin(presetPlugin(tool.name, tool))
+  const agentKey = { session: { header: {} } }
+  const agent = createScope(root, agentKey)
+  bindScopeParent(agentKey, standingKey)
+  return { standingKey, standing, agentKey, agentCtx: agent.ctx }
+}
+
+function toolNames(root, scope) {
+  return root.get('tools').schemas(scope).map((schema) => schema.name)
+}
+
+function definitionOf(root, scope, name) {
+  return root.get('tools').get(name, scope)
+}
+
+async function dispatch(root, scope, name, args) {
+  const settled = await root.get('tools').execute({
+    signal: new AbortController().signal,
+    callId: `call-assembly-${name}`,
+    agent: scope,
+    name,
+    arguments: args,
+  })
+  const text = Array.isArray(settled.content)
+    ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
+    : ''
+  return { isError: settled.isError === true, text }
+}
+
+/**
+ * Assemble one world: preset rows (read/write/x_assembly_probe) on the
+ * standing scope, a compiled realm (ceiling + the requested bindings), and the
+ * configured native modules ready to attach.
+ */
+async function makeWorld(label, { bindingIdentities = [READ_BINDING], modules }) {
+  const root = await makeRoot()
+  const fixture = makeFixture(label)
+  const sinkPath = join(trackedDir(mkdtempSync(join(tmpdir(), `a5sf-assembly-sink-${label}-`))), 'consult.jsonl')
+  const topology = await presetTopology(root, [
+    { name: 'read', reads: true },
+    { name: 'write' },
+    { name: 'x_assembly_probe' },
+  ])
+  const ceiling = memberPolicy(fixture.dir)
+  const realm = await row.mountMemberA5sfRealm({
+    root: topology.agentCtx,
+    a5sfConfig: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
+    provider: () => ({
+      compiledFor: () => ({
+        members: [{ identity: IDENTITY, policy: { ok: true, value: ceiling } }],
+        ...(bindingIdentities.length === 0
+          ? {}
+          : {
+              bindings: bindingIdentities.map((bindingIdentity) => ({
+                identity: IDENTITY,
+                toolBindingIdentity: bindingIdentity,
+                effective: compileBinding(ceiling, bindingIdentity, fixture.inside),
+              })),
+            }),
+        providerClass: TestFileSystem,
+      }),
+    }),
+    member: {
+      sessionId: 'session-assembly',
+      instanceId: IDENTITY.memberInstanceId,
+      teamRootSessionId: 'team-root-assembly',
+      templateId: IDENTITY.templateId,
+    },
+  })
+  assert.notEqual(realm, undefined)
+  return {
+    root,
+    fixture,
+    sinkPath,
+    realm,
+    agentCtx: topology.agentCtx,
+    agentKey: topology.agentKey,
+    config: row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath, a5sfNativeToolModules: modules }),
+  }
+}
+
+function routingsOf(fibers) {
+  return fibers.map((fiber) => fiber.a5sfRegistrationRouting)
+}
+
+/** Wait (bounded) for the realm to record a post-settle invalidation. */
+async function waitForInvalidation(realm, timeoutMs = 1500) {
+  const deadline = Date.now() + timeoutMs
+  while ((realm.nativeInvalidation ?? null) === null) {
+    if (Date.now() > deadline) return realm.nativeInvalidation ?? null
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  return realm.nativeInvalidation ?? null
+}
+
+after(() => {
+  for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
+})
+
+// ===========================================================================
+// GAP 1a — module A + a binding for A's tool mounts AND routes
+// ===========================================================================
+
+test('GAP1a a binding is assigned to the module that OWNS its tool; the composition mounts and routes', async () => {
+  const moduleA = writeNativeModule('a', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  const world = await makeWorld('gap1a', { modules: [moduleA, moduleB] })
+  const { root, fixture, realm, agentCtx, agentKey, config, sinkPath } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    const routing = routingsOf(fibers)
+    // ONE ceiling mount per module + ONE binding mount for the OWNING module.
+    // The pre-fix cartesian product also added a binding mount for module B,
+    // which cannot register `read`, and refused the whole attach.
+    assert.equal(fibers.length, 3, `expected 2 ceiling + 1 binding fibers, got ${JSON.stringify(routing)}`)
+    const readFiber = routing.find((entry) => entry.toolBindingIdentity === READ_BINDING)
+    assert.notEqual(readFiber, undefined, 'the read binding has a fiber')
+    assert.equal(readFiber.realm, 'binding')
+    assert.deepEqual(readFiber.forwarded, ['read'], 'the binding fiber owns ONLY its tool')
+    const probeFiber = routing.find((entry) => entry.forwarded.includes('x_assembly_probe'))
+    assert.equal(probeFiber.realm, 'ceiling', 'module B is mounted in the CEILING partition')
+
+    // The routed read executes on the binding lane: a ceiling-allowed but
+    // restriction-denied locator is REFUSED with a BINDING fact.
+    const routed = await dispatch(root, agentKey, 'read', { file_path: fixture.ceilingOnly })
+    assert.equal(routed.isError, true, `the binding lane must refuse the ceiling-only locator: ${routed.text}`)
+    const facts = transports.readGuardConsultFile
+      ? await transports.readGuardConsultFile(sinkPath)
+      : []
+    assert.equal(facts.length, 1, 'exactly ONE guard fact for the refused read')
+    assert.equal(facts[0].realm, 'binding')
+    assert.equal(facts[0].toolBindingIdentity, READ_BINDING)
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 1b — module B rides in the ceiling partition and does not break attach
+// ===========================================================================
+
+test('GAP1b module B is ceiling-only, its tool still executes, and it never takes the binding lane', async () => {
+  const moduleA = writeNativeModule('a2', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b2', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  const world = await makeWorld('gap1b', { modules: [moduleA, moduleB] })
+  const { root, realm, agentCtx, agentKey, config, fixture } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    const routing = routingsOf(fibers)
+    const bFiber = routing.find((entry) => entry.forwarded.includes('x_assembly_probe'))
+    assert.notEqual(bFiber, undefined, 'module B registered its tool')
+    assert.equal(bFiber.realm, 'ceiling')
+    assert.equal(bFiber.toolBindingIdentity, null)
+    // The unrelated tool really serves, on the ceiling (no restriction applies).
+    const probe = await dispatch(root, agentKey, 'x_assembly_probe', {})
+    assert.equal(probe.isError, false, `module B's tool must execute: ${probe.text}`)
+    assert.equal(probe.text, 'probe-ok')
+    // Sibling read is still routed: the ceiling-only locator refuses.
+    const routed = await dispatch(root, agentKey, 'read', { file_path: fixture.ceilingOnly })
+    assert.equal(routed.isError, true, 'the read tool is still routed to its binding')
+    // Surface neutrality: the composition adds and removes nothing.
+    assert.deepEqual(
+      toolNames(root, agentKey).sort(),
+      ['read', 'write', 'x_assembly_probe'].sort(),
+    )
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 1c — a binding naming a tool NO configured module owns is refused typed
+// ===========================================================================
+
+test('GAP1c a binding whose tool NO module owns is REFUSED with a typed error and mounts nothing', async () => {
+  const moduleA = writeNativeModule('a3', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b3', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  const world = await makeWorld('gap1c', { bindingIdentities: [ARCHIVE_BINDING], modules: [moduleA, moduleB] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetRead = definitionOf(root, agentKey, 'read')
+    await assert.rejects(
+      () => row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey),
+      (error) => {
+        assert.equal(error.code, 'A5SF_BINDING_OWNER_UNRESOLVED', `expected the typed ownership refusal, got ${error.name}: ${error.message}`)
+        assert.match(error.message, /archive/)
+        return true
+      },
+      'a binding no module owns must fail closed',
+    )
+    // Nothing was mounted: the preset definitions are the ones resolved.
+    assert.equal(definitionOf(root, agentKey, 'read'), presetRead, 'no shadow was left behind')
+    assert.deepEqual(toolNames(root, agentKey).sort(), ['read', 'write', 'x_assembly_probe'].sort())
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a pre-mount refusal is not an invalidation event')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 2a — a tools row that cannot answer definition identity must REFUSE
+// ===========================================================================
+
+test('GAP2a a get()-less tools row REFUSES the configged native mount (coverage is never silently skipped)', async () => {
+  const moduleA = writeNativeModule('a4', [{ name: 'read', reads: true }])
+  const names = ['read']
+  const toolsRow = { schemas: () => names.map((name) => ({ name })) } // surface-only double, NO get()
+  const fakeRoot = { get: (name) => (name === 'tools' ? toolsRow : undefined) }
+  let mountCalls = 0
+  const fakeRealm = {
+    mountNativeToolModules: async () => {
+      mountCalls += 1
+      return Object.freeze([{
+        a5sfRegistrationRouting: {
+          realm: 'ceiling',
+          toolBindingIdentity: null,
+          forwarded: Object.freeze(['read']),
+          dropped: Object.freeze([]),
+          forwardedSections: Object.freeze([]),
+        },
+      }])
+    },
+  }
+  const config = row.a5sfRealmConfigOf({ a5sfEvidencePath: '/tmp/a5sf-assembly-coverage.jsonl', a5sfNativeToolModules: [moduleA] })
+  await assert.rejects(
+    () => row.attachA5sfNativeToolModules(fakeRealm, fakeRoot, config, {}),
+    (error) => {
+      assert.equal(error.code, 'A5SF_COVERAGE_UNDEFINED', `expected the typed coverage refusal, got ${error.name}: ${error.message}`)
+      return true
+    },
+    'a name-set-only check cannot prove the router shadowed each forwarded tool',
+  )
+  assert.equal(mountCalls, 0, 'the refusal happens BEFORE mounting anything')
+})
+
+// ===========================================================================
+// GAP 2b — a routed surface CHANGE after the settle window invalidates
+// ===========================================================================
+
+test('GAP2b a routed shadow removed AFTER the settle window is detected, disposed and RECORDED', async () => {
+  const moduleA = writeNativeModule('a5', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b5', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  const world = await makeWorld('gap2b', { modules: [moduleA, moduleB] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const presetRead = definitionOf(root, agentKey, 'read')
+    const presetWrite = definitionOf(root, agentKey, 'write')
+    const presetProbe = definitionOf(root, agentKey, 'x_assembly_probe')
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.equal(realm.nativeInvalidation ?? null, null, 'no invalidation while the routed surface is intact')
+    // Let the bounded post-settle rounds finish WITHOUT a change: they must not
+    // invalidate a healthy mount.
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    assert.equal(realm.nativeInvalidation ?? null, null, 'an intact routed surface is never invalidated by the settle rounds')
+
+    // THE LATE CHANGE: one routed fiber is torn down after the window, which
+    // leaves `read` on the UNSHADOWED preset definition while the siblings stay
+    // shadowed. Pre-fix nothing notices (no event, no re-verification).
+    const readFiber = fibers.find((fiber) => fiber.a5sfRegistrationRouting?.toolBindingIdentity === READ_BINDING)
+    assert.notEqual(readFiber, undefined)
+    await readFiber.dispose()
+
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'the post-settle verification must record the invalidation')
+    // The event is recorded BEFORE the asynchronous teardown; wait for it so the
+    // restored preset surface is observable.
+    await realm.whenNativeVerificationSettled()
+    assert.equal(record.schema, 'a5sf-native-invalidation/1')
+    assert.deepEqual([...record.uncovered], ['read'], 'the unshadowed managed tool is named in the event')
+    assert.equal(typeof record.observedAt, 'string')
+
+    // The rest of the shadow is disposed too: the preset surface is restored.
+    assert.equal(definitionOf(root, agentKey, 'write'), presetWrite, 'sibling write returns to the preset definition')
+    assert.equal(definitionOf(root, agentKey, 'x_assembly_probe'), presetProbe, 'module B returns to the preset definition')
+    assert.equal(definitionOf(root, agentKey, 'read'), presetRead, 'the routed read is gone; the preset read serves again')
+
+    // Fail closed after invalidation: no second shadow can be attached.
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: { name: 'x', apply() {} } }]),
+      /invalidated/i,
+      'an invalidated realm refuses further native mounts',
+    )
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 2b — a NEW name after settle is a surface change, not an unrelated event
+// ===========================================================================
+
+test('GAP2b-late-new-name a tool that APPEARS after the settle window invalidates (S-1 +30 ms escape)', async () => {
+  const moduleA = writeNativeModule('a6', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b6', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  // No binding on purpose: the +30 ms escape is a SURFACE gate hole, not a
+  // routing one, so the arm must prove it with a healthy unbind attach too.
+  const world = await makeWorld('gap2b-late-name', { bindingIdentities: [], modules: [moduleA, moduleB] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    assert.equal(realm.nativeInvalidation ?? null, null, 'healthy after attach')
+    // LATE means a LATER MACROTASK: the first macrotask is still the caller's
+    // own setup turn (the glue registers the Team tools synchronously right
+    // after the attach), which the baseline deliberately absorbs.
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    // S-1's measured hole (a): a brand-new tool name at +30 ms changes the
+    // model-visible surface AFTER the attach-time gate ran. It must NOT be
+    // accepted silently.
+    await agentCtx.plugin({
+      name: 'fixture-late-unrelated',
+      inject: ['tools'],
+      apply(ctx) {
+        ctx.tools.register({
+          name: 'x_assembly_late_unrelated',
+          description: 'later unrelated registration',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+          async execute() {
+            return 'late'
+          },
+        })
+      },
+    })
+    const record = await waitForInvalidation(realm)
+    assert.notEqual(record, null, 'a late NEW name is a surface change and must invalidate')
+    await realm.whenNativeVerificationSettled()
+    assert.equal(record.schema, 'a5sf-native-invalidation/1')
+    assert.deepEqual([...record.uncovered], [], 'no routed definition was lost')
+    assert.deepEqual([...record.surfaceAdded], ['x_assembly_late_unrelated'], 'the late name is named in the event')
+    assert.deepEqual([...record.surfaceRemoved], [])
+    assert.equal(fibers.every((fiber) => fiber.state >= 4), true, 'the shadow is disposed, never left live')
+    await assert.rejects(
+      () => realm.mountNativeToolModules([{ module: { name: 'x', apply() {} } }]),
+      /invalidated/i,
+    )
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 2b control — the caller's OWN same-turn setup additions are absorbed
+// ===========================================================================
+
+test('GAP2b-control same-turn setup additions (the Team tools) do not invalidate', async () => {
+  const moduleA = writeNativeModule('a8', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const world = await makeWorld('gap2b-same-turn', { bindingIdentities: [], modules: [moduleA] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    // The product glue's shape: register on the SAME setup turn, synchronously
+    // after the attach returns. This is legitimate setup, not a late change.
+    const tools = agentCtx.get('tools')
+    tools.register({
+      name: 'x_assembly_team_tool',
+      description: 'same-turn product registration',
+      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+      async execute() {
+        return 'team'
+      },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(realm.nativeInvalidation ?? null, null, 'same-turn setup additions are part of the baseline')
+    assert.equal(fibers.every((fiber) => fiber.state === 2), true, 'every routed fiber is still active')
+  } finally {
+    await realm.dispose()
+  }
+})
+
+// ===========================================================================
+// GAP 2b control — a name that was ALREADY on the surface never invalidates
+// ===========================================================================
+
+test('GAP2b-control a tool already on the surface at arm time does not invalidate the routed shadow', async () => {
+  const moduleA = writeNativeModule('a7', [{ name: 'read', reads: true }, { name: 'write', constant: 'written' }])
+  const moduleB = writeNativeModule('b7', [{ name: 'x_assembly_probe', constant: 'probe-ok' }])
+  // Unbound on purpose: this control exercises the NAME-SET baseline only.
+  const world = await makeWorld('gap2b-control', { bindingIdentities: [], modules: [moduleA, moduleB] })
+  const { root, realm, agentCtx, agentKey, config } = world
+  try {
+    // Register BEFORE the attach: the name is part of the expected surface, so
+    // seeing it later (e.g. another tools/change) is not a surface change.
+    await agentCtx.plugin({
+      name: 'fixture-pre-existing',
+      inject: ['tools'],
+      apply(ctx) {
+        ctx.tools.register({
+          name: 'x_assembly_late_unrelated',
+          description: 'pre-existing registration',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: String(value) }] },
+          async execute() {
+            return 'pre'
+          },
+        })
+      },
+    })
+    const fibers = await row.attachA5sfNativeToolModules(realm, agentCtx, config, agentKey)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(realm.nativeInvalidation ?? null, null, 'a name already in the baseline surface never invalidates')
+    assert.equal(fibers.every((fiber) => fiber.state === 2), true, 'every routed fiber is still active')
+  } finally {
+    await realm.dispose()
+  }
+})

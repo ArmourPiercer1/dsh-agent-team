@@ -123,6 +123,49 @@ export interface NativeToolModuleMount {
    * (fail closed) — never a silent fallback onto the wider ceiling.
    */
   readonly toolBindingIdentity?: string
+  /**
+   * ASSEMBLY GAP 1 (2026-11-03) — OBSERVATION-ONLY mount.
+   *
+   * A binding may only be assigned to the native module that actually OWNS the
+   * tool its identity names, and a module does not declare its tools: the only
+   * honest source is what its `apply` registers. This flag mounts the module in
+   * the CEILING partition behind a router that FORWARDS NOTHING and records the
+   * names it would have registered (`a5sfRegistrationRouting.observed`). The
+   * live registry is untouched (no tool/section is registered), the fibers are
+   * NOT tracked by the realm (the caller disposes them), and the mount performs
+   * no post-settle verification because it creates no shadow.
+   *
+   * Observe-only and normal mounts cannot be mixed in one call, and an
+   * observe-only mount cannot name a binding identity (ownership is what the
+   * observation is for).
+   */
+  readonly observeOnly?: boolean
+}
+
+/**
+ * Post-settle INVALIDATION event (assembly gap 2, 2026-11-03).
+ *
+ * A routed tool was found on a definition this attach did not create AFTER the
+ * mount settled — a late service arrival, a hot update, or a fiber teardown
+ * left it on the unshadowed preset path. The realm disposes every router fiber
+ * it created (restoring the preset surface) and records this event instead of
+ * leaving a live, unconstrained shadow.
+ */
+export interface NativeToolInvalidation {
+  readonly schema: 'a5sf-native-invalidation/1'
+  readonly reason: string
+  /** The managed (routed) tool names that are no longer shadowed by this attach. */
+  readonly uncovered: readonly string[]
+  /**
+   * Tool names that APPEARED on the Member's model-visible surface after the
+   * mount settled (S-1's measured `+30 ms new name escapes the surface gate`
+   * hole). Non-empty even when no managed definition was lost: an unmanaged new
+   * name is itself the surface change this seam must not accept silently.
+   */
+  readonly surfaceAdded: readonly string[]
+  /** Tool names that DISAPPEARED from the Member surface after the mount settled. */
+  readonly surfaceRemoved: readonly string[]
+  readonly observedAt: string
 }
 
 /**
@@ -137,6 +180,12 @@ export interface NativeRegistrationRouting {
   readonly toolBindingIdentity: string | null
   /** Tool names this fiber registered on the real `tools` service. */
   readonly forwarded: readonly string[]
+  /**
+   * EVERY tool name the module attempted to register through this fiber — the
+   * union of `forwarded` and `dropped`. An observe-only mount reports its
+   * ownership answer here (`forwarded` is empty: nothing was registered).
+   */
+  readonly observed: readonly string[]
   /**
    * Registration keys this fiber dropped because they belong to another fiber:
    * tool names, and `section:<name>` for the prompt sections it declined.
@@ -179,6 +228,7 @@ function isDescendantOf(fiber: Fiber, ancestor: Fiber): boolean {
 /** One router fiber's live accounting, published on the fiber once the module loaded. */
 interface RegistrationPartition {
   readonly forwarded: Set<string>
+  readonly observed: Set<string>
   readonly dropped: Set<string>
   readonly forwardedSections: Set<string>
   /** The exact definition object forwarded per tool name (the coverage signal). */
@@ -263,6 +313,7 @@ function createRegistrationRouters(
 ): { tools: object; systemPrompt: object; partition: RegistrationPartition } {
   const partition: RegistrationPartition = {
     forwarded: new Set<string>(),
+    observed: new Set<string>(),
     dropped: new Set<string>(),
     forwardedSections: new Set<string>(),
     forwardedDefinitions: new Map<string, unknown>(),
@@ -279,6 +330,7 @@ function createRegistrationRouters(
       if (name === undefined) {
         return realRegister.call({ layers: toolLayers, ctx: owningContextOf(this, targetCtx) }, definition)
       }
+      partition.observed.add(name)
       if (!forwardTool(name)) {
         partition.dropped.add(name)
         return () => {}
@@ -335,9 +387,43 @@ export interface MountedA5sfRealm {
    * Member ceiling realm and forwards every tool that has no mounted binding.
    * The union is the module's surface, exactly once, so this remains
    * surface-neutral per fiber.
+   *
+   * ASSEMBLY GAP 1 (2026-11-03): `options.scope` is the RESOLVED agent scope
+   * key the caller already uses for its surface reads. It is REQUIRED to make
+   * the post-settle re-verification able to ask `tools.get(name, scope)` which
+   * definition the agent now resolves; without it the mount still works, but no
+   * definition-identity verification can be scheduled (the caller must then
+   * cover that itself — the product row always passes it).
    */
-  mountNativeToolModules(modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]>
+  mountNativeToolModules(
+    modules: readonly NativeToolModuleMount[],
+    options?: NativeToolModuleMountOptions,
+  ): Promise<readonly Fiber[]>
+  /**
+   * ASSEMBLY GAP 2 — the invalidation event recorded when a post-settle
+   * re-verification found a routed tool back on an unshadowed definition.
+   * `null` while the mount is healthy (or before anything was mounted).
+   */
+  readonly nativeInvalidation: NativeToolInvalidation | null
+  /**
+   * Resolves once the bounded post-settle re-verification rounds have run (or
+   * an invalidation fired and its teardown settled). Diagnostics/tests only.
+   */
+  whenNativeVerificationSettled(): Promise<void>
+  /**
+   * The caller's OWN refusal/abandonment of a successful attach (surface or
+   * coverage gate): detach verification, dispose every router fiber, clear the
+   * tracked set, and do NOT record an invalidation (the caller reports the
+   * refusal). Unlike an invalidation this leaves a later attach possible.
+   */
+  disposeNativeToolModules(): Promise<void>
   dispose(): Promise<void>
+}
+
+/** Options for {@link MountedA5sfRealm.mountNativeToolModules}. */
+export interface NativeToolModuleMountOptions {
+  /** The resolved agent scope key (`runtimeAgent ?? scopeOf(root)`). */
+  readonly scope?: unknown
 }
 
 /**
@@ -420,11 +506,226 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
   }
 
   let disposed = false
+  // ASSEMBLY GAP 2 (2026-11-03): post-settle re-verification state. The mount
+  // records the exact definition object each routed fiber registered; a later
+  // change of what the agent resolves for a MANAGED name means the shadow is
+  // gone (a late service arrival, a hot update, or a fiber teardown) and the
+  // realm invalidates itself instead of leaving that tool on the unshadowed
+  // preset path.
+  let invalidation: NativeToolInvalidation | null = null
+  let detachVerification: (() => boolean) | undefined
+  let resolveVerification: (() => void) | undefined
+  const verificationSettled = new Promise<void>((resolve) => { resolveVerification = resolve })
+  /** The in-flight invalidation teardown (resolved when nothing is mounted). */
+  let invalidationTeardown: Promise<void> = Promise.resolve()
+  /** name -> the exact definition this attach registered (the coverage signal). */
+  const expectedDefinitions = new Map<string, unknown>()
+  /**
+   * The Member's model-visible tool NAMES at arm time (post-attach, so the
+   * mount's own registrations are in the baseline). A later name-set difference
+   * is a surface change S-1's attach-time gate cannot see: a brand-new name at
+   * +30 ms escaped it entirely. `undefined` when the tools row cannot list
+   * schemas (a double), in which case only definition identity is verified.
+   */
+  let expectedSurfaceNames: Set<string> | undefined
+
+  /**
+   * Dispose the native shadow and RECORD the event. Fail closed: after this the
+   * realm refuses further native mounts, so a caller cannot re-create a partial
+   * shadow over the same managed names.
+   */
+  const invalidateNativeShadow = (
+    uncovered: readonly string[],
+    surfaceAdded: readonly string[] = [],
+    surfaceRemoved: readonly string[] = [],
+  ): void => {
+    if (disposed || invalidation !== null) return
+    const lostShadow = uncovered.length > 0
+    const changedSurface = surfaceAdded.length > 0 || surfaceRemoved.length > 0
+    const record: NativeToolInvalidation = Object.freeze({
+      schema: 'a5sf-native-invalidation/1',
+      reason: lostShadow && changedSurface
+        ? 'the Member surface changed and at least one managed native tool is no longer shadowed by this attach after the mount settled'
+        : lostShadow
+          ? 'a managed native tool is no longer shadowed by this attach after the mount settled'
+          : 'the Member tool surface changed after the native mount settled',
+      uncovered: Object.freeze([...new Set(uncovered)]),
+      surfaceAdded: Object.freeze([...new Set(surfaceAdded)]),
+      surfaceRemoved: Object.freeze([...new Set(surfaceRemoved)]),
+      observedAt: new Date().toISOString(),
+    })
+    invalidation = record
+    if (detachVerification !== undefined) {
+      try {
+        detachVerification()
+      } catch {
+        // The record below is the report; a listener disposer fault must not
+        // stop the teardown.
+      }
+      detachVerification = undefined
+    }
+    // THE EVENT RECORD. The realm exposes the typed record (a caller can read
+    // `nativeInvalidation`); the process log names it too because the live glue
+    // is not changed by this lane. This is a REPORT, not a second authority.
+    console.error(
+      `a5sf: native tool shadow INVALIDATED (${record.schema}): ${record.reason}; `
+      + `uncovered=${JSON.stringify(record.uncovered)}; disposing every router fiber to restore the preset surface`,
+    )
+    invalidationTeardown = disposeNative()
+      .catch((error) => {
+        console.error(`a5sf: native shadow invalidation teardown failed: ${error instanceof Error ? error.message : String(error)}`)
+      })
+      .finally(() => { resolveVerification?.() })
+  }
+
+  /**
+   * Verify (a) every routed name still resolves to the definition THIS attach
+   * registered and (b) the Member's model-visible tool NAME SET is unchanged.
+   */
+  const verifyRoutedSurface = (scope: unknown): void => {
+    if (disposed || invalidation !== null) return
+    if (expectedDefinitions.size === 0 && expectedSurfaceNames === undefined) return
+    // The row's own refusal path disposes the fibers it was handed; once NONE of
+    // this attach's fibers is active there is no shadow left to guard, and the
+    // row is reporting its own failure. Do not manufacture an invalidation.
+    if (!nativeFibers.some((fiber) => fiber.state === 2)) return
+    const tools = installation.members[0]?.ctx?.get('tools') as
+      | {
+        get?: (name: string, scope: unknown) => unknown
+        schemas?: (scope: unknown) => readonly unknown[]
+      }
+      | undefined
+    if (tools === undefined || tools === null) return
+    try {
+      const uncovered: string[] = []
+      if (typeof tools.get === 'function') {
+        for (const [name, definition] of expectedDefinitions) {
+          if (tools.get(name, scope) !== definition) uncovered.push(name)
+        }
+      }
+      const surfaceAdded: string[] = []
+      const surfaceRemoved: string[] = []
+      // (b) S-1's measured `+30 ms new name escapes the surface gate`: a name
+      // that did not exist at arm time changes what the model can see, even
+      // when no managed definition was lost. Invalidate instead of accepting it
+      // silently; this also catches an unmanaged tool DISAPPEARING.
+      if (expectedSurfaceNames !== undefined && typeof tools.schemas === 'function') {
+        const now = new Set<string>()
+        for (const entry of tools.schemas(scope)) {
+          const name = typeof entry === 'string'
+            ? entry
+            : (entry as { name?: unknown } | null)?.name
+          if (typeof name === 'string') now.add(name)
+        }
+        for (const name of now) if (!expectedSurfaceNames.has(name)) surfaceAdded.push(name)
+        for (const name of expectedSurfaceNames) if (!now.has(name)) surfaceRemoved.push(name)
+      }
+      if (uncovered.length > 0 || surfaceAdded.length > 0 || surfaceRemoved.length > 0) {
+        invalidateNativeShadow(uncovered, surfaceAdded, surfaceRemoved)
+      }
+    } catch {
+      // A registry read fault is not evidence of loss; the next change event or
+      // settle round re-verifies. The attach's own definition-identity gate in
+      // the product row still refuses a mount it cannot verify.
+    }
+  }
+
+  let verificationScope: unknown
+  /** Arm continuous verification (the public `tools/change` event) + bounded settle rounds. */
+  /**
+   * Take the NAME-SET baseline on the FIRST macrotask after the attach.
+   *
+   * WHY NOT AT ARM TIME: the product glue registers the Team tools
+   * SYNCHRONOUSLY in the same setup turn immediately after
+   * `attachA5sfNativeToolModules` returns (measured in `agent-bindings.mjs`:
+   * the native attach at ~line 2809, the Team-tool registration loop at ~2834).
+   * Those tools are legitimate setup, not a late surface change. Capturing the
+   * baseline in the first macrotask absorbs that same-turn setup while still
+   * catching a +30 ms-style registration on a later turn (S-1's measured
+   * escape). Any `tools/change` BEFORE this baseline is definition-only.
+   */
+  const captureSurfaceBaseline = (scope: unknown): void => {
+    const tools = installation.members[0]?.ctx?.get('tools') as
+      | { schemas?: (scope: unknown) => readonly unknown[] }
+      | undefined
+    if (tools === undefined || tools === null || typeof tools.schemas !== 'function') return
+    try {
+      const names = new Set<string>()
+      for (const entry of tools.schemas(scope)) {
+        const name = typeof entry === 'string'
+          ? entry
+          : (entry as { name?: unknown } | null)?.name
+        if (typeof name === 'string') names.add(name)
+      }
+      expectedSurfaceNames = names
+    } catch {
+      expectedSurfaceNames = undefined
+    }
+  }
+
+  const armVerification = (scope: unknown): void => {
+    verificationScope = scope
+    // CONTINUOUS VERIFICATION, without a loader seam: `@deepseek-ai/dsh-tools`
+    // emits `tools/change` on every scoped registration/restriction/disposal,
+    // so a late arrival or hot update is observed as it happens, not inferred.
+    const memberCtx = installation.members[0]?.ctx as
+      | { on?: (name: string, listener: () => void) => (() => boolean) | undefined }
+      | undefined
+    if (typeof memberCtx?.on === 'function') {
+      try {
+        detachVerification = memberCtx.on('tools/change', () => { verifyRoutedSurface(verificationScope) })
+      } catch {
+        detachVerification = undefined
+      }
+    }
+    // BOUNDED POST-SETTLE ROUNDS (the review's explicit requirement): the mount
+    // already settled one macrotask for deferred registrations; two MORE
+    // macrotasks re-read the routed surface so a registration that lands just
+    // after the window is still caught even if its event was missed.
+    const round = (remaining: number): void => {
+      setTimeout(() => {
+        // First macrotask: absorb the caller's own same-turn setup (Team tools),
+        // then verify. A later turn is a genuine late change.
+        if (expectedSurfaceNames === undefined) captureSurfaceBaseline(verificationScope)
+        verifyRoutedSurface(verificationScope)
+        if (remaining > 1) round(remaining - 1)
+        else resolveVerification?.()
+      }, 0)
+    }
+    round(2)
+  }
+
   return Object.freeze({
     members: Object.freeze([...input.members]),
     installation,
     bindings: Object.freeze([...mounted]),
-    mountNativeToolModules: async (modules: readonly NativeToolModuleMount[]): Promise<readonly Fiber[]> => {
+    get nativeInvalidation(): NativeToolInvalidation | null {
+      return invalidation
+    },
+    whenNativeVerificationSettled: async (): Promise<void> => {
+      await verificationSettled
+      // A bounded round may have settled BEFORE the change that invalidated the
+      // shadow; awaiting the teardown makes "settled" mean quiescent.
+      await invalidationTeardown
+    },
+    disposeNativeToolModules: async (): Promise<void> => {
+      if (disposed) return
+      if (detachVerification !== undefined) {
+        try {
+          detachVerification()
+        } catch {
+          // The caller's refusal is the failure that is reported.
+        }
+        detachVerification = undefined
+      }
+      expectedDefinitions.clear()
+      expectedSurfaceNames = undefined
+      await disposeNative()
+    },
+    mountNativeToolModules: async (
+      modules: readonly NativeToolModuleMount[],
+      options?: NativeToolModuleMountOptions,
+    ): Promise<readonly Fiber[]> => {
       // Refuse BEFORE registering anything: every Member realm shares the
       // agent's DSH scope key, so two re-mounts of the same native names would
       // collide inside one scope layer. One Member ceiling per agent tool plane.
@@ -438,6 +739,29 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         throw new TeamServiceInstallError(
           'SERVICE_MOUNT_FAILED',
           'native tool re-mount refused: the realm is already disposed',
+        )
+      }
+      if (invalidation !== null) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `native tool re-mount refused: this realm's native shadow was invalidated at ${invalidation.observedAt} `
+          + `(uncovered ${JSON.stringify(invalidation.uncovered)}); a fresh attach must not re-create a partial shadow`,
+        )
+      }
+      // ASSEMBLY GAP 1: observe-only mounts exist to LEARN module ownership. They
+      // register nothing, so they cannot be mixed with real mounts, and naming a
+      // binding on one is meaningless (the observation IS the binding answer).
+      const observeOnly = modules.length > 0 && modules.every((mount) => mount.observeOnly === true)
+      if (modules.some((mount) => (mount.observeOnly === true) !== observeOnly)) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          'native tool re-mount cannot mix observe-only and registering mounts in one call',
+        )
+      }
+      if (observeOnly && modules.some((mount) => mount.toolBindingIdentity !== undefined)) {
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          'an observe-only native tool mount cannot name a ToolBinding (the observation answers which module owns it)',
         )
       }
       // Its `ctx` IS the isolated scope the confined Provider was installed on
@@ -492,7 +816,7 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         created.length = 0
       }
       for (const [index, mount] of modules.entries()) {
-        const binding = mount.toolBindingIdentity === undefined
+        const binding = observeOnly || mount.toolBindingIdentity === undefined
           ? undefined
           : bindingRealmOf(mount.toolBindingIdentity)
         const target = binding?.ctx ?? memberTarget
@@ -515,12 +839,16 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
             'native tool re-mount needs the systemPrompt service on the target context',
           )
         }
+        // Observation withdraws every registration: the module executes its real
+        // `apply`, the router records what it WOULD have registered, and the live
+        // registry is untouched.
         const { tools, systemPrompt, partition } = createRegistrationRouters(
           realTools as object,
           realPrompt as object,
           target,
-          (name) => (binding === undefined ? !bindingToolNames.has(name) : name === ownedToolName),
+          (name) => (observeOnly ? false : binding === undefined ? !bindingToolNames.has(name) : name === ownedToolName),
           (name) => {
+            if (observeOnly) return false
             // Prompt sections are partitioned the same way as the tools they
             // belong to: `tool:<name>` follows its tool, every other section
             // belongs to the CEILING fiber so it is registered exactly once.
@@ -562,44 +890,47 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           // or its injected child fiber never becomes eligible to start.
           inner = routerFiber.ctx.plugin(mount.module, mount.config as never)
           await inner
-          // COVERAGE (S-1): a module may register through a DEFERRED
-          // `ctx.inject(...)` child. Under the router's isolated service scope
-          // that child cannot reach the shadowed services (measured:
-          // `cannot get property "tools" without inject`), so its tool would
-          // stay UNSHADOWED on the preset definition — executing on the BASE
-          // provider with ZERO guard facts while every surface name stayed equal.
-          // Settle the window, then refuse if any descendant fiber did not reach
-          // ACTIVE: a deferred registration is either served by the router or the
-          // whole mount is refused — never silently left on BASE.
+          // Settle the deferred-registration window for BOTH mount kinds.
           await new Promise<void>((resolve) => setTimeout(resolve, 0))
-          const unsettled = windowFibers
-            .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== FIBER_ACTIVE)
-            // An OPTIONAL dependency that is absent everywhere is benign: the
-            // module declares an extra registration it cannot make (measured:
-            // the pinned tool-fs ALWAYS declares `ctx.inject(['attachments'])`).
-            // The dangerous shape is a dependency the REST of this Member CAN
-            // resolve — the preset would have registered that tool, so refusing
-            // is the only way to keep it off the unshadowed BASE path.
-            .filter((created) => Object.keys(created.inject).some((name) => target.get(name) !== undefined))
-          if (unsettled.length > 0) {
-            // PUBLIC state only: `Fiber.state` is the documented surface, and a
-            // fiber at FAILED says the registration threw without this seam
-            // reaching into the fiber's private error slot (CORE PATCH BUDGET = 0
-            // and AGENTS.md forbid upstream private API). The consequence, stated
-            // honestly in the evidence: the refusal names the MODULE, its pending
-            // inject names and the public fiber state — it does NOT quote the
-            // upstream error text, which this seam never reads.
-            const detail = unsettled
-              .map((created) => {
-                const deps = Object.keys(created.inject).join(',')
-                const state = created.state === FIBER_FAILED ? 'failed' : `state ${created.state}`
-                return `deferred registration ${state}, waiting on [${deps}]`
-              })
-              .join('; ')
-            throw new TeamServiceInstallError(
-              'SERVICE_MOUNT_FAILED',
-              `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} registers asynchronously and its deferred registration cannot run inside the routed mount (${detail}); refusing the mount instead of leaving those tools on the unshadowed preset path`,
-            )
+          if (!observeOnly) {
+            // COVERAGE (S-1): a module may register through a DEFERRED
+            // `ctx.inject(...)` child. Under the router's isolated service scope
+            // that child cannot reach the shadowed services (measured:
+            // `cannot get property "tools" without inject`), so its tool would
+            // stay UNSHADOWED on the preset definition — executing on the BASE
+            // provider with ZERO guard facts while every surface name stayed equal.
+            // Settle the window, then refuse if any descendant fiber did not reach
+            // ACTIVE: a deferred registration is either served by the router or the
+            // whole mount is refused — never silently left on BASE.
+            const unsettled = windowFibers
+              .filter((created) => created !== routerFiber && isDescendantOf(created, routerFiber) && created.uid !== null && created.state !== FIBER_ACTIVE)
+              // An OPTIONAL dependency that is absent everywhere is benign: the
+              // module declares an extra registration it cannot make (measured:
+              // the pinned tool-fs ALWAYS declares `ctx.inject(['attachments'])`).
+              // The dangerous shape is a dependency the REST of this Member CAN
+              // resolve — the preset would have registered that tool, so refusing
+              // is the only way to keep it off the unshadowed BASE path.
+              .filter((created) => Object.keys(created.inject).some((name) => target.get(name) !== undefined))
+            if (unsettled.length > 0) {
+              // PUBLIC state only: `Fiber.state` is the documented surface, and a
+              // fiber at FAILED says the registration threw without this seam
+              // reaching into the fiber's private error slot (CORE PATCH BUDGET = 0
+              // and AGENTS.md forbid upstream private API). The consequence, stated
+              // honestly in the evidence: the refusal names the MODULE, its pending
+              // inject names and the public fiber state — it does NOT quote the
+              // upstream error text, which this seam never reads.
+              const detail = unsettled
+                .map((created) => {
+                  const deps = Object.keys(created.inject).join(',')
+                  const state = created.state === FIBER_FAILED ? 'failed' : `state ${created.state}`
+                  return `deferred registration ${state}, waiting on [${deps}]`
+                })
+                .join('; ')
+              throw new TeamServiceInstallError(
+                'SERVICE_MOUNT_FAILED',
+                `native tool module ${JSON.stringify(mount.toolBindingIdentity ?? null)} registers asynchronously and its deferred registration cannot run inside the routed mount (${detail}); refusing the mount instead of leaving those tools on the unshadowed preset path`,
+              )
+            }
           }
         } catch (error) {
           if (typeof detachWindow === 'function') detachWindow()
@@ -614,11 +945,15 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
         }
         if (typeof detachWindow === 'function') detachWindow()
         created.push(fiber)
-        nativeFibers.push(fiber)
+        if (!observeOnly) {
+          nativeFibers.push(fiber)
+          for (const [name, definition] of partition.forwardedDefinitions) expectedDefinitions.set(name, definition)
+        }
         const routing: NativeRegistrationRouting = Object.freeze({
           realm: binding === undefined ? 'ceiling' : 'binding',
           toolBindingIdentity: binding?.toolBindingIdentity ?? null,
           forwarded: Object.freeze([...partition.forwarded]),
+          observed: Object.freeze([...partition.observed]),
           dropped: Object.freeze([...partition.dropped]),
           forwardedSections: Object.freeze([...partition.forwardedSections]),
         })
@@ -638,11 +973,27 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           )
         }
       }
+      // An observe-only call creates no shadow: the caller OWNS these fibers and
+      // disposes them after reading `a5sfRegistrationRouting.observed`.
+      if (observeOnly) return Object.freeze([...created])
+      // ASSEMBLY GAP 2: arm re-verification AFTER the last registration, so the
+      // mount's own writes cannot be mistaken for a later change.
+      armVerification(options?.scope)
       return Object.freeze([...created])
     },
     dispose: async (): Promise<void> => {
       if (disposed) return
       disposed = true
+      if (detachVerification !== undefined) {
+        try {
+          detachVerification()
+        } catch {
+          // Reported teardown faults are the fibers' below; a listener already
+          // being gone is not a failure.
+        }
+        detachVerification = undefined
+      }
+      resolveVerification?.()
       // The native shadow is disposed FIRST: once the confined Provider fiber is
       // gone, a surviving shadow would resolve a missing `fs` service (fail
       // closed, but reported as a service fault) instead of the guard's refusal.
