@@ -39,15 +39,15 @@ Case 中的有效审批能力”压成了一个 `role` 字段。** 只改任一�
 
 ### D1. 身份不变；有效审批能力可被受限委托
 
-- **Principal** 是真实调用者；Officer 在所有 durable decision、事件及日志中仍是 \`{kind:'instance', instanceId, role:'member'}\`。不得伪造 Leader 身份，亦不修改原有 role rung 的含义。
+- **Principal** 是真实调用者；Officer 在所有 durable decision、事件及日志中仍是 `{kind:'instance', instanceId, role:'member'}`。不得伪造 Leader 身份，亦不修改原有 role rung 的含义。
 - **ReviewRoutingDecision** 只给出当前 Case/leg 的应通知处理者，不是授权；Leader 原有合法的人工/监督决议权限不因普通案件默认投递 Officer 而自动消失。
-- **ReviewCapability** 是在当前 Case/leg/准确操作作用域内，真实 Principal 可行使的有效审批能力；可以源于原生身份或冻结 Blueprint 的静态委托。没有委托时 \`mayReview(member, member, leader)\` 的既有拒绝行为不变。
+- **ReviewCapability** 是在当前 Case/leg/准确操作作用域内，真实 Principal 可行使的有效审批能力；可以源于原生身份或冻结 Blueprint 的静态委托。没有委托时 `mayReview(member, member, leader)` 的既有拒绝行为不变。
 - **DecisionCapabilityEvidence** 是成功决议时原子记录的、可核验的授权依据，不是可脱离 Case 使用的 bearer token，也不是新的权限台阶。
 - Human 专属要求、Team 调度/管理/权限治理、持久权限变更、Officer 自身 ask、显式 Leader 例外均不属于 Officer 可委托范围。Alpha.5 的 Member/Tool I/O 硬上界与现有一次性 Grant/Guard 始终单独生效。
 
 ### D2. 统一 Blueprint 资格判定与 ReviewCapability 求值
 
-**唯一静态策略来源**：当前 Team 绑定、校验并冻结的 Blueprint \`reviewRouting\`。A6-PR1 必须提供一个共享的纯 \`BlueprintReviewPolicy\` 判定，其结果同时被 \`BlueprintRoutingStrategy\` 与 \`ReviewCapabilityEvaluator\` 消费。禁止两处独立实现 MemberTemplate × Tool 例外匹配；RoutingStrategy 只选择接收者，Evaluator 负责授权，两者可以共用判定但不得互相冒充权威。
+**唯一静态策略来源**：当前 Team 绑定、校验并冻结的 Blueprint `reviewRouting`。A6-PR1 必须提供一个共享的纯 `BlueprintReviewPolicy` 判定，其结果同时被 `BlueprintRoutingStrategy` 与 `ReviewCapabilityEvaluator` 消费。禁止两处独立实现 MemberTemplate × Tool 例外匹配；RoutingStrategy 只选择接收者，Evaluator 负责授权，两者可以共用判定但不得互相冒充权威。
 
 用于委托决策的可信输入必须显式区分不同主体（以下是**概念类型，不是冻结的 TypeScript ABI**）：
 
@@ -99,27 +99,27 @@ interface ReviewCapability {
 
 **可信事实取得规则**：
 
-1. Reviewer 的真实实例、Template、Session 来自运行时可信身份绑定；\`operationOwner\` 来自本次工具操作对应的可信 Member/PA manifest；\`requester\` 仅表明谁提交了请求。三者可能不同，不得以 requester、tool owner、label、自由文本摘要替代操作所属 Member 的 Template。
-2. 普通工具委托**必须**可确认实际 \`operationOwner.templateId × operationTool\`；若此事实在旧式行中无法可靠建立，Officer 委托 fail closed，而 Leader/现有 Human 路径仍按旧规则工作。
+1. Reviewer 的真实实例、Template、Session 来自运行时可信身份绑定；`operationOwner` 来自本次工具操作对应的可信 Member/PA manifest；`requester` 仅表明谁提交了请求。三者可能不同，不得以 requester、tool owner、label、自由文本摘要替代操作所属 Member 的 Template。
+2. 普通工具委托**必须**可确认实际 `operationOwner.templateId × operationTool`；若此事实在旧式行中无法可靠建立，Officer 委托 fail closed，而 Leader/现有 Human 路径仍按旧规则工作。
 3. Blueprint 的 Leader 例外、固定 Leader 专属管理类别、Human-only 和 Officer 自身 ask 是**委托资格排除项**。路由投给 Leader 的这些案件不得同时被 Officer 授权；若默认 Officer 的 Case 已有效 Handoff/接管至 Leader，则原 Officer 也不得再签该 leg。
 4. 同一 MemberTemplate 的所有实例初始规则一致；当前 Blueprint 不定义 Instance 级规则。额外的运行时路由修改是未来功能，不在本轮实现。
-5. \`reviewCapability\` 不接收任何由模型或客户端传入的证明字段作为权威。
+5. `reviewCapability` 不接收任何由模型或客户端传入的证明字段作为权威。
 
 求值规则：
 
 - Human/Leader：在既有合法角色与权限规则下使用 native role 能力；保留既有 Human rung、Envelope/Hard Ceiling 语义，不建立新的“全局委托”。
-- Member：只有真实 Reviewer 是当前 Team 唯一有效 Officer、当前 Case 的 current leg 确实 open 且 \`reviewAuthority='leader'\`、操作属于合法常规工具 ask、共享 BlueprintReviewPolicy **将该实际操作归属 Officer**、未触发任何排除项、当前 leg 未转交 Leader、并且 scope/generation/身份全部匹配，才返回 \`source='blueprint-officer', effectiveReviewAuthority='leader'\`。
+- Member：只有真实 Reviewer 是当前 Team 唯一有效 Officer、当前 Case 的 current leg 确实 open 且 `reviewAuthority='leader'`、操作属于合法常规工具 ask、共享 BlueprintReviewPolicy **将该实际操作归属 Officer**、未触发任何排除项、当前 leg 未转交 Leader、并且 scope/generation/身份全部匹配，才返回 `source='blueprint-officer', effectiveReviewAuthority='leader'`。
 - 其他 Member/其他权限 rung/不明事实：拒绝，不通过默认值隐式扩权。
-- \`current-leg-handoff\`、\`unavailable-takeover\` **不是 ReviewCapabilitySource**；它们只是路由覆盖及静态委托有效性的限制。
+- `current-leg-handoff`、`unavailable-takeover` **不是 ReviewCapabilitySource**；它们只是路由覆盖及静态委托有效性的限制。
 
 ### D3. 正确的授权与 durable decision 时序（解决提交前/提交后循环）
 
 **resolve 阶段不存在“本次 decision 行”，不得要求 verifier 从它读取能力。** 正确顺序如下，全部在现有的受保护 ControlService 决议/Team 锁边界下完成；允许 verifier 读取必要的可信调用事实，但不得绕过该决议序列：
 
 1. 读取当前权威 Case/current leg、冻结 Blueprint、真实身份、当前转交事实、权限代际与准确操作/PA manifest。
-2. 用 **D2 唯一求值器**计算本次可信 \`ReviewCapability\` 候选，检查 Actor 此时是否有资格决定当前 leg。单独核定 \`allow/deny/escalate/terminal-close\` 的入口操作权限，**同一资格来源不意味着所有入口开放相同能力**。
+2. 用 **D2 唯一求值器**计算本次可信 `ReviewCapability` 候选，检查 Actor 此时是否有资格决定当前 leg。单独核定 `allow/deny/escalate/terminal-close` 的入口操作权限，**同一资格来源不意味着所有入口开放相同能力**。
 3. 对 allow，在实际提交决议**之前**把此候选能力作为由 ControlService 生成的、非 durable 的可信输入传给已有 PA Effects Verifier；verifier 在当前 EffectSet/Authority Ceiling 下重新验证，不能从不存在的 decision 行读数据。
-4. 所有门禁通过后，把真实 \`decider\`、决议和规范化 \`DecisionCapabilityEvidence\` **在同一 durable decision 写入中原子记录**；不得先写 allow 再补能力，也不得存一个尚未验证的凭据。
+4. 所有门禁通过后，把真实 `decider`、决议和规范化 `DecisionCapabilityEvidence` **在同一 durable decision 写入中原子记录**；不得先写 allow 再补能力，也不得存一个尚未验证的凭据。
 5. 后续 PA Presenter、Grant/Guard 从该已持久化的 decision 及其凭据读取，按 D4 在本次真实调用上下文中重新验证后再作一次性授权与消费。
 6. 如果 preflight 能力不可用/失配，拒绝本次**无资格的审批动作**，不得把该 Member 的未授权提交写成有效 allow。底层既有“合法 Reviewer 的 PA 漂移 → durable DENY”行为继续由原有 PA 法律执行；不任意改变既有终态语义。
 
@@ -127,13 +127,13 @@ interface ReviewCapability {
 
 ### D4. 决议能力证据与消费时再次验证
 
-\`ControlDecisionRecord\` 增加**可选且加法式** \`reviewCapability?: DecisionCapabilityEvidence\`；仅 ControlService 可根据已通过 D3 的候选生成并与该决议一起提交。具体序列化字段由 PR2a/PR2b 审查固定，应至少绑定：
+`ControlDecisionRecord` 增加**可选且加法式** `reviewCapability?: DecisionCapabilityEvidence`；仅 ControlService 可根据已通过 D3 的候选生成并与该决议一起提交。具体序列化字段由 PR2a/PR2b 审查固定，应至少绑定：
 
-- 原始真实 \`decider\`；Team/Blueprint content hash（与当前绑定的快照匹配）；
-- \`approvalCaseId\` + **currentLegRequestId** + \`legOrdinal\`；
+- 原始真实 `decider`；Team/Blueprint content hash（与当前绑定的快照匹配）；
+- `approvalCaseId` + **currentLegRequestId** + `legOrdinal`；
 - 实际 Operation Owner/Template 与可信 Tool Definition 身份；
 - 本次操作 scope、必要时完整 PA EffectSet fingerprint；authorityGeneration；
-- 能力来源 \`native\` / \`blueprint-officer\` 与有效审批权限 rung。
+- 能力来源 `native` / `blueprint-officer` 与有效审批权限 rung。
 
 消费者应遵循下面的**一致性矩阵**，避免“不用快照”与“快照永远有效”两种错误：
 
@@ -143,18 +143,18 @@ interface ReviewCapability {
 | Control 持久提交 | 已验证候选 + 原决议 | 与 decision 同一 durable 写入、真实 decider 不改变 | 第二份 Mandate/Grant 行 |
 | PA/Grant/Guard | 既有 decision + 记录的能力证据 + 当前可信调用事实 | 身份、Case/current leg、scope/EffectSet、Blueprint snapshot、authorityGeneration、现有 PA/External Hard/one-shot 规则；必要事实漂移则拒绝/不消费 | 无关的 Inbox pending、Officer Busy/Unavailable、单纯的通知归属变更 |
 
-- 对**旧 Team 与旧决议**：字段缺席时使用现有 \`deciderAuthority()\` 映射，旧语义不变；但**新型 Officer 的有效委托绝不能因字段缺席而走 legacy fallback 获得 allow**。
+- 对**旧 Team 与旧决议**：字段缺席时使用现有 `deciderAuthority()` 映射，旧语义不变；但**新型 Officer 的有效委托绝不能因字段缺席而走 legacy fallback 获得 allow**。
 - 对新的原生 Leader/Human 决议：可记录 native 凭据或保留与当前同等的 legacy 路径，具体由 PR2b 保证等价；不得要求旧行迁移。
 - 已合法签署的 decision 的审计依据不会因为通知撤销、Officer 繁忙或 Coordinator 状态改变而失效；只有与原授权有关的身份/Case/leg/scope/Blueprint/权限代际或现有硬上界漂移才能阻止兑现。
 - 紧急 kill switch 停止**新的** Officer 委托决议；已合法 durable allow 是否被继续消费，沿用现有执行时权限法律与已记录依据，不能因为关闭通知队列而默默更改结果。若未来要求撤销既发委托，必须新增明确的授权撤销语义与代际，不在本轮偷加。
-- \`reviewCapability\` 是证明一次已授权决议为何有效的**证据**，不是可被跨请求转移的凭据。对同 Case 的旧 leg、别的 Member 或不同 Tool 不得重用。
+- `reviewCapability` 是证明一次已授权决议为何有效的**证据**，不是可被跨请求转移的凭据。对同 Case 的旧 leg、别的 Member 或不同 Tool 不得重用。
 
 ### D5. 静态委托来自冻结 Blueprint，不建每案 Mandate 账本
 
-- **共享 \`BlueprintReviewPolicy\`** 由冻结 Blueprint 静态派生，供 Router 与 D2 求值器调用；固定 Leader 专属、Human rung、Officer-self-ask 和 MemberTemplate × Tool Leader 例外必须得到一致结论。权限层级仍以 ControlService/PA 为权威，而非路由器的通知决定。
+- **共享 `BlueprintReviewPolicy`** 由冻结 Blueprint 静态派生，供 Router 与 D2 求值器调用；固定 Leader 专属、Human rung、Officer-self-ask 和 MemberTemplate × Tool Leader 例外必须得到一致结论。权限层级仍以 ControlService/PA 为权威，而非路由器的通知决定。
 - 普通 Case 不写新 ReviewMandate/Assignment 账本，能力从现有可信身份、Blueprint、Case 和当前权限事实导出；durable decision 行仅记录其经过验证的来源。
 - 只有改变当前路由归属的 Handoff/Unavailable Takeover 才写一次最小 current-leg transfer fact（D6）；不从是否投递过通知推导授权状态。
-- \`reviewRouting\` 采用加法式 Blueprint 版本并参与 content hash，历史 v3/v4 不更改语义与哈希；若 Alpha.5 同时扩展 schema，工程中协调唯一版本路线。
+- `reviewRouting` 采用加法式 Blueprint 版本并参与 content hash，历史 v3/v4 不更改语义与哈希；若 Alpha.5 同时扩展 schema，工程中协调唯一版本路线。
 
 ### D6. Handoff 与故障接管属于路由覆盖，不属于审批授权来源
 
@@ -175,17 +175,17 @@ interface CurrentLegTransfer {
 ~~~
 
 - **Officer-Handoff**：Officer 判断该 leg 需要 Leader 全局信息，主动请求，核实当前 leg/Actor 后记录。
-- **Unavailable-Takeover**：Officer 不可用且绑定的 Blueprint 已显式配置 \`whenOfficerUnavailable: leader\`，**由可信 Team Runtime 发起**，不要求已经不可用的 Officer 签发 Handoff。Busy/普通 Backlog 不触发此路径；\`hold\` 保留待办并报告异常。
+- **Unavailable-Takeover**：Officer 不可用且绑定的 Blueprint 已显式配置 `whenOfficerUnavailable: leader`，**由可信 Team Runtime 发起**，不要求已经不可用的 Officer 签发 Handoff。Busy/普通 Backlog 不触发此路径；`hold` 保留待办并报告异常。
 - 两者均在可信 Team/Control 锁下验证当前 leg 仍待审、起始归属与目标合法，**同一 leg 的重复转交幂等**；只影响当前 leg，不能自动抢回；新 leg 重新按 Blueprint/有效权限计算。转交成功后新接收者需得到合并唤醒，旧接收者不能再以 Blueprint 委托签署此 leg。
-- Handoff/接管不改变 \`reviewAuthority\` rung，不增加任何 Principal 的 native role 能力，也不是 \`escalateApprovalLeg\`；Leader 按其已有原生合法权限审批。其唯一持久记录用于当前 leg 的路由覆盖与禁止旧 Officer 重签。
+- Handoff/接管不改变 `reviewAuthority` rung，不增加任何 Principal 的 native role 能力，也不是 `escalateApprovalLeg`；Leader 按其已有原生合法权限审批。其唯一持久记录用于当前 leg 的路由覆盖与禁止旧 Officer 重签。
 - 这可采用一个最小 TeamDomain/Control 事实，不要求通用 Assignment Ledger、定时工作流或二次授权事务。
 
 ### D7. 失败关闭与向后兼容
 
-- 无可信 \`operationOwner\`/Tool/Reviewer Template、Blueprint 例外无法判定、当前 Case/leg 失配、权限代际漂移、PA effect/scope 失配、Handoff 已改变归属 → 对 Member 委托拒绝，零未经授权的 allow/grant/consumption。
-- 对 native Leader/Human 的旧非委托路径，保留既有 \`mayReview\`、硬上界、逐 EffectSet 检查与 decision 写入顺序；不把“需要委托证据”强加给过去的旧数据。
-- 不增全局 Member role 权限、不伪造 Leader、Human-only 不下放；不接受任何模型声称的 \`reviewCapability\` 当授权事实。
-- 若委托模式无法对当前合法 Team 启用，保留待办并按 Blueprint \`hold/leader\` 策略或明确不可路由行为处理，不能因为不能投递而默认批准。
+- 无可信 `operationOwner`/Tool/Reviewer Template、Blueprint 例外无法判定、当前 Case/leg 失配、权限代际漂移、PA effect/scope 失配、Handoff 已改变归属 → 对 Member 委托拒绝，零未经授权的 allow/grant/consumption。
+- 对 native Leader/Human 的旧非委托路径，保留既有 `mayReview`、硬上界、逐 EffectSet 检查与 decision 写入顺序；不把“需要委托证据”强加给过去的旧数据。
+- 不增全局 Member role 权限、不伪造 Leader、Human-only 不下放；不接受任何模型声称的 `reviewCapability` 当授权事实。
+- 若委托模式无法对当前合法 Team 启用，保留待办并按 Blueprint `hold/leader` 策略或明确不可路由行为处理，不能因为不能投递而默认批准。
 
 ## 3. 跨层数据流与所有权
 
@@ -216,7 +216,7 @@ Frozen Blueprint ──> BlueprintReviewPolicy (pure; ONE authoring matcher)
 ~~~
 
 - **写入权威**：ControlService 仍是唯一的审批决议持久写入口。Router、Coordinator、模型不写授权事实；只有 CurrentLegTransfer 是独立的**非授权路由事实**。
-- **序列化边界**：\`ReviewCapability\` 候选是可信内部值，\`DecisionCapabilityEvidence\` 是 append-only decision 中的数据；格式一致由规范化评估器和受信验证函数确保。不得把已记录 evidence 直接解释为无条件允许执行的 token。
+- **序列化边界**：`ReviewCapability` 候选是可信内部值，`DecisionCapabilityEvidence` 是 append-only decision 中的数据；格式一致由规范化评估器和受信验证函数确保。不得把已记录 evidence 直接解释为无条件允许执行的 token。
 - **程序责任**：A6-PR1 拥有共享静态 BlueprintReviewPolicy；A6-PR2a 拥有统一 ReviewCapabilityEvaluator；A6-PR2b 接受两者并连接提交前、持久化和 PA 执行后的消费者；A6-PR2c 仅实现 current-leg transfer 事实与事件，A6-PR3/PR4 负责通知/Host Inbox，A6-PR5 负责受限 Officer 工具面。
 
 ## 4. 对本轮工程不变量的修订
@@ -230,8 +230,8 @@ Frozen Blueprint ──> BlueprintReviewPolicy (pure; ONE authoring matcher)
 
 ## 5. 兼容、启停与后续扩展
 
-- 旧 Blueprint（不含 \`reviewRouting\`）、旧 Team、旧 decision 行缺少能力证据时，维持既有原生审批和权限行为。新 Officer 决议必须有可验证委托证据，缺席不能按旧 Member 角色获批。
-- \`reviewRouting\` 是 Blueprint 新版本的加法配置；任何运行时紧急停用开关只影响**新**路由/新委托，不能变更冻结 Blueprint 的历史审计依据。发布与回滚仍需保证存量 pending Case 有合法 Leader/Human 接管。
+- 旧 Blueprint（不含 `reviewRouting`）、旧 Team、旧 decision 行缺少能力证据时，维持既有原生审批和权限行为。新 Officer 决议必须有可验证委托证据，缺席不能按旧 Member 角色获批。
+- `reviewRouting` 是 Blueprint 新版本的加法配置；任何运行时紧急停用开关只影响**新**路由/新委托，不能变更冻结 Blueprint 的历史审计依据。发布与回滚仍需保证存量 pending Case 有合法 Leader/Human 接管。
 - 将来新增不同 Officer/路由策略时，可扩展共享 BlueprintReviewPolicy 与委托来源，但必须继续提供一个统一的 CapabilityVerifier。**不得把 Router 的目标直接当成授权**。
 - 不预先建设授权撤销服务、通用工作流、多 Officer 集群调度器、独立 Mandate Store 或额外可靠 Timer。出现必要性必须由真实实现缺口证明。
 
