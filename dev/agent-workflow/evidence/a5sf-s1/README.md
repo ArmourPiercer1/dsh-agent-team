@@ -261,3 +261,11 @@ RED: `git checkout origin/master -- packages/runtime/team-services/src/mount.ts 
 | `eb3-*.log`, `git-diff-check.log` | EB3 gates + whitespace |
 | `ci-local.log` | the `pnpm ci:local` verdict (pass, §4.1) |
 | `ci-local-flake-run2.log`, `ci-local-flake-note.txt`, `flake-isolation-*.log` | the two red attempts, the failure-mode diagnosis and the isolation re-runs |
+
+## The two `ci:local` logs are derived summaries
+
+Both raw captures exceeded the evidence guard's 1 MiB bound, so what is committed is the
+**verbatim verdict and aggregate lines plus the failing lines**, not the 1.2 MB capture.
+That is the guard's intended remedy ("commit the derived numbers instead") rather than an
+allowlist entry, and it means the full per-test output of those two runs is not preserved —
+stated here so nobody assumes the raw transcript is in the tree.
