@@ -462,6 +462,8 @@ function manifestBytes(fixture: DirectFixture): Record<string, unknown> {
   })) as Record<string, unknown>
 }
 
+const LEDGER_ENVELOPE_SCHEMA_VERSION = 2
+
 const manifestOf = (row: ControlRequestRecord): Record<string, unknown> =>
   row.reviewPayload as Record<string, unknown>
 
@@ -1264,7 +1266,7 @@ async function appendDurableFact(
 ): Promise<number> {
   const sequence = await ledger.allocateSequence()
   await ledger.put({
-    schemaVersion: 2, // fence L1253 adjudication evidence: durable LEDGER-ROW envelope version (`ledger.put` row envelope — sequence/rootSessionId/factType/payload/createdAt, ZERO blueprint document fields); the ledger-row signature rides the head line (outer-line-evidence ⇒ UNKNOWN by design). NOT a blueprint document version.
+    schemaVersion: LEDGER_ENVELOPE_SCHEMA_VERSION, // durable LEDGER-ROW envelope version, not a blueprint document version
     sequence,
     rootSessionId: P6T4_ROOT,
     factType,
