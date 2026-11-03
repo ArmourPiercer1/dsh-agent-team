@@ -421,3 +421,11 @@ that has one) and re-read the result.
 | `mount-refusal-probe.json` / `.log` | the three-arm host-free matrix (§2.2) |
 | `ci-local.log` | `pnpm ci:local` verbatim (§8) |
 | `logs/<world>/` | the World's instance log + the composed profile patch actually mounted |
+
+## 7. Remediation — the run record now binds the authority generation
+
+The PR's first CI round failed `EB3-RUN-MANIFEST` with `RUN_AUTHORITY_BINDING_MISMATCH: bindings.authority is absent on a NEW record`. That guard is correct: fresh evidence must name the authority generation it was produced under, otherwise a record can be attached to a later baseline and silently inherit trust it never earned.
+
+Fix: `run-record.json` now carries `bindings.authority = { pointer: {snapshot_version: as20261102r1, content_digest: sha256:0f730fad…}, pointerSha256: <sha256 of dev/engineering/current-authority.json>, note: "bound at the post-run repair of this record (the boot captured before the authority block was required); the generation is the one the boot ran under, unchanged." }` — the same shape and the same disclosure as `a5sf-live-native3`, whose boot also predated the requirement. Nothing else in the record changed: the ledger rows, the grant, the six NOT_REACHED verdicts and the refusal text are exactly what the boot produced.
+
+`node scripts/eb3-run-manifest.mjs --new-since origin/master` → `EB3-RUN-MANIFEST pass records=140 strict=1 incomplete=11 findings=0`.
